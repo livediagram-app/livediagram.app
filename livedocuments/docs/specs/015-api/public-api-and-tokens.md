@@ -54,7 +54,7 @@ account). What follows is how livedocuments uses them.
 - **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.
-- **Management** is liveworkspace's; this app has no routes for listing, minting or revoking tokens. The Settings dialog's Account › API Tokens category draws the shared token panel in place for a signed-in account
+- **Management** is liveworkspace's; this app has no routes for listing, minting or revoking tokens. The Settings dialog's Settings › API Tokens category draws the shared token panel in place for a signed-in account
   (`@liveworkspace/settings-ui/account-panels`, the same one liveworkspace.app's Settings has, loaded when the category
   is first opened): make a token (a name, Read Only), its secret shown once with Copy, and revoke one. Under it the editor's own API Tokens row lists the account's paired workbenches with Unpair and
   says that connecting an AI tool makes its own token; it links to liveworkspace.app (**Manage API Tokens**) only on a
@@ -164,7 +164,7 @@ independently of the owner's interactive app use, and `API_TOKEN_READ_RATE_LIMIT
 
 Tokens are the liveworkspace account's (the head of §3). The **Settings dialog**
 ([User preferences](../007-editor/user-preferences.md)) has an **API Tokens** sub-category of **Account** (id
-`tokens`, `parent: 'account'`, shown as "Account › API Tokens"), reachable from the Explorer and the editor alike.
+`tokens`, `parent: 'account'`, shown as "Settings › API Tokens"), reachable from the Explorer and the editor alike.
 For a signed-in account it first draws the shared token panel in place, the same one liveworkspace.app's Settings has
 (`@liveworkspace/settings-ui/account-panels`, loaded when the category is first opened): make a token (a name and a
 Read Only option), its secret shown once with Copy, and revoke one. Under it, this app's own row (`kind: 'tokens'`,

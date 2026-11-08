@@ -262,11 +262,8 @@ describe('settings catalogue', () => {
     expect(workbench.map((c) => c.id)).not.toContain('data');
   });
 
-  it('points every link row at a category that exists', () => {
-    const ids = new Set(SETTINGS_CATEGORIES.map((c) => c.id));
-    const links = ALL_ROWS.filter((r) => r.kind === 'link');
-    expect(links.length).toBeGreaterThan(0);
-    for (const row of links) expect(ids.has(row.target), row.key).toBe(true);
+  it('has no row that opens another category: a setting shows where it belongs', () => {
+    expect(ALL_ROWS.map((r) => r.kind)).not.toContain('link');
   });
 
   it('drops the email rows unless mail can be sent AND someone is signed in', () => {
@@ -306,7 +303,7 @@ describe('settings catalogue', () => {
   });
 });
 
-// Panels holds sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
+// Only Account holds sub-categories (docs/specs/007-editor/user-preferences.md); a panel is a section of Panels.
 describe('settings sub-categories', () => {
   // Plan has no free canvas: no guides, arrows, element indicators or mouse rows. Its Editor category held only
   // Power user mode's rows, so it went with the mode (docs/specs/007-editor/power-user-mode.md).
@@ -314,26 +311,24 @@ describe('settings sub-categories', () => {
     expect(SETTINGS_CATEGORIES.map((c) => c.id as string)).not.toContain('editor');
   });
 
-  it('nests one sub-category per panel under Panels, directly after it and in order', () => {
-    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
-    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
-    expect(children).toEqual(['collaborate']);
-    const at = ids.indexOf('panels');
-    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  it('files each panel as a section of Panels, after Panel Opacity', () => {
+    expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels')).toEqual([]);
+    const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
+    expect(panels.rows[0]!.key).toBe('panelOpacity');
+    expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual([
+      'Collaborate',
+    ]);
+    // Their old sub-category ids still land on Panels.
+    expect(panels.aliases).toEqual(['collaborate']);
   });
 
-  it('keeps Panel Opacity on Panels itself', () => {
-    const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!.rows.map((r) => r.key);
-    expect(keys).toEqual(['panelOpacity']);
-  });
-
-  it('opens every panel sub-category with its Enable switch, on by default', () => {
-    const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
+  it('opens every panel section with its Enable switch, on by default', () => {
+    const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
     const switches: Record<string, [string, string]> = {
-      collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
+      Collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
     };
-    for (const [id, [key, label]] of Object.entries(switches)) {
-      const row = first(id);
+    for (const [section, [key, label]] of Object.entries(switches)) {
+      const row = panels.rows.find((r) => r.section === section)!;
       expect([row.key, row.label]).toEqual([key, label]);
       if (row.kind !== 'toggle') throw new Error(`${key} is not a toggle`);
       expect(row.read({})).toBe(true);
@@ -360,8 +355,8 @@ describe('settings sub-categories', () => {
   });
 
   it('names a sub-category by its path', () => {
-    const collaborate = SETTINGS_CATEGORIES.find((c) => c.id === 'collaborate')!;
-    expect(settingsCategoryPath(collaborate)).toBe('Panels › Collaborate');
+    const notifications = SETTINGS_CATEGORIES.find((c) => c.id === 'notifications')!;
+    expect(settingsCategoryPath(notifications)).toBe('Account › Notifications');
     expect(settingsCategoryPath(SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!)).toBe(
       'Panels',
     );

@@ -39,7 +39,7 @@ the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-t
   the other modes do not show.
 - **Gone once taken, back from Settings.** A tour taken is off the button: once the person starts it (and so
   finishes or skips it), its host stops offering it, so the button makes room for a tour not yet taken, or is not
-  drawn at all. It comes back when its switch in Settings' **Tours** category is turned on again (on means "offer
+  drawn at all. It comes back when its switch in Settings' **Getting Started** category is turned on again (on means "offer
   me this tour", [User preferences](user-preferences.md) "Tours"), and turning a switch on and closing Settings
   also runs that tour if it could run right then. Every tour's host reads the same synced record its Settings row
   reads, so the button and the row never disagree. The rule lives once in the shared offer (`useOfferTour`'s `seen`, `tour-offer.ts`): a host passes whether its
@@ -65,7 +65,7 @@ the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-t
   preference ([User preferences](user-preferences.md)) records it, so Settings' **Diagram Tour** row reads off and the
   button no longer offers it. It is written as the run starts, too, so a reload mid-tour leaves it taken. The
   preference keeps the welcome tour's name.
-- **Rerun from Settings.** The Settings dialog's **Tours** category has a **Diagram Tour** switch that surfaces
+- **Rerun from Settings.** The Settings dialog's **Getting Started** category has a **Diagram Tour** switch that surfaces
   `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and closing Settings starts the tour
   from the top when the open tab is in Diagram and the tour is on offer there; otherwise it does nothing, and the
   button is there when the person reaches a Diagram tab. Finishing the rerun turns it off again.

@@ -92,9 +92,12 @@ export type CatalogueRow =
 export interface CatalogueCategory {
   id: string;
   label: string;
-  // The category it sits under ("Draw" under "Editor"), when that one is shown here too. A
-  // sub-category whose parent isn't shown takes the path as its label ("Editor › Draw") instead.
+  // The category it sits under ("Layers" under "Panels"), when that one is shown here too. A
+  // sub-category whose parent isn't shown takes the path as its label ("Panels › Layers") instead.
   parent?: string;
+  // Old ids of categories folded into this one (Editor's `draw`), so a remembered category or a deep link to one
+  // lands here.
+  aliases?: readonly string[];
   // The top-level category's tile in the app's Settings list (@liveworkspace/settings-ui's tiles), or
   // for a sub-category named by its path, its parent's.
   tile?: string;
@@ -205,6 +208,7 @@ export interface SourceCategory {
   id: string;
   label: string;
   parent?: string;
+  aliases?: readonly string[];
   sectionNotes?: Readonly<Record<string, { note: string }>>;
   collapsedSections?: readonly string[];
   rows: readonly SourceRow[];
@@ -441,6 +445,7 @@ export function deriveCatalogue(
             ? `${labelOf.get(parent) ?? parent} › ${category.label}`
             : category.label,
         ...(nested ? { parent } : {}),
+        ...(category.aliases ? { aliases: [...category.aliases] } : {}),
         ...(tile ? { tile } : {}),
         ...(notes.length > 0
           ? { sectionNotes: Object.fromEntries(notes.map(([s, n]) => [s, n.note])) }

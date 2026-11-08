@@ -1,13 +1,16 @@
 // The Settings panel's one set of categories (liveworkspace/docs/specs/010-site/site.md "Settings", "One set of categories"):
 // Common's and every app's categories merged by their place, the category's name under its parent's ("Editor",
-// "Editor › Draw", "Panels › Layers"), so two apps' Editor are one Editor. Inside a merged category each section shows
+// "Account › Notifications"), so two apps' Editor are one Editor. Inside a merged category each section shows
 // once, holding every app's rows filed under it (section-order.ts), and each setting is one row: Common's, which every
 // app that has it reads from `all`, and any row two apps keep under the same key with the same meaning, which writes to
 // each of them. Every row carries the apps it applies to (`SettingsRow.apps`), drawn as their logos; `only` keeps the
 // rows that apply to one app (the header's This App side), and the categories left with any.
 //
-// Every id the old per-app layout used (`common:editor`, `livediagram.app:draw`) and each category's bare id
-// (`editor`) is kept as an alias of the merged category, so a remembered category or a deep link lands on it.
+// Every id the old per-app layout used (`common:editor`, `livediagram.app:editor`) and each category's bare id
+// (`editor`) is kept as an alias of the merged category, so a remembered category or a deep link lands on it; so are
+// the ids a category carries for ones folded into it (`aliases`: Editor's old `draw`, `livediagram.app:draw`, and
+// from Common `common:pages`), and an old merged place a category carries as a path (Presenting's `/editor/presenting`
+// answers to `apps:editor/presenting`, the Explorer's `/canvases` to `apps:canvases`).
 //
 // Linear in rows and categories: one pass files every category and row by key, one more lays them out. The panel
 // runs it when it opens and again only when a value changes (panelModel's memo).
@@ -173,6 +176,18 @@ export function mergeAppCategories(
       }
       previous = node;
       node.aliases.push(category.id, localId(source.group, category.id));
+      // A category folded into this one (Editor's old `draw`): its bare and prefixed ids, and the merged id it had
+      // beneath this one (`apps:editor/draw`), land here too.
+      for (const alias of category.aliases ?? []) {
+        // An old place in the merged rail, written as its path (`/editor/presenting`, Presenting's while it sat under
+        // Editor; `/canvases`, before Canvases joined the Explorer): its merged id.
+        if (alias.startsWith('/')) {
+          node.aliases.push(`${group}:${alias.slice(1)}`);
+          continue;
+        }
+        const bare = localId(source.group, alias);
+        node.aliases.push(bare, `${source.group}:${bare}`, `${group}:${slug([...path, bare])}`);
+      }
       const nested = category.parent !== undefined && byId.has(category.parent);
       if (category.icon !== undefined) {
         if (nested) node.nestedIcon ??= category.icon;
@@ -242,7 +257,6 @@ export function mergeAppCategories(
     }
   }
 
-  const categoryAlias = new Map<string, string>();
   const out: SettingsCategory[] = [];
   for (let node: Node | null = head; node; node = node.next) {
     const layout = built.get(node);
@@ -250,13 +264,6 @@ export function mergeAppCategories(
     if (!layout) continue;
     const parent = parentOf(node);
     const nested = parent !== undefined && built.has(parent);
-    for (const alias of node.aliases) if (!categoryAlias.has(alias)) categoryAlias.set(alias, id);
-    // A parent left empty: its old ids go to its first sub-category shown.
-    if (parent && !nested) {
-      for (const alias of parent.aliases) {
-        if (!categoryAlias.has(alias)) categoryAlias.set(alias, id);
-      }
-    }
     const label = nested
       ? node.path.at(-1)!
       : node.path.length > 1
@@ -276,29 +283,13 @@ export function mergeAppCategories(
     });
   }
 
-  // 4. What pointed at an old id (a link, a nested row's switch) points at the merged one.
-  if (rowAlias.size === 0 && categoryAlias.size === 0) return out;
-  const row = (key: string) => rowAlias.get(key) ?? key;
-  const category = (id: string) => categoryAlias.get(id) ?? id;
+  // 4. A nested row whose switch was merged into another app's sits under the merged one.
+  if (rowAlias.size === 0) return out;
   return out.map((c) => ({
     ...c,
-    rows: c.rows.map((r) => remapRow(r, row, category)),
+    rows: c.rows.map((r) => {
+      const parent = r.parent !== undefined ? rowAlias.get(r.parent) : undefined;
+      return parent !== undefined ? { ...r, parent } : r;
+    }),
   }));
-}
-
-function remapRow(
-  row: SettingsRow,
-  rowKey: (key: string) => string,
-  categoryId: (id: string) => string,
-): SettingsRow {
-  const parent = row.parent !== undefined ? rowKey(row.parent) : undefined;
-  const withParent = parent !== row.parent ? { ...row, parent } : row;
-  switch (withParent.kind) {
-    case 'link': {
-      const target = categoryId(withParent.target);
-      return target === withParent.target ? withParent : { ...withParent, target };
-    }
-    default:
-      return withParent;
-  }
 }

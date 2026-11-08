@@ -4,13 +4,24 @@
 // has never met a webhook (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks).
 
 import {
+  APPS,
   IndexError,
+  isApp,
+  orderedTopics,
+  splitTopic,
+  topicsOf,
+  topicOf,
+  WEBHOOK_EVENT_APPS,
   WEBHOOK_EVENT_LABELS,
+  WEBHOOK_EVENTS,
+  WEBHOOK_TOPICS,
+  type App,
   type Webhook,
   type WebhookDelivery,
   type WebhookEvent,
   type WebhookKind,
   type WebhookPauseReason,
+  type WebhookTopic,
 } from '@liveworkspace/index-client';
 import { formatRelativeTime } from '@liveworkspace/ui';
 import { DAY_MONTH } from '@liveworkspace/ui/date-format';
@@ -85,11 +96,14 @@ export const KIND_ORDER: readonly WebhookKind[] = ['slack', 'teams', 'json'];
 
 export type EventGroupId = 'items' | 'sharing' | 'work';
 
-/** The events in groups a person recognises, each with a line saying when it fires. */
+type EventChoice = { event: WebhookEvent; label: string; hint: string };
+
+/** The events in groups a person recognises, each with a line saying when it fires. An app is offered only the events
+ *  it sends (WEBHOOK_EVENT_APPS): card moves and forms are liveplanner's. */
 export const EVENT_GROUPS: readonly {
   id: EventGroupId;
   label: string;
-  events: readonly { event: WebhookEvent; label: string; hint: string }[];
+  events: readonly EventChoice[];
 }[] = [
   {
     id: 'items',
@@ -130,18 +144,74 @@ export const EVENT_GROUPS: readonly {
   },
 ];
 
-// The events only one app sends, which name it by its logo.
-export const EVENT_APP: Partial<Record<WebhookEvent, 'liveplanner'>> = {
-  card_moved: 'liveplanner',
-  form_response: 'liveplanner',
+// Where an app has actions but no cards or forms, its words say so.
+const NO_CARDS: Partial<Record<WebhookEvent, Pick<EventChoice, 'label' | 'hint'>>> = {
+  action_assigned: { label: 'Action Assigned', hint: 'Someone is given an action' },
+  action_done: { label: 'Action Done', hint: 'An action is done' },
 };
+const hasCards = (app: App) => WEBHOOK_EVENT_APPS.card_moved.includes(app);
 
-const EVENT_NAMES = new Map(EVENT_GROUPS.flatMap((g) => g.events.map((e) => [e.event, e.label])));
+/** One app's groups: only the events it sends, in its own words. Made once per app. */
+export type AppEventGroup = { id: EventGroupId; label: string; events: readonly EventChoice[] };
+const APP_GROUPS = new Map<App, readonly AppEventGroup[]>(
+  APPS.map((app): [App, readonly AppEventGroup[]] => [
+    app,
+    EVENT_GROUPS.map((group) => ({
+      id: group.id,
+      label: group.id === 'work' && !hasCards(app) ? 'Actions' : group.label,
+      events: group.events
+        .filter(({ event }) => WEBHOOK_EVENT_APPS[event].includes(app))
+        .map((choice) => (hasCards(app) ? choice : { ...choice, ...NO_CARDS[choice.event] })),
+    })).filter((group) => group.events.length > 0),
+  ]),
+);
 
-/** An event or a delivery's type, by its name in Settings (the app it comes from, where only one sends it, is drawn
- *  beside it as that app's logo). */
-export const eventName = (type: WebhookDelivery['type']): string =>
-  EVENT_NAMES.get(type as WebhookEvent) ?? (type === 'ping' ? 'Test' : WEBHOOK_EVENT_LABELS[type]);
+export const eventGroupsFor = (app: App): readonly AppEventGroup[] => APP_GROUPS.get(app)!;
+
+const EVENT_NAMES = new Map<string, string>(
+  APPS.flatMap((app) =>
+    eventGroupsFor(app).flatMap((g) => g.events.map((e): [string, string] => [topicOf(app, e.event), e.label])),
+  ),
+);
+
+/** An app's event by its name in Settings (its app is always drawn beside it, as that app's logo and wordmark). */
+export const eventName = (app: string, type: WebhookDelivery['type']): string =>
+  EVENT_NAMES.get(`${app}:${type}`) ?? (type === 'ping' ? 'Test' : WEBHOOK_EVENT_LABELS[type]);
+
+/** A webhook as the index sent it, its events read as topics: a bare event (an index not yet serving topics) as that
+ *  event from every app that sends it. */
+export const withTopics = (webhook: Webhook): Webhook => ({
+  ...webhook,
+  events: orderedTopics((webhook.events as readonly string[]).flatMap(topicsOf)),
+});
+
+/** The apps the card covers: the one Settings is kept to, or every app (All, or liveworkspace.app from no app). */
+export function webhookApps(shown: string | null): { current: App | null; apps: readonly App[] } {
+  const app = shown?.replace(/\.app$/, '') ?? null;
+  return isApp(app) ? { current: app, apps: [app] } : { current: null, apps: APPS };
+}
+
+/** Every topic of these apps, in WEBHOOK_TOPICS order. */
+export const topicsOfApps = (apps: readonly App[]): WebhookTopic[] =>
+  apps.length === APPS.length
+    ? [...WEBHOOK_TOPICS]
+    : WEBHOOK_TOPICS.filter((topic) => apps.includes(splitTopic(topic).app));
+
+/** A webhook's events by app, in APPS order, each app's in WEBHOOK_EVENTS order: one pass over the list. */
+export function eventsByApp(events: readonly WebhookTopic[]): Map<App, WebhookEvent[]> {
+  const byApp = new Map<App, WebhookEvent[]>();
+  for (const topic of events) {
+    const { app, event } = splitTopic(topic);
+    const list = byApp.get(app);
+    if (list) list.push(event);
+    else byApp.set(app, [event]);
+  }
+  return byApp;
+}
+
+/** How many events an app sends in all. */
+export const appEventCount = (app: App): number =>
+  WEBHOOK_EVENTS.reduce((n, event) => n + (WEBHOOK_EVENT_APPS[event].includes(app) ? 1 : 0), 0);
 
 // ---------- Refusals --------------------------------------------------------------------------------------------
 

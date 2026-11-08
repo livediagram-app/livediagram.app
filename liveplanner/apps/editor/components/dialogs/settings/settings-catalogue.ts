@@ -1,4 +1,5 @@
 import { DATA_EXPORT_CATEGORY, WEBHOOKS_CATEGORY } from '@liveworkspace/settings/account';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import {
   HIDE_CURSORS_HINT,
@@ -99,6 +100,8 @@ type RowBase = {
   // Rendered as a quiet "also in …" note so Settings listing everything
   // doesn't imply the panel gear has gone away.
   alsoIn?: string;
+  // A page that says more, under the description, opened in a new tab.
+  link?: { href: string; label: string };
   // A small before/after drawing, for a setting whose effect is a LAYOUT
   // rather than a behaviour, see settings-illustrations.tsx.
   illustration?: SettingsIllustrationId;
@@ -170,15 +173,6 @@ export type SettingsAppearanceRowSpec = RowBase & { kind: 'appearance' };
 // appearance row it carries no read/write pair.
 export type SettingsTokensRowSpec = RowBase & { kind: 'tokens' };
 
-// A way into another category of this same dialog, opened in place: the
-// setting lives there, and this is where a reader might look for it first.
-export type SettingsLinkRowSpec = RowBase & {
-  kind: 'link';
-  target: SettingsCategoryId;
-  // The link's own words, which name the destination ("Manage API Tokens").
-  cta: string;
-};
-
 // A card with no control: it stands in for settings the reader cannot use
 // yet and says why. A section whose rows all vanish would otherwise take the
 // section heading with it, so the reader never learns the settings exist ,
@@ -208,6 +202,9 @@ export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
 // was retired, because everything else it held was already in this dialog.
 export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
+// Reset All Settings (docs/specs/007-editor/user-preferences.md): every preference back to its default, above Delete
+// Account in the Danger Zone. Not a preference itself: it clears them.
+export type SettingsResetSettingsRowSpec = RowBase & { kind: 'resetSettings' };
 
 // Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new plans go when made without
 // a place. Not a preference: the shared Explorer reads and writes them on the index.
@@ -219,12 +216,12 @@ export type SettingsRowSpec =
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec
   | SettingsTokensRowSpec
-  | SettingsLinkRowSpec
   | SettingsNoteRowSpec
   | SettingsShortcutsRowSpec
   | SettingsHideCursorsRowSpec
   | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
+  | SettingsResetSettingsRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsDefaultFoldersRowSpec;
 
@@ -280,7 +277,7 @@ function uiScalePartRow(
 // offered only while it is on (see `visibleCategories`).
 function panelSwitch(
   key: PanelSwitch,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event'>,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event' | 'section'>,
 ): SettingsToggleRowSpec {
   return {
     kind: 'toggle',
@@ -404,7 +401,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         ...UI_SCALE_SLIDER,
         key: 'uiScale',
         keywords:
-          'zoom size bigger smaller larger text font scale magnify chrome interface ui accessibility',
+          'zoom size bigger smaller larger text font scale magnify low vision chrome interface ui accessibility',
         section: 'Interface',
         label: 'UI Scale',
         description:
@@ -463,6 +460,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'panels',
     label: 'Panels',
+    // Each panel's settings were a sub-category of their own (Panels › Layers) until they became its sections: their
+    // old ids still land here.
+    aliases: ['collaborate'],
     rows: [
       {
         kind: 'slider',
@@ -480,14 +480,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, panelOpacity: v }),
         event: { category: 'UI', changed: 'PanelOpacity' },
       },
-    ],
-  },
-  {
-    id: 'collaborate',
-    label: 'Collaborate',
-    parent: 'panels',
-    rows: [
       panelSwitch('collaboratePanelEnabled', {
+        section: 'Collaborate',
         label: 'Enable Collaborate Panel',
         keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
         description:
@@ -495,6 +489,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
       }),
       {
+        section: 'Collaborate',
         kind: 'hideCursors',
         key: 'hideCursors',
         available: (ctx) => ctx.cursorsDrawn !== false,
@@ -520,15 +515,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, reduceMotion: v }),
         event: { category: 'UI', on: 'ReduceMotionOn', off: 'ReduceMotionOff' },
       },
-      {
-        kind: 'link',
-        key: 'uiScaleLink',
-        keywords: 'zoom size bigger larger text font scale magnify low vision',
-        label: 'UI Scale',
-        cta: 'Open Appearance',
-        target: 'appearance',
-        description: 'Make the panels, toolbar and corner buttons bigger, in Appearance.',
-      },
     ],
   },
   {
@@ -536,7 +522,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     // tracks one per track ("Boards Tour", "Slides Tour"). A tour starts from the footer's Start Tour button
     // (docs/specs/007-editor/editor-tour.md "Where it appears"), and its switch turns itself off once taken.
     id: 'tours',
-    label: 'Tours',
+    label: 'Getting Started',
+    // Was named Tours: its old place in the panel still lands here.
+    aliases: ['/tours'],
     sectionNotes: {
       'Offer Again': {
         note: 'Start a tour from the Start Tour button in the bottom bar, left of Search: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
@@ -598,14 +586,15 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
   {
     id: 'projects',
-    label: 'Plans',
+    label: 'Explorer',
+    // Was its own category (Settings › Plans) beside the Explorer's: its old place in the panel still lands here.
+    aliases: ['/plans'],
     rows: [
       {
         // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
         // and this switch brings it back. The shared Explorer draws it (@liveworkspace/explorer's HomeHero).
         kind: 'toggle',
         key: 'homeBanner',
-        section: 'Explorer',
         keywords: 'home banner hero greeting welcome header top search explorer hide show close',
         label: 'Show Home Banner',
         description:
@@ -639,6 +628,15 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Your name and email come from your account. Signed out, your plans belong to this browser.',
         helpArticle: 'guestVsAccount',
+      },
+      {
+        kind: 'resetSettings',
+        key: 'resetSettings',
+        section: 'Danger Zone',
+        label: 'Reset All Settings',
+        keywords: 'reset restore default defaults factory clear settings preferences start over',
+        description:
+          'Puts every setting back to its default, in every liveworkspace app. Your profile, API tokens, webhooks and sign-ins stay as they are.',
       },
       {
         kind: 'deleteAccount',
@@ -683,12 +681,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'We can email you when someone joins one of your plans, comments on it, fills in one of your forms, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
-      emailSwitch('notifyProjectJoin', {
-        event: { category: 'UI', on: 'NotifyProjectJoinOn', off: 'NotifyProjectJoinOff' },
-        keywords: 'email join collaborator opened',
-        label: 'Someone Joins My Plan',
-        description: 'A new person opens one of your shared plans.',
-      }),
       emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
         keywords: 'email comment reply feedback',
@@ -705,7 +697,19 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
         keywords: 'email action assigned task todo',
         label: 'Someone Assigns Me an Action',
-        description: 'A teammate assigns you an action on a plan.',
+        description: 'A teammate assigns you an action on an element, or a card on a board.',
+      }),
+      emailSwitch('notifyInviteResponse', {
+        event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
+        keywords: 'email invite team accepted declined',
+        label: 'Someone Responds to a Team Invite',
+        description: 'Someone you invited accepts or declines, for teams you are an admin of.',
+      }),
+      emailSwitch('notifyProjectJoin', {
+        event: { category: 'UI', on: 'NotifyProjectJoinOn', off: 'NotifyProjectJoinOff' },
+        keywords: 'email join collaborator opened',
+        label: 'Someone Joins My Plan',
+        description: 'A new person opens one of your shared plans.',
       }),
       emailSwitch('notifyFormResponses', {
         event: { category: 'UI', on: 'NotifyFormResponsesOn', off: 'NotifyFormResponsesOff' },
@@ -713,12 +717,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Someone Fills In My Form',
         description:
           'Someone responds to a form in a plan you own (at most one email every 15 minutes per form).',
-      }),
-      emailSwitch('notifyInviteResponse', {
-        event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
-        keywords: 'email invite team accepted declined',
-        label: 'Someone Responds to a Team Invite',
-        description: 'Someone you invited accepts or declines, for teams you are an admin of.',
       }),
       emailSwitch('notifyTips', {
         event: { category: 'UI', on: 'NotifyTipsOn', off: 'NotifyTipsOff' },
@@ -800,7 +798,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'analytics tracking usage data privacy anonymous',
         label: 'Send Anonymous Usage Events',
         description:
-          'Small first-party events, listed publicly on /telemetry, that show which features help. Never your content, no third-party trackers.',
+          'Small events like “a tab was added” that show us which features help. Never your content or who you are, and no third-party trackers. Every event we collect is listed in public, with how often each is sent.',
+        link: { href: `${PLATFORM_SITE.url}/telemetry`, label: 'See Every Event' },
         helpArticle: 'whatWeCollect',
         read: (p) => p.telemetryEnabled !== false,
         write: (p, v) => ({ ...p, telemetryEnabled: v }),

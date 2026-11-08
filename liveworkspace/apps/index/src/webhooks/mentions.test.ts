@@ -129,6 +129,15 @@ describe('who a mention reaches', () => {
     expect(accountsAsks).toEqual([]);
   });
 
+  it("reaches only a webhook holding the item's own app's Mentioned", async () => {
+    const ada = await person('user_ada');
+    await addWebhook(ada.auth, { name: 'Diagrams', events: ['livediagram:mention'] });
+    await addWebhook(ada.auth, { name: 'Plans', events: ['liveplanner:mention'] });
+    const item = await makeItem(ada.auth, { title: 'Launch' });
+    await push(item.id, 't1', [{ commentCount: 1, mentionedIds: ['user_ada'], by: 'user_bo' }]);
+    expect(await heard()).toEqual(['Plans user_ada']);
+  });
+
   it("never reaches a link holder whose link is to another tab, or once it's revoked", async () => {
     const ada = await person('user_ada');
     const dee = await person('user_dee');

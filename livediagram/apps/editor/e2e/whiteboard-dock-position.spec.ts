@@ -10,7 +10,7 @@ import {
 } from './fixtures';
 
 // Where the whiteboard dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
-// the top by default, the bottom by choice in Settings, Editor › Draw; flyouts open on the board
+// the top by default, the bottom by choice in Settings, Editor's Draw section; flyouts open on the board
 // side, take the focus on a press and give it back on Escape; top corner panels give way to a top
 // dock.
 
@@ -49,10 +49,6 @@ test.describe('whiteboard dock position', () => {
     await page.getByRole('button', { name: 'Settings' }).last().click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Editor', exact: true }).click();
-    await dialog
-      .getByRole('group', { name: 'Editor' })
-      .getByRole('button', { name: 'Draw', exact: true })
-      .click();
     await dialog.getByText('Dock Position', { exact: true }).scrollIntoViewIfNeeded();
     await dialog.getByRole('radio', { name: 'Bottom' }).click();
     await expect(dock(page)).toHaveAttribute('data-dock-position', 'bottom');

@@ -104,60 +104,60 @@ describe('SettingsCategoryList sub-categories', () => {
   });
 });
 
-describe('the All view’s groups', () => {
+describe('the panel’s label headings', () => {
+  // The account's categories, the apps' merged ones and the developers', as the panel hands them in.
   const categories = [
-    { id: 'profile', label: 'Profile', group: 'account', rows: [] },
-    { id: 'privacy', label: 'Privacy', group: 'account', rows: [] },
-    { id: 'editor', label: 'Editor', group: 'livediagram', rows: [] },
-    { id: 'canvas', label: 'Canvas', group: 'liveplanner', rows: [] },
+    { id: 'account:account', label: 'Profile', group: 'account', rows: [] },
+    { id: 'account:privacy', label: 'Privacy', group: 'account', rows: [] },
+    { id: 'apps:editor', label: 'Editor', group: 'apps', rows: [] },
+    { id: 'account:tokens', label: 'API Tokens', group: 'developers', rows: [] },
   ] as unknown as Parameters<typeof SettingsCategoryList>[0]['categories'];
   const groups = [
     { id: 'account', label: 'Account' },
-    { id: 'livediagram', label: 'livediagram' },
-    { id: 'liveplanner', label: 'liveplanner' },
+    { id: 'apps', label: 'Apps' },
+    { id: 'developers', label: 'Developers' },
+    { id: 'empty', label: 'Empty' },
   ];
-  const ui = (selected: string | null, searching = false) => (
+  const ui = (variant: 'root' | 'sidebar', searching = false) => (
     <SettingsCategoryList
       categories={categories}
       groups={groups}
-      selected={selected}
+      selected={null}
       onSelect={() => {}}
-      variant="sidebar"
+      variant={variant}
       searching={searching}
     />
   );
-  const heading = (name: string) => screen.getByRole('button', { name, expanded: undefined });
-  const expanded = (name: string) => heading(name).getAttribute('aria-expanded');
 
-  it('starts with only the current pane’s group open, and keeps one open at a time', () => {
-    renderWithKit(ui('profile'));
-    expect(expanded('Account')).toBe('true');
-    expect(expanded('livediagram')).toBe('false');
-    expect(expanded('liveplanner')).toBe('false');
-    fireEvent.click(heading('livediagram'));
-    expect(expanded('livediagram')).toBe('true');
-    expect(expanded('Account')).toBe('false');
-    fireEvent.click(heading('livediagram'));
-    expect(expanded('livediagram')).toBe('false');
-  });
+  it.each(['root', 'sidebar'] as const)(
+    'lists every %s category under its plain label, every one always shown',
+    (variant) => {
+      renderWithKit(ui(variant));
+      const rail = screen.getByRole('navigation', { name: 'Settings categories' });
+      // Labels, not buttons: nothing to fold, and a heading with no category is left out.
+      expect([...rail.querySelectorAll('h3')].map((h) => h.textContent)).toEqual([
+        'Account',
+        'Apps',
+        'Developers',
+      ]);
+      const buttons = screen.getAllByRole('button');
+      expect(buttons.map((b) => b.textContent)).toEqual([
+        'Profile',
+        'Privacy',
+        'Editor',
+        'API Tokens',
+      ]);
+      for (const b of buttons) expect(b.getAttribute('aria-expanded')).toBeNull();
+      const account = screen.getByRole('group', { name: 'Account' });
+      expect(account.querySelectorAll('button')).toHaveLength(2);
+      expect(screen.getByRole('group', { name: 'Developers' }).textContent).toContain('API Tokens');
+    },
+  );
 
-  // A group's rows sit in a body that clips for its ease open and shut: a ring drawn outside a row lost its sides.
-  it('draws every focus ring inside its own row, headings and group rows alike', () => {
-    renderWithKit(ui('profile'));
-    const buttons = screen.getAllByRole('button');
-    expect(buttons.map((b) => b.textContent)).toEqual(
-      expect.arrayContaining(['Account', 'Profile', 'Privacy']),
-    );
-    for (const b of buttons) expect(b.className.split(' ')).toContain(FOCUS_INSIDE);
-  });
-
-  it('opens the group of a category picked from elsewhere, and every group while searching', () => {
-    const view = renderWithKit(ui('profile'));
-    view.rerender(ui('canvas'));
-    expect(expanded('liveplanner')).toBe('true');
-    expect(expanded('Account')).toBe('false');
-    view.rerender(ui('canvas', true));
-    expect(expanded('livediagram')).toBe('true');
+  it('keeps every heading and row while searching', () => {
+    renderWithKit(ui('sidebar', true));
+    expect(screen.getAllByRole('group')).toHaveLength(3);
+    expect(screen.getAllByRole('button')).toHaveLength(4);
   });
 });
 

@@ -30,6 +30,7 @@ const TILES = new Set<string>([
   'account',
   'folder',
   'editor',
+  'presenting',
   'appearance',
   'keyboard',
   'panels',
@@ -161,6 +162,7 @@ export function catalogueModel(
       id: category.id,
       label: structure ? category.label : shortLabel(path(category), groups),
       ...(nested ? { parent } : {}),
+      ...(category.aliases ? { aliases: category.aliases } : {}),
       ...(tile && TILES.has(tile)
         ? { icon: <SettingsCategoryTile id={tile as SettingsTileId} /> }
         : {}),

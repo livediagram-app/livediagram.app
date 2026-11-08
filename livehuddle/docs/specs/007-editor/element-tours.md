@@ -50,21 +50,22 @@ section is still called **Show Me**. "Element tour" is the code's and the specs'
   follows the account ([User preferences](user-preferences.md)). Until 25 October 2026 it listed the kinds whose
   offer had been answered (Play or Cancel) and hid the offer for them; from then until 1 November 2026 it only fed
   the Settings rows. Now it hides that kind's tour from the Start Tour button again, until its switch is turned on.
-- `elementToursSeen` counts every kind as taken: **Show Me on Every Element** switched off writes it (with every kind
-  listed), and so did the retired [Power user mode](power-user-mode.md)'s preset, which listed none. Turning a kind's
-  switch back on lifts it, keeping every other kind answered.
+- `elementToursSeen` counts every kind as taken. Nothing writes it `true` now: the switch over them all, **Show Me on
+  Every Element**, wrote it (with every kind listed) until 8 November 2026, when it went because the Portal is the
+  only toured kind, and so did the retired [Power user mode](power-user-mode.md)'s preset, which listed none. A stored
+  `true` still counts, so the Portal switch reads off for anyone who set it. Turning a kind's switch back on lifts it,
+  keeping every other kind answered.
 
 ## Settings
 
-Settings' **Tours** category holds element tours in their own section, **Show Me**, below the Avatar tour's
+Settings' **Getting Started** category holds element tours in their own section, **Show Me**, below the Avatar tour's
 **Offer Again** section. It is a closed accordion (people rarely look for it): its header names the section and
-how many are on (`1 of 1 On`). Opened, it shows the section's line, then **Show Me on Every Element**, one switch
-over them all (on while any is not yet taken; off marks every kind taken, on forgets every run), with one switch per
-toured kind nested beneath it, named for the element alone: **Portal**, linking the Portals article.
+how many are on (`1 of 1 On`). Opened, it shows the section's line, then one switch per toured kind, named for the
+element alone: **Portal**, linking the Portals article. There is no switch over them all while the Portal is the
+only toured kind (a second kind brings one back, nesting the kinds' switches under it).
 On means "not yet taken": switching one on forgets its run and puts that kind's tour back on the Start Tour button
 whenever such an element is selected; off takes it off the button. The accordion opens on its own when Settings is
-opened on one of its rows (a search result) or on the section. The switch over them all is **Show Me on Every
-Element**.
+opened on one of its rows (a search result) or on the section.
 
 ## Menu steps
 
@@ -129,8 +130,9 @@ stay explained for the shared dashboard's history:
 - **Stage views**: `UI` · `View` · `<Kind>TourStep<Id>` once per step entry: the Portal's `PortalTourStepPortal`,
   `...Travel`, `...Unlinked`, `...Menu`, `...Walk` and `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
-- **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
-  `ElementToursSeenOn` | `ElementToursSeenOff`.
+- **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`. The switch over them all sent
+  `ElementToursSeenOn` | `ElementToursSeenOff` until it went on 8 November 2026; their explanations stay for the
+  history.
 
 The dashboard charts them as one **Element Tours** stack on the Visitors tab (offered, declined (older rows), started and started
 per element, steps, completed, skipped), as Show Me's is one stack.

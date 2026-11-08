@@ -70,6 +70,8 @@ describe('profiles', () => {
         picture: null,
         googlePicture: null,
         showPicture: true,
+        timeZone: null,
+        timeZoneAuto: true,
         createdAt: 1000,
         updatedAt: 1000,
       },
@@ -217,6 +219,108 @@ describe("the account menu's colour", () => {
     // Signed out: nothing is written.
     await withSessionColour(Response.json(null), db, 'Asia/Tokyo');
     expect(zoneOf()).toBe('Europe/London');
+  });
+});
+
+describe('a time zone picked by hand', () => {
+  const zone = () =>
+    sql.prepare('SELECT timeZone, timeZoneChosen FROM "user" WHERE id = ?').get('user_ada') as {
+      timeZone: string | null;
+      timeZoneChosen: number | null;
+    };
+  const pick = async (body: Record<string, unknown>, noted: string | null = null) => {
+    const checked = checkProfilePatch(body, { timeZone: true });
+    if (!checked.ok) throw new Error(checked.error);
+    return writeProfile(db, 'user_ada', checked.patch, 1000, noted);
+  };
+
+  it('checks the zone, only where the caller takes one', () => {
+    expect(checkProfilePatch({ timeZone: 'America/New_York' }, { timeZone: true })).toEqual({
+      ok: true,
+      patch: { timeZone: 'America/New_York' },
+    });
+    expect(checkProfilePatch({ timeZone: null }, { timeZone: true })).toEqual({
+      ok: true,
+      patch: { timeZone: null },
+    });
+    for (const timeZone of ['Mars/Olympus_Mons', '', 7, 'x'.repeat(65)]) {
+      expect(checkProfilePatch({ timeZone }, { timeZone: true })).toEqual({
+        ok: false,
+        error: 'invalid_time_zone',
+      });
+    }
+    // An app's own write (a guest's name in the app) never takes one.
+    expect(checkProfilePatch({ timeZone: 'America/New_York' })).toEqual({
+      ok: false,
+      error: 'nothing_to_change',
+    });
+  });
+
+  it('keeps a picked zone, makes no profile row for it, and answers it on the own profile only', async () => {
+    const picked = await pick({ timeZone: 'Asia/Tokyo' });
+    expect(picked).toMatchObject({
+      ok: true,
+      value: { timeZone: 'Asia/Tokyo', timeZoneAuto: false },
+    });
+    expect(zone()).toEqual({ timeZone: 'Asia/Tokyo', timeZoneChosen: 1 });
+    expect(sql.prepare('SELECT count(*) AS n FROM profile').get()).toEqual({ n: 0 });
+    expect(await readOwnProfile(db, 'user_ada')).toMatchObject({
+      timeZone: 'Asia/Tokyo',
+      timeZoneAuto: false,
+    });
+    expect((await readProfiles(db, ['user_ada']))[0]).not.toHaveProperty('timeZone');
+  });
+
+  it('is never overwritten by a sighting while it stands, on either door', async () => {
+    await pick({ timeZone: 'Asia/Tokyo' });
+    await withSessionColour(Response.json({ user: { id: 'user_ada' } }), db, 'Europe/Paris');
+    expect(zone().timeZone).toBe('Asia/Tokyo');
+    expect(await readOwnProfile(db, 'user_ada', 'Europe/Paris')).toMatchObject({
+      timeZone: 'Asia/Tokyo',
+      timeZoneAuto: false,
+    });
+    expect(zone()).toEqual({ timeZone: 'Asia/Tokyo', timeZoneChosen: 1 });
+  });
+
+  it('goes back to Automatic, keeping the zone the request noted, and sightings resume', async () => {
+    await pick({ timeZone: 'Asia/Tokyo' });
+    const back = await pick({ timeZone: null }, 'Europe/Paris');
+    expect(back).toMatchObject({
+      ok: true,
+      value: { timeZone: 'Europe/Paris', timeZoneAuto: true },
+    });
+    expect(zone()).toEqual({ timeZone: 'Europe/Paris', timeZoneChosen: null });
+    // With no zone noted, the last one stays until the next sighting writes the browser's.
+    await pick({ timeZone: 'Asia/Tokyo' });
+    await pick({ timeZone: null });
+    expect(zone()).toEqual({ timeZone: 'Asia/Tokyo', timeZoneChosen: null });
+    expect(await readOwnProfile(db, 'user_ada', 'America/Chicago')).toMatchObject({
+      timeZone: 'America/Chicago',
+      timeZoneAuto: true,
+    });
+  });
+
+  it('notes the browser zone on the own profile read, only when it changed', async () => {
+    expect(await readOwnProfile(db, 'user_ada')).toMatchObject({
+      timeZone: null,
+      timeZoneAuto: true,
+    });
+    await readOwnProfile(db, 'user_ada', 'America/New_York');
+    expect(zone().timeZone).toBe('America/New_York');
+    const changes = () => (sql.prepare('SELECT total_changes() AS n').get() as { n: number }).n;
+    const before = changes();
+    await readOwnProfile(db, 'user_ada', 'America/New_York');
+    expect(changes()).toBe(before);
+  });
+
+  it('refuses a zone for an account id with no account behind it', async () => {
+    const checked = checkProfilePatch({ timeZone: 'Asia/Tokyo' }, { timeZone: true });
+    if (!checked.ok) throw new Error(checked.error);
+    expect(await writeProfile(db, 'user_gone', checked.patch)).toEqual({
+      ok: false,
+      status: 404,
+      error: 'unknown_owner',
+    });
   });
 });
 

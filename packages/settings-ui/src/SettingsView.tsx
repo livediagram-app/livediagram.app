@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { BackBar } from '@liveworkspace/ui';
 import { useSettingsUiKit } from './kit';
 import type { SettingsCategory, SettingsGroupHeading } from './model';
@@ -57,7 +57,7 @@ export function SettingsView({
   // The header's This app / All switch (SettingsScopeSwitch), on the front screen. Beside the title on
   // desktop; on a phone, a row of its own under the header, so the app's name is never squeezed.
   switcher?: ReactNode;
-  // The rail's headings (the All view's Account and each app), each category under its `group`.
+  // The rail's label headings (Account, Apps, Developers), each category under its `group`; absent, one plain list.
   groups?: readonly SettingsGroupHeading[];
 }) {
   const { SearchInput, CloseButton, NoMatches } = useSettingsUiKit();
@@ -88,13 +88,10 @@ export function SettingsView({
     target ?? restore?.categoryId ?? null,
   );
   const initialId = canonical(initialCategoryId);
-  // Read by the stable callbacks below, so a change of categories (a value changed) keeps them, and the rows' memo.
-  const canonicalRef = useRef(canonical);
-  canonicalRef.current = canonical;
 
   const [query, setQuery] = useState('');
   // The row to ring: a targeted open's.
-  const [goTo, setGoTo] = useState<SettingsFocus | null>(() =>
+  const [goTo] = useState<SettingsFocus | null>(() =>
     focus ? { ...focus, categoryId: canonical(focus.categoryId) ?? focus.categoryId } : null,
   );
   const result = useMemo(() => searchSettings(categories, query), [categories, query]);
@@ -130,16 +127,6 @@ export function SettingsView({
     },
     [forgetRestore, onCategoryOpened],
   );
-  // Stable, so the pane's memoised rows keep their memo across a keystroke.
-  const openCategory = useCallback(
-    (to: string) => {
-      setQuery('');
-      select(canonicalRef.current(to) ?? to);
-      setGoTo(null);
-    },
-    [select],
-  );
-
   // The phone shows the root list until a category is picked; desktop always shows the split.
   // Only the phone's pushed pane gets a back bar, and a sub-category's goes back to its
   // parent's pane, the screen that pushed it.
@@ -236,7 +223,6 @@ export function SettingsView({
                 isMobile={isMobile}
                 focusRowKey={goTo?.categoryId === selected.id ? goTo.rowKey : null}
                 focusSectionId={selected.id === initialId ? initialSectionId : null}
-                onOpenCategory={openCategory}
               />
               {/* A phone's way down to a parent's sub-categories: the root
                   list has no accordion to open, so the pane lists them. */}

@@ -40,12 +40,13 @@ describe('accountCategories, Webhooks', () => {
   });
 });
 
-// Its Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): the same, after Webhooks.
+// Its Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): the same, the last of the rail's
+// Account, before the Developers' API Tokens and Webhooks.
 const dataOf = (section: Parameters<typeof accountCategories>[0]) =>
   accountCategories(section).find((c) => c.id === 'data');
 
 describe('accountCategories, Your Data', () => {
-  it('draws the host’s own downloads in the panel when it has them, after Webhooks', () => {
+  it('draws the host’s own downloads in the panel when it has them, after Accessibility', () => {
     const render = () => null;
     const section = {
       ...base,
@@ -56,7 +57,7 @@ describe('accountCategories, Your Data', () => {
     expect(row).toMatchObject({ kind: 'custom', key: 'dataExport', label: 'Your Data' });
     expect(row?.kind === 'custom' && row.render).toBe(render);
     const ids = accountCategories(section).map((c) => c.id);
-    expect(ids.indexOf('data')).toBe(ids.indexOf('webhooks') + 1);
+    expect(ids).toEqual(['notifications', 'privacy', 'accessibility', 'data', 'webhooks']);
   });
 
   it('leaves the category out where the host hands none in', () => {

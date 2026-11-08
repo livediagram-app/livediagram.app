@@ -6,7 +6,7 @@ import { accountCategories } from '../account-model';
 import type { SettingsRow } from '../model';
 import { ProfileHeaderCard } from './ProfileHeader';
 import { onProfileSaved } from './profile-events';
-import { requestProfileHost, type ProfileHost } from './profile-host';
+import { profilePathNotingZone, requestProfileHost, type ProfileHost } from './profile-host';
 import { guestProfileRows, profileRows } from './profile-rows';
 import { deviceName, type AccountSecurity, type AccountSession } from './SecurityRows';
 
@@ -71,16 +71,24 @@ function fakeSecurity(overrides: Partial<AccountSecurity> = {}): AccountSecurity
   };
 }
 
+// The banner's name tag, drawn in the presence colour (the header has no colour chip).
+const tagColour = () =>
+  document.querySelector<HTMLElement>('[data-profile-banner] [style*="background-color"]')?.style
+    .backgroundColor;
+const VIOLET = 'rgb(139, 92, 246)';
+const EMERALD = 'rgb(16, 185, 129)';
+
 describe('the Profile header card', () => {
-  it('shows the avatar’s initials, the name, email, account type, when they joined and their colour', () => {
+  it('shows the avatar’s initials, the name, email, when they joined and their colour, with no account or colour chip', () => {
     render(<ProfileHeaderCard identity={ada} />);
     expect(screen.getByRole('heading', { name: 'Ada Lovelace' })).toBeTruthy();
     expect(screen.getByText('ada@example.com')).toBeTruthy();
     expect(document.querySelector('[data-profile-avatar]')?.textContent).toBe('AL');
     const about = screen.getByRole('list', { name: 'About this account' });
-    expect(within(about).getByText('liveworkspace account')).toBeTruthy();
+    expect(within(about).queryByText('liveworkspace account')).toBeNull();
     expect(within(about).getByText(/^Joined /)).toBeTruthy();
-    expect(within(about).getByText('Colour: Violet')).toBeTruthy();
+    expect(within(about).queryByText(/^Colour:/)).toBeNull();
+    expect(tagColour()).toBe(VIOLET);
     expect(screen.queryByRole('link', { name: 'Sign in' })).toBeNull();
   });
 
@@ -93,8 +101,7 @@ describe('the Profile header card', () => {
       })),
     });
     render(<ProfileHeaderCard identity={{ name: 'Ada Lovelace' }} profile={profile} />);
-    const about = screen.getByRole('list', { name: 'About this account' });
-    await waitFor(() => expect(within(about).getByText('Colour: Emerald')).toBeTruthy());
+    await waitFor(() => expect(tagColour()).toBe(EMERALD));
     expect(screen.getByRole('heading', { name: 'Countess Ada' })).toBeTruthy();
     const request = vi.fn(async () => ({
       ok: true as const,
@@ -105,7 +112,7 @@ describe('the Profile header card', () => {
         color: null,
       });
     });
-    expect(within(about).getByText('Colour: Automatic')).toBeTruthy();
+    expect(tagColour()).not.toBe(EMERALD);
     expect(screen.getByRole('heading', { name: 'Ada Lovelace' })).toBeTruthy();
   });
 
@@ -115,7 +122,7 @@ describe('the Profile header card', () => {
     });
     render(<ProfileHeaderCard identity={ada} profile={profile} />);
     await waitFor(() => expect(profile.load).toHaveBeenCalled());
-    expect(screen.getByText('Colour: Violet')).toBeTruthy();
+    expect(tagColour()).toBe(VIOLET);
   });
 
   it('shows a guest as a guest, with the way to sign in and what an account adds', () => {
@@ -135,7 +142,7 @@ describe('the Profile header card', () => {
 });
 
 describe('the Profile category', () => {
-  it('on liveworkspace.app: the header, Name and Colour, Sign-in Methods, devices and Sign Out, in that order', () => {
+  it('on liveworkspace.app: the header, Name and Colour, Time Zone, Sign-in Methods, devices and Sign Out, in that order', () => {
     const rows = profileRows({
       ...base,
       identity: ada,
@@ -146,6 +153,7 @@ describe('the Profile category', () => {
     expect(rows.map((r) => [r.key, r.section])).toEqual([
       ['identity', undefined],
       ['profile', 'Name and Colour'],
+      ['timeZone', 'Time Zone'],
       ['signInMethods', 'Sign-in Methods'],
       ['sessions', 'Where You’re Signed In'],
       ['signOut', 'Your Account'],
@@ -155,7 +163,7 @@ describe('the Profile category', () => {
   it('with no sign-in and devices handed in: the header and Name and Colour, and nothing that leaves the panel', async () => {
     const profile = fakeProfile();
     const rows = profileRows({ ...base, identity: ada, profile });
-    expect(rows.map((r) => r.key)).toEqual(['identity', 'profile']);
+    expect(rows.map((r) => r.key)).toEqual(['identity', 'profile', 'timeZone']);
     const { container } = drawn(rows[1]);
     expect(await screen.findByRole('textbox', { name: 'Display name' })).toBeTruthy();
     expect(screen.getByRole('radiogroup')).toBeTruthy();
@@ -181,11 +189,18 @@ describe('the Profile category', () => {
     }
   });
 
-  it('is left out where the host has nothing to show, and nests Notifications under it otherwise', () => {
+  it('is left out where the host has nothing to show, and leads the account’s categories otherwise', () => {
     expect(accountCategories(base).some((c) => c.id === 'account')).toBe(false);
     const categories = accountCategories({ ...base, identity: ada });
     expect(categories[0]).toMatchObject({ id: 'account', label: 'Profile' });
-    expect(categories.find((c) => c.id === 'notifications')?.parent).toBe('account');
+    // Nothing nests under it: each of the account's categories stands on its own, with its own tile.
+    expect(categories.every((c) => c.parent === undefined)).toBe(true);
+    expect(categories.map((c) => c.id)).toEqual([
+      'account',
+      'notifications',
+      'privacy',
+      'accessibility',
+    ]);
   });
 
   it('a guest’s Profile is the guest card', () => {
@@ -426,7 +441,10 @@ describe('a host over a request', () => {
       ok: true,
       data: { id: 'user_ada', name: 'Ada', color: null },
     });
-    expect(request).toHaveBeenLastCalledWith('/profile');
+    // The read carries the browser's zone, for the send window's Automatic.
+    expect(request).toHaveBeenLastCalledWith(profilePathNotingZone());
+    expect(profilePathNotingZone('America/New_York')).toBe('/profile?timeZone=America%2FNew_York');
+    expect(profilePathNotingZone(null)).toBe('/profile');
     await host.save({ color: '#0ea5e9' });
     expect(request).toHaveBeenLastCalledWith('/profile', 'PATCH', { color: '#0ea5e9' });
     expect(heard).toHaveBeenCalledWith({

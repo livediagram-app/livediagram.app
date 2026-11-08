@@ -78,7 +78,7 @@ Next to Help, wherever the hero puts it (a phone's row, the pills' row, the wide
 button the size of Help, named and tooltipped "Hide Home Banner"). Pressing it hides the hero for good, as the
 synced `homeBanner` preference set to `false`
 ([User preferences](../007-editor/user-preferences.md)), on every device the person signs in on. It folds away as it
-does on leaving Home. **Settings > Designs > Explorer > Show Home Banner** turns it back on. Either flip reports
+does on leaving Home. **Settings > Explorer > Show Home Banner** turns it back on. Either flip reports
 `UI / Toggled / HomeBannerOff` or `HomeBannerOn` before the preference is written.
 
 With the banner hidden, Home is drawn like every other Explorer page:

@@ -11,7 +11,8 @@
     "./device": "./src/device.ts",
     "./common": "./src/common.ts",
     "./presence": "./src/presence.ts",
-    "./push": "./src/push.ts"
+    "./push": "./src/push.ts",
+    "./sections": "./src/sections.ts"
   },
   "scripts": {
     "lint": "oxlint",

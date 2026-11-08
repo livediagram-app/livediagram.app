@@ -31,7 +31,6 @@ import {
   settingsRequest,
 } from '@/components/dialogs/settings/settings-panel-host';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { useRetiredPartsCount } from '@/hooks/persistence/useRetiredPartsCount';
 
 type SettingsDialogProps = {
   settings: UserPreferences;
@@ -74,9 +73,6 @@ export function SettingsDialog({
   const signedIn = Boolean(isSignedIn && accountUserId);
   const { user } = useDeferredAuth();
   // Live settings, not a snapshot: a panel's rows follow its Enable switch the moment it flips.
-  // Documents in This Browser with parts set aside: Account's way back to the offer
-  // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps").
-  const retiredParts = useRetiredPartsCount();
   // The Hide Participant Cursors row only where the tab draws cursors (collaborator-enhancements.md).
   const cursorsDrawn = useCursorsDrawn();
   const categories = useMemo(
@@ -86,27 +82,26 @@ export function SettingsDialog({
         signedIn,
         preferences: settings,
         cursorsDrawn,
-        retiredParts,
       }),
-    [emailEnabled, signedIn, settings, retiredParts, cursorsDrawn],
-  );
-
-  // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
-  // only when what it reads changes, so its rows keep their identity (and the view's memo) across a
-  // search keystroke.
-  const model = useMemo(
-    () => settingsModel(categories, settings, onChange),
-    [categories, settings, onChange],
+    [emailEnabled, signedIn, settings, cursorsDrawn],
   );
 
   // The header's livehuddle / All switch (docs/specs/007-editor/user-preferences.md "This app or All"): All needs an
   // account whose settings liveworkspace keeps, so a guest sees this app's alone.
   const allowAll = signedIn;
-  // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
-  const [scope, setScope] = useSettingsScope(
-    'livehuddle:settings-scope:v1',
-    focus || initialCategoryId ? 'app' : null,
+  // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
+  // only when what it reads changes, so its rows keep their identity (and the view's memo) across a
+  // search keystroke. Reset All Settings reaches the account's settings in every app where All does; else this
+  // browser's alone.
+  const model = useMemo(
+    () =>
+      settingsModel(categories, settings, onChange, {
+        accountRequest: allowAll ? settingsRequest : null,
+      }),
+    [categories, settings, onChange, allowAll],
   );
+  // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
+  const [scope, setScope] = useSettingsScope();
   // The Account section's switches are this editor's own shared preferences, changed through its own rows (counted
   // and synced as here). The profile's Name and Colour is edited in place, over the same door as All's settings
   // (`/api/workspace/account/profile` with the person's token); a save is told to the page (onProfileSaved), so this

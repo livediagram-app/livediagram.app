@@ -83,19 +83,34 @@ describe('commonCatalogue', () => {
   it('files them in the categories the apps use', () => {
     expect(catalogue.categories.map((c) => [c.id, c.label, c.parent ?? null])).toEqual([
       ['editor', 'Editor', null],
-      ['pages', 'Pages', 'editor'],
-      ['presenting', 'Presenting', 'editor'],
-      ['layers', 'Panels › Layers', null],
-      ['map', 'Panels › Map', null],
-      ['collaborate', 'Panels › Collaborate', null],
-      ['quickStyle', 'Panels › Quick Style', null],
+      ['presenting', 'Presenting', null],
+      ['panels', 'Panels', null],
       ['explorer', 'Explorer', null],
     ]);
-    const map = catalogue.categories.find((c) => c.id === 'map')!;
-    expect(map.rows.map((r) => [r.id, r.parent ?? null])).toEqual([
-      ['showMinimap', null],
-      ['mapDimOutside', 'showMinimap'],
-      ['mapSize', 'showMinimap'],
+    // Presenting stands on its own tile; Pages' Contents is a section of Editor.
+    expect(catalogue.categories.find((c) => c.id === 'presenting')?.tile).toBe('presenting');
+    const editor = catalogue.categories.find((c) => c.id === 'editor')!;
+    expect(editor.rows.find((r) => r.id === 'contentsPlacement')?.section).toBe('Pages');
+    // The ids folded into them answer to Common's too (`common:pages`, `apps:editor/presenting`).
+    expect(editor.aliases).toEqual(expect.arrayContaining(['draw', 'pages']));
+    expect(catalogue.categories.find((c) => c.id === 'presenting')?.aliases).toEqual([
+      '/editor/presenting',
+    ]);
+    // Each panel's settings are a section of Panels, in SECTION_ORDER's order, each switch before its own.
+    const panels = catalogue.categories.find((c) => c.id === 'panels')!;
+    expect(panels.aliases).toEqual(
+      expect.arrayContaining(['layers', 'quickStyle', 'map', 'collaborate']),
+    );
+    expect(panels.rows.map((r) => [r.id, r.section ?? null, r.parent ?? null])).toEqual([
+      ['layersPanelEnabled', 'Layers', null],
+      ['layersShowPreview', 'Layers', 'layersPanelEnabled'],
+      ['layersShowCount', 'Layers', 'layersPanelEnabled'],
+      ['layerHoverPreview', 'Layers', 'layersPanelEnabled'],
+      ['quickStylePanelEnabled', 'Quick Style', null],
+      ['showMinimap', 'Map', null],
+      ['mapDimOutside', 'Map', 'showMinimap'],
+      ['mapSize', 'Map', 'showMinimap'],
+      ['collaboratePanelEnabled', 'Collaborate', null],
     ]);
   });
 
@@ -115,7 +130,7 @@ describe('commonCatalogue', () => {
   });
 
   it('names a sub-category by its path when its parent is not there', () => {
-    const only = commonCatalogue([{ app: 'livedocuments.app', catalogue: editorOwnRowsOnly() }]);
+    const only = commonCatalogue([{ app: 'livedocuments.app', catalogue: contentsUnderEditor() }]);
     expect(only.catalogue.categories.some((c) => c.id === 'editor')).toBe(false);
     expect(only.catalogue.categories.find((c) => c.id === 'pages')?.label).toBe('Editor › Pages');
   });
@@ -134,12 +149,20 @@ describe('withoutCommonRows', () => {
   });
 });
 
-// livedocuments' catalogue with only its own rows left in Editor, so Common has no Editor category.
-function editorOwnRowsOnly(): AppCatalogue {
+// livedocuments' Editor with only its own rows left, so Common has no Editor category, and its Contents row in a
+// Pages sub-category beneath it, as it once was.
+function contentsUnderEditor(): AppCatalogue {
+  const editor = LIVEDOCUMENTS.categories.find((c) => c.id === 'editor')!;
   return {
     ...LIVEDOCUMENTS,
-    categories: LIVEDOCUMENTS.categories.map((c) =>
-      c.id === 'editor' ? { ...c, rows: c.rows.filter((row) => !isCommonRow(row)) } : c,
-    ),
+    categories: [
+      { ...editor, rows: editor.rows.filter((row) => !isCommonRow(row)) },
+      {
+        id: 'pages',
+        label: 'Pages',
+        parent: 'editor',
+        rows: editor.rows.filter((row) => row.id === 'contentsPlacement'),
+      },
+    ],
   };
 }

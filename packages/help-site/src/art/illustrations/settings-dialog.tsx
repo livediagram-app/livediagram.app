@@ -7,7 +7,6 @@
 // Layers / Map / Collaborate / Quick Style under Panels) stay folded, as the dialog opens them.
 
 import type { ReactNode } from 'react';
-import { capital, plural } from '../noun';
 import { Label, Scene } from '../primitives';
 
 /** An on/off switch, brand when on. `sm` sits in a Settings row; `md` in a roomier card. */
@@ -38,15 +37,17 @@ export function Switch({
   );
 }
 
-// The dialog's top-level categories, in catalogue order. The seventh is the product's work (`Designs`).
-const categories = (noun: string) => [
+// The dialog's top-level categories, in catalogue order. Every product's are the same: its work's own category
+// (Canvases, Designs) joined the Explorer's. `noun`, what the product calls its work, is kept on the scenes for the
+// articles that pass it.
+const CATEGORIES = [
   'Editor',
   'Appearance',
   'Keyboard',
   'Panels',
   'Accessibility',
-  'Tours',
-  capital(plural(noun)),
+  'Getting Started',
+  'Explorer',
   'Account',
   'Privacy',
 ];
@@ -55,15 +56,7 @@ type SettingsCategory = 'Editor' | 'Panels';
 
 /** The dialog frame: title, the search field over the category list with `active` picked, and
  *  the open pane headed by its name. Children draw the pane's rows (x from 152). */
-function SettingsFrame({
-  active,
-  noun,
-  children,
-}: {
-  active: SettingsCategory;
-  noun: string;
-  children: ReactNode;
-}) {
+function SettingsFrame({ active, children }: { active: SettingsCategory; children: ReactNode }) {
   return (
     <Scene w={420} h={268} bg="plain">
       <rect
@@ -91,7 +84,7 @@ function SettingsFrame({
       <Label x={30} y={65} size={10} tone="muted">
         Search settings
       </Label>
-      {categories(noun).map((c, i) => {
+      {CATEGORIES.map((c, i) => {
         const y = 80 + i * 16;
         const on = c === active;
         return (
@@ -267,41 +260,28 @@ function EditorRows({ highlight }: { highlight?: EditorRowKey }) {
   );
 }
 
-/** The whole dialog as it opens: every category down the left, Editor's pane on the right. `noun` is what the
- *  product calls its work, for its category. */
-export function SettingsDialogScene({ noun }: { noun: string }) {
+/** The whole dialog as it opens: every category down the left, Editor's pane on the right. */
+export function SettingsDialogScene(_props: { noun: string }) {
   return (
-    <SettingsFrame active="Editor" noun={noun}>
+    <SettingsFrame active="Editor">
       <EditorRows />
     </SettingsFrame>
   );
 }
 
 /** Settings > Editor with one row highlighted (or none), each switch at its default. */
-export function SettingsEditorPane({
-  noun,
-  highlight,
-}: {
-  noun: string;
-  highlight?: EditorRowKey;
-}) {
+export function SettingsEditorPane({ highlight }: { noun: string; highlight?: EditorRowKey }) {
   return (
-    <SettingsFrame active="Editor" noun={noun}>
+    <SettingsFrame active="Editor">
       <EditorRows highlight={highlight} />
     </SettingsFrame>
   );
 }
 
 /** Settings > Panels: the Panel Opacity slider. */
-export function SettingsPanelsPane({
-  noun,
-  highlight,
-}: {
-  noun: string;
-  highlight?: 'panel-opacity';
-}) {
+export function SettingsPanelsPane({ highlight }: { noun: string; highlight?: 'panel-opacity' }) {
   return (
-    <SettingsFrame active="Panels" noun={noun}>
+    <SettingsFrame active="Panels">
       <rect
         x={152}
         y={74}

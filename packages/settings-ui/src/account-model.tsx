@@ -1,12 +1,14 @@
 'use client';
 
-// The Settings panel's Account section (liveworkspace/docs/specs/010-site/site.md "Settings"): what belongs to the person in
-// every app rather than to one, built once here and shown in the All view wherever the panel opens. Its switches
+// The Settings panel's account categories (liveworkspace/docs/specs/010-site/site.md "Settings"): what belongs to the person in
+// every app rather than to one, built once here and listed in the panel's rail beside the apps' categories, each
+// top-level with its own tile, under the rail's Account and Developers labels. Its switches
 // are the `all` scope's (@liveworkspace/settings/account), read from and written to whatever holds that scope where
 // the panel is: the accounts API on liveworkspace.app and an app's Explorer, the editor's own preferences in an
 // editor (which sync them). Everything in it is edited in place, wherever the panel opens: the profile (ProfileHost),
 // sign-in and devices (AccountSecurity), and the API tokens, webhooks and Download Your Data (accountPanels).
 import type { ReactNode } from 'react';
+import { PLATFORM_SITE, workspaceOriginFor } from '@liveworkspace/sites';
 import type { SettingsBlob } from '@liveworkspace/settings';
 import {
   ACCESSIBILITY_ROWS,
@@ -19,7 +21,7 @@ import {
   WEBHOOKS_CATEGORY,
   type AccountToggle,
 } from '@liveworkspace/settings/account';
-import { SettingsCategoryTile, SettingsSharedGlyph, SettingsSubcategoryGlyph } from './glyphs';
+import { SettingsCategoryTile, type SettingsTileId } from './glyphs';
 import { profileRows } from './profile/profile-rows';
 import type { AccountIdentity } from './profile/ProfileHeader';
 import type { ProfileHost } from './profile/profile-host';
@@ -60,6 +62,10 @@ export interface AccountSection {
   phone?: PhoneHost | null;
 }
 
+// liveworkspace.app as this page sees it (staging's from a staging app), for a row's link to a page there.
+const workspaceOrigin = () =>
+  typeof window === 'undefined' ? PLATFORM_SITE.url : workspaceOriginFor(window.location.host);
+
 const toggleRow =
   (all: SettingsBlob, set: AccountSection['set'], section?: string) =>
   (row: AccountToggle): SettingsRow => ({
@@ -69,6 +75,8 @@ const toggleRow =
     description: row.description,
     ...(row.keywords ? { keywords: row.keywords } : {}),
     ...(section ? { section } : {}),
+    ...(row.closesSection ? { closesSection: true } : {}),
+    ...(row.more ? { link: { href: `${workspaceOrigin()}${row.more.path}`, label: row.more.label } } : {}),
     value: readAccountToggle(all, row),
     onChange: (next) => set(row.key, next),
   });
@@ -76,7 +84,32 @@ const toggleRow =
 const TOKENS_KEYWORDS =
   'api token key mcp integration script developer access create revoke secret';
 
-/** The Account section's categories, by their own ids (the panel files them under the Account heading). */
+// The account's categories by their own ids, in the order the panel lists them. Each one's tile has the same id
+// (glyphs.tsx): Profile (`account`) the person, the rest their shared marks.
+export const ACCOUNT_CATEGORY_IDS = [
+  'account',
+  'notifications',
+  'privacy',
+  'accessibility',
+  'data',
+  'tokens',
+  'webhooks',
+] as const satisfies readonly SettingsTileId[];
+// The ones the rail lists under Developers rather than Account.
+export const DEVELOPER_CATEGORY_IDS: ReadonlySet<AccountCategoryId> = new Set([
+  'tokens',
+  'webhooks',
+]);
+export type AccountCategoryId = (typeof ACCOUNT_CATEGORY_IDS)[number];
+
+/** The tile of the account category `id`. */
+export function accountCategoryTile(id: AccountCategoryId): ReactNode {
+  return <SettingsCategoryTile id={id} />;
+}
+
+/** The account's categories, by their own ids (the panel prefixes them `account:`), in the order they are listed:
+ *  Profile, Notifications, Privacy, Accessibility and Your Data (the rail's Account), then API Tokens and Webhooks
+ *  (its Developers). */
 export function accountCategories(section: AccountSection): SettingsCategory[] {
   const { all, set, renderTokens, renderWebhooks, renderDataExport, emails = true } = section;
   const toggle = (rows: readonly AccountToggle[], heading?: string) =>
@@ -94,28 +127,53 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
     categories.push({
       id: 'account',
       label: 'Profile',
-      icon: <SettingsCategoryTile id="account" />,
+      icon: accountCategoryTile('account'),
       rows: profile,
     });
   }
-  const parent = profile.length > 0 ? { parent: 'account' } : {};
-  categories.push({
-    id: 'notifications',
-    label: 'Notifications',
-    icon: parent.parent ? (
-      <SettingsSubcategoryGlyph>
-        <SettingsSharedGlyph id="notifications" />
-      </SettingsSubcategoryGlyph>
-    ) : (
-      <SettingsCategoryTile id="account" />
-    ),
-    ...parent,
-    rows: [
-      ...toggle(IN_APP_ROWS, 'In the Editor'),
-      ...(emails ? toggle(NOTIFICATION_ROWS, 'Email') : []),
-      ...(section.phone ? phoneRows(section.phone, toggle(PUSH_ROWS, PHONE_SECTION)) : []),
-    ],
-  });
+  categories.push(
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: accountCategoryTile('notifications'),
+      rows: [
+        ...toggle(IN_APP_ROWS, 'In the Editor'),
+        ...(emails ? toggle(NOTIFICATION_ROWS, 'Email') : []),
+        ...(section.phone ? phoneRows(section.phone, toggle(PUSH_ROWS, PHONE_SECTION)) : []),
+      ],
+    },
+    {
+      id: 'privacy',
+      label: 'Privacy',
+      icon: accountCategoryTile('privacy'),
+      rows: toggle(PRIVACY_ROWS),
+    },
+    {
+      id: 'accessibility',
+      label: 'Accessibility',
+      icon: accountCategoryTile('accessibility'),
+      rows: toggle(ACCESSIBILITY_ROWS),
+    },
+  );
+  const data: SettingsRow | null = renderDataExport
+    ? {
+        kind: 'custom',
+        key: 'dataExport',
+        label: DATA_EXPORT_CATEGORY.label,
+        description: DATA_EXPORT_CATEGORY.description,
+        keywords: DATA_EXPORT_CATEGORY.keywords,
+        section: DATA_EXPORT_CATEGORY.label,
+        render: renderDataExport,
+      }
+    : null;
+  if (data) {
+    categories.push({
+      id: 'data',
+      label: DATA_EXPORT_CATEGORY.label,
+      icon: accountCategoryTile('data'),
+      rows: [data],
+    });
+  }
   const tokens: SettingsRow | null = renderTokens
     ? {
         kind: 'custom',
@@ -131,12 +189,7 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
     categories.push({
       id: 'tokens',
       label: 'API Tokens',
-      icon: (
-        <SettingsSubcategoryGlyph>
-          <SettingsSharedGlyph id="tokens" />
-        </SettingsSubcategoryGlyph>
-      ),
-      ...parent,
+      icon: accountCategoryTile('tokens'),
       rows: [tokens],
     });
   }
@@ -155,52 +208,9 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
     categories.push({
       id: 'webhooks',
       label: WEBHOOKS_CATEGORY.label,
-      icon: (
-        <SettingsSubcategoryGlyph>
-          <SettingsSharedGlyph id="webhooks" />
-        </SettingsSubcategoryGlyph>
-      ),
-      ...parent,
+      icon: accountCategoryTile('webhooks'),
       rows: [webhooks],
     });
   }
-  const data: SettingsRow | null = renderDataExport
-    ? {
-        kind: 'custom',
-        key: 'dataExport',
-        label: DATA_EXPORT_CATEGORY.label,
-        description: DATA_EXPORT_CATEGORY.description,
-        keywords: DATA_EXPORT_CATEGORY.keywords,
-        section: DATA_EXPORT_CATEGORY.label,
-        render: renderDataExport,
-      }
-    : null;
-  if (data) {
-    categories.push({
-      id: 'data',
-      label: DATA_EXPORT_CATEGORY.label,
-      icon: (
-        <SettingsSubcategoryGlyph>
-          <SettingsSharedGlyph id="data" />
-        </SettingsSubcategoryGlyph>
-      ),
-      ...parent,
-      rows: [data],
-    });
-  }
-  categories.push(
-    {
-      id: 'privacy',
-      label: 'Privacy',
-      icon: <SettingsCategoryTile id="privacy" />,
-      rows: toggle(PRIVACY_ROWS),
-    },
-    {
-      id: 'accessibility',
-      label: 'Accessibility',
-      icon: <SettingsCategoryTile id="accessibility" />,
-      rows: toggle(ACCESSIBILITY_ROWS),
-    },
-  );
   return categories;
 }

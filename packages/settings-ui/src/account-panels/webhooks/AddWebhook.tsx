@@ -1,35 +1,46 @@
 'use client';
 
-import { useId, useState, type FormEvent, type RefObject } from 'react';
+import { useId, useMemo, useState, type FormEvent, type RefObject } from 'react';
 import {
-  WEBHOOK_EVENTS,
+  orderedTopics,
   WEBHOOK_NAME_MAX,
   WEBHOOK_URL_MAX,
+  type App,
   type Webhook,
-  type WebhookEvent,
   type WebhookKind,
+  type WebhookTopic,
 } from '@liveworkspace/index-client';
 import { Button } from '@liveworkspace/ui';
 import { BUTTON, ErrorNote, INPUT } from '../account-ui';
-import { DestinationPicker, EventPicker, FormStep, ScopePicker, type TeamChoice } from './pickers';
+import { ConnectPanel } from './ConnectPanel';
+import {
+  DestinationPicker,
+  EventControls,
+  EventPicker,
+  FormStep,
+  ScopePicker,
+  type TeamChoice,
+} from './pickers';
 import { useAccountPanelsHost } from '../host';
-import { attempt, KINDS, webhookError } from './webhooks-api';
+import { attempt, KINDS, topicsOfApps, webhookError } from './webhooks-api';
 
 export type { TeamChoice } from './pickers';
 
 const LABEL = 'block text-sm font-medium text-slate-700 dark:text-slate-300';
-const TEXT_BUTTON =
-  'relative touch-target-y cursor-pointer rounded text-xs font-semibold text-slate-600 underline-offset-2 transition-colors duration-micro hover:text-slate-900 hover:underline disabled:cursor-default disabled:opacity-40 disabled:no-underline dark:text-slate-300 dark:hover:text-white';
 
 // Adding a webhook (webhooks.md "Who adds one"; site.md "Settings", Webhooks), in the order a person thinks of it:
 // where it posts, its address (with how to get one), a name, whose items (their own, or a team they run) and what it
-// sends. A team the person is only a member of isn't offered, and the index checks again.
+// sends: the events of the apps the card covers (this app's on This App, every app's on All), all chosen at first. A
+// team the person is only a member of isn't offered, and the index checks again.
 export function AddWebhook({
+  apps,
   teams,
   firstRef,
   onAdded,
   onCancel,
 }: {
+  // The apps whose events it offers.
+  apps: readonly App[];
   // The teams the person runs now.
   teams: readonly TeamChoice[];
   // The chosen destination, which takes the keyboard as the form opens.
@@ -42,18 +53,11 @@ export function AddWebhook({
   const [name, setName] = useState('');
   const [scope, setScope] = useState('');
   const [url, setUrl] = useState('');
-  const [events, setEvents] = useState<Set<WebhookEvent>>(() => new Set(WEBHOOK_EVENTS));
+  const offered = useMemo(() => topicsOfApps(apps), [apps]);
+  const [events, setEvents] = useState<Set<WebhookTopic>>(() => new Set(offered));
   const { index } = useAccountPanelsHost();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const toggle = (event: WebhookEvent, on: boolean) =>
-    setEvents((current) => {
-      const next = new Set(current);
-      if (on) next.add(event);
-      else next.delete(event);
-      return next;
-    });
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -64,7 +68,7 @@ export function AddWebhook({
         name: name.trim(),
         kind,
         url: url.trim(),
-        events: WEBHOOK_EVENTS.filter((e) => events.has(e)),
+        events: orderedTopics(offered.filter((topic) => events.has(topic))),
         teamId: scope || null,
       }),
     );
@@ -74,6 +78,7 @@ export function AddWebhook({
   }
 
   const words = KINDS[kind];
+  const chosen = offered.reduce((n, topic) => n + (events.has(topic) ? 1 : 0), 0);
   const missing = !name.trim() ? 'a name' : !url.trim() ? 'an address' : null;
   // Whose Items? is asked only of someone who runs a team.
   const whose = teams.length > 0;
@@ -106,29 +111,30 @@ export function AddWebhook({
       </FormStep>
 
       <FormStep n={2} id={`${id}-address`} title="Connect It">
-        <div className="flex flex-col gap-3">
-          <Steps id={`${id}-how`} steps={words.steps} />
-          <label className={LABEL}>
-            {words.field}
-            <input
-              className={`${INPUT} mt-1 font-mono`}
-              type="url"
-              inputMode="url"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder={words.placeholder}
-              maxLength={WEBHOOK_URL_MAX}
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              aria-describedby={`${id}-how`}
-              required
-            />
-          </label>
+        <div className="flex flex-col gap-4">
+          <ConnectPanel kind={kind} guideId={`${id}-how`}>
+            <label className={LABEL}>
+              {words.field}
+              <input
+                className={`${INPUT} mt-1.5 font-mono`}
+                type="url"
+                inputMode="url"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder={words.placeholder}
+                maxLength={WEBHOOK_URL_MAX}
+                value={url}
+                onChange={(event) => setUrl(event.target.value)}
+                aria-describedby={`${id}-how`}
+                required
+              />
+            </label>
+          </ConnectPanel>
           <div>
             <label className={LABEL}>
               Name
               <input
-                className={`${INPUT} mt-1`}
+                className={`${INPUT} mt-1.5`}
                 placeholder={words.namePlaceholder}
                 maxLength={WEBHOOK_NAME_MAX}
                 value={name}
@@ -154,31 +160,9 @@ export function AddWebhook({
         n={whose ? 4 : 3}
         id={`${id}-what`}
         title="What Should It Send?"
-        aside={
-          <span className="flex items-center gap-3">
-            <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
-              {events.size} of {WEBHOOK_EVENTS.length}
-            </span>
-            <button
-              type="button"
-              className={TEXT_BUTTON}
-              disabled={events.size === WEBHOOK_EVENTS.length}
-              onClick={() => setEvents(new Set(WEBHOOK_EVENTS))}
-            >
-              Select All
-            </button>
-            <button
-              type="button"
-              className={TEXT_BUTTON}
-              disabled={events.size === 0}
-              onClick={() => setEvents(new Set())}
-            >
-              Clear
-            </button>
-          </span>
-        }
+        aside={<EventControls topics={offered} value={events} onChange={setEvents} />}
       >
-        <EventPicker value={events} onToggle={toggle} />
+        <EventPicker apps={apps} value={events} onChange={setEvents} />
       </FormStep>
 
       <div className="flex flex-col gap-3">
@@ -190,7 +174,7 @@ export function AddWebhook({
           >
             {missing
               ? `Add ${missing} to finish.`
-              : events.size === 0
+              : chosen === 0
                 ? 'Pick at least one thing to send.'
                 : ''}
           </p>
@@ -203,7 +187,7 @@ export function AddWebhook({
             className={BUTTON.primary}
             // Only what the form lacks disables it. While it adds, it keeps the keyboard (busy-buttons.md): a
             // disabled button drops it to the dialog's top, and an error then left the person nowhere near it.
-            disabled={events.size === 0 || missing !== null}
+            disabled={chosen === 0 || missing !== null}
             busy={busy}
           >
             {busy ? 'Adding…' : 'Add Webhook'}
@@ -211,41 +195,5 @@ export function AddWebhook({
         </div>
       </div>
     </form>
-  );
-}
-
-// How to get the address: numbered steps for Slack and Teams, one line for a service the person runs.
-function Steps({ id, steps }: { id: string; steps: readonly string[] }) {
-  if (steps.length === 1)
-    return (
-      <p id={id} className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-        {steps[0]}
-      </p>
-    );
-  return (
-    <div
-      id={id}
-      className="rounded-xl border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800"
-    >
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-        How to Get It
-      </p>
-      <ol className="mt-1.5 flex flex-col gap-1.5">
-        {steps.map((text, i) => (
-          <li
-            key={text}
-            className="flex gap-2 text-xs leading-relaxed text-slate-700 dark:text-slate-300"
-          >
-            <span
-              aria-hidden
-              className="w-3 shrink-0 text-right font-semibold tabular-nums text-slate-400 dark:text-slate-500"
-            >
-              {i + 1}
-            </span>
-            <span>{text}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
   );
 }

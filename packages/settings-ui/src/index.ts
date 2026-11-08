@@ -43,6 +43,7 @@ export {
 export { SETTINGS_ROW_ATTRIBUTE } from './settings-scroll-anchor';
 export { readSettingsView, writeSettingsView } from './settings-view-memory';
 export { SettingsScopeSwitch, useSettingsScope, type SettingsScope } from './scope';
+export { SettingsShownAppProvider, useSettingsShownApp } from './shown-app';
 export {
   SettingsPanel,
   preloadSettingsPanel,
@@ -117,6 +118,14 @@ export {
   type SettingsStore,
 } from './store';
 export { createScopesSaver, type PanelScopes, type ScopesSaver } from './saver';
+export {
+  RESET_DONE_MS,
+  RESET_SETTINGS_ACCOUNT,
+  RESET_SETTINGS_BROWSER,
+  ResetSettingsRow,
+  type ResetSettingsReach,
+} from './reset-settings/ResetSettingsRow';
+export { resetAccountSettings, resetBrowserSettings } from './reset-settings/reset-account';
 export {
   createDeviceSettingsStore,
   splitDeviceSettings,

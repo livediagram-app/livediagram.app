@@ -103,7 +103,7 @@ storing tokens itself, the account-level design below supersedes it.
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.
 - **Management** is liveworkspace's. `GET/POST /api/tokens` and `DELETE /api/tokens/:id` answer
-  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's Account › API Tokens category draws the shared token panel in place for a signed-in account
+  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's Settings › API Tokens category draws the shared token panel in place for a signed-in account
   (`@liveworkspace/settings-ui/account-panels`, the same one liveworkspace.app's Settings has, loaded when the category
   is first opened): make a token (a name, Read Only), its secret shown once with Copy, and revoke one. Under it the editor's own API Tokens row lists the account's paired workbenches with Unpair and
   says that connecting an AI tool makes its own token; it links to liveworkspace.app (**Manage API Tokens**) only on a
@@ -231,7 +231,7 @@ backstop.
 Tokens are created, viewed and revoked in the **Settings dialog**
 ([User preferences](../007-editor/user-preferences.md)), in the **API Tokens**
 sub-category of **Account** (id `tokens`, `parent: 'account'`, shown as
-"Account › API Tokens"). It is account-scoped like its parent, and the dialog is reachable
+"Settings › API Tokens"). It is account-scoped like its parent, and the dialog is reachable
 from both the Explorer and the editor, so the tokens are too. There is no
 Explorer page for them and no `/explorer/tokens` route.
 

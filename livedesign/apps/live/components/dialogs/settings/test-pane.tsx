@@ -17,14 +17,12 @@ export function SettingsCategoryPane({
   settings,
   onChange,
   focusRowKey = null,
-  onOpenCategory,
   focusSectionId = null,
 }: {
   category: SettingsCategorySpec;
   settings: UserPreferences;
   onChange: (next: UserPreferences) => void;
   focusRowKey?: string | null;
-  onOpenCategory?: (categoryId: string) => void;
   focusSectionId?: string | null;
 }) {
   const isMobile = useIsMobileViewport();
@@ -35,7 +33,6 @@ export function SettingsCategoryPane({
         category={model!}
         isMobile={isMobile}
         focusRowKey={focusRowKey}
-        onOpenCategory={onOpenCategory}
         focusSectionId={focusSectionId}
       />
     </SettingsUiKitProvider>

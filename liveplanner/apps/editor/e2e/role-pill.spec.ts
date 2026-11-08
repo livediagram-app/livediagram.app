@@ -84,7 +84,7 @@ test.describe('Retired power user keys', () => {
     // Settings: no Editor category (it held only the mode's rows); the preset's tours stay seen.
     await page.getByRole('button', { name: 'Application settings' }).click();
     await expect(dialog(page).getByRole('button', { name: 'Editor', exact: true })).toHaveCount(0);
-    await dialog(page).getByRole('button', { name: 'Tours', exact: true }).click();
+    await dialog(page).getByRole('button', { name: 'Getting Started', exact: true }).click();
     await expect(dialog(page).getByText('Power User', { exact: true })).toHaveCount(0);
     await expect(dialog(page).getByRole('switch', { name: 'Power User Mode' })).toHaveCount(0);
     await expect(dialog(page).getByRole('switch', { name: /^Plan Tours/ })).toHaveAttribute(

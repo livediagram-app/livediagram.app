@@ -22,13 +22,16 @@ export const isListened = (type: string) => LISTENED.has(type);
 let queued = 0;
 export const queuedCount = () => queued;
 
-// The live webhooks of `scope` (the item's, by default) listening for `type`, under their pending cap. `w` and the
-// event's columns come from the statement around it; `?4` is WEBHOOK_PENDING_MAX.
+// The live webhooks of `scope` (the item's, by default) listening for `type` from the item's app (`i.app`), under their
+// pending cap: a webhook holds topics (`,livediagram:shared,`), and a bare event left from before topics (`,shared,`)
+// still means every app. `w`, `i` and the event's columns come from the statement around it; `?4` is
+// WEBHOOK_PENDING_MAX.
 const listening = (
   type: string,
   scope = 'i.scope',
 ) => `JOIN webhooks w ON w.scope = ${scope} AND w.paused_at IS NULL
-  WHERE instr(w.events, ',' || ${type} || ',') > 0
+  WHERE (instr(w.events, ',' || i.app || ':' || ${type} || ',') > 0
+         OR instr(w.events, ',' || ${type} || ',') > 0)
     AND (SELECT COUNT(*) FROM (SELECT 1 FROM webhook_deliveries p
          WHERE p.webhook_id = w.id AND p.state = 'pending' LIMIT ?4)) < ?4`;
 

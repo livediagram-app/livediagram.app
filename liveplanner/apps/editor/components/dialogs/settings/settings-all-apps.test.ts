@@ -16,7 +16,6 @@ describe('rowSharedAcrossApps', () => {
     expect(rowSharedAcrossApps('homeBanner')).toBe(true);
     expect(rowSharedAcrossApps('collaboratePanelEnabled')).toBe(true);
     expect(rowSharedAcrossApps('notifyFormResponses')).toBe(false);
-    expect(rowSharedAcrossApps('uiScaleLink')).toBe(false);
   });
 
   it('marks nothing where preferences stay in this browser', () => {

@@ -14,7 +14,15 @@ import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { accountCredentials } from '../auth/accounts';
 import { json, notFound, rateLimited } from '../responses';
 import { readBody, type RouteContext } from './context';
-import { browserCaller, identityRequired } from './migration';
+
+// The browser's own guest or account, never a script's credential (an API token is a script's, never a browser
+// returning).
+function browserCaller(ctx: RouteContext): string | null {
+  if (ctx.token) return null;
+  return ctx.resolveOwner();
+}
+
+const identityRequired = () => json({ error: 'identity_required' }, { status: 401 });
 
 // An old guest id: `crypto.randomUUID()`, lowercase. Its signature: base64url HMAC-SHA-256, 43 characters.
 const LEGACY_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;

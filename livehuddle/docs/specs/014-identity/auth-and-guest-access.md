@@ -199,8 +199,7 @@ copied under `guest_<old uuid>`, which nobody holds until it is claimed (repo `d
 - **Where it lives**: `lib/legacy-guest-claim.ts`, `lib/api/migration.ts`, `hooks/persistence/useLegacyGuestClaim.ts`.
 
 Documents a guest kept in This Browser on the old site are not part of the claim: they never left the browser,
-and their Pages and Plan parts are set aside and offered separately
-([Offline Mode → Moving retired parts](../006-document/offline-mode.md#moving-retired-parts-to-the-other-apps)).
+and stay in [Offline Mode](../006-document/offline-mode.md).
 
 ## Deleting an account
 

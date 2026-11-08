@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Settings',
   description:
-    'Every liveplanner setting explained: appearance, shortcuts, tours, account, notifications, API tokens, privacy and what syncs.',
+    'Every liveplanner setting explained: appearance, shortcuts, getting started, account, notifications, API tokens, privacy and what syncs.',
   path: '/help/user-interface/settings/',
 });
 
@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
 
 The dialog lists its categories down the left, with a **Search settings** field above them, and shows one category at a time on the right. Type into the search to find a setting by name or by a word it is about ("transparency" finds **Panel Opacity**). On a phone, the list and the category take turns: tap a category to open it, and go back for the list.
 
-Some categories hold **sub-categories** (Account holds Notifications and API Tokens). On a computer, click the parent (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap the parent and its sub-categories are listed at the bottom of its page.
+Only a guest sees **sub-categories**: Account holds Notifications and API Tokens, which are categories of their own once you sign in. Everything else in a category is in its sections, so nothing is hidden behind another level. On a computer, click Account (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap Account and they are listed at the bottom of its page.
 
 Each category groups its settings into cards, one card per section, with a short line under each setting saying what it does. A setting that only matters while another is on sits indented beneath it, and shows only while that switch is on.
 
@@ -38,36 +38,37 @@ Each category groups its settings into cards, one card per section, with a short
 
 - **Panel Opacity**: fades the panels, from 30% to 100%, so what is behind them shows through (buttons and the Explorer stay opaque); a panel snaps back to fully opaque while you hover or focus it.
 
-**Panels** also holds **Collaborate**, with **Enable Collaborate Panel**: the list of a tab's comment threads and actions, behind a button in the bottom-right corner that only appears while the tab has a comment. With it off, comments still work where they were left. See [Comments](/help/collaboration/comments/).
+Below it, the **Collaborate** section holds **Enable Collaborate Panel**: the list of a tab's comment threads and actions, behind a button in the bottom-right corner that only appears while the tab has a comment. With it off, comments still work where they were left. See [Comments](/help/collaboration/comments/).
 
 ## Accessibility
 
 - **Reduce Motion**: turns off the decorative animations and transitions (panels, popovers, dialogs) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
-- **UI Scale**: **Open Appearance** takes you to **UI Scale**, for bigger panels and corner buttons.
 
-## Tours
+## Getting Started
 
 One switch per guided tour. **Plan Tours** switches the planning tours all at once, with **Boards Tour**, **Sheets Tour** and **Dashboards Tour** beneath it, and **Forms Tour** sits on its own. Every tour starts from its **Start Tour** button in the bottom bar, just left of **Search** (Start Boards Tour, Start Forms Tour and so on), which is there whenever the tour can run, until you've taken it. A tour's switch turns itself off once you have finished or skipped it. Switch one back on and close Settings to take that tour again: it starts straight away if you are where it belongs; otherwise use the button when you get there. See [The Plan Tour](/help/plan/plan-tour/).
 
-## Plans
+## Explorer
 
-- **Show Home Banner**, under **Explorer**: the greeting, status pills and large search at the top of the Explorer's [Home](/help/explorer/home/). On by default. When it is off, Home's search sits in the header, as on every other Explorer page; closing the banner on Home turns this off too.
+Once called **Plans**.
+
+- **Show Home Banner**: the greeting, status pills and large search at the top of the Explorer's [Home](/help/explorer/home/). On by default. When it is off, Home's search sits in the header, as on every other Explorer page; closing the banner on Home turns this off too.
 - **Where New Plans Go**, under **Default Folders**: the folders new plans are saved in when you make one without choosing a place, with a separate entry for Kanban and Retrospective plans. Each entry has **Change** and **Clear**. See [Default folders](/help/explorer/folders/#default-folders).
 
 ## Account
 
-**Account** shows who you are (a guest, or your name and email when signed in) and **Delete Account**. It holds two sub-categories:
+**Account** shows who you are (a guest, or your name and email when signed in), **Reset All Settings** and **Delete Account**. **Reset All Settings** puts every setting back to its default once you confirm. Signed in, that is every setting in every liveworkspace app; your profile, API tokens, webhooks and sign-ins stay as they are, and so does your choice about anonymous usage events. As a guest, it is this app's settings in this browser. Tours offer themselves again afterwards. It holds two sub-categories:
 
 ### Notifications
 
 - **In-Editor Notifications**: the brief confirmation shown when you do something whose result isn't on screen, like moving a plan to a folder. **Errors and warnings are always shown**, whatever this is set to, so a failure is never silently swallowed. A notification stays put while you point at it or tab into it, and Escape closes the one you are on.
-- **Email**: once signed in, one switch per email (someone joins, comments on or mentions you in your plan, fills in your form, assigns you an action or responds to a team invite, plus tips and milestones). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
+- **Email**: once signed in, one switch per email (in this order: someone comments on your work, mentions you or assigns you an action, someone responds to a team invite, someone joins your plan, then someone fills in your form, then tips and check-ins and milestones last). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
 
 ### API Tokens
 
 - **API Tokens** is where you make, see and revoke the tokens your own scripts and connected AI tools use to call liveplanner as you, right here in Settings: name a token (switch on **Read-only** if it only needs to look), copy its secret while it is shown (only once), and revoke one with **Revoke**. Tokens belong to your liveworkspace account, so one works in every liveworkspace app, and the same list shows in each one's Settings and on liveworkspace.app. Each expires six months after it is created. Below them, **Paired workbenches** lists the developer tools your CLI sign-in has paired, each with **Unpair** ([Workbenches](/help/developers/workbenches/)). Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
 
-Signed in, **Account** also holds **Webhooks**, which posts what happens to your work to Slack, Microsoft Teams or a service you run (add, test, pause and delete them, and see recent deliveries), and **Your Data**, where you download everything you own, and each team's you run, as one zip. With your profile are your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
+Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens and **Webhooks**, which posts what happens to your work to Slack, Microsoft Teams or a service you run (add, test, pause and delete them, and see recent deliveries). Each app's events are its own, shown with that app's logo and name: Share Link Made for liveplanner is a separate choice from Share Link Made for another app. On the **liveplanner** side you pick and see only liveplanner's events, and a webhook's other apps' events stay as they are when you edit it; under **All** you pick from every app's events. With your profile are your **Time Zone** (when the emails that can wait arrive; **Automatic** follows your browser), your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
 
 Anywhere Settings says something needs an account, it ends with a **Sign In** link that brings you back to where you were.
 

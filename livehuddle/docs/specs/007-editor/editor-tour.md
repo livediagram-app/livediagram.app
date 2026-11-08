@@ -27,7 +27,7 @@ livediagram's Diagram tour and Draw tour are not part of livehuddle (cut with Di
   no tour on offer the button is not drawn.
 - **Gone once taken, back from Settings.** A tour taken is off the button: once the person starts it (and so
   finishes or skips it), its host stops offering it, so the button makes room for a tour not yet taken, or is not
-  drawn at all. It comes back when its switch in Settings' **Tours** category is turned on again (on means "offer
+  drawn at all. It comes back when its switch in Settings' **Getting Started** category is turned on again (on means "offer
   me this tour", [User preferences](user-preferences.md) "Tours"), and turning a switch on and closing Settings
   also runs that tour if it could run right then. Every tour's host reads the same synced record its Settings row
   reads, so the button and the row never disagree. The rule lives once in the shared offer (`useOfferTour`'s `seen`, `tour-offer.ts`): a host passes whether its
@@ -49,7 +49,7 @@ livediagram's Diagram tour and Draw tour are not part of livehuddle (cut with Di
   (`TourPopover`), so this holds for all of them. It leaves the key alone while it is editing a field, where an
   element tour asks for Escape to put text back, and when another surface has already taken it.
 - **Taken, on every device.** However a run ends (skipped mid-tour or completed), the tour's synced preference
-  ([User preferences](user-preferences.md)) records it, so its Settings row in **Tours** reads off and the button no
+  ([User preferences](user-preferences.md)) records it, so its Settings row in **Getting Started** reads off and the button no
   longer offers it. It is written as the run starts, too, so a reload mid-tour leaves it taken.
 - **One tour at a time.** While any tour is on screen the others do not start.
 - **Dialogs come first.** A tour never lands over a dialog the person has open (Share, Settings, Export,

@@ -108,7 +108,7 @@ export type UserPreferences = {
   // undefined / false === click to open, the default (hover-open can feel
   // twitchy, so it's opt-in).
   quickAddOnHover?: boolean;
-  // How an element shows its link, note, action and comments
+  // How an element shows its action and comments (links and notes are retired)
   // (docs/specs/008-canvas/element-indicators.md): glyphs inside its top, at the top-right of a box
   // ('top', the default), a labelled row along its bottom edge ('footer'), or none ('off').
   // Read through `readElementIndicatorStyle`, which maps anything else to the default.

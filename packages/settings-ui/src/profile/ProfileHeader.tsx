@@ -105,66 +105,25 @@ export function ProfileHeaderCard({
             ) : null}
           </div>
         </div>
-        <ul aria-label="About this account" className="mt-4 flex flex-wrap gap-2">
-          {isGuest ? (
-            <Chip tone="muted">Guest · This browser only</Chip>
-          ) : (
-            <Chip tone="brand">
-              <AccountGlyph />
-              liveworkspace account
-            </Chip>
-          )}
-          {joined ? <Chip tone="muted">Joined {joined}</Chip> : null}
-          <Chip tone="muted">
-            <span
-              aria-hidden
-              className="size-2.5 rounded-full ring-1 ring-black/10 dark:ring-white/20"
-              style={
-                colour
-                  ? { backgroundColor: cursorColour(name, colour) }
-                  : { background: AUTOMATIC_SWATCH }
-              }
-            />
-            Colour: {colourLabel(colour)}
-          </Chip>
-        </ul>
+        {isGuest || joined ? (
+          <ul aria-label="About this account" className="mt-4 flex flex-wrap gap-2">
+            {isGuest ? <Chip>Guest · This browser only</Chip> : null}
+            {joined ? <Chip>Joined {joined}</Chip> : null}
+          </ul>
+        ) : null}
         {isGuest && guest ? <GuestInvitation guest={guest} /> : null}
       </div>
     </div>
   );
 }
 
-const AUTOMATIC_SWATCH =
-  'conic-gradient(#0ea5e9, #10b981, #f59e0b, #ef4444, #8b5cf6, #ec4899, #0ea5e9)';
-
-function Chip({ tone, children }: { tone: 'brand' | 'muted'; children: ReactNode }) {
+// No "liveworkspace account" chip (everyone signed in has one) and no colour chip (the banner's name tag, the avatar
+// and Name and Colour below already show it): only what is worth a glance.
+function Chip({ children }: { children: ReactNode }) {
   return (
-    <li
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-        tone === 'brand'
-          ? 'bg-brand-50 text-brand-800 ring-1 ring-brand-200 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-400/30'
-          : 'bg-slate-100 text-slate-700 dark:bg-slate-700/60 dark:text-slate-200'
-      }`}
-    >
+    <li className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700/60 dark:text-slate-200">
       {children}
     </li>
-  );
-}
-
-function AccountGlyph() {
-  return (
-    <svg viewBox="0 0 16 16" aria-hidden className="size-3.5" fill="none" stroke="currentColor">
-      <path
-        d="M8 1.75 13.25 4v4c0 3-2.25 5.25-5.25 6.25C5 13.25 2.75 11 2.75 8V4z"
-        strokeWidth={1.4}
-      />
-      <path
-        d="m5.75 8 1.6 1.6 2.9-3.1"
-        strokeWidth={1.4}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 
@@ -213,53 +172,41 @@ function ProfileBanner({ name, colour }: { name: string; colour: string | null }
       className="relative h-28 overflow-hidden rounded-t-[inherit] bg-gradient-to-br from-brand-50 via-white to-brand-100 dark:from-slate-900 dark:via-slate-900 dark:to-brand-500/25"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle,rgb(100_116_139/0.28)_1px,transparent_1px)] bg-[length:14px_14px] dark:bg-[radial-gradient(circle,rgb(148_163_184/0.18)_1px,transparent_1px)]" />
+      {/* A canvas across the whole banner, in the brand's tint: a sticky note, a small flow of cards and a decision
+          joined by dashed lines, and a collaborator at work. Sliced from the middle, so any width fills edge to edge
+          and the scene stays centred; the left end stays quiet where the avatar overlaps it. */}
       <svg
-        viewBox="0 0 480 112"
-        preserveAspectRatio="xMaxYMid slice"
+        viewBox="0 0 720 112"
+        preserveAspectRatio="xMidYMid slice"
         className="absolute inset-0 h-full w-full"
       >
-        {/* Two cards on the canvas, joined, in the brand's tint. */}
         <g className="text-brand-300 dark:text-brand-500/50">
-          <rect
-            x="250"
-            y="22"
-            width="78"
-            height="40"
-            rx="8"
-            className="fill-white dark:fill-slate-800"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          />
-          <rect x="262" y="34" width="44" height="5" rx="2.5" fill="currentColor" opacity="0.7" />
-          <rect x="262" y="45" width="30" height="5" rx="2.5" fill="currentColor" opacity="0.45" />
-          <rect
-            x="374"
-            y="58"
-            width="78"
-            height="40"
-            rx="8"
-            className="fill-white dark:fill-slate-800"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          />
-          <rect x="386" y="70" width="40" height="5" rx="2.5" fill="currentColor" opacity="0.7" />
-          <rect x="386" y="81" width="52" height="5" rx="2.5" fill="currentColor" opacity="0.45" />
-          <path
-            d="M328 42c26 0 22 36 46 36"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeDasharray="4 4"
-          />
+          <g transform="rotate(-5 172 40)">
+            <rect x="150" y="18" width="46" height="42" rx="3" className="fill-amber-100 dark:fill-amber-400/20" />
+            <rect x="158" y="28" width="28" height="4" rx="2" className="fill-amber-300/80 dark:fill-amber-300/40" />
+            <rect x="158" y="37" width="20" height="4" rx="2" className="fill-amber-300/60 dark:fill-amber-300/30" />
+          </g>
+          <path d="M200 44c18 0 16-12 34-12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
+          <rect x="234" y="16" width="80" height="40" rx="8" className="fill-white dark:fill-slate-800" stroke="currentColor" strokeWidth="1.5" />
+          <rect x="246" y="28" width="46" height="5" rx="2.5" fill="currentColor" opacity="0.7" />
+          <rect x="246" y="39" width="30" height="5" rx="2.5" fill="currentColor" opacity="0.45" />
+          <path d="M314 36c30 0 24 38 54 38" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
+          <rect x="368" y="54" width="80" height="40" rx="8" className="fill-white dark:fill-slate-800" stroke="currentColor" strokeWidth="1.5" />
+          <rect x="380" y="66" width="40" height="5" rx="2.5" fill="currentColor" opacity="0.7" />
+          <rect x="380" y="77" width="54" height="5" rx="2.5" fill="currentColor" opacity="0.45" />
+          <path d="M448 74c26 0 22-34 46-34" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
+          <rect x="497" y="23" width="34" height="34" rx="5" transform="rotate(45 514 40)" className="fill-brand-50 dark:fill-slate-800" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M538 40c22 0 20 30 42 30" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
+          <rect x="580" y="50" width="86" height="40" rx="8" className="fill-white dark:fill-slate-800" stroke="currentColor" strokeWidth="1.5" />
+          <rect x="592" y="62" width="50" height="5" rx="2.5" fill="currentColor" opacity="0.7" />
+          <rect x="592" y="73" width="34" height="5" rx="2.5" fill="currentColor" opacity="0.45" />
         </g>
         {/* A collaborator, faint. */}
-        <path
-          d="M440 14l10 4.8-4.5 1.2-2.2 4.6z"
-          className="fill-slate-400/70 dark:fill-slate-500/70"
-        />
+        <path d="M612 14l10 4.8-4.5 1.2-2.2 4.6z" className="fill-slate-400/70 dark:fill-slate-500/70" />
+        <rect x="620" y="24" width="34" height="11" rx="5.5" className="fill-slate-300/70 dark:fill-slate-600/60" />
       </svg>
       {/* Their own cursor and tag, in their colour. */}
-      <div className="absolute top-7 right-[22.5rem] flex items-start">
+      <div className="absolute top-3 left-[38%] flex items-start">
         <svg viewBox="0 0 16 16" className="size-5 drop-shadow-sm">
           <path
             d="M2 1.5 14 7.2l-5.4 1.4L6 14z"

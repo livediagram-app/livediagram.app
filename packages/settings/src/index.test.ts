@@ -6,6 +6,8 @@ import {
   isAllSettingRow,
   isCommonSetting,
   joinSettings,
+  RESET_KEEPS,
+  resetSettingsBlob,
   RETIRED_ALL_SETTING_KEYS,
   settingKeyOfRow,
   splitSettings,
@@ -141,5 +143,20 @@ describe('settingKeyOfRow', () => {
     expect(isAllSettingRow('presentation-transition')).toBe(true);
     expect(isAllSettingRow('uiScale-toolbar')).toBe(true);
     expect(isAllSettingRow('notifyDocumentJoin')).toBe(false);
+  });
+});
+
+describe('resetting every setting', () => {
+  it('keeps only the usage-events choice, a consent', () => {
+    expect(RESET_KEEPS).toEqual(['telemetryEnabled']);
+    for (const key of RESET_KEEPS) expect(isAllSetting(key)).toBe(true);
+    expect(
+      resetSettingsBlob({ telemetryEnabled: false, tourSeen: true, uiScale: 1.2, customSwatches: ['#fff'] }),
+    ).toEqual({ telemetryEnabled: false });
+  });
+
+  it('leaves nothing when the choice was never made, which is its default', () => {
+    expect(resetSettingsBlob({ tourSeen: true })).toEqual({});
+    expect(resetSettingsBlob({})).toEqual({});
   });
 });

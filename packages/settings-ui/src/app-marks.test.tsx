@@ -54,6 +54,9 @@ describe('app marks', () => {
     expect(markCount(['elsewhere.app'], MARKS)).toBe(0);
     expect(marksWidth(0)).toBe(0);
     expect(marksWidth(2)).toBeGreaterThan(marksWidth(1));
+    // Three or four apps wrap two across: the column never grows past two marks.
+    expect(marksWidth(4)).toBe(marksWidth(2));
+    expect(marksWidth(3)).toBe(marksWidth(2));
   });
 
   it('names the apps a row applies to beside its name, in the panel’s order', () => {
@@ -62,13 +65,13 @@ describe('app marks', () => {
       toggle('two', { apps: ['c.app', 'a.app'] }),
       toggle('every', { apps: ['a.app', 'b.app', 'c.app'], allApps: true }),
     ]);
-    expect(screen.getByRole('img', { name: 'Applies to livea' })).toBeTruthy();
-    const two = screen.getByRole('img', { name: 'Applies to livea and livec' });
+    expect(screen.getByRole('img', { name: 'livea' })).toBeTruthy();
+    const two = screen.getByRole('img', { name: 'livea and livec' });
     expect([...two.querySelectorAll('[data-logo]')].map((l) => l.getAttribute('data-logo'))).toEqual(
       ['a.app', 'c.app'],
     );
     // Every app: liveworkspace's mark alone, and no "All apps" words beside it.
-    const every = screen.getByRole('img', { name: 'Applies to every app' });
+    const every = screen.getByRole('img', { name: 'Every App' });
     expect(every.querySelector('[data-logo="all"]')).not.toBeNull();
     expect(cell('every').querySelector('[data-settings-all-apps]')).toBeNull();
     // Each name starts at the same place: every row's column is as wide as the widest cluster.
@@ -88,11 +91,11 @@ describe('app marks', () => {
     expect(cell('size').querySelector('[data-settings-app-marks]')).toBeNull();
     expect(cell('size').querySelector('[data-settings-app-marks-spacer]')).not.toBeNull();
     expect(cell('dim').querySelector('[data-settings-app-marks]')?.getAttribute('aria-label')).toBe(
-      'Applies to livea',
+      'livea',
     );
   });
 
-  it('draws no marks where one app is in play, and says "All apps" as before', () => {
+  it('draws no marks where one app is in play (This App, a guest), and says "All apps" as before', () => {
     draw([toggle('shared', { apps: ['a.app'], allApps: true })], null);
     expect(document.querySelector('[data-settings-app-marks]')).toBeNull();
     expect(cell('shared').querySelector('[data-settings-all-apps]')).not.toBeNull();
@@ -122,6 +125,6 @@ describe('a row that draws its own cell from its unfiled spec', () => {
         />
       </SettingsAppMarksProvider>,
     );
-    expect(screen.getByRole('img', { name: 'Applies to livea' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'livea' })).toBeTruthy();
   });
 });

@@ -36,15 +36,18 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('offers the Draw mode dock position in the Editor › Draw sub-category', () => {
+  it("offers the Draw mode dock position in Editor's Draw section", () => {
     // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": top by default, bottom by choice;
-    // the sub-category says Draw, as the mode switch does (docs/specs/007-editor/editor-modes.md
+    // the section says Draw, as the mode switch does (docs/specs/007-editor/editor-modes.md
     // "Naming in the interface").
-    const draw = SETTINGS_CATEGORIES.find((c) => c.id === 'draw')!;
-    expect(settingsCategoryPath(draw)).toBe('Editor › Draw');
-    const row = draw.rows.find((r) => r.key === 'whiteboardDockPosition');
+    expect(SETTINGS_CATEGORIES.some((c) => (c.id as string) === 'draw')).toBe(false);
+    const editor = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!;
+    expect(settingsCategoryPath(editor)).toBe('Editor');
+    // Draw's old category id still lands on Editor (a remembered category, a `?settings=draw` link).
+    expect(editor.aliases).toEqual(['draw']);
+    const row = editor.rows.find((r) => r.key === 'whiteboardDockPosition');
     if (row?.kind !== 'choice') throw new Error('no Dock Position choice row');
-    expect(row.section).toBeUndefined();
+    expect(row.section).toBe('Draw');
     expect(row.keywords).toContain('draw mode');
     expect(row.keywords).toContain('whiteboard');
     expect(row.helpArticle).toBe('drawMode');
@@ -354,11 +357,8 @@ describe('settings catalogue', () => {
     expect(workbench.map((c) => c.id)).not.toContain('data');
   });
 
-  it('points every link row at a category that exists', () => {
-    const ids = new Set(SETTINGS_CATEGORIES.map((c) => c.id));
-    const links = ALL_ROWS.filter((r) => r.kind === 'link');
-    expect(links.length).toBeGreaterThan(0);
-    for (const row of links) expect(ids.has(row.target), row.key).toBe(true);
+  it('has no row that opens another category: a setting shows where it belongs', () => {
+    expect(ALL_ROWS.map((r) => r.kind)).not.toContain('link');
   });
 
   it('drops the email rows unless mail can be sent AND someone is signed in', () => {
@@ -395,52 +395,52 @@ describe('settings catalogue', () => {
   });
 });
 
-// Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
+// Panels and Account hold sub-categories; Editor holds none (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests one sub-category per mode with settings of its own under Editor (Draw; no Diagram yet), then Presenting', () => {
+  it('nests nothing under Editor, and puts Presenting, a category of its own, right after it', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
-    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['draw', 'presenting']);
-    const at = ids.indexOf('editor');
-    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+    expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor')).toEqual([]);
+    const presenting = SETTINGS_CATEGORIES.find((c) => c.id === 'presenting')!;
+    expect(presenting.parent).toBeUndefined();
+    expect(ids[ids.indexOf('editor') + 1]).toBe('presenting');
   });
 
-  it('keeps every setting that acts in both modes on Editor itself', () => {
-    const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
-    expect(keys).toEqual([
-      'alignmentGuides',
-      'autoRebindArrows',
-      'elementIndicatorStyle',
-      'quickAddOnHover',
-      'middleMousePan',
+  it("keeps Editor's settings on Editor, Draw mode's own in its Draw section", () => {
+    const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows;
+    expect(rows.map((r) => [r.key, r.section])).toEqual([
+      ['alignmentGuides', 'Canvas'],
+      ['autoRebindArrows', 'Canvas'],
+      ['elementIndicatorStyle', 'Canvas'],
+      ['quickAddOnHover', 'Mouse'],
+      ['middleMousePan', 'Mouse'],
+      ['whiteboardDockPosition', 'Draw'],
     ]);
   });
 
-  it('nests one sub-category per panel under Panels, directly after it and in order', () => {
-    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
-    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
-    expect(children).toEqual(['layers', 'map', 'collaborate', 'quickStyle']);
-    const at = ids.indexOf('panels');
-    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  it('files each panel as a section of Panels, after Panel Opacity', () => {
+    expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels')).toEqual([]);
+    const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
+    expect(panels.rows[0]!.key).toBe('panelOpacity');
+    expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual([
+      'Layers',
+      'Quick Style',
+      'Map',
+      'Collaborate',
+    ]);
+    // Their old sub-category ids still land on Panels.
+    expect(panels.aliases).toEqual(['layers', 'quickStyle', 'map', 'collaborate']);
   });
 
-  it('keeps Panel Opacity on Panels itself, and Enable Map under Map', () => {
-    const keys = (id: string) =>
-      SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows.map((r) => r.key);
-    expect(keys('panels')).toEqual(['panelOpacity']);
-    expect(keys('map')[0]).toBe('showMinimap');
-  });
-
-  it('opens every panel sub-category with its Enable switch, on by default', () => {
-    const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
+  it('opens every panel section with its Enable switch, on by default', () => {
+    const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
     const switches: Record<string, [string, string]> = {
-      layers: ['layersPanelEnabled', 'Enable Layers Panel'],
-      map: ['showMinimap', 'Enable Map'],
-      collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
-      quickStyle: ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
+      Layers: ['layersPanelEnabled', 'Enable Layers Panel'],
+      'Quick Style': ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
+      Map: ['showMinimap', 'Enable Map'],
+      Collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
     };
-    for (const [id, [key, label]] of Object.entries(switches)) {
-      const row = first(id);
+    for (const [section, [key, label]] of Object.entries(switches)) {
+      const row = panels.rows.find((r) => r.section === section)!;
       expect([row.key, row.label]).toEqual([key, label]);
       if (row.kind !== 'toggle') throw new Error(`${key} is not a toggle`);
       expect(row.read({})).toBe(true);
@@ -449,24 +449,25 @@ describe('settings sub-categories', () => {
   });
 
   it("offers a panel's other rows only while its Enable switch is on", () => {
-    const rows = (id: string, preferences: UserPreferences) =>
+    const rows = (section: string, preferences: UserPreferences) =>
       visibleCategories({ emailEnabled: false, signedIn: false, preferences })
-        .find((c) => c.id === id)!
-        .rows.map((r) => r.key);
-    expect(rows('layers', {})).toEqual([
+        .find((c) => c.id === 'panels')!
+        .rows.filter((r) => r.section === section)
+        .map((r) => r.key);
+    expect(rows('Layers', {})).toEqual([
       'layersPanelEnabled',
       'layersShowPreview',
       'layersShowCount',
       'layerHoverPreview',
     ]);
-    expect(rows('layers', { layersPanelEnabled: false })).toEqual(['layersPanelEnabled']);
-    expect(rows('map', { showMinimap: false })).toEqual(['showMinimap']);
-    expect(rows('map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
+    expect(rows('Layers', { layersPanelEnabled: false })).toEqual(['layersPanelEnabled']);
+    expect(rows('Map', { showMinimap: false })).toEqual(['showMinimap']);
+    expect(rows('Map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
   });
 
   it('names a sub-category by its path', () => {
-    const map = SETTINGS_CATEGORIES.find((c) => c.id === 'map')!;
-    expect(settingsCategoryPath(map)).toBe('Panels › Map');
+    const notifications = SETTINGS_CATEGORIES.find((c) => c.id === 'notifications')!;
+    expect(settingsCategoryPath(notifications)).toBe('Account › Notifications');
     expect(settingsCategoryPath(SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!)).toBe(
       'Panels',
     );

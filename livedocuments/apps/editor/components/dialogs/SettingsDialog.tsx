@@ -91,22 +91,22 @@ export function SettingsDialog({
     [emailEnabled, signedIn, settings, workbench, cursorsDrawn],
   );
 
-  // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
-  // only when what it reads changes, so its rows keep their identity (and the view's memo) across a
-  // search keystroke.
-  const model = useMemo(
-    () => settingsModel(categories, settings, onChange),
-    [categories, settings, onChange],
-  );
-
   // The header's livedocuments / All switch (docs/specs/007-editor/user-preferences.md "This app or All"): All needs an
   // account whose settings liveworkspace keeps, so a guest and a workbench see this app's alone.
   const allowAll = signedIn && !workbench && !preferencesKeptLocally();
-  // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
-  const [scope, setScope] = useSettingsScope(
-    'livedocuments:settings-scope:v1',
-    focus || initialCategoryId ? 'app' : null,
+  // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
+  // only when what it reads changes, so its rows keep their identity (and the view's memo) across a
+  // search keystroke. Reset All Settings reaches the account's settings in every app where All does; else this
+  // browser's alone.
+  const model = useMemo(
+    () =>
+      settingsModel(categories, settings, onChange, {
+        accountRequest: allowAll ? settingsRequest : null,
+      }),
+    [categories, settings, onChange, allowAll],
   );
+  // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
+  const [scope, setScope] = useSettingsScope();
   // The Account section's switches are this editor's own shared preferences, changed through its own rows (counted
   // and synced as here). The profile's Name and Colour is edited in place, over the same door as All's settings
   // (`/api/workspace/account/profile` with the person's token); a save is told to the page (onProfileSaved), so this

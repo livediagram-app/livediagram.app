@@ -1,6 +1,7 @@
 // A help article, opened in a new tab; nothing where the host has no article. Three looks, livediagram's
 // HelpArticleLink from before the Explorer split: `icon`, a bare "?" beside a label; `labelled`, "? Help" in a
-// dialog's header row; `text`, "Learn more" after a hint. A hover card names it.
+// dialog's header row; `text`, "Learn more" after a hint. A hover card names the first two; "Learn more" says
+// where it goes in its own words, so it has none.
 
 import { HoverCard } from '@liveworkspace/ui';
 import { ArrowOutGlyph } from './glyphs';
@@ -21,15 +22,13 @@ export function HelpLink({
   const common = { href, target: '_blank', rel: 'noreferrer noopener' } as const;
   if (variant === 'text') {
     return (
-      <HoverCard title={label} description={description}>
-        <a
-          {...common}
-          className="relative touch-target inline-flex items-center gap-1 text-xs font-medium text-blue-600 underline-offset-2 transition duration-micro hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-        >
-          Learn more
-          <ArrowOutGlyph />
-        </a>
-      </HoverCard>
+      <a
+        {...common}
+        className="relative touch-target inline-flex items-center gap-1 text-xs font-medium text-blue-600 underline-offset-2 transition duration-micro hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+      >
+        Learn more
+        <ArrowOutGlyph />
+      </a>
     );
   }
   if (variant === 'labelled') {

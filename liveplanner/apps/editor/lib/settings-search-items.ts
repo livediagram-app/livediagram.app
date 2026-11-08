@@ -25,7 +25,7 @@ export const SETTINGS_SEARCH_ITEMS: SettingSearchItem[] = SETTINGS_CATEGORIES.fl
     // the layer rows without appearing in any of their labels.
     keywords: `${settingsCategoryPath(category)} ${row.section ?? ''} ${row.description} ${row.keywords ?? ''}`,
     categoryId: category.id,
-    // A sub-category reads as its path ("in Panels › Layers"), the way the
+    // A sub-category reads as its path ("in Account › Notifications"), the way the
     // dialog's sidebar nests it.
     categoryLabel: settingsCategoryPath(category),
     rowKey: row.key,

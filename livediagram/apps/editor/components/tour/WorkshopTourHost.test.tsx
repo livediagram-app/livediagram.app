@@ -109,7 +109,7 @@ describe('WorkshopTourHost offer', () => {
     expect(stage.helpHref).toBe('/help/canvas/workshop-mode/');
   });
 
-  // Work Tracker #177: a taken tour leaves the button; its Settings › Tours switch (clearing the record) brings it back.
+  // Work Tracker #177: a taken tour leaves the button; its Settings › Getting Started switch (clearing the record) brings it back.
   it('leaves the button once taken, and comes back when its Settings switch is on again', () => {
     editor({ userPreferences: seenPrefs });
     const { rerender } = render(<WorkshopTourHost />);

@@ -61,6 +61,43 @@ describe('queuing Timeline events', () => {
     expect(queued()).toHaveLength(2);
   });
 
+  it("queues only the item's own app's events: livediagram's Share Link Made is not liveplanner's", async () => {
+    const ada = await person('user_wo9');
+    const hook = await addWebhook(ada.auth, {
+      events: ['livediagram:created', 'livediagram:shared', 'liveplanner:renamed'],
+    });
+    const canvas = await makeItem(ada.auth, { app: 'livediagram', title: 'Canvas' });
+    const plan = await makeItem(ada.auth, { title: 'Plan' });
+    for (const item of [canvas, plan]) {
+      await call(`/items/${item.id}/share`, {
+        method: 'POST',
+        auth: ada.auth,
+        body: { level: 'view' },
+      });
+    }
+    await call(`/items/${plan.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'Plan 2' } });
+    await call(`/items/${canvas.id}`, {
+      method: 'PATCH',
+      auth: ada.auth,
+      body: { title: 'Canvas 2' },
+    });
+    expect(deliveries().map((d) => `${d.app} ${d.type} ${d.title}`)).toEqual([
+      'livediagram created Canvas',
+      'livediagram shared Canvas',
+      'liveplanner renamed Plan 2',
+    ]);
+    expect(deliveries().every((d) => d.webhook_id === hook.webhook.id)).toBe(true);
+  });
+
+  it('still hears a bare event left in a row from before topics, from every app', async () => {
+    const ada = await person('user_wo10');
+    const hook = await addWebhook(ada.auth, { events: ['livediagram:renamed'] });
+    h.db.sql.prepare('UPDATE webhooks SET events = ? WHERE id = ?').run(',created,', hook.webhook.id);
+    await makeItem(ada.auth, { app: 'livediagram', title: 'Canvas' });
+    await makeItem(ada.auth, { app: 'livedocuments', title: 'Doc' });
+    expect(queued()).toEqual(['created Canvas', 'created Doc']);
+  });
+
   it("queues a team item's events for the team's webhooks, never a member's own", async () => {
     const bo = await person('user_wo3', { teams: [{ id: 'teamA' }] });
     world.roles.user_wo3 = [{ id: 'teamA', role: 'admin' }];

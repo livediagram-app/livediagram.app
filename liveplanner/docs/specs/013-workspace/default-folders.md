@@ -46,7 +46,7 @@ folder drops the defaults that point at it.
 - **The default marker**: a pin after a default folder's name (rows, cards, Details, the sidebar), with a count
   when it holds more than one entry. Its words ("Default folder for new Kanban plans") are its tooltip and a
   hidden line for screen readers.
-- **Default Folders** (Settings › Plans, and from Use as Default for…): each entry, where its new plans go, Clear
+- **Default Folders** (Settings › Explorer, and from Use as Default for…): each entry, where its new plans go, Clear
   and Change. Change opens the default folder picker, where My Work's top clears the default and a team's top
   cannot be chosen.
 - **Deleting a default folder**: the confirmation names where the contents go and says which new plans were

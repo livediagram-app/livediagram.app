@@ -41,7 +41,26 @@ Timeline: liveplanner's card moves and form responses, and @-mentions in any app
 | `mention`         | a comment @-mentions someone (see who hears it, below)                   |
 | `ping`            | Send Test, from Settings: proves the endpoint and the signature, no item |
 
-A webhook picks any of the first eleven (at least one). Apart from a mention, it hears an event only when the
+**Each app's events are its own.** A webhook subscribes to pairs of an app and an event (`livediagram:shared`,
+`liveplanner:card_moved`), never to a bare event across every app: Share Link Made for livediagram is a separate
+choice from Share Link Made for liveplanner. Which app sends which:
+
+| App           | Its events                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
+| livediagram   | `created`, `renamed`, `moved`, `trashed`, `shared`, `commented`, `action_assigned`, `action_done`, `mention` |
+| livedocuments | the same nine                                                                                          |
+| livedesign    | the same nine                                                                                          |
+| livehuddle    | the same nine                                                                                          |
+| liveplanner   | the same nine, and `card_moved` and `form_response`                                                    |
+
+Every app has items (so their Timeline events) and pushes its tabs' comment threads and actions (so comments,
+actions and mentions); card moves and forms are liveplanner's alone. A delivery is queued only for a webhook that
+holds the pair of the event's item's app and the event's type, and the delivery records that app.
+
+A webhook picks any of these pairs (at least one); a pair an app never sends (`livediagram:card_moved`) is refused
+(400 `invalid_webhook`). A bare event (`shared`), as a webhook stored before events were per app held them and as
+an older Settings still in an open tab may send them, means that event from every app that sends it: the index
+reads it that way and stores it as its pairs. Apart from a mention, it hears an event only when the
 event's item is in its scope at the time: a person's webhook hears about the items that person owns, a team's about
 the team's items. That is what the Timeline shows the scope's people, so a payload never carries more than someone
 in the scope could already read there: the item's id, app, name and link, who did it (the name an app reported, or
@@ -117,7 +136,7 @@ mentionedId}`).
   never wake the dispatcher: Send Test queues its `ping` only while the webhook is not paused, in the same statement
   (a pause landing between the check and the write gets `409 webhook_paused`), and the next run is scheduled only
   from deliveries of webhooks that are not paused, never sooner than a second away.
-- **Recent deliveries**: each webhook keeps its last 20 finished deliveries (event, time, tries, the last
+- **Recent deliveries**: each webhook keeps its last 20 finished deliveries (app, event, time, tries, the last
   response code or the reason none came), listed in Settings.
 - A webhook holds at most 500 pending deliveries; an event past that is not queued for it.
 
@@ -156,11 +175,13 @@ editor shows a Webhooks stand-in that says to sign in, as its API Tokens row doe
 
 - `GET /webhooks`: `{webhooks}`, the person's own and those of each team they are an admin of now.
 - `POST /webhooks {name, kind, url, events, teamId?}`: 201 `{webhook, secret}` (`secret` for `kind: 'json'` only,
-  shown once). `kind` is `json`, `slack` or `teams`; `teamId` absent is the person's own items.
-- `PATCH /webhooks/:id {name?, events?, paused?}`: `{webhook}`.
+  shown once). `kind` is `json`, `slack` or `teams`; `teamId` absent is the person's own items; `events` is a list of
+  `<app>:<event>` pairs (a bare event is every app that sends it).
+- `PATCH /webhooks/:id {name?, events?, paused?}`: `{webhook}`. `events` replaces the whole list, every app's:
+  Settings showing one app's events sends that app's choice with the others it holds, unchanged.
 - `DELETE /webhooks/:id`: 204.
 - `POST /webhooks/:id/test`: 202: queues a `ping` and wakes the dispatcher.
 - `GET /webhooks/:id/deliveries`: `{deliveries}`, newest first, at most 40: the 20 finished it keeps and the newest
-  still pending.
+  still pending, each with the app it came from (`liveworkspace` for a test).
 
 A webhook another person can't manage answers 404 `webhook_not_found`, never 403, so its id tells them nothing.

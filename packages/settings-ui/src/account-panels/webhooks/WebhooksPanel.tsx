@@ -9,13 +9,14 @@ import {
   type Webhook,
 } from '@liveworkspace/index-client';
 import { useAccountPanelsHost } from '../host';
+import { useSettingsShownApp } from '../../shown-app';
 import type { AccountTeam } from '../types';
 import { BUTTON, ErrorNote } from '../account-ui';
 import { SecretReveal } from '../SecretReveal';
 import { AddWebhook, type TeamChoice } from './AddWebhook';
-import { EveryAppName } from './marks';
+import { AppName, EveryAppName } from './marks';
 import { WebhookRow } from './WebhookRow';
-import { attempt, webhookError } from './webhooks-api';
+import { attempt, webhookApps, webhookError, withTopics } from './webhooks-api';
 
 type Load =
   | { state: 'loading' }
@@ -26,17 +27,21 @@ type Load =
 const listWebhooks = (index: IndexClient) => attempt(() => index.listWebhooks());
 const loadOf = (result: Awaited<ReturnType<typeof listWebhooks>>): Load =>
   result.ok
-    ? { state: 'ready', webhooks: result.data.webhooks, at: Date.now() }
+    ? { state: 'ready', webhooks: result.data.webhooks.map(withTopics), at: Date.now() }
     : { state: 'error', error: result.error };
 
 // Settings › Webhooks (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks; liveworkspace/docs/specs/004-index/
 // webhooks.md): one card, as the Notifications' are, saying what a webhook is and which apps' work it covers, then
 // the person's own webhooks and those of the teams they run, adding one (a plain one's signing secret shown once),
-// and each one's test, pause, delete and recent deliveries. Read when the category is first shown: the index's
+// and each one's test, pause, delete and recent deliveries. On This App (Settings opened in livediagram, say) it keeps
+// to that app: its events alone to pick and show, and the webhooks with at least one of them, the rest counted. On
+// All, and on liveworkspace.app from no app, every app's. Read when the category is first shown: the index's
 // list, and the person's teams from accounts for their names and which they run. Signed in only: the panel never
 // draws it for a guest, and the index refuses one.
 export function WebhooksPanel() {
   const { request, index } = useAccountPanelsHost();
+  const shownApp = useSettingsShownApp();
+  const { current, apps } = useMemo(() => webhookApps(shownApp), [shownApp]);
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [teams, setTeams] = useState<AccountTeam[]>([]);
   const [adding, setAdding] = useState(false);
@@ -78,7 +83,10 @@ export function WebhooksPanel() {
   const replace = (next: Webhook) =>
     setLoad((current) =>
       current.state === 'ready'
-        ? { ...current, webhooks: current.webhooks.map((w) => (w.id === next.id ? next : w)) }
+        ? {
+            ...current,
+            webhooks: current.webhooks.map((w) => (w.id === next.id ? withTopics(next) : w)),
+          }
         : current,
     );
 
@@ -87,7 +95,16 @@ export function WebhooksPanel() {
     setFresh(null);
     setAdding(true);
   };
-  const listed = load.state === 'ready' ? load.webhooks : [];
+  const all = load.state === 'ready' ? load.webhooks : [];
+  // On This App: the webhooks sending at least one of its events; the others are counted under the list.
+  const listed = useMemo(
+    () =>
+      current === null
+        ? all
+        : all.filter((w) => w.events.some((topic) => topic.startsWith(`${current}:`))),
+    [all, current],
+  );
+  const elsewhere = all.length - listed.length;
 
   return (
     <div data-webhooks-panel="" className="flex flex-col">
@@ -108,12 +125,12 @@ export function WebhooksPanel() {
           </h4>
           <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
             A webhook posts a message to a Slack or Microsoft Teams channel, or to a service you
-            run, when something happens to your work: it’s made, shared, commented on, or a card
-            moves.
+            run, when something happens to your work: it’s made, shared or commented on
+            {current && current !== 'liveplanner' ? '.' : ', or a card moves.'}
           </p>
           <div className="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
             <span>For your work in</span>
-            <EveryAppName />
+            {current ? <AppName app={current} /> : <EveryAppName />}
           </div>
         </div>
         {!adding && listed.length > 0 ? (
@@ -132,6 +149,7 @@ export function WebhooksPanel() {
       {adding ? (
         <div className="border-t border-slate-100 dark:border-slate-700/70">
           <AddWebhook
+            apps={apps}
             teams={admin}
             firstRef={firstRef}
             onCancel={() => {
@@ -235,6 +253,7 @@ export function WebhooksPanel() {
             <WebhookRow
               key={webhook.id}
               webhook={webhook}
+              apps={apps}
               scopeName={scopeName(webhook.teamId)}
               fresh={webhook.id === fresh && !made}
               now={load.state === 'ready' ? load.at : 0}
@@ -246,6 +265,15 @@ export function WebhooksPanel() {
             />
           ))}
         </ul>
+      ) : null}
+      {current && elsewhere > 0 ? (
+        <p
+          data-webhooks-elsewhere=""
+          className="flex flex-wrap items-center gap-x-1.5 gap-y-1 border-t border-slate-100 px-4 py-3 text-xs text-slate-500 sm:px-5 dark:border-slate-700/70 dark:text-slate-400"
+        >
+          {elsewhere === 1 ? '1 more webhook sends' : `${elsewhere} more webhooks send`} only other
+          apps’ events. Switch to All to see {elsewhere === 1 ? 'it' : 'them'}.
+        </p>
       ) : null}
     </div>
   );

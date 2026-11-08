@@ -619,14 +619,6 @@ export const LOCAL_MOVE_OFFERED = opened(
   (t) => t === 'LocalMovePrompt',
 );
 
-// The offer to move retired parts to the other apps (docs/specs/006-document/offline-mode.md "Moving retired parts to
-// the other apps"); charted with Offline Mode on the Dashboard.
-export const RETIRED_PARTS_OFFERED = opened(
-  'Retired Parts Offered',
-  'Someone opened the editor with parts of their documents that now belong to the other apps, and was offered to move them there.',
-  (t) => t === 'RetiredPartsOffer',
-);
-
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 
 export const OTHER_OPENED = chart(

@@ -31,3 +31,4 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | ACC25 | data-export           | a team export carries no images and no profiles: an image is its uploader's, in their own export.                                                                    |
 | ACC26 | data-export           | the readable pictures are each tab at twice its size, at most 4096 px on the long side, up to 20 tabs an item.                                                       |
 | ACC27 | data-export           | the emailed link and the file last 3 days; the R2 rule deletes anything older than 4 days.                                                                           |
+| ACC28 | settings-and-profiles | Reset All Settings keeps `telemetryEnabled` (`RESET_KEEPS`): a usage-events opt-out is a consent, not a preference.                                                 |

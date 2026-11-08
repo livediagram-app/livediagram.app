@@ -6,7 +6,7 @@ import { createListeners } from '../../lib/listeners';
 // The tours on offer on this page (docs/specs/007-editor/editor-tour.md "Where it appears"): each tour host publishes
 // its tour here while the person could take it (in its mode, its kind selected, its tool in hand) and has not taken it
 // yet, and the footer's Start Tour button (TourOfferButton) offers the most relevant one. A taken tour (`seen`) is
-// never published: it comes back when its Settings › Tours switch is turned on again, which clears the record the host
+// never published: it comes back when its Settings › Getting Started switch is turned on again, which clears the record the host
 // reads. Nothing here starts a tour: only the button does.
 // A module store, like the modal guard: one editor per page.
 
@@ -88,7 +88,7 @@ export function useTourOffer(): TourOffer | null {
 
 /**
  * Offers a host's tour on the footer button while `offer` is non-null and not `seen`, and takes it back when null,
- * seen, or on unmount. `seen` is the host's taken record, the same one its Settings › Tours switch reads (on means not
+ * seen, or on unmount. `seen` is the host's taken record, the same one its Settings › Getting Started switch reads (on means not
  * seen), so a finished or skipped tour leaves the button and its switch brings it back. Republished only when its name
  * or rank changes; `start` and `onShown` are read when called, so a host may pass fresh closures every render.
  */

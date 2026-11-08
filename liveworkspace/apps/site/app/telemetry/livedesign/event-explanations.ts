@@ -1224,9 +1224,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
   'UI|Toggled|HomeBannerOff':
-    "Someone hid Explorer Home's banner, from its close button or Settings > Designs. Home then opens on its page header.",
+    "Someone hid Explorer Home's banner, from its close button or Settings > Explorer. Home then opens on its page header.",
   'UI|Toggled|HomeBannerOn':
-    "Someone turned Explorer Home's banner back on, in Settings > Designs.",
+    "Someone turned Explorer Home's banner back on, in Settings > Explorer.",
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
   'UI|Toggled|NotificationsOn':
@@ -1284,7 +1284,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|ShortcutsOn': 'Someone turned on keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|SkipLocationStepOff':
-    'Someone turned off skipping the Location step, in Settings > Designs, so the New Design wizard asks where each design goes again.',
+    'Someone turned off skipping the Location step, in Settings > Explorer, so the New Design wizard asks where each design goes again.',
   'UI|Toggled|SkipLocationStepOn':
     'Someone ticked "Always save new designs in <place> and skip this step" on the New Design wizard\'s Location step.',
   'UI|Toggled|SlideHidden':

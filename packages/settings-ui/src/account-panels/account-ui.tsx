@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { SETTINGS_INPUT } from '../profile/ProfileEditor';
 
+export { ErrorNote } from './error-note';
+
 // The account panels' buttons, field, card and error note (API Tokens, Webhooks, Download Your Data), as
 // liveworkspace.app's own account pages use them too: the join, decline, Drive and workbench pairing pages.
 
@@ -29,16 +31,5 @@ export function Panel({ children, className = '' }: { children: ReactNode; class
     >
       {children}
     </section>
-  );
-}
-
-export function ErrorNote({ children }: { children: ReactNode }) {
-  return (
-    <p
-      role="alert"
-      className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-    >
-      {children}
-    </p>
   );
 }

@@ -184,14 +184,14 @@ family of starts rather than a finished brand.
 **Show Guides** is per page: a logo page shows its construction guides to someone who may edit it
 while Show Guides is on for that page. Each page keeps its own choice (each person's, in this
 browser, the latest 200 pages); a page with no choice of its own follows the **Logo Guides**
-setting (Settings, Editor, then Pages; on by default). Snapping to a page's keylines and
+setting (Settings, Editor, its Logo Pages section; on by default). Snapping to a page's keylines and
 drawing onto its guides go with them. They are drawn **over** the artwork, in a cyan that reads on any page, one
 screen pixel wide at any zoom, and take no presses. On an **empty** page (no artwork yet) they are
 drawn under the page's own cards (the layout invitation), which are solid in light and dark.
 
 Each person chooses **which guides show** (any of the parts below) and their **Strength**:
 **Faint**, **Medium** (the default) or **Strong** (the grid always fainter than the rest), in the
-page's Guides popover and in Settings, under Editor, then Pages.
+page's Guides popover and in Settings, under Editor, in its Logo Pages section.
 
 - **Centre lines**: the vertical and horizontal centre lines.
 - **Diagonals**: corner to corner, both ways.

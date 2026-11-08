@@ -67,7 +67,7 @@ describe('SettingsDialog', () => {
       formTourSeen: true,
     } as UserPreferences);
     expect(screen.queryByRole('button', { name: 'Editor' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Tours' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Getting Started' }));
     expect(screen.queryByText('Power User')).toBeNull();
     expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
     expect(screen.queryByRole('switch', { name: 'Minimal Chrome' })).toBeNull();
@@ -107,13 +107,13 @@ describe('SettingsDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
     expect(screen.getByRole('switch', { name: 'Send Anonymous Usage Events' })).toBeTruthy();
     expect(screen.queryByRole('switch', { name: /Forms Tour/ })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Tours' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Getting Started' })).toBeTruthy();
   });
 
   it('opens on a phone at the root list, with no pane showing', () => {
     setViewport(true);
     renderDialog();
-    expect(screen.getByRole('button', { name: 'Tours' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Getting Started' })).toBeTruthy();
     expect(screen.queryByRole('switch', { name: /Forms Tour/ })).toBeNull();
   });
 
@@ -134,7 +134,7 @@ describe('SettingsDialog', () => {
   it('pushes a pane on a phone and comes back to the root list', () => {
     setViewport(true);
     renderDialog();
-    fireEvent.click(screen.getByRole('button', { name: 'Tours' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Getting Started' }));
     expect(screen.getByRole('switch', { name: /Forms Tour/ })).toBeTruthy();
     // The rail is gone: a phone shows one screen at a time.
     expect(screen.queryByRole('button', { name: 'Privacy' })).toBeNull();
@@ -144,23 +144,13 @@ describe('SettingsDialog', () => {
     expect(screen.queryByRole('switch', { name: /Forms Tour/ })).toBeNull();
   });
 
-  it('reaches the Panels sub-categories on a phone through the Panels pane', () => {
-    // The root list has no accordion on a phone, so the parent's pane is the
-    // way down, and back from a sub-category returns to that pane.
+  it('shows each panel as a section of the Panels pane on a phone, with no way down', () => {
+    // Panels has no sub-categories: each panel's settings are a section of its pane.
     setViewport(true);
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
-    const links = screen.getByRole('navigation', { name: 'Panels sub-categories' });
-    expect(Array.from(links.querySelectorAll('button')).map((b) => b.textContent)).toEqual([
-      'Collaborate',
-    ]);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Collaborate' }));
     expect(screen.getByRole('heading', { name: 'Collaborate' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: 'Panels sub-categories' })).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: /^Panels./ }));
-    expect(screen.getByRole('heading', { name: 'Panels' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Settings./ }));
     expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();
   });
@@ -168,7 +158,7 @@ describe('SettingsDialog', () => {
   it('writes the flipped preference through the catalogue', () => {
     setViewport(false);
     const { onChange } = renderDialog();
-    fireEvent.click(screen.getByRole('button', { name: 'Tours' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Getting Started' }));
     fireEvent.click(screen.getByRole('switch', { name: /Forms Tour/ }));
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ formTourSeen: true }));
   });
@@ -270,7 +260,7 @@ describe('SettingsDialog', () => {
   it('describes each switch with its own footnote, for screen readers too', () => {
     setViewport(false);
     renderDialog();
-    fireEvent.click(screen.getByRole('button', { name: 'Tours' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Getting Started' }));
     const sw = screen.getByRole('switch', { name: /Forms Tour/ });
     const describedBy = sw.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();

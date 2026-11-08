@@ -45,7 +45,7 @@ and the closing card. This tour's part:
   own: an answer given before the tour split stands for no kind in particular (`apps/live/lib/pages-tour.ts`). Someone
   who had the retired [Power user mode](power-user-mode.md) on keeps every kind taken: its preset's flag is folded into
   `pagesTourKinds` as the stored preferences are read.
-- **Rerun from Settings**: in Settings' **Tours** category, **Pages Tours** switches every kind at once (on
+- **Rerun from Settings**: in Settings' **Getting Started** category, **Pages Tours** switches every kind at once (on
   while any is untaken; off marks them all taken, on forgets every record), and one switch per kind sits nested beneath
   it, named for its kind (**Wireframe Tour**, **Logo Tour**, **Photo Tour**). On means that kind has not been taken. Turning one off marks that kind alone;
   turning one on forgets that kind alone (and clears the single `pagesTourSeen`, so the other kinds stay as they

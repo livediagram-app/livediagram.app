@@ -58,9 +58,6 @@ const APP_SECURITY = bearerAccountSecurity(accountApi, { settingsParam: 'profile
 // PHONE_MEDIA_QUERY).
 const PHONE_QUERY = '(max-width: 639px), (pointer: coarse) and (max-height: 499px)';
 
-// Which side of the switch this browser last chose, as each editor keeps its own.
-const SCOPE_KEY = 'liveworkspace:settings-scope:v1';
-
 // Each app's prism in its accent, and liveworkspace's own for All and the Account section, as the Explorer's filter.
 const renderLogo = (id: SettingsAppId | 'all') => (
   <BrandMark
@@ -101,7 +98,7 @@ export default function SiteSettingsDialog({
     }
 )) {
   const isMobile = useMediaQuery(PHONE_QUERY);
-  const [scope, setScope] = useSettingsScope(SCOPE_KEY, initialScope);
+  const [scope, setScope] = useSettingsScope(initialScope);
   const site = app ? APP_SITES.find((s) => s.id === app) : undefined;
   // The Profile's header is whoever is signed in here. Everything in the Account section is edited in place on either
   // address: over this site's session on liveworkspace.app, over the app's token on an app's own (accountApi goes

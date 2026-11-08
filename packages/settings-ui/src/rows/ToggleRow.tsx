@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Switch } from '@liveworkspace/ui';
 import type { SettingsRowBase } from '../model';
 import { SettingsRowShell } from '../SettingsRowShell';
+import { channelGlyph } from './channel-glyph';
 
 // An on/off setting: the label and its description, with the switch beside them
 // (see SettingsRowShell). The whole cell is the click target.
@@ -18,7 +19,7 @@ export function SettingsToggleRowView({
   // than growing a second copy of the toggle cell.
   row: Pick<
     SettingsRowBase,
-    'key' | 'label' | 'description' | 'helpArticle' | 'alsoIn' | 'illustration' | 'allApps'
+    'key' | 'label' | 'description' | 'helpArticle' | 'alsoIn' | 'illustration' | 'allApps' | 'link' | 'section'
   >;
   checked: boolean;
   onChange: (next: boolean) => void;
@@ -30,6 +31,7 @@ export function SettingsToggleRowView({
   return (
     <SettingsRowShell
       row={row}
+      leading={channelGlyph(row.section)}
       interactive={!disabled}
       dimmed={disabled}
       illustrationActive={checked}

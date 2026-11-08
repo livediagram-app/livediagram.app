@@ -40,3 +40,5 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX33 | team-audit-log  | when accounts can't name people, the read falls back to the names the events carried rather than failing.                                    |
 | IDX34 | team-audit-log  | Export CSV joins at most 20 files (200,000 rows), newest first, and says so when more matched.                                               |
 | IDX35 | connected-tabs  | the Connect list shows the 40 most recent items across every app (`CONNECT_RECENT_LIMIT`), without paging.                                   |
+| IDX36 | webhooks        | a bare event in a request or a stored row means that event from every app that sends it, stored as its pairs; a pair no app sends is refused. |
+| IDX37 | webhooks        | a test delivery's app is `liveworkspace`, which Settings draws with no app's logo.                                                            |

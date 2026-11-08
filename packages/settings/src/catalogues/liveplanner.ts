@@ -118,8 +118,9 @@ export const CATALOGUE: AppCatalogue = {
   ],
   categories: [
     {
-      id: 'collaborate',
-      label: 'Panels › Collaborate',
+      id: 'panels',
+      label: 'Panels',
+      aliases: ['collaborate'],
       tile: 'panels',
       rows: [
         {
@@ -129,6 +130,7 @@ export const CATALOGUE: AppCatalogue = {
           description:
             "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
           keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
+          section: 'Collaborate',
           key: 'collaboratePanelEnabled',
           on: true,
           off: false,
@@ -143,7 +145,8 @@ export const CATALOGUE: AppCatalogue = {
     },
     {
       id: 'tours',
-      label: 'Tours',
+      label: 'Getting Started',
+      aliases: ['/tours'],
       tile: 'tours',
       sectionNotes: {
         'Offer Again':
@@ -171,7 +174,8 @@ export const CATALOGUE: AppCatalogue = {
     },
     {
       id: 'projects',
-      label: 'Plans',
+      label: 'Explorer',
+      aliases: ['/plans'],
       tile: 'folder',
       rows: [
         {
@@ -181,7 +185,6 @@ export const CATALOGUE: AppCatalogue = {
           description:
             "The greeting, status pills and large search at the top of Explorer Home. When it's hidden, Home's search sits in the header, as on every other Explorer page.",
           keywords: 'home banner hero greeting welcome header top search explorer hide show close',
-          section: 'Explorer',
           key: 'homeBanner',
           on: true,
           off: false,

@@ -40,7 +40,7 @@ card as every other tour, so the tours read as one product. Where this spec is s
   track on its own (`apps/editor/lib/plan-tour.ts`). Someone who had the retired
   [Power user mode](../007-editor/power-user-mode.md) on keeps every track taken: its preset's flag is folded into
   `planTourTracks` as the stored preferences are read.
-- **Replayable from Settings**: in Settings' **Tours** category, **Plan Tours** switches every track at once, and
+- **Replayable from Settings**: in Settings' **Getting Started** category, **Plan Tours** switches every track at once, and
   one switch per track sits nested beneath it: **Boards Tour**, **Sheets Tour** and **Dashboards Tour** (never
   "Plan Tour"). On means that track is not yet taken; a track's switch off marks that track alone, on forgets it
   alone. Turning one on from off and closing Settings runs the tour straight away when it is on offer (the open

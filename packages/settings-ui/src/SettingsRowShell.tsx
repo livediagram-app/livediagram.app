@@ -48,7 +48,7 @@ export function SettingsRowShell({
   // row kind satisfies it.
   row: Pick<
     SettingsRowBase,
-    'key' | 'label' | 'description' | 'helpArticle' | 'alsoIn' | 'illustration' | 'allApps'
+    'key' | 'label' | 'description' | 'helpArticle' | 'alsoIn' | 'illustration' | 'allApps' | 'link'
   >;
   control?: ReactNode;
   // Before the label: an avatar, a provider's mark.
@@ -108,6 +108,24 @@ export function SettingsRowShell({
                   <span className="relative z-[1]">
                     {' '}
                     <HelpLink article={help} />
+                  </span>
+                ) : null}
+                {row.link ? (
+                  // Above a switch row's stretched click target, so the link stays its own click.
+                  <span className="relative z-[1]">
+                    {' '}
+                    <a
+                      href={row.link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative touch-target inline-flex items-center gap-1 font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-400"
+                    >
+                      {row.link.label}
+                      <svg viewBox="0 0 20 20" className="size-3" fill="none" stroke="currentColor" strokeWidth={1.75} aria-hidden>
+                        <path d="M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3M12 4h4v4M16 4l-7 7" />
+                      </svg>
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
                   </span>
                 ) : null}
                 {/* Where the same setting also has an in-context control, so the two read as one

@@ -54,6 +54,9 @@ type Draft = {
   // The parent's name and tile in the app it came from, for when the parent isn't in Common.
   parentLabel?: string;
   parentTile?: string;
+  // The ids of categories folded into this one, from every app that files a row here (Editor's old `pages`), so
+  // `common:pages` still lands on it.
+  aliases?: string[];
   sectionNotes?: Record<string, string>;
   collapsedSections?: string[];
   rows: CatalogueRow[];
@@ -106,6 +109,9 @@ export function commonCatalogue(
             : newDraft(category, byId);
           drafts.set(target, draft);
         }
+        if (!platform && category.aliases) {
+          draft.aliases = [...new Set([...(draft.aliases ?? []), ...category.aliases])];
+        }
         if (target !== lastCategory) {
           place(order, target, lastCategory);
           lastCategory = target;
@@ -134,13 +140,14 @@ export function commonCatalogue(
     const ids = new Set(draft.rows.map((row) => row.id));
     return {
       id,
-      // A sub-category whose parent isn't here is named by its path ("Editor › Pages").
+      // A sub-category whose parent isn't here is named by its path ("Panels › Layers").
       label:
         draft.parent !== undefined && !nested
           ? `${draft.parentLabel ?? draft.parent} › ${draft.label}`
           : draft.label,
       ...(nested ? { parent: draft.parent } : {}),
       ...(tile ? { tile } : {}),
+      ...(draft.aliases ? { aliases: draft.aliases } : {}),
       ...(notes.length > 0 ? { sectionNotes: Object.fromEntries(notes) } : {}),
       ...(collapsed.length > 0 ? { collapsedSections: collapsed } : {}),
       // A row stays nested under its switch only while that switch is here too.

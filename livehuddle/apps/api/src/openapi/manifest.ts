@@ -1446,43 +1446,4 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     },
     statuses: [200, 400, 401, 429, 503],
   },
-  {
-    method: 'POST',
-    path: '/migration/local-parts',
-    segment: 'migration',
-    tag: 'Migration',
-    summary:
-      "Move a This Browser Space's Pages, Plan and design tabs to their apps as the caller's; answers the parts and the tabs it keeps. Safe to repeat. 502 with the parts that landed when a handoff failed.",
-    auth: 'guest-or-clerk',
-    requestSchema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        name: { type: 'string' },
-        tabs: { type: 'array', items: { type: 'object' } },
-      },
-      required: ['id', 'name', 'tabs'],
-    },
-    responseSchema: {
-      type: 'object',
-      properties: {
-        parts: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              app: { type: 'string' },
-              id: { type: 'string' },
-              url: { type: 'string' },
-              tabIds: { type: 'array', items: { type: 'string' } },
-            },
-            required: ['app', 'id', 'url', 'tabIds'],
-          },
-        },
-        keep: { type: 'array', items: { type: 'object' } },
-      },
-      required: ['parts', 'keep'],
-    },
-    statuses: [200, 400, 401, 413, 502, 503],
-  },
 ];

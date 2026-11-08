@@ -8,6 +8,7 @@ Scope, by file:
 | File                                                      | Role                                                                                                                                                                                                                                                                                                                          |
 | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/index/migrations/0008_webhooks.sql`   | `webhooks` and `webhook_deliveries`                                                                                                                                                                                                                                                                                           |
+| `liveworkspace/apps/index/migrations/0012_webhook_app_events.sql` | each stored bare event rewritten as its `<app>:<event>` pairs                                                                                                                                                                                                                                                  |
 | `liveworkspace/apps/index/src/webhooks/routes.ts`         | `handleWebhooks` (the person routes), `pushCardMoves` (`PUT /app/items/:id/card-moves`), `webhookOf`                                                                                                                                                                                                                          |
 | `liveworkspace/apps/index/src/webhooks/outbox.ts`         | `webhookOutboxStatement`, `cardMovesStatement`, `formResponseStatement`, `mentionsStatement`, `pingStatement`, `isListened`, `queuedCount`, `kickWebhooks`                                                                                                                                                                    |
 | `liveworkspace/apps/index/src/webhooks/mentions.ts`       | `mentionedAccounts`, `listeningScopesStatement`, `linkReadersStatement`, `freshMentions`, `mentionDeliveries`: who a collab push just mentioned, and which webhooks may hear it                                                                                                                                               |
@@ -24,7 +25,8 @@ Scope, by file:
 | `packages/api-kit/src/sealed.ts`                          | `importSealKey`, `seal`, `unseal` (AES-GCM, `v1.<iv>.<ct>`), shared with the Drive mirror's refresh tokens                                                                                                                                                                                                                    |
 | `packages/index-app/src/outbox.ts`                        | the `card_moved` outbox kind, drained through `pushCardMoves`                                                                                                                                                                                                                                                                 |
 | `liveplanner/apps/api/src/db/item-history.ts`             | a card's status change written as a `card_moved` outbox key beside its history                                                                                                                                                                                                                                                |
-| `packages/settings-ui/src/account-panels/webhooks/`       | Settings › Webhooks, in every app's Settings and liveworkspace.app's: `WebhooksPanel` (the card), `AddWebhook` and `pickers` (destination, scope and event tiles), `WebhookRow`, `Deliveries`, `useSendTest` (a test's result, read back), `marks` (each destination's mark), `webhooks-api` (the client, refusals and words) |
+| `packages/settings-ui/src/account-panels/webhooks/`       | Settings › Webhooks, in every app's Settings and liveworkspace.app's: `WebhooksPanel` (the card), `AddWebhook`, `ConnectPanel` (the chosen destination's numbered guide and address) and `pickers` (destination cards, scope tiles, each app's card of events), `WebhookRow`, `WebhookEvents` (Sends per app, Edit Events), `Deliveries`, `useSendTest` (a test's result, read back), `marks` (each destination's mark), `webhooks-api` (the client, refusals and words) |
+| `packages/settings-ui/src/shown-app.tsx`                  | `useSettingsShownApp`: the app the panel keeps to on This App (null on All), from `SettingsPanel` |
 | `packages/settings/src/account.ts`                        | `WEBHOOKS_CATEGORY`: the category's words, and a guest's stand-in in each editor's Settings                                                                                                                                                                                                                                   |
 
 ## Domain and naming
@@ -35,6 +37,7 @@ Scope, by file:
 | Kind     | `json`, `slack`, `teams`                                                                                                                         | signed JSON, a Slack incoming webhook, a Teams Workflows webhook                                                                            |
 | Scope    | `p:<person>`, `t:<team>`                                                                                                                         | whose items it hears about: the item's own `items.scope` when the event is recorded                                                         |
 | Event    | `WEBHOOK_EVENTS`                                                                                                                                 | `created`, `renamed`, `moved`, `trashed`, `shared`, `commented`, `action_assigned`, `action_done`, `card_moved`, `form_response`, `mention` |
+| Topic    | `WebhookTopic`, `` `${App}:${WebhookEvent}` ``; `WEBHOOK_EVENT_APPS`, `WEBHOOK_TOPICS`                                                          | what a webhook subscribes to: one app's event. Every app sends the nine item, comment, action and mention events; `card_moved` and `form_response` are liveplanner's alone (47 topics) |
 | Delivery | `webhook_deliveries` row, `UNIQUE (webhook_id, event_id)`                                                                                        | the outbox row, then a recent delivery                                                                                                      |
 | Event id | the Timeline event's id; `cmv:<item>:<card>:<at>`; `frm:<item>:<tab>:<responses>`; `mn:<item>:<tab>:<thread>:<comments>:<person>`; `ping:<uuid>` | the same on every retry: `X-Liveworkspace-Delivery`                                                                                         |
 | Pause    | `paused`, `creator_left`, `failing`, `gone`                                                                                                      | why nothing is sent                                                                                                                         |
@@ -46,7 +49,7 @@ Scope, by file:
 - `eventStatements` and `bulkEventStatements` (`timeline.ts`) append `webhookOutboxStatement` for each event whose
   type `isListened` (and, in bulk, that has an item). It is `INSERT OR IGNORE … SELECT` from `json_each(ids)` joined to
   `timeline_events`, `items` (for `i.scope`) and the scope's live webhooks (`webhooks_scope_live`), kept when
-  `instr(w.events, ',<type>,')`, the event is no older than `WEBHOOK_FRESH_MS` (1 h) and the webhook has fewer than
+  `instr(w.events, ',<app>:<type>,')` (the item's app; a bare `,<type>,` left from before topics also matches), the event is no older than `WEBHOOK_FRESH_MS` (1 h) and the webhook has fewer than
   `WEBHOOK_PENDING_MAX` (500) pending (a count stopped at 500). The event's app, item, title, actor, name, detail and
   time are copied in; `next_at` is now.
 - `cardMovesStatement`: the same over a plan's moves, `type` `card_moved`, `actor_id` null, the item's own title, the
@@ -122,7 +125,9 @@ Scope, by file:
 
 Every person route: `403 webhooks_need_account` for a guest, an app's delegate or the Drive mirror (which never gets
 this far: `404`); `503 webhooks_unavailable` without `WEBHOOK_KEY`; `404 webhook_not_found` for an id that isn't one,
-or isn't mine or a team's I run now. Names are trimmed (1 to 80); events are de-duplicated (at least one). Pausing
+or isn't mine or a team's I run now. Names are trimmed (1 to 80); `events` are topics (`readTopics`): each `<app>:<event>` must be in `WEBHOOK_TOPICS`, a
+bare event expands to every app that sends it (`topicsOf`), and the list is de-duplicated in `WEBHOOK_TOPICS` order
+(at least one, so at most 47). Pausing
 gives up what waits; resuming clears `failures` and makes the caller `created_by`. A card move's text is cut to
 200, its `at` to now + 5 minutes; `card` empty is `Untitled`.
 
@@ -141,7 +146,11 @@ gives up what waits; resuming clears `failures` and makes the caller `created_by
 | `webhooks`           | `id`                           | `webhooks_scope_live (scope) WHERE paused_at IS NULL`; `webhooks_creator (created_by)`                           |
 | `webhook_deliveries` | `id`; `(webhook_id, event_id)` | `webhook_deliveries_due (next_at) WHERE state = 'pending'`; `webhook_deliveries_webhook (webhook_id, state, id)` |
 
-`webhooks.events` is comma-wrapped (`,created,moved,`); `url_sealed` and `secret_sealed` are `v1.<iv>.<ct>`;
+`webhooks.events` is comma-wrapped topics (`,livediagram:created,liveplanner:card_moved,`); `webhookOf` reads a
+bare event left in a row as its pairs, and drops what is neither. `0012_webhook_app_events.sql` rewrote every row
+written before topics (no `:` in it) with nested `REPLACE`s, `,shared,` becoming the five apps' `shared` and
+`,card_moved,`/`,form_response,` liveplanner's; the deliveries' `app` column was already there, and the deliveries list
+now returns it; `url_sealed` and `secret_sealed` are `v1.<iv>.<ct>`;
 `host` is the URL's host, in the clear. `webhook_deliveries` cascades from `webhooks`. A closed account
 (`webhookPurgeStatements`, in the purge's first batch): its `p:` webhooks and those of the teams closed with it are
 deleted, its others' pending rows failed (`paused`), and they paused `creator_left` with `created_by` `deleted`.
@@ -185,8 +194,8 @@ deleted, its others' pending rows failed (`paused`), and they paused `creator_le
 
 | Test                                                     | Pins                                                                                                                                                                                                                                                                                          |
 | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/webhooks/routes.test.ts`   | who may add one (own, team admins checked now, never a guest, delegate, Drive or link Editor), sealing, the checks, the limit, pause and resume, delete, test (and a pause racing it), deliveries                                                                                             |
-| `liveworkspace/apps/index/src/webhooks/outbox.test.ts`   | what queues (own items, team items, collab events once, not paused, not stale, the pending cap), card moves, form responses, waking after the answer and from the cron                                                                                                                        |
+| `liveworkspace/apps/index/src/webhooks/routes.test.ts`   | topics (a pair an app never sends refused, a bare event expanded, a stored bare event read as pairs), who may add one (own, team admins checked now, never a guest, delegate, Drive or link Editor), sealing, the checks, the limit, pause and resume, delete, test (and a pause racing it), deliveries                                                                                             |
+| `liveworkspace/apps/index/src/webhooks/outbox.test.ts`   | what queues (only the item's app's topic, own items, team items, collab events once, not paused, not stale, the pending cap), card moves, form responses, waking after the answer and from the cron                                                                                                                        |
 | `liveworkspace/apps/index/src/webhooks/mentions.test.ts` | who a mention reaches (the mentioned person's own, owner, team member, link holder, the team's) and who it never does (the owner's, another team's, a non-member, a link to another tab, accounts down, the author), once each, the cap, the query count                                      |
 | `liveworkspace/apps/index/src/webhooks/dispatch.test.ts` | the signed POST, Slack, retries and give-ups, each status, timeouts, 410, failing, private and unresolved hosts, unreadable seals, a team creator who left, accounts down, the batch, the trim, a paused webhook's stray row and the next run's floor, the Durable Object, closing an account |
 | `liveworkspace/apps/index/src/webhooks/address.test.ts`  | the URL rules, each blocked range, resolving                                                                                                                                                                                                                                                  |
@@ -216,3 +225,5 @@ migration tag `v1`, `new_sqlite_classes`).
 - `IDX20`: a webhook's deliveries list answers at most 40, newest first.
 - `IDX21`: a tab's push hands on at most 10 mentions; a mention when accounts can't say who is in a team is not sent
   where that decides it.
+- `IDX36`: a bare event means that event from every app that sends it; a pair no app sends is refused.
+- `IDX37`: a test delivery's app is `liveworkspace`, drawn with no app's logo.

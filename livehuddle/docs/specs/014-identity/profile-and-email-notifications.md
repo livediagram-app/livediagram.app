@@ -28,6 +28,9 @@ preference, so the email switches are found where every other setting is.
   sign in to choose.
 - **Phone notifications** are **Notifications > Phone**: Turn On, the device list and four switches, signed in
   only, and not behind the `EMAIL` binding ([Phone notifications](phone-notifications.md)).
+- **Reset All Settings** is the `resetSettings` row in **Account > Danger Zone**, directly above Delete Account: every setting
+  back to its default, in every app, for an account; in this browser for a guest
+  ([User preferences](../007-editor/user-preferences.md)).
 - **Delete account** is the `deleteAccount` row in **Account > Danger Zone**, which opens `DeleteAccountDialog`
   (type your email, then the code emailed to the account, to confirm).
 
@@ -66,15 +69,15 @@ Per-person flags, stored in the **same preferences** as the editor flags
 ([User preferences](../007-editor/user-preferences.md)), which liveworkspace keeps. All but `notifyDocumentJoin` are
 in the `all` scope every liveworkspace app shares, so a switch flipped here is flipped in every app:
 
-| Key                    | Label                             | When it emails                                                   |
-| ---------------------- | --------------------------------- | ---------------------------------------------------------------- |
-| `notifyDocumentJoin`   | Someone Joins My Space            | A new person opens one of your shared canvases                   |
-| `notifyComments`       | Someone Comments on My Canvas     | Someone leaves a comment on a canvas you own                     |
-| `notifyMentions`       | Someone Mentions Me in a Comment  | A teammate @mentions you in a comment                            |
-| `notifyActionAssigned` | Someone Assigns Me an Action      | A teammate assigns you an action on an element                   |
-| `notifyInviteResponse` | Someone Responds to a Team Invite | Someone you invited accepts or declines (liveworkspace sends it) |
-| `notifyTips`           | Tips and Check-Ins                | Occasional getting-started tips, and a nudge after a long gap    |
-| `notifyMilestones`     | Milestones                        | A note when you hit one, like sharing your first canvas          |
+| Key                    | Label                             | When it emails                                                       |
+| ---------------------- | --------------------------------- | -------------------------------------------------------------------- |
+| `notifyDocumentJoin`   | Someone Joins My Space            | A new person opens one of your shared canvases                       |
+| `notifyComments`       | Someone Comments on My Canvas     | Someone leaves a comment on a canvas you own                         |
+| `notifyMentions`       | Someone Mentions Me in a Comment  | A teammate @mentions you in a comment                                |
+| `notifyActionAssigned` | Someone Assigns Me an Action      | A teammate assigns you an action on an element, or a card on a board |
+| `notifyInviteResponse` | Someone Responds to a Team Invite | Someone you invited accepts or declines (liveworkspace sends it)     |
+| `notifyTips`           | Tips and Check-Ins                | Occasional getting-started tips, and a nudge after a long gap        |
+| `notifyMilestones`     | Milestones                        | A note when you hit one, like sharing your first canvas              |
 
 Every switch **defaults on** (undefined === true): an opt-**out**. Settings reads and writes them through the
 `readUserPreferences` / `writeUserPreferences(prefs, ownerId)` round-trip, so a flip persists to the server at once

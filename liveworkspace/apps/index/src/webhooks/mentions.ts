@@ -44,7 +44,8 @@ export function mentionedAccounts(threads: Iterable<CollabThreadInput>): string[
   return [...ids];
 }
 
-/** Which of these people, and the item's team, have a live webhook listening for `mention`: their scopes. */
+/** Which of these people, and the item's team, have a live webhook listening for `mention` from the item's app (or
+ *  a bare `mention` left from before topics, every app's): their scopes. */
 export function listeningScopesStatement(
   db: D1Database,
   itemId: string,
@@ -53,7 +54,9 @@ export function listeningScopesStatement(
   return db
     .prepare(
       `SELECT DISTINCT w.scope FROM webhooks w
-       WHERE w.paused_at IS NULL AND instr(w.events, ',mention,') > 0
+       WHERE w.paused_at IS NULL
+         AND (instr(w.events, ',mention,') > 0
+              OR instr(w.events, ',' || (SELECT app FROM items WHERE id = ?2) || ':mention,') > 0)
          AND w.scope IN (SELECT 'p:' || value FROM json_each(?1)
                          UNION ALL SELECT scope FROM items WHERE id = ?2 AND team_id IS NOT NULL)`,
     )

@@ -1,6 +1,6 @@
 // The Settings list's icons. A top-level category carries one of the shared tiles
 // (@liveworkspace/settings-ui: a white line-art mark on a filled, rounded colour tile, the same in
-// every app); a sub-category carries a plain glyph, the mark its panel or mode has in this editor.
+// every app); a sub-category under Account carries a plain glyph.
 
 import type { ReactNode } from 'react';
 import {
@@ -9,13 +9,9 @@ import {
   SettingsSubcategoryGlyph,
   type SettingsTileId,
 } from '@liveworkspace/settings-ui';
-import { lucideGlyph } from '@livehuddle/ui';
-import { lucideLayers, lucideMap } from '@liveworkspace/icons/lucide';
-import { CollaborateGlyph } from '@liveworkspace/workbench/components/panels/collaborate/CollaborateGlyph';
 
-// The categories that carry a tile: every top-level one. A sub-category
-// (one per panel under Panels, one per mode under Editor, Notifications and
-// API Tokens under Account) draws none of its own.
+// The categories that carry a tile: every top-level one. A sub-category (Notifications, API Tokens and the rest under
+// Account) draws none of its own.
 export type SettingsIconId =
   | 'account'
   | 'documents'
@@ -27,9 +23,8 @@ export type SettingsIconId =
   | 'tours'
   | 'privacy';
 
-// The sub-categories, nested under a top-level category (Editor, Panels, Account).
-export type SettingsSubcategoryId =
-  'layers' | 'map' | 'collaborate' | 'notifications' | 'tokens' | 'webhooks';
+// The sub-categories, nested under Account (the Settings panel lists each on its own).
+export type SettingsSubcategoryId = 'notifications' | 'tokens' | 'webhooks' | 'data';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -48,20 +43,13 @@ export const SETTINGS_TILES: Record<SettingsIconId, SettingsTileId> = {
   privacy: 'privacy',
 };
 
-// A sub-category's glyph: the same mark its panel carries in the editor, so
-// the row is recognisable as that panel's settings. Layers and Collaborate
-// are the toolbar's own (Lucide layers, as LayersStackIcon; the Collaborate
-// button's glyph), at 16px. The Map has no toolbar button, so it takes
-// Lucide's map from the same family. Notifications and API Tokens keep the shared bell and key.
-const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
-const MapSubGlyph = lucideGlyph(lucideMap, 16);
+// A sub-category's glyph: the account's keep the shared bell, key, hook and tray. Panels and Editor have no
+// sub-categories: each panel's and mode's settings are a section of their category.
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
-  layers: () => <LayersSubGlyph />,
-  map: () => <MapSubGlyph />,
-  collaborate: () => <CollaborateGlyph size={16} />,
   notifications: () => <SettingsSharedGlyph id="notifications" />,
   tokens: () => <SettingsSharedGlyph id="tokens" />,
   webhooks: () => <SettingsSharedGlyph id="webhooks" />,
+  data: () => <SettingsSharedGlyph id="data" />,
 };
 
 /** A category's icon in the Settings list: its tile, or a sub-category's glyph. */

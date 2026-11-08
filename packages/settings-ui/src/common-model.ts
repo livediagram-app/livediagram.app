@@ -100,13 +100,21 @@ export function commonModel({
       const apps = common.apps.get(row.key) ?? [];
       const mine = editor && editor.keys.has(row.key) && !apps.includes(editor.app);
       return {
-        ...(ownRows.get(row.key) ?? row),
+        ...withSectionOf(ownRows.get(row.key) ?? row, row),
         allApps: false,
         apps: mine ? [editor.app, ...apps] : apps,
       };
     }),
   }));
   return groupCategories(COMMON_GROUP, categories, { keepEmpty: structure });
+}
+
+// The editor's own row in Common's place: under Common's section, so Show Home Banner, filed under the Explorer
+// itself, carries no "Explorer" heading repeating the category's name.
+function withSectionOf(own: SettingsRow, common: SettingsRow): SettingsRow {
+  if (own.section === common.section) return own;
+  const { section: _section, ...rest } = own;
+  return (common.section !== undefined ? { ...rest, section: common.section } : rest) as SettingsRow;
 }
 
 /** Every Common row's id: what each app's own group leaves out. */

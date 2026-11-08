@@ -2,7 +2,8 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { WEBHOOK_EVENTS, type Webhook, type WebhookDelivery } from '@liveworkspace/index-client';
+import { WEBHOOK_TOPICS, type Webhook, type WebhookDelivery } from '@liveworkspace/index-client';
+import { SettingsShownAppProvider } from '../../shown-app';
 import { withAccountHost } from '../../test/account-host';
 import { WebhooksPanel } from './WebhooksPanel';
 import { testDeliveryOf, READ_AT } from './useSendTest';
@@ -11,7 +12,7 @@ import { deliveryLine, eventName, failureOf, stateOf, webhookError, whenOf } fro
 // Settings › Webhooks (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks; liveworkspace/docs/specs/004-index/
 // webhooks.md): the card's head, the list, adding one step by step for your own items or a team you run (a plain
 // one's secret shown once), Send Test with its result read back, Pause and Resume, Delete asked in a popover, and
-// each one's Recent Deliveries.
+// each one's Recent Deliveries. Every event is one app's, named by its logo and wordmark; This App keeps to its own.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const HOOK: Webhook = {
@@ -20,7 +21,7 @@ const HOOK: Webhook = {
   kind: 'slack',
   teamId: 'teamA',
   host: 'hooks.slack.com',
-  events: ['created', 'card_moved'],
+  events: ['livediagram:created', 'liveplanner:card_moved'],
   createdAt: 1_790_000_000_000,
   pausedAt: null,
   pausedReason: null,
@@ -29,6 +30,7 @@ const HOOK: Webhook = {
 const DELIVERY: WebhookDelivery = {
   id: 1,
   type: 'card_moved',
+  app: 'liveplanner',
   title: 'Sprint 4',
   state: 'failed',
   attempts: 3,
@@ -93,9 +95,12 @@ beforeEach(() => {
       if (url.endsWith('/deliveries')) return json(200, { deliveries: deliveries() });
       if (url.endsWith('/test')) return json(202, { queued: true });
       if (call.method === 'PATCH') {
-        const paused = (call.body as { paused: boolean }).paused;
+        const { paused, events } = call.body as { paused?: boolean; events?: Webhook['events'] };
+        const was = webhooks.find((w) => url.endsWith(`/webhooks/${w.id}`)) ?? HOOK;
         return json(200, {
-          webhook: { ...HOOK, pausedAt: paused ? 1 : null, pausedReason: paused ? 'paused' : null },
+          webhook: events
+            ? { ...was, events }
+            : { ...was, pausedAt: paused ? 1 : null, pausedReason: paused ? 'paused' : null },
         });
       }
       if (call.method === 'DELETE') {
@@ -151,8 +156,13 @@ const field = (label: string) =>
   [...container.querySelectorAll('label')]
     .find((l) => l.firstChild?.textContent === label)!
     .querySelector('input')!;
-const render = async () => {
-  act(() => root.render(withAccountHost(<WebhooksPanel />)));
+// `app`: Settings opened in that app, on This App; none is All.
+const render = async (app: 'livediagram.app' | null = null) => {
+  act(() =>
+    root.render(
+      <SettingsShownAppProvider value={app}>{withAccountHost(<WebhooksPanel />)}</SettingsShownAppProvider>,
+    ),
+  );
   await settle();
 };
 const row = (id = 'w1') => container.querySelector(`[data-webhook="${id}"]`)!;
@@ -183,10 +193,14 @@ describe('Settings › Webhooks', () => {
     expect(row().textContent).toContain('hooks.slack.com');
     // The date in the reader's locale: "21 Sept" or "Sep 21".
     expect(row().textContent).toMatch(/Delivered (\d+ \w{3,4}|\w{3,4} \d+)/);
+    // One line per app, each its logo and wordmark, then its events.
     const sends = row().querySelector('[aria-label="What it sends"]')!;
-    expect(sends.textContent).toContain('Item Created');
-    expect(sends.textContent).toContain('Card Moved');
-    expect(sends.textContent).toContain('liveplanner');
+    const lines = [...sends.querySelectorAll('[data-sends-app]')];
+    expect(lines.map((l) => l.getAttribute('data-sends-app'))).toEqual(['livediagram', 'liveplanner']);
+    expect(lines[0]!.textContent).toContain('Item Created');
+    expect(lines[0]!.querySelector('svg')).not.toBeNull();
+    expect(lines[1]!.textContent).toContain('Card Moved');
+    expect(lines[1]!.textContent).toContain('liveplanner');
     expect(calls.find((c) => c.url === '/api/index/webhooks')?.auth).toBe('Bearer tok');
   });
 
@@ -194,7 +208,7 @@ describe('Settings › Webhooks', () => {
     webhooks = [
       {
         ...HOOK,
-        events: [...WEBHOOK_EVENTS],
+        events: [...WEBHOOK_TOPICS],
         teamId: null,
         lastDelivery: null,
         pausedAt: 1,
@@ -202,6 +216,7 @@ describe('Settings › Webhooks', () => {
       },
     ];
     await render();
+    expect(row().querySelectorAll('[data-sends-app]')).toHaveLength(5);
     expect(row().textContent).toContain('Every Event');
     expect(row().textContent).toContain('Slack · Your own items');
     expect(row().textContent).toContain('Nothing sent yet');
@@ -247,20 +262,38 @@ describe('Settings › Webhooks', () => {
     expect(form.textContent).toContain('Add an address to finish.');
     type(field('HTTPS Address'), 'https://hooks.example.com/in');
     act(() => choice('Design').click());
-    // What it sends: every event to begin with; Clear, Select All and one unticked.
-    expect(form.textContent).toContain('11 of 11');
+    // What it sends: every app's events to begin with, app by app, each app's card headed by its logo and wordmark
+    // and each event naming its app; Clear, Select All and one unticked.
+    expect(form.textContent).toContain('47 of 47');
+    const cards = [...form.querySelectorAll('[data-webhook-app]')];
+    expect(cards.map((c) => c.getAttribute('data-webhook-app'))).toEqual([
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+    ]);
+    // Card moves and forms are liveplanner's alone.
+    expect(cards[0]!.textContent).not.toContain('Card Moved');
+    expect(cards[0]!.textContent).toContain('Action Assigned');
+    expect(cards[1]!.textContent).toContain('Card Moved');
+    for (const box of form.querySelectorAll<HTMLInputElement>('input[name^="webhook-event-"]')) {
+      const app = box.name.slice('webhook-event-'.length).split(':')[0]!;
+      expect(box.closest('label')!.textContent).toContain(app);
+    }
     // The two that came after card moves: a mention, and a liveplanner form's responses.
     expect(form.textContent).toContain('Mentioned');
     expect(form.textContent).toContain('Form Response');
     expect(form.textContent).toContain('Actions, Cards and Forms');
     expect(button('Select All', form).disabled).toBe(true);
     await press('Clear', form);
-    expect(form.textContent).toContain('0 of 11');
+    expect(form.textContent).toContain('0 of 47');
     expect(form.textContent).toContain('Pick at least one thing to send.');
     expect(submit.disabled).toBe(true);
     await press('Select All', form);
+    // livediagram's Item Created, the first of five.
     act(() => choice('Item Created').click());
-    expect(form.textContent).toContain('10 of 11');
+    expect(form.textContent).toContain('46 of 47');
     expect(submit.disabled).toBe(false);
     await press('Add Webhook', form);
     const post = calls.find((c) => c.method === 'POST' && c.url.endsWith('/webhooks'))!;
@@ -270,8 +303,9 @@ describe('Settings › Webhooks', () => {
       url: 'https://hooks.example.com/in',
       teamId: 'teamA',
     });
-    expect((post.body as { events: string[] }).events).not.toContain('created');
-    expect((post.body as { events: string[] }).events).toHaveLength(10);
+    expect((post.body as { events: string[] }).events).not.toContain('livediagram:created');
+    expect((post.body as { events: string[] }).events).toContain('liveplanner:created');
+    expect((post.body as { events: string[] }).events).toHaveLength(46);
     expect(container.textContent).toContain('whsec_abc');
     await press('Done');
     expect(container.textContent).not.toContain('whsec_abc');
@@ -313,6 +347,8 @@ describe('Settings › Webhooks', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     const item = row().querySelector('[data-delivery="failed"]')!;
     expect(item.textContent).toContain('Card Moved');
+    expect(item.textContent).toContain('liveplanner');
+    expect(item.querySelector('[data-logotype]')).not.toBeNull();
     expect(item.textContent).toContain('Sprint 4');
     expect(item.textContent).toContain('Failed: answered 500 · 3 tries');
     await press('Recent Deliveries', row());
@@ -326,6 +362,7 @@ describe('Settings › Webhooks', () => {
       ...DELIVERY,
       id: 9,
       type: 'ping',
+      app: 'liveworkspace',
       title: 'Test',
       occurredAt: Date.now(),
       ...over,
@@ -461,6 +498,64 @@ describe('Settings › Webhooks', () => {
     expect(container.querySelector('[data-empty-state]')).not.toBeNull();
   });
 
+  describe('on This App (Settings opened in livediagram)', () => {
+    const PLANNER: Webhook = { ...HOOK, id: 'w3', name: 'Plans only', events: ['liveplanner:shared'] };
+
+    it('names livediagram alone, lists only webhooks with its events, and counts the rest', async () => {
+      webhooks = [HOOK, PLANNER];
+      await render('livediagram.app');
+      const apps = [...container.querySelectorAll('p, div')].find(
+        (el) => el.firstElementChild?.textContent === 'For your work in',
+      )!;
+      expect(apps.textContent).toContain('livediagram');
+      expect(apps.textContent).not.toContain('liveplanner');
+      expect(container.querySelectorAll('[data-webhook]')).toHaveLength(1);
+      expect(container.querySelector('[data-webhooks-elsewhere]')?.textContent).toContain(
+        '1 more webhook sends only other apps’ events',
+      );
+      // Its row shows livediagram's events, and counts liveplanner's.
+      const sends = row().querySelector('[aria-label="What it sends"]')!;
+      expect(sends.querySelectorAll('[data-sends-app]')).toHaveLength(1);
+      expect(sends.textContent).toContain('Item Created');
+      expect(sends.textContent).not.toContain('Card Moved');
+      expect(sends.textContent).toContain('And 1 event in other apps, shown in All.');
+    });
+
+    it('never offers liveplanner’s events, and adds livediagram’s', async () => {
+      await render('livediagram.app');
+      await press('Add Webhook');
+      const form = container.querySelector('form')!;
+      expect(form.textContent).toContain('9 of 9');
+      expect(form.querySelectorAll('[data-webhook-app]')).toHaveLength(1);
+      expect(form.textContent).not.toContain('Card Moved');
+      expect(form.textContent).not.toContain('Form Response');
+      type(field('Slack Webhook URL'), 'https://hooks.slack.com/services/T/B/x');
+      type(field('Name'), 'Diagrams');
+      await press('Add Webhook', form);
+      const post = calls.find((c) => c.method === 'POST' && c.url.endsWith('/webhooks'))!;
+      const events = (post.body as { events: string[] }).events;
+      expect(events).toHaveLength(9);
+      expect(events.every((e) => e.startsWith('livediagram:'))).toBe(true);
+    });
+
+    it('edits livediagram’s events and keeps liveplanner’s as they were', async () => {
+      await render('livediagram.app');
+      await press('Edit Events', row());
+      const editor = row().querySelector('[data-events-editor]')!;
+      expect(editor.textContent).not.toContain('Card Moved');
+      expect(button('Save', editor).disabled).toBe(true);
+      act(() => choice('Share Link Made').click());
+      await press('Save', editor);
+      expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({
+        events: ['livediagram:created', 'livediagram:shared', 'liveplanner:card_moved'],
+      });
+      expect(row().querySelector('[data-events-editor]')).toBeNull();
+      expect(row().querySelector('[aria-label="What it sends"]')!.textContent).toContain(
+        'Share Link Made',
+      );
+    });
+  });
+
   it('shows a refused list in words, with Try Again', async () => {
     answer = (c) =>
       c.url.endsWith('/webhooks') ? json(403, { error: 'webhooks_need_account' }) : null;
@@ -504,10 +599,12 @@ describe('words', () => {
       'Retrying after it answered 503',
     );
     expect(deliveryLine({ ...DELIVERY, state: 'pending', status: null })).toBe('Retrying');
-    expect(eventName('ping')).toBe('Test');
-    expect(eventName('card_moved')).toBe('Card Moved');
-    expect(eventName('form_response')).toBe('Form Response');
-    expect(eventName('mention')).toBe('Mentioned');
+    expect(eventName('liveworkspace', 'ping')).toBe('Test');
+    expect(eventName('liveplanner', 'card_moved')).toBe('Card Moved');
+    expect(eventName('liveplanner', 'form_response')).toBe('Form Response');
+    expect(eventName('livediagram', 'mention')).toBe('Mentioned');
+    expect(eventName('liveplanner', 'action_assigned')).toBe('Action or Card Assigned');
+    expect(eventName('livediagram', 'action_assigned')).toBe('Action Assigned');
     expect(webhookError('something_new')).toMatch(/Something went wrong/);
     expect(webhookError('webhook_url_invalid', 'teams')).toContain('logic.azure.com');
     expect(webhookError('offline')).toBe('Couldn’t connect. Check your connection and try again.');

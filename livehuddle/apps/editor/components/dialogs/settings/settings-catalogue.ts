@@ -1,4 +1,5 @@
-import { WEBHOOKS_CATEGORY } from '@liveworkspace/settings/account';
+import { DATA_EXPORT_CATEGORY, WEBHOOKS_CATEGORY } from '@liveworkspace/settings/account';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import {
   HIDE_CURSORS_HINT,
@@ -13,7 +14,6 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import {
-  ELEMENT_TOUR_KINDS,
   elementTourSeen,
   markElementTourSeen,
   offerElementTourAgain,
@@ -99,9 +99,6 @@ type SettingsRowContext = {
   // The tab on screen draws other people's cursors (docs/specs/012-collaboration/collaborator-enhancements.md
   // "Only where cursors are drawn"); absent reads as drawn.
   cursorsDrawn?: boolean;
-  // Documents in This Browser with parts set aside (docs/specs/006-document/offline-mode.md "Moving retired parts
-  // to the other apps").
-  retiredParts?: number;
 };
 
 type RowBase = {
@@ -118,6 +115,8 @@ type RowBase = {
   // Rendered as a quiet "also in …" note so Settings listing everything
   // doesn't imply the panel gear has gone away.
   alsoIn?: string;
+  // A page that says more, under the description, opened in a new tab.
+  link?: { href: string; label: string };
   // A small before/after drawing, for a setting whose effect is a LAYOUT
   // rather than a behaviour, see settings-illustrations.tsx.
   illustration?: SettingsIllustrationId;
@@ -190,15 +189,6 @@ export type SettingsAppearanceRowSpec = RowBase & { kind: 'appearance' };
 // appearance row it carries no read/write pair.
 export type SettingsTokensRowSpec = RowBase & { kind: 'tokens' };
 
-// A way into another category of this same dialog, opened in place: the
-// setting lives there, and this is where a reader might look for it first.
-export type SettingsLinkRowSpec = RowBase & {
-  kind: 'link';
-  target: SettingsCategoryId;
-  // The link's own words, which name the destination ("Manage API Tokens").
-  cta: string;
-};
-
 // A card with no control: it stands in for settings the reader cannot use
 // yet and says why. A section whose rows all vanish would otherwise take the
 // section heading with it, so the reader never learns the settings exist ,
@@ -228,10 +218,9 @@ export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
 // was retired, because everything else it held was already in this dialog.
 export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
-
-// Pages and boards set aside from documents in This Browser (docs/specs/006-document/offline-mode.md "Moving
-// retired parts to the other apps"): not a preference, the way back to the offer. Only while there are any.
-export type SettingsRetiredPartsRowSpec = RowBase & { kind: 'retiredParts' };
+// Reset All Settings (docs/specs/007-editor/user-preferences.md): every preference back to its default, above Delete
+// Account in the Danger Zone. Not a preference itself: it clears them.
+export type SettingsResetSettingsRowSpec = RowBase & { kind: 'resetSettings' };
 
 // Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new canvases go when made without
 // a place. Not a preference: the shared Explorer reads and writes them on the index.
@@ -243,14 +232,13 @@ export type SettingsRowSpec =
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec
   | SettingsTokensRowSpec
-  | SettingsLinkRowSpec
   | SettingsNoteRowSpec
   | SettingsShortcutsRowSpec
   | SettingsHideCursorsRowSpec
   | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
+  | SettingsResetSettingsRowSpec
   | SettingsDeleteAccountRowSpec
-  | SettingsRetiredPartsRowSpec
   | SettingsDefaultFoldersRowSpec;
 
 export type SettingsCategorySpec = {
@@ -319,7 +307,7 @@ const MOUSE_DESKTOP_ONLY =
 // offered only while it is on (see `visibleCategories`).
 function panelSwitch(
   key: PanelSwitch,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event'>,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event' | 'section'>,
 ): SettingsToggleRowSpec {
   return {
     kind: 'toggle',
@@ -349,10 +337,9 @@ function tourSwitch(
   };
 }
 
-// A tour of several tracks (lib/tour-tracks.ts): on while any track is still owed. Off answers every track; on
-// forgets those answered. Its telemetry tokens are its seen flag's, as above.
-// One element tour's switch (docs/specs/007-editor/element-tours.md "Settings"), nested under Element Tours: on while
-// its kind is still offered; on forgets its answer, off answers it.
+// One element tour's switch (docs/specs/007-editor/element-tours.md "Settings"): on while its kind is still offered;
+// on forgets its answer, off answers it. A stored `elementToursSeen` (the switch over them all, gone while the Portal
+// is the only toured kind) still reads as every kind taken.
 function elementTourSwitch(
   kind: ElementTourKind,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
@@ -361,7 +348,6 @@ function elementTourSwitch(
     kind: 'toggle',
     key: `elementTour-${kind}`,
     section: ELEMENT_TOURS_SECTION,
-    parent: 'elementToursSeen',
     ...row,
     read: (p) => !elementTourSeen(p, kind),
     write: (p, v) => (v ? offerElementTourAgain(p, kind) : markElementTourSeen(p, kind)),
@@ -371,26 +357,7 @@ function elementTourSwitch(
 // Element tours are called Show Me wherever a person sees them (docs/specs/007-editor/element-tours.md "Naming").
 const ELEMENT_TOURS_SECTION = 'Show Me';
 
-function tourTracksSwitch(
-  key: 'elementToursSeen',
-  tracksKey: 'elementTourKinds',
-  tracks: readonly ElementTourKind[],
-  owed: (p: UserPreferences) => boolean,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
-  section?: string,
-): SettingsToggleRowSpec {
-  return {
-    ...tourSwitch(key, row, section),
-    read: owed,
-    write: (p, v) => {
-      if (!v) return { ...p, [key]: true, [tracksKey]: [...tracks] };
-      const { [tracksKey]: _answered, ...rest } = p;
-      return { ...rest, [key]: false };
-    },
-  };
-}
-
-type TourSeenKey = 'avatarTourSeen' | 'elementToursSeen';
+type TourSeenKey = 'avatarTourSeen';
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
@@ -421,7 +388,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Canvas',
         label: 'Element Indicators',
         description:
-          'How an element shows it has a link, note, action or comments: quiet icons at its top, a labelled footer, or nothing.',
+          'How an element shows it has comments, an action or other markers: quiet icons at its top, a labelled footer, or nothing.',
         options: [
           { id: 'top', label: 'Top' },
           { id: 'footer', label: 'Footer' },
@@ -485,7 +452,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         ...UI_SCALE_SLIDER,
         key: 'uiScale',
         keywords:
-          'zoom size bigger smaller larger text font scale magnify chrome interface ui accessibility',
+          'zoom size bigger smaller larger text font scale magnify low vision chrome interface ui accessibility',
         section: 'Interface',
         label: 'UI Scale',
         description:
@@ -544,6 +511,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'panels',
     label: 'Panels',
+    // Each panel's settings were a sub-category of their own (Panels › Layers) until they became its sections: their
+    // old ids still land here.
+    aliases: ['map', 'collaborate'],
     rows: [
       {
         kind: 'slider',
@@ -561,14 +531,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, panelOpacity: v }),
         event: { category: 'UI', changed: 'PanelOpacity' },
       },
-    ],
-  },
-  {
-    id: 'map',
-    label: 'Map',
-    parent: 'panels',
-    rows: [
       {
+        section: 'Map',
         // The Map's switch, written out rather than a panelSwitch: it keeps its
         // older key and telemetry tokens so stored choices and the dashboard
         // carry over the rename from "Show Map".
@@ -585,6 +549,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
       },
       {
+        section: 'Map',
         kind: 'toggle',
         key: 'mapDimOutside',
         parent: 'showMinimap',
@@ -598,6 +563,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'MapDimOn', off: 'MapDimOff' },
       },
       {
+        section: 'Map',
         kind: 'choice',
         key: 'mapSize',
         parent: 'showMinimap',
@@ -614,14 +580,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, mapSize: v as MapSize }),
         event: { category: 'UI', changed: 'MapSize' },
       },
-    ],
-  },
-  {
-    id: 'collaborate',
-    label: 'Collaborate',
-    parent: 'panels',
-    rows: [
       panelSwitch('collaboratePanelEnabled', {
+        section: 'Collaborate',
         label: 'Enable Collaborate Panel',
         keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
         description:
@@ -629,6 +589,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
       }),
       {
+        section: 'Collaborate',
         kind: 'hideCursors',
         key: 'hideCursors',
         available: (ctx) => ctx.cursorsDrawn !== false,
@@ -638,6 +599,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: HIDE_CURSORS_HINT,
       },
       {
+        section: 'Collaborate',
         // Your hearing ring (docs/specs/012-collaboration/proximity-audio.md "Your hearing ring"). Missing means shown.
         kind: 'toggle',
         key: 'hearingRing',
@@ -667,15 +629,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, reduceMotion: v }),
         event: { category: 'UI', on: 'ReduceMotionOn', off: 'ReduceMotionOff' },
       },
-      {
-        kind: 'link',
-        key: 'uiScaleLink',
-        keywords: 'zoom size bigger larger text font scale magnify low vision',
-        label: 'UI Scale',
-        cta: 'Open Appearance',
-        target: 'appearance',
-        description: 'Make the panels, toolbar and corner buttons bigger, in Appearance.',
-      },
     ],
   },
   {
@@ -683,7 +636,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     // tracks one per track ("Boards Tour", "Slides Tour"). A tour starts from the footer's Start Tour button
     // (docs/specs/007-editor/editor-tour.md "Where it appears"), and its switch turns itself off once taken.
     id: 'tours',
-    label: 'Tours',
+    label: 'Getting Started',
+    // Was named Tours: its old place in the panel still lands here.
+    aliases: ['/tours'],
     collapsedSections: [ELEMENT_TOURS_SECTION],
     sectionNotes: {
       [ELEMENT_TOURS_SECTION]: {
@@ -702,25 +657,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'While you walk as an avatar.',
         helpArticle: 'avatarTour',
       }),
-      // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
-      // them all over one per toured kind.
-      tourTracksSwitch(
-        'elementToursSeen',
-        'elementTourKinds',
-        ELEMENT_TOUR_KINDS,
-        (p) => ELEMENT_TOUR_KINDS.some((k) => !elementTourSeen(p, k)),
-        {
-          label: 'Show Me on Every Element',
-          event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
-          keywords: 'tour walkthrough tutorial element portal how to use learn replay',
-          description: 'Every element’s Show Me at once.',
-        },
-        ELEMENT_TOURS_SECTION,
-      ),
+      // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch per
+      // toured kind. No switch over them all while the Portal is the only one.
       elementTourSwitch('portal', {
         label: 'Portal',
         event: { category: 'UI', on: 'PortalTourSeenOff', off: 'PortalTourSeenOn' },
-        keywords: 'portal link travel teleport avatar shortcut tour',
+        keywords:
+          'portal link travel teleport avatar shortcut tour walkthrough tutorial element show me how to use learn replay',
         description: 'With a portal selected.',
         helpArticle: 'portals',
       }),
@@ -728,7 +671,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
   {
     id: 'documents',
-    label: 'Spaces',
+    label: 'Explorer',
+    // Was its own category (Settings › Spaces) beside the Explorer's: its old place in the panel still lands here.
+    aliases: ['/spaces'],
     sectionNotes: {
       'Default Folders': {
         note: 'Where each kind of new space is saved when you create it without choosing a place.',
@@ -741,7 +686,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         // and this switch brings it back. The shared Explorer draws it (@liveworkspace/explorer's HomeHero).
         kind: 'toggle',
         key: 'homeBanner',
-        section: 'Explorer',
         keywords: 'home banner hero greeting welcome header top search explorer hide show close',
         label: 'Show Home Banner',
         description:
@@ -776,15 +720,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'guestVsAccount',
       },
       {
-        kind: 'retiredParts',
-        key: 'retiredParts',
-        section: 'This Browser',
-        label: 'Pages and Boards in This Browser',
-        keywords:
-          'pages boards designs slides articles sheets forms logos wireframes move livedocuments liveplanner livedesign old this browser local',
+        kind: 'resetSettings',
+        key: 'resetSettings',
+        section: 'Danger Zone',
+        label: 'Reset All Settings',
+        keywords: 'reset restore default defaults factory clear settings preferences start over',
         description:
-          'Pages, boards and designs from this browser that now belong in livedocuments, liveplanner or livedesign. They wait here until you move them.',
-        available: (ctx) => (ctx.retiredParts ?? 0) > 0,
+          'Puts every setting back to its default, in every liveworkspace app. Your profile, API tokens, webhooks and sign-ins stay as they are.',
       },
       {
         kind: 'deleteAccount',
@@ -829,12 +771,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'We can email you when someone joins one of your spaces, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
-      emailSwitch('notifyDocumentJoin', {
-        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
-        keywords: 'email join collaborator opened document',
-        label: 'Someone Joins My Space',
-        description: 'A new person opens one of your shared spaces.',
-      }),
       emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
         keywords: 'email comment reply feedback',
@@ -851,13 +787,19 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
         keywords: 'email action assigned task todo',
         label: 'Someone Assigns Me an Action',
-        description: 'A teammate assigns you an action on an element.',
+        description: 'A teammate assigns you an action on an element, or a card on a board.',
       }),
       emailSwitch('notifyInviteResponse', {
         event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
         keywords: 'email invite team accepted declined',
         label: 'Someone Responds to a Team Invite',
         description: 'Someone you invited accepts or declines, for teams you are an admin of.',
+      }),
+      emailSwitch('notifyDocumentJoin', {
+        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
+        keywords: 'email join collaborator opened document',
+        label: 'Someone Joins My Space',
+        description: 'A new person opens one of your shared spaces.',
       }),
       emailSwitch('notifyTips', {
         event: { category: 'UI', on: 'NotifyTipsOn', off: 'NotifyTipsOff' },
@@ -912,6 +854,26 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     ],
   },
+  // Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): downloading everything an account owns,
+  // made in liveworkspace's Settings. Signed in, the Account section's Your Data draws it in place; a guest gets this
+  // stand-in, as for Webhooks.
+  {
+    id: 'data',
+    label: DATA_EXPORT_CATEGORY.label,
+    parent: 'account',
+    rows: [
+      {
+        kind: 'note',
+        key: 'dataExportSignIn',
+        keywords: DATA_EXPORT_CATEGORY.keywords,
+        label: DATA_EXPORT_CATEGORY.label,
+        description: DATA_EXPORT_CATEGORY.description,
+        note: DATA_EXPORT_CATEGORY.signInNote,
+        signIn: true,
+        available: (ctx) => !ctx.signedIn,
+      },
+    ],
+  },
   {
     id: 'privacy',
     label: 'Privacy',
@@ -922,7 +884,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'analytics tracking usage data privacy anonymous',
         label: 'Send Anonymous Usage Events',
         description:
-          'Small first-party events, listed publicly on /telemetry, that show which features help. Never your content, no third-party trackers.',
+          'Small events like “a tab was added” that show us which features help. Never your content or who you are, and no third-party trackers. Every event we collect is listed in public, with how often each is sent.',
+        link: { href: `${PLATFORM_SITE.url}/telemetry`, label: 'See Every Event' },
         helpArticle: 'whatWeCollect',
         read: (p) => p.telemetryEnabled !== false,
         write: (p, v) => ({ ...p, telemetryEnabled: v }),
@@ -963,7 +926,7 @@ function parentSwitchOn(
   return parent?.kind !== 'toggle' || parent.read(preferences);
 }
 
-// A category's name as a path from the top level: "Panels › Layers" for a
+// A category's name as a path from the top level: "Account › Notifications" for a
 // sub-category, just the label otherwise. Where the name is shown away from
 // the list that nests it (the canvas search's "in …").
 export function settingsCategoryPath(category: SettingsCategorySpec): string {

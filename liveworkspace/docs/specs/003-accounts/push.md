@@ -11,12 +11,12 @@ devices, each person's switches and the VAPID key, and sends.
 
 ## What a notification is about
 
-| Kind          | When                                                            | Switch (`all` scope) | Mirrors the email      |
-| ------------- | --------------------------------------------------------------- | -------------------- | ---------------------- |
-| `mention`     | a teammate @mentions you in a comment on a team item            | `pushMentions`       | `notifyMentions`       |
-| `action`      | a teammate assigns you an action                                | `pushActionAssigned` | `notifyActionAssigned` |
-| `threadReply` | someone replies in a comment thread you started or replied to   | `pushThreadReplies`  | none (new)             |
-| `comment`     | someone comments on a diagram, plan, document or design you own | `pushComments`       | `notifyComments`       |
+| Kind          | When                                                                   | Switch (`all` scope) | Mirrors the email      |
+| ------------- | ---------------------------------------------------------------------- | -------------------- | ---------------------- |
+| `mention`     | a teammate @mentions you in a comment on a team item                   | `pushMentions`       | `notifyMentions`       |
+| `action`      | a teammate assigns you an action on an element, or a card on a board   | `pushActionAssigned` | `notifyActionAssigned` |
+| `threadReply` | someone replies in a comment thread you started or replied to          | `pushThreadReplies`  | none (new)             |
+| `comment`     | someone comments on a diagram, plan, document, design or space you own | `pushComments`       | `notifyComments`       |
 
 The kinds and their switches are plain data in `@liveworkspace/settings/push` (`PUSH_KINDS`, `PUSH_SETTING_KEYS`),
 and the switches are `ALL_SETTING_KEYS`, so they hold in every app. Each is on unless turned off: registering a

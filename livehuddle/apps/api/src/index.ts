@@ -14,7 +14,6 @@ import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
 import { handleLegacyGuestClaim } from './routes/legacy-guest';
-import { handleLocalParts, LOCAL_PARTS_MAX_BYTES } from './routes/migration';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { reportServerEvent } from './server-telemetry';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
@@ -184,13 +183,7 @@ async function routeApiRequest(
     const len = Number(request.headers.get('content-length'));
     // Image uploads carry raw bytes with their own, larger cap (docs/specs/009-elements/images.md);
     // the route re-checks it and answers with file_too_large + limitBytes.
-    // A This Browser document's parts (routes/migration.ts) cross whole, up to an RPC message's cap.
-    const cap =
-      segments[1] === 'images'
-        ? MAX_IMAGE_BYTES
-        : segments[1] === 'migration'
-          ? LOCAL_PARTS_MAX_BYTES
-          : MAX_BODY_BYTES;
+    const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
     if (Number.isFinite(len) && len > cap) {
       return payloadTooLarge();
     }
@@ -307,11 +300,9 @@ async function routeApiRequest(
       return await handlePreferences(ctx);
     case 'participants':
       return await handleParticipants(ctx);
-    // The one-time doors of the move from the old livehuddle.app (docs/migration.md step 6).
+    // The one-time door of the move from the old livehuddle.app (docs/migration.md step 6).
     case 'legacy-guest':
       return await handleLegacyGuestClaim(ctx);
-    case 'migration':
-      return await handleLocalParts(ctx);
   }
 
   return notFound();

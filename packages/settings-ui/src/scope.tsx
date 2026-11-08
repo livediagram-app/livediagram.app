@@ -1,52 +1,19 @@
 'use client';
 
-import { useCallback, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 // The Settings panel's header switch, as the Explorer's (each app's name with its logo, beside All with
 // liveworkspace's): this app's settings alone, or every setting the account has (each app's
 // docs/specs/007-editor/user-preferences.md "This app or All"; liveworkspace/docs/specs/010-site/site.md "Settings").
 export type SettingsScope = 'app' | 'all';
 
-function isScope(value: unknown): value is SettingsScope {
-  return value === 'app' || value === 'all';
-}
-
-function readScope(key: string | null): SettingsScope | null {
-  if (!key || typeof window === 'undefined') return null;
-  try {
-    const stored = window.localStorage.getItem(key);
-    return isScope(stored) ? stored : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeScope(key: string | null, scope: SettingsScope): void {
-  if (!key || typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(key, scope);
-  } catch {
-    // A private window or blocked storage: the choice lasts as long as the dialog.
-  }
-}
-
-/** The switch's state: a targeted open's choice when given, else the one this device last made (one
- *  localStorage read when the dialog opens, one write per change), else this app's. */
+/** The switch's state: a targeted open's choice when given, else this app's. Nothing is remembered between opens:
+ *  Settings opened from an app always starts on that app (All is one press away). */
 export function useSettingsScope(
-  storageKey: string | null,
   initial: SettingsScope | null = null,
 ): [SettingsScope, (next: SettingsScope) => void] {
-  const [scope, setScope] = useState<SettingsScope>(
-    () => initial ?? readScope(storageKey) ?? 'app',
-  );
-  const choose = useCallback(
-    (next: SettingsScope) => {
-      setScope(next);
-      writeScope(storageKey, next);
-    },
-    [storageKey],
-  );
-  return [scope, choose];
+  const [scope, setScope] = useState<SettingsScope>(() => initial ?? 'app');
+  return [scope, setScope];
 }
 
 const SEGMENTS =

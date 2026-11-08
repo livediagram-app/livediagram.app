@@ -77,7 +77,7 @@ folder drops the defaults that point at it.
   none: it cannot be a default.
 - **The default marker**: a pin after a default folder's name (rows, cards, Details, the sidebar). Its words
   ("Default folder for new canvases") are its tooltip and a hidden line for screen readers.
-- **Default Folders** (Settings › Documents, `apps/editor/components/dialogs/settings/SettingsDefaultFoldersRow.tsx`,
+- **Default Folders** (Settings › Explorer, `apps/editor/components/dialogs/settings/SettingsDefaultFoldersRow.tsx`,
   and from Use as Default for…): each entry, where its new canvases go, Clear and Change. Change opens the default
   folder picker, where My Work's top clears the default and a team's top cannot be chosen.
 - **Deleting a default folder**: the confirmation names where the contents go and says which new canvases were

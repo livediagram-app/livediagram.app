@@ -4,38 +4,11 @@ import { useState } from 'react';
 import { AccordionSection } from '../AccordionSection';
 import { useSettingsUiKit } from '../kit';
 import type {
-  SettingsLinkRow,
   SettingsNoteRow,
   SettingsShortcutListRow,
   SettingsShortcutSection,
 } from '../model';
-import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
-
-// A way into another category of this dialog, opened in place: never a page navigation.
-export function SettingsLinkRowView({
-  row,
-  onOpenCategory,
-}: {
-  row: SettingsLinkRow;
-  onOpenCategory?: (categoryId: string) => void;
-}) {
-  return (
-    <SettingsRowShell
-      row={row}
-      control={
-        onOpenCategory ? (
-          <button
-            type="button"
-            onClick={() => onOpenCategory(row.target)}
-            className={SETTINGS_ROW_BUTTON}
-          >
-            {row.cta}
-          </button>
-        ) : null
-      }
-    />
-  );
-}
+import { SettingsRowShell } from '../SettingsRowShell';
 
 // A row with no control, standing in for settings the reader cannot use yet. Same shape as the
 // signed-out API tokens row, so "you need an account for this" reads the same wherever it turns

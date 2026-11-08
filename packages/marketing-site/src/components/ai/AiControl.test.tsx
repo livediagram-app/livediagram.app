@@ -8,6 +8,6 @@ describe('AiControl', () => {
   it('says how long a connection lasts and where to revoke it', () => {
     render(<AiControl name="livediagram" />);
     expect(screen.getByText(/lasts six months/)).toBeTruthy();
-    expect(screen.getByText(/Settings › Account › API Tokens/)).toBeTruthy();
+    expect(screen.getByText(/Settings › API Tokens/)).toBeTruthy();
   });
 });

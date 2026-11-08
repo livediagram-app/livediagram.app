@@ -109,7 +109,7 @@ export function ElementTourHost() {
     setActiveTour('element', active);
   }, [active]);
 
-  // Records the kind as taken (Settings › Tours): onto the freshest preferences, not this render's, since the whole blob
+  // Records the kind as taken (Settings › Getting Started): onto the freshest preferences, not this render's, since the whole blob
   // is written.
   const answer = (k: ElementTourKind) => {
     const next = rebaseUserPreferences(

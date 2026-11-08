@@ -3,17 +3,11 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { Button, Chip, ConfirmPopover, Tooltip, TrashIcon } from '@liveworkspace/ui';
 import { AccordionSection } from '../../AccordionSection';
-import {
-  WEBHOOK_EVENTS,
-  type Webhook,
-  type WebhookDelivery,
-  type WebhookKind,
-} from '@liveworkspace/index-client';
+import type { App, Webhook, WebhookDelivery, WebhookKind } from '@liveworkspace/index-client';
 import { BUTTON, ErrorNote } from '../account-ui';
 import { useAccountPanelsHost } from '../host';
 import { Deliveries } from './Deliveries';
 import {
-  AppName,
   DeliveredGlyph,
   FailedGlyph,
   KindMark,
@@ -23,10 +17,9 @@ import {
   WaitingGlyph,
 } from './marks';
 import { useSendTest, type TestResult } from './useSendTest';
+import { WebhookEvents } from './WebhookEvents';
 import {
   attempt,
-  EVENT_APP,
-  eventName,
   failureOf,
   KINDS,
   stateOf,
@@ -37,8 +30,8 @@ import {
 
 // One webhook (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks): its destination's mark, its name and
 // state, whose items it reports on and where it posts (the host alone; the URL never comes back), its last delivery,
-// Send Test with the test's result read back, Pause or Resume, Delete (asked in a popover), the events it sends, and
-// its Recent Deliveries, read when that section is first opened.
+// Send Test with the test's result read back, Pause or Resume, Delete (asked in a popover), the events it sends app by
+// app (WebhookEvents, with Edit Events), and its Recent Deliveries, read when that section is first opened.
 
 const BADGES: Record<WebhookTone, { chip: string; dot: string }> = {
   live: {
@@ -131,6 +124,7 @@ function TestNote({ kind, result }: { kind: WebhookKind; result: TestResult }) {
 
 export function WebhookRow({
   webhook,
+  apps,
   scopeName,
   fresh = false,
   now,
@@ -138,6 +132,8 @@ export function WebhookRow({
   onDeleted,
 }: {
   webhook: Webhook;
+  // The apps the card covers: this app's on This App, every app's on All.
+  apps: readonly App[];
   // "Your own items", or the team's.
   scopeName: string;
   // Just added: a line inviting a test.
@@ -298,7 +294,7 @@ export function WebhookRow({
         ) : null}
         {error ? <ErrorNote>{webhookError(error, webhook.kind)}</ErrorNote> : null}
 
-        <EventChips events={webhook.events} />
+        <WebhookEvents webhook={webhook} apps={apps} onChanged={onChanged} />
 
         <div className="-mb-2 border-t border-slate-100 pt-1 dark:border-slate-700/70">
           <AccordionSection title="Recent Deliveries" open={open} onToggle={toggleDeliveries}>
@@ -349,37 +345,5 @@ function LastDelivery({ webhook, now }: { webhook: Webhook; now: number }) {
       <Glyph />
       {words}
     </span>
-  );
-}
-
-// The events it sends, as small labels; every one as one.
-function EventChips({ events }: { events: Webhook['events'] }) {
-  const chip =
-    'bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-700/60 dark:text-slate-300';
-  return (
-    <div className="flex flex-wrap items-center gap-1.5" aria-label="What it sends">
-      <span className="mr-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-        Sends
-      </span>
-      {events.length === WEBHOOK_EVENTS.length ? (
-        <Chip radius="sm" className={chip}>
-          Every Event
-        </Chip>
-      ) : (
-        events.map((event) => {
-          const app = EVENT_APP[event];
-          return (
-            <Chip key={event} radius="sm" className={chip}>
-              {eventName(event)}
-              {app ? (
-                <span className="ml-1 inline-flex align-middle [&_[data-logotype]]:text-[11px] [&_svg]:size-3">
-                  <AppName app={app} />
-                </span>
-              ) : null}
-            </Chip>
-          );
-        })
-      )}
-    </div>
   );
 }

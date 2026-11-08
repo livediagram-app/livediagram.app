@@ -3,11 +3,24 @@
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { Button } from '@liveplanner/ui';
-import { ProfileHeaderCard, SettingsRowShell } from '@liveworkspace/settings-ui';
+import { resetSettingsBlob } from '@liveworkspace/settings';
+import {
+  ProfileHeaderCard,
+  resetAccountSettings,
+  resetBrowserSettings,
+  ResetSettingsRow,
+  SettingsRowShell,
+  type SettingsRequest,
+} from '@liveworkspace/settings-ui';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
-import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './settings-catalogue';
+import type { UserPreferences } from '@/lib/user-preferences';
+import type {
+  SettingsDeleteAccountRowSpec,
+  SettingsIdentityRowSpec,
+  SettingsResetSettingsRowSpec,
+} from './settings-catalogue';
 
 // The account rows, moved here from the Explorer's /explorer/profile page
 // (docs/specs/014-identity/profile-and-email-notifications.md) when that page was retired: everything it held now lives in
@@ -42,6 +55,29 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
       )}
     </div>
   );
+}
+
+// Reset All Settings, directly above Delete Account (docs/specs/007-editor/user-preferences.md; the row is the shared
+// one, @liveworkspace/settings-ui ResetSettingsRow). With an account, one request resets every app's settings on it
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Resetting every setting"); either way this editor's own copy then
+// goes back to its defaults through the same change every row makes: no stored value is what a default means, so the
+// change is the keys dropped (all but RESET_KEEPS), written and synced as any change is.
+export function SettingsResetSettingsRow({
+  row,
+  settings,
+  onChange,
+  accountRequest,
+}: {
+  row: SettingsResetSettingsRowSpec;
+  settings: UserPreferences;
+  onChange: (next: UserPreferences) => void;
+  accountRequest: SettingsRequest | null;
+}) {
+  const reset = () => {
+    const apply = () => onChange(resetSettingsBlob(settings) as UserPreferences);
+    return accountRequest ? resetAccountSettings(accountRequest, apply) : resetBrowserSettings(apply);
+  };
+  return <ResetSettingsRow row={row} reach={accountRequest ? 'account' : 'browser'} reset={reset} />;
 }
 
 // Delete account. Signed-in only, and not because of the UI: the api's

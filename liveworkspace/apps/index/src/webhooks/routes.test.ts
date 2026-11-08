@@ -1,6 +1,11 @@
 // Managing webhooks (webhooks.md "Who adds one", "Managing them"): an account's own, and a team's by its admins only,
 // checked against accounts now; never a guest, an app or the Drive mirror acting for someone, or a link visitor.
-import type { Webhook, WebhookDelivery } from '@liveworkspace/index-client';
+import {
+  orderedTopics,
+  topicsOf,
+  type Webhook,
+  type WebhookDelivery,
+} from '@liveworkspace/index-client';
 import { unseal, importSealKey } from '@liveworkspace/api-kit/sealed';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { body, call, h, makeItem, person, useHarness } from '../test-support';
@@ -34,7 +39,8 @@ describe('who may add one', () => {
       kind: 'json',
       teamId: null,
       host: 'hooks.example.com',
-      events: ['created', 'renamed', 'commented', 'card_moved'],
+      // The default's bare events, from an older Settings: each as every app that sends it.
+      events: orderedTopics(['created', 'renamed', 'commented', 'card_moved'].flatMap(topicsOf)),
       pausedAt: null,
       lastDelivery: null,
     });
@@ -186,6 +192,11 @@ describe('what an add checks', () => {
     [{ name: '\u202E\u2066' }, 'invalid_webhook'],
     [{ events: [] }, 'invalid_webhook'],
     [{ events: ['edited'] }, 'invalid_webhook'],
+    // An app that never sends the event, or no app at all.
+    [{ events: ['livediagram:card_moved'] }, 'invalid_webhook'],
+    [{ events: ['livehuddle:form_response'] }, 'invalid_webhook'],
+    [{ events: ['nope:created'] }, 'invalid_webhook'],
+    [{ events: ['livediagram:shared', 7] }, 'invalid_webhook'],
     [{ kind: 'discord' }, 'invalid_webhook'],
     [{ teamId: 'a b' }, 'invalid_webhook'],
     [{ url: 'http://hooks.example.com' }, 'webhook_url_invalid'],
@@ -242,6 +253,33 @@ describe('what an add checks', () => {
   });
 });
 
+describe('each app’s events', () => {
+  it('stores app events as pairs, in order, and reads a bare event left in a row as every app', async () => {
+    const ada = await person('user_wt1');
+    const { webhook } = await addWebhook(ada.auth, {
+      events: ['liveplanner:card_moved', 'livediagram:shared', 'liveplanner:card_moved'],
+    });
+    expect(webhook.events).toEqual(['livediagram:shared', 'liveplanner:card_moved']);
+    const stored = () =>
+      (h.db.sql.prepare('SELECT events FROM webhooks WHERE id = ?').get(webhook.id) as {
+        events: string;
+      }).events;
+    expect(stored()).toBe(',livediagram:shared,liveplanner:card_moved,');
+    h.db.sql
+      .prepare('UPDATE webhooks SET events = ? WHERE id = ?')
+      .run(',form_response,mention,', webhook.id);
+    const [read] = await list(ada.auth);
+    expect(read!.events).toEqual([
+      'livediagram:mention',
+      'liveplanner:form_response',
+      'liveplanner:mention',
+      'livedocuments:mention',
+      'livedesign:mention',
+      'livehuddle:mention',
+    ]);
+  });
+});
+
 describe('changing one', () => {
   it('renames it and changes its events', async () => {
     const ada = await person('user_wc1');
@@ -249,11 +287,11 @@ describe('changing one', () => {
     const res = await call(`/webhooks/${webhook.id}`, {
       method: 'PATCH',
       auth: ada.auth,
-      body: { name: 'Renamed', events: ['trashed', 'trashed'] },
+      body: { name: 'Renamed', events: ['livediagram:trashed', 'livediagram:trashed'] },
     });
     expect((await body<{ webhook: Webhook }>(res)).webhook).toMatchObject({
       name: 'Renamed',
-      events: ['trashed'],
+      events: ['livediagram:trashed'],
     });
     for (const bad of [{ name: '' }, { events: [] }, { paused: 'yes' }, []]) {
       expect(
@@ -352,6 +390,7 @@ describe('testing one and its deliveries', () => {
     expect(listed.deliveries).toEqual([
       expect.objectContaining({
         type: 'ping',
+        app: 'liveworkspace',
         title: 'Ops',
         state: 'pending',
         attempts: 0,

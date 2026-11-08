@@ -31,6 +31,9 @@ retired and its three parts redistributed:
   a guest has no address to send to.
 - **Phone notifications** are **Notifications > Phone**: Turn On, the device list and four switches, signed in
   only, and not behind the `EMAIL` binding ([Phone notifications](phone-notifications.md)).
+- **Reset All Settings** is the `resetSettings` row in **Account > Danger Zone**, directly above Delete Account: every setting
+  back to its default, in every app, for an account; in this browser for a guest
+  ([User preferences](../007-editor/user-preferences.md)).
 - **Delete account** is the `deleteAccount` row in **Account > Danger Zone**.
 
 ### Avatars

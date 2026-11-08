@@ -55,11 +55,10 @@ describe('a launched app in the Settings panel', () => {
       ),
       value: { all: {}, apps: {} },
       account: { renderTokens: () => null },
-      renderLogo: () => null,
       saver: { changeApp: () => {}, changeShared: () => {} },
     });
     // One set of categories, as All's: no Common group, no group named for the app.
-    expect(model.groups?.map((group) => group.label)).toEqual(['Account', 'Apps']);
+    expect(model.groups?.map((group) => group.label)).toEqual(['Account', 'Apps', 'Developers']);
     const keys = model.categories.flatMap((category) => category.rows.map((row) => row.key));
     // A common setting the editor has shows once, as Common's row; its own rows beside it.
     expect(keys.filter((key) => key.endsWith(':alignmentGuides'))).toEqual([

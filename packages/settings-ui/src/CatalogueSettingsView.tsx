@@ -2,9 +2,9 @@
 
 // The Settings panel's view over what it reads from the accounts API (liveworkspace/docs/specs/010-site/site.md "Settings"): one
 // app's settings from its plain-data catalogue (liveworkspace.app, where no app's own Settings is loaded), or the
-// All view: the Account section, then one set of categories, Common's and every app's merged by their place
-// (merge-categories.ts), each row marked with the logos of the apps it applies to; signed in, the app's side is the
-// same, kept to the rows that apply to it. Its own chunk, loaded only when
+// All view: one flat list of categories, Profile, then Common's and every app's merged by their place
+// (merge-categories.ts), then the rest of the account's, each row marked with the logos of the apps it applies to;
+// signed in, the app's side is the same, kept to the rows that apply to it, with no logos. Its own chunk, loaded only when
 // one of those is first shown, with each app's catalogue fetched beside it; an editor showing its own settings
 // never loads it.
 import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
@@ -19,7 +19,12 @@ import {
   withoutCommonRows,
   type CommonCatalogue,
 } from '@liveworkspace/settings/common';
-import { accountCategories, type AccountSection } from './account-model';
+import {
+  accountCategories,
+  DEVELOPER_CATEGORY_IDS,
+  type AccountCategoryId,
+  type AccountSection,
+} from './account-model';
 import { AccountTokensInPlace } from './account-panels/tokens-in-place';
 import { catalogueModel } from './catalogue-model';
 import { foldIntoAccount } from './fold-account';
@@ -65,9 +70,19 @@ function phoneHost(request: SettingsRequest, current: SettingsAppId | null): Pho
   return host;
 }
 
+// The prefix of the account's category ids (`account:notifications`), and the rail's Account label.
 export const ACCOUNT_GROUP = 'account';
-// All's merged categories (merge-categories.ts), listed under the Account section with no heading of their own.
+// The prefix of the merged categories' ids (merge-categories.ts, `apps:editor`), and the rail's Apps label.
 export const APPS_GROUP = 'apps';
+// The rail's Developers label, over the account's API Tokens and Webhooks.
+export const DEVELOPERS_GROUP = 'developers';
+
+// The rail's label headings, in order: who you are, the apps' settings, then the panels for builders.
+const RAIL_GROUPS: readonly SettingsGroupHeading[] = [
+  { id: ACCOUNT_GROUP, label: 'Account' },
+  { id: APPS_GROUP, label: 'Apps' },
+  { id: DEVELOPERS_GROUP, label: 'Developers' },
+];
 
 export type AccountHost = Omit<AccountSection, 'all' | 'set'> & {
   // Where the host holds the `all` scope itself (an editor's preferences): read and written there rather than over
@@ -79,7 +94,7 @@ export type AccountHost = Omit<AccountSection, 'all' | 'set'> & {
 
 export type CatalogueSettingsViewProps = {
   mode: 'app' | 'all';
-  // The app's own view also shows the Account section and the Common settings the app has, above the app's own
+  // The app's own view also shows the account's categories and the Common settings the app has, beside the app's own
   // (signed in: they are the account's, and shape the app as much as its own settings do).
   withShared?: boolean;
   // The app the panel was opened for, if any.
@@ -165,38 +180,30 @@ export default function CatalogueSettingsView({
     };
   }, [apps, store, attempt]);
 
-  // While the rest of the app's side loads, its own rows already carry their logos.
-  const loadingMarks = useAppMarks(withShared && current ? current : undefined, props.renderLogo);
-  const loadingOwn = useMemo(
-    () => (own && current ? markedOwn(own, current, panelAppIds(current)) : []),
-    [own, current],
-  );
-
   const retry = () => {
     setLoad({ state: 'loading' });
     setAttempt((n) => n + 1);
   };
-  // An editor's own settings are drawn at once while the Account section and Common load beside them, and stay when
-  // that read fails: only the account's and the shared parts are missing, so the note and Try again say so below them.
+  // An editor's own settings are drawn at once while the account's and Common load beside them, and stay when that
+  // read fails: only the account's and the shared parts are missing, so the note and Try again say so below them.
+  // The app's side draws no logos (only All does), so nothing shifts when the rest arrives.
   if (load.state !== 'ready' && mode === 'app' && own) {
     return (
-      <SettingsAppMarksProvider value={withShared && current ? loadingMarks : null}>
-        <SettingsView
-          {...view(props)}
-          categories={withShared && current ? loadingOwn : own}
-          memoryKey={props.memoryKey ?? null}
-          footer={
-            load.state === 'error' ? (
-              <>
-                {props.footer}
-                <ReadFailed message={errorMessage(load.error)} onRetry={retry} />
-              </>
-            ) : (
-              props.footer
-            )
-          }
-        />
-      </SettingsAppMarksProvider>
+      <SettingsView
+        {...view(props)}
+        categories={own}
+        memoryKey={props.memoryKey ?? null}
+        footer={
+          load.state === 'error' ? (
+            <>
+              {props.footer}
+              <ReadFailed message={errorMessage(load.error)} onRetry={retry} />
+            </>
+          ) : (
+            props.footer
+          )
+        }
+      />
     );
   }
   if (load.state !== 'ready') {
@@ -289,17 +296,17 @@ function ReadyView({
         common,
         value,
         account: withPhone,
-        renderLogo,
         saver,
       }),
-    [mode, withShared, current, own, catalogues, common, value, withPhone, renderLogo, saver],
+    [mode, withShared, current, own, catalogues, common, value, withPhone, saver],
   );
 
-  // The apps' logos beside each row, wherever the panel holds more than one app's settings.
-  const marks = useAppMarks(mode === 'all' || withShared ? current : undefined, renderLogo);
+  // The apps' logos beside each row, under All only: on the app's side every row shown applies to that app, so it
+  // draws none and keeps no column for them.
+  const marks = useAppMarks(mode === 'all' ? current : undefined, renderLogo);
 
   return (
-    // An editor's own API Tokens row, folded in under the Account section's, reads whether the tokens are drawn above.
+    // An editor's own API Tokens row, folded into the account's, reads whether the tokens are drawn above.
     <AccountTokensInPlace value={Boolean(account.renderTokens)}>
       <SettingsAppMarksProvider value={marks}>
         <SettingsView
@@ -350,23 +357,8 @@ function useAppMarks(
   );
 }
 
-/** An editor's own Settings, drawn while the rest of its side loads, with its rows marked as its own (or every app's,
- *  for a setting they all share), so the names do not shift when the other apps' logos join them. */
-function markedOwn(
-  own: readonly SettingsCategory[],
-  app: SettingsAppId,
-  every: readonly string[],
-): SettingsCategory[] {
-  return own.map((category) => ({
-    ...category,
-    rows: category.rows.map((row) =>
-      row.apps ? row : { ...row, apps: row.allApps ? every : [app] },
-    ),
-  }));
-}
-
-/** The panel's categories and the rail's headings: one app's (its side of the switch), or All's. Plain, so a test can
- *  read the whole of All for every app's catalogue. */
+/** The panel's categories and the rail's label headings: one app's (its side of the switch), or All's. Plain, so a
+ *  test can read the whole of All for every app's catalogue. */
 export function panelModel({
   mode,
   withShared = false,
@@ -376,7 +368,6 @@ export function panelModel({
   common,
   value,
   account,
-  renderLogo,
   saver,
 }: {
   mode: 'app' | 'all';
@@ -387,9 +378,8 @@ export function panelModel({
   common: CommonCatalogue | null;
   value: PanelScopes;
   account: AccountHost;
-  renderLogo: (id: SettingsAppId | 'all') => ReactNode;
   saver: Pick<ScopesSaver, 'changeApp' | 'changeShared'>;
-}): { categories: SettingsCategory[]; groups?: SettingsGroupHeading[] } {
+}): { categories: SettingsCategory[]; groups?: readonly SettingsGroupHeading[] } {
   const { shared } = account;
   const appModel = (app: SettingsAppId, structure = false) => {
     const catalogue = catalogues[app];
@@ -419,9 +409,6 @@ export function panelModel({
     };
   }
 
-  const groups: SettingsGroupHeading[] = [
-    { id: ACCOUNT_GROUP, label: 'Account', icon: renderLogo('all') },
-  ];
   // Every app the panel lists, the app opened for first: whose rows are read, and whose wording and old copies of a
   // common setting win. An Account row, and an app's row over a setting every app shares, applies to all of them.
   const shownIds = panelAppIds(current);
@@ -434,7 +421,7 @@ export function panelModel({
         row.apps ? row : { ...row, apps: row.allApps ? every : [app] },
       ),
     }));
-  // The Account section's categories, which each app's own copies are folded into below, so it shows once.
+  // The account's categories, which each app's own copies are folded into below, so each shows once.
   const accountListed: SettingsCategory[] = groupCategories(
     ACCOUNT_GROUP,
     accountCategories({
@@ -446,7 +433,7 @@ export function panelModel({
     ...category,
     rows: category.rows.map((row) => ({ ...row, apps: every })),
   }));
-  // An editor's own copies of the Account section's switches and of the common settings are left out of its
+  // An editor's own copies of the account's switches and of the common settings are left out of its
   // categories.
   const commonIds = common ? commonRowIds(common) : new Set<string>();
   const ownFiled = (app: SettingsAppId) =>
@@ -501,34 +488,39 @@ export function panelModel({
   }
   const only = mode === 'app' && current ? current : undefined;
   const merged = mergeAppCategories(sources, APPS_GROUP, only ? { only } : {});
-  if (merged.length > 0) groups.push({ id: APPS_GROUP, label: 'Apps', flat: true });
+  // Under the rail's labels (RAIL_GROUPS), never folded: Account (Profile, Notifications, Privacy, Accessibility, Your
+  // Data, in accountCategories' order), the apps' merged categories, then Developers (API Tokens, Webhooks). The
+  // account's answer to their bare ids too (`notifications`), and Profile to `profile`, the Explorer's old name for it.
+  const accountKept = keepFor(accountListed, only).map((c) => {
+    const bare = c.id.slice(ACCOUNT_GROUP.length + 1);
+    return {
+      ...c,
+      group: DEVELOPER_CATEGORY_IDS.has(bare as AccountCategoryId)
+        ? DEVELOPERS_GROUP
+        : ACCOUNT_GROUP,
+      aliases: [...(c.aliases ?? []), bare, ...(bare === 'account' ? ['profile'] : [])],
+    };
+  });
   return {
-    // The Account section's categories answer to their bare ids too (`notifications`).
     categories: [
-      ...keepFor(accountListed, only).map((c) => ({
-        ...c,
-        aliases: [...(c.aliases ?? []), c.id.slice(ACCOUNT_GROUP.length + 1)],
-      })),
+      ...accountKept.filter((c) => c.group === ACCOUNT_GROUP),
       ...merged,
+      ...accountKept.filter((c) => c.group === DEVELOPERS_GROUP),
     ],
-    groups,
+    groups: RAIL_GROUPS,
   };
 }
 
-// The Account section's categories kept to the rows that apply to `app` (another app's own email switches are left
-// out of this app's side), and those left with any; a sub-category whose parent is left out stands on its own.
+// The account's categories kept to the rows that apply to `app` (another app's own email switches are left out of
+// this app's side), and those left with any.
 function keepFor(categories: readonly SettingsCategory[], app: string | undefined) {
   if (app === undefined) return categories;
-  const kept = categories
+  return categories
     .map((category) => ({
       ...category,
       rows: category.rows.filter((row) => !row.apps || row.apps.includes(app)),
     }))
     .filter((category) => category.rows.length > 0);
-  const ids = new Set(kept.map((c) => c.id));
-  return kept.map(({ parent, ...category }) =>
-    parent !== undefined && ids.has(parent) ? { ...category, parent } : category,
-  );
 }
 
 // A read of the account's settings that failed: what went wrong, and the way to ask again.

@@ -29,6 +29,9 @@ const CATALOGUES: Record<SettingsAppId, () => Promise<{ CATALOGUE: AppCatalogue 
 
 const hasCatalogue = (id: string): id is SettingsAppId => Object.hasOwn(CATALOGUES, id);
 
+/** Every app the store can hold scopes for, a held one too: a reset sets each one's copy (reset-settings/). */
+export const STORED_APP_IDS = Object.keys(CATALOGUES) as readonly SettingsAppId[];
+
 // The apps every panel lists, in APP_SITES' order: the launched ones. A held app is in none of them (no other app's
 // All, no liveworkspace.app link) until its row moves into APP_SITES (liveworkspace/docs/specs/010-site/site.md
 // "Settings", "A held app").

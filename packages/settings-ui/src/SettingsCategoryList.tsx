@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import type { SettingsCategory, SettingsGroupHeading } from './model';
+import { SETTINGS_LABEL } from './SettingsGroup';
 import { NavChevron } from './glyphs';
 
 type ListCategory = SettingsCategory & { matchCount?: number };
@@ -11,9 +12,8 @@ type ListCategory = SettingsCategory & { matchCount?: number };
 const ROOT_CARD =
   'flex flex-col divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700';
 
-// A row's focus ring, drawn inside its box. A group's rows sit in a body that clips (overflow-hidden, for its
-// open-and-shut ease) and the phone's card clips at its rounded edge, so a ring outside the row lost its sides and
-// foot, leaving a keyboard user a thin line over the row; the next row's highlight covered a heading's foot too.
+// A row's focus ring, drawn inside its box. The phone's card clips at its rounded edge, so a ring outside the row
+// lost its sides and foot, leaving a keyboard user a thin line over the row.
 export const FOCUS_INSIDE = 'focus-visible:-outline-offset-2';
 
 function childrenOf<C extends SettingsCategory>(categories: readonly C[], id: string): C[] {
@@ -56,23 +56,12 @@ export function SettingsCategoryList({
   // category with none is dimmed and unclickable: the badge is the answer to
   // "which category was it in?", which is the question search is really for.
   searching?: boolean;
-  // Headings to list the categories under, in this order (the All view's Account, then its merged categories under a
-  // `flat` one, drawn with no heading); a category is listed under the one its `group` names. Absent: one plain list.
+  // Label headings to list the categories under, in this order (the panel's Account, Apps, Developers); a category is
+  // listed under the one its `group` names. Each is a plain label, always shown and never folded, and one with no
+  // category listed is left out. Absent: one plain list.
   groups?: readonly SettingsGroupHeading[];
 }) {
   const isRoot = variant === 'root';
-  // The All view's groups are a single-open accordion: the one holding the current pane starts open, picking a
-  // category opens its group (folding the other), and a search opens them all, so neither the current row nor a hit
-  // is ever hidden.
-  const groupOf = (id: string | null) => categories.find((c) => c.id === id)?.group ?? null;
-  const [openGroup, setOpenGroup] = useState<string | null>(() => groupOf(selected));
-  const [seenSelected, setSeenSelected] = useState(selected);
-  if (seenSelected !== selected) {
-    setSeenSelected(selected);
-    const current = groupOf(selected);
-    if (current) setOpenGroup(current);
-  }
-  const toggleGroup = (id: string) => setOpenGroup((prev) => (prev === id ? null : id));
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
   const toggle = (id: string) =>
     setExpanded((prev) => {
@@ -186,77 +175,29 @@ export function SettingsCategoryList({
   return (
     <nav
       aria-label="Settings categories"
-      className={isRoot ? 'flex flex-col gap-5' : 'flex flex-col gap-0.5 p-2'}
+      className={isRoot ? 'flex flex-col gap-5' : 'flex flex-col gap-3 p-2'}
     >
       {groups.map((group) => {
         const listed = categories.filter((c) => c.group === group.id);
         if (listed.length === 0) return null;
-        if (group.flat) {
-          // No heading: its categories always show, set off from the headings above by a rule (or, on a phone,
-          // as a card of their own).
-          return (
-            <div
-              key={group.id}
-              role="group"
-              aria-label={group.label}
-              data-settings-group={group.id}
-              className={
-                isRoot
-                  ? ROOT_CARD
-                  : 'mt-1.5 flex flex-col gap-0.5 border-t border-slate-200 pt-2 first:mt-0 first:border-t-0 first:pt-0 dark:border-slate-800'
-              }
-            >
-              {listed.map(renderCategory)}
-            </div>
-          );
-        }
         const headingId = `settings-group-${group.id}`;
-        const bodyId = `${headingId}-body`;
-        const open = Boolean(searching) || openGroup === group.id;
         return (
-          <div key={group.id} role="group" aria-labelledby={headingId} className="flex flex-col">
-            <p className={isRoot ? 'mb-1.5' : 'contents'}>
-              {/* The category row's own box, icon column and type size, so a heading sits in the rail's rhythm. */}
-              <button
-                type="button"
-                id={headingId}
-                aria-expanded={open}
-                aria-controls={bodyId}
-                onClick={() => toggleGroup(group.id)}
-                className={`flex w-full cursor-pointer items-center gap-3 text-left transition ${FOCUS_INSIDE} ${
-                  isRoot
-                    ? 'rounded-lg px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-                    : 'rounded-lg px-2.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                <span
-                  aria-hidden
-                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center [&_svg]:size-5"
-                >
-                  {group.icon}
-                </span>
-                <span className="text-optical-line min-w-0 flex-1 text-sm font-semibold text-slate-900 [overflow-wrap:anywhere] dark:text-white">
-                  {group.label}
-                </span>
-                <NavChevron
-                  className={`shrink-0 text-slate-400 transition-transform motion-reduce:transition-none ${open ? 'rotate-90' : ''}`}
-                />
-              </button>
-            </p>
-            {/* Eases open and shut on a grid-rows transition (AccordionSection's), with no measuring; a shut group's
-                rows are inert, so Tab skips them. */}
-            <div
-              id={bodyId}
-              inert={!open}
-              className={`grid transition-[grid-template-rows] duration-short ease-out motion-reduce:transition-none ${
-                open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-              }`}
+          <div
+            key={group.id}
+            role="group"
+            aria-labelledby={headingId}
+            data-settings-group={group.id}
+            className="flex flex-col"
+          >
+            {/* A plain label, the pane's section heading's type, set in to the rows' tile column. */}
+            <h3
+              id={headingId}
+              className={`${isRoot ? 'mb-1.5 px-3' : 'mb-1 px-2.5'} ${SETTINGS_LABEL}`}
             >
-              <div className="min-h-0 overflow-hidden">
-                <div className={isRoot ? ROOT_CARD : 'flex flex-col gap-0.5'}>
-                  {listed.map(renderCategory)}
-                </div>
-              </div>
+              {group.label}
+            </h3>
+            <div className={isRoot ? ROOT_CARD : 'flex flex-col gap-0.5'}>
+              {listed.map(renderCategory)}
             </div>
           </div>
         );

@@ -2,7 +2,7 @@
 
 // The apps a setting applies to, drawn as their logos to the left of its name (liveworkspace/docs/specs/010-site/site.md
 // "Settings", "Which apps a setting applies to"). The panel's one set of categories holds every app's settings, so
-// each row says whose it is: one app's mark, an overlapping cluster for two or more, and liveworkspace's mark alone
+// each row says whose it is: one app's mark, a small block of two or more (at most two across), and liveworkspace's mark alone
 // for a setting every app shares, which reads as "every app" without five logos in a row.
 //
 // Two contexts: the panel's apps (which apps it lists, their names and logos), given by the view that merges them, and
@@ -49,14 +49,17 @@ export function markCount(apps: readonly string[], marks: SettingsAppMarks): num
   return count;
 }
 
-// One mark's size and the gap between two, in px: a cluster of n is n * MARK + (n - 1) * GAP wide. Side by side,
-// never overlapping: four overlapping prisms read as one blur of colour, four in a row as four apps.
+// One mark's size and the gap between two, in px. Never overlapping (four overlapping prisms read as one blur of
+// colour), and never more than COLUMNS across: three or four apps wrap into a block (two over one; two by two), every
+// row starting at the left, so the column stays two marks wide and the name keeps the room.
 const MARK = 14;
 const GAP = 2;
+const COLUMNS = 2;
 
 /** The column a category's marks take, for the widest cluster in it: every row's name starts at the same place. */
 export function marksWidth(slots: number): number {
-  return slots <= 0 ? 0 : slots * MARK + (slots - 1) * GAP;
+  const across = Math.min(slots, COLUMNS);
+  return across <= 0 ? 0 : across * MARK + (across - 1) * GAP;
 }
 
 /** "livediagram", "livediagram and liveplanner", "livediagram, liveplanner and livedesign". */
@@ -107,8 +110,8 @@ export function useRowMarksInset(rowKey: string): number {
   return row.width + NAME_GAP;
 }
 
-/** A row's cluster: its apps' marks in the panel's order, right-aligned in a column `width` wide so they sit against
- *  the name, named for a screen reader and in a tooltip. Memoised on the row's apps, which keep their identity while
+/** A row's cluster: its apps' marks in the panel's order, left-aligned in a column `width` wide, so one mark and the first of
+ *  several sit at the same place, named for a screen reader and in a tooltip. Memoised on the row's apps, which keep their identity while
  *  the row does. */
 export const AppMarks = memo(function AppMarks({
   apps,
@@ -123,12 +126,12 @@ export const AppMarks = memo(function AppMarks({
   const shown = useMemo(() => {
     if (!marks || hidden) return null;
     if (appliesToEvery(apps, marks)) {
-      return { label: 'Applies to every app', logos: [{ id: 'all', logo: marks.every }] };
+      return { label: 'Every App', logos: [{ id: 'all', logo: marks.every }] };
     }
     const listed = marks.apps.filter((app) => apps.includes(app.id));
     if (listed.length === 0) return null;
     return {
-      label: `Applies to ${listNames(listed.map((app) => app.name))}`,
+      label: listNames(listed.map((app) => app.name)),
       logos: listed.map(({ id, logo }) => ({ id, logo })),
     };
   }, [marks, apps, hidden]);
@@ -137,15 +140,15 @@ export const AppMarks = memo(function AppMarks({
     return <span aria-hidden data-settings-app-marks-spacer="" className="block shrink-0" style={{ width }} />;
   }
   return (
-    <span className="flex shrink-0 justify-end" style={{ width }}>
+    <span className="flex shrink-0 justify-start" style={{ width }}>
       <Tooltip label={shown.label}>
         <span
           role="img"
           aria-label={shown.label}
           data-settings-app-marks={shown.logos.map((l) => l.id).join(' ')}
           // Above a switch row's stretched click target, so the tooltip still answers the pointer.
-          className="relative z-[1] flex items-center"
-          style={{ gap: GAP }}
+          className="relative z-[1] flex flex-wrap items-center justify-start"
+          style={{ gap: GAP, maxWidth: marksWidth(COLUMNS) }}
         >
           {shown.logos.map(({ id, logo }) => (
             <span

@@ -8,7 +8,7 @@ import { trackOrganise } from '@/lib/explorer-organise';
 import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsDefaultFoldersRowSpec } from './settings-catalogue';
 
-// Settings › Designs › Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new designs go
+// Settings › Explorer › Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new designs go
 // when they are made without choosing a place, one entry for designs and one per template family, each with Clear
 // and Change. The shared Explorer draws the rows and keeps them on the index, per person and per app.
 export function SettingsDefaultFoldersRow({ row }: { row: SettingsDefaultFoldersRowSpec }) {

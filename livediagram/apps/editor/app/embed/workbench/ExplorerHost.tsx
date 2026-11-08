@@ -128,7 +128,7 @@ export function ExplorerHost({
   // The open canvas deleted from the editor lands here with its Undo (lib/document-delete-undo.ts), taken once.
   const [trashedOnArrival] = useState(arrivedTrashed);
   // The hero's close (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): reported, then written, so
-  // every device the person signs in on opens Home without it. Settings > Documents turns it back on.
+  // every device the person signs in on opens Home without it. Settings > Explorer turns it back on.
   const hideHero = useCallback(() => {
     track('UI', 'Toggled', 'HomeBannerOff');
     commitUserPreferences(prefs, { ...prefs, homeBanner: false }, viewerId ?? null);

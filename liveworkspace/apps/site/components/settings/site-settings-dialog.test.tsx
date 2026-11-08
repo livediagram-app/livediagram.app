@@ -77,6 +77,11 @@ async function until(present: () => unknown) {
 const switchFor = (rowKey: string) =>
   document.querySelector<HTMLButtonElement>(`[role="switch"][aria-labelledby="${rowKey}-label"]`)!;
 
+// The rail's label headings: plain labels, never an accordion.
+const headings = () =>
+  [...document.querySelectorAll('nav[aria-label="Settings categories"] [role="group"] > h3')].map(
+    (h) => h.textContent,
+  );
 const railButton = (label: string, within: ParentNode = document) =>
   [
     ...within.querySelectorAll<HTMLButtonElement>(
@@ -109,29 +114,28 @@ describe('the Settings panel, filtered to an app', () => {
   ) {
     return (url: string, init?: RequestInit) => {
       if (init?.method === 'PATCH') return patch(url, init) ?? json(200, { all: {}, app: {} });
-      if (url.endsWith('/profile')) return json(200, { profile: null });
+      // The profile's read carries the browser's time zone (`/profile?timeZone=`).
+      if (url.split('?')[0]!.endsWith('/profile')) return json(200, { profile: null });
       const app = url.split('/settings/')[1] as AppId | undefined;
       return json(200, { all: {}, app: (app && apps[app]) ?? {}, updatedAt: null });
     };
   }
-  const headings = () =>
-    [...document.querySelectorAll('nav[aria-label="Settings categories"] [role="group"] > p')].map(
-      (p) => p.textContent,
-    );
   const reads = () => fetchMock.mock.calls.filter(([, init]) => init?.method !== 'PATCH').length;
 
-  it("is a modal dialog with the app's switch: the Account section, Common and that app, no other app", async () => {
+  it("is a modal dialog with the app's switch: the account's, Common's and that app's, with no logos", async () => {
     fetchMock.mockImplementation(answers());
     await open('liveplanner.app');
-    await until(() => headings().includes('liveplanner'));
+    await until(() => headings().includes('Apps'));
     const dialog = document.querySelector('[role="dialog"]')!;
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     expect(dialog.getAttribute('aria-label')).toBe('Settings');
     expect(scopeButton('liveplanner').getAttribute('aria-pressed')).toBe('true');
     // The footer only says how settings save: it has no link into the app's own Settings.
     expect(dialog.textContent).not.toContain('More in liveplanner Settings');
-    // Account and Common shape this app too; the other apps' own groups stay under All.
-    expect(headings()).toEqual(['Account', 'Common', 'liveplanner']);
+    // The account's and Common shape this app too, under the same labels as All; no group per app.
+    expect(headings()).toEqual(['Account', 'Apps', 'Developers']);
+    // Only All draws the apps' logos beside each row.
+    expect(document.querySelector('[data-settings-app-marks]')).toBeNull();
     const paths = fetchMock.mock.calls.map(([url]) => url);
     expect(paths).toContain('/api/account/settings/liveplanner.app');
   });
@@ -146,7 +150,7 @@ describe('the Settings panel, filtered to an app', () => {
       ),
     );
     await open('livediagram.app', { initialCategoryId: 'account:notifications' });
-    // The app's own email switch, filed under the Account section's Notifications with the app's name.
+    // The app's own email switch, filed under the account's Notifications.
     const key = 'livediagram.app:notifyDocumentJoin';
     await until(() => switchFor(key));
     expect(switchFor(key).getAttribute('aria-checked')).toBe('true');
@@ -173,7 +177,7 @@ describe('the Settings panel, filtered to an app', () => {
       ),
     );
     await open('livediagram.app');
-    await until(() => headings().includes('Common'));
+    await until(() => headings().includes('Apps'));
     await until(() => {
       const button = railButton('Editor');
       if (button) act(() => button.click());
@@ -192,7 +196,7 @@ describe('the Settings panel, filtered to an app', () => {
   it('closes on Escape, and reopens from the page’s copy', async () => {
     fetchMock.mockImplementation(answers());
     const onClose = await open('liveplanner.app');
-    await until(() => headings().includes('liveplanner'));
+    await until(() => headings().includes('Apps'));
     const first = reads();
     const dialog = document.querySelector('[role="dialog"]')!;
     act(() => {
@@ -201,7 +205,7 @@ describe('the Settings panel, filtered to an app', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     act(() => root.render(<div />));
     await open('liveplanner.app');
-    await until(() => headings().includes('liveplanner'));
+    await until(() => headings().includes('Apps'));
     // The settings come from the page's copy; the Profile (who, how they sign in, where) is drawn fresh.
     const again = fetchMock.mock.calls
       .slice(first)
@@ -212,7 +216,7 @@ describe('the Settings panel, filtered to an app', () => {
 
 describe('the Settings panel, on All', () => {
   function answer(url: string, init?: RequestInit) {
-    if (url.endsWith('/profile')) return json(200, { profile: null });
+    if (url.split('?')[0]!.endsWith('/profile')) return json(200, { profile: null });
     if (url.endsWith('/settings') && init?.method === 'PATCH') {
       return json(200, { all: { notifyTips: false }, updatedAt: null });
     }
@@ -223,21 +227,18 @@ describe('the Settings panel, on All', () => {
     fetchMock.mockImplementation(answer);
     await open(null);
     expect(document.querySelector('[aria-label="Show settings for"]')).toBeNull();
-    const headings = [
-      ...document.querySelectorAll('nav[aria-label="Settings categories"] [role="group"] > p'),
-    ].map((p) => p.textContent);
-    // Account is the one heading: every other category is one set, merged across Common and the apps.
-    expect(headings).toEqual(['Account']);
+    // Three labels: the account's, one set merged across Common and the apps, and the developers'.
+    expect(headings()).toEqual(['Account', 'Apps', 'Developers']);
     const apps = document.querySelector<HTMLElement>(
-      'nav[aria-label="Settings categories"] [role="group"][aria-label="Apps"]',
+      'nav[aria-label="Settings categories"] [role="group"][data-settings-group="apps"]',
     )!;
-    const top = [...apps.children].map((c) =>
+    const top = [...apps.lastElementChild!.children].map((c) =>
       (c.matches('button') ? c : c.querySelector('button'))?.textContent?.trim(),
     );
     expect(top.filter((label) => label === 'Editor')).toHaveLength(1);
-    expect(top, top.join(', ')).toContain('Tours');
+    expect(top, top.join(', ')).toContain('Getting Started');
     // The five apps' scopes, then the profile (the first category, shown).
-    const paths = fetchMock.mock.calls.map(([url]) => url);
+    const paths = fetchMock.mock.calls.map(([url]) => url.split('?')[0]!);
     expect(paths).toContain('/api/account/profile');
     expect(paths.filter((p) => p.startsWith('/api/account/settings/'))).toHaveLength(5);
     expect(document.querySelector('[data-settings-pane]')?.textContent).toContain(
@@ -248,13 +249,13 @@ describe('the Settings panel, on All', () => {
   it("opens a merged category, each app's own rows marked with its logo, written to its own scope", async () => {
     fetchMock.mockImplementation(answer);
     await open(null);
-    act(() => railButton('Tours')!.click());
+    act(() => railButton('Getting Started')!.click());
     await settle();
     const pane = document.querySelector<HTMLElement>('[data-settings-pane]')!;
     // No app sub-headings: one list, each row naming the apps it applies to.
     expect(pane.querySelector('[data-settings-app-heading]')).toBeNull();
     const plannerMarks = [...pane.querySelectorAll('[data-settings-app-marks]')].find(
-      (el) => el.getAttribute('aria-label') === 'Applies to liveplanner',
+      (el) => el.getAttribute('aria-label') === 'liveplanner',
     )!;
     expect(plannerMarks).toBeTruthy();
     const row = plannerMarks

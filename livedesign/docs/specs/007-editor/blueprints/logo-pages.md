@@ -593,7 +593,7 @@ Measured (vitest on this branch):
   `Exclude Shapes`, `Mirror Copy`; Export card **Logo Kit** ("An SVG, PNGs from 16 to 1024 px and a
   favicon.ico, in one .zip."), subtitle "Download a logo page as an SVG, PNGs and a favicon.",
   button **Download .zip**.
-- Settings: Editor, then **Pages**, one **Logo Pages** section: the Logo Guides switch (with
+- Settings: Editor, its **Logo Pages** section: the Logo Guides switch (with
   `alsoIn` "a logo page's Guides button": the guides live in the Guides popover beside the cog, not
   the page panel), and nested under it while it is on, Logo Guide Strength and **Guides Shown**, a
   `toggleGroup` of one chip per guide (Centre Lines, Diagonals, Safe Area, Circles, Square, Grid), each

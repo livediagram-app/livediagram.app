@@ -105,23 +105,6 @@ describe('SettingsCategoryPane: targeting a section', () => {
   });
 });
 
-describe('SettingsCategoryPane link rows', () => {
-  it('opens the linked category in place', () => {
-    const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
-    const onOpenCategory = vi.fn();
-    render(
-      <SettingsCategoryPane
-        category={{ ...accessibility, rows: accessibility.rows.filter((r) => r.kind === 'link') }}
-        settings={{}}
-        onChange={vi.fn()}
-        onOpenCategory={onOpenCategory}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Open Appearance' }));
-    expect(onOpenCategory).toHaveBeenCalledWith('appearance');
-  });
-});
-
 // Tours (docs/specs/007-editor/user-preferences.md "Tours"): each switch writes its own preference,
 // inverted, and sends its own token.
 describe('SettingsCategoryPane tours', () => {

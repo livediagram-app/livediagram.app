@@ -48,7 +48,6 @@ export type BindableToggleGroup<P> = SettingsRowText & {
   }[];
 };
 
-export type BindableLink = SettingsRowText & { kind: 'link'; target: string; cta: string };
 export type BindableNote = SettingsRowText & { kind: 'note'; note: string; signIn?: boolean };
 
 export type BindableRow<P> =
@@ -56,7 +55,6 @@ export type BindableRow<P> =
   | BindableChoice<P>
   | BindableSlider<P>
   | BindableToggleGroup<P>
-  | BindableLink
   | BindableNote;
 
 const BINDABLE = new Set(['toggle', 'choice', 'slider', 'toggleGroup', 'link', 'note']);
@@ -87,6 +85,7 @@ function text(row: SettingsRowText): SettingsRowText {
     ...(row.parent !== undefined ? { parent: row.parent } : {}),
     ...(row.helpArticle !== undefined ? { helpArticle: row.helpArticle } : {}),
     ...(row.alsoIn !== undefined ? { alsoIn: row.alsoIn } : {}),
+    ...(row.link !== undefined ? { link: row.link } : {}),
     ...(row.illustration !== undefined ? { illustration: row.illustration } : {}),
     ...(row.desktopOnly !== undefined ? { desktopOnly: row.desktopOnly } : {}),
   };
@@ -151,8 +150,6 @@ export function bindRow<P>(
           },
         })),
       };
-    case 'link':
-      return { ...base, kind: 'link', target: row.target, cta: row.cta };
     case 'note':
       return { ...base, kind: 'note', note: row.note, ...(row.signIn ? { signIn: true } : {}) };
   }

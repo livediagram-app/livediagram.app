@@ -221,27 +221,13 @@ describe('mergeAppCategories', () => {
     expect(onlyB).toEqual([]);
   });
 
-  it('keeps every old id as an alias, and points links and readouts at the merged category', () => {
+  it('keeps every old id as an alias of the merged category', () => {
     const merged = mergeAppCategories(
       [
         common([{ id: 'editor', label: 'Editor', rows: [toggle('guides', 'Guides')] }]),
         app('a.app', [
           { id: 'editor', label: 'Editor', rows: [] },
           { id: 'draw', label: 'Draw', parent: 'editor', rows: [toggle('pen', 'Pen')] },
-          {
-            id: 'more',
-            label: 'More',
-            rows: [
-              {
-                kind: 'link',
-                key: 'go',
-                label: 'Go',
-                description: '',
-                target: 'draw',
-                cta: 'Open',
-              },
-            ],
-          },
         ]),
         app('b.app', [
           { id: 'panels', label: 'Panels', rows: [] },
@@ -255,9 +241,41 @@ describe('mergeAppCategories', () => {
       expect.arrayContaining(['common:editor', 'editor', 'a.app:editor']),
     );
     expect(byLabel('Draw').aliases).toEqual(expect.arrayContaining(['a.app:draw', 'draw']));
-    expect(byLabel('More').rows[0]).toMatchObject({ target: byLabel('Draw').id });
     // Panels was left empty, so Map stands at the top level, under the name of the group it came from.
     expect(byLabel('Panels').parent).toBeUndefined();
+  });
+
+  it('lands the old ids of a category folded into another on the one it was folded into', () => {
+    // livediagram's Draw became a section of Editor: `draw`, `livediagram.app:draw` and the merged sub-category it
+    // was (`apps:editor/draw`) all open Editor. An old merged place written as a path (`/editor/presenting`) lands
+    // on the category that carries it.
+    const merged = mergeAppCategories(
+      [
+        app('a.app', [
+          {
+            id: 'editor',
+            label: 'Editor',
+            aliases: ['draw'],
+            rows: [{ ...toggle('pen', 'Pen'), section: 'Draw' }],
+          },
+          {
+            id: 'presenting',
+            label: 'Presenting',
+            aliases: ['/editor/presenting'],
+            rows: [toggle('loop', 'Loop')],
+          },
+        ]),
+      ],
+      APPS_GROUP,
+    );
+    const editor = merged.find((c) => c.label === 'Editor')!;
+    expect(merged.some((c) => c.label === 'Draw')).toBe(false);
+    expect(editor.aliases).toEqual(
+      expect.arrayContaining(['draw', 'a.app:draw', `${APPS_GROUP}:editor/draw`]),
+    );
+    expect(merged.find((c) => c.label === 'Presenting')!.aliases).toContain(
+      `${APPS_GROUP}:editor/presenting`,
+    );
   });
 
   it('searches only what the filter keeps', () => {
@@ -346,7 +364,6 @@ describe('All in the Settings panel', () => {
       common: commonCatalogue([]),
       value: { all: {}, apps: {} },
       account: {},
-      renderLogo: () => null,
       saver,
     });
     const tours = categories.filter((c) => c.label === 'Tours');
@@ -369,7 +386,6 @@ describe('All in the Settings panel', () => {
       common: commonCatalogue([]),
       value: { all: {}, apps: {} },
       account: {},
-      renderLogo: () => null,
       saver: { changeApp: vi.fn(), changeShared: vi.fn() },
     });
     for (const id of ['tours', 'liveplanner.app:tours', 'notifications']) {
@@ -399,7 +415,6 @@ describe('All in the Settings panel', () => {
       common: commonCatalogue([]),
       value: { all: {}, apps: {} },
       account: {},
-      renderLogo: () => null,
       saver: { changeApp: vi.fn(), changeShared: vi.fn() },
     });
     renderWithKit(
@@ -433,16 +448,43 @@ describe('the five apps’ catalogues in one set of categories', () => {
       common,
       value: { all: {}, apps: {} },
       account: { renderTokens: () => null },
-      renderLogo: () => null,
       saver: { changeApp: vi.fn(), changeShared: vi.fn() },
     });
   const rows = (categories: readonly SettingsCategory[]) => categories.flatMap((c) => c.rows);
 
   it('lists every category once, with no Common or per-app group, every row naming its apps', () => {
     const { categories, groups } = model('all');
-    expect(groups?.map((g) => g.id)).toEqual(['account', APPS_GROUP]);
+    expect(groups?.map((g) => g.label)).toEqual(['Account', 'Apps', 'Developers']);
+    // Account's first, in their order, then the apps' merged categories, then Developers'; every category under one
+    // of the labels, each label's categories together.
+    const account = categories.filter((c) => c.group === 'account').map((c) => c.label);
+    expect(account).toEqual(['Notifications', 'Privacy', 'Accessibility']);
+    expect(categories.filter((c) => c.group === 'developers').map((c) => c.label)).toEqual([
+      'API Tokens',
+    ]);
+    const order = categories.map((c) => c.group);
+    expect(order).toEqual([
+      ...order.filter((g) => g === 'account'),
+      ...order.filter((g) => g === APPS_GROUP),
+      ...order.filter((g) => g === 'developers'),
+    ]);
+    // Every account category is top-level, with a tile of its own.
+    for (const c of categories.filter((c) => c.group !== APPS_GROUP)) {
+      expect(c.parent, c.id).toBeUndefined();
+      expect(c.icon, c.id).toBeTruthy();
+    }
     const labels = categories.map((c) => `${c.parent ?? ''}/${c.label}`);
     expect(new Set(labels).size).toBe(labels.length);
+    // No sub-categories: each panel and each mode is a section, and the sections read in SECTION_ORDER whichever
+    // source brought one first (Common brings Pages before livediagram's Draw).
+    expect(categories.filter((c) => c.parent !== undefined).map((c) => c.label)).toEqual([]);
+    const sections = (label: string) => [
+      ...new Set(categories.find((c) => c.label === label)!.rows.map((r) => r.section ?? '')),
+    ];
+    expect(sections('Editor')).toEqual(['Canvas', 'Mouse', 'Draw', 'Pages', 'Logo Pages']);
+    expect(sections('Panels')).toEqual(['Layers', 'Quick Style', 'Map', 'Collaborate']);
+    // The Explorer holds Show Home Banner without a heading repeating its name.
+    expect(sections('Explorer')).toEqual(['']);
     for (const row of rows(categories)) {
       expect(row.apps?.length, row.key).toBeGreaterThan(0);
     }

@@ -64,9 +64,8 @@ describe('settings catalogue', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
-      // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
-      // linking that element's article.
-      ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
+      // Element tours (docs/specs/007-editor/element-tours.md): one switch per element, linking that element's
+      // article; no switch over them all while the Portal is the only one.
       ['elementTour-portal', 'toggle', 'Portal', 'portals'],
     ]);
     // One shared explanation under the section heading, not one per row.
@@ -80,10 +79,19 @@ describe('settings catalogue', () => {
     expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
       [
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
-        ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['PortalTourSeenOff', 'PortalTourSeenOn'],
       ],
     );
+  });
+
+  // The switch over every element went (docs/specs/007-editor/element-tours.md "Remembering runs"): a stored
+  // `elementToursSeen` still reads as the Portal taken, and turning Portal on lifts it.
+  it('reads a stored switch over them all on the Portal switch', () => {
+    const portal = TOGGLES.find((r) => r.key === 'elementTour-portal')!;
+    expect(portal.read({ elementToursSeen: true })).toBe(false);
+    const again = portal.write({ elementToursSeen: true }, true);
+    expect(again.elementToursSeen).toBe(false);
+    expect(portal.read(again)).toBe(true);
   });
 
   // A phone has no middle button: the Mouse section's row is inert there, as the Map's are.
@@ -125,9 +133,7 @@ describe('settings catalogue', () => {
 
   it('writes only its own key, so one switch never moves another', () => {
     const before: UserPreferences = { alignmentGuides: false, telemetryEnabled: false };
-    // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
     const own: Record<string, string[]> = {
-      elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
       // One element's tour writes the answered list alone (lib/element-tours.ts).
       'elementTour-sankey': ['elementTourKinds'],
       'elementTour-layer-stack': ['elementTourKinds'],
@@ -221,11 +227,19 @@ describe('settings catalogue', () => {
     expect(ids).not.toContain('webhooks');
   });
 
-  it('points every link row at a category that exists', () => {
-    const ids = new Set(SETTINGS_CATEGORIES.map((c) => c.id));
-    const links = ALL_ROWS.filter((r) => r.kind === 'link');
-    expect(links.length).toBeGreaterThan(0);
-    for (const row of links) expect(ids.has(row.target), row.key).toBe(true);
+  it('shows a guest Your Data the same way: a stand-in that says to sign in', () => {
+    const guest = visibleCategories({ emailEnabled: false, signedIn: false });
+    const data = guest.find((c) => c.id === 'data')!;
+    expect(data.parent).toBe('account');
+    expect(data.rows).toEqual([
+      expect.objectContaining({ kind: 'note', key: 'dataExportSignIn', signIn: true }),
+    ]);
+    const ids = visibleCategories({ emailEnabled: false, signedIn: true }).map((c) => c.id);
+    expect(ids).not.toContain('data');
+  });
+
+  it('has no row that opens another category: a setting shows where it belongs', () => {
+    expect(ALL_ROWS.map((r) => r.kind)).not.toContain('link');
   });
 
   it('drops the email rows unless mail can be sent AND someone is signed in', () => {
@@ -276,29 +290,26 @@ describe('settings sub-categories', () => {
     expect(keys).toEqual(['alignmentGuides', 'elementIndicatorStyle', 'middleMousePan']);
   });
 
-  it('nests one sub-category per panel under Panels, directly after it and in order', () => {
-    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
-    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
-    expect(children).toEqual(['map', 'collaborate']);
-    const at = ids.indexOf('panels');
-    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  it('files each panel as a section of Panels, after Panel Opacity', () => {
+    expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels')).toEqual([]);
+    const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
+    expect(panels.rows[0]!.key).toBe('panelOpacity');
+    expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual([
+      'Map',
+      'Collaborate',
+    ]);
+    // Their old sub-category ids still land on Panels.
+    expect(panels.aliases).toEqual(['map', 'collaborate']);
   });
 
-  it('keeps Panel Opacity on Panels itself, and Enable Map under Map', () => {
-    const keys = (id: string) =>
-      SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows.map((r) => r.key);
-    expect(keys('panels')).toEqual(['panelOpacity']);
-    expect(keys('map')[0]).toBe('showMinimap');
-  });
-
-  it('opens every panel sub-category with its Enable switch, on by default', () => {
-    const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
+  it('opens every panel section with its Enable switch, on by default', () => {
+    const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
     const switches: Record<string, [string, string]> = {
-      map: ['showMinimap', 'Enable Map'],
-      collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
+      Map: ['showMinimap', 'Enable Map'],
+      Collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
     };
-    for (const [id, [key, label]] of Object.entries(switches)) {
-      const row = first(id);
+    for (const [section, [key, label]] of Object.entries(switches)) {
+      const row = panels.rows.find((r) => r.section === section)!;
       expect([row.key, row.label]).toEqual([key, label]);
       if (row.kind !== 'toggle') throw new Error(`${key} is not a toggle`);
       expect(row.read({})).toBe(true);
@@ -307,17 +318,18 @@ describe('settings sub-categories', () => {
   });
 
   it("offers a panel's other rows only while its Enable switch is on", () => {
-    const rows = (id: string, preferences: UserPreferences) =>
+    const rows = (section: string, preferences: UserPreferences) =>
       visibleCategories({ emailEnabled: false, signedIn: false, preferences })
-        .find((c) => c.id === id)!
-        .rows.map((r) => r.key);
-    expect(rows('map', { showMinimap: false })).toEqual(['showMinimap']);
-    expect(rows('map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
+        .find((c) => c.id === 'panels')!
+        .rows.filter((r) => r.section === section)
+        .map((r) => r.key);
+    expect(rows('Map', { showMinimap: false })).toEqual(['showMinimap']);
+    expect(rows('Map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
   });
 
   it('names a sub-category by its path', () => {
-    const map = SETTINGS_CATEGORIES.find((c) => c.id === 'map')!;
-    expect(settingsCategoryPath(map)).toBe('Panels › Map');
+    const notifications = SETTINGS_CATEGORIES.find((c) => c.id === 'notifications')!;
+    expect(settingsCategoryPath(notifications)).toBe('Account › Notifications');
     expect(settingsCategoryPath(SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!)).toBe(
       'Panels',
     );

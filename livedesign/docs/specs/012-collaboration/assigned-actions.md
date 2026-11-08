@@ -350,7 +350,7 @@ notifyActionAssigned?: boolean; // someone assigns me an action
   accounts in the `all` scope, so turning it off in any app turns it off here. The notify dispatcher
   reads it through `NotificationPrefs` (`apps/api/src/accounts/settings.ts`).
 - Client-side, Settings' email rows ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md))
-  hold **Someone Assigns Me an Action** ("A teammate assigns you an action on an element.",
+  hold **Someone Assigns Me an Action** ("A teammate assigns you an action on an element, or a card on a board.",
   `emailSwitch('notifyActionAssigned')` in `settings-catalogue.ts`), gated with the others on `emailEnabled`.
 
 This is the recipient-side kill switch the dialog checkbox cannot be: the

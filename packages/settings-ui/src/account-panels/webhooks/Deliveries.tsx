@@ -1,11 +1,13 @@
 import { CompactEmptyState } from '@liveworkspace/ui';
 import { dateFormat } from '@liveworkspace/ui/date-format';
 import { SettingsSharedGlyph } from '../../glyphs';
-import type { WebhookDelivery, WebhookEvent } from '@liveworkspace/index-client';
-import { AppName, DeliveredGlyph, FailedGlyph, WaitingGlyph } from './marks';
-import { deliveryLine, EVENT_APP, eventName } from './webhooks-api';
+import type { WebhookDelivery } from '@liveworkspace/index-client';
+import { DeliveredGlyph, FailedGlyph, WaitingGlyph } from './marks';
+import { AppTag } from './pickers';
+import { deliveryLine, eventName } from './webhooks-api';
 
-// A webhook's Recent Deliveries (webhooks.md "Delivery"): newest first, each its event and item, what happened in
+// A webhook's Recent Deliveries (webhooks.md "Delivery"): newest first, each its event, the app it came from (its logo
+// and wordmark; a test has none) and item, what happened in
 // words, how many tries, and when, marked green, red or amber.
 
 // In the reader's locale, made once (@liveworkspace/ui/date-format).
@@ -42,7 +44,8 @@ export function Deliveries({ deliveries }: { deliveries: WebhookDelivery[] | nul
     <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-slate-50/60 text-sm dark:divide-slate-700/70 dark:border-slate-700 dark:bg-slate-900/30">
       {deliveries.map((d) => {
         const { Glyph, tone } = MARKS[d.state];
-        const app = EVENT_APP[d.type as WebhookEvent];
+        // A test is liveworkspace's, about no app.
+        const app = d.type === 'ping' || !d.app || d.app === 'liveworkspace' ? null : d.app;
         const at = d.lastAttemptAt ?? d.occurredAt;
         return (
           <li key={d.id} data-delivery={d.state} className="flex items-start gap-2.5 px-3 py-2.5">
@@ -51,8 +54,8 @@ export function Deliveries({ deliveries }: { deliveries: WebhookDelivery[] | nul
             </span>
             <span className="min-w-0 flex-1">
               <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 text-slate-900 dark:text-white">
-                <span className="font-medium">{eventName(d.type)}</span>
-                {app ? <AppName app={app} /> : null}
+                <span className="font-medium">{eventName(d.app, d.type)}</span>
+                {app ? <AppTag app={app} /> : null}
                 {d.type !== 'ping' ? (
                   <span className="min-w-0 truncate text-slate-600 dark:text-slate-300">
                     · {d.title}

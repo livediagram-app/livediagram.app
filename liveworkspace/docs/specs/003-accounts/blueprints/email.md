@@ -102,8 +102,11 @@ json_each(?)))` over the outside zones when it is inside. The split is worked ou
   queries share it), with one `Intl.DateTimeFormat` per zone kept for the isolate (at most the known list).
 - The session sighting (`index.ts`, `withSessionColour` in `profiles.ts`): on `GET /api/auth/get-session` with a
   user, an `X-Time-Zone` that `parseTimeZone` accepts is written in the colour read's batch
-  (`UPDATE "user" SET timeZone = ?2 WHERE id = ?1 AND timeZone IS NOT ?2`). liveworkspace.app sends it from
-  `lib/session.ts` and the sign-in flow's `/get-session` calls (`timeZoneHeader()` in `lib/accounts.ts`).
+  (`UPDATE "user" SET timeZone = ?2 WHERE id = ?1 AND timeZone IS NOT ?2 AND timeZoneChosen IS NULL`).
+  liveworkspace.app sends it from `lib/session.ts` and the sign-in flow's `/get-session` calls (`timeZoneHeader()` in
+  `lib/accounts.ts`). The Settings panel's profile reads send it as `?timeZone=` on either door (`requestProfileHost`
+  in `@liveworkspace/settings-ui`), written by the same guarded update. A zone picked in Settings › Profile sets
+  `timeZoneChosen = 1` ([settings-and-profiles.md](settings-and-profiles.md)), and no sighting overwrites it.
 - Each email sent is `Email·Sent·<Welcome|Activation|Week1|Week2|WinBack>` under the home app; none is counted when
   there is no home app.
 

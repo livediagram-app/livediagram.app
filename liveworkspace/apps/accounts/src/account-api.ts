@@ -1,6 +1,6 @@
 // The account API under /api/account (liveworkspace/docs/specs/003-accounts/accounts.md "Teams" and "API tokens"):
 //   - for the signed-in person on liveworkspace.app, by their session cookie: their teams, members and
-//     invitations, their API tokens, their settings shared by every app, and their profile;
+//     invitations, their API tokens, their settings shared by every app (and resetting all of them), and their profile;
 //   - for the apps' servers, by their OAuth client credentials (/api/account/internal/*): checking an
 //     API token, making one for a connecting AI tool, a token revoking itself, which tokens still
 //     work, the teams change feed, a team made in an app, reading and writing someone's settings, and
@@ -57,6 +57,7 @@ import {
   isSettingsApp,
   isSettingsOwner,
   readSettings,
+  resetSettings,
   writeSettings,
   type SettingsApp,
 } from './settings.ts';
@@ -96,6 +97,7 @@ import {
   verifyApiToken,
 } from './tokens.ts';
 import { pushDeviceRoutes, pushInternal } from './push/routes.ts';
+import { parseTimeZone } from './send-window.ts';
 import { reportServerEvent } from './telemetry.ts';
 import { handleWorkbenchInternal } from './workbench/internal.ts';
 import { endTokenWorkbench, tokenBySecret } from './workbench/revoke.ts';
@@ -390,6 +392,8 @@ async function handleSignedIn(
   if (section === 'settings' && !id) {
     if (method === 'GET') return sharedSettings(db, actor);
     if (method === 'PATCH') return patchSharedSettings(request, db, actor);
+    // Reset All Settings: every scope of the person's own, back to its defaults.
+    if (method === 'DELETE') return json(await resetSettings(db, actor.id));
   }
 
   // One app's own settings, for its dialog on the settings page: GET answers both scopes (the app's
@@ -444,21 +448,24 @@ async function tokenRoutes(
 // --- The profile, on both doors: the session's on liveworkspace.app, the bearer's on an app's address and in the
 // editors (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles") ---
 
-// GET answers the person's own profile, PATCH `{ name?, color?, showPicture? }` sets any of them (null clears a name
-// or colour). Both answer it with their own picture and its switch (OwnProfile). Null for a method that isn't one of
-// these.
+// GET answers the person's own profile, PATCH `{ name?, color?, showPicture?, timeZone? }` sets any of them (null
+// clears a name or colour, and puts the time zone back to Automatic). Both answer it with their own picture, its
+// switch and their time zone (OwnProfile). `?timeZone=`, the browser's zone the Settings panel sends, is noted for
+// the send window as a session sighting is (never over a zone picked by hand; an unknown one is ignored), so an
+// account seen only in an editor's Settings is timed by its own zone too. Null for a method that isn't one of these.
 async function profileRoute(
   request: Request,
   db: Env['AUTH_DB'],
   owner: string,
 ): Promise<Response | null> {
+  const noted = parseTimeZone(new URL(request.url).searchParams.get('timeZone'));
   if (request.method === 'GET') {
-    return json({ profile: await readOwnProfile(db, owner) });
+    return json({ profile: await readOwnProfile(db, owner, noted) });
   }
   if (request.method === 'PATCH') {
-    const checked = checkProfilePatch(await readBody(request));
+    const checked = checkProfilePatch(await readBody(request), { timeZone: true });
     if (!checked.ok) return error(400, checked.error);
-    const result = await writeProfile(db, owner, checked.patch);
+    const result = await writeProfile(db, owner, checked.patch, Date.now(), noted);
     return result.ok ? json({ profile: result.value }) : answer(result);
   }
   return null;
@@ -684,6 +691,10 @@ async function handleBearer(
   if (section === 'settings' && !id && method === 'GET') return sharedSettings(db, actor);
   if (section === 'settings' && !id && method === 'PATCH') {
     return patchSharedSettings(request, db, actor);
+  }
+  // Its Danger Zone's Reset All Settings, for the account the token is (a guest stopped above).
+  if (section === 'settings' && !id && method === 'DELETE') {
+    return json(await resetSettings(db, actor.id));
   }
   if (section === 'settings' && id && !sub) {
     const answered = await appSettings(request, db, actor, id);

@@ -13,15 +13,16 @@
 import { trimInvisible, withoutBidiControls } from '@liveworkspace/api-kit/typed-text';
 import { importSealKey, seal } from '@liveworkspace/api-kit/sealed';
 import {
-  isWebhookEvent,
   isWebhookKind,
+  orderedTopics,
+  topicsOf,
   WEBHOOK_NAME_MAX,
   WEBHOOKS_PER_SCOPE_MAX,
   type CardMove,
   type Webhook,
   type WebhookDelivery,
-  type WebhookEvent,
   type WebhookKind,
+  type WebhookTopic,
   type WebhookPauseReason,
   CARD_MOVES_MAX,
 } from '@liveworkspace/index-client';
@@ -87,7 +88,8 @@ export function webhookOf(row: WebhookRow): Webhook {
     kind: row.kind,
     teamId: row.scope.startsWith('t:') ? row.scope.slice(2) : null,
     host: row.host,
-    events: row.events.split(',').filter(isWebhookEvent),
+    // A bare event left from before topics reads as that event from every app that sends it.
+    events: orderedTopics(row.events.split(',').flatMap(topicsOf)),
     createdAt: row.created_at,
     pausedAt: row.paused_at,
     pausedReason: row.paused_reason,
@@ -95,8 +97,8 @@ export function webhookOf(row: WebhookRow): Webhook {
   };
 }
 
-// Events as stored: comma-wrapped, so one `instr` matches a type.
-const storedEvents = (events: readonly WebhookEvent[]) => `,${events.join(',')},`;
+// Topics as stored: comma-wrapped, so one `instr` matches an app's event (`,livediagram:shared,`).
+const storedEvents = (events: readonly WebhookTopic[]) => `,${events.join(',')},`;
 
 // A name as the account names are kept (typed-text): no bidi control to turn the words around it backwards, and no
 // spaces or invisible characters at its ends to make it look blank. Longer than the limit is refused, as before.
@@ -106,9 +108,17 @@ function readName(value: unknown): string | null {
   return name.length > 0 && name.length <= WEBHOOK_NAME_MAX ? name : null;
 }
 
-function readEvents(value: unknown): WebhookEvent[] | null {
-  if (!Array.isArray(value) || value.length === 0 || !value.every(isWebhookEvent)) return null;
-  return [...new Set(value)];
+// The topics asked for: each an app's event that app really sends, or a bare event (an older Settings) as every app
+// that sends it. Anything else refuses the whole list. De-duplicated, in WEBHOOK_TOPICS order.
+function readEvents(value: unknown): WebhookTopic[] | null {
+  if (!Array.isArray(value) || value.length === 0) return null;
+  const topics: WebhookTopic[] = [];
+  for (const item of value) {
+    const read = topicsOf(item);
+    if (read.length === 0) return null;
+    topics.push(...read);
+  }
+  return orderedTopics(topics);
 }
 
 async function readRow(env: Env, id: string): Promise<WebhookRow | null> {
@@ -243,13 +253,14 @@ export async function handleWebhooks(
     const rows =
       (
         await env.INDEX_DB.prepare(
-          `SELECT id, type, title, state, attempts, status, error, occurred_at, last_at, next_at
+          `SELECT id, type, app, title, state, attempts, status, error, occurred_at, last_at, next_at
            FROM webhook_deliveries WHERE webhook_id = ? ORDER BY id DESC LIMIT ?`,
         )
           .bind(id, DELIVERIES_LISTED)
           .all<{
             id: number;
             type: WebhookDelivery['type'];
+            app: WebhookDelivery['app'];
             title: string;
             state: WebhookDelivery['state'];
             attempts: number;
@@ -264,6 +275,7 @@ export async function handleWebhooks(
       deliveries: rows.map((d): WebhookDelivery => ({
         id: d.id,
         type: d.type,
+        app: d.app,
         title: d.title,
         state: d.state,
         attempts: d.attempts,

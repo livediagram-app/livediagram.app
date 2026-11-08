@@ -6,6 +6,7 @@ import {
   SettingsChoiceRowView,
   SettingsToggleRowView,
   type SettingsCategory,
+  type SettingsRequest,
   type SettingsRow,
   type SettingsTrack,
 } from '@liveworkspace/settings-ui';
@@ -26,7 +27,11 @@ import type {
   SettingsShortcutsRowSpec,
 } from './settings-catalogue';
 import { settingsCategoryIcon } from './settings-icons';
-import { SettingsDeleteAccountRow, SettingsIdentityRow } from './SettingsAccountRows';
+import {
+  SettingsDeleteAccountRow,
+  SettingsIdentityRow,
+  SettingsResetSettingsRow,
+} from './SettingsAccountRows';
 import { SettingsDefaultFoldersRow } from './SettingsDefaultFoldersRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
 import { SettingsRetiredPartsRow } from './SettingsRetiredPartsRow';
@@ -50,10 +55,16 @@ export function rowSharedByAllApps(rowKey: string): boolean {
 const trackSetting: SettingsTrack = (category, action, type) =>
   track(category as TelemetryCategory, action, type);
 
+// What the model needs beyond the preferences. `accountRequest`: the accounts API's door (settings-panel-host.tsx),
+// where this editor has a liveworkspace account's settings; Reset All Settings then resets them in every app. Without
+// it (a guest, a self-hosted editor) the reset is this editor's own copy, in this browser.
+export type SettingsModelOptions = { accountRequest?: SettingsRequest | null };
+
 export function settingsModel(
   categories: readonly SettingsCategorySpec[],
   settings: UserPreferences,
   onChange: (next: UserPreferences) => void,
+  { accountRequest = null }: SettingsModelOptions = {},
 ): SettingsCategory[] {
   const ctx = { settings, onChange, track: trackSetting };
   const modelRow = (row: SettingsRowSpec): SettingsRow => {
@@ -71,8 +82,29 @@ export function settingsModel(
         return { ...row, kind: 'custom', render: () => <SettingsTokensRow row={row} /> };
       case 'identity':
         return { ...row, kind: 'custom', render: () => <SettingsIdentityRow row={row} /> };
+      case 'resetSettings':
+        return {
+          ...row,
+          // With the account's settings it resets them in every app, so the panel marks it with every app's logo.
+          ...(accountRequest ? { allApps: true } : {}),
+          kind: 'custom',
+          render: () => (
+            <SettingsResetSettingsRow
+              row={row}
+              settings={settings}
+              onChange={onChange}
+              accountRequest={accountRequest}
+            />
+          ),
+        };
       case 'deleteAccount':
-        return { ...row, kind: 'custom', render: () => <SettingsDeleteAccountRow row={row} /> };
+        // The one account behind every app: deleting it applies to all of them.
+        return {
+          ...row,
+          allApps: true,
+          kind: 'custom',
+          render: () => <SettingsDeleteAccountRow row={row} />,
+        };
       case 'retiredParts':
         return { ...row, kind: 'custom', render: () => <SettingsRetiredPartsRow row={row} /> };
       case 'defaultFolders':
@@ -84,6 +116,7 @@ export function settingsModel(
     label: category.label,
     icon: settingsCategoryIcon(category.id),
     ...(category.parent ? { parent: category.parent } : {}),
+    ...(category.aliases ? { aliases: category.aliases } : {}),
     ...(category.sectionNotes ? { sectionNotes: category.sectionNotes } : {}),
     ...(category.collapsedSections ? { collapsedSections: category.collapsedSections } : {}),
     rows: category.rows.map(modelRow),

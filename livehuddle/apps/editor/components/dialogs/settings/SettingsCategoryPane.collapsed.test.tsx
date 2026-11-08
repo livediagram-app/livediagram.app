@@ -26,12 +26,12 @@ describe('Show Me section (element tours)', () => {
     expect(screen.getByRole('switch', { name: 'Avatar Tour' })).toBeTruthy();
   });
 
-  it('opens from its heading, the master switch over each element', () => {
+  it('opens from its heading onto the Portal switch, with no switch over them all', () => {
     render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
     fireEvent.click(header());
     expect(header().getAttribute('aria-expanded')).toBe('true');
-    const group = screen.getByRole('group', { name: 'Show Me on Every Element settings' });
-    expect(group.textContent).toContain('Portal');
+    expect(screen.getByRole('switch', { name: 'Portal' })).toBeTruthy();
+    expect(screen.queryByRole('switch', { name: 'Show Me on Every Element' })).toBeNull();
   });
 
   it('opens on its own when Settings lands on one of its rows', () => {

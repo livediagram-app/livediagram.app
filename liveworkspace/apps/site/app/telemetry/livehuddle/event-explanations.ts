@@ -1577,9 +1577,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|HearingRingOn':
     'Someone turned the Audio Proximity Ring back on, in Settings > Collaborate.',
   'UI|Toggled|HomeBannerOff':
-    "Someone hid Explorer Home's banner, from its close button or Settings > Documents. Home then opens on its page header.",
+    "Someone hid Explorer Home's banner, from its close button or Settings > Explorer. Home then opens on its page header.",
   'UI|Toggled|HomeBannerOn':
-    "Someone turned Explorer Home's banner back on, in Settings > Documents.",
+    "Someone turned Explorer Home's banner back on, in Settings > Explorer.",
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
   'UI|Toggled|NotificationsOn':
@@ -1637,7 +1637,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|ShortcutsOn': 'Someone turned on keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|SkipLocationStepOff':
-    'Someone turned off skipping the Location step, in Settings > Documents, so the New Document wizard asks where each document goes again.',
+    'Someone turned off skipping the Location step, in Settings > Explorer, so the New Document wizard asks where each document goes again.',
   'UI|Toggled|SkipLocationStepOn':
     'Someone ticked "Always save new documents in <place> and skip this step" on the New Document wizard\'s Location step.',
   'UI|Toggled|System': "Someone set the editor's appearance to follow the system.",

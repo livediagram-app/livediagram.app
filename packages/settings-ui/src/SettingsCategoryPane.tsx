@@ -12,18 +12,17 @@ import {
   type SettingsToggleRow,
 } from './model';
 import { SettingsChoiceRowView } from './rows/ChoiceRow';
-import {
-  SettingsLinkRowView,
-  SettingsNoteRowView,
-  SettingsShortcutListRowView,
-} from './rows/SimpleRows';
+import { SettingsNoteRowView, SettingsShortcutListRowView } from './rows/SimpleRows';
 import { SettingsSliderRowView } from './rows/SliderRow';
 import { SettingsToggleGroupRowView } from './rows/ToggleGroupRow';
 import { SettingsToggleRowView } from './rows/ToggleRow';
 import { SETTINGS_ROW_ATTRIBUTE } from './settings-scroll-anchor';
-import { SETTINGS_CARD_SLOT, SettingsGroup, SettingsGroupChildren } from './SettingsGroup';
-
-type OpenCategory = (categoryId: string) => void;
+import {
+  SETTINGS_CARD_SLOT,
+  SETTINGS_LABEL,
+  SettingsGroup,
+  SettingsGroupChildren,
+} from './SettingsGroup';
 
 // One category's settings. The pane is deliberately thin: the model says which rows exist, what
 // kind of control each needs and what to do when it changes, so this only groups and dispatches.
@@ -31,7 +30,6 @@ export function SettingsCategoryPane({
   category,
   isMobile,
   focusRowKey = null,
-  onOpenCategory,
   focusSectionId = null,
 }: {
   category: SettingsCategory;
@@ -39,8 +37,6 @@ export function SettingsCategoryPane({
   isMobile: boolean;
   // Row to scroll to and ring, when Settings was opened on it.
   focusRowKey?: string | null;
-  // Open another category in place, for a link row. Stable, so the rows it reaches keep their memo.
-  onOpenCategory?: OpenCategory;
   // Section to scroll to and focus the heading of (settingsSectionId).
   focusSectionId?: string | null;
 }) {
@@ -141,7 +137,6 @@ export function SettingsCategoryPane({
                 row={row}
                 focused={row.key === focusRowKey}
                 isMobile={isMobile}
-                onOpenCategory={onOpenCategory}
                 marksColumn={marksColumn}
               />
               {children.length > 0 ? (
@@ -152,7 +147,6 @@ export function SettingsCategoryPane({
                       row={child}
                       focused={child.key === focusRowKey}
                       isMobile={isMobile}
-                      onOpenCategory={onOpenCategory}
                       marksColumn={marksColumn}
                       // Under a switch with the same apps the marks are its parent's: the column stays, empty.
                       sameAppsAsParent={sameApps(child.apps, row.apps)}
@@ -186,19 +180,17 @@ const RowSlot = memo(function RowSlot({
   row,
   focused,
   isMobile,
-  onOpenCategory,
   marksColumn = 0,
   sameAppsAsParent = false,
 }: {
   row: SettingsRow;
   focused: boolean;
   isMobile: boolean;
-  onOpenCategory?: OpenCategory;
   // The category's column for its app marks, in px; 0 draws none.
   marksColumn?: number;
   sameAppsAsParent?: boolean;
 }) {
-  const view = <RowView row={row} isMobile={isMobile} onOpenCategory={onOpenCategory} />;
+  const view = <RowView row={row} isMobile={isMobile} />;
   return (
     <FocusRing rowKey={row.key} focused={focused}>
       {marksColumn > 0 && row.apps ? (
@@ -225,15 +217,7 @@ function sameApps(a: readonly string[] | undefined, b: readonly string[] | undef
   return a.every((app) => b.includes(app));
 }
 
-function RowView({
-  row,
-  isMobile,
-  onOpenCategory,
-}: {
-  row: SettingsRow;
-  isMobile: boolean;
-  onOpenCategory?: OpenCategory;
-}) {
+function RowView({ row, isMobile }: { row: SettingsRow; isMobile: boolean }) {
   // A desktop-only row stays visible on a phone but inert, with its note.
   const inert = isMobile && !!row.desktopOnly;
   const notice = inert ? row.desktopOnly : undefined;
@@ -262,8 +246,6 @@ function RowView({
       return <SettingsSliderRowView row={row} disabled={inert} notice={notice} />;
     case 'toggleGroup':
       return <SettingsToggleGroupRowView row={row} disabled={inert} />;
-    case 'link':
-      return <SettingsLinkRowView row={row} onOpenCategory={onOpenCategory} />;
     case 'note':
       return <SettingsNoteRowView row={row} />;
     case 'shortcutList':
@@ -296,7 +278,7 @@ function SectionHeading({ name, id, focused }: { name: string; id: string; focus
       ref={ref}
       id={`settings-section-${id}`}
       tabIndex={-1}
-      className="scroll-mt-2 rounded px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:text-slate-400"
+      className={`scroll-mt-2 rounded px-1 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${SETTINGS_LABEL}`}
     >
       {name}
     </h3>

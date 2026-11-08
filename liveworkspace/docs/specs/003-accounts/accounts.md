@@ -146,7 +146,7 @@ index know someone's teams" above).
 
 A token (`lwt_…`, 32 random bytes) acts as its account on every app's API and MCP server, read
 and write or read only, for six months. Only its SHA-256 hash is kept; the secret is shown once.
-An account holds up to 20. They are made and revoked in the Settings panel, Account › API Tokens, wherever it opens:
+An account holds up to 20. They are made and revoked in the Settings panel, Settings › API Tokens, wherever it opens:
 on liveworkspace.app (`/explorer?settings=tokens`, [site.md](../010-site/site.md#settings)) over the session, and in
 every app over the app's bearer ([Every account setting in every app](#every-account-setting-in-every-app)).
 
@@ -893,6 +893,23 @@ guest's id has no account row and writes as before.
 Reading is one query on the primary key; writing is one upsert per scope plus that read, in one
 batch.
 
+### Resetting every setting
+
+Every editor's Settings offer **Reset All Settings** in the Danger Zone, directly above Delete Account (under
+Account, or Profile in All). Signed in, it sends `DELETE /api/account/settings` through either door (the session's
+or an app's bearer; a guest's token is refused, `401 signed_out`). That deletes every settings row the caller owns,
+the `all` scope and every app's own, and nobody else's, in one batch, then puts back the one key a reset keeps:
+`telemetryEnabled` (`RESET_KEEPS` in `@liveworkspace/settings`). Sending anonymous usage events is a consent, not a
+preference, so a reset never turns them back on for someone who turned them off. It answers `{ all, updatedAt }`, the
+`all` scope as it now is. Every app then reads its defaults: "no stored value" is what a default already means, so
+nothing is written for them.
+
+Nothing else on the account changes: the profile (name, colour, picture), API tokens, webhooks, sessions, sign-in
+methods, phone devices and teams are their own tables. Tours offer again afterwards, since a tour's seen flag is a
+setting. A guest and a self-hosted editor have no account settings to reset: the editor resets its own copy in that
+browser instead, and its next save sends the cleared keys as it sends any change. A workbench's Settings have no
+Account category, so no reset.
+
 ### Closing an account, and a guest signing in
 
 Closing an account deletes its settings rows with it ([Closing an account](#closing-an-account)). Settings have no foreign key to the account
@@ -915,8 +932,10 @@ for every app. An app keeps no participants table of its own.
 - **A guest** has whatever it sets, under its guest id.
 - **Setting it from Settings.** The Settings panel's Profile sets an account's name and colour in place wherever
   it opens: over the session on liveworkspace.app, and over the app's bearer (`/api/workspace/account/profile`) on
-  an app's address and in each editor. Both doors answer `GET` (`{ profile }`) and `PATCH { name?, color? }` with
-  one handler; a guest's bearer is refused (`401 signed_out`), since a guest sets its name in the app itself.
+  an app's address and in each editor. Both doors answer `GET` (`{ profile }`) and `PATCH { name?, color?,
+  showPicture?, timeZone? }` with one handler; a guest's bearer is refused (`401 signed_out`), since a guest
+  sets its name in the app itself. The [time zone](#the-send-window) is an account's only, set over these two
+  doors; an app's own profile write (`POST /internal/profiles/write`) leaves it alone.
 - **An editor never overwrites a stored name.** On opening, an editor uses the profile as it is; only a first
   visit with none seeds one (the account name, or a guest's placeholder), so a display name set anywhere stays.
 - A name is trimmed, 1 to 120 characters, with no control characters; a colour at most 64, and refused
@@ -1185,7 +1204,18 @@ window is **`SEND_WINDOW`: Monday to Friday, 09:00 to 21:00 in the recipient's o
   name (`parseTimeZone`: at most 64 characters, a zone the runtime knows, kept under the runtime's own
   name for it, so `Asia/Calcutta` and `Asia/Kolkata` are kept as one) and writes it in the same round
   trip as the session's colour read, only when it changed. A missing or unknown name is ignored and
-  leaves the stored zone as it was.
+  leaves the stored zone as it was. The Settings panel's Profile notes the browser's zone the same way on
+  both doors: its profile reads and writes carry it as `?timeZone=` (`GET /api/account/profile`), so an
+  account that only ever opens an editor's Settings is noted too.
+- **A zone picked by hand.** Settings › Profile › Time Zone lets the person pick their zone
+  (`PATCH /api/account/profile { timeZone: '<IANA>' }`, checked by `parseTimeZone`, `400 invalid_time_zone`
+  otherwise). A picked zone is marked on the account (`user.timeZoneChosen`,
+  `migrations/0020_time_zone_chosen.sql`: null is Automatic, 1 is picked) and no automatic sighting
+  overwrites it, on either door. `{ timeZone: null }` is Automatic again: the mark is cleared and the
+  zone the request noted (`?timeZone=`) is kept at once, or, with none noted, the last zone kept (the one
+  picked) stays and times the emails until the next sighting writes the browser's (`COALESCE(?2, timeZone)`
+  in `profiles.ts`); Automatic never empties the zone. The person's own profile read answers `timeZone` (the zone kept, null with none) and
+  `timeZoneAuto` (false while a picked zone stands); nobody else's read carries either.
 - **No zone known:** an account with none stored, and an invited address with no account, are timed
   by **`Europe/London`** (`DEFAULT_TIME_ZONE`).
 - **How a sweep keeps to it.** The windowed sweeps run hourly. Each run works out from the instant
@@ -1309,13 +1339,14 @@ sessions and connects Google, a trade-off accepted on purpose
 | `POST /api/account/sessions/revoke-others`                     | bearer only: ends every session but the token's own: `{ ended }`                                                     |
 | `GET /api/account/sign-in-methods`                             | bearer only: `{ google: 'connected' \| 'available' \| 'off' }`                                                       |
 | `POST /api/account/sign-in-methods/google` `{ callbackURL }`   | bearer only: `{ url }`, the hop that starts connecting Google                                                        |
-| `GET /api/account/profile`                                     | their profile: `{ profile }`                                                                                         |
+| `GET /api/account/profile?timeZone=`                           | their profile: `{ profile }`, noting the browser's zone when no zone was picked                                      |
 | `GET /api/account/people?ids=a,b`                              | names (up to 100): `{ people: [{ id, name, picture }] }`, found ids only; a guest may ask too, and gets no `picture` |
-| `PATCH /api/account/profile` `{ name?, color?, showPicture? }` | sets their display name or colour (null clears) or the picture switch; answers `{ profile }`                         |
+| `PATCH /api/account/profile` `{ name?, color?, …, timeZone? }` | sets their name or colour (null clears), the picture switch or the zone (null: Automatic); answers `{ profile }`     |
 | `GET /api/account/settings`                                    | their `all` settings: `{ all, updatedAt }`                                                                           |
 | `PATCH /api/account/settings` `{ all }`                        | patches `all`; answers `{ all, updatedAt }`                                                                          |
 | `GET /api/account/settings/:app`                               | `all` and that app's own scope: `{ all, app, updatedAt }`                                                            |
 | `PATCH /api/account/settings/:app` `{ app }`                   | patches the app's own scope; answers `{ all, app, updatedAt }`                                                       |
+| `DELETE /api/account/settings`                                 | resets every setting, every scope, keeping `RESET_KEEPS`; answers `{ all, updatedAt }`; bearer too                   |
 | `GET` / `POST /api/account/push/devices`                       | their phone devices and the VAPID public key / registers this browser ([push.md](push.md)); bearer too               |
 | `DELETE /api/account/push/devices/:id`                         | removes one of their devices; bearer too                                                                             |
 
@@ -1354,6 +1385,8 @@ workbench sessions and the signed-in person) are in [workbench.md](../011-workbe
 `Profile` is `{ id, name, color, picture, createdAt, updatedAt }`: `name`, `color` and `picture` may be null
 (`picture` is the published [profile picture](#profile-pictures): null with none or with the switch off), and the
 two times are null for an account that has never set either. The person's own `GET` and `PATCH
-/api/account/profile` add `googlePicture` (their own picture, whatever the switch says) and `showPicture`.
+/api/account/profile` add `googlePicture` (their own picture, whatever the switch says), `showPicture`, and the
+[time zone](#the-send-window): `timeZone` (null with none kept) and `timeZoneAuto` (false while one picked by hand
+stands).
 
 The app side of these is in `@liveworkspace/auth-client` (`src/account.ts`).

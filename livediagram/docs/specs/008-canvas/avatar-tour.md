@@ -31,7 +31,7 @@ Draw tour's rules hold.
 - **Taken, on every device.** As a run starts and however it ends, the synced `avatarTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)) records it: Settings' row reads off and the button stops
   offering it.
-- **Rerun from Settings**: the **Avatar Tour** switch in Settings' **Tours** category, beside **Draw**, built the
+- **Rerun from Settings**: the **Avatar Tour** switch in Settings' **Getting Started** category, beside **Draw**, built the
   same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight away when
   the person is in Avatar mode and it is on offer; otherwise the button is there when they get there.
 

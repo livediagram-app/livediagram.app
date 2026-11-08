@@ -472,6 +472,10 @@ workbench, and never both at once: this offer goes first).
   `lib/api/migration.ts` (the call), `hooks/persistence/useRetiredPartsMove.ts` (the move's phases),
   `components/dialogs/RetiredPartsDialog.tsx`, `components/dialogs/RetiredPartsOffer.tsx` (the load-time
   offer) and `components/dialogs/settings/SettingsRetiredPartsRow.tsx`.
+- **End date: 2026-11-26.** The offer, the Settings row and the `POST /api/migration/local-parts` door are for the
+  weeks after the switch to the new livediagram.app on 2026-10-26 (repo `docs/migration.md`, step 7). They go about
+  30 quiet days later, with step 10's clean-up: on or after 2026-11-26 they are removed, and whatever a browser
+  still holds in `retired-parts` then is left in place, unread. The database version stays as it is.
 
 ## Persistence architecture
 

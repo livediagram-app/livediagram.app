@@ -4,7 +4,7 @@ The editor's guided tours share one engine: a sequence of anchored popover steps
 interface at a time, opening the real panels and menus as they go. The tours on it are the
 [Plan tour](../026-plan/plan-tour.md) (its Boards, Sheets and Dashboards tracks), the Forms tour, the card
 type editor's Show Me ([Show me](show-me.md)) and the [element tours](element-tours.md). Each tour's switch is in
-Settings' **Tours** category.
+Settings' **Getting Started** category.
 
 ## Where it appears
 
@@ -30,7 +30,7 @@ it appears"), with liveplanner's tours on it:
 - **Gone once taken, back from Settings.** A tour taken is off the button: once the person starts it (and so
   finishes or skips it), its host stops offering it, so the button makes room for a tour not yet taken, or is not
   drawn at all. What a run records (`planTourTracks`, `formTourSeen`, [User preferences](user-preferences.md)) is
-  what the Settings **Tours** rows read, and turning a row back on puts its tour back on the button (and runs it on
+  what the Settings **Getting Started** rows read, and turning a row back on puts its tour back on the button (and runs it on
   closing Settings, if it could run right then). The rule lives once in the shared offer (`useOfferTour`'s `seen`,
   `tour-offer.ts`), the same in every editor.
   Until 1 November 2026 a taken tour stayed on the button for good (Work Tracker #177).
@@ -39,7 +39,7 @@ it appears"), with liveplanner's tours on it:
   declining any more.
 - **The last card is a step card**, drawn in the same popover as the steps (`TourPopover`), with the help link and
   the finish button. It takes no focus, so the person carries on where they were.
-- **Settings reruns** (the **Tours** rows) and the form cog's **Show Me Around** start the tour if it is on offer
+- **Settings reruns** (the **Getting Started** rows) and the form cog's **Show Me Around** start the tour if it is on offer
   right now; otherwise the button is there once it is.
 
 ## No welcome tour

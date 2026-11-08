@@ -393,7 +393,7 @@ pages livedesign's. livediagram has neither mode, and reads a stored tab that ca
 - The help article **Editor Modes** (`/help/canvas/editor-modes/`) explains all three modes, the
   switch beside the menu button and the start's, and new tabs in a mode, and links to each mode's own article.
 - The mode is **Draw** on the switch and in Settings, where it names the
-  **Editor › Draw** sub-category (Dock Position) as the switch names it, and
+  **Draw** section of Editor (Dock Position) as the switch names it, and
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,
   the old one redirecting) and the command palette.
 - The template card is **Blank Whiteboard**, one of three blanks (Blank Diagram,

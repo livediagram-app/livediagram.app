@@ -54,7 +54,7 @@ Sankey Tour**, **Start Layer Stack Tour**, **Start Hub and Spoke Tour** (`tourNa
 
 ## Settings
 
-Settings' **Tours** category holds element tours in their own section, **Show Me**, below the Pages tours'
+Settings' **Getting Started** category holds element tours in their own section, **Show Me**, below the Pages tours'
 **Offer Again** section. It is a closed accordion (people rarely look for it): its header names the section and
 how many are on (`1 of 1 On`). Opened, it shows the section's line, then **Show Me on Every Element**, one switch
 over them all ("Every element’s Show Me at once": on while any kind is untaken; off marks every kind taken, on

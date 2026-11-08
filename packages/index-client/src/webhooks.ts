@@ -1,6 +1,8 @@
 // Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): what a person's or a team's items do, sent to another tool
 // as it happens. The names, limits and wire shapes the index, the Settings panel and liveplanner's card moves agree on.
 
+import { APPS, type App } from './constants';
+
 /** The events a webhook can listen for: the Timeline's item events, liveplanner's card moves and form responses, and
  *  @-mentions in any app's comments. */
 export const WEBHOOK_EVENTS = [
@@ -23,6 +25,63 @@ export type WebhookDeliveryType = WebhookEvent | 'ping';
 
 export const isWebhookEvent = (value: unknown): value is WebhookEvent =>
   (WEBHOOK_EVENTS as readonly unknown[]).includes(value);
+
+/** Which apps send each event: every app has items (the Timeline's events) and pushes its comment threads and
+ *  actions (comments, actions, mentions); card moves and form responses are liveplanner's alone. */
+export const WEBHOOK_EVENT_APPS: Record<WebhookEvent, readonly App[]> = {
+  created: APPS,
+  renamed: APPS,
+  moved: APPS,
+  trashed: APPS,
+  shared: APPS,
+  commented: APPS,
+  action_assigned: APPS,
+  action_done: APPS,
+  card_moved: ['liveplanner'],
+  form_response: ['liveplanner'],
+  mention: APPS,
+};
+
+/** What a webhook subscribes to: one app's event (`livediagram:shared`), never a bare event across every app. */
+export type WebhookTopic = `${App}:${WebhookEvent}`;
+
+export const topicOf = (app: App, event: WebhookEvent): WebhookTopic => `${app}:${event}`;
+
+/** Every topic, app by app in APPS order, each app's events in WEBHOOK_EVENTS order: the order a list is kept in. */
+export const WEBHOOK_TOPICS: readonly WebhookTopic[] = APPS.flatMap((app) =>
+  WEBHOOK_EVENTS.filter((event) => WEBHOOK_EVENT_APPS[event].includes(app)).map((event) =>
+    topicOf(app, event),
+  ),
+);
+
+const TOPICS: ReadonlySet<string> = new Set(WEBHOOK_TOPICS);
+
+export const isWebhookTopic = (value: unknown): value is WebhookTopic =>
+  typeof value === 'string' && TOPICS.has(value);
+
+/** A topic's app and event. */
+export function splitTopic(topic: WebhookTopic): { app: App; event: WebhookEvent } {
+  const at = topic.indexOf(':');
+  return { app: topic.slice(0, at) as App, event: topic.slice(at + 1) as WebhookEvent };
+}
+
+/** A topic as given, or a bare event (stored before topics, or sent by an older Settings) as that event from every
+ *  app that sends it; anything else, nothing. */
+export function topicsOf(value: unknown): WebhookTopic[] {
+  if (isWebhookTopic(value)) return [value];
+  if (isWebhookEvent(value)) return WEBHOOK_EVENT_APPS[value].map((app) => topicOf(app, value));
+  return [];
+}
+
+/** Topics de-duplicated and kept in WEBHOOK_TOPICS order. */
+export function orderedTopics(topics: Iterable<string>): WebhookTopic[] {
+  const held = new Set(topics);
+  return WEBHOOK_TOPICS.filter((topic) => held.has(topic));
+}
+
+/** The topics of one app in a list. */
+export const topicsForApp = (topics: readonly WebhookTopic[], app: App): WebhookTopic[] =>
+  topics.filter((topic) => topic.startsWith(`${app}:`));
 
 /** Each event as Settings names it. */
 export const WEBHOOK_EVENT_LABELS: Record<WebhookDeliveryType, string> = {
@@ -76,7 +135,8 @@ export type Webhook = {
   // Null: the person's own items.
   teamId: string | null;
   host: string;
-  events: WebhookEvent[];
+  // The app events it sends, in WEBHOOK_TOPICS order.
+  events: WebhookTopic[];
   createdAt: number;
   pausedAt: number | null;
   pausedReason: WebhookPauseReason | null;
@@ -91,6 +151,8 @@ export type WebhookDeliveryState = 'pending' | 'delivered' | 'failed';
 export type WebhookDelivery = {
   id: number;
   type: WebhookDeliveryType;
+  // The app the event came from; `liveworkspace` for a test.
+  app: App | 'liveworkspace';
   title: string;
   state: WebhookDeliveryState;
   attempts: number;
@@ -105,12 +167,12 @@ export type CreateWebhookInput = {
   name: string;
   kind: WebhookKind;
   url: string;
-  events: WebhookEvent[];
+  events: WebhookTopic[];
   // Absent or null: the person's own items.
   teamId?: string | null;
 };
 
-export type UpdateWebhookInput = { name?: string; events?: WebhookEvent[]; paused?: boolean };
+export type UpdateWebhookInput = { name?: string; events?: WebhookTopic[]; paused?: boolean };
 
 /** One card that changed status, as liveplanner pushes it (`PUT /app/items/:id/card-moves`). */
 export type CardMove = {

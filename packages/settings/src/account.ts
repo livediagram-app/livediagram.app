@@ -16,6 +16,11 @@ export interface AccountToggle {
   keywords?: string;
   // What an unset key means: the apps read most switches as on unless turned off.
   fallback: boolean;
+  // Stays last in its section, after the rows each app adds to it (an app's own "Someone Joins My Canvas"): the
+  // emails from us rather than about your work.
+  closesSection?: true;
+  // A page on liveworkspace.app that says more, linked under the description in a new tab (Privacy's events list).
+  more?: { path: string; label: string };
 }
 
 const on = (
@@ -35,7 +40,7 @@ export const NOTIFICATION_ROWS: AccountToggle[] = [
   on(
     'notifyComments',
     'Someone Comments on My Work',
-    'Someone leaves a comment on a diagram, plan, document or design you own.',
+    'Someone leaves a comment on a diagram, plan, document, design or space you own.',
     'email comment reply feedback',
   ),
   on(
@@ -47,8 +52,8 @@ export const NOTIFICATION_ROWS: AccountToggle[] = [
   on(
     'notifyActionAssigned',
     'Someone Assigns Me an Action',
-    'A teammate assigns you an action on an element.',
-    'email action assigned task todo',
+    'A teammate assigns you an action on an element, or a card on a board.',
+    'email action assigned task todo card',
   ),
   on(
     'notifyInviteResponse',
@@ -56,18 +61,24 @@ export const NOTIFICATION_ROWS: AccountToggle[] = [
     'Someone you invited accepts or declines, for teams you are an admin of.',
     'email invite team accepted declined',
   ),
-  on(
-    'notifyTips',
-    'Tips and Check-Ins',
-    'Occasional getting-started tips, and a nudge if you have been away a while.',
-    'email tips onboarding nudge newsletter',
-  ),
-  on(
-    'notifyMilestones',
-    'Milestones',
-    'A note when you hit one, like sharing your first piece of work.',
-    'email milestone achievement celebrate',
-  ),
+  {
+    ...on(
+      'notifyTips',
+      'Tips and Check-Ins',
+      'Occasional getting-started tips, and a nudge if you have been away a while.',
+      'email tips onboarding nudge newsletter',
+    ),
+    closesSection: true,
+  },
+  {
+    ...on(
+      'notifyMilestones',
+      'Milestones',
+      'A note when you hit one, like sharing your first piece of work.',
+      'email milestone achievement celebrate',
+    ),
+    closesSection: true,
+  },
 ];
 
 // Phone notifications, one switch per kind (./push.ts PUSH_SETTING_KEYS), beside the email ones they mirror. They
@@ -77,7 +88,7 @@ export const PUSH_ROWS: AccountToggle[] = [
   on(
     'pushComments',
     'Someone Comments on My Work',
-    'Someone leaves a comment on a diagram, plan, document or design you own.',
+    'Someone leaves a comment on a diagram, plan, document, design or space you own.',
     'phone push mobile comment feedback',
   ),
   on(
@@ -89,7 +100,7 @@ export const PUSH_ROWS: AccountToggle[] = [
   on(
     'pushActionAssigned',
     'Someone Assigns Me an Action',
-    'A teammate assigns you an action or a card.',
+    'A teammate assigns you an action on an element, or a card on a board.',
     'phone push mobile action assigned task todo card',
   ),
   on(
@@ -110,12 +121,15 @@ export const IN_APP_ROWS: AccountToggle[] = [
 ];
 
 export const PRIVACY_ROWS: AccountToggle[] = [
-  on(
-    'telemetryEnabled',
-    'Send Anonymous Usage Events',
-    'Small first-party events, listed publicly on /telemetry, that show which features help. Never your content, no third-party trackers.',
-    'analytics tracking usage data privacy anonymous',
-  ),
+  {
+    ...on(
+      'telemetryEnabled',
+      'Send Anonymous Usage Events',
+      'Small events like “a tab was added” that show us which features help. Never your content or who you are, and no third-party trackers. Every event we collect is listed in public, with how often each is sent.',
+      'analytics tracking usage data privacy anonymous telemetry events',
+    ),
+    more: { path: '/telemetry', label: 'See Every Event' },
+  },
 ];
 
 export const ACCESSIBILITY_ROWS: AccountToggle[] = [

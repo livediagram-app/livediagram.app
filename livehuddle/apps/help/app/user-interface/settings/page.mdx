@@ -5,7 +5,7 @@ import { SettingsDialogScene } from '@liveworkspace/help-site/art/illustrations/
 export const metadata = helpMetadata({
   title: 'Settings',
   description:
-    'Every livehuddle setting explained: editor behaviour, appearance, shortcuts, panels, accessibility, spaces, account, API tokens, privacy and what syncs.',
+    'Every livehuddle setting explained: editor behaviour, appearance, shortcuts, panels, accessibility, explorer, account, API tokens, privacy and what syncs.',
   path: '/help/user-interface/settings/',
 });
 
@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
 
 **Settings** opens from the **Settings** button (the sliders icon) in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular space, which is why there is one set of them and not one per space.
 
-Signed in, the dialog's header has a **livehuddle** / **All** switch. **All** shows every setting your liveworkspace account keeps, in one list of categories; **livehuddle** shows only the ones that apply to livehuddle. To the left of each setting are the logos of the apps it applies to, or the liveworkspace logo when it applies to every app, so you can see when changing it here changes it in another app too. Both have an **Account** section with **Name and Colour**, **Sign-in Methods**, **Where You’re Signed In**, **Sign Out** and **Cloud Sync**. A guest sees this app's settings only.
+Signed in, the dialog's header has a **livehuddle** / **All** switch. **All** shows every setting your liveworkspace account keeps, in one list of categories; **livehuddle** shows only the ones that apply to livehuddle. Under **All**, to the left of each setting are the logos of the apps it applies to, or the liveworkspace logo when it applies to every app, so you can see when changing it here changes it in another app too; the **livehuddle** side shows no logos, since everything there applies to livehuddle. Both list the categories under three headings: **Account** (**Profile**, with **Name and Colour**, **Time Zone**, **Sign-in Methods**, **Where You’re Signed In**, **Sign Out** and **Cloud Sync**, then **Notifications**, **Privacy**, **Accessibility** and **Your Data**), **Apps** (the app's own categories) and **Developers** (**API Tokens** and **Webhooks**). A guest sees this app's settings only.
 
 The dialog lists its categories down the left, with a **Search settings** field above them, and shows one category at a time on the right. Type into the search to find a setting by name or by a word it is about ("transparency" finds **Panel Opacity**). On a phone, the list and the category take turns: tap a category to open it, and go back for the list.
 
@@ -26,7 +26,7 @@ The dialog lists its categories down the left, with a **Search settings** field 
   <SettingsDialogScene noun="space" />
 </Figure>
 
-Some categories hold **sub-categories** (Panels holds one per panel; Account holds Notifications and API Tokens). On a computer, click the parent (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap the parent and its sub-categories are listed at the bottom of its page.
+Only a guest sees **sub-categories**: Account holds Notifications and API Tokens, which are categories of their own once you sign in. Everything else in a category is in its sections, so nothing is hidden behind another level. On a computer, click Account (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap Account and they are listed at the bottom of its page.
 
 Each category groups its settings into cards, one card per section, with a short line under each setting saying what it does. A setting that only matters while another is on (a panel's own options under its switch) sits indented beneath it, and shows only while that switch is on.
 
@@ -56,7 +56,7 @@ Under **Mouse**:
 
 - **Panel Opacity**: fades every panel and the toolbar, from 30% to 100% (100% by default), so the canvas shows through (buttons and the Explorer stay opaque); a panel snaps back to fully opaque while you hover or focus it. See [Panel Opacity](/help/palette/panel-opacity/).
 
-**Panels** holds three sub-categories, one per panel. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it only while it is on.
+Below it, **Panels** has a section per panel, in the order below. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it only while it is on.
 
 - **Map**: **Enable Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), **Dim Outside the View**, and **Map Size** (**Short**, **Medium** or **Tall**). Desktop only. See [Map](/help/user-interface/minimap/).
 - **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements. See [Comments](/help/collaboration/comments/).
@@ -64,33 +64,34 @@ Under **Mouse**:
 ## Accessibility
 
 - **Reduce Motion**: turns off the decorative animations and transitions (panels, popovers, the snap guides) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
-- **UI Scale**: **Open Appearance** takes you to **UI Scale**, for bigger panels, toolbar and corner buttons.
 
-## Tours
+## Getting Started
 
 One switch per guided tour: **Avatar Tour**. Tours never start on their own: each one starts from the **Start Tour** button in the bar along the bottom of the editor, just left of **Search** (Start Avatar Tour). A switch here turns itself off once you have taken that tour, and the tour leaves its button until you switch it back on. Switch one back on and close Settings to take that tour again: or you can press its button. See [The Avatar Tour](/help/selection-modes/avatar-mode/avatar-tour/).
 
-Below them, **Show Me** is closed until you open it, and says how many are on. Some elements, such as the Portal, have a tour of their own, on the same **Start Tour** button while one is selected (Start Portal Tour). **Show Me on Every Element** switches them all; beneath it, one switch per element that has a tour (**Timeline**, **Chart**, **Stack**, **Lane**, **Boundary**, **Diagram Key** and **Portal**) shows whether you have taken that one. Once you've taken one, it leaves the button until you switch it back on here.
+Below them, **Show Me** is closed until you open it, and says how many are on. The Portal has a tour of its own, on the same **Start Tour** button while one is selected (Start Portal Tour), and its switch, **Portal**, shows whether you have taken it. Once you've taken it, it leaves the button until you switch it back on here.
 
-## Spaces
+## Explorer
 
-- **Show Home Banner**, under **Explorer**: the greeting, status pills and large search at the top of Explorer Home. On by default; with it off, Home's search sits in the header, as on every other Explorer page.
+Once called **Spaces**.
+
+- **Show Home Banner**: the greeting, status pills and large search at the top of Explorer Home. On by default; with it off, Home's search sits in the header, as on every other Explorer page.
 - **Default Folders**: the folder your new spaces go to when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
 
 ## Account
 
-**Account** shows who you are (a guest, or your name and email when signed in), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, and **Delete Account**. When this browser still holds pages, boards or designs that belong in livedocuments, liveplanner or livedesign, **Pages and Boards in This Browser** lists them until you move them there. It holds two sub-categories:
+**Account** shows who you are (a guest, or your name and email when signed in), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, **Reset All Settings** and **Delete Account**. **Reset All Settings** puts every setting back to its default once you confirm. Signed in, that is every setting in every liveworkspace app; your profile, API tokens, webhooks and sign-ins stay as they are, and so does your choice about anonymous usage events. As a guest, it is this app's settings in this browser. Tours offer themselves again afterwards. It holds two sub-categories:
 
 ### Notifications
 
 - **In-Editor Notifications**: the brief confirmation shown when you do something whose result isn't on screen, like moving a space to a folder or linking a tab. **Errors and warnings are always shown**, whatever this is set to, so a failure is never silently swallowed. A notification stays put while you point at it or tab into it, and Escape closes the one you are on.
-- **Email**: once signed in, one switch per email (someone joins, comments on or mentions you in your space, assigns you an action or responds to a team invite, plus tips and milestones). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
+- **Email**: once signed in, one switch per email (in this order: someone comments on your work, mentions you or assigns you an action, someone responds to a team invite, someone joins your space, then tips and check-ins and milestones last). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
 
 ### API Tokens
 
 - **API Tokens** is where you make, see and revoke the tokens your own scripts use to call livehuddle as you, right here in Settings: name a token (switch on **Read-only** if it only needs to look), copy its secret while it is shown (only once), and revoke one with **Revoke**. The same tokens show in every liveworkspace app's Settings and on liveworkspace.app. Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
 
-Signed in, **Account** also holds **Webhooks**, which posts what happens to your work to Slack, Microsoft Teams or a service you run (add, test, pause and delete them, and see recent deliveries), and **Your Data**, where you download everything you own, and each team's you run, as one zip. With your profile are your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
+Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens and **Webhooks**, which posts what happens to your work to Slack, Microsoft Teams or a service you run (add, test, pause and delete them, and see recent deliveries). Each app's events are its own, shown with that app's logo and name: Share Link Made for livehuddle is a separate choice from Share Link Made for another app. On the **livehuddle** side you pick and see only livehuddle's events, and a webhook's other apps' events stay as they are when you edit it; under **All** you pick from every app's events. With your profile are your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
 
 Anywhere Settings says something needs an account, it ends with a **Sign In** link that brings you back to where you were.
 

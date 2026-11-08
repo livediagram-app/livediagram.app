@@ -4,6 +4,7 @@ import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { __setBearerVerifier } from './bearer.ts';
 import { signGuestCookie } from './guests.ts';
+import { readSettings, writeSettings } from './settings.ts';
 import { addClient, addUser, testD1 } from './test-d1.ts';
 
 const BASE = 'https://liveworkspace.app';
@@ -158,6 +159,8 @@ describe('the account API, signed in', () => {
         picture: null,
         googlePicture: null,
         showPicture: true,
+        timeZone: null,
+        timeZoneAuto: true,
         createdAt: null,
         updatedAt: null,
       },
@@ -168,6 +171,48 @@ describe('the account API, signed in', () => {
     });
     expect(await patched.json()).toMatchObject({ profile: { name: 'Ada L', color: '#f97316' } });
     expect((await call('/profile', { method: 'PATCH', body: {} })).status).toBe(400);
+  });
+
+  it('sets their time zone by hand, back to Automatic, and refuses one the runtime doesn’t know', async () => {
+    const zone = () =>
+      sql.prepare('SELECT timeZone, timeZoneChosen FROM "user" WHERE id = ?').get('user_ada');
+    // The panel's read notes the browser's zone while none is picked.
+    const read = await call('/profile?timeZone=Europe/Paris');
+    expect(await read.json()).toMatchObject({
+      profile: { timeZone: 'Europe/Paris', timeZoneAuto: true },
+    });
+    const picked = await call('/profile?timeZone=Europe/Paris', {
+      method: 'PATCH',
+      body: { timeZone: 'Asia/Tokyo' },
+    });
+    expect(await picked.json()).toMatchObject({
+      profile: { timeZone: 'Asia/Tokyo', timeZoneAuto: false },
+    });
+    // While picked, neither the panel's read nor the session's sighting writes the browser's zone.
+    await call('/profile?timeZone=America/New_York');
+    expect(zone()).toEqual({ timeZone: 'Asia/Tokyo', timeZoneChosen: 1 });
+    // Automatic again keeps the zone the request noted at once.
+    const back = await call('/profile?timeZone=America/New_York', {
+      method: 'PATCH',
+      body: { timeZone: null },
+    });
+    expect(await back.json()).toMatchObject({
+      profile: { timeZone: 'America/New_York', timeZoneAuto: true },
+    });
+    expect(zone()).toEqual({ timeZone: 'America/New_York', timeZoneChosen: null });
+    const refused = await call('/profile', { method: 'PATCH', body: { timeZone: 'Mars/Base' } });
+    expect(refused.status).toBe(400);
+    expect(await refused.json()).toMatchObject({ error: 'invalid_time_zone' });
+    // An unknown noted zone is ignored, as an unknown X-Time-Zone is.
+    await call('/profile?timeZone=Mars/Base');
+    expect(zone()).toEqual({ timeZone: 'America/New_York', timeZoneChosen: null });
+  });
+
+  it('refuses the time zone when signed out', async () => {
+    signedIn = null;
+    expect(
+      (await call('/profile', { method: 'PATCH', body: { timeZone: 'Asia/Tokyo' } })).status,
+    ).toBe(401);
   });
 
   it('reads other people’s display names and pictures by id', async () => {
@@ -273,6 +318,52 @@ describe('the account API, signed in', () => {
     });
     expect(crossOrigin.status).toBe(403);
   });
+  it('resets every one of their settings, every scope, keeping the usage-events choice', async () => {
+    await writeSettings(env.AUTH_DB, 'user_ada', 'livediagram.app', {
+      all: { telemetryEnabled: false, reduceMotion: true },
+      app: { showMinimap: false },
+    });
+    await writeSettings(env.AUTH_DB, 'user_ada', 'liveplanner.app', { app: { homeBanner: false } });
+    await writeSettings(env.AUTH_DB, 'user_bea', 'livediagram.app', {
+      all: { reduceMotion: true },
+      app: { showMinimap: false },
+    });
+
+    const reset = await call('/settings', { method: 'DELETE' });
+    expect(reset.status).toBe(200);
+    expect(await reset.json()).toEqual({
+      all: { telemetryEnabled: false },
+      updatedAt: expect.any(Number),
+    });
+    expect(await readSettings(env.AUTH_DB, 'user_ada', 'livediagram.app')).toEqual({
+      all: { telemetryEnabled: false },
+      app: {},
+      updatedAt: expect.any(Number),
+    });
+    expect((await readSettings(env.AUTH_DB, 'user_ada', 'liveplanner.app')).app).toEqual({});
+    // Only the caller's rows.
+    expect(await readSettings(env.AUTH_DB, 'user_bea', 'livediagram.app')).toEqual({
+      all: { reduceMotion: true },
+      app: { showMinimap: false },
+      updatedAt: expect.any(Number),
+    });
+
+    // From another origin, nothing goes.
+    await writeSettings(env.AUTH_DB, 'user_ada', 'livediagram.app', { app: { showMinimap: false } });
+    const crossOrigin = await call('/settings', {
+      method: 'DELETE',
+      headers: { origin: 'https://evil.example' },
+    });
+    expect(crossOrigin.status).toBe(403);
+    expect(
+      (await readSettings(env.AUTH_DB, 'user_ada', 'livediagram.app')).app,
+    ).toEqual({ showMinimap: false });
+  });
+
+  it('refuses a reset signed out', async () => {
+    signedIn = null;
+    expect((await call('/settings', { method: 'DELETE' })).status).toBe(401);
+  });
 });
 
 describe('the account API, for the apps', () => {
@@ -370,6 +461,9 @@ describe('the account API, for the apps', () => {
     expect((await internal('/profiles/read', { ids: ['nobody'] })).status).toBe(400);
     expect((await internal('/profiles/write', { owner: guest, color: 'url(x)' })).status).toBe(400);
     expect((await internal('/profiles/write', { owner: 'user_gone', name: 'x' })).status).toBe(404);
+    // An app's write never sets an account's time zone: that is the person's own, in Settings.
+    const zoned = await internal('/profiles/write', { owner: 'user_ada', timeZone: 'Asia/Tokyo' });
+    expect(await zoned.json()).toMatchObject({ error: 'nothing_to_change' });
   });
 
   it("records the client's own app's sign-ups and milestones", async () => {
@@ -699,6 +793,41 @@ describe("the account API, for the Explorer on an app's address (by the app's be
     ).toBe(401);
   });
 
+  it('resets every scope of the account the token is, for the Danger Zone, and nobody else\'s', async () => {
+    await writeSettings(env.AUTH_DB, 'user_ada', 'liveplanner.app', {
+      all: { notifyTips: false },
+      app: { homeBanner: false },
+    });
+    await writeSettings(env.AUTH_DB, 'user_ada', 'livedesign.app', { app: { showMinimap: false } });
+    await writeSettings(env.AUTH_DB, 'user_bea', 'liveplanner.app', { app: { homeBanner: false } });
+
+    const reset = await call('/settings', bearer('tok-ada', { method: 'DELETE' }));
+    expect(reset.status).toBe(200);
+    // Nothing kept: there was no usage-events choice to keep.
+    expect(await reset.json()).toEqual({ all: {}, updatedAt: null });
+    expect(await readSettings(env.AUTH_DB, 'user_ada', 'liveplanner.app')).toEqual({
+      all: {},
+      app: {},
+      updatedAt: null,
+    });
+    expect((await readSettings(env.AUTH_DB, 'user_ada', 'livedesign.app')).app).toEqual({});
+    expect((await readSettings(env.AUTH_DB, 'user_bea', 'liveplanner.app')).app).toEqual({
+      homeBanner: false,
+    });
+  });
+
+  it("refuses a guest's reset: a guest has no account settings", async () => {
+    await writeSettings(env.AUTH_DB, 'guest_00000000-0000-4000-8000-000000000009', 'liveplanner.app', {
+      app: { homeBanner: false },
+    });
+    expect((await call('/settings', bearer('tok-guest', { method: 'DELETE' }))).status).toBe(401);
+    expect((await call('/settings', bearer('forged', { method: 'DELETE' }))).status).toBe(401);
+    expect(
+      (await readSettings(env.AUTH_DB, 'guest_00000000-0000-4000-8000-000000000009', 'liveplanner.app'))
+        .app,
+    ).toEqual({ homeBanner: false });
+  });
+
   it('lets a guest read names alone', async () => {
     const res = await call('/people?ids=user_ada', bearer('tok-guest'));
     expect(res.status).toBe(200);
@@ -783,6 +912,45 @@ describe("the account API, for the Explorer on an app's address (by the app's be
         .status,
     ).toBe(401);
     expect((await call('/profile', bearer('forged'))).status).toBe(401);
+  });
+
+  it('sets the time zone over the bearer too, and notes the browser’s zone on its read', async () => {
+    const zone = () =>
+      sql.prepare('SELECT timeZone, timeZoneChosen FROM "user" WHERE id = ?').get('user_ada');
+    const read = await call('/profile?timeZone=Europe/Berlin', bearer('tok-ada'));
+    expect(await read.json()).toMatchObject({
+      profile: { timeZone: 'Europe/Berlin', timeZoneAuto: true },
+    });
+    const picked = await call(
+      '/profile',
+      bearer('tok-ada', { method: 'PATCH', body: { timeZone: 'America/Los_Angeles' } }),
+    );
+    expect(await picked.json()).toMatchObject({
+      profile: { timeZone: 'America/Los_Angeles', timeZoneAuto: false },
+    });
+    await call('/profile?timeZone=Europe/Berlin', bearer('tok-ada'));
+    expect(zone()).toEqual({ timeZone: 'America/Los_Angeles', timeZoneChosen: 1 });
+    const back = await call(
+      '/profile?timeZone=Europe/Berlin',
+      bearer('tok-ada', { method: 'PATCH', body: { timeZone: null } }),
+    );
+    expect(await back.json()).toMatchObject({
+      profile: { timeZone: 'Europe/Berlin', timeZoneAuto: true },
+    });
+    expect(
+      (await call('/profile', bearer('tok-ada', { method: 'PATCH', body: { timeZone: 42 } })))
+        .status,
+    ).toBe(400);
+    // A guest's bearer is refused, and writes nothing.
+    expect(
+      (
+        await call(
+          '/profile?timeZone=Asia/Tokyo',
+          bearer('tok-guest', { method: 'PATCH', body: { timeZone: 'Asia/Tokyo' } }),
+        )
+      ).status,
+    ).toBe(401);
+    expect(zone()).toEqual({ timeZone: 'Europe/Berlin', timeZoneChosen: null });
   });
 
   it('makes, lists and revokes API tokens in the app’s Settings, as on the session’s door', async () => {
