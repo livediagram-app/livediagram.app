@@ -138,3 +138,13 @@ describe('which tokens still work', () => {
     expect(await liveApiTokenIds(db, ids, live.expiresAt)).toEqual([]);
   });
 });
+
+describe("a token's lifetime", () => {
+  it('is six calendar months, a day the month lacks being its last', () => {
+    const at = (iso: string) => apiTokenExpiry(Date.parse(iso));
+    expect(at('2026-01-15T10:30:00Z')).toBe(Date.parse('2026-07-15T10:30:00Z'));
+    expect(at('2026-08-31T23:59:00Z')).toBe(Date.parse('2027-02-28T23:59:00Z'));
+    expect(at('2027-08-31T00:00:00Z')).toBe(Date.parse('2028-02-29T00:00:00Z'));
+    expect(at('2026-12-31T12:00:00Z')).toBe(Date.parse('2027-06-30T12:00:00Z'));
+  });
+});

@@ -42,10 +42,15 @@ export async function hashApiToken(token: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Six calendar months from creation, the only lifetime there is.
+// Six calendar months from creation, the only lifetime there is. A day the sixth month lacks is its last day (31 August
+// ends on the last day of February), never a day or three into the month after.
 export function apiTokenExpiry(createdAt: number): number {
   const date = new Date(createdAt);
+  const day = date.getUTCDate();
+  date.setUTCDate(1);
   date.setUTCMonth(date.getUTCMonth() + 6);
+  const lastDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
+  date.setUTCDate(Math.min(day, lastDay));
   return date.getTime();
 }
 
