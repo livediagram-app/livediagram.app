@@ -714,12 +714,7 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
 export function supportsBorderRadius(element: Element): element is ShapeElement {
   return element.type === 'shape' && RADIUS_SHAPES.has(element.shape);
 }
-const RADIUS_SHAPES = new Set<string>([
-  'square',
-  'banner',
-  'site-header',
-  'stat-row',
-]);
+const RADIUS_SHAPES = new Set<string>(['square', 'banner', 'site-header', 'stat-row']);
 
 // The corner preset the Radius control highlights: the element's own, else the preset nearest
 // its kind's default corner (docs/specs/008-canvas/corner-radius.md): Small.

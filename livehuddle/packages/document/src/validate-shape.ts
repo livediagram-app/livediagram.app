@@ -32,7 +32,6 @@ import {
   oneOfRule,
 } from '@liveworkspace/model-core/validate-primitives';
 
-
 const flag = (field: string): FieldCheck => ({ field, valid: isBool, rule: 'a boolean' });
 
 // Absent passes every check; a present value must satisfy its rule. Ids that point at nothing

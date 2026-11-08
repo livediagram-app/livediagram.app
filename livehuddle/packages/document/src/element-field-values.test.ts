@@ -20,7 +20,14 @@ describe('fieldValueIssue', () => {
 
   it('checks the accent edge, and no longer the retired layout kinds’ fields', () => {
     expect(fieldValueIssue('accentEdge', 'right')).toMatch(/left, top, bottom/);
-    for (const field of ['chipLook', 'cardMedia', 'boundaryStyle', 'attachAt', 'stackDirection', 'stackAlign'])
+    for (const field of [
+      'chipLook',
+      'cardMedia',
+      'boundaryStyle',
+      'attachAt',
+      'stackDirection',
+      'stackAlign',
+    ])
       expect(ELEMENT_FIELD_VALUES[field], field).toBeUndefined();
   });
 });

@@ -100,7 +100,9 @@ describe('svgSketchArtDefs', () => {
     expect(faces).toContain('lvd-sketch-face');
     expect(faces).not.toContain('lvd-sketch-art');
     expect(svgSketchArtDefs(sketch({ type: 'shape', shape: 'square' }), undefined)).toBe('');
-    expect(svgSketchArtDefs([{ type: 'shape', shape: 'mode-button' }] as Element[], 'flexible')).toBe('');
+    expect(
+      svgSketchArtDefs([{ type: 'shape', shape: 'mode-button' }] as Element[], 'flexible'),
+    ).toBe('');
   });
 
   it("draws a face's ink in one pass of one octave, the budget's filter", () => {

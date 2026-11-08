@@ -8,7 +8,6 @@
 import type { Element, ImageElement } from './index';
 import { createImage } from './factories';
 
-
 // The component catalogue. The ids are the palette's (tile ids, favourites and telemetry types all key off them).
 export type ComponentKind = 'avatar';
 

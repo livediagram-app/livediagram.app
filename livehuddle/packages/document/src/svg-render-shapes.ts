@@ -217,4 +217,3 @@ export function svgPathElementShape(
     `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
   );
 }
-

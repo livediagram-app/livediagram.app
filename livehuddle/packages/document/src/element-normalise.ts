@@ -37,9 +37,7 @@ export function normaliseElement(el: unknown): unknown {
   // came: no factory defaults, no tidying.
   if (isRetiredElement(el as { type: string; shape?: unknown })) return el;
   // A stroke in a former stored shape (docs/specs/006-document/stroke-points.md) is packed first.
-  const [current] = migrateStoredElements([
-    el,
-  ] as unknown as DocElement[]) as unknown as Raw[];
+  const [current] = migrateStoredElements([el] as unknown as DocElement[]) as unknown as Raw[];
   return normaliseContent(withFactoryDefaults(withTextLabel(current!)));
 }
 

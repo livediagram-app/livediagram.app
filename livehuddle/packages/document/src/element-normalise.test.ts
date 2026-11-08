@@ -1,10 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, isValidElement, isValidTab } from './index';
-import {
-  mergeElementUpdate,
-  normaliseElement,
-  normaliseElements,
-} from './element-normalise';
+import { mergeElementUpdate, normaliseElement, normaliseElements } from './element-normalise';
 
 // livediagram/docs/specs/015-api/mcp-server.md §4.7a: the content-carrying kinds are made safe before validation.
 
@@ -137,7 +133,12 @@ describe('retired layout kinds through normaliseElements', () => {
       railCount: 4,
     };
     const [, b, n, r] = normaliseElements([host, badge, note, rail]) as Record<string, unknown>[];
-    expect(b).toMatchObject({ attachedTo: 'host', attachAt: 'top-right', chipLook: 'tinted', ...box });
+    expect(b).toMatchObject({
+      attachedTo: 'host',
+      attachAt: 'top-right',
+      chipLook: 'tinted',
+      ...box,
+    });
     expect(n).toMatchObject({ attachedTo: 'gone', pointerTip: { x: -200, y: 80 }, ...box });
     expect((r!.conceptRows as unknown[]).length).toBe(10);
     expect(r!.railCount).toBe(4);

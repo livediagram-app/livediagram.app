@@ -8,7 +8,12 @@ import type { Element } from './index';
 // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3): it keeps its stored turn.
 describe('a turn on an element that does not turn', () => {
   it("is dropped from an annotation marker, and kept on a shape's and a stored pointer note's", () => {
-    const note = { ...createShape('square', 0, 0), shape: 'pointer-note', id: 'n', rotation: 90 } as unknown as Element;
+    const note = {
+      ...createShape('square', 0, 0),
+      shape: 'pointer-note',
+      id: 'n',
+      rotation: 90,
+    } as unknown as Element;
     const marker = {
       id: 'm',
       type: 'annotation',
