@@ -1,5 +1,13 @@
 import type { Browser, Page } from '@playwright/test';
-import { adoptGuest, documentHeaders, expect, mintGuest, seedDocumentItem, test } from './fixtures';
+import {
+  adoptGuest,
+  documentHeaders,
+  expect,
+  markModeToursSeen,
+  mintGuest,
+  seedDocumentItem,
+  test,
+} from './fixtures';
 import { legacyViewerLink } from './legacy-viewer';
 
 // Always walking (docs/specs/013-workspace/share-roles.md "Always walking", owner 2026-11-06): a Viewer opens even a
@@ -20,11 +28,8 @@ async function openAs(
   if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(() => {
     localStorage.setItem('livehuddle:v2:name-confirmed', '1');
-    localStorage.setItem(
-      'livehuddle:user-preferences:v1',
-      JSON.stringify({ workshopTourSeen: true }),
-    );
   });
+  await markModeToursSeen(ctx);
   const page = await ctx.newPage();
   await page.goto(url);
   return page;
