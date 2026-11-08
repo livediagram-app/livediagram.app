@@ -45,6 +45,7 @@
     "./components/canvas/collab/temperature/mood-grid": "./src/components/canvas/collab/temperature/mood-grid.ts",
     "./components/canvas/concept-row-layer": "./src/components/canvas/concept-row-layer.tsx",
     "./components/canvas/empty-card-dismissed": "./src/components/canvas/empty-card-dismissed.ts",
+    "./components/canvas/face-take-batch": "./src/components/canvas/face-take-batch.ts",
     "./components/canvas/indicator-items": "./src/components/canvas/indicator-items.ts",
     "./components/canvas/layout-gallery/useTileWidth": "./src/components/canvas/layout-gallery/useTileWidth.ts",
     "./components/canvas/selection-popover-icons": "./src/components/canvas/selection-popover-icons.tsx",

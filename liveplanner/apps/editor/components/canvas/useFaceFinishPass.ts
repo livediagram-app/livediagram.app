@@ -18,7 +18,15 @@ import {
   type MarkerFaceBudget,
 } from '@liveplanner/project';
 import { trustedHtml } from '@liveplanner/ui';
-import { watchUntilSettled } from '@liveworkspace/workbench/components/canvas/settle-watch';
+import {
+  scheduleFaceTake,
+  type FaceTake,
+  type FaceTakeWhen,
+} from '@liveworkspace/workbench/components/canvas/face-take-batch';
+import {
+  watchUntilSettled,
+  type SettleWatch,
+} from '@liveworkspace/workbench/components/canvas/settle-watch';
 import { isBoardHoverWrite } from '@/components/plan/board-hover';
 import {
   DRAWN_ATTR,
@@ -39,7 +47,9 @@ import { readGridRules, type Write } from './marker-grid-rules';
 // part's ink goes in beside the part itself: an <svg> inside a frame, a <g> after a shape, in the shape's own
 // coordinates. So it moves with the part (a column that scrolls, a band that animates) and sits under whatever the
 // face draws above the part (its words). The part's own line is hidden by app/face-finish.css through the mark set
-// here. The ink is ours, not React's: React never sees it, and every take clears the last one first.
+// here. The ink is ours, not React's: React never sees it, and every take clears the last one first. A face takes
+// with the board's other faces (face-take-batch.ts): all clear, then all read, then all write, so a board of
+// thousands of faces is laid out once per batch rather than once per face.
 
 /** What the pass never reads into: the hand-drawn body, photos, embeds, kept parts and its own ink. */
 const SKIP = `[data-finish="marker"], [data-finish-keep], [data-sketch-skip], [data-sketch-ink], [${INK_ATTR}], img, video, iframe, canvas, foreignObject, text`;
@@ -62,18 +72,47 @@ export function useFaceFinishPass(
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (!root || finish === undefined || finish === 'flexible') return;
-    const take =
-      finish === 'professional'
-        ? () => markFacePills(root)
-        : () => drawMarkerFace(root, elementId, finish === 'marker' ? 'marker' : 'pencil', page);
-    take();
-    const stop = watchUntilSettled(root, take, { resize: true, ignore: ownChange });
+    const pen: Pen = finish === 'marker' ? 'marker' : 'pencil';
+    let cancel = () => {};
+    let watch: SettleWatch | undefined;
+    const settle = () =>
+      watchUntilSettled(root, () => take('frame'), { resize: true, ignore: ownChange });
+    // Marker and Sketch take with the board's other faces: a face that mounts before it is first painted, one that
+    // settled or whose lettering loaded at the next frame. Professional only marks pills, which reads no layout.
+    const take = (when: FaceTakeWhen) => {
+      if (finish === 'professional') {
+        markFacePills(root);
+        return;
+      }
+      const { prepare, read } = markerFaceTake(root, elementId, pen, page);
+      cancel = scheduleFaceTake(
+        root,
+        {
+          prepare,
+          read: () => {
+            const write = read();
+            return () => {
+              const after = write();
+              // Every change so far is drawn, the take's own included: none of them is a change to wait for. The
+              // face is watched from its first take on.
+              if (watch) watch.taken();
+              else watch = settle();
+              return after;
+            };
+          },
+        },
+        when,
+      );
+    };
+    take('now');
+    if (finish === 'professional') watch = settle();
     // Lettering that loads late reflows the face without a mutation.
     let live = true;
-    void document.fonts?.ready.then(() => live && take());
+    void document.fonts?.ready.then(() => live && take('frame'));
     return () => {
       live = false;
-      stop();
+      cancel();
+      watch?.();
       clearMarkerFace(root);
       for (const pill of root.querySelectorAll(`[${PILL_ATTR}]`)) pill.removeAttribute(PILL_ATTR);
     };
@@ -136,40 +175,80 @@ export function drawMarkerFace(
   pen: Pen = 'marker',
   page = false,
 ): number {
-  // The face is held still (no transitions) for the whole take (face-finish.css).
-  root.setAttribute(TAKING_ATTR, '');
-  try {
-    clearMarkerFace(root);
-    const face = { width: root.offsetWidth, height: root.offsetHeight };
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
-      acceptNode: (n) =>
-        (n as Element).matches(SKIP) || offScreenCard(n as Element)
-          ? NodeFilter.FILTER_REJECT
-          : NodeFilter.FILTER_ACCEPT,
-    });
-    const parts: Element[] = [root];
-    for (let n = walker.nextNode(); n; n = walker.nextNode()) parts.push(n as Element);
-    // Sketch hides a live face's fills and lines (its ink copy shows them through the wobble, app/sketch-face.css):
-    // they are shown again for the moment they are read.
-    const measured = [...root.querySelectorAll('[data-sketch-words]')];
-    for (const live of measured) live.setAttribute(MEASURE_ATTR, '');
-    // Every part is read first and written after, so a part's ink going in never makes the next read lay the face
-    // out again (on a 200-card board that was a layout per card).
-    const writes: Write[] = [];
-    let drawn = 0;
-    try {
-      drawn = readParts(root, parts, face, markerFaceSeed(elementId), pen, page, writes);
-    } finally {
-      for (const live of measured) live.removeAttribute(MEASURE_ATTR);
-    }
-    const marked = writes.map((write) => write());
-    // The marks take effect while transitions are still held, or each part's own line would ease out from where the
-    // clear left it instead of going at once.
-    for (const el of marked) if (el) void getComputedStyle(el).color;
-    return drawn;
-  } finally {
-    root.removeAttribute(TAKING_ATTR);
-  }
+  let drawn = 0;
+  const take = markerFaceTake(root, elementId, pen, page, (n) => (drawn = n));
+  take.prepare?.();
+  take.read()()?.();
+  return drawn;
+}
+
+/** A take of `root` in steps for a batch (face-take-batch.ts): `prepare` holds the face still and clears the last
+ *  take, `read` reads every part to draw without writing anything, the write it returns draws them, and what the
+ *  write returns lets the marks take effect and releases the face. `onDrawn` hears how many parts it drew. */
+export function markerFaceTake(
+  root: HTMLElement,
+  elementId: string,
+  pen: Pen = 'marker',
+  page = false,
+  onDrawn?: (drawn: number) => void,
+): FaceTake {
+  // Sketch hides a live face's fills and lines (its ink copy shows them through the wobble, app/sketch-face.css):
+  // they are shown again for the moment they are read.
+  let measured: Element[] = [];
+  const unmeasure = () => {
+    for (const live of measured) live.removeAttribute(MEASURE_ATTR);
+  };
+  return {
+    prepare: () => {
+      // The face is held still (no transitions) for the whole take (face-finish.css).
+      root.setAttribute(TAKING_ATTR, '');
+      clearMarkerFace(root);
+      measured = [...root.querySelectorAll('[data-sketch-words]')];
+      for (const live of measured) live.setAttribute(MEASURE_ATTR, '');
+    },
+    read: () => {
+      // Every part is read first and written after, so a part's ink going in never makes the next read lay the face
+      // out again (on a 200-card board that was a layout per card).
+      const writes: Write[] = [];
+      let drawn = 0;
+      try {
+        const face = { width: root.offsetWidth, height: root.offsetHeight };
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+          acceptNode: (n) =>
+            (n as Element).matches(SKIP) || offScreenCard(n as Element)
+              ? NodeFilter.FILTER_REJECT
+              : NodeFilter.FILTER_ACCEPT,
+        });
+        const parts: Element[] = [root];
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) parts.push(n as Element);
+        drawn = readParts(root, parts, face, markerFaceSeed(elementId), pen, page, writes);
+      } catch (error) {
+        unmeasure();
+        root.removeAttribute(TAKING_ATTR);
+        throw error;
+      }
+      return () => {
+        let marked: (Element | null)[] = [];
+        try {
+          unmeasure();
+          marked = writes.map((write) => write());
+        } catch (error) {
+          root.removeAttribute(TAKING_ATTR);
+          throw error;
+        }
+        onDrawn?.(drawn);
+        // The marks take effect while transitions are still held, or each part's own line would ease out from where
+        // the clear left it instead of going at once. Read once every face is written: one style pass for them all.
+        return () => {
+          try {
+            for (const el of marked) if (el) void getComputedStyle(el).color;
+          } finally {
+            root.removeAttribute(TAKING_ATTR);
+          }
+        };
+      };
+    },
+  };
 }
 
 // A busy board's card the browser is not drawing (content-visibility: auto, app/globals.css): reading it would lay it
