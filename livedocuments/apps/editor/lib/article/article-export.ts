@@ -87,10 +87,13 @@ export function bandOps(layout: PageBandLayout | null, r: LaidOutPage['rect']): 
   return ops;
 }
 
+/** The soft bars' ink when none is given: a muted slate. */
+export const WRITING_BAR_INK = 'rgb(100 116 139 / 0.45)';
+
 /** An article page's writing as soft bars, one per line of text: a thumbnail's or the Map's. */
 export function pageWritingBars(
   page: LaidOutPage,
-  ink = 'rgb(100 116 139 / 0.45)',
+  ink = WRITING_BAR_INK,
   // The tab, or what holds its `articles`: an unmounted card's bars are drawn from its estimated lines.
   source?: object,
 ): ArticleDrawOp[] {

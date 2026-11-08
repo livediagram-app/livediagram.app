@@ -3,8 +3,8 @@
 // step, synced to everyone) that moves the content of every page it shifts along with it
 // (withPages), re-reading the tab at commit time so two quick edits compose.
 import {
-  elementIdsOnPage,
   elementsOnPage,
+  pageContentCounts,
   pagesOf,
   layOutPages,
   MAX_PAGES,
@@ -489,7 +489,11 @@ export function pageEdits({
     debugLog('[page] layout placed', { tabId, pageId, layout: layoutId });
   };
   const laidOut = layOutPages(current);
-  const contentCount = (pageId: string) => elementIdsOnPage(elements, laidOut, pageId).size;
+  // Every page's count from one walk, on the first ask: the pages' row asks each page several times a
+  // render, and a scan per ask made a render cost pages x elements (a 20-page, 2,000-element design).
+  let counts: Map<string, number> | null = null;
+  const contentCount = (pageId: string) =>
+    (counts ??= pageContentCounts(elements, laidOut)).get(pageId) ?? 0;
 
   const previewInk = (preview: { pageId: string; patch: Partial<PageBackground> } | null) => {
     const target = preview ? page(preview.pageId) : undefined;

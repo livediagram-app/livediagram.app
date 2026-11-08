@@ -224,6 +224,16 @@ export function stepForward<S>(
   };
 }
 
+/** The history with `present` as its present, or the very same history when `present` is the one it already has.
+ *  A tick that changes no tab (an article settling its layout after a keystroke) then hands React the state it had,
+ *  so the editor does not re-render for it. */
+export function withPresent<H extends { readonly present: unknown }>(
+  h: H,
+  present: H['present'],
+): H {
+  return present === h.present ? h : { ...h, present };
+}
+
 /** Empty stacks and no log: a history starting over. */
 export function clearedStacks<S>(): Stacks<S> {
   return { past: [], future: [], pastAt: [], futureAt: [], remote: undefined };

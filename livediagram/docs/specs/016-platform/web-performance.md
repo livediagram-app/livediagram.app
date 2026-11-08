@@ -67,7 +67,11 @@ this way. Where switching to one must stay instant, its code is fetched once the
   then kept, so their state survives), search, the quick style panel, the tool panels, presenting and
   session settings. Fetched once the opened document has rendered and the page is idle.
 - **At the press**: the photo import's detection pipeline (and the sticky detector in it) loads when a
-  photo is picked; a template's canvas overrides load with its builders when one is applied.
+  photo is picked; a template's builders and canvas overrides load when one is applied, and the start
+  screen's pick (which works out the template's default folder from its tab) loads them the same way.
+  A static import of the builders from that pick once put every template in the document page's first
+  load: 1,389 KiB gzipped, back to 1,277 KiB with the import at the pick (measured 2026-11-08). The
+  first-load test guards both places.
 - **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
   the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys
   listen from its first frame. The top corners give way to a top Draw dock from the commit the dock is

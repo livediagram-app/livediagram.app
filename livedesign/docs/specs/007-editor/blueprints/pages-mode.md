@@ -317,7 +317,10 @@ buildPageLayoutOver(layout, page, elementsOnPage(tab.elements, pages, id)))`, th
   alone (a plain replace).
 - `startBlank(id)`: sets `startedBlank: true` (a logo page's Start From Scratch, [Logo
   pages](logo-pages.md)); the page's own lock refuses it.
-- `contentCount(id)`: `elementIdsOnPage(elements, laidOut, id).size`.
+- `contentCount(id)`: `pageContentCounts(elements, laidOut).get(id) ?? 0`, the counts built once per
+  `pageEdits` call on the first ask (one walk, `rowPageAt` over an element index), so the pages' row asking
+  every page several times a render costs one pass over the tab, not pages x elements; it equals
+  `elementIdsOnPage(elements, laidOut, id).size` (`page-content-counts.test.ts`).
 
 ### Re-fit (`withContentFittedToPage`)
 

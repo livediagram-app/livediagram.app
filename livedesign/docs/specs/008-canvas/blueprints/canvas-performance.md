@@ -22,11 +22,12 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/hooks/canvas/useArrowLabelLayouts.ts`                       | `draftLayout` identity-stable across passes                                                                     |
 | `apps/live/lib/stock-colour-projector.ts`                              | Same board in, same array out (`lastIn` / `lastOut`)                                                            |
 | `apps/live/hooks/canvas/useSettledElements.ts`                         | What the Map draws: frozen during element gestures, throttled otherwise                                         |
+| `apps/live/hooks/canvas/useDesignHistory.ts`                           | `historyTick` through `withPresent`: an unchanged tab hands back the same history                               |
 | `apps/live/components/canvas/Minimap.tsx`                              | Draws `useSettledElements(elements)`                                                                            |
 | `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`                      | Takes `suspended`; never measures while suspended                                                               |
 | `apps/live/components/canvas/CanvasSelectionToolbars.tsx`              | `toolbarsStale` includes `selectionMoving`                                                                      |
 | `../packages/workbench/src/hooks/canvas/useCanvasLongTaskLog.ts`       | The `[canvas-perf] long task` debug log                                                                         |
-| `../packages/workbench/src/components/canvas/CanvasArrivalContext.tsx` | `CanvasArrivalProvider`, `useArrivesWithBoard()`: what a tab opens with                                         |
+| `../packages/workbench/src/components/canvas/CanvasArrivalContext.tsx` | `CanvasArrivalProvider`, `useArrivesWithBoard()`, `ARRIVAL_BURST`: what a tab opens with, and a burst           |
 | `apps/live/components/canvas/useBoxedElementAnimation.ts`              | Pops in only what is added after the board arrived; no timer when nothing pops                                  |
 | `apps/live/app/globals.css`                                            | The editor fade-in rule (chrome markers only, never the canvas world); `[data-element-plane]`'s `cursor: auto`  |
 | `../packages/workbench/src/lib/sticky-peel-image.ts`                   | The sticky peel as a picture: `stickyPeelImage`, `stickyPeelVars` (blob-URL border-images), `useStickyPeelVars` |
@@ -41,6 +42,8 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/e2e/perf/trace-tasks.ts`                                    | `mainThreadTasks`: the renderer main thread's task durations from a trace                                       |
 | `apps/live/e2e/perf/canvas.perf.ts`                                    | The probe: seeds, runs each gesture under a trace, writes the report                                            |
 | root `.github/workflows/canvas-perf.yml`                               | The nightly run and the budget issue                                                                            |
+| `../packages/workbench/src/components/canvas/PageTitleBar.tsx`         | The page's title bar: near-opaque, no backdrop filter                                                           |
+| `../packages/workbench/src/components/canvas/EmptyPageInvite.tsx`      | The empty page's invite: near-opaque, no backdrop filter                                                        |
 
 ## Domain and naming
 
@@ -248,6 +251,15 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   reference board: the picture drops from 417 KB to 305 KB (550 texts, 642 lines gone), and Chrome's
   parse-and-paint at 4x from about 210 ms to about 100 ms. `svgFontDefs` stays left out.
 - Tests: `Minimap.test.tsx` (one `<image>`, no board nodes in the page; a standalone picture).
+
+### Canvas-space chrome blurs nothing
+
+- `PageTitleBar` and `EmptyPageInvite` (both in `@liveworkspace/workbench`, drawn inside `CanvasPages`, which paints
+  under the element plane) carry `bg-white/95` / `dark:bg-slate-900/95` and no `backdrop-blur-*` class. A backdrop
+  filter makes the card a composited layer under the element plane; WebKit then repaints the elements over it on
+  every frame an element changes.
+- Measured (WebKit, 1180 x 820, 20 A4 pages, 2,000 elements, a 60-move drag of one shape, best of two): frames over
+  50 ms 56 to 6, time over 50 ms 3,381 ms to 112 ms; a marquee then group drag 2,740 ms to 408 ms.
 
 ### At rest
 
@@ -519,14 +531,16 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | No layout read in a gesture frame                | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                                                                                                         |
 | Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                                                                                                         |
 | The Map redraws when a gesture ends              | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                                                                                                             |
+| An update that changes nothing renders nothing   | `useDesignHistory.test.ts`: a tick that maps to the same tabs returns the same history                                                                                                                              |
 | Questions about neighbours ask the index         | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                                                                                                                 |
-| Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                                                                                                                   |
+| Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes; `page-content-counts.test.ts`: every page's count in one walk, page tones by index                                               |
 | The canvas's cursor stays off the elements       | `CanvasElementsLayer.renders.test.tsx`: every element (boxed and arrow) sits in the one element plane; `app/canvas-motion.test.ts`: `globals.css` keeps the plane's `cursor: auto`                                  |
 | A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; a preview frame renders no layer; `useLayerDragPreview.test.ts`; `useSnapGuideState.test.ts`: a guide set tells its readers only on a change |
 | Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                                                                                                            |
 | Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                                                                                                           |
 | Budget evaluation and table                      | `budget.test.ts`                                                                                                                                                                                                    |
 | Opening counts every long frame                  | `interactive.test.ts`: tasks and frames merged, overlaps, a gap of exactly 500 ms, nothing after the response                                                                                                       |
+| Canvas-space chrome blurs nothing                | `PageTitleBar.test.tsx`, `EmptyPageInvite.test.tsx`: no `backdrop-` class                                                                                                                                           |
 | Opening animates nothing across the board        | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world                                                                     |
 | Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                                                                                     |
 | The budget holds                                 | The nightly probe                                                                                                                                                                                                   |

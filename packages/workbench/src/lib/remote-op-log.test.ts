@@ -9,6 +9,7 @@ import {
   stacksWithoutRedo,
   stepBack,
   stepForward,
+  withPresent,
   withRemoteOp,
   type RebasingHistory,
   type RemoteOp,
@@ -282,5 +283,22 @@ describe('remote op log costs', () => {
     for (let i = 0; i < 20; i++) h = withRemoteOp(h, (s) => ({ ...s, peer: i }));
     h.past.forEach((s, i) => expect(s).toBe(h0.past[i]));
     h.future.forEach((s, i) => expect(s).toBe(h0.future[i]));
+  });
+});
+
+describe('withPresent', () => {
+  it('hands back the very same history when the present is unchanged, so React renders nothing', () => {
+    const present: State = { a: 1 };
+    const h: RebasingHistory<State> = { past: [{ a: 0 }], present, future: [] };
+    expect(withPresent(h, present)).toBe(h);
+  });
+
+  it('swaps in a new present and keeps the stacks as they were', () => {
+    const h: RebasingHistory<State> = { past: [{ a: 0 }], present: { a: 1 }, future: [{ a: 2 }] };
+    const next = withPresent(h, { a: 5 });
+    expect(next).not.toBe(h);
+    expect(next.present).toEqual({ a: 5 });
+    expect(next.past).toBe(h.past);
+    expect(next.future).toBe(h.future);
   });
 });
