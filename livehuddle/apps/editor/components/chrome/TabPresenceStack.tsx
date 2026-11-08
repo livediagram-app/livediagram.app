@@ -86,7 +86,8 @@ export function TabPresenceStack({
   return (
     // ml-2 keeps the avatar stack off the tab name it sits beside in
     // TabBar (the row only uses gap-1, which crowds the initials).
-    <div className="ml-2 flex items-center">
+    // The Receptionist's Following Someone rings it (docs/specs/008-canvas/receptionist.md "The topics").
+    <div data-tour-id="presence" className="ml-2 flex items-center">
       {shown.map((slot, i) => (
         <span
           key={slot.p.id}

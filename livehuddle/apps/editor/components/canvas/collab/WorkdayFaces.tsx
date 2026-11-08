@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   HOT_DESK_CARD,
   HOT_DESK_CARDS,
@@ -17,7 +17,7 @@ import {
 } from '@livehuddle/document';
 import type { SeatFacing } from '@liveworkspace/avatar/facing';
 import { Glyph } from '@livehuddle/ui';
-import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
+import { useReducedMotion } from '@/lib/reduced-motion';
 import { seatPillBottom } from '@liveworkspace/avatar/chair-sitters';
 import { drawnRect, type SeatGrid } from '@liveworkspace/avatar/seats';
 import { pieceControlProps } from '@/lib/piece-control';
@@ -414,21 +414,9 @@ export function dogOffset(
   return { x: spot.x - bed.x, y: spot.y - bed.y, asleep: false };
 }
 
-// Reduced motion as it changes, not only as the dog mounted: the OS setting's media query, and the in-app preference's
-// `.reduce-motion` class on <html>, so turning either on sends a trotting dog straight back to sleep in its bed.
-function subscribeMotion(onChange: () => void): () => void {
-  const query = window.matchMedia?.('(prefers-reduced-motion: reduce)');
-  query?.addEventListener?.('change', onChange);
-  const html = new MutationObserver(onChange);
-  html.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-  return () => {
-    query?.removeEventListener?.('change', onChange);
-    html.disconnect();
-  };
-}
-
 function PetDog({ element }: { element: ShapeElement }) {
-  const still = useSyncExternalStore(subscribeMotion, prefersReducedMotion, () => false);
+  // Reduced motion sends a trotting dog straight back to sleep in its bed.
+  const still = useReducedMotion();
   const area = usePetArea(element.id);
   const leg = usePetLeg(still);
   const at = still ? dogOffset(element, null, 0) : dogOffset(element, area, leg);

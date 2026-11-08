@@ -93,8 +93,9 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
   avatarTour: {
-    title: 'Learn about the Avatar Tour',
-    description: 'What the tour shows you and how replaying works.',
+    title: 'Learn about the Receptionist',
+    description:
+      'Who the Receptionist is, what you can ask him, and how to hear his welcome again.',
   },
   sharing: {
     title: 'Learn about sharing',

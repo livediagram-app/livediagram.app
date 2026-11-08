@@ -67,6 +67,7 @@ function AvatarWalkerView({
   standingOn,
   name,
   self = false,
+  host = false,
   status = null,
   glideMs = 0,
 }: {
@@ -100,6 +101,9 @@ function AvatarWalkerView({
   name?: string;
   // Your own character rather than a peer's (the e2e and the Avatar tour find it by `data-avatar="self"`).
   self?: boolean;
+  // A character nobody plays (livehuddle's Receptionist): marked `data-avatar="host"`, so nothing counting people's
+  // characters by `data-avatar="peer"` counts it.
+  host?: boolean;
   // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none.
   status?: AvatarStatus | null;
   // A peer's character in a busy room (docs/specs/008-canvas/avatar-mode.md "A busy room"): how long it slides to
@@ -154,7 +158,7 @@ function AvatarWalkerView({
       <div
         ref={placed}
         aria-hidden
-        data-avatar={self ? 'self' : 'peer'}
+        data-avatar={self ? 'self' : host ? 'host' : 'peer'}
         // Your own character is the Avatar tour's push step's anchor (docs/specs/008-canvas/avatar-tour.md).
         data-tour-id={self ? 'avatar-self' : undefined}
         data-seated={seated ? '' : undefined}

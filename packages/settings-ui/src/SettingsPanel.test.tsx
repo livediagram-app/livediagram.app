@@ -265,7 +265,8 @@ describe('SettingsPanel', () => {
     const blocks = [...pane().querySelectorAll('[data-settings-app]')].map((el) =>
       el.getAttribute('data-settings-app'),
     );
-    expect(blocks).toEqual(['liveplanner.app', 'livediagram.app']);
+    // livehuddle's Receptionist's Welcome is its own row, not livediagram's Avatar Tour.
+    expect(blocks).toEqual(['liveplanner.app', 'livediagram.app', 'livehuddle.app']);
   });
 
   it('shows a common setting as an app kept it before it was shared, and writes it to `all` with the rest kept', async () => {

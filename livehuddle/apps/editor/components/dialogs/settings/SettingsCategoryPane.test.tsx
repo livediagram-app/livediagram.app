@@ -128,7 +128,7 @@ describe('SettingsCategoryPane link rows', () => {
 describe('SettingsCategoryPane tours', () => {
   const TOURS = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
 
-  it('turns the Avatar tour back on, the one guided tour of a Space', () => {
+  it("turns the Receptionist's welcome back on, the one guide to a Space", () => {
     const onChange = vi.fn();
     render(
       <SettingsCategoryPane
@@ -137,7 +137,7 @@ describe('SettingsCategoryPane tours', () => {
         onChange={onChange}
       />,
     );
-    const avatar = screen.getByRole('switch', { name: 'Avatar Tour' });
+    const avatar = screen.getByRole('switch', { name: "Receptionist's Welcome" });
     expect(avatar.getAttribute('aria-checked')).toBe('false');
     // No Workshop tour (docs/specs/012-collaboration/workshop-mode.md "Help").
     expect(screen.queryByRole('switch', { name: /Workshop/ })).toBeNull();

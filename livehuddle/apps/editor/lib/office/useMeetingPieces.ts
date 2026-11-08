@@ -22,7 +22,7 @@ import { useToast } from '@/hooks/ui/useToast';
 import type { CallSignal } from '@/lib/calls/call-config';
 import { SELF_MEDIA_ID } from '@/lib/calls/calls-media-store';
 import { track } from '@/lib/telemetry';
-import { onKnock } from './knock-inbox';
+import { onKnock, playKnock } from './knock-inbox';
 import {
   noteKnocked,
   setKnocker,
@@ -69,6 +69,8 @@ function sendKnock(
   noteKnocked(now);
   track('Canvas', 'Used', 'Knock');
   send({ kind: 'avatar-knock', roomId });
+  // The knocker hears their own knock (knock.md "The sound").
+  playKnock();
 }
 
 const distance2 = (a: Point, b: Point) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
@@ -241,6 +243,7 @@ export function useMeetingPieces(deps: MeetingPiecesDeps): void {
       const { roomId } = event.op;
       if (d.doNotDisturb || selfZoneRef.current !== roomId) return;
       const name = nameOf(event.from);
+      playKnock();
       const key = `knock:${event.from}`;
       const answer = (value: KnockAnswer) => {
         toast.dismissAction(key);

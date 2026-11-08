@@ -18,7 +18,8 @@ Follow the references below only as needed; never upfront.
 - ./tidy-up.md - when implementing or changing the Auto-align command, its verdicts or the tidy engine (livehuddle has no Tidy Up button)
 - ./finish.md - when implementing or changing finishes: resolution, Professional fallbacks, sketch strokes, hatching, sketched arrowheads, the Finish menu and dialog tab
 - ./accent-edge.md - when implementing or changing the accent edge: kinds, geometry, colour, the Border row or its export
-- ./avatar-speech.md - when implementing or changing speech bubbles, the composer, the avatar palette's Say and the message popover, or the Avatar tour
+- ./avatar-speech.md - when implementing or changing speech bubbles, the composer, the avatar palette's Say and the message popover, or the Receptionist's relaunch event
+- ./receptionist.md - when implementing or changing the Receptionist: his day, greetings, Ask Receptionist, his bubble, topics or the footer's Ask Receptionist
 - ./opening-walking.md - when implementing or changing Avatar in the picker or search, a Space opening walking, the Walk In button's start spot (boards made before the pads), or Recommended leading the start
 - ./DEFAULTS.md - when a canvas blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a canvas blueprint covers

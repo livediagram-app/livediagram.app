@@ -40,3 +40,23 @@ describe('a peer’s character in a busy room', () => {
     expect(box(container).style.transition).toBe('');
   });
 });
+
+// livehuddle's Receptionist (docs/specs/008-canvas/receptionist.md "Where he is"): a host is never counted as a peer.
+describe('a host character', () => {
+  it('is marked a host, not a peer or you', () => {
+    const { container } = render(
+      <AvatarWalker
+        pos={{ x: 0, y: 0 }}
+        facing="right"
+        config={DEFAULT_AVATAR_CONFIG}
+        walking={false}
+        stepFrame={0}
+        standingOn={null}
+        name="Receptionist"
+        host
+      />,
+    );
+    expect(container.querySelectorAll('[data-avatar="host"]')).toHaveLength(1);
+    expect(container.querySelector('[data-avatar="peer"]')).toBeNull();
+  });
+});

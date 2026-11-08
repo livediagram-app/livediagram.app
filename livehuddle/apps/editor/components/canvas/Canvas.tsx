@@ -45,6 +45,7 @@ import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canva
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { AvatarWalker } from '@liveworkspace/avatar/components/AvatarWalker';
+import { ReceptionistLayer } from './receptionist/ReceptionistLayer';
 import { AvatarPadArrivals } from '@liveworkspace/avatar/components/AvatarPadArrivals';
 import { parseAvatarStatus } from '@liveworkspace/avatar/status';
 import { isDrinkKind } from '@liveworkspace/avatar/office-geometry';
@@ -648,6 +649,17 @@ function CanvasView(props: CanvasProps) {
               glideMs={peer.glideMs}
             />
           ))}
+          {/* The Receptionist (docs/specs/008-canvas/receptionist.md): the host by the tab's Avatar Pad, drawn while you
+            walk. Owns his own clock, so his frames redraw his layer alone. */}
+          {canvasTool === 'avatar' ? (
+            <ReceptionistLayer
+              active
+              elements={elements}
+              arrivals={padArrivals}
+              self={avatar.pos}
+              zoom={viewportZoom}
+            />
+          ) : null}
           {/* A reaction burst (docs/specs/008-canvas/avatar-mode.md "Reactions") thrown around the character.
             Positioned at the character's canvas point, inside the transformed
             wrapper, so it pans and zooms with the canvas it is celebrating. */}

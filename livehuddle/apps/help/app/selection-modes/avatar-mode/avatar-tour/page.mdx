@@ -2,48 +2,62 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'The Avatar Tour',
+  title: 'The Receptionist',
   description:
-    'Take the Avatar tour: dressing up your character, its moves, speech bubbles and pushing, started from the Start Avatar Tour button in the bottom bar.',
+    "Meet the Space's Receptionist: his welcome on the Avatar Pad, the topics you can ask him about, the reception bell, and asking him to leave.",
   path: '/help/selection-modes/avatar-mode/avatar-tour/',
 });
 
 <ArticleLayout
-  title="The Avatar Tour"
-  description="A short, optional walkthrough of Avatar mode, started from the Start Avatar Tour button in the bottom bar."
+  title="The Receptionist"
+  description="The Receptionist walks the Space, greets everyone who arrives on the Avatar Pad, and shows you how the Space works when you ask."
   categoryTitle="Edit or Walk"
   categorySlug="selection-modes/avatar-mode"
 >
 
-The Avatar tour shows you everything your character can do. It works on the real editor rather than screenshots: it spotlights each part with a highlight ring and a short explanation. It changes nothing on your canvas or your character, takes under a minute, and you can leave at any point.
+The Receptionist is a character in an amber shirt who lives on any tab with an Avatar Pad. He takes the place of the old Avatar tour. Rather than a row of cards, he walks over and talks you through the Space, pointing at the real controls as he goes.
 
-## Starting the Tour
+## His Day
 
-The tour never starts or pops up on its own. While you're in [Avatar mode](/help/selection-modes/avatar-mode/), press Start Avatar Tour in the bar along the bottom of the editor, just left of **Search**. On a phone the button shows only its play icon.
+When nobody needs him, the Receptionist gets on with his day near the pad: he fetches a coffee or a drink from the fridge, admires the plants, browses the bookshelf, pats the dog in its bed, stands behind the reception desk, and now and then breaks into a dance or a spin on the open floor. Everyone on the tab sees the same Receptionist in the same place, and he sends nothing over the network to do it.
 
-The button is there whatever your role, including a view-only link, since Avatar mode is yours too. It isn't there in an embed. Once you've taken the tour (finished or skipped it), it leaves the button, which then offers another tour you haven't taken or isn't shown. To take it again, switch it back on in Settings (see below).
+## Being Welcomed
 
-## What It Covers
+When someone appears on the Avatar Pad, the Receptionist walks back over to greet them, wherever he was. The first time it's you, his speech bubble opens over his head with every topic he can help with, grouped into Talk, Meet, Move, You and Space. Seven show at a time, and the list scrolls for the rest. Pick one and he types out his answer, with the control he means ringed in amber. Press **I'll Explore** when you're done. After that, he just says "Welcome back" with your first name when you arrive.
 
-1. **Your Avatar Palette**: the palette at the top, which dresses your character while you walk.
-2. **Make It Yours**: your gender, clothes, hair and hair colour, and status, **Randomise** for a whole new look, and right-clicking your character to swap gender.
-3. **Actions and React**: on the right of the palette, jumping jacks, a wave, a spin, a cheer or a dance, and bursts like confetti and hearts.
-4. **Say Something**: pressing **Enter** to type in a bubble above your head, or **Say** on the palette. Not shown on a view-only link, where you can't speak.
-5. **Give Someone a Push**: clicking someone else's character to walk over and push them, and walking with the arrow keys and hopping with Space.
+Your conversation with the Receptionist is yours alone. Other people see him greet you, but never his bubble or what you pick.
 
-Each step has **Next**, **Back** and **Skip tour**. The last card, **You're Ready to Roam**, links to the [Avatar mode](/help/selection-modes/avatar-mode/) article and ends the tour with **Start**. If you leave Avatar mode or switch tab mid-tour, it ends as skipped.
+## Asking the Receptionist
 
-## Replaying the Tour
+Ask Receptionist whenever you like:
 
-Once taken, the tour stays off the button until you switch it back on in Settings:
+- **Press the Receptionist** on the canvas, or
+- Press **Ask Receptionist** in the bar along the bottom of the editor, just left of **Search**.
+
+He walks over to you and offers every topic in one list. Topics you've already asked about stay in the list with a tick beside them. Asking about **Rooms and Meetings** has him stroll into the nearest room. Walking away from him, or pressing **Escape**, closes his bubble, and he goes back to his day.
+
+The Receptionist only offers what you can do: on a view-only link he leaves out speaking in a bubble, and building the Space is an Editor's topic.
+
+If your device is set to reduce motion, the Receptionist stands by the pad rather than walking about, and his bubble opens where he stands.
+
+## The Reception Bell
+
+When anyone rings the bell on a **Reception Desk**, the Receptionist walks over to the desk to help. If you rang it, his bubble opens there once he arrives: "You rang?" and the full list of topics.
+
+## Asking the Receptionist to Leave
+
+An Editor can send him away for good: press **Ask Receptionist to Leave** under his list. He says goodbye and is gone for everyone in the Space, and **Ask Receptionist** leaves the bar along the bottom.
+
+To bring him back, switch to **Edit**, open the Avatar Pad's menu, and switch **Receptionist** back on.
+
+## Hearing the Welcome Again
 
 <Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
 
-<Step n={2}>Switch **Avatar Tour** back on.</Step>
+<Step n={2}>Switch **Receptionist's Welcome** back on.</Step>
 
 <Step n={3}>
-  Close Settings. If you're in Avatar mode the tour starts straight away; otherwise the Start Avatar
-  Tour button is there the next time you walk as an avatar.
+  Close Settings. If you're walking on a tab with the Receptionist, he comes straight over with his welcome.
 </Step>
 
 </ArticleLayout>
