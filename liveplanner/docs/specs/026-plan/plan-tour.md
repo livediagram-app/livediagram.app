@@ -114,7 +114,8 @@ Every track shows its missions in one small panel, the **mission strip**, the sa
   amber line over it says **Close this window first, then:**, so nobody is left wondering why nothing happens. When
   the window closes the strip goes back to its place. On a phone it docks at the top over a window, as before.
 - **Names the control.** Each mission rings the control it names (**Types**, **Add card**, a column's cog) while it
-  is being done, the most specific one drawn on screen first, and names it in bold in its line.
+  is being done, the most specific one drawn on screen first, and names it in bold in its line. A control another
+  window covers (the Add a Field picker over Add Field) is never ringed: the ring would float over that window.
 - **What it shows.** The track's name (**Practice Sprint**, **Card Types**, **Board Setup**, **Five Small Wins**,
   **Layout View**), one pip per
   mission (filled once done, ringed for the current one), the current mission as a short instruction, one line on

@@ -127,7 +127,8 @@ On a computer, while `useOpenModalCount() > 0`, the full strip moves to the bott
 layer, `justify-start`, the card `w-[19rem]`); nothing about it shrinks. A mission with `onPage` adds the amber line
 `[data-close-first]` "Close this window first, then:" over its why while doing. A phone keeps docking at the top.
 The ring is `hint.ring()` once a hint asks, otherwise the mission's `points` while doing; `HintRing` takes the first
-selector drawn on screen (non-zero box), re-checked every 150 ms. `Emphasis` draws `**x**` as `<strong>`.
+selector drawn on screen (non-zero box) and not covered (`elementFromPoint` at its centre is it, inside it or holds
+it), re-checked every 150 ms. `Emphasis` draws `**x**` as `<strong>`.
 
 ### Practice cards (`usePlanItems`)
 
