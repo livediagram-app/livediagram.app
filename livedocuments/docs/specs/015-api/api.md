@@ -519,6 +519,7 @@ This is the one list of columns that hold an owner id (a guest id or an account 
 | `document.owner_id`          | In each document's own store: the account's own documents are deleted for good through the index first, which purges each store                         |
 | `agent_changesets.author_id` | In each document's own store: those on someone else's document stay until the 30-day changeset retention ages them out                                  |
 | `image_owners.owner_id`      | In each document's own store, the media service's answer cached: the service deletes the account's images, and a document then serves nothing of theirs |
+| `notify_claims.sender`       | In each document's own store: dropped from each document the index names when the account closes (`anonymise`), and past the dedupe window otherwise    |
 
 **The person's images** go first, at liveworkspace's media service (`forgetOwner`, every image the account uploaded, in any app), so a failure leaves the account whole to delete again. **The person's workbench** is liveworkspace's, which ends every pairing (closing the rooms its sessions had open) when the account closes ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access").
 
