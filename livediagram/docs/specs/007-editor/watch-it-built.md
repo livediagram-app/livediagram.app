@@ -197,11 +197,13 @@ The dashboard's Tour Steps ranking reads The Basics' four chapters in order ([Te
 
 ## Settings
 
-Settings' Tours (Getting Started) category, section **Offer Again**: one switch per mode over all its topics (**Watch
-It Built**, **Watch It Built in Draw**, **Watch It Built in Workshop**, on while any of its topics is not taken), and
-one switch per topic nested under it, named by the topic ("The Basics", "Look and Feel", ...). On means not yet taken.
-A mode's switch turned on from off forgets its topics; a topic's switch forgets that topic. Turned on and Settings
-closed, the start panel opens if the editor is in that mode.
+Settings' Tours (Getting Started) category: a section per mode, **Watch It Built in Diagram**, **Watch It Built in
+Draw** and **Watch It Built in Workshop**, each a closed accordion (as Show Me is) whose heading counts its topics on
+("3 of 5 On") and opens it. Inside: the mode's switch over all its topics (**Watch It Built**, **Watch It Built in
+Draw**, **Watch It Built in Workshop**, on while any of its topics is not taken), then one switch per topic nested under
+it, named by the topic ("The Basics", "Look and Feel", ...). On means not yet taken. A mode's switch turned on from off
+forgets its topics; a topic's switch forgets that topic. Turned on and Settings closed, the start panel opens if the
+editor is in that mode. Settings opened on one of these rows (a search, a link) opens its section.
 
 ## Out of scope
 

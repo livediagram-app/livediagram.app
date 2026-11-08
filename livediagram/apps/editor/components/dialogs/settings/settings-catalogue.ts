@@ -426,6 +426,16 @@ function tourTracksSwitch(
 // Watch It Built's rows for a mode (docs/specs/007-editor/watch-it-built.md "Settings"): its switch, on while any of
 // its topics is owed (off takes them all, on offers them all again), then one switch per topic beneath it. The mode's
 // key is the stepped tour's old flag, kept so its telemetry tokens keep their series; the switch reads the topics.
+// Each mode's Watch It Built rows are a closed section of their own (docs/specs/007-editor/watch-it-built.md
+// "Settings"), as Show Me is.
+const WATCH_SECTION = {
+  diagram: 'Watch It Built in Diagram',
+  draw: 'Watch It Built in Draw',
+  workshop: 'Watch It Built in Workshop',
+} as const satisfies Record<ReplayMode, string>;
+const WATCH_NOTE =
+  'Short replays from Watch It Built in the bottom bar. A switch is on until you have watched its topic; switch one back on and close Settings to watch it again.';
+
 const WATCH_ARTICLE = {
   diagram: 'diagramTour',
   draw: 'drawTour',
@@ -438,8 +448,10 @@ function watchRows(
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'keywords' | 'event'>,
 ): SettingsToggleRowSpec[] {
   const helpArticle = WATCH_ARTICLE[mode];
+  const section = WATCH_SECTION[mode];
   const parent: SettingsToggleRowSpec = {
     ...tourSwitch(key, { ...row, helpArticle }),
+    section,
     read: (p) => topicsOwed(p, mode).length > 0,
     write: (p, v) => setModeTopics(p, mode, !v),
   };
@@ -448,7 +460,7 @@ function watchRows(
     ...CURRICULUM[mode].map((t): SettingsToggleRowSpec => ({
       kind: 'toggle',
       key: `watchTopic-${t.id}`,
-      section: 'Offer Again',
+      section,
       parent: key,
       label: t.title,
       description: t.line,
@@ -988,8 +1000,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     // (docs/specs/007-editor/editor-tour.md "Where it appears"), and its switch turns itself off once taken.
     id: 'tours',
     label: 'Tours',
-    collapsedSections: [ELEMENT_TOURS_SECTION],
+    collapsedSections: [...Object.values(WATCH_SECTION), ELEMENT_TOURS_SECTION],
     sectionNotes: {
+      ...Object.fromEntries(
+        (Object.keys(WATCH_SECTION) as ReplayMode[]).map((m) => [
+          WATCH_SECTION[m],
+          { note: WATCH_NOTE, helpArticle: WATCH_ARTICLE[m] },
+        ]),
+      ),
       [ELEMENT_TOURS_SECTION]: {
         note: 'Select a complex element and press Start Tour in the bottom bar to see how it works. A switch is on until you have taken its tour.',
       },

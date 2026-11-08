@@ -22,8 +22,8 @@ describe('Show Me section (element tours)', () => {
     render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
     expect(header().getAttribute('aria-expanded')).toBe('false');
     expect(header().textContent).toContain('20 of 20 On');
-    // The mode tours stay open above it.
-    expect(screen.getByRole('switch', { name: 'Watch It Built in Draw' })).toBeTruthy();
+    // Offer Again stays open beside it.
+    expect(screen.getByRole('switch', { name: 'Avatar Tour' })).toBeTruthy();
   });
 
   it('opens from its heading, the master switch over each element', () => {
@@ -83,5 +83,34 @@ describe('Show Me section (element tours)', () => {
     });
     expect(scroll).toHaveBeenCalledWith(expect.objectContaining({ block: 'nearest' }));
     vi.useRealTimers();
+  });
+});
+
+// docs/specs/007-editor/watch-it-built.md "Settings": each mode's Watch It Built rows are a closed section of their own.
+describe('Watch It Built sections', () => {
+  const workshop = () => screen.getByRole('button', { name: /^Watch It Built in Workshop/ });
+
+  it('start closed, counting the topics on', () => {
+    render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
+    expect(workshop().getAttribute('aria-expanded')).toBe('false');
+    expect(workshop().textContent).toContain('4 of 4 On');
+    expect(
+      screen.getByRole('button', { name: /^Watch It Built in Diagram/ }).textContent,
+    ).toContain('5 of 5 On');
+  });
+
+  it('count a watched topic as off, and open from the heading', () => {
+    render(
+      <SettingsCategoryPane
+        category={TOURS}
+        settings={{ watchTopics: ['workshop-run'] }}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(workshop().textContent).toContain('3 of 4 On');
+    fireEvent.click(workshop());
+    expect(workshop().getAttribute('aria-expanded')).toBe('true');
+    const group = screen.getByRole('group', { name: 'Watch It Built in Workshop settings' });
+    expect(group.textContent).toContain('Run the Room');
   });
 });
