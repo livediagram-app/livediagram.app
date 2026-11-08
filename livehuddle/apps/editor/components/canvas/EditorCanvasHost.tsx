@@ -519,7 +519,6 @@ export function EditorCanvasHost() {
                   track('UI', 'Opened', 'ThemePicker');
                 }
           }
-          // No Tidy Up button: it was Diagram mode's (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
           commentRows={commentRows}
           commentsPanelPosition={commentsPanelPosition}
           onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}

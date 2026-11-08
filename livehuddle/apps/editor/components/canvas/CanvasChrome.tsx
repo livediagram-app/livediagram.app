@@ -22,7 +22,6 @@ import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handler
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { ThemeStrip } from '@/components/canvas/ThemeStrip';
-import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, useCallback, type Dispatch, type RefObject, type SetStateAction } from 'react';
@@ -261,14 +260,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
   );
 
   // Panel elements + their wiring live in useCanvasChromePanels.
-  const { panelEls, explorerEl, collaborateEl, tidyUpPopoverEl, paletteTint } =
-    useCanvasChromePanels({
-      props,
-      chromeHidden,
-      isMobile,
-      panelWiringFor,
-      panelsOn,
-    });
+  const { panelEls, explorerEl, collaborateEl, paletteTint } = useCanvasChromePanels({
+    props,
+    chromeHidden,
+    isMobile,
+    panelWiringFor,
+    panelsOn,
+  });
 
   // Measured against the real top-corner stacks (useStripCrowdsCorners). A
   // stack only renders while it holds a panel, so which top corners are
@@ -405,7 +403,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
           against the canvas, so it renders outside the corner layer, as Layers does. */}
       {chromeAway ? null : collaborateEl}
-      {tidyUpPopoverEl}
       {/* While walking, the avatar palette (docs/specs/008-canvas/avatar-mode.md "The avatar palette"): ahead of the
           hidden building strip, so whatever measures the strip finds this one. */}
       {strip === 'avatar' && props.avatarConfig ? (
@@ -521,23 +518,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               ) : null}
               {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
                 read-only sessions pass no handler): see ThemeStrip. Away while walking. */}
-              {!chromeAway && !walking ? (
-                <ThemeStrip
-                  // Tidy Up, first in the strip (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-                  tidyUp={
-                    tidyUpOffered({
-                      actions: props.tidyUp,
-                      chromeAway: !!chromeAway,
-                    })
-                      ? {
-                          open: activeDockPanel === 'tidy-up',
-                          onToggle: (button) => handleDockButtonClick('tidy-up', button, true),
-                        }
-                      : undefined
-                  }
-                  onOpenTheme={onOpenCanvasTheme}
-                />
-              ) : null}
+              {!chromeAway && !walking ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
               <ViewZoomControls
                 onZoomIn={handleZoomIn}
                 onZoomOut={handleZoomOut}

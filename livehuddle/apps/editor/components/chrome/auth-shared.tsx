@@ -145,14 +145,11 @@ export function resolvePostAuthDestination(
 
 // Where the header's "Not now, keep going as a guest" link goes
 // (docs/specs/014-identity/auth-and-guest-access.md "The look: Night Band"):
-// back to the page the visitor came from when that is safe and works
-// without an account, else the new-document flow. The connect pages
-// (/oauth/*, /workbench/*) only work signed in, so returning a guest
-// there would just bounce them straight back here.
-const SIGNED_IN_ONLY = /^\/(oauth|workbench)(\/|\?|#|$)/i;
+// back to the page the visitor came from when that is safe, else the new-document flow. livehuddle has no
+// signed-in-only connect pages (no OAuth consent or workbench pairing), so any safe page works for a guest.
 export function guestReturnHref(searchParams: { get: (key: string) => string | null }): string {
   const redirect = searchParams.get('redirect_url');
-  return isPostAuthPath(redirect) && !SIGNED_IN_ONLY.test(redirect) ? redirect : POST_AUTH_DEFAULT;
+  return isPostAuthPath(redirect) ? redirect : POST_AUTH_DEFAULT;
 }
 
 // The hand-off to the accounts site: this app's api starts the sign-in and

@@ -1,7 +1,7 @@
 // The tidiers, loaded on demand (docs/specs/008-canvas/blueprints/tidy-up.md "Performance and limits").
-// The Tidy Up layouts, their router and the verdicts are only needed once someone opens Tidy Up or runs a
-// tidier from the command palette, so they stay out of the editor's first load: the popover loads them as
-// it opens (before it judges anything), and a palette command loads them at the press.
+// Auto-align and its verdicts are only needed once someone runs it from the command palette, so they stay out
+// of the editor's first load: the palette command loads them at the press (livehuddle has no Tidy Up button,
+// docs/specs/008-canvas/layout-cleanup.md "No Tidy Up button").
 
 import type { cleanupElements } from './tab-cleanup';
 import type { assessCleanup, verdictNotice } from './tidy-verdict';

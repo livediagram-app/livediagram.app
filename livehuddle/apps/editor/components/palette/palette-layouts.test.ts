@@ -49,9 +49,6 @@ describe('palette layouts', () => {
       'collab-travel',
     ]);
     expect(paletteLandingCategory()).toBe('popular');
-    // No opener anywhere: every category is one level deep.
-    for (const c of paletteCategories())
-      for (const t of c.tiles ?? []) expect(t.action.type, t.id).not.toBe('open');
   });
 
   it('lands on Popular: the light content, then the pieces a meeting place is built from', () => {

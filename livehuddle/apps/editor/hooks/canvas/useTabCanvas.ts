@@ -73,23 +73,20 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   const scheduleCanvasTelemetry = useDebouncedCanvasTelemetry();
 
   // An Auto-align that would change nothing or damage the drawing is refused with a notice
-  // (docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work"). The Tidy Up popover
-  // judges first and greys it out, so its presses arrive `judged`; the command palette's
-  // are judged here, on the live tab (no preview is on screen there). The tidier loads on demand
-  // (lib/tidy-engine.ts): already there after the popover opens, fetched at the press otherwise.
-  const refused = (engine: TidyEngine, judged: boolean | undefined): boolean => {
-    if (judged) return false;
+  // (docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work"), judged here on the live tab. The
+  // tidier loads on demand (lib/tidy-engine.ts), fetched at the press.
+  const refused = (engine: TidyEngine): boolean => {
     const verdict = engine.assessCleanup(activeTab.elements);
     const notice = engine.verdictNotice('Auto-align', verdict);
     if (notice) notify?.(notice);
     return notice !== null;
   };
 
-  const autoAlignTab = (opts: { judged?: boolean } = {}) => {
+  const autoAlignTab = () => {
     if (editsBlocked) return;
     if (activeTab.elements.length === 0) return;
     withTidyEngine((engine) => {
-      if (refused(engine, opts.judged)) return;
+      if (refused(engine)) return;
       // `commit` snapshots the pre-align state, so undo restores it.
       commit((els) => engine.cleanupElements(els));
       track('Tab', 'Aligned');

@@ -86,16 +86,13 @@ describe('buildEditorCommands — document/tab commands', () => {
   });
 });
 
-// The editor in a workbench (livediagram/docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
-describe('buildEditorCommands — in a workbench', () => {
-  it('offers neither Share nor Delete document, and keeps the rest', () => {
-    const inWorkbench = ids({ ...base, canShare: true, workbench: true });
-    expect(inWorkbench).not.toContain('share');
-    expect(inWorkbench).not.toContain('delete-document');
-    expect(inWorkbench).toContain('rename-document');
+describe('buildEditorCommands, Share and Delete', () => {
+  it('offers Share to a session that may share, and Delete Space always', () => {
     expect(ids({ ...base, canShare: true })).toEqual(
-      expect.arrayContaining(['share', 'delete-document']),
+      expect.arrayContaining(['share', 'delete-document', 'rename-document']),
     );
+    expect(ids({ ...base, canShare: false })).not.toContain('share');
+    expect(ids({ ...base, canShare: false })).toContain('delete-document');
   });
 });
 

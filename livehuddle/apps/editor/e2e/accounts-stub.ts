@@ -34,7 +34,7 @@ export function seedMember(
   return seed(request, 'member', member);
 }
 
-// An API token the person made on liveworkspace.app; `secret` is the `lwt_…` a CLI or agent sends.
+// An API token the person made on liveworkspace.app; `secret` is the `lwt_…` a script sends.
 export function seedToken(
   request: APIRequestContext,
   token: { userId: string; email?: string; name?: string; readOnly?: boolean },

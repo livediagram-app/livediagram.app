@@ -3,8 +3,8 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { createPinnedArrow, createShape, type Element } from '@livehuddle/document';
 import { cleanupElements } from './tab-cleanup';
 
-// docs/specs/008-canvas/blueprints/tidy-up.md "Performance and limits": a Tidy Up hover runs Auto-align over
-// the whole tab, so the worst case a hand-drawn board reaches must stay inside one hover's budget.
+// docs/specs/008-canvas/blueprints/tidy-up.md "Performance and limits": an Auto-align press runs over the whole
+// tab, so the worst case a hand-drawn board reaches must stay inside one press's budget.
 
 const TIDY_PREVIEW_WORST_CASE_NODES = 300;
 const TIDY_PREVIEW_BUDGET_MS = 100;
@@ -29,7 +29,7 @@ function bigDiagram(n: number): Element[] {
   return els;
 }
 
-describe('Tidy Up hover budget', () => {
+describe('Auto-align budget', () => {
   const els = bigDiagram(TIDY_PREVIEW_WORST_CASE_NODES);
   // Named with the budget it holds here, so a CI failure names CI's.
   it(`Auto-align snaps ${TIDY_PREVIEW_WORST_CASE_NODES} nodes inside ${cpuBudgetMs(TIDY_PREVIEW_BUDGET_MS)} ms`, () => {

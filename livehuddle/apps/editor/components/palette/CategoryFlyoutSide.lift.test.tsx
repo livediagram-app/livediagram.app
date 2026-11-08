@@ -83,7 +83,6 @@ describe('CategoryFlyoutSide', () => {
         scale={1}
         actions={{} as never}
         pendingDraw={null}
-        openBody={() => null}
         hoverHandlers={{
           onPointerEnter: () => {},
           onPointerLeave: () => {},
@@ -114,7 +113,6 @@ describe('CategoryFlyoutSide', () => {
       scale: 1,
       actions: {} as never,
       pendingDraw: null,
-      openBody: () => null,
       hoverHandlers: {
         onPointerEnter: () => {},
         onPointerLeave: () => {},

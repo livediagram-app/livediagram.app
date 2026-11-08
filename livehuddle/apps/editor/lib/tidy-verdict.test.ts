@@ -6,7 +6,7 @@ import {
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
-import { cleanupVerdict, verdictLine, verdictNotice } from './tidy-verdict';
+import { cleanupVerdict, verdictNotice } from './tidy-verdict';
 
 // docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work".
 
@@ -48,16 +48,18 @@ describe('cleanupVerdict', () => {
 });
 
 describe('verdict copy', () => {
-  it('has a line and a notice for every verdict but ok', () => {
-    expect(verdictLine({ kind: 'ok' })).toBeNull();
+  it('has a notice for every verdict but ok', () => {
     expect(verdictNotice('Auto-align', { kind: 'ok' })).toBeNull();
-    expect(verdictLine({ kind: 'covers', count: 1 })).toBe('Would cover a shape');
-    expect(verdictLine({ kind: 'covers', count: 3 })).toBe('Would cover 3 shapes');
+    expect(verdictNotice('Auto-align', { kind: 'covers', count: 1 })).toBe(
+      'Auto-align would cover a shape, so nothing moved.',
+    );
+    expect(verdictNotice('Auto-align', { kind: 'covers', count: 3 })).toBe(
+      'Auto-align would cover 3 shapes, so nothing moved.',
+    );
     expect(verdictNotice('Auto-align', { kind: 'unchanged' })).toBe(
       'Auto-align: the tab is already tidy, so nothing moved.',
     );
     const v = { kind: 'leaves-container', count: 2 } as const;
-    expect(verdictLine(v)).toBeTruthy();
     expect(verdictNotice('Auto-align', v)).toMatch(/^Auto-align .*nothing moved\.$/);
   });
 });

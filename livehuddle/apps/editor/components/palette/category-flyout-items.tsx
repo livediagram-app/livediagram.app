@@ -20,9 +20,9 @@ import { PointerWords } from '@liveworkspace/workbench/components/palette/Pointe
 const DEFAULT_HINT = 'Click to add one, or drag it onto the canvas.';
 const TOUCH_HINT = 'Tap to add one, or drag it onto the canvas.';
 
-/** Whether pressing this tile opens a side panel (its presets, or what an opener stands for) rather than placing. */
+/** Whether pressing this tile opens a side panel (its presets) rather than placing. */
 export function opensSide(def: PaletteTileDef): boolean {
-  return !!def.variants?.length || def.action.type === 'open';
+  return !!def.variants?.length;
 }
 
 type ItemProps = {
@@ -113,8 +113,6 @@ export function InfoFooter({ def }: { def: PaletteTileDef | null }) {
             <span className="line-clamp-2 text-[11.5px] leading-4 text-slate-500 dark:text-slate-400">
               {def.variants?.length ? (
                 'Choose a preset to start from.'
-              ) : def.action.type === 'open' ? (
-                `Browse ${def.label}.`
               ) : (
                 <PointerWords text={def.description} />
               )}

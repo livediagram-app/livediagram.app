@@ -1,4 +1,3 @@
-import { requestPaletteCategory } from '@/lib/palette-category-request';
 import type { ComponentKind, ShapeKind } from '@livehuddle/document';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { tileCaption } from './tile-caption';
@@ -85,9 +84,6 @@ export function tileHandler(
       return () => actions.addSticker(a.stickerId);
     case 'component':
       return () => actions.addComponent(a.kind);
-    case 'open':
-      // Off the strip (which opens its popover itself) an opener moves the palette to its category.
-      return () => requestPaletteCategory(a.category);
   }
 }
 

@@ -78,8 +78,8 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
   });
 }
 
-// Signed-in and workbench runs sign their pages in (signed-in/session.ts, the workbench pairing): no guest for them.
-const PAGES_SIGN_IN = process.env.E2E_SIGNED_IN === '1' || process.env.E2E_WORKBENCH === '1';
+// Signed-in runs sign their pages in (signed-in/session.ts): no guest for them.
+const PAGES_SIGN_IN = process.env.E2E_SIGNED_IN === '1';
 
 export const test = base.extend<{ pageErrors: string[]; freshVisitor: boolean }>({
   // A test of the first visit itself opts out of holdMintedGuest (docs/specs/003-system-architecture/e2e-smoke.md

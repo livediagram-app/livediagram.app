@@ -277,7 +277,7 @@ export function CanvasThemeDialog({
                   />
                   {allTabs ? (
                     <div className="mt-5 empty:hidden">
-                      <ApplyToAllTabsRow {...allTabs} />
+                      <ApplyToAllTabsRow {...allTabs} tabLocks={false} />
                     </div>
                   ) : null}
                 </>

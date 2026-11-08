@@ -12,7 +12,7 @@ const { useDockPopovers } = await import('./useDockPopovers');
 
 const button = () => document.createElement('button');
 
-// docs/specs/017-telemetry/telemetry.md: the popover layouts open Collaborate and Tidy Up here rather
+// docs/specs/017-telemetry/telemetry.md: the popover layouts open Collaborate here rather
 // than through the desktop un-minimise toggle, so they count here.
 describe('useDockPopovers panel-open telemetry', () => {
   beforeEach(() => trackMock.mockReset());
@@ -21,12 +21,6 @@ describe('useDockPopovers panel-open telemetry', () => {
     const { result } = renderHook(() => useDockPopovers({ current: null }));
     act(() => result.current.handleDockButtonClick('collaborate', button()));
     expect(trackMock.mock.calls).toEqual([['UI', 'Opened', 'Collaborate']]);
-  });
-
-  it('counts a Tidy Up open (docs/specs/008-canvas/layout-cleanup.md "Telemetry")', () => {
-    const { result } = renderHook(() => useDockPopovers({ current: null }));
-    act(() => result.current.handleDockButtonClick('tidy-up', button(), true));
-    expect(trackMock.mock.calls).toEqual([['UI', 'Opened', 'TidyUp']]);
   });
 
   it('does not count a close', () => {

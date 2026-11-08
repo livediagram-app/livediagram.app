@@ -1310,8 +1310,8 @@ export const articles: Article[] = [
   {
     slug: 'layout-cleanup',
     title: 'Layout Cleanup',
-    description: 'Tidy Up: snap notes and pictures onto the grid in one press.',
-    keywords: 'tidy up align arrange auto grid organise organize straighten neat auto layout broom',
+    description: 'Auto-align: snap notes and pictures onto the grid in one step.',
+    keywords: 'tidy up align arrange auto grid organise organize straighten neat auto layout',
     category: 'Tools',
     categorySlug: 'tools',
   },

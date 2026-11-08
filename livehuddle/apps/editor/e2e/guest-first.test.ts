@@ -11,13 +11,11 @@ const dir = import.meta.dirname;
 const read = (name: string) => readFileSync(join(dir, name), 'utf8');
 const specs = readdirSync(dir).filter((name) => name.endsWith('.spec.ts'));
 const SHARED_TEST = /import\s*\{[^}]*\btest\b[^}]*\}\s*from\s*'\.\/fixtures'/;
-// The workbench specs pair a workbench and sign in through it, on their own build and stack.
-const SIGNS_IN = new Set(['workbench-embed.spec.ts', 'workbench-workspace.spec.ts']);
 
 describe('specs that open a page', () => {
   it('open it as a guest who already holds a token', () => {
     const offenders = specs.filter(
-      (name) => !SIGNS_IN.has(name) && /\.goto\(/.test(read(name)) && !SHARED_TEST.test(read(name)),
+      (name) => /\.goto\(/.test(read(name)) && !SHARED_TEST.test(read(name)),
     );
     expect(offenders).toEqual([]);
   });

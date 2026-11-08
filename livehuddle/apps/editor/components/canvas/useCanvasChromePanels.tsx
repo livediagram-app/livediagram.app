@@ -1,10 +1,9 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 
-import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
@@ -12,7 +11,6 @@ import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
-import { tidyUpOffered } from './tidy-up-actions';
 import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
@@ -24,22 +22,6 @@ const CollaboratePanel = dynamic(
   () => import('@/components/panels/CollaboratePanel').then((m) => m.CollaboratePanel),
   { ssr: false },
 );
-
-// Lazy for the same reason: the Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button")
-// loads on the first press of its button.
-const TidyUpPopover = dynamic(() => import('./TidyUpPopover').then((m) => m.TidyUpPopover), {
-  ssr: false,
-});
-
-// A lazily loaded popover in a boundary of its own: one whose code cannot load (opened offline,
-// docs/specs/007-editor/load-recovery.md "Offline") closes, so its button lets go, and never takes the canvas with it.
-function LazyPopover({ onError, children }: { onError: () => void; children: ReactNode }) {
-  return (
-    <AreaErrorBoundary area="Popovers" onError={onError}>
-      {children}
-    </AreaErrorBoundary>
-  );
-}
 
 // Lazy for the same reason: the Actions panel (docs/specs/012-collaboration/assigned-actions.md) only mounts when
 // the active tab has at least one element with an OPEN assigned action.
@@ -72,8 +54,6 @@ export function useCanvasChromePanels({
   // The Explorer, a popover under the menu button (docs/specs/007-editor/toolbar-layout.md).
   explorerEl: ReactNode;
   collaborateEl: ReactNode;
-  // The Tidy Up popover over its button.
-  tidyUpPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -156,16 +136,6 @@ export function useCanvasChromePanels({
   );
   // The tool-config panel (format), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
-  // The Tidy Up popover belongs to its button: an embed or a session without it closes it.
-  const tidyUp = props.tidyUp;
-  const tidyUpShown = tidyUpOffered({
-    actions: tidyUp,
-    chromeAway: !!chromeAway,
-  });
-  const tidyUpOpen = activeDockPanel === 'tidy-up' && tidyUpShown && !chromeHidden;
-  useEffect(() => {
-    if (activeDockPanel === 'tidy-up' && !tidyUpShown) closeDockPanel();
-  }, [activeDockPanel, tidyUpShown, closeDockPanel]);
   const { formatEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -264,17 +234,6 @@ export function useCanvasChromePanels({
     explorerEl,
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
-    tidyUpPopoverEl:
-      tidyUpOpen && tidyUp ? (
-        <LazyPopover onError={closeDockPanel}>
-          <TidyUpPopover
-            actions={tidyUp}
-            empty={elements.length === 0}
-            anchor={activeDockAnchor ?? undefined}
-            onClose={closeDockPanel}
-          />
-        </LazyPopover>
-      ) : null,
     paletteTint,
   };
 }

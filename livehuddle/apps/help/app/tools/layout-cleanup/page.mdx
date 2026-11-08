@@ -11,9 +11,9 @@ export const metadata = helpMetadata({
   path: '/help/tools/layout-cleanup/',
 });
 
-<ArticleLayout title="Layout Cleanup" description="One press on Tidy Up lines up the notes and pictures that are nearly lined up." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("layout-cleanup")}>
+<ArticleLayout title="Layout Cleanup" description="One command lines up the notes and pictures that are nearly lined up." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("layout-cleanup")}>
 
-A board fills up fast in a meeting: notes dropped in a hurry, rooms pulled to roughly the right size, pictures that almost share an edge. **Tidy Up** puts that right in one press. Its tidier, **Auto-align**, snaps what you already have onto the grid, so near-aligned notes become exactly aligned and nothing moves far.
+A board fills up fast in a meeting: notes dropped in a hurry, rooms pulled to roughly the right size, pictures that almost share an edge. **Auto-align** puts that right in one step. It snaps what you already have onto the grid, so near-aligned notes become exactly aligned and nothing moves far.
 
 <Figure caption="Auto-align takes a scattered, mis-sized handful of notes and snaps them into neat rows on the grid.">
   <CleanupBeforeAfter />
@@ -27,11 +27,9 @@ A board fills up fast in a meeting: notes dropped in a hurry, rooms pulled to ro
 
 ## How to run it
 
-Press the **Tidy Up** button (the broom in the bottom-right corner, just left of the Theme & canvas button) and choose **Auto-align** in its panel. Rest the mouse on it first and the tab is tidied behind the panel, so you can see the result before you commit; move away and everything goes back.
+Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K), type **Auto-align** and pick **Auto-align to Grid** under **Actions**. It runs on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was.
 
-You can also open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K), type **Auto-align** and pick **Auto-align to Grid** under **Actions**. It runs on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was.
-
-<Figure caption="Typing layout in the command palette lists the tidiers under Actions.">
+<Figure caption="Typing layout in the command palette lists Auto-align under Actions.">
   <SearchCommandPalette />
 </Figure>
 

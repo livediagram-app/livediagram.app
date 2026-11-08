@@ -52,9 +52,6 @@ export type CommandContext = {
   // Offline document (docs/specs/006-document/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
-  // The editor in a workbench (livediagram/docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table; livehuddle no longer passes it):
-  // no ownership powers, so neither Share nor Delete document.
-  workbench?: boolean;
   // The canvas tool in force, so the command for the CURRENT side (Edit or Walk) is dropped.
   canvasTool: string;
 };
@@ -201,14 +198,12 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: 'rename space canvas document diagram title name relabel',
     run: h.renameDocument,
   });
-  if (!ctx.workbench) {
-    out.push({
-      id: 'delete-document',
-      name: 'Delete Space',
-      keywords: 'delete space canvas document diagram remove trash destroy',
-      run: h.deleteDocument,
-    });
-  }
+  out.push({
+    id: 'delete-document',
+    name: 'Delete Space',
+    keywords: 'delete space canvas document diagram remove trash destroy',
+    run: h.deleteDocument,
+  });
   if (!walking) {
     out.push({
       id: 'open-theme',
@@ -224,7 +219,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.openCanvasOptions,
     });
   }
-  if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
+  if (ctx.canShare && !ctx.isOffline) {
     out.push({
       id: 'share',
       name: 'Share Space',

@@ -4,7 +4,6 @@ import { Fragment, useState, type ReactNode } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { CatalogueGroupTile, type StripOpen } from './catalogue-strip-groups';
-import { BrowseStartGroup } from './PaletteCategoryBrowser';
 import { PaletteTile, type PaletteTileActions } from './PaletteTileGrid';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { STRIP_DIVIDER_ATTR } from '@liveworkspace/workbench/components/palette/useEdgeDividers';
@@ -65,7 +64,6 @@ export function tileItems(
   openers?: Openers,
 ): ReactNode[] {
   return tiles.map((def) => {
-    const a = def.action;
     // A tile with presets opens them (docs/specs/009-elements/card.md "Card presets"), as a catalogue's group does.
     const variants = def.variants;
     const tile =
@@ -86,17 +84,6 @@ export function tileItems(
             )
           }
         />
-      ) : a.type === 'open' ? (
-        <CatalogueGroupTile
-          group={{ id: def.id, label: def.label, icon: def.icon }}
-          open={openers?.isOpen(def.id) ?? false}
-          onToggle={(anchor) =>
-            openers?.toggleOpen(
-              { key: def.id, category: a.category, group: null, label: def.label },
-              anchor,
-            )
-          }
-        />
       ) : (
         <PaletteTile def={def} actions={actions} pendingDraw={pendingDraw} compact />
       );
@@ -109,21 +96,4 @@ export function tileItems(
       <Fragment key={def.id}>{tile}</Fragment>
     );
   });
-}
-
-/** The More popover's body: the category's own, or the category (or catalogue group, alone) a tile opened. */
-export function StripOpenedBody({
-  opened,
-  content,
-}: {
-  opened: StripOpen | null;
-  // The body of the category it shows (`opened.category`, else the strip's own).
-  content: ReactNode;
-}) {
-  return (
-    <BrowseStartGroup.Provider value={opened?.group ? { id: opened.group, bare: true } : null}>
-      {/* Keyed on what opened it, so another group's tile opens the body afresh on its own. */}
-      <Fragment key={opened?.key ?? ''}>{content}</Fragment>
-    </BrowseStartGroup.Provider>
-  );
 }
