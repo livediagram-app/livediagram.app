@@ -836,7 +836,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // Publish a STANDING snapshot on entry and whenever the look flips, so a peer
   // sees the character (and any costume change) without waiting for it to move.
   // Movement publishes from the loop instead. `placed` is in the deps because the
-  // position arrives a commit after `active` flips — keying on `active` alone published
+  // position arrives a commit after `active` flips, so keying on `active` alone published
   // a null position, i.e. nothing, and a peer saw no character until the
   // walker moved (which needs animation frames the tab may not be getting).
   const publishStanding = useEffectEvent((at: AvatarPoint) => {
