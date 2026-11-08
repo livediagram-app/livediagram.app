@@ -102,8 +102,13 @@ describe('SettingsView on desktop', () => {
     const heading = screen.getByRole('button', { name: /Mouse/ });
     expect(heading.getAttribute('aria-expanded')).toBe('false');
     expect(heading.textContent).toContain('0 of 1 On');
+    // Closed, its switches take no focus: the body is inert, not just squeezed to no height.
+    const body = document.querySelector('[data-settings-section] [inert]');
+    expect(body?.querySelector('[role="switch"]')).toBeTruthy();
+    expect(body?.getAttribute('aria-hidden')).toBe('true');
     fireEvent.click(heading);
     expect(heading.getAttribute('aria-expanded')).toBe('true');
+    expect(document.querySelector('[data-settings-section] [inert]')).toBeNull();
   });
 
   it('shows a placeholder in place of the rail and pane', () => {
