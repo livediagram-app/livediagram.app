@@ -71,12 +71,14 @@ describe('applyReplace: elements sent back', () => {
     expect(next.elements.find((e) => e.id === 'n3')).not.toHaveProperty('textSize', 'sm');
   });
 
-  it('gives an element new to the tab the raw defaults', () => {
+  // A stored arrow is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part
+  // 4): even a new one sent back takes no defaults, kept exactly as sent.
+  it('keeps a stored arrow new to the tab exactly as sent', () => {
     const fresh = arrowBetween('a2', 'n2', 'n3');
     const { tab: next } = applied(
       applyReplace(tab, { elements: [...tab.elements, fresh], layout: 'preserve' }, options),
     );
-    expect(next.elements.find((e) => e.id === 'a2')).toHaveProperty('arrowStyle');
+    expect(next.elements.find((e) => e.id === 'a2')).toEqual(fresh);
   });
 });
 
@@ -112,7 +114,8 @@ describe('applyReplace on an existing tab', () => {
     expect(tab.name).toBe('Checkout flow');
   });
 
-  it('takes raw elements, normalised and laid out when asked', () => {
+  // The layered layout went with the arrows (part 4): `layout: 'auto'` keeps the positions sent.
+  it('takes raw elements, normalised, at the positions sent', () => {
     const elements = [
       { id: 'x', type: 'shape', shape: 'rectangle', x: 0, y: 0, width: 100, height: 50 },
       { id: 'y', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 50 },
@@ -124,7 +127,7 @@ describe('applyReplace on an existing tab', () => {
     const [x, y] = tab.elements as { shape: string; y: number; textSize?: string }[];
     expect(x!.shape).toBe('square');
     expect(y!.textSize).toBeDefined();
-    expect(y!.y).not.toBe(x!.y);
+    expect(y!.y).toBe(x!.y);
   });
 });
 
@@ -144,7 +147,7 @@ describe('applyReplace for a new tab', () => {
     expect(createdIds).toEqual(tab.elements.map((el) => el.id));
   });
 
-  it('names the theme by id, as the MCP passes the document theme to add_tab', () => {
+  it('names the theme by id, as a new tab takes the document theme', () => {
     const { tab } = applied(
       applyReplace(null, flow, { ...options, themeId: 'ocean', theme: getBuiltInTheme('brand') }),
     );

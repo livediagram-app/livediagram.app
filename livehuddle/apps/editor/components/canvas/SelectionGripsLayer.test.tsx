@@ -3,11 +3,8 @@
 import { useState, type ReactNode } from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ArrowElement } from '@livehuddle/document';
 import { SelectionChromeLayer } from './element-parts';
-import { SelectedArrowHandles } from './SelectedArrowHandles';
 import {
-  ArrowGripsPortal,
   BoxGripsPortal,
   SELECTION_GRIPS_Z_INDEX,
   SelectionGripsContext,
@@ -134,39 +131,6 @@ describe('SelectionGripsLayer', () => {
     );
     expect(getByTestId('element').querySelector('[data-testid="grip"]')).toBeNull();
     expect(layerOf(container).querySelector('[data-testid="grip"]')).not.toBeNull();
-  });
-
-  it("renders a selected arrow's end grips in the layer's svg", () => {
-    const arrow: ArrowElement = {
-      id: 'ar',
-      type: 'arrow',
-      from: { kind: 'free', x: 0, y: 0 },
-      to: { kind: 'free', x: 100, y: 0 },
-    };
-    const { container, getByTestId } = render(
-      <Harness>
-        <svg>
-          <ArrowGripsPortal arrowId="ar">
-            <SelectedArrowHandles
-              arrow={arrow}
-              from={{ x: 0, y: 0 }}
-              to={{ x: 100, y: 0 }}
-              curveControl={null}
-              curveAnchors={null}
-              elbowPoint={null}
-              guardPress={() => false}
-              onBeginEndpointDrag={vi.fn()}
-            />
-          </ArrowGripsPortal>
-        </svg>
-      </Harness>,
-    );
-    expect(getByTestId('element').querySelectorAll('circle')).toHaveLength(0);
-    const circles = layerOf(container).querySelectorAll('svg circle');
-    expect(circles).toHaveLength(2);
-    expect(circles[0]!.namespaceURI).toBe('http://www.w3.org/2000/svg');
-    // Tagged so the grips ride a move's offset with their arrow (drag-preview.md "Moves ride an offset").
-    expect(circles[0]!.closest('[data-ride-id]')?.getAttribute('data-ride-id')).toBe('ar');
   });
 
   it('renders no grips outside a grips layer', () => {

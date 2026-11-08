@@ -5,41 +5,27 @@ import { applied, lines, refused } from '../fixtures/outcomes';
 import { boxIn, run } from '../fixtures/run';
 
 describe('layout', () => {
-  it('lays out only the selection from its top-left, sizes kept, the rest untouched', () => {
-    const outcome = run('layout n5 n6 n7 n8 t1 direction=right');
+  // No arrow joins anything since part 4 of the element engine (docs/specs/002-project-scope/not-in-livehuddle.md):
+  // the sweep is the whole layout, and the stored arrows are left as stored.
+  it('sweeps only the selection into rows from its top-left, sizes kept, the rest untouched', () => {
+    const outcome = run('layout n5 n6 n7 n8 t1');
     const { tab } = applied(outcome);
-    expect(lines(outcome)).toEqual([
-      '~ a5  arrowStyle →straight',
-      '~ a6  arrowStyle →straight',
-      '~ a7  arrowStyle →straight',
-      '» n5 n6 n7 n8 t1  laid out (flow, right)',
-    ]);
+    // n5 already sits at the selection's top-left.
+    expect(lines(outcome)).toEqual(['» n6 n7 n8 t1  laid out']);
     const laid = ['n5', 'n6', 'n7', 'n8', 't1'].map((id) => boxIn(tab, id));
     expect(Math.min(...laid.map(([x]) => x))).toBe(0);
     expect(Math.min(...laid.map(([, y]) => y))).toBe(400);
     expect(boxIn(tab, 'n5').slice(2)).toEqual([140, 60]);
-    expect(boxIn(tab, 'n6')[2]).toBe(140);
-    expect(boxIn(tab, 'n6')[3]).toBe(80);
+    expect(boxIn(tab, 'n6').slice(2)).toEqual([140, 80]);
     expect(boxIn(tab, 'n4')).toEqual(boxIn(checkoutFlow(), 'n4'));
+    const a5 = (t: Tab) => t.elements.find((el) => el.id === 'a5');
+    expect(a5(tab)).toEqual(a5(checkoutFlow()));
   });
 
-  it('detects the flow direction when none is given', () => {
-    expect(lines(run('layout n5 n6 n7 n8')).at(-1)).toBe('» n6 n7 n8  laid out (flow, down)');
-  });
-
-  it('lays out as a tree, and refuses the mind map style', () => {
-    expect(lines(run('layout type:square style=tree')).find((l) => l.startsWith('»'))).toBe(
-      '» n3 n4 n5 n7  laid out (tree)',
-    );
-    expect(run('layout n1 n2 n3 style=mindmap')).toHaveProperty('errors');
-  });
-
-  it('runs a tree across when asked right, down when asked down (EO38)', () => {
-    const right = run('layout type:square style=tree direction=right');
-    expect(lines(right).some((line) => line.endsWith('laid out (tree, right)'))).toBe(true);
-    const down = run('layout type:square style=tree direction=down');
-    expect(lines(down).some((line) => line.endsWith('laid out (tree, down)'))).toBe(true);
-    expect(applied(right).tab).not.toEqual(applied(down).tab);
+  it('refuses the layered layout’s style and direction', () => {
+    expect(run('layout n1 n2 n3 style=tree')).toHaveProperty('errors');
+    expect(run('layout n1 n2 n3 direction=right')).toHaveProperty('errors');
+    expect(run('{"op":"layout","target":"n1","style":"flow"}')).toHaveProperty('errors');
   });
 
   it('sweeps boxes no arrow joins into rows from the top-left (E9)', () => {

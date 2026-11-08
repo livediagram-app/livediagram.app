@@ -6,6 +6,7 @@ import {
   SHAPE_KINDS,
   isPenColourName,
   isQuickSwatchSlot,
+  isRetiredElement,
   rederiveColorPresetForTheme,
   rederiveQuickSwatches,
   type Element,
@@ -14,9 +15,10 @@ import {
 import { safeJson } from '@liveworkspace/workbench/lib/local-storage-safe';
 import { isQuickStyleTarget } from './quick-style';
 
-// `shape:<ShapeKind>` for a shape, `arrow` for every arrow, `text` for every text element. A `board:` key (livediagram's
-// whiteboard memory) is not a kind: stored ones are dropped when read (Work Tracker #329).
-export type StyleKindKey = `shape:${string}` | 'arrow' | 'text' | 'path';
+// `shape:<ShapeKind>` for a shape, `text` for every text element. A `board:` key (livediagram's whiteboard memory) is not
+// a kind, and nor are `arrow` and `path`, whose elements are retired (docs/specs/002-project-scope/not-in-livehuddle.md
+// "The element engine", part 4): stored ones are dropped when read (Work Tracker #329).
+export type StyleKindKey = `shape:${string}` | 'text';
 export type RememberedStyle = Record<string, string | number>;
 export type StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>;
 
@@ -38,24 +40,6 @@ const SHAPE_MEMORY_FIELDS = {
   textAlignX: 'string',
   iconPosition: 'string',
 } as const;
-const ARROW_MEMORY_FIELDS = {
-  strokeColor: 'string',
-  penColour: 'string',
-  strokeSwatch: 'number',
-  strokeWidth: 'number',
-  strokeStyle: 'string',
-  flow: 'string',
-} as const;
-// A path (docs/specs/023-draw-mode/path-tool.md "Style"): its line and its fill.
-const PATH_MEMORY_FIELDS = {
-  strokeColor: 'string',
-  penColour: 'string',
-  strokeSwatch: 'number',
-  fillColor: 'string',
-  fillSwatch: 'number',
-  strokeWidth: 'string',
-  strokeStyle: 'string',
-} as const;
 const TEXT_MEMORY_FIELDS = {
   textColor: 'string',
   penTextColour: 'string',
@@ -74,25 +58,16 @@ const STORAGE_PREFIX = 'livehuddle:v2:style-memory:';
 export const styleMemoryKey = (documentId: string): string => `${STORAGE_PREFIX}${documentId}`;
 
 export function styleKindOf(el: Element): StyleKindKey | null {
-  return el.type === 'arrow'
-    ? 'arrow'
-    : el.type === 'text'
-      ? 'text'
-      : el.type === 'path'
-        ? 'path'
-        : el.type === 'shape'
-          ? `shape:${el.shape}`
-          : null;
+  if (el.type === 'text') return 'text';
+  return el.type === 'shape' && !isRetiredElement(el) ? `shape:${el.shape}` : null;
 }
 
 function fieldsFor(kind: StyleKindKey): FieldTypes {
-  if (kind === 'arrow') return ARROW_MEMORY_FIELDS;
-  if (kind === 'path') return PATH_MEMORY_FIELDS;
   return kind === 'text' ? TEXT_MEMORY_FIELDS : SHAPE_MEMORY_FIELDS;
 }
 
 function isKnownKind(key: string): key is StyleKindKey {
-  if (key === 'arrow' || key === 'text' || key === 'path') return true;
+  if (key === 'text') return true;
   return key.startsWith('shape:') && SHAPE_KINDS.has(key.slice('shape:'.length));
 }
 

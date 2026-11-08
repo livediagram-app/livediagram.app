@@ -16,6 +16,7 @@ import {
 } from '@livehuddle/document';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { useElementSelectionActions as buildSelectionActions } from '@/hooks/canvas/useElementSelectionActions';
+import { storedAnnotation, storedFreehand, storedPath } from '@/test/retired-elements';
 import { CanvasSurfaceProvider } from './CanvasSurfaceContext';
 import { ElementFaceRouter } from './ElementFaceRouter';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
@@ -329,13 +330,12 @@ describe('the placeholder Delete button', () => {
 
   it('only ever shows inside the card: none outside it, or in the grips layer, at any zoom', () => {
     const host = document.createElement('div');
-    const arrows = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     document.body.appendChild(host);
     const pie = board({ x: 40, y: 80, width: 320, height: 220, shape: 'pie-chart' });
     for (const zoom of [0.1, 0.25, 0.5, 1, 2, 4]) {
       for (const selected of [false, true]) {
         const { container } = render(
-          <SelectionGripsContext.Provider value={{ box: host, arrows }}>
+          <SelectionGripsContext.Provider value={{ box: host }}>
             <CanvasZoomProvider zoom={zoom}>
               <RetiredElementFace element={pie} selected={selected} onDelete={() => {}} />
             </CanvasZoomProvider>
@@ -725,5 +725,105 @@ describe('a stored layout container', () => {
     cleanup();
     const readOnly = render(<ElementFaceRouter {...faceProps(el, true, onDeleteRetired)} />);
     expect(readOnly.container.querySelector('button')).toBeNull();
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: a pen stroke, a highlighter stroke,
+// a path and an annotation, each as stored before the part, with the fields only the deleted code knew.
+const BOX = { x: 0, y: 0, width: 240, height: 160 };
+const PART_4: [string, string, () => Element][] = [
+  [
+    'pen stroke',
+    'Drawing',
+    () => storedFreehand('pen', BOX, { pressures: [0.2, 0.8], penWidth: 2 }),
+  ],
+  [
+    'highlighter stroke',
+    'Drawing',
+    () => storedFreehand('marker', BOX, { pen: 'highlighter', penColour: 'yellow' }),
+  ],
+  [
+    'path',
+    'Path',
+    () => storedPath('path', BOX, { closed: true, fillColor: '#ff0000', contours: [[]] }),
+  ],
+];
+
+describe('a stored pen stroke, highlighter stroke and path', () => {
+  it.each(PART_4)('draws a stored %s as the placeholder named %s', (_kind, name, make) => {
+    const el = make();
+    const { container } = render(<ElementFaceRouter {...faceProps(el, false)} />);
+    const svg = container.querySelector(`svg[data-retired-element="${el.type}"]`)!;
+    expect(svg).not.toBeNull();
+    expect(lines(svg)[0]).toEqual(['name', name]);
+    expect(
+      container.querySelector('path[data-stroke-hit], textarea, input, [contenteditable]'),
+    ).toBeNull();
+  });
+
+  it.each(PART_4)('lets an Editor delete a stored %s, and no one else', (_kind, _name, make) => {
+    const el = make();
+    const editor = resolveEditorCapabilities({ level: 'edit', adderKey: null });
+    const viewer = resolveEditorCapabilities({ level: 'view', adderKey: 'a'.repeat(32) });
+    const participant = resolveEditorCapabilities({
+      level: 'participate',
+      adderKey: 'b'.repeat(32),
+    });
+    expect([editor, viewer, participant].map((can) => can.remove(el))).toEqual([
+      true,
+      false,
+      false,
+    ]);
+    const onDeleteRetired = vi.fn();
+    const editable = render(<ElementFaceRouter {...faceProps(el, false, onDeleteRetired)} />);
+    fireEvent.click(editable.container.querySelector('button[data-retired-delete]')!);
+    expect(onDeleteRetired).toHaveBeenCalledWith(el.id);
+    cleanup();
+    const readOnly = render(<ElementFaceRouter {...faceProps(el, true, onDeleteRetired)} />);
+    expect(readOnly.container.querySelector('button')).toBeNull();
+  });
+});
+
+// An annotation's 44 by 44 marker is too small for the Delete button: an Editor selects it and uses the toolbar's
+// Delete, the ordinary removal.
+describe('a stored annotation', () => {
+  const note = () =>
+    storedAnnotation('note', { x: 10, y: 10, width: 44, height: 44 }, { note: 'Check' });
+
+  it('draws as the placeholder with no Delete button, even for an Editor', () => {
+    const { container } = render(<ElementFaceRouter {...faceProps(note(), false, vi.fn())} />);
+    expect(container.querySelector('svg[data-retired-element="annotation"]')).not.toBeNull();
+    expect(container.querySelector('button')).toBeNull();
+  });
+
+  it('an Editor removes it through the ordinary delete; a Viewer and a Participant may not', () => {
+    const el = note();
+    const editor = resolveEditorCapabilities({ level: 'edit', adderKey: null });
+    const viewer = resolveEditorCapabilities({ level: 'view', adderKey: 'a'.repeat(32) });
+    const participant = resolveEditorCapabilities({
+      level: 'participate',
+      adderKey: 'b'.repeat(32),
+    });
+    expect([editor, viewer, participant].map((can) => can.remove(el))).toEqual([
+      true,
+      false,
+      false,
+    ]);
+    let after: Element[] | null = null;
+    const actions = buildSelectionActions({
+      currentSelectionIds: () => new Set(['note']),
+      readSelection: () => ({ selectedId: 'note', multiSelectedIds: new Set<string>() }),
+      activeTab: { id: 't', name: 'T', elements: [el] },
+      commit: (map) => {
+        after = map([el]);
+      },
+      setSelectedId: () => {},
+      setEditingId: () => {},
+      setMultiSelectedIds: () => {},
+      setFormatSourceId: () => {},
+      lockedByOther: () => false,
+    });
+    actions.deleteSelected();
+    expect(after).toEqual([]);
   });
 });

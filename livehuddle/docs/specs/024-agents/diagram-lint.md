@@ -1,5 +1,9 @@
 # Diagram lint
 
+> **No arrow is drawn as one** ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 4): the arrow checks went
+> with the arrows, and so did `box-overlap` and `aspect-extreme`, which judged only boxes an arrow joins. Their codes
+> and the arrow measures stay on the wire at nothing.
+
 > **No MCP server or CLI in livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
 > the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
 > doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.

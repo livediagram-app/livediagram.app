@@ -4,9 +4,6 @@ import {
   DEFAULT_SCHEME_DARK,
   DEFAULT_SCHEME_LIGHT,
   THEMES,
-  defaultArrowLabelColor,
-  defaultArrowStrokeColor,
-  defaultFillColor,
   defaultTextColor,
   unpaintedShapeInk,
   type BoxedElement,
@@ -63,12 +60,7 @@ function expectDefaultScheme(
   expect(artProperty(selector, 'art-ink-fill')).toBe(hex(ink.fill));
   expect(artProperty(selector, 'art-ink-stroke')).toBe(hex(ink.stroke));
   expect(artProperty(selector, 'art-ink-text')).toBe(hex(ink.text));
-  expect(artProperty(selector, 'art-ink-shade')).toBe(
-    hex(defaultFillColor(element('annotation'), surface)),
-  );
   expect(artProperty(selector, 'art-text')).toBe(hex(defaultTextColor(element('text'), surface)));
-  expect(artProperty(selector, 'art-arrow')).toBe(hex(defaultArrowStrokeColor(surface)));
-  expect(artProperty(selector, 'art-arrow-label')).toBe(hex(defaultArrowLabelColor({}, surface)));
 }
 
 function expectPick(selector: ':root' | '.dark', id: string) {

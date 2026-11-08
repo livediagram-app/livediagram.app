@@ -13,7 +13,6 @@ const OUTSIDE_RENDER: Record<string, string> = {
   '../packages/workbench/src/components/primitives/PagedCarousel.tsx':
     'prefersReducedMotion, called from a scroll handler',
   'apps/editor/components/canvas/ReactionBurst.tsx': 'inside the drawing effect',
-  'apps/editor/components/canvas/arrow-flow.tsx': 'inside the pinning effect',
   // Hooks: read in effects, handlers, store snapshots and subscriptions, or module state the browser-only Explorer reads.
   '../packages/ui/src/useClickOutside.ts': 'inside an effect',
   '../packages/ui/src/useEscape.ts': 'inside an effect',

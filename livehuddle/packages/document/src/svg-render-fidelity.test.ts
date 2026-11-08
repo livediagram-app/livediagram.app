@@ -29,29 +29,6 @@ describe('Behaviour face export', () => {
     expect(svgOf(shape('portal'))).toContain('stop-opacity="0.35"');
   });
 
-  it('draws an arrow whose stored head shape this build does not know with the default head', () => {
-    const a = createShape('square', 0, 0);
-    const b = createShape('square', 300, 0);
-    const svg = renderElementsToSvg({
-      id: 't',
-      name: 'T',
-      elements: [
-        a,
-        b,
-        {
-          id: 'arr',
-          type: 'arrow',
-          from: { kind: 'pinned', elementId: a.id, anchor: 'e' },
-          to: { kind: 'pinned', elementId: b.id, anchor: 'w' },
-          arrowEnds: 'both',
-          arrowheadShape: 'star' as never,
-          arrowheadStartShape: 'moon' as never,
-        },
-      ],
-    });
-    expect(svg).toContain('<polygon');
-  });
-
   it('prints a chair label under the seat', () => {
     expect(svgOf(shape('chair', { label: 'Scribe' }))).toContain('>Scribe<');
   });

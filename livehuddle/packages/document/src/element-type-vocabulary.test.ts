@@ -5,7 +5,7 @@ import { ELEMENT_TYPES, isValidElement, isValidTab } from './validate';
 
 // The element vocabulary exists twice, like the shape vocabulary next door
 // (shape-kind.test.ts): as the `Element` union — nine boxed interfaces in
-// element-types.ts plus `ArrowElement` in arrow-types.ts, each with a literal
+// element-types.ts plus the stored arrow's `RetiredArrowElement` in retired-arrow.ts, each with a literal
 // `type` discriminant — and as the runtime `ELEMENT_TYPES` set in validate.ts.
 //
 // This one is worth MORE than the shape guard, because the failure is bigger.
@@ -27,7 +27,7 @@ function read(name: string): string {
 }
 
 const BOXED_SRC = read('./element-types.ts');
-const ARROW_SRC = read('./arrow-types.ts');
+const ARROW_SRC = read('./retired-arrow.ts');
 const INDEX_SRC = read('./index.ts');
 
 // Each element interface declares its discriminant as `  type: 'shape';`, or, for the retired element types
@@ -97,15 +97,9 @@ const FIXTURES: Record<string, Record<string, unknown>> = {
   table: { ...MINIMAL_BOX, cells: [['a', 'b']] },
   sticky: { ...MINIMAL_BOX },
   image: { ...MINIMAL_BOX, imageId: 'img_1' },
-  freehand: { ...MINIMAL_BOX, closed: false, packedPoints: 'AQAAAAAA' },
-  path: {
-    ...MINIMAL_BOX,
-    closed: false,
-    nodes: [
-      { nx: 0, ny: 0, mode: 'corner' },
-      { nx: 1, ny: 1, mode: 'corner' },
-    ],
-  },
+  // Retired types (part 4): validated on the box alone.
+  freehand: { ...MINIMAL_BOX },
+  path: { ...MINIMAL_BOX },
   annotation: { ...MINIMAL_BOX },
   'link-card': { ...MINIMAL_BOX },
   video: { ...MINIMAL_BOX },

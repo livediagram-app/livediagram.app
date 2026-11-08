@@ -103,20 +103,6 @@ describe('outline budgets (R20, R21)', () => {
     expect(json.nodes.every((n) => !('children' in n) || n.children.length === 0)).toBe(true);
   });
 
-  it('cuts into the own-line arrows too, keeping those that fit', () => {
-    const a = shapeAt('square', 'a', 0, 0);
-    const free = (i: number) => ({
-      ...arrowBetween(`loose-${i}`, 'a', 'a', { label: 'a long retry label '.repeat(2) }),
-      from: { kind: 'free' as const, x: i, y: i },
-    });
-    const model = buildViewModel(tabOf([a, free(1), free(2), free(3)] as Element[]));
-    const full = outlineView(model);
-    const budgets = Array.from({ length: full.fullTokens }, (_, i) => i + 1);
-    const kept = budgets.map((budget) => outlineView(model, { budget }).json.ownLineArrows.length);
-    expect(kept).toContain(0);
-    expect(kept).toContain(1);
-  });
-
   it('points to the full budget when only notes went', () => {
     const { text, fullTokens } = outlineView(checkout(), { budget: 350 });
     expect(text.split('\n').at(-1)).toBe(`… notes hidden: view --budget ${fullTokens}`);
@@ -159,7 +145,7 @@ describe('a stored layout container in the outline', () => {
   it('prints flat, `? <kind>` with its stored label, beside what sat on it', () => {
     const { text, json } = outlineView(buildViewModel(tabOf(elements)));
     expect(text.split('\n')).toEqual([
-      'tab tab-1 "T" · 7 elements: 7 boxes · 3 unknown',
+      'tab tab-1 "T" · 7 elements: 7 boxes · 5 unknown',
       '? lane lane "Ops"',
       'square deploy "Deploy"',
       '? boundary vpc "VPC"',
@@ -208,7 +194,7 @@ describe('outline edge cases', () => {
     expect(json.nodes[2]).toMatchObject({ kind: '? blob', unknown: true });
   });
 
-  it('prints own-line arrows after the root, and folds strokes (E8, E27)', () => {
+  it('prints a stored arrow as `? arrow` with its label, and folds strokes (E8, E27)', () => {
     const a = shapeAt('square', 'a', 0, 0);
     const free = {
       ...arrowBetween('loose', 'a', 'a', { label: 'retry' }),
@@ -220,7 +206,7 @@ describe('outline edge cases', () => {
     expect(outlineView(model).text.split('\n').slice(1)).toEqual([
       'square a',
       'freehand ×2 (1 closed)',
-      'arrow loose free → a "retry"',
+      '? arrow loose "retry"',
     ]);
     expect(outlineView(model).json.nodes[1]).toEqual({
       run: 'freehand',
@@ -229,21 +215,19 @@ describe('outline edge cases', () => {
     });
   });
 
-  it('prints style on arrows with style, and drops it with the attributes', () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: a stored arrow is a retired
+  // element, printed on its own line with its stored style like any retired kind, never on its source's line.
+  it('prints a stored arrow on its own line, with its stored style', () => {
     const a = shapeAt('square', 'a', 0, 0);
     const b = shapeAt('square', 'b', 300, 0);
-    const arrows = Array.from({ length: 6 }, (_, i) =>
-      arrowBetween(`ab${i}`, 'a', 'b', { arrowStyle: 'curved', strokeColor: '#dc2626' }),
+    const arrow = arrowBetween('ab', 'a', 'b', { arrowStyle: 'curved', strokeColor: '#dc2626' });
+    const lines = outlineView(buildViewModel(tabOf([a, b, arrow])), { style: true }).text.split(
+      '\n',
     );
-    const model = buildViewModel(tabOf([a, b, ...arrows]));
-    const styled = 'b stroke=#dc2626 line=curved';
-    expect(outlineView(model, { style: true }).text.split('\n')[1]).toBe(
-      `square a → ${Array(6).fill(styled).join(', ')}`,
-    );
-    const budget = Array.from({ length: 200 }, (_, i) => i + 1).find(
-      (b) => outlineView(model, { style: true, budget: b }).state === 'attributes-dropped',
-    );
-    const dropped = outlineView(model, { style: true, budget });
-    expect(dropped.text.split('\n')[1]).toBe('square a → b, b, b, b, b, b');
+    expect(lines.slice(1)).toEqual([
+      'square a',
+      'square b',
+      '? arrow ab stroke=#dc2626 line=curved',
+    ]);
   });
 });

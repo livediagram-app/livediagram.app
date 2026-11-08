@@ -1,4 +1,4 @@
-tab 0b34 "Checkout platform" · 30 elements: 19 boxes, 11 arrows · 4 unknown · threads 1 open/2 · origin 40,20: stored = shown + origin · rev 41
+tab 0b34 "Checkout platform" · 30 elements: 19 boxes, 11 arrows · 15 unknown · threads 1 open/2 · origin 40,20: stored = shown + origin · rev 41
 98eb 0,0 520x48
 048c 0,80 300x440
 a3cf 50,270 200x72
@@ -18,14 +18,14 @@ e6d7 1320,130 160x90
 cb02 0,560 220x140
 480a 0,740 420x160
 0c84 480,740 200x200
-c74b b811.s → a3cf.n
-6e71 a3cf.s → 649c.n
-9c5e 649c.e → 202b.w
-111e 649c.e → 146b.w
-c41d 146b.s → e4a8.n angled
-8e70 e4a8.e → e6d7.w
-892e 146b.e → d41e.w
-3462 146b.w → 6406.n
-1434 6406.s → 12de.n
-0cee 6406.e → 0556.w
-1fc0 12de.e → 822f.w
+c74b no geometry
+6e71 no geometry
+9c5e no geometry
+111e no geometry
+c41d no geometry
+8e70 no geometry
+892e no geometry
+3462 no geometry
+1434 no geometry
+0cee no geometry
+1fc0 no geometry

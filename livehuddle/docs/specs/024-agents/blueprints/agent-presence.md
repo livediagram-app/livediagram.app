@@ -394,7 +394,7 @@ setAt, expiresAt }`.
 - **E14** The owner has the tab open in two browsers: both sessions are in `joins`; the fold attaches the status to
   the one row the stack keeps for that collab key.
 - **E15** Two tokens of one owner on one tab: one `person`, one row, the later set's status.
-- **E16** Reply, resolve or reopen naming a comment not on the tab: 404. The add naming an arrow or a missing element: 404.
+- **E16** Reply, resolve or reopen naming a comment not on the tab: 404. The add naming a missing element: 404. A stored arrow takes a thread, as its card does in the editor (part 4, D28 in 002-project-scope's DEFAULTS).
 - **E17** A reply that pushes the tab over `MAX_TAB_BYTES`: 413, nothing written, nothing relayed.
 - **E18** A lost compare-and-swap twice: 409 `tab_busy`, nothing written.
 - **E19** A relay that fails: the write stands; `[room-mutation] el-delta did not reach the room` warns (PR26); editors get

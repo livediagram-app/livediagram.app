@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { RETIRED_PLACEHOLDER_COLOURS, retiredPlaceholderLayout } from './retired-placeholder';
 import { boxedNeedsSvgRaster, renderElementsToSvg, svgBoxed } from './svg-render';
-import { svgRetiredElement } from './svg-render-retired';
-import type { BoxedElement, ShapeElement } from './index';
+import { svgRetiredArrow, svgRetiredElement } from './svg-render-retired';
+import type { BoxedElement, Element, RetiredArrowElement, ShapeElement } from './index';
 
 // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": the export and the thumbnail draw a retired
 // element as a plain placeholder card in its own box.
@@ -232,5 +232,90 @@ describe('a retired element in the export', () => {
 
   it('is rasterised from the SVG for the PNG and PDF, which have no drawer for it', () => {
     expect(boxedNeedsSvgRaster(retired('temperature') as BoxedElement)).toBe(true);
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4 (element-engine.md D21): a stored
+// arrow draws a faint dashed straight line between its ends and the 160 by 96 card on its middle; a stored stroke,
+// path or annotation draws the card in its box.
+describe('a stored arrow, drawing, path and annotation in the export', () => {
+  const a = { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 };
+  const b = { id: 'b', type: 'shape', shape: 'square', x: 400, y: 0, width: 100, height: 60 };
+  const arrow = (extra: Record<string, unknown> = {}): RetiredArrowElement =>
+    ({
+      id: 'flow',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
+      label: 'Ships to',
+      arrowEnds: 'both',
+      arrowStyle: 'curved',
+      strokeColor: '#ff0000',
+      curvePoints: [{ dx: 0, dy: -200 }],
+      ...extra,
+    }) as RetiredArrowElement;
+  const elements = [a, b] as Element[];
+
+  it('draws the line straight between its resolved ends, then the card on its middle', () => {
+    const svg = svgRetiredArrow(arrow(), elements);
+    expect(svg).toMatch(/^<g data-retired-arrow="">/);
+    expect(svg).toContain('<line data-retired-arrow-line="" x1="100" y1="30" x2="400" y2="30"');
+    expect(svg).toContain(`stroke="${RETIRED_PLACEHOLDER_COLOURS.light.stroke}"`);
+    expect(svg).toContain('stroke-dasharray="6 6"');
+    // The card: 160 by 96 centred on (250, 30), drawn inset like every placeholder.
+    const card = retiredPlaceholderLayout({ width: 160, height: 96, type: 'arrow' });
+    expect(svg).toContain(`<rect x="${170 + card.inset}" y="${-18 + card.inset}"`);
+    expect(texts(svg)[0]).toBe('Arrow');
+    // Its own colour, bends and heads are never drawn.
+    expect(svg).not.toContain('#ff0000');
+    expect(svg).not.toContain('<path');
+    expect(svg).not.toContain('<polygon');
+  });
+
+  it('names a line without heads Line, and follows the paper', () => {
+    const svg = svgRetiredArrow(arrow({ arrowEnds: 'none' }), elements, 'dark');
+    expect(texts(svg)[0]).toBe('Line');
+    expect(svg).toContain(`fill="${RETIRED_PLACEHOLDER_COLOURS.dark.fill}"`);
+  });
+
+  it('collapses onto its other end when its pinned element is gone', () => {
+    const svg = svgRetiredArrow(arrow(), [b] as Element[]);
+    expect(svg).toContain('x1="400" y1="30" x2="400" y2="30"');
+  });
+
+  it('draws in a whole-tab render, in its place in the array', () => {
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [arrow(), ...elements] });
+    expect(svg).toContain('data-retired-arrow=""');
+    // First in the array, so painted before both boxes: the last rect drawn is a box's, after the card's.
+    expect(svg.indexOf('data-retired-arrow=""')).toBeLessThan(svg.lastIndexOf('<rect'));
+    expect(svg.indexOf('</g>', svg.indexOf('data-retired-arrow=""'))).toBeLessThan(
+      svg.lastIndexOf('<rect'),
+    );
+  });
+
+  it.each([
+    [
+      'freehand',
+      { pen: 'highlighter', packedPoints: 'AQAAAAAA', strokeColor: '#ff0000' },
+      'Drawing',
+    ],
+    ['freehand', { packedPoints: 'AQAAAAAA', penWidth: 3, strokeColor: '#ff0000' }, 'Drawing'],
+    ['path', { closed: true, nodes: [], fillColor: '#ff0000' }, 'Path'],
+    ['annotation', { note: 'Check the numbers', fillColor: '#ff0000' }, 'Annotation'],
+  ])('draws a stored %s as the card named %s, never its own drawing', (type, fields, name) => {
+    const el = {
+      id: 'x',
+      type,
+      x: 0,
+      y: 0,
+      width: 320,
+      height: 220,
+      ...fields,
+    } as unknown as BoxedElement;
+    const svg = svgBoxed(el);
+    expect(texts(svg)).toEqual([name, 'No longer supported in livehuddle']);
+    expect(svg).not.toContain('#ff0000');
+    expect(svg).not.toContain('Check the numbers');
+    expect(boxedNeedsSvgRaster(el)).toBe(true);
   });
 });

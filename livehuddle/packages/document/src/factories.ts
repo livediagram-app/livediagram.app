@@ -1,6 +1,5 @@
 // Factories for every element type EXCEPT shapes: text, stickies,
-// annotations, link cards, images, freehand strokes and arrows, plus
-// scaleElements. The shape kind table and createShape moved to
+// link cards and images, plus scaleElements. The shape kind table and createShape moved to
 // './shape-factory' when this file reached 719 lines.
 //
 // `isBoxed` is imported from './index' rather than a leaf: it is only called
@@ -8,18 +7,12 @@
 // hit the module-init TDZ hazard that pins './shape-factory' to the leaves.
 import {
   isBoxed,
-  type Anchor,
-  type AnnotationElement,
   type LinkCardElement,
-  type ArrowElement,
   type Element,
-  type ElementId,
-  type FreehandElement,
   type ImageElement,
   type StickyElement,
   type TextElement,
 } from './index';
-import { packFreehandPoints } from './freehand-points';
 
 // The shape kind table + createShape live in './shape-factory'. Re-exported
 // here so every existing `from './factories'` import (graph-authoring) and the
@@ -55,26 +48,6 @@ export function createSticky(x: number, y: number): StickyElement {
   };
 }
 
-// Fixed marker size for an annotation (see docs/specs/009-elements/annotations.md). It never resizes, so
-// this is its size for life; `inheritedSizeFor` keeps it at this regardless
-// of the current selection.
-const ANNOTATION_SIZE = 44;
-
-// A note marker dropped at (x, y). The note text starts empty — the user
-// clicks the marker to add it. Aspect-locked by default so resizing keeps
-// the marker round (docs/specs/009-elements/annotations.md).
-export function createAnnotation(x: number, y: number): AnnotationElement {
-  return {
-    id: crypto.randomUUID(),
-    type: 'annotation',
-    x,
-    y,
-    width: ANNOTATION_SIZE,
-    height: ANNOTATION_SIZE,
-    aspectLocked: true,
-  };
-}
-
 // A link-card / bookmark (docs/specs/009-elements/link-cards.md) at (x, y). No link yet — the user sets
 // the URL via the link picker, and the editor fills `meta` from the unfurl
 // endpoint. Default size suits a favicon + title row above an optional image.
@@ -90,9 +63,8 @@ export function createLinkCard(x: number, y: number): LinkCardElement {
 }
 
 // Scale a set of elements uniformly about (ox, oy) — used to drag-to-draw a
-// component to size (docs/specs/008-canvas/canvas-and-palette.md). Boxed elements scale position + size; arrows
-// scale only their FREE endpoints (pinned ones track their elements). Font
-// sizes are unchanged (matches group resize).
+// component to size (docs/specs/008-canvas/canvas-and-palette.md). Boxed elements scale position + size; a stored
+// arrow (a retired element, ./retired-arrow) is never rewritten. Font sizes are unchanged (matches group resize).
 export function scaleElements(elements: Element[], ox: number, oy: number, s: number): Element[] {
   return elements.map((el) => {
     if (isBoxed(el)) {
@@ -104,15 +76,7 @@ export function scaleElements(elements: Element[], ox: number, oy: number, s: nu
         height: el.height * s,
       };
     }
-    const from =
-      el.from.kind === 'free'
-        ? { ...el.from, x: ox + (el.from.x - ox) * s, y: oy + (el.from.y - oy) * s }
-        : el.from;
-    const to =
-      el.to.kind === 'free'
-        ? { ...el.to, x: ox + (el.to.x - ox) * s, y: oy + (el.to.y - oy) * s }
-        : el.to;
-    return { ...el, from, to };
+    return el;
   });
 }
 
@@ -132,46 +96,5 @@ export function createImage(x: number, y: number): ImageElement {
     // its width:height ratio. Holding Shift while resizing the
     // corner handle breaks it via the existing aspect-lock toggle.
     aspectLocked: true,
-  };
-}
-
-// Mints a freehand element from raw canvas-coord points (freehandGeometry). The
-// caller decides the simplification and smoothing (see `simplifyPolyline` and
-// `catmullRomToBezierPath`). A degenerate (single-point) gesture returns a box
-// with one normalised point, which the caller can detect and reject.
-// A pen's pressures (one per point, 0 to 1) are packed with the points.
-export function createFreehand(
-  rawPoints: readonly { x: number; y: number }[],
-  closed: boolean,
-  pressures?: readonly number[],
-): FreehandElement {
-  return {
-    id: crypto.randomUUID(),
-    type: 'freehand',
-    ...packFreehandPoints(rawPoints, pressures),
-    closed,
-  };
-}
-
-export function createArrow(fromX: number, fromY: number, toX: number, toY: number): ArrowElement {
-  return {
-    id: crypto.randomUUID(),
-    type: 'arrow',
-    from: { kind: 'free', x: fromX, y: fromY },
-    to: { kind: 'free', x: toX, y: toY },
-  };
-}
-
-export function createPinnedArrow(
-  fromId: ElementId,
-  fromAnchor: Anchor,
-  toId: ElementId,
-  toAnchor: Anchor,
-): ArrowElement {
-  return {
-    id: crypto.randomUUID(),
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: fromId, anchor: fromAnchor },
-    to: { kind: 'pinned', elementId: toId, anchor: toAnchor },
   };
 }

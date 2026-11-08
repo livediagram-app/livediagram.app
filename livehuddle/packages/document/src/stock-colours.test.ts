@@ -1,16 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  ArrowElement,
-  FreehandElement,
-  ShapeElement,
-  StickyElement,
-  TextElement,
-} from './index';
+import type { ShapeElement, StickyElement, TextElement } from './index';
 import { defaultStrokeColor } from './colors';
 import { PEN_INK, penColourHex } from './pen-colours';
-import { renderElementsToSvg, svgArrow, svgBoxed } from './svg-render';
+import { renderElementsToSvg, svgBoxed } from './svg-render';
 import { resolveStockColours } from './stock-colours';
-import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 's',
@@ -20,22 +13,6 @@ const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   y: 0,
   width: 100,
   height: 60,
-  ...over,
-});
-
-const stroke = (over: Partial<FreehandElement> = {}): FreehandElement => ({
-  id: 'f',
-  type: 'freehand',
-  x: 0,
-  y: 0,
-  width: 40,
-  height: 40,
-  packedPoints: encodeStrokePoints([
-    { nx: 0, ny: 0 },
-    { nx: 1, ny: 1 },
-  ]),
-  closed: false,
-  penWidth: 4,
   ...over,
 });
 
@@ -50,36 +27,7 @@ const text = (over: Partial<TextElement> = {}): TextElement => ({
   ...over,
 });
 
-const arrow = (over: Partial<ArrowElement> = {}): ArrowElement => ({
-  id: 'a',
-  type: 'arrow',
-  from: { kind: 'free', x: 0, y: 0 },
-  to: { kind: 'free', x: 100, y: 0 },
-  ...over,
-});
-
 describe('resolveStockColours', () => {
-  it("fills a pen stroke's area (a closed path with no outline) in its pen colour", () => {
-    const area = {
-      id: 'p',
-      type: 'path',
-      x: 0,
-      y: 0,
-      width: 10,
-      height: 10,
-      closed: true,
-      nodes: [],
-      strokeWidth: 'none',
-      penColour: 'ink',
-    } as const;
-    expect(resolveStockColours(area as never, 'dark')).toMatchObject({
-      fillColor: penColourHex('ink', 'dark'),
-    });
-    // An outlined or open path keeps its fill as it is.
-    const outlined = resolveStockColours({ ...area, strokeWidth: 'thin' } as never, 'dark');
-    expect((outlined as { fillColor?: string }).fillColor).toBeUndefined();
-  });
-
   it('draws a named line colour in its version for the canvas surface', () => {
     const el = shape({ penColour: 'blue' });
     expect(resolveStockColours(el, 'light').strokeColor).toBe(penColourHex('blue', 'light'));
@@ -116,12 +64,6 @@ describe('resolveStockColours', () => {
       penTextColour: 'green',
     };
     expect(resolveStockColours(sticky, 'light').textColor).toBe(penColourHex('green', 'light'));
-    expect(resolveStockColours(arrow({ penColour: 'teal' }), 'light').strokeColor).toBe(
-      penColourHex('teal', 'light'),
-    );
-    expect(resolveStockColours(stroke({ penColour: 'pink' }), 'dark').strokeColor).toBe(
-      penColourHex('pink', 'dark'),
-    );
   });
 
   it('returns the element itself when it carries no name', () => {
@@ -140,17 +82,7 @@ describe('the headless renderer draws stock colours', () => {
     expect(svg).toContain(penColourHex('violet', 'light'));
   });
 
-  it('draws a named pen stroke on a dark page', () => {
-    const svg = svgBoxed(stroke({ penColour: 'orange' }), { surface: 'dark' });
-    expect(svg).toContain(penColourHex('orange', 'dark'));
-  });
-
-  it('draws a named arrow in the version for its page', () => {
-    const svg = svgArrow(arrow({ penColour: 'blue' }), [], 'dark');
-    expect(svg).toContain(penColourHex('blue', 'dark'));
-  });
-
-  it('draws every name in a whole-tab render, as thumbnails and MCP images do', () => {
+  it('draws every name in a whole-tab render, as thumbnails and agent images do', () => {
     const svg = renderElementsToSvg({
       id: 'tab',
       name: 'Tab',
@@ -161,17 +93,7 @@ describe('the headless renderer draws stock colours', () => {
   });
 });
 
-describe('unpainted pen strokes and text', () => {
-  it('draws an unpainted pen stroke in Ink on either surface', () => {
-    expect(svgBoxed(stroke(), { surface: 'light' })).toContain(PEN_INK.light);
-    expect(svgBoxed(stroke(), { surface: 'dark' })).toContain(PEN_INK.dark);
-  });
-
-  it('draws an unpainted freehand sketch in Ink, but leaves a highlighter its recipe', () => {
-    expect(defaultStrokeColor(stroke({ penWidth: undefined }), 'light')).toBe(PEN_INK.light);
-    expect(defaultStrokeColor(stroke({ pen: 'highlighter' }), 'light')).not.toBe(PEN_INK.light);
-  });
-
+describe('unpainted text', () => {
   it('keeps a shape on its theme default', () => {
     expect(defaultStrokeColor(shape(), 'light')).not.toBe(PEN_INK.light);
   });

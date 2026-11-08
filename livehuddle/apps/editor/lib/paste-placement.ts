@@ -1,5 +1,11 @@
 import { landInView, PASTE_OFFSET, pasteBounds } from '@liveworkspace/model-core/paste-placement';
-import { elementBounds, endpointPosition, type Element, type Rect } from '@livehuddle/document';
+import {
+  elementBounds,
+  retiredArrowEnds,
+  type Element,
+  type Rect,
+  type RetiredArrowElement,
+} from '@livehuddle/document';
 
 // Where a paste lands (docs/specs/008-canvas/canvas-and-palette.md Clipboard). Pure, so the rule is one
 // testable answer rather than a pile of conditions inside the clipboard hook.
@@ -10,7 +16,12 @@ import { elementBounds, endpointPosition, type Element, type Rect } from '@liveh
 
 export { PASTE_OFFSET };
 
-const GEOMETRY = { elementBounds, endpointPosition };
+// A stored arrow's end resolves as the arrow's line does (retiredArrowEnds), so a copied arrow measures where it draws.
+const GEOMETRY = {
+  elementBounds,
+  endpointPosition: (end: RetiredArrowElement['from'], all: Element[]) =>
+    retiredArrowEnds({ from: end, to: end } as RetiredArrowElement, all).from,
+};
 
 export function pasteTranslation(
   source: readonly Element[],

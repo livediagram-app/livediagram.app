@@ -1,11 +1,7 @@
 import {
-  ARROW_THICKNESS_PX,
   THEMES,
-  createPath,
   quickSwatchColor,
-  type ArrowElement,
   type Element,
-  type PathElement,
   type ShapeElement,
   type StickyElement,
   type TextElement,
@@ -23,6 +19,7 @@ import {
   clearQuickStyle,
   quickStyleView,
 } from './quick-style';
+import { storedArrow, storedPath } from '@/test/retired-elements';
 
 // docs/specs/008-canvas/quick-style-panel.md
 
@@ -39,19 +36,16 @@ const shape = (id: string, extra: Partial<ShapeElement> = {}): ShapeElement => (
   label: 'Box',
   ...extra,
 });
-const arrow = (id: string, extra: Partial<ArrowElement> = {}): ArrowElement => ({
-  id,
-  type: 'arrow',
-  from: { kind: 'free', x: 0, y: 0 },
-  to: { kind: 'free', x: 50, y: 0 },
-  ...extra,
-});
+// A stored arrow and path are retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+// part 4): the panel never styles them.
+const arrow = (id: string, extra: Record<string, unknown> = {}) =>
+  storedArrow(id, { x: 0, y: 0 }, { x: 50, y: 0 }, extra);
 const sticky: StickyElement = { id: 'n', type: 'sticky', x: 0, y: 0, width: 50, height: 50 };
 
 const sections = (els: Element[]) => Object.keys(quickStyleView(els, forest)?.sections ?? {});
 
 describe('quickStyleView: which sections show', () => {
-  it('shows nothing without a shape or an arrow', () => {
+  it('shows nothing without a shape or a text element', () => {
     expect(quickStyleView([], forest)).toBeNull();
     expect(quickStyleView([sticky], forest)).toBeNull();
   });
@@ -81,35 +75,28 @@ describe('quickStyleView: which sections show', () => {
     expect(sections([shape('a', { iconId: 'server' })])).toContain('iconAlign');
   });
 
-  it('gives an arrow stroke, width and style', () => {
-    expect(sections([arrow('a')])).toEqual(['stroke', 'width', 'style']);
-  });
-
-  it('shows a section when ANY selected element supports it', () => {
-    expect(sections([arrow('a'), shape('b')])).toEqual([
-      'stroke',
-      'background',
-      'width',
-      'style',
-      'textAlign',
-    ]);
+  it('shows nothing for a stored arrow or path, and styles only the shape beside one', () => {
+    expect(quickStyleView([arrow('a')], forest)).toBeNull();
+    const path = storedPath('p', { x: 0, y: 0, width: 40, height: 40 });
+    expect(quickStyleView([path], forest)).toBeNull();
+    expect(quickStyleView([arrow('a'), path, shape('b')], forest)?.targetIds).toEqual(['b']);
   });
 
   // not-in-livehuddle.md "Element and Tab Locking": an element saved locked styles like any other.
   it('styles elements saved locked with the rest', () => {
     const old = shape('a', { locked: true } as Partial<ShapeElement>);
-    expect(quickStyleView([old, arrow('b')], forest)?.targetIds).toEqual(['a', 'b']);
+    expect(quickStyleView([old, shape('b')], forest)?.targetIds).toEqual(['a', 'b']);
   });
 
   it('ignores non-shape elements in a mixed selection', () => {
-    expect(quickStyleView([sticky, arrow('a')], forest)?.targetIds).toEqual(['a']);
+    expect(quickStyleView([sticky, shape('a')], forest)?.targetIds).toEqual(['a']);
   });
 });
 
 describe('quickStyleView: the highlighted value', () => {
   it('is the shared value when every supporting element agrees', () => {
     const view = quickStyleView(
-      [shape('a', { strokeWidth: 'thick' }), arrow('b', { strokeWidth: ARROW_THICKNESS_PX.thick })],
+      [shape('a', { strokeWidth: 'thick' }), shape('b', { strokeWidth: 'thick' })],
       forest,
     )!;
     expect(view.sections.width?.value).toBe('thick');
@@ -146,32 +133,11 @@ describe('quickStyleView: the highlighted value', () => {
       quickStyleView([shape('a', { strokeColor: '#123456' })], forest)!.sections.stroke?.value,
     ).toBeNull();
   });
-
-  it('reads an arrow’s dashed flow as Flowing, and any other flow as nothing', () => {
-    const flowing = arrow('a', { strokeStyle: 'dashed', flow: 'dashes' });
-    expect(quickStyleView([flowing], forest)!.sections.style?.value).toBe('flowing');
-    expect(
-      quickStyleView([arrow('a', { flow: 'comet' })], forest)!.sections.style?.value,
-    ).toBeNull();
-  });
 });
 
 describe('quickStyleView: stroke style options', () => {
-  it('offers Flowing when every styled element is an arrow', () => {
-    expect(quickStyleView([arrow('a')], forest)!.sections.style?.options).toEqual([
-      'solid',
-      'dashed',
-      'flowing',
-    ]);
-  });
-
-  it('offers Dotted for shapes and for a mixed selection', () => {
+  it('offers Solid, Dashed and Dotted', () => {
     expect(quickStyleView([shape('a')], forest)!.sections.style?.options).toEqual([
-      'solid',
-      'dashed',
-      'dotted',
-    ]);
-    expect(quickStyleView([shape('a'), arrow('b')], forest)!.sections.style?.options).toEqual([
       'solid',
       'dashed',
       'dotted',
@@ -192,26 +158,20 @@ describe('apply transforms', () => {
     expect(next.strokeSwatch).toBeUndefined();
   });
 
-  it('colours an arrow’s stroke but never gives it a background', () => {
-    const a = arrow('a');
-    expect(applyQuickStroke(a, forest, 1)).toMatchObject({ strokeSwatch: 1 });
-    expect(applyQuickFill(a, forest, 1)).toBe(a);
+  it('leaves a stored arrow and a stored path exactly as stored, whatever is chosen', () => {
+    const path = storedPath('p', { x: 0, y: 0, width: 40, height: 40 }, { closed: true });
+    for (const el of [arrow('a', { strokeColor: '#111111' }), path]) {
+      expect(applyQuickStroke(el, forest, 1)).toBe(el);
+      expect(applyQuickFill(el, forest, 1)).toBe(el);
+      expect(applyQuickWidth(el, 'thin')).toBe(el);
+      expect(applyQuickStrokeStyle(el, 'dashed')).toBe(el);
+      expect(clearQuickStyle(el, forest)).toBe(el);
+    }
   });
 
-  it('maps width onto each kind’s own scale', () => {
+  it('writes a width and a pattern on a shape', () => {
     expect(applyQuickWidth(shape('a'), 'thick')).toMatchObject({ strokeWidth: 'thick' });
-    expect(applyQuickWidth(arrow('a'), 'thin')).toMatchObject({
-      strokeWidth: ARROW_THICKNESS_PX.thin,
-    });
-  });
-
-  it('makes a flowing arrow in one choice, and a plain one in another', () => {
-    const flowing = applyQuickStrokeStyle(arrow('a'), 'flowing') as ArrowElement;
-    expect(flowing).toMatchObject({ strokeStyle: 'dashed', flow: 'dashes' });
-    expect(flowing.flowSpeed).toBeDefined();
-    const plain = applyQuickStrokeStyle(flowing, 'solid') as ArrowElement;
-    expect(plain.strokeStyle).toBe('solid');
-    expect(plain.flow).toBeUndefined();
+    expect(applyQuickStrokeStyle(shape('a'), 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
   });
 
   it('applies alignment to shapes only', () => {
@@ -257,21 +217,6 @@ describe('clearQuickStyle', () => {
       'textAlignX',
       'iconPosition',
     ])
-      expect(cleared).not.toHaveProperty(f);
-  });
-
-  it('returns an arrow to a plain theme line', () => {
-    const styled = arrow('a', {
-      strokeColor: '#111111',
-      strokeSwatch: 1,
-      strokeWidth: 7,
-      strokeStyle: 'dashed',
-      flow: 'dashes',
-      flowSpeed: 'fast',
-    });
-    const cleared = clearQuickStyle(styled, forest) as ArrowElement;
-    expect(cleared.strokeColor).toBe(forest.elementStroke);
-    for (const f of ['strokeSwatch', 'strokeWidth', 'strokeStyle', 'flow', 'flowSpeed'])
       expect(cleared).not.toHaveProperty(f);
   });
 });
@@ -391,63 +336,13 @@ describe('Text colour: text elements', () => {
   });
 });
 
-describe('a path (docs/specs/023-draw-mode/path-tool.md "Style")', () => {
-  const open = createPath(
-    [
-      { x: 0, y: 0, mode: 'corner' },
-      { x: 40, y: 0, mode: 'corner' },
-      { x: 40, y: 40, mode: 'corner' },
-    ],
-    false,
-  );
-  const closed = { ...open, id: 'closed', closed: true };
-
-  it('styles its line, and its fill only when closed', () => {
-    expect(sections([open])).toEqual(['stroke', 'width', 'style']);
-    expect(sections([closed])).toEqual(['stroke', 'background', 'width', 'style']);
-    expect(quickStyleView([open], forest)!.sections.style!.options).toEqual([
-      'solid',
-      'dashed',
-      'dotted',
-    ]);
-  });
-
-  it('writes stroke, width and style, and a fill on a closed path only', () => {
-    expect(applyQuickWidth(open, 'thick')).toMatchObject({ strokeWidth: 'thick' });
-    expect(applyQuickStrokeStyle(open, 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
-    expect(applyQuickStroke(open, forest, 2)).toMatchObject({
-      strokeColor: quickSwatchColor(forest, 'stroke', 2),
-      strokeSwatch: 2,
-    });
-    expect(applyQuickFill(open, forest, 2)).toBe(open);
-    expect(applyQuickFill(closed, forest, 2)).toMatchObject({ fillSwatch: 2 });
-  });
-
-  it('clears back to plain ink', () => {
-    const styled = {
-      ...closed,
-      strokeColor: '#f00',
-      fillColor: '#0f0',
-      strokeWidth: 'thick' as const,
-    };
-    const cleared = clearQuickStyle(styled, { ...forest, elementStroke: null, elementFill: null });
-    expect(cleared).not.toHaveProperty('strokeColor');
-    expect(cleared).not.toHaveProperty('fillColor');
-    expect(cleared).not.toHaveProperty('strokeWidth');
-  });
-
-  it('styles a path saved locked', () => {
-    expect(quickStyleView([{ ...open, locked: true } as PathElement], forest)).not.toBeNull();
-  });
-});
-
 // docs/specs/008-canvas/quick-style-panel.md "Multi-selection": a whiteboard stock colour stored by
 // name marks no theme swatch, and a choice or Clear Styles replaces it.
 describe('named stock colours', () => {
   const theme = THEMES.find((t) => t.id === 'brand')!;
   it('marks no swatch for a named stroke or text colour', () => {
     const view = quickStyleView(
-      [shape('s', { penColour: 'blue' }), arrow('a', { penColour: 'blue' })],
+      [shape('s', { penColour: 'blue' }), shape('b', { penColour: 'blue' })],
       theme,
     )!;
     expect(view.sections.stroke!.value).toBeNull();
@@ -477,17 +372,6 @@ describe('named stock colours', () => {
       penTextColour: 'red',
     } as TextElement;
     expect((applyQuickTextColour(text, theme, 2) as TextElement).penTextColour).toBeUndefined();
-    const path = {
-      ...createPath(
-        [
-          { x: 0, y: 0, mode: 'corner' },
-          { x: 9, y: 9, mode: 'corner' },
-        ],
-        false,
-      ),
-      penColour: 'green' as const,
-    };
-    expect((applyQuickStroke(path, theme, 1) as typeof path).penColour).toBeUndefined();
   });
 
   it('clears names with Clear Styles', () => {
@@ -497,9 +381,6 @@ describe('named stock colours', () => {
     ) as ShapeElement;
     expect(out.penColour).toBeUndefined();
     expect(out.penTextColour).toBeUndefined();
-    expect(
-      (clearQuickStyle(arrow('a', { penColour: 'teal' }), theme) as ArrowElement).penColour,
-    ).toBeUndefined();
     const text = {
       id: 't',
       type: 'text',

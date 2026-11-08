@@ -49,11 +49,18 @@ describe('tile and element signatures', () => {
 
   it('tell apart the choices an element records', () => {
     expect(elementSignature(el({ type: 'sticky' }))).toBe(sigOf('tools:sticky'));
-    expect(elementSignature(el({ type: 'freehand', pen: 'highlighter' }))).not.toBe(
-      sigOf('tools:pencil'),
-    );
-    expect(elementSignature(el({ type: 'arrow', arrowEnds: 'none' }))).toBe(sigOf('tools:line'));
-    expect(elementSignature(el({ type: 'arrow' }))).toBe(sigOf('tools:arrow'));
+    expect(elementSignature(el({ type: 'text' }))).toBe(sigOf('tools:text'));
+  });
+
+  // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4) has no tile.
+  it('matches no tile for a stored arrow, line or pen stroke', () => {
+    const sigs = new Set(PALETTE_TILES.map(tileSignature));
+    for (const stored of [
+      el({ type: 'arrow' }),
+      el({ type: 'arrow', arrowEnds: 'none' }),
+      el({ type: 'freehand', pen: 'highlighter' }),
+    ])
+      expect(sigs.has(elementSignature(stored)), stored.type).toBe(false);
   });
 
   it('gives the catalogue tiles none', () => {

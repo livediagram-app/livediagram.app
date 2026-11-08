@@ -2,12 +2,13 @@
 import { act, render } from '@testing-library/react';
 import { memo } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createPinnedArrow, createShape, type Element } from '@livehuddle/document';
+import { createShape, type Element } from '@livehuddle/document';
+import { storedPinnedArrow } from '@/test/retired-elements';
 
 // docs/specs/008-canvas/canvas-performance.md: an element view renders only for its own changes. A
 // Canvas render that changes no element, no selection and no zoom renders no element view; a zoom
 // renders none (only the counter-scaled parts inside them, through the zoom context); a selection
-// change renders the elements it touches; a move renders what moved and the arrows on it.
+// change renders the elements it touches; a move renders what moved and the stored arrows pinned to it.
 //
 // The views are replaced by counting stubs wrapped in the REAL memo comparison, so the counts are
 // what production memo lets through. Runs without the React Compiler, so it holds whether or not the
@@ -16,7 +17,6 @@ import { createPinnedArrow, createShape, type Element } from '@livehuddle/docume
 const renders = {
   boxed: new Map<string, number>(),
   arrow: new Map<string, number>(),
-  frame: new Map<string, number>(),
 };
 const bump = (m: Map<string, number>, id: string) => m.set(id, (m.get(id) ?? 0) + 1);
 const drawnAs = new Map<string, Element>();
@@ -29,29 +29,20 @@ vi.mock('./BoxedElementView', () => ({
     return <span data-boxed-stub={element.id} data-ride-id={element.id} />;
   }),
 }));
-vi.mock('./ArrowView', async (importOriginal) => {
-  const real = await importOriginal<typeof import('./ArrowView')>();
+// A stored arrow's view (RetiredArrowView), counted through its real memo comparison.
+vi.mock('./RetiredArrowView', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./RetiredArrowView')>();
   return {
     ...real,
-    ArrowView: memo(function ArrowStub({ arrow }: Parameters<typeof real.arrowViewPropsEqual>[0]) {
+    RetiredArrowView: memo(function ArrowStub({
+      arrow,
+    }: Parameters<typeof real.retiredArrowViewPropsEqual>[0]) {
       bump(renders.arrow, arrow.id);
-      return null;
-    }, real.arrowViewPropsEqual),
+      return <svg data-retired-arrow={arrow.id} />;
+    }, real.retiredArrowViewPropsEqual),
   };
 });
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-// Each arrow's free-arrow frame slot, counted through its real memo comparison.
-vi.mock('./selection-aware-views', async (importOriginal) => {
-  const real = await importOriginal<typeof import('./selection-aware-views')>();
-  type FrameProps = Parameters<typeof real.FreeArrowFrame>[0];
-  return {
-    ...real,
-    FreeArrowFrame: memo(function FrameStub(props: FrameProps) {
-      bump(renders.frame, props.arrow.id);
-      return null;
-    }),
-  };
-});
 // Each element's slot in the list: its count shows whether a layer render walked the board.
 const slotRenders = { count: 0 };
 vi.mock('./PreviewedElement', async (importOriginal) => {
@@ -89,12 +80,10 @@ let store = createSelectionStore();
 const a = createShape('square', 0, 0);
 const b = createShape('square', 400, 0);
 const c = createShape('square', 0, 400);
-const ab = createPinnedArrow(a.id, 'e', b.id, 'w');
+const ab = storedPinnedArrow('ab', a.id, 'e', b.id, 'w');
 const BOARD: Element[] = [a, b, c, ab];
 
-const NONE = { layout: null, knockouts: [] };
 const STABLE = {
-  arrowLabels: { renderOf: () => NONE, labelRectOf: () => null, draftLayout: () => null },
   chairSitters: () => [],
   selfParticipant: { id: 'me', name: 'Me', color: '#000000' },
   settings: {},
@@ -124,7 +113,6 @@ function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
     activeTabId: 't',
     viewportZoom: over.zoom ?? 1,
     editingId: null,
-    hasArrows: true,
     readOnly: false,
     isPaintMode: false,
     canvasTool: 'select',
@@ -138,7 +126,6 @@ function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
     onBeginEdit: fresh(),
     onCommitLabel: fresh(),
     onCancelEdit: fresh(),
-    onBeginEndpointDrag: fresh(),
   } as unknown as CanvasElementsLayerProps;
 }
 
@@ -156,7 +143,6 @@ function mount(first = layerProps()) {
   });
   renders.boxed.clear();
   renders.arrow.clear();
-  renders.frame.clear();
   layerRenders.count = 0;
   slotRenders.count = 0;
   return view;
@@ -165,7 +151,6 @@ function mount(first = layerProps()) {
 afterEach(() => {
   renders.boxed.clear();
   renders.arrow.clear();
-  renders.frame.clear();
 });
 
 describe('element views render only for their own changes', () => {
@@ -191,11 +176,10 @@ describe('element views render only for their own changes', () => {
     expect(slotRenders.count).toBe(BOARD.length);
   });
 
-  it('renders no element view, and no arrow frame slot, for a zoom', () => {
+  it('renders no element view for a zoom', () => {
     const { rerender } = mount();
     rerender(<CanvasElementsLayer {...layerProps({ zoom: 2 })} />);
     expect(counts()).toEqual({ boxed: 0, arrows: 0 });
-    expect(renders.frame.size).toBe(0);
   });
 
   it('renders only the elements a selection change touches', () => {
@@ -230,10 +214,11 @@ describe('element views render only for their own changes', () => {
     expect(layerRenders.count).toBe(0);
   });
 
-  it('renders an arrow view when the arrow itself is selected', () => {
+  // Its card reads the selection itself (the boxed view inside it), so the arrow's own view stays put.
+  it('renders no arrow view when the arrow itself is selected', () => {
     mount();
     act(() => store.setSelectedId(ab.id));
-    expect([...renders.arrow.keys()]).toEqual([ab.id]);
+    expect(counts().arrows).toBe(0);
   });
 
   it('renders only the moved element among the boxed views', () => {
@@ -244,7 +229,7 @@ describe('element views render only for their own changes', () => {
   });
 });
 
-describe('arrow views render only for their own changes', () => {
+describe('stored arrow views render only for their own changes', () => {
   it('renders the arrow on a moved element and no other', () => {
     const { rerender } = mount();
     const movedC = BOARD.map((el) => (el.id === c.id ? { ...el, x: 40 } : el));
@@ -252,14 +237,6 @@ describe('arrow views render only for their own changes', () => {
     expect(counts().arrows).toBe(0);
     const movedA = movedC.map((el) => (el.id === a.id ? { ...el, y: 40 } : el));
     rerender(<CanvasElementsLayer {...layerProps({ elements: movedA })} />);
-    expect([...renders.arrow.keys()]).toEqual([ab.id]);
-  });
-
-  it('renders an arrow when a box moves into its path', () => {
-    const { rerender } = mount();
-    // c slides up between a and b, across the arrow: the arrow now breaks around it.
-    const across = BOARD.map((el) => (el.id === c.id ? { ...el, x: 200, y: 0 } : el));
-    rerender(<CanvasElementsLayer {...layerProps({ elements: across })} />);
     expect([...renders.arrow.keys()]).toEqual([ab.id]);
   });
 });
@@ -314,7 +291,7 @@ describe('drawing a drag preview', () => {
     );
     expect(drawnAs.get(copy.id)).toBe(copy);
     expect(renders.boxed.has(b.id)).toBe(false);
-    expect(container.querySelectorAll('[data-arrow-svg]').length).toBe(1);
+    expect(container.querySelectorAll('[data-retired-arrow]').length).toBe(1);
     // The copy moving on renders it alone; the list holds.
     const before = layerRenders.count;
     const moved = { ...copy, x: 120 };
@@ -350,7 +327,7 @@ describe('drawing a drag preview', () => {
 });
 
 // docs/specs/008-canvas/drag-preview.md "Moves ride an offset": a move renders no element view; each moved node
-// carries the offset, and only the arrows between the moved and the unmoved redraw.
+// carries the offset, and only the stored arrows pinned to what moved redraw.
 describe('a move riding an offset', () => {
   afterEach(() => resetDragPreviewForTests());
 
@@ -363,7 +340,7 @@ describe('a move riding an offset', () => {
       (n) => n.style.translate,
     );
 
-  it('renders no moved element, shifts its nodes, and redraws only the arrow leaving the selection', () => {
+  it('renders no moved element, shifts its nodes, and redraws the stored arrow pinned to it', () => {
     const { container } = mount();
     for (const k of [1, 2, 3])
       act(() => setLocalPreview('t', shifted(BOARD, new Set([a.id, c.id]), 10 * k, 5 * k), BOARD));
@@ -372,16 +349,15 @@ describe('a move riding an offset', () => {
     expect(translateOf(container, a.id)).toEqual(['30px 15px']);
     expect(translateOf(container, c.id)).toEqual(['30px 15px']);
     expect(translateOf(container, b.id)).toEqual(['']);
-    // ab joins a (moved) to b (not): it re-routes, frame by frame, and does not ride.
+    // ab is pinned to a (moved): its end follows, frame by frame, worked out against the preview.
     expect([...renders.arrow.keys()]).toEqual([ab.id]);
-    expect(translateOf(container, ab.id)).toEqual(['']);
+    expect(renders.arrow.get(ab.id)).toBe(3);
   });
 
-  it('carries an arrow whose ends both move, without redrawing it', () => {
-    const { container } = mount();
-    act(() => setLocalPreview('t', shifted(BOARD, new Set([a.id, b.id]), 7, 0), BOARD));
+  it('leaves a stored arrow alone when what moves is not what it is pinned to', () => {
+    mount();
+    act(() => setLocalPreview('t', shifted(BOARD, new Set([c.id]), 7, 0), BOARD));
     expect(counts()).toEqual({ boxed: 0, arrows: 0 });
-    expect(translateOf(container, ab.id)).toEqual(['7px 0px']);
   });
 
   it('drops the offsets in the paint the released board is drawn in', () => {
@@ -433,10 +409,10 @@ describe('the element plane', () => {
     const plane = container.querySelector('[data-element-plane]');
     expect(plane).not.toBeNull();
     expect(plane!.className).toBe('contents');
-    // Every element: the three boxed ones and the arrow, none of them outside it.
+    // Every element: the three boxed ones and the stored arrow, none of them outside it.
     expect(plane!.querySelectorAll('[data-boxed-stub]').length).toBe(3);
     expect(container.querySelectorAll('[data-boxed-stub]').length).toBe(3);
-    expect(plane!.querySelectorAll('[data-arrow-svg]').length).toBe(1);
+    expect(plane!.querySelectorAll('[data-retired-arrow]').length).toBe(1);
     expect(container.querySelectorAll('[data-element-plane]').length).toBe(1);
     expect(plane!.querySelector('[data-selection-grips]')).toBeNull();
   });

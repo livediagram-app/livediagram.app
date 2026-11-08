@@ -5,9 +5,7 @@
 // tidied. Input is untrusted JSON: anything not shaped like the field it claims
 // to be is left for isValidTab to judge.
 
-import { anchorPrimarySide } from './anchors';
 import { asText } from '@liveworkspace/model-core/as-text';
-import { orthogonalBends } from './arrow-orthogonal';
 import { LOOK_MD_MAX_NODES } from '@liveworkspace/model-core/look-size';
 import { createShape } from './shape-factory';
 import { createSticky, createText } from './factories';
@@ -36,7 +34,7 @@ export function normaliseElement(el: unknown): unknown {
   // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") is kept exactly as it
   // came: no factory defaults, no tidying.
   if (isRetiredElement(el as { type: string; shape?: unknown })) return el;
-  // A stroke in a former stored shape (docs/specs/006-document/stroke-points.md) is packed first.
+  // Every stored-element migration runs first, as on a load (./stored-elements).
   const [current] = migrateStoredElements([el] as unknown as DocElement[]) as unknown as Raw[];
   return normaliseContent(withFactoryDefaults(withTextLabel(current!)));
 }
@@ -87,17 +85,11 @@ function normaliseContent(el: Raw): unknown {
 
 // A whole element list from the model made safe. Anything that is not an
 // array comes back as it was, for validation to reject.
-/**
- * An ops-mode update: the model's fields over the element's. Points the model sends in the former
- * `{ nx, ny }` shape replace the stroke's packed ones (docs/specs/006-document/stroke-points.md):
- * left beside them, the migration would keep the old block and drop the new points.
- */
+/** An ops-mode update: the model's fields over the element's. */
 export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
   const base = isRecord(prev) ? prev : {};
   if (!isRecord(patch)) return { ...base };
-  if (!('points' in patch)) return { ...base, ...patch };
-  const { packedPoints: _replaced, ...unpacked } = base;
-  return { ...unpacked, ...patch };
+  return { ...base, ...patch };
 }
 
 // Raw boxes take the graph look's text size by count (look-size.ts): past LOOK_MD_MAX_NODES labelled boxes, one that
@@ -126,26 +118,8 @@ function withLookTextSize(elements: unknown[], kept: ReadonlySet<string>): unkno
   );
 }
 
-// A raw arrow pinned at both ends draws as graph input's lines do (livediagram/docs/specs/015-api/mcp-server.md): angled when it
-// names no style, and an angled one with no bends given its two, along the axis its start leaves by, so it meets
-// both ends square; ends that line up run straight.
-function withRawElbows(elements: DocElement[], kept: ReadonlySet<string>): DocElement[] {
-  return elements.map((el) => {
-    if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') return el;
-    if (kept.has(el.id)) return el;
-    const styled = el.arrowStyle ?? 'angled';
-    if (styled !== 'angled' || (el.curvePoints?.length ?? 0) > 0)
-      return el.arrowStyle ? el : { ...el, arrowStyle: styled };
-    const side = anchorPrimarySide(el.from.anchor);
-    const bends = orthogonalBends(el, elements, side === 'n' || side === 's' ? 'TB' : 'LR');
-    return bends
-      ? { ...el, arrowStyle: 'angled' as const, curvePoints: bends }
-      : { ...el, arrowStyle: 'straight' as const };
-  });
-}
-
 // `kept` names elements that already exist (a replace that sends a tab's own elements back): the look defaults a new
-// raw element takes (`sm` text past 12 boxes, angled lines) are for content arriving fresh, never a restyle of what
+// raw element takes (`sm` text past 12 boxes) are for content arriving fresh, never a restyle of what
 // the person made.
 export function normaliseElements<T>(
   elements: T,
@@ -153,14 +127,5 @@ export function normaliseElements<T>(
 ): T {
   if (!Array.isArray(elements)) return elements;
   const sized = withLookTextSize(elements, kept);
-  const normalised = sized.map(normaliseElement);
-  // Only a list of element records is bent; anything else is left for validation to refuse. The records are not
-  // validated yet, so one that bending cannot read is left as it came, for validation to refuse by name rather than
-  // the request failing whole.
-  if (!normalised.every(isRecord)) return normalised as T;
-  try {
-    return withRawElbows(normalised as DocElement[], kept) as T;
-  } catch {
-    return normalised as T;
-  }
+  return sized.map(normaliseElement) as T;
 }

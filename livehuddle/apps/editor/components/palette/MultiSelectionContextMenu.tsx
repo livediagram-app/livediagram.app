@@ -1,8 +1,4 @@
 import {
-  arrowheadShapeOf,
-  arrowheadSizeOf,
-  arrowStyleOf,
-  arrowThicknessOf,
   supportsFillColor,
   defaultPadding,
   defaultStrokeColor,
@@ -26,44 +22,21 @@ import {
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
-import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
-import {
-  ContextMenu,
-  ContextMenuDivider,
-} from '@liveworkspace/workbench/components/palette/ContextMenu';
-import {
-  BoldIcon,
-  ItalicIcon,
-  StrikethroughIcon,
-  UnderlineIcon,
-} from '@/components/palette/palette-icons';
-import {
-  LineGlyph,
-  PointerGlyph,
-  StyleMenuGlyph,
-  TextColourIcon,
-  TextGlyph,
-} from '@/components/palette/context-menu-icons';
+import { ContextMenu } from '@liveworkspace/workbench/components/palette/ContextMenu';
+import { StyleMenuGlyph, TextGlyph } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuGroupSeparator,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
-import {
-  ColourRow,
-  MarkersMenuGlyph,
-  MarkerTiles,
-  TextToggle,
-} from '@/components/palette/context-menu-rows';
-import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
+import { MarkersMenuGlyph, MarkerTiles } from '@/components/palette/context-menu-rows';
+import { presetPxFor } from '@/components/palette/TextSizeControl';
 import { TypographySections } from './TypographySections';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import { ArrowPresetsSection, ShapePresetsSection, shapeSupportsPresets } from './PresetSections';
+import { ShapePresetsSection, shapeSupportsPresets } from './PresetSections';
 import { MultiPlacementSections } from './MultiPlacementSections';
 import { MultiStyleSections } from './MultiStyleSections';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
 type MultiSelectionContextMenuProps = {
   props: EditorContextMenuProps;
@@ -73,7 +46,7 @@ type MultiSelectionContextMenuProps = {
 };
 
 // The whole-selection ('multi') context menu: type-aware formatting categories
-// (Animation / Colours / Border + arrow Line / Pointer + Text) that apply to
+// (Animation / Colours / Border + Text) that apply to
 // every matching member of a marquee selection. Extracted from
 // EditorContextMenu; shares the accordion/colour scaffolding via the hook.
 export function MultiSelectionContextMenu({
@@ -83,8 +56,7 @@ export function MultiSelectionContextMenu({
   anchorBottom,
 }: MultiSelectionContextMenuProps) {
   const scaffold = useContextMenuScaffold(props);
-  const { sectionProps, flyoutProps, colorProps, textColorHandlers } = scaffold;
-  const surface = useCanvasSurface();
+  const { sectionProps, flyoutProps } = scaffold;
   // The selection toolbar carries Duplicate / Group / Export /
   // Delete, so this menu is purely the type-aware formatting categories
   // its ellipsis opens. It always renders: the placement band (Layer /
@@ -106,19 +78,13 @@ export function MultiSelectionContextMenu({
         // Display values read off the first matching member.
         const sel = props.selectionElements;
         const boxedSel = sel.filter(isBoxed);
-        const arrowSel = sel.filter((el) => el.type === 'arrow');
-        // Presets (docs/specs/010-palette/style-presets.md) apply selection-wide: a shape preset to every
-        // preset-eligible shape, an arrow preset to every arrow. The
-        // active-tile highlight reads off the first matching member.
+        // Presets (docs/specs/010-palette/style-presets.md) apply selection-wide, to every preset-eligible
+        // shape. The active-tile highlight reads off the first matching member.
         const presetShapeSrc = sel.find(shapeSupportsPresets);
         // Colour swatches show for the members whose SINGLE menus would
-        // show Colours: boxed and colour-supporting. Arrows colour their
-        // label via the content Text section, matching the single menu.
+        // show Colours: boxed and colour-supporting.
         const colourSrcs = boxedSel.filter((el) => supportsColours(el));
-        // An arrow-only selection still gets Colours (the Line swatch) —
-        // matching the single-arrow menu. Mixed selections don't need a
-        // separate row: the Border swatch's setter recolours arrows too.
-        const colourable = colourSrcs.length > 0 || arrowSel.length > 0;
+        const colourable = colourSrcs.length > 0;
         const textSrc = colourSrcs[0];
         const fillSrc = colourSrcs.find((el) => supportsFillColor(el));
         const strokeSrc = colourSrcs.find((el) => defaultStrokeColor(el) !== 'transparent');
@@ -131,21 +97,10 @@ export function MultiSelectionContextMenu({
         // setters apply selection-wide (unsupported members no-op).
         const shadowSrc = sel.find((el) => supportsShadow(el)) as
           { shadow?: ElementShadow } | undefined;
-        const arrowSrc = arrowSel[0];
-        // Arrow-with-label members get the content Text section
-        // (B / I / U / S + size + colour), same as their single menus.
-        const contentTextSrc = arrowSel.find((a) => a.label);
         // Same grouping as the single-element menu: placement (Layer / Shape
-        // / Rotation) · appearance (Presets / Animation / Colours / Border /
-        // Icon / Markers / Alignment) · content (Line / Pointer / Text).
-        // Image / Link / Note / Comments stay excluded: those are
+        // / Rotation) then appearance (Presets / Animation / Colours / Border /
+        // Icon / Markers / Alignment). Image / Link / Note / Comments stay excluded: those are
         // per-element identity or content, not formatting.
-        const showMultiAppearance =
-          boxedSel.length > 0 || !!arrowSrc || colourable || borderableSel;
-        // A mixed shape + arrow selection would otherwise show two
-        // "Animation" categories (boxed animation + arrow flow). Disambiguate
-        // by kind only when both are present; on a single-kind selection the
-        // plain "Animation" reads fine.
         // Menu parity with the single-element menu (docs/specs/008-canvas/canvas-and-palette.md): everything you
         // can restyle on ONE element works on a selection / group too. Each
         // section reads its display value off the first matching member and
@@ -174,10 +129,9 @@ export function MultiSelectionContextMenu({
         // The Style flyout shows when any of its children would — the
         // preset sections, Colours, or Border (docs/specs/008-canvas/canvas-and-palette.md, mirroring the
         // single-element menu's Style band).
-        const showStyleFlyout = !!presetShapeSrc || !!arrowSrc || colourable || borderableSel;
+        const showStyleFlyout = !!presetShapeSrc || colourable || borderableSel;
         // The Text flyout groups Typography (Font / Size / Padding) +
-        // Alignment + Markers, mirroring the single-element menu; arrow
-        // and table text formats via the content Text section instead.
+        // Alignment + Markers, mirroring the single-element menu.
         const showTextFlyout = !!markerSrc || !!alignSrc;
         return (
           <>
@@ -208,22 +162,6 @@ export function MultiSelectionContextMenu({
                     props={props}
                     accordion={sectionProps('m-shape-presets')}
                     onClose={onClose}
-                    // Mixed selection shows both preset sections — disambiguate
-                    // by kind, same as the Animation sections below.
-                    title={presetShapeSrc && arrowSrc ? 'Shape Presets' : 'Presets'}
-                  />
-                ) : null}
-                {arrowSrc ? (
-                  <ArrowPresetsSection
-                    current={{
-                      strokeStyle: arrowSrc.strokeStyle,
-                      strokeWidth: arrowSrc.strokeWidth,
-                      flow: arrowSrc.flow,
-                    }}
-                    props={props}
-                    accordion={sectionProps('m-arrow-presets')}
-                    onClose={onClose}
-                    title={presetShapeSrc && arrowSrc ? 'Arrow Presets' : 'Presets'}
                   />
                 ) : null}
                 <MultiStyleSections
@@ -231,7 +169,6 @@ export function MultiSelectionContextMenu({
                   props={props}
                   scaffold={scaffold}
                   boxedSel={boxedSel}
-                  arrowSrc={arrowSrc}
                   colourable={colourable}
                   textSrc={textSrc}
                   fillSrc={fillSrc}
@@ -245,14 +182,13 @@ export function MultiSelectionContextMenu({
                 />
               </MenuFlyoutSection>
             ) : null}
-            {/* Motion band (Animation / arrow Animation / tech-icon size) —
+            {/* Motion band (Animation / tech-icon size):
                   top-level rows, same as the single-element menu. */}
             <MultiStyleSections
               part="motion"
               props={props}
               scaffold={scaffold}
               boxedSel={boxedSel}
-              arrowSrc={arrowSrc}
               colourable={colourable}
               textSrc={textSrc}
               fillSrc={fillSrc}
@@ -329,100 +265,6 @@ export function MultiSelectionContextMenu({
                   </MenuAccordionSection>
                 ) : null}
               </MenuFlyoutSection>
-            ) : null}
-            {/* ── Content group: Line / Pointer / Text ── */}
-            {arrowSrc && showMultiAppearance ? <MenuGroupSeparator /> : null}
-            {arrowSrc ? (
-              <>
-                <MenuAccordionSection title="Line" icon={<LineGlyph />} {...sectionProps('m-line')}>
-                  <div className="px-3 py-1.5">
-                    <ArrowLineControls
-                      thickness={arrowThicknessOf(arrowSrc)}
-                      style={arrowStyleOf(arrowSrc)}
-                      strokeStyle={arrowSrc.strokeStyle ?? 'solid'}
-                      onSetThickness={props.onSetArrowThickness}
-                      onSetStyle={props.onSetArrowStyle}
-                      // Hidden in a multi-selection: the row is a toggle
-                      // reflecting one arrow's state, and arrows in the
-                      // selection can disagree. Set it per arrow.
-                      routeBehind={null}
-                      exactStart={null}
-                      onSetExactStart={props.onSetArrowExactStart}
-                      onSetStrokeStyle={props.onSetArrowStrokeStyle}
-                      onSetRouteBehind={props.onSetArrowRouteBehind}
-                    />
-                  </div>
-                </MenuAccordionSection>
-                <MenuAccordionSection
-                  title="Pointer"
-                  icon={<PointerGlyph />}
-                  {...sectionProps('m-pointer')}
-                >
-                  <div className="px-3 py-1.5">
-                    <ArrowPointerControls
-                      ends={arrowSrc.arrowEnds ?? 'to'}
-                      headSize={arrowheadSizeOf(arrowSrc)}
-                      headShape={arrowheadShapeOf(arrowSrc)}
-                      onSetEnds={props.onSetArrowEnds}
-                      onSetHeadSize={props.onSetArrowheadSize}
-                      onSetHeadShape={props.onSetArrowheadShape}
-                    />
-                  </div>
-                </MenuAccordionSection>
-              </>
-            ) : null}
-            {/* Text: whole-element label formatting for labelled arrows, mirroring the single
-                  menu's content Text section. */}
-            {contentTextSrc ? (
-              <MenuAccordionSection title="Text" icon={<TextGlyph />} {...sectionProps('m-text')}>
-                <div className="flex gap-1 px-2 py-1.5">
-                  <TextToggle
-                    active={!!contentTextSrc.textBold}
-                    label="Bold"
-                    onClick={props.onToggleTextBold}
-                  >
-                    <BoldIcon />
-                  </TextToggle>
-                  <TextToggle
-                    active={!!contentTextSrc.textItalic}
-                    label="Italic"
-                    onClick={props.onToggleTextItalic}
-                  >
-                    <ItalicIcon />
-                  </TextToggle>
-                  <TextToggle
-                    active={!!contentTextSrc.textUnderline}
-                    label="Underline"
-                    onClick={props.onToggleTextUnderline}
-                  >
-                    <UnderlineIcon />
-                  </TextToggle>
-                  <TextToggle
-                    active={!!contentTextSrc.textStrikethrough}
-                    label="Strikethrough"
-                    onClick={props.onToggleTextStrikethrough}
-                  >
-                    <StrikethroughIcon />
-                  </TextToggle>
-                </div>
-                <TextSizeControl
-                  current={contentTextSrc.textSize ?? 'sm'}
-                  presetPx={presetPxFor(contentTextSrc.type)}
-                  onSet={props.onSetTextSize}
-                  onPreview={props.onPreviewTextSize}
-                  onPreviewEnd={props.onPreviewStyleEnd}
-                />
-                <ContextMenuDivider />
-                <ColourRow
-                  label="Colour"
-                  icon={<TextColourIcon />}
-                  value={shownColour(contentTextSrc, 'text', surface, '#0f172a')}
-                  ink={inkSwatch(contentTextSrc, 'text', surface)}
-                  {...textColorHandlers}
-                  {...colorProps('m-content-text')}
-                  {...props.colourPalette}
-                />
-              </MenuAccordionSection>
             ) : null}
           </>
         );

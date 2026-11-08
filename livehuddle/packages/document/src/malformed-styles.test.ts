@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
-import { createArrow } from './factories';
 import { migrateIncomingTab } from './stored-tab';
 import { dropMalformedStyles } from './malformed-styles';
 import { renderElementsToSvg } from './svg-render';
 import type { Element, Tab } from './index';
+
+// A stored arrow (a retired element, ./retired-arrow) with free ends.
+const createArrow = (x1: number, y1: number, x2: number, y2: number) => ({
+  id: 'arrow',
+  type: 'arrow' as const,
+  from: { kind: 'free' as const, x: x1, y: y1 },
+  to: { kind: 'free' as const, x: x2, y: y2 },
+});
 
 // Style fields have their types (docs/specs/006-document/document-structure.md "Styles have their types").
 const shape = (fields: Record<string, unknown>) =>

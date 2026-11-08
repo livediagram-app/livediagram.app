@@ -42,12 +42,8 @@ function inkPatch(el: Element): ColourFields {
         ...unfilled,
         ...(unset(c.textColor, c.penTextColour) ? { penTextColour: INK_PEN_COLOUR } : {}),
       };
-    case 'path':
-      return { ...line, ...unfilled };
-    case 'arrow':
-      return line;
-    case 'freehand':
-      return el.pen === 'highlighter' ? {} : unfilled;
+    // A stored stroke, path or arrow is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The
+    // element engine", part 4), kept exactly as stored.
     default:
       return {};
   }

@@ -28,7 +28,6 @@ function harness(opts: { elements: Element[]; selected?: string; multi?: string[
       tick: (m) => {
         elements = m(elements);
       },
-      autoRebindArrowsRef: { current: false },
     }),
   ).result;
   return {

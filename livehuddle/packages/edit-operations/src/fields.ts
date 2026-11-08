@@ -54,10 +54,6 @@ const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);
 // `addedBy` is the server's record of which Participant added an element (docs/specs/013-workspace/share-roles.md).
 const IDENTITY_FIELDS: ReadonlySet<string> = new Set(['id', 'type', 'addedBy']);
 const RAW_COLOURS: ReadonlySet<string> = new Set(['fillColor', 'strokeColor', 'textColor']);
-// A stroke's former point fields, which normalising packs (docs/specs/006-document/stroke-points.md).
-const FORMER_FIELDS: Readonly<Partial<Record<Element['type'], readonly string[]>>> = {
-  freehand: ['points', 'pressures'],
-};
 const LIVE_HINT = "comments go through the comment commands; assigned actions are people's";
 
 const hasField = (el: Element, field: string) => isElementFieldName(el.type, field);
@@ -153,7 +149,7 @@ export function writeFieldsOnto<T extends Element>(
       if (alias === 'label') label = typeof value === 'string' ? value : null;
       continue;
     }
-    if (!isElementFieldName(el.type, key) && !(FORMER_FIELDS[el.type]?.includes(key) ?? false))
+    if (!isElementFieldName(el.type, key))
       return unknownField(operation, kindOf(el), key, stored, aliases);
     // A closed vocabulary's value off its list is refused with the list (element-field-values.ts).
     if (fieldValueIssue(key, value))

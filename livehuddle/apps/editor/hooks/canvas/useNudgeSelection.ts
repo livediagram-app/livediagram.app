@@ -14,17 +14,14 @@
 //     the present, and the burst closes after 500ms idle.
 //   - Telemetry: one `Element / Changed / Nudge` per burst, never
 //     per press.
-//   - Boxed elements shift `x`/`y`; free arrow endpoints shift
-//     `from`/`to`; pinned arrow ends run the auto-rebind
-//     (rebindArrowAnchorsAfterMove, docs/specs/008-canvas/arrow-anchors.md)
-//     when the autoRebindArrows pref is on (read through the live ref so the latest value applies
-//     without re-mounting the listener).
+//   - Boxed elements shift `x`/`y`. A stored arrow never moves
+//     (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
 //   - Suppressed in view-role sessions; the consumer also gates on
 //     "is there a typing target focused" upstream.
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
-import { useEffect, useRef, type RefObject } from 'react';
-import { isBoxed, rebindArrowAnchorsAfterMove, type Element, type Tab } from '@livehuddle/document';
+import { useEffect, useRef } from 'react';
+import { isBoxed, type Element, type Tab } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 
 type NudgeDeps = {
@@ -36,11 +33,6 @@ type NudgeDeps = {
   // press of a burst takes a checkpoint, subsequent presses tick.
   markCheckpoint: () => void;
   tick: (mapElements: (els: Element[]) => Element[]) => void;
-  // Mutable mirror of the autoRebindArrows preference, kept in sync
-  // with userPreferences upstream. Read through the ref so a flip
-  // in Settings applies on the next press without re-mounting any
-  // listener.
-  autoRebindArrowsRef: RefObject<boolean>;
 };
 
 export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => void {
@@ -85,26 +77,8 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
       burstActiveRef.current = false;
       burstTimerRef.current = null;
     }, 500);
-    const movedBoxedIds = new Set(
-      deps.activeTab.elements.filter((el) => ids.has(el.id) && isBoxed(el)).map((el) => el.id),
+    deps.tick((els) =>
+      els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, x: el.x + dx, y: el.y + dy } : el)),
     );
-    deps.tick((els) => {
-      const moved = els.map((el) => {
-        if (!ids.has(el.id)) return el;
-        if (isBoxed(el)) return { ...el, x: el.x + dx, y: el.y + dy };
-        if (el.type === 'arrow') {
-          const from =
-            el.from.kind === 'free'
-              ? { ...el.from, x: el.from.x + dx, y: el.from.y + dy }
-              : el.from;
-          const to = el.to.kind === 'free' ? { ...el.to, x: el.to.x + dx, y: el.to.y + dy } : el.to;
-          return { ...el, from, to };
-        }
-        return el;
-      });
-      return deps.autoRebindArrowsRef.current
-        ? rebindArrowAnchorsAfterMove(moved, movedBoxedIds)
-        : moved;
-    });
   };
 }

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  type ArrowElement,
-  type FreehandElement,
+  type Element,
   type ShapeElement,
   type Tab,
   TAB_SCHEMA_VERSION,
@@ -9,9 +8,9 @@ import {
   tabToMarkdownText,
   type ExportedTabEnvelope,
 } from '@livehuddle/document';
-import { exportScale, exportTabAsSvg, MAX_EXPORT_CANVAS_SIDE, renderTabToSvg } from './export-tab';
+import { exportScale, exportTabAsSvg, MAX_EXPORT_CANVAS_SIDE } from './export-tab';
 import { parseImportedTab } from './import-tab';
-import { encodeStrokePoints } from '@livehuddle/document';
+import { storedFreehand, storedPinnedArrow } from '@/test/retired-elements';
 
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -24,35 +23,17 @@ const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement 
   ...overrides,
 });
 
-const freehand = (id: string, overrides: Partial<FreehandElement> = {}): FreehandElement => ({
-  id,
-  type: 'freehand',
-  x: 0,
-  y: 0,
-  width: 60,
-  height: 60,
-  packedPoints: encodeStrokePoints([
-    { nx: 0, ny: 0 },
-    { nx: 1, ny: 1 },
-  ]),
-  closed: false,
-  ...overrides,
-});
+const freehand = (id: string, overrides: Record<string, unknown> = {}): Element =>
+  storedFreehand(id, { x: 0, y: 0, width: 60, height: 60 }, overrides);
 
 const pinnedArrow = (
   id: string,
   fromId: string,
   toId: string,
   label?: string,
-  overrides: Partial<ArrowElement> = {},
-): ArrowElement => ({
-  id,
-  type: 'arrow',
-  from: { kind: 'pinned', elementId: fromId, anchor: 'e' },
-  to: { kind: 'pinned', elementId: toId, anchor: 'w' },
-  ...(label ? { label } : {}),
-  ...overrides,
-});
+  overrides: Record<string, unknown> = {},
+): Element =>
+  storedPinnedArrow(id, fromId, 'e', toId, 'w', { ...(label ? { label } : {}), ...overrides });
 
 const tab = (overrides: Partial<Tab> = {}): Tab => ({
   id: 'tab-1',
@@ -146,7 +127,9 @@ describe('exportTabAsMarkdown', () => {
     expect(idxRight).toBeLessThan(idxBelow); // higher band before lower
   });
 
-  it('renders labelled arrows in a Connections section using endpoint labels', async () => {
+  // A stored arrow is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4): the
+  // Markdown lists no Connections for it, labelled or not.
+  it('lists no Connections for a stored arrow', async () => {
     const md = await text(
       exportTabAsMarkdown(
         tab({
@@ -154,27 +137,13 @@ describe('exportTabAsMarkdown', () => {
             shape('a', { label: 'A' }),
             shape('b', { label: 'B', x: 300 }),
             pinnedArrow('e1', 'a', 'b', 'calls'),
+            pinnedArrow('e2', 'a', 'b'),
           ],
         }),
       ),
     );
-    expect(md).toContain('## Connections');
-    expect(md).toContain('- *calls*: A → B');
-  });
-
-  it('falls back to "?" for an arrow endpoint whose target is unlabelled', async () => {
-    const md = await text(
-      exportTabAsMarkdown(
-        tab({
-          elements: [
-            shape('a', { label: 'A' }),
-            shape('b', {}), // unlabelled target
-            pinnedArrow('e1', 'a', 'b', 'calls'),
-          ],
-        }),
-      ),
-    );
-    expect(md).toContain('- *calls*: A → ?');
+    expect(md).not.toContain('## Connections');
+    expect(md).not.toContain('A → B');
   });
 
   it('includes labelled freehand strokes in the Elements section with a (freehand) tag', async () => {
@@ -201,22 +170,6 @@ describe('exportTabAsMarkdown', () => {
     // The unlabelled freehand contributes no bullet.
     expect(md.match(/^- \*\*/gm)?.length).toBe(2);
   });
-
-  it('lists an unlabelled arrow between two elements as the plain edge (issue #985)', async () => {
-    const md = await text(
-      exportTabAsMarkdown(
-        tab({
-          elements: [
-            shape('a', { label: 'A' }),
-            shape('b', { label: 'B', x: 300 }),
-            pinnedArrow('e1', 'a', 'b'), // no label
-          ],
-        }),
-      ),
-    );
-    expect(md).toContain('## Connections');
-    expect(md).toContain('- A → B');
-  });
 });
 
 async function blobType(blob: Blob | Promise<Blob>): Promise<string> {
@@ -242,7 +195,8 @@ describe('exportTabAsSvg', () => {
     expect(svg).toContain('<rect'); // the square (plus the bg rect)
   });
 
-  it('draws an arrow as a path with an arrowhead and escapes the label', async () => {
+  // A stored arrow exports as it draws on the canvas: a dashed line between its ends and the placeholder card on it.
+  it('draws a stored arrow as its dashed line and card, never its raw label', async () => {
     const svg = await text(
       exportTabAsSvg(
         tab({
@@ -254,12 +208,9 @@ describe('exportTabAsSvg', () => {
         }),
       ),
     );
-    // Arrows render via the shared arrow path (straight = M…L…), so curved /
-    // angled arrows export with their real shape rather than a flat line.
-    expect(svg).toContain('<path d="M ');
-    expect(svg).toContain('<polygon'); // arrowhead
-    // Label is XML-escaped, never raw.
-    expect(svg).toContain('A &amp; B &lt;ok&gt;');
+    expect(svg).toContain('data-retired-arrow="arr"');
+    expect(svg).toContain('data-retired-arrow-line=""');
+    expect(svg).toContain('stroke-dasharray=');
     expect(svg).not.toContain('A & B <ok>');
   });
 
@@ -333,22 +284,6 @@ describe('exportTabAsSvg', () => {
     const tspans = svg.match(/<tspan/g) ?? [];
     expect(tspans.length).toBeGreaterThan(1);
   });
-
-  it('exports a curved arrow as a Bézier path (not a straight chord)', async () => {
-    const svg = await text(
-      exportTabAsSvg(
-        tab({
-          elements: [
-            shape('a'),
-            shape('b', { x: 300 }),
-            pinnedArrow('arr', 'a', 'b', '', { arrowStyle: 'curved' }),
-          ],
-        }),
-      ),
-    );
-    expect(svg).toContain('<path d="M '); // a path...
-    expect(svg).toContain(' Q '); // ...with a quadratic curve segment
-  });
 });
 
 // A large tab's image is drawn at 2x only while that stays inside the largest canvas every browser draws.
@@ -358,36 +293,5 @@ describe('exportScale', () => {
     expect(exportScale(2, 19200, 1000) * 19200).toBe(MAX_EXPORT_CANVAS_SIDE);
     expect(exportScale(2, 500, 12000) * 12000).toBe(MAX_EXPORT_CANVAS_SIDE);
     expect(exportScale(2, 0, 0)).toBe(2);
-  });
-});
-
-// The SVG draws arrows as the PNG / PDF do (docs/specs/020-import-export/export-fidelity.md).
-describe('renderTabToSvg arrows match the canvas', () => {
-  const crossing = () =>
-    tab({
-      elements: [
-        shape('a'),
-        shape('b', { x: 400 }),
-        shape('c', { x: 200 }),
-        pinnedArrow('arr', 'a', 'b'),
-      ],
-    });
-
-  it('breaks an arrow behind a box it draws', () => {
-    expect(renderTabToSvg(crossing())).toContain('<mask');
-  });
-
-  it('fills a hollow head with the tab background, not the default canvas colour', () => {
-    const svg = renderTabToSvg(
-      tab({
-        backgroundColor: '#fde68a',
-        elements: [
-          shape('a'),
-          shape('b', { x: 400 }),
-          pinnedArrow('arr', 'a', 'b', undefined, { arrowheadShape: 'triangle-hollow' }),
-        ],
-      }),
-    );
-    expect(svg).toMatch(/<polygon points="[^"]*" fill="#fde68a" stroke=/);
   });
 });

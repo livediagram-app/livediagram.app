@@ -8,7 +8,6 @@ import {
   duplicateElements,
   freshCopyFields,
   isBoxed,
-  type ArrowElement,
   type BoxedElement,
   type Element,
   type Tab,
@@ -28,11 +27,7 @@ export function useElementDuplication(deps: {
 
   // Multi-select duplicate (Cmd+D on a marquee, the command palette): the same
   // duplicateElements paste and quick-add use, offset diagonally. It used to be
-  // a hand-rolled copy of it that remapped arrow pins and nothing else, so a
-  // duplicated mind-map subtree re-parented itself onto the ORIGINAL tree,
-  // copied portals stepped through to the originals, an arrow hung off a
-  // copied arrow stayed on the original line, and a connector between two
-  // copied boxes was left behind unless it was in the marquee too.
+  // a hand-rolled copy of it, so a copied portal stepped through to the original.
   const duplicateMultiSelected = () => {
     const { multiSelectedIds } = readSelection();
     if (multiSelectedIds.size === 0) return;
@@ -53,39 +48,21 @@ export function useElementDuplication(deps: {
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
     if (!source) return;
-    // Element-only duplicate: clones just this element (not arrows attached
-    // to it), offset diagonally so it's visible next to the original.
+    // Element-only duplicate: clones just this element, offset diagonally so it's visible next to
+    // the original. A retired arrow is never copied (docs/specs/002-project-scope/blueprints/element-engine.md D21).
+    if (!isBoxed(source)) return;
     const offset = PASTE_OFFSET;
-    if (isBoxed(source)) {
-      const copy: BoxedElement = {
-        ...source,
-        id: crypto.randomUUID(),
-        x: source.x + offset,
-        y: source.y + offset,
-        // Whatever a copy regenerates rather than inherits.
-        ...freshCopyFields(source),
-      };
-      commit((els) => [...els, copy]);
-      trackDuplicated([copy]);
-      setSelectedId(copy.id);
-      return;
-    }
-    if (source.type === 'arrow') {
-      // For arrows, shift any free endpoints; pinned endpoints stay attached
-      // to the same shape. The duplicate represents an extra arrow with the
-      // same connection pattern as the original.
-      const shift = (e: typeof source.from) =>
-        e.kind === 'free' ? { ...e, x: e.x + offset, y: e.y + offset } : e;
-      const copy: ArrowElement = {
-        ...source,
-        id: crypto.randomUUID(),
-        from: shift(source.from),
-        to: shift(source.to),
-      };
-      commit((els) => [...els, copy]);
-      trackDuplicated([copy]);
-      setSelectedId(copy.id);
-    }
+    const copy: BoxedElement = {
+      ...source,
+      id: crypto.randomUUID(),
+      x: source.x + offset,
+      y: source.y + offset,
+      // Whatever a copy regenerates rather than inherits.
+      ...freshCopyFields(source),
+    };
+    commit((els) => [...els, copy]);
+    trackDuplicated([copy]);
+    setSelectedId(copy.id);
   };
 
   return { duplicateSelected, duplicateMultiSelected };

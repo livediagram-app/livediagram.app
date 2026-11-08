@@ -6,12 +6,7 @@
 // button reads View / Edit); Clear Styles alone at the right, apart from them, as it changes the element's look rather
 // than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
 import type { ReactNode } from 'react';
-import {
-  isBoxed,
-  isRetiredElementType,
-  type BoxedElement,
-  type Element,
-} from '@livehuddle/document';
+import { isRetiredElement, type Element } from '@livehuddle/document';
 import { Glyph, Tooltip } from '@livehuddle/ui';
 import {
   ActionMenuIcon,
@@ -38,7 +33,7 @@ type QuickBarItem = { key: string; label: string; icon: ReactNode; on: boolean; 
 // The items the bar offers on `target`, in order: what attaches to it. A link card and a video take their link from
 // their own Link category, so the generic Add Link is not offered on them.
 export function quickBarItems(
-  target: BoxedElement,
+  target: Element,
   props: Pick<
     EditorContextMenuProps,
     'onAssignAction' | 'onOpenComments' | 'onLinkElement' | 'onOpenNote'
@@ -62,8 +57,8 @@ export function quickBarItems(
       run: () => props.onOpenComments(target.id),
     },
   ];
-  // A retired type (a stored embed or table) takes no new link.
-  if (target.type !== 'link-card' && !isRetiredElementType(target.type))
+  // A retired element (a stored embed, table, stroke or arrow) takes no new link.
+  if (target.type !== 'link-card' && !isRetiredElement(target))
     items.push({
       key: 'link',
       label: target.link ? 'Edit Link' : 'Add Link',
@@ -103,7 +98,7 @@ export function ElementMenuQuickBar({
   const clearStyles = useClearStyles();
   const canClear = !!clearStyles && clearStyles.targetIds.has(target.id);
   // Only a boxed element takes them: arrows are never linked, noted, commented on or assigned.
-  const items = attachments && isBoxed(target) ? quickBarItems(target, props) : [];
+  const items = attachments ? quickBarItems(target, props) : [];
   if (!items.length && !canClear) return null;
   return (
     <div

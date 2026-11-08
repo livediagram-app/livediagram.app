@@ -1,14 +1,7 @@
 import { svgTags, textTagBefore } from '@liveworkspace/model-core/svg-test-tags';
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, FreehandElement, ImageElement, ShapeElement, Tab } from './index';
-import { createPinnedArrow, createShape } from './factories';
-import { freehandPenStroke, penStrokePath } from './pen-stroke';
-import { r2 } from './svg-render-primitives';
+import type { ImageElement, RetiredArrowElement, ShapeElement, Tab } from './index';
 import { contentBounds, renderElementsToSvg } from './svg-render';
-import { arrowLabelFontStack } from './svg-render-arrows';
-import { arrowLabelPass, layoutArrowLabels } from './arrow-label-layout';
-import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
-import { DEFAULT_BACKGROUND_COLOR as PAPER } from '@liveworkspace/model-core/canvas-colors';
 
 const shape = (id: string, o: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -36,8 +29,8 @@ const pinnedArrow = (
   id: string,
   fromId: string,
   toId: string,
-  o: Partial<ArrowElement> = {},
-): ArrowElement => ({
+  o: Partial<RetiredArrowElement> = {},
+): RetiredArrowElement => ({
   id,
   type: 'arrow',
   from: { kind: 'pinned', elementId: fromId, anchor: 'e' },
@@ -53,7 +46,7 @@ const tab = (elements: Tab['elements'], o: Partial<Tab> = {}): Tab => ({
 });
 
 describe('renderElementsToSvg', () => {
-  it('renders a self-contained SVG with shapes, an arrow and a background', () => {
+  it('renders a self-contained SVG with shapes, a stored arrow and a background', () => {
     const svg = renderElementsToSvg(
       tab([shape('a'), shape('b', { x: 200 }), pinnedArrow('arr', 'a', 'b')]),
     );
@@ -61,7 +54,7 @@ describe('renderElementsToSvg', () => {
     expect(svg).toContain('xmlns="http://www.w3.org/2000/svg"');
     expect(svg).toContain('viewBox=');
     expect(svg).toContain('<rect'); // shape bodies + background
-    expect(svg).toContain('<path'); // the arrow
+    expect(svg).toContain('<line data-retired-arrow-line'); // the stored arrow's placeholder line
     expect(svg.trimEnd().endsWith('</svg>')).toBe(true);
   });
 
@@ -90,73 +83,6 @@ describe('renderElementsToSvg', () => {
   it('defaults an empty tab to a standard page rather than a 0x0 frame', () => {
     const svg = renderElementsToSvg(tab([]));
     expect(svg).toContain('viewBox="-32 -32 664 464"');
-  });
-
-  describe('arrowhead shapes (docs/specs/008-canvas/canvas-and-palette.md UML notation)', () => {
-    // The canvas draws all seven head shapes via SVG markers; the export
-    // has to reproduce them or a class diagram's hollow-triangle
-    // inheritance / hollow-diamond aggregation flattens into generic
-    // filled triangles. Each case pins the emitted primitive.
-    const render = (o: Partial<ArrowElement>) =>
-      renderElementsToSvg(tab([shape('a'), shape('b', { x: 200 }), pinnedArrow('r', 'a', 'b', o)]));
-    // The default arrow stroke serialises as an rgb() token.
-    const INK = 'rgb\\(51 65 85\\)';
-
-    it('defaults to the filled triangle', () => {
-      const svg = render({});
-      expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="${INK}"/>`));
-    });
-
-    it('renders a hollow triangle as a paper-filled stroked polygon', () => {
-      const svg = render({ arrowheadShape: 'triangle-hollow' });
-      expect(svg).toMatch(new RegExp(`<polygon points="[^"]+" fill="${PAPER}" stroke="${INK}"`));
-    });
-
-    it('fills a hollow head with the tab paper, so it reads hollow on a dark canvas', () => {
-      const svg = renderElementsToSvg(
-        tab([
-          shape('a'),
-          shape('b', { x: 200 }),
-          pinnedArrow('r', 'a', 'b', { arrowheadShape: 'triangle-hollow', strokeColor: '#cbd5e1' }),
-        ]),
-        { background: '#0d121a' },
-      );
-      expect(svg).toMatch(/<polygon points="[^"]+" fill="#0d121a" stroke="#cbd5e1"/);
-    });
-
-    it('renders the open-V (line) head as an unfilled polyline', () => {
-      const svg = render({ arrowheadShape: 'line' });
-      expect(svg).toMatch(new RegExp(`<polyline points="[^"]+" fill="none" stroke="${INK}"`));
-    });
-
-    it('renders dot heads as circles (filled and hollow)', () => {
-      expect(render({ arrowheadShape: 'circle' })).toMatch(
-        new RegExp(`<circle[^/]+ fill="${INK}"/>`),
-      );
-      expect(render({ arrowheadShape: 'circle-hollow' })).toMatch(
-        new RegExp(`<circle[^/]+ fill="${PAPER}" stroke="${INK}"`),
-      );
-    });
-
-    it('renders diamond heads as four-point polygons (filled and hollow)', () => {
-      const filled = render({ arrowheadShape: 'diamond' });
-      const filledHead = filled.match(new RegExp(`<polygon points="([^"]+)" fill="${INK}"/>`));
-      expect(filledHead?.[1]?.split(' ')).toHaveLength(4);
-      const hollow = render({ arrowheadShape: 'diamond-hollow' });
-      expect(hollow).toMatch(new RegExp(`<polygon points="[^"]+" fill="${PAPER}" stroke="${INK}"`));
-    });
-
-    it('scales the head with the arrowheadSize preset', () => {
-      // An extra-large filled triangle spans twice the medium's reach:
-      // its trailing points sit further from the tip along x.
-      const headPoints = (svg: string) =>
-        svg.match(new RegExp(`<polygon points="([^"]+)" fill="${INK}"/>`))![1]!.split(' ');
-      const medium = headPoints(render({}));
-      const xl = headPoints(render({ arrowheadSize: 'extra-large' }));
-      const reach = (pts: string[]) =>
-        Math.abs(Number(pts[0]!.split(',')[0]) - Number(pts[1]!.split(',')[0]));
-      expect(reach(xl)).toBeGreaterThan(reach(medium) * 1.5);
-    });
   });
 
   describe('image elements', () => {
@@ -283,107 +209,7 @@ describe('renderElementsToSvg', () => {
     });
   });
 
-  describe('freehand + silhouettes + rotation', () => {
-    it('exports a whiteboard pen stroke as the canvas draws it: the filled pressure outline', () => {
-      // docs/specs/023-draw-mode/draw-mode.md "Pens": the same function as FreehandSvg.
-      const el = {
-        id: 'pen',
-        type: 'freehand',
-        x: 10,
-        y: 10,
-        width: 100,
-        height: 50,
-        closed: false,
-        packedPoints: encodeStrokePoints([
-          { nx: 0, ny: 0 },
-          { nx: 0.5, ny: 1 },
-          { nx: 1, ny: 0.5 },
-        ]),
-        penWidth: 2.5,
-        pressures: [0.2, 0.8, 0.5],
-        streamline: 0.2,
-        strokeColor: '#e5484d',
-      } as FreehandElement;
-      const svg = renderElementsToSvg(tab([el]));
-      const d = penStrokePath(freehandPenStroke(el, { x: 10, y: 10 }), r2);
-      expect(svg).toContain(`<path d="${d}" fill="#e5484d" stroke="none"/>`);
-    });
-
-    it('renders a freehand sketch as the canvas smooth curve, not a box', () => {
-      const el = {
-        id: 'fh',
-        type: 'freehand',
-        x: 10,
-        y: 10,
-        width: 100,
-        height: 100,
-        closed: false,
-        packedPoints: encodeStrokePoints([
-          { nx: 0, ny: 0 },
-          { nx: 1, ny: 0.5 },
-        ]),
-        strokeColor: '#333333',
-      } as Tab['elements'][number];
-      const svg = renderElementsToSvg(tab([el]));
-      // The same Catmull-Rom curve the canvas's FreehandSvg draws (it used to
-      // export straight segments), with the numbers rounded to 2 places.
-      expect(svg).toContain('d="M 10 10 C 26.67 18.33, 93.33 51.67, 110 60"');
-      expect(svg).not.toContain('rx="6"');
-    });
-
-    it('keeps a polygon-tool path straight, and draws nothing for one point', () => {
-      const base = {
-        id: 'pg',
-        type: 'freehand',
-        x: 0,
-        y: 0,
-        width: 100,
-        height: 100,
-        closed: true,
-        strokeColor: '#333333',
-      };
-      const polygon = {
-        ...base,
-        straightEdges: true,
-        packedPoints: encodeStrokePoints([
-          { nx: 0, ny: 0 },
-          { nx: 1, ny: 0 },
-          { nx: 1, ny: 1 },
-        ]),
-      } as Tab['elements'][number];
-      expect(renderElementsToSvg(tab([polygon]))).toContain('d="M 0 0 L 100 0 L 100 100 Z"');
-      const dot = {
-        ...base,
-        packedPoints: encodeStrokePoints([{ nx: 0.5, ny: 0.5 }]),
-      } as Tab['elements'][number];
-      expect(renderElementsToSvg(tab([dot]))).not.toContain('<path');
-    });
-
-    it('renders a highlighter stroke with the marker recipe (docs/specs/008-canvas/highlighter.md)', () => {
-      const el = {
-        id: 'hl',
-        type: 'freehand',
-        x: 0,
-        y: 0,
-        width: 100,
-        height: 10,
-        closed: false,
-        pen: 'highlighter',
-        packedPoints: encodeStrokePoints([
-          { nx: 0, ny: 0.5 },
-          { nx: 1, ny: 0.5 },
-        ]),
-        strokeColor: '#fde047',
-      } as Tab['elements'][number];
-      const svg = renderElementsToSvg(tab([el]));
-      // Fixed wide translucent multiply stroke, never filled — the
-      // border presets don't apply to the marker.
-      expect(svg).toContain('stroke-width="14"');
-      expect(svg).toContain('stroke-opacity="0.45"');
-      expect(svg).toContain('mix-blend-mode:multiply');
-      expect(svg).toContain('fill="none"');
-    });
-
+  describe('silhouettes + rotation', () => {
     it('renders a hexagon silhouette instead of a rectangle', () => {
       const svg = renderElementsToSvg(tab([shape('h', { shape: 'hexagon' })]));
       // The table's 0..100 hexagon, mapped onto the 100 x 80 box inset by
@@ -676,80 +502,6 @@ describe('renderElementsToSvg — element shadows (docs/specs/008-canvas/element
   });
 });
 
-// The arrow caption (docs/specs/008-canvas/canvas-and-palette.md). The export used to emit a fixed 12px near-black
-// label whatever the caption was styled as, so a diagram whose captions had
-// been sized or coloured came out of an export looking like a different
-// diagram. These pin that the styling reaches the file.
-describe('a shared end in an export', () => {
-  it("anchors a dashed bus arrow's pattern at its end, as the canvas does", () => {
-    const a = { ...createShape('square', 0, 0), id: 'a' };
-    const b = { ...createShape('square', 0, 300), id: 'b' };
-    const bus = {
-      ...createPinnedArrow('a', 's', 'b', 'n'),
-      id: 'x',
-      strokeStyle: 'dashed' as const,
-      exactEnd: true,
-    };
-    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [a, b, bus] });
-    expect(svg).toMatch(/stroke-dasharray="6 5" stroke-dashoffset="[\d.]+"/);
-  });
-});
-
-describe('arrow captions in an export', () => {
-  const captioned = (o: Partial<ArrowElement>) =>
-    renderElementsToSvg(
-      tab([
-        shape('a'),
-        shape('b', { x: 300 }),
-        pinnedArrow('arr', 'a', 'b', { label: 'why', ...o }),
-      ]),
-    );
-
-  it('paints the caption at its own size', () => {
-    expect(captioned({ textSize: 'lg' })).toContain('font-size="20"');
-  });
-
-  it('paints the caption in its own colour', () => {
-    expect(captioned({ textColor: '#ff0000' })).toContain('fill="#ff0000"');
-  });
-
-  it('falls back to the line colour, the way the canvas does', () => {
-    // A caption with no colour of its own belongs to the arrow it labels.
-    const svg = captioned({ strokeColor: '#00ff00' });
-    expect(svg).toContain('fill="#00ff00"');
-  });
-
-  it('carries bold and italic', () => {
-    const svg = captioned({ textBold: true, textItalic: true });
-    expect(svg).toContain('font-weight="600"');
-    expect(svg).toContain('font-style="italic"');
-  });
-
-  it('draws a plate only when the caption has one', () => {
-    expect(captioned({ labelFill: '#ffe4e6' })).toContain('fill="#ffe4e6"');
-    // Transparent is the same as none: the label sits on the canvas.
-    expect(captioned({ labelFill: 'transparent' })).not.toContain('fill="transparent"');
-  });
-
-  // docs/specs/008-canvas/arrow-labels.md: the export lays labels out with the canvas engine.
-  it('breaks the line open behind an on-line caption', () => {
-    const svg = captioned({});
-    expect(svg).toContain('<mask id="lvd-ko-arr"');
-    expect(svg).toContain('mask="url(#lvd-ko-arr)"');
-  });
-
-  it('wraps a long caption onto the same lines the layout engine chose', () => {
-    const label = 'Context summarisation for the whole team and then some';
-    const t = tab([shape('a'), shape('b', { y: 600 }), pinnedArrow('arr', 'a', 'b', { label })]);
-    const layout = layoutArrowLabels(t.elements, {
-      fontFamilyOf: (a) => arrowLabelFontStack(a, t.font),
-    }).get('arr')!;
-    expect(layout.lines.length).toBeGreaterThan(1);
-    const svg = renderElementsToSvg(t);
-    for (const line of layout.lines) expect(svg).toContain(`>${line}</tspan>`);
-  });
-});
-
 // Drawn-on-the-box chrome (docs/specs/008-canvas/canvas-and-palette.md): the border the canvas draws.
 describe('chrome the canvas draws on a box', () => {
   it("draws a shape's own border width, dash and radius, inside the box", () => {
@@ -762,24 +514,17 @@ describe('chrome the canvas draws on a box', () => {
   });
 });
 
-// A bow can swing well outside the boxes it joins; the export used to size
-// itself to the boxes and free arrow ends only, clipping the curve and its label.
+// A stored arrow (docs/specs/002-project-scope/blueprints/element-engine.md D21) draws a line and a 160 by 96 card
+// on its middle; the export sizes itself to both.
 describe('contentBounds', () => {
-  it('includes the drawn route of a bowed arrow', () => {
+  it('includes a stored arrow’s line and its placeholder card', () => {
     const els = [
-      shape('a', { y: 200 }),
-      shape('b', { x: 500, y: 200 }),
-      pinnedArrow('arr', 'a', 'b', { arrowStyle: 'curved', curveOffset: { dx: 0, dy: -400 } }),
+      shape('a', { x: 0, y: 0, width: 10, height: 10 }),
+      shape('b', { x: 20, y: 0, width: 10, height: 10 }),
+      pinnedArrow('arr', 'a', 'b'),
     ];
-    expect(contentBounds(els).y).toBeLessThan(100);
-  });
-
-  it('includes label plates when given the label pass', () => {
-    const els = [pinnedArrow('arr', 'a', 'b', { label: 'x' }), shape('a'), shape('b', { x: 40 })];
-    const labels = arrowLabelPass(els);
-    const l = labels.layouts.get('arr')!;
-    const b = contentBounds(els, labels);
-    expect(b.y).toBeLessThanOrEqual(l.center.y - l.height / 2);
+    // The ends sit at (10, 5) and (20, 5): the card spans x -65..95 and y -23..33.
+    expect(contentBounds(els)).toEqual({ x: -65, y: -43, w: 160, h: 96 });
   });
 });
 
@@ -787,67 +532,37 @@ describe('contentBounds', () => {
 // line the author typed collapsed, and the text below it moved up a line.
 describe('blank lines in a wrapped label', () => {
   it('keep their height as a non-breaking space', () => {
-    const svg = renderElementsToSvg(
-      tab([shape('a'), shape('b', { x: 400 }), pinnedArrow('arr', 'a', 'b', { label: '1\n\n2' })]),
-    );
+    const svg = renderElementsToSvg(tab([shape('a', { label: '1\n\n2', height: 200 })]));
     const tspans = [...svg.matchAll(/<tspan[^<>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]);
     expect(tspans).toEqual(['1', '\u00a0', '2']);
   });
 });
 
-// An arrow caption on dark paper (docs/specs/008-canvas/canvas-and-palette.md, Default scheme, dark half): the
-// export paints what the canvas does, so an uncoloured arrow's caption is a step lighter than its line.
-describe('caption colour on dark paper', () => {
-  const render = (o: Partial<ArrowElement>) =>
-    renderElementsToSvg(
-      tab([shape('a'), shape('b', { x: 200 }), pinnedArrow('r', 'a', 'b', { label: 'Go', ...o })], {
-        backgroundColor: '#0d121a',
-      }),
-    );
-
-  it('paints the line in the dark ink and the caption in slate-400', () => {
-    const svg = render({});
-    expect(svg).toContain('stroke="#64748b"');
-    expect(svg).toMatch(/<text[^>]*fill="#94a3b8"[^>]*>(<tspan[^>]*>)?Go</);
-  });
-
-  it('lets a coloured arrow keep its caption in step with its line', () => {
-    expect(render({ strokeColor: '#dc2626' })).toMatch(
-      /<text[^>]*fill="#dc2626"[^>]*>(<tspan[^>]*>)?Go</,
-    );
-  });
-});
-
-describe('arrows as the canvas draws them (docs/specs/008-canvas/arrow-route-behind.md, docs/specs/006-document/layers.md)', () => {
-  // a -> c with b sitting on the line between them.
+// A stored arrow is a retired element: its line and card paint in array order, like any element
+// (docs/specs/006-document/layers.md).
+describe('a stored arrow in an export', () => {
   const row = [
     shape('a', { x: 0, y: 0 }),
     shape('b', { x: 200, y: 0 }),
     shape('c', { x: 400, y: 0 }),
   ];
 
-  it('breaks an arrow around a box it passes, like the canvas', () => {
-    const svg = renderElementsToSvg(tab([...row, pinnedArrow('x', 'a', 'c')]));
-    // A mask hole over b, inflated by the 10-unit margin.
-    expect(svg).toContain('<rect x="190" y="-10" width="120" height="100" rx="10" fill="black"/>');
-    expect(svg).toMatch(/<path d="[^"]*"[^>]*mask="url\(#lvd-ko-x\)"/);
-  });
-
-  it('draws it over the top when the arrow opts out', () => {
-    const svg = renderElementsToSvg(
-      tab([...row, pinnedArrow('x', 'a', 'c', { routeBehind: false })]),
-    );
-    expect(svg).not.toContain('mask=');
-  });
-
-  it('paints in array order, so an arrow sent behind a box stays behind it', () => {
+  it('paints in array order, so an arrow stored behind a box stays behind it', () => {
     const svg = renderElementsToSvg(tab([row[0]!, row[2]!, pinnedArrow('x', 'a', 'c'), row[1]!]));
-    const arrowAt = svg.indexOf('mask id="lvd-ko-x"');
-    // Box b sits at x = 200; its border is drawn inside the box, as the canvas
-    // draws it (docs/specs/020-import-export/export-fidelity.md), so its rect starts half a border in.
+    const arrowAt = svg.indexOf('data-retired-arrow=');
+    // Box b sits at x = 200; its border is drawn inside the box, so its rect starts half a border in.
     const boxAt = svg.search(/<rect x="20[01](\.\d+)?"/);
     expect(boxAt).toBeGreaterThan(-1);
     expect(arrowAt).toBeGreaterThan(-1);
     expect(arrowAt).toBeLessThan(boxAt);
+  });
+
+  it('draws a straight dashed line between the ends, never a route or a head', () => {
+    const svg = renderElementsToSvg(
+      tab([...row, pinnedArrow('x', 'a', 'c', { label: 'flows', arrowEnds: 'both' })]),
+    );
+    expect(svg).toContain('x1="100" y1="40" x2="400" y2="40"');
+    expect(svg).not.toContain('mask=');
+    expect(svg).not.toContain('<polygon');
   });
 });

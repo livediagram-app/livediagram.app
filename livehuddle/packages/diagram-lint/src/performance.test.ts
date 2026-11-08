@@ -1,13 +1,15 @@
 // The lint's cost (docs/specs/024-agents/blueprints/diagram-lint.md "Performance and limits", LN35). Timed as
 // growth, not as a ceiling: coverage instrumentation on a CI runner makes an absolute CPU budget flake, a ratio
-// does not. A tab of 300 boxes and 300 arrows costs about 10 ms here, under LINT_BUDGET_CPU_MS; four times the
-// tab costs under eight times as much (the pair check is bounded by LINT_MAX_ARROWS).
+// does not. A tab of 300 boxes and 300 stored arrows costs about 2 ms here, under LINT_BUDGET_CPU_MS; four times the
+// tab costs under eight times as much. A stored arrow is a retired element no check reads (part 4 of the element
+// engine), but its line still counts toward the extent, which once indexed the tab per arrow (quadratic). A run is
+// now well under a millisecond on the small tab, so each sample times several runs to rise above the timer's noise.
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livehuddle/document';
 import { arrow, box, lint, tabOf } from './fixtures/build';
 
-// `n` boxes on a grid, each joined to its right and lower neighbours until `n` arrows are drawn.
+// `n` boxes on a grid, each with a stored arrow to its right and lower neighbours until `n` arrows are drawn.
 function grid(n: number): Element[] {
   const side = Math.ceil(Math.sqrt(n));
   const els: Element[] = [];
@@ -31,8 +33,18 @@ function grid(n: number): Element[] {
 // Four times the elements, under eight times the CPU.
 const RATIO_CEILING = 8;
 
-const fastest = (els: Element[]) =>
-  Math.min(...[0, 1, 2].map(() => cpuMsOf(() => lint(tabOf(...els)))));
+const RUNS_PER_SAMPLE = 10;
+
+const fastest = (els: Element[]) => {
+  const tab = tabOf(...els);
+  return Math.min(
+    ...[0, 1, 2, 3, 4].map(() =>
+      cpuMsOf(() => {
+        for (let run = 0; run < RUNS_PER_SAMPLE; run++) lint(tab);
+      }),
+    ),
+  );
+};
 
 describe('performance', () => {
   it('grows with the tab, not faster: 75 to 300 boxes and arrows', { timeout: 30_000 }, () => {

@@ -20,7 +20,6 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
   bringManyToFront,
-  isBoxed,
   sendManyToBack,
   type AnimationSetId,
   type AnimationSpeed,
@@ -32,12 +31,12 @@ import {
   type Tab,
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
+import { isStyleable } from '@/lib/style-presets';
 import {
   withSetAnimationRepeat,
   withSetAnimationSpeed,
   withoutAnimations,
 } from '@/lib/animation-set-writes';
-import { useArrowStyleSetters } from './useArrowStyleSetters';
 import { useDataShapeSetters } from './useDataShapeSetters';
 import { useShapeStyleSetters } from './useShapeStyleSetters';
 import { useTextStyleSetters } from './useTextStyleSetters';
@@ -86,11 +85,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     checkpointBurst,
   } = deps;
 
-  const { setArrowFieldSelected, ...arrowStyle } = useArrowStyleSetters({
-    currentSelectionIds,
-    commit,
-  });
-
   const dataShape = useDataShapeSetters({
     currentSelectionIds,
     commit,
@@ -127,11 +121,13 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     const { selectedId } = readSelection();
     if (!selectedId) return;
     const source = selectionPrimary();
-    if (!source || !isBoxed(source)) return;
+    if (!source || !isStyleable(source)) return;
     const shouldLock = !(source.aspectLocked === true);
     const ids = currentSelectionIds();
     commit((els) =>
-      els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, aspectLocked: shouldLock } : el)),
+      els.map((el) =>
+        ids.has(el.id) && isStyleable(el) ? { ...el, aspectLocked: shouldLock } : el,
+      ),
     );
     track('Element', 'Toggled', 'AspectLock');
   };
@@ -158,7 +154,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setPaddingSelected = (padding: Padding) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) => els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, padding } : el)));
+    commit((els) => els.map((el) => (ids.has(el.id) && isStyleable(el) ? { ...el, padding } : el)));
     track('Element', 'Changed', 'Padding');
   };
 
@@ -174,10 +170,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     );
     track('Element', 'Changed', 'IconSize');
   };
-
-  // Set arrow-only field(s) on every selected arrow. The straightforward
-  // per-field arrow setters share this; setArrowStyleSelected stays separate
-  // because it also has to drop curvePoints.
 
   // Clear animation (docs/specs/028-animation/element-animations.md "Shared behaviour"): the body and
   // the Text animation together. Picking one goes through the per-set setters below.
@@ -213,8 +205,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     commit((els) => els.map((el) => (ids.has(el.id) ? withSetAnimationSpeed(el, set, value) : el)));
     track('Element', 'Changed', 'AnimationSpeed');
   };
-  const setFlowSpeedSelected = (value: AnimationSpeed) =>
-    setArrowFieldSelected({ flowSpeed: value }, 'FlowSpeed');
   // Repeat toggles (docs/specs/008-canvas/canvas-and-palette.md): true (the default) loops the animation, false
   // plays it once and holds. Stored as `undefined` when true so the common
   // case adds no field to the element.
@@ -228,11 +218,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   };
   const setIconAnimationRepeatSelected = (value: boolean) =>
     setIconFieldSelected({ iconAnimationRepeat: value ? undefined : false });
-  const setFlowRepeatSelected = (value: boolean) =>
-    setArrowFieldSelected({ flowRepeat: value ? undefined : false }, 'FlowRepeat');
 
   return {
-    ...arrowStyle,
     ...dataShape,
     ...shapeStyle,
     ...textStyle,
@@ -246,9 +233,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setIconAnimationSelected,
     setIconAnimationSpeedSelected,
     setSetAnimationSpeedSelected,
-    setFlowSpeedSelected,
     setSetAnimationRepeatSelected,
     setIconAnimationRepeatSelected,
-    setFlowRepeatSelected,
   };
 }

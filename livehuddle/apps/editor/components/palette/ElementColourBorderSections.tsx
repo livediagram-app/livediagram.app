@@ -9,11 +9,9 @@
 import {
   BorderColourIcon,
   FillColourIcon,
-  PointerColourIcon,
   TextColourIcon,
 } from '@/components/palette/context-menu-icons';
 import {
-  defaultArrowStrokeColor,
   defaultFillColor,
   supportsFillColor,
   defaultStrokeColor,
@@ -57,7 +55,6 @@ export function ElementColourBorderSections({
   colorProps,
   textColorHandlers,
   fillColorHandlers,
-  arrowheadColorHandlers,
   strokeColorHandlers,
 }: {
   props: EditorContextMenuProps;
@@ -70,7 +67,6 @@ export function ElementColourBorderSections({
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
   fillColorHandlers: Scaffold['fillColorHandlers'];
-  arrowheadColorHandlers: Scaffold['arrowheadColorHandlers'];
   strokeColorHandlers: Scaffold['strokeColorHandlers'];
 }) {
   // A swatch shows the colour the element is ACTUALLY drawn in, so an element
@@ -85,49 +81,6 @@ export function ElementColourBorderSections({
     (target as { strokeStyle?: BorderStyle }).strokeStyle ?? 'solid';
   return (
     <>
-      {/* Arrow Colours: the line colour swatch. Arrows lived in the old
-          editor side panel's Colours accordion via their strokeColor; the
-          menu rewrite gated Colours on `boxed`, silently dropping them —
-          this restores the control (label colour stays in the content Text
-          section, which needs a label to exist). */}
-      {target.type === 'arrow' ? (
-        <MenuAccordionSection
-          title="Colours"
-          icon={<PaletteMenuIcon />}
-          {...sectionProps('colours')}
-        >
-          <ColourRow
-            label="Line"
-            icon={<BorderColourIcon />}
-            value={shownColour(target, 'line', surface, defaultArrowStrokeColor(surface))}
-            ink={inkSwatch(target, 'line', surface)}
-            {...strokeColorHandlers}
-            {...colorProps('border')}
-            {...props.colourPalette}
-          />
-          {/* The heads, separately from the line: a grey connector with a red
-              head is one arrow saying two things, and doing it with a second
-              element would break the moment either end moved. Unset means the
-              heads take the line's colour, as they always have. */}
-          <ColourRow
-            label="Pointer"
-            icon={<PointerColourIcon />}
-            value={target.arrowheadColor ?? target.strokeColor ?? defaultArrowStrokeColor(surface)}
-            {...arrowheadColorHandlers}
-            {...colorProps('pointer')}
-            {...props.colourPalette}
-          />
-          <div className="px-2 pb-1 pt-1.5">
-            <MenuActionButton
-              label="Reset to Theme"
-              onClick={() => {
-                props.onResetColors();
-                onClose();
-              }}
-            />
-          </div>
-        </MenuAccordionSection>
-      ) : null}
       {boxed && supportsColours(target) ? (
         <>
           <MenuAccordionSection

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   LABEL_BACKDROP_CONTRAST,
   contrastRatio,
-  createFreehand,
+  createShape,
   penColourHex,
   type Element,
 } from '@livehuddle/document';
@@ -10,13 +10,7 @@ import { createStockColourProjector } from './stock-colour-projector';
 
 const stroke = (over: Partial<Element> = {}): Element =>
   ({
-    ...createFreehand(
-      [
-        { x: 0, y: 0 },
-        { x: 10, y: 10 },
-      ],
-      false,
-    ),
+    ...createShape('square', 0, 0),
     ...over,
   }) as Element;
 

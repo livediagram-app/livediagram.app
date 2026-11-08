@@ -2,7 +2,6 @@
 // in two layers of see-through ink, its fill solid with the colouring's streaks over it, its thin chrome as one
 // layer. In the element's own coordinates, so it is memoised on size alone, as Sketch's drawing is
 // (sketch-element.ts, which it shares its outlines with). The canvas overlay and the SVG export both draw from this.
-import { ARROWHEAD_SIZE_PX, type ArrowheadShape } from './arrow-style';
 import {
   BORDER_DASH_ARRAY,
   BORDER_STROKE_PX,
@@ -12,14 +11,8 @@ import {
 } from '@liveworkspace/model-core/border-style';
 import { MARKER_LINE_PX, finishCornerFallbackPx, finishHatches } from './finish';
 import type { BoxedElement } from './index';
-import {
-  markerArrowHead,
-  markerColouring,
-  markerStrokes,
-  trimOutline,
-  type MarkerLayers,
-} from './marker';
-import { outlineOfBox, outlineOfPath, pathEndTangents, sketchAreaPath, sketchSeed } from './sketch';
+import { markerColouring, markerStrokes, type MarkerLayers } from './marker';
+import { outlineOfBox, sketchAreaPath, sketchSeed } from './sketch';
 import { FILLED_ROLES } from './shape-hit';
 import { handDrawnOutlines, isSeeThrough } from './sketch-element';
 
@@ -120,66 +113,4 @@ export function markerElementPaint(
     nibPx,
   };
   return { drawing, strokePx: strokePx > 0 ? strokePx : 0, dash };
-}
-
-/** The arrowhead shapes Marker redraws: a line head as one chevron stroke, a triangle as a solid wedge, a hollow
- *  triangle as a closed outline. Circles and diamonds keep their marks, as under Sketch. */
-const MARKER_HEAD_SHAPES: ReadonlySet<ArrowheadShape> = new Set([
-  'triangle',
-  'triangle-hollow',
-  'line',
-]);
-
-/** A marker head is sized like the line it ends, but never past a 2.5 px line's: a 3 px nib's head drawn at full
- *  scale swamps the line (medium is 15 px long, not 18). */
-const MARKER_HEAD_SCALE_MAX_PX = 2.5;
-
-/** An arrow in marker: its line in two layers (one when `oneLayer`, so a flow's dash and draw maths hold), and its
- *  heads when Marker redraws their shape. Null for a line too short to draw. */
-export function markerArrow(
-  id: string,
-  pathD: string,
-  o: {
-    strokePx: number;
-    headSize: keyof typeof ARROWHEAD_SIZE_PX;
-    headShape: ArrowheadShape;
-    startHead: boolean;
-    endHead: boolean;
-    oneLayer: boolean;
-  },
-): { line: MarkerLayers; heads: string; drawnHeads: boolean; headFill: boolean } | null {
-  const tangents = pathEndTangents(pathD);
-  if (!tangents) return null;
-  const seed = sketchSeed(id);
-  const drawnHeads = MARKER_HEAD_SHAPES.has(o.headShape);
-  const length = ARROWHEAD_SIZE_PX[o.headSize] * Math.min(o.strokePx, MARKER_HEAD_SCALE_MAX_PX);
-  const closed = o.headShape !== 'line';
-  // A hollow head's line stops at its base, so the triangle reads empty.
-  const hollow = drawnHeads && o.headShape === 'triangle-hollow';
-  const outline = hollow
-    ? trimOutline(
-        outlineOfPath(pathD),
-        o.startHead ? length * 0.9 : 0,
-        o.endHead ? length * 0.9 : 0,
-      )
-    : outlineOfPath(pathD);
-  const [a, b] = markerStrokes(outline, seed, { pinEnds: true });
-  const line: MarkerLayers = o.oneLayer ? [[a, b].filter(Boolean).join(' '), ''] : [a, b];
-  if (!drawnHeads) return { line, heads: '', drawnHeads, headFill: false };
-  // The tip sits a tenth of the head's length past the path's end, as the markers' does (refX 9 of 10).
-  const head = (at: { x: number; y: number }, dir: { x: number; y: number }, s: number) =>
-    markerArrowHead(
-      { x: at.x + dir.x * length * 0.1, y: at.y + dir.y * length * 0.1 },
-      dir,
-      length,
-      s,
-      closed,
-    );
-  const heads = [
-    o.startHead ? head(tangents.start.at, tangents.start.dir, seed + 1) : '',
-    o.endHead ? head(tangents.end.at, tangents.end.dir, seed + 2) : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-  return { line, heads, drawnHeads, headFill: o.headShape === 'triangle' };
 }

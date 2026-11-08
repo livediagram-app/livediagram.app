@@ -15,7 +15,7 @@ describe('drag-preview on the wire', () => {
     expect(isPresenceOpKind('drag-preview')).toBe(true);
   });
 
-  it('keeps a box patch and an arrow patch, geometry only', () => {
+  it('keeps a box patch, geometry only, and drops an arrow’s ends and bends', () => {
     const patches = parseDragPreviewPatches([
       {
         id: 'a',
@@ -36,12 +36,8 @@ describe('drag-preview on the wire', () => {
     ]);
     expect(patches).toEqual([
       { id: 'a', x: 1, y: 2, width: 30, height: 40, rotation: 5 },
-      {
-        id: 'ab',
-        from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
-        to: { kind: 'free', x: 9, y: 9 },
-        curveOffset: { dx: 0, dy: 12 },
-      },
+      // An arrow never moves since part 4 of the element engine: nothing of it is drawn live.
+      { id: 'ab' },
     ]);
   });
 

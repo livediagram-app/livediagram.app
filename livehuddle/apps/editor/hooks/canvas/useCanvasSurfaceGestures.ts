@@ -14,9 +14,6 @@ import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarqu
 import type { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
-import { isHeldPenIntent } from '@/lib/draw-mode';
-import { markPenSeen, penSeen } from '@/lib/pen-seen';
-import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isPanThrough, panThroughTap } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 import { isPieceControlPress } from '@/lib/piece-control';
@@ -36,8 +33,7 @@ type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
 // The bottom-right cluster (Undo / Redo, Layers, Theme & Canvas, Zoom) is chrome, never canvas.
 // Its buttons stop the press only in the bubble phase, after the capture intercept: without this,
-// a held Draw mode marker inked a dot under Undo and the click then undid that dot instead of the
-// stroke the person meant (and an armed shape acted under the button too).
+// an armed shape acted under the button.
 const inCornerCluster = (target: EventTarget | null): boolean =>
   !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
 
@@ -80,7 +76,6 @@ export function useCanvasSurfaceGestures({
   onToggleDoor,
   onReadElement,
   beginPendingDrawGesture,
-  interceptPress,
   onCanvasContextMenu,
   onDeselect,
   onCanvasDoubleClick,
@@ -112,12 +107,9 @@ export function useCanvasSurfaceGestures({
   onToggleDoor?: (doorId: string) => boolean;
   // Open an element large in the reader (docs/specs/008-canvas/avatar-mode.md "The reader").
   onReadElement?: (elementId: string) => void;
-  // Starts the queued draw-to-size / freehand gesture; true when it
+  // Starts the queued draw-to-size gesture; true when it
   // claimed the press (see useCanvasDrawGesture).
   beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
-  // A mode that owns every primary press on the canvas while it is open (a path's edit mode,
-  // docs/specs/023-draw-mode/path-tool.md "Editing"); true when it claimed the press.
-  interceptPress?: (e: ReactPointerEvent) => boolean;
   onCanvasContextMenu?: (x: number, y: number) => void;
   onDeselect: () => void;
   // `byFinger`: the double press was a finger's (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
@@ -207,42 +199,10 @@ export function useCanvasSurfaceGestures({
     // gesture.
     const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
-    // Whiteboard (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input"): once a pen has been
-    // used, a single finger pans instead of inking, so a resting palm never
-    // draws. The pen itself, and a mouse, always ink.
-    if (whiteboard && e.button === 0) {
-      if (e.pointerType === 'pen') markPenSeen();
-      const inking = isHeldPenIntent(pendingDraw);
-      const route = whiteboardPointerRoute({
-        pointerType: e.pointerType,
-        penSeen: penSeen(),
-        inking,
-      });
-      if (route === 'pan') {
-        e.preventDefault();
-        e.stopPropagation();
-        setPan({
-          startClientX: e.clientX,
-          startClientY: e.clientY,
-          ...panStartOffset(readViewportOffset()),
-          movedRef: { current: false },
-        });
-        return;
-      }
-    }
-    // A path's edit mode keeps the rest of the canvas inert: its presses are all its own. Held
-    // Space still pans, and the other buttons keep their meaning.
-    if (e.button === 0 && !spaceHeldRef.current && interceptPress?.(e)) {
-      focusCanvas();
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
     // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a non-editing presenter mode where a primary
-    // click means "walk over there". Handled in the capture phase for the
-    // same reason: the canvas layer is pointer-inert, but arrow
-    // hit-bands re-enable themselves via `pointer-events: stroke` and select
-    // on ANY button, so we swallow the secondary button too. Middle-mouse
+    // click means "walk over there". Handled in the capture phase so no
+    // element under the press selects on ANY button, so we swallow the
+    // secondary button too. Middle-mouse
     // (pan) and held-Space (temporary pan) fall through untouched.
     if (canvasTool === 'avatar' && !spaceHeldRef.current && e.button !== 1) {
       // Start a Space (or a dialog) in front of the canvas holds the walk (docs/specs/008-canvas/avatar-mode.md
@@ -504,15 +464,9 @@ export function useCanvasSurfaceGestures({
     // doesn't bubble through the outer onPointerDown's
     // currentTarget gate) still leaves the canvas focused.
     focusCanvas();
-    // Draw-to-size intercept (mirror of the outer handler).
-    // beginPendingDrawGesture branches on `freehand` internally:
-    // a freehand intent seeds the polyline accumulator, every
-    // other intent seeds the box / line drag. (An earlier inline
-    // version always started a drawDrag, so a pen click landed
-    // BOTH a penPoints state and a drawDrag and mis-routed into
-    // createImage; the shared helper has the single correct
-    // branch.) Usually the capture-phase intercept has already
-    // handled this; kept as the rect-less fallback.
+    // Draw-to-size intercept (mirror of the outer handler). Usually the
+    // capture-phase intercept has already handled this; kept as the
+    // rect-less fallback.
     if (pendingDraw && beginPendingDrawGesture(e)) return;
     routePanOrMarquee(e);
   };

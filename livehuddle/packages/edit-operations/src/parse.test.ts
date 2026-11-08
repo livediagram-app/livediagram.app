@@ -68,42 +68,26 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
     });
   });
 
-  it('reads quoted labels on either side of a joined -> (rm, connect)', () => {
+  it('reads quoted labels on either side of a joined -> as one selector term', () => {
     expect(one('rm "Login"->"Address"')).toEqual({ op: 'rm', target: '"Login"->"Address"' });
-    expect(one('connect "Sign in"->"Pay" label=a->b')).toEqual({
-      op: 'connect',
-      from: '"Sign in"',
-      to: '"Pay"',
-      fields: { label: 'a->b' },
-    });
-    expect(one("connect n1->'Pay now'")).toMatchObject({ from: 'n1', to: "'Pay now'" });
-    // A -> inside quotes is text, an escaped \" never closes a double quote, and \ is literal in single quotes.
-    expect(one(`connect "Say \\"hi\\"->x"->'a\\b'`)).toMatchObject({
-      from: '"Say \\"hi\\"->x"',
-      to: "'a\\b'",
-    });
   });
 
-  it('refuses a connect with more than two ends rather than dropping one', () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: no arrow is made or rewired, so
+  // `connect`, `rewire` and `insert` are no operations.
+  it('reads connect, rewire and insert as words that are not operations', () => {
     for (const line of [
+      'connect n3 -> n4',
       'connect a->b->c',
-      'connect a -> b -> c',
-      'connect a->b -> c',
-      'connect a->b c->d',
+      'rewire a3 to=n4',
+      'insert square between n3 n4',
     ]) {
       const [error] = errorsOf(line);
-      expect(error!.code).toBe('parse_error');
-      expect(error!.details.join(' ')).toContain('one -> in connect: <a> -> <b>');
+      expect(error, line).toMatchObject({ code: 'unknown_operation', line: 1 });
     }
   });
 
-  it('reads rm, move, connect and rewire', () => {
-    expect(one('rm n7 all keep-arrows')).toEqual({
-      op: 'rm',
-      target: 'n7',
-      all: true,
-      keepArrows: true,
-    });
+  it('reads rm and move', () => {
+    expect(one('rm n7 all')).toEqual({ op: 'rm', target: 'n7', all: true });
     expect(one('move n4 align:f2')).toEqual({
       op: 'move',
       target: 'n4',
@@ -115,39 +99,16 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
       by: [10, -5],
       all: true,
     });
-    expect(one('connect n3 -> verify id=a9 label=ok line=angled again')).toEqual({
-      op: 'connect',
-      from: 'n3',
-      to: 'verify',
-      id: 'a9',
-      fields: { label: 'ok', line: 'angled' },
-      again: true,
-    });
-    expect(one('connect n3->n4')).toEqual({ op: 'connect', from: 'n3', to: 'n4' });
-    expect(one('connect "Web app" -> "API gateway"')).toEqual({
-      op: 'connect',
-      from: '"Web app"',
-      to: '"API gateway"',
-    });
-    expect(one('rewire a3 to=verify')).toEqual({ op: 'rewire', target: 'a3', to: 'verify' });
   });
 
-  it('reads insert, order, layout and test', () => {
-    expect(one('insert diamond id=valid label=Valid? between n3 n4')).toEqual({
-      op: 'insert',
-      kind: 'diamond',
-      id: 'valid',
-      fields: { label: 'Valid?' },
-      between: ['n3', 'n4'],
-    });
+  it('reads order, layout and test', () => {
     expect(one('order n3 front')).toEqual({ op: 'order', target: 'n3', to: 'front' });
     expect(one('order n3 above=n4')).toEqual({ op: 'order', target: 'n3', above: 'n4' });
-    expect(one('layout type:square style=tree direction=right')).toEqual({
-      op: 'layout',
-      target: 'type:square',
-      style: 'tree',
-      direction: 'right',
-    });
+    expect(one('layout type:square')).toEqual({ op: 'layout', target: 'type:square' });
+    // The layered layout went with the arrows (part 4): `layout` takes no style or direction.
+    expect(errorsOf('layout type:square style=tree')[0]!.details[0]).toBe(
+      'line 1, column 20: expected no key=value on layout',
+    );
     expect(one('test n3 label=Login')).toEqual({
       op: 'test',
       target: 'n3',
@@ -247,16 +208,11 @@ describe('parseEditOperations: refusals', () => {
         'add square at:1',
         'add square gap:10',
         'add square at:1,2 gap:10',
-        'insert square between n3',
-        'connect n3 n4',
-        'connect -> n4',
-        'connect n3 ->',
         'set',
         'set n3',
         'rm n3 label=x',
         'move n3 by=1',
         'move n3 by=a,1',
-        'connect n3 -> n4 tags=[1,',
         'set n3 tags=[1,',
       ].map(detail),
     ).toEqual([
@@ -267,16 +223,11 @@ describe('parseEditOperations: refusals', () => {
       'line 1, column 12: expected at:x,y with two numbers',
       'line 1, column 12: expected gap: with a side, after or align placement',
       'line 1, column 19: expected gap: with a side, after or align placement',
-      'line 1, column 25: expected between <a> <b>',
-      'line 1, column 9: expected connect <a> -> <b>',
-      'line 1, column 9: expected connect <a> -> <b>',
-      'line 1, column 12: expected a selector after ->',
       'line 1, column 4: expected a selector: a ref, a "label" or key:value terms',
       'line 1, column 7: expected key=value',
       'line 1, column 7: expected no key=value on rm',
       'line 1, column 9: expected by=dx,dy with two numbers',
       'line 1, column 9: expected by=dx,dy with two numbers',
-      'line 1, column 18: expected a JSON value after tags=',
       'line 1, column 8: expected a JSON value after tags=',
     ]);
   });
@@ -320,18 +271,12 @@ describe('formatOperation round trip', () => {
     'add text label=Note at:0,-20',
     'set type:sticky fill=green width=200 textBold=true note= tags=["a","b"] all',
     'set "Orders service" label="200" title="a: b" text="#tag" value="" data={"x":"a b"}',
-    'rm n7 all keep-arrows',
+    'rm n7 all',
     'move n4 right-of:"Orders service"',
     'move type:sticky by=10,-5 all',
-    'connect n3 -> verify id=a9 label=ok again',
-    'rewire a3 from=n1',
-    'rewire a3 to="Orders DB"',
-    'rewire a3 from=n1 to="Orders DB"',
-    'insert diamond label=Valid? between n3 "Orders DB"',
     'order n3 back',
     'order n3 above=n4',
     'order n3 below="Orders DB"',
-    'layout type:square style=tree direction=right',
     'layout n3',
     'test n3 label=Login',
     '{"op":"add","element":{"id":"x","type":"text","label":"a b"}}',
@@ -349,18 +294,12 @@ describe('formatOperation round trip', () => {
       'add text label=Note at:0,-20',
       'set type:sticky fill=green width=200 textBold=true note= tags=["a","b"] all',
       'set "Orders service" label="200" title="a: b" text="#tag" value="" data={"x":"a b"}',
-      'rm n7 all keep-arrows',
+      'rm n7 all',
       'move n4 right-of:"Orders service"',
       'move type:sticky by=10,-5 all',
-      'connect n3 -> verify id=a9 label=ok again',
-      'rewire a3 from=n1',
-      'rewire a3 to="Orders DB"',
-      'rewire a3 from=n1 to="Orders DB"',
-      'insert diamond label=Valid? between n3 "Orders DB"',
       'order n3 back',
       'order n3 above=n4',
       'order n3 below="Orders DB"',
-      'layout type:square style=tree direction=right',
       'layout n3',
       'test n3 label=Login',
       '{"op":"add","element":{"id":"x","type":"text","label":"a b"}}',

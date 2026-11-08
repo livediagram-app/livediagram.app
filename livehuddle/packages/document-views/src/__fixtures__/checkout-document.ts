@@ -2,7 +2,6 @@
 // a 42-element lanes tab, and a 24-element retro tab.
 import {
   createComment,
-  createPinnedArrow,
   createShape,
   createSticky,
   createText,
@@ -10,6 +9,7 @@ import {
   type ShapeKind,
   type Tab,
 } from '@livehuddle/document';
+import { createPinnedArrow } from './build';
 import { checkoutTab, FIXED_EPOCH, pinnedId } from './checkout-tab';
 
 export const CHECKOUT_DOCUMENT = {

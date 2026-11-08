@@ -10,9 +10,9 @@ export function rederiveQuickSwatches(el: Element, theme: ThemeDefinition): Elem
     if (!isQuickSwatchSlot(el.textSwatch)) return el;
     return { ...el, textColor: quickSwatchColor(theme, 'text', el.textSwatch) };
   }
-  if (el.type !== 'shape' && el.type !== 'arrow') return el;
+  if (el.type !== 'shape') return el;
   const stroke = isQuickSwatchSlot(el.strokeSwatch) ? el.strokeSwatch : null;
-  const fill = el.type === 'shape' && isQuickSwatchSlot(el.fillSwatch) ? el.fillSwatch : null;
+  const fill = isQuickSwatchSlot(el.fillSwatch) ? el.fillSwatch : null;
   if (stroke === null && fill === null) return el;
   return {
     ...el,

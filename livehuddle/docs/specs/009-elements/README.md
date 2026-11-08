@@ -5,7 +5,7 @@ Follow the references below only as needed; never upfront.
 - ./images.md - when working on Image element + per-owner gallery: Image element + per-owner R2-backed gallery with dedupe, the `image_refs` reference index and unused-image retention
 - ./image-search.md - when working on Image search: the image picker's Search tab, finding openly licensed pictures on Openverse from the browser, copying a pick into the gallery through the import image pipeline, and the `credit` it leaves on the element
 - ./blueprints/README.md - when implementing or changing an element from its blueprint
-- ./annotations.md - (Leaving livehuddle, Work Tracker #423) when working on Annotations: Palette marker (themed circle + note glyph): hover to read its note, click to edit
+- ./annotations.md - (Gone from livehuddle, Work Tracker #459 part 4) when working on Annotations: Palette marker (themed circle + note glyph): hover to read its note, click to edit
 - ./link-cards.md - when working on Link cards: Bookmark element: URL via the element link, server-side unfurl for title/favicon/OG image
 - ./progress.md - (Leaving livehuddle, Work Tracker #423) when working on Progress elements: Horizontal bar + donut ring shapes showing a 0–100 percentage, with fill animations (fill/pulse/stripes)
 - ./shape-markers.md - (Leaving livehuddle, Work Tracker #423) when working on Shape markers: Status glyph inside a shape (traffic-light dots + checkbox), left of the label; Markers context-menu band

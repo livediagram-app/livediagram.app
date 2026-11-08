@@ -2,19 +2,10 @@
 // (useEditorDrag). Split out of the hook so the per-pointer-move math
 // can be reasoned about (and unit-tested) on its own, away from the
 // stateful React closure: alignment / distribution / snap-target list
-// equality (used to bail the rAF setters out of redundant re-renders),
-// the snap-target reveal computation, and point-to-segment distance for
-// curve-point insertion. All stateless; nothing here touches React.
+// equality (used to bail the rAF setters out of redundant re-renders).
+// All stateless; nothing here touches React.
 
-import {
-  offeredAnchors,
-  anchorPosition,
-  isBoxed,
-  type AlignmentGuide,
-  type Anchor,
-  type DistributionGuide,
-  type Element,
-} from '@livehuddle/document';
+import type { AlignmentGuide, DistributionGuide } from '@livehuddle/document';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
 // Value-equality for two guide lists. Used to bail out of the
@@ -24,12 +15,6 @@ import type { SnapTarget } from '@/components/canvas/Canvas.types';
 // force a redundant re-render of the whole editor tree on top of the
 // per-frame `tick`. Returning the previous reference from the setState
 // updater lets React skip the render entirely (Object.is bail-out).
-// Stable empty exclude-set for arrow-endpoint alignment: an arrow isn't a
-// boxed element so it's never an alignment TARGET, and we want it to line
-// up against every boxed element. Module-level so the per-frame snap /
-// guide calls don't allocate a fresh Set each tick.
-export const NO_ALIGN_EXCLUDE: Set<string> = new Set();
-
 export function sameGuides(a: AlignmentGuide[], b: AlignmentGuide[]): boolean {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
@@ -71,43 +56,4 @@ export function sameTargets(a: SnapTarget[], b: SnapTarget[]): boolean {
     if (x.x !== y.x || x.y !== y.y || x.active !== y.active) return false;
   }
   return true;
-}
-
-// How far outside a shape's bounding box the cursor can be and still reveal
-// that shape's connection points while dragging an arrow endpoint. A little
-// generous so the anchors appear as you approach rather than only on contact.
-const SNAP_TARGET_REVEAL_MARGIN = 44;
-
-// The connection-point markers to show for the current arrow-endpoint drag:
-// every anchor of each shape whose (margin-expanded) box the cursor is over,
-// with the one the endpoint has snapped to flagged active. Arrows have no
-// anchors and are skipped; so is the arrow being dragged.
-export function computeSnapTargets(
-  cursor: { x: number; y: number },
-  elements: Element[],
-  activeElementId: string | null,
-  activeAnchor: Anchor | null,
-): SnapTarget[] {
-  const out: SnapTarget[] = [];
-  for (const el of elements) {
-    if (!isBoxed(el)) continue;
-    const m = SNAP_TARGET_REVEAL_MARGIN;
-    if (
-      cursor.x < el.x - m ||
-      cursor.x > el.x + el.width + m ||
-      cursor.y < el.y - m ||
-      cursor.y > el.y + el.height + m
-    ) {
-      continue;
-    }
-    for (const anchor of offeredAnchors(el)) {
-      const p = anchorPosition(el, anchor);
-      out.push({
-        x: p.x,
-        y: p.y,
-        active: el.id === activeElementId && anchor === activeAnchor,
-      });
-    }
-  }
-  return out;
 }

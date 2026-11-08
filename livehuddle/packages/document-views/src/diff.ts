@@ -1,7 +1,7 @@
 // What changed between two reads of a tab (docs/specs/024-agents/blueprints/document-views.md "diff",
 // VW36), in the outline's terms. livediagram's CLI computes it from the tab it cached; no livehuddle door serves it.
 import type { DiffView, ViewDoor } from '@livehuddle/api-schema';
-import { STYLE_KEYS, type Element, type Endpoint, type Tab } from '@livehuddle/document';
+import { STYLE_KEYS, type Element, type Tab } from '@livehuddle/document';
 import { attributesOf } from './attributes';
 import {
   fitLines,
@@ -10,7 +10,6 @@ import {
   type ViewResult,
 } from '@liveworkspace/document-views/budget';
 import { LABEL_CUT_CHARS } from './constants';
-import { edgeText, endText, type ViewEdge } from './edges';
 import {
   boxOf,
   fieldOf,
@@ -79,26 +78,6 @@ function threadState(el: Element): string {
     : `${thread.comments.length} ${thread.resolved ? 'resolved' : 'open'}`;
 }
 
-// Two reads have two ref tables: one added id can lengthen another's ref. So changes compare ids, and refs are
-// only how a change prints.
-const endpointKey = (end: Endpoint): string =>
-  end.kind === 'pinned'
-    ? `pinned ${end.elementId}`
-    : end.kind === 'on-arrow'
-      ? `arrow ${end.arrowId}`
-      : `free ${end.x},${end.y}`;
-
-// A printed arrow's edge; every printed arrow has one.
-function edgeOf(model: ViewModel, id: string): ViewEdge {
-  return model.edges.byArrow.get(id)!;
-}
-
-// `arrow 202b → 7180 "label" [5d21]`.
-function arrowLine(model: ViewModel, id: string): string {
-  const edge = edgeOf(model, id);
-  return `arrow ${endText(edge.from)} → ${edgeText(edge)} [${edge.ref}]`;
-}
-
 function changesOf(before: ViewModel, after: ViewModel, a: Element, b: Element): Change[] {
   const changes: Change[] = [];
   const add = (
@@ -133,14 +112,6 @@ function changesOf(before: ViewModel, after: ViewModel, a: Element, b: Element):
   const [threadA, threadB] = [threadState(a), threadState(b)];
   if (threadA !== threadB)
     add('comments', `comments ${threadA} → ${threadB}`, threadA, threadB, ['commentThread']);
-  if (a.type === 'arrow' && b.type === 'arrow') {
-    const [edgeA, edgeB] = [edgeOf(before, a.id), edgeOf(after, b.id)];
-    for (const end of ['from', 'to'] as const) {
-      if (endpointKey(a[end]) === endpointKey(b[end])) continue;
-      const [was, now] = [endText(edgeA[end]), endText(edgeB[end])];
-      add(end, `${end} ${was} → ${now}`, was, now, [end]);
-    }
-  }
   const [boxA, boxB] = [boxOf(a), boxOf(b)];
   if (boxA !== null && boxB !== null) {
     if (boxA.x !== boxB.x || boxA.y !== boxB.y) {
@@ -186,13 +157,12 @@ function elementLine(model: ViewModel, el: Element): string {
   return `${model.kindOf(el)} ${model.refs.refOf(el.id)}${label === null ? '' : ` ${jsonString(label, LABEL_CUT_CHARS)}`}`;
 }
 
+// A stored arrow (a retired element, part 4 of the element engine) prints like any other: `+ ? arrow ref`.
 function addedLine(model: ViewModel, el: Element): string {
-  if (el.type === 'arrow') return `+ ${arrowLine(model, el.id)}`;
   return `+ ${elementLine(model, el)}`;
 }
 
 function removedLine(model: ViewModel, el: Element): string {
-  if (el.type === 'arrow') return `- ${arrowLine(model, el.id)}`;
   return `- ${elementLine(model, el)}`;
 }
 

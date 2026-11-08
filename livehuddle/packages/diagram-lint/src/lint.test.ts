@@ -3,6 +3,7 @@ import { computeRefs } from '@livehuddle/document';
 import { arrow, box, frame, lint, tabOf } from './fixtures/build';
 import { lintTab } from './lint';
 
+// Stored arrows ride along as retired elements no check reads (part 4 of the element engine).
 const messy = () =>
   tabOf(
     frame('f', 0, 0, 400, 300),
@@ -10,6 +11,10 @@ const messy = () =>
     box('7f3a2c91-0000-4000-8000-000000000001', 100, 100),
     box('b', 600, 80, { label: 'a' }),
     box('alone', 600, 400),
+    box('long', 200, 300, {
+      label: 'An extremely long label that cannot possibly fit in this small box',
+      textSize: 'md',
+    }),
     arrow('x', 'a', 'b'),
     arrow('y', '7f3a2c91-0000-4000-8000-000000000001', 'b'),
     arrow('gone', 'a', 'missing'),
@@ -22,8 +27,8 @@ describe('lintTab', () => {
 
   it('orders by severity, then code, then reading position, then refs', () => {
     const codes = lint(messy()).findings.map((f) => f.code);
-    expect(codes.indexOf('box-overlap')).toBeLessThan(codes.indexOf('arrow-behind-box'));
-    expect(codes.indexOf('arrow-dangling')).toBeLessThan(codes.indexOf('node-isolated'));
+    expect(codes).toContain('label-overflow');
+    expect(codes.indexOf('label-overflow')).toBeLessThan(codes.indexOf('duplicate-label'));
     const severities = lint(messy()).findings.map((f) => f.severity);
     expect(severities).toEqual(
       [...severities].sort(
@@ -41,15 +46,16 @@ describe('lintTab', () => {
     expect(lint(tab).findings.some((f) => f.refs.includes('7f3a'))).toBe(true);
   });
 
-  it('counts by severity and measures overlaps, behind and extent', () => {
+  it('counts by severity and measures extent, with no arrow drawn as one', () => {
     const report = lint(messy());
     expect(report.counts.error).toBe(report.findings.filter((f) => f.severity === 'error').length);
     expect(report.measures.overlaps).toBe(
       report.findings.filter((f) => f.code === 'box-overlap').length,
     );
     expect(report.measures.extent).toEqual({ width: 720, height: 460 });
-    expect(report.measures.boxes).toBe(4);
-    expect(report.measures.arrows).toBe(2);
+    expect(report.measures.boxes).toBe(5);
+    expect(report.measures).toMatchObject({ arrows: 0, crossings: 0, behind: 0, overlaps: 0 });
+    expect(report.skipped).toEqual({ crossings: false });
   });
 
   it('skips boxes without a usable rect (N6)', () => {
@@ -68,7 +74,9 @@ describe('lintTab', () => {
     for (const value of Object.values(fields))
       expect(['number', 'boolean', 'string'].includes(typeof value)).toBe(true);
     expect(JSON.stringify(fields)).not.toMatch(/alone|7f3a/);
-    expect(fields['box-overlap']).toBe(1);
+    // The long label and the id printed as a label.
+    expect(fields['label-overflow']).toBe(2);
+    expect(fields['duplicate-label']).toBe(1);
   });
 
   it('logs to the console by default', () => {

@@ -1,12 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  createAnnotation,
-  createShape,
-  type BoxedElement,
-  type Element,
-} from '@livehuddle/document';
+import { createShape, type BoxedElement, type Element } from '@livehuddle/document';
+import { storedAnnotation } from '@/test/retired-elements';
 import { MultiPlacementSections } from './MultiPlacementSections';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
@@ -35,8 +31,9 @@ function menu(sel: Element[]) {
   );
 }
 
+// A stored annotation marker is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
 const note = (id: string, rotation?: number) =>
-  ({ ...createAnnotation(0, 0), id, ...(rotation ? { rotation } : {}) }) as Element;
+  storedAnnotation(id, { x: 0, y: 0, width: 44, height: 44 }, rotation ? { rotation } : {});
 const square = (id: string, rotation: number) =>
   ({ ...createShape('square', 0, 0), id, rotation }) as Element;
 

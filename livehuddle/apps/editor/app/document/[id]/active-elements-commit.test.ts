@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, Tab } from '@livehuddle/document';
+import type { Element, RetiredArrowElement, Tab } from '@livehuddle/document';
 import { activeElementsCommit } from './active-elements-commit';
 
 // Shift-chaining arrows (docs/specs/008-canvas/canvas-and-palette.md quick-connect): the release lands the
 // drawn arrow (a queued tick) and, in the same event, the next arrow is committed. React applies the queued
 // updates in order, so the commit must build on the landed arrow, never on the last render.
-const arrow = (id: string, x: number): ArrowElement => ({
+const arrow = (id: string, x: number): RetiredArrowElement => ({
   id,
   type: 'arrow',
   from: { kind: 'pinned', elementId: 'src', anchor: 'e' },
@@ -13,7 +13,7 @@ const arrow = (id: string, x: number): ArrowElement => ({
 });
 const tabs = (els: Element[]): Tab[] => [{ id: 't', name: 'T', elements: els }];
 const toX = (ts: Tab[], id: string) =>
-  ((ts[0]!.elements.find((e) => e.id === id) as ArrowElement).to as { x: number }).x;
+  ((ts[0]!.elements.find((e) => e.id === id) as RetiredArrowElement).to as { x: number }).x;
 
 describe('activeElementsCommit', () => {
   it('keeps the landed arrow when the next one is added in the same event', () => {

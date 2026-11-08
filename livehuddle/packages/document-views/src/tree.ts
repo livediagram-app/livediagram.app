@@ -1,7 +1,8 @@
 // The outline's elements (docs/specs/024-agents/blueprints/document-views.md "The view model"): each printed
-// non-arrow element at the top level, in reading order, bare strokes folded. Nothing nests: the layout containers
-// that once held elements are retired kinds that hold nothing (docs/specs/002-project-scope/not-in-livehuddle.md
-// "The element engine", part 3), so a stored lane, stack or boundary prints beside what sat on it.
+// element at the top level, in reading order, bare strokes folded. Nothing nests: the layout containers that once
+// held elements are retired kinds that hold nothing (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+// engine", part 3), so a stored lane, stack or boundary prints beside what sat on it. A stored arrow is a retired
+// element too (part 4): it prints on its own line like any other, and no arrow is an edge.
 import type { Element } from '@livehuddle/document';
 import { freehandRuns, type FreehandRun } from './freehand-runs';
 import { readingOrder, type Placed } from './reading-order';
@@ -16,17 +17,17 @@ export function isViewRun(item: ViewItem): item is FreehandRunItem {
   return 'run' in item;
 }
 
-// `printed` is in array order; arrows are left out.
-export function buildViewTree(
-  printed: readonly Element[],
-  arrowEndIds: ReadonlySet<string>,
-): ViewTree {
+// No arrow ends on a stroke any more, so every bare stroke can fold.
+const NO_ARROW_ENDS: ReadonlySet<string> = new Set();
+
+// `printed` is in array order.
+export function buildViewTree(printed: readonly Element[]): ViewTree {
   const nodes = new Map<string, ViewNode>();
   printed.forEach((el, index) => {
-    if (el.type === 'arrow' || nodes.has(el.id)) return;
+    if (nodes.has(el.id)) return;
     nodes.set(el.id, { el, index });
   });
-  return { roots: freehandRuns(readingOrder([...nodes.values()]), arrowEndIds), nodes };
+  return { roots: freehandRuns(readingOrder([...nodes.values()]), NO_ARROW_ENDS), nodes };
 }
 
 // Every node of `items` in reading order, runs unfolded into their strokes.

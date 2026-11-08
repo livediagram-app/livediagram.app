@@ -1,6 +1,6 @@
 # Arrow anchors and auto-rebind
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/008-canvas/arrow-anchors.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/008-canvas/arrow-anchors.md) is the one to read and change. livehuddle has no tool, gesture, setter or renderer for it: a stored arrow or line is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as a faint dashed line between its ends with its placeholder, named **Arrow** or **Line**, on the middle, which an Editor can delete. It never moves, and nothing attaches to it. The rest of this page describes it as livediagram has it.
 
 Where a pinned arrow end may sit on a boxed element, and how that place changes when elements move.
 The arrow element itself (endpoints, styles, labels, handles) is specified in
@@ -233,7 +233,7 @@ After the re-evaluation, two pinned ends on the **same side of the same shape** 
 
 ## Implementation
 
-- Vocabulary, anchors per shape and geometry: `packages/document/src/anchors.ts`, `shape-outline.ts`,
+- Vocabulary, anchors per shape and geometry: `livediagram/packages/document/src/anchors.ts`, `shape-outline.ts`,
   `svg-path-outline.ts`, `geometry.ts`.
 - Creation choice: `bestAnchorTowards` in `anchor-choice.ts`.
 - Fan: `arrow-endpoint-spread.ts`.

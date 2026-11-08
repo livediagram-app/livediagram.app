@@ -2,15 +2,15 @@
 // the subset of fields that should be copied onto a target of the
 // same kind. Pure functions split out from `applyFormatFromSource`
 // in editor-page.tsx so each list is the single source of truth for
-// "what does the format painter actually paint?" and the boxed /
-// arrow projections are testable in isolation.
+// "what does the format painter actually paint?" and the boxed
+// projection is testable in isolation.
 //
 // Why explicit per-field listing instead of "spread the source":
 // some fields (id, type, shape, label, link, commentThread,
 // position x / y) are identity or content and must NOT be
 // copied. A spread that omitted those would still drag along future
 // fields silently. Listing each painted field by name makes a future
-// addition to BoxedElement / ArrowElement an active, deliberate
+// addition to BoxedElement an active, deliberate
 // choice ("does this belong on the painter?") instead of a passive,
 // silent one ("the painter just started copying my new field too").
 //
@@ -29,7 +29,6 @@ import {
   shapeAnimationsFor,
   supportsAccentEdge,
   type AnimationSpeed,
-  type ArrowElement,
   type BorderRadius,
   type BorderStroke,
   type BorderStyle,
@@ -205,49 +204,6 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
   return out;
 }
 
-// Arrow painter projection. Arrows carry stroke + opacity + arrowhead
-// shape + line-pattern preset, plus label text styling (arrow labels
-// store formatting element-level only — commitLabel drops richText for
-// arrows — so the flags below capture the whole label look).
-export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement> {
-  return {
-    strokeColor: source.strokeColor,
-    strokeSwatch: source.strokeSwatch,
-    strokeWidth: source.strokeWidth,
-    strokeStyle: source.strokeStyle,
-    opacity: source.opacity,
-    arrowEnds: source.arrowEnds,
-    // Arrowhead + path-shape presets, so painting copies the whole look
-    // (a curved dashed UML connector), not just colour + ends.
-    arrowheadColor: source.arrowheadColor,
-    arrowheadSize: source.arrowheadSize,
-    arrowheadShape: source.arrowheadShape,
-    // An ER relationship's own start head (one, many...); absent, the start takes the end's shape.
-    arrowheadStartShape: source.arrowheadStartShape,
-    arrowStyle: source.arrowStyle,
-    // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md): a look choice like the rest. Absent
-    // means on, so a default source turns it back on for the target.
-    routeBehind: source.routeBehind,
-    // Flow animation (docs/specs/008-canvas/canvas-and-palette.md): marching dashes / travelling dot.
-    flow: source.flow,
-    flowSpeed: source.flowSpeed,
-    flowRepeat: source.flowRepeat,
-    // Label text styling (docs/specs/008-canvas/canvas-and-palette.md). Arrows don't carry alignment /
-    // padding (the label rides the line), but do carry the same text
-    // switches + size + colour + font as boxed labels, and the
-    // caption plate behind the label.
-    textColor: source.textColor,
-    textSize: source.textSize,
-    textBold: source.textBold,
-    textItalic: source.textItalic,
-    textUnderline: source.textUnderline,
-    textStrikethrough: source.textStrikethrough,
-    labelFill: source.labelFill,
-    font: source.font,
-    finish: source.finish,
-  };
-}
-
 // Element-level text field -> the run attribute that overrides it per
 // character. Painting the field has to drop the attribute from the
 // target's runs, or the runs keep winning and the paint looks like it
@@ -312,10 +268,7 @@ export function fitPaintToTarget(
   return out;
 }
 
-export function applyPaint<T extends BoxedElement | ArrowElement>(
-  target: T,
-  patch: Partial<BoxedElement> | Partial<ArrowElement>,
-): T {
+export function applyPaint<T extends BoxedElement>(target: T, patch: Partial<BoxedElement>): T {
   const next: Record<string, unknown> = { ...target };
   const painted = patch as Record<string, unknown>;
   for (const [field, value] of Object.entries(painted)) {

@@ -6,9 +6,6 @@ export const EDIT_OPERATION_NAMES = [
   'set',
   'rm',
   'move',
-  'connect',
-  'rewire',
-  'insert',
   'order',
   'layout',
   'test',
@@ -19,13 +16,10 @@ export type EditOperationName = (typeof EDIT_OPERATION_NAMES)[number];
 export const OPERATION_MEMBERS: Readonly<Record<EditOperationName, readonly string[]>> = {
   add: ['op', 'kind', 'id', 'fields', 'place', 'element'],
   set: ['op', 'target', 'fields', 'all'],
-  rm: ['op', 'target', 'all', 'keepArrows'],
+  rm: ['op', 'target', 'all'],
   move: ['op', 'target', 'place', 'by', 'all'],
-  connect: ['op', 'from', 'to', 'id', 'fields', 'again'],
-  rewire: ['op', 'target', 'from', 'to'],
-  insert: ['op', 'kind', 'id', 'fields', 'between'],
   order: ['op', 'target', 'to', 'above', 'below'],
-  layout: ['op', 'target', 'style', 'direction'],
+  layout: ['op', 'target'],
   test: ['op', 'target', 'fields'],
 };
 
@@ -46,27 +40,15 @@ export const SELECTOR_KEYS = ['type', 'shape', 'from', 'to', 'downstream', 'upst
 // The line form's flag words and the JSON members they set.
 export const FLAG_MEMBERS = {
   all: 'all',
-  'keep-arrows': 'keepArrows',
-  again: 'again',
 } as const;
 export type FlagWord = keyof typeof FLAG_MEMBERS;
 
 // Words that always read as keywords, never as refs (EO10).
-export const RESERVED_WORDS: ReadonlySet<string> = new Set([
-  'selected',
-  'all',
-  'again',
-  'keep-arrows',
-  'between',
-  'front',
-  'back',
-]);
+export const RESERVED_WORDS: ReadonlySet<string> = new Set(['selected', 'all', 'front', 'back']);
 
-export const LAYOUT_STYLES = ['flow', 'tree'] as const;
-export const LAYOUT_DIRECTIONS = ['down', 'right'] as const;
 export const ORDER_ENDS = ['front', 'back'] as const;
 
-// The layout engine's rank gap (EO23); larger reads as a separate drawing.
+// The layout sweep's row gap (EO23); larger reads as a separate drawing.
 export { LAYER_GAP as PLACEMENT_GAP } from '@livehuddle/document';
 export const PLACEMENT_GAP_MAX = 2000;
 // Below it boxes read as touching (EO32).

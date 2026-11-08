@@ -2,7 +2,8 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { createArrow, createShape, type Element, type Tab } from '@livehuddle/document';
+import { createShape, type Element, type Tab } from '@livehuddle/document';
+import { storedArrow } from '@/test/retired-elements';
 import { resetDragPreviewForTests } from '@/lib/drag-preview';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
@@ -35,7 +36,7 @@ const BOARD = (): Element[] => [
   shape('square', 'nested-member', 160, 220, 30, 30),
   // A larger boundary that only overlaps: stays.
   shape('boundary', 'neighbour', 250, 250, 300, 300),
-  { ...createArrow(120, 120, 200, 140), id: 'loose' },
+  storedArrow('loose', { x: 120, y: 120 }, { x: 200, y: 140 }),
 ];
 
 function harness(elements: Element[]) {

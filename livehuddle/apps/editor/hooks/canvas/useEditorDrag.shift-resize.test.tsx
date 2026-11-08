@@ -2,12 +2,9 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  createAnnotation,
   createComponent,
-  createFreehand,
   createImage,
   createLinkCard,
-  createPath,
   createShape,
   createSticky,
   createText,
@@ -44,31 +41,6 @@ const KINDS: [string, () => Element][] = [
   ['text', () => createText(0, 0)],
   ['image', () => createImage(0, 0)],
   ['link card', () => createLinkCard(0, 0)],
-  ['annotation', () => createAnnotation(0, 0)],
-  [
-    'freehand stroke',
-    () =>
-      createFreehand(
-        [
-          { x: 0, y: 0 },
-          { x: 90, y: 30 },
-          { x: 160, y: 70 },
-        ],
-        false,
-      ),
-  ],
-  [
-    'path',
-    () =>
-      createPath(
-        [
-          { x: 0, y: 0, mode: 'corner' },
-          { x: 120, y: 40, mode: 'corner' },
-          { x: 60, y: 90, mode: 'corner' },
-        ],
-        false,
-      ),
-  ],
   ['avatar component', () => createComponent('avatar', 200, 100)],
 ];
 

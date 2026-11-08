@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyElementDelta } from './element-deltas';
 import { computeRefs, isSlugId, resolveRef, slugIdFor } from './element-refs';
-import { createPinnedArrow, createShape } from './factories';
+import { createShape } from './factories';
 import type { Element } from './index';
 import { isValidTab } from './validate';
 
@@ -29,7 +29,13 @@ describe('slug ids round trip (R7)', () => {
     id: mint('Launch checklist', 'square'),
     label: 'Launch checklist',
   };
-  const arrow = { ...createPinnedArrow(cache.id, 'e', twin.id, 'w'), id: mint('', 'arrow') };
+  // A stored arrow (a retired element, ./retired-arrow) keeps its slug id too.
+  const arrow: Element = {
+    id: mint('', 'arrow'),
+    type: 'arrow',
+    from: { kind: 'pinned', elementId: cache.id, anchor: 'e' },
+    to: { kind: 'pinned', elementId: twin.id, anchor: 'w' },
+  };
   const tab = { id: 'tab-1', name: 'Agent built', elements: [cache, twin, list, arrow] };
 
   it('mints slug ids, -2 on a clash, arrow for an unlabelled arrow', () => {

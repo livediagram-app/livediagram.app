@@ -1,4 +1,4 @@
-// Headless SVG emitters for the shape silhouettes and freehand sketches the
+// Headless SVG emitters for the shape silhouettes the
 // generic renderer used to flatten into plain rectangles. The silhouettes
 // come from the shared geometry table (shape-geometry.ts), the same data the
 // editor's ShapeSvgOverlay draws from, mapped into the element box
@@ -8,15 +8,9 @@
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/model-core/border-style';
 import { actorFigureRect } from './actor-figure';
 import { finishBorderStroke, type Finish } from './finish';
-import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
-import { isCompoundPath, pathElementD } from './path-element';
+import type { BoxedElement, ShapeKind } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { boxFit, fitShapePart } from './svg-shape-fit';
-import { catmullRomToBezierPath } from './polyline';
-import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
-import { isFilledPenLoop, penLoopFillPath } from './stroke-loop-fill';
-import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
-import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
 import {
   SHAPE_DETAIL_STROKE_PX,
   shapeGeometry,
@@ -135,85 +129,4 @@ export function svgShapeSilhouette(
   return `<g data-silhouette="${el.shape}">${geometry.parts
     .map((part) => svgShapePart(fitShapePart(part, fit), fill, stroke, strokeWidth, dash))
     .join('')}</g>`;
-}
-
-// A freehand sketch's real path (normalised points scaled to the box), drawn
-// the way FreehandSvg draws it on the canvas: a pen stroke through the same
-// Catmull-Rom smoothing, a polygon-tool path (docs/specs/008-canvas/polygon-tool.md) with its straight
-// edges, and nothing for a lone point. Closed paths fill like the canvas;
-// open ones render stroke-only.
-export function svgFreehandShape(
-  el: FreehandElement,
-  stroke: string,
-  fill: string,
-  finish: Finish = 'flexible',
-): string {
-  if (freehandStrokePoints(el).count < 2) return '';
-  // A whiteboard pen stroke (docs/specs/023-draw-mode/draw-mode.md "Pens"): the filled
-  // perfect-freehand outline FreehandSvg draws, from the same function (pen-stroke.ts).
-  if (isPenStroke(el)) {
-    const ink = penStrokePath(freehandPenStroke(el, { x: el.x, y: el.y }), r2);
-    // A marker loop the Fill tool closed (docs/specs/023-draw-mode/fill-tool.md "Export"): its fill
-    // under its ink, along the centre line, as the canvas draws it.
-    const under = isFilledPenLoop(el)
-      ? `<path d="${penLoopFillPath(el, r2)}" fill="${xmlEscape(fill)}" stroke="none"/>`
-      : '';
-    return `${under}<path d="${ink}" fill="${xmlEscape(stroke)}" stroke="none"/>`;
-  }
-  const pts = freehandCanvasPoints(el);
-  const d = el.straightEdges
-    ? pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${r2(p.x)} ${r2(p.y)}`).join(' ') +
-      (el.closed ? ' Z' : '')
-    : catmullRomToBezierPath(pts, el.closed, r2);
-  // Highlighter recipe (docs/specs/008-canvas/highlighter.md): the marker owns width + translucency
-  // (a fixed wide round stroke, multiply blend, never filled); the
-  // border presets don't apply. Mirrors FreehandSvg in the editor so
-  // thumbnails / MCP renders match the canvas.
-  if (el.pen === 'highlighter') {
-    return (
-      `<path d="${d}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${r2(el.penWidth ?? 14)}"` +
-      ` stroke-opacity="0.45" style="mix-blend-mode:multiply"` +
-      ` stroke-linecap="round" stroke-linejoin="round"/>`
-    );
-  }
-  // A recorded pen width (a whiteboard pen, docs/specs/023-draw-mode/draw-mode.md) wins over the preset; a
-  // Polygon-tool outline's unset width follows its finish (Professional's Thin).
-  const strokeWidth = isPolygonOutline(el)
-    ? polygonStrokePx(el, finish)
-    : (el.penWidth ??
-      (BORDER_STROKE_PX[
-        (el as { strokeWidth?: keyof typeof BORDER_STROKE_PX }).strokeWidth ?? 'medium'
-      ] ||
-        2));
-  const dash =
-    BORDER_DASH_ARRAY[
-      (el as { strokeStyle?: keyof typeof BORDER_DASH_ARRAY }).strokeStyle ?? 'solid'
-    ] ?? undefined;
-  const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
-  return (
-    `<path d="${d}" fill="${fillAttr}" stroke="${xmlEscape(stroke)}" stroke-width="${strokeWidth}"` +
-    `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
-  );
-}
-
-// A path (docs/specs/023-draw-mode/path-tool.md): the headless twin of the canvas PathSvg, the same
-// curve from the same function at the border preset width, filled only when closed.
-export function svgPathElementShape(
-  el: PathElement,
-  stroke: string,
-  fill: string,
-  finish: Finish = 'flexible',
-): string {
-  if (el.nodes.length < 2) return '';
-  const d = pathElementD(el, undefined, r2);
-  // An unset width follows the finish (Professional's Thin).
-  const width = polygonStrokePx({ strokeWidth: el.strokeWidth }, finish);
-  const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'];
-  const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
-  // A combined shape's holes show through (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments").
-  const rule = isCompoundPath(el) ? ' fill-rule="evenodd"' : '';
-  return (
-    `<path d="${d}" fill="${fillAttr}"${rule} stroke="${xmlEscape(stroke)}" stroke-width="${width}"` +
-    `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
-  );
 }

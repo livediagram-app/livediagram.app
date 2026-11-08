@@ -1,10 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import {
-  type FreehandElement,
-  type Tab,
-  TAB_SCHEMA_VERSION,
-  type ExportedTabEnvelope,
-} from '@livehuddle/document';
+import { describe, expect, it } from 'vitest';
+import { type Tab, TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from '@livehuddle/document';
 import { parseImportedTab } from './import-tab';
 
 // A minimal but valid tab payload.
@@ -116,8 +111,9 @@ describe('parseImportedTab — stroke points (docs/specs/006-document/stroke-poi
     expect(TAB_SCHEMA_VERSION).toBe(2);
   });
 
-  it('packs the former { nx, ny } strokes of a version 1 file', () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
+  // A stroke is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4): it
+  // imports exactly as it was stored, its points never rewritten.
+  it('keeps the { nx, ny } stroke of a version 1 file as it came', () => {
     const stroke = {
       id: 'f1',
       type: 'freehand',
@@ -136,9 +132,9 @@ describe('parseImportedTab — stroke points (docs/specs/006-document/stroke-poi
     );
     expect(result.ok).toBe(true);
     if (result.ok) {
-      const el = result.tab.elements[0] as FreehandElement;
-      expect(el.type).toBe('freehand');
-      expect(typeof el.packedPoints).toBe('string');
+      const el = result.tab.elements[0]!;
+      expect(el).toMatchObject({ type: 'freehand', points: stroke.points });
+      expect(el).not.toHaveProperty('packedPoints');
     }
   });
 });

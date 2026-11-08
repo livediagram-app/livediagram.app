@@ -1,88 +1,33 @@
-// `layout <selector> [style=flow|tree] [direction=down|right]`
-// (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO38): the selected boxes and the
-// arrows between them are laid out from the selection's top-left, every box keeping its size; boxes
-// no arrow joins are swept into rows below (from the top-left when none is joined). Nothing outside
-// the selection moves.
+// `layout <selector>` (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO38): the selected boxes are
+// swept into rows from the selection's top-left, every box keeping its size. No arrow joins anything since part 4 of
+// the element engine (docs/specs/002-project-scope/not-in-livehuddle.md), so the layered layout went with them and the
+// sweep is the whole layout. Nothing outside the selection moves.
 
 import type { EditRejection } from '@livehuddle/api-schema';
-import {
-  autoLayoutElements,
-  flowDirectionOf,
-  sweepEdgelessNodes,
-  type BoxedElement,
-  type Element,
-  type ElementId,
-} from '@livehuddle/document';
+import { isBoxed, sweepEdgelessNodes, type BoxedElement } from '@livehuddle/document';
 import { shifted } from '../placement';
 import { resolveMembers } from '../selectors';
-import { currentElements, moveElement, putElement, type EditState, type LaidOut } from '../state';
+import { moveElement, type EditState } from '../state';
 import type { LayoutOperation } from '../types';
 
-const DIRECTIONS = { down: 'TB', right: 'LR' } as const;
-
-// The selection's boxes laid out, the arrows between them re-anchored, in the given order.
-export function laidOut(
-  boxes: readonly BoxedElement[],
-  arrows: readonly Element[],
-  style: LaidOut['style'],
-  direction: 'TB' | 'LR' | undefined,
-): Element[] {
+// The selection's boxes swept into rows at its top-left, in the given order.
+export function laidOut(boxes: readonly BoxedElement[]): BoxedElement[] {
   const originX = Math.min(...boxes.map((el) => el.x));
   const originY = Math.min(...boxes.map((el) => el.y));
-  const subset = [...boxes, ...arrows];
-  const placed = autoLayoutElements(subset, {
-    style,
-    ...(direction ? { direction } : {}),
-    originX,
-    originY,
-    fixedSizeIds: new Set(boxes.map((el) => el.id)),
-  });
-  const swept = sweepEdgelessNodes(placed);
-  // With no arrow among them the sweep starts at 0,0: it belongs at the selection's top-left.
-  return arrows.length > 0 ? swept : swept.map((el) => shifted(el, originX, originY));
-}
-
-// Lays out `boxes` and the arrows between them in place, reporting each box as laid out.
-export function layOut(
-  state: EditState,
-  boxes: readonly BoxedElement[],
-  style: LaidOut['style'],
-  direction: 'down' | 'right' | undefined,
-  operation: number,
-): void {
-  const ids = new Set<ElementId>(boxes.map((el) => el.id));
-  const arrows = currentElements(state).filter(
-    (el) =>
-      el.type === 'arrow' &&
-      el.from.kind === 'pinned' &&
-      el.to.kind === 'pinned' &&
-      ids.has(el.from.elementId) &&
-      ids.has(el.to.elementId),
-  );
-  // A flow detects its axis when none is asked; a tree runs down unless asked.
-  const asked = direction ? DIRECTIONS[direction] : undefined;
-  const axis = style === 'flow' ? (asked ?? flowDirectionOf([...boxes, ...arrows])) : asked;
-  const how: LaidOut = axis ? { style, direction: axis === 'TB' ? 'down' : 'right' } : { style };
-  for (const el of laidOut(boxes, arrows, style, axis)) {
-    if (el.type === 'arrow') putElement(state, el, operation);
-    else moveElement(state, el, operation, 'laid out', { layout: how });
-  }
-  state.log('[edit-ops] laid-out', {
-    operation,
-    boxes: boxes.length,
-    arrows: arrows.length,
-    style,
-  });
+  // The sweep starts at 0,0: the rows belong at the selection's top-left.
+  return sweepEdgelessNodes([...boxes]).map((el) => shifted(el, originX, originY) as BoxedElement);
 }
 
 export function applyLayout(
   state: EditState,
-  { target, style = 'flow', direction }: LayoutOperation,
+  { target }: LayoutOperation,
   operation: number,
 ): EditRejection | null {
   const resolved = resolveMembers(state, [target], operation);
   if ('rejection' in resolved) return resolved.rejection;
-  const boxes = resolved.els.filter((el): el is BoxedElement => el.type !== 'arrow');
-  if (boxes.length > 0) layOut(state, boxes, style, direction, operation);
+  const boxes = resolved.els.filter(isBoxed);
+  if (boxes.length === 0) return null;
+  for (const el of laidOut(boxes)) moveElement(state, el, operation, 'laid out');
+  state.log('[edit-ops] laid-out', { operation, boxes: boxes.length });
   return null;
 }

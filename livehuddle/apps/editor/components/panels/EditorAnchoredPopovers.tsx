@@ -3,7 +3,7 @@
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 import dynamic from 'next/dynamic';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
-import { elementActions, isBoxed } from '@livehuddle/document';
+import { elementActions } from '@livehuddle/document';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
@@ -84,21 +84,21 @@ export function EditorAnchoredPopovers() {
 
   // Each popover closes once its element can no longer hold it (deleted, an undo, another tab), rather than staying
   // hidden with its id set and reopening by itself when the element comes back (useCloseVanishedDialogs).
+  // Every element holds them: a box, and a stored arrow on its placeholder card, which carries the arrow's id so the
+  // popovers anchor to it (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4; D28).
   useCloseVanishedDialogs(activeTab.elements, [
-    [commentThreadOpenId, closeComments, isBoxed],
-    [actionPopoverOpenId, closeActionPopover, (el) => isBoxed(el) && !!el.action],
-    [assignActionFor, closeAssignActionDialog, isBoxed],
-    [noteOpenId, closeNote, isBoxed],
+    [commentThreadOpenId, closeComments, () => true],
+    [actionPopoverOpenId, closeActionPopover, (el) => !!el.action],
+    [assignActionFor, closeAssignActionDialog, () => true],
+    [noteOpenId, closeNote, () => true],
   ]);
 
   return (
     <>
       {commentThreadOpenId !== null
         ? (() => {
-            const target = activeTab.elements.find(
-              (el) => el.id === commentThreadOpenId && isBoxed(el),
-            );
-            if (!target || !isBoxed(target)) return null;
+            const target = activeTab.elements.find((el) => el.id === commentThreadOpenId);
+            if (!target) return null;
             const thread = target.commentThread;
             return (
               <CommentThreadPopover
@@ -130,10 +130,8 @@ export function EditorAnchoredPopovers() {
           collaborator deleted it, or its element was removed). */}
       {actionPopoverOpenId !== null
         ? (() => {
-            const target = activeTab.elements.find(
-              (el) => el.id === actionPopoverOpenId && isBoxed(el),
-            );
-            if (!target || !isBoxed(target) || !target.action) return null;
+            const target = activeTab.elements.find((el) => el.id === actionPopoverOpenId);
+            if (!target?.action) return null;
             return (
               <ActionPopover
                 elementId={target.id}
@@ -154,10 +152,8 @@ export function EditorAnchoredPopovers() {
           no action, edit (prefilled) when it does. */}
       {assignActionFor !== null
         ? (() => {
-            const target = activeTab.elements.find(
-              (el) => el.id === assignActionFor && isBoxed(el),
-            );
-            if (!target || !isBoxed(target)) return null;
+            const target = activeTab.elements.find((el) => el.id === assignActionFor);
+            if (!target) return null;
             const cardTarget = Array.isArray((target as { actions?: unknown }).actions);
             // Default action name (docs/specs/012-collaboration/assigned-actions.md §2): the element's own text, its
             // label. Null when the element is unlabelled (the field just starts empty).
@@ -211,8 +207,8 @@ export function EditorAnchoredPopovers() {
         : null}
       {noteOpenId !== null
         ? (() => {
-            const target = activeTab.elements.find((el) => el.id === noteOpenId && isBoxed(el));
-            if (!target || !isBoxed(target)) return null;
+            const target = activeTab.elements.find((el) => el.id === noteOpenId);
+            if (!target) return null;
             return (
               <NotePopover
                 elementId={target.id}

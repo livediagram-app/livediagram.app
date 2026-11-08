@@ -2,19 +2,13 @@
 // editor's export pipeline (apps/editor/lib/export-tab.ts) so the SAME element
 // drawing serves both the in-app SVG/PNG export AND the MCP worker's inline
 // render — one renderer, two callers, no DOM. The per-element drawers
-// (svgBoxed / svgArrow / labels) and their pure helpers live here; the in-app
+// (svgBoxed / labels) and their pure helpers live here; the in-app
 // export keeps only its isometric + backdrop-pattern orchestration on top.
 //
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
 
-import {
-  hasShapeSilhouette,
-  scaledPolygonPoints,
-  svgFreehandShape,
-  svgPathElementShape,
-  svgShapeSilhouette,
-} from './svg-render-shapes';
+import { hasShapeSilhouette, scaledPolygonPoints, svgShapeSilhouette } from './svg-render-shapes';
 import { faceFinishOf, finishWobblesArt, isHandDrawn, resolveFinish, type Finish } from './finish';
 import {
   SKETCH_ART_FILTER_ID,
@@ -31,7 +25,9 @@ import { DIAMOND_POINTS } from './shape-geometry';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
 import { isRetiredElement } from './retired-kinds';
-import { svgRetiredElement } from './svg-render-retired';
+import { svgRetiredArrow, svgRetiredElement } from './svg-render-retired';
+import { retiredArrowBounds } from './retired-arrow';
+import { buildElementIndex, type ElementIndex } from './geometry';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
@@ -62,10 +58,6 @@ export {
   type ExportLabel,
   type ExportRun,
 } from './svg-render-labels';
-import { arrowLabelFontStack, svgArrow } from './svg-render-arrows';
-import { arrowLabelPass, arrowRoutePoints, type ArrowLabelPass } from './arrow-label-layout';
-
-export { arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { paintOrder } from './paint-order';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
@@ -119,25 +111,17 @@ import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
 import { rotationOf } from './rotation';
 
-// Bounding box of the visible content. Arrows count via free endpoints; boxed
-// elements via their rectangle. Empty / degenerate tabs default to a page.
-// Arrows count by their drawn route (a bow can swing well outside the boxes
-// it joins) and, when a label pass is given, by their label plates.
-export function contentBounds(
-  elements: Element[],
-  labels?: ArrowLabelPass,
-): { x: number; y: number; w: number; h: number } {
+// Bounding box of the visible content: boxed elements via their rectangle, a stored arrow via its line and
+// placeholder card (./retired-arrow). Empty / degenerate tabs default to a page.
+export function contentBounds(elements: Element[]): { x: number; y: number; w: number; h: number } {
   const points: Point[] = [];
+  // One index for every stored arrow's ends: an array per arrow made this quadratic in the arrows.
+  let index: ElementIndex | null = null;
   for (const el of elements) {
     if (el.type === 'arrow') {
-      points.push(...arrowRoutePoints(el, elements));
-      const l = labels?.layouts.get(el.id);
-      if (l) {
-        points.push(
-          { x: l.center.x - l.width / 2, y: l.center.y - l.height / 2 },
-          { x: l.center.x + l.width / 2, y: l.center.y + l.height / 2 },
-        );
-      }
+      index ??= buildElementIndex(elements);
+      const b = retiredArrowBounds(el, index);
+      points.push({ x: b.x, y: b.y }, { x: b.x + b.width, y: b.y + b.height });
     } else {
       points.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
@@ -221,16 +205,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     // A kind or type livehuddle no longer has (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): its
     // placeholder card, in place of its body, border and label.
     return `<g${opAttr}${rotAttr}>${svgRetiredElement(el, surface, fontFamily)}</g>`;
-  }
-  if (el.type === 'freehand' && shape.kind === 'rect') {
-    // The sketch's actual polyline instead of its bounding box; a Polygon-tool outline drawn by hand in its finish
-    // (docs/specs/008-canvas/finish.md "Polygons").
-    return `<g${opAttr}${rotAttr}>${sketch ?? svgFreehandShape(el, shape.stroke, shape.fill, finish)}</g>`;
-  }
-  if (el.type === 'path' && shape.kind === 'rect') {
-    // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export"), or drawn by hand in its finish
-    // (finish.md "Polygons and paths").
-    return `<g${opAttr}${rotAttr}>${sketch ?? svgPathElementShape(el, shape.stroke, shape.fill, finish)}</g>`;
   }
   if (shape.kind === 'image') {
     shapeStr =
@@ -441,7 +415,7 @@ export function svgShadowDefs(elements: Element[]): string {
 
 // True when svgBoxed draws something the PNG canvas drawers (drawBoxed)
 // can't reproduce natively — the caller then rasterises this element's
-// svgBoxed markup instead. Tables, freehand sketches, shape silhouettes,
+// svgBoxed markup instead. Retired placeholders, shape silhouettes,
 // rotation, and resolved icon art all fall in.
 export function boxedNeedsSvgRaster(
   el: BoxedElement,
@@ -457,7 +431,6 @@ export function boxedNeedsSvgRaster(
   if (supportsShadow(el) && el.shadow) return true;
   // An accent edge (docs/specs/008-canvas/accent-edge.md) is a clipped bar only the SVG draws.
   if (resolvedAccentEdge(el)) return true;
-  if (el.type === 'freehand' || el.type === 'path') return true;
   // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") is the SVG's placeholder
   // card, which the canvas drawers have no drawer for: a stored table or embed would otherwise export as a bare box.
   if (isRetiredElement(el)) return true;
@@ -508,11 +481,7 @@ export function renderElementsToSvg(
   const visible = tab.elements;
   // Shapes something sits on keep a solid fill under Sketch (sketch-backdrop.ts), as on the canvas.
   const backdrops = sketchBackdropIds(visible, tab.finish);
-  // Every caption laid out once, in document order, so labels see each other.
-  const labels = arrowLabelPass(tab.elements, {
-    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
-  });
-  const bounds = contentBounds(visible, labels);
+  const bounds = contentBounds(visible);
   const vbX = bounds.x - padding;
   const vbY = bounds.y - padding;
   const vbW = bounds.w + padding * 2;
@@ -522,6 +491,9 @@ export function renderElementsToSvg(
   // drawn in the ink of the paper it is being exported onto (docs/specs/007-editor/editor-app.md), so a
   // dark canvas exports dark-canvas elements rather than pale ones.
   const surface = canvasSurface(bg);
+  // One index for every stored arrow's ends, built on the first.
+  let index: ElementIndex | null = null;
+  const tabIndex = () => (index ??= buildElementIndex(visible));
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
@@ -534,12 +506,12 @@ export function renderElementsToSvg(
   if (shadowDefs) parts.push(shadowDefs);
   const sketchArtDefs = svgSketchArtDefs(visible, tab.finish);
   if (sketchArtDefs) parts.push(sketchArtDefs);
-  // In the canvas's paint order (docs/specs/006-document/layers.md "Stacking"): arrows and boxes interleave by
-  // array order, so an arrow sent behind a box stays behind it.
+  // In the canvas's paint order (docs/specs/006-document/layers.md "Stacking"): a stored arrow's placeholder
+  // interleaves with the boxes by array order, as on the canvas.
   parts.push(
     ...paintOrder(tab.elements).map((el) =>
       el.type === 'arrow'
-        ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible, bg, tab.finish)
+        ? svgRetiredArrow(el, tabIndex(), surface, exportFontFamily({}, tab.font, tab.finish))
         : svgBoxed(el, {
             resolveImageHref: opts.resolveImageHref,
             resolveIconArt: opts.resolveIconArt,

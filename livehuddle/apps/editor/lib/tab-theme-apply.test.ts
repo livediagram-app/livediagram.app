@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   LABEL_BACKDROP_CONTRAST,
   contrastRatio,
-  type ArrowElement,
   type Element,
   type ShapeElement,
   type Tab,
@@ -21,13 +20,15 @@ const shape = (over: Partial<ShapeElement> = {}): Element => ({
   height: 60,
   ...over,
 });
-const arrow = (over: Partial<ArrowElement> = {}): Element => ({
-  id: 'a',
-  type: 'arrow',
-  from: { kind: 'free', x: 0, y: 0 },
-  to: { kind: 'free', x: 50, y: 0 },
-  ...over,
-});
+// A stored (retired) arrow (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+const arrow = (over: Record<string, unknown> = {}): Element =>
+  ({
+    id: 'a',
+    type: 'arrow',
+    from: { kind: 'free', x: 0, y: 0 },
+    to: { kind: 'free', x: 50, y: 0 },
+    ...over,
+  }) as unknown as Element;
 
 describe('withThemeApplied', () => {
   it('records the theme and its backdrop on a tab that had none', () => {
@@ -37,7 +38,7 @@ describe('withThemeApplied', () => {
     expect(out.backgroundColor).toBe(forest.backgroundColor);
   });
 
-  it('keeps a colour the user set, and re-tints every arrow', () => {
+  it('keeps a colour the user set, and leaves a stored arrow as it is', () => {
     const t = {
       id: 't',
       name: 'T',
@@ -46,7 +47,7 @@ describe('withThemeApplied', () => {
     } as Tab;
     const out = withThemeApplied(t, 'forest');
     expect((out.elements[0] as ShapeElement).fillColor).toBe('#123456');
-    expect((out.elements[1] as ArrowElement).strokeColor).not.toBe('#654321');
+    expect(out.elements[1]).toEqual(t.elements[1]);
   });
 
   it('hard-resets a tab whose previous theme no longer resolves (an id the catalogue no longer knows)', () => {

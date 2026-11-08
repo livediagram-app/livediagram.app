@@ -1,14 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { parseStrokePoints } from '@livehuddle/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
-// Every tab the api receives runs the stored-tab migration before validation
-// (docs/specs/015-api/api.md "The persistence boundary", docs/specs/006-document/stroke-points.md
-// "Migration of stored strokes"): a stroke in the former `{ nx, ny }` shape, from a browser loaded
-// before a deploy, an API-token script or a Google Drive copy, is stored packed, never refused.
+// A stroke is a retired element since part 4 of the element engine (docs/specs/002-project-scope/not-in-livehuddle.md
+// "The element engine"): it keeps every field it stored. A stroke in the former `{ nx, ny }` shape, from a browser
+// loaded before a deploy, an API-token script or a Google Drive copy, is stored as it came, never refused and no
+// longer packed.
 
 const legacyStroke = {
   id: 'f1',
@@ -36,21 +35,14 @@ function storedElements(sql: DatabaseSync, tabId: string): Record<string, unknow
   return (JSON.parse(row!.data as string) as { elements: Record<string, unknown>[] }).elements;
 }
 
-function expectPacked(el: Record<string, unknown>) {
-  expect(el).not.toHaveProperty('points');
-  expect(el).not.toHaveProperty('pressures');
-  const parsed = parseStrokePoints(el.packedPoints);
-  expect(parsed.ok).toBe(true);
-  if (parsed.ok) {
-    expect(parsed.points.count).toBe(3);
-    expect(parsed.points.pressures).not.toBeNull();
-  }
+function expectAsStored(el: Record<string, unknown>) {
+  expect(el).toEqual(legacyStroke);
 }
 
 afterEach(() => vi.restoreAllMocks());
 
-describe('stroke points on the way in', () => {
-  it('packs a former-shape stroke in a created document', async () => {
+describe('a stored stroke on the way in', () => {
+  it('keeps a former-shape stroke as stored in a created document', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = sqliteD1();
     const res = await call(db, 'POST', '/api/documents', {
@@ -59,10 +51,10 @@ describe('stroke points on the way in', () => {
       tabs: [{ id: 't1', name: 'Board', elements: [legacyStroke] }],
     });
     expect(res.status).toBe(201);
-    expectPacked(storedElements(db.sql, 't1')[0]!);
+    expectAsStored(storedElements(db.sql, 't1')[0]!);
   });
 
-  it('packs a former-shape stroke in a saved tab', async () => {
+  it('keeps a former-shape stroke as stored in a saved tab', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = sqliteD1();
     await call(db, 'POST', '/api/documents', { id: 'D', name: 'Board' });
@@ -72,20 +64,21 @@ describe('stroke points on the way in', () => {
       elements: [legacyStroke],
     });
     expect(res.status).toBe(200);
-    expectPacked(storedElements(db.sql, 't1')[0]!);
+    expectAsStored(storedElements(db.sql, 't1')[0]!);
   });
 
-  it('still refuses a stroke that is neither shape', async () => {
+  it('keeps a stroke whose packed points do not read, as stored: nothing draws them now', async () => {
     const db = sqliteD1();
     await call(db, 'POST', '/api/documents', { id: 'D', name: 'Board' });
+    const { points: _points, pressures: _pressures, ...rest } = legacyStroke;
+    const unreadable = { ...rest, packedPoints: 'AQ*=' };
     const res = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
       id: 't1',
       name: 'Board',
-      elements: [
-        { ...legacyStroke, points: undefined, pressures: undefined, packedPoints: 'AQ*=' },
-      ],
+      elements: [unreadable],
     });
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
+    expect(storedElements(db.sql, 't1')[0]).toEqual(unreadable);
   });
 
   it('refuses a body that is not a tab without throwing', async () => {

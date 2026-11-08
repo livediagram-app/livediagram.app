@@ -9,7 +9,8 @@ describe('kindOf', () => {
   it('reads a shape by its kind and anything else by its type', () => {
     expect(kindOf(byId('n6'))).toBe('diamond');
     expect(kindOf(byId('t1'))).toBe('text');
-    expect(kindOf(byId('a1'))).toBe('arrow');
+    // A stored arrow is a retired element (part 4 of the element engine).
+    expect(kindOf(byId('a1'))).toBe('? arrow');
   });
 });
 
@@ -25,8 +26,8 @@ describe('describeElement', () => {
     expect(describeElement(byId('n7'))).toBe('n7  square "Charge card"');
   });
 
-  it('prints an arrow with its ends and label', () => {
-    expect(describeElement(byId('a6'))).toBe('a6  arrow n6→n7 "yes"');
+  it('prints a stored arrow as a retired element, with its label and no ends', () => {
+    expect(describeElement(byId('a6'))).toBe('a6  ? arrow "yes"');
   });
 
   it('prints an unlabelled element without a label', () => {

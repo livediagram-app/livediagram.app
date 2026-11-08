@@ -1,11 +1,4 @@
-import {
-  arrowReferencesAny,
-  createAnnotation,
-  createShape,
-  type ArrowElement,
-  type BoxedElement,
-  type Element,
-} from '@livehuddle/document';
+import { createShape, type BoxedElement, type Element } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import {
   cornerOf,
@@ -87,30 +80,6 @@ describe('nextBounds — aspect-locked corner resize', () => {
   });
 });
 
-const freeArrow: ArrowElement = {
-  type: 'arrow',
-  id: 'a1',
-  from: { kind: 'free', x: 0, y: 0 },
-  to: { kind: 'free', x: 100, y: 100 },
-};
-
-const pinnedFromArrow: ArrowElement = {
-  ...freeArrow,
-  from: { kind: 'pinned', elementId: 'el-from', anchor: 'e' },
-};
-
-const pinnedToArrow: ArrowElement = {
-  ...freeArrow,
-  to: { kind: 'pinned', elementId: 'el-to', anchor: 'w' },
-};
-
-const bothPinnedArrow: ArrowElement = {
-  type: 'arrow',
-  id: 'a2',
-  from: { kind: 'pinned', elementId: 'el-from', anchor: 'e' },
-  to: { kind: 'pinned', elementId: 'el-to', anchor: 'w' },
-};
-
 describe('inheritedSizeFor', () => {
   it('squares a circle, a diamond and a star up from a flat selection, never squashing them', () => {
     const step = { ...createShape('square', 0, 0), width: 160, height: 56 } as BoxedElement;
@@ -154,14 +123,6 @@ describe('inheritedSizeFor', () => {
     expect(inheritedSizeFor(newShape, selected)).toEqual({ width: 300, height: 90 });
   });
 
-  it('keeps an annotation at its fixed marker size regardless of selection (docs/specs/009-elements/annotations.md)', () => {
-    const marker = createAnnotation(0, 0);
-    const bigSelected = { ...createShape('square', 0, 0), width: 400, height: 250 };
-    // A marker added while a big shape is selected must NOT balloon.
-    expect(inheritedSizeFor(marker, bigSelected)).toEqual({ width: 44, height: 44 });
-    expect(inheritedSizeFor(marker, null)).toEqual({ width: 44, height: 44 });
-  });
-
   it('keeps a portal at its intrinsic size regardless of selection (docs/specs/009-elements/portal-element.md)', () => {
     const portal = createShape('portal', 0, 0);
     // A wide banner selected when the portal is dropped must not stretch the
@@ -196,33 +157,6 @@ describe('framesFirst', () => {
   it('returns the same array reference when there are no backdrops (no-op)', () => {
     const arr = [createShape('square', 0, 0)];
     expect(framesFirst(arr)).toBe(arr);
-  });
-});
-
-describe('arrowReferencesAny', () => {
-  it('returns false for an arrow with no pinned endpoints', () => {
-    expect(arrowReferencesAny(freeArrow, new Set(['el-from', 'el-to']))).toBe(false);
-  });
-
-  it('matches when the `from` endpoint is pinned to a listed id', () => {
-    expect(arrowReferencesAny(pinnedFromArrow, new Set(['el-from']))).toBe(true);
-  });
-
-  it('matches when the `to` endpoint is pinned to a listed id', () => {
-    expect(arrowReferencesAny(pinnedToArrow, new Set(['el-to']))).toBe(true);
-  });
-
-  it('matches when either endpoint of a fully-pinned arrow is listed', () => {
-    expect(arrowReferencesAny(bothPinnedArrow, new Set(['el-from']))).toBe(true);
-    expect(arrowReferencesAny(bothPinnedArrow, new Set(['el-to']))).toBe(true);
-  });
-
-  it('returns false when the pinned endpoints are not in the id set', () => {
-    expect(arrowReferencesAny(bothPinnedArrow, new Set(['unrelated']))).toBe(false);
-  });
-
-  it('returns false against an empty id set', () => {
-    expect(arrowReferencesAny(bothPinnedArrow, new Set())).toBe(false);
   });
 });
 

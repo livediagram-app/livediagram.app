@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
-  buildElementIndex,
   drawnBounds,
-  endpointPosition,
+  elementIndexFor,
   isBoxed,
+  isRetiredArrow,
+  retiredArrowBounds,
   type Element,
 } from '@livehuddle/document';
 import { pointerToCanvas } from '@/lib/canvas';
@@ -271,22 +272,16 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
         const minY = Math.min(start.y, current.y);
         const maxY = Math.max(start.y, current.y);
         const hits = new Set<string>();
-        // Index once up front: resolving each arrow's endpoints inside
+        // Index once up front (cached per board): resolving each arrow's ends inside
         // the element loop would otherwise be O(elements^2) per sweep.
-        const byId = buildElementIndex(d.elements);
+        const byId = elementIndexFor(d.elements);
         for (const el of d.elements) {
-          if (el.type === 'arrow') {
-            // Arrow AABB: bounds of the (from, to) segment. The whole
-            // bbox must sit INSIDE the marquee (containment), matching
-            // the boxed-element rule below so a partial sweep doesn't
-            // grab an arrow it only clipped.
-            const from = endpointPosition(el.from, byId);
-            const to = endpointPosition(el.to, byId);
-            const aMinX = Math.min(from.x, to.x);
-            const aMaxX = Math.max(from.x, to.x);
-            const aMinY = Math.min(from.y, to.y);
-            const aMaxY = Math.max(from.y, to.y);
-            if (aMinX >= minX && aMaxX <= maxX && aMinY >= minY && aMaxY <= maxY) {
+          if (isRetiredArrow(el)) {
+            // A stored arrow (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"): its
+            // line and placeholder card together must sit INSIDE the marquee (containment), matching
+            // the boxed-element rule below so a partial sweep doesn't grab one it only clipped.
+            const a = retiredArrowBounds(el, byId);
+            if (a.x >= minX && a.x + a.width <= maxX && a.y >= minY && a.y + a.height <= maxY) {
               hits.add(el.id);
             }
             continue;

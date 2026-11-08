@@ -8,7 +8,6 @@
 // bodies, and without the import cycle an earlier dialog reached from inside a body once closed.
 
 import {
-  DrawTabIcon,
   PopularTabIcon,
   MediaTabIcon,
   ShapesTabIcon,
@@ -60,15 +59,8 @@ export const PALETTE_CATEGORIES: {
     id: 'write',
     label: 'Write',
     group: 0,
-    description: 'The wordy elements: text, sticky notes and annotations.',
+    description: 'The wordy elements: text and sticky notes.',
     icon: <WriteTabIcon />,
-  },
-  {
-    id: 'draw',
-    label: 'Draw',
-    group: 0,
-    description: 'The gesture tools: pencil, shape pen, highlighter, polygon, and arrows.',
-    icon: <DrawTabIcon />,
   },
   {
     id: 'stickers',

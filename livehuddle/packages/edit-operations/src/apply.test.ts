@@ -165,15 +165,14 @@ describe('applyEditOperations', () => {
       ]);
     });
 
-    it('re-anchors arrows around a moved box, printing no line for anchors alone', () => {
+    // A stored arrow is a retired element (not-in-livehuddle.md "The element engine", part 4): nothing re-anchors it.
+    it('leaves a stored arrow as stored when a box it is pinned to moves', () => {
       const outcome = run([set('n4', { x: 300, y: 200 })]);
-      const a3 = applied(outcome).tab.elements.find((el) => el.id === 'a3') as Element & {
-        from: { anchor: string };
-      };
-      expect(a3.from.anchor).not.toBe('s');
+      const a3 = (tab: Tab) => tab.elements.find((el) => el.id === 'a3');
+      expect(a3(applied(outcome).tab)).toEqual(a3(checkoutFlow()));
       expect(
         applied(outcome).elementOps.map((op) => op.kind === 'update' && op.element.id),
-      ).toContain('a3');
+      ).not.toContain('a3');
       // f2 is a stored boundary, a retired kind that holds nothing: no membership line follows the move.
       expect(lines(outcome)).toEqual(['~ n4  @40,300→@340,200']);
     });
@@ -257,7 +256,7 @@ describe('applyEditOperations', () => {
         ['[edit-ops] coerced', { operation: 4, field: 'shape' }],
         [
           '[edit-ops] applied',
-          { operations: 4, added: 2, changed: 1, removed: 3, moved: 0, warnings: 1 },
+          { operations: 4, added: 2, changed: 1, removed: 1, moved: 0, warnings: 1 },
         ],
       ]);
     });

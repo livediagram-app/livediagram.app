@@ -352,27 +352,6 @@ export function outlineOfPath(d: string): SketchOutline {
   return { segments: subpaths.flatMap((s) => s.segments), area: closed ? closed.points : null };
 }
 
-/** Where a path starts and ends and which way it points there (outward: the way an arrowhead faces). */
-export function pathEndTangents(
-  d: string,
-): { start: { at: Pt; dir: Pt }; end: { at: Pt; dir: Pt } } | null {
-  const pts = parsePath(d).flatMap((s) => s.points);
-  if (pts.length < 2) return null;
-  const away = (from: Pt, others: Pt[]): Pt | null => {
-    for (const p of others) {
-      const l = dist(from, p);
-      if (l > 0.5) return { x: (from.x - p.x) / l, y: (from.y - p.y) / l };
-    }
-    return null;
-  };
-  const first = pts[0]!;
-  const last = pts[pts.length - 1]!;
-  const startDir = away(first, pts.slice(1));
-  const endDir = away(last, pts.slice(0, -1).reverse());
-  if (!startDir || !endDir) return null;
-  return { start: { at: first, dir: startDir }, end: { at: last, dir: endDir } };
-}
-
 // ---------------------------------------------------------------------------------------------------------------
 // Strokes
 // ---------------------------------------------------------------------------------------------------------------
@@ -501,16 +480,4 @@ export function sketchHatching(area: readonly Pt[], seed: number, strokePx: numb
     }
   }
   return out.join(' ');
-}
-
-/** A sketched arrowhead: two loose strokes meeting at `tip`, `lengthPx` long, opening back against `dir`
- *  (the way the head faces). */
-export function sketchArrowHead(tip: Pt, dir: Pt, lengthPx: number, seed: number): string {
-  const rng = sketchRandom(seed ^ 0x51ed27);
-  const bx = tip.x - dir.x * lengthPx;
-  const by = tip.y - dir.y * lengthPx;
-  const half = lengthPx / 2;
-  const w1 = { x: bx - dir.y * half, y: by + dir.x * half };
-  const w2 = { x: bx + dir.y * half, y: by - dir.x * half };
-  return `${roughLine(w1, tip, rng, 0.6)} ${roughLine(w2, tip, rng, 0.6)}`;
 }

@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import type { Element, FreehandElement, ShapeElement } from '@livehuddle/document';
+import { describe, expect, it } from 'vitest';
+import type { Element, ShapeElement } from '@livehuddle/document';
 
 import {
   CLIPBOARD_KIND,
@@ -199,8 +199,9 @@ describe('stroke points (docs/specs/006-document/stroke-points.md)', () => {
     expect(CLIPBOARD_SCHEMA_VERSION).toBe(2);
   });
 
-  it('packs the former { nx, ny } strokes of a version 1 payload from an older editor', () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
+  // A stroke is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4): a
+  // version 1 payload's stroke pastes back exactly as it was stored, its points never rewritten.
+  it('keeps the { nx, ny } stroke of a version 1 payload from an older editor as it came', () => {
     const stroke = {
       id: 'f1',
       type: 'freehand',
@@ -221,7 +222,8 @@ describe('stroke points (docs/specs/006-document/stroke-points.md)', () => {
     });
     const back = parseElementsPayload(text);
     expect(back).toHaveLength(1);
-    expect(typeof (back![0] as FreehandElement).packedPoints).toBe('string');
+    expect(back![0]).toMatchObject({ type: 'freehand', points: stroke.points });
+    expect(back![0]).not.toHaveProperty('packedPoints');
   });
 });
 

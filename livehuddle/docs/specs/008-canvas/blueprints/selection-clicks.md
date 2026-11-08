@@ -14,7 +14,7 @@ Scope, by file:
 | `../packages/workbench/src/hooks/canvas/useCanvasSelectHandlers.ts` | `handleElementClick` settles a click; `handleArrowSelect` applies the rules to arrows            |
 | `apps/editor/components/canvas/useBoxedElementGestures.ts`          | A boxed press arms the click on a selected element; a paired press reselects                     |
 | `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`                  | `beginDrag` drops the multi-selection when the pressed element is not a member                   |
-| `apps/editor/components/canvas/ArrowView.tsx`                       | The line press passes `paired` (the double-press verdict) to `onSelect`                          |
+| `livediagram/apps/editor/components/canvas/ArrowView.tsx`           | The line press passes `paired` (the double-press verdict) to `onSelect`                          |
 | `apps/editor/components/canvas/BoxedElementView.tsx`                | Threads `onPlainClick` and `isPaintMode` into the gesture hook                                   |
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx`             | Hands `handleElementClick` to every boxed view as `onPlainClick`                                 |
 | `apps/editor/components/canvas/Canvas.tsx`                          | Feeds `selectedId`, `isPaintMode` and `onDeselect` to `useCanvasSelectHandlers`                  |

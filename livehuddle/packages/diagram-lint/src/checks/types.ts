@@ -5,7 +5,6 @@ import type { LintCode } from '@livehuddle/api-schema';
 import type { Point } from '@livehuddle/document';
 import type { LintContext } from '../context';
 import type { LintLogger } from '@liveworkspace/diagram-lint/log';
-import type { Crossings } from '../measures';
 
 export type RawFinding = {
   code: LintCode;
@@ -16,7 +15,6 @@ export type RawFinding = {
 };
 
 export type CheckInput = LintContext & {
-  crossings: Crossings | null;
   log: LintLogger;
   // The elements whose colours the write being linted set; every element when absent (a whole tab's lint).
   coloured?: ReadonlySet<string>;

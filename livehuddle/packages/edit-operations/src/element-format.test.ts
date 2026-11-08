@@ -12,12 +12,14 @@ import {
 import { parseEditOperations } from './parse';
 
 describe('the element format', () => {
-  it('lists every kind add makes, the arrow, and what only the editor makes', () => {
+  it('lists every kind add makes, what only the editor makes, and the retired kinds', () => {
     const text = elementKindsText();
     for (const kind of addableKinds()) expect(text).toContain(kind);
-    expect(text).toContain('arrow: connect <a> -> <b>');
-    expect(text).toContain('image, freehand, path: made in the editor');
-    expect(text).toContain('video, table: no longer supported in livehuddle');
+    expect(text).not.toContain('connect');
+    expect(text).toContain('  image: made in the editor');
+    expect(text).toContain(
+      'video, table, arrow, line, freehand, path, annotation: no longer supported in livehuddle',
+    );
   });
 
   // docs/specs/002-project-scope/not-in-livehuddle.md: no agent schema names the Page or a retired kind.
@@ -30,7 +32,7 @@ describe('the element format', () => {
   });
 
   it('keeps every kind within its budget', () => {
-    for (const kind of [...addableKinds(), 'arrow'])
+    for (const kind of addableKinds())
       expect(estimateTokens(elementFormatText(kind)!), kind).toBeLessThanOrEqual(
         SCHEMA_KIND_MAX_TOKENS,
       );
@@ -47,8 +49,6 @@ describe('the element format', () => {
     const sticky = elementFormatText('sticky')!;
     expect(sticky).toContain('fill=classic|');
     expect(sticky).not.toContain('Any other stored field');
-    expect(elementFormatText('arrow')).toContain('line=straight|angled|curved');
-    expect(elementFormatText('arrow')).not.toContain('Size:');
   });
 
   it('knows nothing of a kind the engine does not make', () => {
@@ -58,6 +58,9 @@ describe('the element format', () => {
     expect(elementFormatText('code-block')).toBeNull();
     expect(elementFormatText('video')).toBeNull();
     expect(elementFormatText('table')).toBeNull();
+    // Nor of an arrow, a line, a drawing, a path or an annotation (part 4 of the element engine).
+    for (const kind of ['arrow', 'line', 'freehand', 'path', 'annotation'])
+      expect(elementFormatText(kind), kind).toBeNull();
     // Nor of a layout container (part 3 of the element engine).
     for (const kind of ['lane', 'stack', 'boundary', 'card', 'callout', 'badge', 'step'])
       expect(elementFormatText(kind), kind).toBeNull();

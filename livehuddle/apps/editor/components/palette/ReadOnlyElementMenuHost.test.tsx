@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createArrow, createShape, type Element } from '@livehuddle/document';
+import { createShape, type Element } from '@livehuddle/document';
+import { storedArrow } from '@/test/retired-elements';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { ReadOnlyElementMenuHost } from './ReadOnlyElementMenuHost';
 
@@ -112,9 +113,11 @@ describe('ReadOnlyElementMenuHost', () => {
     expect(writeText).toHaveBeenCalledWith('Hi');
   });
 
-  it('attaches nothing to an arrow', () => {
-    open('participate', { ...createArrow(0, 0, 10, 10), id: 'ar', label: 'yes' });
-    expect(rows()).not.toContain('Add Comment');
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: a stored arrow's card takes
+  // comments, and its stored label can still be copied (never edited).
+  it("takes comments on a stored arrow's card, and copies its stored label", () => {
+    open('participate', storedArrow('ar', { x: 0, y: 0 }, { x: 10, y: 10 }, { label: 'yes' }));
+    expect(rows()).toContain('Add Comment');
     expect(rows()).not.toContain('Open Link');
     expect(rows()).toContain('Copy Text');
   });

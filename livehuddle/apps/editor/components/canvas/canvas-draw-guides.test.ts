@@ -3,37 +3,46 @@ import { createShape, type Element } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { computeDrawGuides } from './canvas-draw-guides';
 
-// A box the stroke below lines up with, so a guide would show for a pencil.
+// A box the drawn box below lines up with, so a guide shows.
 const box = { ...createShape('square', 100, 100), width: 100, height: 100 } as Element;
-const stroke = [
-  { x: 100, y: 300 },
-  { x: 200, y: 320 },
-];
-const guides = (pendingDraw: PendingDraw, hover: { x: number; y: number } | null = null) =>
+const square: PendingDraw = { type: 'shape', kind: 'square' };
+const guides = (
+  drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null,
+  hover: { x: number; y: number } | null = null,
+) =>
   computeDrawGuides({
-    drawDrag: null,
-    pendingDraw,
+    drawDrag,
+    pendingDraw: square,
     elements: [box],
     drawHover: hover,
-    penPoints: hover ? null : stroke,
     snapGuides: [],
     snapTargets: [],
   }).alignGuides;
 
-describe('computeDrawGuides for pens', () => {
-  it('guides a pencil stroke on a diagram', () => {
-    expect(guides({ type: 'freehand' }).length).toBeGreaterThan(0);
+// docs/specs/008-canvas/canvas-and-palette.md "Placement on add": a box drawn to size shows the guides it latched
+// onto, and so does the first corner before the press. (The pens' guides left with the element engine's part 4,
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine".)
+describe('computeDrawGuides', () => {
+  it('guides a box drawn level with a neighbour', () => {
+    expect(
+      guides({ startX: 300, startY: 100, currentX: 400, currentY: 200 }).length,
+    ).toBeGreaterThan(0);
   });
 
-  it('draws no guides for a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "No guides for pens")', () => {
-    const pen: PendingDraw = {
-      type: 'freehand',
-      variant: 'whiteboard',
-      colour: null,
-      width: 1.5,
-      recognise: false,
-    };
-    expect(guides(pen)).toEqual([]);
-    expect(guides(pen, { x: 100, y: 250 })).toEqual([]);
+  it('guides the snapped hover point before the press', () => {
+    expect(guides(null, { x: 300, y: 100 }).length).toBeGreaterThan(0);
+  });
+
+  it('hands the gesture’s own guides through when the draw adds none', () => {
+    const own = [{ axis: 'x', position: 5, from: 0, to: 10 }] as never[];
+    const out = computeDrawGuides({
+      drawDrag: null,
+      pendingDraw: null,
+      elements: [box],
+      drawHover: null,
+      snapGuides: own,
+      snapTargets: [],
+    });
+    expect(out.alignGuides).toBe(own);
   });
 });

@@ -8,7 +8,7 @@ import { withThemeApplied } from './tab-theme-apply';
 
 // docs/specs/008-canvas/canvas-performance.md "A Tab Style change on a busy Space eases the canvas, not its parts": a
 // theme pick is one pure transform of the tab and one room op, however big the Space. The worst case: the 1,770-element
-// board (900 shapes, 870 arrows) with eight Company Campus Spaces beside it, about 2,700 elements. Fastest of five
+// board (900 shapes, 870 captions) with eight Company Campus Spaces beside it, about 2,700 elements. Fastest of five
 // after warm-up, in CPU time.
 
 const campus = (copy: number): Element[] =>

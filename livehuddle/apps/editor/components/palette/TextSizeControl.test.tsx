@@ -5,12 +5,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  arrowLabelFontSize,
-  LABEL_FONT_PX,
-  NOTE_FONT_PX,
-  type TextSize,
-} from '@livehuddle/document';
+import { LABEL_FONT_PX, NOTE_FONT_PX, type TextSize } from '@livehuddle/document';
 import {
   presetPxFor,
   TEXT_SIZE_TICKS,
@@ -68,7 +63,6 @@ describe('textSizeThumbPx / textSizeReadout', () => {
 describe('presetPxFor', () => {
   it('reads each surface on its own scale', () => {
     expect(presetPxFor('sticky')('md')).toBe(NOTE_FONT_PX.md);
-    expect(presetPxFor('arrow')('lg')).toBe(arrowLabelFontSize('lg'));
     expect(presetPxFor('text')('md')).toBe(LABEL_FONT_PX.md);
   });
 });

@@ -19,6 +19,23 @@ import { THEMES } from './themes-data';
 import { normaliseElements } from './element-normalise';
 import { elementBounds } from './geometry';
 import { isBoxed } from './index';
+import { rederiveQuickSwatches } from './quick-swatch-rederive';
+import {
+  recolourElementsForTheme,
+  resetThemeElementsToTheme,
+  switchThemeElements,
+} from './theme-graph';
+import {
+  elementSupportsText,
+  supportsBorder,
+  supportsBorderControls,
+  supportsBorderRadius,
+  supportsColours,
+  supportsFillColor,
+} from './index';
+import { supportsFinish } from './finish';
+import { supportsRotation } from './rotation';
+import { retiredArrowBounds } from './retired-arrow';
 import type { Element, Tab } from './index';
 
 // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": a stored element of a kind livehuddle no
@@ -389,7 +406,7 @@ describe('a stored table', () => {
   });
 
   it('is a deleted element type, named Table', () => {
-    expect([...RETIRED_ELEMENT_TYPES]).toEqual(['video', 'table']);
+    expect(RETIRED_ELEMENT_TYPES.has('table')).toBe(true);
     expect(isRetiredElement(table)).toBe(true);
     expect(retiredElementName(table)).toBe('Table');
     expect(elementKindLabel(tab().elements[0]!)).toBe('Table');
@@ -603,5 +620,217 @@ describe("an image's stored hero caption", () => {
     expect(saved).toEqual(tab);
     expect(isRetiredElement(hero)).toBe(false);
     expect(isValidElement(hero)).toBe(true);
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: arrows, lines, pen and highlighter
+// strokes, paths and annotations are deleted element types, each kept exactly as stored (element-engine.md D21 to
+// D24).
+describe('stored arrows, lines, drawings, paths and annotations', () => {
+  const left = { id: 'left', type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 80 };
+  const right = {
+    id: 'right',
+    type: 'shape',
+    shape: 'square',
+    x: 400,
+    y: 0,
+    width: 120,
+    height: 80,
+  };
+  const arrow = {
+    id: 'flow',
+    type: 'arrow',
+    from: { kind: 'pinned', elementId: 'left', anchor: 'e' },
+    to: { kind: 'pinned', elementId: 'right', anchor: 'w' },
+    label: 'Ships to',
+    arrowEnds: 'both',
+    arrowStyle: 'angled',
+    arrowheadShape: 'triangle-hollow',
+    arrowheadStartShape: 'diamond',
+    arrowheadSize: 'large',
+    strokeColor: '#0f172a',
+    strokeWidth: 3,
+    strokeStyle: 'dashed',
+    strokeSwatch: 2,
+    curvePoints: [
+      { dx: 10, dy: -40 },
+      { dx: 30, dy: 40 },
+    ],
+    elbowOffset: { dx: 0, dy: 12 },
+    flow: 'forward',
+    flowSpeed: 'fast',
+    labelFill: '#ffe4e6',
+    labelMaxWidth: 180,
+    textSize: 'lg',
+    textColor: '#be123c',
+    exactEnd: true,
+    routeBehind: false,
+  };
+  const line = {
+    id: 'rule',
+    type: 'arrow',
+    from: { kind: 'free', x: 0, y: 300 },
+    to: { kind: 'free', x: 500, y: 300 },
+    arrowEnds: 'none',
+    strokeColor: '#64748b',
+  };
+  const pen = {
+    id: 'pen',
+    type: 'freehand',
+    x: 20,
+    y: 400,
+    width: 200,
+    height: 80,
+    closed: false,
+    packedPoints: 'AQAAAAAA',
+    pressures: [0.2, 0.8],
+    penWidth: 2.5,
+    streamline: 0.2,
+    penColour: 'blue',
+    strokeColor: '#1971c2',
+  };
+  const highlighter = {
+    id: 'glow',
+    type: 'freehand',
+    x: 260,
+    y: 400,
+    width: 200,
+    height: 20,
+    closed: false,
+    pen: 'highlighter',
+    packedPoints: 'AQAAAAAA',
+    strokeColor: '#fde047',
+  };
+  const path = {
+    id: 'curve',
+    type: 'path',
+    x: 20,
+    y: 520,
+    width: 160,
+    height: 120,
+    closed: true,
+    nodes: [
+      { nx: 0, ny: 0, mode: 'corner' },
+      { nx: 1, ny: 0, mode: 'mirrored', handleOut: { nx: 1.2, ny: 0.4 } },
+      { nx: 0.5, ny: 1, mode: 'aligned' },
+    ],
+    subpaths: [
+      [
+        { nx: 0.2, ny: 0.2, mode: 'corner' },
+        { nx: 0.4, ny: 0.2, mode: 'corner' },
+        { nx: 0.3, ny: 0.4, mode: 'corner' },
+      ],
+    ],
+    strokeWidth: 'thick',
+    fillColor: '#dbeafe',
+    penColour: 'teal',
+  };
+  const annotation = {
+    id: 'note',
+    type: 'annotation',
+    x: 240,
+    y: 520,
+    width: 44,
+    height: 44,
+    aspectLocked: true,
+    note: 'Check the numbers',
+    noteRich: [{ text: 'Check the numbers' }],
+    fillColor: '#e0f2fe',
+  };
+  const STORED = [left, right, arrow, line, pen, highlighter, path, annotation];
+  const RETIRED_PART_4 = [arrow, line, pen, highlighter, path, annotation];
+  const tab = (): Tab =>
+    structuredClone({ id: 't6', name: 'Diagram', elements: STORED }) as unknown as Tab;
+  const els = () => tab().elements;
+
+  it('is a retired element, named as a person knew it', () => {
+    for (const type of ['freehand', 'path', 'annotation'])
+      expect(RETIRED_ELEMENT_TYPES.has(type), type).toBe(true);
+    // A stored arrow has two ends rather than a box, so it is retired without being a boxed retired type.
+    expect(RETIRED_ELEMENT_TYPES.has('arrow')).toBe(false);
+    for (const el of RETIRED_PART_4) expect(isRetiredElement(el), el.id).toBe(true);
+    expect(RETIRED_PART_4.map(retiredElementName)).toEqual([
+      'Arrow',
+      'Line',
+      'Drawing',
+      'Drawing',
+      'Path',
+      'Annotation',
+    ]);
+    expect(els().slice(2).map(elementKindLabel)).toEqual([
+      'Arrow',
+      'Line',
+      'Drawing',
+      'Drawing',
+      'Path',
+      'Annotation',
+    ]);
+  });
+
+  it('loads deep-equal to what was stored, through every read path', () => {
+    expect(migrateStoredTab(tab())).toEqual(tab());
+    expect(migrateIncomingTab(tab())).toEqual(tab());
+    expect(migrateStoredElements(els())).toEqual(els());
+    expect(migrateIncomingElements(els())).toEqual(els());
+  });
+
+  it('saves unchanged: a load and a save write back exactly what was read', () => {
+    const saved = JSON.parse(JSON.stringify(migrateStoredTab(tab())));
+    expect(saved).toEqual(tab());
+    expect(migrateStoredTab(saved)).toEqual(tab());
+  });
+
+  it('is valid, each element and the tab', () => {
+    expect(isValidTab(tab())).toBe(true);
+    for (const el of els()) expect(isValidElement(el), el.id).toBe(true);
+  });
+
+  it('keeps every colour and field through a theme switch, a theme reset, a recolour, a swatch and a normalise', () => {
+    const [from, to] = [THEMES[0]!, THEMES[1]!];
+    const retired = els().slice(2);
+    for (const el of retired) {
+      expect(switchThemeElement(el, from, to), el.id).toEqual(el);
+      expect(resetThemeElement(el, to), el.id).toEqual(el);
+      expect(rederiveQuickSwatches(el, to), el.id).toBe(el);
+    }
+    expect(switchThemeElements(els(), from, to).slice(2)).toEqual(retired);
+    expect(resetThemeElementsToTheme(els(), to).slice(2)).toEqual(retired);
+    expect(recolourElementsForTheme(els(), to).slice(2)).toEqual(retired);
+    expect(normaliseElements(els()).slice(2)).toEqual(retired);
+  });
+
+  it('is offered no style, text or finish control', () => {
+    for (const el of els().slice(2)) {
+      expect(supportsColours(el), el.id).toBe(false);
+      expect(supportsFillColor(el), el.id).toBe(false);
+      expect(supportsBorder(el), el.id).toBe(false);
+      expect(supportsBorderControls(el), el.id).toBe(false);
+      expect(supportsBorderRadius(el), el.id).toBe(false);
+      expect(elementSupportsText(el), el.id).toBe(false);
+      expect(supportsFinish(el), el.id).toBe(false);
+    }
+    // A stored arrow has no box to turn and an annotation never turned; a stored stroke or path keeps the turn it
+    // stored, its placeholder drawn at it, as a stored table does.
+    expect(
+      els()
+        .filter(supportsRotation)
+        .map((el) => el.id),
+    ).toEqual(['left', 'right', 'pen', 'glow', 'curve']);
+  });
+
+  it('is named to agents as an unknown kind', () => {
+    for (const el of els().slice(2)) {
+      expect(isKnownElement(el), el.id).toBe(false);
+      expect(kindWordOf(el), el.id).toBe(`? ${el.type}`);
+    }
+  });
+
+  it('bounds a stored arrow by its line and card, and the boxed ones by their box', () => {
+    const all = els();
+    const [, , storedArrow, , storedPen] = all;
+    expect(isBoxed(storedArrow!)).toBe(false);
+    expect(elementBounds(storedArrow!, all)).toEqual(retiredArrowBounds(storedArrow as never, all));
+    expect(isBoxed(storedPen!)).toBe(true);
+    expect(elementBounds(storedPen!, all)).toEqual({ x: 20, y: 400, width: 200, height: 80 });
   });
 });

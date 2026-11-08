@@ -19,16 +19,10 @@ import {
 } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import {
   isFixedSizeElement,
-  arrowheadShapeOf,
-  arrowheadSizeOf,
-  arrowRoutesBehind,
-  arrowStyleOf,
-  arrowThicknessOf,
   isBoxed,
   isSelfDrawingShape,
   supportsRotation,
 } from '@livehuddle/document';
-import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import {
   ContextMenu,
   ContextMenuDivider,
@@ -38,8 +32,6 @@ import {
   LayerDownIcon,
   LayersGlyph,
   LayerUpIcon,
-  LineGlyph,
-  PointerGlyph,
   RotationGlyph,
   RotationMenuIcon,
   SizeMenuIcon,
@@ -90,8 +82,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     colorProps,
     textColorHandlers,
     fillColorHandlers,
-    labelFillHandlers,
-    arrowheadColorHandlers,
     strokeColorHandlers,
   } = useContextMenuScaffold(props);
   // Session-tool pickers (docs/specs/012-collaboration/session-tools.md): the chosen timer mode + countdown length,
@@ -126,14 +116,14 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       !isSelfDrawingShape(target.shape);
     // Consistent category grouping (docs/specs/008-canvas/canvas-and-palette.md): placement (Layer / Shape /
     // Rotation) · appearance (Progress / Animation / Colours / Border) ·
-    // content (Line / Pointer / Text / Icon / Image / Link) ·
+    // content (Text / Icon / Image / Link) ·
     // collaboration. A group divider renders above a group only when that
     // group has a visible section, so an absent group never leaves a dangling
     // rule. Placement always shows (Layer is unconditional), so each later
     // group's divider just gates on the group's own visibility.
-    const showContentGroup =
-      target.type === 'arrow' || target.type === 'image' || target.type === 'link-card';
-    const showCollaborateGroup = boxed;
+    const showContentGroup = target.type === 'image' || target.type === 'link-card';
+    // A stored arrow's card attaches a comment, a note and an action as a box does (D28).
+    const showCollaborateGroup = true;
     return (
       <ContextMenu
         position={position}
@@ -252,50 +242,10 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           colorProps={colorProps}
           textColorHandlers={textColorHandlers}
           fillColorHandlers={fillColorHandlers}
-          arrowheadColorHandlers={arrowheadColorHandlers}
           strokeColorHandlers={strokeColorHandlers}
           afterGroup
         />
         {showContentGroup ? <MenuGroupSeparator /> : null}
-        {/* Line + Pointer — arrow stroke + arrowhead controls (shared
-            ArrowLine/PointerControls). */}
-        {target.type === 'arrow' ? (
-          <>
-            <MenuAccordionSection title="Line" icon={<LineGlyph />} {...sectionProps('line')}>
-              <div className="px-3 py-1.5">
-                <ArrowLineControls
-                  thickness={arrowThicknessOf(target)}
-                  style={arrowStyleOf(target)}
-                  strokeStyle={target.strokeStyle ?? 'solid'}
-                  routeBehind={arrowRoutesBehind(target)}
-                  // Only an arrow whose start is pinned has a fan to sit out of.
-                  exactStart={target.from.kind === 'pinned' ? target.exactStart === true : null}
-                  onSetExactStart={props.onSetArrowExactStart}
-                  onSetThickness={props.onSetArrowThickness}
-                  onSetStyle={props.onSetArrowStyle}
-                  onSetStrokeStyle={props.onSetArrowStrokeStyle}
-                  onSetRouteBehind={props.onSetArrowRouteBehind}
-                />
-              </div>
-            </MenuAccordionSection>
-            <MenuAccordionSection
-              title="Pointer"
-              icon={<PointerGlyph />}
-              {...sectionProps('pointer')}
-            >
-              <div className="px-3 py-1.5">
-                <ArrowPointerControls
-                  ends={target.arrowEnds ?? 'to'}
-                  headSize={arrowheadSizeOf(target)}
-                  headShape={arrowheadShapeOf(target)}
-                  onSetEnds={props.onSetArrowEnds}
-                  onSetHeadSize={props.onSetArrowheadSize}
-                  onSetHeadShape={props.onSetArrowheadShape}
-                />
-              </div>
-            </MenuAccordionSection>
-          </>
-        ) : null}
         <ElementContentSections
           props={props}
           target={target}
@@ -303,9 +253,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           hasImage={hasImage}
           hasLink={hasLink}
           sectionProps={sectionProps}
-          colorProps={colorProps}
-          textColorHandlers={textColorHandlers}
-          labelFillHandlers={labelFillHandlers}
         />
       </ContextMenu>
     );

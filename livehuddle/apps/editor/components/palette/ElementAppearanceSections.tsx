@@ -78,7 +78,6 @@ type ElementAppearanceSectionsProps = {
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
   fillColorHandlers: Scaffold['fillColorHandlers'];
-  arrowheadColorHandlers: Scaffold['arrowheadColorHandlers'];
   strokeColorHandlers: Scaffold['strokeColorHandlers'];
 };
 
@@ -91,7 +90,6 @@ export function ElementAppearanceSections({
   colorProps,
   textColorHandlers,
   fillColorHandlers,
-  arrowheadColorHandlers,
   strokeColorHandlers,
   afterGroup = true,
 }: ElementAppearanceSectionsProps & {
@@ -138,15 +136,14 @@ export function ElementAppearanceSections({
   // fields without an `as ShapeElement` assertion at each site.
   const shapeTarget = target.type === 'shape' ? target : null;
   // The appearance group's divider shows whenever any appearance section will
-  // render — boxed elements (shapes / freehand / tables / images) and arrows.
-  const showAppearanceGroup = boxed || target.type === 'arrow';
+  // render: boxed elements.
+  const showAppearanceGroup = boxed;
   // The Style flyout shows when any of its children would: presets
-  // (shapes with looks / arrow line looks), Colours, or Border — the
+  // (shapes with looks), Colours, or Border: the
   // same gates the sections carry inside.
   const showStyle =
     hasStylePresets(target) ||
     target.type === 'sticky' ||
-    target.type === 'arrow' ||
     (boxed && supportsColours(target)) ||
     borderable ||
     // An image has no colours, border or looks, only a Shadow (docs/specs/008-canvas/element-shadows.md),
@@ -164,8 +161,8 @@ export function ElementAppearanceSections({
             starting closed. ── */}
       {showStyle ? (
         <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
-          {/* Which Presets grid this element gets: shape looks, a sticky's
-              pad of note colours, or an arrow's line looks. See PresetSections. */}
+          {/* Which Presets grid this element gets: shape looks or a sticky's
+              pad of note colours. See PresetSections. */}
           <TargetPresetsSection
             target={target}
             props={props}
@@ -184,7 +181,6 @@ export function ElementAppearanceSections({
             colorProps={colorProps}
             textColorHandlers={textColorHandlers}
             fillColorHandlers={fillColorHandlers}
-            arrowheadColorHandlers={arrowheadColorHandlers}
             strokeColorHandlers={strokeColorHandlers}
           />
         </MenuFlyoutSection>

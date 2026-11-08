@@ -10,7 +10,6 @@
 import { useEffect, useEffectEvent, type RefObject } from 'react';
 import { elementIndexFor, type Element } from '@livehuddle/document';
 import {
-  DRAG_PREVIEW_ARROW_FIELDS,
   DRAG_PREVIEW_BOX_FIELDS,
   DRAG_PREVIEW_MAX_ELEMENTS,
   DRAG_PREVIEW_MAX_RIDE_IDS,
@@ -40,7 +39,7 @@ export function rideOf(
   overlay: DragOverlay,
   base: readonly Element[],
 ): { offset: RideOffset; ids: string[]; patches: DragPreviewPatch[] } | null {
-  const rides = ridingElements(overlay, elementIndexFor(base), null);
+  const rides = ridingElements(overlay, elementIndexFor(base));
   const tally = new Map<string, { offset: RideOffset; n: number }>();
   let best: { offset: RideOffset; n: number } | null = null;
   for (const o of rides.values()) {
@@ -64,9 +63,10 @@ export function rideOf(
   return { offset, ids, patches };
 }
 
+// A drag changes boxes alone: a stored arrow is never written (docs/specs/002-project-scope/not-in-livehuddle.md
+// "The element engine").
 function patchOf(el: Element): DragPreviewPatch {
-  const fields: readonly string[] =
-    el.type === 'arrow' ? DRAG_PREVIEW_ARROW_FIELDS : DRAG_PREVIEW_BOX_FIELDS;
+  const fields: readonly string[] = DRAG_PREVIEW_BOX_FIELDS;
   const source = el as unknown as Record<string, unknown>;
   const patch: Record<string, unknown> = { id: el.id };
   for (const k of fields) if (source[k] !== undefined) patch[k] = source[k];

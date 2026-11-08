@@ -95,16 +95,6 @@ export const MODE_OPTIONS = chart(
   { typeIn: (t) => /^Format/.test(t ?? '') },
 );
 
-// Shape recognition on a pen stroke (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"): Alt, or the chip on a
-// touch screen, flipping the stroke being drawn between ink and the shape it reads as. Tabs set to open in Diagram or
-// Draw mode, beside it until Work Tracker #586, went with those modes.
-export const WHITEBOARD_RECOGNITION = chart(
-  'Draw',
-  'Toggled',
-  'Shape Recognition',
-  'A pen stroke flipped between ink and the shape it reads as, with Alt or the chip on a touch screen.',
-);
-
 // ---- Editing tab -------------------------------------------------------------
 // Tools that organise the work rather than draw it. Tab folders (docs/specs/006-document/tab-folders.md) are
 // typed rather than bare because the bare Tab/Folder events belong to
@@ -708,16 +698,6 @@ export const CUSTOM_SWATCHES = chart(
   { types: ['QuickSwatchCustom', 'QuickSwatchReset'], rising: 'neutral' },
 );
 
-// The Highlighter's next-stroke settings (docs/specs/008-canvas/highlighter.md "Settings"), chosen in
-// the quick style panel while its tile is armed. Restyling a drawn highlight is an Element change.
-export const HIGHLIGHTER_SETTINGS = chart(
-  'UI',
-  'Changed',
-  'Highlighter Settings',
-  "The Highlighter's colour or width changed for the next stroke, in the quick style panel.",
-  { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
-);
-
 // The Tab Style popover's Finish filter beside its Looks carousel (docs/specs/011-theme/
 // canvas-and-theme-dialog.md).
 export const LOOKS_FILTERED = chart(
@@ -740,7 +720,6 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_SWATCHES,
     LOOKS_FILTERED,
-    HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { section: 'lookfeel', label: 'See Each Preset in Features › Look & Feel' },

@@ -6,7 +6,7 @@
 
 import {
   isBoxed,
-  type ArrowElement,
+  type RetiredArrowElement,
   type BoxedElement,
   type Element,
   type ElementId,
@@ -94,7 +94,7 @@ export function duplicateElements(
   // both endpoints pin to elements that were duplicated — so a connector
   // between two copied elements rides along even if the marquee didn't
   // catch the arrow itself.
-  let arrowsToCopy: ArrowElement[] = [];
+  let arrowsToCopy: RetiredArrowElement[] = [];
   for (const el of elements) {
     if (el.type !== 'arrow') continue;
     const bothEndsDuplicated =
@@ -114,7 +114,7 @@ export function duplicateElements(
   // duplicate — which would commit an endpoint pointing at an arrow that
   // never gets created (rendered at the canvas origin, then persisted).
   // Repeat until no arrow drops, so every surviving remap is final.
-  const endpointResolvable = (end: ArrowElement['from']): boolean => {
+  const endpointResolvable = (end: RetiredArrowElement['from']): boolean => {
     if (end.kind === 'free') return true;
     if (end.kind === 'on-arrow') return idMap.has(end.arrowId) || existingIds.has(end.arrowId);
     return idMap.has(end.elementId) || existingIds.has(end.elementId);
@@ -137,7 +137,7 @@ export function duplicateElements(
   // orphan). A pin to an element that's gone entirely (e.g. a cross-tab
   // paste where the target wasn't carried over) returns null and the
   // whole arrow is skipped rather than left dangling.
-  const remapEndpoint = (end: ArrowElement['from']): ArrowElement['from'] | null => {
+  const remapEndpoint = (end: RetiredArrowElement['from']): RetiredArrowElement['from'] | null => {
     if (end.kind === 'free') return { kind: 'free', x: end.x + dx, y: end.y + dy };
     // Connected to another arrow's line (docs/specs/008-canvas/arrow-to-arrow.md): follow the duplicate when
     // the target arrow was copied too, else keep the original, else drop.
@@ -151,7 +151,7 @@ export function duplicateElements(
     return existingIds.has(end.elementId) ? end : null;
   };
 
-  const newArrows: ArrowElement[] = [];
+  const newArrows: RetiredArrowElement[] = [];
   for (const el of arrowsToCopy) {
     const from = remapEndpoint(el.from);
     const to = remapEndpoint(el.to);

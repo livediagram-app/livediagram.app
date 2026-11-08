@@ -8,7 +8,6 @@
 import type { ComponentProps } from 'react';
 import { Minimap } from '@/components/canvas/Minimap';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
-import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 
@@ -26,12 +25,4 @@ export function ViewMinimap(
 ) {
   const view = useViewportOf(wholeView);
   return <Minimap {...props} viewportZoom={view.zoom} viewportOffset={view.offset} />;
-}
-
-// A path's edit toolbar, floating in the view like the canvas it edits.
-export function ViewPathEditToolbar(
-  props: Omit<ComponentProps<typeof PathEditToolbar>, 'zoom' | 'viewportOffset'>,
-) {
-  const view = useViewportOf(wholeView);
-  return <PathEditToolbar {...props} zoom={view.zoom} viewportOffset={view.offset} />;
 }

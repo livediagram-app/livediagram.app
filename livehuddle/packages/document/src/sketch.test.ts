@@ -7,8 +7,6 @@ import {
   outlineOfPath,
   outlineOfPolygon,
   outlineOfRect,
-  pathEndTangents,
-  sketchArrowHead,
   sketchHatchGap,
   sketchHatching,
   sketchRandom,
@@ -210,32 +208,5 @@ describe('sketchHatching', () => {
         2,
       ),
     ).toBe('');
-  });
-});
-
-describe('arrows', () => {
-  it('finds where a path ends and which way it faces', () => {
-    const t = pathEndTangents('M 0 0 L 100 0')!;
-    expect(t.start.at).toEqual({ x: 0, y: 0 });
-    expect(t.start.dir.x).toBeCloseTo(-1);
-    expect(t.end.at).toEqual({ x: 100, y: 0 });
-    expect(t.end.dir.x).toBeCloseTo(1);
-  });
-
-  it('follows a curve’s last direction', () => {
-    const t = pathEndTangents('M 0 0 Q 100 0 100 100')!;
-    expect(t.end.dir.y).toBeGreaterThan(0.9);
-  });
-
-  it('has no tangents for a dot', () => {
-    expect(pathEndTangents('M 5 5 L 5 5')).toBeNull();
-  });
-
-  it('a sketched head is two strokes meeting near the tip, behind it', () => {
-    const d = sketchArrowHead({ x: 100, y: 0 }, { x: 1, y: 0 }, 12, 3);
-    expect(count(d, /M /g)).toBe(2);
-    for (const p of pointsOf(d)) expect(p.x).toBeLessThan(103);
-    const starts = pointsOf(d).filter((_, i) => i % 3 === 0);
-    for (const p of starts) expect(p.x).toBeLessThan(92);
   });
 });

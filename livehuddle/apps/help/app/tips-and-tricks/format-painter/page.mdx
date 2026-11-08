@@ -39,9 +39,9 @@ Click **Done** in the message, press `Escape`, or click empty canvas to put the 
 The **Format** panel decides what the brush carries. Under **Copies**, five switches, all on by default:
 
 - **Fill**: the fill colour, a header's fill, and its theme preset.
-- **Border**: stroke colour, width, pattern and corners, and an arrow's line.
+- **Border**: stroke colour, width, pattern and corners.
 - **Text**: colour, size, weight, italic, underline, strikethrough, font and alignment.
-- **Effects**: shadow, opacity, and animations (including an arrow's flow).
+- **Effects**: shadow, opacity, and animations.
 - **Size**: width, height, aspect-ratio lock, padding, and an icon's size and weight.
 
 Switch every one off and the panel warns you that the brush has nothing to paint.
@@ -50,9 +50,7 @@ Under **After painting**, **Keep the brush** (the default) paints one element af
 
 ## How painting works
 
-The target ends up looking like the source in everything the brush carries that the source has, defaults included. If the source arrow uses the theme's colour and the target is red, painting turns the target back to the theme colour rather than leaving the red in place. The same goes for shadows, borders, and text styling. Painting between different kinds of element carries what they share: an image source, say, has no border or text to give, so the target keeps its own. Text formatting you applied to part of the target's label (a bold word, a coloured phrase) gives way to the painted style too; links in the label stay.
-
-Arrows join in too: load an arrow as the source to copy its line colour, thickness, pattern, path style (straight, curved or elbow), arrowheads (including their colour), whether it routes behind shapes, flow animation, and label styling onto other arrows. Because the path style comes along, painting can re-route the target's line. Styles paint between like kinds only: any boxed element to another (a shape onto a sticky note works), and arrow to arrow. Clicking a shape while an arrow is loaded paints nothing, since the two share almost no formatting (with **Paint once**, it still empties the brush).
+The target ends up looking like the source in everything the brush carries that the source has, defaults included. If the source uses the theme's colour and the target is red, painting turns the target back to the theme colour rather than leaving the red in place. The same goes for shadows, borders, and text styling. Painting between different kinds of element carries what they share: an image source, say, has no border or text to give, so the target keeps its own. Text formatting you applied to part of the target's label (a bold word, a coloured phrase) gives way to the painted style too; links in the label stay.
 
 One thing stays put by design: the painter never touches position, so where your elements sit on the canvas is never disturbed. Each paint is an ordinary edit, so `⌘Z` undoes it.
 

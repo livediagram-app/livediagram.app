@@ -12,7 +12,7 @@
       "boxes": 19,
       "arrows": 11
     },
-    "unknown": 4,
+    "unknown": 15,
     "threads": {
       "open": 1,
       "total": 2
@@ -57,20 +57,7 @@
           "value": "nextjs"
         }
       ],
-      "edges": [
-        {
-          "ref": "6e71",
-          "id": "6e710000-0000-4000-8000-000000000015",
-          "from": {
-            "ref": "a3cf"
-          },
-          "to": {
-            "ref": "649c"
-          },
-          "label": null,
-          "style": []
-        }
-      ],
+      "edges": [],
       "children": [],
       "collapsed": 0
     },
@@ -87,32 +74,7 @@
           "value": "Kong. Terminates TLS, rate-limits per API key, forwards to the services."
         }
       ],
-      "edges": [
-        {
-          "ref": "9c5e",
-          "id": "9c5e0000-0000-4000-8000-000000000016",
-          "from": {
-            "ref": "649c"
-          },
-          "to": {
-            "ref": "202b"
-          },
-          "label": "JWT",
-          "style": []
-        },
-        {
-          "ref": "111e",
-          "id": "111e0000-0000-4000-8000-000000000017",
-          "from": {
-            "ref": "649c"
-          },
-          "to": {
-            "ref": "146b"
-          },
-          "label": null,
-          "style": []
-        }
-      ],
+      "edges": [],
       "children": [],
       "collapsed": 0
     },
@@ -124,20 +86,7 @@
       "label": "Customer",
       "summary": null,
       "attributes": [],
-      "edges": [
-        {
-          "ref": "c74b",
-          "id": "c74b0000-0000-4000-8000-000000000014",
-          "from": {
-            "ref": "b811"
-          },
-          "to": {
-            "ref": "a3cf"
-          },
-          "label": null,
-          "style": []
-        }
-      ],
+      "edges": [],
       "children": [],
       "collapsed": 0
     },
@@ -183,32 +132,7 @@
           "value": "Kafka, 3 brokers, 7-day retention."
         }
       ],
-      "edges": [
-        {
-          "ref": "1434",
-          "id": "14340000-0000-4000-8000-00000000001c",
-          "from": {
-            "ref": "6406"
-          },
-          "to": {
-            "ref": "12de"
-          },
-          "label": null,
-          "style": []
-        },
-        {
-          "ref": "0cee",
-          "id": "0cee0000-0000-4000-8000-00000000001d",
-          "from": {
-            "ref": "6406"
-          },
-          "to": {
-            "ref": "0556"
-          },
-          "label": null,
-          "style": []
-        }
-      ],
+      "edges": [],
       "children": [],
       "collapsed": 0
     },
@@ -225,20 +149,7 @@
           "value": "package"
         }
       ],
-      "edges": [
-        {
-          "ref": "1fc0",
-          "id": "1fc00000-0000-4000-8000-00000000001e",
-          "from": {
-            "ref": "12de"
-          },
-          "to": {
-            "ref": "822f"
-          },
-          "label": null,
-          "style": []
-        }
-      ],
+      "edges": [],
       "children": [],
       "collapsed": 0
     },
@@ -259,44 +170,7 @@
           "value": "Owns the order lifecycle and is the source of truth for order state. Calls Payments synchronously; publishes OrderPlaced."
         }
       ],
-      "edges": [
-        {
-          "ref": "c41d",
-          "id": "c41d0000-0000-4000-8000-000000000018",
-          "from": {
-            "ref": "146b"
-          },
-          "to": {
-            "ref": "e4a8"
-          },
-          "label": "charge",
-          "style": []
-        },
-        {
-          "ref": "892e",
-          "id": "892e0000-0000-4000-8000-00000000001a",
-          "from": {
-            "ref": "146b"
-          },
-          "to": {
-            "ref": "d41e"
-          },
-          "label": null,
-          "style": []
-        },
-        {
-          "ref": "3462",
-          "id": "34620000-0000-4000-8000-00000000001b",
-          "from": {
-            "ref": "146b"
-          },
-          "to": {
-            "ref": "6406"
-          },
-          "label": "OrderPlaced",
-          "style": []
-        }
-      ],
+      "edges": [],
       "children": [],
       "collapsed": 0
     },
@@ -317,22 +191,7 @@
           "value": "1 resolved"
         }
       ],
-      "edges": [
-        {
-          "ref": "8e70",
-          "id": "8e700000-0000-4000-8000-000000000019",
-          "from": {
-            "ref": "e4a8"
-          },
-          "to": {
-            "ref": "e6d7"
-          },
-          "label": "HTTPS",
-          "style": [
-            "dashed"
-          ]
-        }
-      ],
+      "edges": [],
       "children": [],
       "collapsed": 0
     },
@@ -448,6 +307,138 @@
           "value": "2 open"
         }
       ],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "c74b",
+      "id": "c74b0000-0000-4000-8000-000000000014",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": null,
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "6e71",
+      "id": "6e710000-0000-4000-8000-000000000015",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": null,
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "9c5e",
+      "id": "9c5e0000-0000-4000-8000-000000000016",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": "JWT",
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "111e",
+      "id": "111e0000-0000-4000-8000-000000000017",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": null,
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "c41d",
+      "id": "c41d0000-0000-4000-8000-000000000018",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": "charge",
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "8e70",
+      "id": "8e700000-0000-4000-8000-000000000019",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": "HTTPS",
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "892e",
+      "id": "892e0000-0000-4000-8000-00000000001a",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": null,
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "3462",
+      "id": "34620000-0000-4000-8000-00000000001b",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": "OrderPlaced",
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "1434",
+      "id": "14340000-0000-4000-8000-00000000001c",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": null,
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "0cee",
+      "id": "0cee0000-0000-4000-8000-00000000001d",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": null,
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "1fc0",
+      "id": "1fc00000-0000-4000-8000-00000000001e",
+      "kind": "? arrow",
+      "unknown": true,
+      "label": null,
+      "summary": null,
+      "attributes": [],
       "edges": [],
       "children": [],
       "collapsed": 0

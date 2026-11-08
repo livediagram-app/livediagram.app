@@ -1,4 +1,3 @@
-import type { PenInk } from '@/hooks/canvas/commit-freehand';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
@@ -7,7 +6,7 @@ import type { Dispatch, SetStateAction } from 'react';
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { Finish, FrameHandle } from '@livehuddle/document';
+import type { Finish } from '@livehuddle/document';
 import type {
   BackgroundPattern,
   Element,
@@ -16,14 +15,12 @@ import type {
   TextAlignY,
   TextRun,
 } from '@livehuddle/document';
-import type { ArrowEnd, DragMode } from '@/lib/canvas';
+import type { DragMode } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { CanvasTool } from '@/components/palette/palette.types';
 
-// A connection-point marker shown while dragging an arrow endpoint: the
-// world-space position of a nearby shape's anchor, with `active` set on the
-// one the endpoint is currently snapped to. Rendered by CanvasChrome.
+// A snap marker drawn by CanvasChrome: a world-space point, with `active` set on the one in use.
 export type SnapTarget = { x: number; y: number; active: boolean };
 
 export type CanvasProps = {
@@ -65,15 +62,12 @@ export type CanvasProps = {
   onFitToScreen: () => void;
   isPinchingRef?: React.RefObject<boolean>;
   elements: Element[];
-  // The board's ink for this appearance, for a whiteboard pen's live stroke (WhiteboardPenPreview).
-  whiteboardInk?: string;
   // Dragged element ids to render translucent while a shift-duplicate is
   // in progress (docs/specs/008-canvas/shift-drag-duplicate.md): the materialised copies already sit at the
   // start position, so the set under the cursor shows as a ghost. Null
   // outside a shift-held move drag.
   shiftDupGhostIds: ReadonlySet<string> | null;
-  // The active move / resize drag's snap guides (alignment lines, equal-spacing gaps, arrow-endpoint
-  // markers; see docs/specs/008-canvas/canvas-and-palette.md), in the editor's store. Only CanvasChrome,
+  // The active move / resize drag's snap guides (alignment lines, equal-spacing gaps; see docs/specs/008-canvas/canvas-and-palette.md), in the editor's store. Only CanvasChrome,
   // which draws them, reads it, so a new set renders the chrome and not the canvas.
   snapGuideStore: SnapGuideStore;
   onSelectMarquee: (ids: Set<string>) => void;
@@ -196,7 +190,6 @@ export type CanvasProps = {
   onAddShape: (kind: ShapeKind) => void;
   // Sticker (docs/specs/010-palette/stickers.md): its own kind, its own handler.
   onAddSticker: (stickerId: string) => void;
-  onAddAnnotation: () => void;
   onAddLinkCard: () => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md), dropped at the viewport centre. Hero /
   // Header / Avatar carry an image and open the picker on drop.
@@ -210,26 +203,14 @@ export type CanvasProps = {
   // view-role visitors / no-R2 deployments can simply omit it; the
   // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
   onAddImage?: () => void;
-  // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
-  onAddArrow: (ends?: import('@livehuddle/document').ArrowEnds) => void;
-  // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
-  // selection frame stands down until the drag ends (docs/specs/008-canvas/arrow-bending.md).
-  reshapingArrowId?: string | null;
-  onBeginFreehand: () => void;
-  // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
-  // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
-  onBeginHighlighter: () => void;
-  onBeginShapePen: () => void;
-  onBeginPolygon: () => void;
   // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.
   onBeginRoomWalls?: () => void;
-  // Draw-to-size mode. Picking any palette element except the annotation
+  // Draw-to-size mode. Picking a palette element
   // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
   // enters a drag-to-define gesture. pointer-up calls onCommitDraw with the start + end
   // canvas-coord points (raw, no axis swap) so the editor can decide
   // how to interpret them per intent: box intents floor to a 16px
-  // minimum and convert to top-left + width/height; the arrow intent
-  // treats the points as from / to. onCancelDraw backs the Cancel
+  // minimum and convert to top-left + width/height. onCancelDraw backs the Cancel
   // button on the in-canvas ModeBanner (Escape calls it from the
   // keyboard hook too).
   pendingDraw: PendingDraw | null;
@@ -240,54 +221,11 @@ export type CanvasProps = {
     endX: number,
     endY: number,
   ) => void;
-  // Freehand commit (pen intent). Receives the raw pointer-sample
-  // polyline in canvas coords. The editor applies RDP simplification
-  // and Catmull-Rom-to-Bezier smoothing before minting the
-  // FreehandElement, both for storage size and visual smoothness.
-  // `recogniseShapes` says whether this stroke came from the Shape Pen
-  // (docs/specs/010-palette/stickers.md); when true the caller (commitFreehand) runs the polyline
-  // through recogniseShape and may mint a real shape primitive instead of a
-  // FreehandElement. It reads off the armed intent's variant, not a
-  // preference — the toggle that used to set it is gone. A whiteboard pen's points are its raw
-  // samples, landed as they are with their `ink` (pressures, streamline; lib/live-stroke).
-  onCommitFreehand: (
-    points: { x: number; y: number }[],
-    recogniseShapes: boolean,
-    // `snapped`: the shape a held-still stroke locked to, as the pen reshaped it (lib/live-stroke);
-    // `keepInk`: the stroke was broken out of a shape, so it lands as drawn.
-    ink?: PenInk,
-  ) => void;
-  // Polygon commit (docs/specs/008-canvas/polygon-tool.md). Receives the deliberately clicked
-  // vertices in canvas coords (no simplification — the user placed
-  // each one) plus whether the loop closed on the start vertex.
-  onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
   // The Room Builder's commit (docs/specs/009-elements/room-builder.md): the corners placed, closed into a room.
   onCommitRoomWalls?: (corners: { x: number; y: number }[]) => void;
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn or continued path lands, an
-  // edit-mode gesture lands, and how a new path is dressed (style memory), so the path being
-  // drawn shows the style it will land with.
-  onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
-  onCommitPathEdit: (
-    id: string,
-    next: { anchors: import('@livehuddle/document').PathAnchor[]; closed: boolean },
-    kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
-  ) => void;
-  onDressPath?: <T extends import('@livehuddle/document').Element>(el: T) => T;
-  // The line or arrow a draw would land if released now, as the canvas would show it
-  // (docs/specs/023-draw-mode/draw-mode.md "Shapes"), drawn in place of a stand-in while the drag
-  // is in flight. From lib/drawn-arrow-preview.
-  previewDrawnArrow?: (
-    intent: Extract<PendingDraw, { type: 'arrow' }>,
-    startX: number,
-    startY: number,
-    endX: number,
-    endY: number,
-  ) => import('@livehuddle/document').ArrowElement;
   // The user preferences (docs/specs/007-editor/user-preferences.md) the chrome reads.
   settings: UserPreferences;
   onCancelDraw: () => void;
-  // The Fill tool's press (docs/specs/023-draw-mode/fill-tool.md), at a canvas point.
-  onPaintBucket?: (point: { x: number; y: number }) => void;
   onUndo: () => void;
   onRedo: () => void;
   // Lightweight id + name of this document's tabs, so a link badge's
@@ -364,9 +302,8 @@ export type CanvasProps = {
   // for the single-element ellipsis).
   onOpenMultiContextMenu?: (screenX: number, screenY: number) => void;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
-  // The armed action a press on an element takes instead of selecting it (an arrow armed to connect, the
-  // format painter): true when it took it. For a touch press that panned instead of dragging, whose tap
-  // must still connect or paint (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
+  // The armed action a press on an element takes instead of selecting it (the format painter): true when it took it. For a touch press that panned instead of dragging, whose tap
+  // must still paint (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)").
   onPressArmedAction?: (id: string) => boolean;
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string, runs?: TextRun[]) => void;
@@ -377,16 +314,6 @@ export type CanvasProps = {
   // Delete a retired element from its placeholder (docs/specs/002-project-scope/not-in-livehuddle.md "Deleting it").
   // An Editor's alone: omitted in read-only.
   onDeleteRetired?: (elementId: string) => void;
-  onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
-  onBeginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
-  onBeginArrowCurvePointDrag: (arrowId: string, index: number, e: ReactPointerEvent) => void;
-  onBeginArrowBend: (arrowId: string, e: ReactPointerEvent<SVGElement>) => void;
-  // Scale a selected free arrow from its frame handles (docs/specs/008-canvas/arrow-bending.md).
-  onBeginArrowScale: (arrowId: string, handle: FrameHandle, e: ReactPointerEvent) => void;
-  onDeleteCurvePoint: (arrowId: string, index: number) => void;
-  onBeginArrowElbowDrag: (arrowId: string, e: ReactPointerEvent) => void;
-  onBeginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;
-  onBeginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
   onShiftSelect: (id: string) => void;
   // Wrap up the Format canvas tool (the palette tool): drops back to the
   // tool active before it. Drives the format-tool mode banner's "Done" button.

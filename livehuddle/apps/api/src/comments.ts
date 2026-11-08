@@ -33,8 +33,8 @@ const threadOf = (el: Element): CommentThread | undefined =>
 
 // The element with its thread replaced, or removed when `thread` is undefined.
 function withThread(el: Element, thread: CommentThread | undefined): Element {
-  const { commentThread: _drop, ...rest } = el as Element & { commentThread?: CommentThread };
-  return (thread ? { ...rest, commentThread: thread } : rest) as Element;
+  const { commentThread: _drop, ...rest } = el;
+  return thread ? { ...rest, commentThread: thread } : rest;
 }
 
 // The element with its thread mapped; the same element when the thread is unchanged.

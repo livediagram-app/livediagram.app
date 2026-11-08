@@ -1,6 +1,5 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
-  isBoxed,
   SHAPE_DEFAULT_SIZE,
   type BorderRadius,
   type BorderStroke,
@@ -20,6 +19,7 @@ import {
   applyBorderStyleToEl,
   applyColorPresetToEl,
   applyShapeKindToEl,
+  isStyleable,
 } from '@/lib/style-presets';
 import { track } from '@/lib/telemetry';
 
@@ -106,7 +106,8 @@ export function useShapeStyleSetters({
     if (!selectedId) return;
     commit((els) =>
       els.map((el) => {
-        if (el.id !== selectedId || !isBoxed(el)) return el;
+        // A retired element never resizes (docs/specs/002-project-scope/blueprints/element-engine.md).
+        if (el.id !== selectedId || !isStyleable(el)) return el;
         const locked = (el as { aspectLocked?: boolean }).aspectLocked === true;
         const ratio = el.height > 0 ? el.width / el.height : 1;
         let width = size.width ?? el.width;
@@ -169,15 +170,15 @@ export function useShapeStyleSetters({
     track('Element', 'Changed', 'BorderRadius');
   };
 
-  // Style presets (docs/specs/010-palette/style-presets.md). One-click looks for the selected shape(s),
-  // Set a field on every selected shape (any shape kind), the shape-wide
-  // counterpart of setArrowFieldSelected. The icon / progress / rating helpers
-  // gate to their specific shape kinds; this is for fields any shape can carry.
+  // Set a field on every selected shape (any shape kind livehuddle draws: a retired one keeps what it stored). The
+  // icon / progress / rating helpers gate to their specific shape kinds; this is for fields any shape can carry.
   const setShapeFieldSelected = (patch: Partial<ShapeElement>, telemetryType: string) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
     commit((els) =>
-      els.map((el) => (ids.has(el.id) && el.type === 'shape' ? { ...el, ...patch } : el)),
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && isStyleable(el) ? { ...el, ...patch } : el,
+      ),
     );
     track('Element', 'Changed', telemetryType);
   };

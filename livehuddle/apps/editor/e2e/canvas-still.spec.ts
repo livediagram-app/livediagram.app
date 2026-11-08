@@ -22,15 +22,18 @@ const square = (i: number) => ({
   height: 80,
   fillColor: '#ffffff',
 });
-const arrow = (i: number) => ({
-  id: `ar-${i}`,
-  type: 'arrow',
-  from: { kind: 'pinned', elementId: `sq-${i}`, anchor: 'e' },
-  to: { kind: 'pinned', elementId: `sq-${i + 1}`, anchor: 'w' },
+const note = (i: number) => ({
+  id: `tx-${i}`,
+  type: 'text',
+  x: 300 + (i % 8) * 160,
+  y: 200 + Math.floor(i / 8) * 140,
+  width: 60,
+  height: 24,
+  label: 'next',
 });
 const BOARD = [
   ...Array.from({ length: 32 }, (_, i) => square(i)),
-  ...Array.from({ length: 24 }, (_, i) => arrow(i)),
+  ...Array.from({ length: 24 }, (_, i) => note(i)),
 ];
 
 async function openStill(page: Page, path: string) {

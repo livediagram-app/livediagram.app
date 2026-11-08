@@ -1,20 +1,13 @@
-import type {
-  ArrowElement,
-  Element,
-  FreehandElement,
-  ShapeElement,
-  StickyElement,
-  TextElement,
-} from '@livehuddle/document';
+import type { Element, ShapeElement, StickyElement, TextElement } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape, DEFAULT_BACKGROUND_COLOR } from '@livehuddle/document';
+import { createShape, DEFAULT_BACKGROUND_COLOR } from '@livehuddle/document';
+import { storedArrow, storedFreehand, storedPinnedArrow } from '@/test/retired-elements';
 import {
   THEMES,
   deriveNewBoxedColours,
   getTheme,
   recolourElementForTheme,
   recolourElementsForTheme,
-  resetArrowsToTheme,
   resetThemeElement,
   resetThemeElementsToTheme,
   resolveTheme,
@@ -25,7 +18,6 @@ import {
   switchThemeElements,
   type ThemeDefinition,
 } from './themes';
-import { encodeStrokePoints } from '@livehuddle/document';
 
 describe('THEMES catalogue', () => {
   it('has a unique id per theme', () => {
@@ -229,7 +221,7 @@ describe('colour-preset re-derivation across themes (docs/specs/010-palette/styl
     const shape = { ...createShape('square', 0, 0), colorPreset: 'branch-9' };
     // No 'branch-9' on a single-accent theme → untouched.
     expect(rederiveColorPresetForTheme(shape, slate)).toBe(shape);
-    const arrow = createPinnedArrow('a', 'e', 'b', 'w');
+    const arrow = storedPinnedArrow('arrow', 'a', 'e', 'b', 'w');
     expect(rederiveColorPresetForTheme(arrow, slate)).toBe(arrow);
   });
 });
@@ -295,12 +287,9 @@ describe('recolourElementForTheme', () => {
     height: 30,
     label: 'hello',
   };
-  const arrow: ArrowElement = {
-    id: 'a',
-    type: 'arrow',
-    from: { kind: 'free', x: 0, y: 0 },
-    to: { kind: 'free', x: 50, y: 50 },
-  };
+  // Stored arrows and pen strokes are retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+  // engine", part 4): a theme leaves them as stored.
+  const arrow = storedArrow('a', { x: 0, y: 0 }, { x: 50, y: 50 });
   const sticky: StickyElement = {
     id: 'n',
     type: 'sticky',
@@ -309,19 +298,7 @@ describe('recolourElementForTheme', () => {
     width: 200,
     height: 200,
   };
-  const freehand: FreehandElement = {
-    id: 'f',
-    type: 'freehand',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100,
-    packedPoints: encodeStrokePoints([
-      { nx: 0, ny: 0 },
-      { nx: 1, ny: 1 },
-    ]),
-    closed: true,
-  };
+  const freehand = storedFreehand('f', { x: 0, y: 0, width: 100, height: 100 });
 
   it('writes fill, stroke, and text on shapes when the theme overrides each', () => {
     const out = recolourElementForTheme(shape, themed) as ShapeElement;
@@ -338,28 +315,14 @@ describe('recolourElementForTheme', () => {
     expect((out as unknown as Record<string, unknown>).strokeColor).toBeUndefined();
   });
 
-  it('writes the stroke colour on arrows so themed templates have themed connectors', () => {
-    // This is the path that the in-editor "Browse templates" picker
-    // previously skipped, leaving arrows in mindmap / flowchart /
-    // flywheel templates stuck at the brand default.
-    const out = recolourElementForTheme(arrow, themed) as ArrowElement;
-    expect(out.strokeColor).toBe('#475569');
+  it('leaves a stored arrow and a stored pen stroke exactly as stored', () => {
+    expect(recolourElementForTheme(arrow, themed)).toBe(arrow);
+    expect(recolourElementForTheme(freehand, themed)).toBe(freehand);
   });
 
   it('leaves sticky notes untouched so the iconic amber palette survives', () => {
     const out = recolourElementForTheme(sticky, themed);
     expect(out).toEqual(sticky);
-  });
-
-  it('writes fill + stroke on freehand sketches so they follow the theme like shapes', () => {
-    // Regression: all three theme transforms used to skip freehand,
-    // leaving sketches stuck at their creation-time colours when the
-    // user themed the tab. Sketches carry fill + stroke (no text).
-    const out = recolourElementForTheme(freehand, themed) as FreehandElement;
-    expect(out.fillColor).toBe('#e2e8f0');
-    expect(out.strokeColor).toBe('#475569');
-    // No text colour: freehand renders no inline label.
-    expect((out as unknown as Record<string, unknown>).textColor).toBeUndefined();
   });
 
   it('no-ops every type when the theme has no element-colour overrides (Brand)', () => {
@@ -566,38 +529,22 @@ describe('switchThemeElement', () => {
     expect(switchThemeElement(sNote, prev, next)).toEqual(sNote);
   });
 
-  it('switches stroke on arrows so themed connectors flip with the canvas', () => {
-    const a: ArrowElement = {
-      id: 'a',
-      type: 'arrow',
-      from: { kind: 'free', x: 0, y: 0 },
-      to: { kind: 'free', x: 10, y: 10 },
-      strokeColor: prev.elementStroke ?? undefined,
-    };
-    expect((switchThemeElement(a, prev, next) as ArrowElement).strokeColor).toBe(
-      next.elementStroke,
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: a stored arrow or pen stroke
+  // keeps every colour it stored through a theme switch.
+  it('leaves a stored arrow and a stored pen stroke exactly as they were', () => {
+    const a = storedArrow(
+      'a',
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+      { strokeColor: prev.elementStroke ?? undefined },
     );
-  });
-
-  it('flips uncustomised fill + stroke on freehand sketches but keeps a customised one', () => {
-    const f: FreehandElement = {
-      id: 'f',
-      type: 'freehand',
-      x: 0,
-      y: 0,
-      width: 100,
-      height: 100,
-      packedPoints: encodeStrokePoints([
-        { nx: 0, ny: 0 },
-        { nx: 1, ny: 1 },
-      ]),
-      closed: true,
-      fillColor: '#ff00ff', // customised: must survive
-      strokeColor: prev.elementStroke ?? undefined, // on old theme: must flip
-    };
-    const out = switchThemeElement(f, prev, next) as FreehandElement;
-    expect(out.fillColor).toBe('#ff00ff');
-    expect(out.strokeColor).toBe(next.elementStroke);
+    expect(switchThemeElement(a, prev, next)).toBe(a);
+    const f = storedFreehand(
+      'f',
+      { x: 0, y: 0, width: 100, height: 100 },
+      { strokeColor: prev.elementStroke ?? undefined },
+    );
+    expect(switchThemeElement(f, prev, next)).toBe(f);
   });
 
   // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table keeps what it saved.
@@ -700,7 +647,7 @@ describe('resetThemeElement', () => {
     expect(out.textColor).toBeUndefined();
   });
 
-  it('overwrites text colour on text elements and stroke on arrows', () => {
+  it('overwrites text colour on text elements', () => {
     const tEl: TextElement = {
       id: 't',
       type: 'text',
@@ -712,85 +659,22 @@ describe('resetThemeElement', () => {
       textColor: '#222',
     };
     expect((resetThemeElement(tEl, theme) as TextElement).textColor).toBe(theme.elementText);
-    const a: ArrowElement = {
-      id: 'a',
-      type: 'arrow',
-      from: { kind: 'free', x: 0, y: 0 },
-      to: { kind: 'free', x: 10, y: 10 },
-      strokeColor: '#abc',
-    };
-    expect((resetThemeElement(a, theme) as ArrowElement).strokeColor).toBe(theme.elementStroke);
   });
 
-  it('overwrites fill + stroke on freehand sketches, blanking them on a null theme', () => {
-    const f: FreehandElement = {
-      id: 'f',
-      type: 'freehand',
-      x: 0,
-      y: 0,
-      width: 100,
-      height: 100,
-      packedPoints: encodeStrokePoints([
-        { nx: 0, ny: 0 },
-        { nx: 1, ny: 1 },
-      ]),
-      closed: true,
-      fillColor: '#ff00ff',
-      strokeColor: '#003366',
-    };
-    const themed = resetThemeElement(f, theme) as FreehandElement;
-    expect(themed.fillColor).toBe(theme.elementFill);
-    expect(themed.strokeColor).toBe(theme.elementStroke);
-    const blanked = resetThemeElement(f, passthrough) as FreehandElement;
-    expect(blanked.fillColor).toBeUndefined();
-    expect(blanked.strokeColor).toBeUndefined();
+  it('leaves a stored arrow and a stored pen stroke exactly as they were', () => {
+    const a = storedArrow('a', { x: 0, y: 0 }, { x: 10, y: 10 }, { strokeColor: '#abc' });
+    expect(resetThemeElement(a, theme)).toBe(a);
+    const f = storedFreehand(
+      'f',
+      { x: 0, y: 0, width: 100, height: 100 },
+      { fillColor: '#ff00ff', strokeColor: '#003366' },
+    );
+    expect(resetThemeElement(f, theme)).toBe(f);
   });
 
   it('leaves sticky notes alone so the iconic amber palette survives a reset', () => {
     const sNote: StickyElement = { id: 'n', type: 'sticky', x: 0, y: 0, width: 200, height: 200 };
     expect(resetThemeElement(sNote, theme)).toEqual(sNote);
-  });
-});
-
-describe('resetArrowsToTheme (docs/specs/011-theme/canvas-and-theme-dialog.md: arrows always track the theme)', () => {
-  const theme: ThemeDefinition = {
-    id: 'slate',
-    label: 'Slate',
-    backgroundColor: '#f1f5f9',
-    backgroundPattern: 'grid',
-    patternColor: '#cbd5e1',
-    elementFill: '#e2e8f0',
-    elementStroke: '#475569',
-    elementText: '#0f172a',
-  };
-
-  it('overwrites a hand-coloured arrow stroke with the theme stroke', () => {
-    const arrow: ArrowElement = {
-      id: 'a',
-      type: 'arrow',
-      from: { kind: 'free', x: 0, y: 0 },
-      to: { kind: 'free', x: 10, y: 10 },
-      strokeColor: '#ff00ff', // user override
-    };
-    const [out] = resetArrowsToTheme([arrow], theme) as ArrowElement[];
-    expect(out!.strokeColor).toBe(theme.elementStroke);
-  });
-
-  it('leaves non-arrow elements untouched, including their custom colours', () => {
-    const shape: ShapeElement = {
-      id: 's',
-      type: 'shape',
-      shape: 'square',
-      x: 0,
-      y: 0,
-      width: 100,
-      height: 50,
-      fillColor: '#ff00ff',
-      strokeColor: '#00ff00',
-      textColor: '#0000ff',
-    };
-    const [out] = resetArrowsToTheme([shape], theme) as ShapeElement[];
-    expect(out).toBe(shape); // referentially unchanged
   });
 });
 
@@ -944,8 +828,8 @@ describe('multi-colour (rainbow) themes', () => {
       center,
       t1,
       t2,
-      createPinnedArrow('center', 'e', 't1', 'w'),
-      createPinnedArrow('center', 'w', 't2', 'e'),
+      storedPinnedArrow('to-t1', 'center', 'e', 't1', 'w'),
+      storedPinnedArrow('to-t2', 'center', 'w', 't2', 'e'),
     ];
   }
 
@@ -960,13 +844,14 @@ describe('multi-colour (rainbow) themes', () => {
     expect((byId.t2 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![1]!.stroke);
   });
 
-  it('colours a connector arrow by the branch it feeds into', () => {
+  // A stored arrow is read for the branches but kept exactly as stored (docs/specs/002-project-scope/
+  // not-in-livehuddle.md "The element engine", part 4).
+  it('leaves the stored connector arrows as stored', () => {
     const rainbow = THEMES.find((t) => t.id === 'rainbow')!;
-    const out = recolourElementsForTheme(miniMap(), rainbow);
-    const arrowToT1 = out.find(
-      (el) => el.type === 'arrow' && el.to.kind === 'pinned' && el.to.elementId === 't1',
-    ) as { strokeColor?: string };
-    expect(arrowToT1.strokeColor).toBe(rainbow.palette![0]!.stroke);
+    const before = miniMap();
+    const out = recolourElementsForTheme(before, rainbow);
+    expect(out.find((el) => el.id === 'to-t1')).toBe(before[3]);
+    expect(out.find((el) => el.id === 'to-t2')).toBe(before[4]);
   });
 
   it('still recolours single-colour themes through the graph-aware path', () => {

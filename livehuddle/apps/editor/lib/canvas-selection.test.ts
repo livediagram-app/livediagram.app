@@ -150,7 +150,7 @@ describe('deriveCanvasSelection', () => {
     expect(b.height).toBeCloseTo(100);
   });
 
-  it('an arrow-only marquee shows the floating toolbar (spanning the arrows) but no resize box', () => {
+  it('a stored-arrow-only marquee shows the floating toolbar (spanning the lines and cards) but no resize box', () => {
     const els: Element[] = [
       arrow('a', { x: 0, y: 0 }, { x: 40, y: 20 }),
       arrow('b', { x: 60, y: 30 }, { x: 100, y: 80 }),
@@ -164,10 +164,10 @@ describe('deriveCanvasSelection', () => {
     // No boxed members, so the resize box (and its handles) stays hidden...
     expect(s.showUnionResize).toBe(false);
     expect(s.unionResizeBounds).toBeNull();
-    // ...but the toolbar still appears, anchored on the arrows' union AABB,
-    // so the user can reach the Flow / animate menu via its "More" button.
+    // ...but the toolbar still appears, over the union of the lines and their 160 by 96 cards, so an Editor can
+    // reach Delete.
     expect(s.showMultiToolbar).toBe(true);
-    expect(s.multiToolbarBounds).toEqual({ x: 0, y: 0, width: 100, height: 80 });
+    expect(s.multiToolbarBounds).toEqual({ x: -60, y: -38, width: 220, height: 141 });
   });
 
   it('suppresses the floating toolbar in read-only mode', () => {
@@ -246,35 +246,22 @@ describe('deriveCanvasSelection — popover yields to an open context menu', () 
   });
 });
 
-// An arrow's label belongs to its line (docs/specs/008-canvas/arrow-labels.md), so the
-// floating toolbars treat it as part of the arrow and never float over it.
-describe('deriveCanvasSelection — an arrow label is part of its arrow', () => {
+// A stored arrow is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4): its
+// bounds are its line and the 160 by 96 card centred on the line's middle, so the toolbars sit clear of the card.
+describe('deriveCanvasSelection, a stored arrow', () => {
   const line = arrow('ar', { x: 100, y: 200 }, { x: 500, y: 200 });
-  const above = { x: 280, y: 150, width: 40, height: 20 };
-  const labelRectOf = (id: string) => (id === 'ar' ? above : null);
 
-  it('spans the label in a selected arrow’s bounds', () => {
-    const s = derive({ elements: [line], selectedId: 'ar', labelRectOf });
-    expect(s.selectionBounds).toEqual({ x: 100, y: 150, width: 400, height: 50 });
+  it('spans the line and its card in a selected arrow’s bounds', () => {
+    const s = derive({ elements: [line], selectedId: 'ar' });
+    expect(s.selectionBounds).toEqual({ x: 100, y: 152, width: 400, height: 96 });
   });
 
-  it('keeps the line’s own bounds when the arrow has no label', () => {
-    const s = derive({ elements: [line], selectedId: 'ar', labelRectOf: () => null });
-    expect(s.selectionBounds).toEqual({ x: 100, y: 200, width: 400, height: 0 });
-  });
-
-  it('never widens a boxed element by a label rect', () => {
-    const s = derive({ elements: [box('a')], selectedId: 'a', labelRectOf: () => above });
-    expect(s.selectionBounds).toEqual({ x: 0, y: 0, width: 100, height: 60 });
-  });
-
-  it('spans selected arrows’ labels in the multi-selection toolbar bounds', () => {
+  it('spans the card in the multi-selection toolbar bounds', () => {
     const s = derive({
       elements: [line, box('b', { x: 100, y: 300 })],
       multiSelectedIds: new Set(['ar', 'b']),
-      labelRectOf,
     });
-    expect(s.multiToolbarBounds).toEqual({ x: 100, y: 150, width: 400, height: 210 });
+    expect(s.multiToolbarBounds).toEqual({ x: 100, y: 152, width: 400, height: 208 });
   });
 });
 

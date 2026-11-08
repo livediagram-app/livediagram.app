@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createArrow, createPinnedArrow, createShape } from '@livehuddle/document';
+import { createShape } from '@livehuddle/document';
+import { storedArrow, storedPinnedArrow } from '@/test/retired-elements';
 import { resetDragPreviewForTests, subscribeDragPreview } from '@/lib/drag-preview';
 import { renderHook } from '@testing-library/react';
 import { useDragPreview } from '@/lib/drag-preview';
@@ -89,23 +90,21 @@ describe("a collaborator's drag preview", () => {
 
 describe("a collaborator's very large move (a ride)", () => {
   const b = createShape('square', 300, 0);
-  const free = createArrow(10, 10, 60, 60);
-  const pinned = createPinnedArrow(a.id, 'e', b.id, 'w');
+  const free = storedArrow('free', { x: 10, y: 10 }, { x: 60, y: 60 });
+  const pinned = storedPinnedArrow('pinned', a.id, 'e', b.id, 'w');
   const board = [a, b, free, pinned];
   const shown = () => renderHook(() => useDragPreview('t', board)).result.current;
   const ride = (dx: number, ids?: string[], patches: unknown[] = []) =>
     ({ kind: 'drag-preview', tabId: 't', ride: { dx, dy: 1, ids, patches } }) as never;
 
-  it("moves every named element by the offset: a box's place, an arrow's free ends", () => {
+  it('moves every named box by the offset, and leaves a stored arrow exactly as stored', () => {
     receivePeerDragPreview('p1', ride(5, [a.id, free.id, pinned.id]), role('edit'));
     const o = shown()!;
     expect(o.changed.get(a.id)).toMatchObject({ x: 5, y: 1 });
-    expect(o.changed.get(free.id)).toMatchObject({
-      from: { kind: 'free', x: 15, y: 11 },
-      to: { kind: 'free', x: 65, y: 61 },
-    });
-    // A pinned end follows its box, so it is left as it is.
-    expect((o.changed.get(pinned.id) as typeof pinned).from).toBe(pinned.from);
+    // A stored arrow never moves (docs/specs/002-project-scope/blueprints/element-engine.md D21); a pinned end
+    // follows its box as it is drawn.
+    expect(o.changed.get(free.id) ?? free).toBe(free);
+    expect(o.changed.get(pinned.id) ?? pinned).toBe(pinned);
     expect(o.changed.has(b.id)).toBe(false);
   });
 

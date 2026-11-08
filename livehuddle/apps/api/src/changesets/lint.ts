@@ -8,12 +8,12 @@ import type { Tab } from '@livehuddle/document';
 
 type Where = { documentId: string; tabId: string };
 
-// The lint's own lines, prefixed with where they happened, at the level each names.
+// The lint's own lines, prefixed with where they happened, at the level each names. No crossing is counted since part 4
+// of the element engine, so the lint logs no `[lint] crossings skipped` warning any more.
 export function lintLog(where: Where): LintLogger {
   return (fingerprint, fields) => {
     const line = { ...where, ...fields };
-    if (fingerprint === '[lint] crossings skipped') console.warn(fingerprint, line);
-    else if (fingerprint === '[lint] theme unresolved') console.debug(fingerprint, line);
+    if (fingerprint === '[lint] theme unresolved') console.debug(fingerprint, line);
     else console.info(fingerprint, line);
   };
 }

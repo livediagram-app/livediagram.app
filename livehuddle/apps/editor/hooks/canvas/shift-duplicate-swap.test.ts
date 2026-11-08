@@ -5,7 +5,8 @@ import {
   type ShiftDupSwap,
   type ShiftDuplicateSwapArgs,
 } from './shift-duplicate-swap';
-import { createArrow, createShape, type Element } from '@livehuddle/document';
+import { createShape, type Element } from '@livehuddle/document';
+import { storedPinnedArrow } from '@/test/retired-elements';
 
 // Real factory output, re-keyed to a readable id: hand-rolled literals drift
 // from the Element union the moment a required field is added.
@@ -13,16 +14,10 @@ function box(id: string, x = 0, y = 0): Element {
   return { ...createShape('square', x, y), id };
 }
 
-// An arrow pinned at both ends. Used to prove the boundary-arrow rule:
-// one end inside the dragged set gets a re-pinned copy, both-ends-outside
-// is ignored.
+// A stored (retired) arrow pinned at both ends (docs/specs/002-project-scope/not-in-livehuddle.md "The
+// element engine"): it is never copied onto a clone.
 function pinnedArrow(id: string, fromId: string, toId: string): Element {
-  return {
-    ...createArrow(0, 0, 100, 0),
-    id,
-    from: { kind: 'pinned', elementId: fromId, anchor: 'e' },
-    to: { kind: 'pinned', elementId: toId, anchor: 'w' },
-  };
+  return storedPinnedArrow(id, fromId, 'e', toId, 'w');
 }
 
 function boxedDrag(ids: string[], elements: Element[]): BoxedDragState {
@@ -33,7 +28,6 @@ function boxedDrag(ids: string[], elements: Element[]): BoxedDragState {
     startClientX: 0,
     startClientY: 0,
     startBounds: new Map(ids.map((id) => [id, { x: 0, y: 0, w: 100, h: 60 }])),
-    startArrowEnds: new Map(),
     startElements: elements,
   } as unknown as BoxedDragState;
 }
@@ -132,10 +126,8 @@ describe('applyShiftDuplicateSwap', () => {
     expect(els.length).toBe(afterOnce);
   });
 
-  it('copies a boundary arrow onto the clone but leaves unrelated arrows alone', () => {
-    // b1 is dragged; b2 is not. The arrow between them has exactly one end
-    // inside the set, so the clone gets its own copy. The b2->b3 arrow
-    // touches nothing dragged and must not be duplicated.
+  it('never copies a retired arrow onto the clone', () => {
+    // b1 is dragged; a1 is pinned to it and a2 touches nothing dragged. Neither is copied.
     const elements = [
       box('b1'),
       box('b2', 300, 0),
@@ -145,8 +137,7 @@ describe('applyShiftDuplicateSwap', () => {
     ];
     const { els } = harness({ elements, drag: boxedDrag(['b1'], elements) });
     const arrows = els.filter((el) => el.type === 'arrow');
-    // a1 + a2 + one boundary copy of a1.
-    expect(arrows.length).toBe(3);
+    expect(arrows.map((a) => a.id)).toEqual(['a1', 'a2']);
   });
 
   it('does nothing when the session is read-only', () => {

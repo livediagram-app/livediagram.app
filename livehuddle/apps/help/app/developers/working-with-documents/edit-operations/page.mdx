@@ -20,10 +20,10 @@ It reaches a tab through the API: `POST /documents/{id}/tabs/{tabId}/changesets`
 The **line form** is one operation a line, which is what an agent writes most easily. Values with spaces are quoted (`label="Sign in"`), and blank lines and lines starting with `#` are skipped:
 
 ```text
-# Rename the API box, add a database under it and join them
+# Rename the API box, add a database under it and a note beside it
 set n2 label="Orders API"
 add cylinder id=db label="Orders DB" below:n2
-connect n2 -> db label=writes
+add sticky label="Ask Sam about backups" right-of:db
 ```
 
 The **JSON form** is one object an operation, which is what a script produces. Any line of the text form that starts with `{` is read as JSON, so the two mix:
@@ -38,7 +38,12 @@ The **JSON form** is one object an operation, which is what a script produces. A
     "fields": { "label": "Orders DB" },
     "place": { "rel": "below", "ref": "n2" }
   },
-  { "op": "connect", "from": "n2", "to": "db", "fields": { "label": "writes" } }
+  {
+    "op": "add",
+    "kind": "sticky",
+    "fields": { "label": "Ask Sam about backups" },
+    "place": { "rel": "right-of", "ref": "db" }
+  }
 ]
 ```
 
@@ -46,24 +51,21 @@ One parser turns the line form into the JSON form, so both are checked the same 
 
 ## Operations
 
-| Operation | Line form                                                               | What it does                                                                                                                    |
-| --------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                         | Creates an element sized for its label                                                                                          |
-| `set`     | `set <selector> key=value… [all]`                                       | Changes only the fields named; `key=` with nothing after it unsets one                                                          |
-| `rm`      | `rm <selector> [all] [keep-arrows]`                                     | Removes elements, and the arrows pinned to them unless `keep-arrows` leaves those with free ends                                |
-| `move`    | `move <selector> <placement> [all]` or `move <selector> by=dx,dy [all]` | Moves elements; pinned arrows follow                                                                                            |
-| `connect` | `connect <a> -> <b> [id=<id>] [label=…] [line=…] [again]`               | Draws an arrow pinned at both ends, anchored on the sides facing each other                                                     |
-| `rewire`  | `rewire <arrow> from=<x> [to=<y>]` or `rewire <arrow> to=<y>`           | Moves one or both ends of an arrow to other elements                                                                            |
-| `insert`  | `insert <kind> [id=<id>] key=value… between <a> <b>`                    | Puts a new element on the arrow from a to b, which becomes two arrows, and makes room for it                                    |
-| `order`   | `order <selector> front`, `back`, `above=<x>` or `below=<x>`            | Changes the stacking order                                                                                                      |
-| `layout`  | `layout <selector> [style=flow] [direction=down]`                       | Lays out only the selection, keeping its top-left corner; `style` is `flow`, `tree` or `mindmap`, `direction` `down` or `right` |
-| `test`    | `test <selector> key=value…`                                            | Refuses the whole changeset unless the element still holds these values                                                         |
+| Operation | Line form                                                               | What it does                                                                 |
+| --------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                         | Creates an element sized for its label                                       |
+| `set`     | `set <selector> key=value… [all]`                                       | Changes only the fields named; `key=` with nothing after it unsets one       |
+| `rm`      | `rm <selector> [all]`                                                   | Removes elements                                                             |
+| `move`    | `move <selector> <placement> [all]` or `move <selector> by=dx,dy [all]` | Moves elements                                                               |
+| `order`   | `order <selector> front`, `back`, `above=<x>` or `below=<x>`            | Changes the stacking order                                                   |
+| `layout`  | `layout <selector>`                                                     | Sweeps only the selection into tidy rows, below the elements it leaves alone |
+| `test`    | `test <selector> key=value…`                                            | Refuses the whole changeset unless the element still holds these values      |
 
 A few rules hold for every operation:
 
-- **Kinds.** `add` and `insert` take a shape kind (`square`, `circle`, `diamond`, `cylinder`, `stadium`, `hexagon` and the rest) or `text`, `sticky`, `annotation` or `link-card`. A shape kind it does not know is turned into the nearest one, with a `shape_coerced` warning. Arrows are made with `connect`; images and drawn strokes are not made by name, `video` and `table` are refused (embeds and tables are no longer supported in livehuddle), but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
-- **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `arrow`, `arrow-2`).
-- **Fields.** `label`, `note`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`), `font` and `line` (`straight`, `angled` or `curved`) work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
+- **Kinds.** `add` takes a shape kind (`square`, `circle`, `diamond`, `cylinder`, `stadium`, `hexagon` and the rest) or `text`, `sticky` or `link-card`. A shape kind it does not know is turned into the nearest one, with a `shape_coerced` warning. Images are not made by name; `video`, `table`, `arrow`, `line`, `freehand`, `path` and `annotation` are refused (livehuddle no longer supports them, and a space saved with one keeps it as a placeholder), but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
+- **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `sticky`, `sticky-2`).
+- **Fields.** `label`, `note`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`) and `font` work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
 - **Nothing holds.** No element holds others. A lane, stack or boundary saved before livehuddle dropped them is a kind livehuddle does not know: it moves on its own, takes no space when something new is placed, and can be removed.
 - **Comments are not fields.** Comment threads and ideas travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
 
@@ -71,40 +73,35 @@ A few rules hold for every operation:
 
 A selector picks the elements an operation acts on. It is a ref, a quoted label, or `key:value` terms joined by spaces, every one of which must match:
 
-| Selector                     | Matches                                                                           |
-| ---------------------------- | --------------------------------------------------------------------------------- |
-| `n3`, `146b`, `orders`       | The element with that ref, id or unique start of an id                            |
-| `"Orders service"`           | The element whose label is exactly that, ignoring case                            |
-| `label~orders`               | Elements whose label contains `orders`                                            |
-| `type:sticky`                | Elements of that kind, as the outline prints it, or of that element type          |
-| `shape:diamond`              | Shapes of that shape kind                                                         |
-| `n3->n4`, `"Sign in"->"Pay"` | The arrow pinned from one element to the other                                    |
-| `from:n3`, `to:n4`           | Arrows pinned from, or to, an element                                             |
-| `downstream:n3`              | Every element reachable from n3 by following arrows forwards (n3 itself left out) |
-| `upstream:n4`                | Every element that reaches n4 by following arrows                                 |
-| `selected`                   | What the token's owner has selected in an editor open on that tab                 |
+| Selector               | Matches                                                                  |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `n3`, `146b`, `orders` | The element with that ref, id or unique start of an id                   |
+| `"Orders service"`     | The element whose label is exactly that, ignoring case                   |
+| `label~orders`         | Elements whose label contains `orders`                                   |
+| `type:sticky`          | Elements of that kind, as the outline prints it, or of that element type |
+| `shape:diamond`        | Shapes of that shape kind                                                |
+| `selected`             | What the token's owner has selected in an editor open on that tab        |
 
-Terms combine: `type:sticky label~orders` is the stickies whose label mentions orders, and `from:n3 label~retry` is the arrows leaving n3 whose label mentions retry.
+Terms combine: `type:sticky label~orders` is the stickies whose label mentions orders.
 
 - A selector must match **exactly one** element unless the operation takes `all`. Nothing matching is refused as `target_not_found` with the nearest labels; several is refused as `target_ambiguous`, listing them.
 - `layout` acts on many by nature. Each ref or quoted label you give names one element, and the other terms together add whatever they match.
 - `selected` with nothing selected is refused. The owner is whoever the API token belongs to, so an agent can act on "what I have selected" while you point at it.
-- The words `selected`, `all`, `again`, `keep-arrows`, `between`, `front` and `back` are always keywords. Reach an element named one of them by its quoted label or a longer ref.
+- The words `selected`, `all`, `front` and `back` are always keywords. Reach an element named one of them by its quoted label or a longer ref.
 
 ## Placement
 
-`add` and `move` take one placement; `insert` places itself on its arrow.
+`add` and `move` take one placement.
 
-| Placement      | Puts the element                                                            |
-| -------------- | --------------------------------------------------------------------------- |
-| `right-of:<x>` | To the right of x                                                           |
-| `left-of:<x>`  | To the left of x                                                            |
-| `above:<x>`    | Above x                                                                     |
-| `below:<x>`    | Below x                                                                     |
-| `after:<x>`    | Along the flow of x's outgoing arrows                                       |
-| `align:<x>`    | Sharing x's centre, on the axis the element is already nearer               |
-| `at:x,y`       | At that point, relative to the tab's content origin                         |
-| `gap:<n>`      | Beside a side, `after` or `align` placement: the space to leave, 0 to 2,000 |
+| Placement      | Puts the element                                                   |
+| -------------- | ------------------------------------------------------------------ |
+| `right-of:<x>` | To the right of x                                                  |
+| `left-of:<x>`  | To the left of x                                                   |
+| `above:<x>`    | Above x                                                            |
+| `below:<x>`    | Below x                                                            |
+| `align:<x>`    | Sharing x's centre, on the axis the element is already nearer      |
+| `at:x,y`       | At that point, relative to the tab's content origin                |
+| `gap:<n>`      | Beside a side or `align` placement: the space to leave, 0 to 2,000 |
 
 Without a placement, a new element goes beside the last one added, or to the right of everything. A spot already taken moves along the placement's direction until it is free. In the JSON form a placement is `{ "rel": "below", "ref": "n2", "gap": 40 }` or `{ "rel": "at", "x": 0, "y": 200 }`, and `by=dx,dy` is `"by": [dx, dy]`.
 
@@ -112,15 +109,11 @@ What you did not ask to change stays put. `set` moves nothing except a box that 
 
 ## Flags
 
-| Flag          | On                  | Means                                                                                          |
-| ------------- | ------------------- | ---------------------------------------------------------------------------------------------- |
-| `all`         | `set`, `rm`, `move` | Act on every element the selector matches, not only one                                        |
-| `keep-arrows` | `rm`                | Leave arrows pinned to the removed elements in place, with free ends, instead of removing them |
-| `again`       | `connect`           | Draw a second arrow from a to b when one already exists (otherwise `arrow_exists`)             |
+| Flag  | On                  | Means                                                   |
+| ----- | ------------------- | ------------------------------------------------------- |
+| `all` | `set`, `rm`, `move` | Act on every element the selector matches, not only one |
 
-In the JSON form, a flag is a member set to `true`: `"all"`, `"keepArrows"`, `"again"`.
-
-`insert` always makes room: everything beyond the new element along the flow, in the same connected group, shifts by its size and the gap, and those moves are reported.
+In the JSON form, a flag is a member set to `true`: `"all"`.
 
 ## The Answer
 
@@ -129,9 +122,7 @@ A changeset answers with one line per element, the same for a dry run (`?dryRun=
 ```text
 ~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160
 + verify  square "Verify email" @45,300 131×120
-~ a3  to n4→verify
-+ arrow  verify→n4 (style of a3)
-» n4 n5 n6  +0,+160 (make room)
+» n4 n5 n6  +0,+160 (layout)
 rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livehuddle changeset revert 3f9c2a71-… cs_8k2m4q7d1x
 ```
 
@@ -140,12 +131,12 @@ rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livehuddle changeset rever
 | `+`  | Added                                              |
 | `~`  | Changed, each field before→after                   |
 | `-`  | Removed, with the reason when it went with another |
-| `»`  | Moved without being named (made room)              |
+| `»`  | Moved without being named (by `layout`)            |
 | `!`  | A warning                                          |
 
 The last line carries the tab's new revision, the changeset's id, the lint verdict and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
 
-**Warnings** do not stop a changeset: `shape_coerced` (an unknown shape kind became a known one), `value_coerced`, `label_capped` (a shape's label over 40 characters kept its heading and moved the full text into the note), `colour_overrides_theme`, `arrows_freed` (from `keep-arrows`), and `no_base` (sent without a `base` revision).
+**Warnings** do not stop a changeset: `shape_coerced` (an unknown shape kind became a known one), `value_coerced`, `label_capped` (a shape's label over 40 characters kept its heading and moved the full text into the note), `colour_overrides_theme`, and `no_base` (sent without a `base` revision).
 
 ## Refusals
 
@@ -156,7 +147,7 @@ error target_ambiguous · op 2 · set "Pay" fill=green
   "Pay" matches 3 elements:
     n7  square "Pay"
     n9  sticky "Pay"
-    a4  arrow n3→n7 "Pay"
+    n12 text "Pay"
   hint: use a ref, narrow with type:square, or add all
 nothing was applied
 ```
@@ -170,8 +161,6 @@ nothing was applied
 | `unknown_field`      | A field the kind does not have; lists the kind's fields       |
 | `invalid_value`      | A value outside what the field takes; lists what it takes     |
 | `id_taken`           | An `id=` already in use; suggests a free one                  |
-| `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again`    |
-| `not_connected`      | `insert … between a b` with no a→b arrow                      |
 | `test_failed`        | A `test` does not hold; shows expected and actual             |
 | `changeset_conflict` | A target changed since the `base` revision you sent           |
 | `elements_held`      | Someone has a target selected in the editor                   |
@@ -180,28 +169,20 @@ nothing was applied
 
 ## Lint Findings
 
-Every changeset lints the whole tab it leaves behind, and `GET /documents/{id}/tabs/{tabId}?view=lint` (or `livehuddle tab lint`) lists the findings, each ending with a fix you can send as a changeset:
+Every changeset lints the whole tab it leaves behind, and `GET /documents/{id}/tabs/{tabId}?view=lint` lists the findings, each ending with a fix you can send as a changeset:
 
 ```text
-5 crossings · 2 behind · 0 overlaps · 1317×1196 → 3 warnings, 6 info
-W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=angled
+0 crossings · 0 behind · 0 overlaps · 1317×1196 → 1 warning, 2 info
+W label-overflow   n4 needs 4 lines, holds 3  fix: set n4 text=sm
 ```
 
-| Code               | Severity | Finding                                                          | Suggested fix                              |
-| ------------------ | -------- | ---------------------------------------------------------------- | ------------------------------------------ |
-| `box-overlap`      | error    | Two boxes that arrows connect partly overlap                     | `move b right-of:a`                        |
-| `arrow-dangling`   | error    | An arrow is pinned to an element that is gone                    | `rm <arrow>`                               |
-| `arrow-behind-box` | warning  | An arrow passes through a box it does not connect                | `set <arrow> line=angled`                  |
-| `edge-crossings`   | warning  | More crossing arrow pairs than a quarter of the arrows           | `layout type:shape`                        |
-| `label-collision`  | warning  | An arrow's label overlaps a box                                  | A shorter arrow label                      |
-| `label-overflow`   | warning  | A label needs more lines than its box holds                      | `text=sm`, or a shorter label and a `note` |
-| `node-isolated`    | warning  | A shape with no arrows, on a tab that is otherwise a graph       | `connect <ref> -> a`                       |
-| `duplicate-label`  | info     | Two boxes share a label                                          | Rename one                                 |
-| `flow-backwards`   | info     | An arrow points against the drawing's flow                       | `rewire <arrow> from=y to=x`               |
-| `aspect-extreme`   | info     | The drawing is more than 3 times wider than tall, or the reverse | `layout type:shape direction=down`         |
-| `colour-on-themed` | info     | A fill or stroke the theme would not paint, bound to no swatch   | `set a fill=` to give it back to the theme |
+| Code               | Severity | Finding                                                        | Suggested fix                              |
+| ------------------ | -------- | -------------------------------------------------------------- | ------------------------------------------ |
+| `label-overflow`   | warning  | A label needs more lines than its box holds                    | `text=sm`, or a shorter label and a `note` |
+| `duplicate-label`  | info     | Two boxes share a label                                        | Rename one                                 |
+| `colour-on-themed` | info     | A fill or stroke the theme would not paint, bound to no swatch | `set a fill=` to give it back to the theme |
 
-Boxes no arrow connects count as decoration and may overlap. Above 300 arrows the crossing check is skipped (the summary says so) and every other check still runs. The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings, 1 info`.
+The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings, 1 info`.
 
 <Tip>
   Send a changeset with `?dryRun=1` first while you learn the vocabulary: the answer and the lint

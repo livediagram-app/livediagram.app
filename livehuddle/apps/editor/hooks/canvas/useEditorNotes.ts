@@ -10,7 +10,7 @@
 // element field.
 
 import { useState } from 'react';
-import { isBoxed, type Element, type TextRun } from '@livehuddle/document';
+import { type Element, type TextRun } from '@livehuddle/document';
 import { canonicalNote } from '@/lib/note-value';
 import { track } from '@/lib/telemetry';
 
@@ -46,7 +46,7 @@ export function useEditorNotes(deps: EditorNotesDeps) {
     // "no note".
     commit((els) =>
       els.map((el) => {
-        if (el.id !== elementId || !isBoxed(el)) return el;
+        if (el.id !== elementId) return el;
         const { note: _dropNote, noteRich: _dropRuns, ...rest } = el;
         if (!note) return rest;
         return noteRich ? { ...rest, note, noteRich } : { ...rest, note };

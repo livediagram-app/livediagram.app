@@ -1,5 +1,16 @@
 # Document views: blueprint
 
+> **No MCP server or CLI in livehuddle** ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
+> the REST API is the only front door, and agents reach it through the agent tools. Where this file names the MCP or
+> the CLI, it records livediagram's front doors over the same engine, where this design came from; their wire values
+> (`mcp`, `cli`) still parse.
+
+> **No arrow joins anything** ([The element engine](../../002-project-scope/not-in-livehuddle.md#the-element-engine), part 4): a stored `arrow`, `freehand`, `path` or
+> `annotation` is a retired element. Every view prints it as `? <kind>` with its stored label and fields (an arrow's
+> stored ends print as `from=` and `to=` in `show`), counted unknown. The graph view lists no node and no arrow and
+> points to the outline for every element; the selectors `from:`, `to:`, `->`
+> and `downstream:` still read stored ends.
+
 > **Nothing nests** ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md) "The element engine", part 3): the frame, the lane, the stack and the
 > boundary are retired kinds that hold nothing, so `deriveContainers` and `containment.ts` are gone from
 > `@livehuddle/document` (`contentOrigin` lives on in `content-origin.ts`). The views follow:
@@ -47,13 +58,13 @@ Scope, by file:
 | `../packages/document-views/src/text.ts`                                  | `cutAtWord`, `jsonString`, `attrValue`, `cellText`, `plural` (shared, `@liveworkspace/document-views`)                                                                                    |
 | `../packages/document-views/src/fields.ts`                                | Typed reads of shared optional fields (`textField`, `boxOf`, `threadOf`, …): views never cast an element (shared, `@liveworkspace/document-views`)                                        |
 | `../packages/document-views/src/view-attribute.ts`                        | `ViewAttribute`, `flagAttribute`, `countAttribute`, `shapeKindOf` (shared, `@liveworkspace/document-views`)                                                                               |
-| `packages/document-views/src/visibility.ts`                               | `pinnedIds`: the ids an arrow's pinned ends name                                                                                                                                          |
+| `livediagram/packages/document-views/src/visibility.ts`                   | `pinnedIds`: the ids an arrow's pinned ends name                                                                                                                                          |
 | `packages/document-views/src/tree.ts`                                     | `buildViewTree`: every printed non-arrow element in reading order, flat; `nodesOf`, `subtreeItems`                                                                                        |
 | `../packages/document-views/src/reading-order.ts`                         | `readingOrder`, `rowsOf` over any element (shared); `packages/document-views/src/reading-order.ts` binds `Placed` to this product's `Element`                                             |
 | `../packages/document-views/src/freehand-runs.ts`                         | `freehandRuns`: consecutive bare strokes folded into one line (shared); `packages/document-views/src/freehand-runs.ts` binds `FreehandRun` to this product's `Placed`                     |
 | `packages/document-views/src/attributes.ts`                               | `attributesOf`: the ordered attribute list of one element                                                                                                                                 |
 | `packages/document-views/src/style-attributes.ts`                         | `styleAttributesOf` for `style`                                                                                                                                                           |
-| `packages/document-views/src/edges.ts`                                    | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                                                                                     |
+| `livediagram/packages/document-views/src/edges.ts`                        | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                                                                                     |
 | `packages/document-views/src/header.ts`                                   | `countElements`, `viewHeader`, `headerLine`                                                                                                                                               |
 | `packages/document-views/src/model.ts`                                    | `buildViewModel(tab, context)` (`ViewContext.selected` too), the model every view reads; `headerFactsOf`, `tabRefsFor`                                                                    |
 | `packages/document-views/src/{outline,graph,layout,comments}.ts`          | One view each                                                                                                                                                                             |

@@ -3,12 +3,11 @@ import { rederiveQuickSwatches } from './quick-swatch-rederive';
 import { quickSwatchColor } from './quick-swatches';
 import {
   recolourElementsForTheme,
-  resetArrowsToTheme,
   resetThemeElementsToTheme,
   switchThemeElements,
 } from './theme-graph';
 import { THEMES } from './themes-data';
-import type { ArrowElement, ShapeElement, TextElement } from './index';
+import type { RetiredArrowElement, ShapeElement, TextElement } from './index';
 import type { ThemeDefinition } from './themes';
 
 // docs/specs/008-canvas/quick-style-panel.md "Colours": a bound colour follows a theme change.
@@ -27,7 +26,7 @@ const shape = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
   height: 100,
   ...extra,
 });
-const arrow = (extra: Partial<ArrowElement> = {}): ArrowElement => ({
+const arrow = (extra: Record<string, unknown> = {}): RetiredArrowElement => ({
   id: 'a',
   type: 'arrow',
   from: { kind: 'free', x: 0, y: 0 },
@@ -60,11 +59,10 @@ describe('rederiveQuickSwatches', () => {
     expect(rederiveQuickSwatches(junk, ocean)).toBe(junk);
   });
 
-  it('re-reads an arrow’s bound stroke', () => {
+  // A stored arrow is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4).
+  it('leaves a stored arrow’s bound stroke as stored, by reference', () => {
     const a = arrow({ strokeColor: quickSwatchColor(forest, 'stroke', 1), strokeSwatch: 1 });
-    expect((rederiveQuickSwatches(a, ocean) as ArrowElement).strokeColor).toBe(
-      quickSwatchColor(ocean, 'stroke', 1),
-    );
+    expect(rederiveQuickSwatches(a, ocean)).toBe(a);
   });
 });
 
@@ -74,10 +72,10 @@ describe('the theme walks honour swatch bindings', () => {
     expect(next!.fillColor).toBe(quickSwatchColor(ocean, 'fill', 4));
   });
 
-  it('switching the theme keeps a bound arrow’s colour instead of resetting it', () => {
+  it('switching the theme leaves a stored arrow as stored', () => {
     const a = arrow({ strokeColor: quickSwatchColor(forest, 'stroke', 2), strokeSwatch: 2 });
-    const [next] = resetArrowsToTheme([a], ocean) as ArrowElement[];
-    expect(next!.strokeColor).toBe(quickSwatchColor(ocean, 'stroke', 2));
+    const [next] = switchThemeElements([a], forest, ocean);
+    expect(next).toEqual(a);
   });
 
   it('reset to theme and recolour keep the binding, like a preset', () => {

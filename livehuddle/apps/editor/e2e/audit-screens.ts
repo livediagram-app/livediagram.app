@@ -23,8 +23,9 @@ export async function darkVisitor(page: Page, owner?: string): Promise<void> {
   });
 }
 
-// A diagram shaped like a real one: an actor, boxes, and solid and dashed labelled arrows, on the
-// Default scheme, so the canvas ink is the palette's own.
+// A board shaped like a real one: an actor, boxes and a caption, on the Default scheme, so the canvas
+// ink is the palette's own. Only kinds livehuddle makes (docs/specs/002-project-scope/not-in-livehuddle.md
+// "The element engine").
 export async function seedDocument(page: Page, owner: string, origin: string): Promise<string> {
   return (await seedDrawnDocument(page, owner, origin)).id;
 }
@@ -50,14 +51,6 @@ async function seedDrawnDocument(
     height: 100,
     label,
   });
-  const arrow = (aid: string, from: string, to: string, label: string, dashed = false) => ({
-    id: aid,
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: from, anchor: 's' },
-    to: { kind: 'pinned', elementId: to, anchor: 'n' },
-    label,
-    ...(dashed ? { strokeStyle: 'dashed' } : {}),
-  });
   const elements = [
     {
       id: 'actor',
@@ -72,9 +65,15 @@ async function seedDrawnDocument(
     box('a', 'Assistant', 180, 240),
     box('s', 'Spinner', 440, 240),
     box('r', 'Runa (Backend)', 280, 480),
-    arrow('x1', 'actor', 'a', 'UI'),
-    arrow('x2', 'actor', 's', 'UI'),
-    arrow('x3', 'a', 'r', 'Use personal assistant', true),
+    {
+      id: 'x3',
+      type: 'text',
+      x: 240,
+      y: 380,
+      width: 220,
+      height: 30,
+      label: 'Use personal assistant',
+    },
   ];
   const res = await seedDocumentItem(page.request, ownerHeaders(owner, { Origin: origin }), {
     id,

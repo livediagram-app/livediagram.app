@@ -9,18 +9,13 @@ import {
 } from '@livehuddle/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
-import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
+import type { PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
 import { PenShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
 import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
-import {
-  HIGHLIGHTER_COLOR,
-  HIGHLIGHTER_WIDTH,
-} from '@liveworkspace/workbench/lib/highlighter-config';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
-  penPoints: { x: number; y: number }[] | null;
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
   pendingDraw: PendingDraw | null;
@@ -28,17 +23,16 @@ type CanvasDrawPreviewProps = {
   // The canvas size. With the view, read from the viewport store here, it is what the wrapper's
   // origin follows (useCanvasViewKey), so the chrome around this takes no view.
   mainSize: { width: number; height: number };
-  // The board's ink on a whiteboard (docs/specs/023-draw-mode/draw-mode.md), what the main pen
+  // The board's ink on a whiteboard (docs/specs/023-draw-mode/draw-mode.md), what a board shape
   // previews in. Absent elsewhere.
   whiteboardInk?: string;
 };
 
-// Live previews shown while a draw gesture is in flight: the freehand pen
-// polyline and the draw-to-size box (a dashed rect, or a ShapeSvgOverlay
+// Live previews shown while a draw gesture is in flight: the Room Builder's
+// walls and the draw-to-size box (a dashed rect, or a ShapeSvgOverlay
 // preview for SVG-rendered shapes). Pure SVG/markup; split out of CanvasChrome.
 export function CanvasDrawPreview({
   drawDrag,
-  penPoints,
   polygonVertices,
   polygonCursor,
   pendingDraw,
@@ -47,80 +41,26 @@ export function CanvasDrawPreview({
   whiteboardInk,
 }: CanvasDrawPreviewProps) {
   const { viewportZoom, viewKey } = useCanvasViewKey(mainSize);
-  // A whiteboard shape or line previews as it will land (docs/specs/023-draw-mode/draw-mode.md
+  // A whiteboard shape previews as it will land (docs/specs/023-draw-mode/draw-mode.md
   // "Shapes"): in the board's ink, solid, unfilled.
-  const inkOf = (colour: string | null) => colour ?? whiteboardInk ?? 'currentColor';
-  // A whiteboard pen draws inside the canvas layer (whiteboard/WhiteboardPenPreview), not here.
-  const showsPen =
-    !isWhiteboardPenIntent(pendingDraw) &&
-    !!penPoints &&
-    pendingDraw?.type === 'freehand' &&
-    penPoints.length >= 2;
-  // The Room Builder (docs/specs/009-elements/room-builder.md) previews on the polygon's path, at wall thickness.
+  const ink = whiteboardInk ?? 'currentColor';
+  // The Room Builder (docs/specs/009-elements/room-builder.md) previews its walls, at wall thickness.
   const roomWalls = pendingDraw?.type === 'room-walls';
-  const showsPolygon = (pendingDraw?.type === 'polygon' || roomWalls) && polygonVertices.length > 0;
-  // A line or an arrow previews as the element it lands, in the canvas layer
-  // (DrawnArrowPreview, docs/specs/023-draw-mode/draw-mode.md "Shapes"), not here.
+  const showsPolygon = roomWalls && polygonVertices.length > 0;
   // A placed piece has no box to draw: it previews itself (PlacementPreview, docs/specs/010-palette/palette-drag-ghost.md
   // "Placed pieces preview themselves").
   const showsBox =
     !!drawDrag &&
     !!pendingDraw &&
-    pendingDraw.type !== 'arrow' &&
     !(pendingDraw.type === 'shape' && dropsAtOwnSize(pendingDraw.kind));
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
-  const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox, viewKey);
-  // The drawings in progress (pencil, polygon, draw-to-size box).
+  const origin = useCanvasClientOrigin(wrapperRef, showsPolygon || showsBox, viewKey);
+  // The drawings in progress (the Room Builder's walls, the draw-to-size box).
   const drafts = (
     <>
-      {/* Pen-gesture live preview for the diagram pencil and the highlighter. While the user
-            is drawing freehand, paint the in-progress polyline so they can see what they're
-            sketching. Sits on the same z-[var(--z-chrome)] overlay layer as the draw-to-size box
-            preview. Switches to the committed FreehandSvg after release (the next render tick
-            once the new element lands in `elements`). */}
-      {showsPen && penPoints && pendingDraw?.type === 'freehand'
-        ? (() => {
-            const rect = origin;
-            if (!rect) return null;
-            // Build an SVG polyline string from the sampled canvas-
-            // coord points, converted to client coords via the
-            // wrapper rect + zoom so the overlay aligns with the
-            // canvas content.
-            const d = penPoints
-              .map((p, i) => {
-                const x = rect.left + p.x * viewportZoom;
-                const y = rect.top + p.y * viewportZoom;
-                return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-              })
-              .join(' ');
-            // The highlighter variant previews with the committed
-            // marker recipe (wide translucent, in the arm's colour and width,
-            // docs/specs/008-canvas/highlighter.md) so what you see while dragging is what lands.
-            const marker = pendingDraw.variant === 'highlighter' ? pendingDraw : null;
-            const isHighlighter = marker !== null;
-            return (
-              <svg
-                aria-hidden
-                className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
-              >
-                <path
-                  d={d}
-                  fill="none"
-                  stroke={marker ? (marker.colour ?? HIGHLIGHTER_COLOR) : 'var(--color-brand-500)'}
-                  strokeWidth={marker ? (marker.width ?? HIGHLIGHTER_WIDTH) : 2}
-                  strokeOpacity={isHighlighter ? 0.45 : undefined}
-                  style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            );
-          })()
-        : null}
-
-      {/* Polygon-tool preview (docs/specs/008-canvas/polygon-tool.md): the placed segments, a rubber-band
-            segment to the live cursor, a dot per vertex, and a snap ring on
-            the START vertex once the cursor is within closing range. */}
+      {/* The Room Builder's preview (docs/specs/009-elements/room-builder.md): the placed walls, a rubber-band
+            segment to the live cursor, a dot per corner, and a snap ring on
+            the START corner once the cursor is within closing range. */}
       {showsPolygon
         ? (() => {
             const rect = origin;
@@ -147,28 +87,24 @@ export function CanvasDrawPreview({
                 aria-hidden
                 className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
               >
-                {roomWalls ? (
-                  <>
-                    {/* The walls as they will stand, and the closing wall back to the first corner, dashed. */}
-                    <path
-                      d={d}
-                      fill="none"
-                      stroke="var(--color-brand-500)"
-                      strokeOpacity={0.3}
-                      strokeWidth={ROOM_WALL * viewportZoom}
-                      strokeLinejoin="miter"
-                    />
-                    {pts.length >= 2 && !nearStart ? (
-                      <path
-                        d={`M ${cursor?.x ?? pts[pts.length - 1]!.x} ${cursor?.y ?? pts[pts.length - 1]!.y} L ${pts[0]!.x} ${pts[0]!.y}`}
-                        fill="none"
-                        stroke="var(--color-brand-500)"
-                        strokeOpacity={0.6}
-                        strokeWidth={1}
-                        strokeDasharray="4 4"
-                      />
-                    ) : null}
-                  </>
+                {/* The walls as they will stand, and the closing wall back to the first corner, dashed. */}
+                <path
+                  d={d}
+                  fill="none"
+                  stroke="var(--color-brand-500)"
+                  strokeOpacity={0.3}
+                  strokeWidth={ROOM_WALL * viewportZoom}
+                  strokeLinejoin="miter"
+                />
+                {pts.length >= 2 && !nearStart ? (
+                  <path
+                    d={`M ${cursor?.x ?? pts[pts.length - 1]!.x} ${cursor?.y ?? pts[pts.length - 1]!.y} L ${pts[0]!.x} ${pts[0]!.y}`}
+                    fill="none"
+                    stroke="var(--color-brand-500)"
+                    strokeOpacity={0.6}
+                    strokeWidth={1}
+                    strokeDasharray="4 4"
+                  />
                 ) : null}
                 <path
                   d={d}
@@ -251,7 +187,7 @@ export function CanvasDrawPreview({
                 {pendingDraw.type === 'shape' && pendingDraw.board ? (
                   <PenShapePreview
                     kind={pendingDraw.kind}
-                    colour={inkOf(null)}
+                    colour={ink}
                     widthPx={BORDER_STROKE_PX[DEFAULT_BORDER_STROKE]}
                     usesSvg={usesSvg}
                     radius={radius}

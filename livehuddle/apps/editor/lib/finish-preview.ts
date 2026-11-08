@@ -1,9 +1,8 @@
 // The Finish tab's preview (docs/specs/008-canvas/finish.md "Where it is set"): a small sample scene (a step,
-// a decision, the arrow between them and a sticky note) drawn in a finish by the same renderer the exports use,
+// a decision and a sticky note) drawn in a finish by the same renderer the exports use,
 // so the preview is exactly what the canvas will draw. Fixed ids, so the Sketch wobble is the same every time.
 import {
   renderElementsToSvg,
-  type ArrowElement,
   type Element,
   type Finish,
   type ShapeElement,
@@ -33,12 +32,6 @@ const DECISION: ShapeElement = {
   height: 100,
   label: 'Ready?',
 };
-const LINK: ArrowElement = {
-  id: 'finish-preview-arrow',
-  type: 'arrow',
-  from: { kind: 'pinned', elementId: STEP.id, anchor: 'e' },
-  to: { kind: 'pinned', elementId: DECISION.id, anchor: 'w' },
-};
 const NOTE: StickyElement = {
   id: 'finish-preview-note',
   type: 'sticky',
@@ -51,7 +44,7 @@ const NOTE: StickyElement = {
 };
 
 /** The sample scene, in drawing order. */
-export const FINISH_PREVIEW_ELEMENTS: readonly Element[] = [STEP, DECISION, LINK, NOTE];
+export const FINISH_PREVIEW_ELEMENTS: readonly Element[] = [STEP, DECISION, NOTE];
 
 /** The sample scene drawn in `finish` on the tab's background, in the tab's theme and font, as SVG markup. */
 export function finishPreviewSvg(
@@ -61,9 +54,7 @@ export function finishPreviewSvg(
   // The sample in the tab's theme colours, recoloured exactly as picking that theme does, its labels at the size
   // new text takes when one is given (the Text panel).
   const sample = tab.textSize
-    ? FINISH_PREVIEW_ELEMENTS.map((el) =>
-        el.type === 'arrow' ? el : { ...el, textSize: tab.textSize },
-      )
+    ? FINISH_PREVIEW_ELEMENTS.map((el) => ({ ...el, textSize: tab.textSize }) as Element)
     : [...FINISH_PREVIEW_ELEMENTS];
   const elements = tab.theme
     ? withThemeApplied({ id: 'finish-preview', name: '', elements: sample }, tab.theme).elements

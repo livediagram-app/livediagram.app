@@ -13,13 +13,13 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/components/canvas/CanvasElementList.tsx`                  | Every element in paint order, memoised so an editor render that changes none skips them; the element plane      |
 | `apps/editor/hooks/canvas/useLayerDragPreview.ts`                      | The layer's preview store: a drag frame renders each previewed element, not the layer                           |
 | `apps/editor/hooks/canvas/useSnapGuideState.ts`                        | `SnapGuideStore`: the drag's snap guides, read only by `CanvasChrome`                                           |
-| `apps/editor/components/canvas/arrow-view-frame.ts`                    | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
-| `apps/editor/components/canvas/ArrowView.tsx`                          | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
+| `livediagram/apps/editor/components/canvas/arrow-view-frame.ts`        | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
+| `livediagram/apps/editor/components/canvas/ArrowView.tsx`              | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
 | `apps/editor/components/canvas/BoxedElementView.tsx`                   | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                                                  |
 | `packages/document/src/element-grid.ts`                                | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
-| `packages/document/src/arrow-behind.ts`                                | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
-| `packages/document/src/svg-render-arrows.ts`                           | The export builds one grid per render and queries it                                                            |
-| `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                     | `draftLayout` identity-stable across passes                                                                     |
+| `livediagram/packages/document/src/arrow-behind.ts`                    | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
+| `livediagram/packages/document/src/svg-render-arrows.ts`               | The export builds one grid per render and queries it                                                            |
+| `livediagram/apps/editor/hooks/canvas/useArrowLabelLayouts.ts`         | `draftLayout` identity-stable across passes                                                                     |
 | `apps/editor/lib/stock-colour-projector.ts`                            | Same board in, same array out (`lastIn` / `lastOut`)                                                            |
 | `apps/editor/hooks/canvas/useSettledElements.ts`                       | What the Map draws: frozen during element gestures, throttled otherwise                                         |
 | `apps/editor/components/canvas/Minimap.tsx`                            | Draws `useSettledElements(elements)`                                                                            |
