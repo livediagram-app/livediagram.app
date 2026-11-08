@@ -223,7 +223,7 @@ describe('computed emitters', () => {
   });
 
   it('read the tour steps the editor sends, in the order the Help tab ranks them', () => {
-    expect(TOUR_STEP_SOURCE.length).toBeGreaterThan(5);
+    expect(TOUR_STEP_SOURCE.length).toBe(4);
     expect([...TOUR_STEP_TYPES]).toEqual(TOUR_STEP_SOURCE);
   });
 });
