@@ -27,11 +27,10 @@ belongs to exactly one **body set**, which animates the element itself. An eleme
 A standalone **text element** has no body set: its words are the whole element, so it shows only Text Animation.
 
 A shape **carries words** when its kind takes a label. Icons, stickers and chairs keep
-their own sets (below) and take no Text set; nor do badges and step numbers, whose few characters are part of their
-body, or the Timeline, which animates its rows with the Concept set. A Shape animation stored on a Timeline
-before it had a set of its own plays only when it is one of the [Shape motions](#shape-motions): its Shape section
-offers no other tile to change or clear it. A step number's
-**Play in Order** offsets its Shape animation by its number ([The step number](../009-elements/step-number.md)).
+their own sets (below) and take no Text set. The badge, the step number and the Timeline, with its Concept set and
+Play in Order, went with the layout containers (Work Tracker #459, part 3:
+[Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)); a stored one draws as its
+placeholder and plays nothing.
 
 ### Shape motions
 
@@ -56,34 +55,33 @@ rows play in.
 
 These keep their catalogues and fields unchanged; they are listed so the menu rules below cover every element.
 
-| Set     | Menu section                         | Members      | Field           | Owned by                                                                      |
-| ------- | ------------------------------------ | ------------ | --------------- | ----------------------------------------------------------------------------- |
-| Icon    | Icon                                 | icon shapes  | `iconAnimation` | [Canvas and palette](../008-canvas/canvas-and-palette.md) "Animated icons"    |
-| Arrow   | Arrow                                | arrows       | `flow`          | [Canvas and palette](../008-canvas/canvas-and-palette.md) "Animated elements" |
-| Concept | (inside the element's Tools section) | the Timeline | `conceptAnim`   | [Timeline](../009-elements/timeline.md)                                       |
+| Set   | Menu section | Members     | Field           | Owned by                                                                      |
+| ----- | ------------ | ----------- | --------------- | ----------------------------------------------------------------------------- |
+| Icon  | Icon         | icon shapes | `iconAnimation` | [Canvas and palette](../008-canvas/canvas-and-palette.md) "Animated icons"    |
+| Arrow | Arrow        | arrows      | `flow`          | [Canvas and palette](../008-canvas/canvas-and-palette.md) "Animated elements" |
 
 ## The menu
 
 - The element context menu has one **Animation** row. Its flyout holds **one section per set present in the
-  selection**, named by its set (Shape, Text, Sticky, Drawing, Media, Icon, Concept, Arrow), and no others. An element's own animation is always one of these sections, never a picker inside
+  selection**, named by its set (Shape, Text, Sticky, Drawing, Media, Icon, Arrow), and no others. An element's own animation is always one of these sections, never a picker inside
   the element's own section (its Tools section holds only what the element is, not how it moves).
   A single shape with a label shows Shape and Text. When only one set is present (a single text element), there
   is nothing to choose between, so its section shows inline in the menu, titled Animation.
 - Sections appear in a fixed order: Shape, Sticky, Drawing, Media, Icon,
-  Concept, Text, Arrow. A body set
+  Text, Arrow. A body set
   comes before the words it carries; arrows come last, as today.
 - A section applies to **every member of its set in the selection** and to nothing else. With a shape and a text
   element selected, the Shape section animates the shape, and the Text section animates the text element and the
   shape's label.
 - A section reads its current value, Speed and Repeat from the **first member of its set** in the selection.
-- A Shape section offers the values **every member in it takes**: the whole set for shapes, a boundary's six, an
-  element's nine motions, and their overlap in a mixed selection (a boundary and a photo: Blink alone).
+- A Shape section offers the values **every member in it takes**: the whole set for shapes, an
+  element's nine motions, and their overlap in a mixed selection.
 - Every section is a closed `MenuAccordionSection`, as every element-menu section is.
 - Each option is a tile with a **live miniature** of its kind (a small box, a word, a note, a zig-zag line, a
   photo, an arrow, a star) running the real animation, frozen on a telling
   frame so the options read apart at a glance, and playing while the tile is hovered. A motion that moves the
   element rests over a faint dashed ghost of where it started. **None** shows the miniature still and clears the
-  animation. Every animation menu uses these tiles, Arrow, Icon and Concept included.
+  animation. Every animation menu uses these tiles, Arrow and Icon included.
 - Once an animation is picked, the section shows the shared **Speed** row (Slowest, Slow, Normal, Fast; Slow is
   the default) and **Repeat** toggle (on by default).
 - **Hover-to-preview** works in every section: hovering a tile with a desktop mouse plays it live on the selected

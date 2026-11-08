@@ -26,9 +26,9 @@ Scope, by file:
 | `apps/editor/components/canvas/web/*.tsx`                                    | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
 | `../packages/workbench/src/components/canvas/InlineTextLine.tsx`             | The in-place single-line editor                                                  |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`                        | Routes faces; computes `editable`                                                |
-| `apps/editor/hooks/canvas/useWebComponentSetters.ts`                         | Row writes, ring append, hero caption writes                                     |
+| `livediagram/apps/editor/hooks/canvas/useWebComponentSetters.ts`             | Row writes, ring append, hero caption writes                                     |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`                            | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
-| `apps/editor/components/palette/context-menu-web-editors.tsx`                | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
+| `livediagram/apps/editor/components/palette/context-menu-web-editors.tsx`    | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
 | `apps/editor/components/palette/ElementContentSections.tsx`                  | The image menu's "Caption Card" toggle                                           |
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx`                      | `WEB_ROW_ACTION`: the ring's add-row action                                      |
 | `apps/editor/lib/element-telemetry.ts`                                       | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
@@ -170,7 +170,7 @@ export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T;
 
-// apps/editor/hooks/canvas/useWebComponentSetters.ts
+// livediagram/apps/editor/hooks/canvas/useWebComponentSetters.ts
 setWebRows: (elementId: string, rows: WebRows) => void;
 appendWebRowTo: (elementId: string) => void;
 setWebRowsSelected: (rows: WebRows) => void;
@@ -267,34 +267,34 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 
 ## Testing
 
-| Rule                                         | Test                                                                                  | File                                                               |
-| -------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| One element per component, no `groupId` (I1) | every component builds exactly one element                                            | `livediagram/packages/document/src/web-components.test.ts`         |
-| Colours per family                           | dresses the accent-bar kinds in the accent with white text                            | `livediagram/packages/document/src/web-components.test.ts`         |
-| Hero is an image with a caption              | the hero is an image with a caption card in the accent                                | `livediagram/packages/document/src/web-components.test.ts`         |
-| Bounds (I3)                                  | validation bounds the rows (three cases)                                              | `livediagram/packages/document/src/web-components.test.ts`         |
-| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                             | `livediagram/packages/document/src/web-components.test.ts`         |
-| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `livediagram/packages/document/src/web-components.test.ts`         |
-| Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `livediagram/packages/document/src/web-components.test.ts`         |
-| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `livediagram/packages/document/src/web-components.test.ts`         |
-| Faces commit, inert until selected           | CardFace (commits a title and a tag; keeps its lines out of reach until selected)     | `apps/editor/components/canvas/web/CardFace.test.tsx`              |
-| Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `apps/editor/components/palette/context-menu-web-editors.test.tsx` |
-| Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `apps/editor/hooks/canvas/useWebComponentSetters.test.ts`          |
-| Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                                      | `packages/document/src/legacy-groups.test.ts`                      |
-| Migration pipeline                           | migrateStoredElements (two cases)                                                     | `packages/document/src/stored-elements.test.ts`                    |
-| Tab migration includes the element step      | migrates a retired scheme and retired element fields in one pass                      | `packages/document/src/stored-tab.test.ts`                         |
-| api read migrates                            | freezes a legacy group out of the stored elements                                     | `apps/api/src/tab-row.test.ts`                                     |
-| Offline load runs the tab migration          | migrates a tab saved against a retired scheme on load                                 | `apps/editor/lib/offline/offline-store.test.ts`                    |
-| JSON import runs the tab migration           | migrates an imported tab saved against a retired scheme                               | `apps/editor/lib/import-merge.test.ts`                             |
-| Thumbnail runs the tab migration             | renders the migrated tab, not the colours Charcoal baked                              | `apps/api/src/thumbnail.test.ts`                                   |
-| Excalidraw import has no groups              | maps common properties: opacity, angle, lock, link, dash; groups are dropped          | `../livediagram/apps/editor/lib/excalidraw-import.test.ts`         |
-| ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
-| Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/editor/lib/canvas-selection.test.ts`                         |
-| Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/editor/lib/draw-commit.test.ts`                              |
-| Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `livediagram/packages/document/src/svg-cap-band-render.test.ts`    |
-| Text alignment in the Quick Style Panel      | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/editor/lib/quick-style.test.ts`                              |
-| Ring add hidden when full                    | none [GA14]                                                                           |                                                                    |
-| Export draws the inline icon                 | none [GA2]                                                                            |                                                                    |
+| Rule                                         | Test                                                                                  | File                                                                           |
+| -------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| One element per component, no `groupId` (I1) | every component builds exactly one element                                            | `livediagram/packages/document/src/web-components.test.ts`                     |
+| Colours per family                           | dresses the accent-bar kinds in the accent with white text                            | `livediagram/packages/document/src/web-components.test.ts`                     |
+| Hero is an image with a caption              | the hero is an image with a caption card in the accent                                | `livediagram/packages/document/src/web-components.test.ts`                     |
+| Bounds (I3)                                  | validation bounds the rows (three cases)                                              | `livediagram/packages/document/src/web-components.test.ts`                     |
+| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                             | `livediagram/packages/document/src/web-components.test.ts`                     |
+| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `livediagram/packages/document/src/web-components.test.ts`                     |
+| Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `livediagram/packages/document/src/web-components.test.ts`                     |
+| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `livediagram/packages/document/src/web-components.test.ts`                     |
+| Faces commit, inert until selected           | CardFace (commits a title and a tag; keeps its lines out of reach until selected)     | `livediagram/apps/editor/components/canvas/web/CardFace.test.tsx`              |
+| Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `livediagram/apps/editor/components/palette/context-menu-web-editors.test.tsx` |
+| Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `livediagram/apps/editor/hooks/canvas/useWebComponentSetters.test.ts`          |
+| Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                                      | `packages/document/src/legacy-groups.test.ts`                                  |
+| Migration pipeline                           | migrateStoredElements (two cases)                                                     | `packages/document/src/stored-elements.test.ts`                                |
+| Tab migration includes the element step      | migrates a retired scheme and retired element fields in one pass                      | `packages/document/src/stored-tab.test.ts`                                     |
+| api read migrates                            | freezes a legacy group out of the stored elements                                     | `apps/api/src/tab-row.test.ts`                                                 |
+| Offline load runs the tab migration          | migrates a tab saved against a retired scheme on load                                 | `apps/editor/lib/offline/offline-store.test.ts`                                |
+| JSON import runs the tab migration           | migrates an imported tab saved against a retired scheme                               | `apps/editor/lib/import-merge.test.ts`                                         |
+| Thumbnail runs the tab migration             | renders the migrated tab, not the colours Charcoal baked                              | `apps/api/src/thumbnail.test.ts`                                               |
+| Excalidraw import has no groups              | maps common properties: opacity, angle, lock, link, dash; groups are dropped          | `../livediagram/apps/editor/lib/excalidraw-import.test.ts`                     |
+| ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.test.ts`                  |
+| Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/editor/lib/canvas-selection.test.ts`                                     |
+| Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/editor/lib/draw-commit.test.ts`                                          |
+| Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `livediagram/packages/document/src/svg-cap-band-render.test.ts`                |
+| Text alignment in the Quick Style Panel      | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/editor/lib/quick-style.test.ts`                                          |
+| Ring add hidden when full                    | none [GA14]                                                                           |                                                                                |
+| Export draws the inline icon                 | none [GA2]                                                                            |                                                                                |
 
 ## Constants and configuration
 

@@ -74,7 +74,7 @@ sticker classes a kept Shape value still draws.
 `takesShapeMotions(el)` is true for `sticky`, `freehand`, `path`, `image`, and a `shape` with a set
 of its own (`hasOwnShapeSet` or `hasOwnBodySet`) other than `icon`. `inAnimationSet('shape', el)` is
 `bodyAnimationSetOf(el) === 'shape' || takesShapeMotions(el)`, and `animationSetsOf` adds `shape` for such an element.
-`shapeAnimationsFor(el)` is `CONTAINER_ANIMATIONS` for a boundary, `SHAPE_ANIMATIONS` for any other Shape member,
+`shapeAnimationsFor(el)` is `SHAPE_ANIMATIONS` for a Shape member,
 `SHAPE_MOTIONS` for an element that takes the motions, else `[]`.
 
 `animationSectionOf(el, value)` is `shape` when the element takes the motions and the value is a motion, or when it
@@ -84,10 +84,9 @@ has no body set and no `hasOwnBodySet` (an older Shape value, shown as the Shape
 `carriesWords(el)`: `text` and `sticky` are true; a `shape` is true when `takesTypedLabel(el)`, not
 `selfLabelled(el)`, not an icon, and not `chair` or `sticker`; everything else is false.
 
-`animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, concept, arrow) to `animationSetsOf` and orders all by
-`shape, sticky, drawing, media, icon, concept, text, arrow`. Concept
-renders `ConceptAnimTiles` (`apps/editor/components/palette/ElementAnimationTiles.tsx`)
-through the menu's `elementStyle` ops.
+`animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, arrow) to `animationSetsOf` and orders all by
+`shape, sticky, drawing, media, icon, text, arrow`. The concept category went with the Timeline (Work Tracker #459,
+part 3: [Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-element-engine)).
 
 ## Data and persistence
 
@@ -232,7 +231,7 @@ tile too. It replaced `AnimationTiles`.
 
 `AnimationSections` props: `elements`, `keyPrefix: '' | 'm-'`, `sectionProps`, `flyoutProps`, `handlers` (a `Pick`
 of `EditorContextMenuProps`). It renders one `MenuFlyoutSection` titled Animation (key `<prefix>animation`) holding a
-`MenuAccordionSection` per category, named by `nameOf` (`ANIMATION_SET_NAME`, or Icon / Concept / Arrow); with one
+`MenuAccordionSection` per category, named by `nameOf` (`ANIMATION_SET_NAME`, or Icon / Arrow); with one
 category it renders that section alone, titled Animation. Section keys are `<prefix>animation-<category>`, and
 `<prefix>flow` for arrows.
 

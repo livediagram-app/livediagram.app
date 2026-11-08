@@ -106,7 +106,7 @@ badge is rose whatever the theme. It is a plain colour, not a swatch, so a later
 (the Warning's rose) wins, as on the canvas. So the tiles are untinted: the palette's theme fill never paints over a
 pill's look. The Badge tile itself shows the New badge it drops. One source: `badgePresetFace(variant)`
 (`packages/document/src/shape-variants.ts`) reads the preset the tile places; `BadgePresetGlyph`
-(`apps/editor/components/palette/BadgePresetGlyph.tsx`) draws it.
+(`livediagram/apps/editor/components/palette/BadgePresetGlyph.tsx`) draws it.
 
 Each is an ordinary badge: its text, look and colour change afterwards like any badge's.
 
