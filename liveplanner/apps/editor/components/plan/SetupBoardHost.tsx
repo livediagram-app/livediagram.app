@@ -5,6 +5,7 @@
 // Set up board, or Board Setup's Setup Board run again). The dialog's code loads only when it first opens.
 import dynamic from 'next/dynamic';
 import { useRef } from 'react';
+import { revealCard } from '@/hooks/plan/useCardRunReveal';
 import { boardAddTypes, type PlanBoardSetup as BoardSetup } from '@liveplanner/items';
 import { mayCreateCardType } from './may-create-card-type';
 import { usePlan } from './PlanContext';
@@ -29,9 +30,10 @@ function focusBoard(id: string, placeholder: HTMLElement | null): void {
     return;
   }
   const board = document.querySelector(`[data-plan-board="${CSS.escape(id)}"]`);
-  board
-    ?.querySelector<HTMLElement>('[data-plan-card], button:not([disabled])')
-    ?.focus({ preventScroll: true });
+  const first = board?.querySelector<HTMLElement>('[data-plan-card], button:not([disabled])');
+  // A far run's card takes no focus (useCardRunReveal): its run drawn first.
+  revealCard(first);
+  first?.focus({ preventScroll: true });
 }
 
 export function SetupBoardHost({

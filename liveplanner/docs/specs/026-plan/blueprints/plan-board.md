@@ -751,6 +751,24 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   (the column hover snaps). `usePlanCardFlip` `cardsToMeasure` reads only the cards of runs within a view's length of
   the body's view (a place read in a skipped run lays it out again); a board without runs reads every card.
   `:root.lvd-style-transition [data-plan-busy] *` turns every transition off for the moment of a Tab Style change.
+- Far runs (spec "Cards out of view wait"; `hooks/plan/useCardRunReveal.ts`): Safari styles a `content-visibility`
+  subtree all the same (measured on a 2,000-card board: 400 cards inserted cost about 0.2 s of style in WebKit
+  whether their runs were `auto`, `hidden` or plain, 8 to 24 ms under `display: none`), so a run's cards are drawn
+  only while the run carries `data-plan-run-near` (`RUN_NEAR_ATTR`). `globals.css`:
+  `.plan-card-run:not([data-plan-run-near]) > *` is `display: none`, and such a run takes
+  `height: var(--run-h, calc(var(--run-cards, 1) * 140px + 40px))` (`52px` a card under `minimal`; the 48 px of its
+  padding less the 8 px gap), so a far run keeps its place: `--run-h` is the run's `offsetHeight`, written as it goes
+  far; one never drawn takes the estimate. React writes neither the attribute nor `--run-h`, so a re-render keeps both.
+  `useCardRunReveal(bodyRef, busy)`, while busy, in a layout effect: marks the body's near runs (`runIsNear`: the run's
+  box within `RUN_NEAR_VIEWS` (1) of the body's box on every side), observes every run with one
+  `IntersectionObserver` (root the body, `rootMargin` 100% on every side: near while intersecting, else far with its
+  height kept first), and a `MutationObserver` on the body (child list, subtree) observes each run added and marks it
+  near at once when it is, in the microtask after React's commit and before the frame is drawn, so a run arriving in
+  view never shows empty. `cardsToMeasure` marks each run it reads (the flip runs inside the commit, before that
+  microtask). Without `IntersectionObserver` (jsdom, an old browser) every run is near. `revealCard(card)` marks the
+  card's run near; `PlanBoardView` and `SetupBoardHost` call it before they focus a card (a keyboard move, the focus after a move or a setup), as a
+  `display: none` card takes no focus. Elsewhere a far card reads as a box of 0: the card morph falls back to its
+  fade, the fan-in and the drop slot pass over it, the face finish pass skips it (`checkVisibility`).
 - <a id="body-end-anchor"></a>Body end anchor: `SplitViewFrame` calls `useBodyEndAnchor` (`hooks/ui/useBodyEndAnchor.ts`),
   which keeps an empty hidden `div[data-body-end]` after the editor's root at the end of `<body>`. A portal (the drag
   copy, a menu, a tooltip) is appended after it, so the editor's root never gains or loses `:last-child`; Safari
@@ -882,6 +900,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Column picker statuses, counts, boards                         | `packages/items/src/board-status-picks.test.ts`                                                                                                                |
 | Cursors per role: card hand, Viewer pointer, body arrow        | `apps/editor/components/plan/board-cursors.test.ts`                                                                                                            |
 | Fill Tab: which board, deletion, copy                          | `apps/editor/components/plan/fill-tab.test.ts`                                                                                                                 |
+| Far runs: near ones drawn, far ones held, focus, no observer   | `apps/editor/hooks/plan/useCardRunReveal.test.tsx`                                                                                                             |
 | Setup Board Layout step, stepper, Fill Tab                     | `apps/editor/components/plan/PlanSetupBoard.test.tsx`                                                                                                          |
 | Setup Board as a dialog: opens, cannot be dismissed, toast     | `apps/editor/components/plan/SetupBoardHost.test.tsx`                                                                                                          |
 | Layout read from and written to the board                      | `apps/editor/components/plan/setup-board.test.ts`                                                                                                              |
@@ -992,6 +1011,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `PLAN_INK_MEMO_MAX`        | 2048               | Bounds the card ink memo; a board asks for tens; 256-8192                   |
 | `RUN_SPREAD`               | 4                  | `card-runs.ts`: 8 cost 0.3-0.5 s an edge crossing, 2 slowed each gap; 3-6   |
 | `CARD_RUN_MAX`             | 8                  | `card-runs.ts`: bounds a run of cards hashing to no start; 6-12             |
+| `RUN_NEAR_VIEWS`           | 1                  | `useCardRunReveal.ts`: a view's length past the body on every side; 0.5-2   |
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to
