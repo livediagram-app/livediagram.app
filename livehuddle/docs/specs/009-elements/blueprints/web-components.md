@@ -8,10 +8,10 @@ Scope, by file:
 
 | File                                                                         | Role                                                                             |
 | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `packages/document/src/web-components.ts`                                    | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
+| `livediagram/packages/document/src/web-components.ts`                        | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
 | `packages/document/src/component-factories.ts`                               | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
 | `packages/document/src/shape-factory.ts`                                     | Default sizes and starting content per kind                                      |
-| `packages/document/src/svg-render-web.ts`                                    | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
+| `livediagram/packages/document/src/svg-render-web.ts`                        | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
 | `packages/document/src/themes.ts`                                            | `themeColourFields`: accent bars retheme only their stroke                       |
 | `packages/document/src/colors.ts`                                            | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
 | `packages/document/src/data-shapes.ts`                                       | `isSelfDrawingShape`: stat row and process carry no label                        |
@@ -96,7 +96,7 @@ shape kind.
 - **Banner:** `pad = round(clamp(min(w, h) * 0.16, 8, 32))`; subtitle band `round(subtitlePx *
 1.5)` tall at the bottom of the padded box, `subtitlePx = round(clamp(h * 0.13, 11, 22))`; the
   title takes the rest.
-- **Callout:** a Card preset since [card.md](card.md); laid out by `cardLayout` with badge media.
+- **Callout:** a Card preset since [card.md](../card.md); laid out by `cardLayout` with badge media.
 - **Stat row:** `n` cards, `gap = min(STAT_GAP, w * 0.2 / (n - 1))`, equal widths; value px
   `round(clamp(min(h * 0.34, cardW * 0.28), 12, 72))`, caption `round(clamp(value * 0.45, 10, 22))`
   [QA3].
@@ -144,7 +144,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/web-components.ts
+// livediagram/packages/document/src/web-components.ts
 export type WebComponentShape = 'banner' | 'callout' | 'stat-row' | 'process' | 'site-header';
 export type StatItem = { value: string; caption: string };
 export type HeroCaption = { title: string; subtitle: string };
@@ -269,14 +269,14 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 
 | Rule                                         | Test                                                                                  | File                                                               |
 | -------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| One element per component, no `groupId` (I1) | every component builds exactly one element                                            | `packages/document/src/web-components.test.ts`                     |
-| Colours per family                           | dresses the accent-bar kinds in the accent with white text                            | `packages/document/src/web-components.test.ts`                     |
-| Hero is an image with a caption              | the hero is an image with a caption card in the accent                                | `packages/document/src/web-components.test.ts`                     |
-| Bounds (I3)                                  | validation bounds the rows (three cases)                                              | `packages/document/src/web-components.test.ts`                     |
-| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                             | `packages/document/src/web-components.test.ts`                     |
-| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `packages/document/src/web-components.test.ts`                     |
-| Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `packages/document/src/web-components.test.ts`                     |
-| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `packages/document/src/web-components.test.ts`                     |
+| One element per component, no `groupId` (I1) | every component builds exactly one element                                            | `livediagram/packages/document/src/web-components.test.ts`         |
+| Colours per family                           | dresses the accent-bar kinds in the accent with white text                            | `livediagram/packages/document/src/web-components.test.ts`         |
+| Hero is an image with a caption              | the hero is an image with a caption card in the accent                                | `livediagram/packages/document/src/web-components.test.ts`         |
+| Bounds (I3)                                  | validation bounds the rows (three cases)                                              | `livediagram/packages/document/src/web-components.test.ts`         |
+| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                             | `livediagram/packages/document/src/web-components.test.ts`         |
+| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `livediagram/packages/document/src/web-components.test.ts`         |
+| Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `livediagram/packages/document/src/web-components.test.ts`         |
+| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `livediagram/packages/document/src/web-components.test.ts`         |
 | Faces commit, inert until selected           | CardFace (commits a title and a tag; keeps its lines out of reach until selected)     | `apps/editor/components/canvas/web/CardFace.test.tsx`              |
 | Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `apps/editor/components/palette/context-menu-web-editors.test.tsx` |
 | Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `apps/editor/hooks/canvas/useWebComponentSetters.test.ts`          |
@@ -291,7 +291,7 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 | ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
 | Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/editor/lib/canvas-selection.test.ts`                         |
 | Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/editor/lib/draw-commit.test.ts`                              |
-| Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `packages/document/src/svg-cap-band-render.test.ts`                |
+| Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `livediagram/packages/document/src/svg-cap-band-render.test.ts`    |
 | Text alignment in the Quick Style Panel      | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/editor/lib/quick-style.test.ts`                              |
 | Ring add hidden when full                    | none [GA14]                                                                           |                                                                    |
 | Export draws the inline icon                 | none [GA2]                                                                            |                                                                    |

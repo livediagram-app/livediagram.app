@@ -37,7 +37,7 @@ was found and measured at the time; it is not a spec.
 ## 1. An experiment on the real engine
 
 To ground the rest, a 15-node, 16-edge e-commerce architecture was run through the MCP's own
-`layoutGraph` (`packages/document/src/graph-input.ts`), rendered with `renderElementsToSvg`
+`layoutGraph` (`livediagram/packages/document/src/graph-input.ts`), rendered with `renderElementsToSvg`
 (`packages/document`) and rasterised with `@resvg/resvg-wasm` and the embedded Inter, exactly
 as the MCP does. Crossings and box hits were counted with the existing `arrowPolyline`,
 `pathsCross` and `pathPassesThrough` (`packages/document/src/arrow-path-hits.ts`).
@@ -130,13 +130,13 @@ flows**, then show the result and report its faults in words.
 
 What livehuddle has, by file:
 
-- `packages/document/src/graph-authoring.ts`: `graphToElements`; node id becomes element id;
+- `livediagram/packages/document/src/graph-authoring.ts`: `graphToElements`; node id becomes element id;
   boxes sized to labels (`labelBoxSize`); entity nodes from `fields`.
 - `packages/document/src/auto-layout*.ts`: layered flow with barycentre crossing reduction
   (`reduceCrossings`, `countCrossings`), long-edge lanes, tree, mindmap; `nodesLookUnplaced`
   to respect a placement the model made on purpose.
-- `packages/document/src/auto-layout-clusters.ts`: `layoutClusteredGraph`, groups as frames.
-- `packages/document/src/graph-input.ts`: label cap of 40 with overflow into the note, layout choice,
+- `livediagram/packages/document/src/auto-layout-clusters.ts`: `layoutClusteredGraph`, groups as frames.
+- `livediagram/packages/document/src/graph-input.ts`: label cap of 40 with overflow into the note, layout choice,
   line style, Mermaid via the editor's own `parseMermaid`.
 - `packages/templates`: 68 hand-tuned templates materialised server-side.
 - `packages/document/src/svg-render*.ts` and `../packages/mcp-kit/src/render.ts`: one SVG renderer for
@@ -533,7 +533,7 @@ These are product decisions, not research conclusions:
 - MermaidSeqBench, arXiv 2511.14967: <https://arxiv.org/abs/2511.14967>
 - GenAI-DrawIO-Creator, arXiv 2601.05162: <https://arxiv.org/abs/2601.05162>
 - Anthropic image token estimate (width × height / 750): Claude vision documentation
-- In-repo: `packages/document/src/graph-input.ts`, `../packages/mcp-kit/src/render.ts`, `livediagram/packages/agent-verbs/src/mcp/schema.ts`,
-  `livediagram/apps/mcp/src/prompts.ts`, `packages/document/src/graph-authoring.ts`, `auto-layout*.ts`,
+- In-repo: `livediagram/packages/document/src/graph-input.ts`, `../packages/mcp-kit/src/render.ts`, `livediagram/packages/agent-verbs/src/mcp/schema.ts`,
+  `livediagram/apps/mcp/src/prompts.ts`, `livediagram/packages/document/src/graph-authoring.ts`, `auto-layout*.ts`,
   `arrow-path-hits.ts`, `mermaid-serialise.ts`, `../packages/icons/src/tech-icon-ids.ts`,
   `packages/templates/src/templates.ts`

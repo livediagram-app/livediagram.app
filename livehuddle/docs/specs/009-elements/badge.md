@@ -1,6 +1,6 @@
 # The badge
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/badge.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 3): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/badge.md) is the one to read and change. livehuddle has no tile, menu, setter or renderer for it, and nothing holds or attaches to it: a stored badge is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder named **Badge**, which an Editor can delete. The rest of this page describes the element as livediagram has it.
 
 ## What
 
@@ -137,4 +137,4 @@ longer than 24 characters is refused with `invalid_result`, naming the element a
 label is at most 24 characters`). A step's label over 3 is refused the same way. Only the elements a write touches are
 checked, so a document that already holds a longer label (made before the cap was enforced) still takes edits to its
 other elements, and the editor's own saves are never refused for it (`chipLabelIssue` in
-`packages/document/src/chip.ts`, run by the agent write paths alone).
+`livediagram/packages/document/src/chip.ts`, run by the agent write paths alone).

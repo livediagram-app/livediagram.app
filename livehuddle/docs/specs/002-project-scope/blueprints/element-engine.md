@@ -59,8 +59,9 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
   take no `graph`; edit operations lose `wrap`, `unwrap`, the `in:` selector, the `inside:` placement, growing a
   container to hold (`grow-container.ts`) and a container's scope in make-room. The diagram lint loses its graph
   entry points (`lintGraph`, `compare`) and its group checks; `lintTab` is unchanged.
-- An image's `heroCaption` stays on the `ImageElement` type as an opaque stored value (`heroCaption?: unknown`), never
-  read; `HeroCaptionCard` and the export's caption go (D20). The tab's `tagColours` stays on `Tab` the same way.
+- An image's `heroCaption` leaves the `ImageElement` type: a stored one rides on the element as a field nothing reads,
+  kept by load and save like any unknown field; `HeroCaptionCard` and the export's caption go (D20). The tab's
+  `tagColours` stays on `Tab` as an opaque stored value (`tagColours?: unknown`), never read.
 
 ## Interfaces and contracts
 

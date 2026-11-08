@@ -1,6 +1,6 @@
 # Timeline
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 3): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/timeline-rail.md) is the one to read and change. livehuddle has no tile, menu, setter or renderer for it, and nothing holds or attaches to it: a stored timeline is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder named **Timeline**, which an Editor can delete. The rest of this page describes the element as livediagram has it.
 
 ## What
 
@@ -53,7 +53,7 @@ export matches the editor. Text re-wraps and re-sizes with the element; it never
 
 ### Timeline
 
-`timelineLayout(w, h, n)` (`packages/document/src/concept-timeline.ts`), shared by the face and the export:
+`timelineLayout(w, h, n)` (`livediagram/packages/document/src/concept-timeline.ts`), shared by the face and the export:
 
 - **The spine** runs across the middle (`y = h / 2`) to an arrowhead at the right edge, `clamp(h * 0.06, 6, 12)` long:
   time runs that way. It is drawn in the accent at 55%, 3 px, round-capped.
