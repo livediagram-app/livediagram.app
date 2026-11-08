@@ -47,5 +47,6 @@ export async function withCappedBody(request: Request, maxBytes: number): Promis
   if (request.body === null) return request;
   // A request body streams bytes; the Workers types leave its chunks untyped.
   const bytes = await readCappedBody(request.body as ReadableStream<Uint8Array>, maxBytes);
-  return bytes && new Request(request, { body: bytes });
+  // The DOM types take only an ArrayBuffer-backed view as a body; a stream's chunks are never shared memory.
+  return bytes && new Request(request, { body: bytes as Uint8Array<ArrayBuffer> });
 }
