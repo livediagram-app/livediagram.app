@@ -352,7 +352,11 @@ describe('comments in a tab PUT', () => {
       stored(db)[0] as unknown as { commentThread: { comments: Record<string, unknown>[] } }
     ).commentThread.comments;
     expect(comments[0]).toMatchObject({ text: 'Ship it', authorName: 'Bob', authorId: 'user_bob' });
-    expect(comments[1]).toMatchObject({ text: 'Delete it all', authorId: OWNER, authorName: '' });
+    expect(comments[1]).toMatchObject({
+      text: 'Delete it all',
+      authorId: OWNER,
+      authorName: 'Alice',
+    });
     expect(comments[1]).not.toHaveProperty('tokenId');
   });
 });

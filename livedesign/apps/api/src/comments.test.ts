@@ -70,6 +70,28 @@ describe('rewriteCommentAuthors', () => {
     expect(result[0]).toBe(el);
   });
 
+  // A writer whose profile could not be read reaches the save with an empty name and colour (tab-put-route.ts):
+  // their own new comment keeps the name and colour it was posted under, clamped and checked, never blank.
+  it("keeps a profile-less writer's own name and a safe colour on their new comment", () => {
+    const blank: ParticipantDTO = { id: 'writer-id', name: '', color: '', createdAt: 0 };
+    const posted = mkShape('a', [mkComment('c1', '  Guest Ada  ', '#22c55e')]);
+    const [kept] = rewriteCommentAuthors([posted], [], blank) as [ShapeElement];
+    expect(kept.commentThread!.comments[0]).toMatchObject({
+      authorName: 'Guest Ada',
+      authorColor: '#22c55e',
+      authorId: 'writer-id',
+    });
+    const unsafe = mkShape('a', [mkComment('c1', '   ', 'url(https://x.example/a.png)')]);
+    const [fell] = rewriteCommentAuthors([unsafe], [], blank) as [ShapeElement];
+    expect(fell.commentThread!.comments[0]).toMatchObject({
+      authorName: 'Anonymous',
+      authorColor: '#94a3b8',
+    });
+    const long = mkShape('a', [mkComment('c1', 'x'.repeat(500), '#22c55e')]);
+    const [clamped] = rewriteCommentAuthors([long], [], blank) as [ShapeElement];
+    expect(clamped.commentThread!.comments[0]!.authorName).toHaveLength(120);
+  });
+
   it('overwrites author fields on a brand-new comment with the writer', () => {
     const next = mkShape('a', [mkComment('c1', 'CLIENT LIE', '#ff0000')]);
     const result = rewriteCommentAuthors([next], [], writer);
