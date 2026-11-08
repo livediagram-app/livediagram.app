@@ -366,6 +366,11 @@ describe('item text', () => {
     expect(itemSummary(a)).toBe('#12 [project] Fix login (@Sam Lee, !high)');
     expect(itemSummary(item({ title: 'x' }, { key: 3 }))).toBe('#3 [task] x');
   });
+
+  // docs/specs/026-plan/plan-tour.md: a practice card (key 0) has no number of its own.
+  it('names a card with no number by its title alone', () => {
+    expect(itemAccessibleName(item({ title: 'Book a room' }, { key: 0 }))).toBe('Book a room, Task');
+  });
 });
 
 describe('presets', () => {
