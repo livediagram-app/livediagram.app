@@ -5,7 +5,7 @@ import { PALETTE_TELEMETRY_TYPES } from '@livehuddle/api-schema';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
-import { LOCAL_MOVE_OFFERED, RETIRED_PARTS_OFFERED, TIDY_UP_OPENED } from './features';
+import { LOCAL_MOVE_OFFERED, RETIRED_PARTS_OFFERED } from './features';
 
 // Filling out existing stacks.
 export const JUST_DRAW = chart(
@@ -371,7 +371,6 @@ export const TAB_ACTIONS: MetricStack = {
     TAB_TEXT_DEFAULTS,
     TAB_FINISH,
     TAB_LOOKS_PICKED,
-    TIDY_UP_OPENED,
     TABS_ARRANGED,
     TABS_REORDERED,
     TABS_LINKED,
