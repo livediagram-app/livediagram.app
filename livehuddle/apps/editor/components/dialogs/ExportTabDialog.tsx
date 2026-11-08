@@ -79,7 +79,7 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'markdown',
     title: 'Markdown',
-    description: "A text outline of this tab's elements and connections. Copy it or save a .md.",
+    description: "A text outline of this tab's elements. Copy it or save a .md.",
   },
   {
     kind: 'png',
