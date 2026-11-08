@@ -70,10 +70,10 @@ describe('useLandscapeBars', () => {
 
   it('a press during a tour folds from what is on screen', () => {
     const { result } = renderHook(() => useLandscapeBars([0, 0]));
-    act(() => setActiveTour('draw', true));
+    act(() => setActiveTour('avatar', true));
     act(() => result.current.toggle());
     expect(track).toHaveBeenLastCalledWith('UI', 'Toggled', 'LandscapeBarsOff');
-    act(() => setActiveTour('draw', false));
+    act(() => setActiveTour('avatar', false));
     expect(result.current.shown).toBe(false);
   });
 });

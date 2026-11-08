@@ -3,12 +3,12 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { activeTour, setActiveTour, useActiveTour } from './tour-active';
 
-// One guided tour at a time (docs/specs/007-editor/editor-tour.md).
+// One guided tour at a time (docs/specs/007-editor/watch-it-built.md).
 
 afterEach(() => {
   setActiveTour('welcome', false);
-  setActiveTour('draw', false);
-  setActiveTour('workshop', false);
+  setActiveTour('avatar', false);
+  setActiveTour('element', false);
 });
 
 describe('tour-active', () => {
@@ -20,24 +20,24 @@ describe('tour-active', () => {
 
   it('is released only by the tour holding it', () => {
     setActiveTour('welcome', true);
-    setActiveTour('draw', false);
+    setActiveTour('avatar', false);
     expect(activeTour()).toBe('welcome');
     setActiveTour('welcome', false);
     expect(activeTour()).toBeNull();
   });
 
-  it('holds the Workshop tour like the others', () => {
-    setActiveTour('workshop', true);
+  it('holds an element tour like the others', () => {
+    setActiveTour('element', true);
     setActiveTour('welcome', false);
-    expect(activeTour()).toBe('workshop');
+    expect(activeTour()).toBe('element');
   });
 
   it('re-renders a reader when it changes', () => {
     const { result } = renderHook(() => useActiveTour());
     expect(result.current).toBeNull();
-    act(() => setActiveTour('draw', true));
-    expect(result.current).toBe('draw');
-    act(() => setActiveTour('draw', false));
+    act(() => setActiveTour('avatar', true));
+    expect(result.current).toBe('avatar');
+    act(() => setActiveTour('avatar', false));
     expect(result.current).toBeNull();
   });
 });

@@ -143,12 +143,12 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Lanes, next-note buttons, and importing a photo of the wall.',
   },
   workshopTour: {
-    title: 'Learn about the Workshop Tour',
-    description: 'What the tour shows you and how replaying works.',
+    title: 'Learn about Watch It Built in Workshop',
+    description: 'The Workshop topics and how to watch one again.',
   },
   drawTour: {
-    title: 'Learn about the Draw Tour',
-    description: 'What the tour shows you and how replaying works.',
+    title: 'Learn about Watch It Built in Draw',
+    description: 'The Draw topics and how to watch one again.',
   },
   avatarTour: {
     title: 'Learn about the Avatar Tour',
@@ -426,7 +426,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   diagramTour: {
     title: 'Learn about Watch It Built',
-    description: 'What the Diagram tour shows and how to watch it again.',
+    description: 'The Diagram topics and how to watch one again.',
   },
   whatWeCollect: {
     title: 'Learn about what we collect',

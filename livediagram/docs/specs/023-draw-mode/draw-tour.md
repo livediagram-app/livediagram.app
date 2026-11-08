@@ -1,5 +1,7 @@
 # Draw tour ("Start Draw Tour")
 
+> **Retired** (owner, 2026-11-08, Work Tracker #58): Draw mode's tour is now [Watch It Built](../007-editor/watch-it-built.md), short replays picked from a start panel. This spec is kept as the record of the stepped tour; its code is gone. The `drawTourSeen` key stays as Settings' row key and telemetry token for the mode's Watch It Built switch.
+
 A short, optional guided tour of [Draw mode](draw-mode.md), started from the footer's **Start Draw Tour** button. It
 is the [Workshop tour](../012-collaboration/workshop-tour.md)'s sibling: the same Start Tour button, anchored step
 cards, glide, dimming ring, Skip, Back and closing card, driven by the same engine. Where this spec is silent, the

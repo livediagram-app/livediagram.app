@@ -426,13 +426,20 @@ function tourTracksSwitch(
 // Watch It Built's rows for a mode (docs/specs/007-editor/watch-it-built.md "Settings"): its switch, on while any of
 // its topics is owed (off takes them all, on offers them all again), then one switch per topic beneath it. The mode's
 // key is the stepped tour's old flag, kept so its telemetry tokens keep their series; the switch reads the topics.
+const WATCH_ARTICLE = {
+  diagram: 'diagramTour',
+  draw: 'drawTour',
+  workshop: 'workshopTour',
+} as const satisfies Record<ReplayMode, HelpArticleKey>;
+
 function watchRows(
   mode: ReplayMode,
   key: 'tourSeen' | 'drawTourSeen' | 'workshopTourSeen',
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'keywords' | 'event'>,
 ): SettingsToggleRowSpec[] {
+  const helpArticle = WATCH_ARTICLE[mode];
   const parent: SettingsToggleRowSpec = {
-    ...tourSwitch(key, { ...row, helpArticle: 'diagramTour' }),
+    ...tourSwitch(key, { ...row, helpArticle }),
     read: (p) => topicsOwed(p, mode).length > 0,
     write: (p, v) => setModeTopics(p, mode, !v),
   };
@@ -446,7 +453,7 @@ function watchRows(
       label: t.title,
       description: t.line,
       keywords: `tour replay learn watch ${mode} ${t.title.toLowerCase()}`,
-      helpArticle: 'diagramTour',
+      helpArticle,
       event: { category: 'UI', on: `Watch${t.telemetry}SeenOff`, off: `Watch${t.telemetry}SeenOn` },
       read: (p) => !topicTaken(p, t.id),
       write: (p, v) => (v ? offerTopicAgain(p, t.id) : markTopicTaken(p, t.id)),

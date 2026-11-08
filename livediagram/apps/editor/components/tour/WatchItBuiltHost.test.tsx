@@ -106,7 +106,7 @@ afterEach(() => {
   shown.panel = null;
   shown.player = null;
   setActiveTour('welcome', false);
-  setActiveTour('draw', false);
+  setActiveTour('avatar', false);
   setStartPanelOpen(false);
   resetTourOffersForTests();
 });
@@ -212,11 +212,11 @@ describe('WatchItBuiltHost', () => {
   it('opens nothing beside another tour', () => {
     editor();
     const r = mount();
-    act(() => setActiveTour('draw', true));
+    act(() => setActiveTour('avatar', true));
     act(() => tourOffer()?.start());
     act(() => requestWatchRelaunch('diagram'));
     expect(r.queryByTestId('panel')).toBeNull();
-    act(() => setActiveTour('draw', false));
+    act(() => setActiveTour('avatar', false));
     act(() => requestWatchRelaunch('diagram'));
     expect(r.getByTestId('panel')).toBeTruthy();
   });

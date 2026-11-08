@@ -1,5 +1,7 @@
 # Workshop tour ("Start Workshop Tour")
 
+> **Retired** (owner, 2026-11-08, Work Tracker #58): Workshop mode's tour is now [Watch It Built](../007-editor/watch-it-built.md), short replays picked from a start panel. This spec is kept as the record of the stepped tour; its code is gone. The `workshopTourSeen` key stays as Settings' row key and telemetry token for the mode's Watch It Built switch.
+
 A short, optional guided tour of [Workshop mode](workshop-mode.md), started from the footer's **Start Workshop Tour**
 button. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling, as the
 [Draw tour](../023-draw-mode/draw-tour.md) is: the same Start Tour button, anchored step cards, glide, dimming ring,
