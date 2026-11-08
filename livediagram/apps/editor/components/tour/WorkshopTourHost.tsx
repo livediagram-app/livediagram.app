@@ -39,7 +39,7 @@ const DEMOS: readonly { which: WorkshopDemo; width: number; height: number }[] =
 ];
 
 // Orchestrates the Workshop tour (docs/specs/012-collaboration/workshop-tour.md). Mounted once in EditorView beside
-// TourHost. While the person is in Workshop mode with an editor they can use, it offers the tour on the footer's Start
+// WatchItBuiltHost. While the person is in Workshop mode with an editor they can use, it offers the tour on the footer's Start
 // Tour button ("Start Workshop Tour"); a press there, or the Settings row, starts it. Its demo session elements are
 // the tour's own, taken away as it ends.
 export function WorkshopTourHost() {

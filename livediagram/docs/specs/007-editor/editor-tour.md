@@ -1,26 +1,31 @@
-# Diagram tour ("Start Diagram Tour")
+# Diagram tour ("Watch It Built")
 
-A bootstrap-style guided tour of [Diagram mode](editor-modes.md): a sequence of anchored popover steps that
-spotlight one piece of the diagramming chrome at a time, opening the real panels and menus as it goes. It is about diagramming alone;
-the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-tour.md) and the
-[Workshop tour](../012-collaboration/workshop-tour.md)).
+The Diagram tab's tour is now [Watch It Built](watch-it-built.md) (owner, 2026-11-08, Work Tracker #58): a cursor
+named Example builds a small diagram with the real chrome while a player bar shows its chapters. Until then it was a
+bootstrap-style stepped tour of [Diagram mode](editor-modes.md), whose steps are kept below under
+[The stepped tour (retired)](#the-stepped-tour-retired) for the record. Everything else here still holds for every
+tour: the footer's Start Tour button, offers, taken records, Settings reruns, one tour at a time, dialogs first, and
+the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), the
+[Workshop tour](../012-collaboration/workshop-tour.md), element tours and Show Me still run on.
 
 ## Domain language
 
-| Term             | Means                                                                                           |
-| ---------------- | ----------------------------------------------------------------------------------------------- |
-| **Diagram tour** | This tour. In the interface: **Diagram Tour**, and **Diagram Tour** in Settings' Tours category |
-| **welcome tour** | A name kept only in code identifiers and telemetry tokens                                       |
-| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)        |
+| Term             | Means                                                                                                       |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Diagram tour** | The Diagram tab's tour. In the interface: **Watch It Built**, on the button and in Settings' Tours category |
+| **welcome tour** | A name kept only in code identifiers and telemetry tokens                                                   |
+| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)                    |
 
 ## Where it appears
 
 - **The footer's Start Tour button is the one way in.** Every tour (this one, the mode tours, the element tours,
   the avatar tour) is started from one button in the editor's bottom bar, immediately left of Search:
-  a contained chip with a play glyph in a small accent disc, reading **Start Diagram Tour** (`TourOfferButton`,
+  a contained chip with a play glyph in a small accent disc, reading **Start <Name> Tour** (**Start Draw Tour**), or a
+  tour's own words when it gives them: the Diagram tour read **Start Diagram Tour** before 8 November 2026 and
+  **Watch It Built** since, with its own hover line (`TourOfferButton`,
   `@liveworkspace/workbench/components/tour`). It is as tall as its neighbours and set in their type, its hover runs
   at `duration-micro`, it has a visible focus ring, and it has light and dark looks. On a phone (below `sm`), and
-  wherever its neighbours drop their words, it shows the glyph alone and keeps **Start Diagram Tour** as its
+  wherever its neighbours drop their words, it shows the glyph alone and keeps its words (**Watch It Built**) as its
   accessible name; it never widens the bar past the screen. A tour never starts, prompts or offers itself on its
   own: no banner, no card, no toolbar beside an element. Offer banners would be something people have to keep turning down.
 - **First of the bar's controls.** The button leads the bar's right-hand cluster, in the same place on a
@@ -62,10 +67,10 @@ the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-t
   (`TourPopover`), so this holds for all of them. It leaves the key alone while it is editing a field, where an
   element tour asks for Escape to put text back, and when another surface has already taken it.
 - **Taken, on every device.** However a run ends (skipped mid-tour or completed), the synced `tourSeen` user
-  preference ([User preferences](user-preferences.md)) records it, so Settings' **Diagram Tour** row reads off and the
+  preference ([User preferences](user-preferences.md)) records it, so Settings' **Watch It Built** row reads off and the
   button no longer offers it. It is written as the run starts, too, so a reload mid-tour leaves it taken. The
   preference keeps the welcome tour's name.
-- **Rerun from Settings.** The Settings dialog's **Tours** category has a **Diagram Tour** switch that surfaces
+- **Rerun from Settings.** The Settings dialog's **Tours** category has a **Watch It Built** switch that surfaces
   `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and closing Settings starts the tour
   from the top when the open tab is in Diagram and the tour is on offer there; otherwise it does nothing, and the
   button is there when the person reaches a Diagram tab. Finishing the rerun turns it off again.
@@ -92,7 +97,11 @@ None: with the button as the one way in there is nothing to hand over from `/new
 document count on create. The Settings rerun crosses no navigation, so it is a window
 event (`livediagram:tour-relaunch`, `lib/diagram-tour.ts`).
 
-## The steps
+## The stepped tour (retired)
+
+Replaced on 2026-11-08 by [Watch It Built](watch-it-built.md); kept as the record of what the Diagram tour was.
+
+### The steps
 
 Six steps in palette → canvas → tabs → theme order (five on mobile, where the
 theme-canvas step is skipped; four on an **event-storming board**, which hides the strip's pickers, and so drops
@@ -135,6 +144,10 @@ Each step popover shows the step count, a title, the copy, and Back / Next plus 
 dots in which the current step's is drawn long. The right and left arrow keys are Next and Back, and Escape skips
 (never while a field is being typed in, nor with a modifier held). The dropdown steps highlight the **union** of
 the trigger button and its portalled menu.
+
+## The stepped engine (every other tour)
+
+What follows is the engine the Draw, Workshop, element and Show Me tours run on.
 
 ### Steps open what they explain
 
@@ -248,5 +261,7 @@ The welcome tour's tokens, unchanged, so the funnel's history reads straight thr
   `TourStepThemeCanvas`, `TourStepOutro`, derived from the fixed step ids, never content; a Back re-entry
   counts as a view). The last View before an `Ended/TourSkipped` marks the drop-off stage.
   `TourStepExplorer`, `TourStepSearch` and `TourStepEditorMode` are retired with their steps, and stay explained for the history.
+  Since November 2026 Watch It Built sends `TourStepAdd`, `TourStepConnect`, `TourStepLabel` and `TourStepStyle` in their
+  place, one per chapter ([watch-it-built.md](watch-it-built.md) "Telemetry"); the seven above stay explained for the history.
 - **End**: `'UI'/'Ended'/'TourCompleted' | 'TourSkipped'` (leaving Diagram mid-tour is a skip).
 - **Settings row**: `'UI'/'Toggled'/'TourSeenOn' | 'TourSeenOff'`.

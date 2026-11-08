@@ -56,7 +56,31 @@ function ensurePreferenceListeners(): void {
 // module, inside the user-preferences -> api-client import cycle, reads nothing at module scope).
 let emitter: TelemetryEmitter | null = null;
 
+// Watch It Built presses real chrome (docs/specs/007-editor/watch-it-built.md "Nothing is kept"): what it presses is not
+// the person using a feature, so tracking pauses for the run, lifted only round the replay's own events.
+let paused = false;
+
+export function pauseTelemetry(): void {
+  paused = true;
+}
+
+export function resumeTelemetry(): void {
+  paused = false;
+}
+
+/** Runs `send` with the pause lifted: the replay's own events. */
+export function trackDuringPause(send: () => void): void {
+  const was = paused;
+  paused = false;
+  try {
+    send();
+  } finally {
+    paused = was;
+  }
+}
+
 export const track: TelemetryEmitter['track'] = (category, action, type) => {
+  if (paused) return;
   emitter ??= createTelemetryEmitter({
     url: telemetryServiceUrl(),
     app: TELEMETRY_APP,

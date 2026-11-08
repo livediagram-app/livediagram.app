@@ -132,9 +132,9 @@ describe('UI·Opened splits', () => {
 describe('tourStepRows', () => {
   it('lists every step in tour order, a step no one reached reading 0', () => {
     const rows = [
-      row('UI', 'View', 'TourStepOutro', 1),
-      row('UI', 'View', 'TourStepPalette', 9),
-      row('UI', 'Opened', 'TourStepPalette', 4),
+      row('UI', 'View', 'TourStepStyle', 1),
+      row('UI', 'View', 'TourStepAdd', 9),
+      row('UI', 'Opened', 'TourStepAdd', 4),
     ];
     const steps = tourStepRows(rows);
     expect(steps.map((r) => r.type)).toEqual([...TOUR_STEP_TYPES]);

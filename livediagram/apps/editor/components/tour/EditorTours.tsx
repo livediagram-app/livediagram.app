@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { TourHost } from '@/components/tour/TourHost';
+import { WatchItBuiltHost } from '@/components/tour/WatchItBuiltHost';
 import { useEverTrue } from '@liveworkspace/workbench/hooks/ui/useEverTrue';
 
 // The Workshop tour (docs/specs/012-collaboration/workshop-tour.md) loads the first time the person
@@ -37,7 +37,8 @@ export function EditorTours() {
   const mountAvatarTour = useEverTrue(canvasTool === 'avatar');
   return (
     <>
-      <TourHost />
+      {/* The Diagram tab's tour, Watch It Built (docs/specs/007-editor/watch-it-built.md). */}
+      <WatchItBuiltHost />
       {/* The Workshop tour (docs/specs/012-collaboration/workshop-tour.md): the first time a person works in Workshop. */}
       {mountWorkshopTour ? <WorkshopTourHost /> : null}
       {mountDrawTour ? <DrawTourHost /> : null}

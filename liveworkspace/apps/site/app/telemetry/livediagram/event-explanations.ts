@@ -2444,14 +2444,20 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Plan tour\'s Spreadsheets track reached its "Sheet Settings" step.',
   'UI|View|PlanTourStepSheetPalette':
     'The Plan tour\'s Spreadsheets track reached its "The Plan palette" step, opening the palette\'s categories.',
+  'UI|View|TourStepAdd':
+    'Watch It Built (the Diagram tour since November 2026) started its Add chapter, the example cursor carrying two shapes from the palette onto the canvas.',
   'UI|View|TourStepCategories':
     'The Diagram tour (the welcome tour until October 2026) reached its "Palette Categories" step, pointing out the palette\'s category tabs.',
+  'UI|View|TourStepConnect':
+    'Watch It Built (the Diagram tour since November 2026) started its Connect chapter, the example cursor joining the shapes with an arrow from the quick-connect ring.',
   'UI|View|TourStepContextMenu':
     'The Diagram tour (the welcome tour until October 2026) reached its "The Element Menu" step, showing the right-click menu on an element.',
   'UI|View|TourStepEditorMode':
     'The Diagram tour (the welcome tour until October 2026) reached its "Tab Mode" step ("Change Tab Mode" before), pointing out the switch for the tab\'s editor mode (step removed October 2026).',
   'UI|View|TourStepExplorer':
     'The welcome tour reached its "The Explorer" step (retired in October 2026, when the welcome tour became the Diagram tour).',
+  'UI|View|TourStepLabel':
+    'Watch It Built (the Diagram tour since November 2026) started its Label chapter, the example cursor naming a shape by typing its label.',
   'UI|View|TourStepOutro':
     'The Diagram tour reached its closing "You\'re ready to diagram" card ("You\'re ready to go" when it was the welcome tour).',
   'UI|View|TourStepPalette':
@@ -2460,6 +2466,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The welcome tour reached its "Search everything" step, showing the search panel.',
   'UI|View|TourStepSelectionModes':
     'The Diagram tour (the welcome tour until October 2026) reached its "Selection Modes" step, showing the pointer-tool dropdown.',
+  'UI|View|TourStepStyle':
+    'Watch It Built (the Diagram tour since November 2026) started its Style chapter, the example cursor giving a shape the Success preset from the element menu.',
   'UI|View|TourStepTabs':
     'The Diagram tour (the welcome tour until October 2026) reached its "Tabs" step.',
   'UI|View|TourStepThemeCanvas':
