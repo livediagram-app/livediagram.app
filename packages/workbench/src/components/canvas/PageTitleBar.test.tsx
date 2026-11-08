@@ -1,16 +1,33 @@
 // @vitest-environment jsdom
-import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+// A page's title bar (PageTitleBar.tsx): its groups, and nothing that makes Safari repaint the board under a drag.
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 import { PageTitleBar } from './PageTitleBar';
 
-// livedocuments/docs/specs/008-canvas/canvas-performance.md "Chrome on every page": every page wears a title bar,
-// so the bar carries no backdrop filter, which Safari runs again for each bar whenever anything behind it repaints.
+afterEach(() => cleanup());
 
 describe('PageTitleBar', () => {
-  it('draws its card without a backdrop filter', () => {
-    const { container } = render(<PageTitleBar groups={[[<button key="a">A</button>]]} />);
-    const bar = container.querySelector('[data-page-title-bar]') as HTMLElement;
-    expect(bar).not.toBeNull();
-    expect(bar.className).not.toMatch(/backdrop-/);
+  it('shows its groups with a divider between them, leaving empty ones out', () => {
+    render(
+      <PageTitleBar
+        groups={[[<button key="a">A</button>, null], [], [<button key="b">B</button>]]}
+      />,
+    );
+    const bar = screen.getByRole('toolbar', { name: 'Page' });
+    expect(bar.querySelectorAll('button')).toHaveLength(2);
+    expect(bar.querySelectorAll('[data-page-title-bar-divider]')).toHaveLength(1);
+  });
+
+  it('renders nothing with nothing to show', () => {
+    render(<PageTitleBar groups={[[null, false], []]} />);
+    expect(screen.queryByRole('toolbar')).toBeNull();
+  });
+
+  // In canvas space, under the element layer: a backdrop filter there made Safari repaint every element above it on
+  // each frame of a drag (livedesign/docs/specs/008-canvas/canvas-performance.md), and every page wears one, so Safari
+  // re-ran each blur per keystroke (livedocuments/docs/specs/008-canvas/canvas-performance.md "Chrome on every page").
+  it('blurs nothing behind it', () => {
+    render(<PageTitleBar groups={[[<button key="a">A</button>]]} />);
+    expect(screen.getByRole('toolbar', { name: 'Page' }).className).not.toMatch(/backdrop-/);
   });
 });

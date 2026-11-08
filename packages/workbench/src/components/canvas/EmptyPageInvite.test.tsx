@@ -36,4 +36,13 @@ describe('EmptyPageInvite', () => {
     fireEvent.doubleClick(button);
     expect(onCanvas).not.toHaveBeenCalled();
   });
+
+  // In canvas space, under the element layer: a backdrop filter there made Safari repaint every element above it on
+  // each frame of a drag (livedesign/docs/specs/008-canvas/canvas-performance.md).
+  it('blurs nothing behind it', () => {
+    render(<EmptyPageInvite pageId="p" zoom={1} onOpen={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Choose a Layout' }).className).not.toMatch(
+      /backdrop-/,
+    );
+  });
 });

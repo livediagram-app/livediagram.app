@@ -38,7 +38,8 @@ export function EmptyPageInvite({
           onPointerDown={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
           onClick={onOpen}
-          className="group touch-target pointer-events-auto relative flex animate-dialog-in cursor-pointer items-center gap-3 whitespace-nowrap rounded-2xl border border-slate-200/90 bg-white/95 py-2.5 pl-2.5 pr-5 text-left shadow-[0_1px_2px_rgb(15_23_42/0.06),0_8px_24px_-8px_rgb(15_23_42/0.18)] backdrop-blur-sm transition-[translate,box-shadow,border-color] duration-150 ease-out hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-[0_2px_4px_rgb(15_23_42/0.06),0_14px_32px_-10px_rgb(15_23_42/0.25)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-slate-700/80 dark:bg-slate-900/95 dark:hover:border-brand-500/50"
+          // No backdrop filter, as the page title bar (PageTitleBar.tsx).
+          className="group touch-target pointer-events-auto relative flex animate-dialog-in cursor-pointer items-center gap-3 whitespace-nowrap rounded-2xl border border-slate-200/90 bg-white/95 py-2.5 pl-2.5 pr-5 text-left shadow-[0_1px_2px_rgb(15_23_42/0.06),0_8px_24px_-8px_rgb(15_23_42/0.18)] transition-[translate,box-shadow,border-color] duration-150 ease-out hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-[0_2px_4px_rgb(15_23_42/0.06),0_14px_32px_-10px_rgb(15_23_42/0.25)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-slate-700/80 dark:bg-slate-900/95 dark:hover:border-brand-500/50"
         >
           <span
             aria-hidden
