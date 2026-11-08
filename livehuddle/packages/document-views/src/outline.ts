@@ -264,7 +264,7 @@ function fitOutline(
   // Each step adds one collapse and measures in O(ELISION_CONTAINERS_NAMED): the hidden length and the elided
   // totals are kept running, entries inside a collapse are marked once (collapses never nest), and the elision
   // line is measured from its named containers (the first collapsed, being the largest) and the rest's totals.
-  // Rebuilding the fit and its elision per step was quadratic: 1.3 s for 4,000 frames at the agent budget.
+  // Rebuilding the fit and its elision per step was quadratic: 1.3 s for 4,000 frames at the MCP budget.
   const collapsed: Collapse[] = [];
   const inside = new Uint8Array(entries.length);
   let hiddenLength = 0;

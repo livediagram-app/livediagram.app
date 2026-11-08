@@ -1,9 +1,5 @@
 # Diagram lint: blueprint
 
-> **No MCP server or CLI in livehuddle** ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
-> the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
-> doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.
-
 > **The Frame left livehuddle** ([The Frame](../../002-project-scope/not-in-livehuddle.md#the-frame)): a stored `frame` is a retired element and holds nothing, and the containers are the lane and the boundary (`wrap … in boundary|lane`, the graph's groups drawn as boundaries). Where this blueprint still names a frame, read a boundary; the identifiers are the code's until #459 removes it.
 
 Derived from [Diagram lint](../diagram-lint.md), with the result footer of [Edit operations](../edit-operations.md#results),
