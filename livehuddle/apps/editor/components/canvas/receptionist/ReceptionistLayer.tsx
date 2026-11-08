@@ -123,6 +123,7 @@ export function ReceptionistLayer({
         pose={pose.reaction ? reactionPose(pose.reaction.kind, pose.reaction.elapsedMs) : null}
         shirt={RECEPTIONIST_COLOUR}
         name="Receptionist"
+        host
         standingOn={null}
       />
       <button

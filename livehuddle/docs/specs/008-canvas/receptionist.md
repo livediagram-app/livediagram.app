@@ -37,6 +37,8 @@ someone in it: a host people meet as they arrive, who answers what they ask, in 
   walked past.
 - **Never stored, never sent, never exported.** He is not an element, rides no presence, and an export has no the Receptionist.
   He never blocks a walk and is never a destination: people walk through him, as through the dog.
+- **Not a person on the page either**: his character is marked a host (`data-avatar="host"`), never a peer, so
+  nothing that counts the people walking (the e2e among them) counts him.
 - **His look is fixed**: a man in a waistcoat with curly dark brown hair and an amber shirt, with a name chip reading
   **The Receptionist** in amber, so nobody mistakes him for a person in the meeting.
 
