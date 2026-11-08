@@ -255,9 +255,11 @@ describe('the Settings panel, on All', () => {
     await settle();
     const pane = document.querySelector<HTMLElement>('[data-settings-pane]')!;
     const blocks = [...pane.querySelectorAll('[data-settings-app]')];
+    // livehuddle's own row, the Receptionist's Welcome, no longer shares livediagram's Avatar Tour wording.
     expect(blocks.map((b) => b.getAttribute('data-settings-app'))).toEqual([
       'livediagram.app',
       'liveplanner.app',
+      'livehuddle.app',
     ]);
     expect(blocks[0]!.querySelector('[data-settings-app-heading]')?.textContent).toBe(
       'livediagram',

@@ -137,13 +137,12 @@ const IMAGE_SEARCH_WARNINGS = [
   ),
 ];
 
-// The welcome tour's steps, in order, as tourStepTelemetryType makes them
-// (apps/editor tour-steps.ts). The welcome card sends no step view.
+// Watch It Built's chapters, in order, as tourStepTelemetryType makes them (apps/editor
+// lib/replay/watch-it-built-script.ts CHAPTERS, docs/specs/007-editor/watch-it-built.md "Telemetry").
 export const TOUR_STEP_SOURCE: string[] = [
-  ...read('editor/components/tour/tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+  ...read('editor/lib/replay/watch-it-built-script.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
   .map(
     (id) =>
       `TourStep${id
@@ -495,7 +494,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
   'apps/editor/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/editor/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
+  'apps/editor/components/tour/WatchItBuiltPlayer.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/editor/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],
     open: 'the shape the Shape Pen recognised',

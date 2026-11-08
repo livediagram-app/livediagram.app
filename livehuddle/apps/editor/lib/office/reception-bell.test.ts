@@ -19,10 +19,12 @@ import {
   BELL_RADIUS,
   bellToast,
   hearsBell,
+  onBellRung,
   receiveBellOp,
   receptionDesks,
   resetBell,
   ringBell,
+  SELF_RINGER,
   useBellRings,
   useBellRung,
   useReceptionBell,
@@ -154,5 +156,22 @@ describe('the bell on the canvas', () => {
     view.unmount();
     expect(playTones).not.toHaveBeenCalled();
     expect(toast.info).not.toHaveBeenCalled();
+  });
+});
+
+describe('telling the Receptionist of a ring', () => {
+  it('tells him of every ring on the tab, yours and anyone’s, in earshot or not, until unsubscribed', () => {
+    const heard = vi.fn();
+    const off = onBellRung(heard);
+    receiveBellOp('tab-sam', { kind: 'avatar-bell', tabId: 't1', deskId: 'far-desk' });
+    ringBell('in-lobby', 10 * BELL_THROTTLE_MS);
+    receiveBellOp('tab-sam', { kind: 'avatar-bell' });
+    expect(heard.mock.calls).toEqual([
+      ['far-desk', 'tab-sam'],
+      ['in-lobby', SELF_RINGER],
+    ]);
+    off();
+    receiveBellOp('tab-sam', { kind: 'avatar-bell', tabId: 't1', deskId: 'far-desk' });
+    expect(heard).toHaveBeenCalledTimes(2);
   });
 });

@@ -19,6 +19,8 @@ import { AnimationSections } from '@/components/palette/AnimationSections';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import { StageMenuSection } from '@/components/palette/StageMenuSection';
+import { ReceptionistMenuSection } from '@/components/palette/ReceptionistMenuSection';
+import { receptionistPad } from '@/lib/receptionist/receptionist-day';
 import { JukeboxMenuSection, WorldClockMenuSection } from '@/components/palette/SocialMenuSections';
 import { ScreenMenuSection } from '@/components/palette/ScreenMenuSection';
 import { ArcadeMenuSection } from '@/components/palette/ArcadeMenuSection';
@@ -63,6 +65,7 @@ export function ElementDataSections({
     // Every room's Walls, Solid or Glass (docs/specs/009-elements/office.md "Glass walls").
     shapeTarget?.shape === 'room' ||
     shapeTarget?.shape === 'stage' ||
+    (shapeTarget?.shape === 'avatar-pad' && !!props.onSetPadReceptionist) ||
     (shapeTarget?.shape === 'screen' && !!props.onSetScreenUrl) ||
     shapeTarget?.shape === 'world-clock' ||
     shapeTarget?.shape === 'jukebox' ||
@@ -93,6 +96,16 @@ export function ElementDataSections({
               target={shapeTarget}
               sectionProps={sectionProps}
               onSetStage={props.onSetStage}
+            />
+          ) : null}
+          {/* The Receptionist's pad, the tab's first (docs/specs/008-canvas/receptionist.md "Asking him to leave"). */}
+          {shapeTarget?.shape === 'avatar-pad' &&
+          props.onSetPadReceptionist &&
+          receptionistPad(props.elements)?.id === shapeTarget.id ? (
+            <ReceptionistMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onSetHere={props.onSetPadReceptionist}
             />
           ) : null}
           {shapeTarget?.shape === 'world-clock' && props.onSetClockZones ? (

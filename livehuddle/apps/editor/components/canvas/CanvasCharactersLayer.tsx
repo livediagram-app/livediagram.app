@@ -15,6 +15,7 @@ import { headPoint } from '@liveworkspace/avatar/speech';
 import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
 import { reactionPose } from '@liveworkspace/avatar/reactions';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
+import { ReceptionistLayer } from './receptionist/ReceptionistLayer';
 import { CallBubbles, useCallBubbleRects } from '@/components/calls/CallBubbles';
 import { TalkingBars } from '@/components/calls/TalkingBars';
 import { HearingRing } from '@/components/calls/HearingRing';
@@ -176,6 +177,17 @@ export function CanvasCharactersLayer({
           glideMs={peer.glideMs}
         />
       ))}
+      {/* The Receptionist (docs/specs/008-canvas/receptionist.md): the host by the tab's Avatar Pad, drawn while you
+        walk. Owns his own clock, so his frames redraw his layer alone. */}
+      {inMode ? (
+        <ReceptionistLayer
+          active
+          elements={props.elements}
+          arrivals={padArrivals}
+          self={feet}
+          zoom={viewportZoom}
+        />
+      ) : null}
       {/* A reaction burst (docs/specs/008-canvas/avatar-mode.md "Reactions") thrown around the character,
         at its canvas point, so it pans and zooms with the canvas it is celebrating. */}
       {feet && avatarBurst ? (

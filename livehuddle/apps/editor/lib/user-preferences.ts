@@ -162,9 +162,13 @@ export type UserPreferences = {
   // livediagram's Diagram, Workshop and Draw tours' seen-guards (`tourSeen`, `workshopTourSeen`, `drawTourSeen`) are
   // not fields here: those tours are not in livehuddle, and a stored value stays in the blob unread, like any key this
   // version does not know (docs/specs/007-editor/user-preferences.md "Retired keys").
-  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md).
-  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
+  // The Receptionist's welcome given (docs/specs/008-canvas/receptionist.md "The welcome"), under the retired Avatar tour's key so
+  // nobody who took that tour is welcomed again. Surfaced in Settings as Tours › "Receptionist's Welcome" (inverted).
+  // Missing / undefined === not welcomed.
   avatarTourSeen?: boolean;
+  // The topics the Receptionist has answered for this person (docs/specs/008-canvas/receptionist.md "Asking the Receptionist"), by topic id,
+  // each once, in the order heard: the ticks in his bubble.
+  receptionistTopicsSeen?: string[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been taken,
   // a record for Settings (it never hides the Start Tour button). Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted). Read through lib/element-tours.
