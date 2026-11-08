@@ -7,7 +7,7 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // gate: every product's room judges an Editor's element ops through it before relaying them. And the presence
 // roster: a gap sends a guest someone's picture, or a socket its own entry. And sealing: a gap there
 // leaks a refresh token or a webhook's URL. And typed text: a gap lets a name turn the words around it backwards. And CSV: a gap
-// runs a typed name as a formula in an admin's spreadsheet.
+// runs a typed name as a formula in an admin's spreadsheet. And the tab swap: a gap there loses a Participant's write or answers it wrongly.
 export default defineProject({
   test: {
     coverage: {
@@ -25,6 +25,7 @@ export default defineProject({
         'src/request-body.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/request-failure.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-element-ops.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/tab-swap.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-presence-relay.ts': {
           statements: 100,
           branches: 100,

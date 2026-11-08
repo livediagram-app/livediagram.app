@@ -12,24 +12,31 @@ import { applyQaAction, type QaNote } from '@livediagram/document';
 // order.
 
 const { store } = vi.hoisted(() => ({
-  store: { data: '', reads: 0, inFlight: 0, maxInFlight: 0 },
+  store: { data: '', rev: 0, reads: 0, inFlight: 0, maxInFlight: 0 },
 }));
 const tick = () => new Promise((r) => setTimeout(r, 0));
 vi.mock('./db', async (orig) => ({
   ...(await orig<typeof import('./db')>()),
-  getTabData: async () => {
+  getTabRow: async () => {
     store.inFlight++;
     store.maxInFlight = Math.max(store.maxInFlight, store.inFlight);
     store.reads++;
-    const snapshot = store.data;
+    const snapshot = { data: store.data, rev: store.rev, updatedAt: 0 };
     await tick();
     return snapshot;
   },
-  swapTabData: async (_env: unknown, _d: string, _t: string, expected: string, next: string) => {
+  swapTabData: async (
+    _env: unknown,
+    _d: string,
+    _t: string,
+    expected: { rev: number },
+    next: string,
+  ) => {
     await tick();
     store.inFlight--;
-    if (store.data !== expected) return false;
+    if (store.rev !== expected.rev) return false;
     store.data = next;
+    store.rev++;
     return true;
   },
 }));

@@ -5,8 +5,7 @@ import { sqliteD1, testCopyDesign, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from '../routes/test-route-context';
 import { handleDesigns } from '../routes/designs';
 import { handleDesignSubresources } from '../routes/design-subresource-routes';
-import { deleteTabRow, seedTabs, swapTabData, upsertTab } from './tabs';
-import { tabStatsOfData } from './tab-stats';
+import { deleteTabRow, seedTabs, getTabRow, swapTabData, upsertTab } from './tabs';
 
 // Every writer of `tabs.data` keeps `image_refs` in step with the body
 // (docs/specs/009-elements/images.md, "Reference index"), in the design's own SQLite. A writer that
@@ -135,15 +134,14 @@ describe('swapTabData (participant writes)', () => {
   it('adds the new body references on a won swap', async () => {
     const db = withDesign();
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
-    const stored = db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get('t1')!.data as string;
     expect(
       await swapTabData(
         db.env,
         'A',
         't1',
-        stored,
+        (await getTabRow(db.env, 'A', 't1'))!,
         body('img-1', 'img-2'),
-        tabStatsOfData(body('img-1', 'img-2')).stats,
+        JSON.parse(body('img-1', 'img-2')) as never,
       ),
     ).toBe(true);
     expect(refs(db.sql, 't1')).toEqual(['img-1', 'img-2']);
@@ -153,7 +151,14 @@ describe('swapTabData (participant writes)', () => {
     const db = withDesign();
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
     expect(
-      await swapTabData(db.env, 'A', 't1', 'stale', body(), tabStatsOfData(body()).stats),
+      await swapTabData(
+        db.env,
+        'A',
+        't1',
+        { rev: 99, updatedAt: 0 },
+        body(),
+        JSON.parse(body()) as never,
+      ),
     ).toBe(false);
     expect(refs(db.sql, 't1')).toEqual(['img-1']);
   });

@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ACCOUNTS_ON, profileOf, stubAccounts, type FakeAccounts } from '../test-accounts';
 import type { Env } from '../types';
@@ -93,10 +94,12 @@ describe('getParticipants', () => {
   it('reads a long list within budget', async () => {
     const ids = Array.from({ length: 500 }, (_, i) => `user_${i}`);
     for (const id of ids) accounts.profiles.set(id, profileOf(id, id, null));
-    const started = performance.now();
-    expect((await getParticipants(env, ids)).size).toBe(500);
-    expect((await getParticipants(env, ids)).size).toBe(500);
-    expect(performance.now() - started).toBeLessThan(250);
+    // CPU time, not the wall clock: a loaded machine (a pre-push run beside other suites) stretches wall time.
+    const spent = await cpuMsOfAsync(async () => {
+      expect((await getParticipants(env, ids)).size).toBe(500);
+      expect((await getParticipants(env, ids)).size).toBe(500);
+    });
+    expect(spent).toBeLessThan(cpuBudgetMs(250));
     expect(accounts.calls).toHaveLength(5);
   });
 });

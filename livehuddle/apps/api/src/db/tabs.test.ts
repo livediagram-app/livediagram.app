@@ -7,11 +7,11 @@ import {
   normalizeReorderEntry,
   renameTab,
   seedTabs,
+  getTabRow,
   swapTabData,
   upsertTab,
   upsertTabAtRev,
 } from './tabs';
-import { tabStatsOfData } from './tab-stats';
 
 // normalizeReorderEntry is the pure decision the reorder batch leans
 // on (docs/specs/006-document/tab-folders.md): it decides what folder value lands on each
@@ -97,15 +97,14 @@ describe('tab revisions', () => {
     await upsertTab(db.env, 'D', tab('t1'), 0);
     await renameTab(db.env, 't1', 'Renamed');
     expect(revOf(db, 't1')).toBe(2);
-    const data = db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string;
     expect(
       await swapTabData(
         db.env,
         'D',
         't1',
-        data,
+        (await getTabRow(db.env, 'D', 't1'))!,
         '{"elements":[]}',
-        tabStatsOfData('{"elements":[]}').stats,
+        { elements: [] },
       ),
     ).toBe(true);
     expect(revOf(db, 't1')).toBe(3);

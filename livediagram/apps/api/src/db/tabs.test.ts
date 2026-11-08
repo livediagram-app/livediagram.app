@@ -7,11 +7,11 @@ import {
   normalizeReorderEntry,
   renameTab,
   seedTabs,
+  getTabRow,
   swapTabData,
   upsertTab,
   upsertTabAtRev,
 } from './tabs';
-import { tabStatsOfData } from './tab-stats';
 
 // normalizeReorderEntry is the pure decision the reorder batch leans
 // on (docs/specs/006-document/tab-folders.md): it decides what folder value lands on each
@@ -92,20 +92,37 @@ describe('tab revisions', () => {
     expect(isTabRevStale(new Error('D1_ERROR: tab_rev_stale: SQLITE_CONSTRAINT'))).toBe(true);
   });
 
+  // The swap guards on the row's version, never its body: a version moved on by any write, or a tab inserted again
+  // under its id at the same revision, loses.
+  it('swaps only at the version it read', async () => {
+    const db = documentWith();
+    await upsertTab(db.env, 'D', tab('t1'), 0);
+    const read = (await getTabRow(db.env, 'D', 't1'))!;
+    expect(read.rev).toBe(1);
+    const body = { elements: [] };
+    const stale = { ...read, updatedAt: read.updatedAt + 1 };
+    expect(await swapTabData(db.env, 'D', 't1', stale, '{"elements":[]}', body)).toBe(false);
+    await upsertTab(db.env, 'D', tab('t1', 'y'), 0);
+    expect(await swapTabData(db.env, 'D', 't1', read, '{"elements":[]}', body)).toBe(false);
+    expect(revOf(db, 't1')).toBe(2);
+    const now = (await getTabRow(db.env, 'D', 't1'))!;
+    expect(await swapTabData(db.env, 'D', 't1', now, '{"elements":[]}', body)).toBe(true);
+    expect(await getTabRow(db.env, 'D', 't1')).toMatchObject({ data: '{"elements":[]}', rev: 3 });
+  });
+
   it('advances on a rename, a board swap and a copy starts at 1', async () => {
     const db = documentWith();
     await upsertTab(db.env, 'D', tab('t1'), 0);
     await renameTab(db.env, 't1', 'Renamed');
     expect(revOf(db, 't1')).toBe(2);
-    const data = db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string;
     expect(
       await swapTabData(
         db.env,
         'D',
         't1',
-        data,
+        (await getTabRow(db.env, 'D', 't1'))!,
         '{"elements":[]}',
-        tabStatsOfData('{"elements":[]}').stats,
+        { elements: [] },
       ),
     ).toBe(true);
     expect(revOf(db, 't1')).toBe(3);

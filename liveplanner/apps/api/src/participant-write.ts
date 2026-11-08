@@ -14,15 +14,19 @@ import {
   type Tab,
   type TabLedger,
 } from '@liveplanner/project';
-import { getTabData, swapTabData } from './db';
-import { storedTabStatsOf } from './db/tab-stats';
+import {
+  swapTabChange,
+  type TabChange,
+  type TabSwapFailure,
+  type TabSwapStore,
+} from '@liveworkspace/api-kit/tab-swap';
+import { getTabRow, swapTabData } from './db';
 import { TabTooLargeError } from './limits';
 import type { PlanEnv } from './types';
 
-// Only an autosave or a linked tab's room can beat us to the row, so a handful of re-reads is plenty.
-export const TAB_CAS_MAX_ATTEMPTS = 8;
+export { TAB_CAS_MAX_ATTEMPTS } from '@liveworkspace/api-kit/tab-swap';
 
-export type ParticipantWriteFailure = { ok: false; status: 404 | 409 | 413 };
+export type ParticipantWriteFailure = TabSwapFailure;
 export type ParticipantWriteResult =
   { ok: true; outcome: ParticipantOpResult } | ParticipantWriteFailure;
 
@@ -33,52 +37,40 @@ type ParticipantOpRequest = {
   adderKey: string | null;
 };
 
-type StoredTab = Omit<Tab, 'id' | 'name'>;
-
-// Read, change and swap one tab row, retrying while somebody else wrote it between our read and our write.
-// `change` answers the new tab, or null to write nothing.
-async function swapTab<T>(
+// One tab row of the project, as the swap reaches it.
+export function participantTabStore(
   env: PlanEnv,
   projectId: string,
   tabId: string,
-  change: (tab: Tab) => { next: Tab | null; answer: T },
-): Promise<{ ok: true; answer: T } | ParticipantWriteFailure> {
-  for (let attempt = 0; attempt < TAB_CAS_MAX_ATTEMPTS; attempt++) {
-    const raw = await getTabData(env, projectId, tabId);
-    if (raw === null) return { ok: false, status: 404 };
-    const data = JSON.parse(raw) as StoredTab;
-    const { next, answer } = change({ ...data, id: tabId, name: '' });
-    if (next === null) return { ok: true, answer };
-    const { id: _id, name: _name, ...rest } = next;
-    const nextData = JSON.stringify(rest);
-    let swapped: boolean;
-    try {
-      swapped = await swapTabData(
-        env,
-        projectId,
-        tabId,
-        raw,
-        nextData,
-        storedTabStatsOf(rest, nextData),
-      );
-    } catch (error) {
-      if (error instanceof TabTooLargeError) return { ok: false, status: 413 };
-      throw error;
-    }
-    if (swapped) return { ok: true, answer };
-  }
-  return { ok: false, status: 409 };
+): TabSwapStore<Tab> {
+  return {
+    tabId,
+    read: () => getTabRow(env, projectId, tabId),
+    write: (expected, data, body) => swapTabData(env, projectId, tabId, expected, data, body),
+    tooLarge: (error) => error instanceof TabTooLargeError,
+  };
+}
+
+// One element op through the participant content rule: written only when it applied and changed something.
+export function participantOpChange(
+  op: ElementOp,
+  adderKey: string | null,
+): TabChange<Tab, ParticipantOpResult> {
+  return (tab) => {
+    const outcome = applyParticipantOp(tab, op, adderKey);
+    const next = outcome.result === 'applied' && outcome.changed ? outcome.tab : null;
+    return { next, answer: outcome };
+  };
 }
 
 export async function writeParticipantOp(
   env: PlanEnv,
   req: ParticipantOpRequest,
 ): Promise<ParticipantWriteResult> {
-  const result = await swapTab(env, req.projectId, req.tabId, (tab) => {
-    const outcome = applyParticipantOp(tab, req.op, req.adderKey);
-    const next = outcome.result === 'applied' && outcome.changed ? outcome.tab : null;
-    return { next, answer: outcome };
-  });
+  const result = await swapTabChange(
+    participantTabStore(env, req.projectId, req.tabId),
+    participantOpChange(req.op, req.adderKey),
+  );
   if (!result.ok) return result;
   return { ok: true, outcome: result.answer };
 }
@@ -88,10 +80,13 @@ export async function writeParticipantAnswers(
   env: PlanEnv,
   req: { projectId: string; tabId: string; ledger: TabLedger },
 ): Promise<{ ok: true; changed: boolean } | ParticipantWriteFailure> {
-  const result = await swapTab(env, req.projectId, req.tabId, (tab) => {
-    const merged = mergeLedgerAnswersIntoTab(tab, req.ledger);
-    return merged === tab ? { next: null, answer: false } : { next: merged, answer: true };
-  });
+  const result = await swapTabChange(
+    participantTabStore(env, req.projectId, req.tabId),
+    (tab: Tab) => {
+      const merged = mergeLedgerAnswersIntoTab(tab, req.ledger);
+      return merged === tab ? { next: null, answer: false } : { next: merged, answer: true };
+    },
+  );
   if (!result.ok) return result;
   return { ok: true, changed: result.answer };
 }

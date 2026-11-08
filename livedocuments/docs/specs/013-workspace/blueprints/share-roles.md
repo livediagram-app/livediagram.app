@@ -87,6 +87,11 @@ An Editor's `el` op and `article` frame are relayed as today. `gateClientOp` (`r
 3. **Write.** `writeParticipantOp` (an element op) or `writeParticipantArticle` (an article's `flow` and its ops)
    reads the stored tab, runs the rule and compare-and-swaps the result (up to `TAB_CAS_MAX_ATTEMPTS`). An `article` frame that
    creates or removes an article is never writing and is ignored.
+   The changes (element ops and article frames) waiting on one tab drain together (`TabChangeQueue`, `@liveworkspace/api-kit/tab-swap`): one read, each
+   applied in order to the tab the change before it produced, one write. Each is answered exactly as it would be
+   alone, a rule that throws fails its change alone, and a drain the tab's cap refuses is answered change by change. The swap
+   guards on the row's version (`rev` with `updated_at`), which the `tabs_rev_advances` trigger advances on every
+   write of `data`, so the stored body is never bound again to be compared.
 4. **Relay.** An `applied` write that changed the tab is sequenced from the sender to everyone but the sender, with a
    `cursor` frame to the sender, as an Editor's op is: an element update as the patch of the fields the rule took,
    an article frame as its writing ops with `grow: true`, so an Editor that is not the writer grows the pages the
@@ -355,7 +360,7 @@ Image grants (`db/image-grants.ts`) come from edit collaborators only: a Partici
   every stored field of every kind new values and checks only the listed ones land.
 - A Participant cannot place a picture, so it never mints an image grant: a document serves an image its owner does
   not own only through an edit collaborator's grant.
-- Rate: room frames ride `OP_RATE_CAP`; each applied write is one read of the document's store and one compare-and-swap.
+- Rate: room frames ride `OP_RATE_CAP`; each drain of a tab's waiting changes is one read of the document's store and one compare-and-swap.
 
 ## Performance and limits
 
@@ -366,8 +371,11 @@ Image grants (`db/image-grants.ts`) come from edit collaborators only: a Partici
   (242 KB), 4.5 ms at 5,000 (611 KB). The editor's commit guard (`participantTabChange`) cost 0.10 ms, 1.5 ms and
   1.6 ms on the same tabs, once per commit.
 - The autosave's 600 ms debounce batches a person's typing into one op per element and one frame per article. What
-  is not bounded is store writes: one per op or frame, and a room of people all writing at once queues behind one
-  another. Recorded as a risk; the mitigation, if it bites, is to batch a socket's ops per tab into one write.
+  is not bounded is a lone op's cost: one read and one write of the whole tab each, when nothing else waits.
+- Changes that wait on one tab share its read and write (the Write step's drain), which waits one macrotask turn first so
+  frames that reached the room while it was busy join it. Measured CPU for 50 ops from 50 Participants on a
+  2,000-element tab: 3.6 ms drained against 140 ms one at a time (1 read instead of 50); 6,000 elements: 8.3 ms
+  against 387 ms (livediagram's `participant-drain.test.ts` holds it to a budget).
 - `applyParticipantOp` is linear in the tab's element count for one op; `applyParticipantArticleOps` is linear in
   the article's block count per op.
 
