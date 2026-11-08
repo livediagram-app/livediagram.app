@@ -3,6 +3,7 @@ import {
   adoptGuest,
   documentHeaders,
   expect,
+  markModeToursSeen,
   mintGuest,
   seedTab,
   serverNewUrl,
@@ -28,11 +29,10 @@ async function personIn(browser: Browser, baseURL: string, owner: string | null)
   // so a test waiting on either could miss it and have it swallow every walk click after (CI's slower runners did).
   await ctx.addInitScript(() => {
     localStorage.setItem('livehuddle:v2:name-confirmed', '1');
-    localStorage.setItem(
-      'livehuddle:user-preferences:v1',
-      JSON.stringify({ workshopTourSeen: true }),
-    );
   });
+  // Everyone already welcomed: the Receptionist's welcome bubble opens over the pad on a first arrival and can cover
+  // the machine, taking the walk click.
+  await markModeToursSeen(ctx);
   return ctx.newPage();
 }
 
@@ -100,9 +100,19 @@ test("a Participant's score lands on the owner's machine and a Viewer's table, a
   await ownerPage.goto(await serverNewUrl(ownerPage, `/new?template=${SPACE}`));
   await ownerPage.locator(CANVAS).waitFor({ timeout: 30_000 });
   await expect(self(ownerPage)).toHaveCount(1, { timeout: 15_000 });
-  // A pad to arrive on and a machine above it, nothing in the way.
+  // A pad to arrive on and a machine above it, nothing in the way: the pad's Receptionist is asked to leave, as his
+  // welcome bubble (docs/specs/008-canvas/receptionist.md) opens over the machine and takes the walk clicks.
   await seedTab(ownerPage, [
-    { id: 'pad', type: 'shape', shape: 'avatar-pad', x: 360, y: 420, width: 96, height: 64 },
+    {
+      id: 'pad',
+      type: 'shape',
+      shape: 'avatar-pad',
+      x: 360,
+      y: 420,
+      width: 96,
+      height: 64,
+      receptionistLeft: true,
+    },
     { id: MACHINE, type: 'shape', shape: 'arcade-machine', x: 376, y: 200, width: 64, height: 112 },
   ]);
   const id = new URL(ownerPage.url()).pathname.split('/').filter(Boolean).pop()!;

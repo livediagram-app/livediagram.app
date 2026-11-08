@@ -3,6 +3,7 @@ import {
   adoptGuest,
   documentHeaders,
   expect,
+  markModeToursSeen,
   mintGuest,
   seedTab,
   serverNewUrl,
@@ -30,13 +31,10 @@ async function personIn(browser: Browser, baseURL: string, owner: string | null)
   await ctx.addInitScript(
     ({ o }) => {
       if (o) localStorage.setItem('livehuddle:v2:name-confirmed', '1');
-      localStorage.setItem(
-        'livehuddle:user-preferences:v1',
-        JSON.stringify({ workshopTourSeen: true }),
-      );
     },
     { o: owner },
   );
+  await markModeToursSeen(ctx);
   return ctx.newPage();
 }
 

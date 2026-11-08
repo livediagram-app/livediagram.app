@@ -55,9 +55,12 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Avatar and element tours (docs/specs/008-canvas/avatar-tour.md, docs/specs/007-editor/element-tours.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
-// their own unit tests. Marked seen for every page of the context.
-async function markModeToursSeen(context: BrowserContext): Promise<void> {
+// The Receptionist's welcome (docs/specs/008-canvas/receptionist.md "The welcome", kept under the Avatar tour's
+// `avatarTourSeen`) and the element tours (docs/specs/007-editor/element-tours.md) open over the canvas on arrival, and
+// their bubbles and overlays would take the presses of every spec there (a walk click landing on the welcome picks a
+// topic instead); they have their own unit tests. Marked seen for every page of the context. Specs that make their own
+// contexts (a second person, a Viewer) call it too.
+export async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     const key = 'livehuddle:user-preferences:v1';
     try {
