@@ -75,6 +75,11 @@ An Editor's `el` op is relayed as today. A Participant's `el` op takes the parti
    participant writes on a design run one at a time.
 3. **Write.** `writeParticipantOps(env, { designId, tabId, ops: [op], adderKey })` reads the stored tab, runs
    `applyParticipantOp` and compare-and-swaps the result (up to `TAB_CAS_MAX_ATTEMPTS`).
+   The ops waiting on one tab drain together (`TabChangeQueue`, `@liveworkspace/api-kit/tab-swap`): one read, each op
+   applied in order to the tab the op before it produced, one write. Each op is answered exactly as it would be
+   alone, a rule that throws fails its op alone, and a drain the tab's cap refuses is answered op by op. The swap
+   guards on the row's version (`rev` with `updated_at`), which the `tabs_rev_advances` trigger advances on every
+   write of `data`, so the stored body is never bound again to be compared.
 4. **Relay.** An `applied` op is sequenced from the sender to everyone but the sender when it equals what the sender
    sent, and to everyone including the sender when the rule changed it (SR3). A `refused` op sends the sender its
    `correction` alone. A failed write sends the sender `catchup { resync: true }`.
@@ -282,7 +287,7 @@ key matches it.
 - `addedBy` is derived from the caller's identity on the design and the design id, so it cannot be turned back
   into an owner id and differs per design; a Participant cannot claim another's element by writing `addedBy`
   (the rule keeps the stored value).
-- Rate: room frames ride `OP_RATE_CAP`; each applied op is one read and one compare-and-swap.
+- Rate: room frames ride `OP_RATE_CAP`; each drain of a tab's waiting ops is one read and one compare-and-swap.
 
 ## Performance and limits
 
@@ -291,10 +296,12 @@ key matches it.
   per design on the tab write queue. Measured CPU for one op (parse, rule, stringify): 0.23 ms on a 200-element
   tab (23 KB), 2.2 ms at 2,000 elements (242 KB), 4.5 ms at 5,000 (611 KB). The editor's commit guard
   (`participantTabChange`) costs 0.10 ms, 1.5 ms and 1.6 ms on the same tabs, once per commit.
-- The autosave's 600 ms debounce batches a person's typing into one op per element. What is not bounded is store round
-  trips: one per op, so a multi-element move by one Participant is several writes, and a room of people all writing
-  at once queues behind one another. Recorded as a risk; the mitigation, if it bites, is to batch a socket's ops per
-  tab into one write.
+- The autosave's 600 ms debounce batches a person's typing into one op per element. A lone op still costs one read and one
+  write of the whole tab, when nothing else waits on it.
+- Ops that wait on one tab share its read and write (the Write step's drain), which waits one macrotask turn first so
+  frames that reached the room while it was busy join it. Measured CPU for 50 ops from 50 Participants on a
+  2,000-element tab: 3.6 ms drained against 140 ms one at a time (1 read instead of 50); 6,000 elements: 8.3 ms
+  against 387 ms (livediagram's `participant-drain.test.ts` holds it to a budget).
 - `applyParticipantOp` is linear in the tab's element count for one op.
 
 ## Presentation and UX

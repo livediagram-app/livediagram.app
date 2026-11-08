@@ -20,7 +20,8 @@ describe('RoomParticipantWrites', () => {
     for (let i = 0; i < PARTICIPANT_PENDING_MAX; i++) void writes.applyContentOp(sender, frame);
     expect(sendTo).not.toHaveBeenCalled();
     await writes.applyContentOp(sender, frame);
-    expect(enqueue).toHaveBeenCalledTimes(PARTICIPANT_PENDING_MAX);
+    // Those that queued wait on one drain of their tab.
+    expect(enqueue).toHaveBeenCalledTimes(1);
     expect(sendTo).toHaveBeenCalledWith(
       ws,
       expect.objectContaining({ kind: 'catchup', resync: true }),

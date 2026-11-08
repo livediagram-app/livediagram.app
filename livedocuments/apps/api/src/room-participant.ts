@@ -3,7 +3,8 @@
 //
 // A Participant edits text only. Its `el` op and its `article` frame are never relayed as sent. Each joins the
 // room's tab write queue, is applied to the stored tab by the participant rules, and only what the rule produced
-// reaches anyone:
+// reaches anyone. The changes waiting on one tab drain together (one read, each in order, one write), and each is
+// answered as it would be alone:
 //   - applied: an element update as a patch of the text fields it changed (never the stored copy whole, which may
 //     be behind an Editor's live change), an article frame as the writing ops it carried, sequenced from the sender
 //     to everyone else, and a cursor frame to the sender, as an Editor's op is;
@@ -18,11 +19,17 @@ import {
   parseArticleOps,
   type ArticleOp,
   type ElementOp,
+  type Tab,
 } from '@livedocuments/document';
 import {
-  writeParticipantArticle,
-  writeParticipantOp,
-  type ParticipantWriteFailure,
+  TabChangeQueue,
+  type TabChange,
+  type TabSwapResult,
+} from '@liveworkspace/api-kit/tab-swap';
+import {
+  participantArticleChange,
+  participantOpChange,
+  participantTabStore,
 } from './participant-write';
 import type { DocumentEnv } from './types';
 
@@ -76,20 +83,23 @@ export class RoomParticipantWrites {
 
   constructor(hooks: ParticipantRoomHooks) {
     this.hooks = hooks;
+    this.changes = new TabChangeQueue(hooks.enqueue);
   }
 
   // Writes waiting on the queue, per socket: a flood is refused, not queued without end.
   private pending = new WeakMap<WebSocket, number>();
 
+  // Element ops and article frames drained per tab on the tab write queue: one read and one write for every change
+  // waiting on a tab.
+  private readonly changes: TabChangeQueue;
+
   // One `el` frame from a Participant's socket.
   async applyContentOp(sender: ParticipantSender, frame: unknown, ref?: unknown): Promise<void> {
     if (!isElFrame(frame)) return;
     const { tabId, op } = frame;
-    const result = await this.queued(sender, tabId, (env, documentId) =>
-      writeParticipantOp(env, { documentId, tabId, op }),
-    );
+    const result = await this.queued(sender, tabId, participantOpChange(op));
     if (!result) return;
-    const outcome = result.outcome;
+    const outcome = result.answer;
     if (outcome.result === 'refused') {
       console.info('[participant-write] refused', { tabId, reason: outcome.reason });
       // An element not saved yet (an Editor's, inside its autosave): nothing here to put back, so the sender
@@ -113,11 +123,9 @@ export class RoomParticipantWrites {
     const article = articleFrameOf(frame);
     if (!article) return;
     const { tabId, flow, ops } = article;
-    const result = await this.queued(sender, tabId, (env, documentId) =>
-      writeParticipantArticle(env, { documentId, tabId, flow, ops }),
-    );
+    const result = await this.queued(sender, tabId, participantArticleChange(flow, ops));
     if (!result) return;
-    const outcome = result.outcome;
+    const outcome = result.answer;
     if (outcome.result === 'refused') {
       // The writing is block by block, so there is no one op that puts the sender back: it re-hydrates.
       console.info('[participant-write] article refused', { tabId, reason: outcome.reason });
@@ -129,13 +137,13 @@ export class RoomParticipantWrites {
     this.relay(sender, { kind: 'article', tabId, flow, ops, grow: true }, ref);
   }
 
-  // One write on the room's tab write queue, bounded per socket. Null when it did not happen: the sender has been
-  // told to re-hydrate.
-  private async queued<T extends { ok: true } | ParticipantWriteFailure>(
+  // One change on the room's tab write queue, drained with the others waiting on its tab, bounded per socket. Null
+  // when it did not happen: the sender has been told to re-hydrate.
+  private async queued<T>(
     sender: ParticipantSender,
     tabId: string,
-    write: (env: DocumentEnv, documentId: string) => Promise<T>,
-  ): Promise<Extract<T, { ok: true }> | null> {
+    change: TabChange<Tab, T>,
+  ): Promise<{ ok: true; answer: T } | null> {
     const env = this.hooks.env;
     const documentId = sender.documentId;
     // Nothing to write against (an attachment from before the room knew its document): the sender re-hydrates.
@@ -150,9 +158,13 @@ export class RoomParticipantWrites {
       return null;
     }
     this.pending.set(sender.ws, queued + 1);
-    let result: T;
+    let result: TabSwapResult<T>;
     try {
-      result = await this.hooks.enqueue(() => write(env, documentId));
+      result = await this.changes.submit(
+        `${documentId}\u0000${tabId}`,
+        () => participantTabStore(env, documentId, tabId),
+        change,
+      );
     } catch (error) {
       console.error('[participant-write] failed', { documentId, tabId, error: String(error) });
       this.resync(sender);
@@ -169,7 +181,7 @@ export class RoomParticipantWrites {
       this.resync(sender);
       return null;
     }
-    return result as Extract<T, { ok: true }>;
+    return result;
   }
 
   // What the rule produced, from the sender to everyone else (the sender already shows it), and its cursor back to it.

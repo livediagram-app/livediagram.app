@@ -15,8 +15,14 @@ import {
   swapComponent,
   touchDesignSaved,
 } from './components';
-import { tabStatsOfData } from './tab-stats';
-import { deleteTabRow, seedTabs, swapTabData, tabWriteStatements, upsertTab } from './tabs';
+import {
+  deleteTabRow,
+  seedTabs,
+  getTabRow,
+  swapTabData,
+  tabWriteStatements,
+  upsertTab,
+} from './tabs';
 
 // The component library's store and its reference index (docs/specs/009-elements/blueprints/components.md "Data
 // and persistence"), on a real SQLite with the design's schema. Every writer of `tabs.data` keeps `component_refs`
@@ -188,9 +194,15 @@ describe('component_refs on every tab write', () => {
   it('swapTabData only ever adds', async () => {
     const db = withDesign();
     await upsertTab(db.env, 'A', tabUsing('t1', 'c1'), 0);
-    const stored = db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string;
     const next = JSON.stringify({ elements: [instance('i-9', 'c2')] });
-    await swapTabData(db.env, 'A', 't1', stored, next, tabStatsOfData(next).stats);
+    await swapTabData(
+      db.env,
+      'A',
+      't1',
+      (await getTabRow(db.env, 'A', 't1'))!,
+      next,
+      JSON.parse(next) as never,
+    );
     expect(refs(db.sql)).toEqual(['t1:c1', 't1:c2']);
   });
 

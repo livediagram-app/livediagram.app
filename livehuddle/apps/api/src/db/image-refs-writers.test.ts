@@ -7,8 +7,7 @@ import { makeTestRouteContext } from '../routes/test-route-context';
 import { handleDocuments } from '../routes/documents';
 import { handleDocumentSubresources } from '../routes/document-subresource-routes';
 import { documentImageIds } from './image-refs';
-import { deleteTabRow, seedTabs, swapTabData, upsertTab } from './tabs';
-import { tabStatsOfData } from './tab-stats';
+import { deleteTabRow, seedTabs, getTabRow, swapTabData, upsertTab } from './tabs';
 
 // Every writer of `tabs.data` keeps `image_refs` in step with the body
 // (docs/specs/009-elements/images.md, "Reference index"), and the document's push hands the media service the
@@ -141,15 +140,14 @@ describe('swapTabData (a participant write)', () => {
   it('adds the new body references on a won swap', async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
-    const stored = db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get('t1')!.data as string;
     expect(
       await swapTabData(
         db.env,
         'A',
         't1',
-        stored,
+        (await getTabRow(db.env, 'A', 't1'))!,
         body('img-1', 'img-2'),
-        tabStatsOfData(body('img-1', 'img-2')).stats,
+        JSON.parse(body('img-1', 'img-2')) as never,
       ),
     ).toBe(true);
     expect(refs(db.sql, 't1')).toEqual(['img-1', 'img-2']);
@@ -159,7 +157,14 @@ describe('swapTabData (a participant write)', () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
     expect(
-      await swapTabData(db.env, 'A', 't1', 'stale', body(), tabStatsOfData(body()).stats),
+      await swapTabData(
+        db.env,
+        'A',
+        't1',
+        { rev: 99, updatedAt: 0 },
+        body(),
+        JSON.parse(body()) as never,
+      ),
     ).toBe(false);
     expect(refs(db.sql, 't1')).toEqual(['img-1']);
   });

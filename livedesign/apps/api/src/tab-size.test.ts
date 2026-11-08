@@ -2,11 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livedesign/design';
 import { MAX_TAB_BYTES, tabDataBytes } from '@livedesign/api-schema';
 import { sqliteD1, type SqliteD1 } from './test-sqlite-d1';
-import { seedTabs, swapTabData, upsertTab } from './db/tabs';
+import { seedTabs, getTabRow, swapTabData, upsertTab } from './db/tabs';
 import { TabTooLargeError } from './limits';
 import { makeTestRouteContext } from './routes/test-route-context';
 import { handleDesigns } from './routes/designs';
-import { tabStatsOfData } from './db/tab-stats';
 
 // docs/specs/015-api/api.md "Tab size": a tab's data fits one D1 row (2,000,000 bytes), which the
 // local sqlite does not enforce, so the worker does, at every write, at the boundary.
@@ -80,13 +79,18 @@ describe('the storage layer', () => {
     const db = sqliteD1();
     liveDoc(db, 'd1');
     await upsertTab(db.env, 'd1', tabOf(100), 0);
-    const raw = (db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get('t1') as { data: string })
-      .data;
     // Two bytes a character: under the cap in characters, over it in bytes.
     const next = JSON.stringify({ elements: [], pad: 'é'.repeat(MAX_TAB_BYTES / 2) });
     expect(next.length).toBeLessThan(MAX_TAB_BYTES);
     await expect(
-      swapTabData(db.env, 'd1', 't1', raw, next, tabStatsOfData(next).stats),
+      swapTabData(
+        db.env,
+        'd1',
+        't1',
+        (await getTabRow(db.env, 'd1', 't1'))!,
+        next,
+        JSON.parse(next) as never,
+      ),
     ).rejects.toBeInstanceOf(TabTooLargeError);
     expect(stored(db, 't1')?.n).toBe(100);
     warn.mockRestore();
