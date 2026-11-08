@@ -13,7 +13,7 @@ import {
   type Calculation,
   type CustomFieldKind,
 } from '@liveplanner/items';
-import { CheckIcon, lucideGlyph } from '@liveplanner/ui';
+import { CheckIcon, indefiniteArticle, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideCalculator,
   lucideBraces,
@@ -291,7 +291,7 @@ function SampleValue({
                 ? `3 ${linkLabel} cards`
                 : '3 linked cards'
               : linkLabel
-                ? `A ${linkLabel} card`
+                ? `${indefiniteArticle(linkLabel) === 'an' ? 'An' : 'A'} ${linkLabel} card`
                 : 'A linked card'}
         </div>
       );

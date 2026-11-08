@@ -33,7 +33,7 @@ describe('the card type chips', () => {
     expect(screen.getByRole('group', { name: 'Add Cards' })).toBeTruthy();
     const buttons = screen.getAllByRole('button');
     expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(
-      two.map((t) => `Add a ${t.label}`),
+      ['Add a Project', 'Add a Task'],
     );
     expect(buttons.map((b) => b.textContent)).toEqual(two.map((t) => t.label));
   });
@@ -44,7 +44,8 @@ describe('the card type chips', () => {
     chips(four);
     const buttons = screen.getAllByRole('button');
     expect(buttons.map((b) => b.textContent)).toEqual(['', '', '', '']);
-    expect(buttons[3]!.getAttribute('aria-label')).toBe(`Add a ${four[3]!.label}`);
+    // An Idea takes "an" (indefiniteArticle), never "Add a Idea".
+    expect(buttons[3]!.getAttribute('aria-label')).toBe('Add an Idea');
   });
 
   it('adds a card and opens it on a click, announcing where it went', () => {
