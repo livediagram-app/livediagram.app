@@ -32,6 +32,7 @@ import {
   closeReceptionist,
   getReceptionistState,
   noteReceptionistGreetedYou,
+  noteReceptionistSetOff,
   openReceptionist,
   useReceptionistState,
 } from '@/lib/receptionist/receptionist-store';
@@ -50,6 +51,8 @@ const NO_DETOUR: { padId: string | null; detour: ReceptionistDetour | null } = {
 export type ReceptionistView = {
   world: ReceptionistWorld;
   pose: ReceptionistPose;
+  /** An ask he has not set off on yet: the render that opens his bubble still draws him where his day had him. */
+  setting: boolean;
 };
 
 /** The world on this tab, built once per change to the elements, only while you walk. */
@@ -79,7 +82,7 @@ export function useReceptionist({
 }): ReceptionistView | null {
   const world = useReceptionistWorld(active, elements);
   const still = useReducedMotion();
-  const { chat, asks } = useReceptionistState();
+  const { chat, asks, setOff } = useReceptionistState();
   // The detour he is on, kept with his pad's id: an edit to the tab keeps it, another tab (another pad) drops it.
   const [held, setHeld] = useState<{ padId: string | null; detour: ReceptionistDetour | null }>(
     NO_DETOUR,
@@ -123,16 +126,16 @@ export function useReceptionist({
     }
   }, [arrivals, world, still, setDetour, currentDetour]);
 
-  // Ask Receptionist: he walks over to you (on your screen only).
-  const asked = useRef(asks);
+  // Ask Receptionist: he walks over to you (on your screen only). The store records each ask he has set off on, so the
+  // render that opens his bubble knows his walk has not started yet (ReceptionistView.setting).
   useEffect(() => {
-    if (asks === asked.current) return;
-    asked.current = asks;
+    if (asks === setOff) return;
+    noteReceptionistSetOff(asks);
     const you = selfRef.current;
     if (!world || !you || still) return;
     const at = Date.now();
     setDetour(world.padId, talkDetour(world, at, currentDetour(world.padId), you));
-  }, [asks, world, still, setDetour, currentDetour, selfRef]);
+  }, [asks, setOff, world, still, setDetour, currentDetour, selfRef]);
 
   // A reception bell rang on this tab, yours or anyone's: he walks over to its desk to help. While his bubble is open
   // for you he finishes with you first, unless the ring was yours.
@@ -229,5 +232,5 @@ export function useReceptionist({
   }, [world, pose, now, detour, still]);
 
   if (!world || !pose) return null;
-  return { world, pose };
+  return { world, pose, setting: asks !== setOff };
 }

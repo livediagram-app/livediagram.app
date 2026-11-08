@@ -88,6 +88,8 @@ export function ReceptionistLayer({
     pose !== null &&
     self !== null &&
     !pose.walking &&
+    // Not in the render an ask opens his bubble: he has not set off yet, and stands where his day had him.
+    !receptionist?.setting &&
     Math.hypot(self.x - pose.at.x, self.y - pose.at.y) > TALK_REACH;
   useEffect(() => {
     if (far) closeReceptionist();

@@ -185,9 +185,20 @@ describe('ReceptionistLayer', () => {
     expect(parseFloat(press.style.left) + parseFloat(press.style.width) / 2).toBe(230);
   });
 
+  it('keeps his bubble open when you ask him from across the room, before he sets off', () => {
+    document.documentElement.classList.remove('reduce-motion');
+    vi.useFakeTimers();
+    // A moment his day stands him over 400 px from you: the render that opens his bubble used to close it as "too far".
+    vi.setSystemTime(Date.UTC(2026, 10, 8, 0, 30, 20));
+    render(layer({ elements: [pad, desk] }));
+    act(() => askReceptionist());
+    expect(getReceptionistState().chat).toMatchObject({ open: true, reason: 'ask' });
+  });
+
   it('finishes with you first when somebody else rings, and ignores a desk not on the tab', () => {
     document.documentElement.classList.remove('reduce-motion');
     vi.useFakeTimers();
+    vi.setSystemTime(Date.UTC(2026, 10, 8, 15, 31, 20));
     render(layer({ elements: [pad, desk] }));
     act(() => askReceptionist());
     act(() => ring('tab-sam'));
