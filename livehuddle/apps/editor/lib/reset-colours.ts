@@ -5,9 +5,12 @@
 // with the colours they bound, and so does a whiteboard stock colour stored by name
 // (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content"), which would otherwise
 // show again the moment the explicit colour is cleared.
-import type { Element, ThemeDefinition } from '@livehuddle/document';
+import { isRetiredElement, type Element, type ThemeDefinition } from '@livehuddle/document';
 
 export function resetElementColours(el: Element, theme: ThemeDefinition): Element {
+  // A retired element, a deleted shape kind included, keeps what it holds
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): a selection-wide reset skips it.
+  if (isRetiredElement(el)) return el;
   if (el.type === 'shape') {
     return {
       ...el,
