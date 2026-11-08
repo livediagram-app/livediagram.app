@@ -187,7 +187,8 @@ The replay never changes the document:
 - `UI·Opened·TourOffer` (the button first offering it in a page load), as before.
 - `UI·Opened·WatchStart` when the start panel opens (a press or a Settings rerun).
 - `UI·Started·Tour` when a topic is picked, plus `UI·View·WatchTopic<Topic>` naming it (`WatchTopicBasics`,
-  `WatchTopicLook`, ...; one token per topic id).
+  `WatchTopicLook`, ...; one token per topic id); liveworkspace.app's telemetry charts them as **Watch It Built Topics Picked**, and every topic's chapters
+  under **Tour Steps Viewed**).
 - `UI·View·TourStep<Chapter>` as each chapter starts (The Basics: `TourStepAdd`, `TourStepConnect`, `TourStepLabel`,
   `TourStepStyle`; other topics' chapters likewise, by their chapter id).
 - `UI·Ended·TourCompleted` (Your Turn, More Topics, Done) or `UI·Ended·TourSkipped`.

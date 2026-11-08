@@ -137,37 +137,36 @@ const IMAGE_SEARCH_WARNINGS = [
   ),
 ];
 
-// Watch It Built's chapters, in order, as tourStepTelemetryType makes them (apps/editor
-// lib/replay/watch-it-built-script.ts CHAPTERS, docs/specs/007-editor/watch-it-built.md "Telemetry").
-export const TOUR_STEP_SOURCE: string[] = [
-  ...read('editor/lib/replay/watch-it-built-script.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .map(
-    (id) =>
-      `TourStep${id
+// Watch It Built's chapters, as tourStepTelemetryType makes them (docs/specs/007-editor/watch-it-built.md
+// "Telemetry"): each topic's CHAPTERS ids (apps/editor lib/replay/topics/<topic id>.ts), topics in the curriculum's
+// order (lib/replay/curriculum.ts).
+const chapterSteps = (topicId: string): string[] => {
+  const src = read(`editor/lib/replay/topics/${topicId}.ts`);
+  const start = src.indexOf('export const CHAPTERS');
+  const block = src.slice(start, src.indexOf('\n];', start));
+  return [...block.matchAll(/^ {4}id: '([a-z-]+)',/gm)].map(
+    (m) =>
+      `TourStep${m[1]!
         .split('-')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
   );
+};
+const TOPIC_IDS = [
+  ...read('editor/lib/replay/curriculum.ts').matchAll(/^ {6}id: '([a-z-]+)',/gm),
+].map((m) => m[1]!);
 
-// The Workshop tour's steps, as workshopTourStepTelemetryType makes them (apps/editor
-// workshop-tour-steps.ts, docs/specs/012-collaboration/workshop-tour.md). The welcome card sends no step view.
-const WORKSHOP_TOUR_STEP_SOURCE: string[] = [
-  ...read('editor/components/tour/workshop-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `WorkshopTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
+// The Basics' chapters, the Help tab's funnel (tour-steps.ts).
+export const TOUR_STEP_SOURCE: string[] = chapterSteps('diagram-basics');
 
-// The Draw tour's steps, as drawTourStepTelemetryType makes them (apps/editor draw-tour-steps.ts,
-// docs/specs/023-draw-mode/draw-tour.md). The welcome card sends no step view.
+// Every topic's chapters: what the player can send.
+export const WATCH_STEP_SOURCE: string[] = TOPIC_IDS.flatMap(chapterSteps);
+
+// A topic picked on the start panel, `WatchTopic<telemetry>` (the curriculum's `telemetry` tokens).
+const WATCH_TOPIC_PICKS: string[] = [
+  ...read('editor/lib/replay/curriculum.ts').matchAll(/^ {6}telemetry: '([A-Za-z]+)',/gm),
+].map((m) => `WatchTopic${m[1]!}`);
+
 // The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
 // it runs inside the dialog (each `flows-` prefixed), then its closing card.
 const pascal = (id: string) =>
@@ -229,19 +228,6 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('DiagramKeyTour', 'diagram-key-tour-steps.ts'),
   ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
-
-const DRAW_TOUR_STEP_SOURCE: string[] = [
-  ...read('editor/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `DrawTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
 
 // The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/editor avatar-tour-steps.ts,
 // docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
@@ -481,10 +467,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: API_ERRORS,
     open: API_ERROR_WHY,
   },
-  'apps/editor/components/tour/WorkshopTourHost.tsx UI·View': {
-    values: WORKSHOP_TOUR_STEP_SOURCE,
-  },
-  'apps/editor/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
   'apps/editor/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
   'apps/editor/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
   'apps/editor/components/tour/ElementTourHost.tsx UI·Ended': {
@@ -494,7 +476,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
   'apps/editor/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/editor/components/tour/WatchItBuiltPlayer.tsx UI·View': { values: TOUR_STEP_SOURCE },
+  'apps/editor/components/tour/WatchItBuiltPlayer.tsx UI·View': { values: WATCH_STEP_SOURCE },
+  'apps/editor/components/tour/WatchItBuiltHost.tsx UI·View': { values: WATCH_TOPIC_PICKS },
   'apps/editor/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],
     open: 'the shape the Shape Pen recognised',
