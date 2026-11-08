@@ -130,7 +130,8 @@ Writes an article's text from **Markdown**.
   around it. A code block's fence is three or more backticks and only a line of backticks alone, at least as many,
   closes it; code is written with one backtick more than its own longest fence-like line, so code holding a
   ` ``` ` line stays one block. A link's parentheses and backslashes are escaped in its address, so an address
-  such as `…/Mercury_(planet)` reads back whole. A title or subtitle wrapped in quotes is written inside the other
+  such as `…/Mercury_(planet)` reads back whole, and a space or other white space in it is percent-encoded
+  (`%20`), since a link's address in Markdown ends at white space. A title or subtitle wrapped in quotes is written inside the other
   quote, so its quotes read back, and without front matter an opening divider is written `***`, never read as front
   matter. A line holding only
   `\pagebreak` is a page break. A pipe table (a header line, a `|---|` line, then rows) is a table block, its header
