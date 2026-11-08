@@ -517,6 +517,7 @@ function CanvasView(props: CanvasProps) {
             <CanvasArrivalProvider
               tabId={props.activeTabId ?? ''}
               loaded={props.activeTabLoaded ?? true}
+              count={elements.length}
             >
               {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}

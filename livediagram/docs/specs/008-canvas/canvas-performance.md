@@ -98,6 +98,17 @@ large move rides as one layer").
   animations"): an animation over the whole board makes the browser lay out the page's
   compositing again as it starts and as it ends, and a per-element entry re-renders every element
   view once more. Chrome may still fade in; it is small.
+- **Adding many elements animates nothing.** More than 24 elements landing in one commit (a paste,
+  a duplicate, an undo, an import, a collaborator's change) appear at once, with no pop-in
+  ([Canvas and palette](canvas-and-palette.md) "Motion and animations"). Safari gives each element
+  running a transform animation a compositing layer of its own, and every element painted over it
+  then needs one too: pasting 500 elements on a 2,600-element board held one frame for about 7 s in
+  WebKit at iPad size with every copy popping in, and about 0.4 s without.
+- **A closed panel draws nothing of the board.** A panel that stays mounted once opened (the
+  Layers panel, for its per-layer previews) does no work over the board's elements while it is
+  closed; it draws them again when it opens. The Layers previews are a pass of the headless
+  renderer over every element, about 65 to 150 ms on a 2,600-element board, which ran on every
+  change (each drag's release, each label commit) after the panel had been opened once.
 - **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
   pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
   redraws it at most once every 250 ms. Opening a board draws the board first; the Map's picture
