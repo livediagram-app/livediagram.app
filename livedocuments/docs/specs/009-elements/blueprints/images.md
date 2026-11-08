@@ -117,8 +117,9 @@ service's ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md
 on as sent (`serviceAnswer`).
 
 1. No media service → 503 `images_unavailable`.
-2. Pre-dispatch in `index.ts`: read-only token → 403; `Content-Length > MAX_IMAGE_BYTES` →
-   413 `payload_too_large`; `WRITE_RATE_LIMITER` exhausted → 429 `rate_limited`.
+2. Pre-dispatch in `index.ts`: read-only token → 403; `Content-Length > MAX_IMAGE_BYTES`, or a
+   body that streams past it (`withCappedBody`, whatever the header says) → 413 `payload_too_large`;
+   `WRITE_RATE_LIMITER` exhausted → 429 `rate_limited`.
 3. No resolved owner → 400 (`requireOwner`, D33).
 4. `Content-Type` (lower-cased) not in `ACCEPTED_IMAGE_TYPES` → 415 `unsupported_type`
    `{ acceptedTypes }`.

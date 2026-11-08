@@ -396,3 +396,72 @@ describe('carried-over lvd_ API tokens', () => {
     expect(resolveApiTokenMock).not.toHaveBeenCalled();
   });
 });
+
+// The body cap (docs/specs/015-api/api.md "Rate limiting") holds whatever the headers say: a chunked body declares
+// no Content-Length (Number(null) is 0, which used to pass), so the gate counts the bytes it reads.
+describe('the write body cap', () => {
+  // A body of `chunks` pieces of `size` bytes that declares no length, as a chunked upload does.
+  const chunkedPut = (chunks: number, size: number, extra: Record<string, string> = {}) => {
+    let sent = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (sent === chunks) return controller.close();
+        sent++;
+        controller.enqueue(new TextEncoder().encode('x'.repeat(size)));
+      },
+    });
+    return new Request('https://api.test/api/documents/doc1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...extra },
+      body,
+      duplex: 'half',
+    } as RequestInit);
+  };
+
+  beforeEach(() => {
+    resolveApiTokenMock.mockResolvedValue(null);
+    handleDocumentsMock.mockClear();
+  });
+
+  it('refuses a chunked body past MAX_BODY_BYTES with 413 before any route reads it', async () => {
+    const request = chunkedPut(9, 1024 * 1024);
+    expect(request.headers.get('content-length')).toBeNull();
+    const res = await worker.fetch(request, env());
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ error: 'payload_too_large' });
+    expect(handleDocumentsMock).not.toHaveBeenCalled();
+  });
+
+  it('still refuses a declared Content-Length past the cap without reading', async () => {
+    const res = await worker.fetch(
+      new Request('https://api.test/api/documents/doc1', {
+        method: 'PUT',
+        headers: { 'Content-Length': String(9 * 1024 * 1024) },
+        body: '{}',
+      }),
+      env(),
+    );
+    expect(res.status).toBe(413);
+    expect(handleDocumentsMock).not.toHaveBeenCalled();
+  });
+
+  it('hands a body under the cap to the route unchanged, chunked or not', async () => {
+    const seen: string[] = [];
+    handleDocumentsMock.mockImplementation((async (ctx: RouteContext) => {
+      seen.push(await ctx.request.text());
+      return new Response(null, { status: 204 });
+    }) as never);
+    const chunked = await worker.fetch(chunkedPut(3, 4), env());
+    const declared = await worker.fetch(
+      new Request('https://api.test/api/documents/doc1', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Roadmap' }),
+      }),
+      env(),
+    );
+    expect([chunked.status, declared.status]).toEqual([204, 204]);
+    expect(seen).toEqual(['x'.repeat(12), JSON.stringify({ name: 'Roadmap' })]);
+    handleDocumentsMock.mockImplementation(async () => new Response(null, { status: 204 }));
+  });
+});

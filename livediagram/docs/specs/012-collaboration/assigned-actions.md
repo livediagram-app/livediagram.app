@@ -213,8 +213,9 @@ The server, not the client, establishes every fact that matters:
 - verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
   an invited member) is a joined OR invited member of `<teamId>` (404
   otherwise, so there is no probing which users exist);
-- verifies the caller can access `documentId` (owner, team library, or
-  shared-with), and reads the **document name from the index**, not the body;
+- verifies the caller can **edit** `documentId` (owner, team library, or
+  shared-with at Editor: assigning is an edit, §2 and §7; a Viewer's or Participant's grant
+  answers 403, no grant 404), and reads the **document name from the index**, not the body;
 - resolves the assignee's address from trusted server state
   (`team_members.email` / `email_lifecycle`), never a client header
   ([Transactional & lifecycle email](../014-identity/transactional-email.md) §7, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);

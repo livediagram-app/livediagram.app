@@ -5,12 +5,12 @@
 // @livedocuments/document (isValidTab); these are the SIZE bounds a structurally
 // valid payload must also respect.
 
-// Outer bound on any request body, gated on Content-Length before dispatch so
-// a hostile payload that DECLARES its size never reaches a route's req.json().
-// It can only ever be that: the gate runs before the body is read, so there is
-// nothing to measure when the header is absent, and it deliberately fails open
-// there. The per-route caps are what actually bound an undeclared body — see
-// bodyExceedsCap at the bottom of this file.
+// Outer bound on any request body, enforced in index.ts before dispatch: a
+// declared Content-Length over it is refused before a byte is read, and every
+// write body is then read through a byte counter that stops at it
+// (@liveworkspace/api-kit/request-body), so a chunked body that declares no
+// length never reaches a route's req.json() past it either. The per-route caps
+// (bodyExceedsCap at the bottom of this file) bound what a route accepts below it.
 export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 
 // A single uploaded image's raw bytes (docs/specs/009-elements/images.md). Larger than MAX_BODY_BYTES,

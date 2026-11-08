@@ -7,10 +7,12 @@
 // The server establishes every fact that matters itself: the caller is in the team (their token's claim, confirmed
 // by accounts) and can open the canvas; the people named are the team's; the canvas's name, the sender's name and
 // the recipient's address come from server state, never the body. 404, never 403, for anyone or anything the caller
-// cannot name, so the routes cannot probe who or what exists. The notify routes answer 202 at once; the emails go
+// cannot name, so the routes cannot probe who or what exists; 403 for an assignment on a canvas the caller can open
+// but not edit. The notify routes answer 202 at once; the emails go
 // in the background (the assignment or comment itself is already in the canvas, through the tab save).
 
 import { teamTargets, type NotifyTarget, type TeamPerson } from '@liveworkspace/auth-client';
+import { levelAtLeast } from '@livehuddle/api-schema';
 import { MENTIONS_MAX } from '@livehuddle/document';
 import { documentRoom } from '../document-client';
 import { requestGrant, type ItemGrant } from '../index-service';
@@ -126,6 +128,9 @@ export async function handleTeamNotifyRoutes(
     if (!assignee) return notFound();
     const grant = await callerGrant(ctx, documentId);
     if (!grant) return notFound();
+    // Assigning is an edit (assigned-actions.md §2, §7): a Viewer or Participant, who can open the canvas and so
+    // name it, is refused outright rather than allowed to send email in someone else's name.
+    if (!levelAtLeast(grant.level, 'edit')) return forbidden();
     const [canOpen, assigner] = await Promise.all([
       personCanOpen(ctx, grant, teamId, assignee),
       getParticipant(ctx.env, owner),

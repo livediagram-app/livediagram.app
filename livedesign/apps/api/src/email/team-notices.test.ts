@@ -19,7 +19,7 @@ import type { TeamClaim, TeamPerson } from '@liveworkspace/auth-client';
 import type { Comment, Element } from '@livedesign/design';
 import { resetProfiles, seedProfile } from '../test-profiles';
 import { ACCOUNTS_ENV, fakeAccounts, INDEX_ENV, type FakeAccounts } from '../test-accounts';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from '../routes/test-route-context';
 import { handleDesigns } from '../routes/designs';
 import { handleInternalItems } from '../routes/internal-items';
@@ -255,6 +255,28 @@ describe('an action assigned', () => {
     fake.settings.set(BOB, { all: { notifyActionAssigned: false }, app: {}, updatedAt: 1 });
     expect((await assign({ assigneeUserId: BOB })).status).toBe(202);
     expect(sent()).toEqual([]);
+  });
+
+  it('refuses a teammate who can open the design but not edit it, and takes an edit link', async () => {
+    // Assigning is an edit (assigned-actions.md §2, §7): a view grant must not send email in anyone's name.
+    fake.teamPeople.set(TEAM, [
+      ...fake.teamPeople.get(TEAM)!,
+      person('m-carol', 'user_carol', 'carol@x.test'),
+    ]);
+    testShareLink(db, 'solo', 'view-code', 'view');
+    testShareLink(db, 'solo', 'part-code', 'participate');
+    testShareLink(db, 'solo', 'edit-code', 'edit');
+    const assignWith = (code: string) =>
+      route('POST', '/api/designs/solo/notify-action', {
+        body: { teamId: TEAM, assigneeUserId: BOB, actionName: 'Ship it' },
+        as: 'user_carol',
+        code,
+      });
+    expect((await assignWith('view-code')).status).toBe(403);
+    expect((await assignWith('part-code')).status).toBe(403);
+    expect(sent()).toEqual([]);
+    expect((await assignWith('edit-code')).status).toBe(202);
+    expect(sent()).toEqual([expect.objectContaining({ to: 'bob@x.test', kind: 'ActionAssigned' })]);
   });
 
   it('refuses a stranger, a team the caller is not in, an API token and a bad body', async () => {

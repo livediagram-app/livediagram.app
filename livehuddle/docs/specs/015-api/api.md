@@ -315,7 +315,7 @@ Seven limiters, each a Cloudflare Workers Rate Limiting binding declared under `
 
 Other reads (a signed-in or guest `GET`, and every `OPTIONS`) are unmetered. The write ceiling sits well above realistic editing traffic (autosave fires once per debounce window, comments are typed by humans) but low enough to stop a bot from spamming document / image creation into storage quota exhaustion. The room-ticket mint is exempt because it shares the per-owner budget with the autosave, and a 429 there would cost a team member the whole session's realtime; `/api/events` is exempt so telemetry never competes with a user's real writes.
 
-Before any limiter, a write whose `Content-Length` exceeds the body cap (`MAX_BODY_BYTES`, or `MAX_IMAGE_BYTES` for `/api/images`, `limits.ts`) is refused with `413`.
+Before any limiter, a write whose `Content-Length` exceeds the body cap (`MAX_BODY_BYTES`, or `MAX_IMAGE_BYTES` for `/api/images`, `limits.ts`) is refused with `413`. The header is only the fast refusal: every write body is then read through a byte counter that stops at the same cap (`withCappedBody`, `@liveworkspace/api-kit/request-body`) and answers the same `413` `payload_too_large`, so a chunked body that declares no length is held to the cap as well, and no route ever reads more than it.
 
 Deployments: every limiter is optional. When a binding is absent its check short-circuits to "allow", so deployments without the feature still serve. The bindings are a Cloudflare paid-tier capability; the open-source path stays unaffected (per [Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 

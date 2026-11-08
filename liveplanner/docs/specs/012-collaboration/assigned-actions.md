@@ -213,7 +213,8 @@ answer: 202, the email worked out in the background
 
 The server, not the client, establishes every fact that matters:
 
-- verifies the **caller** can open the plan (the index's grant) and is a joined member of `teamId`: their
+- verifies the **caller** can edit the plan (the index's grant at Editor: assigning is an edit, §2 and §7;
+  a Viewer's or Participant's grant answers 403, no grant 404) and is a joined member of `teamId`: their
   token names the team, and the team as liveworkspace keeps it now (`POST /api/account/internal/teams/members`,
   [liveworkspace accounts](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Notification emails") still holds them;
 - verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
