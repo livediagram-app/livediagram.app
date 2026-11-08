@@ -7,7 +7,10 @@ import { CHAPTERS, DEMO_IDS, RESULTS, run, TIMER, VOTE } from './workshop-run';
 
 const tab = { id: 't', name: 'Tab', elements: [], backgroundColor: '#ffffff' } as unknown as Tab;
 const centre = { x: 400, y: 300 };
-const layout = { ...run.layout({ centre, size: { width: 1440, height: 820 }, tab }), startedAt: 1_000_000 };
+const layout = {
+  ...run.layout({ centre, size: { width: 1440, height: 820 }, tab }),
+  startedAt: 1_000_000,
+};
 
 describe('Run the Room', () => {
   it('plays Timer, Vote, Results', () => {

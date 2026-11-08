@@ -4,7 +4,11 @@ import { CHAPTERS, COLOUR_BEATS, DRAW, MARKER, NEW_PEN, OPEN, pens } from './dra
 
 // Pens and Colours (docs/specs/023-draw-mode/draw-mode.md "Pens"). What every topic holds is in topics.test.ts.
 
-const env = { centre: { x: 400, y: 300 }, tab: { id: 't', elements: [] } as unknown as Tab };
+const env = {
+  centre: { x: 400, y: 300 },
+  size: { width: 1440, height: 820 },
+  tab: { id: 't', elements: [] } as unknown as Tab,
+};
 const layout = pens.layout(env);
 
 describe('Pens and Colours', () => {

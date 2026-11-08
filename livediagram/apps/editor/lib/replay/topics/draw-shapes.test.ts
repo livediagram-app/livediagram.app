@@ -4,7 +4,11 @@ import { CHAPTERS, RECT, SEARCH, shapes, STICKY, STICKY_TEXT } from './draw-shap
 
 // Shapes and Stickies (docs/specs/023-draw-mode/draw-mode.md "Shapes"). What every topic holds is in topics.test.ts.
 
-const env = { centre: { x: 400, y: 300 }, tab: { id: 't', elements: [] } as unknown as Tab };
+const env = {
+  centre: { x: 400, y: 300 },
+  size: { width: 1440, height: 820 },
+  tab: { id: 't', elements: [] } as unknown as Tab,
+};
 const layout = shapes.layout(env);
 
 describe('Shapes and Stickies', () => {

@@ -4,7 +4,11 @@ import { CHAPTERS, DRAW, MARKER, PICK_UP, sketch } from './draw-sketch';
 
 // Sketch (docs/specs/007-editor/watch-it-built.md "The curriculum", Draw). What every topic holds is in topics.test.ts.
 
-const env = { centre: { x: 400, y: 300 }, tab: { id: 't', elements: [] } as unknown as Tab };
+const env = {
+  centre: { x: 400, y: 300 },
+  size: { width: 1440, height: 820 },
+  tab: { id: 't', elements: [] } as unknown as Tab,
+};
 const layout = sketch.layout(env);
 
 describe('Sketch', () => {

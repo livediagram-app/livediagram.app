@@ -5,7 +5,11 @@ import { BOARD, board, CHAPTERS, DOTS, ERASE, GRID } from './draw-board';
 // Erase and Board (docs/specs/023-draw-mode/draw-mode.md "Eraser", "Board background"). What every topic holds is in
 // topics.test.ts.
 
-const env = { centre: { x: 400, y: 300 }, tab: { id: 't', elements: [] } as unknown as Tab };
+const env = {
+  centre: { x: 400, y: 300 },
+  size: { width: 1440, height: 820 },
+  tab: { id: 't', elements: [] } as unknown as Tab,
+};
 const layout = board.layout(env);
 
 describe('Erase and Board', () => {
