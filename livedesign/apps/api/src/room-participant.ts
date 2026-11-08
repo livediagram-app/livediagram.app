@@ -2,7 +2,8 @@
 // and state"). Split out of design-room.ts, which owns the sockets and hands this module what it needs.
 //
 // Content: a Participant's `el` op is never relayed as sent. It joins the room's tab write queue, is applied to
-// the stored tab by the participant content rule, and only what the rule produced reaches anyone:
+// the stored tab by the participant content rule, and only what the rule produced reaches anyone. The ops waiting
+// on one tab drain together (one read, each op in order, one write), and each is answered as it would be alone:
 //   - applied: an add or a remove as sent, an update as a patch of the fields it changed (never the stored copy
 //     whole, which may be behind an Editor's live change), sequenced from the sender to everyone else, and a cursor
 //     frame to the sender, as an Editor's op is; an add the rule stamped goes to everyone, the sender included (SR3);
@@ -11,11 +12,12 @@
 //     flood past PARTICIPANT_PENDING_MAX), and the sender re-hydrates (`catchup { resync: true }`).
 
 import { isRoomOpRef, type ServerMessage } from '@livedesign/api-schema';
-import type { ElementDelta, ElementOp } from '@livedesign/design';
+import type { ElementDelta, ElementOp, ParticipantOpResult } from '@livedesign/design';
+import { TabChangeQueue, type TabSwapResult } from '@liveworkspace/api-kit/tab-swap';
 import {
-  writeParticipantOp,
+  participantOpChange,
+  participantTabStore,
   writeParticipantReaction,
-  type ParticipantWriteResult,
 } from './participant-write';
 import type { DesignEnv } from './types';
 
@@ -60,10 +62,14 @@ export class RoomParticipantWrites {
 
   constructor(hooks: ParticipantRoomHooks) {
     this.hooks = hooks;
+    this.contentOps = new TabChangeQueue(hooks.enqueue);
   }
 
   // Writes waiting on the queue, per socket: a flood is refused, not queued without end.
   private pending = new WeakMap<WebSocket, number>();
+
+  // Content ops drained per tab on the tab write queue: one read and one write for every op waiting on a tab.
+  private readonly contentOps: TabChangeQueue;
 
   // One `el` frame from a Participant's socket.
   async applyContentOp(sender: ParticipantSender, frame: unknown, ref?: unknown): Promise<void> {
@@ -79,10 +85,12 @@ export class RoomParticipantWrites {
       return this.resync(sender);
     }
     this.pending.set(sender.ws, queued + 1);
-    let result: ParticipantWriteResult;
+    let result: TabSwapResult<ParticipantOpResult>;
     try {
-      result = await this.hooks.enqueue(() =>
-        writeParticipantOp(env, { designId, tabId, op, adderKey: sender.adderKey }),
+      result = await this.contentOps.submit(
+        `${designId}\u0000${tabId}`,
+        () => participantTabStore(env, designId, tabId),
+        participantOpChange(op, sender.adderKey),
       );
     } catch (error) {
       console.error('[participant-write] failed', { designId, tabId, error: String(error) });
@@ -94,7 +102,7 @@ export class RoomParticipantWrites {
       console.error('[participant-write] failed', { designId, tabId, status: result.status });
       return this.resync(sender);
     }
-    const outcome = result.outcome;
+    const outcome = result.answer;
     if (outcome.result === 'refused') {
       console.info('[participant-write] refused', { designId, tabId, reason: outcome.reason });
       // An element not saved yet (an Editor's, inside its autosave): nothing here to put back, so the sender

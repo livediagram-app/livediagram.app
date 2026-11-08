@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useDeferredValue, useMemo, useRef } from 'react';
-import { watchMapBox } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
+import { useDeferredValue, useMemo } from 'react';
+import { MinimapMap, minimapPicture } from '@liveworkspace/workbench/components/canvas/MinimapMap';
 import {
   boundsOfPoints,
   elementIndexFor,
@@ -28,16 +28,6 @@ import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { selectionBoxColors } from '@/lib/selection-box';
 import { useSettledElements } from '@/hooks/canvas/useSettledElements';
 
-// Panel body heights per map size. Tailwind classes rather than inline styles
-// so the dark-mode / responsive tooling still applies.
-// Panel body heights per map size, in Tailwind's 4px scale: h-24 = 96px,
-// h-36 = 144px, h-56 = 224px. MAP_RATIO above must match these.
-const MAP_HEIGHT: Record<MapSize, string> = {
-  short: 'h-24',
-  medium: 'h-36',
-  tall: 'h-56',
-};
-
 // The "Map" panel (docs/specs/008-canvas/minimap.md): a movable floating panel — like the Palette — with
 // a zoomed-out, true-to-shape overview of the whole tab. Each boxed element is
 // painted as its real silhouette (a circle reads as a circle) and each arrow as
@@ -46,12 +36,7 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 // scroll to zoom in on that spot. It drags, minimises and resets position like
 // the other panels (MovablePanel), and a settings gear in its header holds the
 // "Enable Map" toggle (off → showMinimap = false, re-enabled in Settings).
-//
-// Geometry: the canvas transform is `scale(z) translate(o)` about the <main>
-// centre, so the viewport centre in world coords is (W/2 - oₓ, H/2 - o_y) and
-// the visible world rect is (W/z × H/z) around it; re-centring on a world point
-// P is offset = (W/2 - Pₓ, H/2 - P_y). The SVG's viewBox IS world space, so
-// getScreenCTM() maps a click/scroll back to world coords (letterbox included).
+// The map's body (the window, the dim, the presses) is the shared MinimapMap.
 
 type MinimapProps = {
   elements: Element[];
@@ -89,10 +74,6 @@ type MinimapProps = {
   size: MapSize;
 };
 
-// Padding around the content (a fraction of its size plus a floor) so elements
-// never touch the map's edge.
-const PAD_FRACTION = 0.12;
-const PAD_MIN = 48;
 // What the catalogue resolvers find before the catalogue chunk lands.
 const NO_ART = () => undefined;
 const NO_ELEMENTS: Element[] = [];
@@ -106,21 +87,6 @@ function withoutLabel(el: Element): Element {
   } = el as Element & { label?: unknown; richText?: unknown };
   return rest;
 }
-// The map's on-screen size in px (the w-64 panel — matching the Palette — and
-// its h-36 svg). The viewBox is expanded to this aspect ratio so the wireframe
-// fills the panel edge-to-edge rather than letterboxing into white bars under
-// preserveAspectRatio="meet".
-// The panel body's aspect ratio, per map size (docs/specs/008-canvas/minimap.md). It has to track
-// MAP_HEIGHT below: the viewBox is grown on its short axis to THIS ratio so
-// the map fills the panel edge to edge, and a stale number here letterboxes —
-// picking Tall grew the panel but left the drawing its old shape, so all the
-// new height went to blank bars above and below.
-const MAP_RATIO: Record<MapSize, number> = {
-  short: 256 / 96,
-  medium: 256 / 144,
-  tall: 256 / 224,
-};
-
 export function Minimap({
   elements: liveElements,
   tabFont,
@@ -138,20 +104,12 @@ export function Minimap({
   dimOutside,
   size,
 }: MinimapProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
-  // A fit made before the Map showed may have put content under it (docs/specs/008-canvas/minimap.md "Fit leaves
-  // the Map clear"): say so once its drawing has a box, a moment after it mounts (a fit then still finds none).
-  const svgBox = useCallback((svg: SVGSVGElement | null) => {
-    svgRef.current = svg;
-    return svg ? watchMapBox(svg) : undefined;
-  }, []);
   // Drawn as the elements settle, not per frame of a gesture (docs/specs/008-canvas/canvas-performance.md),
   // and deferred: the change that settles them (a drag's release) commits first, and the Map's picture,
   // rebuilt and re-parsed for the whole board, follows as its own render.
   // On mount the picture is deferred too: the first render draws none (NO_ELEMENTS), so opening a
   // board mounts it first and the Map's whole-board picture follows in a background render.
   const elements = useDeferredValue(useSettledElements(liveElements), NO_ELEMENTS);
-  const draggingRef = useRef(false);
 
   // Which paper the canvas is (light / dark), from the SAME context the canvas
   // elements read (docs/specs/008-canvas/minimap.md "Fidelity"). The renderer
@@ -205,87 +163,11 @@ export function Minimap({
       const b = retiredArrowBounds(el, index);
       corners.push({ x: b.x, y: b.y }, { x: b.x + b.width, y: b.y + b.height });
     }
-    const content = boundsOfPoints(corners);
-    if (!content) return { picture: null, bounds: null };
-    // The picture covers the padded content box, so strokes and shadows past the corners still show.
-    const px = content.width * PAD_FRACTION + PAD_MIN;
-    const py = content.height * PAD_FRACTION + PAD_MIN;
-    const box = {
-      x: content.x - px,
-      y: content.y - py,
-      width: content.width + 2 * px,
-      height: content.height + 2 * py,
-    };
-    const doc =
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${box.x} ${box.y} ${box.width} ${box.height}" width="${box.width}" height="${box.height}">` +
-      `${svgShadowDefs(elements)}${parts.join('')}</svg>`;
-    return {
-      // Our own renderer's output (user text is xmlEscaped inside it), shown as an image.
-      picture: { ...box, href: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(doc)}` },
-      bounds: content,
-    };
+    // One image over the padded content box (MinimapMap's minimapPicture).
+    return minimapPicture(boundsOfPoints(corners), `${svgShadowDefs(elements)}${parts.join('')}`);
   }, [elements, tabFont, tabFinish, iconsLoaded, surface]);
 
-  const recentreToClient = (clientX: number, clientY: number) => {
-    const svg = svgRef.current;
-    const ctm = svg?.getScreenCTM();
-    if (!svg || !ctm || !mainSize.width) return null;
-    const pt = svg.createSVGPoint();
-    pt.x = clientX;
-    pt.y = clientY;
-    const world = pt.matrixTransform(ctm.inverse());
-    const nx = mainSize.width / 2 - world.x;
-    const ny = mainSize.height / 2 - world.y;
-    // Only write when it actually changes: setting an equal-valued new object
-    // every render would re-render forever (max update depth).
-    if (nx !== viewportOffset.x || ny !== viewportOffset.y) {
-      setViewportOffset({ x: nx, y: ny });
-    }
-    return world;
-  };
-
   if (!bounds) return null; // Nothing to map.
-
-  const padX = bounds.width * PAD_FRACTION + PAD_MIN;
-  const padY = bounds.height * PAD_FRACTION + PAD_MIN;
-  // Padded content box, then grown on the short axis to the panel's aspect
-  // ratio so the map fills it with no white letterbox bars.
-  let x0 = bounds.x - padX;
-  let y0 = bounds.y - padY;
-  let x1 = bounds.x + bounds.width + padX;
-  let y1 = bounds.y + bounds.height + padY;
-  const ratio = MAP_RATIO[size];
-  if ((x1 - x0) / (y1 - y0) < ratio) {
-    const grow = ((y1 - y0) * ratio - (x1 - x0)) / 2;
-    x0 -= grow;
-    x1 += grow;
-  } else {
-    const grow = ((x1 - x0) / ratio - (y1 - y0)) / 2;
-    y0 -= grow;
-    y1 += grow;
-  }
-  const vb = `${x0} ${y0} ${x1 - x0} ${y1 - y0}`;
-
-  const w = mainSize.width;
-  const h = mainSize.height;
-  const z = viewportZoom || 1;
-  const viewCx = w / 2 - viewportOffset.x;
-  const viewCy = h / 2 - viewportOffset.y;
-  // Visible-world rect, clamped to the padded content box so the "current view"
-  // highlight + the dimmed surround never spill past the map edges.
-  const vx = Math.max(x0, viewCx - w / z / 2);
-  const vy = Math.max(y0, viewCy - h / z / 2);
-  const vx1 = Math.min(x1, viewCx + w / z / 2);
-  const vy1 = Math.min(y1, viewCy + h / z / 2);
-  const hasView = vx1 > vx && vy1 > vy;
-
-  // Scroll on the map zooms the canvas in/out centred on that spot.
-  const onWheel = (e: React.WheelEvent) => {
-    const world = recentreToClient(e.clientX, e.clientY);
-    if (!world) return;
-    const factor = Math.exp(-e.deltaY / 200);
-    setViewportZoom(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, viewportZoom * factor)));
-  };
 
   return (
     <MovablePanel
@@ -303,70 +185,22 @@ export function Minimap({
       growBody
       onReset={onResetPosition}
     >
-      {/* Clip the map to the panel's rounded bottom so its corners don't
-          square off past the border. */}
-      <div className="overflow-hidden rounded-b-lg">
-        <svg
-          ref={svgBox}
-          viewBox={vb}
-          preserveAspectRatio="xMidYMid meet"
-          className={`block w-full cursor-pointer touch-none text-slate-400 ${MAP_HEIGHT[size]}`}
-          style={{ backgroundColor: paperColor }}
-          role="img"
-          aria-label="Canvas map: tap or drag to navigate, scroll to zoom"
-          onPointerDown={(e) => {
-            draggingRef.current = true;
-            e.currentTarget.setPointerCapture(e.pointerId);
-            recentreToClient(e.clientX, e.clientY);
-          }}
-          onPointerMove={(e) => {
-            if (draggingRef.current) recentreToClient(e.clientX, e.clientY);
-          }}
-          onPointerUp={(e) => {
-            draggingRef.current = false;
-            e.currentTarget.releasePointerCapture(e.pointerId);
-          }}
-          onWheel={onWheel}
-        >
-          {/* The tab's real rendering, as one image (see the picture build above). */}
-          {picture ? (
-            <image
-              href={picture.href}
-              x={picture.x}
-              y={picture.y}
-              width={picture.width}
-              height={picture.height}
-              preserveAspectRatio="none"
-            />
-          ) : null}
-          {hasView ? (
-            <>
-              {/* Dim everything outside the current view (even-odd: outer box
-                minus the view hole) so the lit window reads at a glance as
-                "where you are on the canvas". Optional: on a dense canvas some
-                people would rather read the whole map. */}
-              {dimOutside ? (
-                <path
-                  d={`M${x0} ${y0}H${x1}V${y1}H${x0}Z M${vx} ${vy}H${vx1}V${vy1}H${vx}Z`}
-                  fillRule="evenodd"
-                  className={surface === 'dark' ? 'fill-black/45' : 'fill-slate-500/25'}
-                />
-              ) : null}
-              <rect
-                x={vx}
-                y={vy}
-                width={vx1 - vx}
-                height={vy1 - vy}
-                rx={3}
-                fill={viewColors.fill}
-                stroke={viewColors.stroke}
-                strokeWidth={1.75}
-                vectorEffect="non-scaling-stroke"
-              />
-            </>
-          ) : null}
-        </svg>
-      </div>
+      <MinimapMap
+        picture={picture}
+        bounds={bounds}
+        size={size}
+        viewportOffset={viewportOffset}
+        viewportZoom={viewportZoom}
+        setViewportOffset={setViewportOffset}
+        setViewportZoom={setViewportZoom}
+        zoomMin={ZOOM_MIN}
+        zoomMax={ZOOM_MAX}
+        mainSize={mainSize}
+        paperColor={paperColor}
+        dimOutside={dimOutside}
+        dark={surface === 'dark'}
+        viewColors={viewColors}
+      />
     </MovablePanel>
   );
 }

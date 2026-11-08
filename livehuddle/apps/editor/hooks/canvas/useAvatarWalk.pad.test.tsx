@@ -62,8 +62,8 @@ describe('useAvatarWalk entering on an Avatar Pad', () => {
     const near = pad('near', 100, 100);
     const { result, rerender, setViewportOffset } = setup({ elements: [near] });
     rerender({ active: true, els: [near] });
-    expect(result.current.pos).toEqual(avatarPadCore(near as never));
-    expect(result.current.facing).toBe('down');
+    expect(result.current.readPos()).toEqual(avatarPadCore(near as never));
+    expect(result.current.poseStore.get().facing).toBe('down');
     expect(setViewportOffset).not.toHaveBeenCalled();
     expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'AvatarPadArrival');
   });
@@ -73,7 +73,7 @@ describe('useAvatarWalk entering on an Avatar Pad', () => {
     const { result, rerender, setViewportOffset } = setup({ elements: [far] });
     rerender({ active: true, els: [far] });
     const core = avatarPadCore(far as never);
-    expect(result.current.pos).toEqual(core);
+    expect(result.current.readPos()).toEqual(core);
     expect(setViewportOffset).toHaveBeenCalledWith({ x: 400 - core.x, y: 300 - core.y });
   });
 
@@ -84,7 +84,7 @@ describe('useAvatarWalk entering on an Avatar Pad', () => {
       spawnAt: { x: 600, y: 500 },
     });
     rerender({ active: true, els: [lobby] });
-    expect(result.current.pos).toEqual(avatarPadCore(lobby as never));
+    expect(result.current.readPos()).toEqual(avatarPadCore(lobby as never));
     expect(spawnAtRef.current).toBeNull();
   });
 
@@ -93,15 +93,15 @@ describe('useAvatarWalk entering on an Avatar Pad', () => {
     const b = pad('b', 340, 260);
     const { result, rerender } = setup({ elements: [a, b] });
     rerender({ active: true, els: [a, b] });
-    expect(result.current.pos).toEqual(avatarPadCore(b as never));
+    expect(result.current.readPos()).toEqual(avatarPadCore(b as never));
   });
 
   it('never moves a character already walking when a pad is added or moved', () => {
     const { result, rerender } = setup({ elements: [], spawnAt: { x: 200, y: 200 } });
     rerender({ active: true, els: [] });
-    expect(result.current.pos).toEqual({ x: 200, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 200, y: 200 });
     rerender({ active: true, els: [pad('new', 500, 400)] });
-    expect(result.current.pos).toEqual({ x: 200, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 200, y: 200 });
     expect(track).not.toHaveBeenCalled();
   });
 
@@ -112,12 +112,12 @@ describe('useAvatarWalk entering on an Avatar Pad', () => {
     act(() => result.current.teleportTo({ x: 300, y: 300 }));
     rerender({ active: false, els: [lobby] });
     rerender({ active: true, els: [lobby] });
-    expect(result.current.pos).toEqual(avatarPadCore(lobby as never));
+    expect(result.current.readPos()).toEqual(avatarPadCore(lobby as never));
   });
 
   it('without a pad, keeps the button spawn first', () => {
     const { result, rerender } = setup({ elements: [], spawnAt: { x: 600, y: 500 } });
     rerender({ active: true, els: [] });
-    expect(result.current.pos).toEqual({ x: 600, y: 500 });
+    expect(result.current.readPos()).toEqual({ x: 600, y: 500 });
   });
 });

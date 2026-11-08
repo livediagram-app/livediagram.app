@@ -166,3 +166,27 @@ describe('a card carried over its own place', () => {
     unregister();
   });
 });
+
+// docs/specs/026-plan/plan-board.md "A drag stays smooth": carrying a card selects none of the page's text.
+describe('a card carried selects no text', () => {
+  it('refuses a selection while pressed, clears one made before the drag, and allows them again after', () => {
+    const { press, move, up, unregister } = drag();
+    const select = () => {
+      const e = new Event('selectstart', { cancelable: true, bubbles: true });
+      document.body.dispatchEvent(e);
+      return e.defaultPrevented;
+    };
+    expect(select()).toBe(false);
+    const text = document.createElement('p');
+    text.textContent = 'some words';
+    document.body.append(text);
+    press('a');
+    expect(select()).toBe(true);
+    window.getSelection()!.selectAllChildren(text);
+    move(50, 300);
+    expect(window.getSelection()!.rangeCount).toBe(0);
+    up(50, 300);
+    expect(select()).toBe(false);
+    unregister();
+  });
+});

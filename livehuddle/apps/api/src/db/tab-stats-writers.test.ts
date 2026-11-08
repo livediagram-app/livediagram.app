@@ -3,7 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livehuddle/document';
 import { sqliteD1, type SqliteD1, testCopyDocument } from '../test-sqlite-d1';
 import { tabStatsOf } from './tab-stats';
-import { seedTabs, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
+import { seedTabs, getTabRow, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
 
 // Every writer of a tab body keeps its `tab_stats` row in step
 // (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come from"), proven against
@@ -107,16 +107,29 @@ describe('swapTabData (participant writes)', () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tab('t1', 'draw'), 0);
     const before = statsRow(db.sql, 't1');
-    const stored = db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get('t1')!.data as string;
     const next = { opensIn: 'draw', elements: [shape('x', 4)] };
     const nextData = JSON.stringify(next);
     expect(
-      await swapTabData(db.env, 'A', 't1', 'stale', nextData, tabStatsOf(next, nextData)),
+      await swapTabData(
+        db.env,
+        'A',
+        't1',
+        { rev: 99, updatedAt: 0 },
+        nextData,
+        JSON.parse(nextData) as never,
+      ),
     ).toBe(false);
     expect(statsRow(db.sql, 't1')).toEqual(before);
-    expect(await swapTabData(db.env, 'A', 't1', stored, nextData, tabStatsOf(next, nextData))).toBe(
-      true,
-    );
+    expect(
+      await swapTabData(
+        db.env,
+        'A',
+        't1',
+        (await getTabRow(db.env, 'A', 't1'))!,
+        nextData,
+        JSON.parse(nextData) as never,
+      ),
+    ).toBe(true);
     expect(statsRow(db.sql, 't1')).toEqual(expected(db.sql, 't1'));
     expect(statsRow(db.sql, 't1')).toMatchObject({ element_count: 1, comment_count: 4 });
   });

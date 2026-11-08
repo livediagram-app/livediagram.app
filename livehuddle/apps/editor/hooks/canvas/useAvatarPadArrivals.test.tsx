@@ -16,7 +16,13 @@ type Peer = { id: string; color: string; avatar: { x: number; y: number } };
 function setup(elements: Element[] = [pad]) {
   return renderHook(
     ({ self, peers }: { self: AvatarPoint | null; peers: Peer[] }) =>
-      useAvatarPadArrivals({ self, selfColor: '#0ea5e9', peers, elements }),
+      useAvatarPadArrivals({
+        selfPlaced: self !== null,
+        readSelf: () => self,
+        selfColor: '#0ea5e9',
+        peers,
+        elements,
+      }),
     { initialProps: { self: null as AvatarPoint | null, peers: [] as Peer[] } },
   );
 }

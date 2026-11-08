@@ -78,13 +78,30 @@ large move rides as one layer").
   controls, the Map's view box) and nothing else: the editor root, the panels and the chrome do not
   render for it. Handlers read the view from the store when they run. A touch pinch, whose events can
   outrun the display, changes the view at most once a frame, and measures the canvas once, as it
-  starts.
+  starts. A pan does not render the canvas either: the canvas renders for a zoom, and a change of the
+  offset alone is written straight to the canvas's transform and its floor pattern's position, outside
+  React. What reads the offset as a fact (whether everything is off screen) subscribes by value; what
+  acts on it (a press, a walk's camera, a Walk In) reads it when it runs; what is drawn in screen space
+  from it (the speech and call bubbles, a path's toolbar) subscribes where it is drawn.
 - **A collaborator moving renders what shows them, not the editor.** Peers' cursors and characters
   (Avatar mode) are held in one peer-motion store per editor, not as the editor's render state. A
   frame of their movement (up to 60 a second in a small room) renders the cursor layer (for a cursor)
   or the canvas that draws the characters (for a character) and nothing else: the editor root, the
   panels and the chrome do not render for it. What reads presence coarsely (who is on which tab, the
   people lists) is kept by value and changes only when someone joins, leaves or changes tab.
+- **Walking renders the characters, not the canvas.** Your own character's pose from frame to frame
+  (where its feet are, which way it faces, its step, hop, flag wave and reaction pose) is held in one
+  pose store per canvas, not as the canvas's render state, and peers' characters are read from the
+  peer-motion store by the characters layer alone. A frame of anyone walking renders that layer (the
+  characters, the hearing ring, the talking bars, raised hands, call bubbles, pad arrivals and speech
+  bubbles) and the sprites that changed; it renders neither the canvas nor the element layer. What
+  follows a character as a fact (the element under your feet and its ring, the stage you speak from,
+  who sits or stands on each piece, which pod is shut) subscribes by value and renders only when the
+  fact changes; what acts on a position (a click on a peer, Walk There, a climb, a seat on arrival)
+  reads it when it runs. A character is placed by a transform, not by `left` and `top`, so a step
+  moves a layer without laying the page out, and a peer's glide is a transition of that transform. The
+  centred camera pans with every step, and that pan renders nothing more than a pan does: no canvas
+  view and no element view.
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry
@@ -108,7 +125,11 @@ large move rides as one layer").
   follows in a later render.
 - **The Map is one image.** It draws the board as a picture, not as a second copy of the board's
   elements in the page, which every style pass, layout, hit test and collection would otherwise
-  walk.
+  walk. The lit window and the dimmed surround sit on a layer of their own above the picture, so a
+  pan moves the window without repainting the picture: Safari draws an SVG picture again in full
+  each time anything over it repaints, and on a 100-room office that was about 45 ms of every frame
+  of a walk (a walk's frame went from about 56 ms to about 14 ms in WebKit at iPad size). The Map's
+  body is the one every editor shares (`MinimapMap`, `@liveworkspace/workbench`).
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,
@@ -187,7 +208,8 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
 - **Counts, not timings, pin the structural rules** deterministically. In the unit suite: an
   editor render that changes nothing renders no element view, a zoom renders only counter-scaled
   parts, a one-element move renders only it and the arrows whose geometry it changed, and the Map
-  holds its drawing through a gesture. In a real browser, in the end-to-end suite: a still board
+  holds its drawing through a gesture, and two seconds of walking render the walk's host (the canvas)
+  no more often than the facts under the feet change. In a real browser, in the end-to-end suite: a still board
   with a selection showing asks for no animation frames.
 - **A large-selection bench** (`e2e/perf/large-selection-drag.perf.ts`) opens the large-selection
   board, drags its whole selection and a five-element one, and times each pointer move in the page:

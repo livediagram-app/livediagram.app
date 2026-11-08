@@ -1,6 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { scheduleFaceTake, type FaceTakeWhen } from './face-take-batch';
 import { watchUntilSettled } from './settle-watch';
 
 // A face drawn by hand under Sketch (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"). The
@@ -91,15 +92,33 @@ export function SketchFace({
     const ink = inkRef.current;
     const live = liveRef.current;
     if (!active || !ink || !live) return;
-    const take = () => {
-      const { copy, animated } = inkCopyOf(live);
-      ink.replaceChildren(...copy.childNodes);
-      syncInkAnimations(animated);
+    // Taken with the board's other faces (face-take-batch.ts), after this face's own pencil pass, so the copy carries
+    // its shading and the changes that pass made need no second copy.
+    let cancel = () => {};
+    const take = (when: FaceTakeWhen) => {
+      cancel();
+      cancel = scheduleFaceTake(
+        live,
+        {
+          read: () => {
+            const { copy, animated } = inkCopyOf(live);
+            watch.taken();
+            return () => {
+              ink.replaceChildren(...copy.childNodes);
+              syncInkAnimations(animated);
+            };
+          },
+        },
+        when,
+        'copy',
+      );
     };
-    take();
-    const stop = watchUntilSettled(live, take);
+    take('now');
+    // Read by the take above only once it runs, at the end of this task.
+    const watch = watchUntilSettled(live, () => take('frame'));
     return () => {
-      stop();
+      cancel();
+      watch();
       ink.replaceChildren();
     };
   }, [active]);

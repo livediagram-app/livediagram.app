@@ -77,6 +77,9 @@ export type PlanTabActions = {
   // board, chart or utility is copied; a tab is shown again; a Sheet element is not offered (two would share one
   // sheet).
   duplicateSlot: (rowId: string, slotId: string) => void;
+  // A made tab placed straight after the open one, in its look, with nothing to fetch (the Plan tour's kept practice
+  // sheet, docs/specs/026-plan/plan-tour.md "Sheets: Five Small Wins"). Its id.
+  addTabAfter: (tab: Tab) => string;
 };
 
 // The dashboard of `tab`, read safely; a new one when it has none.
@@ -449,6 +452,18 @@ export function usePlanTabActions({
     },
     [commitTabs, onActive],
   );
+  const addTabAfter = useCallback<PlanTabActions['addTabAfter']>(
+    (made) => {
+      commitAnyTabs((ts) => {
+        const here = ts.find((t) => t.id === activeId);
+        return insertTabsAfter(ts, activeId, [here ? withLookOf(made, here) : made]);
+      });
+      tabHooks.current.markTabLoaded?.(made.id);
+      return made.id;
+    },
+    [commitAnyTabs, activeId, tabHooks],
+  );
+
   return useMemo(
     () => ({
       startElementTab,
@@ -460,6 +475,7 @@ export function usePlanTabActions({
       placeItem,
       removeSlot,
       duplicateSlot,
+      addTabAfter,
     }),
     [
       startElementTab,
@@ -471,6 +487,7 @@ export function usePlanTabActions({
       placeItem,
       removeSlot,
       duplicateSlot,
+      addTabAfter,
     ],
   );
 }

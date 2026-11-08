@@ -2,6 +2,7 @@ import { useMemo, type Ref } from 'react';
 import { isBoxed, unionBoxedBounds, unionRects, type Element } from '@livehuddle/document';
 import { isContentOffScreen } from '@liveworkspace/workbench/lib/viewport';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
+import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 
 // True while every element on the tab, and every page (an empty page, or an article's
 // writing, is content too), is panned / zoomed entirely out of view, and there is something to see. Drives the "bring it back"
@@ -12,11 +13,11 @@ import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObserv
 // viewportOffset change forced a synchronous layout reflow on the pan hot
 // path (see useCanvasPanAndMarquee's rАF note). The content bounds are
 // memoised on the elements, so the per-pan work is pure arithmetic over the
-// size, the bounds and the current offset / zoom, computed during render.
+// size, the bounds and the current offset / zoom. It reads the view from the
+// store by value (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the
+// canvas"), so a pan renders its caller only when the answer flips.
 export function useOffscreenContent(
   elements: Element[],
-  viewportOffset: { x: number; y: number },
-  viewportZoom: number,
   mainRef: Ref<HTMLElement>,
   pages?: readonly { rect: { x: number; y: number; width: number; height: number } }[],
 ): boolean {
@@ -26,6 +27,7 @@ export function useOffscreenContent(
     const own = boxedIds.size === 0 ? null : unionBoxedBounds(elements, boxedIds);
     return unionRects([...(own ? [own] : []), ...(pages ?? []).map((p) => p.rect)]);
   }, [elements, pages]);
-  if (!size || !bbox) return false;
-  return isContentOffScreen(size, bbox, viewportOffset, viewportZoom);
+  return useViewportOf((view) =>
+    !size || !bbox ? false : isContentOffScreen(size, bbox, view.offset, view.zoom),
+  );
 }

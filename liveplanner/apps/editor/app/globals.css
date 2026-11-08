@@ -907,20 +907,33 @@ html {
   background-color: color-mix(in srgb, var(--plan-col-ink) 1.5%, transparent) !important;
 }
 
-/* A busy board's cards out of view are skipped (PlanBoardView `data-plan-busy`, docs/specs/026-plan/plan-board.md
- * "A busy board"): no styling, layout or painting until they come near the view, so a Tab Style change restyles
- * the cards on screen, not two thousand. Each holds its last drawn height (`auto`), a card never drawn the usual
- * height of its size. Only where the clip can reach past the card (`overflow-clip-margin`), so its shadows, its
- * presence ring and its hover glow are never cut: elsewhere the board draws every card as before. */
-@supports (overflow-clip-margin: 1px) {
-  [data-plan-busy] [data-plan-card] {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 132px;
-    overflow-clip-margin: 24px;
+/* A busy board's cards out of view are skipped (PlanBoardView `data-plan-busy`, card-runs.ts; docs/specs/026-plan/
+ * plan-board.md "A busy board"): drawn in runs of a few cards, a run out of view gets no styling, layout or painting
+ * until it comes near the view, so a Tab Style change restyles the cards on screen, not two thousand, and a drop gap
+ * opening in a long column relays only the runs in view. Each run holds its last drawn height (`auto`), one never
+ * drawn its cards at the usual height of their size. A run reaches 24px past its cards on every side (its padding,
+ * taken back by its margin, so nothing moves), so the clip the skipping brings never cuts a card's shadow, its rings
+ * or its hover glow, in every browser; that reach takes no pointer, so a press there lands on the card under it.
+ * Each run is its own layer (`will-change`), so a drop gap opening or closing slides the runs below it rather than
+ * repainting every card it passes: Safari repainted a column's cards on every frame of the gap's motion. */
+@utility plan-card-run {
+  will-change: transform;
+  padding: 24px;
+  margin: -24px;
+  pointer-events: none;
+  content-visibility: auto;
+  contain-intrinsic-size: auto calc(var(--run-cards, 1) * 140px - 8px);
+  & > * {
+    pointer-events: auto;
   }
-  [data-plan-busy='minimal'] [data-plan-card] {
-    contain-intrinsic-size: auto 44px;
-  }
+}
+/* A busy board's column hover snaps (plan-board.md "A busy board", "Its parts snap rather than ease"): easing a long
+ * column's colour repainted it every frame, over a second in Safari as a dragged card left it. */
+[data-plan-busy] .plan-col {
+  transition: none;
+}
+[data-plan-busy='minimal'] .plan-card-run {
+  contain-intrinsic-size: auto calc(var(--run-cards, 1) * 52px - 8px);
 }
 
 /* A Plan card's frame (PlanCardFace; docs/specs/026-plan/plan-board.md "Card hover"): its face, edge and shadow from
@@ -976,6 +989,24 @@ html {
     }
   }
 }
+/* A practice card (docs/specs/026-plan/plan-tour.md "Practice cards"): a dashed brand edge over a see-through face, so
+ * it reads as practice beside the board's real cards, never as one of them. */
+[data-practice] .plan-card {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--color-brand-500) 65%, transparent);
+  background-color: color-mix(in srgb, var(--card-bg) 70%, transparent);
+  box-shadow: none;
+}
+[data-practice] .plan-card:hover {
+  border-color: var(--color-brand-500);
+}
+
+/* Layout View (docs/specs/026-plan/plan-tour.md "Dashboards: Layout View"): a dashboard's dividers and row edges stay
+ * shown while the tour runs, as they are on hover. */
+[data-layout-view] [data-dashboard-row] [role='separator'][aria-label^='Resize'] {
+  opacity: 1;
+}
+
 /* Under Sketch the drawn copy is still: the card under the pointer lays a 4% wash of the ink over its drawing. */
 [data-sketch-words]:not([data-sketch-measure]) .plan-card-hover:hover {
   background-color: color-mix(in srgb, var(--card-ink) 4%, transparent) !important;
@@ -1081,4 +1112,10 @@ main:has(> [data-canvas-cover] [data-fill-tab-board]) > [data-canvas-content] {
 }
 main:has(> [data-canvas-cover]) > [data-canvas-content] [data-selection-grips] {
   visibility: hidden;
+}
+
+/* The practice sheet's dialog (docs/specs/026-plan/plan-tour.md "Sheets: Five Small Wins"): the Sheet toolbar's
+   dropdowns portal to the page at the overlay layer, which is under a dialog; while it is open they sit above it. */
+:root[data-practice-sheet-open] body > [data-palette-dropdown-menu] {
+  z-index: var(--z-popover);
 }

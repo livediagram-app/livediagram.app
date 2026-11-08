@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
+import { createElement, type ReactNode } from 'react';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@livehuddle/document';
 import { storedArrow } from '@/test/retired-elements';
@@ -26,11 +29,19 @@ function main(width = 800, height = 600) {
 
 const square = { ...createShape('square', 100, 100), width: 100, height: 100 } as Element;
 
+// The view the hook reads, in a store as the editor's canvas has one.
+function viewAt(offset = { x: 0, y: 0 }, zoom = 1) {
+  const store = createViewportStore(zoom);
+  store.setOffset(offset);
+  const wrapper = ({ children }: { children: ReactNode }) =>
+    createElement(ViewportStoreProvider, { store, children });
+  return { store, wrapper };
+}
+
 function offscreen(elements: Element[], offset = { x: 0, y: 0 }, zoom = 1) {
   const ref = main();
-  return renderHook(({ o, z }) => useOffscreenContent(elements, o, z, ref), {
-    initialProps: { o: offset, z: zoom },
-  });
+  const { store, wrapper } = viewAt(offset, zoom);
+  return { store, ...renderHook(() => useOffscreenContent(elements, ref), { wrapper }) };
 }
 
 describe('useOffscreenContent', () => {
@@ -43,10 +54,10 @@ describe('useOffscreenContent', () => {
   });
 
   it('follows the pan both ways', () => {
-    const { result, rerender } = offscreen([square]);
-    rerender({ o: { x: -5000, y: 0 }, z: 1 });
+    const { result, store } = offscreen([square]);
+    act(() => store.setOffset({ x: -5000, y: 0 }));
     expect(result.current).toBe(true);
-    rerender({ o: { x: 0, y: 0 }, z: 1 });
+    act(() => store.setOffset({ x: 0, y: 0 }));
     expect(result.current).toBe(false);
   });
 
@@ -59,19 +70,18 @@ describe('useOffscreenContent', () => {
   it('counts a page in view as something to see', () => {
     const ref = main();
     const page = { rect: { x: 5000, y: -400, width: 800, height: 1200 } };
-    const at = { x: -5000, y: 0 };
-    expect(renderHook(() => useOffscreenContent([square], at, 1, ref, [page])).result.current).toBe(
-      false,
-    );
-    expect(renderHook(() => useOffscreenContent([], at, 1, ref, [page])).result.current).toBe(
+    const { wrapper } = viewAt({ x: -5000, y: 0 });
+    expect(
+      renderHook(() => useOffscreenContent([square], ref, [page]), { wrapper }).result.current,
+    ).toBe(false);
+    expect(renderHook(() => useOffscreenContent([], ref, [page]), { wrapper }).result.current).toBe(
       false,
     );
   });
 
   it('is false with no canvas to measure', () => {
-    const { result } = renderHook(() =>
-      useOffscreenContent([square], { x: -5000, y: 0 }, 1, () => {}),
-    );
+    const { wrapper } = viewAt({ x: -5000, y: 0 });
+    const { result } = renderHook(() => useOffscreenContent([square], () => {}), { wrapper });
     expect(result.current).toBe(false);
   });
 });

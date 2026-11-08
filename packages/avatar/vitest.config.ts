@@ -17,6 +17,7 @@ const PURE = [
   'office-geometry',
   'pad',
   'pad-art',
+  'pose',
   'palette',
   'reaction-bursts',
   'reactions',

@@ -9,6 +9,7 @@ import { cellColours, isLightColor, resolveFontStack } from '@liveplanner/projec
 import {
   cellKey,
   displayValue,
+  formatA1,
   formatRuleStyle,
   isPending,
   numberText,
@@ -28,6 +29,7 @@ import {
 import { RULE_ARROW_PX, ruleCellDraw } from './rules/sheet-rule-draw';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { cellBox, mergeAt, type Geometry, type GridWindow } from './sheet-geometry';
+import { useSheetCellMarks } from './sheet-cell-marks';
 
 const CELL_PAD = 4;
 const BASE_PX = 13;
@@ -100,6 +102,7 @@ function shownValue(v: Value): { text: string; pending: boolean } {
 
 function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
   const { sheet, workbook, geometry: g, scroll, palette, locale } = p;
+  const marks = useSheetCellMarks();
   // Stored colours are drawn for this Sheet's surface: pale fills tinted on a dark one, ink kept readable (sheet.md
   // "Readable cells").
   const surface = {
@@ -223,6 +226,23 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
               width: g.cols[1]! - g.cols[0]!,
               height: g.rows[1]! - g.rows[0]!,
             }}
+          />,
+        );
+      // A tour's mark on the cell (sheet-cell-marks.ts), over its fill, under its text.
+      const a1 = marks ? formatA1(r, c) : null;
+      const mark = a1 ? marks!.get(a1) : undefined;
+      if (mark)
+        out.push(
+          <div
+            key={`${key}m`}
+            data-practice-cell={a1}
+            data-mark={mark}
+            className={`pointer-events-none absolute box-border rounded-[3px] border-2 transition-colors duration-200 ${
+              mark === 'ok'
+                ? 'border-emerald-500 bg-emerald-500/15 dark:border-emerald-400 dark:bg-emerald-400/15'
+                : 'border-brand-500 bg-brand-500/10 dark:border-brand-400 dark:bg-brand-400/15'
+            }`}
+            style={{ left: box.x, top: box.y, width: box.w, height: box.h, zIndex: 1 }}
           />,
         );
       if (f && (f.bt || f.br || f.bb || f.bl))

@@ -25,6 +25,7 @@ import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import {
   registerSheetSource,
   rememberSetupStart,
+  seedKeepsTitle,
   sheetSeed,
   takePlacedSheet,
   type PlacedSheet,
@@ -230,7 +231,10 @@ export function useSheetModel(
     if (!from) return;
     const source = store.sheet(from);
     const seed = sheetSeed(from);
-    const title = copyTitle(source?.title ?? seed?.title ?? 'Sheet', titles);
+    const title =
+      !source && seed && seedKeepsTitle(from)
+        ? seed.title
+        : copyTitle(source?.title ?? seed?.title ?? 'Sheet', titles);
     if (source) {
       store.create(
         { id: sheetId, tabId, title, copyOf: from },

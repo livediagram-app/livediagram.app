@@ -36,22 +36,22 @@ describe('useAvatarWalk walls', () => {
   it('nudges a character put down beside a room’s left wall, inside it, clear of the wall', () => {
     // The left wall's line is x = 5; feet 10 px inside it, where the wall would hold them.
     const { result } = enterAt({ x: 15, y: 200 });
-    expect(result.current.pos).toEqual({ x: 5 + FENCE_REACH + 0.5, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 5 + FENCE_REACH + 0.5, y: 200 });
   });
 
   it('nudges one beside the wall outside out of its reach, never through the wall', () => {
     const { result } = enterAt({ x: -5, y: 200 });
-    expect(result.current.pos).toEqual({ x: 5 - FENCE_REACH - 0.5, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 5 - FENCE_REACH - 0.5, y: 200 });
   });
 
   it('leaves one put down in the wall itself there, free to walk off either side', () => {
     const { result } = enterAt({ x: 7, y: 200 });
-    expect(result.current.pos).toEqual({ x: 7, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 7, y: 200 });
   });
 
   it('puts a character clear of every wall exactly where it was asked', () => {
     const { result } = enterAt({ x: 300, y: 200 });
-    expect(result.current.pos).toEqual({ x: 300, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 300, y: 200 });
   });
 });
 
@@ -99,12 +99,12 @@ describe('useAvatarWalk walls moved onto a character', () => {
         vi.advanceTimersByTime(16);
       });
     }
-    expect(result.current.pos).toEqual({ x: 300, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 300, y: 200 });
     expect(onPresence).not.toHaveBeenCalled();
     act(() => {
       vi.advanceTimersByTime(FENCE_SETTLE_MS);
     });
-    expect(result.current.pos).toEqual({ x: 290 + FENCE_REACH + 0.5, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 290 + FENCE_REACH + 0.5, y: 200 });
     // Told to the room once, at the new spot.
     expect(onPresence).toHaveBeenCalledTimes(1);
     expect(onPresence).toHaveBeenLastCalledWith(expect.objectContaining({ x: 302.5, y: 200 }));
@@ -118,7 +118,7 @@ describe('useAvatarWalk walls moved onto a character', () => {
       vi.advanceTimersByTime(FENCE_SETTLE_MS);
     });
     // In the wall itself (2 px from its line): free to walk off either side.
-    expect(result.current.pos).toEqual({ x: 300, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 300, y: 200 });
   });
 
   it('leaves a seated character on its seat', () => {
@@ -129,20 +129,20 @@ describe('useAvatarWalk walls moved onto a character', () => {
     act(() => {
       vi.advanceTimersByTime(FENCE_SETTLE_MS);
     });
-    expect(result.current.pos).toEqual({ x: 300, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 300, y: 200 });
     expect(result.current.seatedOn).toBe('chair');
   });
 
   it('snaps a seat beside a wall clear of its reach', () => {
     const { result } = standAt({ x: 300, y: 200 });
     act(() => result.current.sitOn('chair', { x: 15, y: 200 }, 'right'));
-    expect(result.current.pos).toEqual({ x: 5 + FENCE_REACH + 0.5, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 5 + FENCE_REACH + 0.5, y: 200 });
   });
 
   it('steps aside clear of a wall it would land beside', () => {
     const { result } = standAt({ x: 300, y: 200 });
     act(() => result.current.stepAside({ x: 15, y: 200 }));
-    expect(result.current.pos).toEqual({ x: 5 + FENCE_REACH + 0.5, y: 200 });
+    expect(result.current.readPos()).toEqual({ x: 5 + FENCE_REACH + 0.5, y: 200 });
   });
 
   it('costs a settle well under a millisecond on a tab of 500 rooms', () => {

@@ -425,8 +425,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Tips and tricks to help you get the most out of the Palette.',
   },
   diagramTour: {
-    title: 'Learn about the Diagram Tour',
-    description: 'What the tour covers and how replaying works.',
+    title: 'Learn about Watch It Built',
+    description: 'What the Diagram tour shows and how to watch it again.',
   },
   whatWeCollect: {
     title: 'Learn about what we collect',

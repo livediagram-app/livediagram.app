@@ -52,6 +52,7 @@ import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
+import { ReplayScope } from './ReplayScope';
 import { EditorTours } from '@/components/tour/EditorTours';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
@@ -477,7 +478,10 @@ export function EditorView() {
                                   <ConnectedTabHost />
                                 ) : (
                                   <SuppressElementIndicators when={embedMode}>
-                                    <EditorCanvasHost />
+                                    {/* Watch It Built's demo, drawn in for the canvas only (watch-it-built.md). */}
+                                    <ReplayScope>
+                                      <EditorCanvasHost />
+                                    </ReplayScope>
                                   </SuppressElementIndicators>
                                 )}
                               </CommentBadgesContext.Provider>
@@ -568,7 +572,9 @@ export function EditorView() {
                           <EditorAnchoredPopovers />
                         </AreaErrorBoundary>
                         <AreaErrorBoundary area="ContextMenu">
-                          <EditorContextMenuHost />
+                          <ReplayScope>
+                            <EditorContextMenuHost />
+                          </ReplayScope>
                         </AreaErrorBoundary>
                         <AreaErrorBoundary area="ElementDialogs">
                           <EditorElementDialogs />

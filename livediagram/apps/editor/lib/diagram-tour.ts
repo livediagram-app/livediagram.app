@@ -1,5 +1,5 @@
 // The Diagram tour's relaunch signal (docs/specs/007-editor/editor-tour.md "Where it appears"): the Settings row
-// Tours › "Diagram Tour", turned on from off and closed, starts the tour there and then when the open tab is in
+// Tours › "Watch It Built", turned on from off and closed, starts the tour there and then when the open tab is in
 // Diagram. A window event keeps the dialog decoupled from TourHost, as the Draw and Workshop tours' relaunches do.
 export const TOUR_RELAUNCH_EVENT = 'livediagram:tour-relaunch';
 

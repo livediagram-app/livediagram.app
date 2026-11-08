@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { PeerCursors } from '@/components/canvas/PeerCursors';
 
 import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
+import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { buildRetiredArrowLinks } from './retired-arrow-links';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
 import { CanvasElementList, type BoxedShared } from './CanvasElementList';
@@ -40,7 +41,11 @@ export type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 // handles and every element's own grips,
 // portalled in (SelectionGripsLayer). Rendered inside Canvas's
 // viewport-transformed wrapper.
-export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
+// Memoised with its `on…` props stable (docs/specs/008-canvas/canvas-performance.md "Walking renders the characters,
+// not the canvas"): a canvas render that changes none of them (a pan, the camera following a walk) stops here.
+export const CanvasElementsLayer = withStableEventProps(CanvasElementsLayerView);
+
+function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
   const {
     editCursorAtEnd,
     editingId,

@@ -96,6 +96,7 @@ import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { previewAdderKey, useViewPreview } from './useViewPreview';
 import { useParticipantSession } from './useParticipantSession';
+import { useReplayFreeze } from '@/lib/replay/useReplayFreeze';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useLaneSettle } from '@/hooks/canvas/useLaneSettle';
@@ -232,16 +233,30 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tabs,
     canUndo: canTabUndo,
     canRedo: canTabRedo,
-    commit: rawCommitTabs,
-    tick: rawTickTabs,
+    commit: historyCommit,
+    tick: historyTick,
     markCheckpoint: rawMarkCheckpoint,
     cancelToCheckpoint: rawCancelToCheckpoint,
     reset: rawResetTabs,
     applyRemote: applyRemoteTabs,
     applyRemoteOp,
+    undo: historyUndo,
+    redo: historyRedo,
+  } = useDocumentHistory(initialTabs);
+  // Watch It Built's freeze (docs/specs/007-editor/blueprints/watch-it-built.md "The freeze"): while a replay runs
+  // nothing writes the document, so an editor part that commits on its own (a label on blur) cannot save, send or
+  // undo the demo. Remote applies are not frozen: collaborators' edits keep arriving.
+  const {
+    commit: rawCommitTabs,
+    tick: rawTickTabs,
     undo: undoHistory,
     redo: redoHistory,
-  } = useDocumentHistory(initialTabs);
+  } = useReplayFreeze({
+    commit: historyCommit,
+    tick: historyTick,
+    undo: historyUndo,
+    redo: historyRedo,
+  });
   const canHistoryUndo = canTabUndo;
   const canHistoryRedo = canTabRedo;
 

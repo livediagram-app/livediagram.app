@@ -80,23 +80,21 @@ const TRASH_TYPES = tokensAfter(
   '>',
 );
 
-// The Plan tour's steps, as planTourStepTelemetryType makes them (apps/editor plan-tour-steps.ts,
-// docs/specs/026-plan/plan-tour.md), both tracks; the two outros share one id. The welcome card sends no step view.
+// The Plan tour's mission views, as planTourStepTelemetryType makes them (apps/editor plan-tour-steps.ts,
+// docs/specs/026-plan/plan-tour.md "Telemetry"), both tracks, and the finish (`outro`, shared by both).
 const PLAN_TOUR_STEP_SOURCE: string[] = [
   ...new Set(
-    [...read('editor/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm)].map(
+    [...read('editor/components/tour/plan-tour-steps.ts').matchAll(/^ +id: '([a-z-]+)',/gm)].map(
       (m) => m[1]!,
     ),
   ),
-]
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `PlanTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
+].map(
+  (id) =>
+    `PlanTourStep${id
+      .split('-')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join('')}`,
+);
 
 // The Forms tour's steps, as formTourStepTelemetryType makes them (apps/editor form-tour-steps.ts,
 // docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
@@ -442,7 +440,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: API_ERRORS,
     open: API_ERROR_WHY,
   },
-  'apps/editor/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
+  'apps/editor/components/tour/PracticeSheetDialog.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
+  'apps/editor/components/tour/PracticeSprint.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/editor/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
   'apps/editor/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),

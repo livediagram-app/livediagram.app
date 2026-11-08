@@ -5,15 +5,27 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // anyone; everything else from a Participant is dropped.
 
 const { store } = vi.hoisted(() => {
-  const store: { data: string | null; writes: number } = { data: '', writes: 0 };
+  const store: { data: string | null; rev: number; writes: number } = {
+    data: '',
+    rev: 0,
+    writes: 0,
+  };
   return { store };
 });
 vi.mock('./db', async (orig) => ({
   ...(await orig<typeof import('./db')>()),
-  getTabData: async () => store.data,
-  swapTabData: async (_env: unknown, _d: string, _t: string, expected: string, next: string) => {
-    if (store.data !== expected) return false;
+  getTabRow: async () =>
+    store.data === null ? null : { data: store.data, rev: store.rev, updatedAt: 0 },
+  swapTabData: async (
+    _env: unknown,
+    _d: string,
+    _t: string,
+    expected: { rev: number },
+    next: string,
+  ) => {
+    if (store.rev !== expected.rev) return false;
     store.data = next;
+    store.rev++;
     store.writes++;
     return true;
   },

@@ -973,6 +973,45 @@
 .lvd-seq-play-loop {
   animation: lvd-seq-play-loop calc(var(--lvd-seq-dur, 2s) / 0.7) linear infinite both;
 }
+/* The Practice Sprint (docs/specs/026-plan/plan-tour.md "Boards: Practice Sprint"). The deal: while the tour marks
+ * the page (data-practice-deal on the root, for the deal alone), each practice card drops into its column and settles,
+ * 80 ms after the one before it (--practice-deal-i, set by the tour). The stamp: Shipped is pressed onto a card as it
+ * lands in the ship column, once (it mounts there). Both are off under reduced motion (the collapse below and in
+ * globals.css). */
+:root[data-practice-deal] [data-practice] {
+  animation: practice-deal 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--practice-deal-i, 0) * 80ms);
+}
+@keyframes practice-deal {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) rotate(-3deg) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+[data-practice-stamp] {
+  animation: practice-stamp 280ms cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
+}
+@keyframes practice-stamp {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) rotate(-8deg) scale(1.7);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) rotate(-8deg) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-practice-deal] [data-practice],
+  [data-practice-stamp] {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lvd-seq-play,
   .lvd-seq-play-loop {

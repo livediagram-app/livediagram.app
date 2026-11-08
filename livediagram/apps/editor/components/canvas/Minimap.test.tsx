@@ -51,7 +51,7 @@ function mount(mainSize: { width: number; height: number }) {
 }
 
 const viewWindow = (container: HTMLElement) =>
-  container.querySelector(`svg[role="img"] > rect[stroke="${ACCENT}"]`);
+  container.querySelector(`svg[data-minimap-view] > rect[stroke="${ACCENT}"]`);
 
 describe('Minimap current-view window', () => {
   it('draws the window from the canvas size it is given on first render', () => {

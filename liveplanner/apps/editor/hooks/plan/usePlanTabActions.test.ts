@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@liveplanner/project';
 import { dashboardOf, withSlotContent } from './usePlanTabActions';
 import { dashboardElement, dashboardViewElement } from './slot-elements';
@@ -236,5 +236,28 @@ describe('a Visualisation tab started', () => {
     const { tab, title } = await start('Tab 2');
     expect(tab.name).toBe('Gantt Chart');
     expect(title).toBeUndefined();
+  });
+});
+
+// docs/specs/026-plan/plan-tour.md "Sheets: Five Small Wins": a kept practice sheet is a new tab beside the open one.
+describe('a tab added after the open one', () => {
+  it('goes right after it, with nothing to fetch', async () => {
+    const { renderHook } = await import('@testing-library/react');
+    const { usePlanTabActions } = await import('./usePlanTabActions');
+    let tabs: Tab[] = [
+      { id: 'a', name: 'A', elements: [] },
+      { id: 'b', name: 'B', elements: [] },
+    ];
+    const commitTabs = (map: (ts: Tab[]) => Tab[]) => {
+      tabs = map(tabs);
+    };
+    const markTabLoaded = vi.fn();
+    const { result } = renderHook(() =>
+      usePlanTabActions({ activeId: 'a', commitTabs, tickTabs: commitTabs, markTabLoaded }),
+    );
+    const made = result.current.addTabAfter({ id: 'kept', name: 'Practice Budget', elements: [] });
+    expect(made).toBe('kept');
+    expect(tabs.map((t) => t.id)).toEqual(['a', 'kept', 'b']);
+    expect(markTabLoaded).toHaveBeenCalledWith('kept');
   });
 });

@@ -69,6 +69,7 @@ vi.mock('@/components/canvas/SelectionGripsLayer', async (importOriginal) => {
 import { clearLocalPreview, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { buildLargeSelectionBoard } from '@/e2e/perf/large-selection-board';
 import { createPeerMotion } from '@/lib/peer-motion';
+import type { CanvasElementsLayerProps } from './CanvasElementsLayer';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
 const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
@@ -125,7 +126,7 @@ function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
     onBeginEdit: fresh(),
     onCommitLabel: fresh(),
     onCancelEdit: fresh(),
-  } as unknown as Parameters<typeof CanvasElementsLayer>[0];
+  } as unknown as CanvasElementsLayerProps;
 }
 
 const counts = () => ({
@@ -188,6 +189,21 @@ describe('element views render only for their own changes', () => {
     act(() => store.setSelectedId(b.id));
     expect([...renders.boxed.keys()].sort()).toEqual([a.id, b.id].sort());
     expect(counts().arrows).toBe(0);
+  });
+
+  // docs/specs/008-canvas/canvas-performance.md "Walking renders the characters, not the canvas": a canvas render
+  // that hands the layer the same data and handlers (a pan, the camera following a walk) does not render it, even
+  // with every `on…` handler a fresh closure.
+  it('does not render the layer itself for a canvas render that changes none of its props', () => {
+    const handles = {
+      handleArrowSelect: vi.fn(),
+      handleElementClick: vi.fn(),
+      handleElementContextSelect: vi.fn(),
+    };
+    const { rerender } = mount({ ...layerProps(), ...handles });
+    for (let frame = 0; frame < 10; frame++)
+      rerender(<CanvasElementsLayer {...layerProps()} {...handles} />);
+    expect(layerRenders.count).toBe(0);
   });
 
   it('does not render the layer itself for a selection change', () => {

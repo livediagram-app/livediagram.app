@@ -188,7 +188,7 @@ export type UserPreferences = {
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user — synced, so it follows
   // the account across devices like every other preference. Surfaced in
-  // Settings as Tours › "Diagram Tour" (inverted); turning it on there and
+  // Settings as Tours › "Watch It Built" (inverted); turning it on there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
   // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.

@@ -19,7 +19,8 @@ type SpeechSource = 'composer' | 'panel';
 export function useAvatarSpeech({
   active,
   canSpeak,
-  feet,
+  placed,
+  readFeet,
   scale,
   tabId,
   onSay,
@@ -28,8 +29,10 @@ export function useAvatarSpeech({
   active: boolean;
   // An Editor or a Participant (the session's `can.takePart`); a Viewer never speaks.
   canSpeak: boolean;
-  // The character's feet, where a bubble's start is measured from.
-  feet: AvatarPoint | null;
+  // A character stands on the canvas (useAvatarWalk's `placed`), and its feet as they are when a message goes, where
+  // the bubble's start is measured from: read when sending, so a step renders nothing here.
+  placed: boolean;
+  readFeet: () => AvatarPoint | null;
   // The character's size scale, so the bubble clears a tall character's head.
   scale: number;
   tabId: string;
@@ -39,7 +42,7 @@ export function useAvatarSpeech({
   const [composerOpen, setComposerOpen] = useState(false);
   const [lastSentAt, setLastSentAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
-  const speaking = active && canSpeak && feet !== null;
+  const speaking = active && canSpeak && placed;
 
   // The composer belongs to the moment: leaving the mode, a tab switch or losing the right to speak closes it
   // (adjusted during render, so it never draws for a frame it should not).
@@ -70,6 +73,7 @@ export function useAvatarSpeech({
 
   /** Sends `text`; answers whether it went (false while cooling down or blank). */
   const send = (raw: string, source: SpeechSource): boolean => {
+    const feet = readFeet();
     if (!speaking || !feet) return false;
     const text = clampSayText(raw).trim();
     if (!text) {

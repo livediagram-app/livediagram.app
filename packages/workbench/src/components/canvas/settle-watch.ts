@@ -11,6 +11,10 @@ export const SKETCH_INK_SETTLE_MS = 120;
  *  follows (blueprint: 500 to 2000). */
 export const SKETCH_INK_MAX_WAIT_MS = 1000;
 
+/** The cleanup `watchUntilSettled` returns, with `taken`: a take that just read `live` already shows every change
+ *  so far, so the changes waiting to be reported (a batched pass's own writes before it) are dropped. */
+export type SettleWatch = (() => void) & { taken: () => void };
+
 /** Calls `take` SKETCH_INK_SETTLE_MS after `live` last changed (its subtree, or its size when `resize` is set), never
  *  later than SKETCH_INK_MAX_WAIT_MS after the first change. Returns the cleanup. */
 export function watchUntilSettled(
@@ -24,7 +28,7 @@ export function watchUntilSettled(
     // A change the watcher made itself (MarkerFace's ink): not a change to the face.
     ignore?: (record: MutationRecord) => boolean;
   } = {},
-): () => void {
+): SettleWatch {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let changedSince = 0;
   const changed = () => {
@@ -63,9 +67,17 @@ export function watchUntilSettled(
         })
       : undefined;
   resized?.observe(live);
-  return () => {
+  const stop = () => {
     observer.disconnect();
     resized?.disconnect();
     if (timer) clearTimeout(timer);
   };
+  return Object.assign(stop, {
+    taken: () => {
+      observer.takeRecords();
+      if (timer) clearTimeout(timer);
+      timer = undefined;
+      changedSince = 0;
+    },
+  });
 }

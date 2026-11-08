@@ -185,7 +185,8 @@ export function useCanvasAvatar({
     // The session's own say (docs/specs/013-workspace/share-roles.md): an Editor or a Participant, never by
     // whether the canvas is read-only.
     canSpeak: !!props.takePart,
-    feet: avatar.pos,
+    placed: avatar.placed,
+    readFeet: avatar.readPos,
     scale: avatarScale(avatarLook.config.size),
     tabId: props.activeTabId ?? '',
     onSay: props.onAvatarSay,
@@ -193,7 +194,8 @@ export function useCanvasAvatar({
   const speechBubbles = useSpeechBubbles();
   // Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md "The arrival"), yours and every peer's.
   const padArrivals = useAvatarPadArrivals({
-    self: avatar.pos,
+    selfPlaced: avatar.placed,
+    readSelf: avatar.readPos,
     selfColor: props.selfParticipant.color,
     peers: props.remoteAvatars,
     elements: walkElements,

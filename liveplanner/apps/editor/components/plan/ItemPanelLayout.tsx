@@ -91,10 +91,13 @@ export function ItemDetailsRow({
   htmlFor,
   required,
   wide = false,
+  field,
   children,
 }: {
   label: string;
   htmlFor?: string | undefined;
+  // The field's id, marked on the row so a tour's hint can point at it (plan-tour.md "Give it a date").
+  field?: string;
   required?: boolean;
   // A maximised panel's wider Details (plan-board.md "Maximised"): an 8 rem label column.
   wide?: boolean;
@@ -102,6 +105,7 @@ export function ItemDetailsRow({
 }) {
   return (
     <div
+      data-item-field={field}
       // shrink-0: Details is a flex column of a fixed height (its footer pinned to the bottom), and a row allowed to
       // shrink was squeezed to its 36 px floor when the fields outgrew it, its control (a Time Spent field, Labels on
       // two lines) spilling over the rows below instead of Details scrolling.
