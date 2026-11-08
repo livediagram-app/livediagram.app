@@ -26,7 +26,7 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // articles and Presenting from the Canvas land on Following Someone, and Pages on Write Elements. Workshop mode, the
 // Collaborate elements, polls and the diagram tools (shapes, arrows, drawing, the layout containers but the frame,
 // tables, charts, code, components and embeds) left livehuddle too (Work Tracker #423 part 3): each lands on the
-// nearest article that stays (Session Tools, the Avatar Tour, Meeting Elements, Comments, Assigned Actions, Where each
+// nearest article that stays (Session Tools, the Receptionist, Meeting Elements, Comments, Assigned Actions, Where each
 // tool lives, Frames, Write Elements, Images, Notes or Adding Elements), and the older names that led to them follow.
 // Auto Layout, which arranges shapes by their arrows, lands on Layout Cleanup (Work Tracker #494). Shape Libraries and
 // the draw.io, Microsoft Whiteboard and Markdown imports left livehuddle (Work Tracker #423 part 4): Shape Libraries

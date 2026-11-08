@@ -4790,6 +4790,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "reaction": {
         "$ref": "#/components/schemas/Reaction"
       },
+      "receptionistLeft": {
+        "type": "boolean"
+      },
       "richText": {
         "items": {
           "$ref": "#/components/schemas/TextRun"

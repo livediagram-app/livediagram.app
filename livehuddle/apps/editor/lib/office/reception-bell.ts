@@ -33,6 +33,16 @@ type Point = { x: number; y: number };
 // --- Ringing ----------------------------------------------------------------------------------------------------------
 
 let ringer: ((deskId: string) => void) | null = null;
+// Everyone told of a ring on this tab, in earshot or not: the Receptionist walks over (docs/specs/008-canvas/receptionist.md
+// "The reception bell"). `from` is the ringer's id, or SELF_RINGER for a ring from this screen.
+const rungBy = new Set<(deskId: string, from: string) => void>();
+export const SELF_RINGER = 'self';
+
+/** Told of every ring of a desk's bell on this tab, yours and everyone's; returns the unsubscribe. */
+export function onBellRung(listener: (deskId: string, from: string) => void): () => void {
+  rungBy.add(listener);
+  return () => rungBy.delete(listener);
+}
 let rungAt = 0;
 const rungListeners = createListeners();
 
@@ -51,6 +61,7 @@ export function ringBell(deskId: string, now = Date.now()): boolean {
   rungListeners.notify();
   track('Canvas', 'Used', 'ReceptionBell');
   ringer?.(deskId);
+  for (const listener of rungBy) listener(deskId, SELF_RINGER);
   // The ringer hears its own ring, as the receivers in earshot do.
   hearRing(deskId);
   // The button reads Rang until the window is over.
@@ -72,6 +83,7 @@ export function resetBell(): void {
   rungAt = 0;
   ringer = null;
   rings.clear();
+  rungBy.clear();
 }
 
 // --- The ring on the desk ---------------------------------------------------------------------------------------------
@@ -109,6 +121,7 @@ export function receiveBellOp(from: string, raw: unknown): void {
   const op = parseAvatarBell(raw);
   if (!op) return;
   for (const listener of inbox) listener(from, op);
+  for (const listener of rungBy) listener(op.deskId, from);
 }
 
 function onBell(listener: (from: string, op: AvatarBellOp) => void): () => void {

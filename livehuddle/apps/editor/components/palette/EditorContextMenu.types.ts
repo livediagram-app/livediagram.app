@@ -143,6 +143,8 @@ export type EditorContextMenuProps = {
   onSetRoomWalls: (walls: import('@livehuddle/document').RoomWalls) => void;
   // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md): Who Can Speak and Show Cameras.
   onSetStage: (patch: import('./StageMenuSection').StagePatch) => void;
+  // The Receptionist on the tab's first Avatar Pad (docs/specs/008-canvas/receptionist.md "Asking him to leave").
+  onSetPadReceptionist?: (here: boolean) => void;
   // Screen (docs/specs/009-elements/screen-and-room-sign.md): its Video Link, undefined to clear it.
   onSetScreenUrl?: (url: string | undefined) => void;
   // The social pieces (docs/specs/009-elements/social-pieces.md): a World Clock's zones, a Jukebox's source.

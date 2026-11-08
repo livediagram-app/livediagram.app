@@ -5,7 +5,7 @@ Status: retired (5 November 2026, Work Tracker #500)
 ## What it was
 
 **Power user mode** was a preference for people who already knew the editor. Switching it on wrote a preset of
-recommended settings once (alignment guides, the Workshop and Avatar tours and every element tour marked seen, Minimal
+recommended settings once (alignment guides, the Workshop tour, the Receptionist's welcome and every element tour marked seen, Minimal
 chrome) and unlocked settings for someone who no longer needed the interface explained:
 
 - **Minimal chrome**, which hid captions, panel titles, help buttons, onboarding hints, the Shift hint and the desktop
