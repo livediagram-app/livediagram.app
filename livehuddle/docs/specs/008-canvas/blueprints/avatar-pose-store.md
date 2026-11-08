@@ -57,8 +57,8 @@ peers)` compared with `sameSitters`).
 ## Performance and limits
 
 - Per walking frame: one pose notification. Renders: `AvatarSelfWalker` and the characters layer. The
-  canvas, `useCanvasAvatar` and the element layer render 0 times, except for the centred camera's pan,
-  which renders the canvas view as any pan does (no element view).
+  canvas, `useCanvasAvatar` and the element layer render 0 times, the centred camera's pan included: it
+  writes the canvas's transform outside React ([Viewport store](viewport-store.md) "Inside the canvas").
 - Measured by `useAvatarWalk.renders.test.tsx`: two seconds of walking (125 frames) rendered the walk's
   host 125 times before, and 5 times now (once per change of the element under the feet).
 

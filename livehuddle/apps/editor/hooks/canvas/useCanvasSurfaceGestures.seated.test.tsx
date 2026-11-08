@@ -37,7 +37,7 @@ function seatedSetup() {
       elements,
       mainRef: { current: null },
       wrapperRef: { current: null },
-      viewportOffset: { x: 0, y: 0 },
+      readViewportOffset: () => ({ x: 0, y: 0 }),
       viewportZoom: 1,
       setViewportOffset: vi.fn(),
     });
@@ -45,7 +45,7 @@ function seatedSetup() {
       canvasTool: 'avatar',
       middleMousePan: true,
       pendingDraw: null,
-      viewportOffset: { x: 0, y: 0 },
+      readViewportOffset: () => ({ x: 0, y: 0 }),
       viewportZoom: 1,
       mainRef: { current: null },
       wrapperRef: { current: wrapper },

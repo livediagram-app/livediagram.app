@@ -54,12 +54,15 @@ const CHROME_OVER_CANVAS = '[data-talking-bars], [data-call-bubbles], [data-call
 // owned by its existing hook (pan / marquee, spotlight, iso camera,
 // the draw gesture).
 
+// The pan's start, from the view's offset when the press runs.
+const panStartOffset = (o: { x: number; y: number }) => ({ startOffsetX: o.x, startOffsetY: o.y });
+
 export function useCanvasSurfaceGestures({
   canvasTool,
   middleMousePan,
   pendingDraw,
   whiteboard = false,
-  viewportOffset,
+  readViewportOffset,
   viewportZoom,
   mainRef,
   wrapperRef,
@@ -84,7 +87,9 @@ export function useCanvasSurfaceGestures({
   pendingDraw: CanvasProps['pendingDraw'];
   // The active tab is a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input").
   whiteboard?: boolean;
-  viewportOffset: { x: number; y: number };
+  // The view's offset when a press starts a pan: read then, since a pan renders nothing
+  // (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
+  readViewportOffset: () => { x: number; y: number };
   viewportZoom: number;
   mainRef: CanvasProps['mainRef'];
   wrapperRef: React.RefObject<HTMLDivElement | null>;
@@ -153,8 +158,7 @@ export function useCanvasSurfaceGestures({
     setPan({
       startClientX: e.clientX,
       startClientY: e.clientY,
-      startOffsetX: viewportOffset.x,
-      startOffsetY: viewportOffset.y,
+      ...panStartOffset(readViewportOffset()),
       movedRef: { current: false },
       ...(onTap ? { onTap } : {}),
     });
@@ -216,8 +220,7 @@ export function useCanvasSurfaceGestures({
         setPan({
           startClientX: e.clientX,
           startClientY: e.clientY,
-          startOffsetX: viewportOffset.x,
-          startOffsetY: viewportOffset.y,
+          ...panStartOffset(readViewportOffset()),
           movedRef: { current: false },
         });
         return;
@@ -363,8 +366,7 @@ export function useCanvasSurfaceGestures({
       setPan({
         startClientX: e.clientX,
         startClientY: e.clientY,
-        startOffsetX: viewportOffset.x,
-        startOffsetY: viewportOffset.y,
+        ...panStartOffset(readViewportOffset()),
         movedRef: { current: false },
       });
       return;

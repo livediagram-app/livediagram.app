@@ -28,7 +28,7 @@ export function useWalkIn({
   mainRef,
   wrapperRef,
   viewportZoom,
-  viewportOffset,
+  readViewportOffset,
   setViewportOffset,
 }: {
   walkIn: WalkIn | null | undefined;
@@ -38,15 +38,14 @@ export function useWalkIn({
   mainRef: Ref<HTMLElement>;
   wrapperRef: RefObject<HTMLElement | null>;
   viewportZoom: number;
-  // The view's offset now, which the nudge adds to.
-  viewportOffset: { x: number; y: number };
+  // The view's offset when the nudge is judged, which it adds to: read then, since a pan renders nothing.
+  readViewportOffset: () => { x: number; y: number };
   setViewportOffset: (offset: { x: number; y: number }) => void;
 }) {
   const seq = walkIn?.seq;
   // Read when the view is judged, once it has settled: the tab opens walking as it loads, and its fit (and a re-fit
   // when the Map appears) lands frames later, so the zoom the fit chose is the one that counts.
   const zoomRef = useLatest(viewportZoom);
-  const offsetRef = useLatest(viewportOffset);
   useLayoutEffect(() => {
     if (!walkIn) return;
     const feet = avatarSpawnBelow(walkIn.button, scale);
@@ -67,7 +66,7 @@ export function useWalkIn({
           zoom,
         );
         if (fix.x === 0 && fix.y === 0) return;
-        const offset = offsetRef.current;
+        const offset = readViewportOffset();
         setViewportOffset({ x: offset.x + fix.x, y: offset.y + fix.y });
         return;
       }

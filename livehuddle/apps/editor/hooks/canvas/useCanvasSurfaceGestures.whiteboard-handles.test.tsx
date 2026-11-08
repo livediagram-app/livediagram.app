@@ -22,7 +22,7 @@ function setup(wrapper: HTMLElement) {
       middleMousePan: true,
       pendingDraw: null,
       whiteboard: true,
-      viewportOffset: { x: 0, y: 0 },
+      readViewportOffset: () => ({ x: 0, y: 0 }),
       viewportZoom: 1,
       mainRef: { current: null },
       wrapperRef: { current: wrapper },

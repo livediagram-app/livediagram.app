@@ -54,15 +54,23 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 - `ViewportStoreProvider` (`../packages/workbench/src/hooks/canvas/useViewportStore.tsx`) wraps the editor view beside
   the selection's provider; `useViewportOf(select, equal)` subscribes to a slice, `useViewportStore()`
   returns the store and throws `ViewportStoreMissing` outside a provider.
-- `CanvasProps` carries no `viewportZoom` / `viewportOffset`. `CanvasView` subscribes to the whole
-  view and is the canvas-level reader: its transform, its gesture hooks and the zoom context it
-  provides read it. What it renders takes the view only where it shows it:
+- `CanvasProps` carries no `viewportZoom` / `viewportOffset`. `CanvasView` subscribes to the zoom
+  only, and is the canvas-level reader of it: its gesture hooks and the zoom context it provides read
+  it. The offset never renders it: `useViewportTransform` writes the wrapper's
+  `scale(zoom) translate(offset)` and the floor pattern's `background-position` from a store
+  subscription, outside React, and sets them again on every render from the store's current value.
+  The press handlers (`useCanvasSurfaceGestures`), the walk's camera (`useAvatarWalk`'s
+  `readViewportOffset`) and the Walk In read the offset when they run; `useOffscreenContent` subscribes
+  to whether the content is off screen, by value; the characters layer, which follows every step, and
+  the path toolbar subscribe to the view where they draw it. What it renders takes the view only where
+  it shows it:
   - `CanvasChrome` and its panels take no view; inside it the parts that convert canvas points to
     the screen (the guide and lane overlays, draw previews, palette-drag guides, `useCanvasViewKey`),
     the zoom controls and the Map subscribe with `useViewportOf`;
   - the element layer's remote cursors and laser overlay, and the selection toolbars, subscribe.
 - A zoom tick therefore renders `CanvasView`, the counter-scaled parts and those subscribers; the
-  chrome (the Palette strip, the Explorer, the command palette) renders 0 times.
+  chrome (the Palette strip, the Explorer, the command palette) renders 0 times. A pan renders only the
+  subscribers that draw from the offset; `CanvasView` and the element layer render 0 times.
 
 ## Errors and edge cases
 

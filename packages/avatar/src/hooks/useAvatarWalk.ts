@@ -116,6 +116,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   mainRef,
   wrapperRef,
   viewportOffset,
+  readViewportOffset,
   viewportZoom,
   setViewportOffset,
   spawnAtRef,
@@ -141,7 +142,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   elements: readonly E[];
   mainRef: React.RefObject<HTMLElement | null> | React.ForwardedRef<HTMLElement>;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
-  viewportOffset: AvatarPoint;
+  // The view's offset: a value from a render, or, where a pan renders nothing (livehuddle's canvas writes it outside
+  // React, docs/specs/008-canvas/canvas-performance.md), a reader of the store the loop asks each frame.
+  viewportOffset?: AvatarPoint;
+  readViewportOffset?: () => AvatarPoint;
   viewportZoom: number;
   setViewportOffset: (offset: AvatarPoint) => void;
   // A one-shot spawn point for the NEXT entry into the mode, in canvas px:
@@ -300,14 +304,30 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // match what we last wrote, and is adopted.
   // The adoption runs in an insertion effect, before the loop's next frame can read the ref, rather
   // than during render.
-  const offsetRef = useRef(viewportOffset);
+  const offsetRef = useRef(viewportOffset ?? readViewportOffset?.() ?? { x: 0, y: 0 });
   const offsetWrittenRef = useRef<AvatarPoint | null>(null);
-  useInsertionEffect(() => {
+  const adoptOffset = (offset: AvatarPoint) => {
     const written = offsetWrittenRef.current;
-    if (written === null || viewportOffset.x !== written.x || viewportOffset.y !== written.y) {
-      offsetRef.current = viewportOffset;
+    if (written === null || offset.x !== written.x || offset.y !== written.y) {
+      offsetRef.current = offset;
     }
+  };
+  useInsertionEffect(() => {
+    if (viewportOffset) adoptOffset(viewportOffset);
   }, [viewportOffset]);
+  // From a reader: adopted when it changed since the last read, as the effect above adopts a new value.
+  const lastReadRef = useRef<AvatarPoint | null>(null);
+  const readOffset = () => {
+    if (readViewportOffset) {
+      const now = readViewportOffset();
+      const last = lastReadRef.current;
+      if (!last || last.x !== now.x || last.y !== now.y) {
+        lastReadRef.current = now;
+        adoptOffset(now);
+      }
+    }
+    return offsetRef.current;
+  };
 
   const mainNode = () => (mainRef && 'current' in mainRef ? mainRef.current : null);
 
@@ -332,7 +352,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       viewportZoom,
     );
     if (fix.x === 0 && fix.y === 0) return;
-    const prev = offsetRef.current;
+    const prev = readOffset();
     const nextOffset = { x: prev.x + fix.x, y: prev.y + fix.y };
     offsetRef.current = nextOffset;
     offsetWrittenRef.current = nextOffset;
@@ -345,7 +365,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     to: AvatarPoint,
     r: NonNullable<ReturnType<typeof rects>>,
   ) => {
-    const prev = offsetRef.current;
+    const prev = readOffset();
     const nextOffset = centredCamera(
       prev,
       from,

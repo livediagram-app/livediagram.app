@@ -244,6 +244,7 @@
     "./hooks/canvas/useSnapHaptic": "./src/hooks/canvas/useSnapHaptic.ts",
     "./hooks/canvas/useSpotlight": "./src/hooks/canvas/useSpotlight.ts",
     "./hooks/canvas/useViewportStore": "./src/hooks/canvas/useViewportStore.tsx",
+    "./hooks/canvas/useViewportTransform": "./src/hooks/canvas/useViewportTransform.ts",
     "./hooks/canvas/useZoomControls": "./src/hooks/canvas/useZoomControls.ts",
     "./hooks/collab/useHideCursors": "./src/hooks/collab/useHideCursors.ts",
     "./hooks/collab/useShowFollowersMyView": "./src/hooks/collab/useShowFollowersMyView.ts",

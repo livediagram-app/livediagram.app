@@ -11,6 +11,11 @@ import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
+import {
+  useViewportTransform,
+  viewportTransform,
+} from '@liveworkspace/workbench/hooks/canvas/useViewportTransform';
+import { ViewPathEditToolbar } from '@/components/canvas/view-readers';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
@@ -55,7 +60,6 @@ import { PlacementPreview } from '@/components/canvas/collab/PlacementPreview';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
-import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { readPeerAvatarRows } from '@/hooks/collab/usePeerRows';
 import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
@@ -72,7 +76,7 @@ export const Canvas = withStableEventProps(CanvasView);
 
 // The canvas is what shows the view (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the
 // canvas"): CanvasView subscribes to it; what it renders takes the view only where it shows it.
-const wholeView = (v: View) => v;
+const zoomOf = (v: View) => v.zoom;
 // livehuddle has no layers (docs/specs/006-document/layers.md): nothing is inert to the shared select handlers.
 const NO_INERT_IDS = new Set<string>();
 
@@ -107,10 +111,14 @@ function CanvasView(props: CanvasProps) {
     tabLoadState,
     onRetryTabLoad,
   } = props;
-  const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
-  // The zoom when a handler runs, for what is handed down and must keep its identity across zooms.
+  // The zoom only: a pan, a walk's camera follow among them, moves the wrapper and the floor pattern
+  // outside React (useViewportTransform below) and renders no canvas view
+  // (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
+  const viewportZoom = useViewportOf(zoomOf);
+  // The view when a handler runs, for what is handed down and must keep its identity across pans and zooms.
   const viewportStore = useViewportStore();
   const readZoom = useCallback(() => viewportStore.get().zoom, [viewportStore]);
+  const readViewportOffset = useCallback(() => viewportStore.get().offset, [viewportStore]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -122,9 +130,26 @@ function CanvasView(props: CanvasProps) {
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
   useCanvasLongTaskLog(canvasGestureNow);
-  const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
+  const offscreenContent = useOffscreenContent(elements, mainRef);
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
+  // The backdrop for a view. In world space: the pattern pans and zooms with the elements, so they
+  // stay on the same dots at any zoom (worldPatternOrigin).
+  const backdropFor = (v: View) =>
+    tabBackgroundStyle(
+      tabBackgroundPattern,
+      worldPatternOrigin(v.offset, v.zoom, { w: mainSize.width, h: mainSize.height }),
+      tabBackgroundColor,
+      tabPatternColor,
+      tabBackgroundOpacity,
+      tabBackgroundPatternScale * v.zoom,
+    );
+  // The view now, for this render's wrapper and backdrop; every pan after it is written straight to
+  // them (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
+  const view = useViewportTransform(wrapperRef, mainRef, (v) => {
+    const position = backdropFor(v).backgroundPosition;
+    return position === undefined ? undefined : String(position);
+  });
 
   // Pan tracking. viewportOffset is owned by the page (so element placement
   // can reason about the visible viewport); we just read/write through props.
@@ -249,7 +274,7 @@ function CanvasView(props: CanvasProps) {
     elements,
     mainRef,
     wrapperRef,
-    viewportOffset,
+    readViewportOffset,
     viewportZoom,
     setViewportOffset,
     readZoom,
@@ -330,7 +355,7 @@ function CanvasView(props: CanvasProps) {
     middleMousePan: props.settings?.middleMousePan !== false,
     pendingDraw,
     whiteboard: false,
-    viewportOffset,
+    readViewportOffset,
     viewportZoom,
     mainRef,
     wrapperRef,
@@ -433,19 +458,7 @@ function CanvasView(props: CanvasProps) {
           ['--lvd-canvas-paper' as string]: tabBackgroundColor,
           // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
           ...stickyPeel,
-          // In world space: the pattern pans and zooms with the elements, so
-          // they stay on the same dots at any zoom (worldPatternOrigin).
-          ...tabBackgroundStyle(
-            tabBackgroundPattern,
-            worldPatternOrigin(viewportOffset, viewportZoom, {
-              w: mainSize.width,
-              h: mainSize.height,
-            }),
-            tabBackgroundColor,
-            tabPatternColor,
-            tabBackgroundOpacity,
-            tabBackgroundPatternScale * viewportZoom,
-          ),
+          ...backdropFor(view),
           // Mirror the inner-wrapper cursor on <main>. The inner div is
           // `absolute inset-0` but its CSS transform scales it (zoom),
           // so when zoom is below 1 the hit area shrinks and the
@@ -488,7 +501,7 @@ function CanvasView(props: CanvasProps) {
           style={{
             // Translate is in canvas-coords (applied first); scale is centred
             // on the wrapper so zooming keeps the viewport centre stable.
-            transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+            transform: viewportTransform(view),
             // Draw-mode cursor: every intent gets a custom inline-SVG
             // cursor (crosshair at the pointer tip plus a small glyph
             // hinting at what's about to land). Without this, tool
@@ -572,13 +585,7 @@ function CanvasView(props: CanvasProps) {
         </div>
 
         <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
-        {pathTool.toolbar ? (
-          <PathEditToolbar
-            {...pathTool.toolbar}
-            viewportOffset={viewportOffset}
-            zoom={viewportZoom}
-          />
-        ) : null}
+        {pathTool.toolbar ? <ViewPathEditToolbar {...pathTool.toolbar} /> : null}
 
         <CanvasChrome
           {...props}

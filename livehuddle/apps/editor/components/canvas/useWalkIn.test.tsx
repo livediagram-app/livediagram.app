@@ -28,7 +28,7 @@ function setup(button: WalkInButton | null, seq = 1, nodes = true) {
         mainRef: { current: nodes ? el(rect(0, 0, 1000, 800)) : null },
         wrapperRef: { current: nodes ? el(rect(0, 0, 1000, 800)) : null },
         viewportZoom: 1,
-        viewportOffset: { x: 0, y: 0 },
+        readViewportOffset: () => ({ x: 0, y: 0 }),
         setViewportOffset,
       }),
     { initialProps: { s: seq } },
@@ -85,7 +85,7 @@ describe('useWalkIn', () => {
         mainRef: { current: el(rect(0, 0, 1000, mainHeight)) },
         wrapperRef: { current: el(rect(-100, wrapperTop, 1000, 800)) },
         viewportZoom: 2,
-        viewportOffset: { x: -50, y: -40 },
+        readViewportOffset: () => ({ x: -50, y: -40 }),
         setViewportOffset,
       }),
     );
@@ -128,7 +128,7 @@ describe('useWalkIn', () => {
           current: { getBoundingClientRect: () => rect(left++, 0, 1000, 800) } as HTMLElement,
         },
         viewportZoom: 1,
-        viewportOffset: { x: 0, y: 0 },
+        readViewportOffset: () => ({ x: 0, y: 0 }),
         setViewportOffset,
       }),
     );

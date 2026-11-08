@@ -75,7 +75,9 @@ type CanvasAvatarInput = {
   elements: CanvasProps['elements'];
   mainRef: CanvasProps['mainRef'];
   wrapperRef: React.RefObject<HTMLDivElement | null>;
-  viewportOffset: { x: number; y: number };
+  // The view's offset, read when the walk or the Walk In needs it: a pan renders nothing
+  // (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
+  readViewportOffset: () => { x: number; y: number };
   viewportZoom: number;
   setViewportOffset: CanvasProps['setViewportOffset'];
   readZoom: () => number;
@@ -91,7 +93,7 @@ export function useCanvasAvatar({
   elements,
   mainRef,
   wrapperRef,
-  viewportOffset,
+  readViewportOffset,
   viewportZoom,
   setViewportOffset,
   readZoom,
@@ -116,7 +118,7 @@ export function useCanvasAvatar({
     mainRef,
     wrapperRef,
     viewportZoom,
-    viewportOffset,
+    readViewportOffset,
     setViewportOffset,
   });
   // Pressing an Avatar Pad (docs/specs/009-elements/avatar-pad.md "Pressing it") starts the walk on that pad.
@@ -187,7 +189,7 @@ export function useCanvasAvatar({
     elements: walkScene,
     mainRef,
     wrapperRef,
-    viewportOffset,
+    readViewportOffset,
     viewportZoom,
     setViewportOffset,
     spawnAtRef: avatarSpawnRef,

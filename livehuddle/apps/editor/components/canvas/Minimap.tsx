@@ -318,7 +318,7 @@ export function Minimap({
     >
       {/* Clip the map to the panel's rounded bottom so its corners don't
           square off past the border. */}
-      <div className="overflow-hidden rounded-b-lg">
+      <div className="relative overflow-hidden rounded-b-lg">
         <svg
           ref={svgBox}
           viewBox={vb}
@@ -352,6 +352,18 @@ export function Minimap({
               preserveAspectRatio="none"
             />
           ) : null}
+        </svg>
+        {/* The window and the dim on a layer of their own (docs/specs/008-canvas/minimap.md "What it shows"):
+          a pan repaints this layer and not the picture under it, which Safari draws again in full on every
+          repaint over it (canvas-performance.md "The Map is one image"). Same box and viewBox as the
+          picture's; presses fall through to it. */}
+        <svg
+          viewBox={vb}
+          preserveAspectRatio="xMidYMid meet"
+          aria-hidden="true"
+          data-minimap-view=""
+          className="pointer-events-none absolute inset-0 block h-full w-full text-slate-400 [will-change:transform]"
+        >
           {hasView ? (
             <>
               {/* Dim everything outside the current view (even-odd: outer box
