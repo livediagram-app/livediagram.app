@@ -85,8 +85,12 @@ export function historyCommit(h: History, mapTabs: (tabs: Tab[]) => Tab[]): Hist
   };
 }
 
+// A tick that changes nothing hands back the same history, so React keeps the editor as it is: the
+// writing's layout ticks on every keystroke (useArticles onLayout), and a new object each time
+// re-rendered the whole editor per key on a long article.
 export function historyTick(h: History, mapTabs: (tabs: Tab[]) => Tab[]): History {
-  return { ...h, present: mapTabs(h.present) };
+  const present = mapTabs(h.present);
+  return present === h.present ? h : { ...h, present };
 }
 
 export function historyMarkCheckpoint(h: History): History {
