@@ -2,46 +2,64 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'The Workshop Tour',
+  title: 'Watch It Built in Workshop',
   description:
-    'The Workshop tour walks you through the Collaborate categories, the Session strip and Share, started from the Start Workshop Tour button in the bottom bar.',
+    'Short replays of Workshop mode: pick a topic and a cursor adds votes, stickies and reactions and runs a timer while you watch.',
   path: '/help/canvas/workshop-mode/workshop-tour/',
 });
 
 <ArticleLayout
-  title="The Workshop Tour"
-  description="A short, optional walkthrough of Workshop mode, started from the Start Workshop Tour button in the bottom bar."
+  title="Watch It Built in Workshop"
+  description="Workshop mode's tour: pick a topic and a cursor runs a session with the real palette and Session strip, in about 20 seconds."
   categoryTitle="Canvas"
   categorySlug="canvas/workshop-mode"
 >
 
-The Workshop tour shows you where everything for running a session lives. It works on the real editor rather than screenshots (as [Watch It Built](/help/getting-started/diagram-tour/), the Diagram tour, does): it spotlights each part with a highlight ring and a short explanation. It adds nothing to your canvas, takes under a minute, and you can leave at any point.
+In [Workshop mode](/help/canvas/workshop-mode/), Watch It Built shows you how to run a session by running one. A cursor called **Example** drags out votes, polls and stickies, and starts a timer and a dot vote, on your own canvas with the editor's real palette and Session strip, so what you see is exactly what you will press. Each topic takes 15 to 25 seconds, and nothing it does is saved. (It replaced the stepped Workshop Tour in November 2026.)
 
-## Starting the Tour
+## Starting It
 
-The tour never starts or pops up on its own. When you're in [Workshop mode](/help/canvas/workshop-mode/) on a tab you can edit, press Start Workshop Tour in the bar along the bottom of the editor, just left of **Search**. On a phone the button shows only its play icon.
+It never starts or pops up on its own. On a Workshop tab you can edit, press **Watch It Built** in the bar along the bottom of the editor, just left of **Search**. On a phone the button shows only its play icon. It doesn't appear on a view-only canvas, on a locked tab, in an embed, or for someone taking part rather than editing.
 
-The button doesn't appear on a locked tab, in an embed, or for someone who can only view or take part. If you have a complex element selected, the button offers that element's tour instead; select nothing to get the Workshop tour back. Once you've taken the tour (finished or skipped it), it leaves the button, which then offers another tour you haven't taken or isn't shown. To take it again, switch it back on in Settings (see below).
+A press opens a small panel over the canvas: **What would you like to learn?** and the Workshop topics. Press one to watch it. A topic you've watched shows a **Done** tick, and you can press it to watch it again. **Not Now** (or **Esc**) closes the panel and leaves the button where it is.
 
-## What It Covers
+The button stays until you've watched every Workshop topic. After that it offers another tour you haven't taken, and you can bring it back from Settings (see below).
 
-1. **Collaborate**: **Ask** and **Session**, the palette's session kit after Layout: Ask holds votes, polls and quizzes, and Session the tools, records, reactions, selection modes and places to go. See [Collaborate](/help/palette/behaviour/). The rest of the palette is in [Watch It Built](/help/getting-started/diagram-tour/), the Diagram tour.
-2. **Run the Room**: the **Timer**, **Vote** and **Poll** buttons in the bottom-right corner, which run for everyone without placing anything. See [Session Tools](/help/collaboration/session-tools/).
-3. **Bring People In**: the **Share** button, where a Participant link lets people add notes, vote and answer without changing the rest. Left out where there is no Share button.
+## The Topics
 
-Each step has **Next**, **Back** and **Skip tour**. The last card, **You're ready to run a workshop**, links to the [Workshop mode](/help/canvas/workshop-mode/) article and ends the tour with **Start**. If you leave Workshop mode or switch tab mid-tour, it ends as skipped.
+| Topic                     | What it shows                                                                                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ask the Room**          | Opens the palette's **Ask** and drags out a **Dot Vote**, a **Poll** and a **Temperature Check**.                                                  |
+| **Stickies and Stickers** | Drags out three stickies and types an idea on each, then adds a thumbs up and a heart from **Stickers**.                                           |
+| **Reactions and Reveals** | Drags a **Confetti** reaction pad from **Session**, then draws a **Reveal Zone** over two answers so they hide under its cover.                    |
+| **Run the Room**          | Starts a timer, which counts down on the board and the Session strip, runs a dot vote on the notes, then ends it so the most-voted notes light up. |
 
-## Replaying the Tour
+## While It Plays
 
-Once taken, the tour stays off the button until you switch it back on in Settings:
+- **Your work is safe.** Your own elements fade back while Example works, and come back exactly as they were when it ends. Nothing Example draws or changes is saved, sent to anyone you're working with, or added to undo. A timer or vote it shows is never started: nobody else in the room sees anything.
+- **Panels it opens close again.** Example opens the editor's real menus and panels with their own buttons, and closes each one as it moves on.
+- **The player** shows Example's line for the chapter, a **Pause** / **Play** button, the topic's chapters with a progress line each, and **Your Turn**. Press a chapter's name to watch it again from its start.
+- **Keys**: **Space** pauses and plays, the **left** and **right arrow** keys step between chapters, and **Esc** ends it.
+- **Your Turn** ends it and hands the canvas back to you. When there are more topics, **More Topics** beside it opens the list again. Switching to another tab or mode ends it too.
+- **Reduced motion**: if your system or the editor's **Reduce motion** setting asks for less movement, nothing glides. Each chapter shows how it ends, and the play button reads **Next** to step to the next one (and **Done** on the last).
+- **On a phone** Example is a soft touch dot instead of an arrow, and the lines talk about taps and long-presses instead of clicks.
+
+## Watching Again
+
+Every topic stays in the panel with its **Done** tick, so as long as the button is there you can watch any of them again. Once you've watched them all, bring the button back from Settings:
 
 <Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
 
-<Step n={2}>Switch **Workshop Tour** back on.</Step>
+<Step n={2}>
+  Open **Watch It Built in Workshop** and switch **Watch It Built in Workshop** back on to offer
+  every Workshop topic again, or switch on just the topics you want under it.
+</Step>
 
 <Step n={3}>
-  Close Settings. If you're in Workshop mode the tour starts straight away; otherwise the Start
-  Workshop Tour button is there the next time you work in Workshop.
+  Close Settings. In Workshop mode the topic list opens straight away; otherwise the Watch It Built
+  button is there the next time you work in Workshop.
 </Step>
+
+Diagram and Draw have topics of their own, on the same button: see [Watch It Built](/help/getting-started/diagram-tour/) and [Watch It Built in Draw](/help/canvas/draw-mode/draw-tour/).
 
 </ArticleLayout>

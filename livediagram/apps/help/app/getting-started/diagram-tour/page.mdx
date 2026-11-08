@@ -4,60 +4,64 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Watch It Built',
   description:
-    'Watch a cursor build a small diagram with the real palette, selection toolbar and element menu, from the Watch It Built button in the editor’s bottom bar.',
+    'Short replays of Diagram mode: pick a topic and a cursor builds with the real palette, menus and dialogs while you watch.',
   path: '/help/getting-started/diagram-tour/',
 });
 
 <ArticleLayout
   title="Watch It Built"
-  description="The Diagram tour: a cursor builds a small diagram in front of you, with the editor's real controls, in about half a minute."
+  description="Diagram mode's tour: pick a topic and a cursor shows it with the editor's real controls, in under half a minute."
   categoryTitle="Getting Started"
   categorySlug="getting-started"
 >
 
-Watch It Built is the tour of [Diagram mode](/help/canvas/editor-modes/). Instead of pointing at the controls one by one, a cursor called **Example** builds a small diagram in front of you: it drops two shapes from the palette, joins them with an arrow, names one, and gives it a colour from the element menu. Everything it uses is the editor's real chrome, so what you see is exactly what you will press. It takes about half a minute, and nothing it does is saved. (It was the stepped Diagram Tour until November 2026, and the Welcome Tour before October 2026.)
+Watch It Built is the tour of [Diagram mode](/help/canvas/editor-modes/). Instead of pointing at the controls one by one, a cursor called **Example** shows you how something is done, on your own canvas: you pick a topic, and it builds, styles or tidies with the editor's real palette, toolbar, menus and dialogs, so what you see is exactly what you will press. Each topic takes 15 to 25 seconds, and nothing it does is saved. (Until November 2026 it was one replay, and before that a stepped Diagram Tour and the Welcome Tour.)
 
 ## Starting It
 
-The tour never starts or pops up on its own. To watch it, press **Watch It Built** in the bar along the bottom of the editor, just left of **Search**. On a phone the button shows only its play icon.
+It never starts or pops up on its own. On a Diagram tab you can edit, press **Watch It Built** in the bar along the bottom of the editor, just left of **Search**. On a phone the button shows only its play icon. It doesn't appear on a view-only canvas, on a locked tab, in an embed, or for someone taking part rather than editing.
 
-The button appears on a **Diagram tab** you can edit, once any **Start Diagramming** panel is closed or a template picked. It doesn't appear on a view-only canvas, on a locked tab or in an embed. Draw and Workshop have tours of their own, on the same button: see [The Workshop Tour](/help/canvas/workshop-mode/workshop-tour/) and [The Draw Tour](/help/canvas/draw-mode/draw-tour/). When you have a complex element selected, such as a Sankey diagram or a flowchart step, the button offers that element's tour instead (Start Sankey Tour, for example).
+A press opens a small panel over the canvas: **What would you like to learn?** and the Diagram topics. Press one to watch it. A topic you've watched shows a **Done** tick, and you can press it to watch it again. **Not Now** (or **Esc**) closes the panel and leaves the button where it is.
 
-Once you've watched it (to the end or not), it leaves the button, which then offers another tour you haven't taken. To watch it again, switch it back on in Settings (see below).
+The button stays until you've watched every Diagram topic. After that it offers another tour you haven't taken, and you can bring it back from Settings (see below).
 
-## What It Shows
+## The Topics
 
-Four short chapters, each with one line of explanation in the player at the bottom of the canvas:
-
-1. **Add**: Example opens the palette's **Shapes** and drags a shape onto the canvas, then a second one.
-2. **Connect**: it selects the first shape, so its handles and the **selection toolbar** show, then drags from the ring round it onto the second shape to join them with an arrow.
-3. **Label**: it double-clicks the second shape and types its name, "Check stock".
-4. **Style**: it right-clicks the shape to open the **element menu**, goes into **Style**, then **Presets**, and picks **Success**: the shape turns green.
-
-On a touch screen the lines talk about taps, double-taps and long-presses instead of clicks.
+| Topic             | What it shows                                                                                                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **The Basics**    | Drops two shapes from the palette, joins them with an arrow from the ring round the first, names one "Check stock", then right-clicks it and picks the **Success** colour from the element menu. |
+| **Look and Feel** | Opens **Style** in the bottom bar, picks two looks for the whole tab in turn, then a new canvas background. Your tab keeps its own look when it ends.                                            |
+| **Style a Shape** | Right-clicks a shape and goes through the element menu's **Style**: a thicker, dashed **Border**, a **Shadow**, then a handwritten **Font**.                                                     |
+| **Find Anything** | Opens **Search**, types "database" and drags the result onto the canvas, then does the same for "decision".                                                                                      |
+| **Tidy Up**       | Five joined steps land a little off, then **Tidy Up** in the bottom bar and **Auto Layout** glide them into a clean flow.                                                                        |
 
 ## While It Plays
 
-- **Your diagram is safe.** Your own elements fade back while Example works, and come back exactly as they were when it ends. Nothing Example draws is saved, sent to anyone you're working with, or added to undo.
-- **The player** shows Example's line for the chapter, a **Pause** / **Play** button, the four chapters with a progress line each, and **Your Turn**. Press a chapter's name to watch it again from its start. At the end the player holds on the finished diagram, and its button reads **Replay**.
+- **Your work is safe.** Your own elements fade back while Example works, and come back exactly as they were when it ends. Nothing Example draws or changes is saved, sent to anyone you're working with, or added to undo. A look or layout it shows is never applied to your tab.
+- **Panels it opens close again.** Example opens the editor's real menus and panels with their own buttons, and closes each one as it moves on.
+- **The player** shows Example's line for the chapter, a **Pause** / **Play** button, the topic's chapters with a progress line each, and **Your Turn**. Press a chapter's name to watch it again from its start.
 - **Keys**: **Space** pauses and plays, the **left** and **right arrow** keys step between chapters, and **Esc** ends it.
-- **Your Turn** ends it and hands the canvas back to you. Switching to another tab or mode ends it too.
+- **Your Turn** ends it and hands the canvas back to you. When there are more topics, **More Topics** beside it opens the list again. Switching to another tab or mode ends it too.
 - **Reduced motion**: if your system or the editor's **Reduce motion** setting asks for less movement, nothing glides. Each chapter shows how it ends, and the play button reads **Next** to step to the next one (and **Done** on the last).
+- **On a phone** Example is a soft touch dot instead of an arrow, and the lines talk about taps and long-presses instead of clicks.
 
-## Watching It Again
+## Watching Again
 
-Once watched, it stays off the button until you switch it back on in Settings:
+Every topic stays in the panel with its **Done** tick, so as long as the button is there you can watch any of them again. Once you've watched them all, bring the button back from Settings:
 
 <Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
 
-<Step n={2}>Switch **Watch It Built** back on.</Step>
-
-<Step n={3}>
-  Close Settings. On a Diagram tab it starts straight away; on a tab in another mode, nothing happens,
-  and the Watch It Built button is there when you get to a Diagram tab.
+<Step n={2}>
+  Open **Watch It Built in Diagram** and switch **Watch It Built** back on to offer every Diagram
+  topic again, or switch on just the topics you want under it.
 </Step>
 
-Watching it switches **Watch It Built** off again, which takes it off the button until you switch it back on. The other modes have tours of their own, replayed the same way from **Draw** and **Workshop**: see [The Draw Tour](/help/canvas/draw-mode/draw-tour/) and [The Workshop Tour](/help/canvas/workshop-mode/workshop-tour/).
+<Step n={3}>
+  Close Settings. In Diagram mode the topic list opens straight away; otherwise the Watch It Built
+  button is there the next time you work in Diagram.
+</Step>
+
+Draw and Workshop have topics of their own, on the same button: see [Watch It Built in Draw](/help/canvas/draw-mode/draw-tour/) and [Watch It Built in Workshop](/help/canvas/workshop-mode/workshop-tour/). When you have a complex element selected, such as a Sankey diagram or a flowchart step, the button offers that element's tour instead (Start Sankey Tour, for example).
 
 <Tip>
   Prefer learning by doing? [Your First Diagram](/help/getting-started/your-first-diagram/) builds a

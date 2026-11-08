@@ -83,31 +83,37 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('inverts the Diagram tour row against the stored preference', () => {
-    // The row asks "show me the tour?"; `tourSeen` records "already seen".
-    // Getting this backwards would re-offer the tour to everyone who has
-    // taken it, so it is worth pinning both directions explicitly.
+  // docs/specs/007-editor/watch-it-built.md "Settings": a mode's switch is on while any of its topics is owed. Off
+  // takes them all, on offers them all again. Getting this backwards would re-offer every topic to everyone who has
+  // taken them, so both directions are pinned.
+  it("turns each mode's Watch It Built switch on while any of its topics is owed", () => {
     const row = SWITCHES.find((r) => r.key === 'tourSeen')!;
-    expect(row.read({ tourSeen: true })).toBe(false);
-    expect(row.read({ tourSeen: false })).toBe(true);
     expect(row.read({})).toBe(true);
-    expect(row.write({}, true).tourSeen).toBe(false);
-    expect(row.write({}, false).tourSeen).toBe(true);
-    // And the tokens still describe the PREFERENCE, so the dashboard series
-    // keeps its meaning: switching the row on means "not seen".
+    // The first Watch It Built counts as The Basics only; the rest are still owed.
+    expect(row.read({ tourSeen: true })).toBe(true);
+    const all = ['diagram-basics', 'diagram-look', 'diagram-shape', 'diagram-find', 'diagram-tidy'];
+    expect(row.read({ watchTopics: all })).toBe(false);
+    expect(row.write({}, false).watchTopics).toEqual(all);
+    const again = row.write({ tourSeen: true, watchTopics: [...all, 'draw-sketch'] }, true);
+    expect(again.watchTopics).toEqual(['draw-sketch']);
+    expect(again.tourSeen).toBe(false);
+    // The tokens still describe the old preference, so the dashboard series keeps its meaning.
     expect(row.event.on).toBe('TourSeenOff');
     expect(row.event.off).toBe('TourSeenOn');
   });
 
-  it('inverts the Workshop tour row the same way', () => {
-    // docs/specs/012-collaboration/workshop-tour.md "Where it appears".
-    const row = SWITCHES.find((r) => r.key === 'workshopTourSeen')!;
-    expect(row.read({ workshopTourSeen: true })).toBe(false);
+  it('gives each topic its own switch, nested under its mode', () => {
+    const row = SWITCHES.find((r) => r.key === 'watchTopic-workshop-run')!;
+    expect(row.parent).toBe('workshopTourSeen');
     expect(row.read({})).toBe(true);
-    expect(row.write({}, true).workshopTourSeen).toBe(false);
-    expect(row.write({}, false).workshopTourSeen).toBe(true);
-    expect(row.event.on).toBe('WorkshopTourSeenOff');
-    expect(row.event.off).toBe('WorkshopTourSeenOn');
+    expect(row.read({ watchTopics: ['workshop-run'] })).toBe(false);
+    expect(row.write({}, false).watchTopics).toEqual(['workshop-run']);
+    expect(row.write({ watchTopics: ['workshop-run', 'draw-pens'] }, true).watchTopics).toEqual([
+      'draw-pens',
+    ]);
+    const basics = SWITCHES.find((r) => r.key === 'watchTopic-diagram-basics')!;
+    expect(basics.read({ tourSeen: true })).toBe(false);
+    expect(basics.write({ tourSeen: true }, true).tourSeen).toBe(false);
   });
 
   // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
@@ -115,9 +121,24 @@ describe('settings catalogue', () => {
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
+      // Watch It Built: a switch per mode, then one per topic (lib/replay/curriculum.ts).
       ['tourSeen', 'toggle', 'Watch It Built', 'diagramTour'],
-      ['workshopTourSeen', 'toggle', 'Workshop Tour', 'workshopTour'],
-      ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
+      ['watchTopic-diagram-basics', 'toggle', 'The Basics', 'diagramTour'],
+      ['watchTopic-diagram-look', 'toggle', 'Look and Feel', 'diagramTour'],
+      ['watchTopic-diagram-shape', 'toggle', 'Style a Shape', 'diagramTour'],
+      ['watchTopic-diagram-find', 'toggle', 'Find Anything', 'diagramTour'],
+      ['watchTopic-diagram-tidy', 'toggle', 'Tidy Up', 'diagramTour'],
+      ['drawTourSeen', 'toggle', 'Watch It Built in Draw', 'drawTour'],
+      ['watchTopic-draw-sketch', 'toggle', 'Sketch', 'drawTour'],
+      ['watchTopic-draw-recognition', 'toggle', 'Shape Recognition', 'drawTour'],
+      ['watchTopic-draw-pens', 'toggle', 'Pens and Colours', 'drawTour'],
+      ['watchTopic-draw-shapes', 'toggle', 'Shapes and Stickies', 'drawTour'],
+      ['watchTopic-draw-board', 'toggle', 'Erase and Board', 'drawTour'],
+      ['workshopTourSeen', 'toggle', 'Watch It Built in Workshop', 'workshopTour'],
+      ['watchTopic-workshop-ask', 'toggle', 'Ask the Room', 'workshopTour'],
+      ['watchTopic-workshop-stickies', 'toggle', 'Stickies and Stickers', 'workshopTour'],
+      ['watchTopic-workshop-reveal', 'toggle', 'Reactions and Reveals', 'workshopTour'],
+      ['watchTopic-workshop-run', 'toggle', 'Run the Room', 'workshopTour'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
@@ -154,8 +175,22 @@ describe('settings catalogue', () => {
     expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
       [
         ['TourSeenOff', 'TourSeenOn'],
-        ['WorkshopTourSeenOff', 'WorkshopTourSeenOn'],
+        ['WatchBasicsSeenOff', 'WatchBasicsSeenOn'],
+        ['WatchLookSeenOff', 'WatchLookSeenOn'],
+        ['WatchShapeSeenOff', 'WatchShapeSeenOn'],
+        ['WatchFindSeenOff', 'WatchFindSeenOn'],
+        ['WatchTidySeenOff', 'WatchTidySeenOn'],
         ['DrawTourSeenOff', 'DrawTourSeenOn'],
+        ['WatchDrawSketchSeenOff', 'WatchDrawSketchSeenOn'],
+        ['WatchDrawRecognitionSeenOff', 'WatchDrawRecognitionSeenOn'],
+        ['WatchDrawPensSeenOff', 'WatchDrawPensSeenOn'],
+        ['WatchDrawShapesSeenOff', 'WatchDrawShapesSeenOn'],
+        ['WatchDrawBoardSeenOff', 'WatchDrawBoardSeenOn'],
+        ['WorkshopTourSeenOff', 'WorkshopTourSeenOn'],
+        ['WatchWorkshopAskSeenOff', 'WatchWorkshopAskSeenOn'],
+        ['WatchWorkshopStickiesSeenOff', 'WatchWorkshopStickiesSeenOn'],
+        ['WatchWorkshopRevealSeenOff', 'WatchWorkshopRevealSeenOn'],
+        ['WatchWorkshopRunSeenOff', 'WatchWorkshopRunSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
@@ -222,6 +257,24 @@ describe('settings catalogue', () => {
     const before: UserPreferences = { alignmentGuides: false, telemetryEnabled: false };
     // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
     const own: Record<string, string[]> = {
+      // Watch It Built's switches write the taken list alone (lib/watch-topics.ts).
+      tourSeen: ['watchTopics'],
+      'watchTopic-diagram-basics': ['watchTopics'],
+      'watchTopic-diagram-look': ['watchTopics'],
+      'watchTopic-diagram-shape': ['watchTopics'],
+      'watchTopic-diagram-find': ['watchTopics'],
+      'watchTopic-diagram-tidy': ['watchTopics'],
+      drawTourSeen: ['watchTopics'],
+      'watchTopic-draw-sketch': ['watchTopics'],
+      'watchTopic-draw-recognition': ['watchTopics'],
+      'watchTopic-draw-pens': ['watchTopics'],
+      'watchTopic-draw-shapes': ['watchTopics'],
+      'watchTopic-draw-board': ['watchTopics'],
+      workshopTourSeen: ['watchTopics'],
+      'watchTopic-workshop-ask': ['watchTopics'],
+      'watchTopic-workshop-stickies': ['watchTopics'],
+      'watchTopic-workshop-reveal': ['watchTopics'],
+      'watchTopic-workshop-run': ['watchTopics'],
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
       // One element's tour writes the answered list alone (lib/element-tours.ts).
       'elementTour-sankey': ['elementTourKinds'],

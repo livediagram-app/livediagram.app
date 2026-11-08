@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element, Tab } from '@livediagram/document';
+import type { UserPreferences } from '@/lib/user-preferences';
+import type { ReplayDock } from './topic';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu.types';
@@ -12,9 +14,22 @@ export type ReplayState = {
   readonly active: boolean;
   readonly elements: readonly Element[];
   readonly menu: EditorContextMenuState | null;
+  // How the tab looks, and the person's preferences, as the canvas sees them while it runs (a look shown, a board
+  // background): drawn over the real ones in ReplayScope only.
+  readonly tab: Partial<Tab> | null;
+  readonly prefs: Partial<UserPreferences> | null;
+  // Draw's dock as it shows (lib/replay/replay-dock.ts), likewise.
+  readonly dock: ReplayDock | null;
 };
 
-const IDLE: ReplayState = Object.freeze({ active: false, elements: [], menu: null });
+const IDLE: ReplayState = Object.freeze({
+  active: false,
+  elements: [],
+  menu: null,
+  tab: null,
+  prefs: null,
+  dock: null,
+});
 
 // A demo element's id starts with this, so the fade (globals.css) can tell it from the person's own.
 export const DEMO_ID_PREFIX = 'wib-';
@@ -32,7 +47,10 @@ export const replayStore = {
     if (
       merged.active === state.active &&
       merged.elements === state.elements &&
-      merged.menu === state.menu
+      merged.menu === state.menu &&
+      merged.tab === state.tab &&
+      merged.prefs === state.prefs &&
+      merged.dock === state.dock
     )
       return;
     state = merged;

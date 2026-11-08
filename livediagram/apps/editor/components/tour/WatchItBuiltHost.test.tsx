@@ -1,27 +1,63 @@
 // @vitest-environment jsdom
 
-// Watch It Built's way in (docs/specs/007-editor/watch-it-built.md "Where it appears"): the footer's Start Tour button
-// offers it in Diagram until it is taken; a press (or the Settings rerun) counts the start, marks it taken and mounts
-// the player, never beside another tour, and it never starts on its own.
+// Watch It Built's way in (docs/specs/007-editor/watch-it-built.md "Where it appears", "The start panel"): the footer's
+// Start Tour button offers it in Diagram, Draw and Workshop while the mode has a topic not yet taken; a press (or the
+// Settings rerun for that mode) opens the start panel, a pick counts the start, marks that topic taken and plays it,
+// More Topics comes back to the panel, never beside another tour, and it never starts on its own.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { requestTourRelaunch } from '@/lib/diagram-tour';
+import { requestWatchRelaunch } from '@/lib/watch-relaunch';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import {
   resetTourOffersForTests,
   tourOffer,
 } from '@liveworkspace/workbench/components/tour/tour-offer';
+import type { ReplayEnd } from './WatchItBuiltPlayer';
 import { WatchItBuiltHost } from './WatchItBuiltHost';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
-const player = vi.hoisted(() => ({ onEnded: null as (() => void) | null }));
+vi.mock('@/lib/replay/curriculum', () => {
+  const card = (id: string, mode: string, telemetry: string) => ({
+    id,
+    mode,
+    title: telemetry,
+    line: `${telemetry} line`,
+    telemetry,
+    seconds: 25,
+  });
+  const CURRICULUM = {
+    diagram: [card('diagram-basics', 'diagram', 'Basics'), card('look', 'diagram', 'Look')],
+    draw: [card('sketch', 'draw', 'Sketch')],
+    workshop: [],
+  };
+  const all = [...CURRICULUM.diagram, ...CURRICULUM.draw];
+  return {
+    CURRICULUM,
+    ALL_TOPIC_CARDS: all,
+    topicCard: (id: string) => all.find((c) => c.id === id),
+  };
+});
+type PanelProps = {
+  topics: { id: string; taken: boolean; meta?: string }[];
+  onPick: (id: string) => void;
+  onClose: () => void;
+};
+type PlayerProps = { card: { id: string }; hasMore: boolean; onEnded: (how: ReplayEnd) => void };
+const shown = vi.hoisted(() => ({
+  panel: null as PanelProps | null,
+  player: null as PlayerProps | null,
+}));
 vi.mock('next/dynamic', () => ({
   default: () =>
-    function Player({ onEnded }: { onEnded: () => void }) {
-      player.onEnded = onEnded;
+    function Lazy(props: PanelProps | PlayerProps) {
+      if ('onPick' in props) {
+        shown.panel = props;
+        return <div data-testid="panel" />;
+      }
+      shown.player = props;
       return <div data-testid="player" />;
     },
 }));
@@ -44,12 +80,13 @@ const editor = (over: Record<string, unknown> = {}) => {
     setUserPreferences: vi.fn(),
     writeUserPreferences,
     selfParticipant: { id: 'me' },
+    canvasMainRef: { current: null },
     ...over,
   };
 };
 const probe: { shownTour: string | null } = { shownTour: null };
-const record = (shown: string | null) => {
-  probe.shownTour = shown;
+const record = (tour: string | null) => {
+  probe.shownTour = tour;
 };
 function ActiveProbe({ onRender }: { onRender: typeof record }) {
   onRender(useActiveTour());
@@ -66,9 +103,10 @@ const mount = () =>
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  player.onEnded = null;
+  shown.panel = null;
+  shown.player = null;
   setActiveTour('welcome', false);
-  setActiveTour('draw', false);
+  setActiveTour('avatar', false);
   setStartPanelOpen(false);
   resetTourOffersForTests();
 });
@@ -78,7 +116,14 @@ describe('WatchItBuiltHost', () => {
     editor();
     const r = mount();
     expect(tourOffer()).toMatchObject({ name: 'Diagram', label: 'Watch It Built' });
+    expect(r.queryByTestId('panel')).toBeNull();
     expect(r.queryByTestId('player')).toBeNull();
+  });
+
+  it('offers it in Draw too, by that name', () => {
+    editor({ editorMode: { mode: 'draw' } });
+    mount();
+    expect(tourOffer()).toMatchObject({ name: 'Draw', label: 'Watch It Built' });
   });
 
   it.each([
@@ -87,7 +132,8 @@ describe('WatchItBuiltHost', () => {
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],
     ['welcomed', { anyWelcomeOpen: true }],
-    ['in Draw', { editorMode: { mode: 'draw' } }],
+    ['in a mode with no topics', { editorMode: { mode: 'workshop' } }],
+    ['in a mode it does not teach', { editorMode: { mode: 'slides' } }],
   ])('offers nothing when %s', (_why, over) => {
     editor(over);
     mount();
@@ -101,37 +147,91 @@ describe('WatchItBuiltHost', () => {
     expect(tourOffer()).toBeNull();
   });
 
-  it('on a press counts the start, marks it taken and mounts the player until it ends', () => {
-    editor();
+  it('opens the start panel on a press, with the mode topics and which are taken; Not Now records nothing', () => {
+    editor({ userPreferences: { tourSeen: true } });
     const r = mount();
     act(() => tourOffer()!.start());
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'Tour');
-    expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true }, 'me');
-    expect(r.getByTestId('player')).toBeTruthy();
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'WatchStart');
+    expect(r.getByTestId('panel')).toBeTruthy();
+    expect(shown.panel!.topics).toEqual([
+      expect.objectContaining({ id: 'diagram-basics', taken: true, meta: '25 s' }),
+      expect.objectContaining({ id: 'look', taken: false }),
+    ]);
     expect(probe.shownTour).toBe('welcome');
-    act(() => player.onEnded!());
-    expect(r.queryByTestId('player')).toBeNull();
+    act(() => shown.panel!.onClose());
+    expect(r.queryByTestId('panel')).toBeNull();
+    expect(writeUserPreferences).not.toHaveBeenCalled();
     expect(probe.shownTour).toBeNull();
   });
 
-  it('leaves the button once taken, and its Settings rerun plays it without writing the record again', () => {
-    editor({ userPreferences: { tourSeen: true } });
-    const r = mount();
-    expect(tourOffer()).toBeNull();
-    act(() => requestTourRelaunch());
-    expect(r.getByTestId('player')).toBeTruthy();
-    expect(writeUserPreferences).not.toHaveBeenCalled();
-  });
-
-  it('starts from the Settings rerun when it can, and not beside another tour', () => {
+  it('on a pick counts the start, marks the topic taken and plays it until it ends', () => {
     editor();
     const r = mount();
-    act(() => setActiveTour('draw', true));
-    act(() => tourOffer()?.start());
-    act(() => requestTourRelaunch());
-    expect(r.queryByTestId('player')).toBeNull();
-    act(() => setActiveTour('draw', false));
-    act(() => requestTourRelaunch());
+    act(() => tourOffer()!.start());
+    act(() => shown.panel!.onPick('look'));
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'Tour');
+    expect(track).toHaveBeenCalledWith('UI', 'View', 'WatchTopicLook');
+    expect(writeUserPreferences).toHaveBeenCalledWith({ watchTopics: ['look'] }, 'me');
     expect(r.getByTestId('player')).toBeTruthy();
+    expect(shown.player).toMatchObject({ card: { id: 'look' }, hasMore: true });
+    act(() => shown.player!.onEnded('completed'));
+    expect(r.queryByTestId('player')).toBeNull();
+    expect(r.queryByTestId('panel')).toBeNull();
+    expect(probe.shownTour).toBeNull();
+  });
+
+  it('comes back to the start panel on More Topics', () => {
+    editor();
+    const r = mount();
+    act(() => tourOffer()!.start());
+    act(() => shown.panel!.onPick('diagram-basics'));
+    act(() => shown.player!.onEnded('more'));
+    expect(r.getByTestId('panel')).toBeTruthy();
+    expect(r.queryByTestId('player')).toBeNull();
+  });
+
+  it('plays a taken topic again without writing the record', () => {
+    editor({ userPreferences: { watchTopics: ['look'] } });
+    mount();
+    act(() => tourOffer()!.start());
+    act(() => shown.panel!.onPick('look'));
+    expect(writeUserPreferences).not.toHaveBeenCalled();
+    expect(shown.player).toMatchObject({ card: { id: 'look' } });
+  });
+
+  it('leaves the button once every topic is taken; the Settings rerun for its mode opens the panel', () => {
+    editor({ userPreferences: { tourSeen: true, watchTopics: ['look'] } });
+    const r = mount();
+    expect(tourOffer()).toBeNull();
+    act(() => requestWatchRelaunch('draw'));
+    expect(r.queryByTestId('panel')).toBeNull();
+    act(() => requestWatchRelaunch('diagram'));
+    expect(r.getByTestId('panel')).toBeTruthy();
+  });
+
+  it('opens nothing beside another tour', () => {
+    editor();
+    const r = mount();
+    act(() => setActiveTour('avatar', true));
+    act(() => tourOffer()?.start());
+    act(() => requestWatchRelaunch('diagram'));
+    expect(r.queryByTestId('panel')).toBeNull();
+    act(() => setActiveTour('avatar', false));
+    act(() => requestWatchRelaunch('diagram'));
+    expect(r.getByTestId('panel')).toBeTruthy();
+  });
+
+  it('closes the panel when the mode changes under it', () => {
+    editor();
+    const r = mount();
+    act(() => tourOffer()!.start());
+    editor({ editorMode: { mode: 'draw' } });
+    r.rerender(
+      <>
+        <WatchItBuiltHost />
+        <ActiveProbe onRender={record} />
+      </>,
+    );
+    expect(r.queryByTestId('panel')).toBeNull();
   });
 });

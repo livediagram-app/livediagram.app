@@ -1,5 +1,7 @@
 # Draw tour ("Start Draw Tour")
 
+> **Retired** (owner, 2026-11-08, Work Tracker #58): Draw mode's tour is now [Watch It Built](../007-editor/watch-it-built.md), short replays picked from a start panel. This spec is kept as the record of the stepped tour; its code is gone. The `drawTourSeen` key stays as Settings' row key and telemetry token for the mode's Watch It Built switch.
+
 A short, optional guided tour of [Draw mode](draw-mode.md), started from the footer's **Start Draw Tour** button. It
 is the [Workshop tour](../012-collaboration/workshop-tour.md)'s sibling: the same Start Tour button, anchored step
 cards, glide, dimming ring, Skip, Back and closing card, driven by the same engine. Where this spec is silent, the
@@ -43,7 +45,7 @@ again.
 
 Four steps, then an outro card, which sits outside the step count. There is no welcome card. Three steps ring one
 of the dock's groups by its `data-tour-id` (`dock-drawing`, `dock-shapes`, `dock-settings`, carried by every dock
-group as `dock-<group>`); one rings the [Quick style panel](../008-canvas/quick-style-panel.md) (`quick-style`). The exact strings live in `apps/editor/components/tour/draw-tour-steps.ts`.
+group as `dock-<group>`); one rings the [Quick style panel](../008-canvas/quick-style-panel.md) (`quick-style`). The exact strings lived in the tour's steps file, removed with it.
 
 1. **Pens and Tools**: rings the Drawing tools group. Select, three markers, Text, the Path tool and the Eraser;
    pressing the marker in hand again changes its colour and width.

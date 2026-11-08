@@ -156,8 +156,16 @@ export const TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
   'Tour Steps Viewed',
-  'A step of the Diagram tour shown.',
+  'A chapter of a Watch It Built topic shown, in any mode (a step of the Diagram tour until 8 November 2026).',
   { typeIn: (t) => (t ?? '').startsWith('TourStep') },
+);
+
+export const WATCH_TOPICS_PICKED = chart(
+  'UI',
+  'View',
+  'Watch It Built Topics Picked',
+  "A topic picked on Watch It Built's start panel, by topic (from 8 November 2026).",
+  { typeIn: (t) => (t ?? '').startsWith('WatchTopic') },
 );
 
 export const TOURS_COMPLETED = chart(
@@ -187,6 +195,7 @@ export const WELCOME_TOUR: MetricStack = {
     TOUR_OFFER_DISMISSED,
     TOURS_STARTED,
     TOUR_STEPS_VIEWED,
+    WATCH_TOPICS_PICKED,
     TOURS_COMPLETED,
     TOURS_SKIPPED,
   ],

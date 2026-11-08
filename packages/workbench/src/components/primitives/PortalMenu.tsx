@@ -224,6 +224,8 @@ export function MenuAccordionSection({
         onClick={onToggle}
         onMouseDown={preserveFocus ? (e) => e.preventDefault() : undefined}
         aria-expanded={open}
+        // Names the section for drivers (Watch It Built's replay, e2e) apart from controls inside it with the same words.
+        data-menu-section={title}
         className="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-500 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
       >
         <span className="flex items-center gap-2">

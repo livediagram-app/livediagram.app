@@ -130,26 +130,28 @@ describe('SettingsCategoryPane tours', () => {
 
   it('turns the Workshop tour back on alone, leaving the Diagram tour answered', () => {
     const onChange = vi.fn();
+    const workshopTopics = ['workshop-ask', 'workshop-stickies', 'workshop-reveal', 'workshop-run'];
+    const diagramTopics = ['diagram-look', 'diagram-shape', 'diagram-find', 'diagram-tidy'];
     render(
       <SettingsCategoryPane
         category={TOURS}
-        settings={{ tourSeen: true, workshopTourSeen: true }}
+        settings={{ tourSeen: true, watchTopics: [...diagramTopics, ...workshopTopics] }}
         onChange={onChange}
       />,
     );
-    const workshop = screen.getByRole('switch', { name: 'Workshop Tour' });
+    const workshop = screen.getByRole('switch', { name: 'Watch It Built in Workshop' });
     expect(
       screen.getByRole('switch', { name: 'Watch It Built' }).getAttribute('aria-checked'),
     ).toBe('false');
     expect(workshop.getAttribute('aria-checked')).toBe('false');
-    expect(screen.getByRole('switch', { name: 'Draw Tour' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
+    expect(
+      screen.getByRole('switch', { name: 'Watch It Built in Draw' }).getAttribute('aria-checked'),
+    ).toBe('true');
     // The shared explanation sits once, under the section heading.
     expect(screen.getByRole('heading', { name: 'Offer Again' })).toBeTruthy();
     expect(screen.getAllByText(/Start a tour from the Start Tour button/)).toHaveLength(1);
     fireEvent.click(workshop);
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'WorkshopTourSeenOff');
-    expect(onChange).toHaveBeenCalledWith({ tourSeen: true, workshopTourSeen: false });
+    expect(onChange).toHaveBeenCalledWith({ tourSeen: true, watchTopics: diagramTopics });
   });
 });

@@ -22,7 +22,14 @@ describe('replayStore', () => {
     replayStore.selection.setSelection({ selectedId: 'wib-a', multiSelectedIds: new Set() });
     replayStore.reset();
     expect(isReplayActive()).toBe(false);
-    expect(replayStore.get()).toEqual({ active: false, elements: [], menu: null });
+    expect(replayStore.get()).toEqual({
+      active: false,
+      elements: [],
+      menu: null,
+      tab: null,
+      prefs: null,
+      dock: null,
+    });
     expect(replayStore.selection.get().selectedId).toBeNull();
     expect(heard).toHaveBeenCalledTimes(2);
     replayStore.reset();

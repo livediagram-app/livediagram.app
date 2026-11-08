@@ -92,7 +92,7 @@ afterEach(() => {
   cleanup();
   viewport.phone = false;
   vi.clearAllMocks();
-  setActiveTour('draw', false);
+  setActiveTour('avatar', false);
   setActiveTour('element', false);
   setStartPanelOpen(false);
   resetTourOffersForTests();
@@ -144,7 +144,7 @@ describe('ElementTourHost offer', () => {
   it('starts nothing while another tour is on screen', () => {
     editor();
     mount();
-    act(() => setActiveTour('draw', true));
+    act(() => setActiveTour('avatar', true));
     act(() => store.setSelectedId('sk1'));
     act(() => tourOffer()!.start());
     expect(stage.engine?.active).toBe(false);

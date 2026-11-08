@@ -256,82 +256,86 @@ export function CanvasThemeDialog({
           <div className="min-h-[20rem] overflow-y-auto px-5 pb-4 pt-2">
             {/* The home and its panels swap through an easing height and a short slide: into a panel from the
                 right, back home from the left (AnimatedHeightBox). */}
-            <AnimatedHeightBox viewKey={tab} enter={enter}>
-              {/* Inside a panel: the shared breadcrumb back to the home, the panel named in its chip, as the
+            {/* data-tab-style-view: which view is up, for Watch It Built's Look and Feel to hold one open
+                (components/tour/replay-dom.ts). */}
+            <div data-tab-style-view={tab} className="contents">
+              <AnimatedHeightBox viewKey={tab} enter={enter}>
+                {/* Inside a panel: the shared breadcrumb back to the home, the panel named in its chip, as the
                 import / export panels do (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"). */}
-              {tab !== 'looks' ? (
-                <BackBar
-                  label="Tab Style"
-                  current={PANEL_TITLES[tab]}
-                  onClick={() => go('looks')}
-                />
-              ) : null}
-              {tab === 'looks' ? (
-                <>
-                  <LooksHome
-                    settings={lookSettings}
-                    activeLook={activeLookId(lookSettings)}
-                    onPickLook={onApplyLook}
-                    themeId={themeId}
-                    finish={resolveFinish(finish, undefined)}
-                    font={font}
-                    defaultTextSize={defaultTextSize}
-                    pattern={backgroundPattern}
-                    onOpenPanel={go}
+                {tab !== 'looks' ? (
+                  <BackBar
+                    label="Tab Style"
+                    current={PANEL_TITLES[tab]}
+                    onClick={() => go('looks')}
                   />
-                  {allTabs ? (
-                    <div className="mt-5 empty:hidden">
-                      <ApplyToAllTabsRow {...allTabs} />
-                    </div>
-                  ) : null}
-                </>
-              ) : tab === 'font' ? (
-                <TextTab
-                  font={font}
-                  onSetFont={eased(onSetFont)}
-                  defaultTextSize={defaultTextSize}
-                  onSetDefaultTextSize={eased(onSetDefaultTextSize)}
-                  finish={resolveFinish(finish, undefined)}
-                  canvasBackground={canvasBackground}
-                  themeId={themeId}
-                />
-              ) : tab === 'finish' ? (
-                <FinishTab
-                  finish={finish}
-                  onSetFinish={eased(onSetFinish)}
-                  canvasBackground={canvasBackground}
-                  themeId={themeId}
-                  font={font}
-                />
-              ) : tab === 'canvas' ? (
-                <CanvasStyleControls
-                  backgroundPattern={backgroundPattern}
-                  backgroundColor={backgroundColor}
-                  patternColor={patternColor}
-                  backgroundOpacity={backgroundOpacity}
-                  backgroundPatternScale={backgroundPatternScale}
-                  backgroundAnimationSpeed={backgroundAnimationSpeed}
-                  onSetBackgroundPattern={eased(onSetBackgroundPattern)}
-                  onSetBackgroundColor={onSetBackgroundColor}
-                  onSetPatternColor={onSetPatternColor}
-                  onSetBackgroundOpacity={onSetBackgroundOpacity}
-                  onSetBackgroundPatternScale={onSetBackgroundPatternScale}
-                  onSetBackgroundAnimationSpeed={onSetBackgroundAnimationSpeed}
-                  showAllPatterns
-                  previewTiles
-                />
-              ) : (
-                <ThemeBrowser
-                  themeId={themeId}
-                  onSelect={eased(onSetTheme)}
-                  onCommit={(id) => {
-                    onSetTheme(id);
-                    onClose();
-                  }}
-                  className="mt-4"
-                />
-              )}
-            </AnimatedHeightBox>
+                ) : null}
+                {tab === 'looks' ? (
+                  <>
+                    <LooksHome
+                      settings={lookSettings}
+                      activeLook={activeLookId(lookSettings)}
+                      onPickLook={onApplyLook}
+                      themeId={themeId}
+                      finish={resolveFinish(finish, undefined)}
+                      font={font}
+                      defaultTextSize={defaultTextSize}
+                      pattern={backgroundPattern}
+                      onOpenPanel={go}
+                    />
+                    {allTabs ? (
+                      <div className="mt-5 empty:hidden">
+                        <ApplyToAllTabsRow {...allTabs} />
+                      </div>
+                    ) : null}
+                  </>
+                ) : tab === 'font' ? (
+                  <TextTab
+                    font={font}
+                    onSetFont={eased(onSetFont)}
+                    defaultTextSize={defaultTextSize}
+                    onSetDefaultTextSize={eased(onSetDefaultTextSize)}
+                    finish={resolveFinish(finish, undefined)}
+                    canvasBackground={canvasBackground}
+                    themeId={themeId}
+                  />
+                ) : tab === 'finish' ? (
+                  <FinishTab
+                    finish={finish}
+                    onSetFinish={eased(onSetFinish)}
+                    canvasBackground={canvasBackground}
+                    themeId={themeId}
+                    font={font}
+                  />
+                ) : tab === 'canvas' ? (
+                  <CanvasStyleControls
+                    backgroundPattern={backgroundPattern}
+                    backgroundColor={backgroundColor}
+                    patternColor={patternColor}
+                    backgroundOpacity={backgroundOpacity}
+                    backgroundPatternScale={backgroundPatternScale}
+                    backgroundAnimationSpeed={backgroundAnimationSpeed}
+                    onSetBackgroundPattern={eased(onSetBackgroundPattern)}
+                    onSetBackgroundColor={onSetBackgroundColor}
+                    onSetPatternColor={onSetPatternColor}
+                    onSetBackgroundOpacity={onSetBackgroundOpacity}
+                    onSetBackgroundPatternScale={onSetBackgroundPatternScale}
+                    onSetBackgroundAnimationSpeed={onSetBackgroundAnimationSpeed}
+                    showAllPatterns
+                    previewTiles
+                  />
+                ) : (
+                  <ThemeBrowser
+                    themeId={themeId}
+                    onSelect={eased(onSetTheme)}
+                    onCommit={(id) => {
+                      onSetTheme(id);
+                      onClose();
+                    }}
+                    className="mt-4"
+                  />
+                )}
+              </AnimatedHeightBox>
+            </div>
           </div>
         </div>
       </div>
