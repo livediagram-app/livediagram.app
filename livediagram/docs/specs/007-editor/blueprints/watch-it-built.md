@@ -4,23 +4,31 @@ Derived from [Watch It Built](../watch-it-built.md). The spec decides; this file
 
 ## Files
 
-| File                                                 | Role                                                                                                                                 |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `apps/editor/lib/replay/replay-store.ts`             | The replay's own store: `active`, the demo elements, the element menu it holds open, and its own selection store. No React           |
-| `apps/editor/lib/replay/watch-it-built-script.ts`    | The script, pure: the chapters (`id`, length, words), the demo at any moment (`demoAt`), and where Example is heading (`cursorPlan`) |
-| `apps/editor/app/document/[id]/ReplayScope.tsx`      | While the replay runs, re-provides the editor context to the canvas and the element menu with the demo drawn in (see "The scope")    |
-| `apps/editor/components/tour/WatchItBuiltHost.tsx`   | The offer, the taken record and the Settings rerun; mounts the player on a press. Replaces `TourHost` in `EditorTours`               |
-| `apps/editor/components/tour/WatchItBuiltPlayer.tsx` | Loaded on the press: the clock, applying the script, Example's path, the keys and the ending                                         |
-| `apps/editor/components/tour/ReplayOverlay.tsx`      | The player (with Example's line) and Example, portalled over the shield                                                              |
-| `apps/editor/app/document/[id]/useEditorState.ts`    | The write freeze                                                                                                                     |
-| `apps/editor/lib/telemetry.ts`                       | `pauseTelemetry` / `resumeTelemetry` and `trackDuringPause`                                                                          |
+| File                                                 | Role                                                                                                                                                               |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/editor/lib/replay/curriculum.ts`               | The topic cards: each mode's topics in order, by id, name, line, telemetry token and length. All the editor's first load carries                                   |
+| `apps/editor/lib/watch-topics.ts`                    | The taken record (`watchTopics`, and the older `tourSeen` as The Basics): taken, owed, mark, offer again, a whole mode                                             |
+| `apps/editor/lib/replay/topic.ts`                    | The `Topic` contract: `layout(env)`, a pure `frame(chapter, ms, layout)`, `plan(chapter, layout)` of waypoints, an optional `measure`                              |
+| `apps/editor/lib/replay/topics/*.ts`                 | One file per topic (`diagram-*`, `draw-*`, `workshop-*`), their shared helpers, and `index.ts`, the replays by id                                                  |
+| `apps/editor/lib/replay/replay-store.ts`             | The replay's own store: `active`, the demo elements, the held element menu, the tab look and preferences shown, Draw's dock, and its own selection store. No React |
+| `apps/editor/app/document/[id]/ReplayScope.tsx`      | While the replay runs, re-provides the editor context to the canvas, the element menu and the editor's modals with the demo drawn in (see "The scope")             |
+| `apps/editor/components/tour/WatchItBuiltHost.tsx`   | The offer in Diagram, Draw and Workshop, the start panel, a pick's record, More Topics and the Settings rerun                                                      |
+| `apps/editor/components/tour/WatchStartPanel.tsx`    | The start panel in the player's place; its rows are the workbench's `TourTopics`, shared with liveplanner                                                          |
+| `apps/editor/components/tour/WatchItBuiltPlayer.tsx` | Loaded on a pick: the clock, applying a topic's frames, Example's path, the keys and the ending                                                                    |
+| `apps/editor/components/tour/replay-dom.ts`          | Finding what Example points at, `OPENABLES` (the chrome a frame may hold open, by its own buttons), menu sections, typing                                          |
+| `apps/editor/components/tour/ReplayOverlay.tsx`      | The player (with Example's line) and Example, portalled over the shield                                                                                            |
+| `apps/editor/app/document/[id]/useEditorState.ts`    | The write freeze                                                                                                                                                   |
+| `apps/editor/lib/telemetry.ts`                       | `pauseTelemetry` / `resumeTelemetry` and `trackDuringPause`                                                                                                        |
 
 ## The scope
 
-The replay never writes the document. `ReplayScope` wraps `EditorCanvasHost` and `EditorContextMenuHost` and, while
-`replayStore.active`, provides them a copy of the editor context in which:
+The replay never writes the document. `ReplayScope` wraps `EditorCanvasHost`, `EditorContextMenuHost` and
+`EditorModals` and, while `replayStore.active`, provides them a copy of the editor context in which:
 
-- `activeTab.elements` is the person's elements followed by the demo elements;
+- `activeTab.elements` is the person's elements followed by the demo elements, and the frame's `tab` (a look's theme,
+  finish, font and background; a session's timer or vote) is laid over the tab, so the canvas, the Session strip and
+  the Tab Style dialog all show it;
+- `userPreferences` has the frame's `prefs` laid over it (Draw's board background);
 - `contextMenu` is the replay's (`replayStore.menu`), and `setContextMenu` / `closeContextMenu` write there;
 - the selection is the replay's store (a nested `SelectionStoreProvider`), so the real handles, toolbar and
   quick-connect ring draw on demo ids, and presence never sees them (it subscribes to the real store).
@@ -48,35 +56,41 @@ demo id (`wib-` prefix) at 25% opacity.
 
 ## The clock
 
-One `requestAnimationFrame` loop, running only while playing. Time is `(chapter, ms)`. Each frame: `demoAt(chapter, ms,
-layout)` gives the demo elements, the selection, the held menu, whether the palette's Shapes flyout should be open, and
-how far into the menu Example has gone (`menuDepth`), applied only when they change. The flyout is opened and closed by
-pressing the real category button (`[data-tour-id="palette-category"]`), only when its open state differs; the menu's
-Style flyout and its Presets section the same way, by pressing their own buttons (found by their words inside
-`[data-context-menu]` / `[data-menu-flyout]`) when they are not yet expanded. The pick itself is not pressed: B's green
-comes from the demo, as `applyColorPresetToEl` with the theme's Success preset gives it. Example's position is eased
-between the screen points of `cursorPlan`'s waypoints, resolved each frame from the DOM (a tour target, a demo element's
-rect, the open menu), so it follows a pan or a resize. Each move starts from where Example was last drawn, never
-from its last target looked up again: that target can be gone (the palette closed, the menu shut at the end) or moved
-(the Presets accordion pushing its rows down), and easing from it made the cursor jump at chapter changes. A carry out
-of the palette is the exception: Example is the carried shape's centre, pressed, worked out from the frame (the DOM is
-a frame behind as the carry starts), and only when the tile was seen; without it the shape just drops into place.
+One `requestAnimationFrame` loop, running only while playing. Time is `(chapter, ms)`. Each frame the player:
 
-Seek (a chapter press, Back, reduced motion's Next) just sets `(chapter, 0)`: `demoAt` is a pure function of time,
-so there is nothing to replay.
+1. lets the topic `measure` the screen if it needs to (where a palette or search tile is, read again until its carry
+   starts, since a flyout can still be settling as it opens);
+2. applies `topic.frame(chapter, ms, layout)`: the demo elements, the selection, the held menu, the tab look,
+   preferences and dock shown, all only when their JSON signature changes; a new look eases in through
+   `easeNextStyleChange`, as a pick in the dialog does;
+3. holds open what the frame's `open` names and closes the rest it opened, newest first (`syncOpen`): a panel inside a
+   dialog closes before the dialog, or its Back would reopen the dialog's home;
+4. opens the element menu as far as the frame's `menu.path`, pressing only section rows (`data-menu-section`, set by the
+   workbench's `MenuFlyoutSection` and `MenuAccordionSection`) that are not yet expanded, so a control inside a
+   section with the same words (Colours' "Border") is never pressed;
+5. types the frame's `typed` text into its field through the input's own setter;
+6. moves Example.
+
+A press that would change the tab (a look card, a menu tile, Auto Layout) is never made: only its ring shows, and the
+frame draws its result, built with the editor's own functions (`withLookApplied`, `applyColorPresetToEl`,
+`cleanupElements`, Draw's `recogniseBoardStroke`, Workshop's `buildDrawnBoxed`), so what it shows is what the press
+gives.
+
+Example's position is eased between the screen points of the plan's waypoints, resolved each frame from the DOM (a tour
+target, a demo element's rect, a control found by its words or accessible name), so it follows a pan or a resize. Each
+move starts from where Example was last drawn, never from its last target looked up again: that target can be gone or
+moved, and easing from it made the cursor jump. While a frame `hold`s a canvas point (a carry, a pen stroke) Example is
+there, holding.
+
+Seek (a chapter press, reduced motion's Next) just sets `(chapter, 0)`: a frame is a pure function of time.
 
 ## Layout
 
-At start the demo's anchor is the viewport's centre in canvas coordinates (`computeViewportCenter`, which zoom does not
-enter: the canvas scales about the view's centre). Shape A (200 x 56) sits 250 px above it, shape B (200 x 64) 50 px
-above it, far enough apart that B's selection toolbar clears A and high enough that the element menu, opened level with
-A, ends above the player; colours come from `deriveNewBoxedColours` for the tab, so the demo wears the tab's theme until
-the Style chapter gives B the Success preset.
-
-A carried shape starts on the palette's first tile, so the player maps the screen onto the canvas from A's rect while
-A waits unseen where it lands: its width gives the zoom, its corner the origin. That reading is taken again on every
-frame until the first carry, and the tile's canvas point with it, because A's first frames are still in their
-entrance (scaled, 227 x 64 for 200 x 56); a single early reading put the tile hundreds of pixels off the screen.
+A topic lays its demo out round the view's centre in canvas coordinates (`computeViewportCenter`, which zoom does not
+enter: the canvas scales about the view's centre), given the view's size in canvas units so a phone gets a smaller or
+stacked demo. Demo content stays above the player. Screen and canvas map through the view: a canvas point sits
+`(point - centre) * zoom` from the canvas box's middle. While the Tab Style dialog is open (it flies up at the bottom
+right, or is a phone's sheet) a frame asks for `player: 'top'`.
 
 ## Telemetry
 
@@ -102,11 +116,15 @@ reader hears each chapter's words. Reduced motion steps chapter end states inste
 
 ## Testing
 
-- `watch-it-built-script.test.ts`: every chapter's frames at their beats, the carry, the loose arrow, the typing, the
-  menu depth and the green pick; waypoints inside their chapters.
-- `replay-store.test.ts`: the store, its reset, and the freeze dropping all four writers only while active.
-- `telemetry-pause.test.ts`: the pause, the lift round the replay's own events, and the pause surviving a throw.
-- `ReplayScope.test.tsx`: the editor untouched outside a run; the demo, menu and selection inside one.
-- `WatchItBuiltHost.test.tsx`: the offer's gates, the press, the taken record, the rerun, one tour at a time.
-- `WatchItBuiltPlayer.test.tsx`: start on mount, every ending (Your Turn, Escape, a tab change, unmount), seeking, the
-  keys, the clock running through, and reduced motion's Next and Done.
+- `topics/topics.test.ts`: every topic against its card (length, mode), chapter and telemetry ids unique across the
+  curriculum, touch words, no em dashes, frames pure and opening only known chrome on a desktop and a phone, waypoints
+  inside their chapters. Each topic has its own test of its beats.
+- `replay-dom.test.ts`, `replay-dom-openables.test.ts`: finding by words and accessible names, section rows only,
+  closing newest first, typing.
+- `watch-topics.test.ts`: the taken record and its legacy mapping.
+- `replay-store.test.ts`, `telemetry-pause.test.ts`, `ReplayScope.test.tsx`: the store, the freeze, the pause, the
+  scope.
+- `WatchItBuiltHost.test.tsx`: the offer's gates per mode, the start panel, a pick's record, More Topics, the rerun, one
+  tour at a time.
+- `WatchStartPanel.test.tsx`, workbench `TourTopics.test.tsx`: the panel and its rows.
+- `WatchItBuiltPlayer.test.tsx`: start on mount, every ending, seeking, the keys, the carry held, and no jumps.

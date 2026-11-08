@@ -35,7 +35,7 @@ export const CHAPTERS: readonly Chapter[] = [
   },
 ];
 
-export const OPEN = { press: 1400 } as const;
+export const OPEN = { press: 2100 } as const;
 export const PICK = { first: 1600, second: 4800 } as const;
 export const CANVAS = { open: 1500, pick: 4000 } as const;
 

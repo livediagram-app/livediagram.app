@@ -65,18 +65,18 @@ player's look:
 
 ## The curriculum
 
-Each topic is a short replay (20 to 35 s) of two to four chapters, on its mode's canvas, built round the middle of the
+Each topic is a short replay (10 to 35 s) of two to four chapters, on its mode's canvas, built round the middle of the
 view. Lines name clicks on a computer and taps on a touch screen.
 
 ### Diagram
 
-| Topic             | Line on the start panel                          | Chapters: what Example does with the real chrome                                                                                                                                                        |
-| ----------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **The Basics**    | Add shapes, join them, name them and colour one. | Add, Connect, Label, Style, as [The replay](#the-replay) below                                                                                                                                          |
-| **Look and Feel** | Give the whole canvas a new look and background. | **Open Style**: presses the footer's Style; the real Theme & canvas dialog opens. **Pick a Look**: presses two looks in turn; the canvas and demo restyle live. **Canvas**: opens Canvas and picks Grid |
-| **Style a Shape** | Colours, border, shadow and font for one shape.  | **Colours**: right-click, Style, Colours, a fill. **Border**: Border, a thicker dashed edge. **Shadow**: Shadow, a soft preset. **Font**: Text, Font, a hand-drawn face                                 |
-| **Find Anything** | Search for any shape or icon and drop it in.     | **Search**: presses Search on the strip and types "database". **Drop**: presses the first result; it lands on the canvas. **Again**: searches "user" and drops an icon beside it                        |
-| **Tidy Up**       | Lay a messy flow out neatly in one press.        | **The Mess**: five joined shapes scattered at odd angles. **Tidy Up**: presses Tidy Up; the shapes glide into a clean top-to-bottom flow                                                                |
+| Topic             | Line on the start panel                            | Chapters: what Example does with the real chrome                                                                                                                                                                                                                                                                                                                                                        |
+| ----------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **The Basics**    | Add shapes, join them, name them and colour one.   | Add, Connect, Label, Style, as [The replay](#the-replay) below                                                                                                                                                                                                                                                                                                                                          |
+| **Look and Feel** | Give the whole tab a new look and background.      | **Open Style**: presses the footer's Style; the real Tab Style dialog opens and the player moves to the top. **Pick a Look**: presses two looks on its first page in turn (Spectrum, then Whiteboard, or the next ones when the tab already wears one); the canvas, the demo and the dialog restyle as a press would. **Canvas**: opens Fine-tune's Canvas and picks a new background (Graph, or Lines) |
+| **Style a Shape** | Border, shadow and font for one shape.             | **Border**: right-clicks the shape, opens Style, then Border, and picks Thick, then Dashed. **Shadow**: opens Shadow and picks Lifted. **Font**: opens Text, then Font, and picks Caveat (handwriting); the menu closes. (Colours are The Basics' Style chapter)                                                                                                                                        |
+| **Find Anything** | Search every shape by name or use, and drop it in. | **Search**: presses Search on the strip and types "database". **Drop**: drags the Database result onto the canvas (a cylinder). **Again**: searches "decision" and drags the Decision result (a diamond) beside it                                                                                                                                                                                      |
+| **Tidy Up**       | Lay a messy flow out neatly in one press.          | **The Mess**: five joined steps land one by one, each a little off. **Tidy Up**: opens the footer's Tidy Up and picks Auto Layout; the shapes glide to exactly where that press puts them (lib/tab-cleanup.ts)                                                                                                                                                                                          |
 
 ### Draw
 
@@ -153,7 +153,7 @@ The replay is the same for every topic; The Basics is described here as the exam
 The replay never changes the document:
 
 - **A look shown is not applied.** Look and Feel and Erase and Board show a theme or a board background on the canvas
-  (and in the Theme & canvas dialog while it is open) from the replay, not the tab or the person's settings; the tab and
+  (and in the Tab Style dialog while it is open) from the replay, not the tab or the person's settings; the tab and
   the person's Draw background are exactly as they were when it ends.
 - **A session shown is not started.** Run the Room shows a running timer and a dot vote on the canvas and the Session
   strip from the replay, not the tab: nothing starts for the room, and the tab's own timer and vote are as they were.
@@ -165,6 +165,10 @@ The replay never changes the document:
   guard for an editor component that commits on its own, such as a label on blur).
 - **Collaborators carry on.** Their edits arrive and draw as usual under the faded layer, and are there when the
   replay ends. They never see Example.
+- **Chrome it opens is closed again.** Example opens the editor's own panels by their own buttons (the palette, the Tab
+  Style dialog, Search, Tidy Up, a dock flyout, a menu section) and closes each as the replay moves on or ends, the
+  last opened first. A press that would change the tab (a look, a tile, Auto Layout) is never made: only its ring
+  shows, and the replay draws what that press would give.
 - **Nothing it presses is counted** as the person's use of a feature in telemetry.
 
 ## Motion

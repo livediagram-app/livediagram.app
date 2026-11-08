@@ -353,7 +353,9 @@ function menuBeside(id: string) {
   };
 }
 
-type Leg = { key: string; from: Point };
+// `start` is when the move began: a move that follows a hold (a carry, a pen stroke) starts from the release, not
+// from its waypoint's time, or Example would leap to catch up.
+type Leg = { key: string; from: Point; start: number };
 
 const easeInOut = (p: number) => (p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2);
 
@@ -370,7 +372,7 @@ function cursorAt(
 ): ReplayCursor {
   if (frame.hold) {
     const held = toScreen(frame.hold);
-    legRef.current = { key: 'held', from: held };
+    legRef.current = { key: 'held', from: held, start: ms };
     return { ...held, pressing: false, holding: true };
   }
   const nextAt = plan.findIndex((w) => w.at > ms);
@@ -381,13 +383,14 @@ function cursorAt(
     legRef.current = {
       key,
       from: last ?? (prev ? resolveTarget(prev.to, toScreen) : null) ?? fallbackPoint(),
+      start: ms,
     };
   }
   const from = legRef.current.from;
   const pressing = !!prev?.press && ms - prev.at < PRESS_MS;
   if (!next) return { ...from, pressing };
   const to = resolveTarget(next.to, toScreen) ?? from;
-  const leave = prev ? prev.at + 180 : 0;
+  const leave = Math.max(prev ? prev.at + 180 : 0, legRef.current.start);
   const p = ms <= leave ? 0 : easeInOut(Math.min(1, (ms - leave) / Math.max(1, next.at - leave)));
   return { x: from.x + (to.x - from.x) * p, y: from.y + (to.y - from.y) * p, pressing };
 }
