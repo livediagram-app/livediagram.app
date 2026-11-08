@@ -2,10 +2,10 @@
 
 import { useRef, useState, type ReactNode } from 'react';
 import { Button, Chip, ConfirmPopover, Tooltip, TrashIcon } from '@liveworkspace/ui';
-import { AccordionSection } from '../../AccordionSection';
-import type { App, Webhook, WebhookDelivery, WebhookKind } from '@liveworkspace/index-client';
-import { BUTTON, ErrorNote } from '../account-ui';
-import { useAccountPanelsHost } from '../host';
+import { AccordionSection } from '../AccordionSection';
+import type { Webhook, WebhookDelivery, WebhookKind } from '@liveworkspace/index-client';
+import { BUTTON, ErrorNote } from '../account-panels/account-ui';
+import { useDocumentWebhooks } from './host';
 import { Deliveries } from './Deliveries';
 import {
   DeliveredGlyph,
@@ -28,10 +28,10 @@ import {
   type WebhookTone,
 } from './webhooks-api';
 
-// One webhook (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks): its destination's mark, its name and
-// state, whose items it reports on and where it posts (the host alone; the URL never comes back), its last delivery,
-// Send Test with the test's result read back, Pause or Resume, Delete (asked in a popover), the events it sends app by
-// app (WebhookEvents, with Edit Events), and its Recent Deliveries, read when that section is first opened.
+// One of the document's webhooks (liveworkspace/docs/specs/004-index/webhooks.md "Managing them"): its destination's
+// mark, its name and state, who added it and where it posts (the host alone; the URL never comes back), its last
+// delivery, Send Test with the test's result read back, Pause or Resume, Delete (asked in a popover), the events it
+// sends and whose (WebhookEvents, with Edit Events), and its Recent Deliveries, read when that section is first opened.
 
 const BADGES: Record<WebhookTone, { chip: string; dot: string }> = {
   live: {
@@ -124,18 +124,12 @@ function TestNote({ kind, result }: { kind: WebhookKind; result: TestResult }) {
 
 export function WebhookRow({
   webhook,
-  apps,
-  scopeName,
   fresh = false,
   now,
   onChanged,
   onDeleted,
 }: {
   webhook: Webhook;
-  // The apps the card covers: this app's on This App, every app's on All.
-  apps: readonly App[];
-  // "Your own items", or the team's.
-  scopeName: string;
   // Just added: a line inviting a test.
   fresh?: boolean;
   // The moment the list was read, so every row's "2 hours ago" agrees.
@@ -143,7 +137,7 @@ export function WebhookRow({
   onChanged: (webhook: Webhook) => void;
   onDeleted: () => Promise<void>;
 }) {
-  const { index } = useAccountPanelsHost();
+  const { api } = useDocumentWebhooks();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
@@ -168,7 +162,7 @@ export function WebhookRow({
 
   const setPaused = (next: boolean) =>
     run(
-      () => index.updateWebhook(webhook.id, { paused: next }),
+      () => api.update(webhook.id, { paused: next }),
       (data) => {
         test.clear();
         onChanged(data.webhook);
@@ -180,7 +174,7 @@ export function WebhookRow({
     setOpen(next);
     if (next)
       void run(
-        () => index.webhookDeliveries(webhook.id),
+        () => api.deliveries(webhook.id),
         (data) => setDeliveries(data.deliveries),
       );
   };
@@ -200,7 +194,7 @@ export function WebhookRow({
 
   return (
     <li data-webhook={webhook.id} className="border-t border-slate-100 dark:border-slate-700/70">
-      <div className="flex flex-col gap-3 px-4 py-4 sm:px-5">
+      <div className="flex flex-col gap-3 px-5 py-4 sm:px-6">
         <div className="flex flex-wrap items-start gap-x-3 gap-y-3">
           <KindMark kind={webhook.kind} />
           <div className="min-w-0 flex-1 basis-52">
@@ -219,7 +213,7 @@ export function WebhookRow({
               </Chip>
             </div>
             <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
-              {kind.label} · {scopeName}
+              {kind.label} · {webhook.mine ? 'Added by you' : 'Added by another editor'}
             </p>
             <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs">
               {/* The host whole, never split at a hyphen: a long one ends in an ellipsis. */}
@@ -294,7 +288,7 @@ export function WebhookRow({
         ) : null}
         {error ? <ErrorNote>{webhookError(error, webhook.kind)}</ErrorNote> : null}
 
-        <WebhookEvents webhook={webhook} apps={apps} onChanged={onChanged} />
+        <WebhookEvents webhook={webhook} onChanged={onChanged} />
 
         <div className="-mb-2 border-t border-slate-100 pt-1 dark:border-slate-700/70">
           <AccordionSection title="Recent Deliveries" open={open} onToggle={toggleDeliveries}>
@@ -310,7 +304,7 @@ export function WebhookRow({
           onConfirm={() => {
             setConfirming(null);
             void run(
-              () => index.deleteWebhook(webhook.id),
+              () => api.remove(webhook.id),
               () => void onDeleted(),
             );
           }}

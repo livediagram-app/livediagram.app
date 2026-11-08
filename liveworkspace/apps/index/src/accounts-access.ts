@@ -1,7 +1,6 @@
 // Who is in and who runs a team, and what people are called, as accounts says now (`POST /api/account/index/teams`
-// and `/people`, with the key the two share). Team webhooks ask whether the person is an admin of the team at that
-// moment, and a mention whether the mentioned person is one of the item's team's people
-// (liveworkspace/docs/specs/004-index/webhooks.md "Who adds one", "Security"); the team audit log asks who runs the
+// and `/people`, with the key the two share). A team document's webhook asks whether its creator is still one of the
+// team's people (liveworkspace/docs/specs/004-index/webhooks.md "Security"); the team audit log asks who runs the
 // team and names its people (team-audit-log.md "Who reads it"). A token's `teams` claim can be an hour old, so it is
 // never trusted for this.
 

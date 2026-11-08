@@ -814,7 +814,8 @@ A scope is one row, keyed by owner and scope, holding a JSON object of setting n
 
 A setting two or more apps have is one setting, kept in `all`: `COMMON_SETTING_KEYS` in
 `@liveworkspace/settings`, part of `ALL_SETTING_KEYS`. Changing it in any app, or in the Settings panel's All
-view, where it shows once in its merged category ([site.md](../010-site/site.md#settings)), changes it in every app that has it. That is the
+view, where it shows once in its merged category ([site.md](../010-site/site.md#settings)), changes it in every app that has it. That is
+Automatically Open Explorer (`autoOpenExplorer`, [one-explorer.md](../004-index/one-explorer.md#opening-on-the-explorer)), the
 Home banner (`homeBanner`), the Collaborate, Quick Style, Layers and Map panels (`collaboratePanelEnabled`,
 `quickStylePanelEnabled`, `layersPanelEnabled`, `layersShowPreview`, `layersShowCount`, `layerHoverPreview`,
 `showMinimap`, `mapSize`, `mapDimOutside`), the canvas's `alignmentGuides`, `autoRebindArrows`,

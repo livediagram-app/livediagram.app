@@ -161,6 +161,7 @@ export const cardMoveKeyOf = (move: CardMove): string =>
     card: move.card.slice(0, CARD_TEXT_MAX),
     from: move.from.slice(0, CARD_TEXT_MAX),
     to: move.to.slice(0, CARD_TEXT_MAX),
+    ...(move.actorId ? { actorId: move.actorId.slice(0, CARD_TEXT_MAX) } : {}),
     ...(move.actorName ? { actorName: move.actorName.slice(0, CARD_TEXT_MAX) } : {}),
     at: move.at,
   } satisfies CardMove);
@@ -184,6 +185,7 @@ export function cardMoveOf(key: string): CardMove | null {
       card: m.card,
       from: m.from,
       to: m.to,
+      ...(typeof m.actorId === 'string' ? { actorId: m.actorId } : {}),
       ...(typeof m.actorName === 'string' ? { actorName: m.actorName } : {}),
       at: m.at,
     };

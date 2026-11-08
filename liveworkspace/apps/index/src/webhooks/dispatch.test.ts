@@ -1,6 +1,6 @@
 // Sending (webhooks.md "Delivery", "Security"): the dispatcher's alarm sends what is due, signed, in order per webhook,
-// retries with backoff, gives up, pauses a webhook whose creator no longer runs its team or that keeps failing, and
-// never sends to a private address or follows a redirect.
+// retries with backoff, gives up, pauses a webhook whose creator can no longer edit its document or that keeps
+// failing, and never sends to a private address or follows a redirect.
 import {
   WEBHOOK_DELIVERY_HEADER,
   WEBHOOK_EVENT_HEADER,
@@ -53,10 +53,8 @@ const deps = (over: Partial<DispatchDeps> = {}): DispatchDeps => ({
     return answer(s);
   }) as typeof fetch,
   resolve: async (host) => world.dns[host] ?? ['93.184.216.34'],
-  adminTeams: async (personId) =>
-    world.accountsDown
-      ? null
-      : new Set((world.roles[personId] ?? []).filter((t) => t.role === 'admin').map((t) => t.id)),
+  personTeams: async (personId) =>
+    world.accountsDown ? null : new Set((world.roles[personId] ?? []).map((t) => t.id)),
   ...over,
 });
 
@@ -70,16 +68,21 @@ const run = (over: Partial<DispatchDeps> = {}) => {
 };
 const states = () => deliveries().map((d) => `${d.type}:${d.state}:${d.attempts}`);
 
+// A person, a plan of theirs with a webhook, and `bump`, which renames the plan: one `renamed` event a call.
 async function personWithHook(id: string, input: Record<string, unknown> = {}) {
   const ada = await person(id);
-  const hook = await addWebhook(ada.auth, { events: ['created', 'renamed'], ...input });
-  return { ada, ...hook };
+  const item = await makeItem(ada.auth, { title: 'Start' });
+  const hook = await addWebhook(ada.auth, item.id, { events: ['renamed', 'shared'], ...input });
+  let n = 0;
+  const bump = (title = `t${++n}`) =>
+    call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title } });
+  return { ada, item, bump, ...hook };
 }
 
 describe('a delivery', () => {
   it('is a signed JSON POST to the endpoint, never following a redirect', async () => {
-    const { ada, secret, webhook } = await personWithHook('user_wd1');
-    const item = await makeItem(ada.auth, { title: 'Roadmap' });
+    const { item, bump, secret, webhook } = await personWithHook('user_wd1');
+    await bump('Roadmap');
     const result = await run();
     expect(result).toEqual({ delivered: 1, failed: 0, retrying: 0, nextAt: null });
     expect(sent).toHaveLength(1);
@@ -88,7 +91,7 @@ describe('a delivery', () => {
     expect(s.init.method).toBe('POST');
     expect(s.init.redirect).toBe('manual');
     expect(s.headers.get('Content-Type')).toBe('application/json');
-    expect(s.headers.get(WEBHOOK_EVENT_HEADER)).toBe('created');
+    expect(s.headers.get(WEBHOOK_EVENT_HEADER)).toBe('renamed');
     const delivery = s.headers.get(WEBHOOK_DELIVERY_HEADER)!;
     const timestamp = s.headers.get(WEBHOOK_TIMESTAMP_HEADER)!;
     expect(Number(timestamp)).toBe(Math.floor(clock / 1000));
@@ -97,7 +100,7 @@ describe('a delivery', () => {
     const payload = JSON.parse(s.body);
     expect(payload).toMatchObject({
       id: delivery,
-      type: 'created',
+      type: 'renamed',
       app: 'liveplanner',
       item: { id: item.id, title: 'Roadmap', url: `https://liveplanner.app/project/${item.id}` },
       actor: { id: 'user_wd1' },
@@ -113,12 +116,12 @@ describe('a delivery', () => {
 
   it('sends Slack its message, unsigned, and opens a card at the card', async () => {
     const ada = await person('user_wd2');
-    await addWebhook(ada.auth, {
+    const plan = await makeItem(ada.auth, { title: 'Sprint' });
+    await addWebhook(ada.auth, plan.id, {
       kind: 'slack',
       url: 'https://hooks.slack.com/services/T/B/x',
       events: ['card_moved'],
     });
-    const plan = await makeItem(ada.auth, { title: 'Sprint' });
     await call(`/app/items/${plan.id}/card-moves`, {
       method: 'PUT',
       auth: 'lp-key',
@@ -147,8 +150,8 @@ describe('a delivery', () => {
   });
 
   it('links nothing for an app with no origin set', async () => {
-    const { ada } = await personWithHook('user_wd3');
-    await makeItem(ada.auth);
+    const { bump } = await personWithHook('user_wd3');
+    await bump();
     sync();
     await dispatch({ ...h.db.env, APP_ORIGIN_LIVEPLANNER: undefined }, deps());
     expect(JSON.parse(sent[0]!.body).item.url).toBeNull();
@@ -157,9 +160,9 @@ describe('a delivery', () => {
 
 describe('retries', () => {
   it('tries again after each delay, the later ones waiting behind, then gives up', async () => {
-    const { ada, webhook } = await personWithHook('user_wr1');
-    const item = await makeItem(ada.auth, { title: 'A' });
-    await call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'B' } });
+    const { bump, webhook } = await personWithHook('user_wr1');
+    await bump('A');
+    await bump('B');
     answer = () => new Response('busy', { status: 503 });
     let result = await run();
     // The first failed; the second waits behind it, unsent.
@@ -169,7 +172,7 @@ describe('retries', () => {
       retrying: 2,
       nextAt: clock + RETRY_DELAYS_MS[0]!,
     });
-    expect(states()).toEqual(['created:pending:1', 'renamed:pending:0']);
+    expect(states()).toEqual(['renamed:pending:1', 'renamed:pending:0']);
     expect(deliveries()[0]).toMatchObject({ status: 503, next_at: clock + RETRY_DELAYS_MS[0]! });
     expect(deliveries()[1]!.next_at).toBe(clock + RETRY_DELAYS_MS[0]!);
     // Nothing is due before then.
@@ -181,14 +184,14 @@ describe('retries', () => {
       await run();
     }
     // Seven tries, then given up; the next one goes on (and fails its first try in the same run).
-    expect(states()).toEqual(['created:failed:7', 'renamed:pending:1']);
+    expect(states()).toEqual(['renamed:failed:7', 'renamed:pending:1']);
     expect(h.db.sql.prepare('SELECT failures FROM webhooks WHERE id = ?').get(webhook.id)).toEqual({
       failures: 1,
     });
     answer = () => new Response(null, { status: 204 });
     clock += RETRY_DELAYS_MS.at(-1)!;
     await run();
-    expect(states()).toEqual(['created:failed:7', 'renamed:delivered:2']);
+    expect(states()).toEqual(['renamed:failed:7', 'renamed:delivered:2']);
     expect(h.db.sql.prepare('SELECT failures FROM webhooks WHERE id = ?').get(webhook.id)).toEqual({
       failures: 0,
     });
@@ -202,8 +205,8 @@ describe('retries', () => {
     [404, 'final'],
     [301, 'final'],
   ])('reads %i as %s', async (status, kind) => {
-    const { ada } = await personWithHook(`user_ws${status}`);
-    await makeItem(ada.auth);
+    const { bump } = await personWithHook(`user_ws${status}`);
+    await bump();
     answer = () => new Response(null, { status });
     await run();
     expect(deliveries()[0]!.state).toBe(kind === 'retry' ? 'pending' : 'failed');
@@ -212,8 +215,8 @@ describe('retries', () => {
   });
 
   it('retries a timeout or a network failure, saying which', async () => {
-    const { ada } = await personWithHook('user_wr2');
-    await makeItem(ada.auth);
+    const { bump } = await personWithHook('user_wr2');
+    await bump();
     answer = () => {
       throw Object.assign(new Error('slow'), { name: 'TimeoutError' });
     };
@@ -228,13 +231,13 @@ describe('retries', () => {
   });
 
   it('pauses on 410 Gone, giving up what waited', async () => {
-    const { ada, webhook } = await personWithHook('user_wr3');
-    const item = await makeItem(ada.auth);
-    await call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'B' } });
+    const { bump, webhook } = await personWithHook('user_wr3');
+    await bump('A');
+    await bump('B');
     answer = () => new Response(null, { status: 410 });
     await run();
     expect(sent).toHaveLength(1);
-    expect(states()).toEqual(['created:failed:1', 'renamed:failed:0']);
+    expect(states()).toEqual(['renamed:failed:1', 'renamed:failed:0']);
     expect(
       h.db.sql.prepare('SELECT paused_reason FROM webhooks WHERE id = ?').get(webhook.id),
     ).toEqual({
@@ -243,10 +246,10 @@ describe('retries', () => {
   });
 
   it('pauses after 20 given up in a row', async () => {
-    const { ada, webhook } = await personWithHook('user_wr4', {
+    const { bump, webhook } = await personWithHook('user_wr4', {
       url: 'https://refuses.example.com/x',
     });
-    for (let i = 0; i < 20; i++) await makeItem(ada.auth);
+    for (let i = 0; i < 20; i++) await bump();
     answer = () => new Response(null, { status: 403 });
     await run();
     expect(
@@ -260,42 +263,48 @@ describe('retries', () => {
 
 describe('what is checked before sending', () => {
   it('never sends to a host that now resolves to a private address, and waits out one that resolves to nothing', async () => {
-    const { ada } = await personWithHook('user_wx1');
-    await makeItem(ada.auth);
+    const { bump } = await personWithHook('user_wx1');
+    await bump();
     world.dns['hooks.example.com'] = ['127.0.0.1'];
     await run();
     expect(sent).toEqual([]);
     expect(deliveries()[0]).toMatchObject({ state: 'failed', error: 'private_address' });
-    const { ada: bo } = await personWithHook('user_wx2', { url: 'https://flaky.example.com/x' });
-    await makeItem(bo.auth);
+    const bo = await personWithHook('user_wx2', { url: 'https://flaky.example.com/x' });
+    await bo.bump();
     world.dns['flaky.example.com'] = [];
     await run();
     expect(deliveries()[1]).toMatchObject({ state: 'pending', error: 'dns', attempts: 1 });
   });
 
   it("gives up what it can't open: a URL sealed under another key", async () => {
-    const { ada } = await personWithHook('user_wx3');
-    await makeItem(ada.auth);
+    const { bump } = await personWithHook('user_wx3');
+    await bump();
     h.db.sql.prepare("UPDATE webhooks SET url_sealed = 'v1.AAAA.BBBB'").run();
     await run();
     expect(deliveries()[0]).toMatchObject({ state: 'failed', error: 'unreadable' });
   });
 
-  it("pauses a team's webhook once its creator no longer runs the team, and holds it while accounts can't say", async () => {
+  it("pauses a team document's webhook once its creator leaves the team, and holds it while accounts can't say", async () => {
+    // The token's claim lets the add in; the dispatcher asks accounts each time.
     const bo = await person('user_wx4', { teams: [{ id: 'teamX' }] });
-    world.roles.user_wx4 = [{ id: 'teamX', role: 'admin' }];
-    const { webhook } = await addWebhook(bo.auth, { teamId: 'teamX', events: ['created'] });
-    await makeItem(bo.auth, { teamId: 'teamX' });
+    world.roles.user_wx4 = [{ id: 'teamX', role: 'member' }];
+    const item = await makeItem(bo.auth, { teamId: 'teamX' });
+    const { webhook } = await addWebhook(bo.auth, item.id, { events: ['renamed'] });
+    await call(`/items/${item.id}`, { method: 'PATCH', auth: bo.auth, body: { title: 'One' } });
     world.accountsDown = true;
     expect(await run()).toMatchObject({ retrying: 1, delivered: 0 });
     expect(sent).toEqual([]);
-    expect(states()).toEqual(['created:pending:0']);
+    expect(states()).toEqual(['renamed:pending:0']);
     world.accountsDown = false;
-    world.roles.user_wx4 = [{ id: 'teamX', role: 'member' }];
     clock += 60_000;
+    // Still a member: it sends.
+    expect(await run()).toMatchObject({ delivered: 1 });
+    await call(`/items/${item.id}`, { method: 'PATCH', auth: bo.auth, body: { title: 'Two' } });
+    world.roles.user_wx4 = [];
+    sent = [];
     await run();
     expect(sent).toEqual([]);
-    expect(deliveries()[0]).toMatchObject({ state: 'failed', error: 'paused' });
+    expect(deliveries()[1]).toMatchObject({ state: 'failed', error: 'paused' });
     expect(
       h.db.sql.prepare('SELECT paused_reason FROM webhooks WHERE id = ?').get(webhook.id),
     ).toEqual({
@@ -303,9 +312,54 @@ describe('what is checked before sending', () => {
     });
   });
 
+  it("sends for an owner's personal document without asking accounts", async () => {
+    const { bump } = await personWithHook('user_wx6');
+    await bump();
+    world.accountsDown = true;
+    expect(await run()).toMatchObject({ delivered: 1 });
+  });
+
+  it.each([
+    ['revoked', `DELETE FROM share_links`],
+    ['lowered to Viewer', `UPDATE share_links SET level = 'view'`],
+    ['narrowed to one tab', `UPDATE share_links SET tab_id = 'tab-1'`],
+    ['expired', `UPDATE share_links SET expires_at = 1`],
+  ])(
+    'sends while an Editor link to every tab is held, and pauses once it is %s',
+    async (_how, change) => {
+      const ada = await person('user_wx7');
+      const item = await makeItem(ada.auth);
+      const link = await call(`/items/${item.id}/share`, {
+        method: 'POST',
+        auth: ada.auth,
+        body: { level: 'edit' },
+      });
+      const { link: made } = (await link.json()) as { link: { code: string } };
+      const ed = await person('user_wx8');
+      const { webhook } = await addWebhook(
+        ed.auth,
+        item.id,
+        { events: ['renamed'] },
+        { 'X-Share-Code': made.code },
+      );
+      const rename = (title: string) =>
+        call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title } });
+      await rename('One');
+      expect(await run()).toMatchObject({ delivered: 1 });
+      h.db.sql.prepare(change).run();
+      await rename('Two');
+      sent = [];
+      await run();
+      expect(sent).toEqual([]);
+      expect(
+        h.db.sql.prepare('SELECT paused_reason FROM webhooks WHERE id = ?').get(webhook.id),
+      ).toEqual({ paused_reason: 'creator_left' });
+    },
+  );
+
   it('sends nothing without WEBHOOK_KEY', async () => {
-    const { ada } = await personWithHook('user_wx5');
-    await makeItem(ada.auth);
+    const { bump } = await personWithHook('user_wx5');
+    await bump();
     expect(await dispatch({ ...h.db.env, WEBHOOK_KEY: undefined }, deps())).toEqual({
       delivered: 0,
       failed: 0,
@@ -317,8 +371,8 @@ describe('what is checked before sending', () => {
 
 describe('a run', () => {
   it('sends at most 50, then asks to run again at once; keeps 20 finished per webhook', async () => {
-    const { ada, webhook } = await personWithHook('user_wb1');
-    for (let i = 0; i < 55; i++) await makeItem(ada.auth);
+    const { bump, webhook } = await personWithHook('user_wb1');
+    for (let i = 0; i < 55; i++) await bump();
     const first = await run();
     expect(first).toMatchObject({ delivered: 50, nextAt: clock });
     expect(await run()).toMatchObject({ delivered: 5, nextAt: null });
@@ -331,16 +385,16 @@ describe('a run', () => {
   });
 
   it("never schedules a run for a paused webhook's pending row, and never sooner than a second away", async () => {
-    const { ada, webhook } = await personWithHook('user_wb3');
-    await makeItem(ada.auth);
+    const { bump, webhook } = await personWithHook('user_wb3');
+    await bump();
     // A row left pending on a paused webhook (Send Test racing a pause, before the insert was guarded).
     h.db.sql.prepare('UPDATE webhooks SET paused_at = 1 WHERE id = ?').run(webhook.id);
     expect(await run()).toEqual({ delivered: 0, failed: 0, retrying: 0, nextAt: null });
     expect(sent).toEqual([]);
-    expect(states()).toEqual(['created:pending:0']);
+    expect(states()).toEqual(['renamed:pending:0']);
     // Another webhook's row waits behind it in the due index: it alone schedules the next run.
     const bo = await personWithHook('user_wb4');
-    await makeItem(bo.ada.auth);
+    await bo.bump();
     sync();
     const at = clock;
     const later = (next: number) =>
@@ -392,8 +446,8 @@ describe('the dispatcher', () => {
     const state = fakeState();
     const dispatcher = new WebhookDispatcher(state as unknown as DurableObjectState, h.db.env);
     dispatcher.deps = deps();
-    const { ada } = await personWithHook('user_wb2');
-    await makeItem(ada.auth);
+    const { bump } = await personWithHook('user_wb2');
+    await bump();
     answer = () => new Response(null, { status: 500 });
     sync();
     await dispatcher.alarm();
@@ -402,10 +456,10 @@ describe('the dispatcher', () => {
     clock += RETRY_DELAYS_MS[0]!;
     await state.storage.setAlarm(0);
     await dispatcher.alarm();
-    expect(states()).toEqual(['created:delivered:2']);
+    expect(states()).toEqual(['renamed:delivered:2']);
     // Nothing left: no alarm set again.
     expect(state.alarm).toBe(0);
-    expect(dispatcher.deps.adminTeams).toBeTypeOf('function');
+    expect(dispatcher.deps.personTeams).toBeTypeOf('function');
     expect(
       new WebhookDispatcher(state as unknown as DurableObjectState, h.db.env).deps.now(),
     ).toBeTypeOf('number');
@@ -417,8 +471,8 @@ describe('the dispatcher', () => {
     const state = fakeState();
     const dispatcher = new WebhookDispatcher(state as unknown as DurableObjectState, h.db.env);
     dispatcher.deps = deps();
-    const { ada } = await personWithHook('user_wb3');
-    await makeItem(ada.auth);
+    const { bump } = await personWithHook('user_wb5');
+    await bump();
     answer = () => new Response(null, { status: 500 });
     sync();
     await dispatcher.alarm();
@@ -436,15 +490,16 @@ describe('the dispatcher', () => {
 });
 
 describe('closing an account', () => {
-  it("deletes its own webhooks and a closed team's, and pauses an outliving team's, anonymised", async () => {
-    const ada = await person('user_wp1');
-    world.roles.user_wp1 = [
-      { id: 'kept', role: 'admin' },
-      { id: 'closed', role: 'admin' },
-    ];
-    await addWebhook(ada.auth);
-    await addWebhook(ada.auth, { teamId: 'closed' });
-    const kept = await addWebhook(ada.auth, { teamId: 'kept' });
+  it("deletes the webhooks on its own documents and a closed team's, and pauses the rest, anonymised", async () => {
+    const ada = await person('user_wp1', {
+      teams: [{ id: 'kept' }, { id: 'closed' }],
+    });
+    const own = await makeItem(ada.auth);
+    const closed = await makeItem(ada.auth, { teamId: 'closed' });
+    const keptItem = await makeItem(ada.auth, { teamId: 'kept' });
+    await addWebhook(ada.auth, own.id);
+    await addWebhook(ada.auth, closed.id);
+    const kept = await addWebhook(ada.auth, keptItem.id);
     await call(`/webhooks/${kept.webhook.id}/test`, { method: 'POST', auth: ada.auth });
     const res = await call('/internal/purge-person', {
       method: 'POST',

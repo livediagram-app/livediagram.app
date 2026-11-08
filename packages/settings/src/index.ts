@@ -12,6 +12,8 @@
 // once, under Common. They were each app's own before, so a person's value may still sit in an app's scope:
 // joinSettings falls back to it, and splitSettings drops it on the first write.
 export const COMMON_SETTING_KEYS = [
+  // Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer").
+  'autoOpenExplorer',
   'homeBanner',
   'collaboratePanelEnabled',
   'quickStylePanelEnabled',

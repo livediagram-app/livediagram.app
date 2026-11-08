@@ -119,6 +119,13 @@ paged. It is a dialog rather than a page, because "what happened to this?" is as
 (`packages/explorer/src/library/HistoryDialog.tsx`, the rules in `history.ts`). Every app's Explorer, the
 liveworkspace.app Explorer and the editors' Explorer panel open the same one.
 
+**Webhooks** sits on the same menu, after History, for a signed-in account who can edit the whole space (its owner,
+its team's people, or an Editor link to every tab; never a guest, a Viewer, a Participant or a one-tab Editor). It
+opens the shared Webhooks dialog, "Webhooks for “<space>”", whose webhooks report on this space alone and say so;
+each of the person's other spaces has its own (up to 10). Each one picks where it posts, what it sends in the space's
+own words, and Who Did It (Anyone or Only Me). The index checks the role on every call
+([webhooks.md](../../../../liveworkspace/docs/specs/004-index/webhooks.md)).
+
 - **Whose history.** The header shows the item itself: its thumbnail (the host's `renderThumbnail`, else the item
   glyph), its name as the dialog's heading, its app's mark (`AppMark`, never a coloured dot) with its kind word,
   its owner ("You", the team, or the owner's name) and when it was made.

@@ -248,5 +248,5 @@ Every full token inherits the owner's read and write access.
 
 **Webhooks** are no longer out of scope: liveworkspace sends them for every app's items, from the index's
 Timeline events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. A person adds one for their own
-items, and a team's admins for the team's, in Settings › Webhooks (this app's Settings draws the same panel as liveworkspace.app's, in place); a share
+items, and a team's admins for the team's, per document, from the document's ⋯ menu in the Explorer (**Webhooks**); a share
 link's Editor never can. See [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).

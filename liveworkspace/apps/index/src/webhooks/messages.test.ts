@@ -6,7 +6,7 @@ import { newSigningSecret, signatureOf } from './sign';
 
 const event = (over: Partial<DeliveryEvent> = {}): DeliveryEvent => ({
   eventId: 'e1',
-  type: 'created',
+  type: 'trashed',
   app: 'liveplanner',
   itemId: 'p1',
   title: 'Sprint 4',
@@ -20,8 +20,8 @@ const event = (over: Partial<DeliveryEvent> = {}): DeliveryEvent => ({
 
 describe('summaryOf', () => {
   it.each<[Partial<DeliveryEvent>, string]>([
-    [{}, 'Ada made “Sprint 4”'],
-    [{ actorName: null, title: '' }, 'Someone made “Untitled”'],
+    [{}, 'Ada moved “Sprint 4” to the Trash'],
+    [{ actorName: null, title: '' }, 'Someone moved “Untitled” to the Trash'],
     [{ type: 'renamed', detail: { from: 'Sprint' } }, 'Ada renamed “Sprint” to “Sprint 4”'],
     [{ type: 'renamed' }, 'Ada renamed “Sprint 4”'],
     [{ type: 'moved', detail: { folderName: 'Q4' } }, 'Ada moved “Sprint 4” to “Q4”'],
@@ -59,11 +59,6 @@ describe('summaryOf', () => {
     ],
     [{ type: 'form_response', detail: {} }, 'A new response to “Untitled” on “Sprint 4”'],
     [
-      { type: 'mention', detail: { text: 'Bo, can you look?', mentionedId: 'user_bo' } },
-      'Ada mentioned someone on “Sprint 4”: Bo, can you look?',
-    ],
-    [{ type: 'mention' }, 'Ada mentioned someone on “Sprint 4”'],
-    [
       { type: 'ping', title: 'Team chat' },
       'Test from liveworkspace: “Team chat” is set up and working.',
     ],
@@ -96,11 +91,11 @@ describe('bodyFor', () => {
 
   it('sends Slack a sentence with a link back, its control characters escaped', () => {
     const body = JSON.parse(bodyFor('slack', event({ title: 'A <b> & c' })));
-    expect(body.text).toBe('Ada made “A <b> & c”');
+    expect(body.text).toBe('Ada moved “A <b> & c” to the Trash');
     expect(body.blocks[0].text.text).toBe(
-      'Ada made “A &lt;b&gt; &amp; c”\n<https://www.liveplanner.app/project/p1|Open in liveplanner>',
+      'Ada moved “A &lt;b&gt; &amp; c” to the Trash\n<https://www.liveplanner.app/project/p1|Open in liveplanner>',
     );
-    expect(body.blocks[1].elements[0].text).toBe('liveplanner · Item Created');
+    expect(body.blocks[1].elements[0].text).toBe('liveplanner · Moved to the Trash');
     const test = JSON.parse(
       bodyFor('slack', event({ type: 'ping', url: null, app: 'liveworkspace' })),
     );
@@ -113,7 +108,7 @@ describe('bodyFor', () => {
     expect(body.type).toBe('message');
     const card = body.attachments[0];
     expect(card.contentType).toBe('application/vnd.microsoft.card.adaptive');
-    expect(card.content.body[0].text).toBe('Ada made “Sprint 4”');
+    expect(card.content.body[0].text).toBe('Ada moved “Sprint 4” to the Trash');
     expect(card.content.actions).toEqual([
       {
         type: 'Action.OpenUrl',

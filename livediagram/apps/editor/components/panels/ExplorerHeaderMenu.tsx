@@ -18,10 +18,11 @@ import { REPO_URL, Glyph } from '@livediagram/ui';
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import type { ExplorerMenuActions } from './Explorer.types';
 import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
+import { WebhooksGlyph } from '@liveworkspace/workbench/components/dialogs/DocumentWebhooksDialog';
 
 // The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the document-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.
-// Three bands, new/open, then this document (share / export), then the app
+// Three bands, new/open, then this document (share / export / webhooks), then the app
 // (search / GitHub / Licences / settings). Each row renders only when its handler is
 // wired, and a band left empty takes its separator with it, so the Explorer
 // behind an error screen (no document, so no share / export) still reads
@@ -83,6 +84,15 @@ export function ExplorerHeaderMenu({
             icon={<ExportGlyph />}
             label="Export"
             onClick={run(actions.onExport)}
+          />
+        ) : null,
+        actions.onWebhooks ? (
+          <MenuActionRow
+            key="webhooks"
+            plain
+            icon={<WebhooksGlyph />}
+            label="Webhooks"
+            onClick={run(actions.onWebhooks)}
           />
         ) : null,
       ],

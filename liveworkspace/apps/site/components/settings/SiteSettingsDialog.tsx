@@ -22,7 +22,6 @@ import {
   type SettingsAppId,
   type SettingsScope,
 } from '@liveworkspace/settings-ui';
-import { createIndexClient } from '@liveworkspace/index-client';
 import { APP_SITES, PLATFORM_SITE } from '@liveworkspace/sites';
 import { accountApi } from '@/lib/account-api';
 import { accountSecurity } from '@/lib/account-security';
@@ -41,15 +40,10 @@ import { reportAppSetting, reportSharedSetting } from '@/lib/settings-telemetry'
 import { APP_SETTINGS_KIT } from './app-settings-kit';
 import { settingsErrorMessage } from './settings-ui';
 
-// The Account section's API Tokens, Webhooks and Download Your Data (@liveworkspace/settings-ui accountPanels), each
+// The Account section's API Tokens and Download Your Data (@liveworkspace/settings-ui accountPanels), each
 // fetched when its category is first shown: the account API through accountApi (this site's session on
-// liveworkspace.app, the app's token through its router on an app's address), the index with the workspace token.
-const ACCOUNT_PANELS = accountPanels({
-  request: accountApi,
-  index: createIndexClient({
-    getToken: async () => (await import('@/lib/explorer/token')).workspaceToken(),
-  }),
-});
+// liveworkspace.app, the app's token through its router on an app's address).
+const ACCOUNT_PANELS = accountPanels({ request: accountApi });
 
 // Sign-in and devices on an app's address: the account API's bearer door, through the app's router.
 const APP_SECURITY = bearerAccountSecurity(accountApi, { settingsParam: 'profile' });

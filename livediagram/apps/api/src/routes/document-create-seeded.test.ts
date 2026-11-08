@@ -6,6 +6,7 @@ import { handleDocuments } from './documents';
 import { asUser } from './test-route-context';
 import { compileSeededTabs, seedIntentOf } from './document-seed';
 import { indexIntentOf } from '@livediagram/api-schema';
+import { templateEditorMode } from '@livediagram/templates';
 
 // A create's seeded tabs given as a graph, Mermaid or a template (docs/specs/015-api/api.md): compiled by
 // applyReplace before anything is written, the intent derived from the first, a refusal naming the tab.
@@ -65,13 +66,26 @@ describe('seeded tabs compiled on create', () => {
     ).toBe(201);
     expect((await getTab(db.env, 'd1', 't1'))?.elements.length).toBeGreaterThan(0);
     expect(seedIntentOf([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }])).toBe(
-      'retrospective',
+      'workshop:diagram:retrospective',
     );
     expect(
       compileSeededTabs([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }], 'd1'),
     ).toMatchObject({
       intent: { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' },
     });
+  });
+
+  // livediagram files by the mode alone (docs/specs/013-workspace/default-folders.md "Filing on create"): a create
+  // naming no intent is still filed by the mode its first tab opens in.
+  it('derives the mode of a seeded tab that names no template, and of an Event Storming template', () => {
+    expect(seedIntentOf([{ id: 't1', name: 'Plain', elements: [] }])).toBe('diagram:diagram');
+    expect(seedIntentOf([{ id: 't1', name: 'Sketch', elements: [], opensIn: 'draw' }])).toBe(
+      'draw:diagram',
+    );
+    expect(seedIntentOf([{ id: 't1', name: 'Storm', template: 'event-storming' }])).toBe(
+      `${templateEditorMode('event-storming')}:event-storming`,
+    );
+    expect(seedIntentOf([])).toBeNull();
   });
 
   it('keeps an intent the create gives', () => {

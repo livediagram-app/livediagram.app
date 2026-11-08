@@ -22,10 +22,10 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX15 | webhooks        | an address given as an IP literal is refused, public or not: the check is by name, resolved at add and at send.                              |
 | IDX16 | webhooks        | only port 443 is taken; another port is refused as `webhook_url_invalid`.                                                                    |
 | IDX17 | webhooks        | a redirect (3xx) gives the delivery up without retrying; other 4xx but 408, 410 and 429 give up too.                                         |
-| IDX18 | webhooks        | accounts unreachable holds a team webhook's deliveries a minute, counting no try.                                                            |
+| IDX18 | webhooks        | accounts unreachable holds a team document's webhook deliveries a minute, counting no try.                                                   |
 | IDX19 | webhooks        | a card move dated more than 5 minutes ahead is dated now + 5 minutes; its texts are cut to 200.                                              |
 | IDX20 | webhooks        | a webhook's deliveries list answers at most 40, newest first.                                                                                |
-| IDX21 | webhooks        | a tab's push hands on at most 10 mentions; when accounts can't say who is in a team, a mention that needs it is not sent.                    |
+| IDX21 | webhooks        | retired with the Mentioned event (migration 0014).                                                                                           |
 | IDX22 | connected-tabs  | a connection id is `cn_` and 24 random letters and digits.                                                                                   |
 | IDX23 | connected-tabs  | the open door allows 60 opens a minute per caller.                                                                                           |
 | IDX24 | connected-tabs  | the reverse write waits at most 5 seconds for the target app before taking the reverse back.                                                 |
@@ -40,5 +40,7 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX33 | team-audit-log  | when accounts can't name people, the read falls back to the names the events carried rather than failing.                                    |
 | IDX34 | team-audit-log  | Export CSV joins at most 20 files (200,000 rows), newest first, and says so when more matched.                                               |
 | IDX35 | connected-tabs  | the Connect list shows the 40 most recent items across every app (`CONNECT_RECENT_LIMIT`), without paging.                                   |
-| IDX36 | webhooks        | a bare event in a request or a stored row means that event from every app that sends it, stored as its pairs; a pair no app sends is refused. |
-| IDX37 | webhooks        | a test delivery's app is `liveworkspace`, which Settings draws with no app's logo.                                                            |
+| IDX36 | webhooks        | an event the document's app never sends (a canvas's card moves) is refused.                                                                   |
+| IDX37 | webhooks        | a test delivery's app is `liveworkspace`; the Webhooks dialog names it Test.                                                                  |
+| IDX40 | webhooks        | an Editor link limited to one tab can't manage the document's webhooks: they would carry the other tabs' comments and actions.                |
+| IDX41 | webhooks        | a card move or form response with no account behind it never reaches an Only Me webhook.                                                      |

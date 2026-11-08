@@ -23,7 +23,7 @@ export type SettingsIconId =
   | 'privacy';
 
 // The sub-categories, nested under Account (the Settings panel lists each on its own).
-export type SettingsSubcategoryId = 'notifications' | 'tokens' | 'webhooks' | 'data';
+export type SettingsSubcategoryId = 'notifications' | 'tokens' | 'data';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -41,12 +41,11 @@ export const SETTINGS_TILES: Record<SettingsIconId, SettingsTileId> = {
   privacy: 'privacy',
 };
 
-// A sub-category's glyph: the account's keep the shared bell, key, hook and tray. Panels and Editor have no
+// A sub-category's glyph: the account's keep the shared bell, key and tray. Panels and Editor have no
 // sub-categories: each panel's and mode's settings are a section of their category.
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   notifications: () => <SettingsSharedGlyph id="notifications" />,
   tokens: () => <SettingsSharedGlyph id="tokens" />,
-  webhooks: () => <SettingsSharedGlyph id="webhooks" />,
   data: () => <SettingsSharedGlyph id="data" />,
 };
 

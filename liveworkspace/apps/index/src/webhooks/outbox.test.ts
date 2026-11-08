@@ -1,6 +1,7 @@
 // The outbox (webhooks.md "What it sends", "Delivery"): an event the index records about an item queues a delivery,
-// in the same batch, for each of the item scope's live webhooks that listens for it, and nothing else; a plan's card
-// moves queue the same way, off the Timeline. The request wakes the dispatcher only after answering.
+// in the same batch, for each of that item's own live webhooks that listens for it (and, set to Only Me, only for its
+// creator's own actions), and nothing else; a plan's card moves queue the same way, off the Timeline. The request
+// wakes the dispatcher only after answering.
 import { CARD_MOVES_MAX } from '@liveworkspace/index-client';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -29,10 +30,10 @@ const asApp = (path: string, payload: unknown, app = 'liveplanner', key = 'lp-ke
 const queued = () => deliveries().map((d) => `${d.type} ${d.title}`);
 
 describe('queuing Timeline events', () => {
-  it("queues what a person's own webhooks listen for, about the items they own", async () => {
+  it("queues what a document's own webhooks listen for, about that document", async () => {
     const ada = await person('user_wo1');
-    await addWebhook(ada.auth, { events: ['created', 'renamed'] });
     const item = await makeItem(ada.auth, { title: 'Roadmap' });
+    await addWebhook(ada.auth, item.id, { events: ['renamed'] });
     await call(`/items/${item.id}`, {
       method: 'PATCH',
       auth: ada.auth,
@@ -45,8 +46,8 @@ describe('queuing Timeline events', () => {
       body: { level: 'view' },
     });
     await call(`/favourites/${item.id}`, { method: 'PUT', auth: ada.auth });
-    expect(queued()).toEqual(['created Roadmap', 'renamed Roadmap 2']);
-    const renamed = deliveries()[1]!;
+    expect(queued()).toEqual(['renamed Roadmap 2']);
+    const renamed = deliveries()[0]!;
     expect(renamed).toMatchObject({
       state: 'pending',
       attempts: 0,
@@ -55,71 +56,49 @@ describe('queuing Timeline events', () => {
       actor_id: 'user_wo1',
     });
     expect(JSON.parse(renamed.detail as string)).toEqual({ from: 'Roadmap' });
-    // Someone else's item is not theirs to hear about.
-    const bo = await person('user_wo2');
-    await makeItem(bo.auth, { title: 'Bo’s' });
-    expect(queued()).toHaveLength(2);
   });
 
-  it("queues only the item's own app's events: livediagram's Share Link Made is not liveplanner's", async () => {
+  it("never queues another document's events, even the same owner's", async () => {
     const ada = await person('user_wo9');
-    const hook = await addWebhook(ada.auth, {
-      events: ['livediagram:created', 'livediagram:shared', 'liveplanner:renamed'],
-    });
     const canvas = await makeItem(ada.auth, { app: 'livediagram', title: 'Canvas' });
     const plan = await makeItem(ada.auth, { title: 'Plan' });
+    const hook = await addWebhook(ada.auth, canvas.id, { events: ['shared', 'renamed'] });
     for (const item of [canvas, plan]) {
       await call(`/items/${item.id}/share`, {
         method: 'POST',
         auth: ada.auth,
         body: { level: 'view' },
       });
+      await call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'New' } });
     }
-    await call(`/items/${plan.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'Plan 2' } });
-    await call(`/items/${canvas.id}`, {
-      method: 'PATCH',
-      auth: ada.auth,
-      body: { title: 'Canvas 2' },
-    });
-    expect(deliveries().map((d) => `${d.app} ${d.type} ${d.title}`)).toEqual([
-      'livediagram created Canvas',
-      'livediagram shared Canvas',
-      'liveplanner renamed Plan 2',
+    expect(deliveries().map((d) => `${d.app} ${d.type}`)).toEqual([
+      'livediagram shared',
+      'livediagram renamed',
     ]);
     expect(deliveries().every((d) => d.webhook_id === hook.webhook.id)).toBe(true);
   });
 
-  it('still hears a bare event left in a row from before topics, from every app', async () => {
-    const ada = await person('user_wo10');
-    const hook = await addWebhook(ada.auth, { events: ['livediagram:renamed'] });
-    h.db.sql.prepare('UPDATE webhooks SET events = ? WHERE id = ?').run(',created,', hook.webhook.id);
-    await makeItem(ada.auth, { app: 'livediagram', title: 'Canvas' });
-    await makeItem(ada.auth, { app: 'livedocuments', title: 'Doc' });
-    expect(queued()).toEqual(['created Canvas', 'created Doc']);
-  });
-
-  it("queues a team item's events for the team's webhooks, never a member's own", async () => {
+  it("sends an Only Me webhook its creator's actions alone, an Anyone webhook everyone's", async () => {
     const bo = await person('user_wo3', { teams: [{ id: 'teamA' }] });
-    world.roles.user_wo3 = [{ id: 'teamA', role: 'admin' }];
-    const team = await addWebhook(bo.auth, { teamId: 'teamA', events: ['created', 'shared'] });
-    const own = await addWebhook(bo.auth, { events: ['created'] });
+    const cy = await person('user_wo10', { teams: [{ id: 'teamA' }] });
     const item = await makeItem(bo.auth, { title: 'Team plan', teamId: 'teamA' });
-    await call(`/items/${item.id}/share`, {
-      method: 'POST',
-      auth: bo.auth,
-      body: { level: 'edit' },
-    });
-    expect(deliveries().map((d) => [d.webhook_id, d.type])).toEqual([
-      [team.webhook.id, 'created'],
-      [team.webhook.id, 'shared'],
-    ]);
-    expect(deliveries().some((d) => d.webhook_id === own.webhook.id)).toBe(false);
+    const mine = await addWebhook(bo.auth, item.id, { events: ['renamed'], who: 'me' });
+    const anyone = await addWebhook(bo.auth, item.id, { events: ['renamed'] });
+    await call(`/items/${item.id}`, { method: 'PATCH', auth: bo.auth, body: { title: 'By Bo' } });
+    await call(`/items/${item.id}`, { method: 'PATCH', auth: cy.auth, body: { title: 'By Cy' } });
+    expect(deliveries().map((d) => `${d.webhook_id} ${d.title}`).sort()).toEqual(
+      [
+        `${mine.webhook.id} By Bo`,
+        `${anyone.webhook.id} By Bo`,
+        `${anyone.webhook.id} By Cy`,
+      ].sort(),
+    );
   });
 
   it('queues comments and actions from a collab push, once however often it is sent', async () => {
     const ada = await person('user_wo4');
-    await addWebhook(ada.auth, { events: ['commented', 'action_assigned', 'action_done'] });
     const item = await makeItem(ada.auth, { title: 'Board' });
+    await addWebhook(ada.auth, item.id, { events: ['commented', 'action_assigned', 'action_done'] });
     const now = Date.now();
     const push = {
       threads: [
@@ -160,13 +139,14 @@ describe('queuing Timeline events', () => {
 
   it('queues nothing for a paused webhook, an old event, or past the pending cap', async () => {
     const ada = await person('user_wo5');
-    const { webhook } = await addWebhook(ada.auth, { events: ['created', 'renamed'] });
+    const item = await makeItem(ada.auth, { title: 'Now' });
+    const { webhook } = await addWebhook(ada.auth, item.id, { events: ['renamed'] });
     await call(`/webhooks/${webhook.id}`, {
       method: 'PATCH',
       auth: ada.auth,
       body: { paused: true },
     });
-    await makeItem(ada.auth);
+    await call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'Paused' } });
     expect(deliveries()).toEqual([]);
     await call(`/webhooks/${webhook.id}`, {
       method: 'PATCH',
@@ -174,23 +154,22 @@ describe('queuing Timeline events', () => {
       body: { paused: false },
     });
     // 500 already waiting: the next is not queued.
-    const item = await makeItem(ada.auth, { title: 'Now' });
     h.db.sql.prepare('DELETE FROM webhook_deliveries').run();
     h.db.sql
       .prepare(
         `WITH RECURSIVE n(v) AS (SELECT 1 UNION ALL SELECT v + 1 FROM n WHERE v < 500)
          INSERT INTO webhook_deliveries (webhook_id, event_id, type, app, title, occurred_at, next_at)
-         SELECT ?, 'old' || v, 'created', 'liveplanner', 't', 0, 0 FROM n`,
+         SELECT ?, 'old' || v, 'renamed', 'liveplanner', 't', 0, 0 FROM n`,
       )
       .run(webhook.id);
     await call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'Later' } });
-    expect(deliveries().filter((d) => d.type === 'renamed')).toEqual([]);
+    expect(deliveries().filter((d) => d.title === 'Later')).toEqual([]);
   });
 
   it('skips an event older than an hour', async () => {
     const ada = await person('user_wo6');
-    await addWebhook(ada.auth, { events: ['commented'] });
     const item = await makeItem(ada.auth);
+    await addWebhook(ada.auth, item.id, { events: ['commented'] });
     const long = Date.now() - 2 * 60 * 60 * 1000;
     const thread = {
       elementId: 'e1',
@@ -214,11 +193,28 @@ describe('queuing Timeline events', () => {
   });
 });
 
+describe('a document deleted for good', () => {
+  it('takes its webhooks and their deliveries with it', async () => {
+    const ada = await person('user_wo7');
+    const item = await makeItem(ada.auth);
+    const { webhook } = await addWebhook(ada.auth, item.id, { events: ['renamed'] });
+    await call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'x' } });
+    expect(deliveries()).toHaveLength(1);
+    const res = await call(`/items/${item.id}?permanent=true`, {
+      method: 'DELETE',
+      auth: ada.auth,
+    });
+    expect(res.status).toBeLessThan(300);
+    expect(h.db.sql.prepare('SELECT id FROM webhooks WHERE id = ?').all(webhook.id)).toEqual([]);
+    expect(deliveries()).toEqual([]);
+  });
+});
+
 describe('card moves', () => {
-  it("queues a plan's card moves for its scope's webhooks, once each however often they are sent", async () => {
+  it("queues a plan's card moves for its own webhooks, once each however often they are sent", async () => {
     const ada = await person('user_wm1');
-    await addWebhook(ada.auth, { events: ['card_moved'] });
     const plan = await makeItem(ada.auth, { title: 'Sprint 4' });
+    await addWebhook(ada.auth, plan.id, { events: ['card_moved'] });
     const at = Date.now();
     const moves = [
       {
@@ -227,6 +223,7 @@ describe('card moves', () => {
         card: 'Fix sign-in',
         from: 'Doing',
         to: 'Done',
+        actorId: 'user_wm1',
         actorName: 'Ada',
         at,
       },
@@ -236,7 +233,7 @@ describe('card moves', () => {
     expect((await asApp(`/app/items/${plan.id}/card-moves`, { moves })).status).toBe(204);
     const rows = deliveries();
     expect(rows.map((d) => [d.type, d.title, d.actor_name, d.actor_id])).toEqual([
-      ['card_moved', 'Sprint 4', 'Ada', null],
+      ['card_moved', 'Sprint 4', 'Ada', 'user_wm1'],
       ['card_moved', 'Sprint 4', null, null],
     ]);
     expect(JSON.parse(rows[0]!.detail as string)).toEqual({
@@ -253,6 +250,28 @@ describe('card moves', () => {
     );
     expect(timeline.events.map((e) => e.type)).toEqual(['created']);
     expect((await asApp(`/app/items/${plan.id}/card-moves`, { moves: [] })).status).toBe(204);
+  });
+
+  it('sends an Only Me webhook its creator\'s moves alone, never one with no mover', async () => {
+    const ada = await person('user_wm4');
+    const plan = await makeItem(ada.auth);
+    const { webhook } = await addWebhook(ada.auth, plan.id, { events: ['card_moved'], who: 'me' });
+    const at = Date.now();
+    const move = (cardId: string, actorId?: string) => ({
+      cardId,
+      cardKey: null,
+      card: cardId,
+      from: 'A',
+      to: 'B',
+      ...(actorId ? { actorId } : {}),
+      at,
+    });
+    await asApp(`/app/items/${plan.id}/card-moves`, {
+      moves: [move('c1', 'user_wm4'), move('c2', 'user_other'), move('c3')],
+    });
+    expect(deliveries().map((d) => [d.webhook_id, d.title, d.actor_id])).toEqual([
+      [webhook.id, expect.any(String), 'user_wm4'],
+    ]);
   });
 
   it.each([
@@ -291,12 +310,15 @@ describe('form responses', () => {
       form: { heading: 'Bug Report', boardTabId: null, responses, latestAt: Date.now(), ...extra },
     });
 
-  it("queues the rise in a form's responses for its plan's scope, once, never the answers", async () => {
+  it("queues the rise in a form's responses for its plan's own webhooks, once, never the answers", async () => {
     const ada = await person('user_wf1');
-    await addWebhook(ada.auth, { events: ['form_response'] });
-    const bo = await person('user_wf2');
-    await addWebhook(bo.auth, { events: ['form_response'] });
     const plan = await makeItem(ada.auth, { title: 'Triage' });
+    await addWebhook(ada.auth, plan.id, { events: ['form_response'] });
+    // Only Me: a response has no account behind it, so never reaches it.
+    await addWebhook(ada.auth, plan.id, { events: ['form_response'], who: 'me' });
+    const bo = await person('user_wf2');
+    const bos = await makeItem(bo.auth);
+    await addWebhook(bo.auth, bos.id, { events: ['form_response'] });
     // Published with none, then one response, the same push again, then two more at once.
     expect((await pushForm(plan.id, 0, { code: 'abc123' })).status).toBe(204);
     expect((await pushForm(plan.id, 1)).status).toBe(204);
@@ -311,7 +333,7 @@ describe('form responses', () => {
       { form: 'Bug Report', responses: '1', total: '1' },
       { form: 'Bug Report', responses: '2', total: '3' },
     ]);
-    // Bo's webhook is not the plan's scope's.
+    // One webhook: not the Only Me one, and not Bo's on his own plan.
     expect(new Set(rows.map((d) => d.webhook_id)).size).toBe(1);
     // Nothing on the Timeline.
     const timeline = await body<{ events: { type: string }[] }>(
@@ -322,9 +344,8 @@ describe('form responses', () => {
 
   it('queues nothing for a form never pushed, or published again, or for a webhook not listening', async () => {
     const ada = await person('user_wf3');
-    const { webhook } = await addWebhook(ada.auth, { events: ['created'] });
     const plan = await makeItem(ada.auth);
-    h.db.sql.prepare('DELETE FROM webhook_deliveries').run();
+    const { webhook } = await addWebhook(ada.auth, plan.id, { events: ['renamed'] });
     await pushForm(plan.id, 2);
     await pushForm(plan.id, 4);
     expect(deliveries()).toEqual([]);
@@ -343,8 +364,8 @@ describe('form responses', () => {
 
   it('costs a form push one round trip', async () => {
     const ada = await person('user_wf4');
-    await addWebhook(ada.auth, { events: ['form_response'] });
     const plan = await makeItem(ada.auth);
+    await addWebhook(ada.auth, plan.id, { events: ['form_response'] });
     await pushForm(plan.id, 1);
     let trips = 0;
     const db = h.db.env.INDEX_DB;
@@ -388,7 +409,7 @@ describe('cost', () => {
     await rename(20);
     const quiet = await rename(runs);
     expect(deliveries()).toEqual([]);
-    await addWebhook(ada.auth, { events: ['renamed'] });
+    await addWebhook(ada.auth, item.id, { events: ['renamed'] });
     const listened = await rename(runs);
     expect(deliveries()).toHaveLength(runs);
     console.info('[measure] webhook outbox', { quietMs: quiet, listenedMs: listened });
@@ -406,12 +427,13 @@ describe('waking the dispatcher', () => {
     const kicks: string[] = [];
     const env = { ...h.db.env, WEBHOOKS: namespace(kicks) };
     const ada = await person('user_wk1');
-    await addWebhook(ada.auth, { events: ['created'] });
+    const item = await makeItem(ada.auth);
+    await addWebhook(ada.auth, item.id, { events: ['renamed'] });
     await call('/folders', { method: 'POST', auth: ada.auth, body: { name: 'F' }, env });
     await Promise.all(h.pending.splice(0));
     expect(kicks).toEqual([]);
     const before = queuedCount();
-    await call('/items', { method: 'POST', auth: ada.auth, body: { app: 'liveplanner' }, env });
+    await call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'R' }, env });
     expect(queuedCount()).toBeGreaterThan(before);
     await Promise.all(h.pending.splice(0));
     expect(kicks).toEqual(['deliveries']);
@@ -423,8 +445,9 @@ describe('waking the dispatcher', () => {
     expect(await kickWebhooks(h.db.env)).toBe(false);
     expect(await kickWebhooks(env)).toBe(false);
     const ada = await person('user_wk2');
-    await addWebhook(ada.auth, { events: ['created'] });
-    await makeItem(ada.auth);
+    const item = await makeItem(ada.auth);
+    await addWebhook(ada.auth, item.id, { events: ['renamed'] });
+    await call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'R' } });
     expect(await kickWebhooks(env)).toBe(true);
     const broken = {
       ...env,
@@ -440,8 +463,9 @@ describe('waking the dispatcher', () => {
     const kicks: string[] = [];
     const env = { ...h.db.env, WEBHOOKS: namespace(kicks) };
     const ada = await person('user_wk3');
-    await addWebhook(ada.auth, { events: ['created'] });
-    await makeItem(ada.auth);
+    const item = await makeItem(ada.auth);
+    await addWebhook(ada.auth, item.id, { events: ['renamed'] });
+    await call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'R' } });
     const { default: worker } = await import('../index');
     await worker.scheduled({ cron: '*/15 * * * *' } as ScheduledController, env);
     expect(kicks).toEqual(['deliveries']);

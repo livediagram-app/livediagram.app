@@ -371,13 +371,13 @@ describe('the Settings panel, for a guest on an app’s address', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('has no API Tokens or Webhooks, even asked for them: they are signed in only', async () => {
+  it('has no API Tokens, even asked for them: they are signed in only', async () => {
     act(() =>
       root.render(
         <SiteSettingsDialog
           app="livediagram.app"
           guest={{ ownerId: 'guest_abc', signInHref: '/api/auth/sign-in?return_to=%2Fexplorer' }}
-          initialCategoryId="account:webhooks"
+          initialCategoryId="account:tokens"
           onClose={() => {}}
         />,
       ),
@@ -430,25 +430,12 @@ describe('the Settings panel, opened on a section', () => {
     expect(fetchMock.mock.calls.filter(([url]) => url === '/api/account/tokens')).toHaveLength(1);
   });
 
-  it('draws the webhooks in place for a signed-in person, their code and list fetched only when their category shows', async () => {
-    fetchMock.mockImplementation((url: string) =>
-      url === '/api/index/webhooks'
-        ? json(200, { webhooks: [] })
-        : url === '/api/account/teams'
-          ? json(200, { teams: [] })
-          : json(200, { all: {}, app: {}, updatedAt: null }),
-    );
-    await open(null, { initialScope: 'all' });
-    expect(fetchMock.mock.calls.some(([url]) => url === '/api/index/webhooks')).toBe(false);
-    act(() => root.unmount());
-    root = createRoot(container);
+  it('has no Webhooks for a signed-in person: an old link to them opens Settings, asking the index nothing', async () => {
+    fetchMock.mockReturnValue(json(200, { all: {}, app: {}, updatedAt: null }));
     await open(null, { initialScope: 'all', initialCategoryId: 'account:webhooks' });
-    await until(() =>
-      document
-        .querySelector('[data-settings-cell="webhooks"]')
-        ?.textContent?.includes('No Webhooks Yet'),
-    );
-    expect(fetchMock.mock.calls.filter(([url]) => url === '/api/index/webhooks')).toHaveLength(1);
+    expect(railButton('Webhooks')).toBeUndefined();
+    expect(document.querySelector('[data-settings-cell="webhooks"]')).toBeNull();
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes('/webhooks'))).toBe(false);
   });
 
   // Two opens, each waiting up to until()'s 5s for the lazy panel on a cold import, so the test's own limit sits above

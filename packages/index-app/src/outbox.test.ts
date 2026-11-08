@@ -203,6 +203,7 @@ describe('helpers', () => {
       card: long,
       from: long,
       to: long,
+      actorId: long,
       actorName: long,
       at: 9,
     });
@@ -212,11 +213,12 @@ describe('helpers', () => {
       card: 'x'.repeat(200),
       from: 'x'.repeat(200),
       to: 'x'.repeat(200),
+      actorId: 'x'.repeat(200),
       actorName: 'x'.repeat(200),
       at: 9,
     });
     const plain = { cardId: 'c', cardKey: null, card: 'a', from: 'b', to: 'c', at: 1 };
-    expect(cardMoveOf(cardMoveKeyOf({ ...plain, actorName: null }))).toEqual(plain);
+    expect(cardMoveOf(cardMoveKeyOf({ ...plain, actorId: null, actorName: null }))).toEqual(plain);
     expect(cardMoveOf(JSON.stringify({ ...plain, cardKey: 'seven' }))).toEqual(plain);
     expect(cardMoveOf('null')).toBeNull();
     expect(cardMoveOf('{')).toBeNull();

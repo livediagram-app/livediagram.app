@@ -825,6 +825,23 @@ export const CATALOGUE: AppCatalogue = {
       rows: [
         {
           kind: 'toggle',
+          id: 'autoOpenExplorer',
+          label: 'Automatically Open Explorer',
+          description:
+            'Opening the homepage while signed in takes you straight to your Explorer. A link to the homepage from inside the app still shows it.',
+          keywords: 'automatically open explorer redirect home homepage start landing skip straight',
+          key: 'autoOpenExplorer',
+          on: true,
+          off: false,
+          fallback: false,
+          event: {
+            category: 'UI',
+            on: 'AutoOpenExplorerOn',
+            off: 'AutoOpenExplorerOff',
+          },
+        },
+        {
+          kind: 'toggle',
           id: 'homeBanner',
           label: 'Show Home Banner',
           description:

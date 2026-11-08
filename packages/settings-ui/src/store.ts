@@ -6,6 +6,7 @@
 import type { SettingsBlob } from '@liveworkspace/settings';
 import type { AppCatalogue } from '@liveworkspace/settings/catalogue';
 import { APP_SITES } from '@liveworkspace/sites';
+import { syncOpenExplorerCookie } from '@liveworkspace/sites/open-explorer';
 import type { AppScopes } from './catalogue-model';
 
 import type { SettingsApiResult, SettingsRequest } from './request';
@@ -71,6 +72,13 @@ export interface SettingsStore {
   forget: () => void;
 }
 
+// Automatically Open Explorer is a common setting (`all`), and the homepage's router reads it from a cookie on this
+// address (@liveworkspace/sites/open-explorer): every `all` this page reads or holds puts it there, so a change made
+// in another app or on another device lands on the next read.
+function noteShared(all: SettingsBlob): void {
+  syncOpenExplorerCookie(all.autoOpenExplorer === true);
+}
+
 export function createSettingsStore(request: SettingsRequest): SettingsStore {
   const scopes = new Map<SettingsAppId, AppScopes>();
   const reads = new Map<SettingsAppId, Promise<SettingsApiResult<AppScopes>>>();
@@ -83,7 +91,10 @@ export function createSettingsStore(request: SettingsRequest): SettingsStore {
       if (!read) {
         read = request<AppScopes>(`/settings/${app}`).then((result) => {
           reads.delete(app);
-          if (result.ok) scopes.set(app, { all: result.data.all, app: result.data.app });
+          if (result.ok) {
+            scopes.set(app, { all: result.data.all, app: result.data.app });
+            noteShared(result.data.all);
+          }
           return result;
         });
         reads.set(app, read);
@@ -92,9 +103,11 @@ export function createSettingsStore(request: SettingsRequest): SettingsStore {
     },
     remember(app, value) {
       scopes.set(app, value);
+      noteShared(value.all);
     },
     rememberShared(all) {
       for (const [app, value] of scopes) scopes.set(app, { ...value, all });
+      noteShared(all);
     },
     patchApp: (app, patch) => request<AppScopes>(`/settings/${app}`, 'PATCH', { app: patch }),
     patchShared: (patch) => request<{ all: SettingsBlob }>('/settings', 'PATCH', { all: patch }),

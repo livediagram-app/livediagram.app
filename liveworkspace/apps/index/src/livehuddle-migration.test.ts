@@ -100,10 +100,19 @@ function seed(sql: DatabaseSync): void {
       ('liveplanner', 'i2', 'form2', 'Closed', NULL, 0, 131, NULL);
     INSERT INTO collab_form_reads (person_id, item_id, tab_id, seen) VALUES ('u1', 'i2', 'form1', 3);
     INSERT INTO purge_tombstones (item_id, app, created_at) VALUES ('gone', 'livediagram', 140);
-    INSERT INTO webhooks (id, scope, kind, name, url_sealed, host, events, created_by, created_at) VALUES
-      ('w1', 'p:u1', 'json', 'Hook', 'sealed', 'example.com', ',created,', 'u1', 150);
+  `);
+  // Webhooks belonged to an account or team scope until 0014, which ties each to one item.
+  const scoped = sql.prepare("SELECT 1 FROM pragma_table_info('webhooks') WHERE name = 'scope'").get();
+  sql.exec(
+    scoped
+      ? `INSERT INTO webhooks (id, scope, kind, name, url_sealed, host, events, created_by, created_at) VALUES
+           ('w1', 'p:u1', 'json', 'Hook', 'sealed', 'example.com', ',created,', 'u1', 150);`
+      : `INSERT INTO webhooks (id, item_id, kind, name, url_sealed, host, events, created_by, created_at) VALUES
+           ('w1', 'i1', 'json', 'Hook', 'sealed', 'example.com', ',renamed,', 'u1', 150);`,
+  );
+  sql.exec(`
     INSERT INTO webhook_deliveries (webhook_id, event_id, type, app, item_id, title, occurred_at, next_at) VALUES
-      ('w1', 'e1', 'created', 'livediagram', 'i1', 'Flow', 40, 41);
+      ('w1', 'e1', 'renamed', 'livediagram', 'i1', 'Flow', 40, 41);
   `);
 }
 

@@ -1,6 +1,6 @@
-// livediagram's template families as the shared Explorer takes them: the lens's Template filter, and an entry of
-// Default Folders each ("Retrospective canvases"), matched against the last word of a canvas's creation intent
-// ("diagram:diagram:retrospective").
+// livediagram's template families as the shared Explorer takes them: the lens's Template filter, matched against the
+// last word of a canvas's creation intent ("diagram:diagram:retrospective"). Default Folders has no entry for them:
+// livediagram files by mode alone (docs/specs/013-workspace/default-folders.md).
 import type { LensOption } from '@liveworkspace/explorer';
 import { TEMPLATE_FAMILIES, type TemplateFamily } from '@livediagram/api-schema';
 

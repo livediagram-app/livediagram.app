@@ -6,7 +6,7 @@
 // are the `all` scope's (@liveworkspace/settings/account), read from and written to whatever holds that scope where
 // the panel is: the accounts API on liveworkspace.app and an app's Explorer, the editor's own preferences in an
 // editor (which sync them). Everything in it is edited in place, wherever the panel opens: the profile (ProfileHost),
-// sign-in and devices (AccountSecurity), and the API tokens, webhooks and Download Your Data (accountPanels).
+// sign-in and devices (AccountSecurity), and the API tokens and Download Your Data (accountPanels).
 import type { ReactNode } from 'react';
 import { PLATFORM_SITE, workspaceOriginFor } from '@liveworkspace/sites';
 import type { SettingsBlob } from '@liveworkspace/settings';
@@ -18,7 +18,6 @@ import {
   PUSH_ROWS,
   readAccountToggle,
   DATA_EXPORT_CATEGORY,
-  WEBHOOKS_CATEGORY,
   type AccountToggle,
 } from '@liveworkspace/settings/account';
 import { SettingsCategoryTile, type SettingsTileId } from './glyphs';
@@ -46,11 +45,10 @@ export interface AccountSection {
   security?: AccountSecurity;
   // Signing out, where the host can.
   onSignOut?: () => Promise<boolean> | boolean | void;
-  // The API tokens, the webhooks (liveworkspace/docs/specs/004-index/webhooks.md) and Download Your Data
+  // The API tokens and Download Your Data
   // (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"), drawn here (accountPanels) for a signed-in
   // account. A host without an account (a guest, a workbench, a self-hosted editor) hands none.
   renderTokens?: () => ReactNode;
-  renderWebhooks?: () => ReactNode;
   renderDataExport?: () => ReactNode;
   // The email switches, only where the person has an address the emails can go to (default true).
   emails?: boolean;
@@ -93,13 +91,9 @@ export const ACCOUNT_CATEGORY_IDS = [
   'accessibility',
   'data',
   'tokens',
-  'webhooks',
 ] as const satisfies readonly SettingsTileId[];
 // The ones the rail lists under Developers rather than Account.
-export const DEVELOPER_CATEGORY_IDS: ReadonlySet<AccountCategoryId> = new Set([
-  'tokens',
-  'webhooks',
-]);
+export const DEVELOPER_CATEGORY_IDS: ReadonlySet<AccountCategoryId> = new Set(['tokens']);
 export type AccountCategoryId = (typeof ACCOUNT_CATEGORY_IDS)[number];
 
 /** The tile of the account category `id`. */
@@ -108,10 +102,10 @@ export function accountCategoryTile(id: AccountCategoryId): ReactNode {
 }
 
 /** The account's categories, by their own ids (the panel prefixes them `account:`), in the order they are listed:
- *  Profile, Notifications, Privacy, Accessibility and Your Data (the rail's Account), then API Tokens and Webhooks
+ *  Profile, Notifications, Privacy, Accessibility and Your Data (the rail's Account), then API Tokens
  *  (its Developers). */
 export function accountCategories(section: AccountSection): SettingsCategory[] {
-  const { all, set, renderTokens, renderWebhooks, renderDataExport, emails = true } = section;
+  const { all, set, renderTokens, renderDataExport, emails = true } = section;
   const toggle = (rows: readonly AccountToggle[], heading?: string) =>
     rows.map(toggleRow(all, set, heading));
 
@@ -191,25 +185,6 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
       label: 'API Tokens',
       icon: accountCategoryTile('tokens'),
       rows: [tokens],
-    });
-  }
-  const webhooks: SettingsRow | null = renderWebhooks
-    ? {
-        kind: 'custom',
-        key: 'webhooks',
-        label: WEBHOOKS_CATEGORY.label,
-        description: WEBHOOKS_CATEGORY.description,
-        keywords: WEBHOOKS_CATEGORY.keywords,
-        section: WEBHOOKS_CATEGORY.label,
-        render: renderWebhooks,
-      }
-    : null;
-  if (webhooks) {
-    categories.push({
-      id: 'webhooks',
-      label: WEBHOOKS_CATEGORY.label,
-      icon: accountCategoryTile('webhooks'),
-      rows: [webhooks],
     });
   }
   return categories;

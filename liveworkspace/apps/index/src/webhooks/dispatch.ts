@@ -1,7 +1,7 @@
 // Sending what is due (liveworkspace/docs/specs/004-index/webhooks.md "Delivery"), run by the dispatcher's alarm
 // (durable-object.ts), never in a request: at most DISPATCH_BATCH deliveries a run, DISPATCH_CONCURRENCY webhooks at
-// once, each webhook's in order. Before a team webhook sends, its creator must still be an admin of the team; before
-// any sends, its host must still resolve only to public addresses. A delivery that fails is tried again after the
+// once, each webhook's in order. Before a webhook sends, its creator must still be able to edit all of its document
+// (creatorCanEdit); before any sends, its host must still resolve only to public addresses. A delivery that fails is tried again after the
 // next of RETRY_DELAYS_MS, the webhook's later deliveries waiting behind it; one that runs out of tries, or meets an
 // answer that won't change (a redirect, a 4xx), is given up, and FAILING_PAUSE_AFTER of those in a row pause it.
 
@@ -19,7 +19,8 @@ import {
 } from '@liveworkspace/index-client';
 import { APP_ITEMS } from '@liveworkspace/sites';
 import { appOrigin, type Env } from '../env';
-import type { AdminTeams } from '../accounts-access';
+import type { PersonTeams } from '../accounts-access';
+import { LIVE_LINK } from '../rows';
 import { parseWebhookUrl, resolvesPublic, type Resolve } from './address';
 import {
   ACCESS_RETRY_MS,
@@ -37,7 +38,7 @@ export type DispatchDeps = {
   now: () => number;
   fetch: typeof fetch;
   resolve: Resolve;
-  adminTeams: AdminTeams;
+  personTeams: PersonTeams;
 };
 
 export type DispatchResult = {
@@ -61,7 +62,10 @@ type DueRow = {
   detail: string | null;
   occurred_at: number;
   attempts: number;
-  scope: string;
+  // The webhook's document (a ping's own item_id is empty), its owner and team.
+  document_id: string;
+  owner_id: string;
+  team_id: string | null;
   kind: WebhookKind;
   url_sealed: string;
   secret_sealed: string | null;
@@ -202,13 +206,38 @@ const trimStatement = (db: D1Database, webhookId: string) =>
 
 type Counts = { delivered: number; failed: number; retrying: number };
 
+/**
+ * Whether a webhook's creator can still edit all of its document, as the access rule says (access.ts): its owner (a
+ * personal one), a member of its team now, or holding a live Editor link to every tab under Shared. Null when accounts
+ * can't say whether they are still in the team.
+ */
+async function creatorCanEdit(
+  env: Env,
+  head: Pick<DueRow, 'document_id' | 'owner_id' | 'team_id' | 'created_by'>,
+  teamsOf: (personId: string) => Promise<ReadonlySet<string> | null>,
+  now: number,
+): Promise<boolean | null> {
+  if (head.team_id === null && head.owner_id === head.created_by) return true;
+  const link = await env.INDEX_DB.prepare(
+    `SELECT 1 FROM shared_with sw
+     JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
+     WHERE sw.person_id = ? AND sw.item_id = ? AND sl.level = 'edit' AND sl.tab_id IS NULL AND ${LIVE_LINK('sl')}`,
+  )
+    .bind(head.created_by, head.document_id, now)
+    .first();
+  if (link) return true;
+  if (head.team_id === null) return false;
+  const teams = await teamsOf(head.created_by);
+  return teams && teams.has(head.team_id);
+}
+
 /** One webhook's due deliveries, in order. */
 async function runWebhook(
   env: Env,
   deps: DispatchDeps,
   key: CryptoKey,
   rows: DueRow[],
-  admins: (personId: string) => Promise<ReadonlySet<string> | null>,
+  teamsOf: (personId: string) => Promise<ReadonlySet<string> | null>,
   hosts: Map<string, Promise<'public' | 'private' | 'unresolved'>>,
   counts: Counts,
 ): Promise<void> {
@@ -223,19 +252,17 @@ async function runWebhook(
       )
       .bind(until, ids);
 
-  // A team's: its creator must still run the team. Accounts not answering holds them, uncounted.
-  if (head.scope.startsWith('t:')) {
-    const teams = await admins(head.created_by);
-    if (!teams) {
-      await holdAll(now + ACCESS_RETRY_MS).run();
-      counts.retrying += rows.length;
-      return;
-    }
-    if (!teams.has(head.scope.slice(2))) {
-      await db.batch(pauseStatements(db, head.webhook_id, 'creator_left', now));
-      counts.failed += rows.length;
-      return;
-    }
+  // Its creator must still edit the whole document. Accounts not answering holds them, uncounted.
+  const can = await creatorCanEdit(env, head, teamsOf, now);
+  if (can === null) {
+    await holdAll(now + ACCESS_RETRY_MS).run();
+    counts.retrying += rows.length;
+    return;
+  }
+  if (!can) {
+    await db.batch(pauseStatements(db, head.webhook_id, 'creator_left', now));
+    counts.failed += rows.length;
+    return;
   }
 
   const url = await unseal(key, urlContext(head.webhook_id), head.url_sealed);
@@ -331,8 +358,9 @@ export async function dispatch(env: Env, deps: DispatchDeps): Promise<DispatchRe
       await db
         .prepare(
           `SELECT d.id, d.webhook_id, d.event_id, d.type, d.app, d.item_id, d.title, d.actor_id, d.actor_name,
-                  d.detail, d.occurred_at, d.attempts, w.scope, w.kind, w.url_sealed, w.secret_sealed, w.created_by
-           FROM webhook_deliveries d JOIN webhooks w ON w.id = d.webhook_id
+                  d.detail, d.occurred_at, d.attempts, w.item_id AS document_id, i.owner_id, i.team_id, w.kind,
+                  w.url_sealed, w.secret_sealed, w.created_by
+           FROM webhook_deliveries d JOIN webhooks w ON w.id = d.webhook_id JOIN items i ON i.id = w.item_id
            WHERE d.state = 'pending' AND d.next_at <= ? AND w.paused_at IS NULL
            ORDER BY d.next_at, d.id LIMIT ?`,
         )
@@ -346,12 +374,12 @@ export async function dispatch(env: Env, deps: DispatchDeps): Promise<DispatchRe
     byWebhook.set(row.webhook_id, list);
   }
   // Asked once a run per person, and each host resolved once a run.
-  const adminsCache = new Map<string, Promise<ReadonlySet<string> | null>>();
-  const admins = (personId: string) => {
-    let found = adminsCache.get(personId);
+  const teamsCache = new Map<string, Promise<ReadonlySet<string> | null>>();
+  const teamsOf = (personId: string) => {
+    let found = teamsCache.get(personId);
     if (!found) {
-      found = deps.adminTeams(personId);
-      adminsCache.set(personId, found);
+      found = deps.personTeams(personId);
+      teamsCache.set(personId, found);
     }
     return found;
   };
@@ -361,7 +389,7 @@ export async function dispatch(env: Env, deps: DispatchDeps): Promise<DispatchRe
     await Promise.all(
       groups
         .slice(i, i + DISPATCH_CONCURRENCY)
-        .map((rows) => runWebhook(env, deps, key, rows, admins, hosts, counts)),
+        .map((rows) => runWebhook(env, deps, key, rows, teamsOf, hosts, counts)),
     );
   }
   if (due.length >= DISPATCH_BATCH) return { ...counts, nextAt: deps.now() };

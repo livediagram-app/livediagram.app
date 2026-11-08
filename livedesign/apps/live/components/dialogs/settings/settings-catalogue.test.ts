@@ -350,18 +350,11 @@ describe('settings catalogue', () => {
     expect(ids).toContain('tokens');
   });
 
-  it('shows a guest Webhooks as API Tokens is shown them: a stand-in that says to sign in', () => {
-    // Signed in, the Account section's own Webhooks (a link to liveworkspace's Settings) stands in its place.
-    const guest = visibleCategories({ emailEnabled: false, signedIn: false });
-    const webhooks = guest.find((c) => c.id === 'webhooks')!;
-    expect(webhooks.parent).toBe('account');
-    expect(webhooks.rows).toEqual([
-      expect.objectContaining({ kind: 'note', key: 'webhooksSignIn', signIn: true }),
-    ]);
-    const ids = visibleCategories({ emailEnabled: false, signedIn: true }).map((c) => c.id);
-    expect(ids).not.toContain('webhooks');
-    const workbench = visibleCategories({ emailEnabled: false, signedIn: false, workbench: true });
-    expect(workbench.map((c) => c.id)).not.toContain('webhooks');
+  it('has no Webhooks category, for a guest or an account: webhooks are set per document now', () => {
+    for (const signedIn of [false, true]) {
+      const ids = visibleCategories({ emailEnabled: false, signedIn }).map((c) => c.id);
+      expect(ids).not.toContain('webhooks');
+    }
   });
 
   it('shows a guest Your Data the same way: a stand-in that says to sign in', () => {
@@ -513,5 +506,29 @@ describe('Hide Participant Cursors row', () => {
 
   it('is absent where the tab draws none', () => {
     expect(offered(false)).toBe(false);
+  });
+});
+
+// Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer").
+describe('Automatically Open Explorer row', () => {
+  const explorer = SETTINGS_CATEGORIES.find((category) =>
+    category.rows.some((row) => row.key === 'homeBanner'),
+  )!;
+  const row = explorer.rows.find((r) => r.key === 'autoOpenExplorer')!;
+
+  it('sits in Explorer directly above Show Home Banner', () => {
+    expect(explorer.label).toBe('Explorer');
+    const keys = explorer.rows.map((r) => r.key);
+    expect(keys.indexOf('autoOpenExplorer')).toBe(0);
+    expect(keys.indexOf('homeBanner')).toBe(1);
+    expect(row.label).toBe('Automatically Open Explorer');
+  });
+
+  it('is off by default, and writes only its own key', () => {
+    if (row.kind !== 'toggle') throw new Error('expected a toggle');
+    expect(row.read({})).toBe(false);
+    expect(row.read({ autoOpenExplorer: true })).toBe(true);
+    expect(row.write({ homeBanner: false }, true)).toEqual({ homeBanner: false, autoOpenExplorer: true });
+    expect(row.event).toEqual({ category: 'UI', on: 'AutoOpenExplorerOn', off: 'AutoOpenExplorerOff' });
   });
 });

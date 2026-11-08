@@ -2,47 +2,30 @@
 
 import { useId, useMemo, useState, type FormEvent, type RefObject } from 'react';
 import {
-  orderedTopics,
   WEBHOOK_NAME_MAX,
   WEBHOOK_URL_MAX,
-  type App,
   type Webhook,
+  type WebhookEvent,
   type WebhookKind,
-  type WebhookTopic,
+  type WebhookWho,
 } from '@liveworkspace/index-client';
 import { Button } from '@liveworkspace/ui';
-import { BUTTON, ErrorNote, INPUT } from '../account-ui';
+import { BUTTON, ErrorNote, INPUT } from '../account-panels/account-ui';
 import { ConnectPanel } from './ConnectPanel';
-import {
-  DestinationPicker,
-  EventControls,
-  EventPicker,
-  FormStep,
-  ScopePicker,
-  type TeamChoice,
-} from './pickers';
-import { useAccountPanelsHost } from '../host';
-import { attempt, KINDS, topicsOfApps, webhookError } from './webhooks-api';
-
-export type { TeamChoice } from './pickers';
+import { DestinationPicker, EventControls, EventPicker, FormStep, WhoPicker } from './pickers';
+import { useDocumentWebhooks } from './host';
+import { attempt, eventsOfApp, ITEM, KINDS, webhookError } from './webhooks-api';
 
 const LABEL = 'block text-sm font-medium text-slate-700 dark:text-slate-300';
 
-// Adding a webhook (webhooks.md "Who adds one"; site.md "Settings", Webhooks), in the order a person thinks of it:
-// where it posts, its address (with how to get one), a name, whose items (their own, or a team they run) and what it
-// sends: the events of the apps the card covers (this app's on This App, every app's on All), all chosen at first. A
-// team the person is only a member of isn't offered, and the index checks again.
+// Adding a webhook to the document (webhooks.md "Who adds one", "Managing them"), in the order a person thinks of it:
+// where it posts, its address (with how to get one), a name, what it sends (the document's app's events, none chosen
+// at first) and whose changes (anyone's, or only their own).
 export function AddWebhook({
-  apps,
-  teams,
   firstRef,
   onAdded,
   onCancel,
 }: {
-  // The apps whose events it offers.
-  apps: readonly App[];
-  // The teams the person runs now.
-  teams: readonly TeamChoice[];
   // The chosen destination, which takes the keyboard as the form opens.
   firstRef: RefObject<HTMLInputElement | null>;
   onAdded: (webhook: Webhook, secret: string | null) => Promise<void>;
@@ -51,11 +34,11 @@ export function AddWebhook({
   const id = useId();
   const [kind, setKind] = useState<WebhookKind>('slack');
   const [name, setName] = useState('');
-  const [scope, setScope] = useState('');
   const [url, setUrl] = useState('');
-  const offered = useMemo(() => topicsOfApps(apps), [apps]);
-  const [events, setEvents] = useState<Set<WebhookTopic>>(() => new Set(offered));
-  const { index } = useAccountPanelsHost();
+  const [who, setWho] = useState<WebhookWho>('anyone');
+  const { api, app } = useDocumentWebhooks();
+  const offered = useMemo(() => eventsOfApp(app), [app]);
+  const [events, setEvents] = useState<Set<WebhookEvent>>(() => new Set());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,12 +47,12 @@ export function AddWebhook({
     setBusy(true);
     setError(null);
     const result = await attempt(() =>
-      index.createWebhook({
+      api.create({
         name: name.trim(),
         kind,
         url: url.trim(),
-        events: orderedTopics(offered.filter((topic) => events.has(topic))),
-        teamId: scope || null,
+        events: offered.filter((event) => events.has(event)),
+        who,
       }),
     );
     setBusy(false);
@@ -78,24 +61,23 @@ export function AddWebhook({
   }
 
   const words = KINDS[kind];
-  const chosen = offered.reduce((n, topic) => n + (events.has(topic) ? 1 : 0), 0);
+  const chosen = offered.reduce((n, event) => n + (events.has(event) ? 1 : 0), 0);
   const missing = !name.trim() ? 'a name' : !url.trim() ? 'an address' : null;
-  // Whose Items? is asked only of someone who runs a team.
-  const whose = teams.length > 0;
+  const one = ITEM(app).one.toLowerCase();
   return (
     <form
       onSubmit={(event) => void submit(event)}
       aria-labelledby={`${id}-heading`}
       data-webhook-form=""
-      className="flex flex-col gap-6 bg-slate-50/80 px-4 py-5 sm:px-5 dark:bg-slate-900/40"
+      className="flex flex-col gap-6 bg-slate-50/80 px-5 py-5 sm:px-6 dark:bg-slate-900/40"
     >
       <div>
         <h4 id={`${id}-heading`} className="text-base font-semibold text-slate-900 dark:text-white">
           Add a Webhook
         </h4>
         <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
-          Each message carries what the Timeline shows: the item’s name and link, who did it, and a
-          short detail, like a comment’s first words.
+          It posts only what happens to this {one}. Each message carries what its History shows:
+          the {one}’s name and link, who did it, and a short detail, like a comment’s first words.
         </p>
       </div>
 
@@ -150,19 +132,17 @@ export function AddWebhook({
         </div>
       </FormStep>
 
-      {whose ? (
-        <FormStep n={3} id={`${id}-whose`} title="Whose Items?">
-          <ScopePicker teams={teams} value={scope} onChange={setScope} />
-        </FormStep>
-      ) : null}
-
       <FormStep
-        n={whose ? 4 : 3}
+        n={3}
         id={`${id}-what`}
         title="What Should It Send?"
-        aside={<EventControls topics={offered} value={events} onChange={setEvents} />}
+        aside={<EventControls events={offered} value={events} onChange={setEvents} />}
       >
-        <EventPicker apps={apps} value={events} onChange={setEvents} />
+        <EventPicker app={app} value={events} onChange={setEvents} />
+      </FormStep>
+
+      <FormStep n={4} id={`${id}-who`} title="Who Did It?">
+        <WhoPicker value={who} onChange={setWho} />
       </FormStep>
 
       <div className="flex flex-col gap-3">

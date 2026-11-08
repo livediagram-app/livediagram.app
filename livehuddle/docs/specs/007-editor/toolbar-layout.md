@@ -375,6 +375,12 @@ couldn't load, not found) have no menu button and no Explorer. The popover hangs
 button's left edge (`computeDockAnchor(..., 'button')`). The button has no hover card: it
 got in the way of the Explorer's app switcher, and the icon is plain. Its `aria-label` ("Explorer") names it.
 
+The Explorer's header has its own **⋯** menu: New Space and Open Explorer, then the open space's own verbs
+(**Share**, **Export**, and the open space's own **Webhooks**), then the app's rows (Search, Settings and the like). Webhooks is
+offered to a signed-in account who can edit the whole space (not a Viewer, a Participant or a one-tab link) and opens
+the same Webhooks dialog as an item's ⋯ menu in the Explorer, for this space alone
+([webhooks.md](../../../../liveworkspace/docs/specs/004-index/webhooks.md#managing-them)).
+
 Collaborate opens as a **popover over its bottom-row
 button** ([Editor app](editor-app.md)): it is not a corner panel. Every
 other panel (AI, the minimap, Poll and the tool panels) docks in its corner

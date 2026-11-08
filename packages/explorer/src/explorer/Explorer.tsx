@@ -154,7 +154,8 @@ export type ExplorerProps = {
    *  against the mode each item's summary reports. Without them there is no Mode filter. */
   lensModes?: readonly LensOption[];
   /** Default Folders' entries for what the host's items open in and the kinds of their first tabs (livediagram's
-   *  Diagrams, Whiteboards, Sessions, Event Storming boards), between the app's own and its templates'. */
+   *  Diagrams, Drawings, Workshops), between the app's own and its templates'. A mode-only app (index-client
+   *  filesByModeOnly) lists these alone. */
   defaultFolderOptions?: readonly DefaultFolderOption[];
   /** The folder on screen, once its list is in: its name and how many items sit directly in it (FolderShown). */
   onFolderShown?: (shown: FolderShown) => void;

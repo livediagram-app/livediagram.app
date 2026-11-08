@@ -187,7 +187,7 @@ this isolate already found right (its bounded memory of 1,000) costs one SHA-256
 add nothing per request. The migration's handoff is one rate-limit check, one batch (the item and its event), the app call, and on a
 failure one delete by primary key. Its body can be up to 32 MiB, parsed once and sent on once, so a request
 holds about three copies of it in memory at worst (well under a Worker's 128 MB at the cap). A webhook costs the write that records an event one
-more statement in its batch (an indexed probe of the scope's webhooks, usually none), and the request, after it
+more statement in its batch (an indexed probe of the item's own webhooks, usually none), and the request, after it
 answers, one indexed read and one Durable Object call only when that statement could have queued something; the
 deliveries themselves happen in the dispatcher's alarm, never in a request ([blueprints/webhooks.md](blueprints/webhooks.md)).
 

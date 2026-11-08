@@ -17,6 +17,7 @@ import {
 import { REPO_URL, Glyph } from '@livedocuments/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
+import { WebhooksGlyph } from '@liveworkspace/workbench/components/dialogs/DocumentWebhooksDialog';
 
 // The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the document-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.
@@ -82,6 +83,15 @@ export function ExplorerHeaderMenu({
             icon={<ExportGlyph />}
             label="Export"
             onClick={run(actions.onExport)}
+          />
+        ) : null,
+        actions.onWebhooks ? (
+          <MenuActionRow
+            key="webhooks"
+            plain
+            icon={<WebhooksGlyph />}
+            label="Webhooks"
+            onClick={run(actions.onWebhooks)}
           />
         ) : null,
       ],

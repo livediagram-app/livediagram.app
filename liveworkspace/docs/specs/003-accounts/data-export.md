@@ -118,7 +118,7 @@ team's email, ready or failed, goes only to someone still its admin.
 ## Settings
 
 **Your Data** is a category in the Account section of Settings ([site.md "Settings"](../010-site/site.md#settings)),
-beside API Tokens and Webhooks, for a signed-in person only.
+beside API Tokens, for a signed-in person only.
 
 - It opens with what a download holds, and each app it covers shown by its logo mark and wordmark.
 - **Download All My Data** starts a personal export. While it is built the row shows its progress (items done of the

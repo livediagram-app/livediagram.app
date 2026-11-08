@@ -15,16 +15,15 @@ const FOLDED: Readonly<Record<string, AccountCategoryId>> = {
   account: 'account',
   notifications: 'notifications',
   tokens: 'tokens',
-  webhooks: 'webhooks',
   data: 'data',
   privacy: 'privacy',
   accessibility: 'accessibility',
 };
 
-// The account's categories that are one whole panel (the token manager, the webhooks, Download Your Data): an app's
+// The account's categories that are one whole panel (the token manager, Download Your Data): an app's
 // rows there introduce it (what a token lets your scripts and AI tools do, the guide to connecting one), so they come
 // first, above the panel.
-const INTRODUCED: ReadonlySet<AccountCategoryId> = new Set(['tokens', 'webhooks', 'data']);
+const INTRODUCED: ReadonlySet<AccountCategoryId> = new Set(['tokens', 'data']);
 
 // An editor's own rows the Account section draws itself: its identity card is the Profile's header.
 const DRAWN_BY_ACCOUNT = new Set(['identity']);

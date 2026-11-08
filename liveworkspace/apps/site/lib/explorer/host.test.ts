@@ -96,7 +96,8 @@ describe('addresses the Explorer used to have', () => {
     });
     expect(settingsOpening('profile', null)).toMatchObject({ categoryId: 'account:account' });
     expect(settingsOpening('tokens', null)).toMatchObject({ categoryId: 'account:tokens' });
-    expect(settingsOpening('webhooks', null)).toMatchObject({ categoryId: 'account:webhooks' });
+    // Webhooks left Settings for each document's own: an old link opens Profile.
+    expect(settingsOpening('webhooks', null)).toMatchObject({ categoryId: 'account:account' });
     expect(settingsOpening('data', null)).toMatchObject({ categoryId: 'account:data' });
     expect(settingsOpening('accessibility', null)).toMatchObject({
       categoryId: 'account:accessibility',

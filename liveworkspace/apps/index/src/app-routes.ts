@@ -109,7 +109,7 @@ export async function handleApp(
     return pushAppEvents(env, itemId, body);
   }
 
-  // A plan's cards that changed status, for its scope's webhooks only (webhooks/routes.ts).
+  // A plan's cards that changed status, for its own webhooks only (webhooks/routes.ts).
   if (segments.length === 4 && segments[3] === 'card-moves')
     return pushCardMoves(env, itemId, request);
 

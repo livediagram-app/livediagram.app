@@ -7045,6 +7045,9 @@ importers:
       '@liveworkspace/settings':
         specifier: workspace:^
         version: link:../settings
+      '@liveworkspace/settings-ui':
+        specifier: workspace:^
+        version: link:../settings-ui
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
@@ -7927,6 +7930,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../model-core
+      '@liveworkspace/settings-ui':
+        specifier: workspace:^
+        version: link:../settings-ui
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../trusted-types

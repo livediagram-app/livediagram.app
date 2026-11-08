@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { BUTTON, Panel } from './account-ui';
 
 // A secret shown once, with Copy and Done: a new API token (TokensPanel), a new webhook's signing secret
-// (webhooks/WebhooksPanel). The browser can refuse the clipboard (no permission, an insecure page): it says so, and
+// (webhooks/DocumentWebhooks). The browser can refuse the clipboard (no permission, an insecure page): it says so, and
 // selects the secret so it can be copied by hand.
 export function SecretReveal({
   title,

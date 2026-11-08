@@ -1,25 +1,21 @@
 // @vitest-environment jsdom
 import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createIndexClient } from '@liveworkspace/index-client';
 import { accountCategories } from '../account-model';
 import type { SettingsRow } from '../model';
 import { bearerAccountSecurity } from '../profile/bearer-security';
 import { bearerSettingsRequest } from '../request';
 import { accountPanels, preloadAccountPanels } from './lazy';
 
-// An editor's Account section (liveworkspace/docs/specs/010-site/site.md "Settings"): sign-in and devices, API Tokens,
-// Webhooks and Download Your Data drawn in place over the account API's bearer door through the app's router, each
+// An editor's Account section (liveworkspace/docs/specs/010-site/site.md "Settings"): sign-in and devices, API Tokens
+// and Download Your Data drawn in place over the account API's bearer door through the app's router, each
 // panel's code fetched when its category shows, and nothing that leaves for liveworkspace.app.
 
 const request = bearerSettingsRequest({
   baseUrl: '/api/workspace/account',
   token: async () => 'bearer',
 });
-const host = {
-  request,
-  index: createIndexClient({ baseUrl: '/api/index', getToken: async () => 'bearer' }),
-};
+const host = { request };
 const section = {
   all: {},
   set: () => {},
@@ -49,17 +45,15 @@ beforeEach(() => {
       });
       const body = url.endsWith('/tokens')
         ? { tokens: [] }
-        : url.endsWith('/webhooks')
-          ? { webhooks: [] }
-          : url.endsWith('/teams')
-            ? { teams: [] }
-            : url.endsWith('/data-export')
-              ? { personal: null, teams: [] }
-              : url.endsWith('/sessions')
-                ? { sessions: [] }
-                : url.endsWith('/sign-in-methods')
-                  ? { google: 'available' }
-                  : {};
+        : url.endsWith('/teams')
+          ? { teams: [] }
+          : url.endsWith('/data-export')
+            ? { personal: null, teams: [] }
+            : url.endsWith('/sessions')
+              ? { sessions: [] }
+              : url.endsWith('/sign-in-methods')
+                ? { google: 'available' }
+                : {};
       return new Response(JSON.stringify(body), { status: 200 });
     }),
   );
@@ -88,12 +82,8 @@ describe('an editor’s Account section, over the bearer door', () => {
     expect(container.querySelector('a')).toBeNull();
   });
 
-  it('draws the webhooks and Download Your Data in place, never a link to liveworkspace.app', async () => {
-    const webhooks = render(<>{rowOf('webhooks', 'webhooks').render()}</>);
-    await waitFor(() => expect(calls.some((c) => c.url === '/api/index/webhooks')).toBe(true));
-    expect(calls.some((c) => c.url === '/api/workspace/account/teams')).toBe(true);
-    expect(webhooks.container.querySelector('[data-settings-cell="webhooks"]')).toBeTruthy();
-    webhooks.unmount();
+  it('draws Download Your Data in place, never a link to liveworkspace.app, and no Webhooks', async () => {
+    expect(accountCategories(section).map((c) => c.id)).not.toContain('webhooks');
     const data = render(<>{rowOf('data', 'dataExport').render()}</>);
     await waitFor(() =>
       expect(calls.some((c) => c.url === '/api/workspace/account/data-export')).toBe(true),

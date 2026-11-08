@@ -1,19 +1,16 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
-import type { IndexClient } from '@liveworkspace/index-client';
 import type { SettingsRequest } from '../request';
 
-// What the account's own panels (API Tokens, Webhooks, Download Your Data; liveworkspace/docs/specs/010-site/site.md
-// "Settings") reach their services with, handed in by whoever opens the Settings panel: the accounts API's account
-// routes (the session on liveworkspace.app, the app's bearer door through its router everywhere else) and the index
-// for the webhooks, with the person's token. Its own small module, so the panels' code stays in their own chunks.
+// What the account's own panels (API Tokens, Download Your Data; liveworkspace/docs/specs/010-site/site.md
+// "Settings") reach their service with, handed in by whoever opens the Settings panel: the accounts API's account
+// routes (the session on liveworkspace.app, the app's bearer door through its router everywhere else). Its own small
+// module, so the panels' code stays in their own chunks.
 
 export type AccountPanelsHost = {
   // The accounts API's account routes (`/tokens`, `/teams`, `/data-export`).
   request: SettingsRequest;
-  // The index, for the webhooks (liveworkspace/docs/specs/004-index/webhooks.md "Routes").
-  index: IndexClient;
 };
 
 const AccountPanelsContext = createContext<AccountPanelsHost | null>(null);

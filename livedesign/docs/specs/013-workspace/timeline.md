@@ -87,3 +87,10 @@ design's own Timeline, `GET /timeline?item=`, paged, on a day-by-day rail with f
 Activity: the index can answer it (by `t:<team>`), and it
 belongs with the editor and the Teams pages. livedesign's old token-expiry warnings, scheduled events its Upcoming band showed, are accounts' (by email)
 rather than the Timeline's; its share-link-expiry warnings are not carried over.
+
+**Webhooks** sits on the same menu, after History, for a signed-in account who can edit the whole design (its owner,
+its team's people, or an Editor link to every tab; never a guest, a Viewer, a Participant or a one-tab Editor). It
+opens the shared Webhooks dialog, "Webhooks for “<design>”", whose webhooks report on this design alone and say so;
+each of the person's other designs has its own (up to 10). Each one picks where it posts, what it sends in the design's
+own words, and Who Did It (Anyone or Only Me). The index checks the role on every call
+([webhooks.md](../../../../liveworkspace/docs/specs/004-index/webhooks.md)).

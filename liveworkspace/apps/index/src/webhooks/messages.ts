@@ -38,8 +38,6 @@ export function summaryOf(event: DeliveryEvent): string {
   const d = event.detail ?? {};
   const item = quoted(event.title);
   switch (event.type) {
-    case 'created':
-      return `${who} made ${item}`;
     case 'renamed':
       return d.from ? `${who} renamed ${quoted(d.from)} to ${item}` : `${who} renamed ${item}`;
     case 'moved':
@@ -65,10 +63,6 @@ export function summaryOf(event: DeliveryEvent): string {
       const form = quoted(d.form ?? '');
       return `${count === 1 ? 'A new response' : `${count} new responses`} to ${form} on ${item}`;
     }
-    case 'mention':
-      return d.text
-        ? `${who} mentioned someone on ${item}: ${cut(d.text, CHAT_TEXT_MAX)}`
-        : `${who} mentioned someone on ${item}`;
     case 'ping':
       return `Test from liveworkspace: “${event.title}” is set up and working.`;
   }

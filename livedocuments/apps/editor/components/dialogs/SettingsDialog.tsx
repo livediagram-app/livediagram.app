@@ -137,7 +137,7 @@ export function SettingsDialog({
             }
           : null,
       ...(profile ? { profile } : {}),
-      // Sign-in and devices, the API tokens, webhooks and Download Your Data, in place for an account; a guest, a
+      // Sign-in and devices, the API tokens and Download Your Data, in place for an account; a guest, a
       // workbench and a self-hosted editor have none. Phone notifications stay this editor's own (none here).
       ...(allowAll ? ACCOUNT_SETTINGS : {}),
       phone: null,

@@ -134,6 +134,7 @@ export function useCanvasChromePanels({
     onNewDesign,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
+    onMenuWebhooks: explorerMenuActions?.onWebhooks,
     onMenuSearch: explorerMenuActions?.onSearch,
     onMenuSettings: explorerMenuActions?.onOpenSettings,
   });
@@ -141,16 +142,18 @@ export function useCanvasChromePanels({
   // handler is, since the stable wrapper alone would always look present.
   const hasShare = !!explorerMenuActions?.onShare;
   const hasExport = !!explorerMenuActions?.onExport;
+  const hasWebhooks = !!explorerMenuActions?.onWebhooks;
   const hasSearch = !!explorerMenuActions?.onSearch;
   const hasSettings = !!explorerMenuActions?.onOpenSettings;
   const explorerMenu = useMemo(
     () => ({
       onShare: hasShare ? explorerHandlers.onMenuShare : undefined,
       onExport: hasExport ? explorerHandlers.onMenuExport : undefined,
+      onWebhooks: hasWebhooks ? explorerHandlers.onMenuWebhooks : undefined,
       onSearch: hasSearch ? explorerHandlers.onMenuSearch : undefined,
       onOpenSettings: hasSettings ? explorerHandlers.onMenuSettings : undefined,
     }),
-    [explorerHandlers, hasShare, hasExport, hasSearch, hasSettings],
+    [explorerHandlers, hasShare, hasExport, hasWebhooks, hasSearch, hasSettings],
   );
 
   const closeDockPanel = useCallback(() => {

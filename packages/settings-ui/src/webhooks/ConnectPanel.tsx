@@ -4,7 +4,7 @@ import type { WebhookKind } from '@liveworkspace/index-client';
 import { KindMark } from './marks';
 import { KINDS } from './webhooks-api';
 
-// The add form's Connect It (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks): one panel for the chosen
+// The add form's Connect It (liveworkspace/docs/specs/004-index/webhooks.md "Managing them"): one panel for the chosen
 // destination, headed by its tile and "Connect Slack", then how to get the address as a numbered guide (each number
 // in a disc, a hairline running down from one to the next), then the address field itself, so the steps and the
 // box they end in read as one thing. Your Own Service has one line in place of steps.

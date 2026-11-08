@@ -569,7 +569,7 @@ and the dialog stays as the one complete, browsable index of them.
   collapsible groups), **Panels** (panel opacity, then a section per panel: **Layers**, **Quick Style**, **Map** and
   **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md))),
   **Accessibility** (reduce motion), **Getting Started** (one switch per guided tour, see **Getting Started** below),
-  **Explorer** (once its own **Canvases** category, id kept: **Show Home Banner**, then a **Default Folders** section with one row per
+  **Explorer** (once its own **Canvases** category, id kept: **Automatically Open Explorer** (`autoOpenExplorer`, common, off by default: the homepage opens the Explorer, [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-on-the-explorer)), **Show Home Banner**, then a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#surfaces) entry, with Change and Clear; those are not a
   preference, they read and write the index's `/placement-defaults`); Show Home Banner
   writes `homeBanner` (missing means shown; [Explorer Home](../013-workspace/explorer-home.md))), **Account** (identity, **Cloud Sync** (the shared
@@ -628,17 +628,15 @@ and the dialog stays as the one complete, browsable index of them.
   (email footers, the old `/explorer/profile` redirect) and every in-app
   link to them still opens the same pane.
 
-  **Webhooks** are an account's too, the same panel as in liveworkspace's Settings
-  ([Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md#managing-them)). Signed in, the Account
-  section's **Webhooks** draws it in place (add, test, pause, delete, recent deliveries). A guest gets a **Webhooks** category under Account (id `webhooks`, so
-  `?settings=webhooks` opens it) holding one stand-in row, "Sign in to add webhooks." with the **Sign In** link,
-  the same shape as the email stand-in, so it reads the way API Tokens does for a guest. A workbench has neither.
+  **Webhooks** are no longer in Settings (since 8 November 2026): they are set per document, from a document's ⋯
+  menu in the Explorer (**Webhooks**), see [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).
+  The old category id `webhooks` is an alias of Profile, so an old `?settings=webhooks` link opens Profile.
 
   **Your Data** is an account's too: downloading everything the person owns, in every app, as one zip, the same card as in
   liveworkspace's Settings ([Download your data](../../../../liveworkspace/docs/specs/003-accounts/data-export.md#settings)).
   Signed in, the Account section's **Your Data** draws it in place (`?settings=data` opens it); the emailed link still downloads from liveworkspace.app. A guest gets a **Your Data** category
   under Account (id `data`) holding one stand-in row, "Sign in to download your data." with the **Sign In** link, as
-  for Webhooks. A workbench has neither.
+  for API Tokens. A workbench has neither.
 
   Panels holds Panel Opacity, then a section per panel,
   Layers, Quick Style, Map, then Collaborate. Each section opens with that panel's **Enable
@@ -823,7 +821,7 @@ and the dialog stays as the one complete, browsable index of them.
   categories sat under an **Account** accordion, with Notifications, API Tokens, Webhooks and Your Data nested
   under Profile): **Account** (Profile, Notifications, Privacy, Accessibility, Your Data), **Apps** (one set of
   categories merged across every app (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so
-  on, with no group per app and no app sub-headings) and **Developers** (API Tokens, Webhooks), each category
+  on, with no group per app and no app sub-headings) and **Developers** (API Tokens alone), each category
   top-level with its own tile. In each, every setting is one row: every editor setting two
   or more apps have (`COMMON_SETTING_KEYS`, liveworkspace/docs/specs/003-accounts/accounts.md "Common settings"), once, and any row
   two apps keep under the same key and wording, once, written to each; each section shows once, holding every
@@ -842,8 +840,8 @@ and the dialog stays as the one complete, browsable index of them.
   reload (`announceProfileSaved` / `onProfileSaved`), and opening the editor again never overwrites
   a stored name with the account name. Its Time Zone (the zone the emails that can wait keep to, Automatic
   or one picked from a searchable list) is set in place over the same door (`TimeZonePicker`,
-  liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"). Sign-in Methods and Where You're Signed In are drawn in place too, as are API Tokens,
-  Webhooks and Your Data (the shared panels of `@liveworkspace/settings-ui/account-panels`, each loaded when its category is
+  liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"). Sign-in Methods and Where You're Signed In are drawn in place too, as are API Tokens
+  and Your Data (the shared panels of `@liveworkspace/settings-ui/account-panels`, each loaded when its category is
   first opened): none links to liveworkspace.app. Nothing of All is fetched
   until All is first chosen: its code and the three other apps' catalogues are their own chunks, one
   read per other app, kept for the page's lifetime. All is offered only to a signed-in account

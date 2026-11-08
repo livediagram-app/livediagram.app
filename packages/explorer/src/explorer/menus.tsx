@@ -33,7 +33,7 @@ import { VisibilityBadge } from './badges';
 import { useExtras } from './extras';
 import { thenReload } from './ThisBrowser';
 import { useLibraryHost } from '../library/context';
-import { HistoryIcon } from '../ui/library-icons';
+import { HistoryIcon, WebhookIcon } from '../ui/library-icons';
 
 export function canManage(item: ShownItem): boolean {
   return item.access === 'edit' && !item.sharedVia;
@@ -52,7 +52,7 @@ export function ItemMenu({
   extra?: ReactNode;
 }) {
   const { actions, openItem, setRenamingId, openDialog, navigate, reloadLists } = useExplorer();
-  const { slideOut } = useExtras();
+  const { slideOut, signedIn } = useExtras();
   const host = useLibraryHost();
   const run = (fn: () => void) => () => {
     onClose();
@@ -124,6 +124,14 @@ export function ItemMenu({
           label="History"
           icon={<HistoryIcon />}
           onClick={run(() => openDialog({ kind: 'history', item }))}
+        />
+      ) : null}
+      {/* The document's own webhooks (004-index/webhooks.md): for a signed-in account who can edit it. */}
+      {renames && signedIn ? (
+        <MenuActionRow
+          label="Webhooks"
+          icon={<WebhookIcon />}
+          onClick={run(() => openDialog({ kind: 'webhooks', item }))}
         />
       ) : null}
       {/* The label says what the click does, and so the state: no badge anywhere else. */}

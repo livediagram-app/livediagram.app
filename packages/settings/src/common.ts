@@ -2,7 +2,8 @@
 // liveworkspace/docs/specs/010-site/site.md "Settings"): every editor setting two or more apps have (COMMON_SETTING_KEYS), once,
 // built from the apps' catalogues, in the categories the apps file them under. The apps word a common setting the
 // same way and keep it under the same category ids, so the first app that has a row gives its wording; where they
-// file it under a category of their own (Show Home Banner under Documents, Plans or Designs), PLATFORM_PLACES says
+// file it under a category of their own (Automatically Open Explorer and Show Home Banner under Documents, Plans or
+// Designs), PLATFORM_PLACES says
 // where it goes instead.
 //
 // Pure data and helpers, with no editor code: the panel runs it once over the catalogues it has loaded (about 120
@@ -37,6 +38,7 @@ export function withoutCommonRows(catalogue: AppCatalogue): AppCatalogue {
 export const PLATFORM_PLACES: Readonly<
   Record<string, { id: string; label: string; tile: string }>
 > = {
+  autoOpenExplorer: { id: 'explorer', label: 'Explorer', tile: 'folder' },
   homeBanner: { id: 'explorer', label: 'Explorer', tile: 'folder' },
 };
 

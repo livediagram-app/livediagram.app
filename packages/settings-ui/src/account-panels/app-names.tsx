@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { Brand, BRAND_APPS, type BrandApp } from '@liveworkspace/brand';
 import { APP_SITES, type Site } from '@liveworkspace/sites';
 
-// The apps named by their logos in Settings (Webhooks, Your Data), as liveworkspace.app's home page draws them, never
+// The apps named by their logos in Settings (Your Data), as liveworkspace.app's home page draws them, never
 // as plain text: the prism and wordmark, "live" in the app's deep shade on light and its 400 on dark (its 500 accent
 // is too dim for "live" on a dark card).
 
@@ -28,12 +28,6 @@ function AppLogo({ site, brand }: { site: Site; brand: BrandApp }) {
       <Brand app={brand} size="xs" />
     </span>
   );
-}
-
-/** An app named by its logo and wordmark, at the size of the words around it. */
-export function AppName({ app }: { app: string }) {
-  const listed = APPS.get(app);
-  return listed ? <AppLogo {...listed} /> : <span>{app}</span>;
 }
 
 /** Every app, by their logos. */

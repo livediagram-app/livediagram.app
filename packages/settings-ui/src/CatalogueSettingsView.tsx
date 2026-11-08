@@ -74,7 +74,7 @@ function phoneHost(request: SettingsRequest, current: SettingsAppId | null): Pho
 export const ACCOUNT_GROUP = 'account';
 // The prefix of the merged categories' ids (merge-categories.ts, `apps:editor`), and the rail's Apps label.
 export const APPS_GROUP = 'apps';
-// The rail's Developers label, over the account's API Tokens and Webhooks.
+// The rail's Developers label, over the account's API Tokens.
 export const DEVELOPERS_GROUP = 'developers';
 
 // The rail's label headings, in order: who you are, the apps' settings, then the panels for builders.
@@ -489,8 +489,9 @@ export function panelModel({
   const only = mode === 'app' && current ? current : undefined;
   const merged = mergeAppCategories(sources, APPS_GROUP, only ? { only } : {});
   // Under the rail's labels (RAIL_GROUPS), never folded: Account (Profile, Notifications, Privacy, Accessibility, Your
-  // Data, in accountCategories' order), the apps' merged categories, then Developers (API Tokens, Webhooks). The
-  // account's answer to their bare ids too (`notifications`), and Profile to `profile`, the Explorer's old name for it.
+  // Data, in accountCategories' order), the apps' merged categories, then Developers (API Tokens). The
+  // account's answer to their bare ids too (`notifications`), and Profile to `profile`, the Explorer's old name for it,
+  // and to `webhooks`, the category that left Settings for each document's own (004-index/webhooks.md).
   const accountKept = keepFor(accountListed, only).map((c) => {
     const bare = c.id.slice(ACCOUNT_GROUP.length + 1);
     return {
@@ -498,7 +499,11 @@ export function panelModel({
       group: DEVELOPER_CATEGORY_IDS.has(bare as AccountCategoryId)
         ? DEVELOPERS_GROUP
         : ACCOUNT_GROUP,
-      aliases: [...(c.aliases ?? []), bare, ...(bare === 'account' ? ['profile'] : [])],
+      aliases: [
+        ...(c.aliases ?? []),
+        bare,
+        ...(bare === 'account' ? ['profile', 'webhooks'] : []),
+      ],
     };
   });
   return {

@@ -18,6 +18,15 @@ help path missing its `/help` goes straight to `www.liveplanner.app/help/…`. O
 `DEPLOY_ENV`; `wrangler dev` hands a local router its production host), and `www.`, `staging.` and local hosts never
 redirect, so there is no loop and neither staging nor local development leads to production.
 
+## Opening on the Explorer
+
+Right after the bare domain's `301`, the router asks `openExplorerRedirect` (`@liveworkspace/sites/open-explorer`,
+[one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-on-the-explorer)): a `GET` of `/` exactly, with no query, as a page navigation from outside the site, that
+carries the `lw_open_explorer=1` cookie and `liveplanner`'s signed-in hint at `1` (`SIGNED_IN_HINT_COOKIE`), answers a `302`
+to `/explorer/home` with `Cache-Control: no-store` and `Vary: Cookie`, and marketing is never asked. It is the person's
+Automatically Open Explorer setting, mirrored into the cookie by the editor and the Explorer. Every other request,
+`/?home`, a link from inside the site and a signed-out visit, routes on as below. A header test, no fetch.
+
 ## Routing table
 
 The router answers each request from the first row that matches, top to bottom:

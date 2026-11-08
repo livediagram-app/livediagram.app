@@ -325,3 +325,50 @@ describe('writeUserPreferences quota / failure handling', () => {
     expect(() => writeUserPreferences({ autoRebindArrows: false })).not.toThrow();
   });
 });
+
+// Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer"): every
+// write and every server read mirrors the setting into this address's cookie, which the router reads on the homepage.
+describe('the Open Explorer cookie', () => {
+  function mockCookies(initial = ''): string[] {
+    const writes: string[] = [];
+    vi.stubGlobal('document', {
+      location: { protocol: 'https:' },
+      get cookie() {
+        return writes.length > 0 ? writes[writes.length - 1]!.split(';')[0]! : initial;
+      },
+      set cookie(value: string) {
+        writes.push(value);
+      },
+    });
+    return writes;
+  }
+
+  it('sets it when the setting is written on, and clears it when written off', () => {
+    mockBrowser();
+    const writes = mockCookies();
+    writeUserPreferences({ autoOpenExplorer: true }, 'owner-1');
+    expect(writes.at(-1)).toMatch(/^lw_open_explorer=1; Max-Age=\d+; Path=\/; SameSite=Lax; Secure$/);
+    writeUserPreferences({ autoOpenExplorer: false }, 'owner-1');
+    expect(writes.at(-1)).toMatch(/^lw_open_explorer=; Max-Age=0;/);
+  });
+
+  it('follows the server on load, a change made in another app or device', async () => {
+    mockBrowser();
+    const writes = mockCookies();
+    mockedGet.mockResolvedValueOnce({ autoOpenExplorer: true });
+    await fetchUserPreferences('owner-1');
+    expect(writes.at(-1)).toMatch(/^lw_open_explorer=1;/);
+  });
+
+  it('leaves it alone for the editor in a workbench', () => {
+    mockBrowser();
+    const writes = mockCookies();
+    setWorkbenchConfinement({ scope: 'document', documentId: 'doc-1', ownerId: 'user_1' });
+    try {
+      writeUserPreferences({ autoOpenExplorer: true }, 'user_1');
+    } finally {
+      setWorkbenchConfinement(null);
+    }
+    expect(writes).toEqual([]);
+  });
+});

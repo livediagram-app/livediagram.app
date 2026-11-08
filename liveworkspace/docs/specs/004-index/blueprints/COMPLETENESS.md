@@ -171,7 +171,7 @@
 - [x] Errors and edge cases
 - [x] Security and trust
 - [x] Performance and limits
-- [ ] Presentation and UX
+- [x] Presentation and UX
 - [ ] Accessibility
 - [ ] Web Experience
 - [x] Observability

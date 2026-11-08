@@ -191,6 +191,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `packages/sites/src/app-origins.ts`                              | Every address an app answers on, per environment (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in on the app's own address")                                                                  |
 | `packages/sites/src/index.ts`                                    | liveworkspace's sites (liveworkspace/docs/specs/010-site/site-switcher.md): the platform first, then each app                                                                                               |
 | `packages/sites/src/network.ts`                                  | Visitors' addresses, for the platform's per-network limits and counts: the address a request came from, as the app's router names it when it forwarded the request, and th…                                 |
+| `packages/sites/src/open-explorer.ts`                            | Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer"): the homepage's redirect, the cookie sync, the static site's boot script                         |
 | `packages/sites/src/picture.ts`                                  | A profile picture URL as it may be stored, sent to other people and drawn (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): Google's own `picture` claim, an https URL …              |
 | `packages/sites/src/workspace-proxy.ts`                          | liveworkspace pages served under an app's own address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address")                                                             |
 | `packages/account-menu/src/AccountMenu.tsx`                      |                                                                                                                                                                                                             |
@@ -216,10 +217,10 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `packages/settings-ui/src/account-panels/data-export/`           | Settings › Your Data, in every app's Settings and liveworkspace.app's: `DataExportPanel`, `ExportRow`, `data-export-copy`                                                                                   |
 | `packages/settings-ui/src/account-panels/errors.ts`              | The accounts API's refusals in words, as every account panel and liveworkspace.app's own account pages say them                                                                                             |
 | `packages/settings-ui/src/account-panels/host.tsx`               | What the account panels reach their services with (AccountPanelsHost): the account API's request and the index client                                                                                       |
-| `packages/settings-ui/src/account-panels/lazy.tsx`               | accountPanels: API Tokens, Webhooks and Your Data drawn in place, each panel its own chunk fetched when its category first shows                                                                            |
+| `packages/settings-ui/src/account-panels/lazy.tsx`               | accountPanels: API Tokens and Your Data drawn in place, each panel its own chunk fetched when its category first shows                                                                                      |
 | `packages/settings-ui/src/account-panels/tokens-in-place.ts`     | Whether the Account section draws the API tokens, so an editor's own API Tokens row leaves out its link to liveworkspace.app                                                                                |
 | `packages/settings-ui/src/account-panels/tokens/TokensPanel.tsx` | Settings › API Tokens, in every app's Settings and liveworkspace.app's: making one, its secret shown once, revoking one                                                                                     |
-| `packages/settings-ui/src/account-panels/webhooks/`              | Settings › Webhooks (liveworkspace/docs/specs/004-index/blueprints/webhooks.md)                                                                                                                             |
+| `packages/settings-ui/src/webhooks/` | a document's Webhooks dialog body (`@liveworkspace/settings-ui/webhooks`), opened from the Explorer's ⋯ menu (liveworkspace/docs/specs/004-index/blueprints/webhooks.md) |
 | `packages/settings-ui/src/bind.ts`                               |                                                                                                                                                                                                             |
 | `packages/settings-ui/src/catalogue-model.tsx`                   | One app's settings as plain data (its derived catalogue, @liveworkspace/settings/catalogues/<app>, and its stored scopes) as the Settings view's model, so the Settings pa…                                 |
 | `packages/settings-ui/src/cloud-sync/GoogleDriveRow.tsx`         | Google Drive's row in Settings > Account > Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting")                                                                                            |
@@ -558,6 +559,7 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `packages/sites/src/explorer.test.ts`
 - `packages/sites/src/index.test.ts`
 - `packages/sites/src/network.test.ts`
+- `packages/sites/src/open-explorer.test.ts`
 - `packages/sites/src/picture-csp.test.ts`
 - `packages/sites/src/picture.test.ts`
 - `packages/sites/src/previews-proxy.test.ts`
@@ -568,11 +570,12 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `packages/settings-ui/src/SettingsCategoryList.test.tsx`
 - `packages/settings-ui/src/SettingsPanel.test.tsx`
 - `packages/settings-ui/src/SettingsView.test.tsx`
+- `packages/settings-ui/src/store-open-explorer.test.ts`
 - `packages/settings-ui/src/account-model.test.tsx`
 - `packages/settings-ui/src/account-panels/account-panels.test.tsx`
 - `packages/settings-ui/src/account-panels/data-export/data-export-panel.test.tsx`
 - `packages/settings-ui/src/account-panels/tokens/tokens-panel.test.tsx`
-- `packages/settings-ui/src/account-panels/webhooks/webhooks-panel.test.tsx`
+- `packages/settings-ui/src/webhooks/document-webhooks.test.tsx`
 - `packages/settings-ui/src/bind.test.ts`
 - `packages/settings-ui/src/catalogue-model.test.tsx`
 - `packages/settings-ui/src/cloud-sync/GoogleDriveRow.test.tsx`

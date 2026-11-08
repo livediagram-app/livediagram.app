@@ -1,28 +1,27 @@
-// Settings › Webhooks' side of the index (liveworkspace/docs/specs/004-index/webhooks.md "Routes"): the person's client
-// is the panel host's (AccountPanelsHost.index, asking as that page's Explorer does, with the person's token), what each
-// refusal tells the person, and the words for each destination, event, pause and delivery, written for someone who
-// has never met a webhook (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks).
+// A document's webhooks against the index (liveworkspace/docs/specs/004-index/webhooks.md "Managing them"): the calls
+// bound to the one document (and the share link the page holds for it, so an Editor through a link is let in), what
+// each refusal tells the person, and the words for each destination, event, pause and delivery, written for someone
+// who has never met a webhook.
 
 import {
   APPS,
   IndexError,
-  isApp,
-  orderedTopics,
-  splitTopic,
-  topicsOf,
-  topicOf,
   WEBHOOK_EVENT_APPS,
   WEBHOOK_EVENT_LABELS,
-  WEBHOOK_EVENTS,
-  WEBHOOK_TOPICS,
+  webhookEventsOf,
   type App,
+  type CreateWebhookInput,
+  type IndexClient,
+  type ShareAccess,
+  type UpdateWebhookInput,
   type Webhook,
   type WebhookDelivery,
   type WebhookEvent,
   type WebhookKind,
   type WebhookPauseReason,
-  type WebhookTopic,
+  type WebhookWho,
 } from '@liveworkspace/index-client';
+import { APP_ITEMS } from '@liveworkspace/sites';
 import { formatRelativeTime } from '@liveworkspace/ui';
 import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 export type WebhookResult<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -34,6 +33,33 @@ export async function attempt<T>(run: () => Promise<T>): Promise<WebhookResult<T
   } catch (err) {
     return { ok: false, error: err instanceof IndexError ? String(err.code) : 'offline' };
   }
+}
+
+/** The document's webhook calls, each as the index's client makes it, for this one item. */
+export type DocumentWebhooksApi = {
+  list: () => Promise<{ webhooks: Webhook[] }>;
+  create: (input: CreateWebhookInput) => Promise<{ webhook: Webhook; secret: string | null }>;
+  update: (id: string, input: UpdateWebhookInput) => Promise<{ webhook: Webhook }>;
+  remove: (id: string) => Promise<void>;
+  test: (id: string) => Promise<unknown>;
+  deliveries: (id: string) => Promise<{ deliveries: WebhookDelivery[] }>;
+};
+
+/** The calls for one document, through the share link the page opened it with, when it did. */
+export function documentWebhooksApi(
+  client: IndexClient,
+  itemId: string,
+  share?: ShareAccess | null,
+): DocumentWebhooksApi {
+  const via = share ?? undefined;
+  return {
+    list: () => client.listWebhooks(itemId, via),
+    create: (input) => client.createWebhook(itemId, input, via),
+    update: (id, input) => client.updateWebhook(id, input, via),
+    remove: (id) => client.deleteWebhook(id, via),
+    test: (id) => client.testWebhook(id, via),
+    deliveries: (id) => client.webhookDeliveries(id, via),
+  };
 }
 
 // ---------- Where it posts --------------------------------------------------------------------------------------
@@ -98,8 +124,8 @@ export type EventGroupId = 'items' | 'sharing' | 'work';
 
 type EventChoice = { event: WebhookEvent; label: string; hint: string };
 
-/** The events in groups a person recognises, each with a line saying when it fires. An app is offered only the events
- *  it sends (WEBHOOK_EVENT_APPS): card moves and forms are liveplanner's. */
+/** The events in groups a person recognises, each with a line saying when it fires. A document is offered only the
+ *  events its app sends (WEBHOOK_EVENT_APPS): card moves and forms are liveplanner's. */
 export const EVENT_GROUPS: readonly {
   id: EventGroupId;
   label: string;
@@ -109,9 +135,8 @@ export const EVENT_GROUPS: readonly {
     id: 'items',
     label: 'Items',
     events: [
-      { event: 'created', label: 'Item Created', hint: 'Something new is made or copied' },
-      { event: 'renamed', label: 'Item Renamed', hint: 'Its name changes' },
-      { event: 'moved', label: 'Item Moved', hint: 'It moves to another folder or space' },
+      { event: 'renamed', label: 'Renamed', hint: 'Its name changes' },
+      { event: 'moved', label: 'Moved', hint: 'It moves to another folder or space' },
       { event: 'trashed', label: 'Moved to the Trash', hint: 'It goes to the Trash' },
     ],
   },
@@ -121,11 +146,6 @@ export const EVENT_GROUPS: readonly {
     events: [
       { event: 'shared', label: 'Share Link Made', hint: 'Someone makes a link to share it' },
       { event: 'commented', label: 'Comment Added', hint: 'Someone comments or replies' },
-      {
-        event: 'mention',
-        label: 'Mentioned',
-        hint: 'Someone @-mentions you, or a teammate on the team’s items',
-      },
     ],
   },
   {
@@ -151,6 +171,31 @@ const NO_CARDS: Partial<Record<WebhookEvent, Pick<EventChoice, 'label' | 'hint'>
 };
 const hasCards = (app: App) => WEBHOOK_EVENT_APPS.card_moved.includes(app);
 
+// What each app's documents are (@liveworkspace/sites), so its events name them: a canvas, not an "item" (which
+// reads like an element).
+export const ITEM = (app: App): { one: string; many: string } => ({
+  one: APP_ITEMS[app].noun,
+  many: APP_ITEMS[app].nouns,
+});
+
+/** An app's own words for the document's events: "Canvas Renamed", "This canvas's name changes". */
+function itemWords(app: App, choice: EventChoice): EventChoice {
+  const { one } = ITEM(app);
+  const lower = one.toLowerCase();
+  switch (choice.event) {
+    case 'renamed':
+      return { ...choice, label: `${one} Renamed`, hint: `This ${lower}’s name changes` };
+    case 'moved':
+      return { ...choice, label: `${one} Moved`, hint: `This ${lower} moves to another folder` };
+    case 'trashed':
+      return { ...choice, label: `${one} Moved to the Trash`, hint: `This ${lower} goes to the Trash` };
+    case 'shared':
+      return { ...choice, hint: `Someone makes a link to share this ${lower}` };
+    default:
+      return choice;
+  }
+}
+
 /** One app's groups: only the events it sends, in its own words. Made once per app. */
 export type AppEventGroup = { id: EventGroupId; label: string; events: readonly EventChoice[] };
 const APP_GROUPS = new Map<App, readonly AppEventGroup[]>(
@@ -158,9 +203,15 @@ const APP_GROUPS = new Map<App, readonly AppEventGroup[]>(
     app,
     EVENT_GROUPS.map((group) => ({
       id: group.id,
-      label: group.id === 'work' && !hasCards(app) ? 'Actions' : group.label,
+      label:
+        group.id === 'items'
+          ? `This ${ITEM(app).one}`
+          : group.id === 'work' && !hasCards(app)
+            ? 'Actions'
+            : group.label,
       events: group.events
         .filter(({ event }) => WEBHOOK_EVENT_APPS[event].includes(app))
+        .map((choice) => itemWords(app, choice))
         .map((choice) => (hasCards(app) ? choice : { ...choice, ...NO_CARDS[choice.event] })),
     })).filter((group) => group.events.length > 0),
   ]),
@@ -168,50 +219,26 @@ const APP_GROUPS = new Map<App, readonly AppEventGroup[]>(
 
 export const eventGroupsFor = (app: App): readonly AppEventGroup[] => APP_GROUPS.get(app)!;
 
+/** Every event an app's documents send, in WEBHOOK_EVENTS order. */
+export const eventsOfApp = webhookEventsOf;
+
 const EVENT_NAMES = new Map<string, string>(
   APPS.flatMap((app) =>
-    eventGroupsFor(app).flatMap((g) => g.events.map((e): [string, string] => [topicOf(app, e.event), e.label])),
+    eventGroupsFor(app).flatMap((g) =>
+      g.events.map((e): [string, string] => [`${app}:${e.event}`, e.label]),
+    ),
   ),
 );
 
-/** An app's event by its name in Settings (its app is always drawn beside it, as that app's logo and wordmark). */
+/** An event by its name in the dialog, in the document's app's words ("Canvas Renamed"). */
 export const eventName = (app: string, type: WebhookDelivery['type']): string =>
-  EVENT_NAMES.get(`${app}:${type}`) ?? (type === 'ping' ? 'Test' : WEBHOOK_EVENT_LABELS[type]);
+  EVENT_NAMES.get(`${app}:${type}`) ?? WEBHOOK_EVENT_LABELS[type] ?? type;
 
-/** A webhook as the index sent it, its events read as topics: a bare event (an index not yet serving topics) as that
- *  event from every app that sends it. */
-export const withTopics = (webhook: Webhook): Webhook => ({
-  ...webhook,
-  events: orderedTopics((webhook.events as readonly string[]).flatMap(topicsOf)),
-});
-
-/** The apps the card covers: the one Settings is kept to, or every app (All, or liveworkspace.app from no app). */
-export function webhookApps(shown: string | null): { current: App | null; apps: readonly App[] } {
-  const app = shown?.replace(/\.app$/, '') ?? null;
-  return isApp(app) ? { current: app, apps: [app] } : { current: null, apps: APPS };
-}
-
-/** Every topic of these apps, in WEBHOOK_TOPICS order. */
-export const topicsOfApps = (apps: readonly App[]): WebhookTopic[] =>
-  apps.length === APPS.length
-    ? [...WEBHOOK_TOPICS]
-    : WEBHOOK_TOPICS.filter((topic) => apps.includes(splitTopic(topic).app));
-
-/** A webhook's events by app, in APPS order, each app's in WEBHOOK_EVENTS order: one pass over the list. */
-export function eventsByApp(events: readonly WebhookTopic[]): Map<App, WebhookEvent[]> {
-  const byApp = new Map<App, WebhookEvent[]>();
-  for (const topic of events) {
-    const { app, event } = splitTopic(topic);
-    const list = byApp.get(app);
-    if (list) list.push(event);
-    else byApp.set(app, [event]);
-  }
-  return byApp;
-}
-
-/** How many events an app sends in all. */
-export const appEventCount = (app: App): number =>
-  WEBHOOK_EVENTS.reduce((n, event) => n + (WEBHOOK_EVENT_APPS[event].includes(app) ? 1 : 0), 0);
+/** Who Did It: every editor's changes, or only those of whoever added it. */
+export const WHO_CHOICES: readonly { who: WebhookWho; label: string; hint: string }[] = [
+  { who: 'anyone', label: 'Anyone', hint: 'Whoever does it' },
+  { who: 'me', label: 'Only Me', hint: 'Only what you do yourself' },
+];
 
 // ---------- Refusals --------------------------------------------------------------------------------------------
 
@@ -223,14 +250,17 @@ const URL_INVALID: Record<WebhookKind, string> = {
 
 const MESSAGES: Record<string, string> = {
   invalid_webhook: 'Give it a name and pick at least one event.',
+  webhooks_need_editor:
+    'Only people who can edit all of this document can manage its webhooks. Ask its owner for an Editor link.',
+  not_found: 'This document is no longer there, or you can no longer open it.',
+  forbidden: 'Only people who can edit all of this document can manage its webhooks.',
   webhook_url_private:
     'That address is on a private or internal network. Use one the internet can reach.',
-  webhook_limit: 'There can be up to 10 webhooks here. Delete one to add another.',
+  webhook_limit: 'A document can have up to 10 webhooks. Delete one to add another.',
   webhook_not_found: 'That webhook is no longer there. It may have changed elsewhere.',
   webhook_paused: 'Resume it to send a test.',
   webhooks_unavailable: 'Webhooks aren’t available just now. Try again in a minute.',
   webhooks_need_account: 'Sign in to your account to manage webhooks.',
-  not_team_admin: 'Only the team’s admins can add webhooks for it.',
   unauthorized: 'You’ve been signed out. Sign in again to carry on.',
   offline: 'Couldn’t connect. Check your connection and try again.',
 };
@@ -247,7 +277,7 @@ export type WebhookTone = 'live' | 'paused' | 'warn';
 // Why it paused itself, and what to do about it.
 const PAUSES: Record<Exclude<WebhookPauseReason, 'paused'>, string> = {
   creator_left:
-    'It paused because whoever added it no longer runs the team. Resume it to send as you.',
+    'It paused because whoever added it can no longer edit this document. Resume it to send as you.',
   failing:
     'It paused after 20 deliveries in a row failed. Check the address still works, then resume it.',
   gone: 'It paused because the address said it no longer exists. If the address changed, add the webhook again.',

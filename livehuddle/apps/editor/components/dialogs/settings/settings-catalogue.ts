@@ -1,4 +1,4 @@
-import { DATA_EXPORT_CATEGORY, WEBHOOKS_CATEGORY } from '@liveworkspace/settings/account';
+import { DATA_EXPORT_CATEGORY } from '@liveworkspace/settings/account';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import {
@@ -682,6 +682,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     },
     rows: [
       {
+        // Automatically Open Explorer, a common setting (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on
+        // the Explorer"): the homepage opens the Explorer instead. The preferences write mirrors it into this address's
+        // cookie, which the router reads (@liveworkspace/sites/open-explorer).
+        kind: 'toggle',
+        key: 'autoOpenExplorer',
+        keywords: 'automatically open explorer redirect home homepage start landing skip straight',
+        label: 'Automatically Open Explorer',
+        description:
+          'Opening the homepage while signed in takes you straight to your Explorer. A link to the homepage from inside the app still shows it.',
+        read: (p) => p.autoOpenExplorer === true,
+        write: (p, v) => ({ ...p, autoOpenExplorer: v }),
+        event: { category: 'UI', on: 'AutoOpenExplorerOn', off: 'AutoOpenExplorerOff' },
+      },
+      {
         // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
         // and this switch brings it back. The shared Explorer draws it (@liveworkspace/explorer's HomeHero).
         kind: 'toggle',
@@ -834,29 +848,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     ],
   },
-  // Webhooks (liveworkspace/docs/specs/004-index/webhooks.md "Managing them"): an account's, like API tokens. Signed
-  // in, the Account section's Webhooks links to liveworkspace's Settings; a guest gets this stand-in in its place,
-  // the email stand-in's shape, so it says why and links to sign in as the API Tokens row does.
-  {
-    id: 'webhooks',
-    label: WEBHOOKS_CATEGORY.label,
-    parent: 'account',
-    rows: [
-      {
-        kind: 'note',
-        key: 'webhooksSignIn',
-        keywords: WEBHOOKS_CATEGORY.keywords,
-        label: WEBHOOKS_CATEGORY.label,
-        description: WEBHOOKS_CATEGORY.description,
-        note: WEBHOOKS_CATEGORY.signInNote,
-        signIn: true,
-        available: (ctx) => !ctx.signedIn,
-      },
-    ],
-  },
   // Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): downloading everything an account owns,
   // made in liveworkspace's Settings. Signed in, the Account section's Your Data draws it in place; a guest gets this
-  // stand-in, as for Webhooks.
+  // stand-in, as for API Tokens.
   {
     id: 'data',
     label: DATA_EXPORT_CATEGORY.label,

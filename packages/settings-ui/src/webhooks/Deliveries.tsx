@@ -1,14 +1,13 @@
 import { CompactEmptyState } from '@liveworkspace/ui';
 import { dateFormat } from '@liveworkspace/ui/date-format';
-import { SettingsSharedGlyph } from '../../glyphs';
+import { SettingsSharedGlyph } from '../glyphs';
 import type { WebhookDelivery } from '@liveworkspace/index-client';
 import { DeliveredGlyph, FailedGlyph, WaitingGlyph } from './marks';
-import { AppTag } from './pickers';
+import { useDocumentWebhooks } from './host';
 import { deliveryLine, eventName } from './webhooks-api';
 
-// A webhook's Recent Deliveries (webhooks.md "Delivery"): newest first, each its event, the app it came from (its logo
-// and wordmark; a test has none) and item, what happened in
-// words, how many tries, and when, marked green, red or amber.
+// A webhook's Recent Deliveries (webhooks.md "Delivery"): newest first, each its event in the document's app's words,
+// what happened in words, how many tries, and when, marked green, red or amber.
 
 // In the reader's locale, made once (@liveworkspace/ui/date-format).
 const TIME = dateFormat({ day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -20,6 +19,7 @@ const MARKS: Record<WebhookDelivery['state'], { Glyph: typeof DeliveredGlyph; to
 };
 
 export function Deliveries({ deliveries }: { deliveries: WebhookDelivery[] | null }) {
+  const { app } = useDocumentWebhooks();
   if (deliveries === null)
     return (
       <div aria-busy className="flex flex-col gap-2 py-1">
@@ -37,15 +37,13 @@ export function Deliveries({ deliveries }: { deliveries: WebhookDelivery[] | nul
         size="small"
         icon={<SettingsSharedGlyph id="webhooks" />}
         title="No Deliveries Yet"
-        description="Send a test to try it, or wait for something to happen to the items it watches."
+        description="Send a test to try it, or wait for something to happen to this document."
       />
     );
   return (
     <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-slate-50/60 text-sm dark:divide-slate-700/70 dark:border-slate-700 dark:bg-slate-900/30">
       {deliveries.map((d) => {
         const { Glyph, tone } = MARKS[d.state];
-        // A test is liveworkspace's, about no app.
-        const app = d.type === 'ping' || !d.app || d.app === 'liveworkspace' ? null : d.app;
         const at = d.lastAttemptAt ?? d.occurredAt;
         return (
           <li key={d.id} data-delivery={d.state} className="flex items-start gap-2.5 px-3 py-2.5">
@@ -54,13 +52,7 @@ export function Deliveries({ deliveries }: { deliveries: WebhookDelivery[] | nul
             </span>
             <span className="min-w-0 flex-1">
               <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 text-slate-900 dark:text-white">
-                <span className="font-medium">{eventName(d.app, d.type)}</span>
-                {app ? <AppTag app={app} /> : null}
-                {d.type !== 'ping' ? (
-                  <span className="min-w-0 truncate text-slate-600 dark:text-slate-300">
-                    · {d.title}
-                  </span>
-                ) : null}
+                <span className="font-medium">{eventName(app, d.type)}</span>
               </span>
               <span className="block text-xs text-slate-500 dark:text-slate-400">
                 {deliveryLine(d)}

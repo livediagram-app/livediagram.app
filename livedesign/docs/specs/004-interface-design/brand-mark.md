@@ -65,7 +65,7 @@ in the same box, with a small gap between them:
 
 | Size | Where                                                      | Mark | Wordmark | Gap  |
 | ---- | ---------------------------------------------------------- | ---- | -------- | ---- |
-| `xs` | Inside a line of text: liveworkspace's Settings › Webhooks | 16px | 13px     | 4px  |
+| `xs` | Inside a line of text: liveworkspace's Settings › Your Data  | 16px | 13px     | 4px  |
 | `sm` | The marketing hero's mock                                  | 20px | 16px     | 8px  |
 | `md` | Site and editor headers                                    | 28px | 18px     | 10px |
 | `lg` | The site footer                                            | 40px | 24px     | 12px |

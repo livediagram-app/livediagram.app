@@ -10,7 +10,6 @@ import {
 } from '@liveworkspace/settings-ui';
 import { BrandMark } from '@liveplanner/ui';
 import { APP_SITES, PLATFORM_SITE, siteOfApp, workspaceOriginFor } from '@liveworkspace/sites';
-import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { currentBearer } from '@/lib/api/core';
 
 // What this editor hands the shared Settings panel (@liveworkspace/settings-ui SettingsPanel;
@@ -39,11 +38,11 @@ export const settingsRequest = bearerSettingsRequest({
 });
 
 // The Account section's own panels, edited in place (liveworkspace/docs/specs/010-site/site.md "Settings"): sign-in and
-// devices over the account API's bearer door (Google's way back reopens Account > Profile), and the API tokens,
-// webhooks (the index, through this router) and Download Your Data, each fetched when its category is first shown.
+// devices over the account API's bearer door (Google's way back reopens Account > Profile), and the API tokens
+// and Download Your Data, each fetched when its category is first shown.
 export const ACCOUNT_SETTINGS = {
   security: bearerAccountSecurity(settingsRequest, { settingsParam: 'account:account' }),
-  ...accountPanels({ request: settingsRequest, index: indexClient }),
+  ...accountPanels({ request: settingsRequest }),
 };
 
 // Each app's prism in its accent (this app's own, as its Explorer filter shows it), and liveworkspace's for All.

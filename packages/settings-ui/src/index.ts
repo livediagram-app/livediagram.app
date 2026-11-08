@@ -43,7 +43,6 @@ export {
 export { SETTINGS_ROW_ATTRIBUTE } from './settings-scroll-anchor';
 export { readSettingsView, writeSettingsView } from './settings-view-memory';
 export { SettingsScopeSwitch, useSettingsScope, type SettingsScope } from './scope';
-export { SettingsShownAppProvider, useSettingsShownApp } from './shown-app';
 export {
   SettingsPanel,
   preloadSettingsPanel,

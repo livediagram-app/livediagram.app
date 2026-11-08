@@ -1,10 +1,12 @@
 // Default folders: where a person's new items land when they make one without choosing a place. One default
 // per entry: the host app's kind ("Plans": every new plan no more specific entry holds), then each mode and kind the
-// host names ("Whiteboards", "Event Storming boards"), then each of its template families ("Kanban plans"). Per
+// host names ("Drawings", "Workshops"), then each of its template families ("Kanban plans"). Per
 // person and per app; the index keeps them (`/placement-defaults`) and files a new item by them
-// (placementDefaultKeysFor: kind, then template, then mode, then the app's). These are the entries' words.
+// (placementDefaultKeysFor: kind, then template, then mode, then the app's). A mode-only app (filesByModeOnly,
+// livediagram) offers its modes alone: no app entry, no template families. These are the entries' words.
 
 import {
+  filesByModeOnly,
   placementDefaultKey,
   placementDimensionKey,
   type App,
@@ -23,31 +25,33 @@ export type DefaultEntry = {
 };
 
 /** A default the host offers for what its items open in (`mode`) or the kind of their first tab (`kind`), from
- *  the parts of its creation intent: livediagram's Diagrams, Whiteboards, Sessions, Event Storming boards. */
+ *  the parts of its creation intent: livediagram's Diagrams, Drawings, Workshops. */
 export type DefaultFolderOption = {
   dimension: 'mode' | 'kind';
   value: string;
-  // In a list: "Whiteboards".
+  // In a list: "Drawings".
   label: string;
-  // Inside a sentence: "whiteboards".
+  // Inside a sentence: "drawings".
   noun: string;
 };
 
 /** The entries, in the order every surface lists them: the app's kind, the host's modes and kinds, then its
- *  template families. */
+ *  template families. A mode-only app's are its options alone. */
 export function defaultEntries(
   app: App,
   kind: Words,
   templates: readonly LensOption[],
   options: readonly DefaultFolderOption[] = [],
 ): DefaultEntry[] {
+  const optionEntries = options.map((o) => ({
+    key: placementDimensionKey(app, o.dimension, o.value),
+    label: o.label,
+    noun: o.noun,
+  }));
+  if (filesByModeOnly(app)) return optionEntries;
   return [
     { key: placementDefaultKey(app), label: kind.many, noun: kind.lowerMany },
-    ...options.map((o) => ({
-      key: placementDimensionKey(app, o.dimension, o.value),
-      label: o.label,
-      noun: o.noun,
-    })),
+    ...optionEntries,
     ...templates.map((t) => ({
       key: placementDefaultKey(app, t.value),
       label: `${t.label} ${kind.lowerMany}`,
@@ -129,8 +133,9 @@ export function destinationOf(
   if (!id) return { kind: 'root' };
   const folder = byId.get(id);
   if (folder) return { kind: 'folder', folder, teamName: teamName(folder.teamId) };
-  // A template's items fall back to the app's default (the first entry), as a create does.
-  const app = entries[0];
+  // A template's items fall back to the app's default (its entry's key has no ":"), as a create does. A mode-only
+  // app has no app entry, so nothing to fall back to.
+  const app = entries.find((e) => !e.key.includes(':'));
   const appFolder =
     app && app.key !== entry.key ? byId.get(defaults.get(app.key) ?? '') : undefined;
   return { kind: 'unreachable', fallback: appFolder ?? null };

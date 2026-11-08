@@ -20,28 +20,8 @@ describe('accountCategories, API Tokens', () => {
   });
 });
 
-// Its Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): the same, beside API Tokens.
-const webhooksOf = (section: Parameters<typeof accountCategories>[0]) =>
-  accountCategories(section).find((c) => c.id === 'webhooks');
-
-describe('accountCategories, Webhooks', () => {
-  it('draws the host’s own webhooks in the panel when it has them, after API Tokens', () => {
-    const render = () => null;
-    const section = { ...base, renderTokens: render, renderWebhooks: render };
-    const row = webhooksOf(section)?.rows[0];
-    expect(row).toMatchObject({ kind: 'custom', key: 'webhooks', label: 'Webhooks' });
-    expect(row?.kind === 'custom' && row.render).toBe(render);
-    const ids = accountCategories(section).map((c) => c.id);
-    expect(ids.indexOf('webhooks')).toBe(ids.indexOf('tokens') + 1);
-  });
-
-  it('leaves the category out where the host hands none in', () => {
-    expect(webhooksOf(base)).toBeUndefined();
-  });
-});
-
 // Its Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): the same, the last of the rail's
-// Account, before the Developers' API Tokens and Webhooks.
+// Account, before the Developers' API Tokens.
 const dataOf = (section: Parameters<typeof accountCategories>[0]) =>
   accountCategories(section).find((c) => c.id === 'data');
 
@@ -50,17 +30,26 @@ describe('accountCategories, Your Data', () => {
     const render = () => null;
     const section = {
       ...base,
-      renderWebhooks: render,
+      renderTokens: render,
       renderDataExport: render,
     };
     const row = dataOf(section)?.rows[0];
     expect(row).toMatchObject({ kind: 'custom', key: 'dataExport', label: 'Your Data' });
     expect(row?.kind === 'custom' && row.render).toBe(render);
     const ids = accountCategories(section).map((c) => c.id);
-    expect(ids).toEqual(['notifications', 'privacy', 'accessibility', 'data', 'webhooks']);
+    expect(ids).toEqual(['notifications', 'privacy', 'accessibility', 'data', 'tokens']);
   });
 
   it('leaves the category out where the host hands none in', () => {
     expect(dataOf(base)).toBeUndefined();
+  });
+});
+
+// Webhooks left Settings (liveworkspace/docs/specs/004-index/webhooks.md): they are set per document now.
+describe('accountCategories, no Webhooks', () => {
+  it('lists no Webhooks category, whatever the host hands in', () => {
+    const render = () => null;
+    const section = { ...base, renderTokens: render, renderDataExport: render };
+    expect(accountCategories(section).map((c) => c.id)).not.toContain('webhooks');
   });
 });

@@ -151,9 +151,13 @@ describe('the Settings panel lists the account once', () => {
     expect(categories.filter((c) => c.group === 'developers').map((c) => c.label)).toEqual([
       'API Tokens',
     ]);
-    // Profile leads the rail; the account's answer to their bare ids, Profile to `profile` too.
+    // Profile leads the rail; the account's answer to their bare ids, Profile to `profile` too, and to `webhooks`,
+    // the category that left Settings for each document's own.
     expect(categories[0]).toMatchObject({ id: 'account:account', label: 'Profile' });
-    expect(categories[0]!.aliases).toEqual(expect.arrayContaining(['account', 'profile']));
+    expect(categories[0]!.aliases).toEqual(
+      expect.arrayContaining(['account', 'profile', 'webhooks']),
+    );
+    expect(categories.some((c) => c.label === 'Webhooks')).toBe(false);
     expect(categories.find((c) => c.id === 'account:tokens')!.aliases).toContain('tokens');
     // Each app's own email switches join the account's Notifications, in its one Email section, each marked with its
     // app's logo beside the Account section's own, which are every app's.
@@ -211,15 +215,9 @@ describe('the Settings panel lists the account once', () => {
     });
   }
 
-  it('makes an editor’s own Webhooks and Your Data, where the host has none, top-level in the account’s order', () => {
+  it('makes an editor’s own Your Data, where the host has none, top-level in the account’s order', () => {
     const own: SettingsCategory[] = [
       ...editorOwn(),
-      {
-        id: 'webhooks',
-        label: 'Webhooks',
-        parent: 'account',
-        rows: [custom('webhooks', 'Webhooks')],
-      },
       {
         id: 'data',
         label: 'Your Data',
@@ -237,13 +235,12 @@ describe('the Settings panel lists the account once', () => {
       'Accessibility',
       'Your Data',
       'API Tokens',
-      'Webhooks',
     ]);
     for (const c of account) {
       expect(c.parent, c.id).toBeUndefined();
       expect(c.icon, c.id).toBeTruthy();
     }
-    expect(categories.find((c) => c.id === 'account:webhooks')?.group).toBe('developers');
+    expect(categories.find((c) => c.id === 'account:tokens')?.group).toBe('developers');
     expect(categories.find((c) => c.id === 'account:data')?.group).toBe(ACCOUNT_GROUP);
   });
 });

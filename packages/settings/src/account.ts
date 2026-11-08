@@ -180,18 +180,6 @@ export function readAccountToggle(all: SettingsBlob, row: AccountToggle): boolea
   return typeof value === 'boolean' ? value : row.fallback;
 }
 
-// Webhooks (liveworkspace/docs/specs/004-index/webhooks.md "Managing them"): an account's, like API tokens, made and
-// managed in liveworkspace's Settings. The category's words wherever it shows, and the stand-in a guest's editor shows
-// in its place (each editor's user-preferences.md), so the two read the same in every app.
-export const WEBHOOKS_CATEGORY = {
-  label: 'Webhooks',
-  description:
-    'Post what happens to your work, or your team’s, to a Slack or Microsoft Teams channel, or to a service you run.',
-  keywords:
-    'webhook webhooks slack microsoft teams channel post notify integration automation zapier url events signed',
-  signInNote: 'Sign in to add webhooks.',
-} as const;
-
 // Download Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): an account's, made on
 // liveworkspace's Settings. The category's words wherever it shows, and the stand-in a guest's editor shows in its
 // place (each editor's user-preferences.md).

@@ -17,8 +17,8 @@ import {
 import type { WebhookKind } from '@liveworkspace/index-client';
 import type { EventGroupId } from './webhooks-api';
 
-// Settings › Webhooks' marks (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks): each destination's
-// tile, the glyphs on its buttons and pickers, and an app named by its logo. The repo carries no Slack or Teams
+// The Webhooks dialog's marks (liveworkspace/docs/specs/004-index/webhooks.md "Managing them"): each destination's
+// tile, and the glyphs on its buttons and pickers. The repo carries no Slack or Teams
 // logo, so each destination is a plain glyph on a tile in that tool's own colour: Slack's hash on its aubergine,
 // Teams' people on its indigo, a service's braces on slate. Every glyph is a vendored Lucide one.
 
@@ -71,6 +71,3 @@ export function GroupGlyph({ id }: { id: EventGroupId }) {
   const Glyph = GROUP_GLYPHS[id];
   return <Glyph />;
 }
-
-// The apps named by their logos, shared with Your Data.
-export { AppName, EveryAppName } from '../app-names';

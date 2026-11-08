@@ -114,18 +114,21 @@ describe('commonCatalogue', () => {
     ]);
   });
 
-  it("puts Show Home Banner under the platform's Explorer, not an app's Documents or Plans", () => {
+  it("puts Automatically Open Explorer, then Show Home Banner, under the platform's Explorer, not an app's Documents or Plans", () => {
     const explorer = catalogue.categories.find((c) => c.id === 'explorer')!;
     expect(explorer.tile).toBe('folder');
     expect(explorer.rows.map((r) => [r.id, r.label, r.section ?? null])).toEqual([
+      ['autoOpenExplorer', 'Automatically Open Explorer', null],
       ['homeBanner', 'Show Home Banner', null],
     ]);
-    expect(apps.get('homeBanner')).toEqual([
-      'livediagram.app',
-      'liveplanner.app',
-      'livedocuments.app',
-      'livedesign.app',
-    ]);
+    for (const id of ['autoOpenExplorer', 'homeBanner']) {
+      expect(apps.get(id)).toEqual([
+        'livediagram.app',
+        'liveplanner.app',
+        'livedocuments.app',
+        'livedesign.app',
+      ]);
+    }
     expect(apps.get('contentsPlacement')).toEqual(['livedocuments.app', 'livedesign.app']);
   });
 

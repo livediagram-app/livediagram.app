@@ -1576,6 +1576,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone hid the Audio Proximity Ring, the ring showing where people can hear them while they talk, in Settings > Collaborate.',
   'UI|Toggled|HearingRingOn':
     'Someone turned the Audio Proximity Ring back on, in Settings > Collaborate.',
+  'UI|Toggled|AutoOpenExplorerOff':
+    'Someone turned off Automatically Open Explorer in Settings > Explorer, so the homepage shows again when they open it.',
+  'UI|Toggled|AutoOpenExplorerOn':
+    'Someone turned on Automatically Open Explorer in Settings > Explorer, so opening the homepage while signed in takes them straight to their Explorer.',
   'UI|Toggled|HomeBannerOff':
     "Someone hid Explorer Home's banner, from its close button or Settings > Explorer. Home then opens on its page header.",
   'UI|Toggled|HomeBannerOn':

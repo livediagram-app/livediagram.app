@@ -394,6 +394,11 @@ built once here. It is shown here and, through each switched-on app's router, at
   the app's own where the apps differ (`signInReasons(app, words)`, `packages/explorer`): an app with an MCP server
   offers "Connect AI tools" (API tokens and AI assistants over MCP); livehuddle, which has none, offers "Use the
   API" (API tokens for your own scripts) instead.
+- **Opening on the Explorer.** With the person's Automatically Open Explorer switch on (`autoOpenExplorer`, common, in
+  `all`), the homepage, here and on every app's address, opens the Explorer's Home instead
+  ([one-explorer.md](../004-index/one-explorer.md#opening-on-the-explorer)). The Explorer's read of the settings keeps
+  the address's `lw_open_explorer` cookie in step; here the root layout's head script reads it, on an app's address
+  the app's router.
 - **Home's banner.** Closing it is the person's `homeBanner` setting, a common one kept in `all`
   (`PATCH /api/account/settings`; read with the app's scopes, an app's old copy counting until `all` has one,
   [accounts.md](../003-accounts/accounts.md#common-settings)), so it stays closed in every app's Home and editor too, and the
@@ -411,7 +416,7 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link, the old
   `/account/settings` and `/account/tokens`, a Search result) opens the Settings panel here, in place, once the
   page knows who is here (`settingsOpening` in `lib/explorer/host.ts`): `notifications`, `profile` (or `account`),
-  `tokens`, `webhooks`, `data`, `privacy` and `accessibility` open All on that Account category, `all` opens All, an app's name
+  `tokens`, `data`, `privacy` and `accessibility` open All on that Account category (an old `webhooks` opens Profile), `all` opens All, an app's name
   (`liveplanner`) that app's side, `teams` goes to the Invites, and anything else (an editor's own category) the
   side of the app the person came from. It works on a move inside the Explorer too, not only on arrival. Signed
   out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
@@ -446,7 +451,7 @@ the `liveworkspace-app` meta an app's E2E stack adds ([one-explorer.md](../004-i
 - **Links** to the app's items, New, previews, the Library and Import from use the page's own origin
   (`appOrigin`); share links are always the app's public site. The Settings panel opens here in place (the bottom
   bar, the account menu, `?settings=`). Its Profile's Name and Colour is set in place there, over the app's token
-  (`/api/workspace/account/profile`), and its Sign-in Methods, Where You're Signed In, API Tokens, Webhooks and Your
+  (`/api/workspace/account/profile`), and its Sign-in Methods, Where You're Signed In, API Tokens and Your
   Data draw in place too, over the same token ([Settings](#settings), "On an app's address"), never a link to
   liveworkspace.app. Its search opens Profile and API Tokens in place as well.
 - **This Browser** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
@@ -579,10 +584,10 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   **Account**: **Profile**, **Notifications**, **Privacy**, **Accessibility** and **Your Data**;
   **Apps**: the merged categories (one **Editor**, **Presenting**, **Appearance**, **Keyboard**, **Panels**, one
   **Getting Started** and one **Explorer**, whichever apps have them, in the merge's order);
-  **Developers**: **API Tokens** and **Webhooks**. A label none of whose categories are listed (on the app's side,
+  **Developers**: **API Tokens** alone. A label none of whose categories are listed (on the app's side,
   say) is left out with them. Each account category is top-level with its own coloured tile
   (`SettingsCategoryTile`: Profile teal, Notifications red, Privacy emerald, Accessibility indigo, Your Data slate,
-  API Tokens violet, Webhooks cyan; the line art is the shared bell, key, hook and tray). The account's categories hold what belongs to the person in every app, the
+  API Tokens violet; the line art is the shared bell, key and tray). The account's categories hold what belongs to the person in every app, the
   `all` scope ([accounts.md](../003-accounts/accounts.md#settings)) and the profile: **Profile** (the display name and presence colour
   collaborators see, with a preview of their cursor and avatar, `ProfileEditor` in `@liveworkspace/settings-ui`; the apps' one palette
   `PRESENCE_COLOURS`, plus Automatic; leaving the name empty shows the name they signed up with),
@@ -592,8 +597,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   **Accessibility** (Reduce Motion), **API Tokens** (making a token, seeing its
   secret once with room to copy it, and revoking one, the AI tools connected in an app among them,
   `packages/settings-ui/src/account-panels/tokens/`, its own chunk fetched when the category is first shown),
-  **Webhooks** (`account-panels/webhooks/`, its own chunk,
-  [webhooks.md](../004-index/webhooks.md#managing-them)) and **Your Data** (downloading everything the
+  and **Your Data** (downloading everything the
   person owns, or a team they run owns, as one zip, `account-panels/data-export/`, its own chunk,
   [data-export.md](../003-accounts/data-export.md#settings)). The switches are plain data in
   `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
@@ -645,7 +649,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     - **Profile**: Name and Colour, Time Zone, Sign-in Methods, Where You're Signed In, Cloud Sync, Your Account,
       then an editor's This Browser, and the Danger Zone last: Reset All Settings above Delete Account. Both apply to
       every app, so under All they carry liveworkspace's mark (Reset only where it resets the account's settings).
-    - **API Tokens**, **Webhooks**, **Your Data**: an app's own introduction to the panel (what a token lets your
+    - **API Tokens**, **Your Data**: an app's own introduction to the panel (what a token lets your
       scripts and AI tools do, the guide to connecting one) comes first, above the panel (`fold-account.ts`).
   - **No way out of a category** (since 8 November 2026). No row opens another category: a setting is shown in the
     one category it belongs to, never pointed at from another. Accessibility's **UI Scale** link to Appearance went,
@@ -668,7 +672,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     phone. A nested row under a switch with the same apps keeps the column but leaves the logos to its switch. The
     words **All apps** under a description are left out wherever the logos are drawn, since the mark says it. Rows
     that are whole panels rather than a row (Profile's header, Name and Colour, Sign-in Methods, API Tokens,
-    Webhooks, Your Data) draw no logos: they are the account's, in every app. The logos are the host's
+    Your Data) draw no logos: they are the account's, in every app. The logos are the host's
     `renderLogo`, small inline marks drawn only for the rows shown; a row's cluster is memoised on its apps, which
     keep their identity while the row does. While an editor's side loads, its own rows already carry its logo, so
     the names do not shift when the rest arrives.
@@ -693,56 +697,9 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     rebuilt only when what it reads changes, the same build for both sides (the app's side passes `only`, which
     keeps a row after it is merged, so a merged row keeps every app's logo there too); the timed budgets on 40,000
     rows and on the five apps' catalogues are in `merge-categories.test.tsx`.
-- **Webhooks** is one card, drawn as the Notifications' cards are (the same frame, hairlines between its parts, the
-  same type), in the plain words of someone who has never met a webhook:
-  - **The top** says in a line what a webhook is ("When something happens to your work, post a message to Slack,
-    Microsoft Teams or a service you run"), names the apps it covers by their logos (each app's Living Prism and
-    wordmark, never the name as plain text, as everywhere a product is named in this panel), and holds **Add
-    Webhook** once there is one.
-  - **Each app's events are its own** ([webhooks.md "What it sends"](../004-index/webhooks.md#what-it-sends)): an
-    event is always offered and shown with the logo and wordmark of the app that sends it (Share Link Made for
-    livediagram is not Share Link Made for liveplanner). The header switch decides which apps the card covers: on
-    **This App** (opened in livediagram, say) the top names that app alone, Add Webhook and editing offer only its
-    events (never another app's: liveplanner's Card Moved and Form Response are not offered in livediagram), the
-    list holds the webhooks with at least one of its events (a line under it counts the others, which send only
-    other apps' events, and points to All), a row's events and its deliveries show only that app's beside a count
-    of the rest, and saving a webhook's events keeps every other app's as they were. On **All**, and on
-    liveworkspace.app opened from no app, every app's events are offered and shown.
-  - **Each webhook** is a row: its destination's mark (Slack's hash, Teams' people, a service's braces, on a tile
-    in each one's colour), its name, a status badge (**Active**; **Paused**; **Needs Attention** when it paused
-    itself, its reason and a **Resume** beside it in an amber note), whose items it reports on and the address's
-    host, and its last delivery ("Delivered 2 hours ago", or "Failed 31 Oct" in red). **Send Test** is a button;
-    Pause or Resume and Delete are icon buttons with tooltips; Delete asks in a confirmation popover. Send Test's
-    result is shown on the row: "Sending a test…", then the test's own delivery, read back from Recent Deliveries
-    a few times over about 20 seconds ("Test delivered: your endpoint answered 200", or why it failed), or "Test
-    queued" if it hasn't gone yet. Under it, **Sends**: one line per app, the app's logo and wordmark and its
-    events as small labels ("Every Event" when it sends all of that app's), with **Edit Events** opening the same
-    event picker as Add Webhook in place (Save and Cancel; Save waits for at least one event overall); and **Recent
-    Deliveries**, a section closed by default, read when first opened: each delivery's event, the app it came from
-    (its logo and wordmark; a test has none), item, outcome in words and time, with a green, red or amber mark.
-  - **Adding one** unfolds a form in the card, in the order a person thinks of it: **Where Should It Post?** (three
-    selectable cards, Slack, Microsoft Teams and Your Own Service, each its mark, name and a line on what arrives,
-    the chosen one ringed with a filled dot, a hover and a keyboard focus ring of their own, three across from a
-    small screen up and stacked on a phone), **Connect It** (one panel for the chosen destination: its mark and
-    "Connect Slack", the steps to get the address as a numbered guide, each number in a disc, then the address
-    field labelled for the choice; Your Own Service has its one line in place of steps), a **Name**, **Whose Items**
-    (your own, or each team you run, as option tiles; none to choose when you run no team) and **What Should It
-    Send?**: the events per app, each app a card headed by its logo and wordmark with its own count, Select All and
-    Clear, holding its events as checkable rows, each with the app's logo and wordmark beside its name and a line
-    saying when it fires, grouped under Items, Sharing and Comments (with **Mentioned**: "Someone @-mentions you, or
-    a teammate on the team’s items"), and Actions (liveplanner's: Actions, Cards and Forms, with Card Moved and Form
-    Response). On This App the one app's card is open; on All each app's card opens and closes (closed at first,
-    its count saying what is chosen), with Select All and Clear for every app at the step's head. All the offered
-    events start chosen. Add Webhook waits for a name, an address and one event. A plain webhook's signing secret then shows once, with how to
-    check a signature; a Slack or Teams one is ready, with a note to send a test.
-  - With none yet, the empty state ("No Webhooks Yet", a line on what they do, **Add Webhook**). Loading shows the
-    card's skeleton; a failed read says why with **Try Again**.
-  - **Signed in only, as API Tokens are.** A guest gets no Webhooks category on liveworkspace.app or on an app's
-    address (a guest's panel there has no Account section); `?settings=webhooks` signed out asks them to sign in
-    and come back to the same address, as `?settings=tokens` does ([The Explorer](#the-explorer), Addresses
-    handed over); and in an editor's own Settings a guest finds a **Webhooks** category under Account holding
-    one stand-in row, "Sign in to add webhooks." with the **Sign In** link, as its API Tokens row says "Sign in to
-    create API tokens." The index refuses a guest's token too (403 `webhooks_need_account`).
+- **Webhooks** are not in Settings (since 8 November 2026): they are set per document, from a document's ⋯ menu in
+  the Explorer (**Webhooks**), see [webhooks.md](../004-index/webhooks.md). The old id `webhooks` is an alias of
+  Profile, so an old `?settings=webhooks` link opens Profile.
 - **Your Data** is one card in the same frame ([data-export.md](../003-accounts/data-export.md#settings)):
   - **The top** says in a line what a download holds and names the apps it covers by their logos (each app's Living
     Prism and wordmark).
@@ -855,14 +812,14 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   cached one.
 - **On an app's address** (the Explorer there) the panel is the same, over `/api/workspace/account/settings…` with
   the app's token; its Profile header is the app's session's, its Name and Colour is set in place over the same
-  token (`/api/workspace/account/profile`), and so are its Sign-in Methods, Where You're Signed In, API Tokens,
-  Webhooks and Your Data: the same panels as here, from `@liveworkspace/settings-ui/account-panels`, each its own
+  token (`/api/workspace/account/profile`), and so are its Sign-in Methods, Where You're Signed In, API Tokens
+  and Your Data: the same panels as here, from `@liveworkspace/settings-ui/account-panels`, each its own
   chunk loaded only when its category is first opened. Nothing in the Account section links away to
   liveworkspace.app (before 8 November 2026 these five were **Manage** and **Open** links to
   `/explorer?settings=profile|tokens|webhooks|data` there). The same holds in every editor's own Settings for a
   signed-in account; a self-hosted editor without liveworkspace accounts shows none of them.
 - **A guest** (on an app's address only) gets the app's side alone: no switch, no All, no Account section and no
-  tokens or webhooks, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
+  tokens, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
   by a device store (`createDeviceSettingsStore` in `@liveworkspace/settings-ui`) under the editor's own key and
   shape: one flat JSON object at `<app>:user-preferences:v1` (`DEVICE_PREFERENCES` in
   `@liveworkspace/settings/device`, pinned to each editor's `STORAGE_KEY` by its catalogue test), the `all` keys

@@ -59,7 +59,6 @@ export type SettingsTileId =
   // The account's own categories, each top-level in the panel's rail beside the others, on the shared line art.
   | 'notifications'
   | 'tokens'
-  | 'webhooks'
   | 'data';
 
 const TILE: Record<SettingsTileId, string> = {
@@ -75,7 +74,6 @@ const TILE: Record<SettingsTileId, string> = {
   privacy: 'bg-emerald-600',
   notifications: 'bg-red-500',
   tokens: 'bg-violet-600',
-  webhooks: 'bg-cyan-600',
   data: 'bg-slate-500',
 };
 
@@ -162,10 +160,9 @@ const TILE_GLYPHS: Record<SettingsTileId, ReactNode> = {
       <path d="M7 8.5V6a3 3 0 0 1 6 0v2.5" />
     </Svg>
   ),
-  // The shared bell, key, hook and tray (below), the same marks an editor's own Settings nests under Account.
+  // The shared bell, key and tray (below), the same marks an editor's own Settings nests under Account.
   notifications: <SettingsSharedGlyph id="notifications" />,
   tokens: <SettingsSharedGlyph id="tokens" />,
-  webhooks: <SettingsSharedGlyph id="webhooks" />,
   data: <SettingsSharedGlyph id="data" />,
 };
 

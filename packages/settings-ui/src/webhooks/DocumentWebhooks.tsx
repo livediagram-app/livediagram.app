@@ -2,21 +2,21 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CompactEmptyState, PlusIcon } from '@liveworkspace/ui';
-import { SettingsSharedGlyph } from '../../glyphs';
 import {
   WEBHOOK_SIGNATURE_HEADER,
+  WEBHOOKS_PER_DOCUMENT_MAX,
+  type App,
   type IndexClient,
+  type ShareAccess,
   type Webhook,
 } from '@liveworkspace/index-client';
-import { useAccountPanelsHost } from '../host';
-import { useSettingsShownApp } from '../../shown-app';
-import type { AccountTeam } from '../types';
-import { BUTTON, ErrorNote } from '../account-ui';
-import { SecretReveal } from '../SecretReveal';
-import { AddWebhook, type TeamChoice } from './AddWebhook';
-import { AppName, EveryAppName } from './marks';
+import { SettingsSharedGlyph } from '../glyphs';
+import { BUTTON, ErrorNote } from '../account-panels/account-ui';
+import { SecretReveal } from '../account-panels/SecretReveal';
+import { AddWebhook } from './AddWebhook';
+import { DocumentWebhooksProvider, useDocumentWebhooks } from './host';
 import { WebhookRow } from './WebhookRow';
-import { attempt, webhookApps, webhookError, withTopics } from './webhooks-api';
+import { attempt, documentWebhooksApi, ITEM, webhookError } from './webhooks-api';
 
 type Load =
   | { state: 'loading' }
@@ -24,26 +24,50 @@ type Load =
   // `at`: when it was read, so every row's "2 hours ago" agrees.
   | { state: 'ready'; webhooks: Webhook[]; at: number };
 
-const listWebhooks = (index: IndexClient) => attempt(() => index.listWebhooks());
-const loadOf = (result: Awaited<ReturnType<typeof listWebhooks>>): Load =>
+type Listed = Awaited<ReturnType<typeof attempt<{ webhooks: Webhook[] }>>>;
+const loadOf = (result: Listed): Load =>
   result.ok
-    ? { state: 'ready', webhooks: result.data.webhooks.map(withTopics), at: Date.now() }
+    ? { state: 'ready', webhooks: result.data.webhooks, at: Date.now() }
     : { state: 'error', error: result.error };
 
-// Settings › Webhooks (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks; liveworkspace/docs/specs/004-index/
-// webhooks.md): one card, as the Notifications' are, saying what a webhook is and which apps' work it covers, then
-// the person's own webhooks and those of the teams they run, adding one (a plain one's signing secret shown once),
-// and each one's test, pause, delete and recent deliveries. On This App (Settings opened in livediagram, say) it keeps
-// to that app: its events alone to pick and show, and the webhooks with at least one of them, the rest counted. On
-// All, and on liveworkspace.app from no app, every app's. Read when the category is first shown: the index's
-// list, and the person's teams from accounts for their names and which they run. Signed in only: the panel never
-// draws it for a guest, and the index refuses one.
-export function WebhooksPanel() {
-  const { request, index } = useAccountPanelsHost();
-  const shownApp = useSettingsShownApp();
-  const { current, apps } = useMemo(() => webhookApps(shownApp), [shownApp]);
+/**
+ * A document's webhooks (liveworkspace/docs/specs/004-index/webhooks.md "Managing them"), the body of the Webhooks
+ * dialog its ⋯ menu opens: a line saying they are this document's alone, its webhooks, adding one (a plain one's
+ * signing secret shown once), and each one's test, pause, delete and recent deliveries. Read as it opens. For an
+ * account who can edit all of the document; the index checks that on every call, and says so to anyone else.
+ */
+export function DocumentWebhooks({
+  client,
+  itemId,
+  app,
+  share,
+}: {
+  client: IndexClient;
+  itemId: string;
+  // The document's app: its events, in its words.
+  app: App;
+  // The link the page opened the document through, for an Editor who isn't its owner or in its team.
+  share?: ShareAccess | null;
+}) {
+  const code = share?.code ?? null;
+  const password = share?.password ?? null;
+  const host = useMemo(
+    () => ({
+      api: documentWebhooksApi(client, itemId, code ? { code, password } : null),
+      app,
+    }),
+    [client, itemId, code, password, app],
+  );
+  return (
+    <DocumentWebhooksProvider value={host}>
+      <WebhooksList />
+    </DocumentWebhooksProvider>
+  );
+}
+
+function WebhooksList() {
+  const { api, app } = useDocumentWebhooks();
   const [load, setLoad] = useState<Load>({ state: 'loading' });
-  const [teams, setTeams] = useState<AccountTeam[]>([]);
   const [adding, setAdding] = useState(false);
   const [made, setMade] = useState<{ name: string; secret: string } | null>(null);
   const [fresh, setFresh] = useState<string | null>(null);
@@ -51,41 +75,29 @@ export function WebhooksPanel() {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const addRef = useRef<HTMLButtonElement>(null);
 
-  const refresh = useCallback(async () => setLoad(loadOf(await listWebhooks(index))), [index]);
+  const refresh = useCallback(async () => setLoad(loadOf(await attempt(api.list))), [api]);
 
   useEffect(() => {
     let live = true;
-    void listWebhooks(index).then((result) => {
+    void attempt(api.list).then((result) => {
       if (live) setLoad(loadOf(result));
-    });
-    void request<{ teams: AccountTeam[] }>('/teams').then((result) => {
-      if (live && result.ok) setTeams(result.data.teams ?? []);
     });
     return () => {
       live = false;
     };
-  }, [request, index]);
+  }, [api]);
 
   // The form's first choice takes the keyboard as it opens.
   useEffect(() => {
     if (adding) firstRef.current?.focus();
   }, [adding]);
 
-  const admin = useMemo<TeamChoice[]>(
-    () => teams.filter((t) => t.role === 'admin').map((t) => ({ id: t.id, name: t.name })),
-    [teams],
-  );
-  const scopeName = (teamId: string | null) =>
-    teamId === null
-      ? 'Your own items'
-      : `${teams.find((t) => t.id === teamId)?.name ?? 'A team'}’s items`;
-
   const replace = (next: Webhook) =>
     setLoad((current) =>
       current.state === 'ready'
         ? {
             ...current,
-            webhooks: current.webhooks.map((w) => (w.id === next.id ? withTopics(next) : w)),
+            webhooks: current.webhooks.map((w) => (w.id === next.id ? next : w)),
           }
         : current,
     );
@@ -95,49 +107,38 @@ export function WebhooksPanel() {
     setFresh(null);
     setAdding(true);
   };
-  const all = load.state === 'ready' ? load.webhooks : [];
-  // On This App: the webhooks sending at least one of its events; the others are counted under the list.
-  const listed = useMemo(
-    () =>
-      current === null
-        ? all
-        : all.filter((w) => w.events.some((topic) => topic.startsWith(`${current}:`))),
-    [all, current],
-  );
-  const elsewhere = all.length - listed.length;
+  const listed = load.state === 'ready' ? load.webhooks : [];
+  const full = listed.length >= WEBHOOKS_PER_DOCUMENT_MAX;
+  const one = ITEM(app).one.toLowerCase();
 
   return (
-    <div data-webhooks-panel="" className="flex flex-col">
-      <div className="flex flex-wrap items-start gap-x-4 gap-y-3 px-4 py-4 sm:px-5">
-        <span
-          aria-hidden
-          className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-sm shadow-slate-900/20 dark:from-slate-500 dark:to-slate-700"
-        >
-          <SettingsSharedGlyph id="webhooks" />
-        </span>
+    <div data-document-webhooks="" className="flex flex-col">
+      <div className="flex flex-wrap items-start gap-x-4 gap-y-3 px-5 py-4 sm:px-6">
         <div className="min-w-0 flex-1 basis-60">
-          <h4
+          <h3
             ref={headingRef}
             tabIndex={-1}
             className="text-[15px] font-semibold text-slate-900 outline-none dark:text-white"
           >
             Post Updates Where Your Team Talks
-          </h4>
+          </h3>
           <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            A webhook posts a message to a Slack or Microsoft Teams channel, or to a service you
-            run, when something happens to your work: it’s made, shared or commented on
-            {current && current !== 'liveplanner' ? '.' : ', or a card moves.'}
+            A webhook posts to a Slack or Microsoft Teams channel, or to a service you run, when
+            something happens to this {one}.
           </p>
-          <div className="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
-            <span>For your work in</span>
-            {current ? <AppName app={current} /> : <EveryAppName />}
-          </div>
+          <p
+            data-webhooks-scope=""
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+          >
+            <span aria-hidden className="size-1.5 rounded-full bg-slate-400 dark:bg-slate-500" />
+            Only for this {one}. Your other {ITEM(app).many.toLowerCase()} have their own.
+          </p>
         </div>
-        {!adding && listed.length > 0 ? (
+        {!adding && listed.length > 0 && !full ? (
           <button
             ref={addRef}
             type="button"
-            className={`${BUTTON.primary} ml-14 gap-1.5 sm:ml-0`}
+            className={`${BUTTON.primary} gap-1.5`}
             onClick={open}
           >
             <PlusIcon size={14} />
@@ -149,8 +150,6 @@ export function WebhooksPanel() {
       {adding ? (
         <div className="border-t border-slate-100 dark:border-slate-700/70">
           <AddWebhook
-            apps={apps}
-            teams={admin}
             firstRef={firstRef}
             onCancel={() => {
               setAdding(false);
@@ -167,10 +166,9 @@ export function WebhooksPanel() {
         </div>
       ) : null}
       {made ? (
-        <div className="border-t border-slate-100 px-4 py-4 sm:px-5 dark:border-slate-700/70">
+        <div className="border-t border-slate-100 px-5 py-4 sm:px-6 dark:border-slate-700/70">
           <SecretReveal
-            // The name isolated (<bdi>): a right-to-left one, or one kept from before names were cleaned, never
-            // turns the sentence around it.
+            // The name isolated (<bdi>): a right-to-left one never turns the sentence around it.
             title={
               <>
                 “<bdi>{made.name}</bdi>” is added. Copy its signing secret now: it won’t be shown
@@ -201,7 +199,7 @@ export function WebhooksPanel() {
       {load.state === 'loading' ? (
         <div aria-busy className="border-t border-slate-100 dark:border-slate-700/70">
           {[0, 1].map((n) => (
-            <div key={n} className="flex items-start gap-3 px-4 py-4 sm:px-5">
+            <div key={n} className="flex items-start gap-3 px-5 py-4 sm:px-6">
               <div className="size-10 shrink-0 animate-pulse rounded-xl bg-slate-200/80 motion-reduce:animate-none dark:bg-slate-700/60" />
               <div className="flex flex-1 flex-col gap-2 pt-1">
                 <div className="h-3.5 w-40 animate-pulse rounded bg-slate-200/80 motion-reduce:animate-none dark:bg-slate-700/60" />
@@ -212,18 +210,20 @@ export function WebhooksPanel() {
         </div>
       ) : null}
       {load.state === 'error' ? (
-        <div className="border-t border-slate-100 px-4 pb-4 sm:px-5 dark:border-slate-700/70">
+        <div className="border-t border-slate-100 px-5 py-4 sm:px-6 dark:border-slate-700/70">
           <ErrorNote>{webhookError(load.error)}</ErrorNote>
-          <button
-            type="button"
-            className={`${BUTTON.secondary} mt-3`}
-            onClick={() => {
-              setLoad({ state: 'loading' });
-              void refresh();
-            }}
-          >
-            Try Again
-          </button>
+          {load.error !== 'webhooks_need_editor' && load.error !== 'webhooks_need_account' ? (
+            <button
+              type="button"
+              className={`${BUTTON.secondary} mt-3`}
+              onClick={() => {
+                setLoad({ state: 'loading' });
+                void refresh();
+              }}
+            >
+              Try Again
+            </button>
+          ) : null}
         </div>
       ) : null}
       {load.state === 'ready' && listed.length === 0 && !adding ? (
@@ -231,7 +231,7 @@ export function WebhooksPanel() {
           <CompactEmptyState
             icon={<SettingsSharedGlyph id="webhooks" />}
             title="No Webhooks Yet"
-            description="Add one to post updates about your work to a Slack or Teams channel."
+            description={`Add one to post updates about this ${one} to a Slack or Teams channel.`}
             action={
               <button
                 ref={addRef}
@@ -248,13 +248,11 @@ export function WebhooksPanel() {
         </div>
       ) : null}
       {listed.length > 0 ? (
-        <ul aria-label="Your webhooks">
+        <ul aria-label={`This ${one}’s webhooks`}>
           {listed.map((webhook) => (
             <WebhookRow
               key={webhook.id}
               webhook={webhook}
-              apps={apps}
-              scopeName={scopeName(webhook.teamId)}
               fresh={webhook.id === fresh && !made}
               now={load.state === 'ready' ? load.at : 0}
               onChanged={replace}
@@ -266,13 +264,9 @@ export function WebhooksPanel() {
           ))}
         </ul>
       ) : null}
-      {current && elsewhere > 0 ? (
-        <p
-          data-webhooks-elsewhere=""
-          className="flex flex-wrap items-center gap-x-1.5 gap-y-1 border-t border-slate-100 px-4 py-3 text-xs text-slate-500 sm:px-5 dark:border-slate-700/70 dark:text-slate-400"
-        >
-          {elsewhere === 1 ? '1 more webhook sends' : `${elsewhere} more webhooks send`} only other
-          apps’ events. Switch to All to see {elsewhere === 1 ? 'it' : 'them'}.
+      {full && !adding ? (
+        <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500 sm:px-6 dark:border-slate-700/70 dark:text-slate-400">
+          A {one} can have up to {WEBHOOKS_PER_DOCUMENT_MAX} webhooks. Delete one to add another.
         </p>
       ) : null}
     </div>

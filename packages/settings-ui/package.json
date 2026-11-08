@@ -6,7 +6,8 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
-    "./profile-events": "./src/profile/profile-events.ts"
+    "./profile-events": "./src/profile/profile-events.ts",
+    "./webhooks": "./src/webhooks/index.ts"
   },
   "scripts": {
     "lint": "oxlint",

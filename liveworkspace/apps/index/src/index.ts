@@ -25,7 +25,7 @@ import { sweepExpiringLinks } from './share-expiry';
 import { handleWorkbenchClose } from './workbench-close';
 import { handleAccountTimeline, handleTimeline } from './timeline';
 import { kickWebhooks, queuedCount } from './webhooks/outbox';
-import { handleWebhooks } from './webhooks/routes';
+import { handleItemWebhooks, handleWebhooks } from './webhooks/routes';
 import { handleTeamAudit } from './team-audit-read';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 import { under } from '@liveworkspace/index-app/worker-http';
@@ -90,6 +90,12 @@ async function route(ctx: RouteContext): Promise<Response> {
     }
     if (segments[2] === 'connections') {
       return segments.length === 3 ? makeConnection(ctx, id) : notFound();
+    }
+    // The document's own webhooks (webhooks/routes.ts): an account's session only.
+    if (segments[2] === 'webhooks') {
+      const person = ctx.caller.person;
+      if (!person) return unauthorized();
+      return segments.length === 3 ? handleItemWebhooks({ ...ctx, person }, id) : notFound();
     }
     return handleItem(ctx, id);
   }

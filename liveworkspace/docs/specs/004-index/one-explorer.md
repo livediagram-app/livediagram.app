@@ -237,7 +237,7 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   in place. The logo's site switcher marks the app and keeps the person on the Explorer: each row opens that
   site's Explorer at the same view ([site-switcher.md](../010-site/site-switcher.md#on-an-explorer-page)).
 - **Links.** Items of that app open on the same origin; other apps' items open on their own sites.
-  Nothing in Settings links away: the Account section's Profile, Sign-in Methods, API Tokens, Webhooks and Your Data
+  Nothing in Settings links away: the Account section's Profile, Sign-in Methods, API Tokens and Your Data
   draw in place, over the app's token ([site.md "Settings"](../010-site/site.md#settings)), and the Explorer's
   search opens Profile and API Tokens here too.
 - **This Browser.** The app keeps a small list of its offline items (id, title and dates, never content) in
@@ -366,6 +366,39 @@ and "Updated <relative time>". Its name renames it through the editor's own rena
 writes This Browser's list), and its ⋯ menu and right-click are This Browser's (**Open**, **Sync <Kind>** signed in,
 **Delete <Kind>** asked first, for good). Nothing about it is sent to the index. The editors read the index's copy
 through the package's `useOpenItem`.
+
+#### Opening on the Explorer
+
+**Automatically Open Explorer** (`autoOpenExplorer`, a common setting kept in `all`,
+[accounts.md](../003-accounts/accounts.md#common-settings)) is a switch in every app's **Settings › Explorer**, directly
+above **Show Home Banner**, off by default: "Opening the homepage while signed in takes you straight to your
+Explorer. A link to the homepage from inside the app still shows it." While it is on, an app's homepage
+(`www.<app>.app/`) and liveworkspace.app's answer with the Explorer's Home (`/explorer/home`) on the same address.
+
+The homepage never waits for the account. The setting is mirrored into one first-party cookie on each address,
+`lw_open_explorer=1` (host-only, `Path=/`, `SameSite=Lax`, `Secure` on https, `Max-Age` 400 days), by every page
+that reads or writes the person's settings there (`syncOpenExplorerCookie`, `@liveworkspace/sites/open-explorer`):
+the editors' preferences on each write and each server read (not the editor in a workbench), and the Settings
+panel's store (`@liveworkspace/settings-ui`) on each read of `all` and each change it holds, which covers the
+Explorer and the panel on every address. Off, the cookie is cleared. A change made in one app or on one device reaches
+another app's address the next time its Explorer or editor reads the settings there, and that address's homepage
+follows from then on.
+
+- **On an app's address** the router answers before anything else it routes, after the bare domain's `301`
+  (`openExplorerRedirect`): a `302` to `/explorer/home` with `Cache-Control: no-store` and `Vary: Cookie`, only for a
+  `GET` of `/` exactly, with no query, that is a page navigation (`Sec-Fetch-Dest` absent or `document`), carries
+  `lw_open_explorer=1` and the product's signed-in hint at `1` (`SIGNED_IN_HINT_COOKIE`, so signing out brings the
+  homepage back without touching the switch), and arrives from outside the site (`Sec-Fetch-Site` anything but
+  `same-origin`; without it, no Referer on this origin). It is a string test on the request's headers, constant
+  time, with no fetch. The marketing page's own HTML is `no-store` already ([stale-builds](../../../livediagram/docs/specs/016-platform/stale-builds.md)),
+  so no cache can hand one person's redirect, or another's homepage, to anyone else.
+- **On liveworkspace.app**, a static site with no router in front of its homepage, the root layout's second head
+  script (`openExplorerBootScript`, after Trusted Types' boot) applies the same test before anything paints and calls
+  `location.replace('/explorer/home')`, so Back skips the homepage. It has no signed-in hint to read (the session
+  cookie is HttpOnly); the Explorer asks a signed-out person to sign in.
+- **The way back to the homepage.** A link inside the site (a logo, the marketing header or footer, a help page) is a
+  same-origin navigation and always shows the homepage, so no link needs changing. Any query does too, `/?home` the
+  one to bookmark. Reaching the homepage from another site, a bookmark or the address bar opens the Explorer.
 
 #### Teams are run in the Explorer
 

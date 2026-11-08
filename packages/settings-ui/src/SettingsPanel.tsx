@@ -5,7 +5,6 @@ import type { CatalogueBinding, StoredValue } from '@liveworkspace/settings/cata
 import type { AccountHost, CatalogueSettingsViewProps } from './CatalogueSettingsView';
 import type { SettingsCategory } from './model';
 import { SettingsScopeSwitch, type SettingsScope } from './scope';
-import { SettingsShownAppProvider } from './shown-app';
 import type { SettingsAppId, SettingsRequest, SettingsStore } from './store';
 import { SettingsView, type SettingsFocus } from './SettingsView';
 import { useSettingsResetGeneration } from './reset-settings/reset-signal';
@@ -95,8 +94,6 @@ export function SettingsPanel({
   onCategoryOpened?: (categoryId: string) => void;
 }) {
   const shown: SettingsScope = app && (scope === 'app' || !allowAll) ? 'app' : 'all';
-  // The app a panel in a row keeps to (Webhooks): this one on its side, none on All.
-  const shownApp = shown === 'app' && app ? app.id : null;
   // Reset All Settings cleared what the view read when it opened: it draws itself again from the page's copy, which
   // the reset set to the server's answer (reset-settings/), so every row shows its default at once.
   const resets = useSettingsResetGeneration();
@@ -123,9 +120,7 @@ export function SettingsPanel({
   // A guest's editor: its own settings, drawn at once, with nothing fetched.
   if (shown === 'app' && own && !withShared) {
     return (
-      <SettingsShownAppProvider value={shownApp}>
-        <SettingsView key="app" {...common} categories={own} memoryKey={memoryKey} />
-      </SettingsShownAppProvider>
+      <SettingsView key="app" {...common} categories={own} memoryKey={memoryKey} />
     );
   }
 
@@ -144,23 +139,21 @@ export function SettingsPanel({
     memoryKey: memoryKey && shown === 'all' ? `${memoryKey}:all` : memoryKey,
   };
   return (
-    <SettingsShownAppProvider value={shownApp}>
-      <Suspense
-        fallback={
-          withShared && own ? (
-            // An editor's own settings at once, while the rest of its side loads.
-            <SettingsView {...common} categories={own} memoryKey={memoryKey} />
-          ) : (
-            <SettingsView
-              {...common}
-              categories={[]}
-              placeholder={<div aria-busy className="h-40" />}
-            />
-          )
-        }
-      >
-        <CatalogueSettingsView key={`${shown}:${resets}`} {...catalogueProps} />
-      </Suspense>
-    </SettingsShownAppProvider>
+    <Suspense
+      fallback={
+        withShared && own ? (
+          // An editor's own settings at once, while the rest of its side loads.
+          <SettingsView {...common} categories={own} memoryKey={memoryKey} />
+        ) : (
+          <SettingsView
+            {...common}
+            categories={[]}
+            placeholder={<div aria-busy className="h-40" />}
+          />
+        )
+      }
+    >
+      <CatalogueSettingsView key={`${shown}:${resets}`} {...catalogueProps} />
+    </Suspense>
   );
 }
