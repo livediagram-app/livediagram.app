@@ -68,6 +68,7 @@ type RetiredSource = {
   type?: unknown;
   shape?: unknown;
   session?: unknown;
+  arrowEnds?: unknown;
   label?: unknown;
   width: number;
   height: number;

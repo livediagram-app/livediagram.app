@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { handDrawnArrow, handDrawnElementPaint } from './hand-drawn';
+import { handDrawnElementPaint } from './hand-drawn';
 import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from './marker';
 import { MARKER_LINE_PX } from './finish';
 import { createSticky } from './factories';
@@ -65,61 +65,6 @@ describe('handDrawnElementPaint', () => {
   });
 });
 
-describe('handDrawnArrow', () => {
-  const opts = {
-    strokePx: 3,
-    headSize: 'medium' as const,
-    headShape: 'triangle' as const,
-    startHead: false,
-    endHead: true,
-    flowing: false,
-  };
-  const path = 'M 0 0 L 200 0 L 200 120';
-
-  it('is null for a finish that draws a plain path', () => {
-    expect(handDrawnArrow('flexible', 'a', path, opts)).toBeNull();
-    expect(handDrawnArrow('professional', 'a', path, opts)).toBeNull();
-  });
-
-  it('draws Marker’s line in two layers of see-through ink, a triangle head as a solid wedge', () => {
-    const a = handDrawnArrow('marker', 'a', path, opts)!;
-    expect(a.lineOver).not.toBe('');
-    expect(a.inkOpacity).toBe(MARKER_INK_OPACITY);
-    expect(a.sketchedHeads).toBe(true);
-    expect(a.headFill).toBe(true);
-  });
-
-  it('draws a line head as a stroke, and keeps one layer while a flow runs', () => {
-    const a = handDrawnArrow('marker', 'a', path, { ...opts, headShape: 'line', flowing: true })!;
-    expect(a.headFill).toBe(false);
-    expect(a.lineOver).toBe('');
-  });
-
-  it('stops the line short of a hollow head', () => {
-    const hollow = handDrawnArrow('marker', 'a', 'M 0 0 L 200 0', {
-      ...opts,
-      headShape: 'triangle-hollow',
-    })!;
-    const xs = [...`${hollow.line} ${hollow.lineOver}`.matchAll(/(-?[\d.]+) -?[\d.]+/g)].map((m) =>
-      Number(m[1]),
-    );
-    expect(Math.max(...xs)).toBeLessThan(190);
-  });
-
-  it('keeps circle and diamond heads to their markers', () => {
-    const a = handDrawnArrow('marker', 'a', path, { ...opts, headShape: 'circle' })!;
-    expect(a.sketchedHeads).toBe(false);
-    expect(a.heads).toBe('');
-  });
-
-  it('draws Sketch as before: one layer of solid pencil', () => {
-    const a = handDrawnArrow('sketch', 'a', path, opts)!;
-    expect(a.lineOver).toBe('');
-    expect(a.inkOpacity).toBe(1);
-    expect(a.headFill).toBe(false);
-  });
-});
-
 describe('a Marker tab in the export', () => {
   const tab = (elements: object[]) =>
     ({ id: 't', name: 't', finish: 'marker', elements }) as Parameters<
@@ -132,20 +77,6 @@ describe('a Marker tab in the export', () => {
     expect(svg).toContain(`stroke-opacity="${MARKER_INK_OPACITY}"`);
     expect(svg).toContain(`stroke-opacity="${MARKER_STREAK_OPACITY}"`);
     expect(svg).toContain('Permanent Marker');
-  });
-
-  it('draws an arrow in two layers with a filled head', () => {
-    const a = { ...createShape('square', 0, 0), id: 'a' };
-    const b = { ...createShape('square', 400, 0), id: 'b' };
-    const arrow = {
-      id: 'ar',
-      type: 'arrow',
-      from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
-      to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
-      arrowheadShape: 'triangle',
-    };
-    const svg = renderElementsToSvg(tab([a, b, arrow]));
-    expect(svg).toMatch(/fill-opacity="0\.86"/);
   });
 
   it('keeps a sticky as paper, coloured in with no outline', () => {

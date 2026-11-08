@@ -17,14 +17,12 @@ const legacy = (): Element[] =>
   ] as unknown as Element[];
 
 describe('migrateLegacyGroups (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
-  it('freezes a group-pinned end where it resolved: the union box anchor', () => {
-    const out = migrateLegacyGroups(legacy());
-    const arrow = out.find((e) => e.id === 'arr');
-    // Union spans x 0..300, y 0..80, so the south midpoint is (150, 80).
-    expect(arrow).toMatchObject({
-      from: { kind: 'free', x: 150, y: 80 },
-      to: { kind: 'pinned', elementId: 'c', anchor: 'n' },
-    });
+  // A stored arrow is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4):
+  // its group-pinned end stays exactly as stored.
+  it('leaves a stored arrow with a group-pinned end exactly as stored', () => {
+    const before = legacy();
+    const out = migrateLegacyGroups(before);
+    expect(out.find((e) => e.id === 'arr')).toBe(before[3]);
   });
 
   it('strips groupId and leaves no trace for hasLegacyGroups', () => {
@@ -39,10 +37,10 @@ describe('migrateLegacyGroups (docs/specs/009-elements/web-components-and-no-gro
     expect(migrateLegacyGroups(clean)).toBe(clean);
   });
 
-  it('resolves an end whose group has no members left to the origin, as it rendered', () => {
+  it('has nothing to migrate when only a stored arrow names a group', () => {
     const els = legacy().filter((e) => e.id !== 'a' && e.id !== 'b');
-    const arrow = migrateLegacyGroups(els).find((e) => e.id === 'arr');
-    expect(arrow).toMatchObject({ from: { kind: 'free', x: 0, y: 0 } });
+    expect(hasLegacyGroups(els)).toBe(false);
+    expect(migrateLegacyGroups(els)).toBe(els);
   });
 
   it('still accepts the legacy end on write, so an old build can save', () => {

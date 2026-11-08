@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape } from './factories';
+import { createShape } from './factories';
 import { drawnBounds, supportsRotation } from './rotation';
 import type { BoxedElement, Element } from './index';
 
@@ -14,8 +14,14 @@ describe('supportsRotation', () => {
     expect(supportsRotation(marker)).toBe(false);
   });
 
-  it('never rotates an arrow', () => {
-    expect(supportsRotation(createPinnedArrow('a', 'e', 'b', 'w'))).toBe(false);
+  it('never rotates a stored arrow', () => {
+    const arrow: Element = {
+      id: 'arrow',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
+    };
+    expect(supportsRotation(arrow)).toBe(false);
   });
 });
 

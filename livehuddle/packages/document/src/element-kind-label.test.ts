@@ -26,16 +26,21 @@ describe('elementKindLabel', () => {
     expect(elementKindLabel(ofType('table'))).toBe('Table');
     expect(elementKindLabel(ofType('sticky'))).toBe('Sticky');
     expect(elementKindLabel(ofType('image'))).toBe('Image');
-    expect(elementKindLabel(ofType('freehand'))).toBe('Sketch');
-    expect(elementKindLabel(ofType('path'))).toBe('Path');
-    // Freehand variants (docs/specs/008-canvas/highlighter.md highlighter, docs/specs/008-canvas/polygon-tool.md polygon tool).
-    const freehand = (extra: object) => ({ type: 'freehand', ...extra }) as unknown as Element;
-    expect(elementKindLabel(freehand({ pen: 'highlighter' }))).toBe('Highlight');
-    expect(elementKindLabel(freehand({ straightEdges: true }))).toBe('Polyline');
-    expect(elementKindLabel(freehand({ straightEdges: true, closed: true }))).toBe('Polygon');
-    expect(elementKindLabel(ofType('annotation'))).toBe('Annotation');
     expect(elementKindLabel(ofType('link-card'))).toBe('Link');
+  });
+
+  // The retired types go by their placeholder's name (element-engine.md D24): every pen stroke is a Drawing.
+  it('names a stored arrow, line, drawing, path and annotation', () => {
+    expect(elementKindLabel(ofType('freehand'))).toBe('Drawing');
+    const freehand = (extra: object) => ({ type: 'freehand', ...extra }) as unknown as Element;
+    expect(elementKindLabel(freehand({ pen: 'highlighter' }))).toBe('Drawing');
+    expect(elementKindLabel(freehand({ straightEdges: true, closed: true }))).toBe('Drawing');
+    expect(elementKindLabel(ofType('path'))).toBe('Path');
+    expect(elementKindLabel(ofType('annotation'))).toBe('Annotation');
     expect(elementKindLabel(ofType('arrow'))).toBe('Arrow');
+    expect(elementKindLabel({ type: 'arrow', arrowEnds: 'none' } as unknown as Element)).toBe(
+      'Line',
+    );
   });
 });
 

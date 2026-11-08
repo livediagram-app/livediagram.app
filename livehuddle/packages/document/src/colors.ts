@@ -5,9 +5,7 @@ import {
   DEFAULT_PATTERN_COLOR,
   type BoxedElement,
   type Element,
-  type FreehandElement,
   type Padding,
-  type PathElement,
   type ShapeElement,
   type TextAlignX,
   type TextAlignY,
@@ -41,14 +39,12 @@ export function defaultPadding(element: BoxedElement): Padding {
       return 'md';
     case 'image':
       return 'none';
-    case 'freehand':
-    case 'path':
-      return 'none';
-    case 'annotation':
-      return 'none';
     case 'link-card':
     case 'video':
     case 'table':
+    case 'freehand':
+    case 'path':
+    case 'annotation':
       return 'none';
   }
 }
@@ -210,10 +206,6 @@ export const DARK_INK = {
   fill: '#141b26',
   stroke: '#64748b',
   text: '#ffffff',
-  // A shade above the shape fill, so a marker still reads as a chip ON a
-  // shape rather than a hole in it (the light set does the same, brand-100
-  // over brand-50).
-  annotationFill: '#1c2533',
 } as const;
 
 // The Behaviour elements that look like controls or furniture store no
@@ -314,14 +306,14 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
     switch (element.type) {
       case 'shape':
       case 'image':
-      case 'freehand':
-      case 'path':
-      case 'annotation':
         return DARK_INK.text;
       case 'sticky':
       case 'link-card':
       case 'video':
       case 'table':
+      case 'freehand':
+      case 'path':
+      case 'annotation':
         break; // keeps its own ink on any paper
     }
   }
@@ -332,15 +324,14 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
       return '#451a03'; // amber-950-ish
     case 'image':
       return '#1e293b'; // slate-800 (only used for alt-text rendering)
-    case 'freehand':
-    case 'path':
-      return '#1e293b'; // slate-800 (no inline label today, future-proof)
-    case 'annotation':
-      return '#075985'; // brand-800 (no inline label; declared for parity)
     case 'link-card':
       return '#1e293b'; // slate-800 — card title text
+    // The retired types draw as the placeholder, in its own colours; these only answer the union.
     case 'video':
     case 'table':
+    case 'freehand':
+    case 'path':
+    case 'annotation':
       return '#e2e8f0'; // slate-200 — caption over the dark player surface
   }
 }
@@ -383,17 +374,16 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
-      case 'freehand':
         return DARK_INK.fill;
-      case 'annotation':
-        return DARK_INK.annotationFill;
       case 'text':
       case 'image':
       case 'sticky':
       case 'link-card':
       case 'video':
       case 'table':
+      case 'freehand':
       case 'path':
+      case 'annotation':
         break; // transparent, or a fill that is the element's identity
     }
   }
@@ -406,20 +396,13 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
       return 'transparent';
     case 'image':
       return 'transparent';
-    // A path is plain ink, unfilled until a fill is chosen (docs/specs/023-draw-mode/path-tool.md "Style").
-    case 'path':
-      return 'transparent';
-    case 'freehand':
-      // Closed freehand paths fill with a faint brand tint to match
-      // the shape default; open paths render stroke-only so the
-      // fill is visually inert there.
-      return '#f0f9ff';
-    case 'annotation':
-      return '#e0f2fe'; // brand-100 — a touch deeper than a shape so the marker reads as a chip
     case 'link-card':
       return '#ffffff'; // white card surface
     case 'video':
     case 'table':
+    case 'freehand':
+    case 'path':
+    case 'annotation':
       return '#0f172a'; // slate-900 — a player letterboxes against black, not white
   }
 }
@@ -430,15 +413,9 @@ export function defaultStrokeColor(
 ): string {
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.stroke;
-  // A pen stroke with no colour of its own is drawn in Ink (docs/specs/007-editor/editor-modes.md
-  // "One look"); a highlighter keeps its own recipe.
-  if (element.type === 'freehand' && element.pen !== 'highlighter') return PEN_INK[surface];
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
-      case 'freehand':
-      case 'path':
-      case 'annotation':
         return DARK_INK.stroke;
       case 'text':
       case 'image':
@@ -446,6 +423,9 @@ export function defaultStrokeColor(
       case 'link-card':
       case 'video':
       case 'table':
+      case 'freehand':
+      case 'path':
+      case 'annotation':
         break; // transparent, or a border that is the element's identity
     }
   }
@@ -458,15 +438,13 @@ export function defaultStrokeColor(
       return 'transparent';
     case 'image':
       return 'transparent';
-    case 'freehand':
-    case 'path':
-      return '#0ea5e9'; // brand-500, same accent as shapes
-    case 'annotation':
-      return '#0ea5e9'; // brand-500 — ring + note glyph tint
     case 'link-card':
       return '#e2e8f0'; // slate-200 — card border
     case 'video':
     case 'table':
+    case 'freehand':
+    case 'path':
+    case 'annotation':
       return '#1e293b'; // slate-800 — a hairline barely off the player surface
   }
 }
@@ -501,10 +479,6 @@ export function supportsColours(element: Element): boolean {
     // the Colours category shows only its Text row (no fill, no border).
     element.type === 'text' ||
     element.type === 'sticky' ||
-    element.type === 'arrow' ||
-    element.type === 'freehand' ||
-    element.type === 'path' ||
-    element.type === 'annotation' ||
     element.type === 'link-card' ||
     element.type === 'video' ||
     element.type === 'table'
@@ -520,16 +494,11 @@ export function supportsColours(element: Element): boolean {
 // only needs to be added in one place (was four before this
 // predicate landed).
 //
-// Type-predicate (`element is ShapeElement | FreehandElement`) so
-// callers get TypeScript narrowing too: the `strokeWidth` / `strokeStyle`
-// fields are typed as BorderStroke / BorderStyle on these two,
-// distinct from ArrowElement's `strokeWidth: number` (raw px). A
-// non-narrowing predicate would let setters that write a BorderStroke
-// land on arrows, which TS would (correctly) reject.
-export function supportsBorder(
-  element: Element,
-): element is ShapeElement | FreehandElement | PathElement {
-  return element.type === 'shape' || element.type === 'freehand' || element.type === 'path';
+// Type-predicate (`element is ShapeElement`) so callers get TypeScript
+// narrowing too: the `strokeWidth` / `strokeStyle` fields are typed as
+// BorderStroke / BorderStyle on a shape.
+export function supportsBorder(element: Element): element is ShapeElement {
+  return element.type === 'shape';
 }
 
 // Whether the element exposes the Border CONTROLS (strength / pattern /
@@ -720,28 +689,4 @@ const RADIUS_SHAPES = new Set<string>(['square', 'banner', 'site-header', 'stat-
 // its kind's default corner (docs/specs/008-canvas/corner-radius.md): Small.
 export function shownBorderRadius(element: ShapeElement): BorderRadius {
   return element.borderRadius ?? 'sm';
-}
-
-// Default arrow stroke colour when the element has no explicit one set.
-// Picked out as a helper so the Selected Element controls can show the
-// effective colour in the swatch when no override exists.
-export function defaultArrowStrokeColor(surface: CanvasSurface = 'light'): string {
-  if (surface === 'dark') return DARK_INK.stroke; // matches the shapes it connects
-  return 'rgb(51 65 85)'; // slate-700, same as ArrowView's fallback
-}
-
-// slate-400: on dark paper an uncoloured arrow's caption is a step lighter than
-// its line, so the words read before the wire.
-const DARK_ARROW_LABEL_COLOR = '#94a3b8';
-
-// The colour an arrow caption is painted in, for the canvas and the export
-// alike. A caption with its own colour keeps it; otherwise it follows the line,
-// except an uncoloured arrow on dark paper, whose caption is DARK_ARROW_LABEL_COLOR.
-export function defaultArrowLabelColor(
-  arrow: { strokeColor?: string; textColor?: string },
-  surface: CanvasSurface = 'light',
-): string {
-  if (arrow.textColor) return arrow.textColor;
-  if (arrow.strokeColor) return arrow.strokeColor;
-  return surface === 'dark' ? DARK_ARROW_LABEL_COLOR : defaultArrowStrokeColor(surface);
 }

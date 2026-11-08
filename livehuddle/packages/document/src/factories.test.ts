@@ -5,19 +5,16 @@ import {
   DEFAULT_BUTTON_MODE,
   createLinkCard,
   activeCommentCount,
-  createAnnotation,
-  createArrow,
   createComment,
   createComponent,
   scaleElements,
   createImage,
-  createPinnedArrow,
   createShape,
   createSticky,
   createText,
   duplicateElements,
   isBoxed,
-  type ArrowElement,
+  type RetiredArrowElement,
   type CommentThread,
   type Element,
   type ShapeElement,
@@ -76,17 +73,6 @@ describe('boxed-element factories', () => {
     });
   });
 
-  it('createAnnotation is a 44x44 boxed marker with no note yet (docs/specs/009-elements/annotations.md)', () => {
-    const a = createAnnotation(7, 8);
-    expect(a).toMatchObject({ type: 'annotation', x: 7, y: 8, width: 44, height: 44 });
-    // Aspect-locked by default so resizing keeps the marker round.
-    expect(a.aspectLocked).toBe(true);
-    expect(a.note).toBeUndefined();
-    expect(a.id).toMatch(/[0-9a-f-]{36}/);
-    // It must count as boxed so it flows through selection / drag / layering.
-    expect(isBoxed(a)).toBe(true);
-  });
-
   it('createLinkCard is a 280x120 boxed bookmark with no link/meta yet (docs/specs/009-elements/link-cards.md)', () => {
     const c = createLinkCard(3, 4);
     expect(c).toMatchObject({ type: 'link-card', x: 3, y: 4, width: 280, height: 120 });
@@ -108,21 +94,6 @@ describe('boxed-element factories', () => {
   it('factories mint distinct ids on each call', () => {
     expect(createShape('square', 0, 0).id).not.toBe(createShape('square', 0, 0).id);
     expect(createImage(0, 0).id).not.toBe(createImage(0, 0).id);
-  });
-});
-
-describe('arrow factories', () => {
-  it('createArrow builds two free endpoints', () => {
-    const a = createArrow(0, 0, 10, 20);
-    expect(a.type).toBe('arrow');
-    expect(a.from).toEqual({ kind: 'free', x: 0, y: 0 });
-    expect(a.to).toEqual({ kind: 'free', x: 10, y: 20 });
-  });
-
-  it('createPinnedArrow builds two pinned endpoints with anchors', () => {
-    const a = createPinnedArrow('a', 'e', 'b', 'w');
-    expect(a.from).toEqual({ kind: 'pinned', elementId: 'a', anchor: 'e' });
-    expect(a.to).toEqual({ kind: 'pinned', elementId: 'b', anchor: 'w' });
   });
 });
 
@@ -171,14 +142,14 @@ describe('duplicateElements', () => {
   it('remaps a pinned arrow whose both ends are duplicated', () => {
     const a = shape('a');
     const b = shape('b', { x: 100 });
-    const arrow: ArrowElement = {
+    const arrow: RetiredArrowElement = {
       id: 'arrow',
       type: 'arrow',
       from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
       to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
     };
     const { newElements, idMap } = duplicateElements([a, b, arrow], new Set(['a', 'b']), 0, 0);
-    const dupArrow = newElements.find((e): e is ArrowElement => e.type === 'arrow');
+    const dupArrow = newElements.find((e): e is RetiredArrowElement => e.type === 'arrow');
     expect(dupArrow).toBeDefined();
     expect(dupArrow!.from).toEqual({ kind: 'pinned', elementId: idMap.get('a'), anchor: 'e' });
     expect(dupArrow!.to).toEqual({ kind: 'pinned', elementId: idMap.get('b'), anchor: 'w' });
@@ -187,7 +158,7 @@ describe('duplicateElements', () => {
   it('drops a non-selected arrow when only one endpoint is in the duplicated set', () => {
     const a = shape('a');
     const b = shape('b', { x: 100 });
-    const arrow: ArrowElement = {
+    const arrow: RetiredArrowElement = {
       id: 'arrow',
       type: 'arrow',
       from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
@@ -200,14 +171,14 @@ describe('duplicateElements', () => {
   });
 
   it('copies a selected free arrow, translating both endpoints', () => {
-    const arrow: ArrowElement = {
+    const arrow: RetiredArrowElement = {
       id: 'arrow',
       type: 'arrow',
       from: { kind: 'free', x: 10, y: 10 },
       to: { kind: 'free', x: 60, y: 40 },
     };
     const { newElements } = duplicateElements([arrow], new Set(['arrow']), 5, 7);
-    const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow');
+    const dup = newElements.find((e): e is RetiredArrowElement => e.type === 'arrow');
     expect(dup).toBeDefined();
     expect(dup!.id).not.toBe('arrow');
     expect(dup!.from).toEqual({ kind: 'free', x: 15, y: 17 });
@@ -217,7 +188,7 @@ describe('duplicateElements', () => {
   it('keeps a selected arrow pinned to elements that exist but were not copied', () => {
     const a = shape('a');
     const b = shape('b', { x: 100 });
-    const arrow: ArrowElement = {
+    const arrow: RetiredArrowElement = {
       id: 'arrow',
       type: 'arrow',
       from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
@@ -226,14 +197,14 @@ describe('duplicateElements', () => {
     // Only the arrow is selected; a + b stay put → the copy keeps the
     // original pins (still real elements, so no orphan).
     const { newElements } = duplicateElements([a, b, arrow], new Set(['arrow']), 0, 0);
-    const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow');
+    const dup = newElements.find((e): e is RetiredArrowElement => e.type === 'arrow');
     expect(dup).toBeDefined();
     expect(dup!.from).toEqual({ kind: 'pinned', elementId: 'a', anchor: 'e' });
     expect(dup!.to).toEqual({ kind: 'pinned', elementId: 'b', anchor: 'w' });
   });
 
   it('skips a selected arrow whose pinned target no longer exists (no orphan)', () => {
-    const arrow: ArrowElement = {
+    const arrow: RetiredArrowElement = {
       id: 'arrow',
       type: 'arrow',
       from: { kind: 'free', x: 0, y: 0 },
@@ -248,13 +219,13 @@ describe('duplicateElements', () => {
 
   it('remaps an on-arrow endpoint to the duplicate when the target arrow copies too (docs/specs/008-canvas/arrow-to-arrow.md)', () => {
     const a = shape('a');
-    const lifeline: ArrowElement = {
+    const lifeline: RetiredArrowElement = {
       id: 'lifeline',
       type: 'arrow',
       from: { kind: 'pinned', elementId: 'a', anchor: 's' },
       to: { kind: 'free', x: 0, y: 300 },
     };
-    const message: ArrowElement = {
+    const message: RetiredArrowElement = {
       id: 'message',
       type: 'arrow',
       from: { kind: 'on-arrow', arrowId: 'lifeline', t: 0.4 },
@@ -267,7 +238,7 @@ describe('duplicateElements', () => {
       0,
     );
     const dupMessage = newElements.find(
-      (e): e is ArrowElement => e.type === 'arrow' && e.from.kind === 'on-arrow',
+      (e): e is RetiredArrowElement => e.type === 'arrow' && e.from.kind === 'on-arrow',
     );
     expect(dupMessage).toBeDefined();
     // Follows the COPY of the lifeline, not the original.
@@ -279,13 +250,13 @@ describe('duplicateElements', () => {
     // dropped; A (earlier in the array) must NOT keep a remap to the
     // never-created dup(B) — that endpoint would resolve to the canvas
     // origin. The droppability fixpoint settles before any remap.
-    const messageA: ArrowElement = {
+    const messageA: RetiredArrowElement = {
       id: 'A',
       type: 'arrow',
       from: { kind: 'on-arrow', arrowId: 'B', t: 0.5 },
       to: { kind: 'free', x: 100, y: 50 },
     };
-    const lifelineB: ArrowElement = {
+    const lifelineB: RetiredArrowElement = {
       id: 'B',
       type: 'arrow',
       from: { kind: 'free', x: 0, y: 0 },
@@ -297,7 +268,7 @@ describe('duplicateElements', () => {
       0,
       0,
     );
-    const arrows = newElements.filter((e): e is ArrowElement => e.type === 'arrow');
+    const arrows = newElements.filter((e): e is RetiredArrowElement => e.type === 'arrow');
     expect(arrows).toHaveLength(1);
     // The copy of A follows the ORIGINAL B (still a real element in the
     // source list), never a phantom duplicate id.
@@ -306,27 +277,27 @@ describe('duplicateElements', () => {
   });
 
   it('keeps an on-arrow endpoint on the original when the target arrow was not copied', () => {
-    const lifeline: ArrowElement = {
+    const lifeline: RetiredArrowElement = {
       id: 'lifeline',
       type: 'arrow',
       from: { kind: 'free', x: 0, y: 0 },
       to: { kind: 'free', x: 0, y: 300 },
     };
-    const message: ArrowElement = {
+    const message: RetiredArrowElement = {
       id: 'message',
       type: 'arrow',
       from: { kind: 'on-arrow', arrowId: 'lifeline', t: 0.4 },
       to: { kind: 'free', x: 200, y: 120 },
     };
     const { newElements } = duplicateElements([lifeline, message], new Set(['message']), 0, 0);
-    const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow');
+    const dup = newElements.find((e): e is RetiredArrowElement => e.type === 'arrow');
     expect(dup!.from).toEqual({ kind: 'on-arrow', arrowId: 'lifeline', t: 0.4 });
   });
 
   it('repins both ends to the duplicates, anchors unchanged', () => {
     const a = shape('a');
     const b = shape('b', { x: 100 });
-    const arrow: ArrowElement = {
+    const arrow: RetiredArrowElement = {
       id: 'arrow',
       type: 'arrow',
       from: { kind: 'pinned', elementId: 'a', anchor: 'ene' },
@@ -338,24 +309,24 @@ describe('duplicateElements', () => {
       0,
       0,
     );
-    const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow');
+    const dup = newElements.find((e): e is RetiredArrowElement => e.type === 'arrow');
     expect(dup!.from).toEqual({ kind: 'pinned', elementId: idMap.get('a'), anchor: 'ene' });
     expect(dup!.to).toEqual({ kind: 'pinned', elementId: idMap.get('b'), anchor: 'w' });
   });
 
   it('preserves arrow styling (stroke / ends / label) on copy', () => {
-    const arrow: ArrowElement = {
+    const arrow = {
       id: 'arrow',
-      type: 'arrow',
-      from: { kind: 'free', x: 0, y: 0 },
-      to: { kind: 'free', x: 50, y: 0 },
+      type: 'arrow' as const,
+      from: { kind: 'free' as const, x: 0, y: 0 },
+      to: { kind: 'free' as const, x: 50, y: 0 },
       strokeColor: '#ff0000',
-      arrowEnds: 'both',
+      arrowEnds: 'both' as const,
       strokeStyle: 'dashed',
       label: 'flow',
     };
     const { newElements } = duplicateElements([arrow], new Set(['arrow']), 1, 1);
-    const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow')!;
+    const dup = newElements.find((e): e is RetiredArrowElement => e.type === 'arrow')!;
     expect(dup).toMatchObject({
       strokeColor: '#ff0000',
       arrowEnds: 'both',

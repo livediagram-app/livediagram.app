@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { svgArrow, renderElementsToSvg } from './svg-render';
-import type { ArrowElement, Element, ShapeElement, StickyElement, Tab } from './index';
+import { renderElementsToSvg } from './svg-render';
+import type { RetiredArrowElement, Element, ShapeElement, StickyElement, Tab } from './index';
 
-// Exports follow the finish (docs/specs/008-canvas/finish.md): the same sketched strokes, hatching and
-// heads the canvas draws, Professional's sharper corners and thinner lines, and Sketch's lettering.
+// Exports follow the finish (docs/specs/008-canvas/finish.md): the same sketched strokes and hatching the canvas
+// draws, Professional's sharper corners and thinner lines, and Sketch's lettering.
 
 const square = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 'sq',
@@ -25,7 +25,7 @@ const sticky: StickyElement = {
   height: 160,
   text: 'Note',
 } as StickyElement;
-const arrow = (over: Partial<ArrowElement> = {}): ArrowElement => ({
+const arrow = (over: Partial<RetiredArrowElement> = {}): RetiredArrowElement => ({
   id: 'ar',
   type: 'arrow',
   from: { kind: 'free', x: 0, y: 200 },
@@ -89,29 +89,5 @@ describe('renderElementsToSvg in a finish', () => {
     // Square corners and the thin border.
     expect(pro).toMatch(/rx="0"[^>]*stroke-width="1"/);
     expect(flex).toMatch(/rx="7"[^>]*stroke-width="2"/);
-  });
-});
-
-describe('svgArrow in a finish', () => {
-  const draw = (a: ArrowElement, finish?: Tab['finish']) =>
-    svgArrow(a, [a], 'light', undefined, undefined, undefined, undefined, undefined, finish);
-
-  it('Professional thins an arrow without its own width, never one with', () => {
-    expect(draw(arrow(), 'professional')).not.toContain('stroke-width="2"');
-    expect(draw(arrow({ strokeWidth: 4 }), 'professional')).toContain('stroke-width="4"');
-  });
-
-  it('Sketch draws the line by hand and the triangle head as strokes, not a marker shape', () => {
-    const flex = draw(arrow());
-    const sketch = draw(arrow(), 'sketch');
-    expect(sketch).not.toBe(flex);
-    // Two paths: the line and the loose head; no filled head polygon.
-    expect(sketch.match(/<path /g)?.length).toBe(2);
-    expect(sketch).not.toMatch(/<polygon/);
-  });
-
-  it('Sketch keeps a meaningful head (a diamond) as drawn', () => {
-    const sketch = draw(arrow({ arrowheadShape: 'diamond' }), 'sketch');
-    expect(sketch.match(/<path /g)?.length).toBe(1);
   });
 });

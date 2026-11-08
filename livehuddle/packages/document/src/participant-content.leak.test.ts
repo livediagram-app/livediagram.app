@@ -1,16 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ELEMENT_FIELD_NAMES } from './element-fields';
-import {
-  createAnnotation,
-  createArrow,
-  createFreehand,
-  createImage,
-  createLinkCard,
-  createSticky,
-  createText,
-} from './factories';
+import { createImage, createLinkCard, createSticky, createText } from './factories';
 import type { Element, Tab } from './index';
-import { createPath } from './path-element';
 import { applyParticipantOp, participantTabChange } from './participant-content';
 import { createShape } from './shape-factory';
 import { ELEMENT_TYPES, isValidElement } from './validate';
@@ -51,35 +42,49 @@ const SAMPLES: Sample[] = [
     allowed: [],
   },
   { name: 'image', el: theirs(createImage(0, 0), 'im'), allowed: [] },
+  // A pen stroke, a path and an annotation are retired element types (part 4 of the element engine), kept as stored.
   {
-    name: 'freehand',
+    name: 'freehand (retired)',
     el: theirs(
-      createFreehand(
-        [
-          { x: 0, y: 0 },
-          { x: 40, y: 20 },
-        ],
-        false,
-      ),
+      {
+        id: 'f',
+        type: 'freehand',
+        x: 0,
+        y: 0,
+        width: 40,
+        height: 20,
+        packedPoints: 'AQAAAAAA',
+        closed: false,
+      } as unknown as Element,
       'fh',
     ),
     allowed: [],
   },
   {
-    name: 'path',
+    name: 'path (retired)',
     el: theirs(
-      createPath(
-        [
-          { x: 0, y: 0, mode: 'corner' },
-          { x: 40, y: 20, mode: 'corner' },
+      {
+        id: 'p',
+        type: 'path',
+        x: 0,
+        y: 0,
+        width: 40,
+        height: 20,
+        nodes: [
+          { nx: 0, ny: 0, mode: 'corner' },
+          { nx: 1, ny: 1, mode: 'corner' },
         ],
-        false,
-      ),
+        closed: false,
+      } as unknown as Element,
       'pa',
     ),
     allowed: [],
   },
-  { name: 'annotation', el: theirs(createAnnotation(0, 0), 'an'), allowed: [] },
+  {
+    name: 'annotation (retired)',
+    el: theirs({ id: 'a', type: 'annotation', x: 0, y: 0, width: 44, height: 44, note: 'n' }, 'an'),
+    allowed: [],
+  },
   { name: 'link card', el: theirs(createLinkCard(0, 0), 'lc'), allowed: [] },
   // A table is a retired element type too (part 2 of the element engine), kept as stored with its cells.
   {
@@ -116,7 +121,20 @@ const SAMPLES: Sample[] = [
     ),
     allowed: [],
   },
-  { name: 'arrow (free)', el: theirs(createArrow(0, 0, 100, 100), 'af'), allowed: [] },
+  // A stored arrow is retired too (part 4), kept as stored.
+  {
+    name: 'arrow (retired, free)',
+    el: theirs(
+      {
+        id: 'ar',
+        type: 'arrow',
+        from: { kind: 'free', x: 0, y: 0 },
+        to: { kind: 'free', x: 100, y: 100 },
+      },
+      'af',
+    ),
+    allowed: [],
+  },
   { name: 'its own earlier sticky', el: mine(createSticky(0, 0), 'ms'), allowed: [] },
   { name: 'its own earlier text', el: mine(createText(0, 0), 'mt'), allowed: [] },
   {

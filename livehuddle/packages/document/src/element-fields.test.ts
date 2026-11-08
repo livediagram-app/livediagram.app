@@ -21,8 +21,8 @@ describe('ELEMENT_FIELD_NAMES', () => {
     );
   });
 
-  it('lists an arrow by its ends, not a box', () => {
-    expect(ELEMENT_FIELD_NAMES.arrow).toEqual(expect.arrayContaining(['from', 'to', 'arrowStyle']));
+  it('lists a stored arrow by its ends, not a box', () => {
+    expect(ELEMENT_FIELD_NAMES.arrow).toEqual(expect.arrayContaining(['from', 'to', 'arrowEnds']));
     expect(ELEMENT_FIELD_NAMES.arrow).not.toContain('x');
   });
 });

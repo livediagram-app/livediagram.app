@@ -13,7 +13,7 @@ import {
   type Deck,
   type Slide,
 } from './slide-deck';
-import type { ArrowElement, Element, ShapeElement, Tab } from './index';
+import type { RetiredArrowElement, Element, ShapeElement, Tab } from './index';
 
 const shape = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -26,13 +26,13 @@ const shape = (id: string, over: Partial<ShapeElement> = {}): ShapeElement => ({
   ...over,
 });
 
-const arrow = (id: string, from: string, to: string): ArrowElement =>
+const arrow = (id: string, from: string, to: string): RetiredArrowElement =>
   ({
     id,
     type: 'arrow',
     from: { kind: 'pinned', elementId: from, anchor: 'right' },
     to: { kind: 'pinned', elementId: to, anchor: 'left' },
-  }) as unknown as ArrowElement;
+  }) as unknown as RetiredArrowElement;
 
 const tab = (id: string, elements: Element[]): Tab => ({ id, name: id, elements });
 
@@ -105,7 +105,7 @@ describe('resolveSlide', () => {
         type: 'arrow',
         from: { kind: 'on-arrow', arrowId: 'r', t: 0.5 },
         to: { kind: 'pinned', elementId: 'c', anchor: 'left' },
-      } as unknown as ArrowElement;
+      } as unknown as RetiredArrowElement;
       const t = tab('t1', [shape('a'), shape('b'), shape('c'), arrow('r', 'a', 'b'), onArrow]);
       const got = resolveSlide(slide({ elementIds: ['a', 'b', 'c', 'r'] }), t);
       expect(got.map((e) => e.id)).toContain('r2');
@@ -117,7 +117,7 @@ describe('resolveSlide', () => {
         type: 'arrow',
         from: { kind: 'free', x: 0, y: 0 },
         to: { kind: 'pinned', elementId: 'a', anchor: 'left' },
-      } as unknown as ArrowElement;
+      } as unknown as RetiredArrowElement;
       const t = tab('t1', [shape('a'), floating]);
       expect(resolveSlide(slide({ elementIds: ['a'] }), t).map((e) => e.id)).toEqual(['a']);
     });

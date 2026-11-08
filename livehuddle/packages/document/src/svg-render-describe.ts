@@ -122,7 +122,7 @@ export type BoxedExportOptions = {
 // Under the Sketch finish an element without a face of its own writes in the handwriting font, whatever
 // the tab's (docs/specs/008-canvas/finish.md).
 export function exportFontFamily(
-  el: BoxedElement,
+  el: { font?: string },
   tabFont?: string,
   tabFinish?: Finish,
 ): string | undefined {
@@ -272,7 +272,7 @@ export function describeBoxedExport(
     };
   }
   const shape: ExportShape =
-    (el.type === 'shape' && el.shape === 'circle') || el.type === 'annotation'
+    el.type === 'shape' && el.shape === 'circle'
       ? { kind: 'ellipse', fill, stroke }
       : el.type === 'shape' && el.shape === 'diamond'
         ? { kind: 'diamond', fill, stroke }
@@ -356,10 +356,9 @@ export function selfLabelled(el: BoxedElement): boolean {
   );
 }
 
-// Whether an export prints the element's label as the ordinary centred, wrapped label: not a stroke or
-// path (each draws its own), nor a self-labelled element.
+// Whether an export prints the element's label as the ordinary centred, wrapped label: not a self-labelled
+// element.
 export function drawsStandardLabel(el: BoxedElement): boolean {
-  if (el.type === 'freehand' || el.type === 'path') return false;
   return !selfLabelled(el);
 }
 

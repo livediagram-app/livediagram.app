@@ -1,4 +1,4 @@
-import type { ArrowElement, Element, Tab } from './index';
+import type { RetiredArrowElement, Element, Tab } from './index';
 import { describe, expect, it } from 'vitest';
 import {
   TAB_SCHEMA_VERSION,
@@ -18,7 +18,7 @@ const shape = (id: string, over: Record<string, unknown> = {}): Element => ({
   ...over,
 });
 
-const arrow = (id: string, over: Partial<ArrowElement> = {}): Element => ({
+const arrow = (id: string, over: Partial<RetiredArrowElement> = {}): Element => ({
   id,
   type: 'arrow',
   from: { kind: 'free', x: 0, y: 0 },
@@ -79,68 +79,38 @@ describe('tabToMarkdownText', () => {
     expect(lines).not.toContain('## Connections');
   });
 
-  it('renders labelled arrows with resolved endpoint labels', () => {
-    const lines = md(
-      tab('T', [
-        shape('a', { label: 'A' }),
-        arrow('e', {
-          label: 'flows to',
-          from: { kind: 'pinned', elementId: 'a', anchor: 's' },
-          to: { kind: 'free', x: 12.4, y: 30.6 },
-        }),
-      ]),
-    );
-    expect(lines).toContain('## Connections');
-    // pinned endpoint resolves to its target's label; free endpoint rounds.
-    expect(lines).toContain('- *flows to*: A → (12, 31)');
-  });
-
-  it('lists an unlabelled arrow that joins two elements as the plain edge, so a flowchart keeps its main path', () => {
-    // Issue #985: the Flowchart template's Checkout → Enter card details path carries no labels and was left out.
+  // A stored arrow is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4):
+  // even a labelled one pinned between two labelled boxes lists no connection.
+  it('lists no connection for a stored arrow, labelled or pinned', () => {
     const lines = md(
       tab('T', [
         shape('a', { label: 'Checkout' }),
         shape('b', { label: 'Enter card details' }),
         arrow('e', {
+          label: 'flows to',
           from: { kind: 'pinned', elementId: 'a', anchor: 's' },
           to: { kind: 'pinned', elementId: 'b', anchor: 'n' },
         }),
-        arrow('loose', { to: { kind: 'free', x: 5, y: 5 } }),
       ]),
     );
-    expect(lines).toContain('## Connections');
-    expect(lines).toContain('- Checkout → Enter card details');
-    // A free unlabelled line joins nothing and stays out.
-    expect(lines.filter((l) => l.startsWith('- ') && l.includes('→'))).toHaveLength(1);
-  });
-
-  it('shows ? for an arrow pinned to a missing element', () => {
-    const lines = md(
-      tab('T', [
-        arrow('e', {
-          label: 'dangles',
-          from: { kind: 'pinned', elementId: 'gone', anchor: 'n' },
-          to: { kind: 'free', x: 0, y: 0 },
-        }),
-      ]),
-    );
-    expect(lines).toContain('- *dangles*: ? → (0, 0)');
+    expect(lines).not.toContain('## Connections');
+    expect(lines.some((l) => l.includes('→') || l.includes('flows to'))).toBe(false);
   });
 });
 
 describe('tabToMarkdownText', () => {
-  it('writes every element, and the arrows pinned between them', () => {
+  it('writes every labelled element and leaves a stored arrow out', () => {
     const t = tab('T', [
       shape('a', { label: 'First' }),
       shape('b', { label: 'Second note' }),
       arrow('e', {
-        from: { kind: 'pinned', elementId: 'a' },
-        to: { kind: 'pinned', elementId: 'b' },
-      } as Partial<ArrowElement>),
+        from: { kind: 'pinned', elementId: 'a', anchor: 's' },
+        to: { kind: 'pinned', elementId: 'b', anchor: 'n' },
+      }),
     ]);
     const md = tabToMarkdownText(t);
     expect(md).toContain('First');
     expect(md).toContain('Second note');
-    expect(md).toContain('## Connections');
+    expect(md).not.toContain('## Connections');
   });
 });

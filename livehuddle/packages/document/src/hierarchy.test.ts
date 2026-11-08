@@ -1,8 +1,24 @@
-import { createPinnedArrow, createShape } from './factories';
-import type { Element } from './index';
+import { createShape } from './factories';
+import type { Element, RetiredAnchor } from './index';
 import { describe, expect, it } from 'vitest';
-import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
+import { assignBranches, ROOT_BRANCH } from './hierarchy';
 import { MAX_ELEMENTS_PER_TAB } from './validate';
+
+// A stored arrow pinned at both ends: a retired element, read only for which boxes hang together.
+let arrowCount = 0;
+function createPinnedArrow(
+  from: string,
+  fromAnchor: RetiredAnchor,
+  to: string,
+  toAnchor: RetiredAnchor,
+) {
+  return {
+    id: `arrow-${++arrowCount}`,
+    type: 'arrow' as const,
+    from: { kind: 'pinned' as const, elementId: from, anchor: fromAnchor },
+    to: { kind: 'pinned' as const, elementId: to, anchor: toAnchor },
+  };
+}
 
 // Helper: a square with a fixed id so tests can assert on the branch map.
 function box(id: string): Element {
@@ -99,36 +115,6 @@ describe('assignBranches', () => {
     const branches = assignBranches(elements);
     // a is branch 0, b is branch 1; shared is painted by a's subtree first.
     expect(branches.get('shared')).toBe(branches.get('a'));
-  });
-});
-
-describe('branchOfArrow', () => {
-  const branches = new Map<string, number>([
-    ['root', ROOT_BRANCH],
-    ['a', 0],
-    ['b', 1],
-  ]);
-
-  it('colours an arrow by the branch it feeds into (its `to`)', () => {
-    const arrow = createPinnedArrow('root', 's', 'a', 'n');
-    expect(branchOfArrow(arrow, branches)).toBe(0);
-  });
-
-  it('falls back to the `from` branch when `to` is unknown/free', () => {
-    const arrow = {
-      ...createPinnedArrow('a', 's', 'b', 'n'),
-      to: { kind: 'free', x: 0, y: 0 } as const,
-    };
-    expect(branchOfArrow(arrow, branches)).toBe(0);
-  });
-
-  it('falls back to the trunk when neither endpoint resolves', () => {
-    const arrow = {
-      ...createPinnedArrow('a', 's', 'b', 'n'),
-      from: { kind: 'free', x: 0, y: 0 } as const,
-      to: { kind: 'free', x: 1, y: 1 } as const,
-    };
-    expect(branchOfArrow(arrow, branches)).toBe(ROOT_BRANCH);
   });
 });
 

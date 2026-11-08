@@ -27,6 +27,7 @@ import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { ImageCredit } from './image-credit';
 import type { ChairFacing } from './collab-shapes';
 import { SHAPE_KINDS } from './shape-kinds';
+import { isRetiredElementType } from './retired-kinds';
 import type {
   AnimationSpeed,
   Reaction,
@@ -583,260 +584,6 @@ export type ImageElement = {
   noteRich?: TextRun[];
 };
 
-// Freehand "pencil tool" element (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
-// subsection). A polyline sampled during a pointer drag, simplified
-// + smoothed at commit, rendered as an inline SVG path inside the
-// element's bounding box. Points are stored normalised into [0..1]
-// across the box so resize scales the path proportionally;
-// `closed: true` adds the closing segment + a theme fill (the
-// "sketch a custom shape" path) when the user released near where
-// they started.
-export type FreehandElement = {
-  id: ElementId;
-  type: 'freehand';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  /**
-   * The stroke's points, normalised into its box, and a pen's pressure at each when it reported
-   * one, packed into one block: base64 of a version byte, a flags byte and a little-endian record
-   * per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.
-   * @format byte
-   */
-  packedPoints: string;
-  // True when the path auto-closes (release-near-start). The
-  // renderer adds `Z` + a fill; open paths render stroke-only.
-  closed: boolean;
-  // Highlighter strokes (docs/specs/008-canvas/highlighter.md): the renderers swap the border
-  // presets for the marker recipe — a wide round stroke, translucent
-  // multiply blend, never filled. The stroke colour stays
-  // user-overridable; the recipe owns translucency.
-  pen?: 'highlighter';
-  // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
-  // banner's strength control at draw time. Absent = the default 14.
-  penWidth?: number;
-  // A whiteboard pen stroke's perfect-freehand streamline (docs/specs/023-draw-mode/draw-mode.md
-  // "Pens"; absent: a stroke stored before it was recorded, drawn with none). Its pressures, when
-  // the pen reported them, ride in `packedPoints`. A pen stroke's points are its raw samples.
-  streamline?: number;
-  // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
-  // drawn in the version tuned for the viewer's board (penColourHex) when `strokeColor` is unset.
-  penColour?: PenColourName;
-  // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
-  // M/L segments instead of Catmull-Rom smoothing, so deliberately
-  // placed corners stay corners. Absent on pencil / highlighter
-  // strokes (which want the smoothing).
-  straightEdges?: boolean;
-  // Shared boxed-element fields, see ImageElement above for the
-  // rationale: the union code paths (format painter, export,
-  // Editor panel) all read these uniformly. Labels render
-  // on top of the SVG path (BoxedElementView), fill / stroke /
-  // border-width / border-style follow the Colours + Border
-  // accordions, and the rest of the bag (group, opacity,
-  // link, comment, note) flows through the generic boxed-element
-  // machinery; persisting the fields keeps copy / paste /
-  // format-paint symmetrical with the other boxed kinds.
-  label?: string;
-  textSize?: TextSize;
-  textAlignX?: TextAlignX;
-  textAlignY?: TextAlignY;
-  textBold?: boolean;
-  textItalic?: boolean;
-  textUnderline?: boolean;
-  textStrikethrough?: boolean;
-  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
-  // Unset = inherit the tab's font (Tab.font), which itself falls back to
-  // the editor default. Stored as a stable id and mapped to a CSS stack
-  // at render time so saved documents round-trip independent of the
-  // catalogue's exact font stacks.
-  font?: string;
-  textColor?: string;
-  fillColor?: string;
-  // Keep this fill through a theme change (themeColourFields), as a shape may: a drawn scene's colours.
-  themeLockFill?: boolean;
-  strokeColor?: string;
-  strokeWidth?: BorderStroke;
-  strokeStyle?: BorderStyle;
-  borderRadius?: BorderRadius;
-  padding?: Padding;
-  aspectLocked?: boolean;
-  opacity?: number;
-  // Clockwise rotation in degrees about the element's centre. Absent
-  // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
-  rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
-  link?: ElementLink;
-  commentThread?: CommentThread;
-  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
-  // the comment thread. See element-action.ts.
-  action?: ElementAction;
-  note?: string;
-  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
-  // underline / heading / link deltas. `note` stays the plain-text mirror,
-  // always === runsPlainText(noteRich). Absent = an unformatted note, which
-  // renders exactly as it always did.
-  noteRich?: TextRun[];
-};
-
-// --- Paths -----------------------------------------------------------------
-
-// A path's node (docs/specs/023-draw-mode/path-tool.md "The path element"): corner (no handles, or
-// independent ones), mirrored (collinear, equal length) or aligned (collinear, own lengths).
-export type PathHandleMode = 'corner' | 'mirrored' | 'aligned';
-
-// A position normalised to the element's box, like a freehand point. May lie outside 0 to 1: a
-// handle can reach beyond the drawn curve the box wraps.
-export type PathPoint = { nx: number; ny: number };
-
-// An anchor point and its optional handles, stored as absolute normalised positions so a resize
-// scales the whole path, handles included.
-export type PathNode = PathPoint & {
-  mode: PathHandleMode;
-  handleIn?: PathPoint;
-  handleOut?: PathPoint;
-};
-
-// The Path tool's element (docs/specs/023-draw-mode/path-tool.md): an ordered list of nodes joined
-// by cubic Béziers, open or closed, editable point by point. The box wraps the drawn curve. Styled
-// like a shape: stroke, fill (drawn only when closed), border width and style. A path takes no
-// typed label; the label fields stay declared for the union code paths, as on a freehand.
-export type PathElement = {
-  id: ElementId;
-  type: 'path';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  nodes: PathNode[];
-  closed: boolean;
-  // Further contours after `nodes`, closed or open as the path is
-  // (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): a combined shape's islands and holes,
-  // filled even-odd, or a mirrored line's two halves. Such a path moves and restyles as a whole and its points are not
-  // edited one by one.
-  subpaths?: PathNode[][];
-  fillColor?: string;
-  strokeColor?: string;
-  // A whiteboard stock colour (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted
-  // content"): drawn in the version tuned for the viewer's board when `strokeColor` is unset.
-  penColour?: PenColourName;
-  // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md), as a shape carries them.
-  strokeSwatch?: QuickSwatchSlot;
-  fillSwatch?: QuickSwatchSlot;
-  strokeWidth?: BorderStroke;
-  strokeStyle?: BorderStyle;
-  label?: string;
-  textSize?: TextSize;
-  textAlignX?: TextAlignX;
-  textAlignY?: TextAlignY;
-  textBold?: boolean;
-  textItalic?: boolean;
-  textUnderline?: boolean;
-  textStrikethrough?: boolean;
-  font?: string;
-  textColor?: string;
-  borderRadius?: BorderRadius;
-  padding?: Padding;
-  aspectLocked?: boolean;
-  opacity?: number;
-  // Clockwise rotation in degrees about the element's centre. Absent or 0 means unrotated.
-  rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements").
-  animation?: ElementAnimation;
-  animationSpeed?: AnimationSpeed;
-  animationRepeat?: boolean;
-  link?: ElementLink;
-  commentThread?: CommentThread;
-  // Assigned action (docs/specs/012-collaboration/assigned-actions.md).
-  action?: ElementAction;
-  note?: string;
-  noteRich?: TextRun[];
-};
-
-// --- Annotations -----------------------------------------------------------
-
-// See docs/specs/009-elements/annotations.md. A fixed-size themed circle holding a note
-// glyph: hover it to read its `note` floating above the canvas, click it to
-// edit the note. It is a boxed element so it flows through every generic
-// path (selection, drag, layering, group, link, colours, comments,
-// the note feature), but it does NOT resize (no handles) — it stays a tidy
-// marker. There is no inline label; the content lives entirely in `note`.
-// The shared boxed fields are declared (mostly always-undefined here) so the
-// union code paths compile without per-type guards, mirroring ImageElement.
-export type AnnotationElement = {
-  id: ElementId;
-  type: 'annotation';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  // The note this marker carries. Edited via NotePopover / useEditorNotes,
-  // previewed on hover. Empty string strips the field on commit.
-  note?: string;
-  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
-  // underline / heading / link deltas. `note` stays the plain-text mirror,
-  // always === runsPlainText(noteRich). Absent = an unformatted note, which
-  // renders exactly as it always did.
-  noteRich?: TextRun[];
-  // fillColor tints the circle; strokeColor draws the ring + the note glyph.
-  // textColor is unused (no inline label) but declared for the generic
-  // colour code paths.
-  fillColor?: string;
-  strokeColor?: string;
-  textColor?: string;
-  // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
-  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
-  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
-  // for a lane, so an unset heading looks exactly as it always did.
-  //
-  // Separate from `fillColor` because they are separate surfaces: a lane's
-  // body and its title strip are the two halves a swimlane is made of, and
-  // wanting a coloured heading over a plain body is the normal case, not an
-  // exotic one.
-  headerFill?: string;
-  // An annotation has no editable label; declared always-undefined so the
-  // generic "boxed element has a label" paths compile (mirrors Image).
-  label?: string;
-  opacity?: number; // 0..1, defaults to 1
-  link?: ElementLink;
-  commentThread?: CommentThread;
-  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
-  // the comment thread. See element-action.ts.
-  action?: ElementAction;
-  // Shared boxed-element fields that the generic union code paths (format
-  // painter, geometry, search) read uniformly. An annotation doesn't expose
-  // UI for these — it's a fixed, non-rotating marker with no inline text —
-  // so they stay undefined in practice; declared for parity the same way
-  // ImageElement declares its always-undefined text fields.
-  rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
-  aspectLocked?: boolean;
-  padding?: Padding;
-  textSize?: TextSize;
-  textAlignX?: TextAlignX;
-  textAlignY?: TextAlignY;
-  textBold?: boolean;
-  textItalic?: boolean;
-  textUnderline?: boolean;
-  textStrikethrough?: boolean;
-  font?: string;
-};
-
 // --- Link cards ------------------------------------------------------------
 
 // See docs/specs/009-elements/link-cards.md. A rectangular bookmark element: the user sets
@@ -845,7 +592,7 @@ export type AnnotationElement = {
 // the api worker's `/api/unfurl` endpoint and caches it in `meta`. The
 // metadata rides the normal tab sync, so peers + reloads get it for free.
 // Resizable like a shape; carries the shared boxed fields (mostly
-// always-undefined, mirroring AnnotationElement) for the generic code paths.
+// always-undefined, mirroring ImageElement) for the generic code paths.
 // Only the fields the card actually renders (title / image / favicon).
 // The unfurl endpoint also returns siteName + description, but nothing
 // draws them, so they aren't cached onto the element or persisted.
@@ -911,7 +658,7 @@ export type LinkCardElement = {
   // renders exactly as it always did.
   noteRich?: TextRun[];
   // Declared for the generic union code paths (format painter, geometry,
-  // search), unused by the card UI — mirrors AnnotationElement.
+  // search), unused by the card UI.
   padding?: Padding;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
@@ -926,13 +673,14 @@ export type LinkCardElement = {
 // --- Retired element types --------------------------------------------------
 
 // A stored element of a TYPE the element engine deleted (docs/specs/002-project-scope/not-in-livehuddle.md
-// "The element engine", "Retired elements"; part 1: `video`, the video and website embeds; part 2: `table`). Kept
+// "The element engine", "Retired elements"; part 1: `video`, the video and website embeds; part 2: `table`; part 4:
+// `freehand`, `path` and `annotation`, the pen strokes, paths and annotation markers). Kept
 // exactly as stored and drawn as the placeholder in its box: nothing reads its own fields, so whatever else it
 // carries (a video's `embedProvider`, a table's `cells` and `cellStyles`) rides through a save untouched. Only the box and the shared boxed fields the generic code paths
 // read (selection, layout, comments, format painter) are typed.
 export type RetiredTypeElement = {
   id: ElementId;
-  type: 'video' | 'table';
+  type: 'video' | 'table' | 'freehand' | 'path' | 'annotation';
   x: number;
   y: number;
   width: number;
@@ -978,7 +726,7 @@ export type RetiredTypeElement = {
   // renders exactly as it always did.
   noteRich?: TextRun[];
   // Declared for the generic union code paths (format painter, geometry,
-  // search), unused by the card UI — mirrors AnnotationElement.
+  // search), unused by the card UI.
   padding?: Padding;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
@@ -1018,7 +766,7 @@ const UNTYPED_SHAPES = new Set<string>([
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
-  if (el.type === 'arrow') return false;
+  if (el.type === 'arrow' || isRetiredElementType(el.type)) return false;
   if (el.type !== 'shape') return true;
   return !UNTYPED_SHAPES.has(el.shape ?? '') && SHAPE_KINDS.has(el.shape ?? '');
 }

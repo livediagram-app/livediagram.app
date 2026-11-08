@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, ShapeElement } from './index';
+import type { RetiredArrowElement, Element, ShapeElement } from './index';
 import { remapElementRefs, remapTabLinks } from './duplicate';
 
 const shape = (id: string, extra: Partial<ShapeElement> = {}): ShapeElement =>
@@ -21,7 +21,7 @@ describe('remapElementRefs', () => {
       type: 'arrow',
       from: { kind: 'pinned', elementId: 's1', anchor: 'e' },
       to: { kind: 'on-arrow', arrowId: 'a0', t: 0.5 },
-    } as ArrowElement;
+    } as RetiredArrowElement;
     const els: Element[] = [shape('s2', { portalTarget: 's1' }), arrow];
     const out = remapElementRefs(
       els,
@@ -31,8 +31,8 @@ describe('remapElementRefs', () => {
       ]),
     );
     expect(out[0]).toMatchObject({ portalTarget: 'S1' });
-    expect((out[1] as ArrowElement).from).toMatchObject({ elementId: 'S1' });
-    expect((out[1] as ArrowElement).to).toMatchObject({ arrowId: 'A0' });
+    expect((out[1] as RetiredArrowElement).from).toMatchObject({ elementId: 'S1' });
+    expect((out[1] as RetiredArrowElement).to).toMatchObject({ arrowId: 'A0' });
   });
 
   it('leaves references outside the map, and element links, alone', () => {

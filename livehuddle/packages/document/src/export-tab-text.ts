@@ -1,7 +1,7 @@
 // Text serialisation of a Tab: the non-visual export formats (JSON snapshot and Markdown outline), shared by the
 // editor's Export dialog and the CLI's export. They share nothing with a rasteriser beyond the Tab data model.
 
-import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from './index';
+import { isBoxed, type Tab } from './index';
 
 // ---------------------------------------------------------------------
 // File (JSON)
@@ -46,15 +46,13 @@ export function tabToJsonText(tab: Tab): string {
 // Markdown
 // ---------------------------------------------------------------------
 
-// Extracts every labelled boxed element + every labelled arrow into
-// a tree-like markdown document. Reading order: top-to-bottom by y,
+// Extracts every labelled boxed element into
+// a markdown document. Reading order: top-to-bottom by y,
 // then left-to-right by x. That matches how a person would scan the
 // canvas and produces a usable export even for non-tree layouts.
 //
-// Connections list every arrow that joins two elements, keyed off its endpoints so the connection survives the
-// flattening: a labelled one with its label in italics, an unlabelled one as the plain edge (`- Checkout → Enter card
-// details`). On a flowchart the arrows are the content: the main path carries no labels, and leaving it out kept
-// only the side branches (issue #985). A free line that joins nothing, with no label, says nothing and stays out.
+// A stored arrow is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+// part 4): nothing reads it, so the outline lists no connections.
 // The markdown outline as a string — shared by the Blob download and the
 // export dialog's view/copy panel (docs/specs/020-import-export/mermaid.md).
 export function tabToMarkdownText(tab: Tab): string {
@@ -63,12 +61,10 @@ export function tabToMarkdownText(tab: Tab): string {
   lines.push('');
 
   // Use isBoxed instead of an inline kind list so a future
-  // BoxedElement variant (FreehandElement landed via this gap)
-  // doesn't silently drop out of the markdown export. The tag
-  // computation below already falls back to `(<type>)` for any
-  // non-shape kind.
+  // BoxedElement variant doesn't silently drop out of the markdown
+  // export. The tag computation below already falls back to
+  // `(<type>)` for any non-shape kind.
   const boxed = tab.elements.filter(isBoxed);
-  const arrows = tab.elements.filter((e): e is ArrowElement => e.type === 'arrow');
   const labelledBoxed = boxed.filter((b) => b.label && b.label.trim().length > 0);
   labelledBoxed.sort((a, b) => a.y - b.y || a.x - b.x);
   if (labelledBoxed.length > 0) {
@@ -81,37 +77,8 @@ export function tabToMarkdownText(tab: Tab): string {
     lines.push('');
   }
 
-  const connections = arrows.filter(
-    (a) =>
-      (a.label && a.label.trim().length > 0) ||
-      (a.from.kind === 'pinned' && a.to.kind === 'pinned'),
-  );
-  if (connections.length > 0) {
-    lines.push('## Connections');
-    lines.push('');
-    for (const a of connections) {
-      const fromLabel = endpointLabel(a.from, boxed);
-      const toLabel = endpointLabel(a.to, boxed);
-      const label = a.label?.trim();
-      lines.push(
-        label ? `- *${a.label}*: ${fromLabel} → ${toLabel}` : `- ${fromLabel} → ${toLabel}`,
-      );
-    }
-    lines.push('');
-  }
-
-  if (labelledBoxed.length === 0 && connections.length === 0) {
+  if (labelledBoxed.length === 0) {
     lines.push('_No labelled content._');
   }
   return lines.join('\n');
-}
-
-function endpointLabel(endpoint: ArrowElement['from'], boxed: BoxedElement[]): string {
-  if (endpoint.kind === 'pinned') {
-    const target = boxed.find((b) => b.id === endpoint.elementId);
-    if (target && target.label) return target.label;
-    return '?';
-  }
-  if (endpoint.kind === 'on-arrow') return '(arrow)';
-  return `(${Math.round(endpoint.x)}, ${Math.round(endpoint.y)})`;
 }

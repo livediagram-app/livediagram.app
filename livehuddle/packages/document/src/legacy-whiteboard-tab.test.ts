@@ -1,15 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type {
-  ArrowElement,
-  Element,
-  FreehandElement,
-  PathElement,
-  ShapeElement,
-  Tab,
-  TextElement,
-} from './index';
+import type { Element, ShapeElement, Tab, TextElement } from './index';
 import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
-import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 // A stored whiteboard tab (docs/specs/007-editor/editor-modes.md "Existing whiteboards") reads as
 // a general tab that opens in Draw, looking exactly as it did ("One look").
@@ -26,30 +17,36 @@ const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   height: 10,
   ...over,
 });
-const arrow = (over: Partial<ArrowElement> = {}): ArrowElement =>
+// A stored arrow, pen stroke and path: retired elements (docs/specs/002-project-scope/not-in-livehuddle.md "The
+// element engine", part 4).
+const arrow = (over: Record<string, unknown> = {}): Element => ({
+  id: 'a',
+  type: 'arrow',
+  from: { kind: 'free', x: 0, y: 0 },
+  to: { kind: 'free', x: 10, y: 0 },
+  ...over,
+});
+const freehand = (over: Record<string, unknown> = {}): Element =>
   ({
-    id: 'a',
-    type: 'arrow',
-    start: { kind: 'free', x: 0, y: 0 },
-    end: { kind: 'free', x: 10, y: 0 },
+    id: 'f',
+    type: 'freehand',
+    x: 0,
+    y: 0,
+    width: 10,
+    height: 10,
+    packedPoints: 'AQA=',
+    closed: false,
     ...over,
-  }) as ArrowElement;
-const freehand = (over: Partial<FreehandElement> = {}): FreehandElement => ({
-  id: 'f',
-  type: 'freehand',
+  }) as Element;
+const path = (over: Record<string, unknown> = {}): Element => ({
+  id: 'p',
+  type: 'path',
   x: 0,
   y: 0,
   width: 10,
   height: 10,
-  packedPoints: encodeStrokePoints([
-    { nx: 0, ny: 0 },
-    { nx: 1, ny: 1 },
-  ]),
-  closed: false,
   ...over,
 });
-const path = (over: Partial<PathElement> = {}): PathElement =>
-  ({ id: 'p', type: 'path', x: 0, y: 0, width: 10, height: 10, ...over }) as PathElement;
 const text = (over: Partial<TextElement> = {}): TextElement => ({
   id: 'x',
   type: 'text',
@@ -134,29 +131,15 @@ describe('migrateWhiteboardKind', () => {
     expect(migrated(cylinder)).toEqual(cylinder);
   });
 
-  it('gives an unpainted line or arrow an Ink line', () => {
-    expect((migrated(arrow()) as ArrowElement).penColour).toBe('ink');
-    const blue = arrow({ penColour: 'blue' });
-    expect(migrated(blue)).toEqual(blue);
-    const hex = arrow({ strokeColor: '#123456' });
-    expect(migrated(hex)).toEqual(hex);
-  });
-
-  it('gives an unpainted path an Ink line and no fill', () => {
-    const out = migrated(path()) as PathElement;
-    expect(out.penColour).toBe('ink');
-    expect(out.fillColor).toBe('transparent');
-    const filled = path({ strokeColor: '#123456', fillColor: '#abcdef' });
-    expect(migrated(filled)).toEqual(filled);
-  });
-
-  it('leaves pen strokes and text to draw in Ink by themselves, only taking a stroke fill away', () => {
-    const stroke = migrated(freehand()) as FreehandElement;
-    expect(stroke.penColour).toBeUndefined();
-    expect(stroke.strokeColor).toBeUndefined();
-    expect(stroke.fillColor).toBe('transparent');
-    const highlighter = freehand({ pen: 'highlighter' });
-    expect(migrated(highlighter)).toEqual(highlighter);
+  it('leaves a stored arrow, line, path and pen stroke exactly as stored, the same object', () => {
+    for (const el of [
+      arrow(),
+      arrow({ arrowEnds: 'none' }),
+      path(),
+      freehand(),
+      freehand({ pen: 'highlighter' }),
+    ])
+      expect(migrated(el)).toBe(el);
   });
 
   // docs/specs/007-editor/editor-modes.md "A text box's sizing": text hugged on a board.

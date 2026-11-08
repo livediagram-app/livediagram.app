@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape } from './shape-factory';
-import { createArrow } from './factories';
+import type { RetiredArrowElement } from './retired-arrow';
 import type { Element } from './index';
 import {
   ELEMENT_GRID_CELL,
@@ -39,7 +39,12 @@ describe('element grid', () => {
   });
 
   it('holds boxed elements only', () => {
-    const arrow = createArrow(0, 0, 50, 50);
+    const arrow: RetiredArrowElement = {
+      id: 'arrow',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 50, y: 50 },
+    };
     const grid = buildElementGrid([arrow, box(0, 0)]);
     expect(queryElementGrid(grid, { x: 0, y: 0, width: 60, height: 60 })).toHaveLength(1);
   });

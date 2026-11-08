@@ -134,18 +134,21 @@ function unknownKindWord(name: unknown, fallback: string): string {
   return `${UNKNOWN_KIND_MARK} ${BARE_KIND_NAME.test(text) ? text : JSON.stringify(text)}`;
 }
 
+// A boxed type the element engine deleted, or a stored arrow (./retired-arrow), which has no box.
+const isRetiredType = (type: string) => type === 'arrow' || isRetiredElementType(type);
+
 // Whether the document model knows this element's type, and its shape kind for a shape.
 export function isKnownElement(el: Element): boolean {
-  if (!ELEMENT_TYPES.has(el.type) || isRetiredElementType(el.type)) return false;
+  if (!ELEMENT_TYPES.has(el.type) || isRetiredType(el.type)) return false;
   return el.type !== 'shape' || SHAPE_KINDS.has(el.shape);
 }
 
 // The first word of an element's line: a shape's kind, else the element type. An unknown type or shape
 // kind prints `? <name>`.
 export function kindWordOf(el: Element): string {
-  // A retired element type (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine") prints as an
-  // unknown kind, as a retired shape kind does.
-  if (!ELEMENT_TYPES.has(el.type) || isRetiredElementType(el.type))
+  // A retired element type (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"), a stored arrow
+  // included, prints as an unknown kind, as a retired shape kind does.
+  if (!ELEMENT_TYPES.has(el.type) || isRetiredType(el.type))
     return unknownKindWord(el.type, 'element');
   if (el.type !== 'shape') return el.type;
   return SHAPE_KINDS.has(el.shape) ? el.shape : unknownKindWord(el.shape, 'shape');

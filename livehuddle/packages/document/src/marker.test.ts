@@ -2,10 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   MARKER_COLOUR_MAX_ROWS,
   MARKER_COLOUR_NIB_PX,
-  markerArrowHead,
   markerColouring,
   markerStrokes,
-  trimOutline,
 } from './marker';
 import {
   outlineOfBox,
@@ -80,45 +78,6 @@ describe('markerStrokes', () => {
     const pts = points(a);
     expect(pts[0]).toEqual({ x: 0, y: 0 });
     expect(pts[pts.length - 1]).toEqual({ x: 200, y: 0 });
-  });
-});
-
-describe('trimOutline', () => {
-  it('cuts a line back along itself at either end', () => {
-    const cut = trimOutline(outlineOfPath('M 0 0 L 100 0'), 10, 20);
-    expect(cut.segments).toEqual([{ kind: 'line', from: { x: 10, y: 0 }, to: { x: 80, y: 0 } }]);
-  });
-
-  it('cuts a curve back by its length', () => {
-    const cut = trimOutline(outlineOfPath('M 0 0 Q 100 0 200 0'), 0, 50);
-    const seg = cut.segments[0]!;
-    expect(seg.kind).toBe('curve');
-    if (seg.kind !== 'curve') return;
-    const end = seg.points[seg.points.length - 1]!;
-    expect(end.x).toBeCloseTo(150, 0);
-  });
-
-  it('leaves an end segment too short to cut as it was', () => {
-    const outline = outlineOfPath('M 0 0 L 10 0');
-    expect(trimOutline(outline, 0, 20).segments).toEqual(outline.segments);
-  });
-});
-
-describe('markerArrowHead', () => {
-  const tip = { x: 100, y: 50 };
-  const dir = { x: 1, y: 0 };
-
-  it('draws an open head as one chevron stroke through the tip', () => {
-    const d = markerArrowHead(tip, dir, 15, 1, false);
-    expect(strokes(d)).toBe(1);
-    expect(d).not.toContain('Z');
-  });
-
-  it('draws a closed head as a triangle', () => {
-    const d = markerArrowHead(tip, dir, 15, 1, true);
-    expect(d).toMatch(/Z$/);
-    // Every corner sits behind (or within a hair of) the tip.
-    for (const p of points(d)) expect(p.x).toBeLessThanOrEqual(101);
   });
 });
 

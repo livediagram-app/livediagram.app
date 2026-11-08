@@ -89,7 +89,7 @@ describe('dropUnsafeColours', () => {
     ] as unknown as Element[];
     expect(dropUnsafeColours(els)).toBe(els);
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const migrated = migrateStoredElements([{ ...els[0]!, strokeColor: 'url(x)' }]);
+    const migrated = migrateStoredElements([{ ...els[0]!, strokeColor: 'url(x)' } as Element]);
     expect(migrated[0]).not.toHaveProperty('strokeColor');
   });
 
