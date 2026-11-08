@@ -86,7 +86,7 @@ closed the escalation. The fix is [§4](#4-guest-identity-a-verified-guest-token
 ## 3. Design: API tokens
 
 **API tokens belong to the liveworkspace account** ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
-"API tokens"). They are made, listed and revoked on liveworkspace.app, and one token works on every app's API (and
+"API tokens"). They are made, listed and revoked in Settings › API Tokens, in any app's Settings or on liveworkspace.app, and one token works on every app's API (and
 the other apps' MCP servers; livehuddle has none). liveworkspace holds the hash, the name, the read-only flag, the 6-month expiry and the cap (20 per
 account). What follows records how livehuddle uses them; where it describes livehuddle minting, listing or
 storing tokens itself, the account-level design below supersedes it.
@@ -98,9 +98,11 @@ storing tokens itself, the account-level design below supersedes it.
   with `Retry-After: 5`.
 - **No copy.** livehuddle keeps no table of tokens. `GET /api/tokens/current` answers from the verify response.
 - **No minting here.** livehuddle has no MCP server, so no OAuth exchange mints a token through it
-  ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)); every token is made on liveworkspace.app.
-- **Management** is on liveworkspace.app. `GET/POST /api/tokens` and `DELETE /api/tokens/:id` answer
-  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's API Tokens row links to liveworkspace.app.
+  ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)); every token is made in the Settings panel (this app's or liveworkspace.app's).
+- **Management** is liveworkspace's. `GET/POST /api/tokens` and `DELETE /api/tokens/:id` answer
+  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's Settings › API Tokens category draws the shared token panel in place for a signed-in account
+  (`@liveworkspace/settings-ui/account-panels`, the same one liveworkspace.app's Settings has, loaded when the category
+  is first opened): make a token (a name, Read Only), its secret shown once with Copy, and revoke one.
 - **Self-revoke.** `DELETE /api/tokens/current` revokes the presenting token on liveworkspace
   (`POST /api/account/internal/tokens/revoke`).
 - **Expiry reminders** are not sent: liveworkspace sends none yet.
@@ -172,7 +174,7 @@ exists): a `read_only` flag on the token (kept by liveworkspace accounts) that, 
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`. The same choke point refuses it the one read that is a
 credential rather than content: `GET /api/documents/:id/share`, whose links and password would let it
-open an edit link. Read-only tokens are made on liveworkspace.app (a **Read-only**
+open an edit link. Read-only tokens are made in Settings › API Tokens (a **Read-only**
 switch), giving a cautious user a way to let a script VIEW their documents without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
 ([§7](#7-out-of-scope-for-now)): `read_only` is a single boolean, not a general
@@ -214,12 +216,12 @@ backstop.
 
 ### 3.6 Management: the Settings dialog's API Tokens category
 
-> **Superseded**: tokens are managed on liveworkspace.app (see the head of §3). This section records the manager livehuddle had.
+> **Superseded**: tokens are the liveworkspace account's, managed in the shared panel every app's Settings and liveworkspace.app draw (see the head of §3). This section records the manager livehuddle had.
 
 Tokens are created, viewed and revoked in the **Settings dialog**
 ([User preferences](../007-editor/user-preferences.md)), in the **API Tokens**
 sub-category of **Account** (id `tokens`, `parent: 'account'`, shown as
-"Account › API Tokens"). It is account-scoped like its parent, and the dialog is reachable
+"Settings › API Tokens"). It is account-scoped like its parent, and the dialog is reachable
 from both the Explorer and the editor, so the tokens are too. There is no
 Explorer page for them and no `/explorer/tokens` route.
 
@@ -480,6 +482,6 @@ Every full token inherits the owner's read+write access; finer grants come
 later if demand appears.
 
 **Webhooks** are no longer out of scope: liveworkspace sends them for every app's items, from the index's
-Timeline events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. A person adds one for their own
-items, and a team's admins for the team's, in liveworkspace's Settings (this app's Settings links there); a share
-link's Editor never can. See [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).
+Timeline events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. Anyone signed in who can edit the whole space adds one
+from the space's ⋯ menu in the Explorer (**Webhooks**): its owner, its team's people, or an Editor link to every
+tab; a Viewer, a Participant or a one-tab link never can, and a webhook reports on that space alone. See [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).

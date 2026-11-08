@@ -121,7 +121,7 @@ logging `[new] restored, back out <target>`.
   [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
 - **Named** after its template (`untitledNameForTemplate`); it is renamed in the editor.
 - **Themed** Default (`NEW_DESIGN_THEME_ID`, `brand`): the Tab Style dialog changes it later. `/new` shows no themes.
-- People change where designs go in **Settings › Designs › Default Folders**, and move a design between livedesign
+- People change where designs go in **Settings › Explorer › Default Folders**, and move a design between livedesign
   and this browser afterwards ([Offline Mode](../006-design/offline-mode.md)).
 
 Every answer a creation step could ask (name, store, folder, theme) has a later, better home, so `/new` asks none.

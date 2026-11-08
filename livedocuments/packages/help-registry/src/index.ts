@@ -1692,8 +1692,8 @@ export const articles: Article[] = [
   {
     slug: 'layers',
     title: 'Layers',
-    description: 'How Bring to Front and Send to Back stack a tab in layers, and Move to Layer.',
-    keywords: 'photoshop stack layer move to layer front back organise organize z order',
+    description: 'How Bring to Front and Send to Back stack a tab in layers.',
+    keywords: 'photoshop stack layer front back organise organize z order hidden locked',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Layers and Locking',

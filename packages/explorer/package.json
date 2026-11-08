@@ -32,6 +32,7 @@
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:^",
+    "@liveworkspace/settings-ui": "workspace:^",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },

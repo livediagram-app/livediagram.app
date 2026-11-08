@@ -236,33 +236,14 @@ export type CanvasProps = {
   mapPosition: { x: number; y: number } | null;
   onMoveMap: (x: number, y: number) => void;
   onResetMap: () => void;
-  // Layers panel (docs/specs/006-document/layers.md). `layers` is the NORMALISED stack (bottom ->
-  // top, never empty) the panel renders; `tabLayers` above stays the raw
-  // field for the render-order helpers. A popover over its bottom-right
-  // cluster button.
+  // The tab's layers (docs/specs/006-document/layers.md), NORMALISED (bottom -> top, never empty), for Contents'
+  // page pictures; `tabLayers` above stays the raw field for the render-order helpers.
   layers: Layer[];
-  activeLayerId: string;
-  layerCounts: Map<string, number>;
   // Per-user preferences (docs/specs/007-editor/user-preferences.md): where Contents sits, among others.
   userPreferences: UserPreferences;
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
-  onSelectLayer: (layerId: string) => void;
-  onAddLayer: () => void;
-  onRemoveLayer: (layerId: string) => void;
-  onRenameLayer: (layerId: string, name: string) => void;
-  onToggleLayerVisibility: (layerId: string) => void;
-  onToggleLayerLock: (layerId: string) => void;
-  onReorderLayer: (layerId: string, toIndex: number) => void;
-  onMergeLayer: (direction: 'above' | 'below') => void;
-  onSetLayerOpacity: (layerId: string, opacity: number) => void;
-  onClearLayer: (layerId: string) => void;
-  onHideOtherLayers: (layerId: string) => void;
-  // Hover-to-solo (docs/specs/006-document/layers.md): while set, the canvas renders ONLY this
-  // layer. Driven by hovering a Layers-panel row; pure view state.
-  layerPreviewId: string | null;
-  onPreviewLayer: (layerId: string | null) => void;
   // Floating Comments panel. Only mounted when commentRows is
   // non-empty: the panel exists to list discussion that already
   // exists, so on documents without it the panel stays out of the

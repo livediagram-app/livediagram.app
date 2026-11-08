@@ -46,7 +46,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 ### Using the three together
 
-- **Default folders** are keyed in the order kind, template family, then mode ([Default folders](../013-workspace/default-folders.md)).
+- **Default folders** are keyed by the editor mode alone: Diagrams, Drawings, Workshops ([Default folders](../013-workspace/default-folders.md)).
 - **Explorer filters** offer them as separate chips: Opens in (mode), Kind and Template ([Explorer filters](../013-workspace/explorer-filters.md)).
 - Code, copy and specs use these words only in these meanings.
 

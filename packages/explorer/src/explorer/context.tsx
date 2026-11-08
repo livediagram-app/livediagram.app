@@ -78,6 +78,8 @@ export type DialogTarget =
   | { kind: 'empty-trash'; teamId: string | null; title: string }
   // History: the item's own Timeline.
   | { kind: 'history'; item: Item }
+  // Webhooks: the item's own, for an account who edits all of it.
+  | { kind: 'webhooks'; item: Item }
   // This Browser's Delete (its menu, or a drop on the Trash): gone for good, since nothing else holds it.
   | { kind: 'delete-local'; item: ThisBrowserItem }
   // A This Browser item dropped on a place: synced to the account first, then moved there where the host can.

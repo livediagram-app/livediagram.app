@@ -190,7 +190,7 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   Toolbar strip sits in Diagram mode
   ([Toolbar layout](../007-editor/toolbar-layout.md)), so a whiteboard's tools
   are where the rest of the product keeps them.
-- **Bottom by choice**: Settings, **Editor › Draw** (the sub-category for
+- **Bottom by choice**: Settings, **Editor**, the **Draw** section (for
   settings that apply only in Draw mode,
   [User preferences](../007-editor/user-preferences.md)), the row **Dock
   Position** (**Top** / **Bottom**). The bottom is closer to

@@ -10,7 +10,7 @@ import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsDefaultFoldersRowSpec } from './settings-catalogue';
 
-// Settings › Canvases › Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new canvases
+// Settings › Explorer › Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new canvases
 // go when they are made without choosing a place, with Clear and Change. The shared Explorer draws the rows and keeps them on the index, per person and per app.
 export function SettingsDefaultFoldersRow({ row }: { row: SettingsDefaultFoldersRowSpec }) {
   const { isSignedIn } = useAccountBootstrap();

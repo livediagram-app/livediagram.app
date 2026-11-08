@@ -320,10 +320,17 @@ const AVATAR_TOUR_STEP = /^AvatarTourStep/;
 const LOCKING_CATEGORIES = new Set(['Element', 'Tab']);
 const LOCKING_ACTIONS = new Set(['Locked', 'Unlocked']);
 
+// The offer to move a This Browser document's retired parts (Pages, Plan, designs) to the other apps (removed
+// 2026-11-08, livehuddle/docs/specs/006-document/offline-mode.md): livehuddle never held such parts. The offer shown,
+// taken or put off, and a document whose parts moved.
+const RETIRED_PARTS_OFFER_TYPE = 'RetiredPartsOffer';
+
 // What livehuddle inherited from livediagram and never had as its own, per the above.
 export function isInheritedEvent(category: string, action: string, type: string | null): boolean {
   const t = type ?? '';
   if (isLeftLivehuddleEvent(category, action, type)) return true;
+  if (category === 'Document' && action === 'Moved' && t === 'RetiredParts') return true;
+  if (category === 'UI' && t === RETIRED_PARTS_OFFER_TYPE) return true;
   if (category === 'Token') return action === 'Created' && AGENT_DOOR_TOKEN_TYPES.has(t);
   if (category === 'Tab') return action === 'Changed' && MODE_OPENS_IN_TYPES.has(t);
   if (category === 'Canvas') return action === 'Used' && POINTER_TOOL_TYPES.has(t);

@@ -1,6 +1,6 @@
 // The Settings list's icons. A top-level category carries one of the shared tiles
 // (@liveworkspace/settings-ui: a white line-art mark on a filled, rounded colour tile, the same in
-// every app); a sub-category carries a plain glyph, the mark its panel or mode has in this editor.
+// every app); a sub-category under Account carries a plain glyph.
 
 import type { ReactNode } from 'react';
 import {
@@ -9,18 +9,14 @@ import {
   SettingsSubcategoryGlyph,
   type SettingsTileId,
 } from '@liveworkspace/settings-ui';
-import { lucideGlyph, EDITOR_MODE_ICONS } from '@livedocuments/ui';
-import { lucideLayers, lucideMap, lucidePalette } from '@liveworkspace/icons/lucide';
-import { CollaborateGlyph } from '@liveworkspace/workbench/components/panels/collaborate/CollaborateGlyph';
-import { SlideDeckIcon } from '@/components/palette/palette-icons';
 
-// The categories that carry a tile: every top-level one. A sub-category
-// (one per panel under Panels, one per mode under Editor, Notifications and
-// API Tokens under Account) draws none of its own.
+// The categories that carry a tile: every top-level one. A sub-category (Notifications, API Tokens and the rest under
+// Account) draws none of its own.
 export type SettingsIconId =
   | 'account'
   | 'documents'
   | 'editor'
+  | 'presenting'
   | 'appearance'
   | 'keyboard'
   | 'panels'
@@ -28,18 +24,8 @@ export type SettingsIconId =
   | 'tours'
   | 'privacy';
 
-// The sub-categories, nested under a top-level category (Editor, Panels, Account).
-export type SettingsSubcategoryId =
-  | 'pages'
-  | 'presenting'
-  | 'layers'
-  | 'map'
-  | 'collaborate'
-  | 'quickStyle'
-  | 'notifications'
-  | 'tokens'
-  | 'webhooks'
-  | 'data';
+// The sub-categories, nested under Account (the Settings panel lists each on its own).
+export type SettingsSubcategoryId = 'notifications' | 'tokens' | 'data';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -50,6 +36,7 @@ export const SETTINGS_TILES: Record<SettingsIconId, SettingsTileId> = {
   account: 'account',
   documents: 'folder',
   editor: 'editor',
+  presenting: 'presenting',
   appearance: 'appearance',
   keyboard: 'keyboard',
   panels: 'panels',
@@ -58,28 +45,11 @@ export const SETTINGS_TILES: Record<SettingsIconId, SettingsTileId> = {
   privacy: 'privacy',
 };
 
-// A sub-category's glyph: the same mark its panel carries in the editor, so
-// the row is recognisable as that panel's settings. Layers and Collaborate
-// are the toolbar's own (Lucide layers, as LayersStackIcon; the Collaborate
-// button's glyph), at 16px. The Map and Quick Style
-// have no toolbar button, so they take Lucide's map and palette from the
-// same family. Pages is the mark Pages mode carries, so the row reads as
-// that mode's settings. Notifications and API
-// Tokens keep the shared bell and key.
-const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
-const MapSubGlyph = lucideGlyph(lucideMap, 16);
-const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
-const PagesSubGlyph = EDITOR_MODE_ICONS.pages;
+// A sub-category's glyph: the account's keep the shared bell, key and tray. Panels and Editor have no
+// sub-categories: each panel's and mode's settings are a section of their category.
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
-  pages: () => <PagesSubGlyph size={16} />,
-  presenting: () => <SlideDeckIcon />,
-  layers: () => <LayersSubGlyph />,
-  map: () => <MapSubGlyph />,
-  collaborate: () => <CollaborateGlyph size={16} />,
-  quickStyle: () => <QuickStyleSubGlyph />,
   notifications: () => <SettingsSharedGlyph id="notifications" />,
   tokens: () => <SettingsSharedGlyph id="tokens" />,
-  webhooks: () => <SettingsSharedGlyph id="webhooks" />,
   data: () => <SettingsSharedGlyph id="data" />,
 };
 

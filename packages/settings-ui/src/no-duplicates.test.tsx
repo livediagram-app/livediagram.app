@@ -22,7 +22,6 @@ beforeAll(async () => {
 
 const saver = { changeApp: vi.fn(), changeShared: vi.fn() };
 const value = { all: {}, apps: {} };
-const renderLogo = () => null;
 const signedIn: AccountHost = {
   identity: { name: 'Ada Lovelace', email: 'ada@example.com', colour: null },
   profile: {
@@ -30,8 +29,13 @@ const signedIn: AccountHost = {
     load: async () => ({ ok: true, data: null }),
     save: async () => ({ ok: true, data: null }),
   },
-  securityHref: '/explorer?settings=profile',
-  tokensHref: '/explorer?settings=tokens',
+  security: {
+    sessions: async () => [],
+    revokeSession: async () => true,
+    signInMethods: async () => ({ google: 'off' }),
+    connectGoogle: async () => false,
+  },
+  renderTokens: () => null,
 };
 
 const toggle = (key: string, label: string, extra: Partial<SettingsRow> = {}): SettingsRow =>
@@ -70,7 +74,6 @@ function editorOwn(): SettingsCategory[] {
       label: 'Account',
       rows: [
         custom('identity', 'Guest', 'You'),
-        custom('trash', 'Trash', 'Your Data'),
         custom('deleteAccount', 'Delete Account', 'Danger Zone'),
       ],
     },
@@ -109,7 +112,6 @@ function allModel(current: SettingsAppId | null, own?: SettingsCategory[]) {
     common,
     value,
     account: own ? { ...signedIn, shared: { all: {}, set: vi.fn() } } : signedIn,
-    renderLogo,
     saver,
   });
 }
@@ -125,14 +127,13 @@ function expectNoDuplicates(categories: readonly SettingsCategory[]) {
   for (const [group, labels] of byGroup) {
     expect(new Set(labels).size, `${group} lists ${labels.join(', ')}`).toBe(labels.length);
   }
-  // No category name the Account section uses appears under an app.
+  // No category name the account's categories use (under Account or Developers) appears among the apps'.
+  const isAccount = (c: SettingsCategory) => c.id.startsWith(`${ACCOUNT_GROUP}:`);
   const account = new Set(
-    categories
-      .filter((c) => c.group === ACCOUNT_GROUP)
-      .map((c) => c.label.replace(/^Account › /, '')),
+    categories.filter(isAccount).map((c) => c.label.replace(/^Account › /, '')),
   );
   account.add('Account');
-  for (const c of categories.filter((c) => c.group && c.group !== ACCOUNT_GROUP)) {
+  for (const c of categories.filter((c) => c.group && !isAccount(c))) {
     const bare = c.label.replace(/^Account › /, '');
     expect(
       account.has(bare) || c.label.startsWith('Account'),
@@ -146,31 +147,30 @@ describe('the Settings panel lists the account once', () => {
     const { categories } = allModel(null);
     expectNoDuplicates(categories);
     const labels = categories.filter((c) => c.group === ACCOUNT_GROUP).map((c) => c.label);
-    expect(labels).toEqual(
-      expect.arrayContaining([
-        'Profile',
-        'Notifications',
-        'API Tokens',
-        'Privacy',
-        'Accessibility',
-      ]),
-    );
-    // Each app's own email switches join Account › Notifications, under the app's logo and name.
-    const notifications = categories.find((c) => c.id === 'account:notifications')!;
-    const sections = new Set(notifications.rows.map((r) => r.section));
-    expect(sections).toEqual(new Set(['In the Editor', 'Email']));
-    expect(new Set(notifications.rows.flatMap((r) => (r.app ? [r.app] : [])))).toEqual(
-      new Set(SETTINGS_APP_IDS),
-    );
-    expect(Object.values(notifications.appHeadings ?? {}).map((h) => h.label)).toEqual([
-      'livediagram',
-      'liveplanner',
-      'livedocuments',
-      'livedesign',
-      'livehuddle',
+    expect(labels).toEqual(['Profile', 'Notifications', 'Privacy', 'Accessibility']);
+    expect(categories.filter((c) => c.group === 'developers').map((c) => c.label)).toEqual([
+      'API Tokens',
     ]);
+    // Profile leads the rail; the account's answer to their bare ids, Profile to `profile` too, and to `webhooks`,
+    // the category that left Settings for each document's own.
+    expect(categories[0]).toMatchObject({ id: 'account:account', label: 'Profile' });
+    expect(categories[0]!.aliases).toEqual(
+      expect.arrayContaining(['account', 'profile', 'webhooks']),
+    );
+    expect(categories.some((c) => c.label === 'Webhooks')).toBe(false);
+    expect(categories.find((c) => c.id === 'account:tokens')!.aliases).toContain('tokens');
+    // Each app's own email switches join the account's Notifications, in its one Email section, each marked with its
+    // app's logo beside the Account section's own, which are every app's.
+    const notifications = categories.find((c) => c.id === 'account:notifications')!;
+    const sections = notifications.rows.map((r) => r.section);
+    expect(sections.filter((s, i) => s !== sections[i - 1])).toEqual(['In the Editor', 'Email']);
+    const own = notifications.rows.filter((r) => r.apps?.length === 1).map((r) => r.apps![0]);
+    expect(new Set(own)).toEqual(new Set(SETTINGS_APP_IDS));
+    expect(notifications.rows.some((r) => r.apps?.length === SETTINGS_APP_IDS.length)).toBe(true);
     // No app has a group of its own: every other category is All's merged one.
-    expect(new Set(categories.map((c) => c.group))).toEqual(new Set([ACCOUNT_GROUP, 'apps']));
+    expect(new Set(categories.map((c) => c.group))).toEqual(
+      new Set([ACCOUNT_GROUP, 'apps', 'developers']),
+    );
   });
 
   for (const app of [
@@ -183,24 +183,25 @@ describe('the Settings panel lists the account once', () => {
       const { categories } = allModel(app, editorOwn());
       expectNoDuplicates(categories);
       const profile = categories.find((c) => c.id === 'account:account')!;
-      // The editor's identity row gives way to the Profile's header; its Trash and Delete Account join the Profile.
+      // The editor's identity row gives way to the Profile's header; its Delete Account joins the Profile.
       expect(profile.rows.map((r) => r.key)).toEqual(
-        expect.arrayContaining(['account:identity', `${app}:trash`, `${app}:deleteAccount`]),
+        expect.arrayContaining(['account:identity', `${app}:deleteAccount`]),
       );
       expect(profile.rows.some((r) => r.key === `${app}:identity`)).toBe(false);
-      // Its own tokens become the Account section's, under Profile, where the host offered a link.
+      // Its own tokens become the account's, top-level under Developers, where the host offered a link.
       expect(categories.filter((c) => c.label === 'API Tokens')).toHaveLength(1);
-      // Its own accessibility row (not a shared one) sits under Account › Accessibility, under its name.
+      // Its own accessibility row (not a shared one) sits in the account's Accessibility, marked as its own.
       const accessibility = categories.find((c) => c.id === 'account:accessibility')!;
-      expect(accessibility.rows.find((r) => r.key === `${app}:highContrastFocus`)?.app).toBe(app);
-      expect(accessibility.appHeadings?.[app]).toBeTruthy();
+      expect(accessibility.rows.find((r) => r.key === `${app}:highContrastFocus`)?.apps).toEqual([
+        app,
+      ]);
       expect(
         categories.some((c) => c.group === app && /Account|Notifications|Privacy/.test(c.label)),
       ).toBe(false);
     });
 
     it(`on ${app}’s own side, from its catalogue, signed in and as a guest`, () => {
-      const base = { current: app, catalogues, common: null, value, renderLogo, saver } as const;
+      const base = { current: app, catalogues, common: null, value, saver } as const;
       const signed = panelModel({ ...base, mode: 'app', account: signedIn });
       expectNoDuplicates(signed.categories);
       const guest = panelModel({
@@ -213,4 +214,33 @@ describe('the Settings panel lists the account once', () => {
       expect(signed.categories.some((c) => c.id === 'profile')).toBe(false);
     });
   }
+
+  it('makes an editor’s own Your Data, where the host has none, top-level in the account’s order', () => {
+    const own: SettingsCategory[] = [
+      ...editorOwn(),
+      {
+        id: 'data',
+        label: 'Your Data',
+        parent: 'account',
+        rows: [custom('dataExport', 'Your Data')],
+      },
+    ];
+    const { categories } = allModel('livediagram.app', own);
+    expectNoDuplicates(categories);
+    const account = categories.filter((c) => c.id.startsWith(`${ACCOUNT_GROUP}:`));
+    expect(account.map((c) => c.label)).toEqual([
+      'Profile',
+      'Notifications',
+      'Privacy',
+      'Accessibility',
+      'Your Data',
+      'API Tokens',
+    ]);
+    for (const c of account) {
+      expect(c.parent, c.id).toBeUndefined();
+      expect(c.icon, c.id).toBeTruthy();
+    }
+    expect(categories.find((c) => c.id === 'account:tokens')?.group).toBe('developers');
+    expect(categories.find((c) => c.id === 'account:data')?.group).toBe(ACCOUNT_GROUP);
+  });
 });

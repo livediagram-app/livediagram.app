@@ -8,50 +8,26 @@ import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
 import { ProfileHeaderCard, type AccountGuest } from './ProfileHeader';
 import { ProfileSection } from './ProfileEditor';
 import { SessionsRows, SignInMethodsRows } from './SecurityRows';
+import { TIME_ZONE_DESCRIPTION, TIME_ZONE_LABEL, TimeZoneSection } from './TimeZonePicker';
 
 // The Profile category's rows (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"), grouped as the old livediagram
-// Profile page was: the header card, Name and Colour, Sign-in and Security, then Your Account. Name and Colour is
+// Profile page was: the header card, Name and Colour, Time Zone, Sign-in and Security, then Your Account. Name and Colour is
 // edited in place wherever the panel opens (the host's ProfileHost); only sign-in and devices, which are
 // liveworkspace.app's session's, link there from elsewhere.
 
 export const PROFILE_SECTIONS = {
   name: 'Name and Colour',
+  timeZone: 'Time Zone',
   security: 'Sign-in Methods',
   devices: 'Where You’re Signed In',
   account: 'Your Account',
 } as const;
 
 const PROFILE_KEYWORDS = 'name display colour color cursor avatar presence profile';
+const TIME_ZONE_KEYWORDS =
+  'time zone timezone zone clock city offset gmt utc email emails daytime weekdays send window automatic';
 const SECURITY_KEYWORDS =
   'sign in sign-in login method google email code session device browser sign out security connected';
-
-/** A row that leaves for another page (sign-in and devices, the API tokens on liveworkspace.app). */
-export function linkOut(
-  key: string,
-  label: string,
-  description: string,
-  href: string,
-  cta: string,
-  leading?: ReactNode,
-): SettingsRow {
-  return {
-    kind: 'custom',
-    key,
-    label,
-    description,
-    render: () => (
-      <SettingsRowShell
-        row={{ key, label, description }}
-        leading={leading}
-        control={
-          <a href={href} className={SETTINGS_ROW_BUTTON}>
-            {cta}
-          </a>
-        }
-      />
-    ),
-  };
-}
 
 // Several cells drawn by one row, split by the card's hairline.
 function Cells({ children }: { children: ReactNode }) {
@@ -101,7 +77,7 @@ function SignOutRow({ onSignOut }: { onSignOut: NonNullable<AccountSection['onSi
 
 /** The signed-in Profile's rows; none when the host has nothing to show. */
 export function profileRows(section: AccountSection): SettingsRow[] {
-  const { identity, profile, security, securityHref, onSignOut } = section;
+  const { identity, profile, security, onSignOut } = section;
   const rows: SettingsRow[] = [];
   if (identity) {
     rows.push({
@@ -112,7 +88,7 @@ export function profileRows(section: AccountSection): SettingsRow[] {
       keywords: 'account profile identity name email avatar joined',
       render: () => (
         <HeaderCell>
-          <ProfileHeaderCard identity={identity} />
+          <ProfileHeaderCard identity={identity} {...(profile ? { profile } : {})} />
         </HeaderCell>
       ),
     });
@@ -127,6 +103,16 @@ export function profileRows(section: AccountSection): SettingsRow[] {
       keywords: PROFILE_KEYWORDS,
       section: PROFILE_SECTIONS.name,
       render: () => <ProfileSection host={profile} />,
+    });
+    // The zone the emails that can wait keep to, set in place over the same host.
+    rows.push({
+      kind: 'custom',
+      key: 'timeZone',
+      label: TIME_ZONE_LABEL,
+      description: TIME_ZONE_DESCRIPTION,
+      keywords: TIME_ZONE_KEYWORDS,
+      section: PROFILE_SECTIONS.timeZone,
+      render: () => <TimeZoneSection host={profile} />,
     });
   }
   if (security) {
@@ -158,18 +144,6 @@ export function profileRows(section: AccountSection): SettingsRow[] {
         ),
       },
     );
-  } else if (securityHref) {
-    rows.push({
-      ...linkOut(
-        'security',
-        'Sign-in Methods and Devices',
-        'How you sign in (an emailed code, Google) and every browser you’re signed in on, managed on liveworkspace.app.',
-        securityHref,
-        'Manage',
-      ),
-      keywords: SECURITY_KEYWORDS,
-      section: PROFILE_SECTIONS.security,
-    });
   }
   if (onSignOut && rows.length > 0) {
     rows.push({

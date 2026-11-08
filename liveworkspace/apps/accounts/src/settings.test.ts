@@ -5,6 +5,7 @@ import {
   isSettingsOwner,
   mergeGuestSettings,
   readSettings,
+  resetSettings,
   SETTINGS_MAX_BYTES,
   writeSettings,
 } from './settings.ts';
@@ -184,5 +185,46 @@ describe('a guest signing in', () => {
     await write(GUEST, null, { all: { small: 1, huge: 'y'.repeat(500) } });
     await mergeGuestSettings(db, GUEST, ADA);
     expect((await readSettings(db, ADA, null)).all).toEqual({ big, small: 1 });
+  });
+});
+
+describe('resetting every setting', () => {
+  it('resets every scope of one owner, keeping only the usage-events choice', async () => {
+    const BEA = 'user_bea';
+    addUser(sql, { id: BEA, email: 'bea@example.com', name: 'Bea' });
+    await write(ADA, 'livediagram.app', {
+      all: { telemetryEnabled: false, reduceMotion: true, tourSeen: true },
+      app: { showMinimap: false },
+    });
+    await write(ADA, 'liveplanner.app', { app: { density: 'compact' } });
+    await write(BEA, 'livediagram.app', { all: { reduceMotion: true }, app: { snap: true } });
+
+    expect(await resetSettings(db, ADA, 2_000)).toEqual({
+      all: { telemetryEnabled: false },
+      updatedAt: 2_000,
+    });
+    expect(await readSettings(db, ADA, 'livediagram.app')).toEqual({
+      all: { telemetryEnabled: false },
+      app: {},
+      updatedAt: 2_000,
+    });
+    expect((await readSettings(db, ADA, 'liveplanner.app')).app).toEqual({});
+    // Nobody else's.
+    expect(await readSettings(db, BEA, 'livediagram.app')).toEqual({
+      all: { reduceMotion: true },
+      app: { snap: true },
+      updatedAt: 1_000,
+    });
+  });
+
+  it('resets to nothing at all when nothing is kept, and when nothing was stored', async () => {
+    await write(ADA, 'livedesign.app', { all: { uiScale: 1.25 }, app: { snap: true } });
+    expect(await resetSettings(db, ADA, 2_000)).toEqual({ all: {}, updatedAt: null });
+    expect(await readSettings(db, ADA, 'livedesign.app')).toEqual({
+      all: {},
+      app: {},
+      updatedAt: null,
+    });
+    expect(await resetSettings(db, ADA, 3_000)).toEqual({ all: {}, updatedAt: null });
   });
 });

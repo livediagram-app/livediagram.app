@@ -2,8 +2,8 @@
 
 import { useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 
-// Drag a list row onto another (docs/specs/006-design/layers.md, docs/specs/031-photo/photo-layers.md "The
-// Layers tab"): the canvas's Layers panel and a photo's Layers tab both restack this way.
+// Drag a list row onto another (docs/specs/031-photo/photo-layers.md "The Layers tab"): a photo's Layers tab
+// restacks this way (the canvas's Layers panel did too, until it retired).
 //
 // Deliberately POINTER events, not HTML5 drag-and-drop: the layers spec rules the latter out because it is
 // unreliable inside a panel and dead on touch (the tab bar's reorder, useTabReorderDrag, uses it and is a

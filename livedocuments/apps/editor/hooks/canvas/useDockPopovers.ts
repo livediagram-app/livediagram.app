@@ -4,7 +4,7 @@ import { track } from '@/lib/telemetry';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 
 // The panels that open as popovers off a button: the Toolbar layout's
-// Explorer, from its menu button (docs/specs/007-editor/toolbar-layout.md), and Layers / Activity /
+// Explorer, from its menu button (docs/specs/007-editor/toolbar-layout.md), and Contents /
 // Collaborate, from their bottom-right cluster buttons (docs/specs/007-editor/editor-app.md). One is open
 // at a time. This hook owns which (if any), the resolved popover anchor, and
 // the toggle handler. The anchor math is the pure computeDockAnchor (tested
@@ -16,8 +16,6 @@ import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-sca
 const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
 const POPOVER_WIDTHS: Partial<Record<string, number>> = {
-  // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
-  layers: 352,
   // The Contents popover's `w-[380px]` (docs/specs/007-editor/pages-mode.md "Contents").
   contents: 380,
   // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
@@ -26,7 +24,6 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
 
 export type DockPanel =
   | 'explorer'
-  | 'layers'
   | 'collaborate'
   // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents").
   | 'contents';
@@ -37,8 +34,7 @@ export type { DockAnchor };
 // their cluster button. Only on the open transition: re-opening the panel already showing is not a
 // new open.
 function trackDockPanelOpened(id: DockPanel): void {
-  if (id === 'layers') track('Layer', 'Opened', 'Panel');
-  else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
+  if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'contents') track('UI', 'Opened', 'PageContents');
 }
 

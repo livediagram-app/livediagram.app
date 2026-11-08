@@ -4,7 +4,8 @@
 // See docs/specs/016-platform/router-app.md.
 
 import { applyCachePolicy } from './cache-policy';
-import { LIVE_ROUTE_SEGMENTS } from '@liveplanner/api-schema';
+import { LIVE_ROUTE_SEGMENTS, SIGNED_IN_HINT_COOKIE } from '@liveplanner/api-schema';
+import { openExplorerRedirect } from '@liveworkspace/sites/open-explorer';
 import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
 import {
   routeToWorkspace,
@@ -237,6 +238,13 @@ async function route(request: Request, env: Env): Promise<Response> {
   // only (no DEPLOY_ENV): `wrangler dev` hands the router its production host in request.url.
   const www = env.DEPLOY_ENV ? null : wwwRedirect(request, url, redirectedPath);
   if (www) return www;
+  // Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer"): the
+  // homepage, arrived at from outside the site by a signed-in person whose switch is on, opens their Explorer. A
+  // header test on the request's cookies, no fetch; `/?home` always shows the homepage.
+  const openExplorer = openExplorerRedirect(request, url, {
+    signedInCookie: SIGNED_IN_HINT_COOKIE,
+  });
+  if (openExplorer) return openExplorer;
   // The Community page is liveworkspace's, one page for every app (liveworkspace/docs/specs/007-community/
   // community.md "One page for every app"), served here at /community scoped to liveplanner: its head made this
   // app's own and its sitemap answered here (@liveworkspace/community-site/router).

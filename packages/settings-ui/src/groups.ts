@@ -1,7 +1,6 @@
-// Filing one source's categories under a heading of the All view (the Account section, or an app): each category
-// and row id is prefixed with the heading's, so two apps' "Editor" or "notifyComments" never collide in one
-// dialog, and every reference between them (a sub-category's parent, a nested row's, a link's target) is prefixed
-// with it.
+// Filing one source's categories under its id in the panel (the account, Common, or an app): each category
+// and row id is prefixed with the source's, so two apps' "Editor" or "notifyComments" never collide in one
+// dialog, and every reference between them (a sub-category's parent, a nested row's) is prefixed with it.
 import type { SettingsCategory, SettingsRow } from './model';
 
 export const groupedId = (group: string, id: string) => `${group}:${id}`;
@@ -9,12 +8,7 @@ export const groupedId = (group: string, id: string) => `${group}:${id}`;
 function prefixRow(group: string, row: SettingsRow): SettingsRow {
   const key = groupedId(group, row.key);
   const parent = row.parent !== undefined ? { parent: groupedId(group, row.parent) } : {};
-  switch (row.kind) {
-    case 'link':
-      return { ...row, key, ...parent, target: groupedId(group, row.target) };
-    default:
-      return { ...row, key, ...parent };
-  }
+  return { ...row, key, ...parent };
 }
 
 export function groupCategories(

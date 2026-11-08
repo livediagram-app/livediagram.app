@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { EDITOR_MODES, ES_BOARD_LAYER_ID } from '@livediagram/document';
 import {
   DEFAULT_FOLDER_OPTIONS,
-  SPECIFIC_TAB_KINDS,
   TEMPLATE_FAMILIES,
   creationIntentOf,
   indexIntentOf,
@@ -13,12 +12,15 @@ import {
 // creation intent a create carries.
 
 describe('DEFAULT_FOLDER_OPTIONS', () => {
-  it('has one entry per editor mode, then one per specific tab kind', () => {
-    expect(DEFAULT_FOLDER_OPTIONS.map((o) => `${o.dimension}:${o.value}`)).toEqual([
-      ...EDITOR_MODES.map((mode) => `mode:${mode}`),
-      'kind:event-storming',
+  it('has one entry per editor mode and nothing else: Diagrams, Drawings, Workshops', () => {
+    expect(DEFAULT_FOLDER_OPTIONS.map((o) => `${o.dimension}:${o.value}`)).toEqual(
+      EDITOR_MODES.map((mode) => `mode:${mode}`),
+    );
+    expect(DEFAULT_FOLDER_OPTIONS.map((o) => [o.value, o.label, o.noun])).toEqual([
+      ['diagram', 'Diagrams', 'diagrams'],
+      ['draw', 'Drawings', 'drawings'],
+      ['workshop', 'Workshops', 'workshops'],
     ]);
-    expect(SPECIFIC_TAB_KINDS).toEqual(['event-storming']);
   });
 
   it('has the one template family, the retrospective', () => {

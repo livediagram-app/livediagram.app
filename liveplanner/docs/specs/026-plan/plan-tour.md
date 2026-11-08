@@ -15,7 +15,7 @@ a way that suits what the surface is for:
 
 None of them is a row of step cards: each is a short list of **missions**, shown one at a time in the
 [mission strip](#the-mission-strip), that tick themselves off as the person does them, however they found the way.
-The footer button, the synced taken record, Settings › Tours and one-tour-at-a-time are the shared ones
+The footer button, the synced taken record, Settings › Getting Started and one-tour-at-a-time are the shared ones
 ([Editor tours](../007-editor/editor-tour.md)); where this spec is silent, those rules hold.
 
 ## Domain language
@@ -61,7 +61,7 @@ The footer button, the synced taken record, Settings › Tours and one-tour-at-a
   track on its own (`apps/editor/lib/plan-tour.ts`). Someone who had the retired
   [Power user mode](../007-editor/power-user-mode.md) on keeps every track taken: its preset's flag is folded into
   `planTourTracks` as the stored preferences are read.
-- **Replayable from Settings**: in Settings' **Tours** category, **Plan Tours** switches every track at once, and
+- **Replayable from Settings**: in Settings' **Getting Started** category, **Plan Tours** switches every track at once, and
   one switch per track sits nested beneath it: **Boards Tour** (Using a Board), **Card Types Tour**, **Board Setup
   Tour**, **Sheets Tour** and **Dashboards Tour** (never "Plan Tour"). On means that track is not yet taken; a track's switch off marks that track alone, on forgets it
   alone. Turning one on from off and closing Settings opens the start panel straight away when the tour is on offer

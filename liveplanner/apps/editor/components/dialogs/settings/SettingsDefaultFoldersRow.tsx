@@ -9,7 +9,7 @@ import { PLAN_TEMPLATE_FAMILIES } from '@/lib/plan-template-families';
 import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsDefaultFoldersRowSpec } from './settings-catalogue';
 
-// Settings › Plans › Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new plans go
+// Settings › Explorer › Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new plans go
 // when they are made without choosing a place, one entry for plans and one per template family, each with Clear
 // and Change. The shared Explorer draws the rows and keeps them on the index, per person and per app.
 export function SettingsDefaultFoldersRow({ row }: { row: SettingsDefaultFoldersRowSpec }) {

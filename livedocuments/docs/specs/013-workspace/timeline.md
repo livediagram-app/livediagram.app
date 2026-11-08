@@ -88,3 +88,10 @@ document's own Timeline, `GET /timeline?item=`, paged, on a day-by-day rail with
 Activity: the index can answer it (by `t:<team>`), and it
 belongs with the editor and the Teams pages. An API token's expiry warning is the liveworkspace account's, sent by
 email ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)), and is no Timeline row.
+
+**Webhooks** sits on the same menu, after History, for a signed-in account who can edit the whole document (its owner,
+its team's people, or an Editor link to every tab; never a guest, a Viewer, a Participant or a one-tab Editor). It
+opens the shared Webhooks dialog, "Webhooks for “<document>”", whose webhooks report on this document alone and say so;
+each of the person's other documents has its own (up to 10). Each one picks where it posts, what it sends in the document's
+own words, and Who Did It (Anyone or Only Me). The index checks the role on every call
+([webhooks.md](../../../../liveworkspace/docs/specs/004-index/webhooks.md)).

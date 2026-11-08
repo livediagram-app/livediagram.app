@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
-import { loadLayersPanel, loadPhotoPanel } from '@/lib/editor-deferred-code';
+import { loadPhotoPanel } from '@/lib/editor-deferred-code';
 import { visibleLayerElements } from '@livedesign/design';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { ViewMinimap } from '@/components/canvas/view-readers';
@@ -15,9 +15,6 @@ import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { useContentsChrome } from './useContentsChrome';
 import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
 
-// Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
-// editor is idle, lib/editor-deferred-code.ts), and kept mounted after.
-const LayersPanel = dynamic(loadLayersPanel, { ssr: false });
 // A photo page's panel, fetched once a tab has a photo page.
 const PhotoPanel = dynamic(loadPhotoPanel, { ssr: false });
 
@@ -56,13 +53,11 @@ export function useCanvasChromePanels({
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
   // Which panels are on in Settings (docs/specs/007-editor/user-preferences.md), read by CanvasChrome
   // so each panel and its cluster button agree.
-  panelsOn: { layers: boolean; collaborate: boolean };
+  panelsOn: { collaborate: boolean };
 }): {
   panelEls: Partial<Record<PanelId, ReactNode>>;
   // The Explorer, a popover under the menu button (docs/specs/007-editor/toolbar-layout.md).
   explorerEl: ReactNode;
-  // Layers, a popover over its cluster button, rendered outside the corner layer.
-  layersEl: ReactNode;
   collaborateEl: ReactNode;
   // A photo page's Photo panel over its button in the pages strip, and whether that button is offered.
   photoPanelOffered: boolean;
@@ -85,21 +80,6 @@ export function useCanvasChromePanels({
     currentShareCode,
     onRenameCurrentDesign,
     elements,
-    layers,
-    activeLayerId,
-    layerCounts,
-    onSelectLayer,
-    onAddLayer,
-    onRemoveLayer,
-    onRenameLayer,
-    onToggleLayerVisibility,
-    onToggleLayerLock,
-    onReorderLayer,
-    onMergeLayer,
-    onSetLayerOpacity,
-    onClearLayer,
-    onHideOtherLayers,
-    onPreviewLayer,
     onMoveCommentsPanel,
     onNewDesign,
     explorerMenuActions,
@@ -108,7 +88,6 @@ export function useCanvasChromePanels({
     activeTabId,
     onOpenCommentsForElement,
     onResetCommentsPanel,
-    readOnly,
     setActiveDockAnchor,
     setActiveDockPanel,
     settings,
@@ -134,6 +113,7 @@ export function useCanvasChromePanels({
     onNewDesign,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
+    onMenuWebhooks: explorerMenuActions?.onWebhooks,
     onMenuSearch: explorerMenuActions?.onSearch,
     onMenuSettings: explorerMenuActions?.onOpenSettings,
   });
@@ -141,16 +121,18 @@ export function useCanvasChromePanels({
   // handler is, since the stable wrapper alone would always look present.
   const hasShare = !!explorerMenuActions?.onShare;
   const hasExport = !!explorerMenuActions?.onExport;
+  const hasWebhooks = !!explorerMenuActions?.onWebhooks;
   const hasSearch = !!explorerMenuActions?.onSearch;
   const hasSettings = !!explorerMenuActions?.onOpenSettings;
   const explorerMenu = useMemo(
     () => ({
       onShare: hasShare ? explorerHandlers.onMenuShare : undefined,
       onExport: hasExport ? explorerHandlers.onMenuExport : undefined,
+      onWebhooks: hasWebhooks ? explorerHandlers.onMenuWebhooks : undefined,
       onSearch: hasSearch ? explorerHandlers.onMenuSearch : undefined,
       onOpenSettings: hasSettings ? explorerHandlers.onMenuSettings : undefined,
     }),
-    [explorerHandlers, hasShare, hasExport, hasSearch, hasSettings],
+    [explorerHandlers, hasShare, hasExport, hasWebhooks, hasSearch, hasSettings],
   );
 
   const closeDockPanel = useCallback(() => {
@@ -238,43 +220,6 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  // Layers panel (docs/specs/006-design/layers.md). Edit sessions only (a viewer can't manage
-  // layers; visibility / lock still shape what they see via the render
-  // path). A popover over its bottom-right cluster button, always mounted so
-  // that button can pop it open (popoverOpen gates the actual render).
-  // Its Settings switch removes it outright; layers themselves keep applying.
-  const layersOpen = activeDockPanel === 'layers';
-  const [layersOpened, setLayersOpened] = useState(layersOpen);
-  if (layersOpen && !layersOpened) setLayersOpened(true);
-  const layersEl =
-    !chromeHidden && !readOnly && panelsOn.layers && layersOpened ? (
-      <LayersPanel
-        layers={layers}
-        tabFont={props.tabFont}
-        activeLayerId={activeLayerId}
-        counts={layerCounts}
-        elements={elements}
-        popoverOpen={layersOpen}
-        popoverAnchor={activeDockAnchor ?? undefined}
-        onPopoverClose={closeDockPanel}
-        onSelectLayer={onSelectLayer}
-        onAddLayer={onAddLayer}
-        onRemoveLayer={onRemoveLayer}
-        onRenameLayer={onRenameLayer}
-        onToggleVisibility={onToggleLayerVisibility}
-        onToggleLock={onToggleLayerLock}
-        onReorderLayer={onReorderLayer}
-        onMergeLayer={onMergeLayer}
-        onSetLayerOpacity={onSetLayerOpacity}
-        onClearLayer={onClearLayer}
-        onHideOtherLayers={onHideOtherLayers}
-        onPreviewLayer={onPreviewLayer}
-        hoverPreviewEnabled={settings?.layerHoverPreview !== false}
-        showPreview={settings?.layersShowPreview !== false}
-        showCount={settings?.layersShowCount !== false}
-      />
-    ) : null;
-
   // Minimap (docs/specs/008-canvas/minimap.md) routed through docking like the other panels: it
   // docks in the bottom-left and snaps / persists the same way. Desktop-only, gated on the map
   // setting + a few elements; hidden in zen / welcome (chromeHidden).
@@ -354,7 +299,6 @@ export function useCanvasChromePanels({
     contentsSidebarEl,
     contentsDocked,
     menuJoined,
-    layersEl,
     paletteTint,
   };
 }

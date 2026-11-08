@@ -54,9 +54,8 @@ What stays, with where it runs, is the allow-list in `apps/editor/render-browser
 
 ### Ref-only wrappers: the sites
 
-| Site                                                        | The wrapper carried          | Becomes                                                          |
-| ----------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
-| `apps/editor/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
+None left: the one site, the Layers panel's row menu (its confirm popover's anchor became the click's
+`currentTarget`), went with the panel on 8 November 2026.
 
 Stay, carrying more than a ref: `../packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
 ones among them) and `../packages/help-site/src/components/ArticleShell.tsx` (reads `textContent`).
@@ -133,7 +132,6 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 | Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                       |
 | Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type |
 | Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                  |
-| No ref-only wrappers                     | `LayerRowMenu.test.tsx`: focus and anchor with no bare node                                      |
 
 ## Constants and configuration
 

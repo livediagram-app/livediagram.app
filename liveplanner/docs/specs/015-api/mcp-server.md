@@ -78,7 +78,7 @@ hands it to the client; from then on every request is just
 from [Public API and API tokens](public-api-and-tokens.md) (storage, hashing, 6-month expiry,
 per-account cap, revoke, account-deletion cascade, rate limiting) instead of
 inventing a parallel credential. An MCP-minted token is an ordinary liveworkspace
-account token: it is listed on liveworkspace.app and can be revoked there like any
+account token: it is listed in Settings › API Tokens (any app's, or liveworkspace.app's) and can be revoked there like any
 other, and it works with every liveworkspace app's MCP server.
 
 This implements the OAuth flow Manager Toolkit uses:
@@ -403,7 +403,7 @@ assistant to "rename that" or "delete the old one":
   [Trash](../013-workspace/trash.md) (`DELETE /api/projects/<id>`), restorable
   for 30 days, and says so in its result (`trashed: true`, `restorableForDays`).
   There is no permanent option: an AI tool can only ever bin a project, never
-  destroy it. A permanent delete stays with the person (Settings › Trash) or
+  destroy it. A permanent delete stays with the person (the Explorer's Trash) or
   the REST API's `?permanent=true` ([Public API and API tokens](public-api-and-tokens.md)).
   With `tabId` it deletes one tab (`DELETE …/tabs/<tabId>`) outright: tabs have
   no Trash. Still destructive, so the description tells the model to confirm

@@ -190,7 +190,7 @@ why are in [Vulnerability disclosure](../001-platform-scope/vulnerability-disclo
 
 Each app keeps its own help centre; a feature that is the platform's, the same in every app, is explained once here
 instead. That is Google Drive sync (drive.md): `/help/google-drive`, one page in the site's own chrome, listed
-in the sitemap. Settings › Account › Cloud Sync links to it, and each app's help has a short **Google Drive**
+in the sitemap. Settings › Profile › Cloud Sync links to it, and each app's help has a short **Google Drive**
 article under Account and Data (`/help/account-and-data/google-drive/`) that points here, so the apps' search,
 links and old addresses still find it. It names every app's file extension (drive.md "The file"), which
 `app/app-lists.test.ts` checks against the listed apps. Change it when drive.md changes what a person sees.
@@ -394,6 +394,11 @@ built once here. It is shown here and, through each switched-on app's router, at
   the app's own where the apps differ (`signInReasons(app, words)`, `packages/explorer`): an app with an MCP server
   offers "Connect AI tools" (API tokens and AI assistants over MCP); livehuddle, which has none, offers "Use the
   API" (API tokens for your own scripts) instead.
+- **Opening on the Explorer.** With the person's Automatically Open Explorer switch on (`autoOpenExplorer`, common, in
+  `all`), the homepage, here and on every app's address, opens the Explorer's Home instead
+  ([one-explorer.md](../004-index/one-explorer.md#opening-on-the-explorer)). The Explorer's read of the settings keeps
+  the address's `lw_open_explorer` cookie in step; here the root layout's head script reads it, on an app's address
+  the app's router.
 - **Home's banner.** Closing it is the person's `homeBanner` setting, a common one kept in `all`
   (`PATCH /api/account/settings`; read with the app's scopes, an app's old copy counting until `all` has one,
   [accounts.md](../003-accounts/accounts.md#common-settings)), so it stays closed in every app's Home and editor too, and the
@@ -411,7 +416,7 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link, the old
   `/account/settings` and `/account/tokens`, a Search result) opens the Settings panel here, in place, once the
   page knows who is here (`settingsOpening` in `lib/explorer/host.ts`): `notifications`, `profile` (or `account`),
-  `tokens`, `webhooks`, `data`, `privacy` and `accessibility` open All on that Account category, `all` opens All, an app's name
+  `tokens`, `data`, `privacy` and `accessibility` open All on that Account category (an old `webhooks` opens Profile), `all` opens All, an app's name
   (`liveplanner`) that app's side, `teams` goes to the Invites, and anything else (an editor's own category) the
   side of the app the person came from. It works on a move inside the Explorer too, not only on arrival. Signed
   out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
@@ -446,8 +451,9 @@ the `liveworkspace-app` meta an app's E2E stack adds ([one-explorer.md](../004-i
 - **Links** to the app's items, New, previews, the Library and Import from use the page's own origin
   (`appOrigin`); share links are always the app's public site. The Settings panel opens here in place (the bottom
   bar, the account menu, `?settings=`). Its Profile's Name and Colour is set in place there, over the app's token
-  (`/api/workspace/account/profile`); its Sign-in Methods and API Tokens rows link to the panel on liveworkspace.app
-  (`/explorer?settings=profile`, `?settings=tokens`, `workspaceHref`), where the session that runs them lives.
+  (`/api/workspace/account/profile`), and its Sign-in Methods, Where You're Signed In, API Tokens and Your
+  Data draw in place too, over the same token ([Settings](#settings), "On an app's address"), never a link to
+  liveworkspace.app. Its search opens Profile and API Tokens in place as well.
 - **This Browser** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
   changes.
 - **The Inbox's This Browser rows** come from the app's snapshot in localStorage
@@ -539,19 +545,26 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   pushed pane's name takes its place, and the pane opens under the shared back bar (`BackBar`, `@liveworkspace/ui`) to
   the screen that pushed it, the pane's name as its chip. Opened for no app, the title is **Settings** alone.
 - **The switch.** Opened for an app, the header has the Explorer's switch: the app's logo and name, and **All** with
-  liveworkspace's logo. The app's side shows, signed in, the **Account** group and the **Common** settings that app
-  has (below), then the app's own group, from its plain-data catalogue (`@liveworkspace/settings/catalogues/<app>`,
-  [accounts.md](../003-accounts/accounts.md#scopes)): the account's and the shared settings shape that app as much as its own do,
-  so they are never hidden behind All. Only the other apps' groups are left out. It is drawn in the app's own Settings
+  liveworkspace's logo. The two sides are one panel and one set of categories (below): **All** shows every row, and
+  the app's side, signed in, shows only the rows that apply to that app (each row's apps, below), and only the
+  categories left with any, so a category none of whose settings touch the app is gone from the rail. The Account
+  section's rows apply to every app, so the app's side keeps them; another app's own rows (its email switches under
+  Notifications, say) are left out. A setting that applies to this app and others shows on both sides as the same
+  row, and a change writes to each app it covers, exactly as in All (since 8 November 2026;
+  before, the app's side listed a **Common** group and a group under the app's name). Only All draws the apps'
+  logos beside each row: on the app's side every row shown applies to that app, so it draws none and no column
+  for them, and each name starts at the pane's left edge (since 8 November 2026). The app's own settings come
+  from its plain-data catalogue (`@liveworkspace/settings/catalogues/<app>`,
+  [accounts.md](../003-accounts/accounts.md#scopes)), or in an editor from its own Settings. It is drawn in the app's own Settings
   view: its rail with category tiles and nested sub-categories, panes, sections, collapsed sections, section notes,
   search, the phone's push layout and back bar. An editor's own rows draw at once and the rest join them when read. A read that fails leaves the editor's own rows in place,
   with a note and Try again for the rest.
   A guest's side is the app's settings alone. The footer only says where settings are saved: it has no link into the
   app's own Settings (a "More in <app> Settings" link was removed on 25 October 2026); what only makes sense inside
   the editor (appearance, shortcuts, the editors' shared chrome such as UI scale) is in the editor's own Settings.
-  Opened for no app, the panel is All alone, with no switch. The side last chosen is kept in this browser
-  (`liveworkspace:settings-scope:v1`); a link that names one wins.
-  In an editor, the Common settings its side shows are the ones its own Settings has too, drawn as its own rows, so
+  Opened for no app, the panel is All alone, with no switch. Opened from an app, the panel always starts on that
+  app's side; nothing is remembered between opens, and a link that names a side wins.
+  In an editor, the common settings its side shows are the ones its own Settings has too, drawn as its own rows, so
   a common setting the editor has is never left out of its side (before 2 November 2026 they were missed whenever
   the editor's own catalogue was not read, which in an editor it never is).
 - **A held app.** An app registered before its launch
@@ -562,27 +575,31 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   `APP_SITES`' alone, so it is in no other app's All and no `?app=` link here opens it. The panel opened for the held
   app adds it to its own All, first, beside the listed apps. Launch lists it with no change here.
 - **All.** Every setting, in one set of categories (merged on 25 October 2026; before, All listed Common and then
-  a group per app). The rail has **Account** first, under its heading (liveworkspace's logo), a single-open
-  accordion laid out as a category row (the same padding, icon column and type size) that eases open and shut,
-  starts open only when it holds the current pane, and opens for a search so no hit is hidden. Under it, set off by
-  a rule (on a phone, a card of their own), every other category, with no heading and no per-app groups: one
-  **Editor** (with Draw, Pages and Presenting under it), one **Tours**, one **Explorer**, Layers, Map, Collaborate
-  and Quick Style, and so on, whichever apps have them. Account holds what belongs to the person in every app, the `all`
-  scope ([accounts.md](../003-accounts/accounts.md#settings)) and the profile: **Profile** (the display name and presence colour
+  a group per app; app sub-headings inside a category went on 8 November 2026, for the logos beside each row). The
+  rail, on desktop and on a phone, lists every category under three small label headings, the pane's section
+  heading type (`SETTINGS_LABEL`, uppercase, muted): plain labels, always shown, never folded, and nothing happens on
+  a click (until 8 November 2026 the account's categories sat under an **Account** heading that was a single-open
+  accordion, with Notifications, API Tokens, Webhooks and Your Data nested under Profile, and the rest under a rule).
+  On a phone each label sits over its own card of rows. In order:
+  **Account**: **Profile**, **Notifications**, **Privacy**, **Accessibility** and **Your Data**;
+  **Apps**: the merged categories (one **Editor**, **Presenting**, **Appearance**, **Keyboard**, **Panels**, one
+  **Getting Started** and one **Explorer**, whichever apps have them, in the merge's order);
+  **Developers**: **API Tokens** alone. A label none of whose categories are listed (on the app's side,
+  say) is left out with them. Each account category is top-level with its own coloured tile
+  (`SettingsCategoryTile`: Profile teal, Notifications red, Privacy emerald, Accessibility indigo, Your Data slate,
+  API Tokens violet; the line art is the shared bell, key and tray). The account's categories hold what belongs to the person in every app, the
+  `all` scope ([accounts.md](../003-accounts/accounts.md#settings)) and the profile: **Profile** (the display name and presence colour
   collaborators see, with a preview of their cursor and avatar, `ProfileEditor` in `@liveworkspace/settings-ui`; the apps' one palette
-  `PRESENCE_COLOURS`, plus Automatic; leaving the name empty shows the name they signed up with), under it
+  `PRESENCE_COLOURS`, plus Automatic; leaving the name empty shows the name they signed up with),
   **Notifications** (the apps' in-editor notes, and each email that can be turned off: comments, mentions, actions
-  assigned, invitation answers, tips and check-ins, milestones) and **API Tokens** (making a token, seeing its
+  assigned, invitation answers, tips and check-ins, milestones; an envelope beside every switch under Email and a phone
+  beside every switch under Phone, so each says how it reaches you), **Privacy** (anonymous usage events, said in plain words with a **See Every Event** link that opens liveworkspace.app's public /telemetry list in a new tab, so people can look before choosing),
+  **Accessibility** (Reduce Motion), **API Tokens** (making a token, seeing its
   secret once with room to copy it, and revoking one, the AI tools connected in an app among them,
-  `components/settings/TokensPanel.tsx`, its own chunk fetched when the category is first shown; on an app's
-  address a link to the same category on liveworkspace.app, since tokens are the session's), **Webhooks** beside
-  them (`components/settings/webhooks/`, its own chunk; on liveworkspace.app and on an app's address alike, since
-  both reach the index with the person's token; an editor's Settings links to it,
-  [webhooks.md](../004-index/webhooks.md#managing-them)), **Your Data** beside those (downloading everything the
-  person owns, or a team they run owns, as one zip, `components/settings/data-export/`, its own chunk; on an app's
-  address and in an editor a link to the same category on liveworkspace.app, since its doors are the session's,
-  [data-export.md](../003-accounts/data-export.md#settings)), then
-  **Privacy** (anonymous usage events) and **Accessibility** (Reduce Motion). The switches are plain data in
+  `packages/settings-ui/src/account-panels/tokens/`, its own chunk fetched when the category is first shown),
+  and **Your Data** (downloading everything the
+  person owns, or a team they run owns, as one zip, `account-panels/data-export/`, its own chunk,
+  [data-export.md](../003-accounts/data-export.md#settings)). The switches are plain data in
   `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
   something in an editor (UI scale, panel opacity and the rest) are left to that editor's own rows.
   - **How the categories merge** (`mergeAppCategories`, `packages/settings-ui/src/merge-categories.ts`). The
@@ -590,63 +607,99 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     [accounts.md](../003-accounts/accounts.md#common-settings), built from the apps' catalogues by `commonCatalogue` in
     `@liveworkspace/settings/common`, worded as the apps word them), then each app's own settings, the app the
     panel was opened for first, then the rest in the apps' order. A category is merged with another of the same
-    place: its name under its parent's ("Editor", "Editor › Draw", "Panels › Layers"), so two apps' Editor are
+    place: its name under its parent's ("Editor", "Panels › Layers"), so two apps' Editor are
     one, and a sub-category nests under the merged parent the same way. A category only one app has is listed
-    once, under its own name (livediagram's Canvases, liveplanner's Plans). A category placed only by some apps
-    goes after the one before it in that app's list. One left with no rows is left out, and a sub-category whose
-    parent is left out stands at the top level by a short name (Layers, Map). Where the apps file a common
-    setting differently, the platform's place is used: Show Home Banner sits under each app's own Documents,
-    Plans or Designs, and under **Explorer** here.
-  - **Inside a merged category**, the shared rows come first, with no sub-heading: each common setting once,
-    which reads `all`, falling back to an app's old copy as `joinSettings` does, and writes `all`; and any row two
-    or more apps keep in their own scopes under the same key, with the same control and the same wording, also
-    once: it shows the first app's value, and a change is written to each of those apps' scopes, through each
-    app's own row, exactly as the per-app rows would. Then each app's own rows under a small sub-heading with the
-    app's Living Prism and name (never a coloured dot), with that app's sections, section notes and closed
-    sections inside it. Rows that share a key but not their wording (livediagram's "Someone Joins My Canvas" and
-    livedocuments' "Someone Joins My Document", `notifyDocumentJoin`) mean something different enough to want
-    one and not the other, so each stays under its own app.
-  - **Ids.** The Account section's ids are prefixed with its heading's (`account:notifications`); the merged
-    categories' with `apps:` and their place (`apps:editor`, `apps:editor/draw`); rows keep their source's
+    once, under its own name. A category placed only by some apps goes after the one before it in that app's list.
+    One left with no rows is left out, and a sub-category whose parent is left out stands at the top level by a
+    short name. The apps keep no sub-categories today (since 8 November 2026): each panel's settings are a section
+    of **Panels** (Layers, Quick Style, Map, Collaborate), each mode's a section of **Editor**, and each app's own
+    work category (livediagram's Canvases, liveplanner's Plans, livedocuments' Documents, livedesign's Designs,
+    livehuddle's Spaces) is the **Explorer**, holding Show Home Banner and its **Default Folders**. **Tours** is
+    named **Getting Started** (its id stays `tours`).
+  - **Inside a merged category** there are no app sub-headings: one list, each section once. Each setting is one
+    row: each common setting once, which reads `all`, falling back to an app's old copy as `joinSettings` does, and
+    writes `all`; and any row two or more apps keep in their own scopes under the same key, with the same control
+    and the same wording, also once: it shows the first app's value, and a change is written to each of those apps'
+    scopes, through each app's own row, exactly as the per-app rows would. The rows are laid out by section
+    (`bySection`, `packages/settings-ui/src/section-order.ts`, below): each section once, holding every app's rows
+    filed under that name in the order they came (two apps' **Offer Again** are one section); a section's note is
+    the first source's that has one, and a section closed in any app stays closed. Rows that share a key but not their wording (livediagram's
+    "Someone Joins My Canvas" and livedocuments' "Someone Joins My Document", `notifyDocumentJoin`) mean something
+    different enough to want one and not the other, so each stays its own row with its own app's logo.
+  - **Order inside a category** (since 8 November 2026). Every category reads the same in every app and in the
+    merge, whichever app the panel was opened for and whichever source brought a section first: the broadest first,
+    related settings together, a switch before the settings that depend on it, the rarely used last. The rows with
+    no section lead (a category's own broadest settings: Theme, Panel Opacity, Show Home Banner). The sections a
+    category holds follow one list, `SECTION_ORDER` in `@liveworkspace/settings/sections`, among the places they
+    hold; a section it does not list (the Profile's) keeps the place its first row gave it. Each app's catalogue
+    lists its sections in that order too (`sections.test.ts`). The order, category by category:
+    - **Editor**: Canvas (Alignment Guides, Auto-Attach Arrows, Element Indicators), Mouse (Quick-Add on Hover,
+      Middle-Mouse Pan), then each mode's own: Draw (Dock Position), Pages (Contents), Logo Pages (Logo Guides, then
+      its strength and parts beneath it). Before, Common's Pages came before livediagram's Draw.
+    - **Presenting**: Slides, Playback, While Presenting.
+    - **Appearance**: Theme, then Interface (Button Labels, UI Scale with a slider per part beneath it).
+    - **Keyboard**: Keyboard Shortcuts, then All Shortcuts.
+    - **Panels**: Panel Opacity, then Layers, Quick Style (the editing panels), Map, then Collaborate (the people);
+      each section opens with its panel's Enable switch, its other rows beneath it.
+    - **Getting Started**: Offer Again (the mode tours), then Show Me (the element tours, closed).
+    - **Explorer**: Show Home Banner, then Default Folders.
+    - **Notifications**: In the Editor, Email, Phone. Under Email the emails about your work come first and the
+      apps' own after them (Someone Joins My Canvas, Someone Fills In My Form); **Tips and Check-Ins** and
+      **Milestones**, the emails from us, close the section (`closesSection`) however many apps add rows.
+    - **Profile**: Name and Colour, Time Zone, Sign-in Methods, Where You're Signed In, Cloud Sync, Your Account,
+      then an editor's This Browser, and the Danger Zone last: Reset All Settings above Delete Account. Both apply to
+      every app, so under All they carry liveworkspace's mark (Reset only where it resets the account's settings).
+    - **API Tokens**, **Your Data**: an app's own introduction to the panel (what a token lets your
+      scripts and AI tools do, the guide to connecting one) comes first, above the panel (`fold-account.ts`).
+  - **No way out of a category** (since 8 November 2026). No row opens another category: a setting is shown in the
+    one category it belongs to, never pointed at from another. Accessibility's **UI Scale** link to Appearance went,
+    with the link row kind itself (`kind: 'link'`), so one can't come back; UI Scale is Appearance's.
+  - **Which apps a setting applies to** (`SettingsRow.apps`, drawn by `packages/settings-ui/src/app-marks.tsx`).
+    Every row carries the apps it applies to: a common setting the apps that have it (`commonCatalogue`'s `apps`,
+    plus the editor the panel is in where its own Settings has the row, since an editor's own catalogue is never
+    read); a merged row every app it writes to; an app's own row that app, or every app when it is over a setting
+    every app shares (`allApps`); and every Account row, every app. Under **All** only (the app's side draws none,
+    above), to the left of the row's name and description
+    sit those apps' logos (each app's Living Prism, 14 px with 2 px between, never overlapping: four overlapping
+    prisms read as one blur of colour; at most two across, so three sit two over one and four two by two,
+    keeping the column two logos wide and the name its room), in the panel's app order, left-aligned (one logo, or a lone one on the second line, starts at the left) in one column per
+    category as wide as its widest cluster, so every name in a category starts at the same place. A row that
+    applies to every app the panel lists shows liveworkspace's mark alone, the mark the header's **All** carries,
+    rather than five logos. The cluster is named for a screen reader and in the shared tooltip (just the apps'
+    names, short so the tooltip stays narrow: "livediagram and liveplanner", "Every App"), and sits above a switch row's stretched click target so
+    the tooltip answers the pointer. It is vertically centred on the row's name and description, as a row's own
+    leading mark (an avatar, a provider's mark) is, and stays on the name's line when a control wraps below it on a
+    phone. A nested row under a switch with the same apps keeps the column but leaves the logos to its switch. The
+    words **All apps** under a description are left out wherever the logos are drawn, since the mark says it. Rows
+    that are whole panels rather than a row (Profile's header, Name and Colour, Sign-in Methods, API Tokens,
+    Your Data) draw no logos: they are the account's, in every app. The logos are the host's
+    `renderLogo`, small inline marks drawn only for the rows shown; a row's cluster is memoised on its apps, which
+    keep their identity while the row does. While an editor's side loads, its own rows already carry its logo, so
+    the names do not shift when the rest arrives.
+  - **Where only one app is in play** (the app's side of the switch, a guest's side, a self-hosted or workbench editor where All is not offered,
+    liveworkspace.app's view of one app's catalogue alone) the panel draws no logos: each row is that app's, and a
+    shared one still says **All apps**.
+  - **Ids.** The account's category ids are prefixed with `account:` (`account:notifications`, Profile's
+    `account:account`, which also answers to `profile`); the merged
+    categories' with `apps:` and their place (`apps:editor`, `apps:panels/layers`); rows keep their source's
     (`common:alignmentGuides`, `livediagram.app:tourWelcome`), so two apps' rows never collide. Every category
     also answers to the ids it was built from, the old per-app layout's (`common:editor`,
-    `livediagram.app:tours`) and its bare one (`editor`, `notifications`): a category remembered from before
-    the merge, a deep link and a link row or readout line that names an old id all land on the merged
-    category. The merge is linear in rows and categories, rebuilt only when what it reads changes (40,000 rows
-    in about 30 ms; the four apps' catalogues in under 1 ms, with the rest of the panel's model).
-- **Webhooks** is one card, drawn as the Notifications' cards are (the same frame, hairlines between its parts, the
-  same type), in the plain words of someone who has never met a webhook:
-  - **The top** says in a line what a webhook is ("When something happens to your work, post a message to Slack,
-    Microsoft Teams or a service you run"), names the apps it covers by their logos (each app's Living Prism and
-    wordmark, never the name as plain text, as everywhere a product is named in this panel), and holds **Add
-    Webhook** once there is one.
-  - **Each webhook** is a row: its destination's mark (Slack's hash, Teams' people, a service's braces, on a tile
-    in each one's colour), its name, a status badge (**Active**; **Paused**; **Needs Attention** when it paused
-    itself, its reason and a **Resume** beside it in an amber note), whose items it reports on and the address's
-    host, and its last delivery ("Delivered 2 hours ago", or "Failed 31 Oct" in red). **Send Test** is a button;
-    Pause or Resume and Delete are icon buttons with tooltips; Delete asks in a confirmation popover. Send Test's
-    result is shown on the row: "Sending a test…", then the test's own delivery, read back from Recent Deliveries
-    a few times over about 20 seconds ("Test delivered: your endpoint answered 200", or why it failed), or "Test
-    queued" if it hasn't gone yet. Under it, the events it sends as small labels, and **Recent Deliveries**, a
-    section closed by default, read when first opened: each delivery's event, item, outcome in words and time,
-    with a green, red or amber mark.
-  - **Adding one** unfolds a form in the card, in the order a person thinks of it: **Where Should It Post?** (three
-    option tiles: Slack, Microsoft Teams, Your Own Service), the address (labelled for the choice, with the steps
-    to get one from Slack or Teams written out), a **Name**, **Whose Items** (your own, or each team you run, as
-    option tiles; none to choose when you run no team) and **What Should It Send?**: the events as checkable
-    tiles, each with a line saying when it fires, grouped under Items, Sharing and Comments (with **Mentioned**:
-    "Someone @-mentions you, or a teammate on the team’s items"), and Actions, Cards and Forms (Card Moved and
-    **Form Response** carry liveplanner's logo), with Select All and Clear. All events start chosen. Add Webhook
-    waits for a name, an address and one event. A plain webhook's signing secret then shows once, with how to
-    check a signature; a Slack or Teams one is ready, with a note to send a test.
-  - With none yet, the empty state ("No Webhooks Yet", a line on what they do, **Add Webhook**). Loading shows the
-    card's skeleton; a failed read says why with **Try Again**.
-  - **Signed in only, as API Tokens are.** A guest gets no Webhooks category on liveworkspace.app or on an app's
-    address (a guest's panel there has no Account section); `?settings=webhooks` signed out asks them to sign in
-    and come back to the same address, as `?settings=tokens` does ([The Explorer](#the-explorer), Addresses
-    handed over); and in an editor's own Settings a guest finds a **Webhooks** category under Account holding
-    one stand-in row, "Sign in to add webhooks." with the **Sign In** link, as its API Tokens row says "Sign in to
-    create API tokens." The index refuses a guest's token too (403 `webhooks_need_account`).
+    `livediagram.app:tours`) and its bare one (`editor`, `notifications`), and the ids of any category folded into
+    it (`aliases` on an app's category: Editor carries `draw` in livediagram and `pages` in livedocuments and
+    livedesign, since Draw's and Pages' rows became Editor's sections, and Panels `layers`, `quickStyle`, `map` and
+    `collaborate`; these land bare, prefixed, from Common (`common:pages`) and as the merged sub-category they were,
+    `apps:editor/draw`, `apps:panels/layers`). An alias written as a path (`/editor/presenting`, `/tours`,
+    `/canvases`) is an old place in the merged rail and lands as `apps:editor/presenting`, `apps:tours` and
+    `apps:canvases`: Presenting while it sat under Editor, Getting Started while it was Tours, the Explorer while
+    each app's work had its own category. A category remembered from before the merge or a deep link that names an
+    old id lands on the merged category. On the app's side a category id that another app's rows alone held is gone with them; a link to it
+    opens the first category, as any id the panel does not know does. The merge is linear in rows and categories,
+    rebuilt only when what it reads changes, the same build for both sides (the app's side passes `only`, which
+    keeps a row after it is merged, so a merged row keeps every app's logo there too); the timed budgets on 40,000
+    rows and on the five apps' catalogues are in `merge-categories.test.tsx`.
+- **Webhooks** are not in Settings (since 8 November 2026): they are set per document, from a document's ⋯ menu in
+  the Explorer (**Webhooks**), see [webhooks.md](../004-index/webhooks.md). The old id `webhooks` is an alias of
+  Profile, so an old `?settings=webhooks` link opens Profile.
 - **Your Data** is one card in the same frame ([data-export.md](../003-accounts/data-export.md#settings)):
   - **The top** says in a line what a download holds and names the apps it covers by their logos (each app's Living
     Prism and wordmark).
@@ -660,25 +713,27 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     built and the panel is open, never otherwise. A refused emailed link lands here with an amber note saying why
     (the link lapsed, it is for another account, or there is no file any more). Loading shows the card's skeleton;
     a failed read says why with **Try Again**.
-  - **Signed in only, as API Tokens are.** On liveworkspace.app the session's; on an app's address and in an editor,
-    a link to liveworkspace.app's Your Data; a guest finds the editor's stand-in row, "Sign in to download your
-    data." with **Sign In**.
+  - **Signed in only, as API Tokens are.** On liveworkspace.app over the session; on an app's address and in an
+    editor the same card in place, over the app's token; a guest finds the editor's stand-in row, "Sign in to
+    download your data." with **Sign In**. The emailed link still downloads from liveworkspace.app.
 - **The Account section shows once.** Each editor's own Settings has Account, Notifications, API Tokens, Privacy
   and Accessibility categories of its own, and each app's catalogue an Account › Notifications. In All they are
-  folded into the Account section rather than listed again under the app: the app's rows the Account section
-  doesn't already have (its Trash, Cloud Sync and Delete Account; its own email switches, such as "Someone Joins My
-  Canvas"; its own accessibility rows) join the Account category of the same name, under the app's sub-heading
-  (its Living Prism and name, as in the merged categories), and the editor's identity row gives way to the
-  Profile's header. Every category id is unique in the panel,
-  and no category name the Account section uses appears under an app (pinned by
+  folded into the account's categories rather than listed again for the app: the app's rows the account's categories
+  doesn't already have (its Cloud Sync, Reset All Settings and Delete Account; its own email switches, such as "Someone Joins My
+  Canvas"; its own accessibility rows) join the account's category of the same name, each section once
+  (`bySection`), each row with its app's logo beside the Account section's own, which carry liveworkspace's, and
+  the editor's identity row gives way to the Profile's header. Every category id is unique in the panel,
+  and no category name the account's categories use appears twice (pinned by
   `packages/settings-ui/src/no-duplicates.test.tsx`, for every app's catalogue and an editor's own shape).
-- **Profile** (the Account section's first category, `packages/settings-ui/src/profile/`), laid out as the old
+- **Profile** (the rail's first category, `packages/settings-ui/src/profile/`), laid out as the old
   livediagram Profile page was, richer: grouped cards under headings, in the app's brand colour, light and dark.
   - **The header card**: a banner in the brand's tint with a drawing of a canvas where the person's cursor and
     name tag sit in their presence colour, their avatar (their Google picture where they have one, else initials on their colour,
-    Automatic as the name's own colour, as the account menu paints it), their display name, email, **liveworkspace account** and when they
+    Automatic as the name's own colour, as the account menu paints it), their display name, email (no "liveworkspace account" chip: every account is one) and when they
     joined. Every host passes what it knows (`AccountHost.identity`): the site its session, the Explorer on an
-    app's address the app's session, an editor its signed-in user.
+    app's address the app's session, an editor its signed-in user. Where the panel edits the profile, the card's
+    display name and colour come from the profile itself (the same read as Name and Colour, one request for both)
+    and follow each save at once, so a colour picked below shows in the header straight away.
   - **Name and Colour**: the display name and presence colour with the preview of their cursor and avatar, edited
     in place wherever the panel opens, never a link away: one editor (`ProfileEditor`,
     `packages/settings-ui/src/profile/ProfileEditor.tsx`) fed by the host's `AccountHost.profile`, which loads the
@@ -688,16 +743,43 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     There is no link-out for it: `AccountHost` has no profile address to link to. A saved colour repaints the host's
     own avatar at once (the header's, or in an editor its cursor, name tag and presence avatar in the room, with the
     name), with no reload.
-  - **Sign-in Methods** and **Where You’re Signed In**, two sections (on liveworkspace.app, `AccountHost.security`): the methods (an emailed code to
+  - **Time Zone**, its own section after Name and Colour, for an account (`TimeZoneSection`,
+    `packages/settings-ui/src/profile/TimeZonePicker.tsx`): the zone the emails that can wait keep to ("Emails that
+    can wait arrive in your daytime, weekdays 09:00 to 21:00 here", [accounts.md "The send
+    window"](../003-accounts/accounts.md#the-send-window)). One button names the zone in force as its city and
+    offset (**Tokyo (GMT+9)**, or **Automatic: London (GMT+0)**); pressed, it opens a searchable list in place under the row: a search field (city,
+    region, IANA name or offset, `GMT+5:30`), **Automatic** first with the zone this browser is in, then every zone
+    the browser knows (`Intl.supportedValuesOf('timeZone')`, plus the zone kept and the browser's own when the list
+    leaves them out; one that is another name for a listed place, such as `Asia/Calcutta` beside `Asia/Kolkata`,
+    takes that place's entry under its own name, the zone kept before the browser's, so no place shows twice),
+    by offset and then city, each with its region and offset, the one in force checked.
+    Arrow keys move, Enter picks, Escape closes and gives focus back to the button. A pick is saved at once
+    (`PATCH { timeZone }`, or `{ timeZone: null }` for Automatic) through the same `AccountHost.profile`, so on
+    every host and door; a refused write puts back what the server last took and says why, as the colour does.
+    The list is built the first time it is asked for and kept for the page (one `Intl.DateTimeFormat` per zone,
+    about 420, once), and the row's own label needs only the zone in force. The profile reads carry the browser's
+    zone, so Automatic follows the browser wherever Settings opens.
+  - **Sign-in Methods** and **Where You’re Signed In**, two sections (`AccountHost.security`): the methods (an emailed code to
     the account's address, always; Google, **Connected** or **Connect**, when the deployment has Google), and
     **Where You're Signed In** (each session's browser and system, when it was last active, **This device** for the
     current one, **Sign Out** of any other and **Sign Out Everywhere Else**), from Better Auth's own
     `/list-sessions`, `/revoke-session`, `/revoke-other-sessions`, `/list-accounts` and `/link-social` on this origin.
     Signing another device out signs its apps out too ([accounts.md](../003-accounts/accounts.md#signing-out)).
     Either section that can't be read says so with **Try again**.
-    On an app's address and in an editor, a link to the same section on liveworkspace.app.
+    On an app's address and in an editor, the same two sections in place, over the app's token; Google's
+    **Connect** goes to Google and comes back to the app with Settings open.
   - **Your Account**: **Sign Out** where the host can sign out (`AccountHost.onSignOut`), and, in an editor's All, the
-    editor's Trash, Cloud Sync and Delete Account, folded in as above.
+    editor's Trash, Cloud Sync, Reset All Settings and Delete Account, folded in as above.
+  - **Reset All Settings**, an editor's row directly above Delete Account (`ResetSettingsRow`,
+    `packages/settings-ui/src/reset-settings/`): **Reset** asks first in place (**Reset Now** and **Keep**, as Revoke
+    does), then, for an account, sends one `DELETE /api/account/settings` over the app's token
+    ([accounts.md "Resetting every setting"](../003-accounts/accounts.md#resetting-every-setting)): every scope of every
+    app back to its defaults, the usage-events choice kept. On success the editor drops its own copy to defaults, the
+    page's kept scopes become the server's answer (no read again), and the panel draws itself again from them, so every
+    row shows its default at once with no reload; the row says **Settings Reset** for a moment. A refusal leaves
+    everything as it was and says so under the row, with **Try Again**. A guest and a self-hosted editor reset only
+    the editor's own copy, in that browser, and the row says so. liveworkspace.app's own panel has no
+    Danger Zone: as closing an account, resetting goes from an app.
   - **A guest** (an editor's own Settings, the Explorer on an app's address): Profile shows the header card as a
     guest (their name, Guest, and their colour where the app has one) with **Sign in** and **Create account**, and
     says what an account adds, rather than empty rows.
@@ -730,10 +812,14 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   cached one.
 - **On an app's address** (the Explorer there) the panel is the same, over `/api/workspace/account/settings…` with
   the app's token; its Profile header is the app's session's, its Name and Colour is set in place over the same
-  token (`/api/workspace/account/profile`), and its Sign-in Methods and API Tokens rows link to liveworkspace.app,
-  since sessions and tokens are the session's.
+  token (`/api/workspace/account/profile`), and so are its Sign-in Methods, Where You're Signed In, API Tokens
+  and Your Data: the same panels as here, from `@liveworkspace/settings-ui/account-panels`, each its own
+  chunk loaded only when its category is first opened. Nothing in the Account section links away to
+  liveworkspace.app (before 8 November 2026 these five were **Manage** and **Open** links to
+  `/explorer?settings=profile|tokens|webhooks|data` there). The same holds in every editor's own Settings for a
+  signed-in account; a self-hosted editor without liveworkspace accounts shows none of them.
 - **A guest** (on an app's address only) gets the app's side alone: no switch, no All, no Account section and no
-  tokens or webhooks, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
+  tokens, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
   by a device store (`createDeviceSettingsStore` in `@liveworkspace/settings-ui`) under the editor's own key and
   shape: one flat JSON object at `<app>:user-preferences:v1` (`DEVICE_PREFERENCES` in
   `@liveworkspace/settings/device`, pinned to each editor's `STORAGE_KEY` by its catalogue test), the `all` keys

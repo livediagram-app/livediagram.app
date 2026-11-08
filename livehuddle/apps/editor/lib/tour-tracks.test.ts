@@ -1,4 +1,4 @@
-// A tour of several tracks offers each once (lib/tour-tracks.ts, docs/specs/007-editor/user-preferences.md "Tours").
+// A tour of several tracks offers each once (lib/tour-tracks.ts, docs/specs/007-editor/user-preferences.md "Getting Started").
 import { describe, expect, it } from 'vitest';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 

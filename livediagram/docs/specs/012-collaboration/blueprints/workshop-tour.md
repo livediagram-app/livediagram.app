@@ -7,15 +7,15 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 
 ## Domain and naming
 
-| Thing               | Identifier                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------ |
-| The host            | `WorkshopTourHost` (removed)                                                         |
-| The steps           | `WORKSHOP_TOUR_STEPS`, `workshopTourSteps({ canShare })` in `workshop-tour-steps.ts` |
-| The taken record    | `UserPreferences.workshopTourSeen` (synced), read by Settings only                   |
-| The rerun signal    | `WORKSHOP_TOUR_RELAUNCH_EVENT`, `requestWorkshopTourRelaunch` (removed)              |
-| The one-tour slot   | `ActiveTour` `'workshop'` in `apps/editor/lib/tour-active.ts`                        |
-| The Settings switch | `workshopTourSeen`, "Workshop Tour", third toggle row in the Tours category          |
-| The help article    | `canvas/workshop-mode/workshop-tour` (`helpArticle: 'workshopTour'`)                 |
+| Thing               | Identifier                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| The host            | `WorkshopTourHost` (removed)                                                          |
+| The steps           | `WORKSHOP_TOUR_STEPS`, `workshopTourSteps({ canShare })` in `workshop-tour-steps.ts`  |
+| The taken record    | `UserPreferences.workshopTourSeen` (synced), read by Settings only                    |
+| The rerun signal    | `WORKSHOP_TOUR_RELAUNCH_EVENT`, `requestWorkshopTourRelaunch` (removed)               |
+| The one-tour slot   | `ActiveTour` `'workshop'` in `apps/editor/lib/tour-active.ts`                         |
+| The Settings switch | `workshopTourSeen`, "Workshop Tour", third toggle row in the Getting Started category |
+| The help article    | `canvas/workshop-mode/workshop-tour` (`helpArticle: 'workshopTour'`)                  |
 
 ## Behaviour and state
 

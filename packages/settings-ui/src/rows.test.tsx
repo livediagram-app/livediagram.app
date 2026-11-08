@@ -3,7 +3,7 @@ import { fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { SettingsToggleGroupRow } from './model';
 import { SettingsChoiceRowView } from './rows/ChoiceRow';
-import { SettingsLinkRowView, SettingsNoteRowView } from './rows/SimpleRows';
+import { SettingsNoteRowView } from './rows/SimpleRows';
 import { SettingsSliderRowView } from './rows/SliderRow';
 import { SettingsToggleGroupRowView } from './rows/ToggleGroupRow';
 import { SettingsRowShell } from './SettingsRowShell';
@@ -146,26 +146,7 @@ describe('SettingsChoiceRowView', () => {
   });
 });
 
-describe('link and note rows', () => {
-  it('opens another category in place', () => {
-    const open = vi.fn();
-    renderWithKit(
-      <SettingsLinkRowView
-        row={{
-          kind: 'link',
-          key: 'toTokens',
-          label: 'API Tokens',
-          description: '',
-          target: 'tokens',
-          cta: 'Manage',
-        }}
-        onOpenCategory={open}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Manage' }));
-    expect(open).toHaveBeenCalledWith('tokens');
-  });
-
+describe('note rows', () => {
   it('ends a sign-in note with the Sign In link', () => {
     renderWithKit(
       <SettingsNoteRowView

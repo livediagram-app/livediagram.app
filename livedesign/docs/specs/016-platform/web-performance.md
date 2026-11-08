@@ -63,8 +63,8 @@ this way. Where switching to one must stay instant, its code is fetched once the
 
 - **Content a board may draw on open**: the pages and their writing, and tables. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the design
   request, so a design that has one finds its code already in, while the first load does not carry it.
-- **Surfaces someone opens**: the Explorer and Layers popovers (mounted from their first opening on,
-  then kept, so their state survives), search, the quick style panel and the tool panels. Fetched once the opened design has rendered and the page is idle.
+- **Surfaces someone opens**: the Explorer popover (mounted from its first opening on,
+  then kept, so its state survives), search, the quick style panel and the tool panels. Fetched once the opened design has rendered and the page is idle.
 - **At the press**: a template's canvas overrides load with its builders when one is applied.
 - A panel whose code cannot load (offline behind the load-error card) draws nothing rather than
   throwing into the screen around it.

@@ -7,7 +7,9 @@ import type { PhoneHost } from './phone-host';
 import { PHONE_KEYWORDS, PHONE_ROW_DESCRIPTION, PHONE_ROW_LABEL } from './phone-copy';
 import { PhoneNotificationsRow } from './PhoneNotificationsRow';
 
-export const PHONE_SECTION = 'Phone';
+import { PHONE_SECTION } from '../rows/channel-glyph';
+
+export { PHONE_SECTION };
 
 export function phoneRows(phone: PhoneHost, switches: readonly SettingsRow[]): SettingsRow[] {
   return [

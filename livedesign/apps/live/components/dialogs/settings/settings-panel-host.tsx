@@ -1,6 +1,8 @@
 'use client';
 
 import {
+  accountPanels,
+  bearerAccountSecurity,
   bearerSettingsRequest,
   createCloudSyncHost,
   settingsPanelApp,
@@ -31,6 +33,14 @@ export const settingsRequest = bearerSettingsRequest({
   baseUrl: '/api/workspace/account',
   token: currentBearer,
 });
+
+// The Account section's own panels, edited in place (liveworkspace/docs/specs/010-site/site.md "Settings"): sign-in and
+// devices over the account API's bearer door (Google's way back reopens Account > Profile), and the API tokens
+// and Download Your Data, each fetched when its category is first shown.
+export const ACCOUNT_SETTINGS = {
+  security: bearerAccountSecurity(settingsRequest, { settingsParam: 'account:account' }),
+  ...accountPanels({ request: settingsRequest }),
+};
 
 // Each app's prism in its accent (this app's own, as its Explorer filter shows it), and liveworkspace's for All.
 export const renderSettingsLogo = (id: SettingsAppId | 'all') =>

@@ -7,7 +7,7 @@ const issues = [
   },
   {
     q: 'It says I have reached my limit of API tokens',
-    a: 'You can have ten unexpired tokens. Revoke one in Settings › Account › API Tokens, then connect again.',
+    a: 'You can have ten unexpired tokens. Revoke one in Settings › API Tokens, then connect again.',
   },
   {
     q: 'My tool keeps asking me to sign in',

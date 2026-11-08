@@ -43,9 +43,8 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'trash',
   'preferences',
   'participants',
-  // The one-time doors of the move from the old livehuddle.app.
+  // The one-time door of the move from the old livehuddle.app.
   'legacy-guest',
-  'migration',
 ]);
 
 // The fixed words that appear BELOW a resource in the api's routes

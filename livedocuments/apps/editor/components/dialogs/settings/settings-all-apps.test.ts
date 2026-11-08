@@ -17,7 +17,6 @@ describe('rowSharedAcrossApps', () => {
     expect(rowSharedAcrossApps('presentation-transition')).toBe(true);
     expect(rowSharedAcrossApps('contentsPlacement')).toBe(true);
     expect(rowSharedAcrossApps('notifyDocumentJoin')).toBe(false);
-    expect(rowSharedAcrossApps('uiScaleLink')).toBe(false);
   });
 
   it('marks nothing where preferences stay in this browser', () => {

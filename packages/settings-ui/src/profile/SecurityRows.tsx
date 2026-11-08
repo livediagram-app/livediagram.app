@@ -1,18 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@liveworkspace/ui';
 import { DAY_LONG_MONTH, DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
 
 // The Profile's Sign-in and Security (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): how the person signs in and
-// where they are signed in, from the accounts Worker's own session endpoints. Only liveworkspace.app can reach them
-// (they are the session's), so the host hands them over as `AccountSecurity`; elsewhere the Profile links there.
+// where they are signed in, from the accounts Worker: Better Auth's own session endpoints on liveworkspace.app, the
+// account API's bearer door (bearer-security.ts) in an editor and an app's Explorer. The host hands them over as
+// `AccountSecurity`, and the rows are drawn in place wherever a signed-in account opens Settings.
 
 /** One place the person is signed in. */
 export type AccountSession = {
   id: string;
-  // What revokes it.
+  // What revokes it: the session's token on liveworkspace.app, its id over the bearer door.
   token: string;
   current: boolean;
   userAgent: string | null;
@@ -24,11 +25,12 @@ export type AccountSession = {
 /** The ways in: an emailed code always; Google connected, connectable, or not offered here. */
 export type AccountSignInMethods = { google: 'connected' | 'available' | 'off' };
 
-/** What liveworkspace.app's session can do for Sign-in and Security. Each answers null (or false) when refused. */
+/** What the host's door can do for Sign-in and Security. Each answers null (or false) when refused. */
 export type AccountSecurity = {
   sessions: () => Promise<AccountSession[] | null>;
   revokeSession: (token: string) => Promise<boolean>;
-  revokeOtherSessions: () => Promise<boolean>;
+  // Signing out of every other session at once, where the host can (else no Sign Out Others).
+  revokeOtherSessions?: () => Promise<boolean>;
   signInMethods: () => Promise<AccountSignInMethods | null>;
   // Starts linking Google (the browser leaves for Google and comes back).
   connectGoogle: () => Promise<boolean>;
@@ -124,6 +126,24 @@ const GoogleGlyph = () => (
   </svg>
 );
 
+// Why linking Google was refused, as the browser comes back with `?error=<code>` (Settings open, `?settings=`).
+const LINK_REFUSALS: Record<string, string> = {
+  google_off: 'Google sign-in isn’t offered here just now.',
+  already_connected: 'Google is already connected to this account.',
+  session_ended: 'Your session ended before Google answered. Sign in again, then connect Google.',
+};
+
+/** The refusal Google's way back named, read once (and taken off the address, so a reload doesn't say it again). */
+export function linkRefusalOnReturn(): string | null {
+  if (typeof window === 'undefined') return null;
+  const url = new URL(window.location.href);
+  const code = url.searchParams.get('error');
+  if (!code || !url.searchParams.has('settings')) return null;
+  url.searchParams.delete('error');
+  window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  return LINK_REFUSALS[code] ?? 'Google couldn’t be connected just now. Try again in a moment.';
+}
+
 /** Sign-in Methods: an emailed code to the account's address, and Google. */
 export function SignInMethodsRows({
   security,
@@ -135,6 +155,7 @@ export function SignInMethodsRows({
   const [load, , retry] = useLoad(security.signInMethods);
   const [connecting, setConnecting] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [refused] = useState(linkRefusalOnReturn);
   const google = load.state === 'ready' ? load.data.google : null;
   return (
     <>
@@ -205,6 +226,10 @@ export function SignInMethodsRows({
           ) : failed ? (
             <p role="alert" className={ERROR_NOTE}>
               Couldn’t reach your account just now. Try again in a moment.
+            </p>
+          ) : refused ? (
+            <p role="alert" className={ERROR_NOTE}>
+              {refused}
             </p>
           ) : null}
         </SettingsRowShell>
@@ -286,14 +311,23 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
   const [now] = useState(() => Date.now());
   // Where the keyboard was when a Sign Out was pressed. That button is disabled while it works (which drops focus
   // to the page) and then goes with its row, so focus comes back to the next Sign Out here, or to the panel it sits
-  // in: never left on the page's body, outside the Settings dialog.
-  const pressed = useRef<{ scope: HTMLElement | null; button: HTMLElement } | null>(null);
-  useEffect(() => {
+  // in: never left on the page's body, outside the Settings dialog. A signed-out row's hand-off waits for the commit
+  // that takes the row away (handing focus back to the button first, only for the row to go, left it on the body),
+  // and runs as a layout effect, in that same commit, so focus never sits on the body for a frame in between.
+  const pressed = useRef<{
+    scope: HTMLElement | null;
+    button: HTMLElement;
+    signedOut?: boolean;
+  } | null>(null);
+  useLayoutEffect(() => {
     const was = pressed.current;
     if (!was || busy !== null) return;
-    const active = document.activeElement;
-    if (active && active !== document.body && active !== was.button) return;
+    if (was.signedOut === undefined) return;
+    if (was.signedOut && was.button.isConnected) return;
     pressed.current = null;
+    const active = document.activeElement;
+    // Something else took the keyboard meanwhile: it keeps it.
+    if (active && active !== document.body && active !== was.button) return;
     const next = was.button.isConnected
       ? was.button
       : (was.scope?.querySelector<HTMLElement>('[data-session-sign-out]:not([disabled])') ??
@@ -302,10 +336,15 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
   });
 
   async function act(id: string, run: () => Promise<boolean>, button: HTMLElement) {
-    pressed.current = { scope: button.closest<HTMLElement>('[role="dialog"]'), button };
+    const was: NonNullable<typeof pressed.current> = {
+      scope: button.closest<HTMLElement>('[role="dialog"]'),
+      button,
+    };
+    pressed.current = was;
     setBusy(id);
     setFailed(false);
     const ok = await run().catch(() => false);
+    was.signedOut = ok;
     setBusy(null);
     if (ok) {
       setGone((was) => new Set(was).add(id));
@@ -375,7 +414,7 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
           }
         />
       ))}
-      {others > 0 ? (
+      {others > 0 && security.revokeOtherSessions ? (
         <SettingsRowShell
           row={{
             key: 'sessionsOthers',
@@ -388,7 +427,7 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
               className={SETTINGS_ROW_BUTTON}
               busy={busy !== null}
               data-session-sign-out=""
-              onClick={(e) => void act('others', security.revokeOtherSessions, e.currentTarget)}
+              onClick={(e) => void act('others', security.revokeOtherSessions!, e.currentTarget)}
             >
               {busy === 'others' ? 'Signing out…' : 'Sign Out Others'}
             </Button>

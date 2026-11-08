@@ -15,33 +15,47 @@ export function AccordionSection({
   open,
   onToggle,
   trailing,
+  actions,
   headerClassName = 'flex w-full items-center justify-between py-2 text-left',
   titleClassName = 'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400',
   chevronClassName,
   bodyClassName = 'flex flex-col gap-2 pb-2',
   children,
 }: {
-  title: string;
+  // Words, or a mark with its words (an app's logo and wordmark).
+  title: ReactNode;
   open: boolean;
   onToggle: () => void;
   // Optional content between the title and the chevron — e.g. the current
   // value, so a collapsed section still says what it is set to.
   trailing?: ReactNode;
+  // Controls beside the header, outside its button (a button can't hold another): Select All and Clear, say.
+  actions?: ReactNode;
   headerClassName?: string;
   titleClassName?: string;
   chevronClassName?: string;
   bodyClassName?: string;
   children: ReactNode;
 }) {
+  const header = (
+    <button type="button" onClick={onToggle} aria-expanded={open} className={headerClassName}>
+      <span className={titleClassName}>{title}</span>
+      <span className="flex items-center gap-1.5">
+        {trailing}
+        <ChevronIcon open={open} className={chevronClassName} />
+      </span>
+    </button>
+  );
   return (
     <div>
-      <button type="button" onClick={onToggle} aria-expanded={open} className={headerClassName}>
-        <span className={titleClassName}>{title}</span>
-        <span className="flex items-center gap-1.5">
-          {trailing}
-          <ChevronIcon open={open} className={chevronClassName} />
-        </span>
-      </button>
+      {actions ? (
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">{header}</div>
+          {actions}
+        </div>
+      ) : (
+        header
+      )}
       <div
         className={`grid transition-[grid-template-rows] duration-short ease-out ${
           open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'

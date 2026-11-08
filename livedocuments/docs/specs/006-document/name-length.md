@@ -85,13 +85,13 @@ already the stored name without waiting on a round trip:
 - `useSelectionEditing`: the auto-name path.
 - `useTabActions.renameTab`, and `useTabActions.duplicateTab`'s `<name> copy`, which can itself run past the cap.
 - `EditorView`'s header rename.
-- Every inline name field (`InlineRenameInput`, `NameEditor`) takes `maxLength={NAME_MAX_LENGTH}`.
+- Every inline name field (`NameEditor`) takes `maxLength={NAME_MAX_LENGTH}`.
 
 An Offline Mode document never reaches the server until it syncs, so for it
 these editor points are its enforcement; the sync is a create,
 so the server cap applies to it like any other.
 
-The text inputs (`NameEditor`, `InlineRenameInput`, the wizard field) also
+The text inputs (`NameEditor`, the wizard field) also
 carry `maxLength={NAME_MAX_LENGTH}`. That is a **third** line of defence, not
 the enforcement: it makes the limit visible while typing instead of silently
 eating the end of what someone wrote.

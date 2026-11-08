@@ -36,6 +36,7 @@ import {
   savePreferences,
 } from './preferences-sync';
 import { getWorkbenchConfinement } from './api/workbench-confinement';
+import { syncOpenExplorerCookie } from '@liveworkspace/sites/open-explorer';
 import {
   readLocalStorageSafe,
   writeLocalStorageSafe,
@@ -156,6 +157,11 @@ export type UserPreferences = {
   // Home opens on its ordinary page header and the header's search field instead. Missing / undefined / true ===
   // shown, the default. The banner's own close button writes an explicit `false`; Settings turns it back on.
   homeBanner?: boolean;
+  // Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer"), a
+  // common setting. When `true`, the homepage, arrived at from outside the site while signed in, opens the Explorer.
+  // Missing / undefined / false === off, the default. Mirrored into this address's `lw_open_explorer` cookie on every
+  // write and every server read, for the router.
+  autoOpenExplorer?: boolean;
   // Layers panel hover-solo (docs/specs/006-document/layers.md). When `false`, resting the pointer
   // on a Layers-panel row no longer solos that layer on the canvas.
   // Missing / undefined / true === on, the default. Flipped from the
@@ -288,6 +294,7 @@ export function readUserPreferences(): UserPreferences {
 export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | null): void {
   const fitted = fitPreferences(prefs);
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(fitted));
+  if (!getWorkbenchConfinement()) syncOpenExplorerCookie(fitted.autoOpenExplorer === true);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
@@ -375,6 +382,7 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));
+  if (!getWorkbenchConfinement()) syncOpenExplorerCookie(merged.autoOpenExplorer === true);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }

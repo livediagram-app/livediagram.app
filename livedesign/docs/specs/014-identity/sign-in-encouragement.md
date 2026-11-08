@@ -40,7 +40,7 @@ top instead of landing on its words, as a "Design deleted · Undo" once did.
 ~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS`), so it
 never greets someone the instant they open a design. It **stands on the
 bottom chrome**, 8px above the tab bar and the bottom-right cluster (Undo / Redo,
-Layers, Zoom), measured as
+Style, Zoom), measured as
 the toast stack measures its floor (`useChromeFloor`, `BOTTOM_CHROME_SELECTOR`), so it never
 covers a control. It is drawn over the canvas, and is additionally hidden:
 
@@ -48,7 +48,7 @@ covers a control. It is drawn over the canvas, and is additionally hidden:
 - in **zen** mode ([Zen mode](../007-editor/zen-mode.md)), but entering/leaving zen does **not**
   restart the delay; the timer runs on the stable gate (sign-in enabled / signed
   in / embed / dismissed) and zen only hides the card at render, and
-- while a **panel opened from the chrome** is open (Tidy Up, Layers, Style and the rest of the bottom-right cluster, the
+- while a **panel opened from the chrome** is open (Tidy Up, Style and the rest of the bottom-right cluster, the
   Explorer panel): they reach up into the banner's band and it lay over their lower rows, so it steps aside until the
   panel closes (a `[data-dock-button]` control with `aria-expanded="true"`).
 

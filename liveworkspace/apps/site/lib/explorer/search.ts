@@ -5,7 +5,7 @@
 import type { SearchEntry } from '@liveworkspace/explorer/search-panel';
 import { APP_NAMES, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { SETTINGS_CONTENTS } from '@/lib/account-settings';
-import { appOrigin, workspaceHref } from './page-app';
+import { appOrigin } from './page-app';
 
 // The Explorer's articles every app's help centre has (lib/explorer/host.ts VIEW_HELP), by name.
 const HELP_ARTICLES: readonly { slug: string; label: string }[] = [
@@ -22,9 +22,6 @@ const HELP_ARTICLES: readonly { slug: string; label: string }[] = [
   { slug: 'getting-started/guest-vs-account', label: 'Guest or Account' },
 ];
 
-// The Account sections that need liveworkspace.app's own session.
-const SESSION_SECTIONS = new Set(['profile', 'tokens']);
-
 export function searchEntries(app: AppName, signedIn: boolean): SearchEntry[] {
   const site = siteOfApp(app);
   const help: SearchEntry[] = HELP_ARTICLES.map(({ slug, label }) => ({
@@ -36,16 +33,14 @@ export function searchEntries(app: AppName, signedIn: boolean): SearchEntry[] {
     newTab: true,
   }));
   if (!signedIn) return help;
-  // Each opens the Settings panel here, in place, on its section (`?settings=`); the profile and the API tokens are
-  // liveworkspace.app's session's, so from an app's address they open the panel there.
+  // Each opens the Settings panel here, in place, on its section (`?settings=`): every one is edited on an app's
+  // address as on liveworkspace.app.
   const account: SearchEntry[] = SETTINGS_CONTENTS.map(({ id, title }) => ({
     id,
     group: 'settings',
     label: title,
     hint: 'Account Settings',
-    href: SESSION_SECTIONS.has(id)
-      ? workspaceHref(`/explorer?settings=${id}`)
-      : `/explorer?settings=${id}`,
+    href: `/explorer?settings=${id}`,
   }));
   // Each app's own settings, in the Settings panel filtered to that app.
   const apps: SearchEntry[] = APP_NAMES.map((name) => ({

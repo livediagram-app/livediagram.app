@@ -5,7 +5,7 @@ import { SettingsDialogScene } from '@liveworkspace/help-site/art/illustrations/
 export const metadata = helpMetadata({
   title: 'Settings',
   description:
-    'Every livediagram setting explained: editor behaviour, appearance, shortcuts, panels, accessibility, canvases, account, API tokens, privacy and what syncs.',
+    'Every livediagram setting explained: editor behaviour, appearance, shortcuts, panels, accessibility, explorer, account, API tokens, privacy and what syncs.',
   path: '/help/user-interface/settings/',
 });
 
@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
 
 **Settings** opens from the **Settings** button (the sliders icon) in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular canvas, which is why there is one set of them and not one per canvas.
 
-Signed in, the dialog's header has a **livediagram** / **All** switch. **livediagram** shows this app's settings; **All** adds the settings your liveworkspace account keeps for every app, including an **Account** section with **Name and Colour**, **Sign-in Methods**, **Where You’re Signed In**, **Sign Out** and **Cloud Sync**. A guest sees this app's settings only.
+Signed in, the dialog's header has a **livediagram** / **All** switch. **All** shows every setting your liveworkspace account keeps, in one list of categories; **livediagram** shows only the ones that apply to livediagram. Under **All**, to the left of each setting are the logos of the apps it applies to, or the liveworkspace logo when it applies to every app, so you can see when changing it here changes it in another app too; the **livediagram** side shows no logos, since everything there applies to livediagram. Both list the categories under three headings: **Account** (**Profile**, with **Name and Colour**, **Time Zone**, **Sign-in Methods**, **Where You’re Signed In**, **Sign Out** and **Cloud Sync**, then **Notifications**, **Privacy**, **Accessibility** and **Your Data**), **Apps** (the app's own categories) and **Developers** (**API Tokens**). A guest sees this app's settings only.
 
 The dialog lists its categories down the left, with a **Search settings** field above them, and shows one category at a time on the right. Type into the search to find a setting by name or by a word it is about ("transparency" finds **Panel Opacity**). On a phone, the list and the category take turns: tap a category to open it, and go back for the list.
 
@@ -26,7 +26,7 @@ The dialog lists its categories down the left, with a **Search settings** field 
   <SettingsDialogScene noun="canvas" />
 </Figure>
 
-Some categories hold **sub-categories** (Editor holds Draw and Presenting; Panels holds one per panel; Account holds Notifications and API Tokens). On a computer, click the parent (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap the parent and its sub-categories are listed at the bottom of its page.
+Only a guest sees **sub-categories**: Account holds Notifications and API Tokens, which are categories of their own once you sign in. Everything else in a category is in its sections, so nothing is hidden behind another level. On a computer, click Account (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap Account and they are listed at the bottom of its page.
 
 Each category groups its settings into cards, one card per section, with a short line under each setting saying what it does. A setting that only matters while another is on (a panel's own options under its switch) sits indented beneath it, and shows only while that switch is on.
 
@@ -43,11 +43,11 @@ Under **Mouse**:
 - **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
 - **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
 
-### Draw
+Under **Draw**:
 
 - **Dock Position**: where [Draw mode](/help/canvas/draw-mode/)'s dock of pens, shapes and tools sits, **Top** or **Bottom** (closer to hand when drawing on a tablet). **Top** by default. Only Draw mode has a dock, so Diagram mode is unaffected.
 
-### Presenting
+## Presenting
 
 How a [slide deck](/help/selection-modes/slide-deck/) runs when you present it. See [Presenter Controls](/help/selection-modes/slide-deck/presenter-controls/).
 
@@ -70,41 +70,45 @@ How a [slide deck](/help/selection-modes/slide-deck/) runs when you present it. 
 
 - **Panel Opacity**: fades every panel and the toolbar, from 30% to 100% (100% by default), so the canvas shows through (buttons and the Explorer stay opaque); a panel snaps back to fully opaque while you hover or focus it. See [Panel Opacity](/help/palette/panel-opacity/).
 
-**Panels** holds four sub-categories, one per panel. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it only while it is on.
+Below it, **Panels** has a section per panel, in the order below. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it only while it is on.
 
 - **Layers**: **Enable Layers Panel**, then **Layer Thumbnails**, **Layer Element Counts** and **Preview Layer on Hover**. Turning the panel off also hides its button and the **Move to layer** choices in the element menu; your layers keep working. See [Layers](/help/canvas/layers/).
+- **Quick Style**: **Enable Quick Style Panel**, the panel of common styles that opens beside a selected shape or arrow. With it off, every style is still in the element's right-click menu. See [Quick Style Panel](/help/canvas/quick-style-panel/).
 - **Map**: **Enable Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), **Dim Outside the View**, and **Map Size** (**Short**, **Medium** or **Tall**). Desktop only. See [Map](/help/user-interface/minimap/).
 - **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements. See [Comments](/help/collaboration/comments/).
-- **Quick Style**: **Enable Quick Style Panel**, the panel of common styles that opens beside a selected shape or arrow. With it off, every style is still in the element's right-click menu. See [Quick Style Panel](/help/canvas/quick-style-panel/).
 
 ## Accessibility
 
 - **Reduce Motion**: turns off the decorative animations and transitions (panels, popovers, the snap guides) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
-- **UI Scale**: **Open Appearance** takes you to **UI Scale**, for bigger panels, toolbar and corner buttons.
 
-## Tours
+## Getting Started
 
 Watch It Built has a section per mode, **Watch It Built in Diagram**, **Watch It Built in Draw** and **Watch It Built in Workshop**, each closed until you open it and saying how many of its topics are on. Inside is the mode's switch over all its topics, then a switch per topic. Under **Offer Again** is the **Avatar Tour**. Tours never start on their own: each one starts from the **Start Tour** button in the bar along the bottom of the editor, just left of **Search**. A topic's switch turns itself off once you have watched it, and a mode's switch once you have watched all its topics. Switch one back on and close Settings to watch again: the topic list opens straight away if you are in that mode, or the button is there when you get to it. See [Watch It Built](/help/getting-started/diagram-tour/), [Watch It Built in Draw](/help/canvas/draw-mode/draw-tour/) and [Watch It Built in Workshop](/help/canvas/workshop-mode/workshop-tour/).
 
 Below them, **Show Me** is closed until you open it, and says how many are on. Some elements, such as the [Sankey Diagram](/help/palette/build/sankey-diagram/), have a tour of their own, on the same **Start Tour** button while one is selected (Start Sankey Tour). **Show Me on Every Element** switches them all; beneath it, one switch per element that has a tour (**Sankey Diagram**, **Layer Stack**, **Pyramid**, **Funnel**, **Cycle**, **Hub and Spoke**, **Onion**, **Chevrons**, **Timeline**, **Mind Map**, **Flowchart**, **Org Chart**, **Sequence**, **Chart**, **Stack**, **Entity**, **Lane**, **Boundary**, **Diagram Key** and **Portal**) shows whether you have taken that one. Once you've taken one, it leaves the button until you switch it back on here.
 
-## Canvases
+## Explorer
 
-- **Show Home Banner**, under **Explorer**: the greeting, status pills and large search at the top of Explorer Home. On by default; with it off, Home's search sits in the header, as on every other Explorer page.
-- **Default Folders**: the folder each kind of new canvas goes to (diagrams, whiteboards, sessions and so on) when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
+Once called **Canvases**.
+
+- **Automatically Open Explorer**: off by default. While it's on and you're signed in, opening livediagram.app takes you straight to your Explorer instead of the homepage. A link to the homepage from inside livediagram still shows it, and so does `livediagram.app/?home`. It's one setting for every app: each other app picks up a change the next time you open its Explorer or an item in it.
+- **Show Home Banner**: the greeting, status pills and large search at the top of Explorer Home. On by default; with it off, Home's search sits in the header, as on every other Explorer page.
+- **Default Folders**: the folder new diagrams, drawings and workshops each go to when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
 
 ## Account
 
-**Account** shows who you are (a guest, or your name and email when signed in), your [Trash](/help/account-and-data/trash/) (deleted canvases wait there for 30 days), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, and **Delete Account**. When this browser still holds pages, boards or designs that belong in livedocuments, liveplanner or livedesign, **Pages and Boards in This Browser** lists them until you move them there. It holds two sub-categories:
+**Account** shows who you are (a guest, or your name and email when signed in), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, **Reset All Settings** and **Delete Account**. When this browser still holds pages, boards or designs that belong in livedocuments, liveplanner or livedesign, **Pages and Boards in This Browser** lists them until you move them there. **Reset All Settings** puts every setting back to its default once you confirm. Signed in, that is every setting in every liveworkspace app; your profile, API tokens, webhooks and sign-ins stay as they are, and so does your choice about anonymous usage events. As a guest, it is this app's settings in this browser. Tours offer themselves again afterwards. It holds two sub-categories:
 
 ### Notifications
 
 - **In-Editor Notifications**: the brief confirmation shown when you do something whose result isn't on screen, like moving a canvas to a folder or linking a tab. **Errors and warnings are always shown**, whatever this is set to, so a failure is never silently swallowed. A notification stays put while you point at it or tab into it, and Escape closes the one you are on.
-- **Email**: once signed in, one switch per email (someone joins, comments on or mentions you in your canvas, assigns you an action or responds to a team invite, plus tips and milestones). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
+- **Email**: once signed in, one switch per email (in this order: someone comments on your work, mentions you or assigns you an action, someone responds to a team invite, someone joins your canvas, then tips and check-ins and milestones last). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
 
 ### API Tokens
 
-- **Manage API Tokens** opens liveworkspace.app, where you create, view and revoke the tokens your own scripts and connected AI tools use to call livediagram as you. Below it, the workbenches paired with your tokens are listed, each with **Unpair**. Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
+- **API Tokens** is where you make, see and revoke the tokens your own scripts and connected AI tools use to call livediagram as you, right here in Settings: name a token (switch on **Read-only** if it only needs to look), copy its secret while it is shown (only once), and revoke one with **Revoke**. The same tokens show in every liveworkspace app's Settings and on liveworkspace.app. Below them, the workbenches paired with your tokens are listed, each with **Unpair**. Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
+
+Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Webhooks, which post what happens to your work to Slack, Microsoft Teams or a service you run, are set per document: open the document's ⋯ menu in the Explorer and choose **Webhooks**. With your profile are your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
 
 Anywhere Settings says something needs an account, it ends with a **Sign In** link that brings you back to where you were.
 

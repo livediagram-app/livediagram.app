@@ -279,13 +279,6 @@ export const DOCUMENT_ACTIONS: MetricStack = {
 // question, so restores lead; each chart counts every Trash (Personal, Team).
 // The Trash itself is the shared Explorer's; the editor opens it from Settings
 // and restores the open document from its deleted page.
-export const TRASH_OPENED = chart(
-  'Trash',
-  'Opened',
-  'Trash Opened',
-  'The Trash opened from Settings.',
-);
-
 export const DOCUMENTS_RESTORED = chart(
   'Trash',
   'Restored',
@@ -315,7 +308,7 @@ export const TRASH: MetricStack = {
   title: 'Trash',
   blurb:
     'Deleted documents wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
-  members: [DOCUMENTS_RESTORED, TRASH_OPENED, DOCUMENTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
+  members: [DOCUMENTS_RESTORED, DOCUMENTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
 };
 
 const TAB_CHANGES = [
@@ -705,8 +698,8 @@ export const EXPORT_OPTIONS = chart(
   'UI',
   'Toggled',
   'Export Options',
-  'Image export options: the canvas pattern, hidden layers.',
-  { types: ['PatternExport', 'HiddenLayersExport'] },
+  'Image export options: the canvas pattern.',
+  { types: ['PatternExport'] },
 );
 
 export const TAB_IMPORTS = chart(

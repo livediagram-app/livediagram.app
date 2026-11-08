@@ -42,7 +42,7 @@ describe('a launched app in the Settings panel', () => {
     expect(await loadAppCatalogue('livehuddle.app')).toBe(LIVEHUDDLE);
   });
 
-  it('names its own group in its own panel, keeping the common settings its editor has on its side', () => {
+  it('keeps the common settings its editor has on its own side, once', () => {
     const catalogues = { 'liveplanner.app': LIVEPLANNER, 'livedocuments.app': LIVEDOCUMENTS };
     const model = panelModel({
       mode: 'app',
@@ -54,13 +54,13 @@ describe('a launched app in the Settings panel', () => {
         Object.entries(catalogues).map(([app, catalogue]) => ({ app, catalogue })),
       ),
       value: { all: {}, apps: {} },
-      account: { tokensHref: '/explorer?settings=tokens' },
-      renderLogo: () => null,
+      account: { renderTokens: () => null },
       saver: { changeApp: () => {}, changeShared: () => {} },
     });
-    expect(model.groups?.map((group) => group.label)).toEqual(['Account', 'Common', 'livehuddle']);
+    // One set of categories, as All's: no Common group, no group named for the app.
+    expect(model.groups?.map((group) => group.label)).toEqual(['Account', 'Apps', 'Developers']);
     const keys = model.categories.flatMap((category) => category.rows.map((row) => row.key));
-    // A common setting the editor has shows once, under Common; its own rows under its name.
+    // A common setting the editor has shows once, as Common's row; its own rows beside it.
     expect(keys.filter((key) => key.endsWith(':alignmentGuides'))).toEqual([
       'common:alignmentGuides',
     ]);

@@ -13,8 +13,8 @@ type SettledFields = {
 };
 
 // A layer as the products that still have layers read it (livehuddle has none, docs/specs/006-document/layers.md; a
-// tab it opens has them dropped by ./retired-layers first, so this only settles a tab handed on by
-// `migrateStoredTabKeepingRetired`): a non-empty string id, seen once; a string name; the optional
+// tab it reads has them dropped by ./retired-layers first, so this only settles a peer's tab patch): a non-empty
+// string id, seen once; a string name; the optional
 // flags and opacity only when they have their types. Null when nothing of it is readable.
 function settleLayer(v: unknown, index: number, seen: Set<string>): Layer | null {
   if (!isRecord(v) || typeof v.id !== 'string' || v.id === '' || seen.has(v.id)) return null;

@@ -6,6 +6,7 @@
 // keys, read in-process (it cannot fetch its own /jwks), and kept for a few minutes per isolate.
 
 import { createPersonVerifier, localKeySet, type PersonClaims } from '@liveworkspace/auth-client';
+import { decodeJwt } from 'jose';
 import type { Auth } from './auth.ts';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Env } from './env.ts';
@@ -56,6 +57,17 @@ export async function bearerPerson(
     return await (
       await verifierFor(env, auth, now)
     )(token);
+  } catch {
+    return null;
+  }
+}
+
+/** The liveworkspace session an access token was minted under: the provider writes its id into every access token as
+ *  `sid`. Read without a signature check, so only for a token bearerPerson has already accepted. Null without one. */
+export function bearerSessionId(token: string): string | null {
+  try {
+    const { sid } = decodeJwt(token);
+    return typeof sid === 'string' && sid ? sid : null;
   } catch {
     return null;
   }

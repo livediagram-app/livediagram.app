@@ -865,7 +865,7 @@ only, `h-12`, the header's colours.
 
 ### Settings > API tokens
 
-The API Tokens row (whose tokens are run on liveworkspace.app) shows, under its link there, one "Paired workbenches"
+The API Tokens row (under the account's token panel, which every app's Settings draws in place) shows one "Paired workbenches"
 list for the account (none: nothing, WB35). A row: the name (or "Unnamed workbench"), the origin in monospace, its
 scope ("One canvas at a time" or "Whole workspace", WB67), "Paired <relative time>", and an **Unpair** text button.
 Unpair opens a confirm popover: "Unpair <name>? Its open diagrams stop editing until you allow it again." with

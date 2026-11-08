@@ -12,6 +12,7 @@ import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useEffect, useLayoutEffect, useState } from 'react';
+import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
 import { registerTabStyleOpen } from '@/lib/tab-style-opener';
 import { setBandDocumentName } from '@/lib/article/article-band-layout';
 import { presentedPages } from '@/lib/presented-pages';
@@ -55,9 +56,7 @@ export function EditorCanvasHost() {
     presentingElements,
     presentingPageId,
     layers,
-    activeLayerId,
     layerInertIds,
-    layerCounts,
     laserPanelPosition,
     spotlightPanelPosition,
     setSpotlightPanelPosition,
@@ -69,19 +68,6 @@ export function EditorCanvasHost() {
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
-    setActiveLayer,
-    addLayer,
-    renameLayer,
-    removeLayer,
-    toggleLayerVisibility,
-    toggleLayerLock,
-    reorderLayer,
-    mergeActiveLayer,
-    setLayerOpacityLive,
-    clearLayer,
-    hideOtherLayersOp,
-    layerPreviewId,
-    setLayerPreviewId,
     addArrow,
     addAvatar,
     addBanner,
@@ -143,6 +129,8 @@ export function EditorCanvasHost() {
     deleteMultiSelected,
     documentId,
     documentName,
+    sessionTabScope,
+    participating,
     nameDocument,
     sessionShareCode,
     dropIconOnElement,
@@ -280,6 +268,11 @@ export function EditorCanvasHost() {
   // (docs/specs/008-canvas/canvas-and-palette.md "Colours"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
   const [projectStockColours] = useState(createStockColourProjector);
+  // The document's own Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): offered to a signed-in account that
+  // edits the whole document (not a Viewer, a Participant or a one-tab link); the index checks again on every call.
+  const [webhooksOpen, setWebhooksOpen] = useState(false);
+  const canManageWebhooks =
+    hydrated && Boolean(accountUserId) && !isReadOnly && !participating && sessionTabScope === null;
   const surface = canvasSurface(backdrop.backgroundColor);
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
@@ -495,8 +488,6 @@ export function EditorCanvasHost() {
             }
             onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
             layers={layers}
-            activeLayerId={activeLayerId}
-            layerCounts={layerCounts}
             userPreferences={userPreferences}
             laserPanelPosition={laserPanelPosition}
             spotlightPanelPosition={spotlightPanelPosition}
@@ -537,19 +528,6 @@ export function EditorCanvasHost() {
                     track('UI', 'Opened', 'ThemePicker');
                   }
             }
-            onSelectLayer={setActiveLayer}
-            onAddLayer={addLayer}
-            onRemoveLayer={removeLayer}
-            onRenameLayer={renameLayer}
-            onToggleLayerVisibility={toggleLayerVisibility}
-            onToggleLayerLock={toggleLayerLock}
-            onReorderLayer={reorderLayer}
-            onMergeLayer={mergeActiveLayer}
-            onSetLayerOpacity={setLayerOpacityLive}
-            onClearLayer={clearLayer}
-            onHideOtherLayers={hideOtherLayersOp}
-            layerPreviewId={layerPreviewId}
-            onPreviewLayer={setLayerPreviewId}
             commentRows={commentRows}
             commentsPanelPosition={commentsPanelPosition}
             onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
@@ -584,6 +562,7 @@ export function EditorCanvasHost() {
                 setExportScope('tab');
                 setExportOpen(true);
               },
+              onWebhooks: canManageWebhooks ? () => setWebhooksOpen(true) : undefined,
               onSearch: () => openSearchWithPrefetch(setSearchOpen, loadAllTabs),
               onOpenSettings: () => {
                 setSettingsOpen(true);
@@ -753,6 +732,16 @@ export function EditorCanvasHost() {
               onClose={() => setLockedMenu(null)}
             />
           ) : null}
+          {documentId !== null && (
+            <ItemWebhooksDialog
+              open={webhooksOpen}
+              onClose={() => setWebhooksOpen(false)}
+              itemId={documentId}
+              app="livedocuments"
+              title={documentName}
+              shareCode={sessionShareCode}
+            />
+          )}
         </SuppressElementIndicators>
       </TagColoursProvider>
     </CanvasThemeProvider>

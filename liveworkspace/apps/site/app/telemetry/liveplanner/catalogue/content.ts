@@ -281,13 +281,6 @@ export const PROJECT_ACTIONS: MetricStack = {
 // question, so restores lead; each chart counts every Trash (Personal, Team).
 // The Trash itself is the One Explorer's; the editor opens it from Settings and
 // restores the open project from its deleted page.
-export const TRASH_OPENED = chart(
-  'Trash',
-  'Opened',
-  'Trash Opened',
-  'The Trash opened from Settings.',
-);
-
 export const PROJECTS_RESTORED = chart(
   'Trash',
   'Restored',
@@ -317,7 +310,7 @@ export const TRASH: MetricStack = {
   title: 'Trash',
   blurb:
     'Deleted projects wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
-  members: [PROJECTS_RESTORED, TRASH_OPENED, PROJECTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
+  members: [PROJECTS_RESTORED, PROJECTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
 };
 
 const TAB_CHANGES = [

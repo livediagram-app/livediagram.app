@@ -131,6 +131,7 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'editor',
       label: 'Editor',
+      aliases: ['draw'],
       tile: 'editor',
       rows: [
         {
@@ -174,7 +175,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'elementIndicatorStyle',
           label: 'Element Indicators',
           description:
-            'How an element shows it has a link, note, action or comments: quiet icons at its top, a labelled footer, or nothing.',
+            'How an element shows it has comments, an action or other markers: quiet icons at its top, a labelled footer, or nothing.',
           keywords:
             'badges icons note action comment link markers indicators top corner footer metadata chip hide off',
           section: 'Canvas',
@@ -220,13 +221,6 @@ export const CATALOGUE: AppCatalogue = {
             off: 'QuickAddHoverOff',
           },
         },
-      ],
-    },
-    {
-      id: 'draw',
-      label: 'Draw',
-      parent: 'editor',
-      rows: [
         {
           kind: 'choice',
           id: 'whiteboardDockPosition',
@@ -235,6 +229,7 @@ export const CATALOGUE: AppCatalogue = {
             'Where the dock of pens, shapes and tools sits. Bottom is closer to hand on a tablet.',
           keywords:
             'draw mode drawing mode whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
+          section: 'Draw',
           key: 'whiteboardDockPosition',
           options: [
             {
@@ -259,7 +254,8 @@ export const CATALOGUE: AppCatalogue = {
     {
       id: 'presenting',
       label: 'Presenting',
-      parent: 'editor',
+      aliases: ['/editor/presenting'],
+      tile: 'presenting',
       rows: [
         {
           kind: 'choice',
@@ -525,8 +521,9 @@ export const CATALOGUE: AppCatalogue = {
       ],
     },
     {
-      id: 'layers',
-      label: 'Panels › Layers',
+      id: 'panels',
+      label: 'Panels',
+      aliases: ['layers', 'quickStyle', 'map', 'collaborate'],
       tile: 'panels',
       rows: [
         {
@@ -536,6 +533,7 @@ export const CATALOGUE: AppCatalogue = {
           description:
             'The panel, its corner button and “Move to layer”. Off, layers still keep their order, visibility and lock.',
           keywords: 'layers panel enable hide show turn off remove move to layer',
+          section: 'Layers',
           key: 'layersPanelEnabled',
           on: true,
           off: false,
@@ -552,6 +550,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Layer Thumbnails',
           description: 'A small preview of what each layer holds.',
           keywords: 'thumbnail preview layer picture',
+          section: 'Layers',
           when: {
             key: 'layersPanelEnabled',
             on: true,
@@ -575,6 +574,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Layer Element Counts',
           description: 'How many elements each layer holds, beside its name.',
           keywords: 'number badge count layer element counts',
+          section: 'Layers',
           when: {
             key: 'layersPanelEnabled',
             on: true,
@@ -598,6 +598,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Preview Layer on Hover',
           description: 'Shows only that layer on the canvas while you rest on its row.',
           keywords: 'highlight hover layer preview solo',
+          section: 'Layers',
           when: {
             key: 'layersPanelEnabled',
             on: true,
@@ -615,13 +616,25 @@ export const CATALOGUE: AppCatalogue = {
           },
           parent: 'layersPanelEnabled',
         },
-      ],
-    },
-    {
-      id: 'map',
-      label: 'Panels › Map',
-      tile: 'panels',
-      rows: [
+        {
+          kind: 'toggle',
+          id: 'quickStylePanelEnabled',
+          label: 'Enable Quick Style Panel',
+          description:
+            "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
+          keywords:
+            'quick style colour color stroke fill width panel selection enable hide show turn off',
+          section: 'Quick Style',
+          key: 'quickStylePanelEnabled',
+          on: true,
+          off: false,
+          fallback: true,
+          event: {
+            category: 'UI',
+            on: 'QuickStylePanelOn',
+            off: 'QuickStylePanelOff',
+          },
+        },
         {
           kind: 'toggle',
           id: 'showMinimap',
@@ -629,6 +642,7 @@ export const CATALOGUE: AppCatalogue = {
           description:
             'An overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Drag it to move around.',
           keywords: 'minimap overview thumbnail navigator birds eye hide show turn off enable',
+          section: 'Map',
           key: 'showMinimap',
           on: true,
           off: false,
@@ -645,6 +659,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Dim Outside the View',
           description: 'Shades what is off screen, so the part you are looking at stands out.',
           keywords: 'shade minimap viewport dim',
+          section: 'Map',
           when: {
             key: 'showMinimap',
             on: true,
@@ -668,6 +683,7 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Map Size',
           description: 'How much of the corner the Map takes up.',
           keywords: 'minimap height short medium tall',
+          section: 'Map',
           when: {
             key: 'showMinimap',
             on: true,
@@ -699,13 +715,6 @@ export const CATALOGUE: AppCatalogue = {
           },
           parent: 'showMinimap',
         },
-      ],
-    },
-    {
-      id: 'collaborate',
-      label: 'Panels › Collaborate',
-      tile: 'panels',
-      rows: [
         {
           kind: 'toggle',
           id: 'collaboratePanelEnabled',
@@ -713,6 +722,7 @@ export const CATALOGUE: AppCatalogue = {
           description:
             "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
           keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
+          section: 'Collaborate',
           key: 'collaboratePanelEnabled',
           on: true,
           off: false,
@@ -726,33 +736,9 @@ export const CATALOGUE: AppCatalogue = {
       ],
     },
     {
-      id: 'quickStyle',
-      label: 'Panels › Quick Style',
-      tile: 'panels',
-      rows: [
-        {
-          kind: 'toggle',
-          id: 'quickStylePanelEnabled',
-          label: 'Enable Quick Style Panel',
-          description:
-            "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
-          keywords:
-            'quick style colour color stroke fill width panel selection enable hide show turn off',
-          key: 'quickStylePanelEnabled',
-          on: true,
-          off: false,
-          fallback: true,
-          event: {
-            category: 'UI',
-            on: 'QuickStylePanelOn',
-            off: 'QuickStylePanelOff',
-          },
-        },
-      ],
-    },
-    {
       id: 'tours',
-      label: 'Tours',
+      label: 'Getting Started',
+      aliases: ['/tours'],
       tile: 'tours',
       sectionNotes: {
         'Offer Again':
@@ -781,9 +767,28 @@ export const CATALOGUE: AppCatalogue = {
     },
     {
       id: 'documents',
-      label: 'Canvases',
+      label: 'Explorer',
+      aliases: ['/canvases'],
       tile: 'folder',
       rows: [
+        {
+          kind: 'toggle',
+          id: 'autoOpenExplorer',
+          label: 'Automatically Open Explorer',
+          description:
+            'Opening the homepage while signed in takes you straight to your Explorer. A link to the homepage from inside the app still shows it.',
+          keywords:
+            'automatically open explorer redirect home homepage start landing skip straight',
+          key: 'autoOpenExplorer',
+          on: true,
+          off: false,
+          fallback: false,
+          event: {
+            category: 'UI',
+            on: 'AutoOpenExplorerOn',
+            off: 'AutoOpenExplorerOff',
+          },
+        },
         {
           kind: 'toggle',
           id: 'homeBanner',
@@ -791,7 +796,6 @@ export const CATALOGUE: AppCatalogue = {
           description:
             "The greeting, status pills and large search at the top of Explorer Home. When it's hidden, Home's search sits in the header, as on every other Explorer page.",
           keywords: 'home banner hero greeting welcome header top search explorer hide show close',
-          section: 'Explorer',
           key: 'homeBanner',
           on: true,
           off: false,

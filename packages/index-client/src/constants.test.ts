@@ -3,8 +3,10 @@ import {
   APP_DEFAULT_LINK_LEVEL,
   APP_LINK_LEVELS,
   APPS,
+  MODE_ONLY_PLACEMENT_APPS,
   RETIRED_PLACEMENT_KEYS,
   TEAM_AUDIT_EVENT_TYPES,
+  filesByModeOnly,
   foldRetiredDefaults,
   isTeamAuditEventType,
   linkLevelOffered,
@@ -14,19 +16,28 @@ import {
 
 describe('placementDefaultKeysFor', () => {
   it('tries the kind, the template, the mode, then the app', () => {
+    expect(placementDefaultKeysFor('liveplanner', 'plan:board:kanban')).toEqual([
+      'liveplanner:kind:board',
+      'liveplanner:template:kanban',
+      'liveplanner:mode:plan',
+      'liveplanner',
+    ]);
+  });
+
+  // MODE_ONLY_PLACEMENT_APPS (one-explorer-contracts.md "Mode-only apps"): livediagram files by its mode alone.
+  it("tries a mode-only app's mode key and nothing else", () => {
+    expect(MODE_ONLY_PLACEMENT_APPS).toEqual(['livediagram']);
+    expect(filesByModeOnly('livediagram')).toBe(true);
+    expect(filesByModeOnly('liveplanner')).toBe(false);
     expect(placementDefaultKeysFor('livediagram', 'workshop:event-storming:retrospective')).toEqual(
-      [
-        'livediagram:kind:event-storming',
-        'livediagram:template:retrospective',
-        'livediagram:mode:workshop',
-        'livediagram',
-      ],
+      ['livediagram:mode:workshop'],
     );
     expect(placementDefaultKeysFor('livediagram', 'draw:diagram')).toEqual([
-      'livediagram:kind:diagram',
       'livediagram:mode:draw',
-      'livediagram',
     ]);
+    // An intent with no mode (one word, a family) or none at all files nowhere but the root.
+    expect(placementDefaultKeysFor('livediagram', 'retrospective')).toEqual([]);
+    expect(placementDefaultKeysFor('livediagram', null)).toEqual([]);
   });
 
   it('reads one word as a template family, and no intent as the app alone', () => {

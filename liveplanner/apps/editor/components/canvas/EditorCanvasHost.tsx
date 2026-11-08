@@ -7,6 +7,7 @@ import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { canvasSurface, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { useState } from 'react';
+import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
 import { isBoxed, isVoteHost, threadAt } from '@liveplanner/project';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
@@ -99,6 +100,7 @@ export function EditorCanvasHost() {
     deleteSelected,
     projectId,
     projectName,
+    sessionTabScope,
     nameProject,
     duplicateMultiSelected,
     contextMenu,
@@ -253,6 +255,11 @@ export function EditorCanvasHost() {
   // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
   const [projectStockColours] = useState(createStockColourProjector);
+  // The plan's own Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): offered to a signed-in account that
+  // edits the whole plan (not a Viewer, a Participant or a one-tab link); the index checks again on every call.
+  const [webhooksOpen, setWebhooksOpen] = useState(false);
+  const canManageWebhooks =
+    hydrated && Boolean(accountUserId) && !isReadOnly && !participating && sessionTabScope === null;
   const surface = canvasSurface(backdrop.backgroundColor);
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
@@ -531,6 +538,7 @@ export function EditorCanvasHost() {
                 setExportScope('tab');
                 setExportOpen(true);
               },
+              onWebhooks: canManageWebhooks ? () => setWebhooksOpen(true) : undefined,
               onSearch: () => openSearchWithPrefetch(setSearchOpen, loadAllTabs),
               onOpenSettings: () => {
                 setSettingsOpen(true);
@@ -702,6 +710,16 @@ export function EditorCanvasHost() {
             explorerHidden={workbenchMode || landscapePhone}
             onToggleZen={embedMode ? undefined : toggleZenMode}
           />
+          {projectId !== null && (
+            <ItemWebhooksDialog
+              open={webhooksOpen}
+              onClose={() => setWebhooksOpen(false)}
+              itemId={projectId}
+              app="liveplanner"
+              title={projectName}
+              shareCode={sessionShareCode}
+            />
+          )}
         </PlanTextScaleProvider>
       </TagColoursProvider>
     </CanvasThemeProvider>

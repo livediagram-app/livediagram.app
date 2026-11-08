@@ -5,7 +5,7 @@ import { PALETTE_TELEMETRY_TYPES } from '@livehuddle/api-schema';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
-import { LOCAL_MOVE_OFFERED, RETIRED_PARTS_OFFERED } from './features';
+import { LOCAL_MOVE_OFFERED } from './features';
 
 // Filling out existing stacks.
 export const JUST_DRAW = chart(
@@ -181,37 +181,11 @@ export const LOCAL_MOVE_DISMISSED = chart(
   { types: ['LocalMovePrompt'], rising: 'neutral' },
 );
 
-// The offer to move retired parts to the other apps (docs/specs/006-document/offline-mode.md "Moving retired parts to
-// the other apps"): offered (homed with the other opens, features.ts), taken, or put off, and the documents it moved.
-export const RETIRED_PARTS_ACCEPTED = chart(
-  'UI',
-  'Selected',
-  'Retired Parts Accepted',
-  'Move Them, pressed on that offer.',
-  { types: ['RetiredPartsOffer'] },
-);
-
-export const RETIRED_PARTS_DISMISSED = chart(
-  'UI',
-  'Closed',
-  'Retired Parts Put Off',
-  'Not Now on that offer.',
-  { types: ['RetiredPartsOffer'], rising: 'neutral' },
-);
-
-export const RETIRED_PARTS_MOVED = chart(
-  'Document',
-  'Moved',
-  'Retired Parts Moved',
-  'A document whose retired parts moved to the other apps, one per document.',
-  { types: ['RetiredParts'] },
-);
-
 export const OFFLINE_MODE: MetricStack = {
   stack: true,
   title: 'Offline Mode',
   blurb:
-    'Documents kept only in this browser (where a guest starts): made there, taken offline from the cloud, synced back up, and the offer to move them after signing in, and the offer to move parts that now belong to the other apps.',
+    'Documents kept only in this browser (where a guest starts): made there, taken offline from the cloud, synced back up, and the offer to move them after signing in.',
   members: [
     CREATED_OFFLINE,
     TAKEN_OFFLINE,
@@ -219,10 +193,6 @@ export const OFFLINE_MODE: MetricStack = {
     LOCAL_MOVE_OFFERED,
     LOCAL_MOVE_ACCEPTED,
     LOCAL_MOVE_DISMISSED,
-    RETIRED_PARTS_OFFERED,
-    RETIRED_PARTS_ACCEPTED,
-    RETIRED_PARTS_DISMISSED,
-    RETIRED_PARTS_MOVED,
   ],
 };
 
@@ -303,13 +273,6 @@ export const DOCUMENT_ACTIONS: MetricStack = {
 // document delete. Whether anyone comes back for a deleted document is the
 // question, so restores lead; each chart counts every Trash (Personal, Team,
 // Local).
-export const TRASH_OPENED = chart(
-  'Trash',
-  'Opened',
-  'Trash Opened',
-  'The Trash opened from Settings.',
-);
-
 export const DOCUMENTS_RESTORED = chart(
   'Trash',
   'Restored',
@@ -339,7 +302,7 @@ export const TRASH: MetricStack = {
   title: 'Trash',
   blurb:
     'Deleted documents wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
-  members: [DOCUMENTS_RESTORED, TRASH_OPENED, DOCUMENTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
+  members: [DOCUMENTS_RESTORED, DOCUMENTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
 };
 
 const TAB_CHANGES = [

@@ -18,23 +18,29 @@ export type SettingsRowText = {
   keywords?: string;
   // The sub-heading the row sits under within its category. Rows sharing one are adjacent.
   section?: string;
+  // The row stays last in its section however many apps add rows to it (section-order.ts): Tips and Check-Ins and
+  // Milestones, the emails from us rather than about your work.
+  closesSection?: boolean;
   // The key of a row in the same category this one nests under.
   parent?: string;
   // A help article, drawn by the kit's HelpLink.
   helpArticle?: string;
   // Where the same setting also has an in-context control.
   alsoIn?: string;
+  // A page that says more, under the description, opened in a new tab (Privacy's list of every usage event).
+  link?: { href: string; label: string };
   // A drawing under the row, drawn by the kit's Illustration.
   illustration?: string;
   // The note shown on a phone, where the row has no effect: it stays visible, greyed and inert.
   desktopOnly?: string;
-  // The app this row is one app's own, in the All view's merged categories: a key into its category's
-  // `appHeadings`, drawn under that app's logo and name. Rows of one app are adjacent.
-  app?: string;
+  // The apps this setting applies to (their ids, `livediagram.app`), in the Settings panel's merged categories: drawn
+  // as their logos to the left of the label (app-marks.tsx), and what the header's This App side filters on. Absent
+  // where only one app is in play (an editor's own Settings, a guest's).
+  apps?: readonly string[];
 };
 
 export type SettingsRowBase = SettingsRowText & {
-  // The setting is one every liveworkspace app shares: the row says "All apps".
+  // The setting is one every liveworkspace app shares: the row says "All apps" (where no app marks are drawn).
   allApps?: boolean;
 };
 
@@ -76,8 +82,8 @@ export type SettingsToggleGroupRow = SettingsRowBase & {
   }[];
 };
 
-// A way into another category of this dialog, opened in place.
-export type SettingsLinkRow = SettingsRowBase & { kind: 'link'; target: string; cta: string };
+// There is no row that opens another category: a setting is shown in the one category it belongs to, never pointed
+// at from another (liveworkspace/docs/specs/010-site/site.md "Settings", "No way out of a category").
 
 // A card with no control, standing in for settings the reader can't use yet. `signIn` ends the note
 // with the kit's Sign In link.
@@ -94,7 +100,7 @@ export type SettingsShortcutListRow = SettingsRowBase & {
   sections: readonly SettingsShortcutSection[];
 };
 
-// A row the app draws itself (API tokens, the Trash, account rows, Cloud Sync and the rest), with
+// A row the app draws itself (API tokens, account rows, Cloud Sync and the rest), with
 // SettingsRowShell for the common cell. `render` is called where the row is drawn, so a row backed
 // by a hook returns its own component.
 export type SettingsCustomRow = SettingsRowBase & { kind: 'custom'; render: () => ReactNode };
@@ -104,7 +110,6 @@ export type SettingsRow =
   | SettingsChoiceRow
   | SettingsSliderRow
   | SettingsToggleGroupRow
-  | SettingsLinkRow
   | SettingsNoteRow
   | SettingsShortcutListRow
   | SettingsCustomRow;
@@ -118,39 +123,29 @@ export type SettingsCategory = {
   icon?: ReactNode;
   // The top-level category this nests under.
   parent?: string;
-  // The heading it is listed under (SettingsGroupHeading's id), in the All view: the account, or an app.
+  // The heading it is listed under in the rail (SettingsGroupHeading's id), where the panel groups them: Account,
+  // Apps, Developers.
   group?: string;
   // A line under a section's heading, for what every row in it shares.
   sectionNotes?: Readonly<Record<string, SettingsSectionNote>>;
   // Sections drawn as a closed accordion.
   collapsedSections?: readonly string[];
-  // The apps whose own rows sit here under their logo and name (a row's `app`), with each app's section notes
-  // and closed sections, which may differ between apps.
-  appHeadings?: Readonly<Record<string, SettingsAppHeading>>;
   // Ids this category also answers to: an old layout's (a remembered `livediagram.app:editor`, `common:editor`) or a
   // bare deep link's (`editor`).
   aliases?: readonly string[];
   rows: readonly SettingsRow[];
 };
 
-// An app's sub-heading inside a category of the All view: its logo and name.
-export type SettingsAppHeading = {
-  label: string;
-  icon?: ReactNode;
-  sectionNotes?: Readonly<Record<string, SettingsSectionNote>>;
-  collapsedSections?: readonly string[];
-};
-
-// A heading the rail lists categories under, in the order given: the All view's Account, with its logo. A `flat`
-// one has no heading: its categories are listed as they are, always shown (All's merged categories).
-export type SettingsGroupHeading = { id: string; label: string; icon?: ReactNode; flat?: boolean };
+// A label the rail lists categories under, in the order given (Account, Apps, Developers): always shown, never folded,
+// and left out when none of its categories are listed.
+export type SettingsGroupHeading = { id: string; label: string };
 
 // A section's target id: "Cloud Sync" → "cloud-sync".
 export function settingsSectionId(section: string): string {
   return section.trim().toLowerCase().replace(/\s+/g, '-');
 }
 
-// A category's name from the top level: "Panels › Layers" for a sub-category.
+// A category's name from the top level: "Account › Notifications" for a sub-category.
 export function settingsCategoryPath(
   category: Pick<SettingsCategory, 'label' | 'parent'>,
   categories: readonly Pick<SettingsCategory, 'id' | 'label'>[],

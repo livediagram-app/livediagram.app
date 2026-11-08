@@ -90,7 +90,7 @@ restored or purged).
 
 ## Telemetry
 
-`Trash` · `Opened` · `Settings` from Settings' Trash row, and `Trash` · `Restored` from a trashed canvas's own card
+`Trash` · `Restored` from a trashed canvas's own card
 ([Telemetry](../017-telemetry/telemetry.md)). The delete itself is `Document` · `Deleted`. The Explorer's own Trash
 events are liveworkspace's ([telemetry.md](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)).
 

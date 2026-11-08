@@ -184,8 +184,8 @@ export function lensModesFor(app: App): readonly LensOption[] | undefined {
   return LENS_MODES[app];
 }
 
-// Default Folders' entries per editor mode and specific kind, for an app that files new items by them (its
-// api-schema's DEFAULT_FOLDER_OPTIONS), between the app's own entry and its template families.
+// Default Folders' entries per editor mode, for an app that files new items by them (its api-schema's
+// DEFAULT_FOLDER_OPTIONS). livediagram is mode-only (index-client MODE_ONLY_PLACEMENT_APPS): these are its only entries.
 const DEFAULT_FOLDER_OPTIONS: Partial<Record<App, readonly DefaultFolderOption[]>> = {
   livediagram: DIAGRAM_FOLDER_OPTIONS,
 };
@@ -202,18 +202,19 @@ export const SETTINGS_PARAM = 'settings';
 export const SECTION_PARAM = 'section';
 
 /** Why Download Your Data's emailed link didn't open (`?settings=data&export=expired`): Settings › Your Data says. */
-export const EXPORT_LINK_PARAM = 'export';
+export { EXPORT_LINK_PARAM } from '@liveworkspace/data-export';
 
 /** The account's notification settings: every notification email's unsubscribe link lands here. */
 export const NOTIFICATIONS_SETTINGS = `/explorer?${SETTINGS_PARAM}=notifications`;
 
 // The Account section's categories an address can name, by the panel's own category ids (the profile's is `account`).
+// `webhooks` left Settings for each document's own (004-index/webhooks.md): an old link to it opens Profile.
 const ACCOUNT_CATEGORIES: Readonly<Record<string, string>> = {
   account: 'account',
   profile: 'account',
   notifications: 'notifications',
   tokens: 'tokens',
-  webhooks: 'webhooks',
+  webhooks: 'account',
   data: 'data',
   privacy: 'privacy',
   accessibility: 'accessibility',

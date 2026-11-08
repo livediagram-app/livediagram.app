@@ -193,8 +193,8 @@ The deck **never advances itself** on a budget, and going over is marked rather 
 
 ### Presenter settings
 
-The presenter settings live in **Settings > Presenting** (a sub-category under Editor, with the other modes'
-settings), set before the talk, and follow the person's account. The rule is that the HUD's cog opens ON a
+The presenter settings live in **Settings > Presenting** (a top-level category of its own, right after Editor),
+set before the talk, and follow the person's account. The rule is that the HUD's cog opens ON a
 projector, in front of a room, so it keeps only what is changed there: **Transition** with its **Speed**, then
 **Pacing** (**Show Elapsed Time**, **Show Slide Budget**), and a line saying the rest is in Settings, under
 Presenting. Anything needing thought belongs before you start, which is why per-slide budgets are authored in the

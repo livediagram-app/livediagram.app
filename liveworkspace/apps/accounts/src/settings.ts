@@ -2,6 +2,7 @@
 // app reads the same ones. A row is one owner's settings in one scope: 'all', shown by every app, or
 // one app's site id, shown only there. Writes patch keys one by one, so two apps writing different
 // keys never undo each other.
+import { resetSettingsBlob } from '@liveworkspace/settings';
 import { REGISTERED_APP_SITES, type SiteId } from '@liveworkspace/sites';
 import { GUEST_ID, USER_ID } from './ids.ts';
 
@@ -168,6 +169,34 @@ export async function writeSettings(
     if (tooLarge(error)) return fail(413, 'settings_too_large');
     throw error;
   }
+}
+
+// Reset All Settings (accounts.md "Resetting every setting"): every row the owner has, the `all` scope and every app's
+// own, goes, and only that owner's; the RESET_KEEPS keys (all `all` keys) are written back to the `all` row. One batch,
+// so a reset that fails part way leaves the rows as they were. Answers the `all` scope as it now is.
+export async function resetSettings(
+  db: D1Database,
+  owner: string,
+  now = Date.now(),
+): Promise<{ all: Prefs; updatedAt: number | null }> {
+  const row = await db
+    .prepare(`SELECT prefs FROM settings WHERE owner_id = ? AND scope = 'all'`)
+    .bind(owner)
+    .first<{ prefs: string }>();
+  const kept = row ? resetSettingsBlob(JSON.parse(row.prefs) as Prefs) : {};
+  const statements = [db.prepare('DELETE FROM settings WHERE owner_id = ?').bind(owner)];
+  const keeps = Object.keys(kept).length > 0;
+  if (keeps) {
+    statements.push(
+      db
+        .prepare(
+          `INSERT INTO settings (owner_id, scope, prefs, updated_at) VALUES (?, 'all', ?, ?)`,
+        )
+        .bind(owner, JSON.stringify(kept), now),
+    );
+  }
+  await db.batch(statements);
+  return { all: kept, updatedAt: keeps ? now : null };
 }
 
 // Closing an account takes its settings with it.

@@ -6,8 +6,6 @@ import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from '@liveworkspace/workbench/components/dialogs/TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
 import {
-  isLayerVisible,
-  tabLayers,
   type Deck,
   type LaidOutPage,
   type Tab,
@@ -118,10 +116,6 @@ type ExportTabDialogProps = {
   // authenticated endpoint). Absent (e.g. no document id) → images export as
   // their placeholder, same as before.
   imageContext?: { ownerId: string; documentId: string; shareCode: string | null };
-  // False while the Layers panel is off in Settings (docs/specs/007-editor/user-preferences.md): the
-  // image options then leave out "Hidden layers", and hidden layers stay out
-  // of the export as they stay off the canvas.
-  offerHiddenLayers?: boolean;
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "Export"): PDF, PNG and
   // SVG export all pages or one chosen page, each exactly its sheet. Absent elsewhere.
   pages?: LaidOutPage[];
@@ -232,7 +226,6 @@ export function ExportTabDialog({
   onClose,
   scope = 'tab',
   imageContext,
-  offerHiddenLayers = true,
   pages,
   documentTabs,
   onClearSelection,
@@ -573,11 +566,6 @@ export function ExportTabDialog({
             pageExport={!!pages}
             busy={busy}
             error={error}
-            // Pages mode has no Layers, so no "Hidden layers" option: hidden layers stay
-            // out, as they stay off its canvas.
-            hasHiddenLayers={
-              !pages && offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
-            }
             renderPreview={renderPreview}
             previewReady={previewReady}
             onExport={(opts) => void runImageExport(active as ImageFormat, opts)}

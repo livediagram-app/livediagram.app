@@ -2,7 +2,7 @@
 
 What a team's admins can look back on: who joined, left or changed role, who shared a team document publicly or
 made or revoked its share links, which documents came into the team, left it or were deleted, and who added or
-removed the team's webhooks (Work Tracker #160). It answers "who shared this?", "who joined?" and "who made that
+removed webhooks on the team's documents (Work Tracker #160). It answers "who shared this?", "who joined?" and "who made that
 webhook?" for a team that relies on the product.
 
 It is the index's: one log for every app (platform first, [platform.md](../001-platform-scope/platform.md)), next to
@@ -30,8 +30,8 @@ and the app's (liveplanner's no-activity-log rule for content stands). A row rec
 | `trashed`             | A team document goes to the team Trash (a teammate's Take Offline included)                                       | the index |
 | `restored`            | A team document comes back from the Trash                                                                         | the index |
 | `deleted`             | A team document is deleted for good: Delete Forever, Empty Trash, or its owner's Take Offline (`reason: offline`) | the index |
-| `webhook_added`       | An admin adds a team webhook (`kind`, `host`)                                                                     | the index |
-| `webhook_removed`     | An admin deletes a team webhook (`kind`, `host`)                                                                  | the index |
+| `webhook_added`       | Someone adds a webhook to a team document (`kind`, `host`)                                                        | the index |
+| `webhook_removed`     | Someone deletes a webhook from a team document (`kind`, `host`)                                                   | the index |
 
 Left out, as decided on the card: API tokens and OAuth apps belong to an account, not a team, so their events stay on
 their owner's Timeline alone (team-scoped tokens are a separate idea). Also left out: `team_deleted` (the team is gone,
@@ -73,7 +73,7 @@ A year (`TEAM_AUDIT_RETENTION_MS`, 365 days) from when it happened, then deleted
 
 ## Who reads it
 
-A team's admins only, checked against accounts on each read, as a team webhook's are; a member, someone outside the
+A team's admins only, checked against accounts on each read; a member, someone outside the
 team, a guest, an app or the Drive mirror acting for someone is refused (`403 not_team_admin`), and when accounts
 can't say who runs the team the read is refused too (`503 team_audit_unavailable`), never answered from a token's
 hour-old claim. Members keep the Timeline's Team Activity, which is unchanged.

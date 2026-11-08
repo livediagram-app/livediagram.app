@@ -114,6 +114,13 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   toggle(
     'UI',
+    'AutoOpenExplorerOn',
+    'AutoOpenExplorerOff',
+    'Automatically Open Explorer',
+    'The homepage opening straight on the Explorer, switched in Settings > Explorer.',
+  ),
+  toggle(
+    'UI',
     'HomeBannerOn',
     'HomeBannerOff',
     'Home Banner',
@@ -166,48 +173,16 @@ export const KEYBOARD_SETTINGS = settingsStack(
   ],
 );
 
-export const PANELS_SETTINGS = settingsStack(
-  'Panels Settings',
-  'What the Layers and minimap panels show.',
-  [
-    toggle(
-      'UI',
-      'LayerPreviewOn',
-      'LayerPreviewOff',
-      'Layer Thumbnails',
-      'Thumbnails in the Layers panel.',
-    ),
-    toggle(
-      'UI',
-      'LayerCountOn',
-      'LayerCountOff',
-      'Layer Element Counts',
-      'Element counts on each layer.',
-    ),
-    toggle(
-      'UI',
-      'LayerHoverPreviewOn',
-      'LayerHoverPreviewOff',
-      'Preview Layer on Hover',
-      'Highlighting a layer\u2019s elements on hover.',
-    ),
-    toggle(
-      'UI',
-      'MapDimOn',
-      'MapDimOff',
-      'Dim Outside the View',
-      'The minimap dimming what is off screen.',
-    ),
-    changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
-    toggle(
-      'UI',
-      'LayersPanelOn',
-      'LayersPanelOff',
-      'Layers Panel',
-      'The Layers panel switched on or off.',
-    ),
-  ],
-);
+export const PANELS_SETTINGS = settingsStack('Panels Settings', 'What the minimap shows.', [
+  toggle(
+    'UI',
+    'MapDimOn',
+    'MapDimOff',
+    'Dim Outside the View',
+    'The minimap dimming what is off screen.',
+  ),
+  changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
+]);
 
 export const COLLABORATE_SETTINGS = settingsStack(
   'Collaborate Settings',

@@ -1,4 +1,4 @@
-// A tour of several tracks offers each one once (docs/specs/007-editor/user-preferences.md "Tours"): the element
+// A tour of several tracks offers each one once (docs/specs/007-editor/user-preferences.md "Getting Started"): the element
 // tours. A synced list holds the tracks answered (taken, skipped or declined). The tour's single flag counts every
 // track as seen: Settings writes it when the tour's switch goes off, as the retired Power user mode's preset did.
 

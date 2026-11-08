@@ -91,6 +91,13 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   toggle(
     'UI',
+    'AutoOpenExplorerOn',
+    'AutoOpenExplorerOff',
+    'Automatically Open Explorer',
+    'The homepage opening straight on the Explorer, switched in Settings > Explorer.',
+  ),
+  toggle(
+    'UI',
     'HomeBannerOn',
     'HomeBannerOff',
     'Home Banner',

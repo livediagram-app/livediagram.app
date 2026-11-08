@@ -2,7 +2,8 @@
 // liveworkspace/docs/specs/010-site/site.md "Settings"): every editor setting two or more apps have (COMMON_SETTING_KEYS), once,
 // built from the apps' catalogues, in the categories the apps file them under. The apps word a common setting the
 // same way and keep it under the same category ids, so the first app that has a row gives its wording; where they
-// file it under a category of their own (Show Home Banner under Documents, Plans or Designs), PLATFORM_PLACES says
+// file it under a category of their own (Automatically Open Explorer and Show Home Banner under Documents, Plans or
+// Designs), PLATFORM_PLACES says
 // where it goes instead.
 //
 // Pure data and helpers, with no editor code: the panel runs it once over the catalogues it has loaded (about 120
@@ -37,6 +38,7 @@ export function withoutCommonRows(catalogue: AppCatalogue): AppCatalogue {
 export const PLATFORM_PLACES: Readonly<
   Record<string, { id: string; label: string; tile: string }>
 > = {
+  autoOpenExplorer: { id: 'explorer', label: 'Explorer', tile: 'folder' },
   homeBanner: { id: 'explorer', label: 'Explorer', tile: 'folder' },
 };
 
@@ -54,6 +56,9 @@ type Draft = {
   // The parent's name and tile in the app it came from, for when the parent isn't in Common.
   parentLabel?: string;
   parentTile?: string;
+  // The ids of categories folded into this one, from every app that files a row here (Editor's old `pages`), so
+  // `common:pages` still lands on it.
+  aliases?: string[];
   sectionNotes?: Record<string, string>;
   collapsedSections?: string[];
   rows: CatalogueRow[];
@@ -106,6 +111,9 @@ export function commonCatalogue(
             : newDraft(category, byId);
           drafts.set(target, draft);
         }
+        if (!platform && category.aliases) {
+          draft.aliases = [...new Set([...(draft.aliases ?? []), ...category.aliases])];
+        }
         if (target !== lastCategory) {
           place(order, target, lastCategory);
           lastCategory = target;
@@ -134,13 +142,14 @@ export function commonCatalogue(
     const ids = new Set(draft.rows.map((row) => row.id));
     return {
       id,
-      // A sub-category whose parent isn't here is named by its path ("Editor › Pages").
+      // A sub-category whose parent isn't here is named by its path ("Panels › Layers").
       label:
         draft.parent !== undefined && !nested
           ? `${draft.parentLabel ?? draft.parent} › ${draft.label}`
           : draft.label,
       ...(nested ? { parent: draft.parent } : {}),
       ...(tile ? { tile } : {}),
+      ...(draft.aliases ? { aliases: draft.aliases } : {}),
       ...(notes.length > 0 ? { sectionNotes: Object.fromEntries(notes) } : {}),
       ...(collapsed.length > 0 ? { collapsedSections: collapsed } : {}),
       // A row stays nested under its switch only while that switch is here too.

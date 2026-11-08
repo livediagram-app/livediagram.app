@@ -23,6 +23,11 @@ export const SETTINGS_CARD =
 export const SETTINGS_CARD_SLOT =
   'border-t border-slate-100 first:rounded-t-xl first:border-t-0 last:rounded-b-xl dark:border-slate-700/70';
 
+// A small label's type: a pane's section heading and a rail's group heading, so the two read as the same kind of
+// label.
+export const SETTINGS_LABEL =
+  'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
+
 export function SettingsGroup({ children }: { children: ReactNode }) {
   return (
     <div className={`flex flex-col ${SETTINGS_CARD}`}>

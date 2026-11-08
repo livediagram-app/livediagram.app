@@ -106,6 +106,7 @@
     "./components/dialogs/ApplyToAllTabsRow": "./src/components/dialogs/ApplyToAllTabsRow.tsx",
     "./components/dialogs/ConfirmDialog": "./src/components/dialogs/ConfirmDialog.tsx",
     "./components/dialogs/DeleteAccountDialog": "./src/components/dialogs/DeleteAccountDialog.tsx",
+    "./components/dialogs/ItemWebhooksDialog": "./src/components/dialogs/ItemWebhooksDialog.tsx",
     "./components/dialogs/Dialog": "./src/components/dialogs/Dialog.tsx",
     "./components/dialogs/DialogFooter": "./src/components/dialogs/DialogFooter.tsx",
     "./components/dialogs/DialogTabs": "./src/components/dialogs/DialogTabs.tsx",
@@ -450,6 +451,7 @@
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
+    "@liveworkspace/settings-ui": "workspace:^",
     "@liveworkspace/trusted-types": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },

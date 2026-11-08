@@ -87,3 +87,10 @@ plan's own Timeline, `GET /timeline?item=`, paged, on a day-by-day rail with fil
 Activity: the index can answer it (by `t:<team>`), and it
 belongs with the editor and the Teams pages. livediagram's token-expiry warnings, the scheduled events its Upcoming
 band showed, are accounts' (by email) rather than the Timeline's.
+
+**Webhooks** sits on the same menu, after History, for a signed-in account who can edit the whole plan (its owner,
+its team's people, or an Editor link to every tab; never a guest, a Viewer, a Participant or a one-tab Editor). It
+opens the shared Webhooks dialog, "Webhooks for “<plan>”", whose webhooks report on this plan alone and say so;
+each of the person's other plans has its own (up to 10). Each one picks where it posts, what it sends in the plan's
+own words, and Who Did It (Anyone or Only Me). Card Moved and Form Response are a plan's alone. The index checks the role on every call
+([webhooks.md](../../../../liveworkspace/docs/specs/004-index/webhooks.md)).

@@ -17,7 +17,6 @@ export function ImageExportPanel({
   label,
   busy,
   error,
-  hasHiddenLayers,
   renderPreview,
   previewReady,
   onExport,
@@ -30,9 +29,6 @@ export function ImageExportPanel({
   label: string;
   busy: boolean;
   error: string | null;
-  // True when the tab has at least one hidden layer (docs/specs/006-design/layers.md) — only then
-  // does the include-hidden-layers toggle render at all.
-  hasHiddenLayers: boolean;
   // Build the preview SVG markup for the given options (same content the
   // export produces). Called on each toggle change.
   renderPreview: (opts: { pattern: boolean; hiddenLayers: boolean }) => string;
@@ -54,14 +50,13 @@ export function ImageExportPanel({
   // Backdrop pattern (docs/specs/010-palette/style-presets.md): paint the tab's grid / dots / … pattern. On by
   // default so the export matches the canvas; switch off for a clean backdrop.
   const [pattern, setPattern] = useState(true);
-  // Hidden layers (docs/specs/006-design/layers.md): include layers the user has hidden. Off by
-  // default — what you see is what you export.
-  const [hiddenLayers, setHiddenLayers] = useState(false);
 
   // Rebuild the preview only when an option or the loaded assets change.
   const previewSvg = useMemo(
-    () => (previewReady ? renderPreview({ pattern, hiddenLayers }) : ''),
-    [previewReady, renderPreview, pattern, hiddenLayers],
+    // Hidden layers stay out (docs/specs/006-design/layers.md "Exports and snapshots"): what you see is what you
+    // export. The option to include them retired with the Layers panel.
+    () => (previewReady ? renderPreview({ pattern, hiddenLayers: false }) : ''),
+    [previewReady, renderPreview, pattern],
   );
 
   return (
@@ -114,29 +109,6 @@ export function ImageExportPanel({
           </button>
         </>
       )}
-      {/* Hidden-layers toggle (docs/specs/006-design/layers.md) — only offered when a layer is
-          actually hidden, alongside the other image options. */}
-      {hasHiddenLayers ? (
-        <button
-          type="button"
-          onClick={() => {
-            track('UI', 'Toggled', 'HiddenLayersExport');
-            setHiddenLayers((v) => !v);
-          }}
-          aria-pressed={hiddenLayers}
-          className="mt-2 flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
-        >
-          <span className="flex flex-col">
-            <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-              Hidden layers
-            </span>
-            <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-              Include layers you've hidden in the Layers panel.
-            </span>
-          </span>
-          <Switch presentational size="sm" checked={hiddenLayers} />
-        </button>
-      ) : null}
       {error ? (
         <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
           {error}
@@ -146,7 +118,7 @@ export function ImageExportPanel({
         <Button
           variant="primary"
           size="md"
-          onClick={() => onExport({ pattern, hiddenLayers })}
+          onClick={() => onExport({ pattern, hiddenLayers: false })}
           busy={busy}
         >
           {busy ? 'Exporting…' : `Download ${label}`}

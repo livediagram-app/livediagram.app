@@ -59,6 +59,8 @@ export async function appendItemHistory(
           card: typeof title === 'string' ? title : '',
           from: change.from ?? NO_STATUS,
           to: change.to ?? NO_STATUS,
+          // The mover's id, for a webhook set to Only Me (liveworkspace 004-index/webhooks.md "Who Did It").
+          actorId: by.id,
           actorName: by.name,
           at: after.updatedAt,
         }),

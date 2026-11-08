@@ -12,6 +12,8 @@
 // once, under Common. They were each app's own before, so a person's value may still sit in an app's scope:
 // joinSettings falls back to it, and splitSettings drops it on the first write.
 export const COMMON_SETTING_KEYS = [
+  // Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer").
+  'autoOpenExplorer',
   'homeBanner',
   'collaboratePanelEnabled',
   'quickStylePanelEnabled',
@@ -140,6 +142,18 @@ export function joinSettings(all: SettingsBlob, app: SettingsBlob): SettingsBlob
     if (ALL.has(key) || RETIRED.has(key)) joined[key] = value;
   }
   return joined;
+}
+
+// Reset All Settings (liveworkspace/docs/specs/003-accounts/accounts.md "Resetting every setting"): the keys a reset
+// keeps. Sending anonymous usage events is a consent, not a preference, so a reset never turns them back on for
+// someone who turned them off. Each is an `all` key, so the accounts Worker keeps it in that row alone.
+export const RESET_KEEPS = ['telemetryEnabled'] as const satisfies readonly AllSettingKey[];
+
+/** What a reset leaves of a blob: only the RESET_KEEPS keys it holds. Every other key goes, which is its default. */
+export function resetSettingsBlob(blob: SettingsBlob): SettingsBlob {
+  const kept: SettingsBlob = {};
+  for (const key of RESET_KEEPS) if (Object.hasOwn(blob, key)) kept[key] = blob[key];
+  return kept;
 }
 
 export {

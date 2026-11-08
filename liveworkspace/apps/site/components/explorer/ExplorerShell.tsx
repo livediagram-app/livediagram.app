@@ -11,8 +11,8 @@
 //
 // The same page is also served under each app's own address (`liveplanner.app/explorer/…`, through the app's router;
 // lib/explorer/page-app.ts). There it is that app's Explorer: it asks as the app's session, shows the app's items kept
-// only in this browser (This Browser), keeps its links on the app's address and sends only what needs
-// liveworkspace.app's session (the profile, API tokens) there. Where the app supplies them (the sites registry), it also offers the
+// only in this browser (This Browser) and keeps its links on the app's address: every setting, the profile and API
+// tokens too, is edited in its Settings panel in place. Where the app supplies them (the sites registry), it also offers the
 // app's Take Offline, Sync and Delete (lib/explorer/offline-moves.tsx). Teams are made and run in place, here and
 // there alike, over liveworkspace's account API (createTeamsHost with accountFetch).
 //
@@ -167,8 +167,8 @@ const NO_ARRIVAL: Arrival = { app: null, via: null };
 // Where the Settings panel opens: the app it is for (by its site id), the side of the switch, and the category.
 type PanelOpening = { app: AppId | null; scope: 'app' | 'all' | null; categoryId: string | null };
 const appIdOf = (app: AppName) => siteOfApp(app).id as AppId;
-// The API tokens, a category of the Settings panel (the timeline's token cards lead there). The tokens are
-// liveworkspace.app's session's, so from an app's address they are the panel there.
+// The API tokens, a category of the Settings panel (the timeline's token cards lead there), opened in place on
+// either address.
 const TOKENS_SETTINGS = `/explorer?${SETTINGS_PARAM}=tokens`;
 
 // The Explorer's own addresses move inside the page; anything else (an item in its app, which on an app's address is
@@ -573,7 +573,7 @@ export function ExplorerShell() {
           shareUrl={shareUrl}
           share={share}
           teamsHost={teamsHost}
-          tokensUrl={host ? workspaceHref(TOKENS_SETTINGS) : TOKENS_SETTINGS}
+          tokensUrl={TOKENS_SETTINGS}
           filter={shownFilter}
           onFilterChange={setFilter}
           header={header}

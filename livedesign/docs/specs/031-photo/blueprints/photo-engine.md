@@ -98,7 +98,7 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
     `PhotoCanvasOverlays.tsx` and `PhotoToolOverlay.tsx` (presses, the cursor, marching ants, boxes),
     `PhotoToolsRail.tsx` (the photo tools: `placement="strip"` in the palette strip, `"row"` on a phone), `PhotoColours.tsx`, `PhotoToolOptionsBody.tsx` (with `PhotoPhoneOptions.tsx` and `PhotoTransformOptions.tsx`), `PhotoBrushPresets.tsx`,
     `PhotoGradientField.tsx`, `PhotoTitleBar.tsx`, `PhotoPanel.tsx` with `PhotoPanelParts.tsx`,
-    `PhotoLayersTab.tsx`, `PhotoLayerRow.tsx` (rows restack by the shared `useRowPointerDrag` the canvas's `useLayerRowDrag` also runs on), `PhotoBlendPicker.tsx`, `PhotoAdjustTab.tsx`,
+    `PhotoLayersTab.tsx`, `PhotoLayerRow.tsx` (rows restack by the shared `useRowPointerDrag`), `PhotoBlendPicker.tsx`, `PhotoAdjustTab.tsx`,
     `AdjustmentEditor.tsx`, `CurvesEditor.tsx`, `PhotoEffectsEditor.tsx`, `PhotoTextEditor.tsx`, the dialogs
     (`PhotoDialogs.tsx`, `PhotoSizeDialogs.tsx`, `PhotoEditDialogs.tsx`, `PhotoApplyDialogs.tsx`,
     `SelectAndMaskDialog.tsx`, `PlacePictureDialog.tsx`, `FilterPreview.tsx`, `MakeSizesDialog.tsx`), `PhotoExportPanel.tsx`,

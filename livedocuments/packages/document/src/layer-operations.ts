@@ -16,7 +16,7 @@ import {
 // queries and its operations. The queries answer "what is on this layer, and
 // can I see it?" and are read on every render by the canvas and the SVG
 // renderer; these are the writes, reached only from the
-// Layers panel and the editor's commands. Two audiences, two files.
+// editor's commands (there is no Layers panel). Two audiences, two files.
 //
 // The no-op contract is the reason these are worth reading together: an
 // operation that changes nothing returns the SAME Tab reference, so a caller

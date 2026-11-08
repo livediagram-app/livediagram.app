@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useRowAppMarks, useRowMarksInset } from './app-marks';
 import { InfoGlyph } from './glyphs';
 import { useSettingsUiKit } from './kit';
 import type { SettingsRowBase } from './model';
@@ -47,7 +48,7 @@ export function SettingsRowShell({
   // row kind satisfies it.
   row: Pick<
     SettingsRowBase,
-    'key' | 'label' | 'description' | 'helpArticle' | 'alsoIn' | 'illustration' | 'allApps'
+    'key' | 'label' | 'description' | 'helpArticle' | 'alsoIn' | 'illustration' | 'allApps' | 'link'
   >;
   control?: ReactNode;
   // Before the label: an avatar, a provider's mark.
@@ -66,7 +67,13 @@ export function SettingsRowShell({
 }) {
   const { HelpLink, Illustration } = useSettingsUiKit();
   const inGroup = useInSettingsGroup();
-  const allApps = row.allApps === true;
+  // The apps the setting applies to, as their logos left of the name, where the panel lists more than one app. They
+  // say what "All apps" says, so the words are left out beside them.
+  const marks = useRowAppMarks(row.key);
+  // What sits under the name lines up with it, not with the marks.
+  const inset = useRowMarksInset(row.key);
+  const under = inset > 0 ? { paddingLeft: inset } : undefined;
+  const allApps = row.allApps === true && !marks;
   const help = row.helpArticle && HelpLink ? row.helpArticle : undefined;
   const described = Boolean(descriptionContent ?? row.description) || !!help || allApps;
 
@@ -78,51 +85,81 @@ export function SettingsRowShell({
       }`}
     >
       <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 ${dimmed ? 'opacity-50' : ''}`}>
-        {leading}
-        <div className="min-w-[9rem] flex-1">
-          <div
-            id={`${row.key}-label`}
-            className="text-sm font-medium text-slate-800 dark:text-slate-100"
-          >
-            {row.label}
-          </div>
-          {described ? (
-            <p
-              id={`${row.key}-description`}
-              className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400"
+        {/* The marks, any leading mark and the name stay together on one line, so the marks are always the first
+            thing in the row and a wrapping control drops below the name, never between them. */}
+        <div className="flex flex-1 items-center gap-x-3">
+          {marks}
+          {leading ? <div className="mr-1 flex shrink-0 items-center">{leading}</div> : null}
+          <div className="min-w-[9rem] flex-1">
+            <div
+              id={`${row.key}-label`}
+              className="text-sm font-medium text-slate-800 dark:text-slate-100"
             >
-              {descriptionContent ?? row.description}
-              {help && HelpLink ? (
-                // Above a switch row's stretched click target, so the link stays its own click.
-                <span className="relative z-[1]">
-                  {' '}
-                  <HelpLink article={help} />
-                </span>
-              ) : null}
-              {/* Where the same setting also has an in-context control, so the two read as one
+              {row.label}
+            </div>
+            {described ? (
+              <p
+                id={`${row.key}-description`}
+                className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400"
+              >
+                {descriptionContent ?? row.description}
+                {help && HelpLink ? (
+                  // Above a switch row's stretched click target, so the link stays its own click.
+                  <span className="relative z-[1]">
+                    {' '}
+                    <HelpLink article={help} />
+                  </span>
+                ) : null}
+                {row.link ? (
+                  // Above a switch row's stretched click target, so the link stays its own click.
+                  <span className="relative z-[1]">
+                    {' '}
+                    <a
+                      href={row.link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative touch-target inline-flex items-center gap-1 font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-400"
+                    >
+                      {row.link.label}
+                      <svg
+                        viewBox="0 0 20 20"
+                        className="size-3"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.75}
+                        aria-hidden
+                      >
+                        <path d="M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3M12 4h4v4M16 4l-7 7" />
+                      </svg>
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  </span>
+                ) : null}
+                {/* Where the same setting also has an in-context control, so the two read as one
                   setting with two doors rather than rival controls. */}
-              {row.alsoIn ? (
-                <span className="mt-0.5 block text-slate-500 dark:text-slate-400">
-                  Also in {row.alsoIn}.
-                </span>
-              ) : null}
-              {/* A setting every liveworkspace app shares: changing it here changes it there, so
+                {row.alsoIn ? (
+                  <span className="mt-0.5 block text-slate-500 dark:text-slate-400">
+                    Also in {row.alsoIn}.
+                  </span>
+                ) : null}
+                {/* A setting every liveworkspace app shares: changing it here changes it there, so
                   it says so, quietly. */}
-              {allApps ? (
-                <span
-                  data-settings-all-apps
-                  className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400"
-                >
-                  All apps
-                </span>
-              ) : null}
-            </p>
-          ) : null}
+                {allApps ? (
+                  <span
+                    data-settings-all-apps
+                    className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400"
+                  >
+                    All apps
+                  </span>
+                ) : null}
+              </p>
+            ) : null}
+          </div>
         </div>
         {control ? <div className="ml-auto flex shrink-0 items-center gap-2">{control}</div> : null}
       </div>
       {row.illustration && Illustration ? (
-        <div className={`relative z-[1] ${dimmed ? 'opacity-50' : ''}`}>
+        <div className={`relative z-[1] ${dimmed ? 'opacity-50' : ''}`} style={under}>
           <Illustration
             id={row.illustration}
             active={illustrationActive}
@@ -133,10 +170,11 @@ export function SettingsRowShell({
           />
         </div>
       ) : null}
-      {children}
+      {children && under ? <div style={under}>{children}</div> : children}
       {notice ? (
         <p
           role="note"
+          style={under}
           className="flex items-start gap-1.5 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300"
         >
           <InfoGlyph />
@@ -149,6 +187,6 @@ export function SettingsRowShell({
   return inGroup ? cell : <div className={SETTINGS_CARD}>{cell}</div>;
 }
 
-// The quiet bordered button a row's action uses (Change, Open Trash, Turn Off).
+// The quiet bordered button a row's action uses (Change, Turn Off).
 export const SETTINGS_ROW_BUTTON =
   'shrink-0 cursor-pointer rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60';

@@ -324,7 +324,7 @@ export const INDEX_ERRORS = [
   'invalid_form',
   'invalid_form_seen',
   'invalid_events',
-  // Webhooks (webhooks.md): a malformed body, an address refused, a scope full, no key set, a caller who isn't an
+  // Webhooks (webhooks.md): a malformed body, an address refused, a document full, no key set, a caller who isn't an
   // account, card moves malformed.
   'invalid_webhook',
   'webhook_url_invalid',
@@ -334,6 +334,8 @@ export const INDEX_ERRORS = [
   'webhook_paused',
   'webhooks_unavailable',
   'webhooks_need_account',
+  // Webhooks are a document's editors' (webhooks.md "Who adds one"): a Viewer, a Participant or a one-tab Editor.
+  'webhooks_need_editor',
   'not_team_admin',
   // The team audit log's read (team-audit-log.md): accounts can't say who runs the team.
   'team_audit_unavailable',
@@ -394,8 +396,14 @@ export const RETIRED_PLACEMENT_KEYS: Partial<Record<App, readonly string[]>> = {
 const NO_KEYS: readonly string[] = [];
 const retiredKeysOf = (app: App): readonly string[] => RETIRED_PLACEMENT_KEYS[app] ?? NO_KEYS;
 
+/** Apps that file every new item by the mode it opens in alone (liveworkspace/docs/specs/004-index/
+ *  one-explorer-contracts.md "Mode-only apps"): a create tries its mode's key and nothing else, and Default Folders
+ *  lists only the app's modes. livediagram: Diagrams, Drawings, Workshops. */
+export const MODE_ONLY_PLACEMENT_APPS: readonly App[] = ['livediagram'];
+export const filesByModeOnly = (app: App): boolean => MODE_ONLY_PLACEMENT_APPS.includes(app);
+
 /** The keys a create of this app with this creation intent tries, most specific first: kind, template, mode, app,
- *  then the app's retired keys. */
+ *  then the app's retired keys. A mode-only app's create tries its mode's key alone. */
 export function placementDefaultKeysFor(app: App, intent: string | null | undefined): string[] {
   const parts = intent ? intent.split(':') : [];
   const [mode, kind, family] =
@@ -407,6 +415,10 @@ export function placementDefaultKeysFor(app: App, intent: string | null | undefi
     const key = placementDimensionKey(app, dimension, value);
     if (!retired.includes(key)) keys.push(key);
   };
+  if (filesByModeOnly(app)) {
+    add('mode', mode);
+    return keys;
+  }
   add('kind', kind);
   add('template', family);
   add('mode', mode);

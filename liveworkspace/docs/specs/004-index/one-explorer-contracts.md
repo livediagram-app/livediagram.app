@@ -243,9 +243,8 @@ Their rows in the team audit log ([team-audit-log.md](team-audit-log.md)) are an
 acted, the actor is `deleted` with no name; where a team event is about them, its person is `deleted` and their name
 leaves its detail. A team that closed with the account loses its log.
 
-Their webhooks ([webhooks.md](webhooks.md)) go too: those for their own items, and those of a team that closed with
-the account, are deleted; those of a team that outlives them are paused, their creator `deleted`, for another admin
-to resume.
+The webhooks they added ([webhooks.md](webhooks.md)) are paused, their creator `deleted`, for anyone who can edit
+the document to delete or resume; those on their own documents go with the documents when those are deleted.
 
 Their Google Drive mirror's flag (`drive_mirrored`, below) goes too; accounts tells the mirror's service itself.
 
@@ -280,6 +279,12 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
   Default Folders lists the app's entry, the app's modes and kinds (`defaultFolderOptions`), then its template
   families. An explicit
   `folderId: null` is the root chosen on purpose and wins over any default.
+- **Mode-only apps** (`MODE_ONLY_PLACEMENT_APPS`, today livediagram): an app that files every new item by the mode
+  it opens in alone. Its create tries its mode's key and nothing else (no kind, template or app key, no retired
+  keys), and the Explorer lists only the app's mode options (`defaultFolderOptions`), with no app entry and no
+  template families, whatever template families the host gives its filters. The intent is still recorded whole.
+  livediagram's older app, kind and template keys were carried over and deleted by migration
+  `0013_livediagram_mode_defaults.sql`; one written since by an older client is never read.
 - **Retired default keys** (`RETIRED_PLACEMENT_KEYS`): a key an app no longer offers an entry for (livehuddle's
   `livehuddle:mode:workshop`, which repeated its app entry, and `livehuddle:template:retrospective`, whose templates
   left) is never dropped. It reads as the app's own key: a create tries it after the app's key, in the list's order,
@@ -423,8 +428,7 @@ actions: [{elementId, actionId, elementLabel, name, description?, status, assign
 assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push makes the Timeline's
   collaboration events (below); the optional ids say who wrote, resolved or closed. The comment text itself stays in the content, beside what it is about; the index
   keeps what the Inbox needs: the latest comment's opening, the action's note, and the names on it. Shown text
-  is cut to length rather than refused. A thread that gains comments and newly names an account in `mentionedIds`
-  also queues a webhook `mention` for that person's or their team's webhooks ([webhooks.md](webhooks.md)).
+  is cut to length rather than refused.
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
   action whose `elementId` is the card's id, and each of a card's comment threads a thread whose `elementId` is the
   thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, type,
@@ -443,7 +447,7 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
   first `seen` responses (a count only grows). Opening the form marks every response so far seen; publishing
   marks them seen for the publisher. `code` is the live link's public code, sent when the link is published
   (before anyone is given it); a push without one keeps the code held, and `null` drops it with the row. A push
-  that raises the held count queues a webhook `form_response` for the item's scope ([webhooks.md](webhooks.md)).
+  that raises the held count queues a webhook `form_response` for the item's own webhooks ([webhooks.md](webhooks.md)).
 - `GET /app/forms/:code`: `{itemId, tabId}`: the item and tab a live form's code names, for the app that pushed
   it (404 otherwise), so the app's Worker routes a public form request to its item without a table of its own
   (`@liveworkspace/index-app` `createFormPlaces` caches the answer a minute). `GET
@@ -458,8 +462,8 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
 - `PUT /app/people/events`: `{events: [{type: 'image_uploaded', actorId, at, count?}]}`, up to 100, from the
   app's server when a person uploads images (not a deduped re-upload): each adds `count` (default 1) to that
   person's one `image_uploaded` event for the app and UTC day, seen by them alone.
-- `PUT /app/items/:id/card-moves`: `{moves: [{cardId, cardKey, card, from, to, actorName?, at}]}`, up to 100: a
-  plan's cards that changed status (liveplanner), for its scope's webhooks only (`card_moved`,
+- `PUT /app/items/:id/card-moves`: `{moves: [{cardId, cardKey, card, from, to, actorId?, actorName?, at}]}`, up to
+  100: a plan's cards that changed status (liveplanner), for the plan's own webhooks only (`card_moved`,
   [webhooks.md](webhooks.md)); nothing goes on the Timeline. Each is one delivery per webhook however often it is
   sent (its id is made from the item, card and time). 204; 400 `invalid_moves`.
 
@@ -586,9 +590,9 @@ by link are not on it.
   it out again at once; a daily pass (at most 2,000 items, the soonest first) catches links the week has since
   reached, and leaves one the owner removed from their Timeline removed.
 - Apps report `edited` and `image_uploaded` (above).
-- Each event the index records about an item (`created`, `renamed`, `moved`, `trashed`, `shared`, `commented`,
-  `action_assigned`, `action_done`) is also handed, in the same batch, to the webhooks of the item's scope that
-  listen for it ([webhooks.md](webhooks.md)).
+- Each event the index records about an item (`renamed`, `moved`, `trashed`, `shared`, `commented`,
+  `action_assigned`, `action_done`) is also handed, in the same batch, to that item's own webhooks that listen for
+  it ([webhooks.md](webhooks.md)).
 - liveworkspace accounts reports its teams' and API tokens' events, `POST /internal/timeline {events}` with
   its key (up to 100, each `{id, type, actorId, actorName?, title, detail?, at, scopes}`): `team_invite_sent`,
   `team_joined`, `team_declined`, `team_role_changed`, `team_member_removed` (`left` when they left),

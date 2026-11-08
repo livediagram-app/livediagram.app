@@ -10,6 +10,7 @@ import { DefaultFoldersSettings } from './DefaultFolders';
 import {
   defaultEntries,
   defaultFolderDescription,
+  destinationOf,
   folderDeleteConfirmation,
   joinNouns,
 } from './entries';
@@ -65,25 +66,48 @@ describe('the entries', () => {
   });
 
   it('put the host’s modes and kinds between the app’s entry and its templates', () => {
-    const entries = defaultEntries('livediagram', kindWords('livediagram'), TEMPLATES, [
-      { dimension: 'mode', value: 'draw', label: 'Whiteboards', noun: 'whiteboards' },
-      {
-        dimension: 'kind',
-        value: 'event-storming',
-        label: 'Event Storming boards',
-        noun: 'Event Storming boards',
-      },
+    const entries = defaultEntries('livedesign', kindWords('livedesign'), TEMPLATES, [
+      { dimension: 'mode', value: 'pages', label: 'Page designs', noun: 'page designs' },
+      { dimension: 'kind', value: 'board', label: 'Boards', noun: 'boards' },
     ]);
     expect(entries.map((e) => e.key)).toEqual([
-      'livediagram',
-      'livediagram:mode:draw',
-      'livediagram:kind:event-storming',
-      'livediagram:template:retrospective',
-      'livediagram:template:kanban',
+      'livedesign',
+      'livedesign:mode:pages',
+      'livedesign:kind:board',
+      'livedesign:template:retrospective',
+      'livedesign:template:kanban',
     ]);
     expect(defaultFolderDescription(entries.slice(1, 3))).toBe(
-      'Default folder for new whiteboards and Event Storming boards',
+      'Default folder for new page designs and boards',
     );
+  });
+
+  // A mode-only app (index-client MODE_ONLY_PLACEMENT_APPS): its modes alone, whatever templates the host gives.
+  it('list only a mode-only app’s modes: no app entry, no template families', () => {
+    const entries = defaultEntries('livediagram', kindWords('livediagram'), TEMPLATES, [
+      { dimension: 'mode', value: 'diagram', label: 'Diagrams', noun: 'diagrams' },
+      { dimension: 'mode', value: 'draw', label: 'Drawings', noun: 'drawings' },
+      { dimension: 'mode', value: 'workshop', label: 'Workshops', noun: 'workshops' },
+    ]);
+    expect(entries.map((e) => e.label)).toEqual(['Diagrams', 'Drawings', 'Workshops']);
+    expect(entries.map((e) => e.key)).toEqual([
+      'livediagram:mode:diagram',
+      'livediagram:mode:draw',
+      'livediagram:mode:workshop',
+    ]);
+    expect(defaultFolderDescription(entries.slice(0, 2))).toBe(
+      'Default folder for new diagrams and drawings',
+    );
+    // A default whose folder is out of reach has no app entry to fall back to.
+    expect(
+      destinationOf(
+        entries[1]!,
+        entries,
+        new Map([[entries[1]!.key, 'gone']]),
+        new Map(),
+        () => null,
+      ),
+    ).toEqual({ kind: 'unreachable', fallback: null });
   });
 
   it('name where a deleted folder’s contents go, and warn about a default', () => {

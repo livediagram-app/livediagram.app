@@ -6,7 +6,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { roomAlarmAt } from '@liveworkspace/api-kit/room-alarm';
 import type { Env } from '../env';
-import { accountsAdminTeams } from '../accounts-access';
+import { accountsPersonTeams } from '../accounts-access';
 import { dohResolve } from './address';
 import { dispatch, type DispatchDeps } from './dispatch';
 
@@ -19,7 +19,7 @@ export class WebhookDispatcher extends DurableObject<Env> {
     now: () => Date.now(),
     fetch: (input, init) => fetch(input, init),
     resolve: dohResolve,
-    adminTeams: accountsAdminTeams(this.env),
+    personTeams: accountsPersonTeams(this.env),
   };
 
   /** Something was queued: run the alarm now unless it is about to run anyway. */

@@ -6,7 +6,7 @@
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { signInHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
-import { BUTTON } from '../settings/account-ui';
+import { ACCOUNT_BUTTON as BUTTON } from '@liveworkspace/settings-ui';
 import { JoinShell } from '../teams/JoinPage';
 
 export { JoinShell as DriveShell };
@@ -49,7 +49,9 @@ export function DriveMessage({
       </h1>
       <p className="mx-auto mt-3 max-w-sm text-slate-600 dark:text-slate-400">{body}</p>
       {children ? (
-        <div className="mt-8 flex flex-col justify-center gap-2 sm:flex-row-reverse">{children}</div>
+        <div className="mt-8 flex flex-col justify-center gap-2 sm:flex-row-reverse">
+          {children}
+        </div>
       ) : null}
     </div>
   );

@@ -315,21 +315,25 @@ export function createIndexClient({
     dismissTimelineEvents: (ids: readonly string[]) =>
       call<void>('/timeline/dismiss', { method: 'POST', body: { ids } }),
 
-    // Webhooks (webhooks.md): the person's own and those of the teams they run.
-    listWebhooks: () => call<{ webhooks: Webhook[] }>('/webhooks'),
+    // Webhooks (webhooks.md): one document's, for someone who can edit all of it. `share`: the link the person
+    // reaches it through, when it is not one they opened before (the index also finds those under Shared).
+    listWebhooks: (itemId: string, share?: ShareAccess | null) =>
+      call<{ webhooks: Webhook[] }>(`/items/${enc(itemId)}/webhooks`, { share }),
     // `secret` only for a `json` webhook, and only now.
-    createWebhook: (input: CreateWebhookInput) =>
-      call<{ webhook: Webhook; secret: string | null }>('/webhooks', {
+    createWebhook: (itemId: string, input: CreateWebhookInput, share?: ShareAccess | null) =>
+      call<{ webhook: Webhook; secret: string | null }>(`/items/${enc(itemId)}/webhooks`, {
         method: 'POST',
         body: input,
+        share,
       }),
-    updateWebhook: (id: string, input: UpdateWebhookInput) =>
-      call<{ webhook: Webhook }>(`/webhooks/${enc(id)}`, { method: 'PATCH', body: input }),
-    deleteWebhook: (id: string) => call<void>(`/webhooks/${enc(id)}`, { method: 'DELETE' }),
-    testWebhook: (id: string) =>
-      call<{ queued: true }>(`/webhooks/${enc(id)}/test`, { method: 'POST' }),
-    webhookDeliveries: (id: string) =>
-      call<{ deliveries: WebhookDelivery[] }>(`/webhooks/${enc(id)}/deliveries`),
+    updateWebhook: (id: string, input: UpdateWebhookInput, share?: ShareAccess | null) =>
+      call<{ webhook: Webhook }>(`/webhooks/${enc(id)}`, { method: 'PATCH', body: input, share }),
+    deleteWebhook: (id: string, share?: ShareAccess | null) =>
+      call<void>(`/webhooks/${enc(id)}`, { method: 'DELETE', share }),
+    testWebhook: (id: string, share?: ShareAccess | null) =>
+      call<{ queued: true }>(`/webhooks/${enc(id)}/test`, { method: 'POST', share }),
+    webhookDeliveries: (id: string, share?: ShareAccess | null) =>
+      call<{ deliveries: WebhookDelivery[] }>(`/webhooks/${enc(id)}/deliveries`, { share }),
 
     // The team audit log (team-audit-log.md "Who reads it"): a team admin's alone, newest first, a page at a time,
     // or as a CSV file of up to TEAM_AUDIT_CSV_MAX rows.

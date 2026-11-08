@@ -16,7 +16,7 @@ livedocuments's own code beside it.
   `CanvasThemeDialog`, and `settings/` rows).
 - `notes/`, `tags/`, `tour/`, `split/`, `placement/`, `rich-text/`: one feature each.
 - `palette/`: palette and context-menu tiles, rows and menu sections.
-- `panels/`: side and floating panels (the Explorer panel, Layers, the gallery).
+- `panels/`: side and floating panels (the Explorer panel, Collaborate, the gallery).
 - `primitives/`: local leaves not promoted to `@livedocuments/ui` or `@liveworkspace/ui`.
 - `providers/`: context providers (auth, the workbench session).
 - `start/`: the start panel and its template cards ([Start diagramming](../007-editor/start-diagramming.md)).

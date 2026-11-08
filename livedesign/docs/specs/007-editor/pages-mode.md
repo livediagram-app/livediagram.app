@@ -942,7 +942,7 @@ canvas's ink.
 
 Which home is the person's own, kept in their synced preferences (`contentsPlacement`,
 [User preferences](user-preferences.md)), so it follows them across devices and designs; Settings
-› Editor › Pages › **Contents** (Sidebar or Button) sets it too. The sidebar docks from the
+› Editor's Pages section › **Contents** (Sidebar or Button) sets it too. The sidebar docks from the
 tab's first page: it is where pages are added, named and reordered, so it is there from the start
 rather than appearing with a second page and shifting the canvas. A phone never has the sidebar, whatever the
 choice: there Contents is always the button, opening a bottom sheet. Zen mode hides
@@ -1197,8 +1197,8 @@ The Export dialog exports **pages**, not the tab's content bounds.
   resolved ends) that reaches onto the page is drawn; the rest are left out of the file.
 - A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
 - The Background pattern option is not offered: a page is its own background.
-- The Hidden layers option is not offered: Pages has no Layers, so a hidden layer's
-  elements stay out of the export as they stay off its canvas.
+- There is no Hidden layers option (retired with the Layers panel, [Layers](../006-design/layers.md) "Retired: the
+  Layers panel"): a hidden layer's elements stay out of the export as they stay off its canvas.
 - The preview is the download: a logo page's PNG and SVG preview show its see-through paper over a
   checkerboard, as the Logo Kit's preview does.
 
@@ -1282,8 +1282,9 @@ livedesign has no slides: a tab's pages are not a deck and are not presented
 
 - **Photo button**: while a photo page is in focus, a **Photo** button joins the same frame right after Contents and
   opens the Photo panel as a popover above it ([Photo pages](../031-photo/photo-pages.md) "The Photo panel").
-- **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not
-  layers); a tab's stored layers are left untouched.
+- **No Layers**: there is no Layers button or panel (a page is arranged by its pages, not layers; the panel was
+  removed on 8 November 2026, [Layers](../006-design/layers.md) "Retired: the Layers panel"); a tab's stored
+  layers are left untouched and keep shaping the canvas.
 
 ## Non-goals
 

@@ -6,6 +6,7 @@
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { GUEST_ID, USER_ID } from './ids.ts';
 import { trimInvisible, withoutBidiControls } from '@liveworkspace/api-kit/typed-text';
+import { parseTimeZone } from './send-window.ts';
 
 // The most ids one read may name: a presence list's worth, in one query.
 export const MAX_PROFILE_IDS = 100;
@@ -43,6 +44,9 @@ export interface ProfilePatch {
   color?: string | null;
   // Show My Google Picture: whether others see the account's picture.
   showPicture?: boolean;
+  // The account's time zone for the send window (accounts.md "The send window"): a zone sets it by hand; null is
+  // Automatic again, the browser's zone noted from then on. Only the person's own doors take it.
+  timeZone?: string | null;
 }
 
 // The person's own profile, as their own Settings reads it: beside what others see, their own picture whatever the
@@ -50,6 +54,10 @@ export interface ProfilePatch {
 export interface OwnProfile extends Profile {
   googlePicture: string | null;
   showPicture: boolean;
+  // The zone the send window times them by (null: none seen yet, so the default), and whether it follows their
+  // browser (true) or was picked by hand (false). A guest has neither: null and true.
+  timeZone: string | null;
+  timeZoneAuto: boolean;
 }
 
 export type ProfileResult<T> =
@@ -64,9 +72,11 @@ export function isProfileOwner(value: unknown): value is string {
   return typeof value === 'string' && (USER_ID.test(value) || GUEST_ID.test(value));
 }
 
-// A patch, checked and cleaned: a name trimmed (empty clears it), a colour that is safe to paint.
+// A patch, checked and cleaned: a name trimmed (empty clears it), a colour that is safe to paint, and, where the
+// caller allows it (the person's own doors, never an app's write for a guest), a zone the runtime knows.
 export function checkProfilePatch(
   body: Record<string, unknown>,
+  { timeZone: allowZone = false }: { timeZone?: boolean } = {},
 ): { ok: true; patch: ProfilePatch } | { ok: false; error: string } {
   const patch: ProfilePatch = {};
   if (body.name !== undefined) {
@@ -93,7 +103,17 @@ export function checkProfilePatch(
     if (typeof body.showPicture !== 'boolean') return { ok: false, error: 'invalid_show_picture' };
     patch.showPicture = body.showPicture;
   }
-  if (patch.name === undefined && patch.color === undefined && patch.showPicture === undefined) {
+  if (allowZone && body.timeZone !== undefined) {
+    const zone = body.timeZone === null ? null : parseTimeZone(body.timeZone);
+    if (body.timeZone !== null && zone === null) return { ok: false, error: 'invalid_time_zone' };
+    patch.timeZone = zone;
+  }
+  if (
+    patch.name === undefined &&
+    patch.color === undefined &&
+    patch.showPicture === undefined &&
+    patch.timeZone === undefined
+  ) {
     return { ok: false, error: 'nothing_to_change' };
   }
   return { ok: true, patch };
@@ -108,6 +128,9 @@ type Row = {
   show_picture: number | null;
   created_at: number | null;
   updated_at: number | null;
+  // The account's zone and its hand-picked mark ("user".timeZone, .timeZoneChosen): the own profile's only.
+  time_zone: string | null;
+  time_zone_chosen: number | null;
 };
 
 const showsPicture = (row: Row) => row.show_picture !== 0;
@@ -125,6 +148,8 @@ const toOwnProfile = (row: Row): OwnProfile => ({
   ...toProfile(row),
   googlePicture: profilePictureOf(row.image),
   showPicture: showsPicture(row),
+  timeZone: row.time_zone,
+  timeZoneAuto: row.time_zone_chosen !== 1,
 });
 
 // Every named owner that has a profile or is an account, in one query: the ids ride in as one JSON
@@ -135,7 +160,8 @@ function readStatement(db: D1Database, ids: string[]): D1PreparedStatement {
     .prepare(
       `SELECT j.value AS id, COALESCE(p.name, NULLIF(u.name, '')) AS name, p.color AS color,
               u.image AS image, p.show_picture AS show_picture,
-              p.created_at AS created_at, p.updated_at AS updated_at
+              p.created_at AS created_at, p.updated_at AS updated_at,
+              u.timeZone AS time_zone, u.timeZoneChosen AS time_zone_chosen
        FROM json_each(?) j
        LEFT JOIN profile p ON p.owner_id = j.value
        LEFT JOIN "user" u ON u.id = j.value
@@ -151,11 +177,33 @@ export async function readProfiles(db: D1Database, ids: string[]): Promise<Profi
   return results.map(toProfile);
 }
 
-// The person's own profile: what others see, their own picture and the switch. Null for an id that is neither an
-// account nor a guest with a profile.
-export async function readOwnProfile(db: D1Database, owner: string): Promise<OwnProfile | null> {
-  const row = await readStatement(db, [owner]).first<Row>();
+// The person's own profile: what others see, their own picture and the switch, and their time zone. Null for an id
+// that is neither an account nor a guest with a profile. `notedZone`, the browser's zone the Settings panel sent
+// (already checked by parseTimeZone), is kept first in the same batch, as a session sighting is (noteZone).
+export async function readOwnProfile(
+  db: D1Database,
+  owner: string,
+  notedZone: string | null = null,
+): Promise<OwnProfile | null> {
+  if (!notedZone) {
+    const row = await readStatement(db, [owner]).first<Row>();
+    return row ? toOwnProfile(row) : null;
+  }
+  const [, read] = await db.batch<Row>([
+    noteZone(db, owner, notedZone),
+    readStatement(db, [owner]),
+  ]);
+  const row = read?.results[0];
   return row ? toOwnProfile(row) : null;
+}
+
+// A sighting of the browser's zone: written only when it changed, and never over a zone picked by hand.
+function noteZone(db: D1Database, owner: string, zone: string): D1PreparedStatement {
+  return db
+    .prepare(
+      'UPDATE "user" SET timeZone = ?2 WHERE id = ?1 AND timeZone IS NOT ?2 AND timeZoneChosen IS NULL',
+    )
+    .bind(owner, zone);
 }
 
 // One owner's presence colour, or null for none (Automatic): one primary-key read, for the account
@@ -194,7 +242,7 @@ export async function storeAccountPicture(
 // liveworkspace.app's header paints its avatar in it without a request of its own. Any other answer
 // (signed out, an error) is passed on as it was. `timeZone`, the browser's zone the page sent (already checked by
 // parseTimeZone), is kept on the account for the send window (accounts.md "The send window") in the same round
-// trip, written only when it changed.
+// trip, written only when it changed and never over a zone picked by hand.
 export async function withSessionColour(
   response: Response,
   db: D1Database,
@@ -230,47 +278,73 @@ async function readColourNotingZone(
 ): Promise<string | null> {
   const [read] = await db.batch<{ color: string | null }>([
     db.prepare('SELECT color FROM profile WHERE owner_id = ?').bind(owner),
-    db
-      .prepare('UPDATE "user" SET timeZone = ?2 WHERE id = ?1 AND timeZone IS NOT ?2')
-      .bind(owner, timeZone),
+    noteZone(db, owner, timeZone),
   ]);
   return read?.results?.[0]?.color ?? null;
 }
 
 // Sets the fields the patch names and leaves the rest, in one upsert, then answers the profile as it
 // now is (one batch, one round trip). An account id with no account behind it is refused, so a
-// closed account can't be written back.
+// closed account can't be written back. A time zone goes on the account's own row: a zone picked by hand is marked
+// so no sighting overwrites it; Automatic (null) clears the mark and keeps `notedZone`, the browser's zone this
+// request carried, at once (with none, the next sighting writes it). A patch of the zone alone makes no profile row.
 export async function writeProfile(
   db: D1Database,
   owner: string,
   patch: ProfilePatch,
   now = Date.now(),
+  notedZone: string | null = null,
 ): Promise<ProfileResult<OwnProfile>> {
-  const [, read] = await db.batch<Row>([
-    db
-      .prepare(
-        `INSERT INTO profile (owner_id, name, color, show_picture, created_at, updated_at)
-         SELECT ?1, ?2, ?3, ?7, ?4, ?4
-         WHERE substr(?1, 1, 6) = 'guest_' OR EXISTS (SELECT 1 FROM "user" WHERE id = ?1)
-         ON CONFLICT (owner_id) DO UPDATE SET
-           name = CASE WHEN ?5 THEN excluded.name ELSE profile.name END,
-           color = CASE WHEN ?6 THEN excluded.color ELSE profile.color END,
-           show_picture = CASE WHEN ?7 IS NOT NULL THEN excluded.show_picture ELSE profile.show_picture END,
-           updated_at = excluded.updated_at`,
-      )
-      .bind(
-        owner,
-        patch.name ?? null,
-        patch.color ?? null,
-        now,
-        patch.name !== undefined ? 1 : 0,
-        patch.color !== undefined ? 1 : 0,
-        patch.showPicture === undefined ? null : patch.showPicture ? 1 : 0,
-      ),
-    readStatement(db, [owner]),
-  ]);
-  const row = read?.results[0];
+  const statements: D1PreparedStatement[] = [];
+  if (patch.name !== undefined || patch.color !== undefined || patch.showPicture !== undefined) {
+    statements.push(upsertStatement(db, owner, patch, now));
+  }
+  if (patch.timeZone !== undefined) {
+    statements.push(
+      patch.timeZone === null
+        ? db
+            .prepare(
+              'UPDATE "user" SET timeZoneChosen = NULL, timeZone = COALESCE(?2, timeZone) WHERE id = ?1',
+            )
+            .bind(owner, notedZone)
+        : db
+            .prepare('UPDATE "user" SET timeZone = ?2, timeZoneChosen = 1 WHERE id = ?1')
+            .bind(owner, patch.timeZone),
+    );
+  }
+  statements.push(readStatement(db, [owner]));
+  const results = await db.batch<Row>(statements);
+  const row = results[results.length - 1]?.results[0];
   return row ? { ok: true, value: toOwnProfile(row) } : fail(404, 'unknown_owner');
+}
+
+// The upsert of the fields a patch names, gated so a closed account's id makes no row.
+function upsertStatement(
+  db: D1Database,
+  owner: string,
+  patch: ProfilePatch,
+  now: number,
+): D1PreparedStatement {
+  return db
+    .prepare(
+      `INSERT INTO profile (owner_id, name, color, show_picture, created_at, updated_at)
+       SELECT ?1, ?2, ?3, ?7, ?4, ?4
+       WHERE substr(?1, 1, 6) = 'guest_' OR EXISTS (SELECT 1 FROM "user" WHERE id = ?1)
+       ON CONFLICT (owner_id) DO UPDATE SET
+         name = CASE WHEN ?5 THEN excluded.name ELSE profile.name END,
+         color = CASE WHEN ?6 THEN excluded.color ELSE profile.color END,
+         show_picture = CASE WHEN ?7 IS NOT NULL THEN excluded.show_picture ELSE profile.show_picture END,
+         updated_at = excluded.updated_at`,
+    )
+    .bind(
+      owner,
+      patch.name ?? null,
+      patch.color ?? null,
+      now,
+      patch.name !== undefined ? 1 : 0,
+      patch.color !== undefined ? 1 : 0,
+      patch.showPicture === undefined ? null : patch.showPicture ? 1 : 0,
+    );
 }
 
 // Closing an account takes its profile with it.

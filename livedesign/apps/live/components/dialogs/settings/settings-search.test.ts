@@ -35,18 +35,17 @@ describe('settings search', () => {
   });
 
   it('finds a setting by its category or section name', () => {
-    // "layers" appears in no layer row's own label.
-    const layerKeys = keysFor('layers');
-    expect(layerKeys).toContain('layersShowPreview');
-    expect(layerKeys).toContain('layersShowCount');
-    expect(layerKeys).toContain('layerHoverPreview');
+    // "panels" appears in no Map row's own words: the category name finds them.
+    const panelKeys = keysFor('panels');
+    expect(panelKeys).toContain('mapDimOutside');
+    expect(panelKeys).toContain('mapSize');
   });
 
   it('narrows on a second term rather than widening', () => {
-    const one = keysFor('preview');
-    const two = keysFor('preview hover');
+    const one = keysFor('minimap');
+    const two = keysFor('minimap dim');
     expect(two.length).toBeLessThan(one.length);
-    expect(two).toContain('layerHoverPreview');
+    expect(two).toContain('mapDimOutside');
   });
 
   it('is case-insensitive', () => {

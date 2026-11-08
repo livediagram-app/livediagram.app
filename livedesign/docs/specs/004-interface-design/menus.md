@@ -82,7 +82,7 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 ## Control menus
 
 - The menu is a non-modal `role="dialog"` with a name ("Element menu", "Selection menu", "Cell
-  menu", "Tab menu", "Canvas menu", "<layer> layer menu",
+  menu", "Tab menu", "Canvas menu",
   "Live image"). Its trigger says so: `aria-haspopup="dialog"` (the tab's ⋯, the selection
   toolbar's More actions, an element's settings ⋯).
 - Its controls keep their own roles: buttons, toggle buttons (`aria-pressed`), sliders, fields,
@@ -146,7 +146,7 @@ element or add one:
   that describes a gesture rather than naming a command ("Pan canvas (overrides current tool)")
   keeps sentence case.
 
-Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the
+Captions inside a section ("Picks from"), hints, a tooltip that is not the
 control's only name (the page lock), descriptions, aria-labels written only
 for a screen reader, and the Explorer's folder actions are not item labels and keep sentence
 case. An element's own name in prose ("a Code block") stays sentence case too. A help article
@@ -184,7 +184,6 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Selection menu        | The same on a multi-selection                                            | Accordions, tiles, sliders, colour rows, flyouts         |
 | Cell menu             | Right-click on a table cell                                              | Text toggles, colour rows, tiles                         |
 | Tab menu, Canvas menu | ⋯ on the active tab; right-click on the canvas; the footer canvas button | Tool buttons, accordions, canvas sections                |
-| Layer menu            | ⋯ on a layer row                                                         | Tool buttons, an opacity slider, accordion tiles         |
 | Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                  |
 | Settings cog          | The cog on a chart or a page                                             | Collapsible sections of fields, tiles and pictures       |
 

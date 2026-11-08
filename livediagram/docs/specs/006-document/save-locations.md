@@ -40,7 +40,7 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
   Only a known account saves on livediagram; a session that
   still hasn't answered after the wait keeps the document in This Browser, where nothing is lost.
 - There is no per-person override: no setting chooses the store. Where a document is **filed** on livediagram is the
-  person's to set, in Settings > Documents > Default Folders ([Default folders](../013-workspace/default-folders.md)).
+  person's to set, in Settings > Explorer > Default Folders ([Default folders](../013-workspace/default-folders.md)).
   The retired `skipLocationStep` preference is not read ([User preferences](../007-editor/user-preferences.md)).
 
 ## On the start screen

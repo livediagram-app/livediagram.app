@@ -41,6 +41,7 @@ describe('an app’s catalogue in the panel', () => {
           {
             id: 'editor',
             label: 'Editor',
+            aliases: ['pages'],
             tile: 'editor',
             sectionNotes: { One: 'A note.' },
             rows: [
@@ -84,7 +85,11 @@ describe('an app’s catalogue in the panel', () => {
       { all: {}, app: { panel: true, size: 'l' } },
       change,
     );
-    expect(editor).toMatchObject({ id: 'editor', sectionNotes: { One: { note: 'A note.' } } });
+    expect(editor).toMatchObject({
+      id: 'editor',
+      aliases: ['pages'],
+      sectionNotes: { One: { note: 'A note.' } },
+    });
     expect(editor!.icon).toBeTruthy();
     expect(draw).toMatchObject({ id: 'draw', label: 'Draw', parent: 'editor' });
     const [panel, child] = editor!.rows as SettingsToggleRow[];

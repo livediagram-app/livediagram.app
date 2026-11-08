@@ -1,4 +1,5 @@
-import { DATA_EXPORT_CATEGORY, WEBHOOKS_CATEGORY } from '@liveworkspace/settings/account';
+import { DATA_EXPORT_CATEGORY } from '@liveworkspace/settings/account';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import {
   HIDE_CURSORS_HINT,
@@ -134,6 +135,8 @@ type RowBase = {
   // Rendered as a quiet "also in …" note so Settings listing everything
   // doesn't imply the panel gear has gone away.
   alsoIn?: string;
+  // A page that says more, under the description, opened in a new tab.
+  link?: { href: string; label: string };
   // A small before/after drawing, for a setting whose effect is a LAYOUT
   // rather than a behaviour, see settings-illustrations.tsx.
   illustration?: SettingsIllustrationId;
@@ -225,15 +228,6 @@ export type SettingsAppearanceRowSpec = RowBase & { kind: 'appearance' };
 // appearance row it carries no read/write pair.
 export type SettingsTokensRowSpec = RowBase & { kind: 'tokens' };
 
-// A way into another category of this same dialog, opened in place: the
-// setting lives there, and this is where a reader might look for it first.
-export type SettingsLinkRowSpec = RowBase & {
-  kind: 'link';
-  target: SettingsCategoryId;
-  // The link's own words, which name the destination ("Manage API Tokens").
-  cta: string;
-};
-
 // A card with no control: it stands in for settings the reader cannot use
 // yet and says why. A section whose rows all vanish would otherwise take the
 // section heading with it, so the reader never learns the settings exist ,
@@ -263,11 +257,9 @@ export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
 // was retired, because everything else it held was already in this dialog.
 export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
-
-// The Trash (docs/specs/013-workspace/trash.md): not a preference, a way in.
-// Here for everyone, guests and deployments without accounts included, because
-// Settings is the one menu every deployment has.
-export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
+// Reset All Settings (docs/specs/007-editor/user-preferences.md): every preference back to its default, above Delete
+// Account in the Danger Zone. Not a preference itself: it clears them.
+export type SettingsResetSettingsRowSpec = RowBase & { kind: 'resetSettings' };
 
 // Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new documents go when made without
 // a place. Not a preference: the shared Explorer reads and writes them on the index.
@@ -280,25 +272,26 @@ export type SettingsRowSpec =
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec
   | SettingsTokensRowSpec
-  | SettingsLinkRowSpec
   | SettingsNoteRowSpec
   | SettingsShortcutsRowSpec
   | SettingsHideCursorsRowSpec
   | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
+  | SettingsResetSettingsRowSpec
   | SettingsDeleteAccountRowSpec
-  | SettingsTrashRowSpec
   | SettingsDefaultFoldersRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
   // The top-level category this is a sub-category of (Panels holds one per
-  // panel, Editor one per mode with settings of its own, Account its
-  // Notifications and API Tokens). The list nests it, untiled and indented, beneath its
+  // panel, Account its Notifications and API Tokens). The list nests it, untiled and indented, beneath its
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
+  // Old ids of categories folded into this one (Editor's `draw`, `pages`), so a remembered category or a
+  // `?settings=` deep link to one still lands here.
+  aliases?: readonly string[];
   // A line under a section's heading, for what every row in it shares (Documents' Default Folders,
   // the Tours' "offer again"), said once rather than under each row.
   sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;
@@ -356,7 +349,7 @@ const MOUSE_DESKTOP_ONLY =
 // offered only while it is on (see `visibleCategories`).
 function panelSwitch(
   key: PanelSwitch,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event'>,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event' | 'section'>,
 ): SettingsToggleRowSpec {
   return {
     kind: 'toggle',
@@ -367,7 +360,7 @@ function panelSwitch(
   };
 }
 
-// A tour's switch (docs/specs/007-editor/user-preferences.md "Tours"). INVERTED against its stored
+// A tour's switch (docs/specs/007-editor/user-preferences.md "Getting Started"). INVERTED against its stored
 // preference: the switch asks "offer me this tour?", the preference records "already seen". The
 // telemetry tokens still track the PREFERENCE, not the switch, so each dashboard series keeps
 // meaning what it always has: switching ON sets `<tour>Seen` false, which is '<Tour>SeenOff'.
@@ -409,7 +402,7 @@ function elementTourSwitch(
 const ELEMENT_TOURS_SECTION = 'Show Me';
 
 // One page kind's track of the Pages tour (lib/tour-tracks.ts), as its own row nested under Pages Tours, the switch
-// over every kind (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on
+// over every kind (docs/specs/007-editor/user-preferences.md "Getting Started"). On while the track is owed; off answers it, on
 // forgets its answer. Each track is named for itself ("Slides Tour"). The tour's single seen flag is cleared, so only the
 // answered list speaks for the tracks.
 function pagesTourTrackSwitch(
@@ -494,6 +487,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'editor',
     label: 'Editor',
+    // Pages was its own sub-category (Editor › Pages) until its row became Editor's Pages section: its old id still
+    // lands here (docs/specs/007-editor/user-preferences.md).
+    aliases: ['pages'],
     rows: [
       {
         kind: 'toggle',
@@ -525,8 +521,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
       },
       {
-        // docs/specs/008-canvas/element-indicators.md: how an element shows its link, note,
-        // action and comments.
+        // docs/specs/008-canvas/element-indicators.md: how an element shows its action and
+        // comments (links and notes are retired).
         kind: 'choice',
         key: 'elementIndicatorStyle',
         keywords:
@@ -534,7 +530,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Canvas',
         label: 'Element Indicators',
         description:
-          'How an element shows it has a link, note, action or comments: quiet icons at its top, a labelled footer, or nothing.',
+          'How an element shows it has comments, an action or other markers: quiet icons at its top, a labelled footer, or nothing.',
         options: [
           { id: 'top', label: 'Top' },
           { id: 'footer', label: 'Footer' },
@@ -571,15 +567,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, middleMousePan: v }),
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
       },
-    ],
-  },
-  {
-    // Pages mode's own settings (docs/specs/007-editor/pages-mode.md "Contents").
-    id: 'pages',
-    label: 'Pages',
-    parent: 'editor',
-    rows: [
       {
+        // Pages mode's own settings (docs/specs/007-editor/pages-mode.md "Contents"), in Editor's Pages section.
         // docs/specs/007-editor/pages-mode.md "Contents": the sidebar's minimise and the
         // popover's dock button write the same choice.
         kind: 'choice',
@@ -604,9 +593,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): how slides change, how
     // the deck plays and what shows while presenting. They follow the account; the cog in a running presentation
     // keeps only Transition, Speed and the two clocks, the things changed in front of the room.
+    // A category of its own, right after Editor (docs/specs/007-editor/user-preferences.md).
     id: 'presenting',
     label: 'Presenting',
-    parent: 'editor',
+    // Presenting sat under Editor in the Settings panel's merged rail: its id there still lands here.
+    aliases: ['/editor/presenting'],
     rows: [
       presentingChoice('transition', {
         section: 'Slides',
@@ -711,11 +702,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'dockButtonNames',
         keywords:
-          'button labels names text captions bottom bar corner buttons zoom layers style tidy up icons only',
+          'button labels names text captions bottom bar corner buttons zoom style tidy up icons only',
         section: 'Interface',
         label: 'Button Labels',
         description:
-          'Names the buttons along the bottom (Search, Settings, the theme, Layers, Style) beside their icons.',
+          'Names the buttons along the bottom (Search, Settings, the theme, Style) beside their icons.',
         desktopOnly:
           'Phones always show these buttons as icons. Your choice still applies on a larger screen.',
         read: (p) => p.dockButtonNames !== false,
@@ -729,7 +720,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         ...UI_SCALE_SLIDER,
         key: 'uiScale',
         keywords:
-          'zoom size bigger smaller larger text font scale magnify chrome interface ui accessibility',
+          'zoom size bigger smaller larger text font scale magnify low vision chrome interface ui accessibility',
         section: 'Interface',
         label: 'UI Scale',
         description:
@@ -741,7 +732,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
       uiScalePartRow('panels', {
         label: 'Panel Scale',
-        keywords: 'panels explorer palette layers popover size bigger smaller zoom panel scale',
+        keywords: 'panels explorer palette popover size bigger smaller zoom panel scale',
         description: 'Every panel, docked or opened from a button.',
         changed: 'UiScalePanels',
       }),
@@ -753,8 +744,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       }),
       uiScalePartRow('cornerButtons', {
         label: 'Corner Buttons Scale',
-        keywords: 'undo redo zoom controls layers theme corner buttons size bigger smaller scale',
-        description: 'Undo and Redo, Layers, Style and zoom.',
+        keywords: 'undo redo zoom controls theme corner buttons size bigger smaller scale',
+        description: 'Undo and Redo, Style and zoom.',
         changed: 'UiScaleCornerButtons',
       }),
     ],
@@ -788,6 +779,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'panels',
     label: 'Panels',
+    // Each panel's settings were a sub-category of their own (Panels › Map) until they became its sections: their
+    // old ids still land here. `layers` too, though the Layers panel and its section retired on 8 November 2026
+    // (docs/specs/006-document/layers.md "Retired: the Layers panel"), so an old link still opens Panels.
+    aliases: ['layers', 'quickStyle', 'map', 'collaborate'],
     rows: [
       {
         kind: 'slider',
@@ -805,62 +800,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, panelOpacity: v }),
         event: { category: 'UI', changed: 'PanelOpacity' },
       },
-    ],
-  },
-  {
-    id: 'layers',
-    label: 'Layers',
-    parent: 'panels',
-    rows: [
-      panelSwitch('layersPanelEnabled', {
-        label: 'Enable Layers Panel',
-        keywords: 'layers panel enable hide show turn off remove move to layer',
+      panelSwitch('quickStylePanelEnabled', {
+        section: 'Quick Style',
+        label: 'Enable Quick Style Panel',
+        keywords:
+          'quick style colour color stroke fill width panel selection enable hide show turn off',
         description:
-          'The panel, its corner button and “Move to layer”. Off, layers still keep their order, visibility and lock.',
-        event: { category: 'UI', on: 'LayersPanelOn', off: 'LayersPanelOff' },
+          "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
+        event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
       }),
       {
-        kind: 'toggle',
-        key: 'layersShowPreview',
-        parent: 'layersPanelEnabled',
-        keywords: 'thumbnail preview layer picture',
-        illustration: 'layerThumbnails',
-        label: 'Layer Thumbnails',
-        description: 'A small preview of what each layer holds.',
-        read: (p) => p.layersShowPreview !== false,
-        write: (p, v) => ({ ...p, layersShowPreview: v }),
-        event: { category: 'UI', on: 'LayerPreviewOn', off: 'LayerPreviewOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'layersShowCount',
-        parent: 'layersPanelEnabled',
-        keywords: 'number badge count layer element counts',
-        label: 'Layer Element Counts',
-        description: 'How many elements each layer holds, beside its name.',
-        read: (p) => p.layersShowCount !== false,
-        write: (p, v) => ({ ...p, layersShowCount: v }),
-        event: { category: 'UI', on: 'LayerCountOn', off: 'LayerCountOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'layerHoverPreview',
-        parent: 'layersPanelEnabled',
-        keywords: 'highlight hover layer preview solo',
-        label: 'Preview Layer on Hover',
-        description: 'Shows only that layer on the canvas while you rest on its row.',
-        read: (p) => p.layerHoverPreview !== false,
-        write: (p, v) => ({ ...p, layerHoverPreview: v }),
-        event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
-      },
-    ],
-  },
-  {
-    id: 'map',
-    label: 'Map',
-    parent: 'panels',
-    rows: [
-      {
+        section: 'Map',
         // The Map's switch, written out rather than a panelSwitch: it keeps its
         // older key and telemetry tokens so stored choices and the dashboard
         // carry over the rename from "Show Map".
@@ -877,6 +827,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
       },
       {
+        section: 'Map',
         kind: 'toggle',
         key: 'mapDimOutside',
         parent: 'showMinimap',
@@ -890,6 +841,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'MapDimOn', off: 'MapDimOff' },
       },
       {
+        section: 'Map',
         kind: 'choice',
         key: 'mapSize',
         parent: 'showMinimap',
@@ -906,14 +858,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, mapSize: v as MapSize }),
         event: { category: 'UI', changed: 'MapSize' },
       },
-    ],
-  },
-  {
-    id: 'collaborate',
-    label: 'Collaborate',
-    parent: 'panels',
-    rows: [
       panelSwitch('collaboratePanelEnabled', {
+        section: 'Collaborate',
         label: 'Enable Collaborate Panel',
         keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
         description:
@@ -921,6 +867,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
       }),
       {
+        section: 'Collaborate',
         kind: 'hideCursors',
         key: 'hideCursors',
         available: (ctx) => ctx.cursorsDrawn !== false,
@@ -929,21 +876,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'cursors pointers names pills participants collaborators hide show busy session distracting',
         description: HIDE_CURSORS_HINT,
       },
-    ],
-  },
-  {
-    id: 'quickStyle',
-    label: 'Quick Style',
-    parent: 'panels',
-    rows: [
-      panelSwitch('quickStylePanelEnabled', {
-        label: 'Enable Quick Style Panel',
-        keywords:
-          'quick style colour color stroke fill width panel selection enable hide show turn off',
-        description:
-          "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
-        event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
-      }),
     ],
   },
   {
@@ -961,23 +893,16 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, reduceMotion: v }),
         event: { category: 'UI', on: 'ReduceMotionOn', off: 'ReduceMotionOff' },
       },
-      {
-        kind: 'link',
-        key: 'uiScaleLink',
-        keywords: 'zoom size bigger larger text font scale magnify low vision',
-        label: 'UI Scale',
-        cta: 'Open Appearance',
-        target: 'appearance',
-        description: 'Make the panels, toolbar and corner buttons bigger, in Appearance.',
-      },
     ],
   },
   {
-    // The guided tours (docs/specs/007-editor/user-preferences.md "Tours"), a tour of several tracks one switch per
+    // The guided tours (docs/specs/007-editor/user-preferences.md "Getting Started"), a tour of several tracks one switch per
     // track ("Slides Tour"). A tour starts from the footer's Start Tour button
     // (docs/specs/007-editor/pages-tour.md "Where it appears"), and its switch turns itself off once taken.
     id: 'tours',
-    label: 'Tours',
+    label: 'Getting Started',
+    // Was named Tours: its old place in the panel still lands here.
+    aliases: ['/tours'],
     collapsedSections: [ELEMENT_TOURS_SECTION],
     sectionNotes: {
       [ELEMENT_TOURS_SECTION]: {
@@ -1135,7 +1060,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
   {
     id: 'documents',
-    label: 'Documents',
+    label: 'Explorer',
+    // Was its own category (Settings › Documents) beside the Explorer's: its old place in the panel still lands here.
+    aliases: ['/documents'],
     sectionNotes: {
       'Default Folders': {
         note: 'Where each kind of new document is saved when you create it without choosing a place.',
@@ -1144,11 +1071,24 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     },
     rows: [
       {
+        // Automatically Open Explorer, a common setting (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on
+        // the Explorer"): the homepage opens the Explorer instead. The preferences write mirrors it into this address's
+        // cookie, which the router reads (@liveworkspace/sites/open-explorer).
+        kind: 'toggle',
+        key: 'autoOpenExplorer',
+        keywords: 'automatically open explorer redirect home homepage start landing skip straight',
+        label: 'Automatically Open Explorer',
+        description:
+          'Opening the homepage while signed in takes you straight to your Explorer. A link to the homepage from inside the app still shows it.',
+        read: (p) => p.autoOpenExplorer === true,
+        write: (p, v) => ({ ...p, autoOpenExplorer: v }),
+        event: { category: 'UI', on: 'AutoOpenExplorerOn', off: 'AutoOpenExplorerOff' },
+      },
+      {
         // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
         // and this switch brings it back. The shared Explorer draws it (@liveworkspace/explorer's HomeHero).
         kind: 'toggle',
         key: 'homeBanner',
-        section: 'Explorer',
         keywords: 'home banner hero greeting welcome header top search explorer hide show close',
         label: 'Show Home Banner',
         description:
@@ -1183,14 +1123,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'guestVsAccount',
       },
       {
-        kind: 'trash',
-        key: 'trash',
-        section: 'Your Data',
-        label: 'Trash',
-        keywords:
-          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
-        description: 'Deleted documents wait here for 30 days, ready to restore.',
-        helpArticle: 'trash',
+        kind: 'resetSettings',
+        key: 'resetSettings',
+        section: 'Danger Zone',
+        label: 'Reset All Settings',
+        keywords: 'reset restore default defaults factory clear settings preferences start over',
+        description:
+          'Puts every setting back to its default, in every liveworkspace app. Your profile, API tokens, webhooks and sign-ins stay as they are.',
       },
       {
         kind: 'deleteAccount',
@@ -1235,12 +1174,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
-      emailSwitch('notifyDocumentJoin', {
-        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
-        keywords: 'email join collaborator opened',
-        label: 'Someone Joins My Document',
-        description: 'A new person opens one of your shared documents.',
-      }),
       emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
         keywords: 'email comment reply feedback',
@@ -1257,13 +1190,19 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
         keywords: 'email action assigned task todo',
         label: 'Someone Assigns Me an Action',
-        description: 'A teammate assigns you an action on an element.',
+        description: 'A teammate assigns you an action on an element, or a card on a board.',
       }),
       emailSwitch('notifyInviteResponse', {
         event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
         keywords: 'email invite team accepted declined',
         label: 'Someone Responds to a Team Invite',
         description: 'Someone you invited accepts or declines, for teams you are an admin of.',
+      }),
+      emailSwitch('notifyDocumentJoin', {
+        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
+        keywords: 'email join collaborator opened',
+        label: 'Someone Joins My Document',
+        description: 'A new person opens one of your shared documents.',
       }),
       emailSwitch('notifyTips', {
         event: { category: 'UI', on: 'NotifyTipsOn', off: 'NotifyTipsOff' },
@@ -1295,29 +1234,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     ],
   },
-  // Webhooks (liveworkspace/docs/specs/004-index/webhooks.md "Managing them"): an account's, like API tokens. Signed
-  // in, the Account section's Webhooks links to liveworkspace's Settings; a guest gets this stand-in in its place,
-  // the email stand-in's shape, so it says why and links to sign in as the API Tokens row does.
-  {
-    id: 'webhooks',
-    label: WEBHOOKS_CATEGORY.label,
-    parent: 'account',
-    rows: [
-      {
-        kind: 'note',
-        key: 'webhooksSignIn',
-        keywords: WEBHOOKS_CATEGORY.keywords,
-        label: WEBHOOKS_CATEGORY.label,
-        description: WEBHOOKS_CATEGORY.description,
-        note: WEBHOOKS_CATEGORY.signInNote,
-        signIn: true,
-        available: (ctx) => !ctx.signedIn,
-      },
-    ],
-  },
   // Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): downloading everything an account owns,
   // made in liveworkspace's Settings. Signed in, the Account section's Your Data links there; a guest gets this
-  // stand-in, as for Webhooks.
+  // stand-in, as for API Tokens.
   {
     id: 'data',
     label: DATA_EXPORT_CATEGORY.label,
@@ -1345,7 +1264,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'analytics tracking usage data privacy anonymous',
         label: 'Send Anonymous Usage Events',
         description:
-          'Small first-party events, listed publicly on /telemetry, that show which features help. Never your content, no third-party trackers.',
+          'Small events like “a tab was added” that show us which features help. Never your content or who you are, and no third-party trackers. Every event we collect is listed in public, with how often each is sent.',
+        link: { href: `${PLATFORM_SITE.url}/telemetry`, label: 'See Every Event' },
         helpArticle: 'whatWeCollect',
         read: (p) => p.telemetryEnabled !== false,
         write: (p, v) => ({ ...p, telemetryEnabled: v }),
@@ -1355,7 +1275,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
 ];
 
-// A section's target id: "Your Data" → "your-data". Settings can open on one
+// A section's target id: "This Browser" → "this-browser". Settings can open on one
 // (docs/specs/007-editor/user-preferences.md).
 export function settingsSectionId(section: string): string {
   return section.trim().toLowerCase().replace(/\s+/g, '-');
@@ -1382,7 +1302,7 @@ export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec
 // What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
 // Surface table): the account and everything beyond the one document. A category nested under one
 // goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['documents', 'account', 'tokens', 'webhooks']);
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['documents', 'account', 'tokens']);
 
 function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
   return (
@@ -1404,7 +1324,7 @@ function parentSwitchOn(
   return parent?.kind !== 'toggle' || parent.read(preferences);
 }
 
-// A category's name as a path from the top level: "Panels › Layers" for a
+// A category's name as a path from the top level: "Account › Notifications" for a
 // sub-category, just the label otherwise. Where the name is shown away from
 // the list that nests it (the canvas search's "in …").
 export function settingsCategoryPath(category: SettingsCategorySpec): string {

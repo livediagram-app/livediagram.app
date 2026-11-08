@@ -177,13 +177,13 @@ not an empty result: the start finds it in Workshop, shows it, and choosing it t
   its mode: its tab opens in that mode (`templateCanvasOverrides`' `opensIn`), so the tab switches ([Changing mode](#changing-mode)). The start goes with the empty tab. A
   blank of the other mode (Blank Whiteboard from Start Diagramming) closes that mode's start, as choosing a start's own
   blank does, so the tab opens on the empty canvas asked for. The pick is a start-screen pick for
-  [Default folders](#default-folders): a document `/new` just made moves to the template's default folder.
+  [Default folders](#default-folders): a document `/new` just made moves to the default folder of the template's mode.
 - **Only where the mode may change.** When the tab's mode is locked (the mode switch shows its lock,
   `canSwitch` false) the start searches its own mode alone, as before.
 
 ## Default folders
 
-A template picked here on a document `/new` just made goes to that template's default folder, unless the document
+A template picked here on a document `/new` just made goes to the default folder of the mode the template opens in, unless the document
 was made into a folder on purpose (a `/new?folder=` or `?team=` link, [Default folders](../013-workspace/default-folders.md) "A template
 picked after creation"). The move is `useTemplatePickMove` (`apps/editor/components/start/useTemplatePickMove.ts`).
 

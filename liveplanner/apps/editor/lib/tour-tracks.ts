@@ -1,4 +1,4 @@
-// A tour of several tracks offers each one once (docs/specs/007-editor/user-preferences.md "Tours"): the Plan tour's
+// A tour of several tracks offers each one once (docs/specs/007-editor/user-preferences.md "Getting Started"): the Plan tour's
 // Boards, Sheets and Dashboards tracks. A synced list holds the tracks answered (taken, skipped or declined).
 
 /** The answered list with `tracks` added, each once, in the order answered. */

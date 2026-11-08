@@ -188,7 +188,7 @@ page), logging `[new] restored, back out <target>`.
   [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
 - **Named** after its template (`untitledNameForTemplate`); it is renamed in the editor.
 - **Themed** Default: the Theme and canvas controls change it later.
-- People change where documents go in **Settings > Documents > Default Folders**, and move a document between
+- People change where documents go in **Settings > Explorer > Default Folders**, and move a document between
   livedocuments and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
 - Why: every answer a creation step could ask (name, store, folder, theme) has a later, better home, so asking up
   front only slowed the first document down.

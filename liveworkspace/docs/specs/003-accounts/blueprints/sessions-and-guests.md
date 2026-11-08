@@ -2,7 +2,8 @@
 
 Derived from [accounts.md "Guests"](../accounts.md#guests), ["Returning guests of the old
 livediagram.app"](../accounts.md#returning-guests-of-the-old-livediagramapp), ["liveworkspace.app's own
-token"](../accounts.md#liveworkspaceapps-own-token) and ["Guests who never come back"](../accounts.md#guests-who-never-come-back).
+token"](../accounts.md#liveworkspaceapps-own-token), ["Guests who never come back"](../accounts.md#guests-who-never-come-back) and
+["Every account setting in every app"](../accounts.md#every-account-setting-in-every-app).
 The spec decides; this file only adds engineering precision, read from the code. Defaults are cited as `ACCn`. Paths
 are relative to the repository root.
 
@@ -14,6 +15,8 @@ Scope, by file:
 | `liveworkspace/apps/accounts/src/workspace-token.ts` | `GET /api/auth/workspace-token`: liveworkspace.app's own token                            |
 | `liveworkspace/apps/accounts/src/end-session.ts`     | `POST` and `GET /api/auth/end-session`; every app's tokens on a session, at any sign-out  |
 | `liveworkspace/apps/accounts/src/bearer.ts`          | `bearerPerson`: an app API's access or guest token, checked against this Worker's keys    |
+| `liveworkspace/apps/accounts/src/own-sessions.ts`    | The bearer's Where You're Signed In: list, end one, end the others                        |
+| `liveworkspace/apps/accounts/src/link-google.ts`     | The bearer's Sign-in Methods, and `GET /api/auth/link-google`, the hop to Google          |
 | `liveworkspace/apps/accounts/src/legacy-guests.ts`   | `POST /api/account/internal/legacy-guests/claim`                                          |
 | `liveworkspace/apps/accounts/src/guest-sweep.ts`     | `noteGuestSeen`, `sweepIdleGuests`                                                        |
 | `liveworkspace/apps/accounts/src/account-api.ts`     | `GET /api/account/people` on each door                                                    |
@@ -99,9 +102,47 @@ expiresAt (ms) }`, `no-store`.
 
 `Authorization: Bearer <token>` (not a merge key) is verified offline with `createPersonVerifier` against this
 Worker's own key set (read in-process with `auth.api.getJwks()`, kept 5 minutes), issuer `${BASE_URL}/api/auth`,
-audience the environment's resources. A guest reaches `GET /api/account/people` only (limited by `TEAM_LINK_LIMITER`
-keyed `people:<range>`, names without pictures); an account also teams, invitations, settings and its profile.
-Anything else `401 signed_out` or `404 not_found`.
+audience the environment's resources. An API token (`lwt_`, `lvd_`) is not a JWT, so `jwtVerify` refuses it and it is
+`401 signed_out` on every route. A guest reaches `GET /api/account/people` only (limited by `TEAM_LINK_LIMITER`
+keyed `people:<range>`, names without pictures); an account also teams, invitations, settings, its profile, phone
+devices, API tokens (`tokenRoutes`, the session door's handler, `waitUntil` threaded for the workbench cleanup),
+Download Your Data (`handleDataExport` with `{ id, name: accountName(), email: verified or null }`), sessions and
+sign-in methods. Anything else `401 signed_out` or `404 not_found`. `bearerSessionId` reads the verified token's
+`sid` claim (the provider's own: the session the token was minted under), with `jose`'s `decodeJwt`, only after
+`bearerPerson` has checked the signature.
+
+### Sessions over the bearer (`own-sessions.ts`)
+
+- `GET /api/account/sessions`: `SELECT id, userAgent, createdAt, updatedAt, expiresAt FROM session WHERE userId = ?`
+  (`session_userId_idx`), expired rows left out, sorted by `updatedAt` newest first; dates answered as ISO strings;
+  `{ sessions: [{ id, current, userAgent: string | null, createdAt, updatedAt }] }`, `current` = `id === sid`. The
+  `token` column is never read.
+- `DELETE /api/account/sessions/:id`: `SELECT id FROM session WHERE id = ? AND userId = ?`, else `404 not_found`;
+  then `endSessionTokens(db, id)` (`end-session.ts`: the access and refresh tokens on it, then the row) and `{ id }`.
+- `POST /api/account/sessions/revoke-others`: no `sid` is `409 no_current_session`; otherwise every session id of the
+  account but `sid`, through `endSessionTokens` (40 a statement, one batch); `{ ended: <count> }`.
+
+### Sign-in methods over the bearer (`link-google.ts`)
+
+- `GET /api/account/sign-in-methods`: one `SELECT 1 FROM account WHERE userId = ? AND providerId = 'google'`
+  (`account_userId_idx`); `{ google: 'connected' | 'available' | 'off' }`, `available` when `GOOGLE_CLIENT_ID` and
+  `GOOGLE_CLIENT_SECRET` are set.
+- `POST /api/account/sign-in-methods/google { callbackURL }`, in order: `409 google_off`, `409 already_connected`,
+  `400 invalid_callback` (`linkCallback`: absolute `http(s)`, no credentials, at most `REDIRECT_MAX_LENGTH`, origin in
+  `allAppOrigins(ENVIRONMENT)` or `BASE_URL`'s origin and its www twin), `409 session_ended` (no `sid`, or its row
+  gone, expired or another account's). Answers `{ url: "${BASE_URL}/api/auth/link-google?ticket=<ticket>" }`.
+- The ticket is `<payload>.<sig>`: payload base64url JSON `{ u: userId, s: sessionId, c: callbackURL, e: exp seconds }`,
+  `sig` Better Auth's `makeSignature` (HMAC-SHA-256, base64) of `link-google:<payload>` under `BETTER_AUTH_SECRET`,
+  compared in constant time; `e` is `LINK_TICKET_TTL_SECONDS` (300) from minting.
+- `GET /api/auth/link-google?ticket=`: a bad or expired ticket, or a return address no longer allowed, is
+  `400 { error: 'invalid_ticket' }` and goes nowhere. A session that is gone, expired or another account's is `302`
+  to the return address with `?error=session_ended`. Otherwise the session's token is read by id and user and signed
+  as Better Auth's session cookie in the request headers alone, and `auth.api.linkSocialAccount({ provider: 'google',
+callbackURL, errorCallbackURL: callbackURL, disableRedirect: true })` runs with `returnHeaders`; a throw is `302` to
+  the return address with `?error=link_failed`. The answer is `302` to Google's URL, `no-store`, `no-referrer`,
+  carrying only the `state` and `oauth_state` Set-Cookies Better Auth made (any other, a refreshed session cookie
+  above all, is dropped). Google comes back to `${BASE_URL}/api/auth/callback/google`, Better Auth's own callback
+  (`getAuth`, never the app-address instance, since the request isn't proxied).
 
 ### People's names (`GET /api/account/people?ids=a,b`)
 
@@ -185,14 +226,16 @@ delete. Their items stay in the index.
 | `liveworkspace/apps/accounts/src/end-session.test.ts` (17)    | ending a session from an app, the browser's hop, liveworkspace.app and Security: every app's tokens gone, tickets, redirects refused |
 | `liveworkspace/apps/accounts/src/legacy-guests.test.ts` (14)  | claiming a returning guest of the old livediagram.app                                                                                |
 | `liveworkspace/apps/accounts/src/guest-sweep.test.ts` (4)     | noting a guest seen; sweeping guests who can never come back                                                                         |
-| `liveworkspace/apps/accounts/src/account-api.test.ts` (33)    | the people door and bearers among the rest                                                                                           |
+| `liveworkspace/apps/accounts/src/account-api.test.ts` (43)    | the people door and bearers among the rest, sessions, tokens                                                                         |
+| `liveworkspace/apps/accounts/src/link-google.test.ts` (10)    | connecting Google from an app: the hop, the state cookie alone, Better Auth's callback, tickets, return addresses                    |
 
 ## Constants and configuration
 
 `GUEST_PATH` `/guest`, `GUEST_COOKIE` `lw_guest`, `GUEST_TOKEN_TTL_SECONDS` 45 d, `COOKIE_MAX_AGE_SECONDS` 10 years,
 `STATE_MAX_LENGTH` 200, `MERGE_TIMEOUT_MS` 5 s, `AUTHORIZE_PATH` `/oauth2/authorize` (`guests.ts`);
 `WORKSPACE_TOKEN_TTL_SECONDS` 900 (`workspace-token.ts`); `END_SESSION_PATH` `/end-session`, `TICKET_TTL_SECONDS` 300,
-`REDIRECT_MAX_LENGTH` 2,000, `SESSIONS_PER_STATEMENT` 40 (`end-session.ts`); `KEYS_TTL_MS` 5 min (`bearer.ts`); `LEGACY_CLAIM_HOLD_MS`
+`REDIRECT_MAX_LENGTH` 2,000, `SESSIONS_PER_STATEMENT` 40 (`end-session.ts`); `KEYS_TTL_MS` 5 min (`bearer.ts`);
+`LINK_GOOGLE_PATH` `/link-google`, `LINK_TICKET_TTL_SECONDS` 300 (`link-google.ts`); `LEGACY_CLAIM_HOLD_MS`
 60 s (`legacy-guests.ts`); `GUEST_IDLE_MS` 400 d, `GUEST_SWEEP_LIMIT` 500 (`guest-sweep.ts`); `MAX_PROFILE_IDS` 100.
 Rate limiters: `GUEST_LIMITER` `1003` (`2003`), 60 per 60 s; `TEAM_LINK_LIMITER` `1004` (`2004`), 20 per 60 s;
 `LEGACY_GUEST_LIMITER` `1105` (`2105`), 10 per 60 s.

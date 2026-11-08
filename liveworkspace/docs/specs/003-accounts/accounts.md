@@ -146,8 +146,9 @@ index know someone's teams" above).
 
 A token (`lwt_…`, 32 random bytes) acts as its account on every app's API and MCP server, read
 and write or read only, for six months. Only its SHA-256 hash is kept; the secret is shown once.
-An account holds up to 20. They are made and revoked in the Settings panel, Account › API Tokens
-(`/explorer?settings=tokens` on liveworkspace.app, [site.md](../010-site/site.md#settings)).
+An account holds up to 20. They are made and revoked in the Settings panel, Settings › API Tokens, wherever it opens:
+on liveworkspace.app (`/explorer?settings=tokens`, [site.md](../010-site/site.md#settings)) over the session, and in
+every app over the app's bearer ([Every account setting in every app](#every-account-setting-in-every-app)).
 
 Connecting an AI tool in an app (its MCP OAuth flow) makes one too: the app's consent page sends
 the person's access token to liveworkspace (`POST /api/account/internal/tokens`), which makes the
@@ -541,6 +542,66 @@ client, the session lookup, one batch). No other request changes.
 **What it can't reach.** An app with no refresh token to send (it had already lapsed) gets no ticket, so only its
 own cookies go; and a browser whose liveworkspace session is another account's than the app's keeps that session.
 
+## Every account setting in every app
+
+The Settings panel shows every account setting in place wherever it opens, so nothing in an app's Settings sends the
+person to liveworkspace.app. Over the app's bearer (the access token the accounts Worker minted for one of the app
+APIs, through the app's router at `/api/workspace/account/…`, [The API](#the-api)) the account API answers, beside
+teams, settings, the profile and phone devices: API tokens, Download Your Data, Where You're Signed In and Sign-in
+Methods. API tokens and Download Your Data are the session door's own handlers on both doors; the sessions and
+sign-in methods routes are the bearer's (liveworkspace.app's Settings uses Better Auth's own endpoints for those).
+
+**The trade-off, accepted.** These routes make an app's access token as strong as the liveworkspace session for them.
+Whoever holds a copied access token can, until it lapses (an hour from its last refresh), list, make and revoke API
+tokens (and an API token lasts six months, so a stolen access token can become a six-month credential), start a data
+export, list and end the account's sessions, and start connecting Google. This was decided knowingly, so that no
+setting needs a trip to liveworkspace.app. What still holds:
+
+- Only an account's access token passes. A guest token is refused (`401 signed_out`), and an API token (`lwt_…`,
+  `lvd_…`) is an opaque random string, never a signed JWT, so the bearer check refuses it outright: no tool or script
+  with an API token can mint more, end sessions or export.
+- The emailed Download Your Data link still needs the liveworkspace session to download.
+- A session's token is never answered, over either door: it is the credential itself. Sessions are named by their id.
+- Connecting Google links only a Google account whose address Google has verified and which is the account's own, so
+  it grants nothing that signing in with that Google account wouldn't already (signing in with Google joins an
+  account of the same verified address anyway).
+
+**Where You're Signed In.** `GET /api/account/sessions` answers the account's unexpired liveworkspace sessions, the
+most recently active first, each `{ id, current, userAgent, createdAt, updatedAt }`. `current` marks the session the
+app's access token was minted under: the provider writes that session's id into every access token as its `sid`
+claim, so the app's own browser session is the current one. `DELETE /api/account/sessions/:id` ends one of the
+account's own sessions (any other id is `404`), and `POST /api/account/sessions/revoke-others` ends every one but
+the current. Each ends as Sign out ends one ([Signing out](#signing-out)): every app's tokens issued on it go, then
+the session. A token whose session has already gone has no current session, so revoke-others refuses it
+(`409 no_current_session`). Ending the current session signs this app out at its next refresh (its access token
+lasts until then).
+
+**Sign-in Methods.** `GET /api/account/sign-in-methods` answers `{ google }`: `connected` when a Google account is
+linked, `available` when it isn't and this Worker has a Google client, `off` otherwise. Connecting Google is a trip to
+Google that has to start and end on the accounts Worker's own address, where Google comes back and the flow's state
+cookie must be (the app's router passes no cookies on `/api/workspace/account`):
+
+1. `POST /api/account/sign-in-methods/google` `{ callbackURL }` checks the bearer, that Google is on
+   (`409 google_off`) and not yet connected (`409 already_connected`), the return address (below; `400
+invalid_callback`), and that the access token's session is still live (`409 session_ended`). It answers
+   `{ url }`: `GET /api/auth/link-google?ticket=…` on the accounts Worker, the ticket naming the account, that session
+   and the return address, signed with the Worker's secret and good for five minutes.
+2. The page sends the browser there, top level. The Worker checks the ticket, and that the session is still live and
+   the account's, then starts Better Auth's own link-social for that session. Of what that sets, only the flow's state
+   cookie reaches the browser (never a session cookie), and the browser goes on to Google.
+3. Google comes back to the Worker's own callback, which Better Auth runs as for any link: the state names the
+   account, the session that started it must still be live, and Google's address must be verified and the account's
+   own. Then the browser goes to `callbackURL`; a refusal goes there with `?error=<code>`.
+
+The return address must be an absolute `http` or `https` address, with no user name or password, at most 2,000
+characters, on one of the apps' own origins in this environment or the accounts Worker's own (and its twin while the
+move to www. lasts), the same origins Better Auth trusts. It never goes anywhere else.
+
+**What it costs.** API tokens and Download Your Data cost what they do on the session's door, plus the bearer's
+signature check. Reading sessions is one query on the session table's `userId` index; ending one is a read and one
+batch; reading sign-in methods is one query on the account table's `userId` index. Starting Google costs a session
+read and the hop costs one more, Better Auth's own session check and its state row.
+
 ## Signing in on the app's own address
 
 Someone signing in to livediagram, liveplanner, livedocuments or livedesign stays on that app's
@@ -753,7 +814,8 @@ A scope is one row, keyed by owner and scope, holding a JSON object of setting n
 
 A setting two or more apps have is one setting, kept in `all`: `COMMON_SETTING_KEYS` in
 `@liveworkspace/settings`, part of `ALL_SETTING_KEYS`. Changing it in any app, or in the Settings panel's All
-view, where it shows once in its merged category ([site.md](../010-site/site.md#settings)), changes it in every app that has it. That is the
+view, where it shows once in its merged category ([site.md](../010-site/site.md#settings)), changes it in every app that has it. That is
+Automatically Open Explorer (`autoOpenExplorer`, [one-explorer.md](../004-index/one-explorer.md#opening-on-the-explorer)), the
 Home banner (`homeBanner`), the Collaborate, Quick Style, Layers and Map panels (`collaboratePanelEnabled`,
 `quickStylePanelEnabled`, `layersPanelEnabled`, `layersShowPreview`, `layersShowCount`, `layerHoverPreview`,
 `showMinimap`, `mapSize`, `mapDimOutside`), the canvas's `alignmentGuides`, `autoRebindArrows`,
@@ -761,7 +823,9 @@ Home banner (`homeBanner`), the Collaborate, Quick Style, Layers and Map panels 
 object). Each has the same type, values and default in every app that has it. A key is shared only when it does
 mean the same everywhere: `notifyDocumentJoin` stays livediagram's and livedocuments' own, one of each app's
 "someone joins my …" emails beside liveplanner's `notifyProjectJoin` and livedesign's `notifyDesignJoin`, which
-someone may well want from one app and not another.
+someone may well want from one app and not another. The Layers panel's four keys are livediagram's alone since
+livedocuments and livedesign retired the panel (8 November 2026); they stay in `COMMON_SETTING_KEYS`, so a value a
+person set keeps living in `all` rather than moving scope, and the common-settings test allows them in one app.
 
 These keys were each app's own until October 2026, so a person's values for them may still sit in an app's scope.
 Nothing is lost: `joinSettings` takes a shared key from `all` when `all` has it, and otherwise from the app's own
@@ -832,6 +896,23 @@ guest's id has no account row and writes as before.
 Reading is one query on the primary key; writing is one upsert per scope plus that read, in one
 batch.
 
+### Resetting every setting
+
+Every editor's Settings offer **Reset All Settings** in the Danger Zone, directly above Delete Account (under
+Account, or Profile in All). Signed in, it sends `DELETE /api/account/settings` through either door (the session's
+or an app's bearer; a guest's token is refused, `401 signed_out`). That deletes every settings row the caller owns,
+the `all` scope and every app's own, and nobody else's, in one batch, then puts back the one key a reset keeps:
+`telemetryEnabled` (`RESET_KEEPS` in `@liveworkspace/settings`). Sending anonymous usage events is a consent, not a
+preference, so a reset never turns them back on for someone who turned them off. It answers `{ all, updatedAt }`, the
+`all` scope as it now is. Every app then reads its defaults: "no stored value" is what a default already means, so
+nothing is written for them.
+
+Nothing else on the account changes: the profile (name, colour, picture), API tokens, webhooks, sessions, sign-in
+methods, phone devices and teams are their own tables. Tours offer again afterwards, since a tour's seen flag is a
+setting. A guest and a self-hosted editor have no account settings to reset: the editor resets its own copy in that
+browser instead, and its next save sends the cleared keys as it sends any change. A workbench's Settings have no
+Account category, so no reset.
+
 ### Closing an account, and a guest signing in
 
 Closing an account deletes its settings rows with it ([Closing an account](#closing-an-account)). Settings have no foreign key to the account
@@ -854,8 +935,10 @@ for every app. An app keeps no participants table of its own.
 - **A guest** has whatever it sets, under its guest id.
 - **Setting it from Settings.** The Settings panel's Profile sets an account's name and colour in place wherever
   it opens: over the session on liveworkspace.app, and over the app's bearer (`/api/workspace/account/profile`) on
-  an app's address and in each editor. Both doors answer `GET` (`{ profile }`) and `PATCH { name?, color? }` with
-  one handler; a guest's bearer is refused (`401 signed_out`), since a guest sets its name in the app itself.
+  an app's address and in each editor. Both doors answer `GET` (`{ profile }`) and `PATCH { name?, color?,
+showPicture?, timeZone? }` with one handler; a guest's bearer is refused (`401 signed_out`), since a guest
+  sets its name in the app itself. The [time zone](#the-send-window) is an account's only, set over these two
+  doors; an app's own profile write (`POST /internal/profiles/write`) leaves it alone.
 - **An editor never overwrites a stored name.** On opening, an editor uses the profile as it is; only a first
   visit with none seeds one (the account name, or a guest's placeholder), so a display name set anywhere stays.
 - A name is trimmed, 1 to 120 characters, with no control characters; a colour at most 64, and refused
@@ -1124,7 +1207,18 @@ window is **`SEND_WINDOW`: Monday to Friday, 09:00 to 21:00 in the recipient's o
   name (`parseTimeZone`: at most 64 characters, a zone the runtime knows, kept under the runtime's own
   name for it, so `Asia/Calcutta` and `Asia/Kolkata` are kept as one) and writes it in the same round
   trip as the session's colour read, only when it changed. A missing or unknown name is ignored and
-  leaves the stored zone as it was.
+  leaves the stored zone as it was. The Settings panel's Profile notes the browser's zone the same way on
+  both doors: its profile reads and writes carry it as `?timeZone=` (`GET /api/account/profile`), so an
+  account that only ever opens an editor's Settings is noted too.
+- **A zone picked by hand.** Settings › Profile › Time Zone lets the person pick their zone
+  (`PATCH /api/account/profile { timeZone: '<IANA>' }`, checked by `parseTimeZone`, `400 invalid_time_zone`
+  otherwise). A picked zone is marked on the account (`user.timeZoneChosen`,
+  `migrations/0020_time_zone_chosen.sql`: null is Automatic, 1 is picked) and no automatic sighting
+  overwrites it, on either door. `{ timeZone: null }` is Automatic again: the mark is cleared and the
+  zone the request noted (`?timeZone=`) is kept at once, or, with none noted, the last zone kept (the one
+  picked) stays and times the emails until the next sighting writes the browser's (`COALESCE(?2, timeZone)`
+  in `profiles.ts`); Automatic never empties the zone. The person's own profile read answers `timeZone` (the zone kept, null with none) and
+  `timeZoneAuto` (false while a picked zone stands); nobody else's read carries either.
 - **No zone known:** an account with none stored, and an invited address with no account, are timed
   by **`Europe/London`** (`DEFAULT_TIME_ZONE`).
 - **How a sweep keeps to it.** The windowed sweeps run hourly. Each run works out from the instant
@@ -1221,7 +1315,9 @@ router (`/api/workspace/account/…`; `src/bearer.ts`). A bearer is no ambient c
 same-origin check. A guest's bearer reads names alone; an API token (`lwt_…`) is not a bearer here, so no tool or
 script runs a team. An account's bearer also reads and sets its own profile (`GET` and `PATCH /api/account/profile`,
 the session door's own handler), which grants nothing new: the app's API already sets the same name and colour with
-the same token (`PUT /api/participants/:id`). Joining by link and tokens stay the session's.
+the same token (`PUT /api/participants/:id`). It also runs API tokens and Download Your Data, and reads and ends
+sessions and connects Google, a trade-off accepted on purpose
+([Every account setting in every app](#every-account-setting-in-every-app)). Joining by link stays the session's.
 
 | Route                                                          | Does                                                                                                                 |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -1238,15 +1334,22 @@ the same token (`PUT /api/participants/:id`). Joining by link and tokens stay th
 | `DELETE /api/account/teams/:id/members/:member`                | removes someone (admins), or leaves (oneself)                                                                        |
 | `POST /api/account/invitations/:member/accept`                 | joins (the invited, verified address only)                                                                           |
 | `POST /api/account/invitations/:member/decline`                | declines                                                                                                             |
-| `GET` / `POST /api/account/tokens`                             | lists / makes a token (the secret once)                                                                              |
-| `DELETE /api/account/tokens/:id`                               | revokes one                                                                                                          |
-| `GET /api/account/profile`                                     | their profile: `{ profile }`                                                                                         |
+| `GET` / `POST /api/account/tokens`                             | lists / makes a token (the secret once); bearer too                                                                  |
+| `DELETE /api/account/tokens/:id`                               | revokes one; bearer too                                                                                              |
+| `GET` / `POST /api/account/data-export`                        | their export and their teams' / starts one ([data-export.md](data-export.md)); bearer too                            |
+| `GET /api/account/sessions`                                    | bearer only: `{ sessions: [{ id, current, userAgent, createdAt, updatedAt }] }`, never a session's token             |
+| `DELETE /api/account/sessions/:id`                             | bearer only: ends one of their sessions and its apps' tokens: `{ id }`                                               |
+| `POST /api/account/sessions/revoke-others`                     | bearer only: ends every session but the token's own: `{ ended }`                                                     |
+| `GET /api/account/sign-in-methods`                             | bearer only: `{ google: 'connected' \| 'available' \| 'off' }`                                                       |
+| `POST /api/account/sign-in-methods/google` `{ callbackURL }`   | bearer only: `{ url }`, the hop that starts connecting Google                                                        |
+| `GET /api/account/profile?timeZone=`                           | their profile: `{ profile }`, noting the browser's zone when no zone was picked                                      |
 | `GET /api/account/people?ids=a,b`                              | names (up to 100): `{ people: [{ id, name, picture }] }`, found ids only; a guest may ask too, and gets no `picture` |
-| `PATCH /api/account/profile` `{ name?, color?, showPicture? }` | sets their display name or colour (null clears) or the picture switch; answers `{ profile }`                         |
+| `PATCH /api/account/profile` `{ name?, color?, …, timeZone? }` | sets their name or colour (null clears), the picture switch or the zone (null: Automatic); answers `{ profile }`     |
 | `GET /api/account/settings`                                    | their `all` settings: `{ all, updatedAt }`                                                                           |
 | `PATCH /api/account/settings` `{ all }`                        | patches `all`; answers `{ all, updatedAt }`                                                                          |
 | `GET /api/account/settings/:app`                               | `all` and that app's own scope: `{ all, app, updatedAt }`                                                            |
 | `PATCH /api/account/settings/:app` `{ app }`                   | patches the app's own scope; answers `{ all, app, updatedAt }`                                                       |
+| `DELETE /api/account/settings`                                 | resets every setting, every scope, keeping `RESET_KEEPS`; answers `{ all, updatedAt }`; bearer too                   |
 | `GET` / `POST /api/account/push/devices`                       | their phone devices and the VAPID public key / registers this browser ([push.md](push.md)); bearer too               |
 | `DELETE /api/account/push/devices/:id`                         | removes one of their devices; bearer too                                                                             |
 
@@ -1285,6 +1388,8 @@ workbench sessions and the signed-in person) are in [workbench.md](../011-workbe
 `Profile` is `{ id, name, color, picture, createdAt, updatedAt }`: `name`, `color` and `picture` may be null
 (`picture` is the published [profile picture](#profile-pictures): null with none or with the switch off), and the
 two times are null for an account that has never set either. The person's own `GET` and `PATCH
-/api/account/profile` add `googlePicture` (their own picture, whatever the switch says) and `showPicture`.
+/api/account/profile` add `googlePicture` (their own picture, whatever the switch says), `showPicture`, and the
+[time zone](#the-send-window): `timeZone` (null with none kept) and `timeZoneAuto` (false while one picked by hand
+stands).
 
 The app side of these is in `@liveworkspace/auth-client` (`src/account.ts`).

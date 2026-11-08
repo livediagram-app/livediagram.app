@@ -47,7 +47,7 @@ and the closing card. This tour's part:
   counts no kind on its own: an answer given before the tour split stands for no kind in particular
   (`apps/editor/lib/pages-tour.ts`). Someone who had the retired [Power user mode](power-user-mode.md) on keeps every
   kind taken: its preset's flag is folded into `pagesTourKinds` as the stored preferences are read.
-- **Rerun from Settings**: in Settings' **Tours** category, **Pages Tours** switches every kind at once (on
+- **Rerun from Settings**: in Settings' **Getting Started** category, **Pages Tours** switches every kind at once (on
   while any is untaken; off marks them all taken, on forgets every record), and one switch per kind sits nested beneath
   it, named for its kind (**Slides Tour**, **Infographic Tour**, **Article Tour**, **Flashcards Tour**; the Flashcards
   row came with the button leaving once a track is taken, since without it a taken Flashcards track had no switch of

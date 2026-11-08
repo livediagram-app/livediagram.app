@@ -30,12 +30,12 @@ delete, undo, label edit via Space) that already work on a selection.
   chrome after it in the tab order (the palette strip, the bottom controls, the tab bar) sat behind dozens of
   presses. F6 moves focus to the next region and Shift+F6 to the previous, wrapping round, in screen order:
   **Header** (the document's title row), **Palette** (the strip), **Canvas**, **Controls** (the
-  bottom-right cluster: Undo, Tidy Up, Layers, Style, zoom) and **Tabs** (the tab bar). A region lands on its first
+  bottom-right cluster: Undo, Tidy Up, Style, zoom) and **Tabs** (the tab bar). A region lands on its first
   control (the Canvas on the canvas itself); a region not on screen (a viewer has no Palette, Zen hides the chrome)
   is skipped. It works from anywhere on the page but a modal dialog (whose focus trap keeps it) and with focus in a
   text field, where F6 still moves on: typing never uses it. Each region is marked `data-region` with its name, and
   the tab order inside a region is unchanged. (`../packages/workbench/src/hooks/ui/useRegionCycle.ts`.)
-- **Panels are named regions.** Every floating panel and the popovers hung from the bottom controls (Layers, the
+- **Panels are named regions.** Every floating panel and the popovers hung from the bottom controls (Contents, the
   Explorer, the Map and the rest) is a `region` named by its title, so a screen reader moving into one hears which
   panel it is in rather than a nameless group of controls.
 - Traversal is **selection**: the existing selection ring is the focus

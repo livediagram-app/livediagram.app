@@ -29,7 +29,7 @@ export function AppLogo({
   size = 'lg',
 }: {
   app: ListedApp;
-  // `xs`: inside a line of text (Settings › Webhooks).
+  // `xs`: inside a line of text (Your Data's list of apps).
   size?: 'xs' | 'sm' | 'md' | 'lg';
 }) {
   const brand = brandAppOf(app.id);

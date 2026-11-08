@@ -27,6 +27,8 @@ export type ExplorerProps = {
 export type ExplorerMenuActions = {
   onShare?: () => void;
   onExport?: () => void;
+  // The plan's own Webhooks (liveworkspace 004-index/webhooks.md): a signed-in Editor of the whole plan only.
+  onWebhooks?: () => void;
   onSearch?: () => void;
   onOpenSettings?: () => void;
 };

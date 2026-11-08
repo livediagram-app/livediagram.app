@@ -3,10 +3,15 @@
 // as a `replace` changeset compiles, so the CLI and the MCP create documents the way they replace tabs. A tab the
 // engine refuses refuses the whole create, by its id, before anything is written.
 
-import { creationIntentOf, type CreationIntent } from '@livediagram/api-schema';
+import { creationIntentOf, indexIntentOf, type CreationIntent } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 import { applyReplace, type ReplaceBody } from '@livediagram/edit-operations';
-import { isTemplateKind, templateKindOf, templateFamilyOf } from '@livediagram/templates';
+import {
+  isTemplateKind,
+  templateEditorMode,
+  templateKindOf,
+  templateFamilyOf,
+} from '@livediagram/templates';
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
 import { isRecord } from '@livediagram/document';
@@ -70,13 +75,29 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
   };
 }
 
-// The intent the index files an API client's create by when the create names none: the template family of its first
-// seeded tab, the part of an intent the index's default folders key on (index-client placementDefaultKeysFor).
-// Read from the body as sent, before anything is compiled. Null when the first tab names no known template.
+// The intent the index files an API client's create by when the create names none, from its first seeded tab: the
+// mode its template opens in (with the template's kind and family, for the record), else the mode the tab itself
+// opens in. livediagram's defaults key on the mode alone (docs/specs/013-workspace/default-folders.md "Filing on
+// create"). Read from the body as sent, before anything is compiled. Null when there is no first tab.
 export function seedIntentOf(tabs: unknown): string | null {
   if (!Array.isArray(tabs) || !isRecord(tabs[0])) return null;
-  const template = tabs[0].template;
-  return typeof template === 'string' && isTemplateKind(template)
-    ? templateFamilyOf(template)
-    : null;
+  const tab = tabs[0];
+  const template = tab.template;
+  if (typeof template === 'string' && isTemplateKind(template)) {
+    return indexIntentOf(
+      creationIntentOf(
+        {
+          opensIn: templateEditorMode(template),
+          ...(template === 'event-storming' ? { kind: 'event-storming' } : {}),
+        },
+        templateFamilyOf(template),
+      ),
+    );
+  }
+  return indexIntentOf(
+    creationIntentOf({
+      ...(typeof tab.kind === 'string' ? { kind: tab.kind } : {}),
+      ...(typeof tab.opensIn === 'string' ? { opensIn: tab.opensIn } : {}),
+    }),
+  );
 }

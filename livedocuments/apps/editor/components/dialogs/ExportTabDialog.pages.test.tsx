@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // Pages mode's Export dialog (docs/specs/007-editor/pages-mode.md "Export"): there is no
-// "Hidden layers" option, as the mode has no Layers.
+// "Hidden layers" option, as the mode has no Layers (docs/specs/006-document/layers.md "Retired: the Layers panel").
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -61,11 +61,11 @@ describe('ExportTabDialog, Pages', () => {
     expect(screen.queryByText('Hidden layers')).toBeNull();
   });
 
-  it('still offers Hidden layers outside Pages', async () => {
+  it('offers no Hidden layers option outside Pages either, with a layer hidden', async () => {
     open(false);
     fireEvent.click(screen.getByRole('button', { name: /^SVG/ }));
     await preview();
-    expect(screen.getByText('Hidden layers')).toBeTruthy();
+    expect(screen.queryByText('Hidden layers')).toBeNull();
   });
 });
 

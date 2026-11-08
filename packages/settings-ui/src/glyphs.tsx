@@ -49,23 +49,32 @@ export type SettingsTileId =
   | 'account'
   | 'folder'
   | 'editor'
+  | 'presenting'
   | 'appearance'
   | 'keyboard'
   | 'panels'
   | 'accessibility'
   | 'tours'
-  | 'privacy';
+  | 'privacy'
+  // The account's own categories, each top-level in the panel's rail beside the others, on the shared line art.
+  | 'notifications'
+  | 'tokens'
+  | 'data';
 
 const TILE: Record<SettingsTileId, string> = {
   account: 'bg-teal-600',
   folder: 'bg-lime-700',
   editor: 'bg-blue-500',
+  presenting: 'bg-rose-600',
   appearance: 'bg-sky-600',
   keyboard: 'bg-orange-500',
   panels: 'bg-amber-500',
   accessibility: 'bg-indigo-500',
   tours: 'bg-pink-600',
   privacy: 'bg-emerald-600',
+  notifications: 'bg-red-500',
+  tokens: 'bg-violet-600',
+  data: 'bg-slate-500',
 };
 
 function Svg({ children }: { children: ReactNode }) {
@@ -85,7 +94,7 @@ const TILE_GLYPHS: Record<SettingsTileId, ReactNode> = {
       <path d="M4 16.5a6 6 0 0 1 12 0" />
     </Svg>
   ),
-  // A folder, where new files go.
+  // A folder, for the Explorer: its home and where new files go.
   folder: (
     <Svg>
       <path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h3.2l1.6 1.8h6.2A1.5 1.5 0 0 1 17 8.3v6.2a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5Z" />
@@ -96,6 +105,14 @@ const TILE_GLYPHS: Record<SettingsTileId, ReactNode> = {
     <Svg>
       <rect x="2.5" y="3.5" width="15" height="13" rx="2" />
       <path d="M12 3.5v13" />
+    </Svg>
+  ),
+  // A screen on its stand with a play mark, the slides being shown.
+  presenting: (
+    <Svg>
+      <rect x="2.5" y="3" width="15" height="10.5" rx="1.5" />
+      <path d="M8.6 6.1v4.3l3.7-2.15Z" />
+      <path d="M10 13.5V17M7 17h6" />
     </Svg>
   ),
   // A half-filled circle, the standard light/dark mark.
@@ -143,6 +160,10 @@ const TILE_GLYPHS: Record<SettingsTileId, ReactNode> = {
       <path d="M7 8.5V6a3 3 0 0 1 6 0v2.5" />
     </Svg>
   ),
+  // The shared bell, key and tray (below), the same marks an editor's own Settings nests under Account.
+  notifications: <SettingsSharedGlyph id="notifications" />,
+  tokens: <SettingsSharedGlyph id="tokens" />,
+  data: <SettingsSharedGlyph id="data" />,
 };
 
 /** One tile: the coloured rounded square with its glyph centred. */

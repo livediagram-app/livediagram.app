@@ -33,7 +33,7 @@ import {
 import { itemWriteMayWait } from '@/lib/offline-queue/queue-roles';
 import { isConnectionFailure } from '@/lib/offline-queue/reconnect';
 import type { ItemUndoStep } from './item-undo-journal';
-import { useItemQueue, withWaitingItems } from './useItemQueue';
+import { useItemQueue, withWaitingItems, withWritesLaid } from './useItemQueue';
 import {
   addPracticeItems,
   applyPracticeWrite,
@@ -185,6 +185,11 @@ export function usePlanItems(opts: {
   const refetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Items whose last write was refused or failed: the next load takes the server's copy of them as it is.
   const unconfirmedRef = useRef(new Set<string>());
+  // The writes sent and not yet answered, by their sequence number: a read of the store that lands meanwhile was taken
+  // before them, so they are laid back over it (blueprint item-store.md "Optimistic").
+  const inFlightRef = useRef(new Map<number, ItemWrite>());
+  // The newest load, for a read that comes back older than the store it would replace to ask again.
+  const loadRef = useRef<() => Promise<void>>(async () => {});
   // The practice cards on this screen (practice-items.ts): the ref for writes, the state for drawing.
   const practiceRef = useRef<ReadonlySet<string>>(NO_PRACTICE);
   const [practiceIds, setPracticeIds] = useState<ReadonlySet<string>>(NO_PRACTICE);
@@ -230,14 +235,27 @@ export function usePlanItems(opts: {
     try {
       // Read before the fetch: a write that fails while it is in flight asks for a load of its own.
       const unconfirmed = new Set(unconfirmedRef.current);
+      const revBefore = serverRevRef.current;
       const fetched = await fetchItems(s);
+      // An answer or a room op newer than this copy landed while it was on its way: the copy predates a card the
+      // board already holds, so it is read again rather than taking that card away.
+      if (serverRevRef.current > revBefore && fetched.rev < serverRevRef.current) {
+        debugLog('[items] items.refetch.stale', { rev: fetched.rev, held: serverRevRef.current });
+        void loadRef.current();
+        return;
+      }
+      const flying = [...inFlightRef.current.values()];
       serverRevRef.current = fetched.rev;
       unconfirmed.forEach((id) => unconfirmedRef.current.delete(id));
       // What waits for the connection is laid back over the server's copy.
       // Practice cards are never read back: they are laid over the fresh copy as they were.
       setStore((prev) =>
         keepPracticeItems(
-          withWaitingItems(refetchedItemStore(prev, fetched, unconfirmed), queueOf(), layBy()),
+          withWritesLaid(
+            withWaitingItems(refetchedItemStore(prev, fetched, unconfirmed), queueOf(), layBy()),
+            flying,
+            layBy(),
+          ),
           prev,
           practiceRef.current,
         ),
@@ -248,6 +266,7 @@ export function usePlanItems(opts: {
       setStatus((prev) => (prev === 'ready' ? prev : 'error'));
     }
   }, [scopeRef, queueOf, layBy]);
+  useAssignRef(loadRef, load);
 
   useEffect(() => {
     if (!ready || !scope) return;
@@ -368,11 +387,14 @@ export function usePlanItems(opts: {
       }
       storeRef.current = local.state;
       setStore(local.state);
+      inFlightRef.current.set(seq, write);
       try {
         const answer = await writeItem(s, write, by);
+        inFlightRef.current.delete(seq);
         settle(answer);
         return { ok: true, made: answer.upserts };
       } catch (err) {
+        inFlightRef.current.delete(seq);
         console.warn('[items] items.write.failed', { kind: write.kind, error: String(err) });
         // ItemWritePartlyLanded carries what landed before the failure.
         const landed = (err as { landed?: ItemWriteAnswer } | null)?.landed ?? null;

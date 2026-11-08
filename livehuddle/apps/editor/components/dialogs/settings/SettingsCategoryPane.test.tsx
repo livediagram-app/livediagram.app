@@ -33,7 +33,8 @@ function show(onChange = vi.fn(), category = PANELS) {
 // a phone never draws the minimap, so its rows are greyed and inert there,
 // with a note, rather than flipping to no visible effect.
 describe('SettingsCategoryPane desktop-only rows', () => {
-  const MAP = SETTINGS_CATEGORIES.find((c) => c.id === 'map')!;
+  // The Map's rows are Panels' Map section.
+  const MAP = PANELS;
   const mapSwitch = () => screen.getByRole('switch', { name: /Enable Map/ });
 
   it('greys out Enable Map on a phone, says why, and ignores a tap', () => {
@@ -92,38 +93,21 @@ describe('SettingsCategoryPane: targeting a section', () => {
         category={account}
         settings={{}}
         onChange={vi.fn()}
-        focusSectionId="your-data"
+        focusSectionId="danger-zone"
       />,
     );
     await new Promise((r) => requestAnimationFrame(r));
-    const heading = screen.getByRole('heading', { name: 'Your Data' });
-    expect(heading.id).toBe('settings-section-your-data');
+    const heading = screen.getByRole('heading', { name: 'Danger Zone' });
+    expect(heading.id).toBe('settings-section-danger-zone');
     expect(document.activeElement).toBe(heading);
     expect(scroll).toHaveBeenCalledWith(expect.objectContaining({ block: 'start' }));
     expect(heading.closest('[data-settings-section]')!.getAttribute('data-settings-section')).toBe(
-      'your-data',
+      'danger-zone',
     );
   });
 });
 
-describe('SettingsCategoryPane link rows', () => {
-  it('opens the linked category in place', () => {
-    const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
-    const onOpenCategory = vi.fn();
-    render(
-      <SettingsCategoryPane
-        category={{ ...accessibility, rows: accessibility.rows.filter((r) => r.kind === 'link') }}
-        settings={{}}
-        onChange={vi.fn()}
-        onOpenCategory={onOpenCategory}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Open Appearance' }));
-    expect(onOpenCategory).toHaveBeenCalledWith('appearance');
-  });
-});
-
-// Tours (docs/specs/007-editor/user-preferences.md "Tours"): each switch writes its own preference,
+// Tours (docs/specs/007-editor/user-preferences.md "Getting Started"): each switch writes its own preference,
 // inverted, and sends its own token.
 describe('SettingsCategoryPane tours', () => {
   const TOURS = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;

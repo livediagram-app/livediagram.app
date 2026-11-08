@@ -277,18 +277,18 @@ which crowded the same corner:
   renders as a popover); `CollaboratePanel.tsx` under `components/panels/` on
   `MovablePanel`, lazily imported and mounted from `useCanvasChromePanels.tsx`.
 - **It lives behind a button in the bottom-right cluster.** A
-  **Collaborate** button (speech-bubble glyph) sits **just before the Layers and
-  Theme strip** ([Layers](../006-design/layers.md) is the model). It shows the tab's
+  **Collaborate** button (speech-bubble glyph) sits **just before the Theme
+  strip**. It shows the tab's
   **open count** as a badge (the shared `CountBadge`, brand tone, hidden at
   zero). Pressing it opens the panel as a **popover hanging above it**
   (`computeDockAnchor(..., 'above')`); a second press or a press outside closes it, and it shares the
-  dock's one-open-at-a-time slot with Layers, Activity and the Explorer.
+  dock's one-open-at-a-time slot with Contents and the Explorer.
   It is never docked in a corner: a panel this tall, docked bottom-right, would run up a short
   window, and a popover never meets another corner. It renders outside the corner
-  layer, as Layers does.
+  layer.
 - **The button shows only when it is relevant: the active tab has at least
   one comment thread OR one action**, open or resolved. Nothing to
-  collaborate on, no button and no panel. Unlike Layers it is there for a
+  collaborate on, no button and no panel. It is there for a
   **view-role** visitor too (they read threads and answer them); it hides in
   zen and during the welcome flow like the rest of the cluster ([Live app](../007-editor/live-app.md) "Mobile chrome").
 
@@ -350,7 +350,7 @@ notifyActionAssigned?: boolean; // someone assigns me an action
   accounts in the `all` scope, so turning it off in any app turns it off here. The notify dispatcher
   reads it through `NotificationPrefs` (`apps/api/src/accounts/settings.ts`).
 - Client-side, Settings' email rows ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md))
-  hold **Someone Assigns Me an Action** ("A teammate assigns you an action on an element.",
+  hold **Someone Assigns Me an Action** ("A teammate assigns you an action on an element, or a card on a board.",
   `emailSwitch('notifyActionAssigned')` in `settings-catalogue.ts`), gated with the others on `emailEnabled`.
 
 This is the recipient-side kill switch the dialog checkbox cannot be: the

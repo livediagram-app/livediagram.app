@@ -20,7 +20,7 @@ library): it only moves the design to the Trash, so a question would guard nothi
   ([Toasts](../004-interface-design/toasts.md#naming-what-it-acted-on); "Design deleted" when it has no name), with
   **Undo** (`apps/live/lib/design-delete-undo.ts`, `offerDeleteUndo`). Undo restores it from the Trash exactly as
   Restore does (`Trash·Restored`, typed by the Trash it was in), closes the toast and says **“Roadmap” restored**; a
-  restore that fails says "Could not restore “Roadmap”. It is in the Trash, in Settings." The toast stays up for the
+  restore that fails says "Could not restore “Roadmap”. It is in the Trash, in the Explorer." The toast stays up for the
   answer time (10 seconds, paused while hovered or focused) and then goes, leaving the Trash; the "Show
   notifications" preference silences it like any other.
 - From a list (the Explorer, the editor's Explorer panel, `/new`), the row leaves at once, and Undo puts it back where it
@@ -80,15 +80,12 @@ Trash are always confirmed. Restore is not: it destroys nothing.
 deleted a moment ago shows 30 and one due within the day shows 1. A design
 past its 30 days but not yet swept reads "Removed at the next clean-up".
 
-The Trash is reached two ways, never from the account menu: the **Trash** row
-last in the Explorer sidebar's **More** group, after **Library** (the Image gallery,
+The Trash is reached from the **Trash** row last in the Explorer sidebar's **More** group, after **Library** (the Image gallery,
 the other things that hold your stuff rather than
-being it; [Explorer structure](explorer-structure.md)), and
-**Settings › Account**'s **Trash** row, for everyone, guests and deployments
-without accounts included, because Settings is the one menu every deployment
-has. It was Settings-only at first, to stay out of the way of everyday work,
-but a deleted design's first question is "where did it go", and the sidebar is
-where people look. The row is selected while the Trash is open. The view itself
+being it; [Explorer structure](explorer-structure.md)), for everyone, guests and deployments
+without accounts included. It is not in the account menu or in Settings: it was Settings-only at first, then both,
+and Settings' row was removed once the sidebar is where people look, since a deleted design's first question is "where
+did it go". The row is selected while the Trash is open. The view itself
 lives at `/explorer/trash`.
 
 Empty Trash empties **one group**: your designs, one team's, or this

@@ -40,20 +40,40 @@ describe('filing on create', () => {
 
   it('files by the kind, then the template, then the mode, then the app', async () => {
     const ada = await person('user_a');
+    const plans = await folder(ada.auth, { name: 'Plans' });
+    const planning = await folder(ada.auth, { name: 'Planning' });
+    const boards = await folder(ada.auth, { name: 'Boards' });
+    const kanban = await folder(ada.auth, { name: 'Kanban' });
+    await setDefault(ada.auth, 'liveplanner', plans);
+    await setDefault(ada.auth, 'liveplanner:mode:plan', planning);
+    await setDefault(ada.auth, 'liveplanner:kind:board', boards);
+    await setDefault(ada.auth, 'liveplanner:template:kanban', kanban);
+    const filed = async (intent: string) => (await makeItem(ada.auth, { intent })).folderId;
+    expect(await filed('kanban')).toBe(kanban);
+    expect(await filed('plan:sheet')).toBe(planning);
+    expect(await filed('plan:sheet:kanban')).toBe(kanban);
+    expect(await filed('plan:board:kanban')).toBe(boards);
+  });
+
+  // MODE_ONLY_PLACEMENT_APPS (one-explorer-contracts.md "Mode-only apps"): livediagram files by its mode alone, and
+  // an older app, kind or template key (one an older client wrote) never wins.
+  it('files a mode-only app by its mode alone', async () => {
+    const ada = await person('user_a');
     const canvases = await folder(ada.auth, { name: 'Canvases' });
-    const boards = await folder(ada.auth, { name: 'Whiteboards' });
+    const drawings = await folder(ada.auth, { name: 'Drawings' });
+    const workshops = await folder(ada.auth, { name: 'Workshops' });
     const storms = await folder(ada.auth, { name: 'Storms' });
-    const retros = await folder(ada.auth, { name: 'Retros' });
     await setDefault(ada.auth, 'livediagram', canvases);
-    await setDefault(ada.auth, 'livediagram:mode:draw', boards);
+    await setDefault(ada.auth, 'livediagram:mode:draw', drawings);
+    await setDefault(ada.auth, 'livediagram:mode:workshop', workshops);
     await setDefault(ada.auth, 'livediagram:kind:event-storming', storms);
-    await setDefault(ada.auth, 'livediagram:template:retrospective', retros);
+    await setDefault(ada.auth, 'livediagram:template:retrospective', storms);
     const filed = async (intent: string) =>
       (await makeItem(ada.auth, { app: 'livediagram', intent })).folderId;
-    expect(await filed('draw:diagram')).toBe(boards);
-    expect(await filed('diagram:diagram')).toBe(canvases);
-    expect(await filed('draw:diagram:retrospective')).toBe(retros);
-    expect(await filed('draw:event-storming:retrospective')).toBe(storms);
+    expect(await filed('draw:diagram')).toBe(drawings);
+    expect(await filed('workshop:event-storming:retrospective')).toBe(workshops);
+    expect(await filed('diagram:event-storming')).toBeNull();
+    expect(await filed('retrospective')).toBeNull();
   });
 
   // RETIRED_PLACEMENT_KEYS (one-explorer-contracts.md "Retired default keys"): livehuddle's Workshop mode entry

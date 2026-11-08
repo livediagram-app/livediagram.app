@@ -956,7 +956,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the Notifications category in the Settings dialog.',
   'UI|Opened|SettingsPanels': 'Someone opened the Panels category in the Settings dialog.',
   'UI|Opened|SettingsPrivacy': 'Someone opened the Privacy category in the Settings dialog.',
-  'UI|Opened|SettingsTours': 'Someone opened the Tours category in the Settings dialog.',
+  'UI|Opened|SettingsTours': 'Someone opened the Getting Started category in the Settings dialog.',
   'UI|Opened|SettingsTokens': 'Someone opened the API Tokens category in the Settings dialog.',
   'UI|Opened|Share': 'Someone opened the Share dialog.',
   'UI|Opened|Shortcuts': 'Someone opened the keyboard-shortcuts dialog.',
@@ -1161,10 +1161,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|DockButtonNamesOn':
     'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
+  'UI|Toggled|AutoOpenExplorerOff':
+    'Someone turned off Automatically Open Explorer in Settings > Explorer, so the homepage shows again when they open it.',
+  'UI|Toggled|AutoOpenExplorerOn':
+    'Someone turned on Automatically Open Explorer in Settings > Explorer, so opening the homepage while signed in takes them straight to their Explorer.',
   'UI|Toggled|HomeBannerOff':
-    "Someone hid Explorer Home's banner, from its close button or Settings > Documents. Home then opens on its page header.",
+    "Someone hid Explorer Home's banner, from its close button or Settings > Explorer. Home then opens on its page header.",
   'UI|Toggled|HomeBannerOn':
-    "Someone turned Explorer Home's banner back on, in Settings > Documents.",
+    "Someone turned Explorer Home's banner back on, in Settings > Explorer.",
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
   'UI|Toggled|NotificationsOn':
@@ -1222,7 +1226,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|ShortcutsOn': 'Someone turned on keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|SkipLocationStepOff':
-    'Someone turned off skipping the Location step, in Settings > Documents, so the New Document wizard asks where each document goes again.',
+    'Someone turned off skipping the Location step, in Settings > Explorer, so the New Document wizard asks where each document goes again.',
   'UI|Toggled|SkipLocationStepOn':
     'Someone ticked "Always save new documents in <place> and skip this step" on the New Document wizard\'s Location step.',
   'UI|Toggled|SlideHidden':

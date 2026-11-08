@@ -20,8 +20,9 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
   dialog. The row rather than a dialog section, because the article's style is what that button is pressed for
   on that page; the tab's look is one press further, named plainly
   (`apps/editor/lib/tab-style-opener.ts`, `PageTabStyleButton`, `PageArticleButtons`' `TabStyleRow`).
-- A **dock button** ("Theme & canvas") sits in the bottom-right chrome cluster, **in one strip with the Layers
-  button** (Layers on its left) ([Editor app](../007-editor/editor-app.md) "Mobile chrome"), while the tab has
+- A **dock button** ("Theme & canvas") sits in the bottom-right chrome cluster, in a strip of its own
+  ([Editor app](../007-editor/editor-app.md) "Mobile chrome"; the Layers button that shared it retired with the
+  Layers panel, [Layers](../006-document/layers.md) "Retired: the Layers panel"), while the tab has
   no pages yet (its first-page choice), and opens the dialog on its home. Its icon is a painter's palette with filled paint wells, in the button's own colour like every other chrome icon, so it reads as "how this tab
   looks" at a glance. It shows on **every viewport, mobile included**, and stays hidden in zen mode and in
   read-only / embed views.

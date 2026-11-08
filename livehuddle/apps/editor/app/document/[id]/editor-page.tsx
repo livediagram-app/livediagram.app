@@ -188,7 +188,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
           <EditorView />
         </CommentReactionsProvider>
       </MentionContext.Provider>
-      {/* This browser's own store: an old livehuddle.app guest's claim, its retired parts, and moving documents in
+      {/* This browser's own store: an old livehuddle.app guest's claim and moving documents in
           This Browser after signing in (docs/specs/014-identity/auth-and-guest-access.md); never inside someone
           else's page. */}
       {appChrome ? <LocalStorePrompts /> : null}

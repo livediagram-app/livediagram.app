@@ -268,7 +268,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What if I delete something by accident?',
-        a: 'Deleted canvases wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer or in Settings › Account. Team canvases go to their team’s Trash.',
+        a: 'Deleted canvases wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer. Team canvases go to their team’s Trash.',
       },
     ],
   },

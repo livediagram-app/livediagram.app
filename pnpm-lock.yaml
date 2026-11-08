@@ -7045,6 +7045,9 @@ importers:
       '@liveworkspace/settings':
         specifier: workspace:^
         version: link:../settings
+      '@liveworkspace/settings-ui':
+        specifier: workspace:^
+        version: link:../settings-ui
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
@@ -7589,12 +7592,18 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:^
         version: link:../brand
+      '@liveworkspace/data-export':
+        specifier: workspace:^
+        version: link:../data-export
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../drive
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../icons
+      '@liveworkspace/index-client':
+        specifier: workspace:*
+        version: link:../index-client
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
@@ -7921,6 +7930,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../model-core
+      '@liveworkspace/settings-ui':
+        specifier: workspace:^
+        version: link:../settings-ui
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../trusted-types

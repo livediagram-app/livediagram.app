@@ -105,17 +105,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // WhatHappened; See Timeline followed, SeeTimeline), Opened (a summary dealt out, Group).
   'Home·Opened',
   'Home·Selected',
-  'Layer·Added',
-  'Layer·Changed',
-  'Layer·Cleared',
-  'Layer·Deleted',
-  'Layer·Moved',
-  'Layer·Opened',
-  'Layer·Removed',
   'Layer·Renamed',
-  'Layer·Reordered',
-  'Layer·Selected',
-  'Layer·Toggled',
   'Note·Added',
   'Note·Changed',
   'Note·Deleted',
@@ -165,7 +155,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Trash·Cleared',
   'Trash·Deleted',
   // Trash (docs/specs/013-workspace/trash.md): a trashed design's card, and the design restored from it.
-  'Trash·Opened',
   'Trash·Restored',
   'UI·Changed',
   // A browser repair from the load-error screen (docs/specs/007-editor/load-recovery.md).

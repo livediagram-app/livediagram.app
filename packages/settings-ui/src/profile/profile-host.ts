@@ -4,6 +4,7 @@
 // editor. Either way the panel edits it in place; there is no address to link away to.
 import type { SettingsApiResult, SettingsRequest } from '../request';
 import { announceProfileSaved } from './profile-events';
+import { browserTimeZone } from './time-zones';
 
 /** The accounts API's profile: the display name (its own, or the account's) and the presence colour, null for each
  *  app's own pick. The person's own read adds their Google picture and Show My Google Picture
@@ -14,11 +15,26 @@ export interface Profile {
   color: string | null;
   googlePicture?: string | null;
   showPicture?: boolean;
+  // The time zone the emails that can wait keep to (liveworkspace/docs/specs/003-accounts/accounts.md "The send
+  // window"): the IANA name kept, null with none, and whether it follows the browser (true) or was picked by hand.
+  timeZone?: string | null;
+  timeZoneAuto?: boolean;
 }
 
-/** A change: a string sets a field, null clears it (an empty name shows the sign-up name; no colour is Automatic);
- *  `showPicture` turns Show My Google Picture on or off. */
-export type ProfilePatch = { name?: string | null; color?: string | null; showPicture?: boolean };
+/** A change: a string sets a field, null clears it (an empty name shows the sign-up name; no colour is Automatic;
+ *  no time zone is Automatic, the browser's); `showPicture` turns Show My Google Picture on or off. */
+export type ProfilePatch = {
+  name?: string | null;
+  color?: string | null;
+  showPicture?: boolean;
+  timeZone?: string | null;
+};
+
+/** `/profile` carrying the browser's time zone, which the accounts API keeps for the send window unless one was
+ *  picked by hand: on the read, so Automatic follows the browser on every door, and on going back to Automatic. */
+export function profilePathNotingZone(zone: string | null = browserTimeZone()): string {
+  return zone ? `/profile?timeZone=${encodeURIComponent(zone)}` : '/profile';
+}
 
 export type ProfileResult<T> =
   { ok: true; data: T } | { ok: false; status?: number; error: string };
@@ -44,13 +60,21 @@ export function requestProfileHost(
 ): ProfileHost {
   const profileOf = (result: SettingsApiResult<{ profile?: Profile | null }>) =>
     result.ok ? ({ ok: true, data: result.data.profile ?? null } as const) : result;
+  // The header card and the Name and Colour editor both read it as the Profile opens: one request answers both.
+  let reading: Promise<ProfileResult<Profile | null>> | null = null;
   return {
     ...options,
-    load: async () => profileOf(await request<{ profile?: Profile | null }>('/profile')),
+    load: () => {
+      reading ??= request<{ profile?: Profile | null }>(profilePathNotingZone())
+        .then(profileOf)
+        .finally(() => {
+          reading = null;
+        });
+      return reading;
+    },
     save: async (patch) => {
-      const result = profileOf(
-        await request<{ profile?: Profile | null }>('/profile', 'PATCH', patch),
-      );
+      const path = patch.timeZone === null ? profilePathNotingZone() : '/profile';
+      const result = profileOf(await request<{ profile?: Profile | null }>(path, 'PATCH', patch));
       if (result.ok) {
         announceProfileSaved({
           patch,

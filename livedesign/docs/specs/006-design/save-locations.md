@@ -36,7 +36,7 @@ Why a guest starts local: [Auth + guest access → Guest designs start local](..
   sign-in (it then carries on as a guest) is not that answer. Only a known account saves on livedesign; a session that
   still hasn't answered after the wait keeps the design in This Browser, where nothing is lost.
 - There is no per-person override: no setting chooses the store. Where a design is **filed** on livedesign is the
-  person's to set, in Settings > Designs > Default Folders ([Default folders](../013-workspace/default-folders.md)).
+  person's to set, in Settings > Explorer > Default Folders ([Default folders](../013-workspace/default-folders.md)).
 
 ## On the start screen
 

@@ -157,7 +157,7 @@ export const mcpDeleteDesign = mcpTool('delete_design', {
   title: 'Delete a design or tab',
   description:
     'Delete a design by moving it to the Trash, where it can be restored for ' +
-    `${TRASH_RETENTION_DAYS} days (with restore_design, or from Settings › Trash) before ` +
+    `${TRASH_RETENTION_DAYS} days (with restore_design, or from the Trash in the Explorer) before ` +
     'it is purged. With tabId, delete just one of its tabs, outright: tabs have no ' +
     'Trash. Confirm with the user first. A design must keep at least one tab.',
   inputSchema: deleteDesignShape,

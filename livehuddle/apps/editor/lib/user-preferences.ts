@@ -38,6 +38,7 @@ import {
   writeLocalStorageSafe,
 } from '@liveworkspace/workbench/lib/local-storage-safe';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { syncOpenExplorerCookie } from '@liveworkspace/sites/open-explorer';
 
 export type UserPreferences = {
   // (`autoRebindArrows`, the Auto-Attach Arrows switch, left livehuddle in Work Tracker #423 part 4: arrows
@@ -134,6 +135,11 @@ export type UserPreferences = {
   // Home opens on its ordinary page header and the header's search field instead. Missing / undefined / true ===
   // shown, the default. The banner's own close button writes an explicit `false`; Settings turns it back on.
   homeBanner?: boolean;
+  // Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer"), a
+  // common setting. When `true`, the homepage, arrived at from outside the site while signed in, opens the Explorer.
+  // Missing / undefined / false === off, the default. Mirrored into this address's `lw_open_explorer` cookie on every
+  // write and every server read, for the router.
+  autoOpenExplorer?: boolean;
   // Whether the bottom-right cluster names its buttons beside their icons on a wide desktop
   // (docs/specs/007-editor/editor-app.md "Named on a wide desktop"). Missing === on; a phone never
   // names them, whatever this says. Read through useDockNames.
@@ -240,6 +246,7 @@ export function readUserPreferences(): UserPreferences {
 export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | null): void {
   const fitted = fitPreferences(prefs);
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(fitted));
+  syncOpenExplorerCookie(fitted.autoOpenExplorer === true);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
@@ -325,6 +332,7 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));
+  syncOpenExplorerCookie(merged.autoOpenExplorer === true);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }

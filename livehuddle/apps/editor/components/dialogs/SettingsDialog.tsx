@@ -12,7 +12,6 @@ import {
   useSettingsScope,
   type AccountHost,
 } from '@liveworkspace/settings-ui';
-import { workspaceOriginFor } from '@liveworkspace/sites';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useCursorsDrawn } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
@@ -25,13 +24,13 @@ import { visibleCategories } from '@/components/dialogs/settings/settings-catalo
 import { SETTINGS_KIT } from '@/components/dialogs/settings/settings-kit';
 import { settingsModel } from '@/components/dialogs/settings/settings-model';
 import {
+  ACCOUNT_SETTINGS,
   cloudSyncHost,
   renderSettingsLogo,
   SETTINGS_APP,
   settingsRequest,
 } from '@/components/dialogs/settings/settings-panel-host';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { useRetiredPartsCount } from '@/hooks/persistence/useRetiredPartsCount';
 
 type SettingsDialogProps = {
   settings: UserPreferences;
@@ -74,9 +73,6 @@ export function SettingsDialog({
   const signedIn = Boolean(isSignedIn && accountUserId);
   const { user } = useDeferredAuth();
   // Live settings, not a snapshot: a panel's rows follow its Enable switch the moment it flips.
-  // Documents in This Browser with parts set aside: Account's way back to the offer
-  // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps").
-  const retiredParts = useRetiredPartsCount();
   // The Hide Participant Cursors row only where the tab draws cursors (collaborator-enhancements.md).
   const cursorsDrawn = useCursorsDrawn();
   const categories = useMemo(
@@ -86,27 +82,26 @@ export function SettingsDialog({
         signedIn,
         preferences: settings,
         cursorsDrawn,
-        retiredParts,
       }),
-    [emailEnabled, signedIn, settings, retiredParts, cursorsDrawn],
-  );
-
-  // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
-  // only when what it reads changes, so its rows keep their identity (and the view's memo) across a
-  // search keystroke.
-  const model = useMemo(
-    () => settingsModel(categories, settings, onChange),
-    [categories, settings, onChange],
+    [emailEnabled, signedIn, settings, cursorsDrawn],
   );
 
   // The header's livehuddle / All switch (docs/specs/007-editor/user-preferences.md "This app or All"): All needs an
   // account whose settings liveworkspace keeps, so a guest sees this app's alone.
   const allowAll = signedIn;
-  // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
-  const [scope, setScope] = useSettingsScope(
-    'livehuddle:settings-scope:v1',
-    focus || initialCategoryId ? 'app' : null,
+  // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
+  // only when what it reads changes, so its rows keep their identity (and the view's memo) across a
+  // search keystroke. Reset All Settings reaches the account's settings in every app where All does; else this
+  // browser's alone.
+  const model = useMemo(
+    () =>
+      settingsModel(categories, settings, onChange, {
+        accountRequest: allowAll ? settingsRequest : null,
+      }),
+    [categories, settings, onChange, allowAll],
   );
+  // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
+  const [scope, setScope] = useSettingsScope();
   // The Account section's switches are this editor's own shared preferences, changed through its own rows (counted
   // and synced as here). The profile's Name and Colour is edited in place, over the same door as All's settings
   // (`/api/workspace/account/profile` with the person's token); a save is told to the page (onProfileSaved), so this
@@ -137,14 +132,14 @@ export function SettingsDialog({
             }
           : null,
       ...(profile ? { profile } : {}),
-      // Sign-in methods and devices are liveworkspace.app's session's.
-      securityHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
-      // Webhooks are added and managed in liveworkspace's Settings (liveworkspace/docs/specs/004-index/webhooks.md).
-      webhooksHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=webhooks`,
+      // Sign-in and devices, the API tokens and Download Your Data, in place for an account; a guest, a
+      // workbench and a self-hosted editor have none. Phone notifications stay this editor's own (none here).
+      ...(allowAll ? ACCOUNT_SETTINGS : {}),
+      phone: null,
       emails: emailEnabled,
       cloudSync,
     }),
-    [settings, model, onChange, emailEnabled, signedIn, user, profile, cloudSync],
+    [settings, model, onChange, emailEnabled, signedIn, user, profile, cloudSync, allowAll],
   );
 
   // Which categories people actually open is the signal for whether this
@@ -153,7 +148,7 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   }, []);
 
-  // Tours › "Receptionist's Welcome" (docs/specs/008-canvas/receptionist.md): turning its row on from off and closing has the Receptionist
+  // Getting Started › "Receptionist's Welcome" (docs/specs/008-canvas/receptionist.md): turning its row on from off and closing has the Receptionist
   // give his welcome again, as the footer's Ask Receptionist does.
   const avatarTourSeen = settings.avatarTourSeen === true;
   const avatarTourSeenAtOpen = useRef(avatarTourSeen);

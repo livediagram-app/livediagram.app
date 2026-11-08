@@ -10,8 +10,8 @@ import { APP_ITEMS } from '@liveworkspace/sites';
 // The names are the registry's, which the Explorer page deletes a This Browser item by.
 const DB_NAME = APP_ITEMS.livehuddle.offlineStore.db;
 // Version 2 renamed the object store (docs/specs/006-document/offline-mode.md);
-// ./legacy-offline-store moves every record across. Version 3 added the `retired-parts` store and sets aside each
-// record holding Pages or Plan content before anything can read it (./retired-parts-upgrade).
+// ./legacy-offline-store moves every record across. Version 3 is kept so no browser that opened it is asked to go
+// back a version.
 const DB_VERSION = 3;
 const STORE = APP_ITEMS.livehuddle.offlineStore.store;
 export const OFFLINE_DOCUMENTS_STORE = STORE;
@@ -55,9 +55,8 @@ export class OfflineStoreUnavailableError extends Error {
   }
 }
 
-// One connection to the store, for one operation: callers close it when done. Exported for the retired-parts store
-// (./retired-parts), which shares the database and its upgrade.
-export function openOfflineDb(): Promise<IDBDatabase> {
+// One connection to the store, for one operation: callers close it when done.
+function openOfflineDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
       reject(new Error('IndexedDB unavailable'));
@@ -72,8 +71,7 @@ export function openOfflineDb(): Promise<IDBDatabase> {
       reject(new OfflineStoreUnavailableError(reason));
     };
     const timer = setTimeout(() => giveUp('timeout'), OFFLINE_STORE_OPEN_TIMEOUT_MS);
-    req.onupgradeneeded = (event) =>
-      upgradeStores(req.result, req.transaction!, STORE, event.oldVersion);
+    req.onupgradeneeded = () => upgradeStores(req.result, req.transaction!, STORE);
     req.onblocked = () => giveUp('blocked');
     req.onsuccess = () => {
       // An open that lands after we gave up is closed at once, so it never holds a version lock.

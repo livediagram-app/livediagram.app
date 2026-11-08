@@ -16,3 +16,9 @@
 # features"); its article's old URL lands on the Selection Modes page. livediagram keeps the view.
 /selection-modes/isometric-mode /selection-modes/ 301
 /selection-modes/isometric-mode/ /selection-modes/ 301
+# The Layers panel was retired on 2026-11-08 (docs/specs/006-design/layers.md "Retired: the Layers panel");
+# its two sub-articles land on the Layers article, which says what layers still do.
+/canvas/layers-organising /canvas/layers/ 301
+/canvas/layers-organising/ /canvas/layers/ 301
+/canvas/layers-visibility-and-locking /canvas/layers/ 301
+/canvas/layers-visibility-and-locking/ /canvas/layers/ 301

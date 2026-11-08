@@ -70,7 +70,9 @@ Every list of items (My Work, a folder, a team, Recent, Favourites and search re
 
 ## An item's menu
 
-Each row and card has a **⋯** button (or right-click it) with what you can do to that item: **Open**, **Rename**, **Duplicate**, **Change Folder**, **Share**, **Add to Favourites**, **History**, **Hide from Recent**, **Open Team** for a team's item, **Take Offline**, and **Delete Plan** to move it to the Trash. What appears depends on your access: someone who reaches an item through a link cannot rename, move, share or delete it, and its menu offers **Remove from Shared With Me** instead.
+Each row and card has a **⋯** button (or right-click it) with what you can do to that item: **Open**, **Rename**, **Duplicate**, **Change Folder**, **Share**, **Add to Favourites**, **History**, **Webhooks**, **Hide from Recent**, **Open Team** for a team's item, **Take Offline**, and **Delete Plan** to move it to the Trash. What appears depends on your access: someone who reaches an item through a link cannot rename, move, share or delete it, and its menu offers **Remove from Shared With Me** instead.
+
+**Webhooks** posts what happens to this plan to a Slack or Microsoft Teams channel, or to a service you run. It is the plan's own: what you set up there applies to this plan only, and each of your other plans has its own, up to 10 each. Choose **Add Webhook**, pick where it posts, paste the address (the dialog shows how to get one), name it, then tick what it should send (none are ticked at first) and **Who Did It**: **Anyone**, or **Only Me** for just your own changes. A plan's webhooks can also post when a card moves or a form gets a response. Each webhook has **Send Test**, **Pause**, **Delete**, **Edit Events** and its **Recent Deliveries**. You need to be signed in and able to edit the whole plan: its owner, someone in its team, or someone with an Editor link to every tab.
 
 **Duplicate** makes a copy named after the original with "(copy)" on the end, every tab included, and puts it in your library.
 

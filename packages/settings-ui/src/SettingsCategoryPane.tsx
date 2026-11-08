@@ -1,7 +1,8 @@
 'use client';
 
-import { Fragment, memo, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Fragment, memo, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AccordionSection } from './AccordionSection';
+import { markCount, marksWidth, SettingsRowMarksProvider, useSettingsAppMarks } from './app-marks';
 import { useSettingsUiKit } from './kit';
 import {
   settingsSectionId,
@@ -11,18 +12,17 @@ import {
   type SettingsToggleRow,
 } from './model';
 import { SettingsChoiceRowView } from './rows/ChoiceRow';
-import {
-  SettingsLinkRowView,
-  SettingsNoteRowView,
-  SettingsShortcutListRowView,
-} from './rows/SimpleRows';
+import { SettingsNoteRowView, SettingsShortcutListRowView } from './rows/SimpleRows';
 import { SettingsSliderRowView } from './rows/SliderRow';
 import { SettingsToggleGroupRowView } from './rows/ToggleGroupRow';
 import { SettingsToggleRowView } from './rows/ToggleRow';
 import { SETTINGS_ROW_ATTRIBUTE } from './settings-scroll-anchor';
-import { SETTINGS_CARD_SLOT, SettingsGroup, SettingsGroupChildren } from './SettingsGroup';
-
-type OpenCategory = (categoryId: string) => void;
+import {
+  SETTINGS_CARD_SLOT,
+  SETTINGS_LABEL,
+  SettingsGroup,
+  SettingsGroupChildren,
+} from './SettingsGroup';
 
 // One category's settings. The pane is deliberately thin: the model says which rows exist, what
 // kind of control each needs and what to do when it changes, so this only groups and dispatches.
@@ -30,7 +30,6 @@ export function SettingsCategoryPane({
   category,
   isMobile,
   focusRowKey = null,
-  onOpenCategory,
   focusSectionId = null,
 }: {
   category: SettingsCategory;
@@ -38,8 +37,6 @@ export function SettingsCategoryPane({
   isMobile: boolean;
   // Row to scroll to and ring, when Settings was opened on it.
   focusRowKey?: string | null;
-  // Open another category in place, for a link row. Stable, so the rows it reaches keep their memo.
-  onOpenCategory?: OpenCategory;
   // Section to scroll to and focus the heading of (settingsSectionId).
   focusSectionId?: string | null;
 }) {
@@ -52,21 +49,25 @@ export function SettingsCategoryPane({
   const listed = new Set(category.rows.map((r) => r.key));
   const nested = (row: SettingsRow) => !!row.parent && listed.has(row.parent);
   const childrenOf = (row: SettingsRow) => category.rows.filter((r) => r.parent === row.key);
-  //
-  // In All's merged categories an app's own rows (`row.app`) come after the shared ones, as a block under the app's
-  // logo and name, with that app's section notes and closed sections.
   type Group = { section?: string; rows: SettingsRow[] };
-  const blocks: { app?: string; groups: Group[] }[] = [];
+  const groups: Group[] = [];
   for (const row of category.rows.filter((r) => !nested(r))) {
-    let block = blocks[blocks.length - 1];
-    if (!block || block.app !== row.app) {
-      block = { ...(row.app !== undefined ? { app: row.app } : {}), groups: [] };
-      blocks.push(block);
-    }
-    const last = block.groups[block.groups.length - 1];
+    const last = groups[groups.length - 1];
     if (last && last.section === row.section) last.rows.push(row);
-    else block.groups.push({ section: row.section, rows: [row] });
+    else groups.push({ section: row.section, rows: [row] });
   }
+
+  // The apps each setting applies to, as logos left of its name (app-marks.tsx), where the panel lists more than one
+  // app: one column for the category, as wide as its widest cluster, so every name starts at the same place.
+  const marks = useSettingsAppMarks();
+  const marksColumn = useMemo(() => {
+    if (!marks) return 0;
+    let slots = 0;
+    for (const row of category.rows) {
+      if (row.apps) slots = Math.max(slots, markCount(row.apps, marks));
+    }
+    return marksWidth(slots);
+  }, [marks, category.rows]);
 
   const noteText = (note: SettingsSectionNote) => (
     <>
@@ -80,98 +81,46 @@ export function SettingsCategoryPane({
     </>
   );
 
-  const renderSections = (
-    groups: Group[],
-    {
-      sectionNotes,
-      collapsedSections,
-      prefix,
-      level,
-    }: {
-      sectionNotes?: SettingsCategory['sectionNotes'];
-      collapsedSections?: readonly string[];
-      // An app block's: its sections' element ids are its own, and a deep link's section is never one of them.
-      prefix: string;
-      level: 'h3' | 'h4';
-    },
-  ) =>
-    groups.map((group, groupIndex) => {
-      const note = group.section ? sectionNotes?.[group.section] : undefined;
-      const sectionId = group.section ? settingsSectionId(group.section) : null;
-      const focusable = prefix === '' && sectionId !== null && sectionId === focusSectionId;
-      if (group.section && collapsedSections?.includes(group.section)) {
-        // A section people rarely look for, as a closed accordion: opened by its heading, or on its own when
-        // Settings was opened on one of its rows or on the section.
-        const all = group.rows.flatMap((r) => [r, ...childrenOf(r)]);
-        return (
-          <CollapsedSection
-            key={`${prefix}${group.section}`}
-            name={group.section}
-            id={`${prefix}${sectionId}`}
-            note={note ? noteText(note) : undefined}
-            focused={focusable || all.some((r) => r.key === focusRowKey)}
-            onCount={onCount(all)}
-          >
-            {renderGroup(group.rows)}
-          </CollapsedSection>
-        );
-      }
-      return (
-        <section
-          key={`${prefix}${group.section ?? groupIndex}`}
-          className="flex flex-col gap-2"
-          {...(sectionId ? { 'data-settings-section': `${prefix}${sectionId}` } : {})}
-        >
-          {group.section ? (
-            <SectionHeading
-              name={group.section}
-              id={`${prefix}${sectionId}`}
-              level={level}
-              focused={focusable}
-            />
-          ) : null}
-          {note ? (
-            <p className="-mt-1 px-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-              {noteText(note)}
-            </p>
-          ) : null}
-          {renderGroup(group.rows)}
-        </section>
-      );
-    });
-
   return (
     <div className="flex flex-col gap-6">
-      {blocks.flatMap((block, blockIndex) => {
-        const app = block.app;
-        const heading = app !== undefined ? category.appHeadings?.[app] : undefined;
-        if (app === undefined || !heading) {
-          return renderSections(block.groups, {
-            sectionNotes: category.sectionNotes,
-            collapsedSections: category.collapsedSections,
-            prefix: app !== undefined ? `${settingsSectionId(app)}-` : '',
-            level: 'h3',
-          });
+      {groups.map((group, groupIndex) => {
+        const note = group.section ? category.sectionNotes?.[group.section] : undefined;
+        const sectionId = group.section ? settingsSectionId(group.section) : null;
+        const focusable = sectionId !== null && sectionId === focusSectionId;
+        if (group.section && category.collapsedSections?.includes(group.section)) {
+          // A section people rarely look for, as a closed accordion: opened by its heading, or on its own when
+          // Settings was opened on one of its rows or on the section.
+          const all = group.rows.flatMap((r) => [r, ...childrenOf(r)]);
+          return (
+            <CollapsedSection
+              key={group.section}
+              name={group.section}
+              id={sectionId!}
+              note={note ? noteText(note) : undefined}
+              focused={focusable || all.some((r) => r.key === focusRowKey)}
+              onCount={onCount(all)}
+            >
+              {renderGroup(group.rows)}
+            </CollapsedSection>
+          );
         }
-        const headingId = `settings-app-${settingsSectionId(category.id)}-${settingsSectionId(app)}`;
-        return [
+        return (
           <section
-            key={`app:${app}:${blockIndex}`}
-            aria-labelledby={headingId}
-            data-settings-app={app}
+            key={group.section ?? groupIndex}
             className="flex flex-col gap-2"
+            {...(sectionId ? { 'data-settings-section': sectionId } : {})}
           >
-            <AppHeading id={headingId} label={heading.label} icon={heading.icon} />
-            <div className="flex flex-col gap-5">
-              {renderSections(block.groups, {
-                sectionNotes: heading.sectionNotes,
-                collapsedSections: heading.collapsedSections,
-                prefix: `${settingsSectionId(app)}-`,
-                level: 'h4',
-              })}
-            </div>
-          </section>,
-        ];
+            {group.section ? (
+              <SectionHeading name={group.section} id={sectionId!} focused={focusable} />
+            ) : null}
+            {note ? (
+              <p className="-mt-1 px-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                {noteText(note)}
+              </p>
+            ) : null}
+            {renderGroup(group.rows)}
+          </section>
+        );
       })}
     </div>
   );
@@ -188,7 +137,7 @@ export function SettingsCategoryPane({
                 row={row}
                 focused={row.key === focusRowKey}
                 isMobile={isMobile}
-                onOpenCategory={onOpenCategory}
+                marksColumn={marksColumn}
               />
               {children.length > 0 ? (
                 <SettingsGroupChildren label={`${row.label} settings`}>
@@ -198,7 +147,9 @@ export function SettingsCategoryPane({
                       row={child}
                       focused={child.key === focusRowKey}
                       isMobile={isMobile}
-                      onOpenCategory={onOpenCategory}
+                      marksColumn={marksColumn}
+                      // Under a switch with the same apps the marks are its parent's: the column stays, empty.
+                      sameAppsAsParent={sameApps(child.apps, row.apps)}
                     />
                   ))}
                 </SettingsGroupChildren>
@@ -229,29 +180,44 @@ const RowSlot = memo(function RowSlot({
   row,
   focused,
   isMobile,
-  onOpenCategory,
+  marksColumn = 0,
+  sameAppsAsParent = false,
 }: {
   row: SettingsRow;
   focused: boolean;
   isMobile: boolean;
-  onOpenCategory?: OpenCategory;
+  // The category's column for its app marks, in px; 0 draws none.
+  marksColumn?: number;
+  sameAppsAsParent?: boolean;
 }) {
+  const view = <RowView row={row} isMobile={isMobile} />;
   return (
     <FocusRing rowKey={row.key} focused={focused}>
-      <RowView row={row} isMobile={isMobile} onOpenCategory={onOpenCategory} />
+      {marksColumn > 0 && row.apps ? (
+        <SettingsRowMarksProvider
+          value={{
+            rowKey: row.key,
+            apps: row.apps,
+            width: marksColumn,
+            hidden: sameAppsAsParent,
+          }}
+        >
+          {view}
+        </SettingsRowMarksProvider>
+      ) : (
+        view
+      )}
     </FocusRing>
   );
 });
 
-function RowView({
-  row,
-  isMobile,
-  onOpenCategory,
-}: {
-  row: SettingsRow;
-  isMobile: boolean;
-  onOpenCategory?: OpenCategory;
-}) {
+// Whether a nested row applies to the same apps as the switch it sits under.
+function sameApps(a: readonly string[] | undefined, b: readonly string[] | undefined): boolean {
+  if (!a || !b || a.length !== b.length) return false;
+  return a.every((app) => b.includes(app));
+}
+
+function RowView({ row, isMobile }: { row: SettingsRow; isMobile: boolean }) {
   // A desktop-only row stays visible on a phone but inert, with its note.
   const inert = isMobile && !!row.desktopOnly;
   const notice = inert ? row.desktopOnly : undefined;
@@ -280,8 +246,6 @@ function RowView({
       return <SettingsSliderRowView row={row} disabled={inert} notice={notice} />;
     case 'toggleGroup':
       return <SettingsToggleGroupRowView row={row} disabled={inert} />;
-    case 'link':
-      return <SettingsLinkRowView row={row} onOpenCategory={onOpenCategory} />;
     case 'note':
       return <SettingsNoteRowView row={row} />;
     case 'shortcutList':
@@ -294,17 +258,7 @@ function RowView({
 // A section's heading. When Settings was opened on this section, it scrolls
 // to the top of the pane and takes focus, so a keyboard or screen reader user
 // lands on it too.
-function SectionHeading({
-  name,
-  id,
-  level: Heading,
-  focused,
-}: {
-  name: string;
-  id: string;
-  level: 'h3' | 'h4';
-  focused: boolean;
-}) {
+function SectionHeading({ name, id, focused }: { name: string; id: string; focused: boolean }) {
   const ref = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (!focused) return;
@@ -320,37 +274,13 @@ function SectionHeading({
     return () => cancelAnimationFrame(frame);
   }, [focused]);
   return (
-    <Heading
+    <h3
       ref={ref}
       id={`settings-section-${id}`}
       tabIndex={-1}
-      className="scroll-mt-2 rounded px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:text-slate-400"
+      className={`scroll-mt-2 rounded px-1 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${SETTINGS_LABEL}`}
     >
       {name}
-    </Heading>
-  );
-}
-
-// An app's sub-heading in one of All's merged categories (and the Account section): its Living Prism and name, over
-// the rows only that app has.
-function AppHeading({ id, label, icon }: { id: string; label: string; icon?: ReactNode }) {
-  return (
-    <h3
-      id={id}
-      data-settings-app-heading=""
-      className="flex items-center gap-1.5 px-1 pt-1 text-xs font-semibold text-slate-700 dark:text-slate-200"
-    >
-      {icon ? (
-        <span
-          aria-hidden
-          className="inline-flex size-4 shrink-0 items-center justify-center [&_svg]:size-4"
-        >
-          {icon}
-        </span>
-      ) : null}
-      <span data-logotype="" className="min-w-0 [overflow-wrap:anywhere]">
-        {label}
-      </span>
     </h3>
   );
 }

@@ -1,10 +1,12 @@
-// Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): what a person's or a team's items do, sent to another tool
-// as it happens. The names, limits and wire shapes the index, the Settings panel and liveplanner's card moves agree on.
+// Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): what happens to one document, sent to another tool as it
+// happens. The names, limits and wire shapes the index, the document's Webhooks dialog and liveplanner's card moves
+// agree on.
 
-/** The events a webhook can listen for: the Timeline's item events, liveplanner's card moves and form responses, and
- *  @-mentions in any app's comments. */
+import { APPS, type App } from './constants';
+
+/** The events a webhook can listen for: what can happen to an existing document (the Timeline's item events after
+ *  it is made) and liveplanner's card moves and form responses. */
 export const WEBHOOK_EVENTS = [
-  'created',
   'renamed',
   'moved',
   'trashed',
@@ -14,7 +16,6 @@ export const WEBHOOK_EVENTS = [
   'action_done',
   'card_moved',
   'form_response',
-  'mention',
 ] as const;
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
 
@@ -24,19 +25,42 @@ export type WebhookDeliveryType = WebhookEvent | 'ping';
 export const isWebhookEvent = (value: unknown): value is WebhookEvent =>
   (WEBHOOK_EVENTS as readonly unknown[]).includes(value);
 
-/** Each event as Settings names it. */
+/** Which apps send each event: every app has documents (the Timeline's events) and pushes its comment threads and
+ *  actions; card moves and form responses are liveplanner's alone. */
+export const WEBHOOK_EVENT_APPS: Record<WebhookEvent, readonly App[]> = {
+  renamed: APPS,
+  moved: APPS,
+  trashed: APPS,
+  shared: APPS,
+  commented: APPS,
+  action_assigned: APPS,
+  action_done: APPS,
+  card_moved: ['liveplanner'],
+  form_response: ['liveplanner'],
+};
+
+/** The events a document of `app` can send, in WEBHOOK_EVENTS order. */
+export const webhookEventsOf = (app: App): WebhookEvent[] =>
+  WEBHOOK_EVENTS.filter((event) => WEBHOOK_EVENT_APPS[event].includes(app));
+
+/** Whose actions a webhook reports: anyone's, or only its creator's. */
+export const WEBHOOK_WHO = ['anyone', 'me'] as const;
+export type WebhookWho = (typeof WEBHOOK_WHO)[number];
+
+export const isWebhookWho = (value: unknown): value is WebhookWho =>
+  (WEBHOOK_WHO as readonly unknown[]).includes(value);
+
+/** Each event as the dialog's fallback names it (the dialog names an item event by its app's own word). */
 export const WEBHOOK_EVENT_LABELS: Record<WebhookDeliveryType, string> = {
-  created: 'Item Created',
-  renamed: 'Item Renamed',
-  moved: 'Item Moved',
-  trashed: 'Item Moved to the Trash',
+  renamed: 'Renamed',
+  moved: 'Moved',
+  trashed: 'Moved to the Trash',
   shared: 'Share Link Made',
   commented: 'Comment Added',
   action_assigned: 'Action or Card Assigned',
   action_done: 'Action or Card Done',
-  card_moved: 'Card Moved (liveplanner)',
-  form_response: 'Form Response (liveplanner)',
-  mention: 'Mentioned',
+  card_moved: 'Card Moved',
+  form_response: 'Form Response',
   ping: 'Test',
 };
 
@@ -47,13 +71,13 @@ export type WebhookKind = (typeof WEBHOOK_KINDS)[number];
 export const isWebhookKind = (value: unknown): value is WebhookKind =>
   (WEBHOOK_KINDS as readonly unknown[]).includes(value);
 
-// Why a webhook is paused: by a person, its creator no longer a team admin, 20 deliveries in a row given up, or the
-// endpoint answered 410 Gone.
+// Why a webhook is paused: by a person, its creator no longer able to edit the document, 20 deliveries in a row given
+// up, or the endpoint answered 410 Gone.
 export type WebhookPauseReason = 'paused' | 'creator_left' | 'failing' | 'gone';
 
-// Limits: webhooks per scope, a name's length, a URL's length, a delivery's body, the finished deliveries kept per
+// Limits: webhooks per document, a name's length, a URL's length, a delivery's body, the finished deliveries kept per
 // webhook, and the pending ones it may hold.
-export const WEBHOOKS_PER_SCOPE_MAX = 10;
+export const WEBHOOKS_PER_DOCUMENT_MAX = 10;
 export const WEBHOOK_NAME_MAX = 80;
 export const WEBHOOK_URL_MAX = 2048;
 export const WEBHOOK_PAYLOAD_MAX_BYTES = 16 * 1024;
@@ -68,15 +92,21 @@ export const WEBHOOK_TIMESTAMP_HEADER = 'X-Liveworkspace-Timestamp';
 export const WEBHOOK_EVENT_HEADER = 'X-Liveworkspace-Event';
 export const WEBHOOK_DELIVERY_HEADER = 'X-Liveworkspace-Delivery';
 
-/** A webhook as Settings lists it: never its URL or secret, only the URL's host. */
+/** A document's webhook as its dialog lists it: never its URL or secret, only the URL's host. */
 export type Webhook = {
   id: string;
+  // The document it reports on, and its app.
+  itemId: string;
+  app: App;
   name: string;
   kind: WebhookKind;
-  // Null: the person's own items.
-  teamId: string | null;
   host: string;
+  // The events it sends, in WEBHOOK_EVENTS order.
   events: WebhookEvent[];
+  // Whose actions: anyone's, or only its creator's.
+  who: WebhookWho;
+  // Whether the person asking added it (or resumed it last), so Only Me reads "Only You" to them.
+  mine: boolean;
   createdAt: number;
   pausedAt: number | null;
   pausedReason: WebhookPauseReason | null;
@@ -91,6 +121,8 @@ export type WebhookDeliveryState = 'pending' | 'delivered' | 'failed';
 export type WebhookDelivery = {
   id: number;
   type: WebhookDeliveryType;
+  // The app the event came from; `liveworkspace` for a test.
+  app: App | 'liveworkspace';
   title: string;
   state: WebhookDeliveryState;
   attempts: number;
@@ -106,11 +138,16 @@ export type CreateWebhookInput = {
   kind: WebhookKind;
   url: string;
   events: WebhookEvent[];
-  // Absent or null: the person's own items.
-  teamId?: string | null;
+  // Absent: anyone.
+  who?: WebhookWho;
 };
 
-export type UpdateWebhookInput = { name?: string; events?: WebhookEvent[]; paused?: boolean };
+export type UpdateWebhookInput = {
+  name?: string;
+  events?: WebhookEvent[];
+  who?: WebhookWho;
+  paused?: boolean;
+};
 
 /** One card that changed status, as liveplanner pushes it (`PUT /app/items/:id/card-moves`). */
 export type CardMove = {
@@ -120,6 +157,8 @@ export type CardMove = {
   card: string;
   from: string;
   to: string;
+  // Who moved it: their id (an account's for Only Me), and their name.
+  actorId?: string | null;
   actorName?: string | null;
   at: number;
 };

@@ -41,7 +41,8 @@ is the only way the editor links to a help article. It:
   `md` for a dialog header, matching `DialogCloseButton`'s `h-7`);
 - opens `/help/<slug>/` in a new tab (`target="_blank"`,
   `rel="noreferrer noopener"`), matching the existing header Help link;
-- wraps the trigger in the shared `HoverCard` (never a native `title`; see
+- wraps the `?` and Help triggers in the shared `HoverCard` (a **Learn more** text link has none: its own
+  words say where it goes; never a native `title`; see
   [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)). The hover card's copy comes
   from `HELP_LINK_COPY` in `apps/live/lib/help-articles.ts`, one entry per
   article key: a **"Learn about …"** title naming the thing the reader is
@@ -136,7 +137,7 @@ help button that moves around teaches people not to look for it. It renders in
 both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
-Wired: Palette, Explorer, Activity, Layers, Map, and the tool panels
+Wired: Palette, Explorer, Activity, Layers (until the panel retired), Map, and the tool panels
 (Laser, Spotlight, Format, Eraser, Photo, and Inspect on a wireframe tab, which links
 `inspect`, the Inspect article under Wireframe Pages). This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so

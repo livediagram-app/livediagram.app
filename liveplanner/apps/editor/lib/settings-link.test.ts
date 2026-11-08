@@ -4,16 +4,20 @@ import { dropSettingsLink, readSettingsLink } from '@liveworkspace/workbench/lib
 
 describe('the Settings deep link', () => {
   it('names a category and, optionally, a section', () => {
-    expect(readSettingsLink('?settings=account&section=your-data')).toEqual({
+    expect(readSettingsLink('?settings=account&section=danger-zone')).toEqual({
       category: 'account',
-      section: 'your-data',
+      section: 'danger-zone',
     });
     expect(readSettingsLink('?settings=privacy')).toEqual({ category: 'privacy', section: null });
     expect(readSettingsLink('?x=1')).toBeNull();
   });
 
   it('leaves the URL once Settings closes, keeping the rest', () => {
-    window.history.replaceState(null, '', '/project/a?view=1&settings=account&section=your-data#t');
+    window.history.replaceState(
+      null,
+      '',
+      '/project/a?view=1&settings=account&section=danger-zone#t',
+    );
     dropSettingsLink();
     expect(`${location.pathname}${location.search}${location.hash}`).toBe('/project/a?view=1#t');
   });

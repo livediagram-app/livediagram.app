@@ -39,6 +39,7 @@ import {
   savePreferences,
 } from './preferences-sync';
 import { getWorkbenchConfinement } from './api/workbench-confinement';
+import { syncOpenExplorerCookie } from '@liveworkspace/sites/open-explorer';
 import {
   readLocalStorageSafe,
   writeLocalStorageSafe,
@@ -74,21 +75,12 @@ export type UserPreferences = {
   // How tall the map is. A big canvas is unreadable in a 144px strip; a
   // small one doesn't need more.
   mapSize?: MapSize;
-  // Layers panel options (docs/specs/006-design/layers.md). Both default ON via `!== false`.
-  //
-  // The row thumbnail is the quickest way to tell two similarly-named layers
-  // apart, but it is also the tallest thing in a row — turning it off gives a
-  // compact list on a design with many layers.
-  layersShowPreview?: boolean;
-  // The per-layer element count, beside the name.
-  layersShowCount?: boolean;
   // Panel switches (docs/specs/007-editor/user-preferences.md), each ON
   // unless stored `false`. Off removes the panel and the chrome that reaches
   // it, never the feature underneath. Read them through `panelEnabled`.
+  // (The Layers panel's switch and options retired with the panel,
+  // docs/specs/006-design/layers.md "Retired: the Layers panel": their stored keys are read by nothing.)
   //
-  // Layers: the panel, its cluster button, "Move to layer" in the element
-  // menus and the export's "Hidden layers" row. Layers still apply.
-  layersPanelEnabled?: boolean;
   // Collaborate: the panel and its button. Comments and actions stay.
   collaboratePanelEnabled?: boolean;
   // Quick style: the selection's style panel. Style memory stays.
@@ -168,11 +160,11 @@ export type UserPreferences = {
   // Home opens on its ordinary page header and the header's search field instead. Missing / undefined / true ===
   // shown, the default. The banner's own close button writes an explicit `false`; Settings turns it back on.
   homeBanner?: boolean;
-  // Layers panel hover-solo (docs/specs/006-design/layers.md). When `false`, resting the pointer
-  // on a Layers-panel row no longer solos that layer on the canvas.
-  // Missing / undefined / true === on, the default. Flipped from the
-  // panel's settings gear (desktop-only chrome, like the hover itself).
-  layerHoverPreview?: boolean;
+  // Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer"), a
+  // common setting. When `true`, the homepage, arrived at from outside the site while signed in, opens the Explorer.
+  // Missing / undefined / false === off, the default. Mirrored into this address's `lw_open_explorer` cookie on every
+  // write and every server read, for the router.
+  autoOpenExplorer?: boolean;
   // Whether the bottom-right cluster names its buttons beside their icons on a wide desktop
   // (docs/specs/007-editor/live-app.md "Named on a wide desktop"). Missing === on; a phone never
   // names them, whatever this says. Read through useDockNames.
@@ -280,6 +272,7 @@ export function readUserPreferences(): UserPreferences {
 export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | null): void {
   const fitted = fitPreferences(prefs);
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(fitted));
+  if (!getWorkbenchConfinement()) syncOpenExplorerCookie(fitted.autoOpenExplorer === true);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
@@ -370,6 +363,7 @@ async function loadUserPreferences(ownerId: string): Promise<UserPreferences | n
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));
+  if (!getWorkbenchConfinement()) syncOpenExplorerCookie(merged.autoOpenExplorer === true);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
@@ -388,8 +382,7 @@ export function __forgetFetchedPreferences(): void {
 // Whether a panel switch is on (docs/specs/007-editor/user-preferences.md):
 // on unless stored `false`, so the Settings row and every surface it gates
 // read one rule.
-export type PanelSwitch =
-  'layersPanelEnabled' | 'collaboratePanelEnabled' | 'quickStylePanelEnabled';
+export type PanelSwitch = 'collaboratePanelEnabled' | 'quickStylePanelEnabled';
 export function panelEnabled(prefs: UserPreferences | undefined, key: PanelSwitch): boolean {
   return prefs?.[key] !== false;
 }

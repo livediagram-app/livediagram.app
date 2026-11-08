@@ -81,7 +81,7 @@ describe('settings catalogue', () => {
     expect(sheets.read(next)).toBe(false);
   });
 
-  // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
+  // docs/specs/007-editor/user-preferences.md "Getting Started": a category of its own, one switch per tour in
   // the order the tours come.
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
@@ -241,18 +241,11 @@ describe('settings catalogue', () => {
     expect(ids).toContain('tokens');
   });
 
-  it('shows a guest Webhooks as API Tokens is shown them: a stand-in that says to sign in', () => {
-    // Signed in, the Account section's own Webhooks (a link to liveworkspace's Settings) stands in its place.
-    const guest = visibleCategories({ emailEnabled: false, signedIn: false });
-    const webhooks = guest.find((c) => c.id === 'webhooks')!;
-    expect(webhooks.parent).toBe('account');
-    expect(webhooks.rows).toEqual([
-      expect.objectContaining({ kind: 'note', key: 'webhooksSignIn', signIn: true }),
-    ]);
-    const ids = visibleCategories({ emailEnabled: false, signedIn: true }).map((c) => c.id);
-    expect(ids).not.toContain('webhooks');
-    const workbench = visibleCategories({ emailEnabled: false, signedIn: false, workbench: true });
-    expect(workbench.map((c) => c.id)).not.toContain('webhooks');
+  it('has no Webhooks category, for a guest or an account: webhooks are set per plan now', () => {
+    for (const signedIn of [false, true]) {
+      const ids = visibleCategories({ emailEnabled: false, signedIn }).map((c) => c.id);
+      expect(ids).not.toContain('webhooks');
+    }
   });
 
   it('shows a guest Your Data the same way: a stand-in that says to sign in', () => {
@@ -268,11 +261,8 @@ describe('settings catalogue', () => {
     expect(workbench.map((c) => c.id)).not.toContain('data');
   });
 
-  it('points every link row at a category that exists', () => {
-    const ids = new Set(SETTINGS_CATEGORIES.map((c) => c.id));
-    const links = ALL_ROWS.filter((r) => r.kind === 'link');
-    expect(links.length).toBeGreaterThan(0);
-    for (const row of links) expect(ids.has(row.target), row.key).toBe(true);
+  it('has no row that opens another category: a setting shows where it belongs', () => {
+    expect(ALL_ROWS.map((r) => r.kind)).not.toContain('link');
   });
 
   it('drops the email rows unless mail can be sent AND someone is signed in', () => {
@@ -312,7 +302,7 @@ describe('settings catalogue', () => {
   });
 });
 
-// Panels holds sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
+// Only Account holds sub-categories (docs/specs/007-editor/user-preferences.md); a panel is a section of Panels.
 describe('settings sub-categories', () => {
   // Plan has no free canvas: no guides, arrows, element indicators or mouse rows. Its Editor category held only
   // Power user mode's rows, so it went with the mode (docs/specs/007-editor/power-user-mode.md).
@@ -320,26 +310,22 @@ describe('settings sub-categories', () => {
     expect(SETTINGS_CATEGORIES.map((c) => c.id as string)).not.toContain('editor');
   });
 
-  it('nests one sub-category per panel under Panels, directly after it and in order', () => {
-    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
-    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
-    expect(children).toEqual(['collaborate']);
-    const at = ids.indexOf('panels');
-    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  it('files each panel as a section of Panels, after Panel Opacity', () => {
+    expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels')).toEqual([]);
+    const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
+    expect(panels.rows[0]!.key).toBe('panelOpacity');
+    expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual(['Collaborate']);
+    // Their old sub-category ids still land on Panels.
+    expect(panels.aliases).toEqual(['collaborate']);
   });
 
-  it('keeps Panel Opacity on Panels itself', () => {
-    const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!.rows.map((r) => r.key);
-    expect(keys).toEqual(['panelOpacity']);
-  });
-
-  it('opens every panel sub-category with its Enable switch, on by default', () => {
-    const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
+  it('opens every panel section with its Enable switch, on by default', () => {
+    const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
     const switches: Record<string, [string, string]> = {
-      collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
+      Collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
     };
-    for (const [id, [key, label]] of Object.entries(switches)) {
-      const row = first(id);
+    for (const [section, [key, label]] of Object.entries(switches)) {
+      const row = panels.rows.find((r) => r.section === section)!;
       expect([row.key, row.label]).toEqual([key, label]);
       if (row.kind !== 'toggle') throw new Error(`${key} is not a toggle`);
       expect(row.read({})).toBe(true);
@@ -369,8 +355,8 @@ describe('settings sub-categories', () => {
   });
 
   it('names a sub-category by its path', () => {
-    const collaborate = SETTINGS_CATEGORIES.find((c) => c.id === 'collaborate')!;
-    expect(settingsCategoryPath(collaborate)).toBe('Panels › Collaborate');
+    const notifications = SETTINGS_CATEGORIES.find((c) => c.id === 'notifications')!;
+    expect(settingsCategoryPath(notifications)).toBe('Account › Notifications');
     expect(settingsCategoryPath(SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!)).toBe(
       'Panels',
     );
@@ -392,5 +378,36 @@ describe('Hide Participant Cursors row', () => {
 
   it('is absent where the tab draws none', () => {
     expect(offered(false)).toBe(false);
+  });
+});
+
+// Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer").
+describe('Automatically Open Explorer row', () => {
+  const explorer = SETTINGS_CATEGORIES.find((category) =>
+    category.rows.some((row) => row.key === 'homeBanner'),
+  )!;
+  const row = explorer.rows.find((r) => r.key === 'autoOpenExplorer')!;
+
+  it('sits in Explorer directly above Show Home Banner', () => {
+    expect(explorer.label).toBe('Explorer');
+    const keys = explorer.rows.map((r) => r.key);
+    expect(keys.indexOf('autoOpenExplorer')).toBe(0);
+    expect(keys.indexOf('homeBanner')).toBe(1);
+    expect(row.label).toBe('Automatically Open Explorer');
+  });
+
+  it('is off by default, and writes only its own key', () => {
+    if (row.kind !== 'toggle') throw new Error('expected a toggle');
+    expect(row.read({})).toBe(false);
+    expect(row.read({ autoOpenExplorer: true })).toBe(true);
+    expect(row.write({ homeBanner: false }, true)).toEqual({
+      homeBanner: false,
+      autoOpenExplorer: true,
+    });
+    expect(row.event).toEqual({
+      category: 'UI',
+      on: 'AutoOpenExplorerOn',
+      off: 'AutoOpenExplorerOff',
+    });
   });
 });

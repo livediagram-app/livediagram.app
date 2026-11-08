@@ -86,7 +86,7 @@ export function InlineRenameInput({
       aria-label={ariaLabel}
       onChange={(e) => setDraft(e.target.value)}
       // A click in the field is for the field. Rows that stay clickable
-      // behind an open rename (the Layers panel keeps its select-on-click
+      // behind an open rename (a photo's Layers tab keeps its select-on-click
       // live) would otherwise treat placing the caret as a row click.
       onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => {

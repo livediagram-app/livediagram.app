@@ -133,7 +133,8 @@ export const RECEPTIONIST_TOPICS: readonly ReceptionistTopic[] = [
     id: 'help',
     group: 'Space',
     title: 'Tours and Help',
-    answer: 'Ask me any time from the button down here. Settings › Tours brings my welcome back.',
+    answer:
+      'Ask me any time from the button down here. Settings › Getting Started brings my welcome back.',
     target: '[data-tour-offer="receptionist"]',
   },
 ];

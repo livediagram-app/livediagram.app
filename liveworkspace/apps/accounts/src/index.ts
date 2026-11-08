@@ -42,6 +42,7 @@ import { withSessionColour } from './profiles.ts';
 import { networkOf, overCodeLimit } from './rate-limit.ts';
 import { sweepCodeDays, withCodeDay } from './code-day.ts';
 import { withOwnCookies } from './own-cookies.ts';
+import { LINK_GOOGLE_PATH, linkGoogleHop } from './link-google.ts';
 
 const GET_SESSION_PATH = '/get-session';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
@@ -157,6 +158,10 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
     // Signing out everywhere: the browser's hop through here, back to the app (end-session.ts).
     if (pathname === `${AUTH_BASE_PATH}${END_SESSION_PATH}`) {
       return endSessionInBrowser(request, env, getAuth(env));
+    }
+    // Connecting Google from an app's Settings: the browser's hop through here, on to Google (link-google.ts).
+    if (pathname === `${AUTH_BASE_PATH}${LINK_GOOGLE_PATH}`) {
+      return linkGoogleHop(request, env, getAuth(env));
     }
     // Discovery at the root as well as under the issuer path, for clients that only look
     // at the origin (RFC 8414 §3 and OIDC Discovery §4 disagree on where it lives).

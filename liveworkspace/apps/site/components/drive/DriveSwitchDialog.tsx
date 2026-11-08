@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, Dialog, DialogFooter } from '@liveworkspace/ui';
 import type { DriveClient } from '@liveworkspace/drive/client';
 import { switchOutcome } from '@/lib/drive/pages';
-import { BUTTON } from '../settings/account-ui';
+import { ACCOUNT_BUTTON as BUTTON } from '@liveworkspace/settings-ui';
 
 export const ACCOUNT_SWITCH_TITLE = 'Switch Google Account?';
 export const ACCOUNT_SWITCH_BODY =

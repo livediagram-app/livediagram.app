@@ -227,7 +227,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What if I delete something by accident?',
-        a: 'Deleted documents wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer or in Settings › Account. Team documents go to their team’s Trash.',
+        a: 'Deleted documents wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer. Team documents go to their team’s Trash.',
       },
     ],
   },
@@ -370,14 +370,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is there an API?',
         a: (
           <>
-            Yes. Once you sign in, make an API token from Settings › Account › API Tokens (tokens
-            belong to your liveworkspace account) and call the livedocuments REST API to read and
-            change your documents, tabs and pages from scripts, CI or anything that can send a
-            header. See the <a href="/help/developers/api-overview/">API overview</a>.
+            Yes. Once you sign in, make an API token from Settings › API Tokens (tokens belong to
+            your liveworkspace account) and call the livedocuments REST API to read and change your
+            documents, tabs and pages from scripts, CI or anything that can send a header. See the{' '}
+            <a href="/help/developers/api-overview/">API overview</a>.
           </>
         ),
         aText:
-          'Yes. Once you sign in, make an API token from Settings › Account › API Tokens (tokens belong to your liveworkspace account) and call the livedocuments REST API to read and change your documents, tabs and pages from scripts, CI or anything that can send a header. See the API overview.',
+          'Yes. Once you sign in, make an API token from Settings › API Tokens (tokens belong to your liveworkspace account) and call the livedocuments REST API to read and change your documents, tabs and pages from scripts, CI or anything that can send a header. See the API overview.',
       },
       {
         q: 'Is there a command-line tool?',

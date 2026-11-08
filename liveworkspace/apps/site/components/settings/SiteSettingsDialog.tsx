@@ -1,10 +1,12 @@
 'use client';
 
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BrandMark } from '@livediagram/ui';
 import { Dialog, useMediaQuery } from '@liveworkspace/ui';
 import type { StoredValue } from '@liveworkspace/settings/catalogue';
 import {
+  accountPanels,
+  bearerAccountSecurity,
   createDeviceSettingsStore,
   requestProfileHost,
   SETTINGS_DIALOG_CLASS,
@@ -32,29 +34,23 @@ import {
 } from '@/lib/explorer/app-session';
 import { setSessionColour, signOut, useSession } from '@/lib/session';
 import { settingsStore, type AppId } from '@/lib/app-settings';
-import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
+import { pageApp } from '@/lib/explorer/page-app';
 import { setExplorerConsent, setGuestTelemetryChoice } from '@/lib/explorer/telemetry';
 import { reportAppSetting, reportSharedSetting } from '@/lib/settings-telemetry';
 import { APP_SETTINGS_KIT } from './app-settings-kit';
 import { settingsErrorMessage } from './settings-ui';
 
-// The API Tokens category's own code: fetched when it is first shown, not with the panel.
-const TokensPanel = lazy(() => import('./TokensPanel').then((m) => ({ default: m.TokensPanel })));
-// The Webhooks category's, the same way.
-const WebhooksPanel = lazy(() =>
-  import('./webhooks/WebhooksPanel').then((m) => ({ default: m.WebhooksPanel })),
-);
-// Your Data's (Download Your Data), the same way.
-const DataExportPanel = lazy(() =>
-  import('./data-export/DataExportPanel').then((m) => ({ default: m.DataExportPanel })),
-);
+// The Account section's API Tokens and Download Your Data (@liveworkspace/settings-ui accountPanels), each
+// fetched when its category is first shown: the account API through accountApi (this site's session on
+// liveworkspace.app, the app's token through its router on an app's address).
+const ACCOUNT_PANELS = accountPanels({ request: accountApi });
+
+// Sign-in and devices on an app's address: the account API's bearer door, through the app's router.
+const APP_SECURITY = bearerAccountSecurity(accountApi, { settingsParam: 'profile' });
 
 // The apps' phone layout: narrower than `sm`, or a touch screen under 500px tall (each editor's
 // PHONE_MEDIA_QUERY).
 const PHONE_QUERY = '(max-width: 639px), (pointer: coarse) and (max-height: 499px)';
-
-// Which side of the switch this browser last chose, as each editor keeps its own.
-const SCOPE_KEY = 'liveworkspace:settings-scope:v1';
 
 // Each app's prism in its accent, and liveworkspace's own for All and the Account section, as the Explorer's filter.
 const renderLogo = (id: SettingsAppId | 'all') => (
@@ -96,12 +92,11 @@ export default function SiteSettingsDialog({
     }
 )) {
   const isMobile = useMediaQuery(PHONE_QUERY);
-  const [scope, setScope] = useSettingsScope(SCOPE_KEY, initialScope);
+  const [scope, setScope] = useSettingsScope(initialScope);
   const site = app ? APP_SITES.find((s) => s.id === app) : undefined;
-  // The Profile's header is whoever is signed in here. Its Name and Colour is edited in place on either address: over
-  // this site's session on liveworkspace.app, over the app's token on an app's own (accountApi goes through the app's
-  // router there). Sessions, sign-in methods and the API tokens are liveworkspace.app's session's, so on an app's
-  // address they link to the panel there, on the same category.
+  // The Profile's header is whoever is signed in here. Everything in the Account section is edited in place on either
+  // address: over this site's session on liveworkspace.app, over the app's token on an app's own (accountApi goes
+  // through the app's router there, and sign-in and devices through the account API's bearer door).
   const identity = useSettingsIdentity();
   const guestSignIn = guest?.signInHref ?? null;
   const accountName = identity?.name ?? '';
@@ -126,12 +121,8 @@ export default function SiteSettingsDialog({
               identity,
               profile,
               cloudSync,
-              securityHref: workspaceHref('/explorer?settings=profile'),
-              tokensHref: workspaceHref('/explorer?settings=tokens'),
-              // Webhooks are the index's, which the page reaches with the person's token on either address.
-              renderWebhooks: () => <LazyCell cell="webhooks" flush panel={<WebhooksPanel />} />,
-              // Downloads are the accounts session's, as the tokens are.
-              dataExportHref: workspaceHref('/explorer?settings=data'),
+              security: APP_SECURITY,
+              ...ACCOUNT_PANELS,
             }
           : {
               identity,
@@ -143,9 +134,7 @@ export default function SiteSettingsDialog({
                 if (left) window.location.assign('/');
                 return left;
               },
-              renderTokens: () => <LazyCell cell="tokens" panel={<TokensPanel />} />,
-              renderWebhooks: () => <LazyCell cell="webhooks" flush panel={<WebhooksPanel />} />,
-              renderDataExport: () => <LazyCell cell="data" flush panel={<DataExportPanel />} />,
+              ...ACCOUNT_PANELS,
             },
     [identity, guestSignIn, profile, cloudSync],
   );
@@ -239,35 +228,6 @@ export default function SiteSettingsDialog({
         />
       </SettingsUiKitProvider>
     </Dialog>
-  );
-}
-
-// A category drawn in the panel from its own chunk, fetched when it is first shown: the API tokens (making one, its
-// secret shown once, revoking one; they read GET /api/account/tokens then) and the webhooks (the index's
-// GET /webhooks then). `flush`: the category lays out its own parts edge to edge in the card, with the hairlines
-// between them, as the webhooks do.
-function LazyCell({
-  cell,
-  panel,
-  flush = false,
-}: {
-  cell: string;
-  panel: ReactNode;
-  flush?: boolean;
-}) {
-  return (
-    <div data-settings-cell={cell} className={flush ? undefined : 'px-4 py-4'}>
-      <Suspense
-        fallback={
-          <div
-            aria-busy
-            className="h-40 animate-pulse rounded-xl bg-slate-100 motion-reduce:animate-none dark:bg-slate-800/70"
-          />
-        }
-      >
-        {panel}
-      </Suspense>
-    </div>
   );
 }
 

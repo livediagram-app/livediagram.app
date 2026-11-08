@@ -22,6 +22,7 @@ const SOURCE: SourceCategory[] = [
   {
     id: 'editor',
     label: 'Editor',
+    aliases: ['draw'],
     rows: [
       {
         kind: 'toggle',
@@ -156,11 +157,14 @@ describe('deriveCatalogue', () => {
     });
   });
 
-  it("carries the app's tiles, keywords, nesting, section notes and collapsed sections", () => {
+  it("carries the app's tiles, aliases, keywords, nesting, section notes and collapsed sections", () => {
     const [editor, presenting] = catalogue.categories;
     // Only a top-level category draws a tile.
     expect(editor).toHaveProperty('tile', 'editor');
     expect(presenting).not.toHaveProperty('tile');
+    // The old ids of categories folded into one (Editor's `draw`) go with it, so they still land there.
+    expect(editor).toHaveProperty('aliases', ['draw']);
+    expect(presenting).not.toHaveProperty('aliases');
     expect(rows[3]).toMatchObject({ keywords: 'pace tempo', parent: 'presentation-loop' });
     // Notes for sections it shows, as text.
     expect(presenting).toMatchObject({

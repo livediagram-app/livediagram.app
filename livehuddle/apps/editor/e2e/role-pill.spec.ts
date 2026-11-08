@@ -96,7 +96,7 @@ test.describe('Retired power user keys', () => {
       'true',
     );
     // Tours seen stay seen: the Receptionist's welcome is not given again.
-    await dialog(page).getByRole('button', { name: 'Tours', exact: true }).click();
+    await dialog(page).getByRole('button', { name: 'Getting Started', exact: true }).click();
     await expect(
       dialog(page).getByRole('switch', { name: "Receptionist's Welcome" }),
     ).toHaveAttribute('aria-checked', 'false');

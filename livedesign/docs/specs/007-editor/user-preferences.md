@@ -25,7 +25,7 @@ blocks on a network round-trip at boot.
   every liveworkspace app shares (`ALL_SETTING_KEYS` in
   `@liveworkspace/settings`: privacy, motion, notifications, the chrome's
   scale and opacity, your own swatches, and the editor
-  settings two or more apps have: the Home banner, the Collaborate, Quick Style, Layers and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover and Pages' Contents), and livedesign's
+  settings two or more apps have: the Home banner, the Collaborate, Quick Style and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover and Pages' Contents), and livedesign's
   own for every other key. The api joins the two on a read
   (`joinSettings`) and splits a change between them on a write
   (`splitSettings`), so the editor sees one flat set. A shared key changed
@@ -158,7 +158,7 @@ type UserPreferences = {
   // stay readable in use. Applied via the `--lvd-panel-opacity` custom
   // property (usePanelOpacity), read by every surface tagged
   // `data-panel-translucent`: MovablePanel in both its docked and its
-  // popover branch (so the Explorer, Layers and Collaborate
+  // popover branch (so the Explorer and Collaborate
   // popovers follow it too), the Map, the Quick style panel and the
   // Toolbar strip. Buttons are not panels: the
   // bottom-right cluster buttons and the zoom controls stay opaque.
@@ -179,18 +179,12 @@ type UserPreferences = {
   // desktop"). Missing / true === shown; a phone never shows them. Read through useDockNames.
   dockButtonNames?: boolean;
 
-  // Panel switches (the Panels sub-categories, see "Settings dialog"
+  // Panel switches (the Panels sections, see "Settings dialog"
   // below). Each defaults ON via `!== false`, so an existing user's editor
   // is unchanged; `false` is the only state that turns its panel off.
   // Turning a panel off removes the panel and every piece of chrome that
   // exists to reach or mirror it, but never the feature underneath:
   //
-  // `layersPanelEnabled` false: no Layers panel, no Layers cluster button,
-  // no "Move to layer" tiles in the element menus, no "Hidden layers" row
-  // in the image export. Layers keep working: a tab's layers, their
-  // order, visibility, lock and opacity still shape the canvas, and new
-  // elements still land on the active layer.
-  layersPanelEnabled?: boolean;
   // `collaboratePanelEnabled` false: no Collaborate panel and no
   // Collaborate cluster button, even while the tab has comment threads or
   // actions (the only time either shows when on). Comments and actions
@@ -302,7 +296,7 @@ Missing key === undefined === default behaviour. Concretely:
   the button. Which edge (left or right) is per device, kept in the browser
   alone, never here
   ([Pages](pages-mode.md#contents)). Written by the sidebar's
-  Collapse Contents (in its Contents Options), the popover's Dock as Sidebar and Settings › Editor › Pages ›
+  Collapse Contents (in its Contents Options), the popover's Dock as Sidebar and Settings › Editor's Pages section ›
   Contents; emits `UI`/`Changed`/`ContentsPlacementSidebar` or
   `ContentsPlacementButton`.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
@@ -339,12 +333,14 @@ Missing key === undefined === default behaviour. Concretely:
   reads as 1, out-of-range values clamp ([UI scale](ui-scale.md)). Emits
   `UI`/`Changed`/`UiScale` (or `UiScalePanels`, `UiScaleToolbar`,
   `UiScaleCornerButtons`) on release.
-- `layersPanelEnabled` / `collaboratePanelEnabled` /
-  `quickStylePanelEnabled` undefined / true → the panel is on (the
-  default). `false` removes it and the chrome that reaches it, leaving the
-  feature working (see the data model). Emits `UI`/`Toggled`/
-  `LayersPanel{On,Off}`, `CollaboratePanel{On,Off}`
-  and `QuickStylePanel{On,Off}`.
+- `collaboratePanelEnabled` / `quickStylePanelEnabled` undefined / true →
+  the panel is on (the default). `false` removes it and the chrome that
+  reaches it, leaving the feature working (see the data model). Emits
+  `UI`/`Toggled`/`CollaboratePanel{On,Off}` and `QuickStylePanel{On,Off}`.
+- **Keys this editor does not read.** The Layers panel's `layersPanelEnabled`, `layersShowPreview`,
+  `layersShowCount` and `layerHoverPreview` (the panel retired on 8 November 2026, [Layers](../006-design/layers.md)
+  "Retired: the Layers panel") are read by nothing here; they stay common settings for livediagram, so a stored
+  value is left as it is.
 - **Retired keys.** A key no setting reads (`activityPanelEnabled`, the Activity panel's revert hover preview,
   `skipLocationStep`) is ignored on read and dropped on the next write: Undo and Redo always show in the
   bottom-right cluster, and `/new` never asks where a design goes
@@ -403,7 +399,7 @@ on" state.
 that is the only control.
 
 - The **Settings dialog** lists all of them, grouped and searchable by eye.
-  It is the answer to "I half-remember a setting about layer previews" from
+  It is the answer to "I half-remember a setting about the map's size" from
   someone who does not know which panel owns it, and the place a new reader
   goes to see what the editor can be told to do.
 - **One setting, one control.** No panel carries a gear popover of its own
@@ -501,21 +497,17 @@ and the dialog stays as the one complete, browsable index of them.
   **It is the central place to find every preference.** Categories:
   **Editor** (a **Canvas** section: alignment guides, auto-attach arrows,
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
-  pan; with the sub-categories
-  **Pages** (a **Pages**
-  section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
-  nested under it)), **Appearance** (theme, then an **Interface** section:
+  pan; a **Pages** section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo
+  Guide Strength and the Guides Shown chips nested under it), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
-  collapsible groups), **Panels** (panel opacity; with the
-  sub-categories **Layers**, **Map**, **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md)) and
-  **Quick Style**, one per panel),
-  **Accessibility** (reduce motion, and a **UI Scale** link row that opens
-  Appearance), **Tours** (one switch per guided tour, see **Tours** below),
-  **Designs** (a **Default Folders** section with one row per
+  collapsible groups), **Panels** (panel opacity, then a section per panel: **Quick Style**, **Map** and
+  **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md))),
+  **Accessibility** (reduce motion), **Getting Started** (one switch per guided tour, see **Getting Started** below),
+  **Explorer** (once its own **Designs** category, id kept: **Automatically Open Explorer** (`autoOpenExplorer`, common, off by default: the homepage opens the Explorer, [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-on-the-explorer)), **Show Home Banner**, then a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
-  preference, they read and write the index's placement defaults), and an **Explorer** section with **Show Home Banner**
-  (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, Trash, delete account, see
+  preference, they read and write the index's placement defaults); Show Home Banner
+  writes `homeBanner` (missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, **Reset All Settings** and delete account, the two rows of its Danger Zone, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
   sub-categories **Notifications** (in-editor, plus the seven email preferences) and **API Tokens** (create, view and
   revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management-the-settings-dialogs-api-tokens-category);
@@ -524,8 +516,31 @@ and the dialog stays as the one complete, browsable index of them.
   people came to change; Account and Privacy sit at the end, where the
   account-shaped things belong.
 
-  **A link row** (`kind: 'link'`) opens another category of the same dialog
-  in place: it names the category it opens and never navigates the page.
+  **Settings never has rows that navigate to another category.** A setting lives in one category and search
+  finds it there: UI Scale is Appearance's alone, and Accessibility no longer carries a row that opens Appearance.
+
+  **Order inside a category** follows one rule ([site.md "Settings"](../../../../liveworkspace/docs/specs/010-site/site.md#settings), "Order inside a
+  category"), so a category reads the same here as in every app and in liveworkspace's merged panel: the rows with
+  no section lead (a category's broadest setting, like Panel Opacity), then the sections in the shared order
+  (`SECTION_ORDER` in `@liveworkspace/settings/sections`): Canvas, Mouse, Draw, Pages, Logo Pages; Slides, Playback,
+  While Presenting; Layers, Quick Style, Map, Collaborate; Offer Again, Show Me; Default Folders; In the Editor,
+  Email, Phone. Email reads Comments, Mentions, Assigns and Invite responses, then this app's own emails, then Tips
+  and Check-Ins and Milestones last (`closesSection`), the emails from us rather than about your work. In the
+  merged panel Reset All Settings and Delete Account carry every app's mark: both act on every app.
+
+  **Reset All Settings** sits in Account's Danger Zone, directly above Delete Account (row kind `resetSettings`,
+  drawn by the shared `ResetSettingsRow` in `@liveworkspace/settings-ui`). **Reset** asks first, in place (**Reset
+  Now** and **Keep**), since it can't be undone. Signed in, it is one `DELETE /api/account/settings` over the app's token
+  ([accounts.md "Resetting every setting"](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#resetting-every-setting)):
+  every setting in every liveworkspace app goes back to its default. Then this editor drops its own copy to its
+  defaults through the same change path every row uses (no stored value is what a default means, so nothing is
+  hard-coded), and the panel draws itself again, so the change shows at once with no reload; the row says **Settings
+  Reset** for a moment. The profile, API tokens, webhooks, sign-ins and phone devices stay as they are, and so does
+  the Send Anonymous Usage Events choice (a consent, `RESET_KEEPS`). A guest and a self-hosted editor have no account
+  settings (a workbench's Settings have no Account at all): the row resets this app's settings in this browser only, and says so. The device-only
+  switches (Appearance, Keyboard Shortcuts and the like, kept apart from the preferences) are left alone. Tours offer
+  again afterwards, since a tour's seen flag is a setting. A refusal changes nothing and says so under the row, with
+  **Try Again**.
 
   **Every signed-out message links to sign in.** Wherever a Settings row says
   something needs an account (the guest identity card, Delete Account, the
@@ -534,30 +549,32 @@ and the dialog stays as the one complete, browsable index of them.
   only here: see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec). **Editor** holds **Pages** (Contents and the logo guides); the
-  settings that act on the whole canvas (quick-add on hover, alignment guides, auto-attach arrows, middle-mouse pan)
-  stay on Editor itself. A category with no rows is never shown. **Account** holds **Notifications** and
+  spec). **Editor** keeps Pages mode's own settings (Contents and the logo guides) in sections of their own
+  (**Pages**, **Logo Pages**) rather than a sub-category, after the settings that act on the whole canvas (quick-add
+  on hover, alignment guides, auto-attach arrows, middle-mouse pan). (Pages was once the sub-category Editor ›
+  Pages; its old ids, `pages` and `livedesign.app:pages`, are aliases of Editor, so a remembered category or a
+  `?settings=pages` link lands on Editor.) A category with no rows is never shown. **Panels** has none either: each panel is a section of it, and the old sub-category ids (`layers`, `quickStyle`, `map`, `collaborate`) are aliases of
+  Panels, so `?settings=map` still lands there (and `?settings=layers`, though Layers has no section since its panel
+  retired). Only **Account** holds **Notifications** and
   **API Tokens**: both belong to the person rather than the editor. Their
   category ids (`notifications`, `tokens`) predate the nesting and are
   kept, so every `?settings=notifications` / `?settings=tokens` deep link
   (email footers, the old `/explorer/profile` redirect) and every in-app
   link to them still opens the same pane.
 
-  **Webhooks** are an account's too, made and managed in liveworkspace's Settings
-  ([Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md#managing-them)). Signed in, the Account
-  section's **Webhooks** links there. A guest gets a **Webhooks** category under Account (id `webhooks`, so
-  `?settings=webhooks` opens it) holding one stand-in row, "Sign in to add webhooks." with the **Sign In** link,
-  the same shape as the email stand-in, so it reads the way API Tokens does for a guest. A workbench has neither.
+  **Webhooks** are no longer in Settings (since 8 November 2026): they are set per document, from a document's ⋯
+  menu in the Explorer (**Webhooks**), see [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).
+  The old category id `webhooks` is an alias of Profile, so an old `?settings=webhooks` link opens Profile.
 
-  **Your Data** is an account's too: downloading everything the person owns, in every app, as one zip, made in
+  **Your Data** is an account's too: downloading everything the person owns, in every app, as one zip, the same card as in
   liveworkspace's Settings ([Download your data](../../../../liveworkspace/docs/specs/003-accounts/data-export.md#settings)).
-  Signed in, the Account section's **Your Data** links there (`?settings=data`). A guest gets a **Your Data** category
+  Signed in, the Account section's **Your Data** draws it in place (`?settings=data` opens it); the emailed link still downloads from liveworkspace.app. A guest gets a **Your Data** category
   under Account (id `data`) holding one stand-in row, "Sign in to download your data." with the **Sign In** link, as
-  for Webhooks. A workbench has neither.
+  for API Tokens. A workbench has neither.
 
-  Panels holds Layers, Map, Collaborate and Quick Style,
-  one per panel, each its own pane. Each opens with that panel's **Enable
-  switch** ("Enable Layers Panel", "Enable Map",
+  Panels holds Panel Opacity, then a section per panel,
+  Quick Style, Map, then Collaborate. Each section opens with that panel's **Enable
+  switch** ("Enable Map",
   "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
   switches in the data model). The panel's other rows nest beneath the
   switch (`parent`) and are offered only while it is on: a setting for a
@@ -576,19 +593,15 @@ and the dialog stays as the one complete, browsable index of them.
   and that pane ends with its sub-categories as rows in the root list's
   grouped card, each pushing its own pane, the way iOS Settings nests a
   screen. Back from a sub-category returns to its parent's pane (the back
-  control reads "Panels", "Editor" or "Account"), and back from there to the root list. On the
+  control reads "Account"), and back from there to the root list. On the
   phone's root list the sub-categories show beneath the parent only for a
   search hit. (A disclosure chevron on the phone was tried and dropped: its
   right-pointing arrow read as the row's own "go" arrow, so the
   sub-categories behind it went unfound.) A
-  sub-category carries a plain 16px glyph rather than a tile: its panel's own
-  mark in the editor (Lucide layers for Layers, the Collaborate button's
-  glyph; the Map and Quick Style, which have no
-  toolbar button, take Lucide map and Lucide palette; Notifications and
-  API Tokens keep the bell and key they carried as top-level tiles). Search matches a
+  sub-category carries a plain 16px glyph rather than a tile: Notifications and
+  API Tokens keep the bell and key they carried as top-level tiles. Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
-  it by path ("in Panels › Layers", "in Editor › Pages", "in Account ›
-  API Tokens").
+  it by path ("in Account › API Tokens").
 
   Within a category, rows carry an optional **`section`** so a category
   holding several clusters (Editor's Canvas and Mouse rows) gets a sub-heading per
@@ -627,7 +640,7 @@ and the dialog stays as the one complete, browsable index of them.
   Settings whose effect is **visual** carry a small **before/after
   illustration** drawn from the real editor, which **rings the state
   currently in force** so the picture doubles as a readout: the minimap,
-  alignment guides, layer thumbnails, and the minimap's dimming.
+  alignment guides, and the minimap's dimming.
 
   Pick-one settings whose options LOOK different draw **one picture per
   option** instead, side by side with no arrow, the one in force ringed
@@ -655,7 +668,7 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
   Pan): a phone has no hover and no middle button.
 
-  **Tours** is a category of its own: **Pages Tours** (over **Wireframe Tour**, **Logo Tour** and **Photo Tour**), with a line saying where it runs and a **Learn more** to its article, under
+  **Getting Started** is a category of its own: **Pages Tours** (over **Wireframe Tour**, **Logo Tour** and **Photo Tour**), with a line saying where it runs and a **Learn more** to its article, under
   one **Offer Again** section note. No tour offers itself: every tour is started from the footer's
   **Start Tour** button, immediately left of Search, and leaves it once taken until its switch here is turned back on ([Pages tour](pages-tour.md)).
   These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages
@@ -713,24 +726,32 @@ and the dialog stays as the one complete, browsable index of them.
   `settings-catalogue.ts`, `settings-model.tsx` (its catalogue bound to the live preferences: the
   standard kinds through the package's `bindStandardRow`, which tracks each change before writing it,
   and its own rows as `custom` rows), its icons and illustrations, and the rows only it has
-  (appearance, shortcuts, tokens and pairings, identity, delete account, trash, default folders).
+  (appearance, shortcuts, tokens and pairings, identity, reset all settings, delete account, default folders).
   liveworkspace.app renders the same view over this app's derived catalogue
   ([liveworkspace/docs/specs/010-site/site.md](../../../../liveworkspace/docs/specs/010-site/site.md) "Settings"), so the app's
   settings look the same there as here.
 
   **This app or All.** The dialog is the package's `SettingsPanel`, the one Settings panel every app
   and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **livedesign**
-  (this app's logo and name) and **All** (liveworkspace's logo). livedesign shows, signed in, the **Account** section and the **Common** settings this app has, then this app's
-  own Settings (as above, less what those two hold): they shape this app as much as its own. Its own rows draw
+  (this app's logo and name) and **All** (liveworkspace's logo). Both sides are one set of categories (liveworkspace/docs/specs/010-site/site.md "Settings"): **All** shows
+  every row, and **livedesign**, signed in, only the rows that apply to livedesign (the Account section's, the common settings
+  livedesign has, and its own), and only the categories left with any. Under **All** each row shows, to the left of its name, the logos
+  of the apps it applies to (liveworkspace's mark alone for every app), so a setting shared with other apps says so;
+  the **livedesign** side draws no logos and keeps no column for them, since every row there applies to livedesign
+  (before 8 November 2026 it drew them too); there is no **Common** group and no group under the app's name (before 8 November 2026 there
+  were). Its own rows draw
   at once and the rest join them when read (a read that fails leaves this app's own rows, with a note and Try again
   for the rest); a guest sees this app's own Settings alone, asking the network
-  for nothing. All shows every setting the account
-  has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then one set of categories
-  merged across every app (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so
-  on, with no group per app. In each, the shared rows come first: every editor setting two or more apps have
-  (`COMMON_SETTING_KEYS`, liveworkspace/docs/specs/003-accounts/accounts.md "Common settings"), once, and any row two apps keep under the
-  same key and wording, once, written to each; then each app's own rows under a small sub-heading with its logo and
-  name. This app's rows are its own Settings minus the shared switches the Account section already
+  for nothing, with no logos beside its rows (only one app is in play). All shows every setting the account
+  has, under three small label headings that never fold (before 8 November 2026 the account's
+  categories sat under an **Account** accordion, with Notifications, API Tokens, Webhooks and Your Data nested
+  under Profile): **Account** (Profile, Notifications, Privacy, Accessibility, Your Data), **Apps** (one set of
+  categories merged across every app (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so
+  on, with no group per app and no app sub-headings) and **Developers** (API Tokens alone), each category
+  top-level with its own tile. In each, every setting is one row: every editor setting two
+  or more apps have (`COMMON_SETTING_KEYS`, liveworkspace/docs/specs/003-accounts/accounts.md "Common settings"), once, and any row
+  two apps keep under the same key and wording, once, written to each; each section shows once, holding every
+  app's rows filed under it; and each row carries its apps' logos. This app's rows are its own Settings minus the shared switches the Account section already
   holds (a row marked "All apps" whose key is one of the Account section's), and its common rows are this editor's
   own rows (so a change there is counted and synced as here), so a setting never shows twice; the other apps' rows are their own rows of their
   plain-data catalogues (`@liveworkspace/settings/catalogues/<app>`), read and written over
@@ -743,13 +764,15 @@ and the dialog stays as the one complete, browsable index of them.
   same door (`/api/workspace/account/profile`, `bearerProfileHost`). A saved name or colour is the
   editor's own at once: its cursor, name tag and presence avatar in the room follow it without a
   reload (`announceProfileSaved` / `onProfileSaved`), and opening the editor again never overwrites
-  a stored name with the account name. Sign-in Methods and devices link to liveworkspace.app, whose
-  session holds them. Nothing of All is fetched
+  a stored name with the account name. Its Time Zone (the zone the emails that can wait keep to, Automatic
+  or one picked from a searchable list) is set in place over the same door (`TimeZonePicker`,
+  liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"). Sign-in Methods and Where You're Signed In are drawn in place too, as are API Tokens
+  and Your Data (the shared panels of `@liveworkspace/settings-ui/account-panels`, each loaded when its category is
+  first opened): none links to liveworkspace.app. Nothing of All is fetched
   until All is first chosen: its code and the three other apps' catalogues are their own chunks, one
   read per other app, kept for the page's lifetime. All is offered only to a signed-in account
-  outside a workbench (a guest's settings stay in this browser); a targeted open (a search result,
-  `?settings=`) lands on livedesign; otherwise the dialog opens on the side this device chose last
-  (`livedesign:settings-scope:v1`). The host part is `settings-panel-host.tsx` (the app's id, its logos
+  outside a workbench (a guest's settings stay in this browser); the dialog always opens on livedesign, whatever was chosen last time (nothing is remembered; All is
+  one press away). The host part is `settings-panel-host.tsx` (the app's id, its logos
   and the bearer request); the switch, the Account section and All's merged categories are the package's.
 
   Email rows are **absent, not disabled**, unless BOTH email is configured (the api's `EMAIL` binding)

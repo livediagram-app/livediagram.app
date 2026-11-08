@@ -78,7 +78,13 @@ export {
   type AccountSession,
   type AccountSignInMethods,
 } from './profile/SecurityRows';
+export { bearerAccountSecurity } from './profile/bearer-security';
 export { foldIntoAccount } from './fold-account';
+export { accountPanels, preloadAccountPanels } from './account-panels/lazy';
+export type { AccountPanelsHost } from './account-panels/host';
+export { useAccountTokensInPlace } from './account-panels/tokens-in-place';
+export { accountErrorMessage } from './account-panels/errors';
+export { BUTTON as ACCOUNT_BUTTON } from './account-panels/account-ui';
 export {
   CLOUD_SYNC_PROVIDERS,
   cloudSyncRows,
@@ -111,6 +117,14 @@ export {
   type SettingsStore,
 } from './store';
 export { createScopesSaver, type PanelScopes, type ScopesSaver } from './saver';
+export {
+  RESET_DONE_MS,
+  RESET_SETTINGS_ACCOUNT,
+  RESET_SETTINGS_BROWSER,
+  ResetSettingsRow,
+  type ResetSettingsReach,
+} from './reset-settings/ResetSettingsRow';
+export { resetAccountSettings, resetBrowserSettings } from './reset-settings/reset-account';
 export {
   createDeviceSettingsStore,
   splitDeviceSettings,

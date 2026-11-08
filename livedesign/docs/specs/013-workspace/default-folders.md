@@ -221,7 +221,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
   resolves it.
 - **A context is explicit.** A `/new?folder=` or `?team=` link files the design there, in livedesign, ahead of
   any default.
-- **Where to change it.** Settings > Designs > Default Folders ([Settings](#settings)), the folder menus' **Use as
+- **Where to change it.** Settings > Explorer > Default Folders ([Settings](#settings)), the folder menus' **Use as
   Default for** and My Work's own menu. `/new` itself sets nothing.
 - None of this applies to **This Browser**: an offline design has no folder ([Non-goals](#non-goals)).
 

@@ -1,4 +1,4 @@
-// What the webhook tests share: the key, a stand-in for accounts' team roles and for DNS, and a way to add a
+// What the webhook tests share: the key, a stand-in for accounts' teams and for DNS, and a way to add a document's
 // webhook. Not a `.test.ts` file, so vitest doesn't collect it.
 
 import type { Webhook } from '@liveworkspace/index-client';
@@ -46,18 +46,22 @@ export function answerWorld(
 
 export const newWorld = (): World => ({ roles: {}, accountsDown: false, dns: {} });
 
+/** Adds a webhook to a document, as its owner or (with `headers`, say an `X-Share-Code`) whoever the caller is. */
 export async function addWebhook(
   auth: string,
+  itemId: string,
   input: Record<string, unknown> = {},
+  headers: Record<string, string> = {},
 ): Promise<{ webhook: Webhook; secret: string | null }> {
-  const res = await call('/webhooks', {
+  const res = await call(`/items/${itemId}/webhooks`, {
     method: 'POST',
     auth,
+    headers,
     body: {
       name: 'Hook',
       kind: 'json',
       url: 'https://hooks.example.com/in',
-      events: ['created', 'renamed', 'commented', 'card_moved'],
+      events: ['renamed', 'commented', 'card_moved'],
       ...input,
     },
   });

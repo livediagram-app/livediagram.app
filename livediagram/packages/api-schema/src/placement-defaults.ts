@@ -1,10 +1,11 @@
 // Default folders (docs/specs/013-workspace/default-folders.md): where a person's new documents land when
-// no place is chosen, keyed by what the document is made as. liveworkspace's index resolves and stores them; the
-// editor and the MCP server send the creation intent, which the api hands the index as `indexIntentOf`.
+// no place is chosen, keyed by the editor mode the document opens in alone: Diagrams, Drawings, Workshops.
+// liveworkspace's index resolves and stores them; the editor and the MCP server send the creation intent, which
+// the api hands the index as `indexIntentOf`.
 //
-// Three honest dimensions, most specific first: the first tab's kind (a specific kind such as an
-// event-storming board), the template family it was made from (a retrospective), and the editor mode it opens in.
-// Each comes from one closed list, so a new editor mode adds its Default Folders entry here unasked.
+// The intent still records the first tab's kind and the template family (the Explorer's filters read them), but
+// livediagram is a mode-only app at the index (index-client MODE_ONLY_PLACEMENT_APPS), so only the mode files a
+// create. EDITOR_MODES is one closed list, so a new editor mode adds its Default Folders entry here unasked.
 
 import {
   DEFAULT_TAB_KIND,
@@ -24,15 +25,9 @@ export const CREATION_TAB_KINDS = [
 ] as const satisfies readonly TabKind[];
 export type CreationTabKind = (typeof CREATION_TAB_KINDS)[number];
 
-/** The specific tab kinds: every creatable kind but the general tab. Each has a `kind:` key. */
-export type SpecificTabKind = Exclude<CreationTabKind, 'diagram'>;
-const isSpecificTabKind = (kind: CreationTabKind): kind is SpecificTabKind =>
-  kind !== DEFAULT_TAB_KIND;
-export const SPECIFIC_TAB_KINDS: readonly SpecificTabKind[] =
-  CREATION_TAB_KINDS.filter(isSpecificTabKind);
-
-/** The template families: ordinary diagram tabs made from a family of templates. The map from each
- *  template to its family is `templateFamilyOf` in `@livediagram/templates`. */
+/** The template families: ordinary diagram tabs made from a family of templates, recorded on the intent for the
+ *  Explorer's filters (no Default Folders entry). The map from each template to its family is `templateFamilyOf`
+ *  in `@livediagram/templates`. */
 export const TEMPLATE_FAMILIES = ['retrospective'] as const;
 export type TemplateFamily = (typeof TEMPLATE_FAMILIES)[number];
 
@@ -46,30 +41,23 @@ export type CreationIntent = {
 type EntryWords = { label: string; noun: string };
 const MODE_WORDS: Record<EditorMode, EntryWords> = {
   diagram: { label: 'Diagrams', noun: 'diagrams' },
-  draw: { label: 'Whiteboards', noun: 'whiteboards' },
-  workshop: { label: 'Sessions', noun: 'sessions' },
-};
-const KIND_WORDS: Record<SpecificTabKind, EntryWords> = {
-  'event-storming': { label: 'Event Storming boards', noun: 'Event Storming boards' },
+  draw: { label: 'Drawings', noun: 'drawings' },
+  workshop: { label: 'Workshops', noun: 'workshops' },
 };
 
-/** Default Folders' entries for each editor mode and specific tab kind, as the shared Explorer takes them
- *  (@liveworkspace/explorer DefaultFolderOption), between "Canvases" and the template families: "Whiteboards" holds
- *  new canvases that open in Draw mode (`livediagram:mode:draw` at the index). Typed per dimension, so a new mode
- *  or kind does not compile until it is named here. */
+/** Default Folders' entries, one per editor mode and nothing else, as the shared Explorer takes them
+ *  (@liveworkspace/explorer DefaultFolderOption): "Drawings" holds new canvases that open in Draw mode
+ *  (`livediagram:mode:draw` at the index). Typed per mode, so a new mode does not compile until it is named here. */
 export const DEFAULT_FOLDER_OPTIONS: readonly {
   dimension: 'mode' | 'kind';
   value: string;
   label: string;
   noun: string;
-}[] = [
-  ...EDITOR_MODES.map((mode) => ({ dimension: 'mode' as const, value: mode, ...MODE_WORDS[mode] })),
-  ...SPECIFIC_TAB_KINDS.map((kind) => ({
-    dimension: 'kind' as const,
-    value: kind,
-    ...KIND_WORDS[kind],
-  })),
-];
+}[] = EDITOR_MODES.map((mode) => ({
+  dimension: 'mode' as const,
+  value: mode,
+  ...MODE_WORDS[mode],
+}));
 
 /** The create's refusal of a malformed `intent`. */
 export const INTENT_INVALID = 'intent_invalid';
@@ -126,9 +114,9 @@ export function readCreationIntent(
   return { ok: true, intent: { ...intent, templateFamily } };
 }
 
-/** The intent the index files a create by (its default folders, docs/specs/013-workspace/default-folders.md):
- *  `mode:tabKind:templateFamily`, whose last part names the template family the index's defaults key on. Null for
- *  no intent. */
+/** The intent the index records a create with: `mode:tabKind:templateFamily`. The index files it by its mode
+ *  alone (livediagram is a mode-only app, docs/specs/013-workspace/default-folders.md "Filing on create"); the last
+ *  part names the template family the Explorer's filters read. Null for no intent. */
 export function indexIntentOf(intent: CreationIntent | null): string | null {
   if (!intent) return null;
   return [intent.mode, intent.tabKind, intent.templateFamily].filter(Boolean).join(':');

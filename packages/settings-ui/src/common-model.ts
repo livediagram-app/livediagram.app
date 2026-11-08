@@ -1,5 +1,5 @@
-// The All view's Common group (liveworkspace/docs/specs/010-site/site.md "Settings"): every editor setting two or more apps have,
-// once (@liveworkspace/settings/common), as the Settings view's model. A row reads `all`, else the copy an app kept
+// The Settings panel's common settings (liveworkspace/docs/specs/010-site/site.md "Settings"): every editor setting two or more
+// apps have, once (@liveworkspace/settings/common), as the Settings view's model, each row naming the apps that have it. A row reads `all`, else the copy an app kept
 // from before the setting was shared (the app the panel was opened for first), and writes `all` through that app's
 // row, so the change is counted as that app's. In an editor, the rows the editor has are its own rows, bound to its
 // live preferences, so a change there is synced and counted as on its own side.
@@ -39,6 +39,7 @@ export function commonModel({
   apps,
   order,
   own,
+  editor,
   change,
   structure = false,
 }: {
@@ -49,6 +50,9 @@ export function commonModel({
   order: readonly SettingsAppId[];
   // The editor's own Settings and preferences, where the panel is an editor's.
   own?: { categories: readonly SettingsCategory[]; prefs: SettingsBlob };
+  // The editor the panel is in, and its own Settings' row keys: its catalogue is never read, so it is one of the apps
+  // a common row applies to wherever its own Settings has that row.
+  editor?: { app: SettingsAppId; keys: ReadonlySet<string> };
   change: (app: SettingsAppId, binding: CatalogueBinding, stored: StoredValue) => void;
   // Every category under its own name, an empty one kept (catalogueModel's `structure`), for All's merge.
   structure?: boolean;
@@ -91,10 +95,28 @@ export function commonModel({
     { structure },
   ).map((category) => ({
     ...category,
-    // The heading says every row here is shared, so no row repeats "All apps".
-    rows: category.rows.map((row) => ({ ...(ownRows.get(row.key) ?? row), allApps: false })),
+    // Each row names the apps that have it, the logos drawn beside it, so no row repeats "All apps".
+    rows: category.rows.map((row) => {
+      const apps = common.apps.get(row.key) ?? [];
+      const mine = editor && editor.keys.has(row.key) && !apps.includes(editor.app);
+      return {
+        ...withSectionOf(ownRows.get(row.key) ?? row, row),
+        allApps: false,
+        apps: mine ? [editor.app, ...apps] : apps,
+      };
+    }),
   }));
   return groupCategories(COMMON_GROUP, categories, { keepEmpty: structure });
+}
+
+// The editor's own row in Common's place: under Common's section, so Show Home Banner, filed under the Explorer
+// itself, carries no "Explorer" heading repeating the category's name.
+function withSectionOf(own: SettingsRow, common: SettingsRow): SettingsRow {
+  if (own.section === common.section) return own;
+  const { section: _section, ...rest } = own;
+  return (
+    common.section !== undefined ? { ...rest, section: common.section } : rest
+  ) as SettingsRow;
 }
 
 /** Every Common row's id: what each app's own group leaves out. */

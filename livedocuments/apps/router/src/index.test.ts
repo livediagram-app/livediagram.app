@@ -765,3 +765,50 @@ describe("the visitor's address, proved to liveworkspace", () => {
     }
   });
 });
+
+describe('Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer")', () => {
+  const home = (path: string, headers: Record<string, string>) =>
+    new Request(`https://www.livedocuments.app${path}`, { headers });
+  const on = {
+    Cookie: 'ldoc_signed_in=1; lw_open_explorer=1',
+    'Sec-Fetch-Site': 'none',
+    'Sec-Fetch-Dest': 'document',
+  };
+
+  it('sends the homepage to the Explorer with the switch on, never cached, marketing never asked', async () => {
+    const { env, marketing } = makeEnv();
+    const res = await router.fetch(home('/', on), env);
+    expect(res.status).toBe(302);
+    expect(res.headers.get('Location')).toBe('/explorer/home');
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    expect(res.headers.get('Vary')).toBe('Cookie');
+    expect(marketing.urls).toEqual([]);
+  });
+
+  it('serves the homepage without the cookie, or signed out', async () => {
+    for (const Cookie of [
+      'ldoc_signed_in=1',
+      'lw_open_explorer=1',
+      'ldoc_signed_in=0; lw_open_explorer=1',
+    ]) {
+      const { env, marketing } = makeEnv();
+      const res = await router.fetch(home('/', { ...on, Cookie }), env);
+      expect(res.status).toBe(200);
+      expect(marketing.urls).toEqual(['https://www.livedocuments.app/']);
+    }
+  });
+
+  it('leaves every other page, `/?home` and a link inside the site on the homepage', async () => {
+    const { env, marketing } = makeEnv();
+    await router.fetch(home('/faq', on), env);
+    await router.fetch(home('/?home', on), env);
+    await router.fetch(home('/', { ...on, 'Sec-Fetch-Site': 'same-origin' }), env);
+    await router.fetch(home('/', { ...on, 'Sec-Fetch-Dest': 'empty' }), env);
+    expect(marketing.urls).toEqual([
+      'https://www.livedocuments.app/faq',
+      'https://www.livedocuments.app/?home',
+      'https://www.livedocuments.app/',
+      'https://www.livedocuments.app/',
+    ]);
+  });
+});

@@ -22,18 +22,18 @@ multiplayer canvas, so the tour also previews working together.
 
 ## Domain language
 
-| Term               | Means                                                                                                |
-| ------------------ | ---------------------------------------------------------------------------------------------------- |
-| **Watch It Built** | This tour. In the interface: **Watch It Built** on the footer button and in Settings' Tours category |
-| **A topic**        | One thing to learn, played as one replay: **The Basics**, **Look and Feel**, **Sketch**, ...         |
-| **The curriculum** | A mode's topics, in the order the start panel lists them                                             |
-| **Start panel**    | What a press opens: "What would you like to learn?" and the mode's topics                            |
-| **The replay**     | One run of a topic, from the pick to its end                                                         |
-| **Example**        | The replay's cursor and its name chip                                                                |
-| **Demo elements**  | What the replay builds: drawn on the canvas, never part of the document                              |
-| **A chapter**      | One named part of a topic's replay (The Basics: **Add**, **Connect**, **Label**, **Style**)          |
-| **The player**     | The bar the replay shows under the canvas: pause or play, the chapters, **Your Turn**                |
-| **welcome tour**   | Kept only in code identifiers and telemetry tokens, as before                                        |
+| Term               | Means                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| **Watch It Built** | This tour. In the interface: **Watch It Built** on the footer button and in Settings' Getting Started category |
+| **A topic**        | One thing to learn, played as one replay: **The Basics**, **Look and Feel**, **Sketch**, ...                   |
+| **The curriculum** | A mode's topics, in the order the start panel lists them                                                       |
+| **Start panel**    | What a press opens: "What would you like to learn?" and the mode's topics                                      |
+| **The replay**     | One run of a topic, from the pick to its end                                                                   |
+| **Example**        | The replay's cursor and its name chip                                                                          |
+| **Demo elements**  | What the replay builds: drawn on the canvas, never part of the document                                        |
+| **A chapter**      | One named part of a topic's replay (The Basics: **Add**, **Connect**, **Label**, **Style**)                    |
+| **The player**     | The bar the replay shows under the canvas: pause or play, the chapters, **Your Turn**                          |
+| **welcome tour**   | Kept only in code identifiers and telemetry tokens, as before                                                  |
 
 ## Where it appears
 
@@ -197,7 +197,7 @@ The dashboard's Tour Steps ranking reads The Basics' four chapters in order ([Te
 
 ## Settings
 
-Settings' Tours (Getting Started) category: a section per mode, **Watch It Built in Diagram**, **Watch It Built in
+Settings' Getting Started category: a section per mode, **Watch It Built in Diagram**, **Watch It Built in
 Draw** and **Watch It Built in Workshop**, each a closed accordion (as Show Me is) whose heading counts its topics on
 ("3 of 5 On") and opens it. Inside: the mode's switch over all its topics (**Watch It Built**, **Watch It Built in
 Draw**, **Watch It Built in Workshop**, on while any of its topics is not taken), then one switch per topic nested under
