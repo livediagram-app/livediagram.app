@@ -19,4 +19,15 @@ describe('page export', () => {
     expect(zipEntryName(pages[1]!, 2, 'svg')).toMatch(/^02 Page 2/);
     expect(sanitizeFilename('a/b:c')).toBe('a-b-c');
   });
+
+  // docs/specs/020-import-export/export-fidelity.md "File names": a page's size in its label read
+  // "Poster -9-16-" before brackets were dropped and end dashes trimmed.
+  it('drops brackets and colons from a name and collapses repeated dashes', () => {
+    expect(sanitizeFilename('Poster (9:16)')).toBe('Poster 9-16');
+    expect(sanitizeFilename('(9:16)')).toBe('9-16');
+    expect(sanitizeFilename('Logo (1080×1080)')).toBe('Logo 1080-1080');
+    expect(sanitizeFilename('Design - Slide [1]: intro?')).toBe('Design - Slide 1- intro');
+    expect(sanitizeFilename('a---b')).toBe('a-b');
+    expect(sanitizeFilename('?')).toBe('');
+  });
 });
