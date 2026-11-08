@@ -31,6 +31,7 @@
     "./room-roster": "./src/room-roster.ts",
     "./sealed": "./src/sealed.ts",
     "./tab-swap": "./src/tab-swap.ts",
+    "./testing/sqlite-d1": "./src/testing/sqlite-d1.ts",
     "./testing/unavailable-d1": "./src/testing/unavailable-d1.ts",
     "./typed-text": "./src/typed-text.ts",
     "./unfurl": "./src/unfurl.ts",

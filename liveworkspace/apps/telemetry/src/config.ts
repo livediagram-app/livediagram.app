@@ -4,7 +4,7 @@
 // The path of liveworkspace.app this Worker owns: its API, under /api like every liveworkspace API.
 export const API_PATH = '/api/telemetry';
 
-const DAY_MS = 86_400_000;
+export const DAY_MS = 86_400_000;
 // The dashboard's longest look back is 59 days (the last 30 and the 30 before them).
 export const RETENTION_MS = 60 * DAY_MS;
 

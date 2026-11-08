@@ -45,6 +45,11 @@ livedocuments', livedesign's and livehuddle's), and only stores an event that it
 The answer is always `204`, whether the batch was stored or not, so telemetry can never surface an
 error to the page or Worker that sent it. A batch stores at most 100 events.
 
+**Stored twice, at once.** Each event is kept as a row of its own (`events`), and it adds one to its
+day's count (`event_counts`: one row per UTC day, app and event, holding how many arrived). Both are
+written in one transaction, so the two never disagree. The dashboard reads only the day counts; the
+rows are the record the counts can always be rebuilt from.
+
 **From a browser**, each app buffers events and sends them in batches, with `navigator.sendBeacon`
 on page hide. The batching is one engine for every sender, `@liveworkspace/telemetry/emitter`
 (`createTelemetryEngine`). The browser side around it (the opt-out rule, the public sites' tracker,
@@ -199,14 +204,19 @@ at once, and changing the window or tab never fetches, so neither shows the skel
 keeps its own message.
 
 The numbers come from `GET /api/telemetry/summary?app=all|<an app in TELEMETRY_APPS>`, built from
-one grouped per-day query over the last 59 days (the last 30, and the 30 before them for the trend
-arrows). Each window carries `byApp`, and the daily series carries `byApp` too. The response is
+one read of the day counts over the last 59 days (the last 30, and the 30 before them for the trend
+arrows). It reads one row per day and event, never the events themselves, so its cost follows how
+many kinds of event arrive, not how many. Each window carries `byApp`, and the daily series carries `byApp` too. The response is
 cached at the edge for 5 minutes per filter, so a traffic spike on the public page is answered from
 the cache, not D1. In development the cache is off.
 
 ## Retention
 
-A daily cron (03:17 UTC) deletes events older than 60 days.
+A daily cron (03:17 UTC) deletes events older than 60 days, and the day counts of every UTC day before
+the one 60 days back (that day and older are outside the dashboard's 59). In the same run it counts yesterday again from its events and replaces yesterday's
+day counts with that, in one transaction: if anything ever wrote one without the other (the seconds
+during a deploy between the migration and the new code, when the old code still writes only events),
+the counts heal by the next morning.
 
 ## Running it locally
 
@@ -284,11 +294,21 @@ out livehuddle's `apps/mcp`, `apps/cli` and `packages/agent-verbs`: livehuddle d
 
 ## Performance
 
-- **Ingest**: one D1 batch insert per request, as before. Rows are 1 column wider (`app`).
-- **Summary**: one grouped query per filter, at most once per 5 minutes per edge location. The
-  query groups by `app` too, so "All apps" returns up to one set of rows per sending app. Folding them is linear;
-  a test folds a worst case (59 days × 2 apps × 1,500 events) inside a time budget.
-- **Index**: `(app, ts)` for one app's range, and `(ts)` for every app and for the sweep.
+- **Ingest**: one D1 batch per request: an insert per event, and one count update per distinct event
+  in the batch (the batch's events are added up first, so 100 of the same event are one update).
+- **Summary**: one read of the day counts per filter, at most once per 5 minutes per edge location.
+  It reads one row per day, app and event, never the events. Until November 2026 it grouped every event
+  of the 59 days instead: on a local SQLite copy with 1 million events, All apps took 1.5 to 2.3 s (3.4 to 32.5 s
+  when the events were stored out of order) and one app 0.25 to 0.4 s, growing with every event, so it would
+  near D1's 30-second limit at about 10 million events in 60 days, and every cache miss was billed a
+  row read per event. The counts make it a few milliseconds, whatever the traffic (blueprint
+  "Performance and limits" has the numbers). Folding the rows is linear; a test folds a worst case
+  (59 days × 2 apps × 1,500 events) inside a time budget.
+- **Index**: `events` keeps `(ts)` for the sweep and for counting a day again; the day counts' key starts
+  with the app, so one app's read is a range of it.
+- **The counts' first fill**: the migration that adds them counts every event already stored, in one
+  statement, so the dashboard shows the same numbers on the day it ships. In production that was
+  44,203 events (6,238 day counts) in November 2026, about 30 ms of D1 time.
 - **Dashboard**: "All apps" loads none of the apps' catalogues. Each app's dashboard is split out and
   loads when picked. Its styles are its own stylesheet, loaded only on `/telemetry`: the site's
   other pages carry 9.5 KB of CSS (gzipped), and the dashboard adds 16.6 KB.
