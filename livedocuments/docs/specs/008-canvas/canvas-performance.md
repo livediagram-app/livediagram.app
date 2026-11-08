@@ -124,13 +124,19 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   the board (the Map, the arrow frames, the endpoint spread) recomputes.
 - **An update that changes nothing renders nothing.** Settling the tab without changing it (an
   article laying itself out after a keystroke, which finds its pages, zones and margin notes where
-  they were) hands the editor back the very history it had, so React renders nothing for it. A new
+  they were) hands the editor back the very history it had (`withPresent`,
+  `@liveworkspace/workbench/lib/remote-op-log`, shared by every editor's history), so React renders
+  nothing for it. A new
   history object for an unchanged tab re-rendered the whole editor, every page's title bar among it,
   on every key typed into a long article.
 - **Chrome on every page draws no backdrop filter.** What every page wears (its title bar) is a
   plain card: Safari runs a backdrop filter again whenever anything behind it repaints, so a
   hundred title bars' blur ran on every keystroke of a 100-page article, about 60 ms a key in WebKit
   at iPad size. Chrome that shows once (a popover, a dialog) may blur.
+- **A render of the pages re-renders only the pages it changed.** Each page's sheet and chrome (its
+  label, title bar and invite) renders from what that page shows alone, and the editor's actions
+  reach it through handles that keep their identity; so a pause in typing, a pan or a panel opening
+  re-renders the pages that changed (none, or the one written on), not every page's title bar.
 - **Pictures of every page redraw only the pages that changed.** The Contents pictures and the Map
   read an article's writing (its lines as soft bars) once for every page, in one pass over the
   article's lines, never once per page; a page whose own elements, lines of writing and article

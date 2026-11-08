@@ -22,8 +22,9 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                     | `draftLayout` identity-stable across passes                                                                     |
 | `apps/editor/lib/stock-colour-projector.ts`                            | Same board in, same array out (`lastIn` / `lastOut`)                                                            |
 | `apps/editor/hooks/canvas/useSettledElements.ts`                       | What the Map draws: frozen during element gestures, throttled otherwise                                         |
-| `apps/editor/hooks/canvas/useDocumentHistory.ts`                       | `historyTick`: an unchanged tab hands back the same history                                                     |
+| `apps/editor/hooks/canvas/useDocumentHistory.ts`                       | `historyTick` through `withPresent`: an unchanged tab hands back the same history                               |
 | `../packages/workbench/src/components/canvas/PageTitleBar.tsx`         | The page's title bar card: no backdrop filter                                                                   |
+| `apps/editor/components/canvas/CanvasPageSheet.tsx`                    | One page's sheet and chrome, memoised; `PageSheetActions`                                                       |
 | `apps/editor/lib/article/page-writing-bars.ts`                         | `writingBarsByPage` (every page's bars in one pass), `sameBars`                                                 |
 | `apps/editor/hooks/ui/usePageThumbnails.ts`                            | Keeps a page's picture while its elements, bars and article style hold                                          |
 | `apps/editor/components/canvas/Minimap.tsx`                            | Draws `useSettledElements(elements)`                                                                            |
@@ -113,6 +114,20 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   `backdrop-blur-*`. Measured on the same article, WebKit at 1180x820, 20 keys: the time from each
   key's `input` to the next task 45 → 5 ms; frames over 50 ms 31 → 0; p95 frame 102 → 27 ms. Taking
   the blur off alone, or the card's shadow alone, gave the same: the blur is what re-runs.
+
+### A render of the pages re-renders only the pages it changed
+
+- `CanvasPages` renders each page as `CanvasPageSheet` (`components/canvas/CanvasPageSheet.tsx`, `React.memo`): the
+  page (one `LaidOutPage` per change of the stored pages), the zoom, and per-page values (its background, name, article
+  style, the buttons it shows, its open, request and invite state as booleans and counters). What it does goes
+  through one `PageSheetActions` bag from `useStableCallbacks`, whose handles keep their identity and run the newest
+  closure, so the editor's new view, new `PageEdits` and new closures on every render reach no sheet. A value only a
+  few pages use (the deck for Notes, the edits for Tidy, a stack's row and article) is passed only to a page whose
+  button shows it.
+- `usePagesMode` keeps `themeBackgrounds` per theme (`useMemo`), so the Background button's presets hold.
+- Measured on the same 100-page article, WebKit at 1180x820 (React renders counted per component): six bursts of
+  typing with a second's pause after each, page title bar renders 1,632 to 2,016 → 96 (one zoom step of the view,
+  which every page shows); twenty keys, 480 → 0; every component's renders over the twenty keys 13,650 → 6,900.
 
 ### Pictures of every page
 
@@ -564,6 +579,7 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; a preview frame renders no layer; `useLayerDragPreview.test.ts`; `useSnapGuideState.test.ts`: a guide set tells its readers only on a change |
 | An update that changes nothing renders nothing   | `useDocumentHistory.test.ts`: a tick that maps to the same tabs returns the same history                                                                                                                            |
 | Chrome on every page draws no backdrop filter    | `PageTitleBar.test.tsx` (`@liveworkspace/workbench`): the card has no `backdrop-` class                                                                                                                             |
+| A render of the pages re-renders what changed    | `CanvasPages.renders.test.tsx`: a new view re-renders no title bar; a cog opened re-renders its page's alone; a zoom re-renders all                                                                                 |
 | Pictures of every page redraw only what changed  | `page-writing-bars.test.ts`: each page's bars equal `pageWritingBars`', unmounted flows estimated, 100 pages inside a CPU budget; `sameBars`                                                                        |
 | Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                                                                                                            |
 | Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                                                                                                           |
