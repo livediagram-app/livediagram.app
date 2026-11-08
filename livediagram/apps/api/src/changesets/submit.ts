@@ -47,6 +47,9 @@ type SubmitArgs = {
   author: Author;
   tokenId: string | null;
   frontDoor: FrontDoor;
+  // False for a tab-scoped grant, which writes its own tab and never makes one
+  // (docs/specs/013-workspace/tab-scoped-share-links.md): its tab gone, a `replace` reads as missing.
+  mayCreateTab?: boolean;
   waitUntil?: (promise: Promise<unknown>) => void;
 };
 
@@ -67,7 +70,9 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       args.tokenId ? readSelections(env, document.id, tabId, args.author.id) : null,
     ]);
     if (!stored) {
-      if (request.body.kind !== 'replace') return { status: 404, body: { error: 'not_found' } };
+      if (request.body.kind !== 'replace' || args.mayCreateTab === false) {
+        return { status: 404, body: { error: 'not_found' } };
+      }
     }
     const compiled = compile(args, stored, selections);
     if ('errors' in compiled) return rejected(args, stored, compiled.errors, where);
