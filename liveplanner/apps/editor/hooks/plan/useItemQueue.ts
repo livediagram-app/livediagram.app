@@ -27,9 +27,26 @@ export function withWaitingItems(
   now = Date.now(),
 ): ItemStoreState {
   if (!queue || queue.count('items') === 0) return state;
+  const changes = queue.changes('items') as Extract<QueuedChange, { store: 'items' }>[];
+  return withWritesLaid(
+    state,
+    changes.map((c) => c.write),
+    by,
+    now,
+  );
+}
+
+// Writes laid over a store in order: the waiting ones above, and those still on their way to the api when a read of
+// the store lands (usePlanItems), so a card added a moment ago never blinks out. One that no longer applies is left out.
+export function withWritesLaid(
+  state: ItemStoreState,
+  writes: readonly ItemWrite[],
+  by: ItemPerson,
+  now = Date.now(),
+): ItemStoreState {
   let next = state;
-  for (const change of queue.changes('items') as Extract<QueuedChange, { store: 'items' }>[]) {
-    const r = applyItemWrite(next, change.write, { now, by });
+  for (const write of writes) {
+    const r = applyItemWrite(next, write, { now, by });
     if (r.ok) next = r.state;
   }
   return next;

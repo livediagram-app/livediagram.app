@@ -694,6 +694,10 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
   person with the hashed id (`itemPersonId` of the editor's self id, the id the api resolves as owner).
   - Optimistic: a write applies `applyItemWrite` locally (creates carry client-made ids, `withCreateIds`), sends,
     then merges the answer. A failed write refetches the store and toasts "Couldn't save that change".
+  - A read crossing a write never takes the written card away (a card added and opened at once would blink out,
+    and its panel close with its address): the writes still on their way are laid back over the copy read, as the
+    waiting ones are, and a copy older than an answer or room op that landed while it was asked for (its `rev`
+    below `serverRevRef`, which moved during the read) is dropped and read again (`items.refetch.stale`).
   - Room op `items`: `mergeItemChanges` keeps the higher `rev` per item; an item back at the rev it holds and alike
     field for field keeps its object, and a fold that changes no item keeps the store itself (plan-board.md "A drag
     stays smooth": the answer to a drop redraws nothing); `removed` deletes; a rev past
@@ -903,7 +907,7 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
 ## Observability
 
 Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, `items.rejected <error>`,
-`items.refetch.gap`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.write.partial` (api),
+`items.refetch.gap`, `items.refetch.stale`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.write.partial` (api),
 `comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api), `history.read`,
 `history.append.failed`, `history.retention` (api), `items.history.failed` (editor), `[repeats] made`,
 `[repeats] settled` (a copy already there), `[repeats] items_full`, `[repeats] failed` (api). Api logs never
