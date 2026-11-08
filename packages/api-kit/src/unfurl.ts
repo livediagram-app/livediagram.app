@@ -32,11 +32,7 @@ function isBlockedIpv4(a: number, b: number): boolean {
 export function isBlockedHost(hostname: string): boolean {
   // IPv6 brackets off, and a fully qualified name's trailing dot: `localhost.` and `printer.local.` reach the same
   // hosts as without it, and WHATWG URL keeps the dot in `hostname`.
-  const h = hostname
-    .toLowerCase()
-    .replace(/^\[/, '')
-    .replace(/\]$/, '')
-    .replace(/\.$/, '');
+  const h = hostname.toLowerCase().replace(/^\[/, '').replace(/\]$/, '').replace(/\.$/, '');
   if (!h) return true;
   if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local')) return true;
   if (h === '::1' || h === '::' || h === '0.0.0.0') return true; // loopback / unspecified
