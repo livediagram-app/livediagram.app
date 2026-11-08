@@ -117,7 +117,9 @@ describe('remote ops against a deep history', () => {
     const full = flood.slice(0, FLOOD_OPS).reduce(applyOp, h);
     const spent = cpuMsOf(() => void flood.slice(FLOOD_OPS).reduce(applyOp, full));
     expect(spent).toBeLessThan(cpuBudgetMs(FLOOD_BUDGET_MS));
-  });
+    // The budget is CPU time; the wall-clock timeout only stops a hang. Filling the log first is untimed and can take
+    // seconds on a loaded machine, past the 5 s default.
+  }, 60_000);
 
   it('keeps the snapshots sharing a tab the peer changed and they did not', () => {
     // Fifty steps on the small tab, then a peer save on the big one: the big tab is the same array in every
