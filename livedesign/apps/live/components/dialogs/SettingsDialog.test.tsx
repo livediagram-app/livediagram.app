@@ -147,7 +147,11 @@ describe('SettingsDialog', () => {
     setViewport(true);
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
-    expect(screen.getByRole('heading', { name: 'Layers' })).toBeTruthy();
+    for (const name of ['Quick Style', 'Map', 'Collaborate']) {
+      expect(screen.getByRole('heading', { name })).toBeTruthy();
+    }
+    // The Layers panel retired (docs/specs/006-design/layers.md "Retired: the Layers panel"), and its section with it.
+    expect(screen.queryByRole('heading', { name: 'Layers' })).toBeNull();
     expect(screen.queryByRole('navigation', { name: 'Panels sub-categories' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /^Settings./ }));
     expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();

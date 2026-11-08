@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   OPEN_EXPLORER_COOKIE,
   OPEN_EXPLORER_MAX_AGE_SECONDS,
@@ -89,9 +90,10 @@ describe('openExplorerRedirect', () => {
 
   it('stays a header test however long the Cookie header is', () => {
     const long = `${'a=b; '.repeat(2000)}ld_signed_in=1; ${ON}`;
-    const started = performance.now();
-    for (let i = 0; i < 100; i++) answer(HOME, { ...signedIn, Cookie: long });
-    expect(performance.now() - started).toBeLessThan(500);
+    const spent = cpuMsOf(() => {
+      for (let i = 0; i < 100; i++) answer(HOME, { ...signedIn, Cookie: long });
+    });
+    expect(spent).toBeLessThan(cpuBudgetMs(100));
   });
 });
 

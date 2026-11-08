@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Button, ConfirmPopover } from '@liveworkspace/ui';
 import { ErrorNote } from '../account-panels/error-note';
 import { accountErrorMessage } from '../account-panels/errors';
@@ -72,8 +72,9 @@ export function ResetSettingsRow({
   }, []);
 
   // Settings Reset gives way to the button again. The button it replaced had the keyboard, so the note takes it,
-  // unless something else on the page has it by now.
-  useEffect(() => {
+  // unless something else on the page has it by now. A layout effect, so the keyboard moves in the same commit that
+  // removes the button and never sits on the page for a frame in between.
+  useLayoutEffect(() => {
     if (phase !== 'done') return;
     const left = Math.max(0, RESET_DONE_MS - (Date.now() - doneAt.current));
     const timer = setTimeout(() => {
@@ -86,7 +87,7 @@ export function ResetSettingsRow({
     }
     return () => clearTimeout(timer);
   }, [phase]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (phase !== 'idle' || !refocus.current) return;
     refocus.current = false;
     buttonRef.current?.focus();
