@@ -6,11 +6,16 @@
 // The docked sidebar stays on screen while the person works, so it passes `settleMs`: the pictures
 // redraw once the tab has rested that long, never on every frame of a drag or every key typed.
 // Each page draws from its own elements only (lib/page-element-buckets.ts), and a page whose own
-// elements and page are unchanged keeps its picture: an edit redraws the page it touched, not the tab.
+// elements, page and writing are unchanged keeps its picture: an edit redraws the page it touched, not
+// the tab. An article's writing is read for every page in one pass (writingBarsByPage), and a page
+// whose lines of writing did not move keeps its picture (docs/specs/008-canvas/canvas-performance.md
+// "Pictures of every page").
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   pagesOf,
   layOutPages,
+  type ArticleDrawOp,
+  type ArticleStyle,
   type Element,
   type LaidOutPage,
   type Slide,
@@ -22,6 +27,7 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useImageSources } from '@/components/canvas/page-image-access';
 import { thumbImageHref, thumbImageIds } from '@/lib/thumb-images';
 import { slideThumbFor, tabArrowLabels, type SlideThumb } from '@/lib/slide-thumb';
+import { sameBars, writingBarsByPage } from '@/lib/article/page-writing-bars';
 
 export type PageThumbTab = Pick<
   Tab,
@@ -34,8 +40,14 @@ type Drawn = {
   page: LaidOutPage;
   elements: readonly Element[];
   hrefs: readonly (string | undefined)[];
+  // An article page's writing as drawn (its soft bars) and its article's style (its Lines' ruling).
+  bars: readonly ArticleDrawOp[];
+  style: ArticleStyle | undefined;
   thumb: SlideThumb | null;
 };
+// A page with no writing.
+const NO_BARS: readonly ArticleDrawOp[] = [];
+
 // What every picture shares: a change to any redraws them all.
 type Shared = readonly unknown[];
 
@@ -77,21 +89,16 @@ export function usePageThumbnails(
     const full = drawn.tab as Tab;
     const { byId, buckets } = laidOut;
     const resolveImageHref = thumbImageHref(imageSource);
-    const shared: Shared = [
-      full.id,
-      full.layers,
-      full.font,
-      full.finish,
-      full.articles,
-      iconsLoaded,
-      surface,
-    ];
+    // The articles are not shared: each page compares its own writing and style below.
+    const shared: Shared = [full.id, full.layers, full.font, full.finish, iconsLoaded, surface];
     const kept = sameList(shared, cache.current.shared)
       ? cache.current.pages
       : new Map<string, Drawn>();
     let labels: ReturnType<typeof tabArrowLabels> | undefined;
     const next = new Map<string, Drawn>();
     const out = new Map<string, SlideThumb>();
+    const drawnPages = drawn.pageIds.flatMap((id) => byId.get(id) ?? []);
+    const barsOf = writingBarsByPage(drawnPages, undefined, full);
     for (const pageId of drawn.pageIds) {
       const page = byId.get(pageId);
       if (!page) continue;
@@ -99,11 +106,15 @@ export function usePageThumbnails(
       const was = kept.get(pageId);
       let entry = was;
       const hrefs = thumbImageIds(elements, page).map(resolveImageHref);
+      const bars = barsOf.get(pageId) ?? NO_BARS;
+      const style = page.flow ? full.articles?.[page.flow]?.style : undefined;
       if (
         !was ||
         !samePage(was.page, page) ||
         !sameList(was.elements, elements) ||
-        !sameList(was.hrefs, hrefs)
+        !sameList(was.hrefs, hrefs) ||
+        was.style !== style ||
+        !sameBars(was.bars, bars)
       ) {
         // Arrow labels laid out once for the tab, and only when a page with an arrow redraws.
         if (!labels && full.elements.some((e) => e.type === 'arrow')) labels = tabArrowLabels(full);
@@ -111,9 +122,15 @@ export function usePageThumbnails(
         const thumb = slideThumbFor(
           slide,
           { ...full, elements },
-          { iconsLoaded, surface, resolveImageHref, ...(labels ? { labels } : {}) },
+          {
+            iconsLoaded,
+            surface,
+            resolveImageHref,
+            writingBars: bars,
+            ...(labels ? { labels } : {}),
+          },
         );
-        entry = { page, elements, hrefs, thumb };
+        entry = { page, elements, hrefs, bars, style, thumb };
       }
       next.set(pageId, entry!);
       if (entry!.thumb) out.set(pageId, entry!.thumb);

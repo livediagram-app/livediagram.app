@@ -1,7 +1,7 @@
 'use client';
 
 import { CANVAS_PAPER } from '@/lib/page-paint';
-import { pageWritingBars } from '@/lib/article/article-export';
+import { writingBarsByPage } from '@/lib/article/page-writing-bars';
 import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { useDeferredValue, useMemo } from 'react';
@@ -155,16 +155,17 @@ export function Minimap({
     // even an empty page shows where it is.
     const paper = CANVAS_PAPER[surface === 'dark' ? 'dark' : 'light'];
     const outline = surface === 'dark' ? '#94a3b8' : '#64748b';
+    // Every article page's writing, as soft lines of text, read in one pass for the whole row.
+    const barsOf = writingBarsByPage(
+      pages ?? [],
+      outline,
+      writing ? { articles: writing } : undefined,
+    );
     for (const page of pages ?? []) {
       const { x, y, width, height } = page.rect;
       parts.push(
         pageExportFrame(page, { paper, idPrefix: 'lvd-minimap-page' }).backgroundSvg +
-          // An article page's writing, as soft lines of text.
-          (page.flow
-            ? articleOpsToSvg(
-                pageWritingBars(page, outline, writing ? { articles: writing } : undefined),
-              )
-            : '') +
+          (page.flow ? articleOpsToSvg(barsOf.get(page.id) ?? []) : '') +
           `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
       );
       corners.push({ x, y }, { x: x + width, y: y + height });

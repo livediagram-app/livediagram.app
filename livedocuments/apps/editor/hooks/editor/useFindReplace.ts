@@ -1,7 +1,8 @@
 // Find and replace on the open tab (docs/specs/007-editor/find-and-replace.md; blueprint "The current match",
 // "Replacing"): the bar's state, the search (150 ms after typing stops, over the tab's text gathered once per change
 // of the tab), the match in hand and going to it, Replace and Replace All as one edit, the highlights published for the
-// painters, and the two chords that open it. Composed into useEditorState; the bar (FindBar) only renders it.
+// painters, and the two chords that open it. Run by FindHost, beside the bar, so typing in it re-renders the bar alone
+// (never the editor); the editor reaches it through a FindDoor. The bar (FindBar) only renders it.
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import {
   articlesOf,
@@ -80,7 +81,8 @@ export type FindView = {
   close: () => void;
 };
 
-type Deps = {
+// What the editor hands find: the tab and the editor's own doors (useEditorState, on every render).
+export type FindDeps = {
   activeTab: Tab;
   // The tab's pages in the row (Pages mode's laid out pages).
   pages: readonly LaidOutPage[] | null;
@@ -94,6 +96,10 @@ type Deps = {
   commitActiveTab: (map: (t: Tab) => Tab) => void;
   notify: (message: string) => void;
 };
+
+// What the editor holds of find: whether this person may replace (the commands' Replace), and the bar's opener (the
+// search panel's commands), which runs FindHost's when it is mounted.
+export type FindDoor = { canReplace: boolean; openBar: (withReplace: boolean) => void };
 
 type Search = { query: string; opts: FindOptions; seq: number; from: string | undefined };
 type Hand = { key: string; start: number; order: number; seq: number };
@@ -128,7 +134,7 @@ function flushWriting(tab: Tab): void {
   for (const flow of Object.keys(articlesOf(tab))) articleHandleOf(flow)?.flush();
 }
 
-export function useFindReplace(deps: Deps): FindView {
+export function useFindReplace(deps: FindDeps): FindView {
   const { activeTab, can, standsAside } = deps;
   const latest = useRef(deps);
   useEffect(() => {

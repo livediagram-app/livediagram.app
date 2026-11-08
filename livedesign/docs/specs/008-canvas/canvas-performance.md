@@ -122,6 +122,11 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   re-renders the editor without touching an element; every display projection of the board (stock
   colours, hidden layers) then returns the same array it returned before, so nothing derived from
   the board (the Map, the arrow frames, the endpoint spread) recomputes.
+- **An update that changes nothing renders nothing.** A tick of the tabs that changes none of them
+  (a settle that finds everything where it was) hands the editor back the very history it had
+  (`withPresent`, `@liveworkspace/workbench/lib/remote-op-log`), so React renders nothing for it. A
+  new history object for an unchanged tab re-rendered the whole editor; in livedocuments that was
+  every keystroke of a long article.
 
 ## Later
 

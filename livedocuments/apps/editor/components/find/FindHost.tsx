@@ -3,7 +3,9 @@
 // Where the Find bar sits (docs/specs/007-editor/find-and-replace.md "The bar"): at the canvas's top right, under the
 // Toolbar strip; on a phone across the canvas's top under the strip. Placed against the canvas's own box (it moves
 // with the header, the tab bar and a side pane), so the canvas never re-renders for it. The bar's code loads the first
-// time it opens, its Find field standing in meanwhile so what is typed is the query (FindBarLoading).
+// time it opens, its Find field standing in meanwhile so what is typed is the query (FindBarLoading). It runs the find
+// state itself (useFindReplace), so a key typed into the bar re-renders the bar and not the editor around it; the
+// editor's door (FindDoor.openBar) reaches its opener through `openerRef`.
 import {
   lazy,
   Suspense,
@@ -14,7 +16,8 @@ import {
 } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import type { FindView } from '@/hooks/editor/useFindReplace';
+import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useFindReplace, type FindDeps, type FindDoor } from '@/hooks/editor/useFindReplace';
 import { FindBarLoading } from './FindBarLoading';
 
 const FindBar = lazy(() => import('./FindBar').then((m) => ({ default: m.FindBar })));
@@ -27,12 +30,16 @@ const PHONE_INSET = 8;
 type Box = { top: number; left: number; right: number };
 
 export function FindHost({
-  find,
+  deps,
+  openerRef,
   canvasMainRef,
 }: {
-  find: FindView;
+  deps: FindDeps;
+  openerRef: RefObject<FindDoor['openBar']>;
   canvasMainRef: RefObject<HTMLElement | null>;
 }) {
+  const find = useFindReplace(deps);
+  useAssignRef(openerRef, find.openBar);
   const phone = useIsMobileViewport();
   const [box, setBox] = useState<Box | null>(null);
   const open = find.open;

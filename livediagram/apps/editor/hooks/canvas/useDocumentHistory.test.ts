@@ -93,6 +93,11 @@ describe('historyTick', () => {
     expect(next.future).toBe(h.future);
     expect(next.present).toEqual([tab('new', 'n')]);
   });
+
+  it('hands back the same history when the tick changes nothing (no re-render)', () => {
+    const h: History = { past: [], present: [tab('cur', 'c')], future: [] };
+    expect(historyTick(h, (ts) => ts)).toBe(h);
+  });
 });
 
 describe('historyMarkCheckpoint', () => {

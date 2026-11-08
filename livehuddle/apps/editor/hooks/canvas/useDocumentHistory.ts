@@ -7,6 +7,7 @@ import {
   stacksAfterStep,
   stepBack,
   stepForward,
+  withPresent,
   withRemoteOp,
   type RebasingHistory,
 } from '@liveworkspace/workbench/lib/remote-op-log';
@@ -72,8 +73,9 @@ export function historyCommit(h: History, mapTabs: (tabs: Tab[]) => Tab[]): Hist
   };
 }
 
+// A tick that changes nothing hands back the same history, so React keeps the editor as it is (withPresent).
 export function historyTick(h: History, mapTabs: (tabs: Tab[]) => Tab[]): History {
-  return { ...h, present: mapTabs(h.present) };
+  return withPresent(h, mapTabs(h.present));
 }
 
 export function historyMarkCheckpoint(h: History): History {
