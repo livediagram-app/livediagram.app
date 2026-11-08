@@ -53,6 +53,12 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   border-image computed from its recipe ([Canvas and palette](canvas-and-palette.md) "Sticky notes
   read as paper"); it takes no pointer, so a click or a drop beside a note reaches the board. A filter a person chooses for one element (an element shadow, the Sketch finish)
   stays a filter.
+- **Nothing in canvas space blurs what is behind it.** Chrome drawn in the canvas world (a page's
+  title bar, an empty page's Choose a Layout invite) wears no backdrop filter: it sits under the
+  element layer, and Safari then repainted every element above it on each frame of a drag, about
+  110 ms a frame at an iPad's size with 20 pages and 2,000 elements (measured in livedesign, which
+  shares the title bar: a one-element drag went from 3.4 s of frames over 50 ms to 0.1 s without it). Such a card is near-opaque instead
+  (`bg-white/95`), which looks the same.
 - **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
   one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
   pan or a glide renders what shows the view (the canvas and its counter-scaled parts, the zoom

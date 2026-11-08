@@ -71,7 +71,10 @@ export function PageTitleBar({
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
       style={style}
-      className={`pointer-events-auto flex items-center gap-0.5 rounded-[10px] border border-slate-200/90 bg-white/95 p-0.5 shadow-[0_1px_2px_rgb(15_23_42/0.06),0_4px_12px_-4px_rgb(15_23_42/0.12)] backdrop-blur-sm dark:border-slate-700/80 dark:bg-slate-900/95 ${className}`}
+      // No backdrop filter: the bar sits in canvas space, under the element layer, and in Safari a
+      // backdrop filter there made every element above it repaint on each frame of a drag
+      // (livedesign/docs/specs/008-canvas/canvas-performance.md "Nothing in canvas space blurs what is behind it").
+      className={`pointer-events-auto flex items-center gap-0.5 rounded-[10px] border border-slate-200/90 bg-white/95 p-0.5 shadow-[0_1px_2px_rgb(15_23_42/0.06),0_4px_12px_-4px_rgb(15_23_42/0.12)] dark:border-slate-700/80 dark:bg-slate-900/95 ${className}`}
     >
       {shown.map((group, i) => (
         <Fragment key={i}>
