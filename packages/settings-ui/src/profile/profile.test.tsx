@@ -75,8 +75,9 @@ function fakeSecurity(overrides: Partial<AccountSecurity> = {}): AccountSecurity
 const tagColour = () =>
   document.querySelector<HTMLElement>('[data-profile-banner] [style*="background-color"]')?.style
     .backgroundColor;
-const VIOLET = 'rgb(139, 92, 246)';
-const EMERALD = 'rgb(16, 185, 129)';
+// Painted in each colour's deep shade, so white reads on it (avatarFill).
+const VIOLET = 'rgb(109, 40, 217)';
+const EMERALD = 'rgb(4, 120, 87)';
 
 describe('the Profile header card', () => {
   it('shows the avatar’s initials, the name, email, when they joined and their colour, with no account or colour chip', () => {

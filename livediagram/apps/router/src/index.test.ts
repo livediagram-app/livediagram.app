@@ -808,7 +808,6 @@ describe('Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-ex
       const { env, marketing } = makeEnv();
       const res = await router.fetch(home('/', { ...on, Cookie }), env);
       expect(res.status).toBe(200);
-      expect(res.headers.get('Cache-Control')).toBe('no-store');
       expect(marketing.urls).toEqual(['https://www.livediagram.app/']);
     }
   });

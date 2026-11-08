@@ -147,7 +147,11 @@ export const AppMarks = memo(function AppMarks({
     );
   }
   return (
-    <span className="flex shrink-0 justify-start" style={{ width }}>
+    <span
+      data-settings-app-marks-column=""
+      className="flex shrink-0 justify-start"
+      style={{ width }}
+    >
       <Tooltip label={shown.label}>
         <span
           role="img"

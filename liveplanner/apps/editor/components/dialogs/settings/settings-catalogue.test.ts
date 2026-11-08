@@ -241,7 +241,7 @@ describe('settings catalogue', () => {
     expect(ids).toContain('tokens');
   });
 
-  it('has no Webhooks category, for a guest or an account: webhooks are set per document now', () => {
+  it('has no Webhooks category, for a guest or an account: webhooks are set per plan now', () => {
     for (const signedIn of [false, true]) {
       const ids = visibleCategories({ emailEnabled: false, signedIn }).map((c) => c.id);
       expect(ids).not.toContain('webhooks');

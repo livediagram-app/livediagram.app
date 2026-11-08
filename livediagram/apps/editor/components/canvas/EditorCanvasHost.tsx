@@ -18,7 +18,7 @@ import {
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useState } from 'react';
-import { DocumentWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/DocumentWebhooksDialog';
+import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
 import { isBoxed, isVoteHost } from '@livediagram/document';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { pollHostFor } from '@/hooks/collab/useLivePoll';
@@ -1160,10 +1160,10 @@ export function EditorCanvasHost() {
             />
           ) : null}
           {documentId !== null && (
-            <DocumentWebhooksDialog
+            <ItemWebhooksDialog
               open={webhooksOpen}
               onClose={() => setWebhooksOpen(false)}
-              documentId={documentId}
+              itemId={documentId}
               app="livediagram"
               title={documentName}
               shareCode={sessionShareCode}

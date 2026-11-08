@@ -7,7 +7,7 @@ import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { canvasSurface, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { useState } from 'react';
-import { DocumentWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/DocumentWebhooksDialog';
+import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
 import { isBoxed, isVoteHost, threadAt } from '@liveplanner/project';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
@@ -255,7 +255,7 @@ export function EditorCanvasHost() {
   // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
   const [projectStockColours] = useState(createStockColourProjector);
-  // The document's own Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): offered to a signed-in account that
+  // The plan's own Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): offered to a signed-in account that
   // edits the whole plan (not a Viewer, a Participant or a one-tab link); the index checks again on every call.
   const [webhooksOpen, setWebhooksOpen] = useState(false);
   const canManageWebhooks =
@@ -711,10 +711,10 @@ export function EditorCanvasHost() {
             onToggleZen={embedMode ? undefined : toggleZenMode}
           />
           {projectId !== null && (
-            <DocumentWebhooksDialog
+            <ItemWebhooksDialog
               open={webhooksOpen}
               onClose={() => setWebhooksOpen(false)}
-              documentId={projectId}
+              itemId={projectId}
               app="liveplanner"
               title={projectName}
               shareCode={sessionShareCode}

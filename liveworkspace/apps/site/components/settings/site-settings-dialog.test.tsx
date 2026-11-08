@@ -314,7 +314,8 @@ describe('the Settings panel, on All', () => {
     await until(() => pane().textContent?.includes('Safari on iOS'));
     expect(pane().querySelector('[data-profile-header] h3')?.textContent).toBe('Ada Lovelace');
     expect(pane().textContent).toContain('ada@example.com');
-    expect(pane().textContent).toContain('Colour: Violet');
+    // The header has no colour chip: the colour is on the banner's name tag.
+    expect(pane().textContent).not.toContain('Colour:');
     expect(pane().textContent).toContain('Email Code');
     act(() =>
       pane()
@@ -409,7 +410,7 @@ describe('the Settings panel, for a guest on an app’s address', () => {
 
 describe('the Settings panel, opened on a section', () => {
   it('opens on the app it is asked for, its side of the switch chosen', async () => {
-    fetchMock.mockReturnValue(json(200, { all: {}, app: {}, updatedAt: null }));
+    fetchMock.mockImplementation(() => json(200, { all: {}, app: {}, updatedAt: null }));
     await open('livedesign.app', { initialScope: 'app' });
     expect(scopeButton('livedesign').getAttribute('aria-pressed')).toBe('true');
   });
@@ -433,7 +434,7 @@ describe('the Settings panel, opened on a section', () => {
   });
 
   it('has no Webhooks for a signed-in person: an old link to them opens Settings, asking the index nothing', async () => {
-    fetchMock.mockReturnValue(json(200, { all: {}, app: {}, updatedAt: null }));
+    fetchMock.mockImplementation(() => json(200, { all: {}, app: {}, updatedAt: null }));
     await open(null, { initialScope: 'all', initialCategoryId: 'account:webhooks' });
     expect(railButton('Webhooks')).toBeUndefined();
     expect(document.querySelector('[data-settings-cell="webhooks"]')).toBeNull();

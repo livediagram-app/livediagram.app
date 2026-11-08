@@ -29,7 +29,14 @@ function page(item: Item, { signedIn = true, trash = false } = {}) {
     <Explorer
       app="livediagram"
       client={createFakeIndex({ items: [item] }).client}
-      view={trash ? { kind: 'trash' } : { kind: 'all' }}
+      // An item shared with them is listed under Recent, not All (which is their own).
+      view={
+        trash
+          ? { kind: 'trash' }
+          : item.ownerId === 'user_other'
+            ? { kind: 'recent' }
+            : { kind: 'all' }
+      }
       onNavigate={vi.fn()}
       itemHref={(i) => `/d/${i.id}`}
       onCreate={vi.fn()}
@@ -41,7 +48,13 @@ function page(item: Item, { signedIn = true, trash = false } = {}) {
 }
 
 const canvas = (over: Partial<Item> = {}) =>
-  makeItem(1, { app: 'livediagram', kind: 'canvas', title: 'Roadmap', ...over });
+  makeItem(1, {
+    app: 'livediagram',
+    kind: 'canvas',
+    title: 'Roadmap',
+    lastOpenedAt: 5_000_000,
+    ...over,
+  });
 
 const openMenu = async () =>
   fireEvent.click((await screen.findAllByRole('button', { name: 'Menu for Roadmap' }))[0]!);

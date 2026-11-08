@@ -563,7 +563,7 @@ and the dialog stays as the one complete, browsable index of them.
   (email footers, the old `/explorer/profile` redirect) and every in-app
   link to them still opens the same pane.
 
-  **Webhooks** are no longer in Settings (since 8 November 2026): they are set per document, from a document's ⋯
+  **Webhooks** are no longer in Settings (since 8 November 2026): they are set per plan, from a plan's ⋯
   menu in the Explorer (**Webhooks**), see [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).
   The old category id `webhooks` is an alias of Profile, so an old `?settings=webhooks` link opens Profile.
 

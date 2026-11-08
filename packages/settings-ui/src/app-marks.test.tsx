@@ -77,8 +77,7 @@ describe('app marks', () => {
     // Each name starts at the same place: every row's column is as wide as the widest cluster.
     const widths = ['mine', 'two', 'every'].map(
       (key) =>
-        (cell(key).querySelector('[data-settings-app-marks]')!.parentElement as HTMLElement).style
-          .width,
+        cell(key).querySelector<HTMLElement>('[data-settings-app-marks-column]')!.style.width,
     );
     expect(new Set(widths).size).toBe(1);
     expect(widths[0]).toBe(`${marksWidth(2)}px`);

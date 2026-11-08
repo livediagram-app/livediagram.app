@@ -17,7 +17,7 @@ import {
 import { REPO_URL, Glyph } from '@livedocuments/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
-import { WebhooksGlyph } from '@liveworkspace/workbench/components/dialogs/DocumentWebhooksDialog';
+import { WebhooksGlyph } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
 
 // The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the document-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.

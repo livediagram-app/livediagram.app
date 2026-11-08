@@ -202,15 +202,19 @@ describe('SettingsPanel', () => {
     expect(top).not.toContain('Privacy');
     expect(top).not.toContain('Common');
     // Editor: the common settings as the editor's own rows (changed through it), marked with every app that has
-    // them; liveplanner's own row beside them with its logo, never under an app's heading.
+    // them (all five here, so liveworkspace's one mark); liveplanner's own row beside them with its logo, never under
+    // an app's heading.
     fireEvent.click(within(apps).getByRole('button', { name: /^Editor/ }));
     expect(pane().querySelector('[data-settings-app-heading]')).toBeNull();
     const guides = within(pane()).getByRole('switch', { name: 'Alignment Guides' });
-    expect(marksOf(guides)).toMatch(/liveplanner/);
+    expect(marksOf(guides)).toBe('Every App');
     fireEvent.click(guides);
     const ownGuides = own[0]!.rows[0] as Extract<SettingsRow, { kind: 'toggle' }>;
     expect(ownGuides.onChange).toHaveBeenCalledWith(true);
-    const attach = within(pane()).getByRole('switch', { name: 'Auto-Attach Arrows' });
+    // liveplanner's own Auto-Attach row (its fixture key, not the other apps' common autoRebindArrows of that name).
+    const attach = within(
+      pane().querySelector<HTMLElement>('[data-settings-cell$="autoAttach"]')!,
+    ).getByRole('switch', { name: 'Auto-Attach Arrows' });
     expect(marksOf(attach)).toBe('liveplanner');
     expect(
       attach.closest('[data-settings-cell]')?.querySelector('[data-logo="liveplanner.app"]'),
@@ -285,8 +289,8 @@ describe('SettingsPanel', () => {
       method: 'PATCH',
       body: { all: { alignmentGuides: false } },
     });
-    // Tours: every app's own in one category, each section once, each row with its own app's logo.
-    fireEvent.click(within(apps).getByRole('button', { name: /^Tours/ }));
+    // Getting Started: every app's own in one category, each section once, each row with its own app's logo.
+    fireEvent.click(within(apps).getByRole('button', { name: /^Getting Started/ }));
     const marks = [...pane().querySelectorAll('[data-settings-app-marks]')].map((el) =>
       el.getAttribute('aria-label'),
     );
@@ -348,7 +352,7 @@ describe('SettingsPanel', () => {
     await waitFor(() => expect(screen.getByRole('group', { name: 'Apps' })).toBeTruthy());
     expect(
       within(rail())
-        .getByRole('button', { name: /^Tours/ })
+        .getByRole('button', { name: /^Getting Started/ })
         .getAttribute('aria-current'),
     ).toBe('page');
     expect(pane().querySelector('[aria-label="livediagram"]')).not.toBeNull();
