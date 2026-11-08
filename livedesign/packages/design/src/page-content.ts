@@ -11,9 +11,9 @@ import {
   type CanvasSurface,
 } from './colors';
 import { duplicateElements } from './duplicate';
-import { endpointPosition, type ElementIndex } from './geometry';
+import { buildElementIndex, endpointPosition, type ElementIndex } from './geometry';
 import {
-  pageAt,
+  rowPageAt,
   pagesOf,
   layOutPages,
   PAGE_NAME_MAX,
@@ -50,11 +50,30 @@ export function elementIdsOnPage(
   pageId: string,
 ): Set<string> {
   const ids = new Set<string>();
+  const index = buildElementIndex(elements);
   for (const el of elements) {
-    const page = pageAt(pages, elementAnchorPoint(el, elements));
+    const page = rowPageAt(pages, elementAnchorPoint(el, index));
     if (page?.id === pageId) ids.add(el.id);
   }
   return ids;
+}
+
+/** How many elements sit on each page (as elementIdsOnPage reads it), in one walk over the tab:
+ *  every page's count for what one page's scan cost (docs/specs/008-canvas/canvas-performance.md
+ *  "Whole-board passes stay linear and run once"). `pages` is a laid-out row (layOutPages); a page
+ *  with nothing on it is absent. */
+export function pageContentCounts(
+  elements: Element[],
+  pages: readonly LaidOutPage[],
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  if (pages.length === 0) return counts;
+  const index = buildElementIndex(elements);
+  for (const el of elements) {
+    const page = rowPageAt(pages, elementAnchorPoint(el, index));
+    if (page) counts.set(page.id, (counts.get(page.id) ?? 0) + 1);
+  }
+  return counts;
 }
 
 /** The elements on the page (see elementIdsOnPage), in the tab's order. */
@@ -223,8 +242,10 @@ export function elementPageTones(
   const out = new Map<string, string>();
   if (!pages.some((p) => p.background?.fill)) return out;
   const tones = new Map<LaidOutPage, string | null>();
+  // An arrow's ends looked up by id, not by a search of the tab each: the canvas asks on every render.
+  const index = buildElementIndex(elements);
   for (const el of elements) {
-    const page = pageAt(pages, elementAnchorPoint(el, elements));
+    const page = rowPageAt(pages, elementAnchorPoint(el, index));
     if (!page) continue;
     let tone = tones.get(page);
     if (tone === undefined) {
