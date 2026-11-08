@@ -35,6 +35,16 @@ describe('flow-backwards', () => {
     expect(of(report, 'flow-backwards')).toEqual([]);
   });
 
+  it('finds the loop through a branch that joins again, walking each box once', () => {
+    const branch = [
+      box('x', -140, 200),
+      arrow('4', 'a', 'x', ['s', 'n']),
+      arrow('5', 'x', 'c', ['s', 'n']),
+    ];
+    const retry = arrow('retry', 'd', 'a', ['n', 's']);
+    expect(of(lint(tabOf(...column(), ...down(), ...branch, retry)), 'flow-backwards')).toEqual([]);
+  });
+
   it('reads an arrow drawn from its from end the other way round, and skips undirected ones', () => {
     const reversed = arrow('rev', 'top', 'd', ['s', 'n'], { arrowEnds: 'from' });
     const both = arrow('both', 'd', 'top', ['n', 's'], { arrowEnds: 'both' });
@@ -45,13 +55,11 @@ describe('flow-backwards', () => {
     ).toEqual(['rev']);
   });
 
-  it('takes a graph source\x27s direction, every flow, and says reverse the edge', () => {
+  it('takes the flow it is given, every flow, and says rewire the line', () => {
     const row = [box('a', 0, 0), box('b', 300, 0), arrow('x', 'b', 'a', ['w', 'e'])];
-    expect(
-      of(lint(tabOf(...row), { source: 'graph', flow: 'right' }), 'flow-backwards')[0],
-    ).toMatchObject({
+    expect(of(lint(tabOf(...row), { flow: 'right' }), 'flow-backwards')[0]).toMatchObject({
       message: 'b→a points left, against the flow right',
-      fix: 'reverse the edge, unless it is a loop',
+      fix: 'rewire x from=a to=b',
     });
     const left = [
       box('a', 900, 0),

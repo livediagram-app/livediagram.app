@@ -19,25 +19,6 @@ describe('duplicate-label', () => {
         fix: 'set b label="<text>"',
       },
     ]);
-    expect(
-      of(
-        lint(tabOf(box('a', 0, 0, { label: 'X' }), box('b', 300, 0, { label: 'x' })), {
-          source: 'graph',
-        }),
-        'duplicate-label',
-      )[0]!.fix,
-    ).toBe('rename one, or merge the nodes');
-  });
-
-  it("counts a card's title and subtitle", () => {
-    const card = (id: string, x: number, sub: string) =>
-      box(id, x, 0, { shape: 'card', pageTitle: 'ECS', pageSubtitle: sub, label: 'Web + API' });
-    expect(
-      of(lint(tabOf(card('a', 0, 'AZ A'), card('b', 300, 'AZ B'))), 'duplicate-label'),
-    ).toEqual([]);
-    expect(
-      of(lint(tabOf(card('a', 0, 'AZ A'), card('b', 300, 'AZ A'))), 'duplicate-label'),
-    ).toHaveLength(1);
   });
 
   it('never matches blank labels or different ones', () => {

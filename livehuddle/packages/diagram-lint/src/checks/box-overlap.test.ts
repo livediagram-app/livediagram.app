@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arrow, box, lint, of, tabOf } from '../fixtures/build';
+import { arrow, box, frame, lint, of, tabOf } from '../fixtures/build';
 
 describe('box-overlap', () => {
   it('fires on two boxes that partly overlap, naming both, the earlier first', () => {
@@ -40,12 +40,18 @@ describe('box-overlap', () => {
     expect(of(lint(tabOf(...graph)), 'box-overlap')).toEqual([]);
   });
 
-  it('suggests a graph source compare', () => {
-    expect(
-      of(
-        lint(tabOf(box('a', 0, 0), box('b', 60, 20), arrow('x', 'a', 'b')), { source: 'graph' }),
-        'box-overlap',
-      )[0]!.fix,
-    ).toBe('graph lint --compare direction,groups');
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a stored lane, stack, boundary or
+  // frame paints at the back with boxes drawn over it, so it is no box to overlap.
+  it('never calls a box drawn over a stored backdrop an overlap', () => {
+    for (const shape of ['lane', 'stack', 'boundary', 'frame']) {
+      const tab = tabOf(
+        frame('f', -20, -20, 300, 120, shape),
+        box('a', 0, 0),
+        box('b', 160, 0),
+        arrow('x', 'a', 'b'),
+      );
+      expect(of(lint(tab), 'box-overlap'), shape).toEqual([]);
+      expect(lint(tab).measures.boxes, shape).toBe(2);
+    }
   });
 });

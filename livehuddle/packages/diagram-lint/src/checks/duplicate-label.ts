@@ -1,6 +1,5 @@
 // `duplicate-label` (info): boxes sharing a label once trimmed, whitespace collapsed and lower-cased;
-// blank never matches; one finding a label (LN14). A card's title and subtitle are part of what it says, so two
-// mirrored cards (an AZ A and an AZ B service with one body) differ.
+// blank never matches; one finding a label (LN14).
 
 import type { BoxedElement } from '@livehuddle/document';
 import { refOf } from '../context';
@@ -15,8 +14,7 @@ export const duplicateLabel: Check = (ctx) => {
   for (const box of ctx.boxes) {
     const label: unknown = Reflect.get(box, 'label');
     if (typeof label !== 'string' || label.trim() === '') continue;
-    const heads = ['pageTitle', 'pageSubtitle'].map((k): unknown => Reflect.get(box, k) ?? '');
-    const key = [...heads, label].map((t) => keyOf(String(t))).join('\n');
+    const key = keyOf(label);
     const group = groups.get(key) ?? { label, boxes: [] };
     group.boxes.push(box);
     groups.set(key, group);
@@ -29,7 +27,7 @@ export const duplicateLabel: Check = (ctx) => {
         code: 'duplicate-label' as const,
         refs,
         message: `${refs.join(', ')} share ${quoteLabel(label)}`,
-        fix: fixes.duplicateLabel(ctx.source, refs[1]!),
+        fix: fixes.duplicateLabel(refs[1]!),
         at: { x: boxes[0]!.x, y: boxes[0]!.y },
       };
     });

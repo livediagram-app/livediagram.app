@@ -13,7 +13,7 @@ export const arrowDangling: Check = (ctx) =>
       code: 'arrow-dangling' as const,
       refs: [ref],
       message: `${ref} points at a missing element`,
-      fix: fixes.arrowDangling(ctx.source, ref),
+      fix: fixes.arrowDangling(ref),
       at: endpointPosition(arrow.from, ctx.index),
     };
   });

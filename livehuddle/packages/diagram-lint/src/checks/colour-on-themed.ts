@@ -47,7 +47,7 @@ export const colourOnThemed: Check = (ctx) => {
       code: 'colour-on-themed' as const,
       refs: [ref],
       message: `${ref} sets its ${fields.join(' and ')} on a themed tab`,
-      fix: fixes.colourOnThemed(ctx.source, ref, fields),
+      fix: fixes.colourOnThemed(ref, fields),
       at: el.type === 'arrow' ? endpointPosition(el.from, ctx.index) : { x: el.x, y: el.y },
     });
   }

@@ -24,7 +24,7 @@ export const boxOverlap: Check = (ctx) =>
             code: 'box-overlap' as const,
             refs: [ra, rb],
             message: `${ra} overlaps ${rb}`,
-            fix: fixes.boxOverlap(ctx.source, ra, rb),
+            fix: fixes.boxOverlap(ra, rb),
             at: { x: a.x, y: a.y },
           };
         });

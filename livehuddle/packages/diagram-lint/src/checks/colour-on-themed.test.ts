@@ -20,12 +20,6 @@ describe('colour-on-themed', () => {
       ['a sets its fill on a themed tab', 'set a fill='],
       ['b sets its fill and stroke on a themed tab', 'set b fill= stroke='],
     ]);
-    expect(
-      of(
-        lint({ ...themed('ocean', box('a', 0, 0, { fillColor: '#123456' })) }, { source: 'graph' }),
-        'colour-on-themed',
-      )[0]!.fix,
-    ).toBe('drop the colour');
   });
 
   it('reports an arrow\x27s stroke too', () => {

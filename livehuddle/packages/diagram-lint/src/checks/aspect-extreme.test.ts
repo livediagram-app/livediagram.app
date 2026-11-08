@@ -14,19 +14,16 @@ describe('aspect-extreme', () => {
         fix: 'layout type:shape direction=down',
       },
     ]);
-    const tall = lint(tabOf(box('a', 0, 0), box('b', 0, 600), box('c', 0, 1200)), {
-      source: 'graph',
-    });
+    const tall = lint(tabOf(box('a', 0, 0), box('b', 0, 600), box('c', 0, 1200), ...joined));
     expect(of(tall, 'aspect-extreme')[0]).toMatchObject({
       message: 'drawing: 120×1260, 10.5 times taller than wide',
-      fix: 'direction: right',
+      fix: 'layout type:shape direction=right',
     });
   });
 
   it('stays quiet on a tab whose boxes no line joins, a board shaped by its design', () => {
     const board = tabOf(box('a', 0, 0), box('b', 600, 0), box('c', 1200, 0));
     expect(of(lint(board), 'aspect-extreme')).toEqual([]);
-    expect(of(lint(board, { source: 'graph' }), 'aspect-extreme')).toHaveLength(1);
   });
 
   it('stays quiet under three boxes, near square, or with nothing visible', () => {
@@ -40,10 +37,14 @@ describe('aspect-extreme', () => {
       box('b', 300, 0, { height: 0 }),
       box('c', 600, 0, { height: 0 }),
     ];
-    expect(of(lint(tabOf(...flat), { source: 'graph' }), 'aspect-extreme')).toEqual([]);
+    expect(
+      of(lint(tabOf(...flat, arrow('ab', 'a', 'b'), arrow('bc', 'b', 'c'))), 'aspect-extreme'),
+    ).toEqual([]);
   });
 
-  it('stays quiet on a tab whose boxes sit in frames, which no layout keeps', () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a stored boundary, lane, stack
+  // or frame is a backdrop its boxes sit on, which no layout keeps.
+  it('stays quiet on a tab with a stored backdrop, which no layout keeps', () => {
     const framed = tabOf(
       frame('f', -20, -20, 1400, 120),
       box('a', 0, 0),
@@ -51,17 +52,5 @@ describe('aspect-extreme', () => {
       box('c', 1200, 0),
     );
     expect(of(lint(framed), 'aspect-extreme')).toEqual([]);
-  });
-
-  it('fires on a framed graph, whose fix lays it out again with its groups', () => {
-    const framed = tabOf(
-      frame('f', -20, -20, 1400, 120),
-      box('a', 0, 0),
-      box('b', 600, 0),
-      box('c', 1200, 0),
-    );
-    expect(of(lint(framed, { source: 'graph' }), 'aspect-extreme')[0]).toMatchObject({
-      fix: 'direction: down',
-    });
   });
 });

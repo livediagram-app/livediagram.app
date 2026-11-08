@@ -15,14 +15,6 @@ describe('node-isolated', () => {
         fix: 'connect <ref> -> alone',
       },
     ]);
-    expect(
-      of(
-        lint(tabOf(box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b'), box('alone', 0, 200)), {
-          source: 'graph',
-        }),
-        'node-isolated',
-      )[0]!.fix,
-    ).toBe('add an edge to alone, or drop it');
   });
 
   it("skips an unlabelled shape: a key's sample or a card is decoration", () => {
