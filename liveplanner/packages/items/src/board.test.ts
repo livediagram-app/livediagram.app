@@ -369,7 +369,9 @@ describe('item text', () => {
 
   // docs/specs/026-plan/plan-tour.md: a practice card (key 0) has no number of its own.
   it('names a card with no number by its title alone', () => {
-    expect(itemAccessibleName(item({ title: 'Book a room' }, { key: 0 }))).toBe('Book a room, Task');
+    expect(itemAccessibleName(item({ title: 'Book a room' }, { key: 0 }))).toBe(
+      'Book a room, Task',
+    );
   });
 });
 
