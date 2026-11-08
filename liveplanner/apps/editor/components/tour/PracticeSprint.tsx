@@ -60,6 +60,7 @@ export function PracticeSprint({
     return {
       boardId,
       firstStatus: first.status,
+      firstName: first.name,
       nextStatus: next.status,
       nextName: next.name,
       shipStatus: ship.status,
@@ -70,6 +71,8 @@ export function PracticeSprint({
   });
   const missions = useMemo(() => (shape ? sprintMissions(shape) : []), [shape]);
 
+  // The cards the deal made, so one the person adds is told apart.
+  const [dealtIds, setDealtIds] = useState<ReadonlySet<string>>(() => new Set());
   // The deal: three practice cards into the first column, dropping in one after another.
   const endPractice = plan.endPractice;
   // Read when it runs: the deal happens once as the sprint mounts (a remount, as Strict Mode's, ends the first
@@ -80,9 +83,11 @@ export function PracticeSprint({
       ctx.scrollIntoView(element.x, element.y, element.width, element.height);
     const root = document.documentElement;
     root.setAttribute('data-practice-deal', '');
+    const dealt = PRACTICE_CARD_TITLES.map(() => newItemId());
+    setDealtIds(new Set(dealt));
     const ok = plan.practise(
-      PRACTICE_CARD_TITLES.map((title) => ({
-        id: newItemId(),
+      PRACTICE_CARD_TITLES.map((title, i) => ({
+        id: dealt[i],
         type: setup.addTypes?.[0] ?? 'task',
         fields: { title },
         place: { status: shape.firstStatus },
@@ -90,9 +95,15 @@ export function PracticeSprint({
     );
     if (!ok) debugLog('[plan-tour] practice cards refused');
     const t = window.setTimeout(() => root.removeAttribute('data-practice-deal'), DEAL_MS);
+    // A card added on this board while the sprint runs is a practice card too (plan-tour.md "Add a Card").
+    const statuses = new Set(setup.columns.map((c) => c.status));
+    plan.capturePractice(
+      (c) => typeof c.place?.status === 'string' && statuses.has(c.place.status),
+    );
     return () => {
       window.clearTimeout(t);
       root.removeAttribute('data-practice-deal');
+      plan.capturePractice(null);
     };
   });
   useEffect(() => deal.current(), [deal]);
@@ -111,7 +122,9 @@ export function PracticeSprint({
           }),
     [items, plan.practiceIds],
   );
-  const live: SprintCtx | null = shape ? { ...shape, practice, openItemId: plan.openItemId } : null;
+  const live: SprintCtx | null = shape
+    ? { ...shape, practice, openItemId: plan.openItemId, dealtIds }
+    : null;
   const run = useMissions({
     missions,
     ctx: live as SprintCtx,

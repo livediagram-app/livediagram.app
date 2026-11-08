@@ -38,6 +38,8 @@ export function entersPrimary(target: EventTarget | null): boolean {
 // (a board's press would select it, a Sheet's focus would take the keys).
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
+const NOOP = () => {};
+
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), [tabindex="0"]';
 
 export function SetupDialog({
@@ -56,11 +58,15 @@ export function SetupDialog({
   onPrimary,
   wide = false,
   returnFocus,
+  dismissible = true,
   children,
 }: {
   open: boolean;
   // Escape, Close, the backdrop and Not now / Cancel: the element stays as it is.
   onClose: () => void;
+  // False for a board's first setup (plan-board.md "Setup Board"): only its primary action leaves it, so the board is
+  // never left unset. No Close, and Escape, the backdrop and a phone sheet's drag do nothing.
+  dismissible?: boolean;
   titleId: string;
   title: string;
   line: string;
@@ -123,11 +129,11 @@ export function SetupDialog({
     >
       <Dialog
         open={open}
-        onClose={onClose}
+        onClose={dismissible ? onClose : NOOP}
         titleId={titleId}
         size={wide ? '3xl' : '2xl'}
         initialFocus="container"
-        closeOnEscape={!coveredByAnother}
+        closeOnEscape={dismissible && !coveredByAnother}
         className="h-[min(40rem,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] overflow-hidden"
       >
         <div className="flex shrink-0 items-start gap-3.5 px-6 pt-6">
@@ -150,7 +156,7 @@ export function SetupDialog({
           </div>
           <div className="-mt-1 flex shrink-0 items-center gap-0.5">
             <HelpArticleLink article={help} variant="icon" />
-            <DialogCloseButton onClick={onClose} />
+            {dismissible ? <DialogCloseButton onClick={onClose} /> : null}
           </div>
         </div>
         <div className="mt-5 shrink-0 border-b border-slate-100 px-6 pb-4 dark:border-slate-800">

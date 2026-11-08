@@ -8,6 +8,7 @@ import {
   EDITOR_REASONS_OPENED,
   EXPLORER_REASONS_OPENED,
   PLAN_TOUR_OFFERED,
+  PLAN_TOUR_START_OPENED,
   FORM_TOUR_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
@@ -168,6 +169,22 @@ export const PLAN_TOUR_WORK_KEPT = chart(
   { types: ['PlanTourKeepCards', 'PlanTourKeepSheet'] },
 );
 
+export const PLAN_TOUR_PUT_BACK = chart(
+  'UI',
+  'Selected',
+  'Plan Tours: Put Back',
+  "The Boards tour's Card Types or Board Setup track finished with Put It Back: its changes undone.",
+  { types: ['PlanTourPutBack'], rising: 'neutral' },
+);
+
+export const PLAN_TOUR_BOARD_TRACKS = chart(
+  'UI',
+  'Started',
+  'Plan Tours: Board Tracks Started',
+  "The Boards tour's Card Types and Board Setup tracks, picked on its start panel.",
+  { types: ['PlanTourCardTypes', 'PlanTourBoardSetup'] },
+);
+
 export const PLAN_TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
@@ -199,12 +216,15 @@ export const PLAN_TOUR: MetricStack = {
     'The first time in Plan mode: the Plan tour offered, its track picked (Boards or Spreadsheets), stepped through, finished or skipped.',
   members: [
     PLAN_TOUR_OFFERED,
+    PLAN_TOUR_START_OPENED,
     PLAN_TOUR_DECLINED,
     PLAN_TOURS_STARTED,
     PLAN_TOUR_BOARDS_PICKED,
     PLAN_TOUR_SHEETS_PICKED,
     PLAN_TOUR_STEPS_VIEWED,
     PLAN_TOUR_WORK_KEPT,
+    PLAN_TOUR_PUT_BACK,
+    PLAN_TOUR_BOARD_TRACKS,
     PLAN_TOURS_COMPLETED,
     PLAN_TOURS_SKIPPED,
   ],

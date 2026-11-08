@@ -2,14 +2,11 @@
 
 // The hands-on tours' missions (docs/specs/026-plan/plan-tour.md "The mission strip"): one thing to do at a time,
 // checked from what the person really did, never from a Next button. A mission is done the moment its check passes
-// (by any route: a drag, a menu, a key); the strip then shows its lesson for LESSON_MS and moves on by itself. Hints
-// climb one press at a time. The tracks own their missions and what a check reads; this is the runner they share.
+// (by any route: a drag, a menu, a key); the strip then shows its lesson until the person presses Next, so it is never
+// gone before it is read. Hints climb one press at a time. The tracks own their missions and what a check reads; this is the runner they share.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-
-// How long a done mission's lesson shows before the next mission (plan-tour.md "Done, then next").
-export const LESSON_MS = 1600;
 
 // One rung of a mission's hints: words, and optionally the place it means, ringed (a CSS selector, read when shown).
 export type MissionHint = { text: string; ring?: () => string | null };
@@ -24,6 +21,12 @@ export type Mission<Ctx> = {
   // What was just learned, shown once it is done.
   lesson: string;
   hints: readonly MissionHint[];
+  // The control the mission names (Types, Add card), ringed for as long as it is the mission, as livehuddle's
+  // Receptionist rings what he talks about: selectors, the most specific first (the first on screen is ringed), so
+  // the ring follows the person in (Types, then Add Card Type, then the editor's name field). A hint's ring wins.
+  points?: readonly string[];
+  // Done on the page itself (a drag on the board): while a window covers it, the strip says to close it first.
+  onPage?: boolean;
   // Whether the person has done it, read from the track's live state.
   done: (ctx: Ctx) => boolean;
 };
@@ -42,11 +45,13 @@ export type MissionRun<Ctx> = {
   // Whether another hint is left to show.
   moreHints: boolean;
   showHint: () => void;
+  // From a lesson, on to the next mission (or the finish after the last).
+  next: () => void;
 };
 
 // Runs `missions` in order against `ctx` while `active`: each is checked whenever ctx changes; once done its lesson
-// shows for LESSON_MS, then the next starts (one already done shows its lesson and moves on too), and after the last
-// the phase is 'finish'. `onView` fires once as each mission starts (a restart shows them again).
+// shows until `next`, then the next starts (one already done shows its lesson straight away), and after the last the
+// phase is 'finish'. `onView` fires once as each mission starts (a restart shows them again).
 export function useMissions<Ctx>({
   missions,
   ctx,
@@ -91,18 +96,15 @@ export function useMissions<Ctx>({
     onViewRef.current?.(mission);
   }, [active, phase, mission, onViewRef]);
 
-  // The lesson, then the next mission (or the finish).
-  useEffect(() => {
-    if (!active || phase !== 'lesson') return;
-    const t = window.setTimeout(() => {
-      setHintLevel(0);
-      if (index + 1 < missions.length) {
-        setIndex(index + 1);
-        setPhase('doing');
-      } else setPhase('finish');
-    }, LESSON_MS);
-    return () => window.clearTimeout(t);
-  }, [active, phase, index, missions.length]);
+  // The lesson, then (on Next) the next mission or the finish.
+  const next = useCallback(() => {
+    if (phase !== 'lesson') return;
+    setHintLevel(0);
+    if (index + 1 < missions.length) {
+      setIndex(index + 1);
+      setPhase('doing');
+    } else setPhase('finish');
+  }, [phase, index, missions.length]);
 
   const hints = mission?.hints ?? [];
   const showHint = useCallback(
@@ -118,5 +120,6 @@ export function useMissions<Ctx>({
     hint: phase === 'doing' && hintLevel > 0 ? (hints[hintLevel - 1] ?? null) : null,
     moreHints: phase === 'doing' && hintLevel < hints.length,
     showHint,
+    next,
   };
 }

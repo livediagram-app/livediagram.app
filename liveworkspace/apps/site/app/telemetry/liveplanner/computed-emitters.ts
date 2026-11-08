@@ -80,12 +80,14 @@ const TRASH_TYPES = tokensAfter(
   '>',
 );
 
-// The Plan tour's mission views, as planTourStepTelemetryType makes them (apps/editor plan-tour-steps.ts,
-// docs/specs/026-plan/plan-tour.md "Telemetry"), both tracks, and the finish (`outro`, shared by both).
+// The Plan tour's mission views, as planTourStepTelemetryType makes them (apps/editor plan-tour-steps.ts and
+// board-tracks.ts, docs/specs/026-plan/plan-tour.md "Telemetry"), every track, and the finish (`outro`, shared).
 const PLAN_TOUR_STEP_SOURCE: string[] = [
   ...new Set(
-    [...read('editor/components/tour/plan-tour-steps.ts').matchAll(/^ +id: '([a-z-]+)',/gm)].map(
-      (m) => m[1]!,
+    ['plan-tour-steps.ts', 'board-tracks.ts'].flatMap((file) =>
+      [...read(`editor/components/tour/${file}`).matchAll(/^ +id: '([a-z-]+)',/gm)].map(
+        (m) => m[1]!,
+      ),
     ),
   ),
 ].map(
@@ -442,6 +444,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/editor/components/tour/PracticeSheetDialog.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/editor/components/tour/PracticeSprint.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
+  'apps/editor/components/tour/CardTypesTrack.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
+  'apps/editor/components/tour/BoardSetupTrack.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/editor/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
   'apps/editor/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),

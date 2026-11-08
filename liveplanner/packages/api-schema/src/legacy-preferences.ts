@@ -11,7 +11,13 @@ const RETIRED: ReadonlySet<string> = new Set([
 ]);
 
 // Every track of the Plan tour (apps/editor/lib/plan-tour.ts PLAN_TOUR_TRACKS; its tests hold the two together).
-const PLAN_TOUR_TRACKS: readonly string[] = ['boards', 'sheets', 'dashboards'];
+const PLAN_TOUR_TRACKS: readonly string[] = [
+  'boards',
+  'card-types',
+  'board-setup',
+  'sheets',
+  'dashboards',
+];
 
 export function upgradeLegacyPreferences<T extends Record<string, unknown>>(prefs: T): T {
   const keys = Object.keys(prefs);

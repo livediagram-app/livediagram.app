@@ -89,6 +89,8 @@ describe('settings catalogue', () => {
       // A tour of several tracks: one switch over them all, then each track's own row beneath it.
       ['planTourSeen', 'toggle', 'Plan Tours', 'planTour'],
       ['planTourSeen-boards', 'toggle', 'Boards Tour', 'planTour'],
+      ['planTourSeen-card-types', 'toggle', 'Card Types Tour', 'planTour'],
+      ['planTourSeen-board-setup', 'toggle', 'Board Setup Tour', 'planTour'],
       ['planTourSeen-sheets', 'toggle', 'Sheets Tour', 'planTour'],
       ['planTourSeen-dashboards', 'toggle', 'Dashboards Tour', 'planDashboards'],
       ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
@@ -105,6 +107,8 @@ describe('settings catalogue', () => {
       [
         ['PlanTourSeenOff', 'PlanTourSeenOn'],
         ['BoardsTourSeenOff', 'BoardsTourSeenOn'],
+        ['CardTypesTourSeenOff', 'CardTypesTourSeenOn'],
+        ['BoardSetupTourSeenOff', 'BoardSetupTourSeenOn'],
         ['SheetsTourSeenOff', 'SheetsTourSeenOn'],
         ['DashboardsTourSeenOff', 'DashboardsTourSeenOn'],
         ['FormTourSeenOff', 'FormTourSeenOn'],
@@ -146,6 +150,8 @@ describe('settings catalogue', () => {
       // A tour track's row writes the answered list and clears the tour's single flag (lib/tour-tracks.ts).
       planTourSeen: ['planTourSeen', 'planTourTracks'],
       'planTourSeen-boards': ['planTourSeen', 'planTourTracks'],
+      'planTourSeen-card-types': ['planTourSeen', 'planTourTracks'],
+      'planTourSeen-board-setup': ['planTourSeen', 'planTourTracks'],
       'planTourSeen-sheets': ['planTourSeen', 'planTourTracks'],
       'planTourSeen-dashboards': ['planTourSeen', 'planTourTracks'],
     };
@@ -335,14 +341,17 @@ describe('settings sub-categories', () => {
     expect(rows({})).toEqual([
       'planTourSeen',
       'planTourSeen-boards',
+      'planTourSeen-card-types',
+      'planTourSeen-board-setup',
       'planTourSeen-sheets',
       'planTourSeen-dashboards',
       'formTourSeen',
     ]);
-    expect(rows({ planTourTracks: ['boards', 'sheets', 'dashboards'] })).toEqual([
-      'planTourSeen',
-      'formTourSeen',
-    ]);
+    expect(
+      rows({
+        planTourTracks: ['boards', 'card-types', 'board-setup', 'sheets', 'dashboards'],
+      }),
+    ).toEqual(['planTourSeen', 'formTourSeen']);
   });
 
   it('names a sub-category by its path', () => {

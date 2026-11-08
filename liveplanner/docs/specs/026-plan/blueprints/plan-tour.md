@@ -24,8 +24,13 @@ missions, checked from live state, in a mission strip of their own.
 
 | File                                                  | Holds                                                                                                                                     |
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/editor/components/tour/missions.ts`             | `useMissions`, `Mission`, `MissionHint`, `LESSON_MS`: the runner the three tracks share                                                   |
-| `apps/editor/components/tour/MissionStrip.tsx`        | The strip: name, segments, mission or lesson or finish, Hint / More Help, End; footer clearance                                           |
+| `apps/editor/components/tour/missions.ts`             | `useMissions`, `Mission`, `MissionHint`: the runner every track shares (a lesson waits for `next`)                                        |
+| `apps/editor/components/tour/MissionStrip.tsx`        | The strip: name, segments, mission or lesson (Next) or finish, Hint / More Help, End; `StripFrame`, the corner strip over a dialog        |
+| `apps/editor/components/tour/TourStart.tsx`           | The start panel a press opens: one track (Start) or a board's three (rows with a Done tick); Not Now                                      |
+| `apps/editor/components/tour/board-tracks.ts`         | `typesMissions`, `setupMissions`, `newTypeOf`, `typeShape`, `setupChanged`: the Card Types and Board Setup checks                         |
+| `apps/editor/components/tour/CardTypesTrack.tsx`      | The Card Types track: new type, its first shape, capture of its card, board `addTypes`, Keep the Type / Put It Back                       |
+| `apps/editor/components/tour/BoardSetupTrack.tsx`     | The Board Setup track: the board's setup at start, missions, Keep Changes / Put It Back (`updateBoard(boardId, start)`)                   |
+| `apps/editor/components/tour/TrackFinish.tsx`         | The finish of a track that changed the real plan: Keep, Put It Back, Learn More                                                           |
 | `apps/editor/components/tour/HintRing.tsx`            | A hint's ring round a selector, re-measured every 150 ms                                                                                  |
 | `apps/editor/components/tour/LearnMore.tsx`           | A finish's help link, in a new tab                                                                                                        |
 | `apps/editor/components/tour/plan-tour-steps.ts`      | `sprintMissions`, `sheetMissions`, `overWipColumn`, `wipNote`, `a1Range`, `visiblePlanWork`, `needsReveal`, `FINISH_STEP`, telemetry type |
@@ -58,30 +63,35 @@ events list).
 ### Missions (`useMissions`)
 
 `useMissions({ missions, ctx, active, onView })` returns `{ mission, index, count, phase, hintLevel, hint,
-moreHints, showHint }`:
+moreHints, showHint, next }`:
 
 1. A new `missions` array or `active` turning on resets to index 0, no hints, phase `'doing'` (`'finish'` when
    there are none). The reset happens as it renders, not in an effect.
 2. Each render checks `mission.done(ctx)` while `'doing'`; true sets `'lesson'`. A mission already done as it starts
-   shows its lesson and moves on too.
-3. `'lesson'` waits `LESSON_MS` (1600), then the next mission (`'doing'`, hints reset) or `'finish'`.
+   shows its lesson straight away.
+3. `'lesson'` waits for `next()` (the strip's Next, Finish after the last), then the next mission (`'doing'`, hints
+   reset) or `'finish'`. No timer: a lesson is never gone before it is read.
 4. `onView(mission)` fires once as each mission starts (`UI` · `View` · `PlanTourStep<Id>`).
 5. `showHint()` raises `hintLevel` up to the mission's hint count; `hint` is the rung on show. A rung's `ring()` is a
    selector `MissionStrip` hands to `HintRing`.
 
 ### Offer and end (`PlanTourHost`)
 
-| State   | Event                                                        | Guard                                         | Effect                                                                                     |
-| ------- | ------------------------------------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| idle    | render                                                       | usable, can edit, tab unlocked, has plan work | publish `{ name: 'Boards' \| 'Sheets', rank: TOUR_OFFER_RANK.mode, … }`                    |
-| idle    | render                                                       | otherwise                                     | publish `null`                                                                             |
-| idle    | the button first shows this offer in a page load (`onShown`) | none                                          | `Opened` · `PlanTourOffer`                                                                 |
-| idle    | a press or relaunch event                                    | not active, no other tour, `offerTrack` set   | `Run { track, boardId: visiblePlanWork(…), tabId, n }`, `Started` · `PlanTour`, mark taken |
-| running | edit rights lost / another tab / its board deleted           | none                                          | end as skipped                                                                             |
-| running | the track's `onEnd(outcome)`                                 | `runRef` set (an end counts once)             | mark taken, `Ended` · `PlanTourCompleted` or `PlanTourSkipped`, unmount                    |
+| State   | Event                                                        | Guard                                         | Effect                                                                                         |
+| ------- | ------------------------------------------------------------ | --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| idle    | render                                                       | usable, can edit, tab unlocked, has plan work | publish `{ name: 'Boards' \| 'Sheets', rank: TOUR_OFFER_RANK.mode, … }`                        |
+| idle    | render                                                       | otherwise                                     | publish `null`                                                                                 |
+| idle    | the button first shows this offer in a page load (`onShown`) | none                                          | `Opened` · `PlanTourOffer`                                                                     |
+| idle    | a press or relaunch event                                    | not active, no other tour, `offerKind` set    | `Run { kind, track: null, boardId: visiblePlanWork(…), tabId, n }`, `Opened` · `PlanTourStart` |
+| start   | a pick on `TourStart`                                        | none                                          | `track` set, `Started` · `PlanTour` / `PlanTourCardTypes` / `PlanTourBoardSetup`, mark taken   |
+| start   | Not Now                                                      | none                                          | `Run` null; nothing recorded                                                                   |
+| running | edit rights lost / another tab / its board deleted           | none                                          | end as skipped                                                                                 |
+| running | the track's `onEnd(outcome)`                                 | `runRef` set (an end counts once)             | mark taken, `Ended` · `PlanTourCompleted` or `PlanTourSkipped`, unmount                        |
 
-"Usable": `hydrated && !anyWelcomeOpen && !isReadOnly && !embedMode`. `offerTrack`: of the tracks with work on the
-tab (Boards first), the first not taken, else the first. `seen`: every track with work on the tab is taken.
+"Usable": `hydrated && !anyWelcomeOpen && !isReadOnly && !embedMode`. `offerKind`: of the kinds with work on the
+tab (Boards first), the first not taken, else the first; Boards is taken when all of `BOARD_TRACKS` are. `seen`:
+every kind with work on the tab is taken. The Dashboards tour's offer calls `tour.start(true)`: `TourStart` first,
+then `begin()` (mark taken, `Started` · `DashboardTour`) or `cancel()`; Show Me calls `start()` and goes straight in.
 
 ### Boards: Practice Sprint (`PracticeSprint`)
 
@@ -91,11 +101,33 @@ tab (Boards first), the first not taken, else the first. `seen`: every track wit
 - Mount: reveal the board if it is off screen (`needsReveal`, `scrollIntoView`), set `data-practice-deal` on the
   root for `DEAL_MS` (900), and `plan.practise(creates)` with `PRACTICE_CARD_TITLES` in the first column. Unmount:
   `endPractice(false)` (a no-op once kept). Under Strict Mode the remount ends the first practice and deals again.
-- Ctx per render: the practice cards from `plan.context.items`, the open item id.
+- Ctx per render: the practice cards from `plan.context.items`, the open item id, the dealt ids.
+- Capture: as it deals, `plan.capturePractice(c => c.place.status is one of the board's columns)`, so Add card on
+  the board makes a practice card (`add-card` is done when one not dealt appears); cleared on unmount and by
+  `endPractice` (so kept cards are made real, not captured again). `addItem` sends no `Plan` · `Added` for one.
 - WIP: `overWipColumn(setup.columns, items)` gone over during a mission sets a note once, shown in place of that
   mission's why.
 - Finish: **Clear Them** (`endPractice(false)`), **Keep as Real Cards** (`endPractice(true)`, `UI` · `Selected` ·
   `PlanTourKeepCards`), Learn More (`/help/plan/planning-basics/`); then `onEnd('completed')`.
+
+### Boards: Card Types (`CardTypesTrack`) and Board Setup (`BoardSetupTrack`)
+
+- Card Types keeps the type ids at mount; `newTypeOf` is the first type not among them, and its `typeShape` as first
+  seen (set during render) tells an edit apart. Once it exists, `capturePractice` matches a create of that type in a
+  board column, and a board whose `addTypes` names its types gets the new id (`updateBoard`). Put It Back:
+  `endPractice(false)`, `itemTypes.deleteType(id)`, and `addTypes` as it was; Keep: `endPractice(false)` only.
+- Board Setup keeps the board's `PlanBoardSetup` at mount; the checks compare columns by id (a new column is not a
+  rename) and `widgetsOf` (so an unset `widgets` reads as the defaults). Put It Back: `updateBoard(boardId, start)`
+  when `setupChanged`; one undo step. Adding a column is left out (its status would stay).
+- Either: `UI` · `Selected` · `PlanTourPutBack` on Put It Back; End keeps the changes.
+
+### The strip over a dialog (`StripFrame`)
+
+On a computer, while `useOpenModalCount() > 0`, the full strip moves to the bottom-left (`data-mission-corner` on its
+layer, `justify-start`, the card `w-[19rem]`); nothing about it shrinks. A mission with `onPage` adds the amber line
+`[data-close-first]` "Close this window first, then:" over its why while doing. A phone keeps docking at the top.
+The ring is `hint.ring()` once a hint asks, otherwise the mission's `points` while doing; `HintRing` takes the first
+selector drawn on screen (non-zero box), re-checked every 150 ms. `Emphasis` draws `**x**` as `<strong>`.
 
 ### Practice cards (`usePlanItems`)
 
@@ -147,8 +179,8 @@ another project is kept. Nothing writes a record any more.
 
 ## Interfaces and contracts
 
-- `UserPreferences.planTourTracks?: PlanTourTrack[]` (`'boards' | 'sheets' | 'dashboards'`; PlanTourHost runs the
-  first two, `BoardSheetTrack`); missing = none answered. `planTourSeen?: boolean` counts no
+- `UserPreferences.planTourTracks?: PlanTourTrack[]` (`'boards' | 'card-types' | 'board-setup' | 'sheets' |
+'dashboards'`; PlanTourHost runs all but the last, `BoardSheetTrack`); missing = none answered. `planTourSeen?: boolean` counts no
   track on its own; for a stored blob that had `powerUserMode` on, `upgradeLegacyPreferences`
   (`packages/api-schema/src/legacy-preferences.ts`) adds every track to `planTourTracks` on read. No migration
   (free-form preferences blob).

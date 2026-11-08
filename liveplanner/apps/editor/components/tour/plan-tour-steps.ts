@@ -65,15 +65,18 @@ export type SprintCtx = {
   practice: readonly Item[];
   // The board's first column's status (where the deal lands), the next one's, and the ship column's.
   firstStatus: string;
+  firstName: string;
   nextStatus: string;
   nextName: string;
   shipStatus: string;
   shipName: string;
   openItemId: string | null;
+  // The cards dealt at the start: a practice card not among them is one the person added.
+  dealtIds: ReadonlySet<string>;
 };
 
 // What shapes the sprint's missions, fixed when it starts.
-export type SprintShape = Omit<SprintCtx, 'practice' | 'openItemId'> & {
+export type SprintShape = Omit<SprintCtx, 'practice' | 'openItemId' | 'dealtIds'> & {
   // Whether the practice cards' type has a Due field.
   hasDue: boolean;
   phone: boolean;
@@ -86,8 +89,26 @@ const hasValue = (v: unknown) => v !== undefined && v !== null && v !== '';
 
 // The sprint's missions for this board: Give it a date only when the cards' type has a Due field.
 export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
+  const add: Mission<SprintCtx> = {
+    id: 'add-card',
+    title: 'Add a Card',
+    why: `Press **Add card** in ${shape.firstName} and pick a type.`,
+    points: [`${cellOf(shape.boardId, shape.firstStatus)} [data-add-card-trigger]`],
+    lesson:
+      'A new card lands where you add it, and opens so you can name it. This one is practice too: name it, then close it.',
+    onPage: true,
+    hints: [
+      { text: `Add card sits at the foot of ${shape.firstName}, under the dashed cards.` },
+      {
+        text: 'This one.',
+        ring: () => `${cellOf(shape.boardId, shape.firstStatus)} [data-add-card-trigger]`,
+      },
+    ],
+    done: (c) => c.practice.some((i) => !c.dealtIds.has(i.id)),
+  };
   const move: Mission<SprintCtx> = {
     id: 'move-card',
+    onPage: true,
     title: 'Move One On',
     why: shape.phone
       ? `Hold a dashed practice card, then drag it into ${shape.nextName}.`
@@ -125,7 +146,8 @@ export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
   const due: Mission<SprintCtx> = {
     id: 'due-date',
     title: 'Give It a Date',
-    why: 'Set a due date on a practice card, in its panel.',
+    why: 'Set a **Due** date on a practice card, in its panel.',
+    points: ['[role="dialog"] [data-item-field="due"]'],
     lesson: 'Dates show on the card, and on calendars and dashboards.',
     hints: [
       { text: 'Open a practice card and find Due.' },
@@ -138,6 +160,7 @@ export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
   };
   const ship: Mission<SprintCtx> = {
     id: 'ship-card',
+    onPage: true,
     title: 'Ship It',
     why: `Drag a practice card all the way into ${shape.shipName}.`,
     lesson: `Done is a column too. The header's widgets count what reaches ${shape.shipName}.`,
@@ -149,7 +172,13 @@ export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
   };
   // A board of one column has nowhere to move a card to: only the card's own missions.
   const flows = shape.nextStatus !== shape.firstStatus;
-  return [...(flows ? [move] : []), open, ...(shape.hasDue ? [due] : []), ...(flows ? [ship] : [])];
+  return [
+    add,
+    ...(flows ? [move] : []),
+    open,
+    ...(shape.hasDue ? [due] : []),
+    ...(flows ? [ship] : []),
+  ];
 }
 
 // The first column whose WIP limit the board has gone over, by name and limit, or null.
@@ -266,7 +295,8 @@ export function sheetMissions(touch: boolean): SheetMission[] {
     id: 'currency',
     cells: a1Range('B2', 'D7'),
     title: 'Make It Money',
-    why: 'Show B2 to D7 as currency.',
+    why: 'Show B2 to D7 as currency, from **Numbers**.',
+    points: [switcher()],
     lesson: 'The toolbar acts on whatever you have selected.',
     hints: [
       { text: 'Select B2 to D7, then Numbers › Number Format › a Currency.' },
@@ -281,7 +311,8 @@ export function sheetMissions(touch: boolean): SheetMission[] {
     id: 'chart',
     cells: a1Range('A1', 'C6'),
     title: 'Chart It',
-    why: 'Chart planned against actual.',
+    why: 'Chart planned against actual, from **Data**.',
+    points: [switcher()],
     lesson: 'Charts read the cells, so they change when the numbers do.',
     hints: [
       { text: 'Select A1 to C6, then Data › Insert Chart.' },
