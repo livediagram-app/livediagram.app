@@ -75,4 +75,80 @@ describe('unfurl', () => {
     const out = await unfurl(new URL('https://example.com/page'), 'test');
     expect(out).toMatchObject({ result: { title: 'My Page' } });
   });
+
+  it('keeps the deadline while the body is read: a page trickling its <head> is cut off', async () => {
+    vi.useFakeTimers();
+    try {
+      // The headers come at once; the body never finishes until the request is aborted.
+      let aborted = false;
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (_url: string, init: RequestInit) => {
+          const body = new ReadableStream<Uint8Array>({
+            start(c) {
+              c.enqueue(new TextEncoder().encode('<html><head>'));
+              init.signal?.addEventListener('abort', () => {
+                aborted = true;
+                c.error(new DOMException('aborted', 'AbortError'));
+              });
+            },
+          });
+          const res = new Response(body, { headers: { 'content-type': 'text/html' } });
+          Object.defineProperty(res, 'url', { value: 'https://example.com/slow' });
+          return res;
+        }),
+      );
+      stubRewriter([]);
+      const out = unfurl(new URL('https://example.com/slow'), 'test');
+      await vi.advanceTimersByTimeAsync(8000);
+      expect(aborted).toBe(true);
+      await expect(out).resolves.toEqual({
+        result: { url: 'https://example.com/slow', favicon: 'https://example.com/favicon.ico' },
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('answers the bare URL when the fetch itself fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new TypeError('network');
+      }),
+    );
+    const out = await unfurl(new URL('https://example.com/down'), 'test');
+    expect(out).toEqual({ result: { url: 'https://example.com/down' } });
+  });
+
+  it('refuses a redirect that ends on a private host, and never reads its body', async () => {
+    const cancel = vi.fn(async () => {});
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        const res = new Response('secret', { headers: { 'content-type': 'text/html' } });
+        Object.defineProperty(res, 'url', { value: 'http://169.254.169.254/' });
+        Object.defineProperty(res, 'body', { value: { cancel } });
+        return res;
+      }),
+    );
+    const out = await unfurl(new URL('https://example.com/redirects'), 'test');
+    expect(out).toEqual({ disallowed: true });
+    expect(cancel).toHaveBeenCalled();
+  });
+
+  it('offers a favicon alone for a page that is not HTML', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        const res = new Response('%PDF', { headers: { 'content-type': 'application/pdf' } });
+        Object.defineProperty(res, 'url', { value: 'https://example.com/a.pdf' });
+        return res;
+      }),
+    );
+    const out = await unfurl(new URL('https://example.com/a.pdf'), 'test');
+    expect(out).toEqual({
+      result: { url: 'https://example.com/a.pdf', favicon: 'https://example.com/favicon.ico' },
+    });
+  });
 });
