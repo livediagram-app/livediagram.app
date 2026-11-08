@@ -15,22 +15,13 @@ import {
 // surface their concrete sub-kind ('Square', 'Diamond'…) so a name
 // reads as "Square" rather than the abstract "Shape".
 export function kindLabel(el: Element): string {
-  if (el.type === 'arrow') return 'Arrow';
   if (el.type === 'text') return 'Text';
   if (el.type === 'sticky') return 'Sticky note';
   if (el.type === 'image') return 'Image';
-  if (el.type === 'annotation') return 'Annotation';
-  if (el.type === 'freehand') {
-    // The marker pen (docs/specs/008-canvas/highlighter.md) and the polygon tool (docs/specs/008-canvas/polygon-tool.md) both
-    // commit FreehandElements; name them by what the user drew.
-    if (el.pen === 'highlighter') return 'Highlight';
-    if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';
-    return 'Sketch';
-  }
-  if (el.type === 'path') return 'Path';
   if (el.type === 'link-card') return 'Link card';
   // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") reads by the name its
-  // placeholder shows ('Q&A Board', a session button's 'Timer'), not its stored kind word.
+  // placeholder shows ('Q&A Board', a session button's 'Timer', a stored arrow's 'Arrow' or 'Line', a pen stroke's
+  // 'Drawing'), not its stored kind word.
   if (isRetiredElement(el)) return retiredElementName(el);
   if (el.type === 'shape') return shapeKindLabel(el.shape);
   return 'Element';
@@ -115,10 +106,6 @@ export function describeMany(elements: Element[]): string {
 // 'Arrow "yes"'. Unlike describeOne this always leads with the kind,
 // so a screen-reader user hears WHAT the thing is before its text.
 export function elementAriaLabel(el: Element): string {
-  // A path is read by its points (docs/specs/023-draw-mode/path-tool.md "Accessibility").
-  if (el.type === 'path') {
-    return `${el.closed ? 'Closed path' : 'Path'}, ${el.nodes.length} points`;
-  }
   const kind = kindLabel(el);
   const label = ('label' in el && typeof el.label === 'string' ? el.label : '').trim();
   return label ? `${kind} "${label}"` : kind;

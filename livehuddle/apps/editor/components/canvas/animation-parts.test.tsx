@@ -1,27 +1,9 @@
 // @vitest-environment jsdom
-import { render, renderHook } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { DRAWING_ANIMATIONS, type PathElement } from '@livehuddle/document';
 import { AnimationLayer } from '@liveworkspace/workbench/components/canvas/AnimationLayer';
-import { useDrawingAnimation } from './drawing-animation';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
-
-const path = (animation?: string) =>
-  ({
-    id: 'p',
-    type: 'path',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 50,
-    closed: false,
-    nodes: [
-      { nx: 0, ny: 1, mode: 'corner' },
-      { nx: 1, ny: 0, mode: 'corner' },
-    ],
-    ...(animation ? { animation } : {}),
-  }) as unknown as PathElement;
 
 describe('AnimationLayer', () => {
   it('is a plain layer for the ring, halo and band, and a measured outline for Trace', () => {
@@ -35,34 +17,6 @@ describe('AnimationLayer', () => {
     expect(trace).toContain('lvd-svg-trace-head');
     // The corner never exceeds half the box.
     expect(trace).toContain('rx="20"');
-  });
-});
-
-describe('useDrawingAnimation', () => {
-  it('gives every Drawing value its class, and nothing to a still drawing', () => {
-    const still = renderHook(() => useDrawingAnimation(path(), 'M0 50 L100 0', 3, '#000')).result
-      .current;
-    expect(still.mainProps).toEqual({});
-    for (const v of DRAWING_ANIMATIONS) {
-      const parts = renderHook(() => useDrawingAnimation(path(v), 'M0 50 L100 0', 3, '#000')).result
-        .current;
-      expect(String(parts.mainProps.className)).toContain(`lvd-draw-${v}`);
-    }
-  });
-
-  it('masks Draw, filters Boil and overlays Trace, all over a region the drawing’s size', () => {
-    const draw = renderHook(() => useDrawingAnimation(path('draw'), 'M0 50 L100 0', 3, '#000'))
-      .result.current;
-    expect(draw.mainProps.mask).toMatch(/^url\(#/);
-    const { container } = render(<svg>{draw.defs}</svg>);
-    const mask = container.querySelector('mask')!;
-    expect(Number(mask.getAttribute('width'))).toBeLessThan(1000);
-    const boil = renderHook(() => useDrawingAnimation(path('boil'), 'M0 50 L100 0', 3, '#000'))
-      .result.current;
-    expect(render(<svg>{boil.defs}</svg>).container.querySelectorAll('filter')).toHaveLength(3);
-    const trace = renderHook(() => useDrawingAnimation(path('trace'), 'M0 50 L100 0', 3, '#000'))
-      .result.current;
-    expect(renderToStaticMarkup(<>{trace.overlay}</>)).toContain('lvd-draw-head');
   });
 });
 

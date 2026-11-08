@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ArrowElement, Element, ShapeElement } from '@livehuddle/document';
+import type { Element, RetiredArrowElement, ShapeElement } from '@livehuddle/document';
 import {
   copyTooLargeMessage,
   IN_APP_COPY_ELSEWHERE,
@@ -25,7 +25,7 @@ const box = (i: number): ShapeElement => ({
   height: 10,
 });
 
-const link: ArrowElement = {
+const link: RetiredArrowElement = {
   id: 'arrow',
   type: 'arrow',
   from: { kind: 'pinned', elementId: 's0', anchor: 'e' },
@@ -97,7 +97,7 @@ describe('a copy too large for the system clipboard', () => {
     expect(written.length).toBeLessThan(1024);
     paste(written);
     expect(h.elements()).toHaveLength(big.length * 2);
-    const arrows = h.elements().filter((el): el is ArrowElement => el.type === 'arrow');
+    const arrows = h.elements().filter((el): el is RetiredArrowElement => el.type === 'arrow');
     expect(arrows).toHaveLength(2);
     const ids = new Set(h.elements().map((el) => el.id));
     for (const a of arrows)

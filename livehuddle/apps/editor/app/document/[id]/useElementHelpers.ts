@@ -1,4 +1,4 @@
-import { isFloorShape, withDoorPiece } from '@livehuddle/document';
+import { isFloorShape, isRetiredElement, withDoorPiece } from '@livehuddle/document';
 import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
@@ -9,12 +9,7 @@ import {
 } from '@livehuddle/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
-import {
-  applyPaint,
-  fitPaintToTarget,
-  paintableArrowFields,
-  paintableBoxedFields,
-} from '@/lib/format-painter';
+import { applyPaint, fitPaintToTarget, paintableBoxedFields } from '@/lib/format-painter';
 import {
   filterPaintedFields,
   formatPaintsAnything,
@@ -210,37 +205,33 @@ export function useElementHelpers(opts: {
       return;
     }
     const target = activeTab.elements.find((el) => el.id === targetId);
-    // Only an apply empties a Paint once brush (or counts as a paint): a tap on the source itself, or on an
-    // element of the other kind (a shape's look onto an arrow, a no-op), leaves the brush loaded.
-    const boxedPair = !!target && isBoxed(source) && isBoxed(target);
-    const arrowPair = source.type === 'arrow' && target?.type === 'arrow';
-    if (!target || source.id === target.id || !(boxedPair || arrowPair)) return;
+    // Only an apply empties a Paint once brush (or counts as a paint): a tap on the source itself, or on a
+    // retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements", a stored arrow
+    // among them), which keeps what it stored and lends no look, leaves the brush loaded.
+    if (
+      !target ||
+      source.id === target.id ||
+      !isBoxed(source) ||
+      !isBoxed(target) ||
+      isRetiredElement(source) ||
+      isRetiredElement(target)
+    )
+      return;
     track('Element', 'Changed', 'FormatPainter');
     // Field projections live in lib/format-painter.ts so the list
     // of painted fields (and the rule that future additions to
-    // BoxedElement / ArrowElement must be opted into the painter
-    // by hand) is one tested source of truth. Boxed-to-arrow and
-    // arrow-to-boxed paints are no-ops: the two kinds share
-    // almost no formattable fields.
-    if (isBoxed(source) && isBoxed(target)) {
-      // The Format Panel (docs/specs/008-canvas/format-panel.md) decides which parts travel; the projection
-      // above still decides which parts CAN.
-      const projection = fitPaintToTarget(
-        source,
-        target,
-        filterPaintedFields(paintableBoxedFields(source), formatConfig),
-      );
-      commit((els) =>
-        els.map((el) => (el.id === targetId && isBoxed(el) ? applyPaint(el, projection) : el)),
-      );
-    } else if (source.type === 'arrow' && target.type === 'arrow') {
-      const projection = filterPaintedFields(paintableArrowFields(source), formatConfig);
-      commit((els) =>
-        els.map((el) =>
-          el.id === targetId && el.type === 'arrow' ? applyPaint(el, projection) : el,
-        ),
-      );
-    }
+    // BoxedElement must be opted into the painter
+    // by hand) is one tested source of truth.
+    // The Format Panel (docs/specs/008-canvas/format-panel.md) decides which parts travel; the projection
+    // above still decides which parts CAN.
+    const projection = fitPaintToTarget(
+      source,
+      target,
+      filterPaintedFields(paintableBoxedFields(source), formatConfig),
+    );
+    commit((els) =>
+      els.map((el) => (el.id === targetId && isBoxed(el) ? applyPaint(el, projection) : el)),
+    );
     if (!keepSource) setFormatSourceId(null);
   };
 

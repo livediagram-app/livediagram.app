@@ -60,8 +60,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  write: 3,
-  draw: 6,
+  write: 2,
   stickers: 0,
   media: 3,
   // The meeting elements, one category per group (docs/specs/010-palette/palette-top-level-categories.md

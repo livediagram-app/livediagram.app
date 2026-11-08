@@ -34,7 +34,6 @@ import {
 
 import { useDoorToggle } from '@/hooks/canvas/useDoorToggle';
 import { dropsOnTap } from '@/lib/draw-mode';
-import { usePathCommits } from '@/hooks/canvas/usePathCommits';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
@@ -441,16 +440,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Per-user editor preferences (docs/specs/007-editor/user-preferences.md): the state, the ref mirrors
   // the drag hook reads, and the localStorage read + D1 sync effects.
   // See useEditorPreferences.
-  const {
-    userPreferences,
-    setUserPreferences,
-    prefsSettled,
-    autoRebindArrowsRef,
-    alignmentGuidesRef,
-  } = useEditorPreferences({
-    ownerId: selfParticipant.id,
-    passwordGated: sharePasswordGate !== null,
-  });
+  const { userPreferences, setUserPreferences, prefsSettled, alignmentGuidesRef } =
+    useEditorPreferences({
+      ownerId: selfParticipant.id,
+      passwordGated: sharePasswordGate !== null,
+    });
 
   // Per-element note popover (state + open/close/setNote handlers)
   // lives in useEditorNotes. Invoked further down, after `commit`
@@ -1491,7 +1485,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
   // Selection + placement + format helpers. See useElementHelpers.
-  const { addBoxed, addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
+  const { addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
     useElementHelpers({
       readSelection,
       activeId,
@@ -1732,79 +1726,49 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // --- Element CRUD --------------------------------------------------------
 
-  // Draw-to-size + freehand pen tooling (pendingDraw state machine +
+  // Draw-to-size tooling (pendingDraw state machine +
   // commit handlers). beginDrawIfEnabled short-circuits the palette
   // adds below into draw mode; the rest is consumed by the Canvas +
   // keyboard hook. See useShapeDrawing.
-  const {
-    pendingDraw,
-    beginDraw,
-    commitDraw,
-    cancelDrawShape,
-    beginFreehand,
-    beginHighlighter,
-    beginShapePen,
-    beginPolygon,
-    beginRoomWalls,
-    commitFreehand,
-    commitPolygon,
-    commitRoomWalls,
-    highlighter,
-  } = useShapeDrawing({
-    editsBlocked,
-    readSelection,
-    canvasTool,
-    setCanvasTool,
-    activeTab,
-    commit,
-    setSelectedId,
-    setMultiSelectedIds,
-    setSelection: selectionStore.setSelection,
-    setEditingId,
-    zoomRef,
-    styleNewElement: styleMemory.styleNewElement,
-  });
+  const { pendingDraw, beginDraw, commitDraw, cancelDrawShape, beginRoomWalls, commitRoomWalls } =
+    useShapeDrawing({
+      editsBlocked,
+      readSelection,
+      canvasTool,
+      setCanvasTool,
+      activeTab,
+      commit,
+      setSelectedId,
+      setMultiSelectedIds,
+      setSelection: selectionStore.setSelection,
+      setEditingId,
+      styleNewElement: styleMemory.styleNewElement,
+    });
   useEffect(() => {
     putToolDownRef.current = () => {
       cancelDrawShape();
       setCanvasTool('select');
     };
   });
-  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
-  const { commitPath, commitPathEdit } = usePathCommits({
-    editsBlocked: structureCreateBlocked,
-    commit,
-    elements: () => activeTab.elements,
-    styleNewElement: styleMemory.styleNewElement,
-    setSelectedId,
-  });
-
   // Palette element-creation handlers. See useElementCreation.
   const {
     addShape,
     addSticker,
-    addAnnotation,
     addLinkCard,
     addImage,
     addAvatar,
     dropPaletteItem,
     addText,
     addSticky,
-    addArrow,
     handleCanvasDoubleClick,
-    connectSourceId,
-    connectArrowTo,
-    cancelConnect,
   } = useElementCreation({
     editsBlocked,
     imagesBlocked: embedMode,
     activeId,
     activeTab,
-    readSelection,
     commitTabs,
     setSelectedId,
     setEditingId,
-    addBoxed,
     addBoxedAt,
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
@@ -1871,17 +1835,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setShadowSelected,
     setPaddingSelected,
     setIconSizeSelected,
-    setArrowEndsSelected,
-    setArrowThicknessSelected,
-    setArrowheadSizeSelected,
-    setArrowheadShapeSelected,
     burstSelectedStyle,
-    setArrowheadColorSelected,
-    setLabelFillSelected,
-    setArrowStyleSelected,
-    setArrowStrokeStyleSelected,
-    setArrowRouteBehindSelected,
-    setArrowExactStartSelected,
     setShapeKindSelected,
     resetAspectRatioSelected,
     setSizeSelected,
@@ -1901,16 +1855,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setClockZonesSelected,
     setJukeboxSourceSelected,
     resetShapeStyleSelected,
-    resetArrowStyleSelected,
     clearAnimationsSelected,
-    setArrowFlowSelected,
     setIconAnimationSelected,
     setIconAnimationSpeedSelected,
     setSetAnimationSpeedSelected,
-    setFlowSpeedSelected,
     setSetAnimationRepeatSelected,
     setIconAnimationRepeatSelected,
-    setFlowRepeatSelected,
     resetColorsSelected,
   } = useElementStyle({
     currentSelectionIds,
@@ -1937,8 +1887,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
     memory: styleMemory,
     swatchOverrides,
-    highlighter,
-    toolIntent: pendingDraw,
   };
 
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
@@ -1964,20 +1912,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitElementStyle,
     previewShapeColorPreset,
     commitShapeColorPreset,
-    previewArrowPreset,
-    commitArrowPreset,
     previewSetAnimation,
     commitSetAnimation,
-    previewArrowFlow,
-    commitArrowFlow,
     previewIconAnimation,
     commitIconAnimation,
     previewFillColor,
-    previewLabelFill,
-    commitLabelFill,
-    previewArrowheadColor,
     commitFillColor,
-    commitArrowheadColor,
     previewStrokeColor,
     commitStrokeColor,
     previewTextColor,
@@ -2094,7 +2034,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   // Keyboard nudge (docs/specs/008-canvas/canvas-and-palette.md Move). See useNudgeSelection for the
-  // burst-coalescing + auto-rebind behaviour; this hook also owns
+  // burst-coalescing behaviour; this hook also owns
   // the timer-cleanup-on-unmount that the prior inline version
   // didn't have.
   const nudgeSelection = useNudgeSelection({
@@ -2103,7 +2043,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeTab,
     markCheckpoint,
     tick,
-    autoRebindArrowsRef,
   });
 
   // Drag state machine + its global pointer-move / pointer-up
@@ -2115,23 +2054,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // `drag` itself isn't consumed in the page (Canvas pulls cursor
   // styling from `canvasTool`, not the drag state); only the four
   // begin-handlers below are passed through to Canvas as props.
-  const {
-    drag,
-    shiftDupGhostIds,
-    snapGuideStore,
-    beginDrag,
-    beginAnchorDrag,
-    pressArmedAction,
-    beginArrowTranslate,
-    beginEndpointDrag,
-    beginArrowCurveDrag,
-    beginArrowCurvePointDrag,
-    beginArrowBend,
-    beginArrowScale,
-    deleteCurvePoint,
-    beginArrowElbowDrag,
-    beginArrowLabelDrag,
-  } = useEditorDrag({
+  const { drag, shiftDupGhostIds, snapGuideStore, beginDrag, pressArmedAction } = useEditorDrag({
     activeTab,
     zoomRef,
     readSelection,
@@ -2145,15 +2068,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyFormatFromSource,
     formatToolActive,
     setFormatSourceId,
-    connectSourceId,
-    connectArrowTo,
     tick,
     commit,
     markCheckpoint,
     cancelToCheckpoint,
     onIconElementDroppedOnShape: editsBlocked ? undefined : dropIconElementOnShape,
-    autoRebindArrowsRef,
-    styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
     isPinchingRef,
   });
@@ -2294,18 +2213,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // The whole creation gate: a view-only session or a tab still loading.
     createBlocked: editsBlocked,
     quickStyleDeps,
-    addArrow,
     addComment,
     replaceCommentId,
     addSticker,
-    connectSourceId,
-    connectArrowTo,
-    cancelConnect,
     removeIconFromElement,
     addImage,
     addShape,
     addSticky,
-    addAnnotation,
     addLinkCard,
     addAvatar,
     dropPaletteItem,
@@ -2323,24 +2237,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyStyleToAllTabs,
     applyingStyleToAllTabs,
     canApplyStyleToAllTabs: !isStructureReadOnly,
-    beginAnchorDrag,
-    beginArrowCurveDrag,
-    beginArrowCurvePointDrag,
-    beginArrowBend,
-    beginArrowScale,
-    deleteCurvePoint,
-    beginArrowElbowDrag,
-    beginArrowLabelDrag,
     drag,
-    beginArrowTranslate,
     beginDrag,
     pressArmedAction,
     beginEdit,
-    beginEndpointDrag,
-    beginFreehand,
-    beginHighlighter,
-    beginShapePen,
-    beginPolygon,
     beginRoomWalls,
     bringSelectedToFront,
     broadcastAvatar,
@@ -2379,12 +2279,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commentRows,
     commentThreadOpenId,
     commitDraw,
-    commitFreehand,
-    commitPolygon,
     commitRoomWalls,
-    commitPath,
-    commitPathEdit,
-    styleNewElement: styleMemory.styleNewElement,
     commitLabel,
     contextMenu,
     deleteComment,
@@ -2468,21 +2363,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitElements: commit,
     previewShapeColorPreset,
     commitShapeColorPreset,
-    previewArrowPreset,
-    commitArrowPreset,
     previewSetAnimation,
     commitSetAnimation,
-    previewArrowFlow,
-    commitArrowFlow,
     previewIconAnimation,
     commitIconAnimation,
     // Granular colour / border / rotation hover preview + click commit.
     previewFillColor,
-    previewLabelFill,
-    commitLabelFill,
-    previewArrowheadColor,
     commitFillColor,
-    commitArrowheadColor,
     previewStrokeColor,
     commitStrokeColor,
     previewTextColor,
@@ -2528,17 +2415,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // The Share dialog's "Sharing as" renames a guest.
     setSelfParticipant,
     sendSelectedToBack,
-    setArrowEndsSelected,
-    setArrowStrokeStyleSelected,
-    setArrowRouteBehindSelected,
-    setArrowExactStartSelected,
-    setArrowStyleSelected,
-    setArrowThicknessSelected,
-    setArrowheadSizeSelected,
-    setArrowheadShapeSelected,
     burstSelectedStyle,
-    setArrowheadColorSelected,
-    setLabelFillSelected,
     setBackgroundColor,
     setBackgroundOpacity,
     setBackgroundPatternScale,
@@ -2563,16 +2440,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setPortalNameSelected,
     createLinkedPortal,
     resetShapeStyleSelected,
-    resetArrowStyleSelected,
     clearAnimationsSelected,
-    setArrowFlowSelected,
     setIconAnimationSelected,
     setIconAnimationSpeedSelected,
     setSetAnimationSpeedSelected,
-    setFlowSpeedSelected,
     setSetAnimationRepeatSelected,
     setIconAnimationRepeatSelected,
-    setFlowRepeatSelected,
     setCanvasTool: pickCanvasTool,
     formatConfig: formatSettings.config,
     onToggleFormatGroup: formatSettings.toggleGroup,

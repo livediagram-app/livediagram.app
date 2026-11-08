@@ -1,26 +1,16 @@
 'use client';
 
-// One-click style presets for the selected-element context menu (docs/specs/010-palette/style-presets.md).
-// Two surfaces:
-//   - ShapePresets — theme-derived style looks in hierarchical tiers (theme /
+// One-click style presets for the selected-element context menu (docs/specs/010-palette/style-presets.md):
+//   - ShapePresets: theme-derived style looks in hierarchical tiers (theme /
 //     neutral / border treatments / semantic status), each a complete style:
-//     colour + a matching border weight and pattern (never the radius —
+//     colour + a matching border weight and pattern (never the radius:
 //     that's the user's own silhouette choice) + a reset.
-//   - ArrowPresets — line looks in tiers (solid weights, patterns, animated
-//     flows) + a reset.
 // Purely presentational: every apply is a callback prop. Shape presets are
-// theme-derived (passed in); arrow presets are the static table below. Lives in
+// theme-derived (passed in). Lives in
 // its own file so EditorContextMenu doesn't accrete more large categories
 // inline (see the no-god-files principle).
 
-import {
-  ARROW_THICKNESS_PX,
-  type ArrowFlow,
-  type ArrowThickness,
-  type BorderStyle,
-  type BorderStroke,
-  type ShapeKind,
-} from '@livehuddle/document';
+import { type BorderStyle, type BorderStroke, type ShapeKind } from '@livehuddle/document';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { MenuActionButton } from '@liveworkspace/workbench/components/primitives/PortalMenu';
@@ -29,37 +19,6 @@ import {
   onMouseHover,
   useRevertOnUnmount,
 } from '@liveworkspace/workbench/components/primitives/hover-preview';
-
-// ── Static preset table ─────────────────────────────────────────────────
-
-// Arrow presets: line pattern × thickness × optional flow animation, so the
-// user can grab a dashed animated arrow, a travelling-dot arrow, etc. in one
-// click. Ordered hierarchically so the grid reads as tiers: solid weights
-// (fine → bold), then patterns (with their weight variants), then the
-// animated flows.
-export type ArrowPreset = {
-  name: string;
-  style: BorderStyle;
-  thickness: ArrowThickness;
-  flow?: ArrowFlow;
-};
-const ARROW_PRESETS: readonly ArrowPreset[] = [
-  // ── Solid weights, lightest → heaviest ──
-  { name: 'Fine', style: 'solid', thickness: 'thin' },
-  { name: 'Plain', style: 'solid', thickness: 'medium' },
-  { name: 'Bold', style: 'solid', thickness: 'thick' },
-  // ── Patterns ──
-  { name: 'Fine Dash', style: 'dashed', thickness: 'thin' },
-  { name: 'Dashed', style: 'dashed', thickness: 'medium' },
-  { name: 'Bold Dash', style: 'dashed', thickness: 'thick' },
-  { name: 'Dotted', style: 'dotted', thickness: 'medium' },
-  // ── Animated flows ──
-  { name: 'Flow', style: 'solid', thickness: 'medium', flow: 'dashes' },
-  { name: 'Dash Flow', style: 'dashed', thickness: 'medium', flow: 'dashes' },
-  { name: 'Dot Flow', style: 'solid', thickness: 'medium', flow: 'dots' },
-  { name: 'Signal', style: 'solid', thickness: 'medium', flow: 'signal' },
-  { name: 'Pulse', style: 'solid', thickness: 'medium', flow: 'pulse' },
-];
 
 // ── Preview-style mappings ──────────────────────────────────────────────
 
@@ -84,13 +43,6 @@ const SVG_BORDER_DASH: Record<BorderStyle, string | undefined> = {
 function svgBorderDash(style: BorderStyle): string | undefined {
   return SVG_BORDER_DASH[style];
 }
-// SVG stroke-dasharray for an arrow-line preview, scaled to the stroke width.
-function svgDash(style: BorderStyle, w: number): string | undefined {
-  if (style === 'dotted') return `0.1 ${w * 2.5}`;
-  if (style === 'solid') return undefined;
-  return `${w * 3} ${w * 2.5}`;
-}
-
 // ── Tiles ───────────────────────────────────────────────────────────────
 
 function PresetLabel({ children, name }: { children: React.ReactNode; name: string }) {
@@ -173,76 +125,6 @@ export function ShapePresets({
           >
             <PresetLabel name={p.name}>
               <ColorPresetSwatch preset={p} shape={shape} />
-            </PresetLabel>
-          </SizeButton>
-        ))}
-      </div>
-      <ResetButton onReset={onReset} />
-    </div>
-  );
-}
-
-// ── Arrow presets ───────────────────────────────────────────────────────
-
-function ArrowPresetSwatch({ preset }: { preset: ArrowPreset }) {
-  const w = ARROW_THICKNESS_PX[preset.thickness];
-  const dash = svgDash(preset.style, w);
-  return (
-    <svg width="34" height="14" viewBox="0 0 34 14" fill="none" aria-hidden>
-      <path
-        d="M2 7 H26"
-        stroke="currentColor"
-        strokeWidth={w}
-        strokeLinecap={preset.style === 'dotted' ? 'round' : 'butt'}
-        strokeDasharray={dash}
-        // Reuse the canvas arrow-flow march so animated presets preview live.
-        className={preset.flow ? 'lvd-arrow-flow' : undefined}
-      />
-      <path
-        d="M24 3 L30 7 L24 11"
-        stroke="currentColor"
-        strokeWidth={w}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-export function ArrowPresets({
-  current,
-  onApply,
-  onPreview,
-  onPreviewEnd,
-  onReset,
-}: {
-  // The arrow's current style, to highlight a matching preset. strokeWidth
-  // disambiguates the weight tiers (Fine / Plain / Bold share style + flow).
-  current: { strokeStyle?: BorderStyle; strokeWidth?: number; flow?: ArrowFlow };
-  onApply: (preset: ArrowPreset) => void;
-  // Hover preview (desktop pointer only): show the preset live, revert on leave.
-  onPreview: (preset: ArrowPreset) => void;
-  onPreviewEnd: () => void;
-  onReset: () => void;
-}) {
-  useRevertOnUnmount(onPreviewEnd);
-  return (
-    <div className="px-2 py-1.5">
-      <div className="grid grid-cols-4 gap-1">
-        {ARROW_PRESETS.map((p) => (
-          <SizeButton
-            key={p.name}
-            active={
-              (current.strokeStyle ?? 'solid') === p.style &&
-              current.flow === p.flow &&
-              (current.strokeWidth ?? ARROW_THICKNESS_PX.medium) === ARROW_THICKNESS_PX[p.thickness]
-            }
-            onClick={() => onApply(p)}
-            onPointerEnter={onMouseHover(() => onPreview(p))}
-            onPointerLeave={onMouseHover(onPreviewEnd)}
-          >
-            <PresetLabel name={p.name}>
-              <ArrowPresetSwatch preset={p} />
             </PresetLabel>
           </SizeButton>
         ))}

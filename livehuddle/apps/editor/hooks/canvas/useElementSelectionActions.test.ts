@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ArrowElement, Element, ShapeElement, Tab } from '@livehuddle/document';
+import type { Element, ShapeElement, Tab } from '@livehuddle/document';
 // Aliased to a non-`use` name: this factory takes no React state of its
 // own (it just closes over the passed deps), so calling it outside a
 // component is fine — the alias keeps react-hooks/rules-of-hooks quiet.
@@ -19,12 +19,14 @@ const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement 
   ...overrides,
 });
 
-const pinnedArrow = (id: string, fromId: string, toId: string): ArrowElement => ({
-  id,
-  type: 'arrow',
-  from: { kind: 'pinned', elementId: fromId, anchor: 'e' },
-  to: { kind: 'pinned', elementId: toId, anchor: 'w' },
-});
+// A stored arrow, retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4).
+const pinnedArrow = (id: string, fromId: string, toId: string): Element =>
+  ({
+    id,
+    type: 'arrow',
+    from: { kind: 'pinned', elementId: fromId, anchor: 'e' },
+    to: { kind: 'pinned', elementId: toId, anchor: 'w' },
+  }) as unknown as Element;
 
 // Build the hook over fake deps. `commit` synchronously applies the
 // mapper to `elements` and stashes the result so a test can assert on it.
@@ -58,12 +60,8 @@ const ids = (els: Element[] | null) => (els ?? []).map((e) => e.id).sort();
 // A tab or element saved locked before locking left (docs/specs/002-project-scope/not-in-livehuddle.md "Element and
 // Tab Locking") deletes like any other.
 describe('deleting what was saved locked', () => {
-  it('deletes a locked element, on a locked tab, with its locked arrow', () => {
-    const els = [
-      shape('a', { locked: true } as Partial<ShapeElement>),
-      shape('b'),
-      { ...pinnedArrow('arrow', 'a', 'b'), locked: true } as ArrowElement,
-    ];
+  it('deletes a locked element on a locked tab', () => {
+    const els = [shape('a', { locked: true } as Partial<ShapeElement>), shape('b')];
     const { actions, getResult } = setup(els, { selection: ['a'], tabLocked: true });
     actions.deleteSelected();
     expect(ids(getResult())).toEqual(['b']);
@@ -77,26 +75,26 @@ describe('deleting what was saved locked', () => {
   });
 });
 
-// docs/specs/008-canvas/arrow-to-arrow.md: an arrow hung off a connector goes when the connector does, however the
-// connector goes, the cascade from a deleted box included.
-describe('the arrow cascade reaches arrows hung off arrows', () => {
-  const hung = (id: string, onto: string): ArrowElement => ({
-    id,
-    type: 'arrow',
-    from: { kind: 'free', x: 0, y: 0 },
-    to: { kind: 'on-arrow', arrowId: onto, t: 0.5 },
-  });
-  const els = () => [shape('a'), shape('b'), pinnedArrow('x', 'a', 'b'), hung('y', 'x')];
+// docs/specs/002-project-scope/blueprints/element-engine.md D23: no cascade. A stored arrow pinned to what goes
+// stays, and only what was picked is deleted.
+describe('deleting what a stored arrow is pinned to', () => {
+  const els = () => [shape('a'), shape('b'), pinnedArrow('x', 'a', 'b')];
 
-  it('takes the hung arrow with the connector a single delete takes', () => {
+  it('keeps the arrow on a single delete', () => {
     const { actions, getResult } = setup(els(), { selection: ['a'] });
     actions.deleteSelected();
-    expect(ids(getResult())).toEqual(['b']);
+    expect(ids(getResult())).toEqual(['b', 'x']);
   });
 
-  it('takes it on a multi-selection delete too', () => {
+  it('keeps it on a multi-selection delete too', () => {
     const { actions, getResult } = setup([...els(), shape('c')], { selection: ['a', 'c'] });
     actions.deleteMultiSelected();
-    expect(ids(getResult())).toEqual(['b']);
+    expect(ids(getResult())).toEqual(['b', 'x']);
+  });
+
+  it('deletes the arrow itself when it is the one picked', () => {
+    const { actions, getResult } = setup(els(), { selection: ['x'] });
+    actions.deleteSelected();
+    expect(ids(getResult())).toEqual(['a', 'b']);
   });
 });

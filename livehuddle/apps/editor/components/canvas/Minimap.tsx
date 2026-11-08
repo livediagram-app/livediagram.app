@@ -4,11 +4,10 @@ import { useCallback, useDeferredValue, useMemo, useRef } from 'react';
 import { watchMapBox } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import {
   boundsOfPoints,
-  endpointPosition,
+  elementIndexFor,
   isBoxed,
-  arrowLabelFontStack,
-  arrowLabelPass,
-  svgArrow,
+  isRetiredArrow,
+  retiredArrowBounds,
   sketchBackdropIds,
   svgBoxed,
   svgShadowDefs,
@@ -16,6 +15,7 @@ import {
   type Point,
 } from '@livehuddle/document';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
+import { svgRetiredArrowMarkup } from '@/lib/retired-arrow-card';
 import {
   resolveIconArtLoaded,
   resolveStickerArtLoaded,
@@ -163,8 +163,8 @@ export function Minimap({
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
   // One pass builds the full-fidelity markup (the SAME headless renderer the
-  // exports / live image use — real colours, silhouettes, tables, freehand,
-  // icon glyphs, rotation, curved arrows) plus the content bounds; recomputed
+  // exports / live image use: real colours, silhouettes, icon glyphs,
+  // rotation) plus the content bounds; recomputed
   // only when elements, the tab font or the icon catalogues change —
   // panning/zooming re-renders just the viewport overlay below. It is shown as ONE image of that markup
   // (docs/specs/008-canvas/minimap.md "What it shows"), not injected as live elements: on a large
@@ -179,15 +179,10 @@ export function Minimap({
     // re-runs the build with the glyphs.
     const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
     const resolveStickerArt = iconsLoaded ? resolveStickerArtLoaded : NO_ART;
-    const labels = arrowLabelPass(drawn, {
-      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
-    });
-    // Boxed first (frames behind their contents), then arrows on top —
-    // matching the canvas z-order.
+    // Boxed first (frames behind their contents), then the stored arrows on top, matching the canvas z-order.
     // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
     const backdrops = sketchBackdropIds(drawn, tabFinish);
     for (const el of framesFirst(drawn)) {
-      if (el.type === 'arrow') continue;
       if (!isBoxed(el)) continue;
       parts.push(
         svgBoxed(el, {
@@ -201,22 +196,14 @@ export function Minimap({
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
+    // A stored arrow (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"): its dashed line and its
+    // placeholder card, as the canvas draws them.
+    const index = elementIndexFor(drawn);
     for (const el of drawn) {
-      if (el.type !== 'arrow') continue;
-      parts.push(
-        svgArrow(
-          el,
-          drawn,
-          surface,
-          tabFont,
-          labels,
-          'lvd-minimap-ko-',
-          undefined,
-          undefined,
-          tabFinish,
-        ),
-      );
-      corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
+      if (!isRetiredArrow(el)) continue;
+      parts.push(svgRetiredArrowMarkup(el, index, { surface, tabFont, tabFinish }));
+      const b = retiredArrowBounds(el, index);
+      corners.push({ x: b.x, y: b.y }, { x: b.x + b.width, y: b.y + b.height });
     }
     const content = boundsOfPoints(corners);
     if (!content) return { picture: null, bounds: null };

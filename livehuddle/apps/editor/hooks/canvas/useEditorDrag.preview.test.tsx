@@ -80,24 +80,12 @@ function harness() {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: k }));
     });
   const xOf = (id: string) => (elements.find((e) => e.id === id) as { x: number }).x;
-  const drawFromAnchor = () =>
-    act(() => {
-      view.result.current.beginAnchorDrag('a', 'e', {
-        clientX: 100,
-        clientY: 30,
-        button: 0,
-        stopPropagation: () => {},
-        preventDefault: () => {},
-      } as unknown as Parameters<typeof view.result.current.beginAnchorDrag>[2]);
-    });
-  const arrow = () =>
-    elements.find((e) => e.type === 'arrow') as Extract<Element, { type: 'arrow' }>;
-  return { view, press, pointer, key, calls, xOf, drawFromAnchor, arrow };
+  return { view, press, pointer, key, calls, xOf };
 }
 
 beforeEach(() => {
   vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
-    cb(performance.now());
+    cb(0);
     return 0;
   });
   vi.stubGlobal('cancelAnimationFrame', () => {});
@@ -158,26 +146,5 @@ describe('a drag draws from a preview', () => {
     h.view.unmount();
     expect(h.calls.tick + h.calls.commit).toBe(0);
     expect(localPreview()).toBeNull();
-  });
-});
-
-// A quick-connect arrow (drag a box's plus to another box): its end lands where it was dropped. The
-// collision bow a fresh arrow gets is folded into the one write on release; written afterwards
-// through `commit`, which reads the document as last rendered, it put the end back at the start.
-describe('drawing a quick-connect arrow', () => {
-  it('lands its end where it was dropped, in the one write on release', () => {
-    const h = harness();
-    h.drawFromAnchor();
-    // The arrow is created by the press: one commit.
-    expect(h.calls.commit).toBe(1);
-    h.pointer('pointermove', 250);
-    h.pointer('pointermove', 300);
-    h.pointer('pointerup', 300);
-    // Nothing else goes through commit after the release's single tick.
-    expect(h.calls.commit).toBe(1);
-    expect(h.calls.tick).toBe(1);
-    const to = h.arrow().to;
-    expect(to.kind === 'free' ? to.x : to.kind).not.toBe(100);
-    expect(to.kind === 'free' ? to.x : 300).toBe(300);
   });
 });

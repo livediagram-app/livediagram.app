@@ -1,9 +1,7 @@
 import {
   THEMES,
-  createPath,
   quickSwatchColor,
   shapeColorPresets,
-  type ArrowElement,
   type Element,
   type ShapeElement,
   type StickyElement,
@@ -19,6 +17,7 @@ import {
   styleMemoryKey,
   type StyleMemory,
 } from './style-memory';
+import { storedArrow, storedPath } from '@/test/retired-elements';
 
 // docs/specs/008-canvas/quick-style-panel.md "Style memory".
 
@@ -28,13 +27,8 @@ const ocean = THEMES.find((t) => t.id === 'ocean')!;
 
 const shape = (id: string, kind: ShapeElement['shape'], extra: Partial<ShapeElement> = {}) =>
   ({ id, type: 'shape', shape: kind, x: 0, y: 0, width: 50, height: 50, ...extra }) as ShapeElement;
-const arrow = (id: string, extra: Partial<ArrowElement> = {}): ArrowElement => ({
-  id,
-  type: 'arrow',
-  from: { kind: 'free', x: 0, y: 0 },
-  to: { kind: 'free', x: 10, y: 0 },
-  ...extra,
-});
+// A stored arrow is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4).
+const arrow = (id: string) => storedArrow(id, { x: 0, y: 0 }, { x: 10, y: 0 });
 
 const edit = (
   memory: StyleMemory,
@@ -49,15 +43,18 @@ describe('recordStyleEdit', () => {
     expect(m).toEqual({ 'shape:circle': { strokeColor: '#ff0000' } });
   });
 
-  it('keeps arrows in their own bucket', () => {
-    const m = edit({}, [arrow('a')], (el) => ({ ...el, strokeWidth: 4 }) as Element);
-    expect(m).toEqual({ arrow: { strokeWidth: 4 } });
+  it('remembers nothing for a stored arrow or path', () => {
+    const path = storedPath('p', { x: 0, y: 0, width: 40, height: 40 });
+    const m = edit({}, [arrow('a'), path], (el) => ({ ...el, strokeColor: '#ff0000' }) as Element);
+    expect(m).toEqual({});
+    expect(styleKindOf(arrow('a'))).toBeNull();
+    expect(styleKindOf(path)).toBeNull();
   });
 
   it('remembers each kind of a mixed selection separately', () => {
     const before = [shape('a', 'circle'), shape('b', 'square'), arrow('c')];
     const m = edit({}, before, (el) => ({ ...el, strokeColor: '#00ff00' }));
-    expect(Object.keys(m).sort()).toEqual(['arrow', 'shape:circle', 'shape:square']);
+    expect(Object.keys(m).sort()).toEqual(['shape:circle', 'shape:square']);
   });
 
   it('remembers field by field, keeping what was chosen before', () => {
@@ -89,7 +86,7 @@ describe('recordStyleEdit', () => {
     expect(edit(m, [shape('a', 'circle')], (el) => ({ ...el, rotation: 45 }))).toBe(m);
   });
 
-  it('ignores elements that are not shapes or arrows', () => {
+  it('ignores elements that are not shapes or text', () => {
     const note: StickyElement = { id: 'n', type: 'sticky', x: 0, y: 0, width: 5, height: 5 };
     expect(edit({}, [note], (el) => ({ ...el, fillColor: '#ff0000' }))).toEqual({});
   });
@@ -98,7 +95,6 @@ describe('recordStyleEdit', () => {
 describe('applyStyleMemory', () => {
   const memory: StyleMemory = {
     'shape:circle': { strokeColor: '#ff0000', strokeWidth: 'thick', textAlignX: 'left' },
-    arrow: { strokeStyle: 'dashed', flow: 'dashes' },
   };
 
   it('dresses the next element of a remembered kind', () => {
@@ -107,15 +103,13 @@ describe('applyStyleMemory', () => {
       strokeWidth: 'thick',
       textAlignX: 'left',
     });
-    expect(applyStyleMemory(arrow('n'), memory, forest)).toMatchObject({
-      strokeStyle: 'dashed',
-      flow: 'dashes',
-    });
   });
 
-  it('leaves another kind alone, by reference', () => {
+  it('leaves another kind, and a stored arrow, alone by reference', () => {
     const square = shape('n', 'square');
     expect(applyStyleMemory(square, memory, forest)).toBe(square);
+    const stored = arrow('n');
+    expect(applyStyleMemory(stored, memory, forest)).toBe(stored);
   });
 
   it('re-derives a remembered swatch for the tab’s theme', () => {
@@ -142,8 +136,11 @@ describe('applyStyleMemory', () => {
 
 describe('forgetStyleKinds', () => {
   it('drops the named kinds only', () => {
-    const m: StyleMemory = { arrow: { flow: 'dashes' }, 'shape:circle': { strokeWidth: 'thin' } };
-    expect(forgetStyleKinds(m, ['arrow'])).toEqual({ 'shape:circle': { strokeWidth: 'thin' } });
+    const m: StyleMemory = {
+      text: { textColor: '#aa0000' },
+      'shape:circle': { strokeWidth: 'thin' },
+    };
+    expect(forgetStyleKinds(m, ['text'])).toEqual({ 'shape:circle': { strokeWidth: 'thin' } });
   });
 });
 
@@ -153,11 +150,11 @@ describe('parseStyleMemory', () => {
       'shape:circle': { strokeColor: '#ff0000', rotation: 90, strokeWidth: 3 },
       'shape:nonsense': { strokeColor: '#ff0000' },
       arrow: { strokeWidth: 4, flow: 7 },
+      path: { strokeColor: '#ff0000' },
       junk: 1,
     });
     expect(parseStyleMemory(raw)).toEqual({
       'shape:circle': { strokeColor: '#ff0000' },
-      arrow: { strokeWidth: 4 },
     });
   });
 
@@ -192,7 +189,6 @@ describe('parseStyleMemory', () => {
 describe('keys', () => {
   it('names a kind and a storage key', () => {
     expect(styleKindOf(shape('a', 'diamond'))).toBe('shape:diamond');
-    expect(styleKindOf(arrow('a'))).toBe('arrow');
     expect(styleMemoryKey('d1')).toBe('livehuddle:v2:style-memory:d1');
   });
 });
@@ -215,41 +211,5 @@ describe('text elements', () => {
   it('survive a parse round trip', () => {
     const memory = { text: { textColor: '#aa0000' } };
     expect(parseStyleMemory(JSON.stringify(memory))).toEqual(memory);
-  });
-});
-
-describe('a path (docs/specs/023-draw-mode/path-tool.md "Style")', () => {
-  const path = createPath(
-    [
-      { x: 0, y: 0, mode: 'corner' },
-      { x: 40, y: 0, mode: 'corner' },
-    ],
-    false,
-  );
-
-  it('is its own kind', () => {
-    expect(styleKindOf(path)).toBe('path');
-  });
-
-  it('remembers and applies its line style', () => {
-    const m = recordStyleEdit(
-      {},
-      [path],
-      [{ ...path, strokeColor: '#ff0000', strokeWidth: 'thick' }],
-      forest,
-    );
-    expect(m).toEqual({ path: { strokeColor: '#ff0000', strokeWidth: 'thick' } });
-    const next = createPath(
-      [
-        { x: 5, y: 5, mode: 'corner' },
-        { x: 9, y: 9, mode: 'corner' },
-      ],
-      false,
-    );
-    expect(applyStyleMemory(next, m, forest)).toMatchObject({
-      strokeColor: '#ff0000',
-      strokeWidth: 'thick',
-    });
-    expect(parseStyleMemory(JSON.stringify(m))).toEqual(m);
   });
 });

@@ -1,20 +1,26 @@
-import { Fragment, memo, type ComponentProps } from 'react';
-import { arrowLabelFontStack, exportFontFamily, isBoxed, type Element } from '@livehuddle/document';
-import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
+import { memo, type ComponentProps } from 'react';
+import {
+  exportFontFamily,
+  isBoxed,
+  isRetiredArrow,
+  retiredArrowEnds,
+  type Element,
+  type ElementIndex,
+} from '@livehuddle/document';
 import type {
   LayerDrawn,
   LayerPreviewStore,
   PreviewEntry,
 } from '@/hooks/canvas/useLayerDragPreview';
 import type { RemoteSelector } from '@/lib/presence-rows';
-import type { arrowViewGeometry } from './arrow-view-frame';
 import type { BoxedElementView } from './BoxedElementView';
 import type { CanvasElementsLayerProps } from './CanvasElementsLayer';
 import { PreviewedElement } from './PreviewedElement';
-import { FreeArrowFrame, SelectableArrowView, SelectableBoxedView } from './selection-aware-views';
+import { RetiredArrowView } from './RetiredArrowView';
+import { SelectableBoxedView } from './selection-aware-views';
 
-// Every element of the canvas in paint order (arrows and boxed views interleaved, so `bringToFront` /
-// `sendToBack` reorder arrows relative to boxes), each a PreviewedElement drawn from its drag preview
+// Every element of the canvas in paint order (retired arrows and boxed views interleaved, so `bringToFront` /
+// `sendToBack` reorder a retired arrow relative to boxes), each a PreviewedElement drawn from its drag preview
 // entry or the document. Memoised: every prop is identity-stable across editor renders that change
 // nothing it draws, so a press or a release that renders the editor (a drag beginning or ending) does
 // not walk the board's element views (docs/specs/008-canvas/canvas-performance.md "A move re-renders
@@ -46,31 +52,12 @@ export type BoxedShared = Omit<
 >;
 
 // The layer's identity-stable handler bag (useStableHandlers), as much of it as an element uses.
-type ElementListHandlers = Pick<
-  P,
-  | 'handleArrowSelect'
-  | 'handleElementContextSelect'
-  | 'onBeginEndpointDrag'
-  | 'onBeginEdit'
-  | 'onCommitLabel'
-  | 'onCancelEdit'
-  | 'onBeginArrowCurveDrag'
-  | 'onBeginArrowCurvePointDrag'
-  | 'onBeginArrowBend'
-  | 'onDeleteCurvePoint'
-  | 'onBeginArrowElbowDrag'
-  | 'onBeginArrowLabelDrag'
-  | 'onBeginArrowTranslate'
-  | 'onBeginArrowScale'
->;
+type ElementListHandlers = Pick<P, 'handleArrowSelect'>;
 
 type CanvasElementListProps = Pick<
   P,
-  | 'elements'
   | 'editingId'
   | 'editCursorAtEnd'
-  | 'reshapingArrowId'
-  | 'isPaintMode'
   | 'readOnly'
   | 'shiftDupGhostIds'
   | 'remoteSelectionsByElement'
@@ -85,11 +72,10 @@ type CanvasElementListProps = Pick<
   attachPlane: (plane: HTMLElement | null) => void;
   h: ElementListHandlers;
   boxedShared: BoxedShared;
-  arrowGeometry: ReadonlyMap<string, ReturnType<typeof arrowViewGeometry>>;
-  arrowLabels: ArrowLabels;
+  // The drawn board by id, which a retired arrow's ends resolve against (retiredArrowEnds).
+  elementIndex: ElementIndex;
   // Bumped when webfonts land, so every fitted label measures again in its real face (useFontEpoch).
   fontEpoch: number;
-  // The ids a stack holds, which glide to their slots when it reflows (docs/specs/009-elements/stack.md).
 };
 
 export const CanvasElementList = memo(function CanvasElementList({
@@ -98,13 +84,9 @@ export const CanvasElementList = memo(function CanvasElementList({
   attachPlane,
   h,
   boxedShared,
-  arrowGeometry,
-  arrowLabels,
-  elements,
+  elementIndex,
   editingId,
   editCursorAtEnd,
-  reshapingArrowId,
-  isPaintMode,
   readOnly,
   shiftDupGhostIds,
   remoteSelectionsByElement,
@@ -130,57 +112,25 @@ export const CanvasElementList = memo(function CanvasElementList({
             // position, multiplied over any per-layer opacity.
             const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
             const effOpacity = ghostFactor * layerOpacity;
-            if (element.type === 'arrow') {
+            const remoteSelectors =
+              remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS;
+            // A retired arrow (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4):
+            // its dashed line and its placeholder card, its ends worked out now (or as a drag preview has them).
+            if (isRetiredArrow(element)) {
               return (
-                <Fragment key={element.id}>
-                  <svg
-                    className="absolute inset-0 h-full w-full"
-                    data-arrow-svg=""
-                    // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
-                    data-ride-id={element.id}
-                    style={{
-                      pointerEvents: 'none',
-                      overflow: 'visible',
-                      ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
-                    }}
-                  >
-                    <SelectableArrowView
-                      arrow={element}
-                      frame={(entry?.geometry ?? arrowGeometry.get(element.id)!).frame}
-                      holes={(entry?.geometry ?? arrowGeometry.get(element.id)!).holes}
-                      labelRender={entry?.label ?? arrowLabels.renderOf(element.id)}
-                      draftLayout={arrowLabels.draftLayout}
-                      isPaintMode={isPaintMode}
-                      isEditing={element.id === editingId}
-                      editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-                      readOnly={readOnly}
-                      onSelect={h.handleArrowSelect}
-                      onContextSelect={h.handleElementContextSelect}
-                      onBeginEndpointDrag={h.onBeginEndpointDrag}
-                      onBeginEdit={h.onBeginEdit}
-                      onCommitLabel={h.onCommitLabel}
-                      onBeginCurveDrag={h.onBeginArrowCurveDrag}
-                      onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
-                      onBeginArrowBend={h.onBeginArrowBend}
-                      onDeleteCurvePoint={h.onDeleteCurvePoint}
-                      onBeginElbowDrag={h.onBeginArrowElbowDrag}
-                      onBeginLabelDrag={h.onBeginArrowLabelDrag}
-                      fontFamily={arrowLabelFontStack(element, tabFont, tabFinish)}
-                    />
-                  </svg>
-                  <FreeArrowFrame
-                    arrow={element}
-                    elements={elements}
-                    standsDown={
-                      element.id === editingId ||
-                      element.id === reshapingArrowId ||
-                      readOnly ||
-                      isPaintMode
-                    }
-                    onBeginArrowTranslate={h.onBeginArrowTranslate}
-                    onBeginArrowScale={h.onBeginArrowScale}
-                  />
-                </Fragment>
+                <RetiredArrowView
+                  key={element.id}
+                  editingId={editingId}
+                  {...boxedShared}
+                  arrow={element}
+                  ends={entry?.ends ?? retiredArrowEnds(element, elementIndex)}
+                  onSelect={h.handleArrowSelect}
+                  layerOpacity={effOpacity < 1 ? effOpacity : undefined}
+                  remoteSelectors={remoteSelectors}
+                  isEditing={false}
+                  // The tab's font: an arrow carries none of its own that livehuddle reads.
+                  fontFamily={exportFontFamily({}, tabFont, tabFinish)}
+                />
               );
             }
             if (!isBoxed(element)) return null;
@@ -190,17 +140,12 @@ export const CanvasElementList = memo(function CanvasElementList({
                 editingId={editingId}
                 {...boxedShared}
                 element={element}
-                // A stack's child glides to its new slot, unless the gesture is moving it (docs/specs/009-elements/stack.md).
-
                 layerOpacity={effOpacity < 1 ? effOpacity : undefined}
-                remoteSelectors={
-                  remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS
-                }
+                remoteSelectors={remoteSelectors}
                 isEditing={element.id === editingId}
                 editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
                 movable={!readOnly || canMove?.(element) === true}
                 resizable={!readOnly || canResize?.(element) === true}
-
                 // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).
                 fontFamily={exportFontFamily(element, tabFont, tabFinish)}
               />

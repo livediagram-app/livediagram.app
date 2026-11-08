@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createPinnedArrow,
   createShape,
   type BoxedElement,
   type Element,
   type ShapeElement,
   type ShapeKind,
 } from '@livehuddle/document';
+import { storedPinnedArrow } from '@/test/retired-elements';
 import { autoAlignElements } from './auto-align';
 import { LINK_TOLERANCE } from './auto-align-lines';
 
@@ -25,8 +25,8 @@ describe('alignBoxes via autoAlignElements', () => {
       box('a', 141.5, 100, 220, 64),
       box('b', 126.5, 210, 250, 72),
       box('c', 141.5, 330, 220, 72),
-      { ...createPinnedArrow('a', 's', 'b', 'n'), id: 'ab' },
-      { ...createPinnedArrow('b', 's', 'c', 'n'), id: 'bc' },
+      storedPinnedArrow('ab', 'a', 's', 'b', 'n'),
+      storedPinnedArrow('bc', 'b', 's', 'c', 'n'),
     ];
     const out = autoAlignElements(els);
     const centres = ['a', 'b', 'c'].map((id) => cx(find(out, id)));
@@ -44,7 +44,7 @@ describe('alignBoxes via autoAlignElements', () => {
     const els = [
       box('a', 100, 0, 200, 60),
       box('b', 100 + LINK_TOLERANCE - 2, 200, 200, 60),
-      { ...createPinnedArrow('a', 's', 'b', 'n'), id: 'ab' },
+      storedPinnedArrow('ab', 'a', 's', 'b', 'n'),
     ];
     const out = autoAlignElements(els);
     expect(cx(find(out, 'a'))).toBe(cx(find(out, 'b')));

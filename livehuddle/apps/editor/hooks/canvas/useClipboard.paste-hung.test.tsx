@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ArrowElement, Element } from '@livehuddle/document';
+import type { Element, RetiredArrowElement } from '@livehuddle/document';
 import { useClipboard } from './useClipboard';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
@@ -10,13 +10,13 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 // stayed on the clipboard. A connector copied without its boxes cannot land on another tab, and an arrow hung off it
 // used to land anyway, its end naming the connector's clipboard id (drawn at the canvas origin, and saved).
 
-const connector: ArrowElement = {
+const connector: RetiredArrowElement = {
   id: 'x',
   type: 'arrow',
   from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
   to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
 };
-const hung: ArrowElement = {
+const hung: RetiredArrowElement = {
   id: 'y',
   type: 'arrow',
   from: { kind: 'free', x: 0, y: 0 },

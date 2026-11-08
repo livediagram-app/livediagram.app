@@ -10,7 +10,7 @@ import {
 } from '../fixtures';
 import {
   buildLargeSelectionBoard,
-  LARGE_ARROW_COUNT,
+  LARGE_CAPTION_COUNT,
   LARGE_NODE_COUNT,
   largeNodeId,
 } from './large-selection-board';
@@ -104,7 +104,7 @@ test('large selection drag', async ({ browser, baseURL, page }) => {
   const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const elements = buildLargeSelectionBoard();
-  expect(elements).toHaveLength(LARGE_NODE_COUNT + LARGE_ARROW_COUNT);
+  expect(elements).toHaveLength(LARGE_NODE_COUNT + LARGE_CAPTION_COUNT);
   const res = await seedDocumentItem(
     page.request,
     ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
@@ -139,7 +139,7 @@ test('large selection drag', async ({ browser, baseURL, page }) => {
 
     const cases: { name: string; select: () => Promise<Point> }[] = [
       {
-        name: `all ${LARGE_NODE_COUNT + LARGE_ARROW_COUNT}`,
+        name: `all ${LARGE_NODE_COUNT + LARGE_CAPTION_COUNT}`,
         select: async () => {
           await p.keyboard.press('Escape');
           await p.keyboard.press('ControlOrMeta+a');

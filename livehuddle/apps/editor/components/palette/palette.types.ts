@@ -32,8 +32,6 @@ export type PaletteProps = {
   onAddSticker: (stickerId: string) => void;
   onAddText: () => void;
   onAddSticky: () => void;
-  // Drop a note marker (annotation) at the viewport centre. See docs/specs/009-elements/annotations.md.
-  onAddAnnotation: () => void;
   // Drop a link-card / bookmark at the viewport centre. See docs/specs/009-elements/link-cards.md.
   onAddLinkCard: () => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md): each arms the tap-or-drag draw gesture.
@@ -45,28 +43,12 @@ export type PaletteProps = {
   // Image palette entry hides when the handler is missing. See
   // docs/specs/009-elements/images.md.
   onAddImage?: () => void;
-  // Drops a horizontal arrow at the viewport centre with no pointers
-  // on either end by default (i.e. a plain line). Users can flip the
-  // arrowEnds afterwards via the Pointer accordion.
-  // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
-  onAddArrow: (ends?: import('@livehuddle/document').ArrowEnds) => void;
-  // Pencil tool: enters one-shot freehand draw mode. Unlike the
-  // other add-element callbacks, this never drops at the viewport
-  // centre, the pencil is gestural by design. See docs/specs/008-canvas/canvas-and-palette.md Pencil
-  // (freehand) subsection.
-  onBeginFreehand: () => void;
-  // Highlighter (docs/specs/008-canvas/highlighter.md): the pencil gesture with the marker
-  // variant. Same one-shot arm semantics as onBeginFreehand.
-  onBeginHighlighter: () => void;
-  onBeginShapePen: () => void;
   // Disarm the armed tool: its tile pressed again (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
   onCancelDraw?: () => void;
-  // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
-  onBeginPolygon: () => void;
   // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.
   onBeginRoomWalls?: () => void;
   // Currently-queued draw-to-size intent, or null. When set, the
-  // matching palette button (shape, text, sticky, image, arrow)
+  // matching palette button (shape, text, sticky, image)
   // renders pressed so the user can see what's queued for the next
   // canvas drag. Only populated when user-preferences.drawToAdd is
   // on; otherwise null and no button shows the pressed treatment.

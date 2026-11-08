@@ -2,21 +2,14 @@
 
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
-  elementIndexFor,
+  isRetiredArrow,
+  retiredArrowEnds,
   type Element,
-  type ElementGrid,
   type ElementIndex,
+  type Point,
 } from '@livehuddle/document';
 import { dragPreviewFor, subscribeDragPreview, type DragOverlay } from '@/lib/drag-preview';
-import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
-import { sameArrowViewFrame, type ArrowViewFrame } from '@/components/canvas/arrow-view-frame';
-import {
-  affectedArrows,
-  movedBoxesGrid,
-  previewArrowGeometry,
-  type ArrowLinks,
-} from '@/components/canvas/drag-affected-arrows';
-import type { Rect } from '@livehuddle/document';
+import { arrowsReading, type RetiredArrowLinks } from '@/components/canvas/retired-arrow-links';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { ridingElements, type RideOffset } from './drag-ride';
 import { createRideWriter } from '@liveworkspace/workbench/lib/drag-ride-dom';
@@ -27,17 +20,17 @@ import { createRideWriter } from '@liveworkspace/workbench/lib/drag-ride-dom';
 // preview frame re-renders the elements it changes and never the layer that holds all of them. The
 // layer itself re-renders only when the preview adds or removes elements (a Shift-duplicate), which
 // changes what it lists. What a preview only moves rides an offset written outside React (drag-ride.ts), so a move
-// frame re-renders none of it: only the arrows between the moved and the unmoved
-// (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
+// frame re-renders none of it (docs/specs/008-canvas/drag-preview.md "Moves ride an offset"): only the retired arrows
+// with an end on what moved, whose ends are worked out against the preview
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4).
 
 export type LayerDrawn = { element: Element; layerOpacity: number };
 
-// What one element draws from while a preview lasts: the element as the gesture has it, and for an
-// affected arrow its frame, holes and label.
+// What one element draws from while a preview lasts: the element as the gesture has it, and for a
+// retired arrow reading what moved, its ends as the preview has them.
 export type PreviewEntry = {
   element: Element;
-  geometry?: { frame: ArrowViewFrame; holes: Rect[] };
-  label?: ArrowLabelRender;
+  ends?: { from: Point; to: Point };
 };
 
 // The ids the preview adds and removes: what the layer lists, as one value that holds while the set does.
@@ -49,11 +42,8 @@ export type LayerPreviewInputs = {
   tabId: string;
   ordered: readonly LayerDrawn[];
   drawnElements: readonly Element[];
-  elementIndex: ElementIndex | null;
-  arrowLinks: ArrowLinks | null;
-  gridFor: (elements: readonly Element[]) => ElementGrid;
-  arrowLabels: ArrowLabels;
-  tabFinish: unknown;
+  elementIndex: ElementIndex;
+  arrowLinks: RetiredArrowLinks | null;
 };
 
 export type LayerPreviewStore = {
@@ -101,9 +91,9 @@ export function shownWithOverlay(
   return shown;
 }
 
-// Whether two inputs would derive the same entries. The layer hands a fresh object (and a fresh `gridFor` closure) on
-// every render, so identity alone made any layer render mid-gesture (a peer's cursor, a timer tick) re-derive every
-// moved element and arrow; the fields themselves are what matter, and the grid follows `drawnElements`.
+// Whether two inputs would derive the same entries. The layer hands a fresh object on every render, so identity
+// alone made any layer render mid-gesture (a peer's cursor, a timer tick) re-derive every moved element; the fields
+// themselves are what matter.
 function sameInputs(a: LayerPreviewInputs | null, b: LayerPreviewInputs): boolean {
   return (
     a !== null &&
@@ -111,9 +101,7 @@ function sameInputs(a: LayerPreviewInputs | null, b: LayerPreviewInputs): boolea
     a.ordered === b.ordered &&
     a.drawnElements === b.drawnElements &&
     a.elementIndex === b.elementIndex &&
-    a.arrowLinks === b.arrowLinks &&
-    a.arrowLabels === b.arrowLabels &&
-    a.tabFinish === b.tabFinish
+    a.arrowLinks === b.arrowLinks
   );
 }
 
@@ -126,26 +114,17 @@ function sameElement(a: Element, b: Element): boolean {
   return ka.every((k) => (a as Record<string, unknown>)[k] === (b as Record<string, unknown>)[k]);
 }
 
-const sameRects = (a: readonly Rect[], b: readonly Rect[]) =>
-  a.length === b.length &&
-  a.every(
-    (r, i) =>
-      r.x === b[i]!.x && r.y === b[i]!.y && r.width === b[i]!.width && r.height === b[i]!.height,
-  );
+const samePoint = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
 
-// The previous entry when the new one draws the same (the same element, and for an arrow the same frame, holes and
-// label), so only the elements that changed re-render. By value and cheap first (sameArrowViewFrame leaves at the
-// path), as it runs for every affected arrow on every frame; a label, rarer, by its JSON.
+// The previous entry when the new one draws the same (the same element, and for an arrow the same ends), so only
+// the elements that changed re-render.
 function steadyEntry(prev: PreviewEntry | undefined, next: PreviewEntry): PreviewEntry {
   if (!prev || !sameElement(prev.element, next.element)) return next;
-  const pg = prev.geometry;
-  const ng = next.geometry;
-  if (pg || ng) {
-    if (!pg || !ng || !sameArrowViewFrame(pg.frame, ng.frame) || !sameRects(pg.holes, ng.holes))
-      return next;
+  const pe = prev.ends;
+  const ne = next.ends;
+  if (pe || ne) {
+    if (!pe || !ne || !samePoint(pe.from, ne.from) || !samePoint(pe.to, ne.to)) return next;
   }
-  if ((prev.label || next.label) && JSON.stringify(prev.label) !== JSON.stringify(next.label))
-    return next;
   return prev;
 }
 
@@ -197,49 +176,28 @@ export function createLayerPreviewStore(): LayerPreviewStore {
     inputs: LayerPreviewInputs,
   ): { out: Map<string, PreviewEntry>; rides: ReadonlyMap<string, RideOffset> } {
     const out = new Map<string, PreviewEntry>();
-    const { elementIndex, arrowLinks, drawnElements } = inputs;
-    // A board without arrows has no element index; the board's cached one finds what rides (built once per board,
-    // not per frame).
-    const rides = ridingElements(
-      overlay,
-      elementIndex ?? elementIndexFor(drawnElements),
-      arrowLinks,
-    );
+    const { elementIndex, arrowLinks } = inputs;
+    const rides = ridingElements(overlay, elementIndex);
     for (const [id, element] of overlay.changed) if (!rides.has(id)) out.set(id, { element });
     for (const { el } of overlay.added) out.set(el.id, { element: el });
-    if (!elementIndex || !arrowLinks) return { out, rides };
+    if (!arrowLinks) return { out, rides };
+    // The retired arrows with an end on what the preview changes, adds or removes, drawn with their ends worked out
+    // against the board as the preview has it (an end whose element the preview removes takes the other end's point).
+    const moved = [
+      ...overlay.changed.keys(),
+      ...overlay.added.map((a) => a.el.id),
+      ...overlay.removed,
+    ];
+    const ids = arrowsReading(arrowLinks, moved);
+    if (ids.size === 0) return { out, rides };
     const index = new Map(elementIndex);
     for (const [id, el] of overlay.changed) index.set(id, el);
     for (const { el } of overlay.added) index.set(el.id, el);
-    const grid = inputs.gridFor(drawnElements);
-    const ids = affectedArrows(overlay, drawnElements, arrowLinks);
-    // An arrow riding the offset is drawn as the document has it: only the rest re-route.
-    for (const id of rides.keys()) ids.delete(id);
-    const moved = movedBoxesGrid(overlay);
-    for (const { el } of overlay.added) if (el.type === 'arrow') ids.add(el.id);
-    // The board as the preview shows it, which a moved label is laid out against; only built when
-    // an affected arrow has a label.
-    let virtual: Element[] | null = null;
+    for (const id of overlay.removed) index.delete(id);
     for (const id of ids) {
       const arrow = index.get(id);
-      if (!arrow || arrow.type !== 'arrow') continue;
-      const entry: PreviewEntry = {
-        element: arrow,
-        geometry: previewArrowGeometry(arrow, index, grid, overlay, moved),
-      };
-      if (arrow.label) {
-        virtual ??= shownWithOverlay(inputs.ordered, overlay).map((o) => o.element);
-        const base = inputs.arrowLabels.renderOf(id);
-        const layout = inputs.arrowLabels.draftLayout(arrow, arrow.label, virtual);
-        entry.label = {
-          layout,
-          knockouts: [
-            ...base.knockouts.filter((k) => k !== base.layout?.knockout),
-            ...(layout?.knockout ? [layout.knockout] : []),
-          ],
-        };
-      }
-      out.set(id, entry);
+      if (!arrow || !isRetiredArrow(arrow)) continue;
+      out.set(id, { element: arrow, ends: retiredArrowEnds(arrow, index) });
     }
     return { out, rides };
   }

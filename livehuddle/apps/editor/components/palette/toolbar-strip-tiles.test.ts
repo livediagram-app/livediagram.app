@@ -64,16 +64,16 @@ describe('stripTilesFor', () => {
   });
 
   // "Fixed dividers": each category's groups, between the tiles shown.
-  it.each([
-    ['shapes', ['shapes:diamond', 'shapes:stadium']],
-    ['draw', ['tools:highlighter', 'tools:polygon']],
-  ])('divides %s into its groups', (category, after) => {
-    expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
+  it('divides shapes into its groups', () => {
+    expect([...stripTilesFor('shapes', NONE).dividersAfter]).toEqual([
+      'shapes:diamond',
+      'shapes:stadium',
+    ]);
   });
 
   it('keeps every tile of a category short of the strip', () => {
     const write = stripTilesFor('write', NONE);
-    expect(write.tiles).toHaveLength(3);
+    expect(write.tiles).toHaveLength(2);
     expect(write.hasMore).toBe(false);
     expect([...write.dividersAfter]).toEqual([]);
   });

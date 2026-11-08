@@ -3,27 +3,10 @@ import {
   drawBannerMessage,
   drawIntentCursor,
   dropsOnTap,
-  isFillIntent,
-  isHeldPenIntent,
-  isHeldToolIntent,
-  isPathIntent,
   isWhiteboardOnlyIntent,
   opensForTyping,
   type PendingDraw,
 } from './draw-mode';
-
-// Every pen variant, keyed so the compiler owns the list: `variant` is an
-// optional union on the freehand intent, and adding a member to it fails
-// this Record until a sample is added below. That check is here because the
-// hand-written array underneath it drifted twice — 'shape-pen' (docs/specs/008-canvas/two-pens.md)
-// and 'component' both shipped with dedicated branches in BOTH exported
-// functions while the sweeps below walked straight past them.
-type FreehandVariant = NonNullable<Extract<PendingDraw, { type: 'freehand' }>['variant']>;
-const FREEHAND_VARIANTS: Record<FreehandVariant, PendingDraw> = {
-  highlighter: { type: 'freehand', variant: 'highlighter' },
-  'shape-pen': { type: 'freehand', variant: 'shape-pen' },
-  whiteboard: { type: 'freehand', variant: 'whiteboard', colour: null, width: 4, recognise: false },
-};
 
 // One sample per discriminant. Typing it as a Record over PendingDraw['type']
 // means a NEW intent type also fails to compile until it's represented, so
@@ -31,20 +14,14 @@ const FREEHAND_VARIANTS: Record<FreehandVariant, PendingDraw> = {
 const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   shape: [{ type: 'shape', kind: 'square' }],
   text: [{ type: 'text' }],
-  fill: [{ type: 'fill', fill: '#dbeafe' }],
   sticky: [{ type: 'sticky' }],
   image: [{ type: 'image' }],
   'link-card': [{ type: 'link-card' }],
-  arrow: [{ type: 'arrow' }],
-  polygon: [{ type: 'polygon' }],
   'room-walls': [{ type: 'room-walls' }],
-  path: [{ type: 'path' }],
   // Component kinds share one branch and one label table that is already a
   // Record<ComponentKind, string>, so the compiler covers that axis; one
   // sample is enough here.
   component: [{ type: 'component', kind: 'avatar' }],
-  // Plain pen plus every variant.
-  freehand: [{ type: 'freehand' }, ...Object.values(FREEHAND_VARIANTS)],
 };
 
 const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
@@ -57,12 +34,6 @@ describe('drawBannerMessage', () => {
     );
     expect(drawBannerMessage({ type: 'image' }, false)).toBe(
       'Click to drop or drag to draw image bounds',
-    );
-    expect(drawBannerMessage({ type: 'arrow' }, false)).toBe(
-      'Click to drop or drag to draw an arrow',
-    );
-    expect(drawBannerMessage({ type: 'arrow', ends: 'none' }, false)).toBe(
-      'Click to drop or drag to draw a line',
     );
     expect(drawBannerMessage({ type: 'link-card' }, false)).toBe(
       'Click to drop or drag to draw a link card',
@@ -109,49 +80,6 @@ describe('drawBannerMessage', () => {
     );
   });
 
-  it('keeps freehand gestural-only, with the close hint only on desktop', () => {
-    // The pencil collects a pointer stream (no tap-to-drop), so it keeps
-    // "Drag to draw"; the release-near-start hint overflows the mobile
-    // banner so phones get the bare copy.
-    expect(drawBannerMessage({ type: 'freehand' }, false)).toBe(
-      'Drag to draw (release near the start to close)',
-    );
-    expect(drawBannerMessage({ type: 'freehand' }, true)).toBe('Drag to draw');
-  });
-
-  it('has the shape pen announce that it converts, shortened on mobile', () => {
-    // Recognition used to be a hidden toggle; it is now which pen you picked
-    // (docs/specs/008-canvas/two-pens.md), so the banner is where that gets said. Distinct from plain
-    // freehand on both viewports, or the two pens would read identically.
-    expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, false)).toBe(
-      'Draw a rough shape; it snaps to the real one',
-    );
-    expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, true)).toBe(
-      'Draw a shape',
-    );
-    expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, false)).not.toBe(
-      drawBannerMessage({ type: 'freehand' }, false),
-    );
-  });
-
-  it('gives the highlighter variant its own copy with no close hint', () => {
-    // The highlighter never closes / fills (docs/specs/008-canvas/highlighter.md), so both viewports
-    // get the same short copy.
-    expect(drawBannerMessage({ type: 'freehand', variant: 'highlighter' }, false)).toBe(
-      'Drag to highlight',
-    );
-    expect(drawBannerMessage({ type: 'freehand', variant: 'highlighter' }, true)).toBe(
-      'Drag to highlight',
-    );
-  });
-
-  it('describes the polygon click-to-place gesture, shortened on mobile', () => {
-    expect(drawBannerMessage({ type: 'polygon' }, false)).toBe(
-      'Click to place points, click the start to close, double-click to finish',
-    );
-    expect(drawBannerMessage({ type: 'polygon' }, true)).toBe('Tap to place points');
-  });
-
   it('describes the Room Builder, shortened on mobile', () => {
     expect(drawBannerMessage({ type: 'room-walls' }, false)).toBe(
       'Click to place corners, click the start to close',
@@ -186,8 +114,8 @@ describe('drawIntentCursor', () => {
       { type: 'text' },
       { type: 'sticky' },
       { type: 'image' },
-      { type: 'arrow' },
-      { type: 'freehand' },
+      { type: 'link-card' },
+      { type: 'room-walls' },
     ] as PendingDraw[]) {
       expect(isInlineSvgCursor(drawIntentCursor(intent))).toBe(true);
     }
@@ -214,20 +142,6 @@ describe('drawIntentCursor', () => {
     }
   });
 
-  it('gives each pen variant its own cursor', () => {
-    // Three pens share the freehand intent and each has its own glyph — the
-    // highlighter's marker, the shape pen's nib-plus-dashed-square, and the
-    // plain nib. If any two collided, the cursor would stop telling you
-    // which pen is armed, which is the one thing it is there to do.
-    const cursors = [
-      drawIntentCursor({ type: 'freehand' }),
-      drawIntentCursor({ type: 'freehand', variant: 'highlighter' }),
-      drawIntentCursor({ type: 'freehand', variant: 'shape-pen' }),
-    ];
-    for (const c of cursors) expect(isInlineSvgCursor(c)).toBe(true);
-    expect(new Set(cursors).size).toBe(3);
-  });
-
   it('never returns an empty or inherited ("auto") cursor', () => {
     for (const intent of [...ALL_INTENTS, { type: 'shape', kind: 'cloud' } as PendingDraw]) {
       const c = drawIntentCursor(intent);
@@ -248,72 +162,32 @@ describe('opensForTyping', () => {
   });
 });
 
-describe('the Highlighter (docs/specs/008-canvas/highlighter.md)', () => {
-  it('is a one-shot arm, not a held pen: it wears the mode banner', () => {
-    expect(isHeldPenIntent({ type: 'freehand', variant: 'highlighter' })).toBe(false);
-  });
-});
-
-describe('the Fill tool (docs/specs/023-draw-mode/fill-tool.md)', () => {
-  const fill: PendingDraw = { type: 'fill', fill: '#dbeafe' };
-  it('is held, with no one-shot banner, but is not an inking tool, and lives on a whiteboard', () => {
-    expect(isFillIntent(fill)).toBe(true);
-    expect(isFillIntent({ type: 'path' })).toBe(false);
-    expect(isHeldToolIntent(fill)).toBe(true);
-    expect(isHeldToolIntent({ type: 'path' })).toBe(true);
-    expect(isHeldToolIntent({ type: 'polygon' })).toBe(false);
-    expect(isHeldPenIntent(fill)).toBe(false);
-    expect(isWhiteboardOnlyIntent(fill)).toBe(true);
-  });
-
-  it('has its own bucket cursor and screen-reader copy', () => {
-    expect(drawIntentCursor(fill)).toMatch(/^url\(/);
-    expect(drawIntentCursor(fill)).not.toBe(drawIntentCursor({ type: 'path' }));
-    expect(drawBannerMessage(fill, false)).toBe('Click inside a closed shape to fill it');
-    expect(drawBannerMessage(fill, true)).toBe('Tap inside a closed shape to fill it');
-  });
-});
-
-describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
-  it('is held like a pen: no one-shot banner, and a finger pans once a pen is seen', () => {
-    expect(isHeldPenIntent({ type: 'path' })).toBe(true);
-    expect(isPathIntent({ type: 'path' })).toBe(true);
-    expect(isPathIntent({ type: 'polygon' })).toBe(false);
-  });
-
-  it('has its own cursor and screen-reader copy', () => {
-    expect(drawIntentCursor({ type: 'path' })).toMatch(/^url\(/);
-    expect(drawBannerMessage({ type: 'path' }, false)).toBe('Click to place points, drag to curve');
+describe('isWhiteboardOnlyIntent', () => {
+  it('holds for a shape armed from the board, not a palette shape', () => {
+    expect(isWhiteboardOnlyIntent({ type: 'shape', kind: 'square', board: true })).toBe(true);
+    expect(isWhiteboardOnlyIntent({ type: 'shape', kind: 'square' })).toBe(false);
+    expect(isWhiteboardOnlyIntent({ type: 'sticky' })).toBe(false);
+    expect(isWhiteboardOnlyIntent(null)).toBe(false);
   });
 });
 
 // Enter drops an armed tile at the middle of the view, as a tap would (docs/specs/008-canvas/canvas-and-palette.md
 // "Adding elements"); a gesture with no tap leaves Enter alone.
 describe('dropsOnTap', () => {
-  it('holds for every box, line and component', () => {
+  it('holds for every box and component', () => {
     const taps: PendingDraw[] = [
       { type: 'shape', kind: 'circle' },
       { type: 'text' },
       { type: 'sticky' },
       { type: 'image' },
       { type: 'link-card' },
-      { type: 'arrow' },
       { type: 'component', kind: 'avatar' },
     ];
     for (const intent of taps) expect(dropsOnTap(intent)).toBe(true);
   });
 
-  it('fails for the pens, the polygon, the Path and Fill tools, and nothing armed', () => {
-    const gestures: PendingDraw[] = [
-      { type: 'freehand' },
-      { type: 'freehand', variant: 'shape-pen' },
-      { type: 'freehand', variant: 'highlighter' },
-      { type: 'polygon' },
-      { type: 'room-walls' },
-      { type: 'path' },
-      { type: 'fill', fill: '#000' },
-    ];
-    for (const intent of gestures) expect(dropsOnTap(intent)).toBe(false);
+  it('fails for the Room Builder and nothing armed', () => {
+    expect(dropsOnTap({ type: 'room-walls' })).toBe(false);
     expect(dropsOnTap(null)).toBe(false);
   });
 });

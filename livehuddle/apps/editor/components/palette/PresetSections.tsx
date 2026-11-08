@@ -4,21 +4,19 @@
 // context menu (ElementAppearanceSections) and the multi-selection menu
 // (MultiSelectionContextMenu) so there is one implementation of each. The
 // apply / reset handlers on EditorContextMenuProps are already selection-wide
-// (applyShapeColorPresetSelected / applyArrowPresetSelected walk every selected
+// (applyShapeColorPresetSelected walks every selected
 // id), so the same section works for one element or many.
 
 import {
   STICKY_PRESETS,
   supportsColours,
-  type ArrowFlow,
-  type BorderStyle,
   type Element,
   type ShapeColorPreset,
   type ShapeElement,
   type ShapeKind,
 } from '@livehuddle/document';
 import { PresetsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { ArrowPresets, ShapePresets } from '@/components/palette/StylePresets';
+import { ShapePresets } from '@/components/palette/StylePresets';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
@@ -68,9 +66,7 @@ export function ShapePresetsSection({
   props: EditorContextMenuProps;
   accordion: AccordionProps;
   onClose: () => void;
-  // Section label. A mixed shape + arrow selection shows BOTH preset
-  // sections, so the caller disambiguates ("Shape Presets") the same way
-  // the Animation sections do; alone, the plain "Presets" reads fine.
+  // Section label: the plain "Presets" unless the caller names it.
   title?: string;
 }) {
   return (
@@ -91,48 +87,14 @@ export function ShapePresetsSection({
   );
 }
 
-// Presets (docs/specs/010-palette/style-presets.md) — one-click line looks for an arrow (pattern / thickness /
-// optional flow animation), plus a reset.
-export function ArrowPresetsSection({
-  current,
-  props,
-  accordion,
-  onClose,
-  title = 'Presets',
-}: {
-  // The arrow's current line style, to highlight a matching preset
-  // (strokeWidth disambiguates the Fine / Plain / Bold weight tiers).
-  current: { strokeStyle?: BorderStyle; strokeWidth?: number; flow?: ArrowFlow };
-  props: EditorContextMenuProps;
-  accordion: AccordionProps;
-  onClose: () => void;
-  // See ShapePresetsSection: "Arrow Presets" when both sections show.
-  title?: string;
-}) {
-  return (
-    <MenuAccordionSection title={title} icon={<PresetsMenuGlyph />} {...accordion}>
-      <ArrowPresets
-        current={current}
-        onApply={(p) => props.onApplyArrowPreset(p)}
-        onPreview={(p) => props.onPreviewArrowPreset(p)}
-        onPreviewEnd={props.onPreviewStyleEnd}
-        onReset={() => {
-          props.onResetArrowStyle();
-          onClose();
-        }}
-      />
-    </MenuAccordionSection>
-  );
-}
-
 /** Whether `TargetPresetsSection` would render anything for this element. */
 export function hasStylePresets(el: Element): boolean {
-  return shapeSupportsPresets(el) || el.type === 'sticky' || el.type === 'arrow';
+  return shapeSupportsPresets(el) || el.type === 'sticky';
 }
 
 // Which Presets grid an element gets, and the choice is its own question, so it lives with the sections rather than
-// inside the appearance menu's render: a shape's theme looks, a sticky's pad of note colours, or an
-// arrow's line looks. Elements with none of them
+// inside the appearance menu's render: a shape's theme looks or a sticky's pad of note colours. Elements with none
+// of them
 // render nothing, which is why the caller can mount this unconditionally.
 export function TargetPresetsSection({
   target,
@@ -173,20 +135,6 @@ export function TargetPresetsSection({
           fillColor: target.fillColor,
           strokeColor: target.strokeColor,
           textColor: target.textColor,
-        }}
-        props={props}
-        accordion={accordion}
-        onClose={onClose}
-      />
-    );
-  }
-  if (target.type === 'arrow') {
-    return (
-      <ArrowPresetsSection
-        current={{
-          strokeStyle: target.strokeStyle,
-          strokeWidth: target.strokeWidth,
-          flow: target.flow,
         }}
         props={props}
         accordion={accordion}

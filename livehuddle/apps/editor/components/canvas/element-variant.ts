@@ -77,6 +77,19 @@ export function describeVariant(
   const shadow = supportsShadow(element) ? element.shadow : undefined;
   const boxShadow: CSSProperties = shadow ? { boxShadow: shadowBoxCss(shadow) } : {};
   const filterShadow: CSSProperties = shadow ? { filter: shadowFilterCss(shadow) } : {};
+  // A stored element of a retired type (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): an
+  // embed, a table, a pen stroke, a path, an annotation, or a stored arrow's card (part 4, D21). Its face paints the
+  // placeholder card, so the wrapper carries only the selection ring and a remote selector's outline. Every type the
+  // switch below does not name is one of these.
+  const placeholder = {
+    className: `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim(),
+    style: {
+      borderRadius: '4px',
+      ...(remoteBorderColor
+        ? { outline: `${remoteBorderWidth}px solid ${remoteBorderColor}`, outlineOffset: 2 }
+        : {}),
+    },
+  };
   switch (element.type) {
     case 'shape': {
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
@@ -239,48 +252,6 @@ export function describeVariant(
         },
       };
     }
-    case 'freehand':
-    case 'path': {
-      // The freehand element renders its SVG path as the child
-      // content. The wrapper here just contributes the selection
-      // ring + remote-selector outline, with a transparent
-      // background so the SVG geometry is what the user sees, not
-      // a bounding rectangle. Same shape as the image case
-      // (selection-via-outline, not selection-via-border) so a
-      // dashed / dotted stroke doesn't get overridden by a box
-      // border around it.
-      const ring = `${singleRing('ring-2 ring-brand-300')} ${multiRing}`.trim();
-      return {
-        className: `${ring}`,
-        style: remoteBorderColor
-          ? { outline: `${remoteBorderWidth}px solid ${remoteBorderColor}`, outlineOffset: 2 }
-          : {},
-      };
-    }
-    case 'annotation': {
-      // A themed circle marker (docs/specs/009-elements/annotations.md): fill + ring from the element's
-      // colours, fully round. The note glyph paints as the child content.
-      const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
-      return {
-        className: `${finishFaceShadows(finish) ? 'shadow-sm ' : ''}${ring}`,
-        style: {
-          borderRadius: '50%',
-          backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
-          borderColor:
-            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface),
-          borderWidth: remoteBorderColor ? remoteBorderWidth : 2,
-          borderStyle: 'solid',
-        },
-      };
-    }
-    // A retired embed or table (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") paints its own
-    // placeholder card, as a retired shape does: the wrapper carries only the selection ring.
-    case 'video':
-    case 'table':
-      return {
-        className: `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim(),
-        style: { borderRadius: '4px' },
-      };
     // A bookmark card (docs/specs/009-elements/link-cards.md): fill background + 1px border, rounded; the favicon,
     // title and image render as the child content (LinkCardView). overflow-hidden clips it to the radius.
     case 'link-card': {
@@ -300,15 +271,11 @@ export function describeVariant(
       };
     }
   }
+  return placeholder;
 }
 
-// How an element in its edit mode sits on the canvas. A label being typed rises above its
-// neighbours and wears the text cursor; a path in its edit mode (docs/specs/023-draw-mode/path-tool.md
-// "Editing") does neither: its points are edited, never typed, and its nodes must stay above it.
-export function editingLook(
-  element: { type: string },
-  isEditing: boolean,
-): { raise: boolean; textCursor: boolean } {
-  const typing = isEditing && element.type !== 'path';
-  return { raise: typing, textCursor: typing };
+// How an element in its edit mode sits on the canvas: a label being typed rises above its neighbours and wears the
+// text cursor.
+export function editingLook(isEditing: boolean): { raise: boolean; textCursor: boolean } {
+  return { raise: isEditing, textCursor: isEditing };
 }

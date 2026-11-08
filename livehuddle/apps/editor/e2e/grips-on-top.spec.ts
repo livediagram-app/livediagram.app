@@ -39,24 +39,13 @@ const seed = [
     if (cover.type === 'sticky') delete cover.shape;
     return [box(`T${i}`, x, 300, c.target), cover];
   }),
-  // An arrow whose end sits under a box painted after it.
-  {
-    id: 'AR',
-    type: 'arrow',
-    from: { kind: 'free', x: 400, y: 620 },
-    to: { kind: 'free', x: 600, y: 640 },
-  },
-  box('K', 570, 610, { width: 70, height: 70 }),
 ];
 
 // Every grip an element covers at the grip's own centre, with the element that covers it. The
 // floating panels over the canvas are not elements, and the viewport leaves some grips beneath them.
 async function coveredGrips(page: Page): Promise<string[]> {
   return page.evaluate(() => {
-    const grips = [
-      ...document.querySelectorAll<HTMLElement>('[data-canvas-handle]'),
-      ...document.querySelectorAll<SVGElement>('[data-selection-grips] svg circle'),
-    ];
+    const grips = [...document.querySelectorAll<HTMLElement>('[data-canvas-handle]')];
     return grips.flatMap((grip) => {
       const r = grip.getBoundingClientRect();
       const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
@@ -88,13 +77,6 @@ test.describe('selection grips', () => {
       expect(await coveredGrips(page), c.name).toEqual([]);
       await page.keyboard.press('Escape');
     }
-
-    // The arrow's end grips.
-    const line = page.locator('path[data-element-id="AR"]');
-    const r = (await line.boundingBox())!;
-    await page.mouse.click(r.x + r.width * 0.3, r.y + r.height * 0.3);
-    await expect(page.locator('[data-selection-grips] svg circle[r="6"]')).toHaveCount(2);
-    expect(await coveredGrips(page), 'arrow').toEqual([]);
 
     expectNoPageErrors(pageErrors);
   });

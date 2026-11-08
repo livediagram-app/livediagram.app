@@ -3,18 +3,16 @@
 // Animation-picker tile grids for the editor context menu (docs/specs/008-canvas/canvas-and-palette.md), lifted
 // out of EditorContextMenu.tsx to keep that god file focused on menu structure.
 // Each control is an illustrated tile per kind plus a Speed row once a motion
-// is picked. The boxed Animation, arrow Flow, and icon-animation pickers all
+// is picked. The boxed Animation and icon-animation pickers all
 // live here; the Progress picker stays in EditorContextMenu (it pairs with the
 // local MenuToggleRow) but reuses TileLabel + SpeedTiles from this module.
 
 import { useState, type ReactNode } from 'react';
 import {
   ANIMATION_SPEEDS,
-  ARROW_FLOWS,
   ICON_ANIMATIONS,
   animationLabel,
   type AnimationSpeed,
-  type ArrowFlow,
   ICON_SIZES,
   ICON_WEIGHTS,
   ICON_WEIGHT_PX,
@@ -24,10 +22,7 @@ import {
 } from '@livehuddle/document';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
-import {
-  ArrowFlowPreview,
-  IconAnimationPreview,
-} from '@/components/palette/animation-previews-existing';
+import { IconAnimationPreview } from '@/components/palette/animation-previews-existing';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import {
   onMouseHover,
@@ -119,60 +114,6 @@ export function TileLabel({ glyph, label }: { glyph: ReactNode; label: string })
       {glyph}
       <span className="text-[9px] capitalize leading-none">{label}</span>
     </span>
-  );
-}
-
-// Arrow Flow control: None / Dashes / Dots / Beads / Pulse / Grow / Glow
-// illustrated, plus the Speed row.
-export function FlowTiles({
-  flow,
-  speed,
-  repeat,
-  onSet,
-  onSetSpeed,
-  onSetRepeat,
-  onPreview,
-  onPreviewEnd,
-}: {
-  flow: ArrowFlow | null;
-  speed: AnimationSpeed;
-  // Whether the flow loops (on by default); false = play once and hold.
-  repeat: boolean;
-  onSet: (v: ArrowFlow | null) => void;
-  onSetSpeed: (v: AnimationSpeed) => void;
-  onSetRepeat: (v: boolean) => void;
-  // Desktop hover-to-preview (docs/specs/008-canvas/canvas-and-palette.md), as in AnimationSetTiles.
-  onPreview?: (v: ArrowFlow | null) => void;
-  onPreviewEnd?: () => void;
-}) {
-  useRevertOnUnmount(onPreviewEnd ?? NOOP);
-  const { showSpeed, handleSet } = useSpeedRowGate(flow, onSet);
-  return (
-    <>
-      <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
-        {withNone(ARROW_FLOWS).map((v) => (
-          <AnimationPreviewTile
-            key={v ?? 'none'}
-            active={flow === v}
-            label={v ? animationLabel(v) : 'None'}
-            frame={v === 'draw' ? 0.25 : v ? 0.3 : 0}
-            onClick={() => handleSet(v)}
-            onPreview={onPreview ? () => onPreview(v) : undefined}
-            onPreviewEnd={onPreviewEnd}
-          >
-            <ArrowFlowPreview flow={v} />
-          </AnimationPreviewTile>
-        ))}
-      </div>
-      {showSpeed ? (
-        <SpeedAndRepeatRows
-          speed={speed}
-          repeat={repeat}
-          onSetSpeed={onSetSpeed}
-          onSetRepeat={onSetRepeat}
-        />
-      ) : null}
-    </>
   );
 }
 

@@ -1,11 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livehuddle/document';
 import {
   DEFAULT_BUTTON_MODE,
   PADDING_PX,
-  defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
   carriesSharedSettingsMenu,
@@ -17,10 +15,7 @@ import {
   type TextAlignY,
   type TextSize,
 } from '@livehuddle/document';
-import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
-import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
-import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
@@ -87,8 +82,6 @@ type ElementFaceRouterProps = Pick<
   inlineIcon: string | false | undefined;
   marker: ShapeMarker | undefined;
   iconCaptionBand: string | null;
-  // A pen stroke or a path is picked by its drawn line (selected, its box catches pointers too).
-  hitLine: boolean;
   // The box the element's indicators take, in its own units (indicatorClusterRect), so a retired element's Delete
   // keeps clear of them; absent or null when it has none.
   indicatorRect?: { x: number; y: number; width: number; height: number } | null;
@@ -111,7 +104,6 @@ export function ElementFaceRouter(props: ElementFaceRouterProps) {
 }
 
 function KnownElementFace({
-  hitLine,
   element,
   isEditing,
   readOnly,
@@ -216,10 +208,6 @@ function KnownElementFace({
           textColor={textColor}
           wayfinding={onEnterPortal?.(element).wayfinding}
         />
-      ) : element.type === 'annotation' ? (
-        <AnnotationGlyph
-          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-        />
       ) : element.type === 'link-card' ? (
         <LinkCardView
           element={element}
@@ -234,36 +222,6 @@ function KnownElementFace({
           shareCode={imageContext.shareCode}
           onOpenPicker={imageContext.onOpenPicker}
           fontFamily={fontFamily}
-        />
-      ) : element.type === 'freehand' ? (
-        <>
-          <FreehandSvg
-            element={element}
-            hitPenWidth={hitLine ? (element.penWidth ?? 0) : undefined}
-            fill={element.fillColor ?? defaultFillColor(element, surface)}
-            stroke={
-              remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
-            }
-          />
-          {/* Render the label on top of the SVG path so a freehand
-              can carry text the same way a shape does (the Editor
-              panel's Text accordion lights up for it). Both the SVG
-              and the label use absolute inset-0 so they overlay
-              cleanly inside the element's bounding box. Skipped when
-              there's no label AND we're not mid-edit, to avoid the
-              empty placeholder taking up space and competing with
-              the drawn stroke. */}
-          {isEditing || label.length > 0 ? labelNode : null}
-        </>
-      ) : element.type === 'path' ? (
-        // A path (docs/specs/023-draw-mode/path-tool.md) draws its curve and takes no label.
-        <PathSvg
-          element={element}
-          hitPenWidth={
-            hitLine ? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE] : undefined
-          }
-          fill={element.fillColor ?? defaultFillColor(element, surface)}
-          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
         />
       ) : element.type === 'shape' && (inlineIcon || marker) ? (
         <InsetContent inset={contentInset}>

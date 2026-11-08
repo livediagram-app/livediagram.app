@@ -1,4 +1,4 @@
-import type { ArrowElement, ShapeElement, StickyElement, TextElement } from '@livehuddle/document';
+import type { Element, ShapeElement, StickyElement, TextElement } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import { AUTO_ALIGN_GRID, autoAlignElement, autoAlignElements } from './auto-align';
 import { MIN_SIZE } from './canvas';
@@ -14,13 +14,15 @@ const square = (overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   ...overrides,
 });
 
-const arrow = (overrides: Partial<ArrowElement> = {}): ArrowElement => ({
-  id: 'a',
-  type: 'arrow',
-  from: { kind: 'free', x: 0, y: 0 },
-  to: { kind: 'free', x: 100, y: 100 },
-  ...overrides,
-});
+// A stored arrow, retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4).
+const arrow = (overrides: Record<string, unknown> = {}): Element =>
+  ({
+    id: 'a',
+    type: 'arrow',
+    from: { kind: 'free', x: 0, y: 0 },
+    to: { kind: 'free', x: 100, y: 100 },
+    ...overrides,
+  }) as unknown as Element;
 
 describe('autoAlignElement', () => {
   it(`snaps position and size to the ${AUTO_ALIGN_GRID}px grid`, () => {
@@ -82,16 +84,12 @@ describe('autoAlignElement', () => {
     expect(out.height).toBeGreaterThanOrEqual(MIN_SIZE);
   });
 
-  it('snaps free arrow endpoints but leaves pinned ones attached', () => {
+  it('leaves a stored arrow exactly as stored', () => {
     const a = arrow({
       from: { kind: 'free', x: 13, y: 27 },
       to: { kind: 'pinned', elementId: 'el-2', anchor: 'n' },
     });
-    const out = autoAlignElement(a) as ArrowElement;
-    expect(out.from).toEqual({ kind: 'free', x: 10, y: 30 });
-    // Pinned endpoint is returned by reference (no work needed,
-    // follows the target element's snap).
-    expect(out.to).toEqual({ kind: 'pinned', elementId: 'el-2', anchor: 'n' });
+    expect(autoAlignElement(a)).toBe(a);
   });
 
   it('leaves text + sticky elements snapped on the grid same as shapes', () => {
@@ -130,12 +128,12 @@ describe('autoAlignElements', () => {
     expect(out).toHaveLength(input.length);
   });
 
-  it('passes each element through autoAlignElement', () => {
+  it('snaps the boxes and leaves a stored arrow as stored', () => {
     const sq = square({ x: 13, y: 27 });
     const ar = arrow({ from: { kind: 'free', x: 13, y: 27 } });
     const out = autoAlignElements([sq, ar]);
     expect((out[0] as ShapeElement).x).toBe(10);
-    expect(((out[1] as ArrowElement).from as { x: number; y: number }).x).toBe(10);
+    expect(out[1]).toBe(ar);
   });
 
   it('snaps each element independently without resizing relative to neighbours', () => {

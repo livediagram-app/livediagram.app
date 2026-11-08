@@ -1,7 +1,7 @@
 import { expect, test, expectNoPageErrors, seedTab, startBlankDocument } from './fixtures';
 
 // Multi-colour themes (docs/specs/011-theme/multicolour-themes.md) end to end:
-// Rainbow, picked for an uncoloured hierarchy, paints each limb its own palette colour, and
+// Rainbow, picked for uncoloured boxes, paints each loose box its own palette colour, and
 // the switch leaves its trace in the console (blueprint O1). Unit tests prove
 // the branch map; only the editor proves the colours reach the canvas.
 
@@ -24,16 +24,14 @@ async function rainbowHues(page: import('@playwright/test').Page): Promise<numbe
 }
 
 test.describe('Multi-colour themes', () => {
-  test('Rainbow gives each limb of a mind map its own palette colour', async ({
-    page,
-    pageErrors,
-  }) => {
+  test('Rainbow gives each loose box its own palette colour', async ({ page, pageErrors }) => {
     const logs: string[] = [];
     page.on('console', (msg) => logs.push(msg.text()));
 
-    // A root and three limbs with no colours of their own (a template's authored hues would rightly be kept
-    // as customisations, docs/specs/011-theme/multicolour-themes.md), so any Rainbow hue found came from the
-    // palette.
+    // Four boxes with no colours of their own (a template's authored hues would rightly be kept as
+    // customisations, docs/specs/011-theme/multicolour-themes.md), so any Rainbow hue found came from the
+    // palette. Not joined by arrows (they left with the element engine's part 4,
+    // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"): a loose box takes the next hue.
     await startBlankDocument(page);
     const box = (id: string, x: number, y: number) => ({
       id,
@@ -45,20 +43,11 @@ test.describe('Multi-colour themes', () => {
       height: 60,
       label: id,
     });
-    const limb = (id: string, anchor: string) => ({
-      id: `to-${id}`,
-      type: 'arrow',
-      from: { kind: 'pinned', elementId: 'root', anchor },
-      to: { kind: 'pinned', elementId: id, anchor: 'w' },
-    });
     await seedTab(page, [
       box('root', 100, 300),
       box('one', 400, 150),
       box('two', 400, 300),
       box('three', 400, 450),
-      limb('one', 'e'),
-      limb('two', 'e'),
-      limb('three', 'e'),
     ]);
     expect(await rainbowHues(page)).toBe(0);
 
@@ -76,7 +65,7 @@ test.describe('Multi-colour themes', () => {
       .toContainEqual(expect.stringMatching(SWITCH_LOG));
 
     await expect
-      .poll(() => rainbowHues(page), { message: 'limbs take distinct palette colours' })
+      .poll(() => rainbowHues(page), { message: 'loose boxes take distinct palette colours' })
       .toBeGreaterThanOrEqual(3);
     expectNoPageErrors(pageErrors);
   });

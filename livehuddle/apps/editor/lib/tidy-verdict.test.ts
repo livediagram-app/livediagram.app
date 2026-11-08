@@ -1,21 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createPinnedArrow,
-  createShape,
-  type ArrowElement,
-  type Element,
-  type ShapeElement,
-} from '@livehuddle/document';
+import { createShape, type Element, type ShapeElement } from '@livehuddle/document';
 import { cleanupVerdict, verdictNotice } from './tidy-verdict';
 
 // docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work".
 
 const box = (id: string, x: number, y: number, w = 100, h = 50) =>
   ({ ...createShape('square', x, y), id, width: w, height: h }) as ShapeElement;
-const arrow = (from: string, to: string): ArrowElement => ({
-  ...createPinnedArrow(from, 's', to, 'n'),
-  id: `${from}>${to}`,
-});
+// A stored (retired) arrow (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+const arrow = (from: string, to: string) =>
+  ({
+    id: `${from}>${to}`,
+    type: 'arrow',
+    from: { kind: 'pinned', elementId: from, anchor: 's' },
+    to: { kind: 'pinned', elementId: to, anchor: 'n' },
+  }) as Element;
 const moved = (els: Element[], id: string, dx: number, dy: number) =>
   els.map((e) =>
     e.id === id

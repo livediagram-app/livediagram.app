@@ -21,24 +21,16 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import {
   acceptsInlineIcon,
-  anchorOutward,
   isBoxed,
-  nearestElementTowards,
-  opposingAnchor,
-  rebindArrowAnchorsAfterMove,
   doorsFollowRooms,
   snapMovedDoors,
-  type ArrowElement,
   type Element,
 } from '@livehuddle/document';
-import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { iconDropSide, type DragState } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
-import { applyCollisionAvoidance } from './arrow-avoidance-apply';
-import { applyArrowDragMove } from './arrow-drag-apply';
 import { applyShiftDuplicateSwap, type ShiftDupSwap } from './shift-duplicate-swap';
 import {
   resizedElement,
@@ -48,7 +40,6 @@ import {
 } from './boxed-drag-resolve';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { useSnapGuideState } from './useSnapGuideState';
-import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -61,8 +52,7 @@ import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';
 // wobbles a few pixels) just selects / opens the element for editing —
 // it never nudges it. Distance-based, not time-based: a fast flick still
 // covers far more than this, so real drags engage immediately. Resize /
-// rotate / arrow-endpoint grabs are deliberate handle pulls and aren't
-// gated.
+// rotate grabs are deliberate handle pulls and aren't gated.
 const DRAG_ENGAGE_PX = 4;
 
 // Everything the move handler reads off a pointer event. Structural rather
@@ -81,8 +71,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // Alignment guides for the active gesture. Set from the move-effect on
   // every boxed move / single-element resize, cleared on pointer-up. The
   // render layer (CanvasChrome) draws them as faint lines.
-  // Cosmetic snap-guide overlay state (alignment + distribution guides,
-  // arrow snap markers), coalesced through rAF. See useSnapGuideState.
+  // Cosmetic snap-guide overlay state (alignment + distribution guides),
+  // coalesced through rAF. See useSnapGuideState.
   const { snapGuideStore, scheduleGuides, scheduleSnapTargets } = useSnapGuideState();
   // Whether the current body drag has crossed DRAG_ENGAGE_PX. Reset at the
   // start of each gesture (in the move effect below); flipped true once the
@@ -96,16 +86,10 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // pointer-down pushed a no-op snapshot (and cleared the redo stack) on
   // every click, evicting real states from the bounded HISTORY_LIMIT.
   const checkpointPendingRef = useRef(false);
-  // One-shot guard so an arrow-to-arrow connection (docs/specs/008-canvas/arrow-to-arrow.md) is tracked once
-  // per endpoint drag, not on every pointer-move tick. Reset on drag start.
-  const arrowConnectTrackedRef = useRef(false);
   // Shift-duplicate ghosting (docs/specs/008-canvas/shift-drag-duplicate.md). Holding Shift during a boxed move
   // swaps identities: the ORIGINAL elements park back at their start
-  // position (keeping their ids, so every arrow pinned to them stays put),
-  // and a fresh CLONE set takes over the cursor, rendered as a translucent
-  // ghost. Boundary arrows (pinned to a dragged element from outside the
-  // set) are duplicated onto the clones so a copied box keeps its
-  // connections. `dupSwapRef` holds what's needed to swing back if Shift
+  // position (keeping their ids), and a fresh CLONE set takes over the
+  // cursor, rendered as a translucent ghost. `dupSwapRef` holds what's needed to swing back if Shift
   // is released (a ref, so mid-drag toggles don't churn the
   // pointer-listener effect); `shiftDupGhostIds` is the render-facing set
   // of CLONE ids to draw translucent.
@@ -118,8 +102,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // here, not in the document, and the document changes once, on release. `base` is the board as
   // the gesture found it (the overlay is what the gesture changed relative to it, so a
   // collaborator's change to another element is never undone), `virtual` the gesture's own result,
-  // which the drag logic reads in place of the written document. Kept across the effect's re-runs
-  // within one gesture (a quick-connect arrow turning to follow the pointer).
+  // which the drag logic reads in place of the written document.
   const previewRef = useRef<{ tabId: string; base: Element[]; virtual: Element[] } | null>(null);
   const virtualTab = useEffectEvent(() => {
     const tab = depsRef.current.activeTab;
@@ -163,28 +146,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // The canvas going away mid-gesture writes nothing.
   useEffect(() => () => cancelPreview(), []);
 
-  const { beginDrag, beginAnchorDrag, pressArmedAction } = useBoxedDragHandlers({
+  const { beginDrag, pressArmedAction } = useBoxedDragHandlers({
     depsRef,
     setDrag,
     checkpointPendingRef,
   });
-
-  // Shared opening for every arrow-handle drag: refuse to start while a
-  // format-painter gesture is live, then resolve the
-  // target as a typed arrow. Returns the deps snapshot + arrow, or null
-  // when the drag shouldn't begin. The setSelectedId / style
-  // guards stay per-handler because their order differs between gestures.
-  const {
-    beginArrowTranslate,
-    beginEndpointDrag,
-    beginArrowCurveDrag,
-    beginArrowCurvePointDrag,
-    beginArrowBend,
-    beginArrowScale,
-    deleteCurvePoint,
-    beginArrowElbowDrag,
-    beginArrowLabelDrag,
-  } = useArrowDragHandlers({ depsRef, setDrag, checkpointPendingRef, arrowConnectTrackedRef });
 
   // Global pointer-move / pointer-up listeners. Attached once per
   // drag-start, torn down when the drag ends. Every fire reads
@@ -232,11 +198,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     // A pointer the system took back (a touch interrupted, a native drag starting from content in an
     // element) ends with `pointercancel` and no `pointerup`: the gesture is cancelled, as Escape cancels
     // it, rather than left live to follow a pointer with no button held and commit on a later release.
-    // A click-to-place arrow rides through pointer releases by design and is left to its next click.
-    const onPointerCancel = () => {
-      if (drag?.kind === 'arrow-endpoint' && drag.following) return;
-      cancelDrag();
-    };
+    const onPointerCancel = () => cancelDrag();
     // Cancel the drag immediately when a second touch finger lands — that
     // signals a pinch gesture, not a solo drag.
     const onSecondTouch = (e: PointerEvent) => {
@@ -261,209 +223,112 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // distribution snapping and its guide lines for this gesture (docs/specs/008-canvas/snap-override.md).
       const noSnap = e.metaKey || e.ctrlKey;
 
-      if (drag.kind === 'boxed') {
-        if (drag.mode === 'move') {
-          // Drag-engage threshold: until the pointer has travelled past
-          // DRAG_ENGAGE_PX (screen space), treat the press as a click —
-          // select / open-to-edit without moving anything. Once engaged it
-          // tracks the full delta from the start, so there's no jump.
-          if (!dragEngagedRef.current) {
-            const travelled = Math.hypot(
-              e.clientX - drag.startClientX,
-              e.clientY - drag.startClientY,
-            );
-            if (travelled < DRAG_ENGAGE_PX) return;
-            dragEngagedRef.current = true;
-            engageGesture();
-          }
-          // Alignment / distribution snapping + the guide lines live in
-          // resolveBoxedMove; this handler applies the resolved
-          // translation and the rebind pass.
-          const move = resolveBoxedMove({
-            elements: activeTab.elements,
-            startBounds: drag.startBounds,
-            primaryId: drag.primaryId,
-            dx,
-            dy,
-            noSnap,
-            guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
-          });
-          scheduleGuides(move.guides, move.distGuides);
-          tick((els) => {
-            // First pass: translate every dragged boxed element (and the
-            // free ends of arrows pulled into a frame-section move).
-            const moved = translateBoxedSelection(
-              els,
-              drag.startBounds,
-              drag.startArrowEnds,
-              move.tx,
-              move.ty,
-            );
-            // Second pass, live on every frame: the auto-rebind
-            // (docs/specs/008-canvas/arrow-anchors.md) moves an end whose
-            // arrow now runs through a shape. Skipped when the
-            // preference (docs/specs/007-editor/user-preferences.md) is
-            // off. Read through a ref so a mid-drag flip lands on the
-            // next pointermove; ?? true mirrors its default.
-            const autoRebind = depsRef.current.autoRebindArrowsRef.current ?? true;
-            // A moved door lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door"), unless
-            // Cmd / Ctrl places it freely.
-            const onWalls = noSnap ? moved : snapMovedDoors(moved, drag.startBounds);
-            return autoRebind ? rebindArrowAnchorsAfterMove(onWalls, drag.startBounds) : onWalls;
-          });
-          // Shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): holding Shift turns
-          // this move into a copy by parking the originals and handing the
-          // cursor to a fresh clone set, and releasing it swings back. All
-          // of that lives in shift-duplicate-swap.ts; a true return means
-          // it took the tick over and the plain translate above no longer
-          // applies.
-          const d = depsRef.current;
-          if (
-            applyShiftDuplicateSwap({
-              drag,
-              shiftKey: e.shiftKey,
-              isReadOnly: d.isReadOnly,
-              dx,
-              dy,
-              elements: activeTab.elements,
-              swap: dupSwapRef.current,
-              setSwap: (next) => {
-                dupSwapRef.current = next;
-              },
-              setGhostIds: setShiftDupGhostIds,
-              setDrag,
-              ...d.readSelection(),
-              setSelectedId: d.setSelectedId,
-              setMultiSelectedIds: d.setMultiSelectedIds,
-              tick,
-            })
-          ) {
-            return;
-          }
-        } else {
-          // Single + multi resize (union scaling, rotated projection,
-          // resize snapping) all live in resolveBoxedResize; this handler
-          // writes the resolved per-element bounds. `guides: null` means
-          // the frame doesn't own the guide state (multi-resize never
-          // scheduled it).
-          const resize = resolveBoxedResize({
-            elements: activeTab.elements,
-            startBounds: drag.startBounds,
-            primaryId: drag.primaryId,
-            mode: drag.mode,
-            dx,
-            dy,
-            shiftHeld: e.shiftKey,
-            dragAspectLocked: drag.aspectLocked,
-            guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
-            noSnap,
-          });
-          if (!resize) return;
-          if (resize.guides !== null) scheduleGuides(resize.guides);
-          // A lone text box that fits or wraps hugs its text through the resize, in either
-          // editor mode (docs/specs/007-editor/editor-modes.md "A text box's sizing").
-          const textHug =
-            drag.startBounds.size === 1
-              ? {
-                  mode: drag.mode,
-                  constrain: drag.aspectLocked || e.shiftKey,
-                  measure: measureDrawnText(activeTab.font, activeTab.finish),
-                }
-              : null;
-          // A resized room's Doors keep their place along its walls (docs/specs/009-elements/room-builder.md "It
-          // rides its room"), in the same tick, so one undo takes back both.
-          tick((els) =>
-            doorsFollowRooms(
-              els,
-              els.map((el) => {
-                if (!isBoxed(el)) return el;
-                const next = resize.boundsById.get(el.id);
-                return next ? resizedElement(el, next, textHug) : el;
-              }),
-            ),
+      if (drag.mode === 'move') {
+        // Drag-engage threshold: until the pointer has travelled past
+        // DRAG_ENGAGE_PX (screen space), treat the press as a click:
+        // select / open-to-edit without moving anything. Once engaged it
+        // tracks the full delta from the start, so there's no jump.
+        if (!dragEngagedRef.current) {
+          const travelled = Math.hypot(
+            e.clientX - drag.startClientX,
+            e.clientY - drag.startClientY,
           );
+          if (travelled < DRAG_ENGAGE_PX) return;
+          dragEngagedRef.current = true;
+          engageGesture();
         }
-        return;
-      }
-
-      // Arrow drags engage like a body move: until the pointer travels past
-      // DRAG_ENGAGE_PX a press is a click, so a quick double-click never nudges
-      // a handle, pins a label or bends a line (docs/specs/008-canvas/arrow-bending.md). Drawing a
-      // new arrow's endpoint is the exception: it follows the pointer at once.
-      const engages = drag.kind !== 'arrow-endpoint' || drag.reposition === true;
-      if (engages && !dragEngagedRef.current) {
-        const travelled = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY);
-        if (travelled < DRAG_ENGAGE_PX) return;
-        dragEngagedRef.current = true;
-        engageGesture();
-        if (drag.kind === 'arrow-bend') {
-          debugLog('[arrow-bend]', drag.arrowId, drag.plan.kind);
-          track('Element', 'Changed', 'ArrowBend');
+        // Alignment / distribution snapping + the guide lines live in
+        // resolveBoxedMove; this handler applies the resolved
+        // translation.
+        const move = resolveBoxedMove({
+          elements: activeTab.elements,
+          startBounds: drag.startBounds,
+          primaryId: drag.primaryId,
+          dx,
+          dy,
+          noSnap,
+          guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+        });
+        scheduleGuides(move.guides, move.distGuides);
+        tick((els) => {
+          // Translate every dragged boxed element.
+          const moved = translateBoxedSelection(els, drag.startBounds, move.tx, move.ty);
+          // A moved door lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door"), unless
+          // Cmd / Ctrl places it freely.
+          return noSnap ? moved : snapMovedDoors(moved, drag.startBounds);
+        });
+        // Shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): holding Shift turns
+        // this move into a copy by parking the originals and handing the
+        // cursor to a fresh clone set, and releasing it swings back. All
+        // of that lives in shift-duplicate-swap.ts; a true return means
+        // it took the tick over and the plain translate above no longer
+        // applies.
+        const d = depsRef.current;
+        if (
+          applyShiftDuplicateSwap({
+            drag,
+            shiftKey: e.shiftKey,
+            isReadOnly: d.isReadOnly,
+            dx,
+            dy,
+            elements: activeTab.elements,
+            swap: dupSwapRef.current,
+            setSwap: (next) => {
+              dupSwapRef.current = next;
+            },
+            setGhostIds: setShiftDupGhostIds,
+            setDrag,
+            ...d.readSelection(),
+            setSelectedId: d.setSelectedId,
+            setMultiSelectedIds: d.setMultiSelectedIds,
+            tick,
+          })
+        ) {
+          return;
         }
+      } else {
+        // Single + multi resize (union scaling, rotated projection,
+        // resize snapping) all live in resolveBoxedResize; this handler
+        // writes the resolved per-element bounds. `guides: null` means
+        // the frame doesn't own the guide state (multi-resize never
+        // scheduled it).
+        const resize = resolveBoxedResize({
+          elements: activeTab.elements,
+          startBounds: drag.startBounds,
+          primaryId: drag.primaryId,
+          mode: drag.mode,
+          dx,
+          dy,
+          shiftHeld: e.shiftKey,
+          dragAspectLocked: drag.aspectLocked,
+          guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+          noSnap,
+        });
+        if (!resize) return;
+        if (resize.guides !== null) scheduleGuides(resize.guides);
+        // A lone text box that fits or wraps hugs its text through the resize, in either
+        // editor mode (docs/specs/007-editor/editor-modes.md "A text box's sizing").
+        const textHug =
+          drag.startBounds.size === 1
+            ? {
+                mode: drag.mode,
+                constrain: drag.aspectLocked || e.shiftKey,
+                measure: measureDrawnText(activeTab.font, activeTab.finish),
+              }
+            : null;
+        // A resized room's Doors keep their place along its walls (docs/specs/009-elements/room-builder.md "It
+        // rides its room"), in the same tick, so one undo takes back both.
+        tick((els) =>
+          doorsFollowRooms(
+            els,
+            els.map((el) => {
+              if (!isBoxed(el)) return el;
+              const next = resize.boundsById.get(el.id);
+              return next ? resizedElement(el, next, textHug) : el;
+            }),
+          ),
+        );
       }
-      // Every remaining kind is an arrow-handle drag (curve / elbow /
-      // label / bend / translate, and arrow-endpoint as the fall-through), all
-      // of which apply the same way: delta in, resolved geometry out
-      // through `tick`. See arrow-drag-apply.ts.
-      applyArrowDragMove({
-        drag,
-        dx,
-        dy,
-        noSnap,
-        shiftHeld: e.shiftKey,
-        elements: activeTab.elements,
-        guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
-        tick,
-        scheduleGuides,
-        scheduleSnapTargets,
-        onArrowConnected: () => {
-          // Once per endpoint drag, not once per move tick.
-          if (arrowConnectTrackedRef.current) return;
-          arrowConnectTrackedRef.current = true;
-          track('Element', 'Linked', 'ArrowPoint');
-        },
-      });
-    };
-    // Shift-chaining (docs/specs/008-canvas/canvas-and-palette.md quick-connect): landing a NEW arrow's endpoint
-    // with Shift held immediately starts ANOTHER arrow from the same source
-    // end, endpoint following the cursor — a hub fans out to several targets
-    // in one flow without reopening the ring. Only for freshly drawn arrows
-    // (never a reposition of an existing endpoint) whose source is pinned.
-    // Returns true when the chain took over the gesture.
-    const chainNextArrow = (e: PointerEvent): boolean => {
-      if (!e.shiftKey) return false;
-      if (drag?.kind !== 'arrow-endpoint' || drag.end !== 'to' || drag.reposition) return false;
-      const d = depsRef.current;
-      if (d.isReadOnly) return false;
-      const placed = d.activeTab.elements.find(
-        (el): el is ArrowElement => el.id === drag.arrowId && el.type === 'arrow',
-      );
-      if (!placed || placed.from.kind !== 'pinned') return false;
-      const cursor = {
-        x: drag.startCanvasX + (e.clientX - drag.startClientX) / d.zoomRef.current,
-        y: drag.startCanvasY + (e.clientY - drag.startClientY) / d.zoomRef.current,
-      };
-      const arrow: ArrowElement = d.styleNewElement({
-        id: crypto.randomUUID(),
-        type: 'arrow',
-        from: placed.from,
-        to: { kind: 'free', x: cursor.x, y: cursor.y },
-        ...(placed.strokeColor ? { strokeColor: placed.strokeColor } : {}),
-      });
-      d.commit((els) => [...els, arrow]);
-      d.setSelectedId(arrow.id);
-      track('Element', 'Added', 'Arrow');
-      setDrag({
-        kind: 'arrow-endpoint',
-        arrowId: arrow.id,
-        end: 'to',
-        startClientX: e.clientX,
-        startClientY: e.clientY,
-        startCanvasX: cursor.x,
-        startCanvasY: cursor.y,
-        following: true,
-      });
-      return true;
     };
     const onUp = (e: PointerEvent) => {
       // Land on the final pointer position even if it arrived in the same
@@ -471,112 +336,19 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // this a fast release drops up to one frame of movement, so the element
       // finishes a few pixels behind the cursor.
       flushMove();
-      // Quick-connect arrow "click to place": if the arrow was started by a
-      // click (clickToPlace) and this release ends a gesture that never
-      // really moved, don't commit — flip into `following` so the endpoint
-      // trails the cursor and the NEXT click (handled in capture below)
-      // places it. A real press-drag (moved past the threshold) falls
-      // through and commits like any anchor drag.
-      if (drag?.kind === 'arrow-endpoint' && drag.clickToPlace && !drag.following) {
-        const px = drag.pressClientX ?? drag.startClientX;
-        const py = drag.pressClientY ?? drag.startClientY;
-        const moved = Math.hypot(e.clientX - px, e.clientY - py) > 6;
-        if (!moved) {
-          setDrag({ ...drag, clickToPlace: false, following: true });
-          return;
-        }
-      }
-      // Follow mode rides THROUGH pointer-ups: after a shift-chained
-      // placing click, the release of that same click arrives here with the
-      // fresh arrow already following — committing now would land it where
-      // it spawned. The gesture ends at the NEXT placing click, not on up.
-      if (drag?.kind === 'arrow-endpoint' && drag.following) return;
-      // A freshly DRAWN arrow (never a reposition) gets the one-shot collision-avoiding bow
-      // (docs/specs/008-canvas/arrow-collision-avoidance.md) as its gesture ends, folded into the
-      // gesture's result so the two land as the one write. Written afterwards through `commit`, it
-      // started from the document as last rendered, before the result had landed, and put the
-      // arrow's end back where the drag began. A touch tap that never moved places its end below
-      // instead, as it always has, with no bow.
-      const tapStill =
-        drag?.kind === 'arrow-endpoint' &&
-        !!drag.tapPlace &&
-        !drag.following &&
-        Math.hypot(
-          e.clientX - (drag.pressClientX ?? drag.startClientX),
-          e.clientY - (drag.pressClientY ?? drag.startClientY),
-        ) <= 6;
-      if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition && !tapStill) {
-        const arrowId = drag.arrowId;
-        previewTick((els) =>
-          applyCollisionAvoidance(els, arrowId, depsRef.current.activeTab.finish),
-        );
-      }
+      // Shift-duplicate finalisation (docs/specs/008-canvas/shift-drag-duplicate.md). The identity swap already
+      // happened during the move (originals parked, a clone set on the
+      // cursor); this either keeps the clones at the drop
+      // point (a real shift-drop — they stay selected) or dissolves them
+      // and finishes as a plain move of the originals (no displacement, or
+      // Shift released exactly at the up with no intervening move event).
+      // All inside the gesture's single undo step.
       // The gesture's result, as the release logic below reads it, then written in one change before
       // anything else writes (docs/specs/008-canvas/drag-preview.md).
       const released = virtualTab();
       commitPreview();
       const d = { ...depsRef.current, activeTab: released };
-      // Touch quick-connect tap (docs/specs/008-canvas/canvas-and-palette.md): the gesture entered a real drag so
-      // a finger CAN drag to a target, but this release never moved. Attach
-      // the far end to whatever sits on that side, or fall back to the short
-      // free stub when there's nothing there — either way the user gets a
-      // usable arrow from one tap instead of a stub they must then place by
-      // hand on the device least suited to it.
-      if (drag?.kind === 'arrow-endpoint' && drag.tapPlace && !drag.following) {
-        const px = drag.pressClientX ?? drag.startClientX;
-        const py = drag.pressClientY ?? drag.startClientY;
-        if (Math.hypot(e.clientX - px, e.clientY - py) <= 6) {
-          const { anchor, sourceId, placeOutPx } = drag.tapPlace;
-          const arrowId = drag.arrowId;
-          const source = d.activeTab.elements.find((el) => el.id === sourceId);
-          const target =
-            source && isBoxed(source)
-              ? nearestElementTowards(d.activeTab.elements, source, anchor)
-              : null;
-          // Out of the anchor, for placing a tapped quick-connect arrow's free end
-          // when there's nothing on that side to attach to.
-          const out = anchorOutward(anchor);
-          d.commit((els) =>
-            els.map((el) =>
-              el.id !== arrowId || el.type !== 'arrow'
-                ? el
-                : {
-                    ...el,
-                    to:
-                      target &&
-                      (anchor === 'n' || anchor === 's' || anchor === 'e' || anchor === 'w')
-                        ? { kind: 'pinned', elementId: target.id, anchor: opposingAnchor(anchor) }
-                        : {
-                            kind: 'free',
-                            x: drag.startCanvasX + out.x * placeOutPx,
-                            y: drag.startCanvasY + out.y * placeOutPx,
-                          },
-                  },
-            ),
-          );
-          setDrag(null);
-          scheduleGuides([]);
-          scheduleSnapTargets([]);
-          return;
-        }
-      }
-      // Shift-release of a press-drag chains the next arrow (same rule as
-      // the placing click below). The landed endpoint is already committed
-      // by the drag ticks; close this gesture's bookkeeping and follow on.
-      if (drag?.kind === 'arrow-endpoint' && !drag.following && chainNextArrow(e)) {
-        scheduleGuides([]);
-        scheduleSnapTargets([]);
-        checkpointPendingRef.current = false;
-        return;
-      }
-      // Shift-duplicate finalisation (docs/specs/008-canvas/shift-drag-duplicate.md). The identity swap already
-      // happened during the move (originals parked with their arrows, a
-      // clone set on the cursor); this either keeps the clones at the drop
-      // point (a real shift-drop — they stay selected) or dissolves them
-      // and finishes as a plain move of the originals (no displacement, or
-      // Shift released exactly at the up with no intervening move event).
-      // All inside the gesture's single undo step.
-      if (drag?.kind === 'boxed' && drag.mode === 'move' && dupSwapRef.current) {
+      if (drag.mode === 'move' && dupSwapRef.current) {
         const swap = dupSwapRef.current;
         dupSwapRef.current = null;
         setShiftDupGhostIds(null);
@@ -606,7 +378,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             return translateBoxedSelection(
               withoutClones,
               swap.orig.startBounds,
-              swap.orig.startArrowEnds,
               movedAway ? dropDx : 0,
               movedAway ? dropDy : 0,
             );
@@ -623,7 +394,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // 'icon' shape but are ALWAYS standalone — a coloured brand tile
       // folded beside a shape's text isn't meaningful and the inline-icon
       // renderer only knows line-art prims — so they're excluded here.
-      if (drag?.kind === 'boxed' && drag.mode === 'move' && d.onIconElementDroppedOnShape) {
+      if (drag.mode === 'move' && d.onIconElementDroppedOnShape) {
         const moved = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) > 4;
         const dragged = d.activeTab.elements.find((el) => el.id === drag.primaryId);
         if (moved && dragged && dragged.type === 'shape' && dragged.shape === 'icon') {
@@ -658,48 +429,12 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           }
         }
       }
-      // Annotations open their note on DOUBLE-click now (handled in
-      // BoxedElementView), so a plain click just selects — no note-open here.
       setDrag(null);
       scheduleGuides([]);
       scheduleSnapTargets([]);
       // Disarm any checkpoint the gesture never used (a click that
       // selected without moving), so it can't attach to a later one.
       checkpointPendingRef.current = false;
-    };
-    // Quick-connect arrow follow mode: the placing click. Captured on the
-    // way DOWN (capture phase) so it commits the endpoint and is swallowed
-    // before the canvas can read it as a marquee / deselect.
-    const onPlaceClick = (e: PointerEvent) => {
-      if (!(drag?.kind === 'arrow-endpoint' && drag.following)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      // Land the last pointermove first, as onUp does: it can still be
-      // waiting on the next frame, and the cleanup that ending the gesture
-      // triggers would cancel it, leaving the endpoint a frame behind (and
-      // unsnapped from the element under the cursor).
-      flushMove();
-      // The landed arrow gets the one-shot collision-avoiding bow
-      // (docs/specs/008-canvas/arrow-collision-avoidance.md), folded into the result before it is
-      // written, as the press-drag end in onUp above does.
-      if (drag.end === 'to' && !drag.reposition) {
-        const arrowId = drag.arrowId;
-        previewTick((els) =>
-          applyCollisionAvoidance(els, arrowId, depsRef.current.activeTab.finish),
-        );
-      }
-      commitPreview();
-      // The endpoint already tracks the cursor (last pointermove); this
-      // click just lands it. Shift chains straight into the next arrow
-      // from the same source (docs/specs/008-canvas/canvas-and-palette.md); otherwise clear and end.
-      if (chainNextArrow(e)) {
-        scheduleGuides([]);
-        scheduleSnapTargets([]);
-        return;
-      }
-      setDrag(null);
-      scheduleGuides([]);
-      scheduleSnapTargets([]);
     };
     // Escape aborts the gesture (docs/specs/008-canvas/canvas-and-palette.md). Capture phase + swallow so
     // the editor-wide Escape handlers (deselect / zen exit) don't ALSO
@@ -708,14 +443,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       if (e.key !== 'Escape' || !drag) return;
       e.preventDefault();
       e.stopPropagation();
-      // Follow mode: the half-drawn arrow is removed outright.
-      if (drag.kind === 'arrow-endpoint' && drag.following) {
-        const arrowId = drag.arrowId;
-        depsRef.current.commit((els) => els.filter((el) => el.id !== arrowId));
-        depsRef.current.setSelectedId(null);
-        cancelDrag();
-        return;
-      }
       // Nothing was written while the gesture lasted, so cancelling drops its preview and the
       // elements are where the grab started, with no undo step left behind.
       cancelDrag();
@@ -777,7 +504,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onPointerCancel);
     window.addEventListener('pointerdown', onSecondTouch);
-    window.addEventListener('pointerdown', onPlaceClick, true);
     window.addEventListener('keydown', onKey, true);
     return () => {
       endGesture?.();
@@ -786,7 +512,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onPointerCancel);
       window.removeEventListener('pointerdown', onSecondTouch);
-      window.removeEventListener('pointerdown', onPlaceClick, true);
       window.removeEventListener('keydown', onKey, true);
     };
   }, [depsRef, drag, scheduleGuides, scheduleSnapTargets]);
@@ -796,16 +521,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     shiftDupGhostIds,
     snapGuideStore,
     beginDrag,
-    beginAnchorDrag,
     pressArmedAction,
-    beginArrowTranslate,
-    beginEndpointDrag,
-    beginArrowCurveDrag,
-    beginArrowCurvePointDrag,
-    beginArrowBend,
-    beginArrowScale,
-    deleteCurvePoint,
-    beginArrowElbowDrag,
-    beginArrowLabelDrag,
   };
 }

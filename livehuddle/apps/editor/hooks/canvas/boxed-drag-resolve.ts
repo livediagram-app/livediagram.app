@@ -30,12 +30,11 @@ import {
 } from '@/lib/canvas';
 
 // The boxed move / resize frame resolvers (docs/specs/008-canvas/canvas-and-palette.md canvas), lifted out of
-// useEditorDrag's pointermove switch the same way the arrow snap ladder
-// went to resolveArrowEndpointDrag: pure functions the drag hook feeds
+// useEditorDrag's pointermove switch: pure functions the drag hook feeds
 // the gesture's captured start state + the live delta, getting back the
 // per-element bounds / translation plus the guide lines to show. The
 // hook stays the owner of everything React-shaped (the engage gate, the
-// checkpoint tick, the guide scheduler, the auto-rebind preference).
+// checkpoint tick, the guide scheduler).
 
 // The corner / edge OPPOSITE each resize handle, in element-local sign space
 // (±1 per axis from the centre). Used to anchor that point while resizing a
@@ -157,38 +156,18 @@ export function resolveBoxedMove({
 }
 
 // Apply a move frame's translation: every dragged boxed element shifts
-// from its captured start bounds, and the FREE endpoints of any arrows
-// pulled into a frame-section move shift with them (pinned ends are left
-// for the caller's rebind pass).
+// from its captured start bounds.
 export function translateBoxedSelection(
   els: Element[],
   startBounds: ReadonlyMap<string, ShapeBounds>,
-  startArrowEnds: ReadonlyMap<
-    string,
-    { from?: { x: number; y: number }; to?: { x: number; y: number } }
-  >,
   tx: number,
   ty: number,
 ): Element[] {
   return els.map((el) => {
-    if (isBoxed(el)) {
-      const start = startBounds.get(el.id);
-      if (!start) return el;
-      return { ...el, x: start.x + tx, y: start.y + ty };
-    }
-    if (el.type === 'arrow') {
-      const ends = startArrowEnds.get(el.id);
-      if (!ends) return el;
-      const next = { ...el };
-      if (ends.from && el.from.kind === 'free') {
-        next.from = { kind: 'free', x: ends.from.x + tx, y: ends.from.y + ty };
-      }
-      if (ends.to && el.to.kind === 'free') {
-        next.to = { kind: 'free', x: ends.to.x + tx, y: ends.to.y + ty };
-      }
-      return next;
-    }
-    return el;
+    if (!isBoxed(el)) return el;
+    const start = startBounds.get(el.id);
+    if (!start) return el;
+    return { ...el, x: start.x + tx, y: start.y + ty };
   });
 }
 

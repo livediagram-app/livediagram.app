@@ -9,7 +9,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { act, cleanup, render } from '@testing-library/react';
 import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createPinnedArrow, createShape, createText } from '@livehuddle/document';
+import { createShape, createText } from '@livehuddle/document';
+import { storedPinnedArrow } from '@/test/retired-elements';
 import { Minimap } from './Minimap';
 
 afterEach(cleanup);
@@ -128,13 +129,13 @@ describe('Minimap drawing', () => {
 
 // docs/specs/008-canvas/minimap.md "What it shows": the picture draws no labels.
 describe('Minimap labels', () => {
-  it('leaves every label out of the picture, keeping the shapes and arrows', () => {
+  it('leaves every label out of the picture, keeping the shapes and the stored arrow', () => {
     const labelled = [
       { ...createShape('square', 0, 0), id: 's1', label: 'Checkout' },
       { ...createShape('square', 400, 0), id: 's2', label: 'Pay' },
       { ...createText(0, 300), id: 't1', label: 'A note' },
       { ...createShape('square', 400, 300), id: 's3' },
-      { ...createPinnedArrow('s1', 'e', 's2', 'w'), id: 'a1', label: 'next' },
+      storedPinnedArrow('a1', 's1', 'e', 's2', 'w', { label: 'next' }),
     ];
     const { container } = render(
       <Minimap
@@ -155,10 +156,14 @@ describe('Minimap labels', () => {
     );
     const href = container.querySelector('svg[role="img"] > image')!.getAttribute('href')!;
     const doc = decodeURIComponent(href.slice(href.indexOf(',') + 1));
-    expect(doc).not.toContain('<text');
     expect(doc).not.toMatch(/Checkout|Pay|A note|next/);
     expect(doc.match(/<rect /g)?.length ?? 0).toBeGreaterThanOrEqual(3);
-    expect(doc).toContain('<path');
+    // The stored arrow draws as its placeholder: the dashed line between its ends and its card, whose only words are
+    // the placeholder's own (its name and note), never the arrow's label.
+    expect(doc).toContain('data-retired-arrow-line');
+    const card = doc.slice(doc.indexOf('<g data-retired-arrow='));
+    expect(doc.slice(0, doc.indexOf('<g data-retired-arrow='))).not.toContain('<text');
+    expect(card).toContain('>Arrow</text>');
   });
 });
 

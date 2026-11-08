@@ -41,15 +41,7 @@ export function resetElementColours(el: Element, theme: ThemeDefinition): Elemen
     const { fillColor: _f, strokeColor: _s, textColor: _t, ...rest } = el;
     return rest;
   }
-  if (el.type === 'arrow') {
-    return {
-      ...el,
-      ...(theme.elementStroke !== null
-        ? { strokeColor: theme.elementStroke }
-        : { strokeColor: undefined }),
-      strokeSwatch: undefined,
-      penColour: undefined,
-    };
-  }
+  // A stored arrow, like every retired element, keeps what it holds
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
   return el;
 }

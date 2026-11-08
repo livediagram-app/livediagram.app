@@ -10,11 +10,9 @@ import {
   canvasSurface,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_BUTTON_MODE,
-  PEN_INK,
   spacePattern,
 } from '@livehuddle/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
-import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useState } from 'react';
 
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
@@ -50,11 +48,7 @@ export function EditorCanvasHost() {
     formatPanelPosition,
     setFormatPanelPosition,
 
-    addAnnotation,
-    addArrow,
     addAvatar,
-    beginArrowBend,
-    beginArrowScale,
     addSticker,
     addImage,
     addLinkCard,
@@ -63,19 +57,9 @@ export function EditorCanvasHost() {
     dropBoardFile,
     addText,
     anyWelcomeOpen,
-    beginArrowCurveDrag,
-    beginArrowCurvePointDrag,
-    beginArrowElbowDrag,
-    beginArrowLabelDrag,
-    beginArrowTranslate,
     beginDrag,
     pressArmedAction,
     beginEdit,
-    beginEndpointDrag,
-    beginFreehand,
-    beginHighlighter,
-    beginShapePen,
-    beginPolygon,
     beginRoomWalls,
     broadcastAvatar,
     broadcastAvatarPush,
@@ -89,7 +73,6 @@ export function EditorCanvasHost() {
     pressFocusButton,
     broadcastCursor,
     canvasPointerRef,
-    cancelConnect,
     cancelDrawShape,
     cancelEdit,
     canRedo,
@@ -108,14 +91,8 @@ export function EditorCanvasHost() {
     commentRows,
     commentsPanelPosition,
     commitDraw,
-    commitFreehand,
-    commitPolygon,
     commitRoomWalls,
-    commitPath,
-    commitPathEdit,
-    styleNewElement,
     commitLabel,
-    deleteCurvePoint,
     deleteMultiSelected,
     deleteSelected,
     documentId,
@@ -195,27 +172,14 @@ export function EditorCanvasHost() {
     setViewportZoom,
     shiftDupGhostIds,
     snapGuideStore,
-
     tabSummaries,
     toggleAspectLockSelected,
     toggleInMultiSelect,
     undo,
     userPreferences,
-    drag,
     loadedTabIds,
     applyElementDelta,
   } = useEditorContext();
-  // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
-  // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
-  const reshapingArrowId =
-    drag &&
-    (drag.kind === 'arrow-bend' ||
-      drag.kind === 'arrow-curve' ||
-      drag.kind === 'arrow-elbow' ||
-      drag.kind === 'arrow-endpoint')
-      ? drag.arrowId
-      : null;
-
   // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md). The facilitator verbs
   // below fall away for everybody else, exactly as they do on a read-only
   // surface; the responses beside them stay, because answering is the point.
@@ -331,15 +295,6 @@ export function EditorCanvasHost() {
         }}
         setViewportOffset={setViewportOffset}
         elements={canvasElements}
-        whiteboardInk={PEN_INK[surface]}
-        previewDrawnArrow={(intent, startX, startY, endX, endY) =>
-          drawnArrowAsShown(intent, startX, startY, endX, endY, {
-            elements: activeTab.elements,
-            theme: activeTheme,
-            styleNewElement,
-            surface,
-          })
-        }
         shiftDupGhostIds={shiftDupGhostIds}
         snapGuideStore={snapGuideStore}
         remoteSelectionsByElement={remoteSelectionsByElement}
@@ -442,28 +397,16 @@ export function EditorCanvasHost() {
         canRedo={canRedo}
         onAddShape={addShape}
         onAddSticker={addSticker}
-        onAddAnnotation={addAnnotation}
         onAddLinkCard={addLinkCard}
         onAddAvatar={addAvatar}
         onAddText={addText}
         onAddSticky={addSticky}
         onDropFile={isReadOnly ? undefined : dropBoardFile}
         onAddImage={addImage}
-        onAddArrow={addArrow}
-        reshapingArrowId={reshapingArrowId}
-        onBeginFreehand={beginFreehand}
-        onBeginHighlighter={beginHighlighter}
-        onBeginShapePen={beginShapePen}
-        onBeginPolygon={beginPolygon}
         onBeginRoomWalls={beginRoomWalls}
         pendingDraw={pendingDraw}
         onCommitDraw={commitDraw}
-        onCommitFreehand={commitFreehand}
-        onCommitPolygon={commitPolygon}
         onCommitRoomWalls={commitRoomWalls}
-        onCommitPath={commitPath}
-        onCommitPathEdit={commitPathEdit}
-        onDressPath={styleNewElement}
         settings={userPreferences}
         onCancelDraw={cancelDrawShape}
         onUndo={undo}
@@ -505,7 +448,7 @@ export function EditorCanvasHost() {
                 track('UI', 'Opened', 'ThemePicker');
               }
         }
-        // No Tidy Up button: it was Diagram mode's (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
+        // No Tidy Up button: Auto Layout is not in livehuddle (docs/specs/008-canvas/layout-cleanup.md).
         commentRows={commentRows}
         commentsPanelPosition={commentsPanelPosition}
         onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
@@ -550,11 +493,9 @@ export function EditorCanvasHost() {
           },
         }}
         onDeselect={() => {
-          // Clicking empty canvas also cancels an armed arrow-connect, and
-          // wraps up the Format tool (restoring the pre-Format tool) so a
+          // Clicking empty canvas wraps up the Format tool (restoring the pre-Format tool) so a
           // background click is the quick way out of paint mode (docs/specs/008-canvas/canvas-and-palette.md).
           if (canvasTool === 'format') exitFormatTool();
-          cancelConnect();
           setSelectedId(null);
           setMultiSelectedIds(new Set());
           setEditingId(null);
@@ -652,15 +593,6 @@ export function EditorCanvasHost() {
         onCommitLabel={commitLabel}
         onDeleteRetired={isReadOnly ? undefined : deleteRetired}
         onCancelEdit={cancelEdit}
-        onBeginEndpointDrag={beginEndpointDrag}
-        onBeginArrowTranslate={beginArrowTranslate}
-        onBeginArrowCurveDrag={beginArrowCurveDrag}
-        onBeginArrowCurvePointDrag={beginArrowCurvePointDrag}
-        onBeginArrowBend={beginArrowBend}
-        onBeginArrowScale={beginArrowScale}
-        onDeleteCurvePoint={deleteCurvePoint}
-        onBeginArrowLabelDrag={beginArrowLabelDrag}
-        onBeginArrowElbowDrag={beginArrowElbowDrag}
         onShiftSelect={toggleInMultiSelect}
         onExitFormatTool={exitFormatTool}
         onStartFormatPainter={isReadOnly ? undefined : startFormatPainter}

@@ -14,8 +14,7 @@ import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
-import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
-import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
+import { drawIntentCursor } from '@/lib/draw-mode';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useZoomControls } from '@liveworkspace/workbench/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
@@ -31,12 +30,8 @@ import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { canvasGestureNow } from '@/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
-import {
-  useSelectionOf,
-  useSelectionStore,
-} from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
@@ -67,13 +62,8 @@ import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLo
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import { PlacementPreview } from '@/components/canvas/collab/PlacementPreview';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
-import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
-import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
-import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
-import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import { CallBubbles, useCallBubbleRects } from '@/components/calls/CallBubbles';
 import { TalkingBars } from '@/components/calls/TalkingBars';
@@ -118,8 +108,6 @@ function CanvasView(props: CanvasProps) {
     editingId,
     pendingDraw,
     onCommitDraw,
-    onCommitFreehand,
-    onCommitPolygon,
     onDeselect,
     onSelect,
     onCanvasContextMenu,
@@ -138,8 +126,8 @@ function CanvasView(props: CanvasProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Paint mode is the Format canvas tool: it reads as paint mode from its
-  // first click (copy cursor, handles/label-drag/dblclick suppressed on boxed
-  // elements AND arrows), not only once a source is armed.
+  // first click (copy cursor, handles/label-drag/dblclick suppressed on
+  // elements), not only once a source is armed.
   const isPaintMode = canvasTool === 'format';
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
@@ -210,23 +198,6 @@ function CanvasView(props: CanvasProps) {
     setZoomTo: handleSetZoom,
   } = useZoomControls(setViewportZoom);
 
-  // "Are there any arrows" decides whether to mount the ArrowDefs and lay out
-  // labels. `some` short-circuits on the first arrow, so the typical render
-  // pays O(1).
-  const hasArrows = elements.some((el) => el.type === 'arrow');
-  // Every arrow label laid out once per element change, avoiding each other
-  // (docs/specs/008-canvas/arrow-labels.md). Laid out here, not in the element
-  // layer, because the selection toolbars clear a label as part of its arrow.
-  const fontEpoch = useFontEpoch();
-  const arrowLabels = useArrowLabelLayouts(
-    elements,
-    hasArrows,
-    props.tabFont,
-    fontEpoch,
-    undefined,
-    props.tabFinish,
-  );
-
   // Selection-display derivation (primary element, bounds, and every
   // "show this chrome?" predicate) lives in lib/canvas-selection.ts so
   // it's unit-tested. Memoised because it walks the elements. The chrome that derives it lays a drag in
@@ -239,21 +210,8 @@ function CanvasView(props: CanvasProps) {
       isPaintMode,
       readOnly,
       elementMenuOpen: props.elementMenuOpen === true,
-      labelRectOf: arrowLabels.labelRectOf,
     }),
-    [elements, editingId, isPaintMode, readOnly, props.elementMenuOpen, arrowLabels],
-  );
-  // The one selected element when it is a path: the path tool's edit gesture arms on it.
-  const soleSelectedPathId = useSelectionOf(
-    useCallback(
-      (s: Selection) =>
-        s.multiSelectedIds.size === 0 &&
-        s.selectedId !== null &&
-        elements.some((el) => el.id === s.selectedId && el.type === 'path')
-          ? s.selectedId
-          : null,
-      [elements],
-    ),
+    [elements, editingId, isPaintMode, readOnly, props.elementMenuOpen],
   );
 
   const { handlePointerMoveCanvas, handlePointerLeaveCanvas } = useCanvasPointer({
@@ -317,8 +275,7 @@ function CanvasView(props: CanvasProps) {
     isPaintMode,
   });
 
-  // Stable selection-routing wrappers for the memo'd element / arrow
-  // views — see useCanvasSelectHandlers.
+  // Stable selection-routing wrappers for the memo'd element views, see useCanvasSelectHandlers.
   const { handleElementContextSelect, handleArrowSelect, handleElementClick } =
     useCanvasSelectHandlers({
       inertIds: NO_INERT_IDS,
@@ -333,28 +290,19 @@ function CanvasView(props: CanvasProps) {
 
   const {
     drawDrag,
-    penPoints,
-    penStroke,
     drawHover,
     polygonVertices,
     polygonCursor,
     handlePolygonDoubleClick,
-    pathTool,
     beginPendingDrawOrPolygon,
   } = useCanvasDrawTools({
     props,
     pendingDraw,
     elements,
-    canvasTool,
     viewportZoom,
     wrapperRef,
     isPinchingRef,
     onCommitDraw,
-    onCommitFreehand,
-    onCommitPolygon,
-    editingId,
-    soleSelectedPathId,
-    onDeselect,
   });
 
   // Bare-surface press routing (capture intercepts, background context
@@ -384,7 +332,6 @@ function CanvasView(props: CanvasProps) {
     onToggleDoor: props.onToggleDoor,
     onReadElement: elementReader.open,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
-    interceptPress: (e) => pathTool.beginEditPress(e),
     onCanvasContextMenu,
     onDeselect,
     // On a whiteboard a double-click inside a shape edits it (lib/whiteboard-edit-target). On the bare board a
@@ -454,7 +401,7 @@ function CanvasView(props: CanvasProps) {
         onPointerDown={surface.onPointerDown}
         onDoubleClick={(e) => {
           if (e.target !== e.currentTarget) return;
-          if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
+          if (handlePolygonDoubleClick()) return;
           surface.onSurfaceDoubleClick(e);
         }}
         // A finger's double-tap on an element too small to work on frames it before it edits (useSmallElementDoubleTap).
@@ -469,8 +416,6 @@ function CanvasView(props: CanvasProps) {
           pendingDraw ? '' : cursorClass
         }`}
         style={{
-          // The paper hollow arrowheads fill with (arrow-defs.tsx).
-          ['--lvd-canvas-paper' as string]: tabBackgroundColor,
           // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
           ...stickyPeel,
           // In world space: the pattern pans and zooms with the elements, so
@@ -493,7 +438,6 @@ function CanvasView(props: CanvasProps) {
           // setting cursor here too, the user would see the OS default
           // arrow in that gap while a draw-to-size intent is pending.
           ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
-          ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
         }}
       >
         {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
@@ -504,9 +448,9 @@ function CanvasView(props: CanvasProps) {
           data-canvas-content=""
           onPointerDown={surface.onWrapperPointerDown}
           onDoubleClick={(e) => {
-            // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
-            // add-text double-click while the intent is armed.
-            if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
+            // The Room Builder's closing double-click (docs/specs/009-elements/room-builder.md) wins over
+            // the add-text double-click while the intent is armed.
+            if (handlePolygonDoubleClick()) return;
             surface.onWrapperDoubleClick(e);
           }}
           // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the mode is read-only, so the canvas layer
@@ -515,16 +459,6 @@ function CanvasView(props: CanvasProps) {
           className={`absolute inset-0 origin-center touch-none ${
             canvasTool === 'avatar' ? 'pointer-events-none' : ''
           } ${pendingDraw ? '' : cursorClass}`}
-          // A whiteboard pen draws wherever it presses, so nothing under it swaps
-          // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").
-          data-pen-in-hand={
-            (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
-            pendingDraw?.type === 'path' ||
-            pendingDraw?.type === 'fill'
-              ? ''
-              : undefined
-          }
-          data-path-cursor={pathTool.cursor ? '' : undefined}
           style={{
             // Translate is in canvas-coords (applied first); scale is centred
             // on the wrapper so zooming keeps the viewport centre stable.
@@ -536,8 +470,6 @@ function CanvasView(props: CanvasProps) {
             // wrapper drops its Tailwind cursor- class above when
             // pendingDraw is set, leaving no cursor specified at all.
             ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
-            // A path in its edit mode says what a press would do (usePathTool).
-            ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
           }}
         >
           <CanvasStillProvider still={false}>
@@ -552,7 +484,6 @@ function CanvasView(props: CanvasProps) {
                   <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
                     <CanvasElementsLayer
                       {...props}
-                      elements={pathTool.elements}
                       // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
                       // so the prop from the host is overridden with the local resolver.
                       onEnterPortal={resolvePortal}
@@ -567,14 +498,11 @@ function CanvasView(props: CanvasProps) {
                       onPressModeButton={props.onPressModeButton ? pressModeButton : undefined}
                       onPressAvatarPad={pressAvatarPad}
                       onPressFocusButton={props.onPressFocusButton}
-                      hasArrows={hasArrows}
-                      arrowLabels={arrowLabels}
                       selectionInput={selectionInput}
                       isPaintMode={isPaintMode}
                       handleArrowSelect={handleArrowSelect}
                       handleElementClick={handleElementClick}
                       handleElementContextSelect={handleElementContextSelect}
-                      drawDrag={drawDrag}
                     />
                   </ElementIndicatorStyleProvider>
                 </SpeakingStageContext>
@@ -582,19 +510,6 @@ function CanvasView(props: CanvasProps) {
             </CanvasArrivalProvider>
           </CanvasStillProvider>
           {/* Drafts and the avatars: editor-only. */}
-          {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
-            in this transformed layer, after the elements, laid out as the stroke it lands as, so
-            the same layer rasterises both and release changes no pixel. */}
-          {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
-            <WhiteboardPenPreview
-              stroke={penStroke}
-              pen={pendingDraw}
-              ink={props.whiteboardInk ?? 'currentColor'}
-              zoom={viewportZoom}
-            />
-          ) : null}
-          {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
-          {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
           {/* Where the placed piece being added would land (docs/specs/010-palette/palette-drag-ghost.md
             "Placed pieces preview themselves"). */}
           <PlacementPreview
@@ -604,7 +519,6 @@ function CanvasView(props: CanvasProps) {
             zoom={viewportZoom}
             drawing={!!drawDrag}
           />
-          {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
           {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after
             the element layer so they stand in front of the content they walk
@@ -719,26 +633,9 @@ function CanvasView(props: CanvasProps) {
         </div>
 
         <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
-        {pathTool.toolbar ? (
-          <PathEditToolbar
-            {...pathTool.toolbar}
-            viewportOffset={viewportOffset}
-            zoom={viewportZoom}
-          />
-        ) : null}
 
         <CanvasChrome
           {...props}
-          // While a path is being drawn, Undo and Redo (the dock's and the corner's) step through its
-          // nodes, not the board (docs/specs/023-draw-mode/path-tool.md "Drawing").
-          {...(pathTool.history
-            ? {
-                canUndo: pathTool.history.canUndo,
-                canRedo: pathTool.history.canRedo,
-                onUndo: pathTool.history.undo,
-                onRedo: pathTool.history.redo,
-              }
-            : null)}
           mainSize={mainSize}
           avatarConfig={avatarLook.config}
           onChangeAvatarField={avatarLook.setField}
@@ -762,8 +659,6 @@ function CanvasView(props: CanvasProps) {
           marquee={marquee}
           drawDrag={drawDrag}
           drawHover={drawHover}
-          // Off a whiteboard, a marker's live stroke guides off its box as the pencil's does.
-          penPoints={penPoints ?? (penStroke ? penStroke.points.slice() : null)}
           polygonVertices={polygonVertices}
           polygonCursor={polygonCursor}
           wrapperRef={wrapperRef}

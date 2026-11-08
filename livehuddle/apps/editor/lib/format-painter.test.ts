@@ -1,14 +1,9 @@
-import type { ArrowElement, BoxedElement, TextRun } from '@livehuddle/document';
+import type { BoxedElement, TextRun } from '@livehuddle/document';
 import { createShape, createSticky, createText } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
-import {
-  applyPaint,
-  fitPaintToTarget,
-  paintableArrowFields,
-  paintableBoxedFields,
-} from './format-painter';
+import { applyPaint, fitPaintToTarget, paintableBoxedFields } from './format-painter';
 
-// Fully-populated source shapes / arrows so the painter has something
+// Fully-populated source shapes so the painter has something
 // for every field. The painter's whole job is to be specific about
 // which fields travel, so the tests are equally specific.
 
@@ -40,29 +35,6 @@ const fullyStyledShape: BoxedElement = {
   borderRadius: 'lg',
   // Identity / content fields the painter must NOT copy.
   label: 'Source label',
-};
-
-const fullyStyledArrow: ArrowElement = {
-  id: 'arr',
-  type: 'arrow',
-  from: { kind: 'free', x: 0, y: 0 },
-  to: { kind: 'free', x: 100, y: 100 },
-  strokeColor: '#0ea5e9',
-  strokeWidth: 3,
-  strokeStyle: 'dashed',
-  opacity: 0.5,
-  arrowEnds: 'both',
-  arrowheadSize: 'large',
-  arrowheadShape: 'triangle-hollow',
-  arrowStyle: 'curved',
-  textColor: '#222222',
-  textSize: 'lg',
-  textBold: true,
-  textItalic: true,
-  textUnderline: true,
-  textStrikethrough: true,
-  font: 'caveat',
-  label: 'Arrow label',
 };
 
 describe('paintableBoxedFields', () => {
@@ -225,88 +197,7 @@ describe('paintableBoxedFields', () => {
   });
 });
 
-describe('paintableArrowFields', () => {
-  it('carries stroke, width, pattern, opacity, arrowEnds and label text styling from the source arrow', () => {
-    const out = paintableArrowFields(fullyStyledArrow);
-    expect(out).toEqual({
-      strokeColor: '#0ea5e9',
-      strokeWidth: 3,
-      strokeStyle: 'dashed',
-      opacity: 0.5,
-      arrowEnds: 'both',
-      arrowheadSize: 'large',
-      arrowheadShape: 'triangle-hollow',
-      arrowStyle: 'curved',
-      textColor: '#222222',
-      textSize: 'lg',
-      textBold: true,
-      textItalic: true,
-      textUnderline: true,
-      textStrikethrough: true,
-      font: 'caveat',
-    });
-  });
-
-  it('omits identity, endpoints, label and locked so the target keeps its own', () => {
-    const out = paintableArrowFields(fullyStyledArrow) as Record<string, unknown>;
-    expect(out).not.toHaveProperty('id');
-    expect(out).not.toHaveProperty('type');
-    expect(out).not.toHaveProperty('from');
-    expect(out).not.toHaveProperty('to');
-    expect(out).not.toHaveProperty('label');
-    expect(out).not.toHaveProperty('locked');
-  });
-
-  it('carries an ER relationship’s own start head, and a plain arrow’s lack of one', () => {
-    const er = {
-      ...fullyStyledArrow,
-      arrowheadShape: 'many',
-      arrowheadStartShape: 'one',
-    } as ArrowElement;
-    expect(paintableArrowFields(er)).toMatchObject({
-      arrowheadShape: 'many',
-      arrowheadStartShape: 'one',
-    });
-    const onto = applyPaint(er, paintableArrowFields(fullyStyledArrow));
-    expect(onto.arrowheadStartShape).toBeUndefined();
-  });
-
-  it('carries the arrowhead colour and the label plate', () => {
-    const out = paintableArrowFields({
-      ...fullyStyledArrow,
-      arrowheadColor: '#ff0000',
-      labelFill: '#ffffff',
-    });
-    expect(out.arrowheadColor).toBe('#ff0000');
-    expect(out.labelFill).toBe('#ffffff');
-  });
-});
-
 describe('applyPaint', () => {
-  const bareArrow: ArrowElement = {
-    id: 'a',
-    type: 'arrow',
-    from: { kind: 'free', x: 0, y: 0 },
-    to: { kind: 'free', x: 10, y: 10 },
-  };
-
-  it('resets a coloured arrow when the source arrow is on the theme colour', () => {
-    // The reported bug: a default-coloured source left the target red.
-    const red: ArrowElement = { ...bareArrow, id: 'b', strokeColor: '#ff0000', strokeWidth: 4 };
-    const out = applyPaint(red, paintableArrowFields(bareArrow));
-    expect(out).not.toHaveProperty('strokeColor');
-    expect(out).not.toHaveProperty('strokeWidth');
-    // Identity and geometry stay the target's.
-    expect(out.id).toBe('b');
-    expect(out.from).toEqual(red.from);
-  });
-
-  it('sets the colours a styled source carries', () => {
-    const out = applyPaint(bareArrow, paintableArrowFields(fullyStyledArrow));
-    expect(out.strokeColor).toBe('#0ea5e9');
-    expect(out.arrowStyle).toBe('curved');
-  });
-
   it('keeps the target’s border when the source kind has none', () => {
     const text: BoxedElement = { id: 't', type: 'text', x: 0, y: 0, width: 100, height: 40 };
     const out = applyPaint(fullyStyledShape, paintableBoxedFields(text)) as Record<string, unknown>;
@@ -407,9 +298,6 @@ describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', (
 
   it('travel in the projection beside their colours', () => {
     expect(paintableBoxedFields(source)).toMatchObject({ strokeSwatch: 2, fillSwatch: 4 });
-    expect(paintableArrowFields({ ...fullyStyledArrow, strokeSwatch: 3 })).toMatchObject({
-      strokeSwatch: 3,
-    });
   });
 
   it('land only with the colour they bind', () => {

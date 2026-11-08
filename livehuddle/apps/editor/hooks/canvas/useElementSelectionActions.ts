@@ -11,13 +11,7 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { haptic } from '@liveworkspace/workbench/lib/haptics';
-import {
-  bringManyToFront,
-  sendManyToBack,
-  withAttachedArrows,
-  type Element,
-  type Tab,
-} from '@livehuddle/document';
+import { bringManyToFront, sendManyToBack, type Element, type Tab } from '@livehuddle/document';
 import { useElementDuplication } from './useElementDuplication';
 import { track } from '@/lib/telemetry';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
@@ -81,11 +75,9 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
 
   const removeSelected = (targetIds: Set<string>) => {
     haptic('delete');
-    commit((els) => {
-      // The arrows attached to what goes, and those hung off them in turn (withAttachedArrows).
-      const gone = withAttachedArrows(els, targetIds);
-      return els.filter((el) => !gone.has(el.id));
-    });
+    // Only what was picked goes: an arrow pinned to it stays, its loose end drawn at its other end
+    // (retiredArrowEnds; docs/specs/002-project-scope/blueprints/element-engine.md D22, D23).
+    commit((els) => els.filter((el) => !targetIds.has(el.id)));
     setSelectedId(null);
     setEditingId(null);
     track('Element', 'Deleted');
@@ -136,10 +128,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   const removeMultiSelected = (targetIds: Set<string>) => {
     track('Element', 'Deleted'); // parity with single-element deleteSelected
     announceDeleted(targetIds);
-    commit((els) => {
-      const gone = withAttachedArrows(els, targetIds);
-      return els.filter((el) => !gone.has(el.id));
-    });
+    commit((els) => els.filter((el) => !targetIds.has(el.id)));
     setMultiSelectedIds(new Set());
     setEditingId(null);
   };

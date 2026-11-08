@@ -1,18 +1,14 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import {
-  createElementGridTracker,
-  createPinnedArrow,
-  createShape,
-  type Element,
-} from '@livehuddle/document';
+import { createShape, type Element } from '@livehuddle/document';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
-import { buildArrowLinks } from '@/components/canvas/drag-affected-arrows';
+import { buildRetiredArrowLinks } from '@/components/canvas/retired-arrow-links';
+import { storedPinnedArrow } from '@/test/retired-elements';
 import { createLayerPreviewStore, type LayerPreviewInputs } from './useLayerDragPreview';
 
 // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved": the layer's preview store runs on every
-// pointer frame of a drag. 2,000 boxes, an arrow from each to its neighbour, 20 of them dragged: one frame's update,
-// fastest of five after warm-up.
+// pointer frame of a drag. 2,000 boxes, a stored arrow from each to its neighbour (a board saved before the element
+// engine's part 4), 20 of them dragged: one frame's update, fastest of five after warm-up.
 const N = 2000;
 const DRAGGED = 20;
 const boxes = Array.from({ length: N }, (_, i) => ({
@@ -21,22 +17,14 @@ const boxes = Array.from({ length: N }, (_, i) => ({
 }));
 const arrows = boxes
   .slice(1)
-  .map((b, i) => ({ ...createPinnedArrow(boxes[i]!.id, 'e', b.id, 'w'), id: `a${i}` }));
+  .map((b, i) => storedPinnedArrow(`a${i}`, boxes[i]!.id, 'e', b.id, 'w'));
 const BOARD = [...boxes, ...arrows];
-const tracker = createElementGridTracker();
 const inputs: LayerPreviewInputs = {
   tabId: 't',
   ordered: BOARD.map((element) => ({ element, layerOpacity: 1 })),
   drawnElements: BOARD,
   elementIndex: new Map(BOARD.map((el) => [el.id, el])),
-  arrowLinks: buildArrowLinks(BOARD),
-  gridFor: (els) => tracker.gridFor(els),
-  arrowLabels: {
-    renderOf: () => ({ layout: null, knockouts: [] }),
-    labelRectOf: () => null,
-    draftLayout: () => null,
-  },
-  tabFinish: undefined,
+  arrowLinks: buildRetiredArrowLinks(BOARD),
 };
 const moved = (dx: number) =>
   BOARD.map((el, i) =>
@@ -66,7 +54,7 @@ describe('the layer preview store’s frame', () => {
     setLocalPreview('t', moved(3), BOARD);
     store.update({ ...inputs });
     // A peer's cursor, a timer tick: the layer renders again with a fresh inputs object.
-    const again = () => store.update({ ...inputs, gridFor: (els) => tracker.gridFor(els) });
+    const again = () => store.update({ ...inputs });
     for (let i = 0; i < 3; i++) again();
     let best = Infinity;
     for (let i = 0; i < 5; i++) best = Math.min(best, cpuMsOf(again));

@@ -9,8 +9,8 @@ import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-sto
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-// The Highlighter is a Draw tile (docs/specs/008-canvas/highlighter.md): picking it arms the marker
-// for one stroke and clears the selection, like the pens. It is not a canvas tool.
+// Arming a draw (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") clears the selection and holds
+// for one gesture; a tool change arms nothing.
 
 type Commit = Parameters<typeof useShapeDrawing>[0]['commit'];
 
@@ -31,7 +31,6 @@ function setup(commit = vi.fn<Commit>(), setCanvasTool = vi.fn()) {
         setMultiSelectedIds: selection.setMultiSelectedIds,
         setSelection: selection.setSelection,
         setEditingId,
-        zoomRef: { current: 1 },
         styleNewElement: (el) => el,
       });
       const { selectedId, multiSelectedIds: multi } = selection.get();
@@ -41,47 +40,30 @@ function setup(commit = vi.fn<Commit>(), setCanvasTool = vi.fn()) {
   );
 }
 
-describe('useShapeDrawing highlighter', () => {
-  it('arms the marker and clears the selection when the tile is picked', () => {
+describe('useShapeDrawing arming', () => {
+  it('arms a draw and clears the selection', () => {
     const { result } = setup();
-    act(() => result.current.drawing.beginHighlighter());
-    // Armed in the highlighter's current colour and width: Yellow / Medium on a fresh load.
-    expect(result.current.drawing.pendingDraw).toEqual({
-      type: 'freehand',
-      variant: 'highlighter',
-      colour: '#fde047',
-      width: 14,
-    });
+    act(() => result.current.drawing.beginRoomWalls());
+    expect(result.current.drawing.pendingDraw).toEqual({ type: 'room-walls' });
     expect(result.current.selectedId).toBeNull();
     expect(result.current.multi.size).toBe(0);
     expect(result.current.editingId).toBeNull();
   });
 
-  // docs/specs/008-canvas/highlighter.md "Settings": a choice made while armed reaches the armed
-  // stroke, and every later arm.
-  it('carries a colour or width chosen while armed into the arm and the next one', () => {
-    const { result } = setup();
-    act(() => result.current.drawing.beginHighlighter());
-    act(() => result.current.drawing.highlighter.setColour('#93c5fd'));
-    act(() => result.current.drawing.highlighter.setWidth(22));
-    expect(result.current.drawing.pendingDraw).toMatchObject({ colour: '#93c5fd', width: 22 });
-    act(() => result.current.drawing.beginPolygon());
-    act(() => result.current.drawing.beginHighlighter());
-    expect(result.current.drawing.pendingDraw).toMatchObject({ colour: '#93c5fd', width: 22 });
-  });
-
-  it('leaves another arm alone when a setting changes', () => {
-    const { result } = setup();
-    act(() => result.current.drawing.beginPolygon());
-    act(() => result.current.drawing.highlighter.setColour('#93c5fd'));
-    expect(result.current.drawing.pendingDraw).toEqual({ type: 'polygon' });
-  });
-
   it('is replaced by the next tile picked, like any one-shot arm', () => {
     const { result } = setup();
-    act(() => result.current.drawing.beginHighlighter());
-    act(() => result.current.drawing.beginPolygon());
-    expect(result.current.drawing.pendingDraw).toEqual({ type: 'polygon' });
+    act(() => result.current.drawing.beginRoomWalls());
+    act(() => result.current.drawing.beginDraw({ type: 'sticky' }));
+    expect(result.current.drawing.pendingDraw).toEqual({ type: 'sticky' });
+  });
+
+  it('commits nothing for a room-walls intent reaching the draw commit', () => {
+    const commit = vi.fn<Commit>();
+    const { result } = setup(commit);
+    act(() => result.current.drawing.beginRoomWalls());
+    act(() => result.current.drawing.commitDraw({ type: 'room-walls' }, 0, 0, 100, 100));
+    expect(commit).not.toHaveBeenCalled();
+    expect(result.current.drawing.pendingDraw).toBeNull();
   });
 
   it('arms nothing on its own when a tool changes', () => {
@@ -110,7 +92,6 @@ describe('useShapeDrawing Room Builder', () => {
         setMultiSelectedIds: selection.setMultiSelectedIds,
         setSelection: selection.setSelection,
         setEditingId: vi.fn(),
-        zoomRef: { current: 1 },
         styleNewElement: (el) => el,
       }),
     );

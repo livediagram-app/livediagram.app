@@ -2,13 +2,8 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import {
-  createArrow,
-  createShape,
-  DEFAULT_ANIMATION_SPEED,
-  type Element,
-  type Tab,
-} from '@livehuddle/document';
+import { createShape, type Element, type Tab } from '@livehuddle/document';
+import { storedAnnotation, storedArrow, storedFreehand, storedPath } from '@/test/retired-elements';
 import { useElementStyle } from './useElementStyle';
 
 // useElementStyle builds plain handler closures from its deps (no internal
@@ -193,55 +188,46 @@ describe('useElementStyle shape style presets (docs/specs/010-palette/style-pres
   });
 });
 
-describe('useElementStyle arrow style presets (docs/specs/010-palette/style-presets.md)', () => {
-  it('applies an animated line preset (pattern + thickness + flow) in one step', () => {
-    const a = createArrow(0, 0, 100, 0);
-    const { style, result } = harness([a], new Set([a.id]));
+// docs/specs/002-project-scope/blueprints/element-engine.md: the style setters skip a retired element. A selection
+// that holds one beside a shape restyles the shape and leaves the stored element exactly as it was.
+describe('useElementStyle on a selection holding retired elements', () => {
+  const box = { x: 300, y: 0, width: 100, height: 60 };
+  const retired = [
+    storedArrow('arrow', { x: 0, y: 0 }, { x: 100, y: 0 }, { strokeColor: '#111111' }),
+    storedFreehand('pen', box),
+    storedFreehand('marker', box, { pen: 'highlighter' }),
+    storedPath('path', box),
+    storedAnnotation('note', box),
+  ];
 
-    style.applyArrowPresetSelected({ style: 'dashed', thickness: 'thick', flow: 'dashes' });
+  it('restyles only the shape', () => {
+    const shape = createShape('square', 0, 200);
+    const all = [shape, ...retired];
+    const { style, result } = harness(all, new Set(all.map((e) => e.id)));
 
-    const el = result()[0] as {
-      strokeStyle?: string;
-      strokeWidth?: number;
-      flow?: string;
-      flowSpeed?: string;
-    };
-    expect(el.strokeStyle).toBe('dashed');
-    expect(el.strokeWidth).toBe(4); // thick → 4px
-    expect(el.flow).toBe('dashes');
-    // A fresh flow starts at the shared default speed ('slow', docs/specs/008-canvas/canvas-and-palette.md).
-    expect(el.flowSpeed).toBe(DEFAULT_ANIMATION_SPEED);
+    style.setFillColorSelected('#123456');
+    style.setStrokeColorSelected('#654321');
+    style.setTextColorSelected('#abcdef');
+    style.setOpacitySelected(0.5);
+    style.setBorderStrokeSelected('thick');
+    style.setBorderStyleSelected('dashed');
+    style.setTextAlignSelected('left', 'top');
+    style.setTextSizeSelected('lg');
+    style.setFontSelected('caveat');
+    style.setPaddingSelected('lg');
+    style.toggleTextStyleSelected('textBold');
+
+    const [styled, ...rest] = result();
+    expect(styled).toMatchObject({ fillColor: '#123456', strokeWidth: 'thick', textBold: true });
+    expect(rest).toEqual(retired);
+    rest.forEach((el, i) => expect(el, el.id).toBe(retired[i]));
   });
 
-  it('a preset without a flow clears any existing animation', () => {
-    const a = createArrow(0, 0, 100, 0);
-    const { style, result } = harness([a], new Set([a.id]));
-
-    style.applyArrowPresetSelected({ style: 'solid', thickness: 'medium', flow: 'dashes' });
-    style.applyArrowPresetSelected({ style: 'dotted', thickness: 'medium' });
-
-    const el = result()[0] as { flow?: string; strokeStyle?: string };
-    expect(el.flow).toBeUndefined();
-    expect(el.strokeStyle).toBe('dotted');
-  });
-
-  it('resets a preset-styled arrow back to its defaults', () => {
-    const a = createArrow(0, 0, 100, 0);
-    const { style, result } = harness([a], new Set([a.id]));
-
-    style.applyArrowPresetSelected({ style: 'dashed', thickness: 'thick', flow: 'dashes' });
-    style.resetArrowStyleSelected();
-
-    const el = result()[0] as {
-      strokeStyle?: string;
-      strokeWidth?: number;
-      flow?: string;
-      flowSpeed?: string;
-    };
-    expect(el.strokeStyle).toBeUndefined();
-    expect(el.strokeWidth).toBeUndefined();
-    expect(el.flow).toBeUndefined();
-    expect(el.flowSpeed).toBeUndefined();
+  it('does nothing when a retired element leads the selection', () => {
+    const { style, result } = harness(retired, new Set(retired.map((e) => e.id)));
+    style.toggleTextStyleSelected('textBold');
+    style.toggleAspectLockSelected();
+    expect(result()).toEqual(retired);
   });
 });
 

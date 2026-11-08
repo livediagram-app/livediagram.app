@@ -28,16 +28,10 @@ export function usePaletteCatalogue({
   onAddSticker,
   onAddText,
   onAddSticky,
-  onAddAnnotation,
   onAddLinkCard,
   onAddAvatar,
   onAddImage,
-  onAddArrow,
-  onBeginFreehand,
-  onBeginHighlighter,
   onCancelDraw,
-  onBeginShapePen,
-  onBeginPolygon,
   onBeginRoomWalls,
   pendingDraw,
   onTileUsed,
@@ -57,18 +51,9 @@ export function usePaletteCatalogue({
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
   const addText = armed(onAddText);
   const addSticky = armed(onAddSticky);
-  // The annotation is the ONE tile that still places instantly (docs/specs/009-elements/annotations.md): a
-  // fixed 44x44 marker has no box to draw.
-  const addAnnotation = armed(onAddAnnotation);
   const addLinkCard = armed(onAddLinkCard);
   // Components arm the draw gesture (tap-or-drag) and close a popover
   // palette so the canvas is clear to draw on.
-  const addArrow = (ends?: import('@livehuddle/document').ArrowEnds) =>
-    armed(() => onAddArrow(ends))();
-  const beginFreehand = armed(onBeginFreehand);
-  const beginHighlighter = armed(onBeginHighlighter);
-  const beginShapePen = armed(onBeginShapePen);
-  const beginPolygon = armed(onBeginPolygon);
   const beginRoomWalls = armed(() => onBeginRoomWalls?.());
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
@@ -90,15 +75,9 @@ export function usePaletteCatalogue({
     {
       addShape,
       addText,
-      beginFreehand,
-      beginHighlighter,
-      beginShapePen,
-      beginPolygon,
       beginRoomWalls,
-      addArrow,
       addSticky,
       addImage,
-      addAnnotation,
       addLinkCard,
       addSticker,
       addComponent,

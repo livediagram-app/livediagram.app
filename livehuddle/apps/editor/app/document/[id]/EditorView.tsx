@@ -43,7 +43,7 @@ import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs'
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
 import { EditorTours } from '@/components/tour/EditorTours';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
-import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
+import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -138,8 +138,6 @@ export function EditorView() {
     moveTabToFolder,
     removeTabFromFolder,
     reorderTabs,
-    connectSourceId,
-    cancelConnect,
     selfParticipant,
     sessionRole,
     sessionShareCode,
@@ -359,25 +357,6 @@ export function EditorView() {
                       // The open tab's editor mode, for the e2e helpers (e2e/fixtures.ts).
                       className="flex h-dvh flex-col"
                     >
-                      {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
-        is armed so the user knows the next shape click connects, and
-        gives a click target to cancel (clicking empty canvas also
-        cancels). */}
-                      {connectSourceId !== null ? (
-                        <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
-                          <button
-                            type="button"
-                            onClick={cancelConnect}
-                            className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
-                          >
-                            Click a shape to connect the arrow
-                            <span className="text-brand-300" aria-hidden>
-                              |
-                            </span>
-                            <span className="text-brand-700 dark:text-brand-300">Cancel</span>
-                          </button>
-                        </div>
-                      ) : null}
                       {headerInColumn}
                       {sessionCommunity && appChrome && hydrated ? (
                         <CommunityBar
@@ -484,10 +463,8 @@ export function EditorView() {
 
                       {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
         right now. Suppressed while a mode banner owns the top slot. */}
-                      <ModifierHint
-                        readOnly={isReadOnly}
+                      <ModifierHintBanner
                         drag={drag}
-                        elements={activeTab.elements}
                         hasElements={activeTab.elements.length > 0}
                         suppressed={
                           canvasTool === 'format' || formatSourceId !== null || pendingDraw !== null

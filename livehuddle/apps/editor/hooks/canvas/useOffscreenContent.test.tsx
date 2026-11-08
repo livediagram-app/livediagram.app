@@ -2,7 +2,8 @@
 
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createArrow, createShape, type Element } from '@livehuddle/document';
+import { createShape, type Element } from '@livehuddle/document';
+import { storedArrow } from '@/test/retired-elements';
 import { useOffscreenContent } from './useOffscreenContent';
 
 beforeEach(() =>
@@ -50,7 +51,7 @@ describe('useOffscreenContent', () => {
   });
 
   it('is false on a tab with nothing boxed to see', () => {
-    const arrow = createArrow(0, 0, 10, 10) as Element;
+    const arrow = storedArrow('a', { x: 0, y: 0 }, { x: 10, y: 10 });
     expect(offscreen([], { x: -5000, y: 0 }).result.current).toBe(false);
     expect(offscreen([arrow], { x: -5000, y: 0 }).result.current).toBe(false);
   });

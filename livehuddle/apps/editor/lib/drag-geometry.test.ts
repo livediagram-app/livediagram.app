@@ -1,7 +1,7 @@
-import type { AlignmentGuide, DistributionGuide, Element } from '@livehuddle/document';
+import type { AlignmentGuide, DistributionGuide } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
-import { computeSnapTargets, sameDistGuides, sameGuides, sameTargets } from './drag-geometry';
+import { sameDistGuides, sameGuides, sameTargets } from './drag-geometry';
 
 describe('sameGuides', () => {
   const g: AlignmentGuide[] = [{ axis: 'x', position: 10, start: 0, end: 100 }];
@@ -62,52 +62,5 @@ describe('sameTargets', () => {
     expect(sameTargets(t, [{ x: 1, y: 3, active: false }])).toBe(false);
     expect(sameTargets(t, [{ x: 1, y: 2, active: true }])).toBe(false);
     expect(sameTargets(t, [])).toBe(false);
-  });
-});
-
-describe('computeSnapTargets', () => {
-  const shape = (over: Record<string, unknown> = {}): Element => ({
-    id: 's',
-    type: 'shape',
-    shape: 'square',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 60,
-    ...over,
-  });
-  // Arrows aren't boxed, so they never contribute anchors.
-  const arrow = (): Element =>
-    ({ id: 'a', type: 'arrow', from: { x: 0, y: 0 }, to: { x: 10, y: 10 } }) as Element;
-
-  it('reveals all 16 anchors of a shape under the cursor', () => {
-    const out = computeSnapTargets({ x: 50, y: 30 }, [shape()], null, null);
-    expect(out).toHaveLength(16);
-    expect(out.every((t) => !t.active)).toBe(true);
-  });
-
-  it("reveals only a circle's eight anchors (docs/specs/008-canvas/arrow-anchors.md)", () => {
-    const circle = { ...shape(), shape: 'circle' } as Element;
-    expect(computeSnapTargets({ x: 50, y: 30 }, [circle], null, null)).toHaveLength(8);
-  });
-
-  it('flags exactly the active (element, anchor) anchor', () => {
-    const out = computeSnapTargets({ x: 50, y: 30 }, [shape()], 's', 'n');
-    expect(out.filter((t) => t.active)).toHaveLength(1);
-  });
-
-  it('skips shapes outside the reveal margin', () => {
-    expect(computeSnapTargets({ x: 500, y: 500 }, [shape()], null, null)).toEqual([]);
-  });
-
-  it('reveals a shape when the cursor is within the margin but outside the box', () => {
-    // Box spans x 0..100; margin is generous, so x = -20 still reveals.
-    expect(computeSnapTargets({ x: -20, y: 30 }, [shape()], null, null)).toHaveLength(16);
-    // Far enough past the margin: nothing.
-    expect(computeSnapTargets({ x: -200, y: 30 }, [shape()], null, null)).toEqual([]);
-  });
-
-  it('ignores non-boxed elements (arrows)', () => {
-    expect(computeSnapTargets({ x: 5, y: 5 }, [arrow()], null, null)).toEqual([]);
   });
 });

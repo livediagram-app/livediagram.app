@@ -7,7 +7,6 @@ import {
   elementKindLabel,
   elementSupportsText,
   isBoxed,
-  isCompoundPath,
   turnsWithFacing,
   type Element,
 } from '@livehuddle/document';
@@ -122,17 +121,6 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             hasText={selected ? elementHasText(selected) : false}
-            // A path's points (docs/specs/023-draw-mode/path-tool.md "Editing"): its edit mode, the
-            // Path tool put down first when it is still in hand.
-            onEditPoints={
-              // A combined shape edits as a whole (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments").
-              !readOnly && selected?.type === 'path' && !isCompoundPath(selected)
-                ? () => {
-                    if (props.pendingDraw) props.onCancelDraw();
-                    props.onBeginEdit(selected.id);
-                  }
-                : undefined
-            }
             // A piece of furniture's quarter turns (docs/specs/009-elements/furniture-facing.md "Turning a placed piece"),
             // an Editor's, on a piece that turns.
             onTurn={

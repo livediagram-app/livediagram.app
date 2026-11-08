@@ -1,7 +1,7 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Anchor, Element, IconPosition, Tab, FrameHandle } from '@livehuddle/document';
-import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
+import type { Element, IconPosition, Tab } from '@livehuddle/document';
+import type { DragMode, DragState } from '@/lib/canvas';
 import type { SnapGuideStore } from './useSnapGuideState';
 
 // External state + callbacks the drag machine reads on every move.
@@ -42,14 +42,10 @@ export type EditorDragDeps = {
   // of selecting / dragging. `setFormatSourceId` arms the source.
   formatToolActive: boolean;
   setFormatSourceId: (id: string | null) => void;
-  // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): armed source + the action.
-  connectSourceId: string | null;
-  connectArrowTo: (targetId: string) => void;
   // Element setters from the editor. `tick` writes elements without
   // taking a history checkpoint (used during the move-effect's
   // 60+/sec updates); `commit` writes elements AND snapshots history
-  // (used at drag-begin to create the new arrow when an anchor is
-  // pulled). `markCheckpoint` is the snapshot-without-write entry
+  // (used by a release that writes outside the gesture). `markCheckpoint` is the snapshot-without-write entry
   // point, used at the start of a boxed move/resize so a single
   // Cmd-Z undoes the whole gesture.
   tick: (mapper: (els: Element[]) => Element[]) => void;
@@ -67,16 +63,6 @@ export type EditorDragDeps = {
     targetShapeId: string,
     position: IconPosition,
   ) => void;
-  // Per-user preference (docs/specs/007-editor/user-preferences.md) controlling whether connected
-  // arrows re-pin to the most-natural face as a box is dragged.
-  // Defaults to true; setting `false` keeps anchors frozen at
-  // whatever the user originally chose. Tracked via ref so a
-  // mid-drag toggle takes effect on the next pointermove without
-  // re-attaching listeners.
-  autoRebindArrowsRef: React.RefObject<boolean>;
-  // Style memory (docs/specs/008-canvas/quick-style-panel.md): dresses a quick-connect arrow and a
-  // Shift-chained one, both user-drawn, in the remembered arrow style.
-  styleNewElement: <T extends Element>(el: T) => T;
   // Per-user preference (docs/specs/008-canvas/canvas-and-palette.md) controlling whether the faint
   // alignment guides are drawn during a move / resize. Defaults to
   // true; `false` suppresses the guide lines (the snap itself is
@@ -96,32 +82,10 @@ export type EditorDragApi = {
   // position, so the set following the cursor shows as a ghost. Null
   // outside a shift-held move drag.
   shiftDupGhostIds: ReadonlySet<string> | null;
-  // The in-progress gesture's snap guides (alignment lines, equal-spacing gaps, the arrow-endpoint
-  // markers), empty when no snap is in effect and cleared on release. A store, not state, so a new set
+  // The in-progress gesture's snap guides (alignment lines, equal-spacing gaps), empty when no snap is in effect and cleared on release. A store, not state, so a new set
   // renders only the chrome that draws it (useSnapGuideState).
   snapGuideStore: SnapGuideStore;
   beginDrag: (elementId: string, mode: DragMode, e: ReactPointerEvent) => void;
-  // The armed action (connect an arrow, the format painter) a press on an element takes instead of selecting it.
+  // The armed action (the format painter) a press on an element takes instead of selecting it.
   pressArmedAction: (elementId: string) => boolean;
-  beginAnchorDrag: (
-    elementId: string,
-    anchor: Anchor,
-    e: ReactPointerEvent,
-    opts?: {
-      clickToPlace?: boolean;
-      placeOutPx?: number;
-      // Enter a real drag, but remember what a no-movement TAP should do
-      // (touch quick-connect, docs/specs/008-canvas/canvas-and-palette.md).
-      tapPlaceOutPx?: number;
-    },
-  ) => void;
-  beginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
-  beginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
-  beginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
-  beginArrowCurvePointDrag: (arrowId: string, index: number, e: ReactPointerEvent) => void;
-  beginArrowBend: (arrowId: string, e: ReactPointerEvent<SVGElement>) => void;
-  beginArrowScale: (arrowId: string, handle: FrameHandle, e: ReactPointerEvent) => void;
-  deleteCurvePoint: (arrowId: string, index: number) => void;
-  beginArrowElbowDrag: (arrowId: string, e: ReactPointerEvent) => void;
-  beginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;
 };

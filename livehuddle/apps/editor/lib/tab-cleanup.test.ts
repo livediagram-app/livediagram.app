@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape, type Element } from '@livehuddle/document';
+import { createShape, type Element } from '@livehuddle/document';
+import { storedPinnedArrow } from '@/test/retired-elements';
 import { cleanupElements } from './tab-cleanup';
 
 // docs/specs/008-canvas/layout-cleanup.md: Auto-align grid-snaps the whole tab. An element saved locked before
@@ -12,10 +13,9 @@ const at = (id: string, x: number, y: number, extra: Record<string, unknown> = {
   height: 57,
   ...extra,
 });
-const link = (from: string, to: string): Element => ({
-  ...createPinnedArrow(from, 's', to, 'n'),
-  id: `arr-${from}-${to}`,
-});
+// A stored arrow is retired and stays exactly as stored (docs/specs/002-project-scope/not-in-livehuddle.md).
+const link = (from: string, to: string): Element =>
+  storedPinnedArrow(`arr-${from}-${to}`, from, 's', to, 'n');
 
 describe('cleanupElements', () => {
   it('snaps every box, one saved locked included', () => {
@@ -30,6 +30,7 @@ describe('cleanupElements', () => {
     expect(byId.get('a')).not.toEqual(before[0]);
     expect(byId.get('old-lock')).not.toBe(before[2]);
     expect(byId.get('old-lock')).toMatchObject({ x: 800, y: 10 });
+    expect(byId.get('arr-a-b')).toBe(before[3]);
   });
 
   it('leaves an empty tab as it is', () => {

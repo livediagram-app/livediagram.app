@@ -28,15 +28,8 @@ export function PaletteShapesTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteTileGrid tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// The wordy elements (docs/specs/010-palette/palette-top-level-categories.md): Text, Sticky Note, Annotation.
+// The wordy elements (docs/specs/010-palette/palette-top-level-categories.md): Text and Sticky Note.
 export function PaletteWriteTab({ pendingDraw, actions, tiles }: TabProps) {
-  return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
-}
-
-// The gesture tools (docs/specs/010-palette/palette-top-level-categories.md): the three pens, Polygon, Arrow, Line. Separate
-// from Write because these are things you pick up and drag, not things you
-// drop and type into.
-export function PaletteDrawTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 

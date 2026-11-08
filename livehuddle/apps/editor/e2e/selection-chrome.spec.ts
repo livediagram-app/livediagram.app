@@ -1,6 +1,6 @@
 // docs/specs/008-canvas/canvas-performance.md "A selection change re-renders what it touches": the
 // selection chrome reads the selection store, and follows it through select, reselect, select-all,
-// a free arrow, delete and undo. livehuddle draws no quick-connect pluses
+// delete and undo. livehuddle draws no quick-connect pluses
 // (docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect), so the resize grips stand for the chrome.
 import { expect, expectNoPageErrors, seedTab, startBlankDocument, test } from './fixtures';
 
@@ -14,16 +14,7 @@ const square = (id: string, label: string, x: number, y: number) => ({
   height: 90,
   label,
 });
-const board = [
-  square('a', 'Alpha', 200, 200),
-  square('b', 'Beta', 500, 200),
-  {
-    id: 'fr',
-    type: 'arrow',
-    from: { kind: 'free', x: 220, y: 450 },
-    to: { kind: 'free', x: 520, y: 520 },
-  },
-];
+const board = [square('a', 'Alpha', 200, 200), square('b', 'Beta', 500, 200)];
 const SHOTS = process.env.E2E_SHOTS_DIR;
 const shot = async (page: import('@playwright/test').Page, n: string) => {
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/selection-${n}.png` });
@@ -42,7 +33,7 @@ test('the selection chrome follows the selection', async ({ page, pageErrors }) 
     return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
   };
 
-  // Nothing selected: no grips, no frame, no union box.
+  // Nothing selected: no grips, no union box.
   await expect(grip).toHaveCount(0);
   await shot(page, '0-none');
 
@@ -72,18 +63,7 @@ test('the selection chrome follows the selection', async ({ page, pageErrors }) 
   await shot(page, '3-select-all');
   await page.keyboard.press('Escape');
 
-  // The free arrow: its move frame.
-  const frame = page.getByTestId('arrow-move-frame');
-  await expect(frame).toHaveCount(0);
-
-  const arrowPath = page.locator('path[data-element-id="fr"]').first();
-  const ab = (await arrowPath.boundingBox())!;
-  await page.mouse.click(ab.x + ab.width / 2, ab.y + ab.height / 2);
-  await expect(frame).toBeVisible();
-  await shot(page, '4-free-arrow');
-
   // Delete the selected box, then undo: chrome comes back with it.
-  await page.keyboard.press('Escape');
   await page.mouse.click(a.x, a.y);
   await page.keyboard.press('Delete');
   await expect(box('a')).toHaveCount(0);
@@ -99,6 +79,5 @@ test('the selection chrome follows the selection', async ({ page, pageErrors }) 
   await page.locator('[data-tab-key]', { hasText: /^Tab 1$/ }).click();
   await expect(box('b')).toBeVisible();
   await expect(grip).toHaveCount(0);
-  await expect(page.getByTestId('arrow-move-frame')).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });

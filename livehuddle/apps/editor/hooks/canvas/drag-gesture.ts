@@ -4,22 +4,11 @@ import type { CanvasGesture } from '@/lib/canvas-gesture';
 import type { DragState } from '@/lib/canvas';
 
 export function gestureOfDrag(drag: DragState): CanvasGesture {
-  switch (drag.kind) {
-    case 'boxed':
-      return drag.mode === 'move' ? 'move' : 'resize';
-    case 'arrow-translate':
-      return 'move';
-    case 'arrow-scale':
-      return 'resize';
-    default:
-      return 'reshape';
-  }
+  return drag.mode === 'move' ? 'move' : 'resize';
 }
 
-// A body move and an arrow handle are clicks until they travel; a resize and a new arrow's end
-// following the pointer act at once (the same split as useEditorDrag's engage threshold).
+// A body move is a click until it travels; a resize acts at once (the same split as useEditorDrag's
+// engage threshold).
 export function dragWaitsToEngage(drag: DragState): boolean {
-  if (drag.kind === 'boxed') return drag.mode === 'move';
-  if (drag.kind === 'arrow-endpoint') return drag.reposition === true;
-  return true;
+  return drag.mode === 'move';
 }
