@@ -12,7 +12,7 @@ import {
 import { PARTICIPANT_CANVAS_TOOLS, paletteCategories } from '@/components/palette/palette-layouts';
 import { tilesForCategory } from '@/components/palette/palette-tile-defs';
 import { SPACE_CATEGORIES } from '@/components/palette/space-categories';
-import { avatarTourSteps } from '@/components/tour/avatar-tour-steps';
+import { receptionistTopicsFor } from '@/lib/receptionist/receptionist-topics';
 import { stripPaletteFor } from '@/lib/avatar-palette';
 import { avatarPressOutcome } from '@/lib/avatar-click-intent';
 
@@ -96,14 +96,27 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     { edit: 'edit walk toggle', participate: 'always walking', view: 'always walking' },
   );
 
-  // useCanvasAvatar's `canSpeak` and the Avatar tour's Say Something step both read `can.takePart`.
+  // useCanvasAvatar's `canSpeak` and the Receptionist's Say, Actions and React topic both read `can.takePart`.
   expectPerLevel(
     'Speak in a speech bubble',
     (level) => {
-      const canSpeak = gatesFor(level).takePart;
-      return [canSpeak, avatarTourSteps({ canSpeak, mobile: false }).some((s) => s.speaks)];
+      const gates = gatesFor(level);
+      const canSpeak = gates.takePart;
+      const topics = receptionistTopicsFor({ speak: canSpeak, edit: gates.shape });
+      return [canSpeak, topics.some((t) => t.id === 'say')];
     },
     { edit: [true, true], participate: [true, true], view: [false, false] },
+  );
+
+  // The Receptionist's topics (docs/specs/008-canvas/receptionist.md "Share roles"): Building the Space is an Editor's, and Say,
+  // Actions and React anyone's who may speak; everyone sees and asks him.
+  expectPerLevel(
+    "The Receptionist's topics",
+    (level) => {
+      const gates = gatesFor(level);
+      return receptionistTopicsFor({ speak: gates.takePart, edit: gates.shape }).length;
+    },
+    { edit: 15, participate: 14, view: 13 },
   );
 
   // Video and screen share bubbles (docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles"):

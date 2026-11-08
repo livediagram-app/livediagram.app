@@ -5,7 +5,7 @@ import type { QaNote } from '@livediagram/document';
 // bumped, and a compare-and-swap that re-reads when another writer (an
 // editor's tab autosave) got to the row first.
 
-const { db } = vi.hoisted(() => ({ db: { getTabData: vi.fn(), swapTabData: vi.fn() } }));
+const { db } = vi.hoisted(() => ({ db: { getTabRow: vi.fn(), swapTabData: vi.fn() } }));
 vi.mock('./db', () => db);
 
 import { writeQaAction, type QaWriteRequest } from './qa-board-write';
@@ -37,8 +37,11 @@ const req = (action: QaWriteRequest['action'], voterId = 'v1'): QaWriteRequest =
   actor: { voterId, author: null, now: 10 },
 });
 
+// A stored row as the swap reads it: its body at a revision.
+const row = (data: string | null) => (data === null ? null : { data, rev: 1, updatedAt: 1 });
+
 beforeEach(() => {
-  db.getTabData.mockReset();
+  db.getTabRow.mockReset();
   db.swapTabData.mockReset();
   db.swapTabData.mockResolvedValue(true);
 });
@@ -46,7 +49,7 @@ beforeEach(() => {
 describe('writeQaAction', () => {
   it('applies the action, bumps the rev and swaps against what it read', async () => {
     const before = boardData([{ id: 'n1', text: 'a', at: 1, voters: [] }], 3);
-    db.getTabData.mockResolvedValue(before);
+    db.getTabRow.mockResolvedValue(row(before));
     const out = await writeQaAction({} as never, req({ type: 'vote', noteId: 'n1', on: true }));
     expect(out).toEqual({
       ok: true,
@@ -54,11 +57,13 @@ describe('writeQaAction', () => {
       notes: [{ id: 'n1', text: 'a', at: 1, voters: ['v1'] }],
       rev: 4,
     });
-    expect(db.swapTabData.mock.calls[0]!.slice(1, 4)).toEqual(['d1', 't1', before]);
+    expect(db.swapTabData.mock.calls[0]!.slice(1, 4)).toEqual(['d1', 't1', row(before)]);
   });
 
   it('writes nothing for an action that changes nothing', async () => {
-    db.getTabData.mockResolvedValue(boardData([{ id: 'n1', text: 'a', at: 1, voters: ['v1'] }], 3));
+    db.getTabRow.mockResolvedValue(
+      row(boardData([{ id: 'n1', text: 'a', at: 1, voters: ['v1'] }], 3)),
+    );
     const out = await writeQaAction({} as never, req({ type: 'vote', noteId: 'n1', on: true }));
     expect(out).toMatchObject({ ok: true, changed: false, rev: 3 });
     expect(db.swapTabData).not.toHaveBeenCalled();
@@ -70,7 +75,7 @@ describe('writeQaAction', () => {
   it('re-reads when an autosave got to the row first, keeping both writes', async () => {
     const first = boardData([{ id: 'n1', text: 'a', at: 1, voters: [] }], 0);
     const moved = boardData([{ id: 'n1', text: 'a', at: 1, voters: [] }], 0, { x: 500 });
-    db.getTabData.mockResolvedValueOnce(first).mockResolvedValueOnce(moved);
+    db.getTabRow.mockResolvedValueOnce(row(first)).mockResolvedValueOnce(row(moved));
     db.swapTabData.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
     const out = await writeQaAction({} as never, req({ type: 'vote', noteId: 'n1', on: true }));
     expect(out).toMatchObject({ ok: true, rev: 1 });
@@ -80,7 +85,7 @@ describe('writeQaAction', () => {
   });
 
   it('gives up with a 409 rather than looping forever', async () => {
-    db.getTabData.mockResolvedValue(boardData());
+    db.getTabRow.mockResolvedValue(row(boardData()));
     db.swapTabData.mockResolvedValue(false);
     const out = await writeQaAction(
       {} as never,
@@ -90,12 +95,12 @@ describe('writeQaAction', () => {
   });
 
   it('404s a missing tab or board', async () => {
-    db.getTabData.mockResolvedValueOnce(null);
+    db.getTabRow.mockResolvedValueOnce(row(null));
     expect(await writeQaAction({} as never, req({ type: 'clear' }))).toEqual({
       ok: false,
       status: 404,
     });
-    db.getTabData.mockResolvedValueOnce(JSON.stringify({ elements: [] }));
+    db.getTabRow.mockResolvedValueOnce(row(JSON.stringify({ elements: [] })));
     expect(await writeQaAction({} as never, req({ type: 'clear' }))).toEqual({
       ok: false,
       status: 404,

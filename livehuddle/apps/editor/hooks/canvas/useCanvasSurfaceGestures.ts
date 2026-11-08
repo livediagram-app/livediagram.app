@@ -9,13 +9,11 @@ import { peerPushTarget } from '@liveworkspace/avatar/walk';
 import { walkInputBlocked } from '@liveworkspace/avatar/walk-guard';
 import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import type { RemoteAvatarRow } from '@/lib/presence-rows';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import type { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
-import { isHeldPenIntent } from '@/lib/draw-mode';
-import { markPenSeen, penSeen } from '@/lib/pen-seen';
-import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isPanThrough, panThroughTap } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 import { isPieceControlPress } from '@/lib/piece-control';
@@ -35,13 +33,16 @@ type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
 // The bottom-right cluster (Undo / Redo, Layers, Theme & Canvas, Zoom) is chrome, never canvas.
 // Its buttons stop the press only in the bubble phase, after the capture intercept: without this,
-// a held Draw mode marker inked a dot under Undo and the click then undid that dot instead of the
-// stroke the person meant (and an armed shape acted under the button too).
+// an armed shape acted under the button.
 const inCornerCluster = (target: EventTarget | null): boolean =>
   !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
 
-/** What floats over the canvas with presses of its own, so a press on it is never a walk (Avatar mode). */
-const CHROME_OVER_CANVAS = '[data-talking-bars], [data-call-bubbles], [data-call-maximised]';
+/**
+ * What floats over the canvas with presses of its own, so a press on it is never a walk (Avatar mode): the Receptionist and his
+ * bubble too (docs/specs/008-canvas/receptionist.md "Asking the Receptionist").
+ */
+const CHROME_OVER_CANVAS =
+  '[data-talking-bars], [data-call-bubbles], [data-call-maximised], [data-receptionist], [data-receptionist-bubble]';
 
 // How presses on the bare canvas surface route between the tools
 // (docs/specs/008-canvas/canvas-and-palette.md), lifted out of Canvas's JSX: the capture-phase
@@ -53,12 +54,15 @@ const CHROME_OVER_CANVAS = '[data-talking-bars], [data-call-bubbles], [data-call
 // owned by its existing hook (pan / marquee, spotlight, iso camera,
 // the draw gesture).
 
+// The pan's start, from the view's offset when the press runs.
+const panStartOffset = (o: { x: number; y: number }) => ({ startOffsetX: o.x, startOffsetY: o.y });
+
 export function useCanvasSurfaceGestures({
   canvasTool,
   middleMousePan,
   pendingDraw,
   whiteboard = false,
-  viewportOffset,
+  readViewportOffset,
   viewportZoom,
   mainRef,
   wrapperRef,
@@ -66,13 +70,12 @@ export function useCanvasSurfaceGestures({
   setPan,
   setMarquee,
   avatar,
-  peerAvatars,
+  readPeerAvatars,
   onPushPeer,
   elements,
   onToggleDoor,
   onReadElement,
   beginPendingDrawGesture,
-  interceptPress,
   onCanvasContextMenu,
   onDeselect,
   onCanvasDoubleClick,
@@ -83,7 +86,9 @@ export function useCanvasSurfaceGestures({
   pendingDraw: CanvasProps['pendingDraw'];
   // The active tab is a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input").
   whiteboard?: boolean;
-  viewportOffset: { x: number; y: number };
+  // The view's offset when a press starts a pan: read then, since a pan renders nothing
+  // (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
+  readViewportOffset: () => { x: number; y: number };
   viewportZoom: number;
   mainRef: CanvasProps['mainRef'];
   wrapperRef: React.RefObject<HTMLDivElement | null>;
@@ -92,7 +97,8 @@ export function useCanvasSurfaceGestures({
   setMarquee: PanAndMarquee['setMarquee'];
   avatar: ReturnType<typeof useAvatarWalk>;
   // Peers' characters on this tab (docs/specs/008-canvas/avatar-mode.md), so a click can land on one.
-  peerAvatars: CanvasProps['remoteAvatars'];
+  // Read when a press runs (hooks/collab/usePeerRows readPeerAvatarRows), so a peer's step renders nothing here.
+  readPeerAvatars: () => readonly RemoteAvatarRow[];
   // Shove a peer: fired once our character has walked up to theirs.
   onPushPeer?: (targetId: string, dx: number, dy: number) => void;
   // The tab's elements, for the Door under a walking click (lib/avatar-door-press), and the swing it may ask for:
@@ -101,12 +107,9 @@ export function useCanvasSurfaceGestures({
   onToggleDoor?: (doorId: string) => boolean;
   // Open an element large in the reader (docs/specs/008-canvas/avatar-mode.md "The reader").
   onReadElement?: (elementId: string) => void;
-  // Starts the queued draw-to-size / freehand gesture; true when it
+  // Starts the queued draw-to-size gesture; true when it
   // claimed the press (see useCanvasDrawGesture).
   beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
-  // A mode that owns every primary press on the canvas while it is open (a path's edit mode,
-  // docs/specs/023-draw-mode/path-tool.md "Editing"); true when it claimed the press.
-  interceptPress?: (e: ReactPointerEvent) => boolean;
   onCanvasContextMenu?: (x: number, y: number) => void;
   onDeselect: () => void;
   // `byFinger`: the double press was a finger's (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
@@ -120,14 +123,14 @@ export function useCanvasSurfaceGestures({
   // it the peers as the presence packets describe them.
   const peerAvatarAt = (point: { x: number; y: number }) =>
     peerPushTarget(
-      peerAvatars.map((peer) => ({
+      readPeerAvatars().map((peer) => ({
         id: peer.id,
         feet: { x: peer.avatar.x, y: peer.avatar.y },
         lift: peer.avatar.lift,
         scale: avatarScale(parseAvatarConfig(peer.avatar.config).size),
       })),
       point,
-      avatar.pos,
+      avatar.readPos(),
     );
 
   const focusCanvas = () => {
@@ -151,8 +154,7 @@ export function useCanvasSurfaceGestures({
     setPan({
       startClientX: e.clientX,
       startClientY: e.clientY,
-      startOffsetX: viewportOffset.x,
-      startOffsetY: viewportOffset.y,
+      ...panStartOffset(readViewportOffset()),
       movedRef: { current: false },
       ...(onTap ? { onTap } : {}),
     });
@@ -197,43 +199,10 @@ export function useCanvasSurfaceGestures({
     // gesture.
     const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
-    // Whiteboard (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input"): once a pen has been
-    // used, a single finger pans instead of inking, so a resting palm never
-    // draws. The pen itself, and a mouse, always ink.
-    if (whiteboard && e.button === 0) {
-      if (e.pointerType === 'pen') markPenSeen();
-      const inking = isHeldPenIntent(pendingDraw);
-      const route = whiteboardPointerRoute({
-        pointerType: e.pointerType,
-        penSeen: penSeen(),
-        inking,
-      });
-      if (route === 'pan') {
-        e.preventDefault();
-        e.stopPropagation();
-        setPan({
-          startClientX: e.clientX,
-          startClientY: e.clientY,
-          startOffsetX: viewportOffset.x,
-          startOffsetY: viewportOffset.y,
-          movedRef: { current: false },
-        });
-        return;
-      }
-    }
-    // A path's edit mode keeps the rest of the canvas inert: its presses are all its own. Held
-    // Space still pans, and the other buttons keep their meaning.
-    if (e.button === 0 && !spaceHeldRef.current && interceptPress?.(e)) {
-      focusCanvas();
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
     // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a non-editing presenter mode where a primary
-    // click means "walk over there". Handled in the capture phase for the
-    // same reason: the canvas layer is pointer-inert, but arrow
-    // hit-bands re-enable themselves via `pointer-events: stroke` and select
-    // on ANY button, so we swallow the secondary button too. Middle-mouse
+    // click means "walk over there". Handled in the capture phase so no
+    // element under the press selects on ANY button, so we swallow the
+    // secondary button too. Middle-mouse
     // (pan) and held-Space (temporary pan) fall through untouched.
     if (canvasTool === 'avatar' && !spaceHeldRef.current && e.button !== 1) {
       // Start a Space (or a dialog) in front of the canvas holds the walk (docs/specs/008-canvas/avatar-mode.md
@@ -273,7 +242,7 @@ export function useCanvasSurfaceGestures({
           const peer = peerAvatarAt(point);
           if (peer) {
             // A seated character cannot be pushed (docs/specs/009-elements/chair.md "Sitting"): walk up to them only.
-            const seated = peerAvatars.some((p) => p.id === peer.id && p.avatar.seatedOn);
+            const seated = readPeerAvatars().some((p) => p.id === peer.id && p.avatar.seatedOn);
             avatar.walkTo(
               peer.standAt,
               seated ? undefined : () => onPushPeer?.(peer.id, peer.dx, peer.dy),
@@ -282,10 +251,9 @@ export function useCanvasSurfaceGestures({
           }
           // A Door: next to it the click swings it where you stand; farther away (or a Viewer) it walks you to its
           // near side and swings nothing (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
+          const feet = avatar.readPos();
           const door =
-            elements && avatar.pos
-              ? avatarDoorPress(elements, point, avatar.pos, viewportZoom)
-              : null;
+            elements && feet ? avatarDoorPress(elements, point, feet, viewportZoom) : null;
           if (door) {
             if (door.next && onToggleDoor?.(door.doorId)) return;
             avatar.walkTo(door.nearSide);
@@ -362,8 +330,7 @@ export function useCanvasSurfaceGestures({
       setPan({
         startClientX: e.clientX,
         startClientY: e.clientY,
-        startOffsetX: viewportOffset.x,
-        startOffsetY: viewportOffset.y,
+        ...panStartOffset(readViewportOffset()),
         movedRef: { current: false },
       });
       return;
@@ -497,15 +464,9 @@ export function useCanvasSurfaceGestures({
     // doesn't bubble through the outer onPointerDown's
     // currentTarget gate) still leaves the canvas focused.
     focusCanvas();
-    // Draw-to-size intercept (mirror of the outer handler).
-    // beginPendingDrawGesture branches on `freehand` internally:
-    // a freehand intent seeds the polyline accumulator, every
-    // other intent seeds the box / line drag. (An earlier inline
-    // version always started a drawDrag, so a pen click landed
-    // BOTH a penPoints state and a drawDrag and mis-routed into
-    // createImage; the shared helper has the single correct
-    // branch.) Usually the capture-phase intercept has already
-    // handled this; kept as the rect-less fallback.
+    // Draw-to-size intercept (mirror of the outer handler). Usually the
+    // capture-phase intercept has already handled this; kept as the
+    // rect-less fallback.
     if (pendingDraw && beginPendingDrawGesture(e)) return;
     routePanOrMarquee(e);
   };

@@ -324,10 +324,10 @@ export const CATALOGUE: AppCatalogue = {
         {
           kind: 'toggle',
           id: 'avatarTourSeen',
-          label: 'Avatar Tour',
-          description: 'While you walk as an avatar.',
+          label: "Receptionist's Welcome",
+          description: 'The Receptionist greets you on the Avatar Pad with what to try first.',
           keywords:
-            'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
+            'receptionist receptionist welcome tour walkthrough onboarding tutorial avatar character walk pad topics ask replay',
           section: 'Offer Again',
           key: 'avatarTourSeen',
           on: false,

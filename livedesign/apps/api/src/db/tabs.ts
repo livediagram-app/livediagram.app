@@ -8,13 +8,7 @@ import {
   tabConnectionStatement,
 } from '@liveworkspace/index-app';
 import type { TabConnection } from '@liveworkspace/index-client';
-import {
-  capElementActions,
-  componentRefIds,
-  componentRefIdsFromData,
-  drawnCount,
-  type Tab,
-} from '@livedesign/design';
+import { capElementActions, componentRefIds, drawnCount, type Tab } from '@livedesign/design';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 
@@ -28,7 +22,8 @@ function assertTabDataFits(tabId: string, data: string, write: string): void {
   throw new TabTooLargeError(tabId, bytes, write);
 }
 import type { DesignEnv, TabDTO } from '../types';
-import { imageRefIds, imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
+import { imageRefIds } from '@liveworkspace/api-kit/image-refs';
+import type { StoredTabRow, TabVersion } from '@liveworkspace/api-kit/tab-swap';
 import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';
 import {
   imageRefAddStatements,
@@ -138,22 +133,22 @@ export async function stampTabElementCount(
 // actually contains it — a share code for design A can never coax out
 // a tab that lives only in design B. Backs the per-tab live image
 // (docs/specs/013-workspace/live-image-share.md); mirrors getFirstTabData but keyed by tab id instead of the
-// lowest order_index.
-export async function getTabData(
+// lowest order_index. With the row's version (`rev`, `updated_at`), which a compare-and-swap guards on.
+export async function getTabRow(
   env: DesignEnv,
   designId: string,
   tabId: string,
-): Promise<string | null> {
+): Promise<StoredTabRow | null> {
   const row = await env.DESIGN_DB.prepare(
-    `SELECT t.data
+    `SELECT t.data, t.rev, t.updated_at
        FROM design_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.design_id = ? AND dt.tab_id = ?
       LIMIT 1`,
   )
     .bind(designId, tabId)
-    .first<{ data: string }>();
-  return row?.data ?? null;
+    .first<{ data: string; rev: number; updated_at: number }>();
+  return row ? { data: row.data, rev: row.rev, updatedAt: row.updated_at } : null;
 }
 
 // How a tab write moves the revision (docs/specs/024-agents/agent-changesets.md "The tab revision"):
@@ -437,10 +432,11 @@ export async function reorderTabs(
     .run();
 }
 
-// Compare-and-swap one tab's `data` blob (docs/specs/013-workspace/share-roles.md "Integrity"). Writes
-// `nextData` only if the row still holds exactly `expectedData`, the string the caller read, and reports whether
-// it did. A Participant's write loops on this so a room answering in the same second can't lose an answer to the
-// read-modify-write race a plain upsert would have.
+// Compare-and-swap one tab's `data` blob (docs/specs/013-workspace/share-roles.md "Integrity"; the loop that calls
+// it is @liveworkspace/api-kit tab-swap.ts). Writes `nextData` only while the row is still at `expected`, the version
+// the caller read, and reports whether it did. The `tabs_rev_advances` trigger advances `rev` on every write of
+// `data`, so the same version is the same body: the body is never bound again to be compared. `updated_at` rules
+// out a tab deleted and inserted again under its id at the same revision.
 //
 // Only `data` and `updated_at` move: a participant write never renames, reorders or
 // relinks the tab, and it touches no action or thread, so the collaboration
@@ -451,22 +447,24 @@ export async function swapTabData(
   env: DesignEnv,
   designId: string,
   tabId: string,
-  expectedData: string,
+  expected: TabVersion,
   nextData: string,
-  // `nextData`'s stats (tabStatsOf), from the tab the caller parsed to build it; its element count
-  // is also the tab's element_count (the baseline migration).
-  nextStats: TabStats,
+  // The tab `nextData` serialises, as the caller built it: its stats and references are read from it, not parsed
+  // again. Its element count is also the tab's element_count.
+  nextBody: Omit<Tab, 'id' | 'name'>,
 ): Promise<boolean> {
   assertTabDataFits(tabId, nextData, 'swapTabData');
   const now = Date.now();
+  const nextStats: TabStats = tabStatsOf(nextBody, nextData);
   const [res] = await env.DESIGN_DB.batch([
     env.DESIGN_DB.prepare(
-      'UPDATE tabs SET data = ?, updated_at = ?, element_count = ?, rev = rev + 1 WHERE id = ? AND data = ?',
-    ).bind(nextData, now, nextStats.elementCount, tabId, expectedData),
-    // Only if the swap above won: then the tab stores exactly `nextData`.
-    tabStatsStatement(env, tabId, nextStats, now, nextData),
-    ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
-    ...componentRefAddStatements(env, tabId, componentRefIdsFromData(nextData)),
+      'UPDATE tabs SET data = ?, updated_at = ?, element_count = ?, rev = rev + 1 WHERE id = ? AND rev = ? AND updated_at = ?',
+    ).bind(nextData, now, nextStats.elementCount, tabId, expected.rev, expected.updatedAt),
+    // Only if the swap above won: then the tab is at the next revision, written now.
+    tabStatsStatement(env, tabId, nextStats, now, expected.rev + 1),
+    // Add only, so harmless when the swap lost: the references are a superset, which keeps bytes.
+    ...imageRefAddStatements(env, tabId, imageRefIds(nextBody.elements, nextBody.pages)),
+    ...componentRefAddStatements(env, tabId, componentRefIds(nextBody.elements)),
   ]);
   if ((res?.meta?.changes ?? 0) === 0) return false;
   await env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?')

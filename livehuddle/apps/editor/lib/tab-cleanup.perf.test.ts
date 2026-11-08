@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { createPinnedArrow, createShape, type Element } from '@livehuddle/document';
+import { createShape, type Element } from '@livehuddle/document';
+import { storedPinnedArrow } from '@/test/retired-elements';
 import { cleanupElements } from './tab-cleanup';
 
 // docs/specs/008-canvas/blueprints/tidy-up.md "Performance and limits": an Auto-align press runs over the whole
@@ -19,12 +20,8 @@ function bigDiagram(n: number): Element[] {
       id: `n${i}`,
     });
   for (let i = 1; i < n; i++) {
-    els.push({
-      ...createPinnedArrow(`n${Math.floor((i - 1) / 2)}`, 's', `n${i}`, 'n'),
-      id: `t${i}`,
-    });
-    if (i % 3 === 0)
-      els.push({ ...createPinnedArrow(`n${i}`, 'e', `n${(i * 7) % n}`, 'w'), id: `x${i}` });
+    els.push(storedPinnedArrow(`t${i}`, `n${Math.floor((i - 1) / 2)}`, 's', `n${i}`, 'n'));
+    if (i % 3 === 0) els.push(storedPinnedArrow(`x${i}`, `n${i}`, 'e', `n${(i * 7) % n}`, 'w'));
   }
   return els;
 }

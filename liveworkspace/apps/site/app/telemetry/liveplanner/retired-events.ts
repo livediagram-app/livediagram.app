@@ -425,6 +425,21 @@ const ENTITY_EDITING = new Set([
   'Element|Changed|Cardinality',
 ]);
 
+// The Plan tour's step cards (retired 2026-11-08, docs/specs/026-plan/plan-tour.md "Telemetry"): the hands-on tracks
+// send a view per mission instead. Move Card and the finish (Outro) keep their tokens, so their series carry on.
+const PLAN_TOUR_STEP_CARDS = new Set([
+  'PlanTourStepBoard',
+  'PlanTourStepAddCards',
+  'PlanTourStepCardPanel',
+  'PlanTourStepBoardHeader',
+  'PlanTourStepCardTypes',
+  'PlanTourStepSheet',
+  'PlanTourStepCells',
+  'PlanTourStepFormulas',
+  'PlanTourStepSheetToolbar',
+  'PlanTourStepSheetSettings',
+]);
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (isRetiredDiagramTourEvent(category, action, type)) return true;
   if (FORMAT_AND_ISOMETRIC.has(`${category}|${action}|${type ?? ''}`)) return true;
@@ -446,6 +461,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))
     return true;
   if (category === 'UI' && NEW_PROJECT_WIZARD_UI.has(`${action}|${type ?? ''}`)) return true;
+  if (category === 'UI' && action === 'View' && PLAN_TOUR_STEP_CARDS.has(type ?? '')) return true;
   if (category === 'Help') {
     return (
       ACTIVITY_PANEL_HELP_IDS.has(type ?? '') ||

@@ -4,7 +4,6 @@ import {
   createShape,
   createSticky,
   createText,
-  defaultArrowStrokeColor,
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
@@ -112,11 +111,5 @@ describe('defaultStrokeColor', () => {
 
   it('text elements have a transparent stroke (no border around plain text)', () => {
     expect(defaultStrokeColor(createText(0, 0))).toBe('transparent');
-  });
-});
-
-describe('defaultArrowStrokeColor', () => {
-  it('arrows fall back to slate-700, matching the ArrowView fallback', () => {
-    expect(defaultArrowStrokeColor()).toBe('rgb(51 65 85)');
   });
 });

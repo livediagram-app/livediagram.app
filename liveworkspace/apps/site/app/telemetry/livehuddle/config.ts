@@ -29,7 +29,7 @@ import {
   API_TOKEN_ACTIVITY,
   ARTICLE_VIEWS,
   ASSIGNED_ACTIONS,
-  AVATAR_TOUR,
+  RECEPTIONIST,
   CALLS_TO_ACTION,
   CANVAS_MODES,
   CLIENT_EXCEPTIONS,
@@ -90,7 +90,6 @@ import {
   UNDO_AND_REDO,
   WEB_VITAL_CHARTS,
   WELCOME_DIALOG_CLOSED,
-  WHITEBOARD_RECOGNITION,
 } from './metric-catalogue';
 import { isNonThemePick, PALETTE_TYPE_ALIASES, SELECTION_MODES } from './palette-types';
 import { isRetiredEvent } from './retired-events';
@@ -223,7 +222,6 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
     {
       title: 'Features',
       metrics: [
-        WHITEBOARD_RECOGNITION,
         IN_THE_SPACE,
         PALETTE_USE,
         CANVAS_MODES,
@@ -382,7 +380,7 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
   tours: [
     {
       title: 'Tours',
-      metrics: [AVATAR_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
+      metrics: [RECEPTIONIST, ELEMENT_TOURS, SHOW_ME_TOURS],
     },
     { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
   ],

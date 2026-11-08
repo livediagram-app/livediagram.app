@@ -23,7 +23,7 @@ describe('Show Me section (element tours)', () => {
     expect(header().getAttribute('aria-expanded')).toBe('false');
     expect(header().textContent).toContain('1 of 1 On');
     // The mode tours stay open above it.
-    expect(screen.getByRole('switch', { name: 'Avatar Tour' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: "Receptionist's Welcome" })).toBeTruthy();
   });
 
   it('opens from its heading onto the Portal switch, with no switch over them all', () => {

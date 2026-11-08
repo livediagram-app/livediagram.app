@@ -650,11 +650,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     },
     rows: [
       tourSwitch('avatarTourSeen', {
-        label: 'Avatar Tour',
+        label: "Receptionist's Welcome",
         event: { category: 'UI', on: 'AvatarTourSeenOff', off: 'AvatarTourSeenOn' },
         keywords:
-          'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
-        description: 'While you walk as an avatar.',
+          'receptionist receptionist welcome tour walkthrough onboarding tutorial avatar character walk pad topics ask replay',
+        description: 'The Receptionist greets you on the Avatar Pad with what to try first.',
         helpArticle: 'avatarTour',
       }),
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch per

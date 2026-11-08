@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ModifierHintBanner, selectedKindOf } from './ModifierHintBanner';
+import type { DragState } from '@/lib/canvas';
+import { ModifierHintBanner } from './ModifierHintBanner';
 
 function holdShift(down: boolean) {
   act(() => {
@@ -10,15 +11,7 @@ function holdShift(down: boolean) {
 }
 
 function show(props: Partial<Parameters<typeof ModifierHintBanner>[0]> = {}) {
-  return render(
-    <ModifierHintBanner
-      drag={null}
-      selectedKind={null}
-      hasElements
-      suppressed={false}
-      {...props}
-    />,
-  );
+  return render(<ModifierHintBanner drag={null} hasElements suppressed={false} {...props} />);
 }
 
 afterEach(() => {
@@ -45,18 +38,18 @@ describe('ModifierHintBanner', () => {
     holdShift(true);
     expect(screen.queryByText(/click elements to select several/i)).toBeNull();
   });
-});
 
-describe('selectedKindOf', () => {
-  const els = [
-    { id: 'r', type: 'arrow' },
-    { id: 's', type: 'shape' },
-  ] as unknown as Parameters<typeof selectedKindOf>[0];
-
-  it('names the selected element’s flavour for the no-drag hints, or null', () => {
-    expect(selectedKindOf(els, 'r')).toBe('arrow');
-    expect(selectedKindOf(els, 's')).toBe('other');
-    expect(selectedKindOf(els, null)).toBeNull();
-    expect(selectedKindOf(els, 'gone')).toBeNull();
+  it('names the aspect lock while resizing, and nothing while moving', () => {
+    const { rerender } = show({ drag: { kind: 'boxed', mode: 'resize-se' } as DragState });
+    holdShift(true);
+    expect(screen.getByText(/proportions locked/i)).toBeTruthy();
+    rerender(
+      <ModifierHintBanner
+        drag={{ kind: 'boxed', mode: 'move' } as DragState}
+        hasElements
+        suppressed={false}
+      />,
+    );
+    expect(screen.queryByText(/proportions locked|select several/i)).toBeNull();
   });
 });

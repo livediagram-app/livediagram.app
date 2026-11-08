@@ -1,31 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  ArrowElement,
-  Element,
-  FreehandElement,
-  PathElement,
-  ShapeElement,
-  StickyElement,
-  TextElement,
-} from './index';
+import type { Element, ShapeElement, StickyElement, TextElement } from './index';
 import { SNAP_COLOUR_FIELDS, snapTabColours, snappableCustomColours } from './snap-colours';
-import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
-const stroke = (over: Partial<FreehandElement> = {}): FreehandElement => ({
-  id: 'f',
-  type: 'freehand',
-  x: 0,
-  y: 0,
-  width: 10,
-  height: 10,
-  packedPoints: encodeStrokePoints([
-    { nx: 0, ny: 0 },
-    { nx: 1, ny: 1 },
-  ]),
-  closed: false,
-  penWidth: 1.5,
-  ...over,
-});
 const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 's',
   type: 'shape',
@@ -34,13 +10,6 @@ const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   y: 0,
   width: 10,
   height: 10,
-  ...over,
-});
-const arrow = (over: Partial<ArrowElement> = {}): ArrowElement => ({
-  id: 'a',
-  type: 'arrow',
-  from: { kind: 'free', x: 0, y: 0 },
-  to: { kind: 'free', x: 10, y: 10 },
   ...over,
 });
 const text = (over: Partial<TextElement> = {}): TextElement => ({
@@ -53,21 +22,6 @@ const text = (over: Partial<TextElement> = {}): TextElement => ({
   label: 'hi',
   ...over,
 });
-
-const path = (over: Partial<PathElement> = {}): PathElement => ({
-  id: 'p',
-  type: 'path',
-  x: 0,
-  y: 0,
-  width: 10,
-  height: 10,
-  closed: false,
-  nodes: [
-    { nx: 0, ny: 0, mode: 'corner' },
-    { nx: 1, ny: 1, mode: 'corner' },
-  ],
-  ...over,
-});
 const sticky = (over: Partial<StickyElement> = {}): StickyElement => ({
   id: 'n',
   type: 'sticky',
@@ -77,27 +31,50 @@ const sticky = (over: Partial<StickyElement> = {}): StickyElement => ({
   height: 10,
   ...over,
 });
+// The retired elements (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4): a stored
+// pen stroke, path and arrow keep every colour they stored.
+const stroke = (over: Record<string, unknown> = {}): Element =>
+  ({
+    id: 'f',
+    type: 'freehand',
+    x: 0,
+    y: 0,
+    width: 10,
+    height: 10,
+    packedPoints: 'AQAAAAAA',
+    closed: false,
+    penWidth: 1.5,
+    ...over,
+  }) as Element;
+const path = (over: Record<string, unknown> = {}): Element => ({
+  id: 'p',
+  type: 'path',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  ...over,
+});
+const arrow = (over: Record<string, unknown> = {}): Element => ({
+  id: 'a',
+  type: 'arrow',
+  from: { kind: 'free', x: 0, y: 0 },
+  to: { kind: 'free', x: 10, y: 10 },
+  ...over,
+});
 
 // docs/specs/023-draw-mode/draw-mode.md "Snap colours".
 describe('snapTabColours', () => {
-  it('snaps a marker stroke, a shape outline and an arrow to their stock colours by name', () => {
-    const els: Element[] = [
-      stroke({ id: 'f', strokeColor: '#e03131' }),
-      shape({ id: 's', strokeColor: '#1971C2' }),
-      arrow({ id: 'a', strokeColor: '#2f9e44' }),
-    ];
+  it('snaps a shape outline to its stock colour by name', () => {
+    const els: Element[] = [shape({ id: 's', strokeColor: '#1971C2' })];
     const out = snapTabColours(els);
-    expect(out.elements).toEqual([
-      stroke({ id: 'f', penColour: 'red' }),
-      shape({ id: 's', penColour: 'blue' }),
-      arrow({ id: 'a', penColour: 'green' }),
-    ]);
-    expect(out).toMatchObject({ colours: 3, changed: 3 });
+    expect(out.elements).toEqual([shape({ id: 's', penColour: 'blue' })]);
+    expect(out).toMatchObject({ colours: 1, changed: 1 });
   });
 
   it('snaps a neutral colour to the ink: no colour stored at all', () => {
-    const out = snapTabColours([stroke({ strokeColor: '#868e96', penColour: 'blue' })]);
-    expect(out.elements[0]).toEqual(stroke());
+    const out = snapTabColours([shape({ strokeColor: '#868e96', penColour: 'blue' })]);
+    expect(out.elements[0]).toEqual(shape());
     expect('penColour' in out.elements[0]!).toBe(false);
     expect('strokeColor' in out.elements[0]!).toBe(false);
   });
@@ -110,14 +87,14 @@ describe('snapTabColours', () => {
   });
 
   it('returns untouched elements by identity and counts distinct colours and changed elements', () => {
-    const plain = stroke({ id: 'plain' });
+    const plain = shape({ id: 'plain' });
     const stock = shape({ id: 'stock', penColour: 'violet' });
     const els: Element[] = [
       plain,
       stock,
-      stroke({ id: 'a', strokeColor: '#E03131' }),
-      stroke({ id: 'b', strokeColor: '#e03131' }),
-      arrow({ id: 'c', strokeColor: '#1971c2' }),
+      shape({ id: 'a', strokeColor: '#E03131' }),
+      shape({ id: 'b', strokeColor: '#e03131' }),
+      text({ id: 'c', textColor: '#1971c2' }),
     ];
     const out = snapTabColours(els);
     expect(out.elements[0]).toBe(plain);
@@ -125,19 +102,21 @@ describe('snapTabColours', () => {
     expect(out).toMatchObject({ colours: 2, changed: 3 });
   });
 
-  it('never touches highlighters, pencil strokes, fills, text on a fill or arrow heads', () => {
+  it('never touches fills, text on a fill, or a stored stroke, path or arrow', () => {
     const els: Element[] = [
-      stroke({ id: 'hl', pen: 'highlighter', strokeColor: '#ffd43b' }),
-      stroke({ id: 'pencil', penWidth: undefined, strokeColor: '#e03131' }),
       shape({ id: 'fill', fillColor: '#ffdf6b', textColor: '#e03131' }),
       sticky({ id: 'note', fillColor: '#fde68a', textColor: '#1971c2' }),
-      arrow({ id: 'head', arrowheadColor: '#e03131' }),
       shape({ id: 'clear', strokeColor: 'transparent' }),
       shape({ id: 'short', strokeColor: '#f00' }),
+      stroke({ id: 'pen', strokeColor: '#e03131' }),
+      stroke({ id: 'hl', pen: 'highlighter', strokeColor: '#ffd43b' }),
+      path({ strokeColor: '#e03131' }),
+      arrow({ strokeColor: '#2f9e44', textColor: '#6741d9', arrowheadColor: '#e03131' }),
     ];
     const out = snapTabColours(els);
     out.elements.forEach((el, i) => expect(el).toBe(els[i]));
     expect(out).toMatchObject({ colours: 0, changed: 0 });
+    expect(snappableCustomColours(els)).toEqual([]);
   });
 
   it('keeps a snapped shape fill and label as they are', () => {
@@ -152,44 +131,36 @@ describe('snapTabColours', () => {
   it('has one row per kind and field that carries a named colour', () => {
     expect(SNAP_COLOUR_FIELDS.map((r) => [r.hex, r.named])).toEqual([
       ['strokeColor', 'penColour'],
-      ['strokeColor', 'penColour'],
-      ['strokeColor', 'penColour'],
-      ['strokeColor', 'penColour'],
-      ['textColor', 'penTextColour'],
       ['textColor', 'penTextColour'],
       ['textColor', 'penTextColour'],
     ]);
-    expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(stroke()))).toHaveLength(1);
     expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(text()))).toHaveLength(1);
     expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(shape()))).toHaveLength(2);
     expect(
       SNAP_COLOUR_FIELDS.filter((r) => r.applies(shape({ fillColor: '#ffdf6b' }))),
     ).toHaveLength(1);
-    expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(sticky()))).toHaveLength(0);
+    for (const el of [sticky(), stroke(), path(), arrow()])
+      expect(SNAP_COLOUR_FIELDS.filter((r) => r.applies(el))).toHaveLength(0);
   });
 
   // docs/specs/023-draw-mode/blueprints/snap-colours.md: the named colours imports land on.
-  it('snaps a text box, a path, an unfilled shape’s label and an arrow’s label', () => {
+  it('snaps a text box and an unfilled shape’s label', () => {
     const out = snapTabColours([
       text({ textColor: '#1971C2', textSwatch: 2 }),
-      path({ strokeColor: '#e03131', strokeSwatch: 1 }),
       shape({ id: 's2', strokeColor: '#2f9e44', textColor: '#c2255c' }),
       shape({ id: 's3', fillColor: 'transparent', textColor: '#868e96' }),
-      arrow({ textColor: '#6741d9' }),
     ]);
     expect(out.elements).toEqual([
       text({ penTextColour: 'blue' }),
-      path({ penColour: 'red' }),
       shape({ id: 's2', penColour: 'green', penTextColour: 'pink' }),
       shape({ id: 's3', fillColor: 'transparent' }),
-      arrow({ penTextColour: 'violet' }),
     ]);
-    expect(out).toMatchObject({ changed: 5 });
+    expect(out).toMatchObject({ changed: 3 });
   });
 
   it('lists a text box’s and a label’s custom colours among the snappable ones', () => {
     expect(
-      snappableCustomColours([text({ textColor: '#0C8599' }), arrow({ textColor: '#9c36b5' })]),
+      snappableCustomColours([text({ textColor: '#0C8599' }), shape({ textColor: '#9c36b5' })]),
     ).toEqual(['#9c36b5', '#0c8599']);
   });
 });
@@ -197,11 +168,10 @@ describe('snapTabColours', () => {
 describe('snappableCustomColours', () => {
   it('lists the distinct lower-cased custom colours the snap would convert, newest first', () => {
     const els: Element[] = [
-      stroke({ id: '1', strokeColor: '#E03131' }),
+      shape({ id: '1', strokeColor: '#E03131' }),
       shape({ id: '2', strokeColor: '#1971c2' }),
-      stroke({ id: '3', strokeColor: '#e03131' }),
-      stroke({ id: '4', penColour: 'blue' }),
-      stroke({ id: '5', pen: 'highlighter', strokeColor: '#ffd43b' }),
+      shape({ id: '3', strokeColor: '#e03131' }),
+      shape({ id: '4', penColour: 'blue' }),
     ];
     expect(snappableCustomColours(els)).toEqual(['#e03131', '#1971c2']);
     expect(snappableCustomColours([])).toEqual([]);

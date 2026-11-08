@@ -1,20 +1,13 @@
-import {
-  ARROW_THICKNESS_PX,
-  DEFAULT_ANIMATION_SPEED,
-  encodeStrokePoints,
-  freehandPressures,
-  type Element,
-  type FreehandElement,
-} from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import type { ShapeColorPreset } from './themes';
 import {
-  applyArrowPresetToEl,
   applyBorderRadiusToEl,
+  applyMarkerToEl,
+  applyShapeKindToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
   applyColorPresetToEl,
-  applyLabelFillToEl,
   applyFillColorToEl,
   applyIconWeightToEl,
   applyRotationToEl,
@@ -31,7 +24,6 @@ const el = (type: string, over: Record<string, unknown> = {}): Element =>
     id: 'e',
     type,
     ...(type === 'shape' ? { shape: 'square' } : {}),
-    ...(type === 'freehand' ? { packedPoints: 'AQA=' } : {}),
     ...over,
   }) as unknown as Element;
 
@@ -75,19 +67,6 @@ describe('applyColorPresetToEl', () => {
   });
 });
 
-describe('applyLabelFillToEl', () => {
-  it('sets the caption plate on an arrow', () => {
-    expect(applyLabelFillToEl(el('arrow'), '#fff')).toMatchObject({ labelFill: '#fff' });
-  });
-
-  it('is a no-op on anything else, so a mixed selection only paints arrows', () => {
-    const shape = el('shape');
-    expect(applyLabelFillToEl(shape, '#fff')).toBe(shape);
-  });
-});
-
-// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table is a placeholder, so no
-// style control changes what it saved.
 describe('a stored table', () => {
   const table = () => el('table', { tablePreset: 'table-banded', strokeColor: '#123456' });
 
@@ -107,83 +86,48 @@ describe('a stored table', () => {
 });
 
 describe('colour field setters clear the colour-preset binding on shapes', () => {
-  it('applyFillColorToEl: shape clears colorPreset; sticky/freehand keep theirs; others no-op', () => {
+  it('applyFillColorToEl: shape clears colorPreset; sticky keeps its own; others no-op', () => {
     expect(applyFillColorToEl(el('shape', { colorPreset: 'x' }), '#c')).toMatchObject({
       fillColor: '#c',
       colorPreset: undefined,
     });
     expect(applyFillColorToEl(el('sticky'), '#c')).toMatchObject({ fillColor: '#c' });
-    expect(applyFillColorToEl(el('freehand'), '#c')).toMatchObject({ fillColor: '#c' });
     const text = el('text');
     expect(applyFillColorToEl(text, '#c')).toBe(text); // text has no fill
   });
 
-  it('applyStrokeColorToEl: applies to shape/sticky/arrow/freehand', () => {
+  it('applyStrokeColorToEl: applies to shapes and stickies', () => {
     expect(applyStrokeColorToEl(el('shape', { colorPreset: 'x' }), '#c')).toMatchObject({
       strokeColor: '#c',
       colorPreset: undefined,
     });
-    expect(applyStrokeColorToEl(el('arrow'), '#c')).toMatchObject({ strokeColor: '#c' });
+    expect(applyStrokeColorToEl(el('sticky'), '#c')).toMatchObject({ strokeColor: '#c' });
     const text = el('text');
     expect(applyStrokeColorToEl(text, '#c')).toBe(text);
   });
 
-  it('applyTextColorToEl: applies to any boxed element + arrows', () => {
+  it('applyTextColorToEl: applies to any boxed element', () => {
     expect(applyTextColorToEl(el('shape', { colorPreset: 'x' }), '#c')).toMatchObject({
       textColor: '#c',
       colorPreset: undefined,
     });
     expect(applyTextColorToEl(el('text'), '#c')).toMatchObject({ textColor: '#c' });
-    expect(applyTextColorToEl(el('arrow'), '#c')).toMatchObject({ textColor: '#c' });
+    expect(applyTextColorToEl(el('link-card'), '#c')).toMatchObject({ textColor: '#c' });
   });
 });
 
 describe('border field setters', () => {
-  it('stroke/style apply to shapes and freehand only', () => {
+  it('stroke/style apply to shapes only', () => {
     expect(applyBorderStrokeToEl(el('shape'), 'thick')).toMatchObject({ strokeWidth: 'thick' });
-    expect(applyBorderStrokeToEl(el('freehand'), 'thin')).toMatchObject({ strokeWidth: 'thin' });
     const sticky = el('sticky');
     expect(applyBorderStrokeToEl(sticky, 'thin')).toBe(sticky);
     expect(applyBorderStyleToEl(el('shape'), 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
   });
 
-  it('lets a border width replace the pen width a stroke recorded', () => {
-    const pen = applyBorderStrokeToEl(el('freehand', { penWidth: 8 }), 'thin');
-    expect(pen).toMatchObject({ strokeWidth: 'thin' });
-    expect('penWidth' in pen).toBe(false);
-  });
-
-  it('drops a pen stroke\u2019s pressures and streamline with its pen width', () => {
-    const points = [
-      { nx: 0, ny: 0 },
-      { nx: 1, ny: 1 },
-    ];
-    const pen = applyBorderStrokeToEl(
-      el('freehand', {
-        penWidth: 2.5,
-        packedPoints: encodeStrokePoints(points, [0.2, 0.9]),
-        streamline: 0.2,
-      }),
-      'thin',
-    ) as FreehandElement;
-    // The same points, re-packed without their pressures.
-    expect(pen.packedPoints).toBe(encodeStrokePoints(points));
-    expect(freehandPressures(pen)).toBeUndefined();
-    expect('streamline' in pen).toBe(false);
-  });
-
-  it('keeps the width of a highlighter stroke, which the preset never drew', () => {
-    const marker = applyBorderStrokeToEl(
-      el('freehand', { pen: 'highlighter', penWidth: 20 }),
-      'thin',
-    );
-    expect(marker).toMatchObject({ penWidth: 20 });
-  });
-
   it('radius is shape-only', () => {
     expect(applyBorderRadiusToEl(el('shape'), 'full')).toMatchObject({ borderRadius: 'full' });
-    const fh = el('freehand');
-    expect(applyBorderRadiusToEl(fh, 'md')).toBe(fh);
+    const note = el('sticky');
+    expect(applyBorderRadiusToEl(note, 'md')).toBe(note);
   });
 });
 
@@ -196,54 +140,51 @@ describe('applyRotationToEl', () => {
     expect(applyRotationToEl(el('shape'), 90.4)).toMatchObject({ rotation: 90 }); // rounds
   });
 
-  it('is a no-op on non-boxed elements (arrows)', () => {
-    const a = el('arrow');
-    expect(applyRotationToEl(a, 45)).toBe(a);
-  });
-
-  // docs/specs/009-elements/blueprints/annotations.md [QD8]: a marker never rotates, even inside a
-  // multi-selection's Rotation pick.
-  it('is a no-op on an annotation marker', () => {
-    const marker = el('annotation');
-    expect(applyRotationToEl(marker, 90)).toBe(marker);
+  it('is a no-op on furniture, which turns by its facing', () => {
+    const chair = el('shape', { shape: 'chair' });
+    expect(applyRotationToEl(chair, 45)).toBe(chair);
   });
 });
 
-describe('applyArrowPresetToEl', () => {
-  it('sets style/thickness, defaults flowSpeed to the shared default when a flow is added', () => {
-    const out = applyArrowPresetToEl(el('arrow'), {
-      style: 'dashed',
-      thickness: 'medium',
-      flow: 'dashes',
-    });
-    expect(out).toMatchObject({
-      strokeStyle: 'dashed',
-      strokeWidth: ARROW_THICKNESS_PX['medium'],
-      flow: 'dashes',
-      flowSpeed: DEFAULT_ANIMATION_SPEED,
-    });
+// docs/specs/002-project-scope/blueprints/element-engine.md: a retired element keeps every field it stored, so every
+// setter leaves it as it is, whatever the selection around it takes.
+describe('a retired element', () => {
+  const RETIRED = ['arrow', 'freehand', 'path', 'annotation', 'table', 'video'];
+  const preset = {
+    id: 'cp',
+    fill: '#f',
+    stroke: '#s',
+    text: '#t',
+    borderStroke: 'thin',
+    borderStyle: 'solid',
+  } as ShapeColorPreset;
+  const setters: [string, (e: Element) => Element][] = [
+    ['preset', (e) => applyColorPresetToEl(e, preset)],
+    ['fill', (e) => applyFillColorToEl(e, '#c')],
+    ['stroke', (e) => applyStrokeColorToEl(e, '#c')],
+    ['stroke ink', (e) => applyStrokeColorToEl(e, 'ink')],
+    ['text', (e) => applyTextColorToEl(e, '#c')],
+    ['border', (e) => applyBorderStrokeToEl(e, 'thick')],
+    ['pattern', (e) => applyBorderStyleToEl(e, 'dotted')],
+    ['radius', (e) => applyBorderRadiusToEl(e, 'full')],
+    ['shadow', (e) => applyShadowToEl(e, { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 })],
+    ['finish', (e) => applyFinishToEl(e, 'sketch')],
+    ['rotation', (e) => applyRotationToEl(e, 45)],
+    ['kind', (e) => applyShapeKindToEl(e, 'circle')],
+    ['marker', (e) => applyMarkerToEl(e, 'checkbox-checked')],
+    ['icon weight', (e) => applyIconWeightToEl(e, 'bold')],
+  ];
+
+  it('is left exactly as stored by every setter', () => {
+    for (const type of RETIRED) {
+      const source = el(type, { x: 0, y: 0, width: 160, height: 56, strokeColor: '#123456' });
+      for (const [name, set] of setters) expect(set(source), `${type} ${name}`).toBe(source);
+    }
   });
 
-  it('keeps an existing flowSpeed when a flow is re-applied', () => {
-    const out = applyArrowPresetToEl(el('arrow', { flowSpeed: 'fast' }), {
-      style: 'solid',
-      thickness: 'thin',
-      flow: 'dashes',
-    });
-    expect((out as { flowSpeed?: string }).flowSpeed).toBe('fast');
-  });
-
-  it('clears the flow when the preset has none', () => {
-    const out = applyArrowPresetToEl(el('arrow', { flow: 'dashes' }), {
-      style: 'solid',
-      thickness: 'thin',
-    });
-    expect((out as { flow?: string }).flow).toBeUndefined();
-  });
-
-  it('is a no-op on non-arrows', () => {
-    const s = el('shape');
-    expect(applyArrowPresetToEl(s, { style: 'solid', thickness: 'thin' })).toBe(s);
+  it('includes a shape of a kind livehuddle no longer draws', () => {
+    const gone = el('shape', { shape: 'session-button', x: 0, y: 0, width: 160, height: 56 });
+    for (const [name, set] of setters) expect(set(gone), name).toBe(gone);
   });
 });
 
@@ -267,7 +208,7 @@ describe('applyShadowToEl', () => {
   });
 
   it('no-ops (same reference) on unsupported types', () => {
-    for (const type of ['text', 'freehand', 'annotation', 'table', 'arrow']) {
+    for (const type of ['text', 'room-walls']) {
       const source = el(type);
       expect(applyShadowToEl(source, shadow), type).toBe(source);
     }
@@ -282,15 +223,11 @@ describe('any other colour edit drops a quick-swatch binding (docs/specs/008-can
     expect(next).toMatchObject({ fillColor: '#abcdef', fillSwatch: undefined, strokeSwatch: 2 });
   });
 
-  it('a hand-set stroke drops the stroke binding, on shapes and arrows', () => {
+  it('a hand-set stroke drops the stroke binding', () => {
     expect(applyStrokeColorToEl(bound, '#abcdef')).toMatchObject({
       strokeSwatch: undefined,
       fillSwatch: 4,
     });
-    expect(applyStrokeColorToEl(el('arrow', { strokeSwatch: 1 }), '#abcdef')).toHaveProperty(
-      'strokeSwatch',
-      undefined,
-    );
   });
 
   it('a preset drops both', () => {
@@ -323,8 +260,8 @@ describe('applyIconWeightToEl', () => {
 // docs/specs/007-editor/editor-modes.md "One look": the element menu's Ink swatch stores Ink by
 // name; any other colour replaces a stored name.
 describe('Ink by name from the colour rows', () => {
-  it('stores Ink as the line\u2019s name on a shape, an arrow and a pen stroke', () => {
-    for (const type of ['shape', 'arrow', 'freehand']) {
+  it('stores Ink as the line\u2019s name on a shape', () => {
+    for (const type of ['shape']) {
       const out = applyStrokeColorToEl(el(type, { strokeColor: '#ff0000' }), 'ink') as {
         strokeColor?: string;
         penColour?: string;
@@ -334,8 +271,8 @@ describe('Ink by name from the colour rows', () => {
     }
   });
 
-  it('stores Ink as the text\u2019s name on a shape, a text box, a note and an arrow label', () => {
-    for (const type of ['shape', 'text', 'sticky', 'arrow']) {
+  it('stores Ink as the text\u2019s name on a shape, a text box and a note', () => {
+    for (const type of ['shape', 'text', 'sticky']) {
       const out = applyTextColorToEl(el(type, { textColor: '#ff0000' }), 'ink') as {
         textColor?: string;
         penTextColour?: string;
@@ -367,8 +304,8 @@ describe('Ink where no name can be stored', () => {
 });
 
 describe('applyFinishToEl (docs/specs/008-canvas/finish.md)', () => {
-  it('sets a finish on shapes, arrows, text and stickies', () => {
-    for (const type of ['shape', 'arrow', 'text', 'sticky']) {
+  it('sets a finish on shapes, text and stickies', () => {
+    for (const type of ['shape', 'text', 'sticky']) {
       const out = applyFinishToEl(el(type), 'sketch') as { finish?: unknown };
       expect(out.finish, type).toBe('sketch');
     }
@@ -388,7 +325,7 @@ describe('applyFinishToEl (docs/specs/008-canvas/finish.md)', () => {
   });
 
   it('no-ops (same reference) on types without a finish', () => {
-    for (const type of ['freehand', 'image', 'annotation']) {
+    for (const type of ['image', 'room-walls']) {
       const source = el(type);
       expect(applyFinishToEl(source, 'sketch'), type).toBe(source);
     }

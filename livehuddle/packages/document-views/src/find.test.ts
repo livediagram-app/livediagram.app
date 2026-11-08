@@ -18,9 +18,11 @@ describe('findView (R17, VW35)', () => {
     expect(json.matches.map((m) => m.field)).toContain('note');
   });
 
-  it('folds case and width, and finds an arrow label under its source', () => {
+  // A stored arrow is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+  // part 4): find reads its stored label on its own line, like any element's.
+  it('folds case and width, and finds a stored arrow’s label on its own line', () => {
     const { text, json } = findView(checkout(), 'ｊｗｔ');
-    expect(text.split('\n').slice(1)).toEqual(['arrow 9c5e 649c → 202b "JWT"', '1 match: 1 edge']);
+    expect(text.split('\n').slice(1)).toEqual(['? arrow 9c5e "JWT"', '1 match: 1 label']);
     expect(json.q).toBe('ｊｗｔ');
   });
 
@@ -82,10 +84,10 @@ describe('find on odd shapes', () => {
       '? checklist',
       'square talk',
       '? code-block',
-      'arrow free',
+      '? arrow',
       '4 matches:',
     ]);
-    expect(lines.at(-1)).toBe('4 matches: 1 edge, 1 item, 1 code, 1 comment');
+    expect(lines.at(-1)).toBe('4 matches: 1 label, 1 item, 1 code, 1 comment');
   });
 
   // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a stored lane, boundary or stack

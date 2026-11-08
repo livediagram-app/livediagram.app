@@ -18,3 +18,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: pnpm install --frozen-lockfile
+      # onnxruntime-node's postinstall fetches CUDA binaries on Linux x64 from GitHub. Nothing in CI runs on a GPU,
+      # and a 504 from that fetch failed whole runs on main (2026-11-08).
+      env:
+        ONNXRUNTIME_NODE_INSTALL_CUDA: skip

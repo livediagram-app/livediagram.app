@@ -6,19 +6,14 @@ import {
   PROFESSIONAL_FONT_ID,
   SKETCH_FONT_ID,
   MARKER_FONT_ID,
-  MARKER_LINE_PX,
-  finishArrowThickness,
-  finishArrowWidthPx,
   finishDrawsBodyByHand,
   finishIconWeight,
   isHandDrawn,
   finishBorderStroke,
   finishCornerFallbackPx,
-  finishCurvesNewArrows,
   finishDrawsDefaultShadow,
   elementFontId,
   finishFontId,
-  finishNewArrowStyle,
   finishSplitsFace,
   supportsFinish,
   finishHatches,
@@ -65,18 +60,10 @@ describe('Professional fallbacks', () => {
     expect(finishBorderStroke(undefined, 'flexible')).toBe('medium');
   });
 
-  it('thins an unset arrow, keeps a picked one', () => {
-    expect(finishArrowThickness('medium', false, 'professional')).toBe('thin');
-    expect(finishArrowThickness('thick', true, 'professional')).toBe('thick');
-    expect(finishArrowThickness('medium', false, 'sketch')).toBe('medium');
-  });
-
-  it('drops default shadows and draw-time curves', () => {
+  it('drops default shadows', () => {
     expect(finishDrawsDefaultShadow('professional')).toBe(false);
     expect(finishDrawsDefaultShadow('flexible')).toBe(true);
     expect(finishDrawsDefaultShadow('sketch')).toBe(true);
-    expect(finishCurvesNewArrows('professional')).toBe(false);
-    expect(finishCurvesNewArrows('sketch')).toBe(true);
   });
 });
 
@@ -107,19 +94,20 @@ describe('finishHatches', () => {
 });
 
 describe('supportsFinish', () => {
-  it('takes shapes, arrows, text and stickies only', () => {
-    for (const type of ['shape', 'arrow', 'text', 'sticky'])
+  it('takes shapes, text and stickies only', () => {
+    for (const type of ['shape', 'text', 'sticky'])
       expect(supportsFinish({ type }), type).toBe(true);
-    for (const type of ['freehand', 'image', 'path', 'annotation', 'link-card', 'table', 'video'])
+    for (const type of [
+      'arrow',
+      'freehand',
+      'image',
+      'path',
+      'annotation',
+      'link-card',
+      'table',
+      'video',
+    ])
       expect(supportsFinish({ type }), type).toBe(false);
-  });
-});
-
-describe('finishNewArrowStyle', () => {
-  it('draws a new arrow right-angled under Professional only', () => {
-    expect(finishNewArrowStyle('professional')).toBe('angled');
-    expect(finishNewArrowStyle('flexible')).toBeUndefined();
-    expect(finishNewArrowStyle('sketch')).toBeUndefined();
   });
 });
 
@@ -209,23 +197,12 @@ describe('Marker (docs/specs/008-canvas/finish.md "Marker")', () => {
     expect(elementFontId({ finish: 'marker' }, 'inter', 'flexible')).toBe(MARKER_FONT_ID);
   });
 
-  it('draws unset and Thin arrows at a marker’s nib, a wider own width as picked', () => {
-    expect(finishArrowWidthPx(undefined, 'marker')).toBe(MARKER_LINE_PX);
-    expect(finishArrowWidthPx(1, 'marker')).toBe(MARKER_LINE_PX);
-    expect(finishArrowWidthPx(1, 'flexible')).toBe(1);
-    expect(finishArrowWidthPx(undefined, 'professional')).toBe(1);
-    expect(finishArrowWidthPx(undefined, 'flexible')).toBe(2);
-    expect(finishArrowWidthPx(7, 'marker')).toBe(7);
-  });
-
   it('draws a line icon without its own weight Bold', () => {
     expect(finishIconWeight(undefined, 'marker')).toBe('bold');
     expect(finishIconWeight('thin', 'marker')).toBe('thin');
   });
 
-  it('keeps Flexible’s corners and arrows', () => {
+  it('keeps Flexible’s corners', () => {
     expect(finishCornerFallbackPx(8, 'marker')).toBe(8);
-    expect(finishCurvesNewArrows('marker')).toBe(true);
-    expect(finishNewArrowStyle('marker')).toBeUndefined();
   });
 });

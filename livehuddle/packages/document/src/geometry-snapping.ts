@@ -1,11 +1,7 @@
 // Snapping + alignment/distribution guides, split out of geometry.ts to keep
-// each file under the ~1000-line budget. Depends on the core geometry helpers
-// (anchorPosition, Point) which stay in geometry.ts. Re-exported through the
-// package barrel (index.ts) alongside geometry.
-import { anchorPosition, type Point } from './geometry';
-import type { AlignmentGuide } from './geometry-guides';
-import { isBoxed, type Anchor, type Element, type ElementId } from './index';
-import { offeredAnchors } from './anchors';
+// each file under the ~1000-line budget. Re-exported through the package
+// barrel (index.ts) alongside geometry.
+import { isBoxed, type Element, type ElementId } from './index';
 
 // Alignment snapping: when dragging an element, snap its edges/centre to
 // match nearby OTHER elements' edges/centres on the same axis. Returns the
@@ -53,75 +49,6 @@ export function snapToAlignment(
   // both yield dx 0). Callers that layer another snap (e.g. distribution)
   // use these to tell "already aligned, leave it" from "free, go ahead".
   return { dx: bestX ?? 0, dy: bestY ?? 0, snappedX: bestX !== null, snappedY: bestY !== null };
-}
-
-// Snap a dragged arrow control point (a curve bend, the single-bow control,
-// or an angled elbow) to the alignment lines around it, so bends square up
-// instead of landing at arbitrary sub-pixel positions. Two families of
-// candidate line, both per axis, nearest-within-`threshold` wins:
-//   1. `neighbours` — the point's adjacent vertices on the rendered line
-//      (the previous + next vertex). Snapping x to a neighbour's x makes that
-//      segment vertical; snapping y makes it horizontal. Hitting one on each
-//      axis squares the bend to a right angle.
-//   2. Other elements' left / centre / right (x) and top / centre / bottom
-//      (y), so a bend lines up with nearby shapes the same way a moved box
-//      does.
-// Returns the snapped point plus the guide lines now in effect (same shape as
-// `alignmentGuides`, so the caller renders them through the existing overlay).
-// `excludeIds` are elements the arrow's own endpoints sit on, skipped so a
-// pinned arrow doesn't snap its bend to the very box it connects.
-export function snapArrowPoint(
-  point: Point,
-  neighbours: Point[],
-  elements: Element[],
-  threshold: number,
-  excludeIds: Set<ElementId> = new Set(),
-): { point: Point; guides: AlignmentGuide[] } {
-  // Each candidate carries the perpendicular coordinate of whatever it lines
-  // up with, so the emitted guide spans from the point to that reference.
-  const xLines: { pos: number; ref: number }[] = [];
-  const yLines: { pos: number; ref: number }[] = [];
-  for (const n of neighbours) {
-    xLines.push({ pos: n.x, ref: n.y });
-    yLines.push({ pos: n.y, ref: n.x });
-  }
-  for (const el of elements) {
-    if (!isBoxed(el) || excludeIds.has(el.id)) continue;
-    const cx = el.x + el.width / 2;
-    const cy = el.y + el.height / 2;
-    for (const x of [el.x, cx, el.x + el.width]) xLines.push({ pos: x, ref: cy });
-    for (const y of [el.y, cy, el.y + el.height]) yLines.push({ pos: y, ref: cx });
-  }
-  const nearest = (lines: { pos: number; ref: number }[], v: number) => {
-    let best: { pos: number; ref: number } | null = null;
-    for (const c of lines) {
-      const d = Math.abs(c.pos - v);
-      if (d <= threshold && (best === null || d < Math.abs(best.pos - v))) best = c;
-    }
-    return best;
-  };
-  const bestX = nearest(xLines, point.x);
-  const bestY = nearest(yLines, point.y);
-  const sx = bestX ? bestX.pos : point.x;
-  const sy = bestY ? bestY.pos : point.y;
-  const guides: AlignmentGuide[] = [];
-  if (bestX) {
-    guides.push({
-      axis: 'x',
-      position: sx,
-      start: Math.min(sy, bestX.ref),
-      end: Math.max(sy, bestX.ref),
-    });
-  }
-  if (bestY) {
-    guides.push({
-      axis: 'y',
-      position: sy,
-      start: Math.min(sx, bestY.ref),
-      end: Math.max(sx, bestY.ref),
-    });
-  }
-  return { point: { x: sx, y: sy }, guides };
 }
 
 // Snap candidate bounds during a resize to align with other elements'
@@ -269,43 +196,3 @@ export function snapResizeBounds(
 // span on the perpendicular axis (top→bottom for a vertical line,
 // left→right for a horizontal one) so the guide bridges only the
 // aligned elements rather than crossing the whole canvas.
-
-// Nearest boxed-element anchor to a canvas point. Returns the pinning
-// reference if one is within `threshold` pixels; otherwise null.
-export function snapToAnchor(
-  point: Point,
-  elements: Element[],
-  threshold: number,
-): { elementId: ElementId; anchor: Anchor } | null {
-  // Compare squared distances throughout (Math.hypot is markedly
-  // slower and we only need the ordering / the threshold test).
-  const thresholdSq = threshold * threshold;
-  let best: { elementId: ElementId; anchor: Anchor; distSq: number } | null = null;
-  for (const el of elements) {
-    if (!isBoxed(el)) continue;
-    // Bounding-radius pre-reject: every anchor (corner, edge-mid, or
-    // centre) sits within R = half the element's diagonal of its
-    // centre, for ANY rotation. So if the point is farther than
-    // R + threshold from the centre, no anchor can be in range — skip
-    // the anchor loop entirely. Conservative, so it never
-    // changes the result, only avoids work on distant elements.
-    const cx = el.x + el.width / 2;
-    const cy = el.y + el.height / 2;
-    const radius = Math.hypot(el.width, el.height) / 2;
-    const reach = radius + threshold;
-    const dcx = cx - point.x;
-    const dcy = cy - point.y;
-    if (dcx * dcx + dcy * dcy > reach * reach) continue;
-    for (const anchor of offeredAnchors(el)) {
-      const pos = anchorPosition(el, anchor);
-      const dx = pos.x - point.x;
-      const dy = pos.y - point.y;
-      const distSq = dx * dx + dy * dy;
-      if (distSq <= thresholdSq && (best === null || distSq < best.distSq)) {
-        best = { elementId: el.id, anchor, distSq };
-      }
-    }
-  }
-  if (!best) return null;
-  return { elementId: best.elementId, anchor: best.anchor };
-}

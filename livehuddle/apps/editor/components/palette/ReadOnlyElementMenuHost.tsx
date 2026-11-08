@@ -9,6 +9,7 @@ import {
   elementKindLabel,
   elementSupportsText,
   isBoxed,
+  isRetiredArrow,
   type ElementLink,
 } from '@livehuddle/document';
 import { ReadOnlyElementMenu } from '@liveworkspace/workbench/components/palette/ReadOnlyElementMenu';
@@ -39,8 +40,9 @@ export function ReadOnlyElementMenuHost() {
     takePart: can.takePart,
     // Comment badges are off for a reader of an embed, and so are its comments rows.
     commentsShown: !embedMode,
-    // Arrows take no comment, link or note.
-    attachments: isBoxed(target),
+    // A stored arrow's card takes comments, a link and a note as a box does (docs/specs/002-project-scope/
+    // not-in-livehuddle.md "The element engine", part 4).
+    attachments: isBoxed(target) || isRetiredArrow(target),
     writeText: can.writeText(target) && elementSupportsText(target) && !lockedByOther(target.id),
   });
   const items = readOnlyElementMenuItems(facts);

@@ -1,9 +1,10 @@
 'use client';
 
 // The palette tray (docs/specs/007-editor/toolbar-layout.md "Layout details"): in the Toolbar layout, a message
-// about the next press (a mode banner, the modifier hint) hangs from the strip's bottom edge instead of floating
-// under it. One look for all of them: the strip's own surface, no top border so it joins the strip, rounded
-// bottom corners, centred under the strip's card and never wider. Without a strip on screen there is no box,
+// about the next press (a mode banner, the modifier hint) sits just under the strip instead of floating in the
+// top-centre stack. One look for all of them: a card of the strip's own surface, a small gap below it (close
+// enough to read as the strip's, apart so the two are not stuck together), centred under the strip's card and
+// never wider. Without a strip on screen there is no box,
 // and the caller draws its usual top-centre pill instead.
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -11,6 +12,9 @@ import { EDITOR_VIEWPORT_ATTR } from '../../lib/editor-viewport';
 
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
+
+/** The gap between the strip's bottom edge and the tray, in px. */
+export const PALETTE_TRAY_GAP_PX = 6;
 
 export type StripBox = { left: number; width: number; bottom: number; top: number };
 
@@ -140,8 +144,11 @@ export function PaletteTray({
     <div
       // Steps aside while the Explorer is open: its panel reaches under the strip (explorer-structure.md "Layout").
       className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center [body[data-explorer-open]_&]:hidden [body[data-strip-popover-open]_&]:hidden"
-      // Up a pixel, so the tray covers the strip's bottom border where they meet and the two read as one.
-      style={{ left: box.left - host.dx, width: box.width, top: box.bottom - 1 - host.dy }}
+      style={{
+        left: box.left - host.dx,
+        width: box.width,
+        top: box.bottom + PALETTE_TRAY_GAP_PX - host.dy,
+      }}
     >
       <div
         // Floating UI: the canvas's capture-phase pointerdown leaves its presses alone (as TopCenterBanner).
@@ -149,7 +156,7 @@ export function PaletteTray({
         data-palette-tray=""
         {...(standing ? { 'data-yields-to-mode': '' } : { 'data-mode-message': '' })}
         role="status"
-        className="pointer-events-auto flex min-w-0 max-w-full animate-fade-in items-center gap-2 rounded-b-xl border border-t-0 border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-[0_6px_10px_-6px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        className="pointer-events-auto flex min-w-0 max-w-full animate-fade-in items-center gap-2 rounded-xl border border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-slate-950/40"
         onPointerDown={(e) => e.stopPropagation()}
       >
         <span className="flex shrink-0 items-center text-brand-700 dark:text-brand-300">

@@ -489,7 +489,7 @@ export function ContextualToolbar() {
   );
 }
 
-/** A mixed marquee selection (two shapes and an arrow) with the multi-select
+/** A mixed marquee selection (two boxes and a circle) with the multi-select
  *  toolbar: More, Filter Selection, Duplicate, Export and Delete. */
 export function MultiSelectToolbar() {
   const tx = 116;
@@ -518,7 +518,7 @@ export function MultiSelectToolbar() {
       </Panel>
       <Shape x={94} y={112} w={90} h={46} label="Cart" />
       <Shape x={250} y={112} w={90} h={46} accent label="Pay" />
-      <Arrow from={[184, 135]} to={[250, 135]} />
+      <Shape x={196} y={118} w={42} h={34} kind="circle" />
       <SelectionBox x={86} y={102} w={262} h={66} />
     </Scene>
   );
@@ -591,15 +591,6 @@ export function Minimap() {
       <Shape x={196} y={26} w={68} h={38} label="A" />
       <Shape x={176} y={116} w={62} h={36} accent label="B" />
       <Shape x={300} y={116} w={62} h={36} kind="circle" label="C" />
-      {/* Elbow connectors down out of A, splitting to B and C, one level arrowhead each. */}
-      <path
-        d="M230 64 V88 H207 V108 M230 88 H331 V108"
-        className="fill-none stroke-brand-400"
-        strokeWidth={2}
-        strokeLinejoin="round"
-      />
-      <Arrow from={[207, 106]} to={[207, 116]} tone="accent" />
-      <Arrow from={[331, 106]} to={[331, 116]} tone="accent" />
       {/* The Map panel, bottom-left, with the current-view box. */}
       <Panel x={20} y={110} w={136} h={88} title="MAP">
         <rect x={26} y={136} width={124} height={56} rx={4} className="fill-slate-100" />
@@ -616,11 +607,6 @@ export function Minimap() {
         />
         <rect x={68} y={172} width={17} height={9} rx={2} className="fill-brand-500" />
         <circle cx={112} cy={176} r={5} className="fill-white stroke-brand-300" strokeWidth={1} />
-        <path
-          d="M90 160 V166 H76 V172 M90 166 H112 V171"
-          className="fill-none stroke-brand-300"
-          strokeWidth={1}
-        />
         <rect
           x={52}
           y={146}

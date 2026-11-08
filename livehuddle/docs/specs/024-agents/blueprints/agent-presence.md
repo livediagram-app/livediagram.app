@@ -50,7 +50,7 @@ Scope, by file:
 | `apps/api/src/routes/document-room-routes.ts`                                                                               | The mint stores the person tag; the upgrade sets `X-Verified-Person`                                                                                    |
 | `apps/api/src/room-client.ts`                                                                                               | `putAgentPresence`, `deleteAgentPresence`, `refreshAgentPresence`; `relayElementDelta` logs                                                             |
 | `../packages/api-kit/src/room-agent-presence.ts` (+ test)                                                                   | `RoomAgentPresence` (storage, set, refresh, clear, sweep), the pure `agentRosterFor`, `answerAgentPresence`, `clearAgentsForOp`, `agentPresenceWriteOf` |
-| `apps/api/src/document-room/document-room.ts`, `room-internal.ts`, `room-roster.ts`                                         | `PUT` / `DELETE /presence`, restore, `armAlarm`, `alarm`, roster, clears on trash and revoke                                                            |
+| `apps/api/src/document-room/document-room.ts`, `room-internal.ts`, api-kit `room-roster.ts`                                 | `PUT` / `DELETE /presence`, restore, `armAlarm`, `alarm`, roster, clears on trash and revoke                                                            |
 | `apps/api/src/index.ts`                                                                                                     | Unchanged: the choke point already refuses every write from a read-only token                                                                           |
 | `apps/api/src/openapi/manifest.ts`, `schemas.generated.ts`, `apps/api/scripts/gen-openapi-schemas.mjs`                      | Six new routes, `tokenUsable` on the comment routes, the new schemas                                                                                    |
 | `apps/editor/lib/api/room.ts`                                                                                               | `onPresence(participants, agents)`                                                                                                                      |
@@ -394,7 +394,7 @@ setAt, expiresAt }`.
 - **E14** The owner has the tab open in two browsers: both sessions are in `joins`; the fold attaches the status to
   the one row the stack keeps for that collab key.
 - **E15** Two tokens of one owner on one tab: one `person`, one row, the later set's status.
-- **E16** Reply, resolve or reopen naming a comment not on the tab: 404. The add naming an arrow or a missing element: 404.
+- **E16** Reply, resolve or reopen naming a comment not on the tab: 404. The add naming a missing element: 404. A stored arrow takes a thread, as its card does in the editor (part 4, D28 in 002-project-scope's DEFAULTS).
 - **E17** A reply that pushes the tab over `MAX_TAB_BYTES`: 413, nothing written, nothing relayed.
 - **E18** A lost compare-and-swap twice: 409 `tab_busy`, nothing written.
 - **E19** A relay that fails: the write stands; `[room-mutation] el-delta did not reach the room` warns (PR26); editors get

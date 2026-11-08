@@ -2,13 +2,13 @@
 // (docs/specs/024-agents/blueprints/document-views.md "Testing", VW7). No group: the graph input that drew groups as
 // boundaries is gone (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3).
 import {
-  createPinnedArrow,
   createShape,
   slugIdFor,
   type Element,
   type ShapeKind,
   type Tab,
 } from '@livehuddle/document';
+import { createPinnedArrow } from './build';
 
 function slugArrows(elements: readonly Element[]): Element[] {
   const taken = new Set(elements.filter((el) => el.type !== 'arrow').map((el) => el.id));

@@ -21,7 +21,6 @@ export function useBoxedElementGestures({
   wrapperRef,
   isEditing,
   remotelyLocked,
-  isAnnotation,
   isMultiSelected,
   isSelected,
   isPaintMode,
@@ -31,7 +30,6 @@ export function useBoxedElementGestures({
   onBeginDrag,
   onBeginEdit,
   onEditLink,
-  onOpenNote,
   imageContext,
   onContextSelect,
 }: Pick<
@@ -44,7 +42,6 @@ export function useBoxedElementGestures({
   | 'onBeginDrag'
   | 'onBeginEdit'
   | 'onEditLink'
-  | 'onOpenNote'
   | 'imageContext'
   | 'onContextSelect'
 > & {
@@ -52,7 +49,6 @@ export function useBoxedElementGestures({
   // Another participant holds this element selected (docs/specs/007-editor/editor-app.md): block
   // select / drag / edit outright.
   remotelyLocked: boolean;
-  isAnnotation: boolean;
   isMultiSelected: boolean;
   // Single-selection state, so a shift press on the selected element can
   // start the duplicate drag (docs/specs/008-canvas/shift-drag-duplicate.md) instead of only toggling.
@@ -96,9 +92,6 @@ export function useBoxedElementGestures({
     });
     if (verdict.pairs) {
       e.stopPropagation();
-      // A path opens its edit mode on the pair itself: a double-tap brings no reliable dblclick
-      // (docs/specs/023-draw-mode/path-tool.md "Editing").
-      if (element.type === 'path') onBeginEdit(element.id);
       // A double-click's first click deselected the only selected element; its
       // second selects it again, as the editor opens.
       if (!isSelected && settlesClick) onPlainClick?.(element.id);
@@ -165,12 +158,6 @@ export function useBoxedElementGestures({
     // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") takes no typed label
     // and opens nothing.
     if (isRetiredElement(element)) return;
-    // An annotation has no inline label either — double-click opens its note
-    // editor (docs/specs/009-elements/annotations.md). A single click just selects it now.
-    if (isAnnotation) {
-      onOpenNote?.(element.id);
-      return;
-    }
     // The self-drawing data components (progress / rail / rating / charts /
     // checklist) draw their own content and have no editable text label, so
     // double-click never enters text-edit mode for them — it would pop an

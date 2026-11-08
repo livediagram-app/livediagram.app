@@ -1,22 +1,7 @@
-import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livehuddle/document';
-import { COMPONENT_SIZE } from '@livehuddle/document';
+import type { Tab } from '@livehuddle/document';
+import { COMPONENT_SIZE, isBoxed } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
-import {
-  buildDrawnArrow,
-  buildDressedDrawnArrow,
-  buildDrawnBoxed,
-  buildDrawnComponent,
-  NEW_ARROW_THEME_STROKE_FALLBACK,
-} from './draw-commit';
-
-// Only the fields the builders read; the full ThemeDefinition carries a
-// dozen backdrop fields irrelevant here.
-const themed = {
-  elementStroke: '#123456',
-  elementFill: '#fafafa',
-  elementText: '#111111',
-} as unknown as ThemeDefinition;
-const bareTheme = {} as unknown as ThemeDefinition;
+import { buildDrawnBoxed, buildDrawnComponent } from './draw-commit';
 
 const tab = (overrides: Partial<Tab> = {}): Tab => ({
   id: 't',
@@ -25,79 +10,10 @@ const tab = (overrides: Partial<Tab> = {}): Tab => ({
   ...overrides,
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "Shapes": the preview and the commit build one arrow.
-describe('buildDressedDrawnArrow', () => {
-  const thick = <T extends Element>(el: T): T => ({
-    ...el,
-    strokeWidth: 6,
-    arrowheadSize: 'large',
-  });
-  const board = { elements: [] as Element[], theme: themed };
-
-  it('paints a drawn arrow in the theme stroke, then dresses it', () => {
-    const out = buildDressedDrawnArrow({ type: 'arrow' }, 0, 0, 100, 0, board, thick);
-    expect(out.strokeColor).toBe('#123456');
-    expect(out.strokeWidth).toBe(6);
-    expect(out.arrowEnds).toBe('none');
-  });
-
-  it('lands the tap placeholder while the drag is still a tap', () => {
-    const out = buildDressedDrawnArrow({ type: 'arrow' }, 500, 300, 505, 302, board, (el) => el);
-    expect(out.from).toEqual({ kind: 'free', x: 420, y: 300 });
-    expect(out.to).toEqual({ kind: 'free', x: 580, y: 300 });
-  });
-});
-
-describe('buildDrawnArrow', () => {
-  it('lays a flat 160px placeholder across a stray click, unsnapped', () => {
-    const out = buildDrawnArrow(500, 300, 505, 310, [], themed); // <16px travel = click
-    expect(out.from).toEqual({ kind: 'free', x: 420, y: 300 });
-    expect(out.to).toEqual({ kind: 'free', x: 580, y: 300 });
-    expect(out.arrowEnds).toBe('none');
-    expect(out.strokeColor).toBe('#123456');
-  });
-
-  it('falls back to the brand stroke when the theme has no elementStroke', () => {
-    const out = buildDrawnArrow(0, 0, 5, 5, [], bareTheme);
-    expect(out.strokeColor).toBe(NEW_ARROW_THEME_STROKE_FALLBACK);
-  });
-
-  it('draws a whiteboard line or arrow with the asked-for heads and no colour', () => {
-    // docs/specs/023-draw-mode/draw-mode.md: unpainted, so it takes the board's ink.
-    const arrow = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'to', unpainted: true });
-    expect(arrow.arrowEnds).toBe('to');
-    expect(arrow.strokeColor).toBeUndefined();
-    const line = buildDrawnArrow(10, 20, 150, 90, [], themed, { ends: 'none', unpainted: true });
-    expect(line.arrowEnds).toBe('none');
-  });
-
-  it('uses the dragged endpoints as-is on a real drag', () => {
-    const out = buildDrawnArrow(10, 20, 150, 90, [], themed);
-    expect(out.from).toEqual({ kind: 'free', x: 10, y: 20 });
-    expect(out.to).toEqual({ kind: 'free', x: 150, y: 90 });
-  });
-
-  it('snaps a dragged endpoint onto a nearby arrow (docs/specs/008-canvas/arrow-to-arrow.md), leaving the far one free', () => {
-    const existing: ArrowElement = {
-      id: 'ex',
-      type: 'arrow',
-      from: { kind: 'free', x: 0, y: 100 },
-      to: { kind: 'free', x: 200, y: 100 },
-    };
-    const out = buildDrawnArrow(50, 0, 100, 100, [existing], themed);
-    expect(out.from).toEqual({ kind: 'free', x: 50, y: 0 });
-    expect(out.to.kind).toBe('on-arrow');
-    if (out.to.kind === 'on-arrow') {
-      expect(out.to.arrowId).toBe('ex');
-      expect(out.to.t).toBeCloseTo(0.5, 1);
-    }
-  });
-});
-
 describe('buildDrawnComponent', () => {
   it('drops one element at its natural size, centred on a tap', () => {
     const out = buildDrawnComponent('avatar', 500, 300, 503, 302);
-    if (out.type === 'arrow') throw new Error('expected a boxed element');
+    if (!isBoxed(out)) throw new Error('expected a boxed element');
     expect(out).toMatchObject(COMPONENT_SIZE.avatar);
     expect(out.x + out.width / 2).toBe(500);
     expect(out.y + out.height / 2).toBe(300);

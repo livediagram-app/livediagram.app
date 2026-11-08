@@ -131,6 +131,22 @@ describe('mergeItemChanges', () => {
     expect([merged.rev, merged.nextKey]).toEqual([12, 10]);
     expect(mergeItemChanges(s, [], [], 2).rev).toBe(10);
   });
+
+  // docs/specs/026-plan/plan-board.md "A drag stays smooth": the answer to this person's own write changes no card.
+  it('keeps every card and the list when the fold changes nothing', () => {
+    const a = item({ title: 'a' }, { rev: 3, key: 4 });
+    const b = item({ title: 'b' }, { rev: 1, key: 5 });
+    const s: ItemStoreState = { items: [a, b], rev: 10, nextKey: 6 };
+    const echo = mergeItemChanges(s, [{ ...a, fields: { ...a.fields } }], ['gone'], 10);
+    expect(echo).toBe(s);
+    const later = mergeItemChanges(s, [{ ...a }], [], 11);
+    expect(later.items).toBe(s.items);
+    expect(later.rev).toBe(11);
+    const edited = mergeItemChanges(s, [{ ...a, fields: { title: 'A' } }], [], 11);
+    expect(edited.items).not.toBe(s.items);
+    expect(edited.items[1]).toBe(b);
+    expect(edited.items[0]!.fields['title']).toBe('A');
+  });
 });
 
 describe('inverseItemWrites', () => {

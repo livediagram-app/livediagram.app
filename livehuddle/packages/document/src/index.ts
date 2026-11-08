@@ -16,20 +16,15 @@ import type { EditorMode } from './editor-mode';
 // this type are re-exported lower down via `export * from '@liveworkspace/model-core/rich-text'`.
 // Only the BoxedElement union members are imported for local use; the full set
 // (incl. the LinkCardMeta sub-type) is re-exported just below.
-import type { ArrowElement } from './arrow-types';
+import type { RetiredArrowElement } from './retired-arrow';
 import type { Finish } from './finish';
-export type { Anchor, ArrowEnds, ArrowElement, Endpoint } from './arrow-types';
 export type { ShapeKind } from './shape-kind';
-export { ALL_ANCHORS } from './arrow-types';
 
 import type {
   ShapeElement,
   TextElement,
   StickyElement,
   ImageElement,
-  FreehandElement,
-  PathElement,
-  AnnotationElement,
   LinkCardElement,
   RetiredTypeElement,
 } from './element-types';
@@ -46,23 +41,12 @@ export type {
   TextSizing,
   StickyElement,
   ImageElement,
-  FreehandElement,
-  PathElement,
-  PathHandleMode,
-  PathNode,
-  PathPoint,
-  AnnotationElement,
   LinkCardMeta,
   LinkCardElement,
   RetiredTypeElement,
 } from './element-types';
 
-// Arrow appearance preset types used by ArrowElement's fields below. The
-// constants + accessors that go with them live in arrow-style.ts; type-only
-// import so the index <-> arrow-style relationship stays erasable, and the
-// whole module is re-exported lower down via `export * from './arrow-style'`.
-
-// Border preset types used by the boxed-element + arrow field definitions
+// Border preset types used by the boxed-element field definitions
 // below. The px / dasharray maps + defaults that go with them live in
 // border-style.ts; type-only import (erasable), and the whole module is
 // re-exported lower down via `export * from '@liveworkspace/model-core/border-style'`.
@@ -140,16 +124,10 @@ export type ElementLink =
 // --- Element union ---------------------------------------------------------
 
 export type BoxedElement =
-  | ShapeElement
-  | TextElement
-  | StickyElement
-  | ImageElement
-  | FreehandElement
-  | PathElement
-  | AnnotationElement
-  | LinkCardElement
-  | RetiredTypeElement;
-export type Element = BoxedElement | ArrowElement;
+  ShapeElement | TextElement | StickyElement | ImageElement | LinkCardElement | RetiredTypeElement;
+// A stored arrow is the one element with no box (./retired-arrow): two ends, kept as stored and drawn as a
+// placeholder (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4).
+export type Element = BoxedElement | RetiredArrowElement;
 
 // What KIND of board this tab is (see ./tab-kind). 'diagram' is an ordinary tab and is written explicitly onto tabs the
 // editor commits; tabs stored before the field carry nothing, which reads
@@ -230,6 +208,8 @@ export * from './accent-edge';
 // Retired elements (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): kinds livehuddle no longer
 // has, their names, and the placeholder card every surface draws them as.
 export * from './retired-kinds';
+// A stored arrow's two ends and its placeholder card (part 4 of the element engine).
+export * from './retired-arrow';
 export * from './retired-placeholder';
 export * from './shape-variants';
 export * from './piece-variants';
@@ -252,20 +232,17 @@ export function isBoxed(element: Element): element is BoxedElement {
     element.type === 'text' ||
     element.type === 'sticky' ||
     element.type === 'image' ||
-    element.type === 'freehand' ||
-    element.type === 'path' ||
-    element.type === 'annotation' ||
     element.type === 'link-card' ||
-    // A retired type (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"), a stored embed or table,
-    // is a box like any other: it moves, resizes and deletes as its placeholder.
+    // A retired type (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"), a stored embed, table,
+    // stroke, path or annotation, is a box like any other: it moves, resizes and deletes as its placeholder.
     isRetiredElementType(element.type)
   );
 }
 
 // True when the element carries a non-empty text label — the plain-text
-// `label` every labelable kind mirrors (shape / text / sticky / freehand /
-// link-card and arrows). Drives the selection toolbar's "Edit Text" button,
-// which only appears once an element actually has text to edit. Images (`alt`) and annotations (`note`) carry no
+// `label` every labelable kind mirrors (shape / text / sticky / link-card).
+// Drives the selection toolbar's "Edit Text" button,
+// which only appears once an element actually has text to edit. Images (`alt`) carry no
 // single `label`, so this reads false for them — matching the inline label
 // editor, which targets `label`-bearing elements only.
 export function elementHasText(element: Element): boolean {
@@ -276,7 +253,7 @@ export function elementHasText(element: Element): boolean {
 // True when the element KIND can carry the plain-text `label` — whether or
 // not one is set yet. Shapes qualify except the self-drawing data shapes
 // (progress / rail / rating / charts), which the inline editor refuses;
-// text / sticky / freehand / arrows all edit `label` too. A link-card is
+// text and sticky edit `label` too. A link-card is
 // deliberately OUT: its view renders link metadata, never `label`, and its
 // double-click opens the link picker (docs/specs/009-elements/link-cards.md) — an Add-text button there
 // entered an edit state with no editor on screen.
@@ -285,31 +262,14 @@ export function elementHasText(element: Element): boolean {
 // affordance teaches that text can be added).
 export function elementSupportsText(element: Element): boolean {
   if (element.type === 'shape') return !isSelfDrawingShape(element.shape);
-  return (
-    element.type === 'text' ||
-    element.type === 'sticky' ||
-    element.type === 'freehand' ||
-    element.type === 'arrow'
-  );
+  return element.type === 'text' || element.type === 'sticky';
 }
 
 // --- Re-exported resource modules -----------------------------------------
 export * from './animation';
 export * from './animation-membership';
-export * from '@liveworkspace/model-core/arrow-avoidance';
-export * from './nearest-towards';
-export * from './arrow-ends';
 export * from './youtube';
-export * from './arrow-path';
-export * from './arrow-dash';
-export * from '@liveworkspace/model-core/arrow-label';
-export * from './arrow-label-layout';
-export * from '@liveworkspace/model-core/arrow-label-wrap';
-export * from './arrow-bend';
-export * from './arrow-scale';
 export * from '@liveworkspace/model-core/label-font';
-export * from './arrow-style';
-export * from './er-heads';
 export * from '@liveworkspace/model-core/border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
@@ -406,24 +366,14 @@ export * from '@liveworkspace/model-core/person-card';
 
 export * from './factories';
 export * from './whiteboard';
-export * from './whiteboard-stroke';
 export * from './label-box-size';
 export * from './duplicate';
 export * from './polyline';
-export * from './pen-stroke';
-export * from './stroke-loop-fill';
-export * from '@liveworkspace/model-core/stroke-points';
-export * from './stroke-fit';
-export * from '@liveworkspace/model-core/stroke-points-cache';
-export * from './freehand-points';
-export * from '@liveworkspace/model-core/stroke-points-debug';
 export * from './pen-colours';
 export * from './standard-colours';
 export * from './custom-colours';
 export * from './stock-colours';
 export * from './snap-colours';
-export * from './path-geometry';
-export * from './path-element';
 export * from './component-factories';
 
 // Runtime structural validation for Element + Tab (the trust-boundary guard
@@ -434,15 +384,9 @@ export * from './savable';
 // Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
 export * from './element-fields';
 
-// Deterministic auto-layout for AI-generated diagrams (livediagram/docs/specs/015-api/mcp-server.md).
-export * from './auto-layout';
-export { sweepEdgelessNodes } from './auto-layout-sweep';
 export { capLabel, LABEL_CAP_MAX } from './label-cap';
-// The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
-export { tidyLayoutElements } from './auto-layout-tidy';
-
-// The layout engine's gaps, which edit operations place and make room by.
-export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
+// The edit operations' `layout`: loose boxes swept into rows, and the gaps placement keeps.
+export { LAYER_GAP, SIBLING_GAP, sweepEdgelessNodes } from './layout-sweep';
 
 // Authoring input the api's changesets build from (livediagram/docs/specs/015-api/mcp-server.md §4.7,
 // §4.7a): raw elements made safe and finished tabs built.
@@ -486,37 +430,24 @@ export * from './element-kind-label';
 // or "Untitled".
 export * from './element-display-label';
 
-// Anchor table, outlines and side choice (docs/specs/008-canvas/arrow-anchors.md).
-export * from './anchors';
-export * from './anchor-layouts';
+// Shape outlines and hit tests.
 export * from './shape-outline';
 export * from '@liveworkspace/model-core/svg-path-outline';
 export * from './shape-hit';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
 export * from './label-body';
 export * from './indicator-placement';
-export * from './anchor-choice';
-export * from './arrow-body-drop';
 export * from './geometry';
-export * from './arrow-path-hits';
-export * from './arrow-rebind';
-export * from './arrow-endpoint-spread';
-export * from './arrow-orthogonal';
-export * from './arrow-reciprocal';
-// Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).
-export * from './arrow-behind';
 export * from './element-grid';
 // Tab + document name length cap (docs/specs/006-document/name-length.md).
 export * from '@liveworkspace/model-core/names';
 export * from './geometry-snapping';
-export * from './arrow-snapping';
 export * from './geometry-guides';
 
 // Layer order + union bounds, and the load-time migration of documents saved
 // while groups existed (docs/specs/009-elements/web-components-and-no-groups.md).
 export * from './layer-order';
 export * from './legacy-groups';
-export * from './legacy-stroke-points';
 export * from './stored-elements';
 export { isSafeColourValue } from './unsafe-colours';
 export * from './stored-tab';
@@ -565,16 +496,6 @@ export * from './tab-folders';
 export * from './timer-pieces';
 // The Arcade Machine's High Scores (docs/specs/009-elements/social-pieces.md "High Scores").
 export * from './arcade-scores';
-
-// Pencil-tool shape recognition (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
-// subsection's recognise mode). Re-exported so callers import
-// from the package root the same way they do every other helper
-// here.
-export {
-  recogniseShape,
-  type RecognisedShape,
-  type RecognisedShapeKind,
-} from '@liveworkspace/model-core/recognise-shape';
 
 // The curated typefaces (docs/specs/004-interface-design/fonts.md): the catalogue, the id -> CSS stack
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in

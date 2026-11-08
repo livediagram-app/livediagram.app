@@ -521,7 +521,7 @@ export const ELEMENTS_CHANGED = chart(
   'Element',
   'Changed',
   'Elements Changed',
-  'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
+  'Restyled or edited: colour, text, size, presets, the format painter and more.',
   // A timer piece's presses are Timers'.
   {
     typeIn: (t) => !TIMER_PIECE_CHANGES.includes(t ?? ''),
@@ -548,14 +548,6 @@ export const ELEMENTS_COPIED = chart(
   'Copied',
   'Elements Copied',
   'Copied to the clipboard.',
-);
-
-export const ARROW_ENDS_ATTACHED = chart(
-  'Element',
-  'Linked',
-  'Arrow Ends Attached',
-  'An arrow end dropped onto a shape so it follows it.',
-  { types: ['ArrowPoint'] },
 );
 
 export const ELEMENTS_REORDERED = chart(
@@ -617,7 +609,6 @@ export const ELEMENT_EDITING: MetricStack = {
     ELEMENTS_DELETED,
     ELEMENTS_DUPLICATED,
     ELEMENTS_COPIED,
-    ARROW_ENDS_ATTACHED,
     ELEMENTS_REORDERED,
     ELEMENT_OPTIONS_TOGGLED,
     ELEMENT_ACTIONS_USED,

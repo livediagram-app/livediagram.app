@@ -64,9 +64,7 @@ describe('tileDragStart', () => {
     expect(data.has(PALETTE_DND_MIME)).toBe(false);
   });
 
-  it('offers no drag for tools that arm a gesture rather than place an element', () => {
-    for (const type of ['text', 'freehand', 'shape-pen', 'polygon', 'arrow'] as const) {
-      expect(tileDragStart({ type })).toBeUndefined();
-    }
+  it('offers no drag for a tool that arms a gesture rather than placing an element', () => {
+    expect(tileDragStart({ type: 'text' })).toBeUndefined();
   });
 });

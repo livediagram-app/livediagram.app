@@ -37,7 +37,7 @@ function seatedSetup() {
       elements,
       mainRef: { current: null },
       wrapperRef: { current: null },
-      viewportOffset: { x: 0, y: 0 },
+      readViewportOffset: () => ({ x: 0, y: 0 }),
       viewportZoom: 1,
       setViewportOffset: vi.fn(),
     });
@@ -45,7 +45,7 @@ function seatedSetup() {
       canvasTool: 'avatar',
       middleMousePan: true,
       pendingDraw: null,
-      viewportOffset: { x: 0, y: 0 },
+      readViewportOffset: () => ({ x: 0, y: 0 }),
       viewportZoom: 1,
       mainRef: { current: null },
       wrapperRef: { current: wrapper },
@@ -54,7 +54,7 @@ function seatedSetup() {
       setMarquee: vi.fn(),
       spotlight: {},
       avatar,
-      peerAvatars: [],
+      readPeerAvatars: () => [],
       onPushPeer: vi.fn(),
       elements,
       isoCamera: {},
@@ -95,8 +95,8 @@ describe('a tap while seated', () => {
     act(() => {
       vi.advanceTimersByTime(8_000);
     });
-    expect(result.current.avatar.pos!.x).toBeCloseTo(200, 0);
-    expect(result.current.avatar.pos!.y).toBeCloseTo(500, 0);
+    expect(result.current.avatar.readPos()!.x).toBeCloseTo(200, 0);
+    expect(result.current.avatar.readPos()!.y).toBeCloseTo(500, 0);
   });
 
   it('keeps you seated when the finger drags instead (a pan, not a tap)', () => {

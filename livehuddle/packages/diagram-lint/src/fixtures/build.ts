@@ -1,8 +1,8 @@
-// Small builders for lint fixtures: boxes, stored backdrops (a retired boundary, lane, stack or frame) and pinned
-// arrows on a tab, and a quiet lint.
+// Small builders for lint fixtures: boxes, stored backdrops (a retired boundary, lane, stack or frame) and stored
+// arrows (retired since part 4 of the element engine) on a tab, and a quiet lint.
 
 import type { LintCode, LintReport } from '@livehuddle/api-schema';
-import type { Anchor, Element, Tab } from '@livehuddle/document';
+import type { Element, RetiredAnchor, Tab } from '@livehuddle/document';
 import { lintTab, type LintOptions } from '../lint';
 
 export const box = (
@@ -36,7 +36,7 @@ export const arrow = (
   id: string,
   from: string,
   to: string,
-  anchors: [Anchor, Anchor] = ['e', 'w'],
+  anchors: [RetiredAnchor, RetiredAnchor] = ['e', 'w'],
   extra: Record<string, unknown> = {},
 ): Element => ({
   id,

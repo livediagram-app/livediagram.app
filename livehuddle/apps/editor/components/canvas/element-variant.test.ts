@@ -165,8 +165,8 @@ describe('describeVariant — per-type body styling', () => {
     expect(style.boxShadow).toBe('0px 4px 12px rgba(15, 23, 42, 0.25)');
   });
 
-  it('text / freehand / a stored table carry no body border or fill', () => {
-    for (const type of ['text', 'freehand', 'table']) {
+  it('text and every retired type carry no body border or fill', () => {
+    for (const type of ['text', 'freehand', 'path', 'annotation', 'arrow', 'video', 'table']) {
       const { style } = describeVariant(make(type), false, false, null);
       expect(style.backgroundColor).toBeUndefined();
       expect(style.borderWidth).toBeUndefined();
@@ -176,7 +176,7 @@ describe('describeVariant — per-type body styling', () => {
 
 describe('describeVariant — remote-selector signal', () => {
   it('borderless types render the remote colour as an outline halo', () => {
-    for (const type of ['text', 'freehand', 'image']) {
+    for (const type of ['text', 'freehand', 'arrow', 'table', 'image']) {
       const { style } = describeVariant(make(type), false, false, '#ff0000');
       const hasHalo = style.outline === '3px solid #ff0000' || style.borderColor === '#ff0000';
       expect(hasHalo).toBe(true);
@@ -239,14 +239,10 @@ describe('describeVariant — element shadows (docs/specs/008-canvas/element-sha
   });
 });
 
-describe('editingLook (docs/specs/023-draw-mode/path-tool.md "Editing")', () => {
+describe('editingLook', () => {
   it('raises a label being typed and shows the text cursor on it', () => {
-    expect(editingLook({ type: 'shape' }, true)).toEqual({ raise: true, textCursor: true });
-    expect(editingLook({ type: 'shape' }, false)).toEqual({ raise: false, textCursor: false });
-  });
-
-  it('never gives a path in its edit mode a text cursor, nor lifts it over its own nodes', () => {
-    expect(editingLook({ type: 'path' }, true)).toEqual({ raise: false, textCursor: false });
+    expect(editingLook(true)).toEqual({ raise: true, textCursor: true });
+    expect(editingLook(false)).toEqual({ raise: false, textCursor: false });
   });
 });
 

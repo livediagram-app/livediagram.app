@@ -31,16 +31,19 @@ describe('animationCategoriesOf (one category per set present)', () => {
     ]);
   });
 
-  it('icons and arrows keep their own categories', () => {
+  it('an icon keeps its own category, and a stored arrow adds none', () => {
     const sel = [of('arrow'), createShape('icon', 0, 0), createShape('square', 0, 0)];
-    expect(animationCategoriesOf(sel)).toEqual(['shape', 'icon', 'text', 'arrow']);
-    // The Shape category there is the square's: an icon or an arrow alone takes none.
+    expect(animationCategoriesOf(sel)).toEqual(['shape', 'icon', 'text']);
+    // The Shape category there is the square's: an icon alone takes none.
     expect(animationCategoriesOf([createShape('icon', 0, 0)])).toEqual(['icon']);
-    expect(animationCategoriesOf([of('arrow')])).toEqual(['arrow']);
   });
 
-  it('a drawing shows Shape and Drawing', () => {
-    expect(animationCategoriesOf([of('freehand'), of('path')])).toEqual(['shape', 'drawing']);
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: a stored arrow, pen stroke, path
+  // or annotation is retired, and is never animated.
+  it('gives a retired element no category', () => {
+    expect(
+      animationCategoriesOf([of('arrow'), of('freehand'), of('path'), of('annotation')]),
+    ).toEqual([]);
   });
 
   // docs/specs/028-animation/element-animations.md "Shape motions": a photo on a slide can bounce.

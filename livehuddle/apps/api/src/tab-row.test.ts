@@ -90,7 +90,10 @@ describe('rowToTab', () => {
     ];
     const dto = rowToTab(baseRow({ data: bodyJson({ elements }) }));
     expect(dto.elements.some((el) => 'groupId' in el)).toBe(false);
-    expect(dto.elements[2]).toMatchObject({ from: { kind: 'free', x: 100, y: 50 } });
+    // A stored arrow is a retired element (part 4 of the element engine): its group end stays as stored.
+    expect(dto.elements[2]).toMatchObject({
+      from: { kind: 'pinned-group', groupId: 'g', anchor: 'e' },
+    });
   });
 
   it('reads a stored whiteboard as a general tab that opens in Draw (docs/specs/007-editor/editor-modes.md)', () => {

@@ -182,8 +182,8 @@ export function parseAction(value: unknown): CollabActionInput | null {
   };
 }
 
-/** Replaces one tab's threads and actions in one batch. Rows go in through json_each, a statement per table
- *  whatever the count. */
+/** Makes one tab's threads and actions match the push in one batch. Rows go in through json_each, a statement per
+ *  table whatever the count. */
 export async function pushCollab(
   request: Request,
   env: Env,
@@ -231,7 +231,7 @@ export async function pushCollab(
   }
 
   const db = env.INDEX_DB;
-  const key = [app, itemId, tabId];
+  const key = [app, itemId, tabId] as const;
   const now = Date.now();
   // What the tab held, to tell what changed: one round trip of three primary-key ranges.
   const [itemRead, threadRead, actionRead] = await db.batch<
@@ -271,15 +271,84 @@ export async function pushCollab(
   await db.batch([
     ...bulkEventStatements(db, events),
     ...(retracted.length > 0 ? [retractStatement(db, itemId, retracted)] : []),
+    ...collabRowStatements(db, key, tabName, threads, actions, people),
+  ]);
+  return noContent();
+}
+
+// The columns a push sets on a thread's or an action's row beyond its key, compared to tell a changed row.
+const THREAD_COLUMNS = [
+  'tab_name',
+  'element_label',
+  'resolved',
+  'comment_count',
+  'participant_ids',
+  'mentioned_ids',
+  'latest_text',
+  'latest_author_name',
+  'latest_author_color',
+  'card',
+  'first_at',
+  'latest_at',
+] as const;
+const ACTION_COLUMNS = [
+  'tab_name',
+  'element_label',
+  'name',
+  'description',
+  'status',
+  'assignee_id',
+  'assignee_name',
+  'assigner_id',
+  'assigner_name',
+  'team_id',
+  'card',
+  'created_at',
+  'updated_at',
+] as const;
+
+// An upsert's update of a row whose columns differ, and only then: a row pushed as it is held writes nothing.
+const updateIfChanged = (table: string, columns: readonly string[]): string =>
+  `DO UPDATE SET ${columns.map((c) => `${c} = excluded.${c}`).join(', ')}
+   WHERE ${columns.map((c) => `${table}.${c} IS NOT excluded.${c}`).join(' OR ')}`;
+
+/** The statements that make one tab's rows match a push (blueprints/inbox.md "The pushes"): a row the push no longer
+ *  holds is deleted, a new one inserted, a held one updated only where a column differs. A push sent again writes
+ *  nothing, and one that changes one row of a thousand writes one, on the platform's one database. Each table is one
+ *  statement through json_each, under D1's bound-parameter cap whatever the count. */
+export function collabRowStatements(
+  db: D1Database,
+  key: readonly [App, string, string],
+  tabName: string,
+  threads: ReadonlyMap<string, CollabThreadInput>,
+  actions: ReadonlyMap<string, CollabActionInput>,
+  people: readonly [string, string][],
+): D1PreparedStatement[] {
+  const [, itemId, tabId] = key;
+  const threadRows = JSON.stringify([...threads.values()]);
+  const actionRows = JSON.stringify([...actions.values()]);
+  const peopleRows = JSON.stringify(people);
+  return [
     db
-      .prepare('DELETE FROM collab_threads WHERE app = ? AND item_id = ? AND tab_id = ?')
-      .bind(...key),
+      .prepare(
+        `DELETE FROM collab_threads WHERE app = ?1 AND item_id = ?2 AND tab_id = ?3
+         AND element_id NOT IN (SELECT json_extract(value, '$.elementId') FROM json_each(?4))`,
+      )
+      .bind(...key, threadRows),
     db
-      .prepare('DELETE FROM collab_thread_people WHERE item_id = ? AND tab_id = ?')
-      .bind(itemId, tabId),
+      .prepare(
+        `DELETE FROM collab_thread_people WHERE item_id = ?1 AND tab_id = ?2
+         AND (app, element_id, person_id) NOT IN
+           (SELECT ?3, json_extract(value, '$[0]'), json_extract(value, '$[1]') FROM json_each(?4))`,
+      )
+      .bind(itemId, tabId, key[0], peopleRows),
     db
-      .prepare('DELETE FROM collab_actions WHERE app = ? AND item_id = ? AND tab_id = ?')
-      .bind(...key),
+      .prepare(
+        `DELETE FROM collab_actions WHERE app = ?1 AND item_id = ?2 AND tab_id = ?3
+         AND (element_id, action_id) NOT IN
+           (SELECT json_extract(value, '$.elementId'), json_extract(value, '$.actionId') FROM json_each(?4))`,
+      )
+      .bind(...key, actionRows),
     db
       .prepare(
         `INSERT INTO collab_threads (app, item_id, tab_id, tab_name, element_id, element_label, resolved,
@@ -292,15 +361,16 @@ export async function pushCollab(
            json_extract(value, '$.latestAuthorColor'),
            CASE WHEN json_type(value, '$.card') = 'object' THEN json_extract(value, '$.card') END,
            json_extract(value, '$.firstAt'), json_extract(value, '$.latestAt')
-         FROM json_each(?)`,
+         FROM json_each(?) WHERE true
+         ON CONFLICT (app, item_id, tab_id, element_id) ${updateIfChanged('collab_threads', THREAD_COLUMNS)}`,
       )
-      .bind(...key, tabName, JSON.stringify([...threads.values()])),
+      .bind(...key, tabName, threadRows),
     db
       .prepare(
         `INSERT OR IGNORE INTO collab_thread_people (app, item_id, tab_id, element_id, person_id)
          SELECT ?, ?, ?, json_extract(value, '$[0]'), json_extract(value, '$[1]') FROM json_each(?)`,
       )
-      .bind(...key, JSON.stringify(people)),
+      .bind(...key, peopleRows),
     db
       .prepare(
         `INSERT INTO collab_actions (app, item_id, tab_id, tab_name, element_id, action_id, element_label, name,
@@ -314,11 +384,11 @@ export async function pushCollab(
            json_extract(value, '$.teamId'),
            CASE WHEN json_type(value, '$.card') = 'object' THEN json_extract(value, '$.card') END,
            json_extract(value, '$.createdAt'), json_extract(value, '$.updatedAt')
-         FROM json_each(?)`,
+         FROM json_each(?) WHERE true
+         ON CONFLICT (app, item_id, tab_id, element_id, action_id) ${updateIfChanged('collab_actions', ACTION_COLUMNS)}`,
       )
-      .bind(...key, tabName, JSON.stringify([...actions.values()])),
-  ]);
-  return noContent();
+      .bind(...key, tabName, actionRows),
+  ];
 }
 
 /** The comment events a push takes back: for each thread it held with more comments than it now has, its event id

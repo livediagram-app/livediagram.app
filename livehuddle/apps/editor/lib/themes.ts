@@ -35,7 +35,6 @@ export {
   switchThemeBackdrop,
   resetThemeElement,
   resetThemeElementsToTheme,
-  resetArrowsToTheme,
   shapeColorPresets,
   rederiveColorPresetForTheme,
   themePresetColors,

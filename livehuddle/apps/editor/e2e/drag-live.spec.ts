@@ -10,7 +10,7 @@ import {
 } from './fixtures';
 
 // docs/specs/008-canvas/drag-preview.md "Live movement for collaborators": while the owner drags a box,
-// a collaborator on an edit link sees it move (and the arrow on it follow) before anything is saved,
+// a collaborator on an edit link sees it move before anything is saved,
 // and sees it land where it was released. Dark mode; synthesised board.
 
 const CANVAS = '[data-canvas-a11y-root]';
@@ -38,12 +38,6 @@ const BOARD = [
     width: 120,
     height: 80,
     fillColor: '#ffffff',
-  },
-  {
-    id: 'ab',
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
-    to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
   },
 ];
 
@@ -131,10 +125,6 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
   const savedX = () => shared.savedX('a');
   await expect(box(peerPage, 'a')).toBeVisible();
   expect(await leftOf(peerPage, 'a')).toBe(300);
-  const peerPath = await peerPage
-    .locator(`${CANVAS} svg[data-arrow-svg] path[d]`)
-    .first()
-    .getAttribute('d');
 
   await ownerPage.keyboard.press('v');
   const r = (await box(ownerPage, 'a').boundingBox())!;
@@ -143,11 +133,8 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
   for (let i = 1; i <= 15; i++)
     await ownerPage.mouse.move(r.x + r.width / 2 + i * 10, r.y + r.height / 2);
 
-  // Mid-drag on the collaborator's screen: moved, arrow following, nothing saved.
+  // Mid-drag on the collaborator's screen: moved, nothing saved.
   await expect.poll(() => leftOf(peerPage, 'a'), { timeout: 5_000 }).toBeGreaterThan(360);
-  expect(
-    await peerPage.locator(`${CANVAS} svg[data-arrow-svg] path[d]`).first().getAttribute('d'),
-  ).not.toBe(peerPath);
   expect(await savedX()).toBe(300);
   if (SHOTS) {
     await peerPage.screenshot({ path: `${SHOTS}/drag-live-peer-mid.png` });

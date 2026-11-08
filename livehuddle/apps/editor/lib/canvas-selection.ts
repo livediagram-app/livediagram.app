@@ -12,7 +12,6 @@ import {
   unionRects,
   type BoxedElement,
   type Element,
-  type ElementId,
 } from '@livehuddle/document';
 
 type CanvasSelection = {
@@ -27,7 +26,7 @@ type CanvasSelection = {
   selectionBounds: Rect | null;
   // Single-selection popover visibility.
   showPopover: boolean;
-  // Per-element resize-handle / arrow-anchor visibility (same predicate
+  // Per-element resize-handle / edge-anchor visibility (same predicate
   // for both today). Call with an element id.
   showHandlesFor: (id: string) => boolean;
   showAnchorsFor: (id: string) => boolean;
@@ -36,7 +35,7 @@ type CanvasSelection = {
   unionResizeBounds: Rect | null;
   unionResizePrimaryId: string | null;
   showUnionResize: boolean;
-  // Floating multi-selection toolbar anchor + visibility. Spans arrows too,
+  // Floating multi-selection toolbar anchor + visibility. Spans a retired arrow too,
   // so it shows for arrow-only / mixed marquees (the resize box above does not).
   multiToolbarBounds: Rect | null;
   showMultiToolbar: boolean;
@@ -84,10 +83,6 @@ export function deriveCanvasSelection(input: {
   // other's verbs, so the menu — the deliberate, more specific gesture —
   // owns the moment and the popover (with its pluses) stands down.
   elementMenuOpen?: boolean;
-  // Where an arrow's label is drawn, if it has one. The label belongs to its
-  // line (docs/specs/008-canvas/arrow-labels.md), so the floating toolbars
-  // clear it as they clear the line.
-  labelRectOf?: (id: ElementId) => Rect | null;
 }): CanvasSelection {
   const {
     elements,
@@ -97,16 +92,11 @@ export function deriveCanvasSelection(input: {
     isPaintMode,
     readOnly,
     elementMenuOpen,
-    labelRectOf,
   } = input;
 
-  // An element's selection extent (docs/specs/008-canvas/arrow-labels.md): an arrow spans
-  // its label too.
-  const selectionExtent = (el: Element): Rect => {
-    const own = elementBounds(el, elements);
-    const label = el.type === 'arrow' ? labelRectOf?.(el.id) : null;
-    return label ? unionRects([own, label])! : own;
-  };
+  // An element's selection extent: a retired arrow spans its line and its placeholder card
+  // (elementBounds, docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+  const selectionExtent = (el: Element): Rect => elementBounds(el, elements);
 
   const multiPrimaryId =
     multiSelectedIds.size > 0
@@ -138,8 +128,7 @@ export function deriveCanvasSelection(input: {
   const resizeVisible = (id: string) => gripsOf(id).handles;
   const anchorVisible = (id: string) => gripsOf(id).anchors;
 
-  // The union resize box spans the members a resize moves: boxed (the drag leaves arrows where
-  // they are), each as drawn, so a rotated member's turned corners sit inside it. Those members
+  // The union resize box spans the members a resize moves: boxed (a retired arrow never moves), each as drawn, so a rotated member's turned corners sit inside it. Those members
   // also pick the primary the handles press, so an arrow first in z-order neither hides the
   // handles nor takes a press it refuses
   // (docs/specs/008-canvas/blueprints/resize.md).
@@ -161,9 +150,9 @@ export function deriveCanvasSelection(input: {
   // The floating multi-selection toolbar (Duplicate / Export /
   // Delete + the "More" entry into the type-aware formatting menu) is anchored
   // separately from the resize box: it floats over the union of EVERY selected
-  // element including arrows, so an arrow-only or mixed marquee still gets the
-  // toolbar (and thus the Flow / animate controls). The resize handles above
-  // stay boxed-only because there's no box to drag-resize an arrow by.
+  // element including a retired arrow, so an arrow-only or mixed marquee still gets the
+  // toolbar (Delete above all). The resize handles above stay boxed-only because there's
+  // no box to drag-resize an arrow by.
   const multiToolbarBounds =
     multiSelectedIds.size > 1
       ? unionRects(elements.filter((el) => multiSelectedIds.has(el.id)).map(selectionExtent))

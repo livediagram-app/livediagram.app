@@ -1,7 +1,5 @@
-import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
-  createAnnotation,
   applyShapeVariant,
   createShape,
   createText,
@@ -18,16 +16,13 @@ import { buildDrawnBoxed } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
-import { useArrowConnect } from '@/app/document/[id]/useArrowConnect';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
 // Palette element-creation handlers, lifted out of editor-page.tsx. Nearly
 // every element arms the combined add gesture (beginDraw, from
 // useShapeDrawing) — the canvas then drops it at default size on a tap or
-// sizes it on a drag. The ANNOTATION alone drops at the viewport centre via
-// addBoxed (from useElementHelpers): a fixed 44x44 marker has no box to size,
-// so there is nothing for the drag to decide (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
+// sizes it on a drag (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
 
 export function useElementCreation(opts: {
   editsBlocked: boolean;
@@ -36,12 +31,9 @@ export function useElementCreation(opts: {
   imagesBlocked: boolean;
   activeId: string;
   activeTab: Tab;
-  // The selection, read where an add acts on the selection (docs/specs/008-canvas/blueprints/selection-store.md).
-  readSelection: () => Selection;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
-  addBoxed: <T extends BoxedElement>(make: (x: number, y: number) => T) => void;
   addBoxedAt: <T extends BoxedElement>(
     canvasX: number,
     canvasY: number,
@@ -54,7 +46,7 @@ export function useElementCreation(opts: {
   ) => void;
   beginDraw: (intent: PendingDraw) => void;
   // Style memory (docs/specs/008-canvas/quick-style-panel.md) for the user-drawn adds made here: a palette
-  // drop and a click-to-connect arrow.
+  // drop.
   styleNewElement: <T extends Element>(el: T) => T;
 }) {
   const {
@@ -62,11 +54,9 @@ export function useElementCreation(opts: {
     imagesBlocked,
     activeId,
     activeTab,
-    readSelection,
     commitTabs,
     setSelectedId,
     setEditingId,
-    addBoxed,
     addBoxedAt,
     beginDraw,
     styleNewElement,
@@ -96,15 +86,6 @@ export function useElementCreation(opts: {
   const addSticker = (stickerId: string) => {
     if (editsBlocked) return;
     beginDraw({ type: 'shape', kind: 'sticker', stickerId });
-  };
-
-  // A note marker (docs/specs/009-elements/annotations.md) dropped at the viewport centre (no
-  // draw-to-size: it's a fixed-size marker, not a box you drag out). The
-  // user clicks it afterwards to add the note text.
-  const addAnnotation = () => {
-    if (editsBlocked) return;
-    addBoxed((x, y) => createAnnotation(x, y));
-    track('Element', 'Added', titleCaseType('annotation'));
   };
 
   // A link-card / bookmark (docs/specs/009-elements/link-cards.md), drawn to size. The card starts empty
@@ -147,19 +128,6 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     beginDraw({ type: 'sticky' });
   };
-
-  // Click-to-connect (docs/specs/008-canvas/canvas-and-palette.md) — arm from the selection, complete on the next
-  // element click, or abandon. See useArrowConnect.
-  const { connectSourceId, cancelConnect, addArrow, connectArrowTo } = useArrowConnect({
-    editsBlocked,
-    activeId,
-    activeTab,
-    readSelection,
-    setSelectedId,
-    beginDraw,
-    commitTabs,
-    styleNewElement,
-  });
 
   // Drag-from-palette drop (docs/specs/008-canvas/canvas-and-palette.md): place the dragged kind centred on the
   // drop point. Shapes / devices use createShape; a sticker carries `stickerId`
@@ -258,17 +226,12 @@ export function useElementCreation(opts: {
   return {
     addShape,
     addSticker,
-    addAnnotation,
     addLinkCard,
     addImage,
     addAvatar,
     dropPaletteItem,
     addText,
     addSticky,
-    addArrow,
     handleCanvasDoubleClick,
-    connectSourceId,
-    connectArrowTo,
-    cancelConnect,
   };
 }

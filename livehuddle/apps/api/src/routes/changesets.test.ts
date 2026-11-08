@@ -265,7 +265,7 @@ describe('submitting a changeset', () => {
   it('applies the line form, answering the result lines', async () => {
     quiet();
     const { db } = await setUp();
-    const res = await submit(db, { operations: 'set a fill=green\nconnect a -> b label=next' });
+    const res = await submit(db, { operations: 'set a fill=green\nrm b' });
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
       text: string;
@@ -274,15 +274,12 @@ describe('submitting a changeset', () => {
     expect(body.text.split('\n').at(-1)).toMatch(
       /^rev 1→2 · cs_\w+ · lint (clean|\d+ \w+(, \d+ \w+)*) · revert: /,
     );
-    expect(body.lint).toMatchObject({ measures: { boxes: 2, arrows: 1 } });
+    expect(body.lint).toMatchObject({ measures: { boxes: 1, arrows: 0 } });
     expect(body.text.split('\n').slice(0, 2)).toEqual([
       '~ a  fill →green · textSize →md',
-      '+ next  a→b "next"',
+      '- b  square "b"',
     ]);
-    expect(stored(db).find((e) => e.id === 'next')).toMatchObject({
-      type: 'arrow',
-      label: 'next',
-    });
+    expect(stored(db).map((e) => e.id)).toEqual(['a']);
   });
 
   it('answers a dry run with the plan only', async () => {

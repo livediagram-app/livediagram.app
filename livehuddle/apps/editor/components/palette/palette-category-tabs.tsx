@@ -17,7 +17,6 @@ import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import {
   PaletteCollaborateTab,
   PaletteMediaTab,
-  PaletteDrawTab,
   PaletteWriteTab,
   PaletteShapesTab,
 } from '@/components/palette/palette-create-tabs';
@@ -77,8 +76,6 @@ export function paletteCategoryTabs(
         return <PaletteShapesTab {...tab} tiles={tiles} />;
       case 'write':
         return <PaletteWriteTab {...tab} tiles={tiles} />;
-      case 'draw':
-        return <PaletteDrawTab {...tab} tiles={tiles} />;
       case 'media':
         return <PaletteMediaTab {...tab} tiles={tiles} />;
       default:

@@ -27,8 +27,6 @@ import {
   CoffeeMachineIcon,
   RugIcon,
   SofaIcon,
-  HighlighterIcon,
-  ShapePenIcon,
 } from '@/components/palette/palette-icons';
 import { SPACE_CATEGORIES, type SpaceTileGroup } from './space-categories';
 import {
@@ -112,7 +110,6 @@ import {
   lucideCircle,
   lucideDiamond,
   lucideImage,
-  lucideMoveRight,
   lucideSquare,
   lucideStickyNote,
   lucideType,
@@ -163,21 +160,11 @@ type PaletteTileAction =
       variant?: string;
     }
   | { type: 'text' }
-  | { type: 'freehand' }
-  // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md), the recognising pen
-  // (docs/specs/008-canvas/two-pens.md) and the click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md)
-  // are separate action types, so each tile maps to its own arm-handler and pressed state.
-  | { type: 'highlighter' }
-  | { type: 'shape-pen' }
   | { type: 'sticker'; stickerId: string }
-  | { type: 'polygon' }
   // The Room Builder (docs/specs/009-elements/room-builder.md): walls placed corner by corner.
   | { type: 'room-walls' }
-  // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
-  | { type: 'arrow'; ends?: import('@livehuddle/document').ArrowEnds }
   | { type: 'sticky' }
   | { type: 'image' }
-  | { type: 'annotation' }
   | { type: 'link-card' }
   | { type: 'component'; kind: ComponentKind };
 
@@ -185,7 +172,7 @@ type PaletteTileAction =
 // the Tools tab renders one labelled grid per group instead of a flat
 // sixteen-tile wall. Group membership is metadata on the tile — ids stay
 // stable, so palette layouts and search are untouched.
-export type ToolGroupId = 'write' | 'draw' | 'behaviour';
+export type ToolGroupId = 'write' | 'behaviour';
 
 // Display order, headings, and a one-line "what's in here" for the Tools tab's
 // groups. The description is what the category tile's hover card says: a count
@@ -201,13 +188,6 @@ export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
   {
     id: 'write',
     label: 'Write',
-  },
-  {
-    // Split back out from a combined "Write & Draw" (docs/specs/010-palette/palette-top-level-categories.md): once both were
-    // one click from the category picker rather than two inside Tools, the
-    // pairing bought nothing and the combined list ran to eight rows.
-    id: 'draw',
-    label: 'Draw',
   },
   // Behaviour (docs/specs/009-elements/mode-button.md): elements that DO something when someone interacts
   // with them, rather than elements that say something. Last, because a
@@ -456,109 +436,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideType} />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:pencil',
-    blurb: 'Sketch a stroke, left as drawn',
-    section: 'tools',
-    toolGroup: 'draw',
-    caption: 'Freehand',
-    label: 'Freehand Pencil',
-    description:
-      'Sketch a freehand stroke, kept exactly as you drew it. Drag to draw; release near the start to close the shape.',
-    shortcut: 'P',
-    action: { type: 'freehand' },
-    icon: (
-      <Glyph size={18} units={18}>
-        {/* Diagonal pencil. Body angled bottom-left to top-right, with a
-            separated tip + eraser segment so the silhouette reads as
-            "pencil" even at the 18 px palette size. Pairs with the cursor
-            glyph (also a diagonal nib) so the tool's two visual surfaces
-            stay in sync. */}
-        <path d="M2 16 L6 12" />
-        <path d="M5 13 L12 6 L14 8 L7 15 Z" />
-        <path d="M12 6 L15 3 L17 5 L14 8" />
-        <path d="M2 16 L5 13" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:shape-pen',
-    blurb: 'A rough shape snaps to the real one',
-    section: 'tools',
-    toolGroup: 'draw',
-    caption: 'Shape Pen',
-    label: 'Shape Pen',
-    description:
-      'Draw a rough circle, square, triangle or line and it converts to the real shape on release.',
-    shortcut: '6',
-    action: { type: 'shape-pen' },
-    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
-  },
-  // The marker (docs/specs/008-canvas/highlighter.md): the third pen, one stroke per pick like the
-  // other two. No shortcut: only the common flowchart vocabulary gets letters.
-  {
-    id: 'tools:highlighter',
-    blurb: 'A wide translucent marker stroke',
-    section: 'tools',
-    toolGroup: 'draw',
-    label: 'Highlighter',
-    description: 'A wide translucent yellow marker. Drag to call attention to a region.',
-    dividerAfter: true,
-    action: { type: 'highlighter' },
-    icon: <HighlighterIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:polygon',
-    blurb: 'Straight edges, point by point',
-    section: 'tools',
-    toolGroup: 'draw',
-    label: 'Polygon',
-    description: 'Click to place points. Click the start to close, double-click to finish a line.',
-    dividerAfter: true,
-    action: { type: 'polygon' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={18}>
-        {/* Irregular polygon with visible vertex dots: reads as
-            "place points", distinct from the fixed shape tiles. */}
-        <path d="M4 14 L5.5 6 L12.5 4 L15 10 L10 15 Z" />
-        <circle cx="5.5" cy="6" r="1.4" fill="currentColor" stroke="none" />
-        <circle cx="12.5" cy="4" r="1.4" fill="currentColor" stroke="none" />
-        <circle cx="10" cy="15" r="1.4" fill="currentColor" stroke="none" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:arrow',
-    blurb: 'A connector you place by hand',
-    section: 'tools',
-    toolGroup: 'draw',
-    label: 'Add Arrow',
-    description:
-      'A connector with a pointer at its end. Change its pointers in the Pointer accordion.',
-    shortcut: 'A',
-    action: { type: 'arrow' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucideMoveRight} />
-      </Glyph>
-    ),
-  },
-  // The Line: the arrow tool without its heads (docs/specs/008-canvas/canvas-and-palette.md
-  // "Arrows and lines"), the same element, connector and gesture.
-  {
-    id: 'tools:line',
-    blurb: 'A plain line, no pointers',
-    section: 'tools',
-    toolGroup: 'draw',
-    label: 'Line',
-    description: 'A line you place by hand, with no pointers. Add them in the Pointer accordion.',
-    action: { type: 'arrow', ends: 'none' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <path d="M5 19 19 5" />
       </Glyph>
     ),
   },
@@ -1977,29 +1854,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <circle cx="12" cy="12" r="9" />
         <circle cx="12" cy="9.5" r="3" />
         <path d="M6.5 19a6 6 0 0 1 11 0" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:annotation',
-    blurb: 'A marker that holds a note',
-    section: 'tools',
-    // Last in Write, and the odd one out in it: an annotation is a MARKER you
-    // drop on the canvas that happens to hold text, not a surface you write
-    // on like Text, a sticky or a Page. It briefly sat in its own Blocks group
-    // for exactly that reason, but docs/specs/010-palette/palette-top-level-categories.md emptied Blocks out and deleted it,
-    // so Write is where it lives — ordered last, after the three surfaces,
-    // which is the distinction the row order now carries.
-    toolGroup: 'write',
-    label: 'Add Annotation',
-    description: 'Annotation. A note marker: hover to read it, double-click to edit.',
-    filled: true,
-    action: { type: 'annotation' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z" />
-        <path d="M6.5 9.75h11" />
-        <path d="M6.5 12.5h7" />
       </Glyph>
     ),
   },

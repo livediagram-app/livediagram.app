@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createAnnotation,
-  createFreehand,
-  createPath,
-  createShape,
-  createSticky,
-  createText,
-  type Element,
-} from '@livehuddle/document';
+import { createShape, createSticky, createText, type Element } from '@livehuddle/document';
 import {
   describeMany,
   describeOne,
@@ -23,13 +15,18 @@ import {
 // names. These tests pin the formats they rely on.
 
 const square = (label?: string) => ({ ...createShape('square', 0, 0), label });
-const arrow = (label?: string) => ({
-  id: 'ar',
-  type: 'arrow' as const,
-  from: { kind: 'free' as const, x: 0, y: 0 },
-  to: { kind: 'free' as const, x: 10, y: 10 },
-  label,
-});
+// A stored (retired) arrow (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+const arrow = (label?: string) =>
+  ({
+    id: 'ar',
+    type: 'arrow' as const,
+    from: { kind: 'free' as const, x: 0, y: 0 },
+    to: { kind: 'free' as const, x: 10, y: 10 },
+    label,
+  }) as Extract<Element, { type: 'arrow' }>;
+// A stored pen stroke, path or annotation: a retired boxed kind.
+const retiredBox = (type: string, extra: object = {}) =>
+  ({ id: type, type, x: 0, y: 0, width: 10, height: 10, ...extra }) as unknown as Element;
 
 describe('kindLabel', () => {
   it('names shapes by their concrete sub-kind, others by type', () => {
@@ -37,24 +34,14 @@ describe('kindLabel', () => {
     expect(kindLabel(arrow())).toBe('Arrow');
     expect(kindLabel(createSticky(0, 0))).toBe('Sticky note');
     expect(kindLabel(createText(0, 0))).toBe('Text');
-    expect(kindLabel(createAnnotation(0, 0))).toBe('Annotation');
   });
 
-  it('names freehand variants by what the user drew', () => {
-    const freehand = (extra: object) => ({
-      ...createFreehand(
-        [
-          { x: 0, y: 0 },
-          { x: 10, y: 10 },
-        ],
-        false,
-      ),
-      ...extra,
-    });
-    expect(kindLabel(freehand({}))).toBe('Sketch');
-    expect(kindLabel(freehand({ pen: 'highlighter' }))).toBe('Highlight');
-    expect(kindLabel(freehand({ straightEdges: true }))).toBe('Polyline');
-    expect(kindLabel(freehand({ straightEdges: true, closed: true }))).toBe('Polygon');
+  // D24: the retired part-4 kinds read by their placeholder's name.
+  it('names a stored arrow, line, pen stroke, path and annotation by their placeholder', () => {
+    expect(kindLabel({ ...arrow(), arrowEnds: 'none' })).toBe('Line');
+    expect(kindLabel(retiredBox('freehand', { pen: 'highlighter' }))).toBe('Drawing');
+    expect(kindLabel(retiredBox('path'))).toBe('Path');
+    expect(kindLabel(retiredBox('annotation'))).toBe('Annotation');
   });
 });
 
@@ -76,16 +63,6 @@ describe('elementAriaLabel', () => {
     expect(elementAriaLabel(square('  '))).toBe('Square');
     expect(elementAriaLabel(arrow('yes'))).toBe('Arrow "yes"');
     expect(elementAriaLabel(createSticky(0, 0))).toBe('Sticky note');
-  });
-});
-
-describe('a path (docs/specs/023-draw-mode/path-tool.md "Accessibility")', () => {
-  const corner = (x: number, y: number) => ({ x, y, mode: 'corner' as const });
-  it('is named by its points, open or closed', () => {
-    const open = createPath([corner(0, 0), corner(10, 0), corner(10, 10)], false);
-    expect(kindLabel(open)).toBe('Path');
-    expect(elementAriaLabel(open)).toBe('Path, 3 points');
-    expect(elementAriaLabel({ ...open, closed: true })).toBe('Closed path, 3 points');
   });
 });
 

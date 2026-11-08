@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createArrow, createShape } from '@livehuddle/document';
-import { paintableArrowFields, paintableBoxedFields } from './format-painter';
+import { createShape } from '@livehuddle/document';
+import { paintableBoxedFields } from './format-painter';
 import {
   DEFAULT_FORMAT_CONFIG,
   filterPaintedFields,
@@ -44,29 +44,6 @@ const richShape = {
   aspectLocked: true,
 } as unknown as Parameters<typeof paintableBoxedFields>[0];
 
-const richArrow = {
-  ...createArrow(0, 0, 10, 10),
-  strokeColor: '#000',
-  strokeWidth: 'bold' as const,
-  strokeStyle: 'dashed' as const,
-  opacity: 0.7,
-  arrowEnds: 'both' as const,
-  arrowheadSize: 'lg' as const,
-  arrowheadShape: 'triangle' as const,
-  arrowStyle: 'curved' as const,
-  routeBehind: true,
-  flow: 'dash' as const,
-  flowSpeed: 'slow' as const,
-  flowRepeat: true,
-  textColor: '#111',
-  textSize: 'sm' as const,
-  textBold: true,
-  textItalic: true,
-  textUnderline: true,
-  textStrikethrough: true,
-  font: 'mono',
-} as unknown as Parameters<typeof paintableArrowFields>[0];
-
 describe('the field → toggle mapping', () => {
   // The load-bearing test: lib/format-painter.ts decides what CAN be painted,
   // and the panel decides which of it does. A field added there but not here
@@ -94,13 +71,6 @@ describe('the field → toggle mapping', () => {
     );
     expect(unmapped).toEqual([]);
   });
-
-  it('assigns every field the arrow projection can produce', () => {
-    const unmapped = Object.keys(paintableArrowFields(richArrow)).filter(
-      (field) => formatGroupOf(field) === undefined,
-    );
-    expect(unmapped).toEqual([]);
-  });
 });
 
 describe('filterPaintedFields', () => {
@@ -116,27 +86,6 @@ describe('filterPaintedFields', () => {
     };
     const painted = filterPaintedFields(paintableBoxedFields(richShape), config);
     expect(painted).toEqual({ fillColor: '#fff', colorPreset: 'brand' });
-  });
-
-  it('leaves an arrow’s line look under Border', () => {
-    const config = {
-      ...DEFAULT_FORMAT_CONFIG,
-      copies: { fill: false, border: true, text: false, effects: false, size: false },
-    };
-    const painted = filterPaintedFields(paintableArrowFields(richArrow), config);
-    expect(Object.keys(painted).sort()).toEqual([
-      'arrowEnds',
-      'arrowStyle',
-      'arrowheadColor',
-      'arrowheadShape',
-      'arrowheadSize',
-      'arrowheadStartShape',
-      'routeBehind',
-      'strokeColor',
-      'strokeStyle',
-      'strokeSwatch',
-      'strokeWidth',
-    ]);
   });
 
   it('paints nothing when every toggle is off', () => {

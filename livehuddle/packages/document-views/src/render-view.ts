@@ -124,12 +124,6 @@ export function renderView(
   if (request.only !== undefined) {
     const resolved = resolveElement(model, request.only);
     if ('refusal' in resolved) return { ok: false, refusal: resolved.refusal };
-    if (resolved.el.type === 'arrow') {
-      return {
-        ok: false,
-        refusal: { error: 'invalid_value', message: 'only takes an element, not an arrow' },
-      };
-    }
     only = resolved.el.id;
   }
 

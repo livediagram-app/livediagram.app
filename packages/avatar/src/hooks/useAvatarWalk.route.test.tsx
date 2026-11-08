@@ -66,8 +66,8 @@ describe('useAvatarWalk finding the way', () => {
     const arrived = vi.fn();
     act(() => result.current.walkTo({ x: 200, y: 150 }, arrived));
     run(8_000);
-    expect(result.current.pos!.x).toBeCloseTo(200, 0);
-    expect(result.current.pos!.y).toBeCloseTo(150, 0);
+    expect(result.current.readPos()!.x).toBeCloseTo(200, 0);
+    expect(result.current.readPos()!.y).toBeCloseTo(150, 0);
     expect(arrived).toHaveBeenCalledOnce();
   });
 
@@ -78,11 +78,11 @@ describe('useAvatarWalk finding the way', () => {
     const arrived = vi.fn();
     act(() => result.current.walkTo({ x: 200, y: 150 }, arrived));
     run(8_000);
-    const pos = result.current.pos!;
+    const pos = result.current.readPos()!;
     // Just outside the back wall (its line y 31), standing still.
     expect(pos.y).toBeLessThan(31);
     expect(pos.y).toBeGreaterThan(-20);
-    expect(result.current.walking).toBe(false);
+    expect(result.current.poseStore.get().walking).toBe(false);
     expect(arrived).not.toHaveBeenCalled();
   });
 
@@ -94,7 +94,7 @@ describe('useAvatarWalk finding the way', () => {
     act(() => result.current.teleportTo({ x: -150, y: 150 }));
     act(() => result.current.walkTo({ x: 200, y: 150 }));
     run(8_000);
-    const pos = result.current.pos!;
+    const pos = result.current.readPos()!;
     expect(pos.x).toBeGreaterThan(395);
     expect(pos.x).toBeLessThan(395 + 48);
     expect(Math.abs(pos.y - 150)).toBeLessThan(16);

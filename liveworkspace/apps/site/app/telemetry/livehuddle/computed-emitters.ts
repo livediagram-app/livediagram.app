@@ -99,16 +99,15 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
 
-// The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/editor avatar-tour-steps.ts,
-// docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
-const AVATAR_TOUR_STEP_SOURCE: string[] = [
-  ...read('editor/components/tour/avatar-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+// The Receptionist's topics, as receptionistTopicTelemetryType makes them (apps/editor receptionist-topics.ts,
+// docs/specs/008-canvas/receptionist.md "Telemetry").
+const RECEPTIONIST_TOPIC_SOURCE: string[] = [
+  ...read('editor/lib/receptionist/receptionist-topics.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
   .map(
     (id) =>
-      `AvatarTourStep${id
+      `ReceptionistTopic${id
         .split('-')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
@@ -320,10 +319,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/canvas/collab/useNoteSigner.ts Element·Changed': {
     values: ['Notice-board', 'Calendar-wall'],
   },
-  'apps/editor/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/editor/hooks/canvas/commit-freehand.ts Element·Added': {
-    values: ['Square', 'Circle', 'Diamond', 'Triangle'],
-    open: 'the shape the Shape Pen recognised',
+  'apps/editor/components/canvas/receptionist/ReceptionistBubble.tsx UI·View': {
+    values: RECEPTIONIST_TOPIC_SOURCE,
   },
   'apps/editor/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),

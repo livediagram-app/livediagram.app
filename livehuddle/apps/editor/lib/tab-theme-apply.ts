@@ -12,7 +12,6 @@ import {
 import { getResolvedAppearance } from '@livehuddle/ui';
 import {
   getTheme,
-  resetArrowsToTheme,
   resetThemeElementsToTheme,
   resolveTheme,
   switchThemeBackdrop,
@@ -64,11 +63,8 @@ export function withThemeApplied(
   // and kept when the user has set it to something else). The
   // graph-aware wrapper additionally rainbows the branches when
   // either side is a multi-colour theme (docs/specs/011-theme/multicolour-themes.md).
-  // Arrows are the exception to preserve-customs: they ALWAYS snap
-  // to the new theme's stroke (resetArrowsToTheme), so a theme pick
-  // re-tints every connector instead of leaving hand-coloured ones
-  // on the old hue. Shapes / text keep their customisations.
-  const switched = resetArrowsToTheme(switchThemeElements(t.elements, prevTheme, theme), theme);
+  // A stored arrow, like every retired element, keeps what it holds.
+  const switched = switchThemeElements(t.elements, prevTheme, theme);
   // Backdrop follows the same preserve-customs rule as the
   // elements: a deliberately-chosen pattern / colour survives a
   // theme change instead of being reset to the theme's backdrop.

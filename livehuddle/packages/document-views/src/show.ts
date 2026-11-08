@@ -1,8 +1,9 @@
-// One element in full (docs/specs/024-agents/blueprints/document-views.md "show", VW34): its container,
-// geometry or ends, every stored field, a table's cells, an entity's fields, its comments and its
-// arrows both ways. Mirrors, packed points and person ids are left out and named.
+// One element in full (docs/specs/024-agents/blueprints/document-views.md "show", VW34): its geometry, every stored
+// field, a table's cells, its comments. Mirrors, packed points and person ids are left out and named. A stored
+// arrow (a retired element, part 4 of the element engine) shows its stored fields, its ends among them, and no
+// element lists arrows in or out.
 import type { ShowView, ViewDoor } from '@livehuddle/api-schema';
-import { contentOrigin, type Element, type Endpoint } from '@livehuddle/document';
+import { contentOrigin, type Element } from '@livehuddle/document';
 import {
   fitLines,
   fitOf,
@@ -10,7 +11,6 @@ import {
   type ViewResult,
 } from '@liveworkspace/document-views/budget';
 import { LABEL_CUT_CHARS } from './constants';
-import { edgeJson, endText, type ViewEdge } from './edges';
 import {
   arrayField,
   boxOf,
@@ -20,7 +20,6 @@ import {
   threadOf,
 } from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
-import { layoutEndText } from './layout';
 import type { ViewModel } from './model';
 import { commentText, readComment } from './comments';
 import { cellText, jsonString } from '@liveworkspace/document-views/text';
@@ -40,8 +39,6 @@ const SHOWN_ELSEWHERE = new Set([
   'width',
   'height',
   'rotation',
-  'from',
-  'to',
 ]);
 const BLOCK_FIELDS = new Set(['cells', 'entityFields', 'commentThread']);
 // Plain-text mirrors' runs and packed geometry: noise beside the fields they mirror.
@@ -137,57 +134,21 @@ export function shownFields(el: Element): { fields: Record<string, unknown>; omi
   return { fields, omitted };
 }
 
-function labelOf(el: Element | undefined): string {
-  const label = el === undefined ? null : textField(el, 'label');
+function labelOf(el: Element): string {
+  const label = textField(el, 'label');
   return label === null ? '' : ` ${jsonString(label, LABEL_CUT_CHARS)}`;
 }
 
-function edgeLines(model: ViewModel, edges: readonly ViewEdge[], direction: '←' | '→'): ViewLine[] {
-  return edges.map((edge) => {
-    const other = direction === '←' ? edge.arrow.from : edge.arrow.to;
-    const end = direction === '←' ? edge.from : edge.to;
-    const otherEl = other.kind === 'pinned' ? model.tree.nodes.get(other.elementId)?.el : undefined;
-    const label = edge.label === null ? '' : ` label=${jsonString(edge.label, LABEL_CUT_CHARS)}`;
-    return {
-      text: `  ${direction} ${endText(end)}${labelOf(otherEl)}${label} [${edge.ref}]`,
-      noun: LINE,
-    };
-  });
-}
+// What every shown element of one model reads: the content origin. Built once per model, so showing every selected
+// element is linear in the tab, not selected x tab.
+const origins = new WeakMap<ViewModel, ReturnType<typeof contentOrigin>>();
 
-// The element an arrow end is pinned to, or the arrow it rides on.
-function namedBy(end: Endpoint): string | null {
-  if (end.kind === 'pinned') return end.elementId;
-  return end.kind === 'on-arrow' ? end.arrowId : null;
-}
-
-// What every shown element of one model reads: the content origin and each element's arrows in and out, in
-// array order. Built once per model, so showing every selected element is linear in the tab, not selected x tab.
-type ShowIndex = {
-  origin: ReturnType<typeof contentOrigin>;
-  incoming: ReadonlyMap<string, ViewEdge[]>;
-  outgoing: ReadonlyMap<string, ViewEdge[]>;
-};
-const showIndexes = new WeakMap<ViewModel, ShowIndex>();
-
-function showIndexOf(model: ViewModel): ShowIndex {
-  const known = showIndexes.get(model);
+function originOf(model: ViewModel): ReturnType<typeof contentOrigin> {
+  const known = origins.get(model);
   if (known) return known;
-  const incoming = new Map<string, ViewEdge[]>();
-  const outgoing = new Map<string, ViewEdge[]>();
-  const note = (into: Map<string, ViewEdge[]>, id: string | null, edge: ViewEdge) => {
-    if (id === null) return;
-    const list = into.get(id);
-    if (list) list.push(edge);
-    else into.set(id, [edge]);
-  };
-  for (const edge of model.edges.all) {
-    note(incoming, namedBy(edge.arrow.to), edge);
-    note(outgoing, namedBy(edge.arrow.from), edge);
-  }
-  const index = { origin: contentOrigin(model.printed), incoming, outgoing };
-  showIndexes.set(model, index);
-  return index;
+  const origin = contentOrigin(model.printed);
+  origins.set(model, origin);
+  return origin;
 }
 
 function blockLines(el: Element, fields: Record<string, unknown>): ViewLine[] {
@@ -224,22 +185,17 @@ export function showElement(
 ): { lines: ViewLine[]; json: ShownElement } {
   const ref = model.refs.refOf(el.id);
   const kind = model.kindOf(el);
-  const index = showIndexOf(model);
-  const origin = index.origin;
+  const origin = originOf(model);
   const { fields, omitted } = shownFields(el);
-  const incoming = index.incoming.get(el.id) ?? [];
-  const outgoing = index.outgoing.get(el.id) ?? [];
 
   const box = boxOf(el);
   const rotation = Math.round(numberField(el, 'rotation') ?? 0);
   const placement =
-    el.type === 'arrow'
-      ? [`  ${layoutEndText(el.from, model, origin)} → ${layoutEndText(el.to, model, origin)}`]
-      : box === null
-        ? []
-        : [
-            `  at ${Math.round(box.x - origin.x)},${Math.round(box.y - origin.y)} ${Math.round(box.width)}x${Math.round(box.height)}${rotation !== 0 ? ` r=${rotation}` : ''}`,
-          ];
+    box === null
+      ? []
+      : [
+          `  at ${Math.round(box.x - origin.x)},${Math.round(box.y - origin.y)} ${Math.round(box.width)}x${Math.round(box.height)}${rotation !== 0 ? ` r=${rotation}` : ''}`,
+        ];
   const fieldLines = Object.keys(fields)
     .filter((key) => !SHOWN_ELSEWHERE.has(key) && !BLOCK_FIELDS.has(key))
     .sort()
@@ -249,8 +205,6 @@ export function showElement(
     ...placement.map((text) => ({ text, noun: LINE })),
     ...fieldLines,
     ...blockLines(el, fields),
-    ...edgeLines(model, incoming, '←'),
-    ...edgeLines(model, outgoing, '→'),
     ...(omitted.length > 0 ? [{ text: `  omitted: ${omitted.join(', ')}`, noun: LINE }] : []),
   ];
   const { id: _id, type: _type, ...jsonFields } = fields;
@@ -262,8 +216,9 @@ export function showElement(
       // Nothing holds an element since part 3 of the element engine; kept on the wire as null.
       container: null,
       fields: jsonFields,
-      incoming: incoming.map(edgeJson),
-      outgoing: outgoing.map(edgeJson),
+      // Kept on the wire, empty: no arrow is an edge since part 4 of the element engine.
+      incoming: [],
+      outgoing: [],
       omitted,
     },
   };

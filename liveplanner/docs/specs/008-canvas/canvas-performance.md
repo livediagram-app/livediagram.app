@@ -60,6 +60,11 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   render for it. Handlers read the view from the store when they run. A touch pinch, whose events can
   outrun the display, changes the view at most once a frame, and measures the canvas once, as it
   starts.
+- **A collaborator moving renders what shows them, not the editor.** Peers' cursors are held in
+  one peer-motion store per editor, not as the editor's render state. A frame of their movement (up to
+  60 a second in a small room) renders the cursor layer and nothing else: the editor root,
+  the panels and the chrome do not render for it. What reads presence coarsely (who is on which tab, the
+  people lists) is kept by value and changes only when someone joins, leaves or changes tab.
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry
@@ -76,7 +81,10 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   follows in a later render.
 - **The Map is one image.** It draws the board as a picture, not as a second copy of the board's
   elements in the page, which every style pass, layout, hit test and collection would otherwise
-  walk.
+  walk. The lit window and the dimmed surround sit on a layer of their own above the picture, so a
+  pan moves the window without repainting the picture: Safari draws an SVG picture again in full
+  each time anything over it repaints. The Map's body is the one every editor shares
+  (`MinimapMap`, `@liveworkspace/workbench`).
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,

@@ -4,8 +4,10 @@
 the **Show Me** button. It is the on-the-spot cousin of the tours started from the footer's Start Tour button (the
 [Plan tour](../026-plan/plan-tour.md), the Forms tour and the Dashboards tour, [Editor tours](editor-tour.md) "Where
 it appears"); like them, Show Me never offers itself. It exists for surfaces where people make something real in
-several steps whose ideas are not visible at a glance, and where the button sits on the surface itself. The
-Dashboards tour is Dashboard Settings' Show Me steps, started from the footer instead; Show Me records nothing.
+several steps whose ideas are not visible at a glance, and where the button sits on the surface itself. Dashboard
+Settings' Show Me is the exception to the step cards below: it starts Layout View, the hands-on Dashboards tour
+([Plan tour](../026-plan/plan-tour.md) "Dashboards: Layout View"), the same run the footer starts; from Show Me it
+records nothing.
 
 ## Domain language
 
@@ -51,11 +53,11 @@ A new Show Me surface is added to this table, and its own spec says its steps.
   is right from the first step; a target that still never appears skips its step.
 - **Escape belongs to the tour** while it runs over a dialog or an overlay (the card type editor, the Share dialog):
   it never closes the surface under it. The surface stops closing on Escape for the duration; the tour's own Skip
-  ends it. A tour on the page itself (a dashboard) leaves Escape to the page.
+  ends it. A tour on the page itself (Layout View on a dashboard) leaves Escape to the page.
 - **Ending.** Done ends it as completed, Skip as skipped; closing the surface under it (Cancel, a finished save)
-  ends the tour with it and sends no Ended event. So does losing it while it stays mounted: a dashboard covered by
-  a maximised slot or no longer editable, a page deleted, locked or no longer editable; whatever a step was showing
-  (a slot's grip and cog) is put back. Nothing is remembered: Show Me runs again every time it is pressed, and Settings' Show Tours does not list it.
+  ends the tour with it and sends no Ended event. So does losing it while it stays mounted: a page deleted, locked or
+  no longer editable; whatever a step was showing is put back. (Layout View, covered by a maximised slot or no
+  longer editable, ends as skipped: plan-tour.md "Dashboards: Layout View".) Nothing is remembered: Show Me runs again every time it is pressed, and Settings' Show Tours does not list it.
 - **Layer.** Over a dialog the ring draws just above the dialog and below the menus its controls open, so those
   stay lit (`layer` `modal`); over the editor's own chrome it draws at the overlay layer.
 

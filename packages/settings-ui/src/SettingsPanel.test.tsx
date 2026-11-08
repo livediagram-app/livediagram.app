@@ -292,6 +292,8 @@ describe('SettingsPanel', () => {
     );
     expect(marks).toEqual(expect.arrayContaining(['liveplanner']));
     expect(marks).toEqual(expect.arrayContaining(['livediagram']));
+    // livehuddle's Receptionist's Welcome is its own row, not livediagram's Avatar Tour.
+    expect(marks).toEqual(expect.arrayContaining(['livehuddle']));
     const sections = [...pane().querySelectorAll('h3')].map((h) => h.textContent);
     expect(new Set(sections).size).toBe(sections.length);
   });

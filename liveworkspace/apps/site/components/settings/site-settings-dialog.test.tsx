@@ -258,6 +258,8 @@ describe('the Settings panel, on All', () => {
       (el) => el.getAttribute('aria-label') === 'liveplanner',
     )!;
     expect(plannerMarks).toBeTruthy();
+    // livehuddle's own row, the Receptionist's Welcome, no longer shares livediagram's Avatar Tour wording.
+    expect(pane.textContent).toContain("Receptionist's Welcome");
     const row = plannerMarks
       .closest('[data-settings-cell]')!
       .querySelector<HTMLButtonElement>('[role="switch"]')!;

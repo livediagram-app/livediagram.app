@@ -23,6 +23,7 @@ import {
 } from '@liveplanner/sheets';
 import {
   axisDeleteStatement,
+  cellCountDeltaStatement,
   cellWriteStatements,
   projectSheetTotals,
   existingCells,
@@ -236,9 +237,11 @@ export async function storeSheetWrite(
         ...(applied.kind === 'title' ? { title: landed.sheet.title } : {}),
       }),
     ];
+    let axisDeleted = false;
     if (applied.kind === 'layout')
       for (const ch of applied.changes)
-        if (ch.k === 'deleteRows' || ch.k === 'deleteCols')
+        if (ch.k === 'deleteRows' || ch.k === 'deleteCols') {
+          axisDeleted = true;
           statements.push(
             axisDeleteStatement(
               ctx.env,
@@ -249,8 +252,19 @@ export async function storeSheetWrite(
               ch.ids,
             ),
           );
-    statements.push(...cellWriteStatements(ctx.env, projectId, sheetId, nonce, cells));
-    statements.push(recountStatement(ctx.env, projectId, sheetId));
+        }
+    // The sheet's cell count and bytes: recounted whole when rows or columns went (their cells are not named), and
+    // otherwise moved by the named cells' sizes before and after, so a one-cell edit costs the same on any sheet.
+    const writes = cellWriteStatements(ctx.env, projectId, sheetId, nonce, cells);
+    const keys = cells.map((ch) => cellKey(ch.r, ch.c));
+    if (axisDeleted) statements.push(...writes, recountStatement(ctx.env, projectId, sheetId));
+    else if (keys.length > 0) {
+      statements.push(
+        cellCountDeltaStatement(ctx.env, projectId, sheetId, nonce, keys, -1),
+        ...writes,
+        cellCountDeltaStatement(ctx.env, projectId, sheetId, nonce, keys, 1),
+      );
+    }
     statements.push(projectSavedStatement(ctx.env, projectId, sheetId, nonce, now));
     const results = await ctx.env.PLAN_DB.batch(statements);
     const raised = (results[0]?.results ?? []) as { rev: number }[];
@@ -258,7 +272,6 @@ export async function storeSheetWrite(
       console.info('[sheets] sheets.write.retry', { attempt });
       continue;
     }
-    const keys = cells.map((ch) => cellKey(ch.r, ch.c));
     const answer: SheetWriteResponse = {
       applied,
       rev: nextRev,

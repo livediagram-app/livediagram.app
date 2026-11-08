@@ -1,5 +1,8 @@
 # Document views
 
+> **No arrow joins anything** ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 4): a stored arrow, stroke, path or
+> annotation prints as `? <kind>`, and the graph view lists no node and no arrow.
+
 > **No MCP server or CLI in livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
 > the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
 > doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.

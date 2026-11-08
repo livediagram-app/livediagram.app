@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, ShapeElement, StickyElement, TextElement } from '@livehuddle/document';
+import type { Element, ShapeElement, StickyElement, TextElement } from '@livehuddle/document';
 import { getTheme } from './themes';
 import { resetElementColours } from './reset-colours';
 
@@ -46,15 +46,16 @@ describe('resetElementColours', () => {
     expect(out.textSwatch).toBeUndefined();
   });
 
-  it('drops an arrow’s named colour', () => {
-    const arrow: ArrowElement = {
+  // A stored arrow is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+  it('leaves a stored arrow as it is', () => {
+    const arrow = {
       id: 'a',
       type: 'arrow',
       from: { kind: 'free', x: 0, y: 0 },
       to: { kind: 'free', x: 9, y: 9 },
       penColour: 'teal',
-    };
-    expect((resetElementColours(arrow, theme) as ArrowElement).penColour).toBeUndefined();
+    } as unknown as Element;
+    expect(resetElementColours(arrow, theme)).toBe(arrow);
   });
 
   it('keeps a sticky’s own paper, dropping only its overrides', () => {

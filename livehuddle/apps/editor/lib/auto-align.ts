@@ -1,8 +1,8 @@
 // Auto-align (the command palette's Auto-align, docs/specs/008-canvas/layout-cleanup.md): snap every boxed element's
 // position and dimensions to the grid so near-aligned shapes become exactly
-// aligned and minor drift collapses. Free-endpoint arrows snap their endpoints
-// to the same grid; pinned arrow endpoints stay attached to their elements
-// (which themselves get snapped, so the arrow follows).
+// aligned and minor drift collapses. A stored arrow is retired and left exactly as
+// stored (docs/specs/002-project-scope/blueprints/element-engine.md D21); a pinned end
+// follows its element when it is drawn.
 //
 // Grid unit is 10 px. That matches the canvas's "you basically can't see drift
 // of less than 10 px" threshold and is the same step the other snap helpers use
@@ -39,7 +39,7 @@ export const SQUARE_SHAPES: ReadonlySet<string> = new Set(['circle', 'diamond', 
 const drawnSquare = (width: number, height: number) => Math.abs(width - height) <= AUTO_ALIGN_GRID;
 
 // Apply the cleanup pass to one element. Pure, idempotent, and
-// leaves non-boxed-non-arrow elements unchanged.
+// leaves every element that is not boxed unchanged.
 export function autoAlignElement(el: Element): Element {
   if (isBoxed(el)) {
     let width = Math.max(MIN_SIZE, snap(el.width));
@@ -73,19 +73,6 @@ export function autoAlignElement(el: Element): Element {
       height,
     };
   }
-  if (el.type === 'arrow') {
-    return {
-      ...el,
-      // Pinned endpoints stay attached to their elements (the
-      // element itself just got snapped, so the arrow follows).
-      // Free endpoints snap to the grid like any other coord.
-      from:
-        el.from.kind === 'free'
-          ? { kind: 'free', x: snap(el.from.x), y: snap(el.from.y) }
-          : el.from,
-      to: el.to.kind === 'free' ? { kind: 'free', x: snap(el.to.x), y: snap(el.to.y) } : el.to,
-    };
-  }
   return el;
 }
 
@@ -96,7 +83,7 @@ export function autoAlignElement(el: Element): Element {
 // edges still line up afterwards, and a snap that would make two boxes overlap
 // is undone. Auto Layout is the structural pass.
 export function autoAlignElements(elements: Element[]): Element[] {
-  let out = elements.map((el) => (el.type === 'arrow' ? autoAlignElement(el) : el));
+  let out = elements;
   // A pass can bring two boxes within reach of a line they did not share before, so passes repeat
   // until one moves nothing: the result is settled, and Auto-align again finds it already tidy.
   for (let pass = 0; pass < MAX_ALIGN_PASSES; pass++) {

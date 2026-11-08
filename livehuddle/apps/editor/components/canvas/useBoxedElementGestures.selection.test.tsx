@@ -2,7 +2,7 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { createFreehand, createSticky, createText, type BoxedElement } from '@livehuddle/document';
+import { createShape, createSticky, createText, type BoxedElement } from '@livehuddle/document';
 import { useBoxedElementGestures } from './useBoxedElementGestures';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Selection" (click the selected element again) and
@@ -30,7 +30,6 @@ function harness(element: BoxedElement, initial: State) {
       wrapperRef: { current: null },
       isEditing: false,
       remotelyLocked: false,
-      isAnnotation: false,
       isPaintMode: false,
       ...state,
       onBeginDrag,
@@ -75,17 +74,7 @@ const OUTSIDER: State = { isSelected: false, isMultiSelected: false };
 const KINDS: [string, () => BoxedElement][] = [
   ['sticky', () => createSticky(0, 0)],
   ['text', () => createText(0, 0)],
-  [
-    'marker stroke',
-    () =>
-      createFreehand(
-        [
-          { x: 0, y: 0 },
-          { x: 40, y: 20 },
-        ],
-        false,
-      ),
-  ],
+  ['shape', () => createShape('square', 0, 0)],
 ];
 
 afterEach(() => {

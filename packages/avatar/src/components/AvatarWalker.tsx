@@ -7,7 +7,7 @@
 // same component draws PEERS' characters (from their presence snapshot), which
 // is why every animation input is a prop rather than read from the walk hook.
 
-import { useLayoutEffect, useRef } from 'react';
+import { memo, useLayoutEffect, useRef } from 'react';
 import type { DrinkKind } from '../office-geometry';
 import { avatarGlides } from '../relay';
 import { avatarStatusColour, avatarStatusLabel, type AvatarStatus } from '../status';
@@ -23,6 +23,7 @@ import {
   avatarBox,
 } from '../walk';
 import { AvatarSprite } from './avatar-sprite';
+import { propsEqualByField } from './props-equal';
 import { avatarStatusHeadroomPx } from './avatar-status-effects';
 
 // An Away character fades to half (docs/specs/008-canvas/avatar-mode.md "Status").
@@ -52,7 +53,7 @@ export function StatusDot({ status }: { status: AvatarStatus }) {
   );
 }
 
-export function AvatarWalker({
+function AvatarWalkerView({
   pos,
   facing,
   config,
@@ -67,6 +68,7 @@ export function AvatarWalker({
   standingOn,
   name,
   self = false,
+  host = false,
   status = null,
   glideMs = 0,
 }: {
@@ -100,6 +102,9 @@ export function AvatarWalker({
   name?: string;
   // Your own character rather than a peer's (the e2e and the Avatar tour find it by `data-avatar="self"`).
   self?: boolean;
+  // A character nobody plays (livehuddle's Receptionist): marked `data-avatar="host"`, so nothing counting people's
+  // characters by `data-avatar="peer"` counts it.
+  host?: boolean;
   // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none.
   status?: AvatarStatus | null;
   // A peer's character in a busy room (docs/specs/008-canvas/avatar-mode.md "A busy room"): how long it slides to
@@ -115,12 +120,15 @@ export function AvatarWalker({
   // style prop: whether a move glides depends on where the character stood before it.
   const placed = useRef<HTMLDivElement>(null);
   const from = useRef(pos);
+  // By coordinates: a caller hands a fresh `pos` each render, and a render for anything else must not re-judge the glide.
+  const { x, y } = pos;
   useLayoutEffect(() => {
     const el = placed.current;
-    const glides = avatarGlides(from.current, pos, glideMs, walking);
-    from.current = pos;
-    if (el) el.style.transition = glides ? `left ${glideMs}ms linear, top ${glideMs}ms linear` : '';
-  }, [pos, glideMs, walking]);
+    const at = { x, y };
+    const glides = avatarGlides(from.current, at, glideMs, walking);
+    from.current = at;
+    if (el) el.style.transition = glides ? `transform ${glideMs}ms linear` : '';
+  }, [x, y, glideMs, walking]);
   return (
     <>
       {/* The status for a screen reader (docs/specs/008-canvas/avatar-mode.md "Status"): the character itself is
@@ -151,7 +159,7 @@ export function AvatarWalker({
       <div
         ref={placed}
         aria-hidden
-        data-avatar={self ? 'self' : 'peer'}
+        data-avatar={self ? 'self' : host ? 'host' : 'peer'}
         // Your own character is the Avatar tour's push step's anchor (docs/specs/008-canvas/avatar-tour.md).
         data-tour-id={self ? 'avatar-self' : undefined}
         data-seated={seated ? '' : undefined}
@@ -162,8 +170,12 @@ export function AvatarWalker({
           // so placing it means offsetting from the feet rather than the
           // sprite's own corner. The contact shadow stays on the ground while
           // the body rises.
-          left: pos.x - box.offsetX,
-          top: pos.y - box.offsetY,
+          // Placed by a transform from the canvas's corner, never by left and top: a step then moves the box
+          // without laying the page out (docs/specs/008-canvas/canvas-performance.md "Walking renders the
+          // characters, not the canvas"), and a peer's glide is a transition of it.
+          left: 0,
+          top: 0,
+          transform: `translate(${pos.x - box.offsetX}px, ${pos.y - box.offsetY}px)`,
           width: box.width,
           height: box.height,
         }}
@@ -235,3 +247,14 @@ export function AvatarWalker({
     </>
   );
 }
+
+type WalkerProps = Parameters<typeof AvatarWalkerView>[0];
+
+// The props equal when each is the same value, or a plain object (pos, config, pose, standingOn) with the same fields:
+// callers build those afresh every render (a peer's position and parsed costume from their latest packet).
+export const walkerPropsEqual: (prev: WalkerProps, next: WalkerProps) => boolean =
+  propsEqualByField;
+
+// Memoised: a room's presence flush re-renders the layer that maps every peer, and only the peers who moved, turned
+// or changed costume need their sprite (a few hundred SVG nodes) drawn again.
+export const AvatarWalker = memo(AvatarWalkerView, walkerPropsEqual);

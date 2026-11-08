@@ -125,7 +125,7 @@ order, counts summed per rule.
 | `TEXT_SCALE_EPSILON`      | `0.005`                                                     | 0.001 to 0.02       | A scale this close to 1 is omitted (no visible difference at 64 px)                                                         |
 | `CLOSED_END_EPSILON_PX`   | `1`                                                         | 0.5 to 2            | The Excalidraw importer's closure test: ends within 1 px coincide                                                           |
 | `SCENE_FONTS`             | hand `caveat`, mono `roboto-mono`, serif `lora`, sans unset | n/a                 | `fonts.ts` catalogue; Excalifont / Virgil / Whiteboard ink fonts read as hand                                               |
-| Marker widths             | `WHITEBOARD_PEN_WIDTHS`                                     | as defined          | `apps/editor/lib/whiteboard-prefs.ts` (1, 1.5, 2.5, 4, 6, 9 px)                                                             |
+| Marker widths             | `WHITEBOARD_PEN_WIDTHS`                                     | as defined          | `livediagram/apps/editor/lib/whiteboard-prefs.ts` (1, 1.5, 2.5, 4, 6, 9 px)                                                 |
 | Border widths             | `BORDER_STROKE_PX`                                          | as defined          | `nearestBorderStroke` in `packages/document/src/whiteboard.ts`                                                              |
 | Text presets              | `LABEL_FONT_PX` sm/md/lg                                    | as defined          | 14 / 22 / 32 px                                                                                                             |
 | Text scale limits         | `TEXT_SCALE_MIN..MAX`                                       | as defined          | 0.1 to 40, `validate.ts`                                                                                                    |
@@ -387,7 +387,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 ## Compact output (`compact.ts`)
 
 - A stroke's points and pressures are the codec's: ink and the diagram profile's freehands land through
-  `packFreehandPoints(points, pressures?)` (`packages/document/src/freehand-points.ts`), whose box is
+  `packFreehandPoints(points, pressures?)` (`livediagram/packages/document/src/freehand-points.ts`), whose box is
   the points' bounds padded a pixel and grown to whole px, and whose quantisation
   (`STROKE_POINT_MAX_ERROR`, `STROKE_PRESSURE_MAX_ERROR`) is the only rounding a stroke meets. The
   landing has no point or pressure rounding of its own.

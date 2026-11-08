@@ -34,7 +34,8 @@ import {
   PATH_CURVE_SEGMENTS,
   svgPathSubpaths,
 } from '@liveworkspace/model-core/svg-path-outline';
-import { insidePolygon, segmentDistance } from './whiteboard-stroke';
+import { insidePolygon } from './inside-polygon';
+import { segmentDistance } from '@liveworkspace/model-core/segment-geometry';
 
 type HitLine = { readonly points: readonly Point[]; readonly closed: boolean };
 

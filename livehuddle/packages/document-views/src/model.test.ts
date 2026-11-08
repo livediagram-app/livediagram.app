@@ -21,10 +21,12 @@ describe('buildViewModel', () => {
     expect(model.facts).toMatchObject({
       tab: { ref: '0b34', name: 'Checkout', kind: 'diagram' },
       elements: 5,
-      unknown: 1,
+      // The hologram and both stored arrows (retired elements since part 4 of the element engine).
+      unknown: 3,
       rev: 7,
     });
     expect(model.kindOf(model.printed[2]!)).toBe('? hologram');
+    expect(model.kindOf(model.printed[3]!)).toBe('? arrow');
   });
 
   it('refs every element (VW2)', () => {

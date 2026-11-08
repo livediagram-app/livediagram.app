@@ -1,5 +1,7 @@
 # The Fill tool: blueprint
 
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-element-engine)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/023-draw-mode/blueprints/fill-tool.md) is the one to read and change. livehuddle has no tool, gesture, setter or renderer for it: a stored pen, highlighter or polygon stroke is a [retired element](../../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder named **Drawing**, which an Editor can delete. The rest of this page describes it as livediagram has it.
+
 Derived from [The Fill tool](../fill-tool.md) and the Fill rows of [Draw mode](../draw-mode.md).
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) as `Fn`.
 livedesign builds the same tool on its logo pages from the same shared modules (livedesign's
@@ -13,17 +15,17 @@ landing, the dock model, the button and the flyout describe livediagram's build,
 
 Scope, by file:
 
-| File                                                                  | Role                                                                                       |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `packages/model-core/src/stroke-loop.ts` (monorepo root)              | `STROKE_LOOP_*`, `isStrokeLoop`, `closeStrokeLoop`, `insideLoop`, `loopFillPath` (pure)    |
-| `packages/workbench/src/lib/fill-choice.ts` (monorepo root)           | The bucket's colour in this browser: `parseFillChoice`, `loadFillChoice`, `saveFillChoice` |
-| `packages/document/src/stroke-loop-fill.ts`                           | `isOpenMarkerLoop`, `isFilledPenLoop`, `fillStrokeLoop`, `penLoopFillPath`                 |
-| `packages/document/src/svg-render-shapes.ts`                          | Export: a filled loop's fill path under its ink                                            |
-| `packages/document/src/whiteboard-stroke.ts`                          | The Stroke eraser touches a filled loop's fill                                             |
-| `apps/editor/lib/draw-mode.ts`                                        | The `fill` intent, `isFillIntent`, `isHeldToolIntent`, its cursor and copy                 |
-| `packages/workbench/src/hooks/canvas/useFillPress.ts` (monorepo root) | The press: release within the slop, pinch and cancel rules (shared with livedesign)        |
-| `apps/editor/components/canvas/boxed-element-overlays.tsx`            | `FreehandSvg` draws a filled loop's fill under its ink                                     |
-| `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                    | `f` on a whiteboard                                                                        |
+| File                                                                   | Role                                                                                       |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `packages/model-core/src/stroke-loop.ts` (monorepo root)               | `STROKE_LOOP_*`, `isStrokeLoop`, `closeStrokeLoop`, `insideLoop`, `loopFillPath` (pure)    |
+| `packages/workbench/src/lib/fill-choice.ts` (monorepo root)            | The bucket's colour in this browser: `parseFillChoice`, `loadFillChoice`, `saveFillChoice` |
+| `livediagram/packages/document/src/stroke-loop-fill.ts`                | `isOpenMarkerLoop`, `isFilledPenLoop`, `fillStrokeLoop`, `penLoopFillPath`                 |
+| `packages/document/src/svg-render-shapes.ts`                           | Export: a filled loop's fill path under its ink                                            |
+| `livediagram/packages/document/src/whiteboard-stroke.ts`               | The Stroke eraser touches a filled loop's fill                                             |
+| `apps/editor/lib/draw-mode.ts`                                         | The `fill` intent, `isFillIntent`, `isHeldToolIntent`, its cursor and copy                 |
+| `packages/workbench/src/hooks/canvas/useFillPress.ts` (monorepo root)  | The press: release within the slop, pinch and cancel rules (shared with livedesign)        |
+| `livediagram/apps/editor/components/canvas/boxed-element-overlays.tsx` | `FreehandSvg` draws a filled loop's fill under its ink                                     |
+| `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                     | `f` on a whiteboard                                                                        |
 
 ## Domain and naming
 

@@ -1,8 +1,8 @@
 'use client';
 
 // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md) and the animation tiles
-// (docs/specs/008-canvas/canvas-and-palette.md). On a desktop pointer, hovering a colour / border / arrow preset —
-// or an Animation / Flow / Icon-animation tile — shows it live on the selected
+// (docs/specs/008-canvas/canvas-and-palette.md). On a desktop pointer, hovering a colour / border preset
+// (or an Animation / Icon-animation tile) shows it live on the selected
 // element(s); the change only sticks on click. Pulling the mouse off the tile
 // reverts to the pre-hover look.
 //
@@ -28,8 +28,6 @@ import { useRef, type MutableRefObject } from 'react';
 import { ANIMATION_SET_TELEMETRY_TYPE, type AnimationSetId } from '@livehuddle/document';
 import { withSetAnimation } from '@/lib/animation-set-writes';
 import type {
-  ArrowFlow,
-  ArrowThickness,
   BorderRadius,
   BorderStroke,
   BorderStyle,
@@ -50,7 +48,6 @@ import type {
   TextSizePreset,
 } from '@livehuddle/document';
 import {
-  applyArrowPresetToEl,
   applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
@@ -69,8 +66,6 @@ import {
   applyShapeKindToEl,
   applyStrokeColorToEl,
   applyTextAlignToEl,
-  applyArrowheadColorToEl,
-  applyLabelFillToEl,
   applyTextColorToEl,
   applyTextSizeToEl,
 } from '@/lib/style-presets';
@@ -78,7 +73,6 @@ import type { ShapeColorPreset } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 
 type Snapshot = { ids: Set<string>; originals: Map<string, Element> };
-type ArrowPreset = { style: BorderStyle; thickness: ArrowThickness; flow?: ArrowFlow };
 
 export function useStylePreview(deps: {
   editsBlocked: boolean;
@@ -213,10 +207,6 @@ export function useStylePreview(deps: {
       previewStyle((el) => applyColorPresetToEl(el, p)),
     commitShapeColorPreset: (p: ShapeColorPreset) =>
       commitStyle((el) => applyColorPresetToEl(el, p), 'StylePreset'),
-    // Arrow preset
-    previewArrowPreset: (p: ArrowPreset) => previewStyle((el) => applyArrowPresetToEl(el, p)),
-    commitArrowPreset: (p: ArrowPreset) =>
-      commitStyle((el) => applyArrowPresetToEl(el, p), 'ArrowPreset'),
     // Granular colour swatches (text / fill / stroke): the same hover-preview /
     // click-commit flow as the presets, one field per swatch. The custom colour
     // <input> drag stays on the debounced useElementStyle setter — only the
@@ -228,13 +218,6 @@ export function useStylePreview(deps: {
       commitStyle((el) => applyStrokeColorToEl(el, c), 'StrokeColor'),
     previewTextColor: (c: string) => previewStyle((el) => applyTextColorToEl(el, c)),
     commitTextColor: (c: string) => commitStyle((el) => applyTextColorToEl(el, c), 'TextColor'),
-    // Heading band (a lane's title gutter): same flow,
-    // and a no-op on elements that have no heading to paint.
-    previewLabelFill: (c: string) => previewStyle((el) => applyLabelFillToEl(el, c)),
-    commitLabelFill: (c: string) => commitStyle((el) => applyLabelFillToEl(el, c), 'LabelFill'),
-    previewArrowheadColor: (c: string) => previewStyle((el) => applyArrowheadColorToEl(el, c)),
-    commitArrowheadColor: (c: string) =>
-      commitStyle((el) => applyArrowheadColorToEl(el, c), 'ArrowheadColor'),
     // Border weight / pattern / radius tiles.
     previewBorderStroke: (v: BorderStroke) => previewStyle((el) => applyBorderStrokeToEl(el, v)),
     commitBorderStroke: (v: BorderStroke) =>
@@ -296,7 +279,7 @@ export function useStylePreview(deps: {
       commitStyle((el) => applyInlineIconToEl(el, iconId, position), 'Icon', new Set([elementId])),
     // Animation tiles (docs/specs/008-canvas/canvas-and-palette.md): the same hover-preview / click-commit flow,
     // each setting a single field on the matching member of the selection
-    // (boxed `animation`, arrow `flow`, icon-shape `iconAnimation`). `null` is
+    // (boxed `animation`, icon-shape `iconAnimation`). `null` is
     // the "None" tile. Reuses the snapshot/revert/commit machinery above, so a
     // hovered-then-clicked animation undoes to the true pre-hover value.
     // Each animation set's category (docs/specs/028-animation/element-animations.md) writes only the
@@ -305,13 +288,6 @@ export function useStylePreview(deps: {
       previewStyle((el) => withSetAnimation(el, set, v)),
     commitSetAnimation: (set: AnimationSetId, v: string | null) =>
       commitStyle((el) => withSetAnimation(el, set, v), ANIMATION_SET_TELEMETRY_TYPE[set]),
-    previewArrowFlow: (v: ArrowFlow | null) =>
-      previewStyle((el) => (el.type === 'arrow' ? { ...el, flow: v ?? undefined } : el)),
-    commitArrowFlow: (v: ArrowFlow | null) =>
-      commitStyle(
-        (el) => (el.type === 'arrow' ? { ...el, flow: v ?? undefined } : el),
-        'ArrowFlow',
-      ),
     previewIconAnimation: (v: IconAnimation | null) =>
       previewStyle((el) =>
         el.type === 'shape' && el.shape === 'icon' ? { ...el, iconAnimation: v ?? undefined } : el,

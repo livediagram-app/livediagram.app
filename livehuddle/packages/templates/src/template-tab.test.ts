@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidTab, parseStrokePoints } from '@livehuddle/document';
+import { isRetiredElement, isValidTab } from '@livehuddle/document';
 import {
   buildTemplateTab,
   resolveTemplate,
@@ -11,17 +11,15 @@ import {
 import { TEMPLATES } from './templates';
 import { templateCatalogue } from './template-catalogue';
 
-// What the MCP writes from a template must be a tab the api accepts, any strokes packed
-// (docs/specs/006-document/stroke-points.md).
+// What an agent's replace writes from a template must be a tab the api accepts. No template holds a retired element:
+// no stroke, arrow, path or annotation since part 4 of the element engine (docs/specs/002-project-scope/
+// not-in-livehuddle.md "The element engine").
 describe('buildTemplateTab', () => {
-  it('builds every template as a valid tab, with packed strokes', () => {
+  it('builds every template as a valid tab of elements livehuddle still has', () => {
     for (const { kind } of TEMPLATES) {
       const tab = buildTemplateTab(`tab-${kind}`, kind, kind);
       expect(isValidTab(tab), kind).toBe(true);
-      for (const el of tab.elements) {
-        if (el.type !== 'freehand') continue;
-        expect(parseStrokePoints(el.packedPoints).ok, kind).toBe(true);
-      }
+      for (const el of tab.elements) expect(isRetiredElement(el), `${kind} ${el.id}`).toBe(false);
     }
   });
 });

@@ -28,18 +28,9 @@ const unfilled = (el: Element) => {
 
 // A kind gaining a named colour adds one row here.
 export const SNAP_COLOUR_FIELDS: readonly SnapColourField[] = [
-  // Marker strokes; a highlighter's recipe owns its colour, a pencil stroke has no stock colours.
-  {
-    applies: (el) =>
-      el.type === 'freehand' && el.penWidth !== undefined && el.pen !== 'highlighter',
-    ...STROKE,
-  },
   { applies: (el) => el.type === 'shape', ...STROKE },
-  { applies: (el) => el.type === 'arrow', ...STROKE },
-  { applies: (el) => el.type === 'path', ...STROKE },
   { applies: (el) => el.type === 'text', ...TEXT, clear: ['textSwatch'] },
   { applies: (el) => el.type === 'shape' && unfilled(el), ...TEXT },
-  { applies: (el) => el.type === 'arrow', ...TEXT },
 ];
 
 type Fields = Record<string, unknown>;

@@ -1,5 +1,19 @@
 # Diagram lint: blueprint
 
+> **No MCP server or CLI in livehuddle** ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
+> the REST API is the only front door, and agents reach it through the agent tools. Where this file names the MCP or
+> the CLI, it records livediagram's front doors over the same engine, where this design came from; their wire values
+> (`mcp`, `cli`) still parse.
+
+> **No arrow is drawn as one** ([The element engine](../../002-project-scope/not-in-livehuddle.md#the-element-engine), part 4): a stored arrow is a retired element
+> that joins nothing. The checks that read arrows went with them (`arrow-dangling`, `arrow-behind-box`,
+> `edge-crossings`, `label-collision`, `node-isolated`, `flow-backwards`), and so did the two that judged the graph
+> the arrows drew (`box-overlap` and `aspect-extreme` named only boxes an arrow joins, and none is joined now). What
+> is left: `label-overflow`, `duplicate-label`, `colour-on-themed` and `text-overflow`, where `colour-on-themed`
+> judges boxed elements only. The codes and the `crossings`, `behind`, `overlaps` and `arrows` measures stay on the
+> wire, always nothing (`skipped.crossings` false), so a reader of the JSON keeps working. `LintOptions.flow` and the
+> lint context's arrow, grid and graph fields are gone; a stored arrow's line and card still count toward the extent.
+
 > **The layout containers left livehuddle** ([The element engine](../../002-project-scope/not-in-livehuddle.md#the-element-engine), part 3): a stored `frame`, `lane`, `stack` or `boundary` is a retired backdrop that holds nothing and paints at the back, so the lint counts it as no box, and the group codes (`group-escape`, `group-split-edges`), the graph source (`lintGraph`, `graph lint`, `--compare`) and the card checks went with the containment rule and the graph input.
 
 Derived from [Diagram lint](../diagram-lint.md), with the result footer of [Edit operations](../edit-operations.md#results),
@@ -14,23 +28,22 @@ Scope, by file:
 | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/diagram-lint/{package.json,tsconfig.json,oxlint.config.ts}` | The package `@livehuddle/diagram-lint`; depends on `@livehuddle/document` and `@livehuddle/api-schema` (tests also on `templates` and `edit-operations`)                                                               |
 | `packages/diagram-lint/vitest.config.ts`                              | `defineProject`, node environment, 100% coverage thresholds (as the former explorer-lens package did)                                                                                                                  |
-| `packages/diagram-lint/src/index.ts`                                  | The barrel: `lintTab`, the formatters, the constants                                                                                                                                                                   |
-| `packages/diagram-lint/src/constants.ts`                              | Every `LINT_*` constant (see Constants): the shared ones from `../packages/diagram-lint/src/constants.ts`, then those only this product's own checks use                                                               |
-| `packages/diagram-lint/src/context.ts`                                | `prepareLintContext`: visible elements, index, refs, boxes, arrows, routes, the connected boxes, grid, labels                                                                                                          |
-| `packages/diagram-lint/src/boxes.ts`                                  | `isLintBox`, `centreOf`, `boxCorners`, `boxBounds`, `overlapDepth` (separating axes), `holdsWholly`                                                                                                                    |
-| `packages/diagram-lint/src/arrow-names.ts`                            | `pinnedEnds`, `arrowName` (`orders→bus`), `arrowSelector` (`orders->bus` or the arrow's ref)                                                                                                                           |
-| `packages/diagram-lint/src/checks/<code>.ts` (+ test)                 | One file per finding code, each `(input: CheckInput) => RawFinding[]`; its test has a finding and a clean twin                                                                                                         |
-| `packages/diagram-lint/src/checks/index.ts`, `types.ts`               | `LINT_CHECKS`: the eleven checks in code order; `RawFinding`, `CheckInput`, `Check`                                                                                                                                    |
-| `packages/diagram-lint/src/measures.ts`                               | `lintExtent`, `crossingPairs` (shared by the summary and `edge-crossings`)                                                                                                                                             |
-| `packages/diagram-lint/src/flow.ts`                                   | `inferFlow`, `headOf`, `directedVector`, `directionOf`                                                                                                                                                                 |
+| `packages/diagram-lint/src/index.ts`                                  | The barrel: `lintTab`, `coloursSet`, `withoutFindings`, the formatters, the constants                                                                                                                                  |
+| `packages/diagram-lint/src/constants.ts`                              | Re-exports the shared `LINT_*` constants from `../packages/diagram-lint/src/constants.ts`; this product's checks add none of their own                                                                                 |
+| `packages/diagram-lint/src/context.ts`                                | `prepareLintContext`: the theme, visible elements, refs, boxes and the count of skipped rects; `refOf`                                                                                                                 |
+| `packages/diagram-lint/src/boxes.ts`                                  | `isLintBox`                                                                                                                                                                                                            |
+| `packages/diagram-lint/src/checks/<code>.ts` (+ test)                 | One file per code that still fires, each `(input: CheckInput) => RawFinding[]`; its test has a finding and a clean twin                                                                                                |
+| `packages/diagram-lint/src/checks/index.ts`, `types.ts`               | `LINT_CHECKS`: `label-overflow`, `duplicate-label`, `colour-on-themed` in code order (`text-overflow`'s `textOverprint` is added by `lintTab`); `RawFinding`, `CheckInput`, `Check`                                    |
+| `packages/diagram-lint/src/measures.ts`                               | `lintExtent`: the summary line's extent                                                                                                                                                                                |
 | `packages/diagram-lint/src/theme-colours.ts`                          | `themeColourSet(themeId, el, field)`: every fill or stroke a built-in theme paints on that element                                                                                                                     |
-| `packages/diagram-lint/src/fixes.ts`                                  | `fixes`: the fix catalogue, one function per code                                                                                                                                                                      |
+| `packages/diagram-lint/src/colours-set.ts`, `without-findings.ts`     | `coloursSet(before, after)`: the ids a write coloured; `withoutFindings(report, code)`: a report with one code taken out and recounted                                                                                 |
+| `packages/diagram-lint/src/fixes.ts`                                  | `fixes`: the fix catalogue, one function per code that fires                                                                                                                                                           |
 | `../packages/diagram-lint/src/quote.ts`                               | `quoteLabel` (shared, `@liveworkspace/diagram-lint`)                                                                                                                                                                   |
 | `packages/diagram-lint/src/order.ts`                                  | `sortFindings`: `../packages/diagram-lint/src/order.ts`'s `createSortFindings` bound to this product's `LINT_CODES` and `LINT_SEVERITY`; the finding shapes it reads are in `../packages/diagram-lint/src/findings.ts` |
 | `../packages/diagram-lint/src/format.ts`                              | `lintSummaryLine`, `lintVerdict`, `lintFooterPart`, `formatLintReport` over any product's codes (shared, `@liveworkspace/diagram-lint`)                                                                                |
 | `packages/diagram-lint/src/lint.ts`                                   | `lintTab`                                                                                                                                                                                                              |
 | `../packages/diagram-lint/src/log.ts`                                 | `LintLogger`, `consoleLintLogger`, the `[lint]` fingerprints (shared, `@liveworkspace/diagram-lint`)                                                                                                                   |
-| `packages/diagram-lint/src/fixtures/build.ts`                         | Fixture builders and a quiet lint                                                                                                                                                                                      |
+| `packages/diagram-lint/src/fixtures/build.ts`                         | Fixture builders (boxes, stored arrows) and a quiet lint                                                                                                                                                               |
 | `packages/api-schema/src/lint.ts` (+ test), `index.ts`                | Wire types: `LINT_CODES`, `LINT_SEVERITIES`, `LINT_SEVERITY`, `LintFinding`, `LintReport`, `LintMeasures`, `isLintCode`                                                                                                |
 | `packages/api-schema/src/document-views.ts`                           | `VIEW_NAMES` gains `lint`; `LINT_VIEW_NAME`                                                                                                                                                                            |
 | `packages/api-schema/src/changesets.ts`                               | `ChangesetResponse.lint` and `RevertResponse.lint`: `LintReport \| null`                                                                                                                                               |
@@ -48,26 +61,21 @@ The root `AGENTS.md` repo layout lists packages; its line for `diagram-lint/` ne
 
 ## Domain and naming
 
-| Term             | Identifier                                                   | Meaning                                                                                                       |
-| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Diagram lint     | `@livehuddle/diagram-lint`, `lintTab`                        | The check of how a tab is drawn                                                                               |
-| Lint finding     | `LintFinding`                                                | One problem: code, severity, refs, message, fix                                                               |
-| Code             | `LintCode`, `LINT_CODES`                                     | The twelve kebab-case codes of the spec, in the spec's table order                                            |
-| Severity         | `LintSeverity` (`error`, `warning`, `info`), `LINT_SEVERITY` | Fixed per code by the spec                                                                                    |
-| Fix              | `LintFinding.fix`                                            | Edit operations in the line form; every finding has one                                                       |
-| Lint report      | `LintReport`                                                 | Measures, findings in order, severity counts, what was skipped                                                |
-| Measures         | `LintMeasures`                                               | Crossings, behind, overlaps, extent: the summary line's numbers                                               |
-| Summary line     | `lintSummaryLine(report)`                                    | `5 crossings · 2 behind · 0 overlaps · 1317×1196 → 2 warnings, 1 info`                                        |
-| Verdict          | `lintVerdict(report)`                                        | The part after `→`: `clean`, or the severity counts                                                           |
-| Footer part      | `lintFooterPart(report)`                                     | `lint {verdict}`: what a changeset result's last line carries                                                 |
-| Box              | `isLintBox`                                                  | A boxed element that is not a stored backdrop (`isRetiredBackdrop`), text, annotation, freehand or path (LN2) |
-| Shape            | `isLintBox(el) && el.type === 'shape'`                       | The boxes `node-isolated` judges                                                                              |
-| Drawable arrow   | `ctx.drawable`                                               | A visible arrow whose two ends resolve to a point                                                             |
-| Connecting arrow | `ctx.connecting`                                             | A drawable arrow pinned at both ends to two different boxes                                                   |
-| Flow             | `LintFlow` (`down`, `up`, `right`, `left`)                   | The direction most connecting arrows point                                                                    |
+| Term         | Identifier                                                   | Meaning                                                                                                                                                  |
+| ------------ | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Diagram lint | `@livehuddle/diagram-lint`, `lintTab`                        | The check of how a tab is drawn                                                                                                                          |
+| Lint finding | `LintFinding`                                                | One problem: code, severity, refs, message, fix                                                                                                          |
+| Code         | `LintCode`, `LINT_CODES`                                     | The twelve kebab-case codes of the spec, in the spec's table order; four fire (`label-overflow`, `duplicate-label`, `colour-on-themed`, `text-overflow`) |
+| Severity     | `LintSeverity` (`error`, `warning`, `info`), `LINT_SEVERITY` | Fixed per code by the spec                                                                                                                               |
+| Fix          | `LintFinding.fix`                                            | Edit operations in the line form; every finding has one                                                                                                  |
+| Lint report  | `LintReport`                                                 | Measures, findings in order, severity counts, what was skipped                                                                                           |
+| Measures     | `LintMeasures`                                               | Crossings, behind, overlaps, extent: the summary line's numbers; all but the extent and the box count are always 0                                       |
+| Summary line | `lintSummaryLine(report)`                                    | `0 crossings · 0 behind · 0 overlaps · 1317×1196 → 1 warning, 1 info`                                                                                    |
+| Verdict      | `lintVerdict(report)`                                        | The part after `→`: `clean`, or the severity counts                                                                                                      |
+| Footer part  | `lintFooterPart(report)`                                     | `lint {verdict}`: what a changeset result's last line carries                                                                                            |
+| Box          | `isLintBox`                                                  | A boxed element with a finite rect that is not a stored backdrop (`isRetiredBackdrop`), text, annotation, freehand or path (LN2)                         |
 
-Banned: "issue", "warning" or "lint error" for a finding (a warning is a severity), "problem" in copy, "edge" for an
-arrow in tab-facing messages, "node" for
+Banned: "issue", "warning" or "lint error" for a finding (a warning is a severity), "problem" in copy, "node" for
 a box, "rule" for a code, "score" for measures.
 
 ## Behaviour and state
@@ -78,58 +86,40 @@ The lint is a pure function: no state, no clock, no randomness, no I/O but one l
 
 1. **Prepare** (`prepareLintContext`):
    - `visible` = `tab.elements`; every element is checked.
-   - `index` = `buildElementIndex(tab.elements)` over every element.
    - `refs` = `computeRefs(tab.elements ids)` (`@livehuddle/document`), the refs every view prints.
-   - `boxes` = `visible.filter(isLintBox)` with finite `x`, `y`, `width`, `height`. An element with a non-finite
-     rect is counted in `skipped` and checked by nothing.
-   - `arrows` = visible arrows. `dangling` = those failing the `arrow-dangling` test. `drawable` = the rest.
-   - `polylines` = `arrowRoutePoints(arrow, visible)` for each drawable arrow (the drawn route, shared-anchor ends
-     fanned), with its bounds, computed once.
-   - `grid` = `buildElementGrid(boxes)`; `rotationPad` = half the largest diagonal of any rotated box (0 if none),
-     added to every grid query rect so a rotated box's corners are not missed (LN34).
-   - `labels` = `arrowLabelPass(visible, { measureFor: (px) => estimatedLabelMeasure(px), fontEpoch: LINT_MEASURE_EPOCH })`
-     (LN4, LN33).
-2. **Measure**: `crossingPairs(ctx)` unless `drawable.length > LINT_MAX_ARROWS` (LN10); `lintExtent(ctx)` =
-   `contentBounds(visible, labels)` rounded to whole px, arrow routes and label plates included, or null when
-   nothing is visible. `behind` and `overlaps` are the counts of their findings.
-3. **Check**: each entry of `LINT_CHECKS`, in code order, returns its findings (granularity LN8, LN9, LN36).
+   - `boxes` = `visible.filter(isLintBox)`. A boxed element with a non-finite rect is counted in `skipped` and
+     checked by nothing.
+   - A stored arrow is a retired element: nothing in the context reads its ends.
+2. **Measure**: `lintExtent(ctx)` = `contentBounds` of the visible elements with a finite rect (a stored arrow's
+   line and card included) rounded to whole px, or null when nothing is visible. `crossings`, `behind`, `overlaps`
+   and `arrows` are 0, and `skipped.crossings` is false.
+3. **Check**: each entry of `LINT_CHECKS`, in code order, then `textOverprint` (`text-overflow`), returns its
+   findings (granularity LN36).
 4. **Order** (`sortFindings`, LN18): severity (`error`, `warning`, `info`); then code order; then the primary
-   subject's reading position (rounded top `y`, then `x`: a box's rect, an arrow's first polyline point;
-   `aspect-extreme` first); then the refs joined by a space. **Count** by severity, **log** `[lint] run`,
-   return the report.
+   subject's reading position (rounded top `y`, then `x` of its rect); then the refs joined by a space. **Count** by
+   severity, **log** `[lint] run`, return the report.
 
 There is no graph source: `lintGraph`, `graphEdgeIds` and `compareGraphLayouts` left with the graph input
-(docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3). `lintTab` takes an optional `flow` (`down`, `right`) that `inferFlow` uses as given.
+(docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3). There is no `flow` option and no
+flow inference: both read arrows (part 4).
 
 ### The checks
 
-"Overlap" means `overlapDepth(a, b) > LINT_OVERLAP_TOLERANCE_PX`: the smallest penetration of two oriented rects
-over the four separating axes of their edges, so rotated boxes are exact and touching edges do not count (LN3).
-`holdsWholly(a, b)` is true when every corner of `b` lies inside `a` (or the reverse), to within the same tolerance.
+| Code               | Fires when                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | One finding per | Refs                                |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ----------------------------------- |
+| `label-overflow`   | A box with `drawsStandardLabel(el)`, a non-blank `label` and `textSize` not `scale` (LN6) wraps to more lines than it holds: `wrapLabel(label, room.width, estimatedLabelMeasure(px), true).length > max(1, floor(room.height / (px × LABEL_LINE_HEIGHT)))`, with `px = fontSizeFor(textSize, type === 'sticky')` and `room = labelRoom(el)` (LN5, LN7)                                                                                                                                                                                                                                                                             | Box             | Box                                 |
+| `duplicate-label`  | Two or more boxes whose labels match after trimming, collapsing whitespace and lower-casing; blank labels never match (LN14)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Label           | Boxes in paint order                |
+| `colour-on-themed` | A boxed element's `fillColor` or `strokeColor`, among its `themeColourFields`, is a hex, bound to no preset or swatch (`colorPreset` on a shape; `fillSwatch` for fill, `strokeSwatch` for stroke) and not in `themeColourSet(tab.theme, field)`. A stored arrow is never reported (its colours are not the agent's to change); stickies, images, link cards and videos have no theme fields (LN17, LN39); a `themeLockFill` shape's fill is not among its theme fields. `LintOptions.coloured` (the api's changeset lint passes `coloursSet(before, after)`, an empty set for a replace landing a template) limits it to those ids | Element         | Element                             |
+| `text-overflow`    | Visible text elements with a label, neither on an arc (`textArc`) nor turned (`rotation` not a multiple of 360). On any tab (`textOverprint`): two such texts whose drawn lines overlap by more than `LINT_OVERLAP_TOLERANCE_PX`, found by a sweep sorted by top edge. Every template lints with none (`templates.test.ts`)                                                                                                                                                                                                                                                                                                         | Text pair       | Text element (the first), the other |
 
-| Code               | Fires when                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | One finding per         | Refs                                  |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------- |
-| `box-overlap`      | Boxes `a` and `b` (a earlier in paint order), both the pinned end of a drawable arrow, overlap and neither holds the other wholly. Candidates come from `queryElementGrid` over `a`'s bounds, so each pair is tested once                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Pair                    | `a`, `b`                              |
-| `arrow-dangling`   | An end is `pinned` to an id absent from `index` or not boxed, or `on-arrow` to an id absent or not an arrow. A line with both ends free is a drawing and is never dangling                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Arrow                   | Arrow                                 |
-| `arrow-behind-box` | `pathPassesThrough(polyline, box)` for a box from the grid over the polyline's bounds that is neither end's `pinnedBoxedElement` (LN8)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Arrow, every box listed | Arrow, boxes in paint order           |
-| `edge-crossings`   | `crossingPairs > LINT_CROSSINGS_PER_ARROW × drawable.length`. A pair counts once when `pathsCross(p, q)`; pairs whose polyline bounds do not intersect are not tested. Skipped above `LINT_MAX_ARROWS`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Tab                     | Arrows by crossings, most first       |
-| `label-collision`  | An arrow's label plate (`labels.layouts`: `center` ± half `width`, `height`) overlaps a box, the arrow's own ends included, or a later arrow's plate (each pair once, on the earlier arrow, the other's arrow ref listed); else, struck: another arrow's segment passes through the plate drawn in by `LINT_OVERLAP_TOLERANCE_PX` (`pathPassesThrough`), a segment along the label's own run's axis through its centre aside (a bus the label cuts as its own line)                                                                                                                                                                                                                   | Arrow, every box listed | Arrow, boxes                          |
-| `label-overflow`   | A box with `drawsStandardLabel(el)`, a non-blank `label` and `textSize` not `scale` (LN6) wraps to more lines than it holds: `wrapLabel(label, room.width, estimatedLabelMeasure(px), true).length > max(1, floor(room.height / (px × LABEL_LINE_HEIGHT)))`, with `px = fontSizeFor(textSize, type === 'sticky')` and `room = labelRoom(el)` (LN5, LN7)                                                                                                                                                                                                                                                                                                                               | Box                     | Box                                   |
-| `node-isolated`    | The tab is a graph (LN11) and a shape is no drawable arrow's pinned end                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Shape                   | Shape                                 |
-| `duplicate-label`  | Two or more boxes whose labels match after trimming, collapsing whitespace and lower-casing; blank labels never match (LN14)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Label                   | Boxes in paint order                  |
-| `flow-backwards`   | A flow exists (`options.flow`, else `inferFlow`, LN15) and a directed connecting arrow's head-to-tail vector between box centres has a component against it larger than `LINT_FLOW_TOLERANCE_PX`. `arrowEnds` `from` reverses the arrow; `both` and `none` are undirected and skipped; a self-loop is skipped                                                                                                                                                                                                                                                                                                                                                                         | Arrow                   | Arrow                                 |
-| `aspect-extreme`   | At least `LINT_ASPECT_MIN_BOXES` boxes and the extent's `max(w/h, h/w) > LINT_MAX_ASPECT`, both sides at least 1 px (LN16); never on a framed tab (`framedTab`: it holds a stored backdrop, N13), whose backdrop sets its shape and which no layout keeps, nor on a tab whose boxes no line joins (`connecting` empty)                                                                                                                                                                                                                                                                                                                                                                | Tab                     | none                                  |
-| `colour-on-themed` | An element's `fillColor` or `strokeColor`, among its `themeColourFields`, is set, bound to no preset or swatch (`colorPreset` on a shape; `fillSwatch` for fill, `strokeSwatch` for stroke) and not in `themeColourSet(tab.theme, field)`. Stickies, images, link cards and videos have no theme fields and are never reported (LN17, LN39); a `themeLockFill` shape's fill is not among its theme fields, so it is never reported. `LintOptions.coloured` (the api's changeset lint passes `coloursSet(before, after)`, an empty set for a replace landing a template) limits it to those ids; the MCP's `create_document` drops it from a template tab's report (`withoutFindings`) | Element                 | Element                               |
-| `text-overflow`    | Visible text elements with a label, neither on an arc (`textArc`) nor turned (`rotation` not a multiple of 360). On any tab (`textOverprint`): two such texts whose drawn lines overlap by more than `LINT_OVERLAP_TOLERANCE_PX`, found by a sweep sorted by top edge. Every template lints with none (`templates.test.ts`)                                                                                                                                                                                                                                                                                                                                                           | Text element            | Text element (the first, for overlap) |
-
-`inferFlow`: over connecting directed arrows, classify each head-to-tail vector by its larger axis (`right`/`left`
-when `|dx| >= |dy|`, else `down`/`up`). The flow is the most frequent class when it holds at least
-`LINT_FLOW_MIN_SHARE` of at least `LINT_FLOW_MIN_ARROWS` arrows; else null and the check returns nothing. A `flow`
-option (`down`, `right`) is used as given.
+Gone (part 4): `box-overlap`, `arrow-dangling`, `arrow-behind-box`, `edge-crossings`, `label-collision`,
+`node-isolated`, `flow-backwards` and `aspect-extreme`, with `inferFlow`, `crossingPairs`, the arrow names
+(`arrowName`, `arrowSelector`), the element grid and the arrow label pass. Their codes stay in `LINT_CODES` and
+never fire.
 
 `themeColourSet(themeId, el, field)`: undefined, `brand` and every `THEMES` id resolve to their definitions; the set
 holds the theme's `elementFill` (or `elementStroke`), or where the theme leaves it null the element type's own default on
-either surface (`defaultFillColor`, `defaultStrokeColor`, `defaultArrowStrokeColor`), every `palette` entry's and `rootColor`'s `fill` (or `stroke`),
+either surface (`defaultFillColor`, `defaultStrokeColor`), every `palette` entry's and `rootColor`'s `fill` (or `stroke`),
 and every `shapeColors` entry's. For `brand` both `DEFAULT_SCHEME_LIGHT` and `DEFAULT_SCHEME_DARK` contribute, as
 `backdropVariants` treats the backdrop. Any other id (one no catalogue entry names) returns null: the check is skipped and logged.
 
@@ -150,24 +140,26 @@ never fails the call that asked for it: the api and the MCP log `[lint] failed` 
 verdict or summary would go (LN23); the view answers 500 with that message.
 
 `tab lint` exits 1 when `report.counts.error > 0`, else 0; a usage error exits 2 and a view request
-the api refuses exits with the CLI's code for it.
+the api refuses exits with the CLI's code for it. No code that still fires is an error, so livehuddle's lint never
+exits 1.
 
 ## Interfaces and contracts
 
-`packages/api-schema/src/lint.ts` (wire types live with every DTO the api emits, LN25):
+`packages/api-schema/src/lint.ts` (wire types live with every DTO the api emits, LN25). Every code and measure stays
+on the wire so a reader of the JSON keeps working:
 
 ```ts
 export const LINT_CODES = [
-  'box-overlap',
-  'arrow-dangling',
-  'arrow-behind-box',
-  'edge-crossings',
-  'label-collision',
+  'box-overlap', // never fires (part 4)
+  'arrow-dangling', // never fires (part 4)
+  'arrow-behind-box', // never fires (part 4)
+  'edge-crossings', // never fires (part 4)
+  'label-collision', // never fires (part 4)
   'label-overflow',
-  'node-isolated',
+  'node-isolated', // never fires (part 4)
   'duplicate-label',
-  'flow-backwards',
-  'aspect-extreme',
+  'flow-backwards', // never fires (part 4)
+  'aspect-extreme', // never fires (part 4)
   'colour-on-themed',
   'text-overflow',
 ] as const;
@@ -177,23 +169,23 @@ export declare const LINT_SEVERITY: Record<LintCode, LintSeverity>; // the spec'
 export type LintFinding = {
   code: LintCode;
   severity: LintSeverity;
-  refs: string[]; // every ref involved, primary first; never empty except aspect-extreme
+  refs: string[]; // every ref involved, primary first; never empty
   message: string; // refs first, as printed
   fix: string;
 };
 export type LintMeasures = {
-  crossings: number | null; // null when skipped
-  behind: number; // arrow-behind-box findings
-  overlaps: number; // box-overlap findings
+  crossings: number | null; // always 0
+  behind: number; // always 0
+  overlaps: number; // always 0
   extent: { width: number; height: number } | null; // rounded px; null when nothing is visible
-  arrows: number; // drawable arrows
+  arrows: number; // always 0
   boxes: number;
 };
 export type LintReport = {
   measures: LintMeasures;
   findings: LintFinding[];
   counts: Record<LintSeverity, number>;
-  skipped: { crossings: boolean };
+  skipped: { crossings: boolean }; // always false
 };
 ```
 
@@ -203,11 +195,15 @@ The changeset response's `lint` field (agent-changesets blueprint) is this `Lint
 
 ```ts
 export type LintOptions = {
-  flow?: 'down' | 'right';
   log?: LintLogger;
   coloured?: ReadonlySet<string>;
 };
-export function lintTab(tab: Pick<Tab, 'elements' | 'theme'>, options?: LintOptions): LintReport;
+export function lintTab(
+  tab: Pick<Tab, 'elements' | 'theme'> & Partial<Pick<Tab, 'opensIn' | 'kind'>>,
+  options?: LintOptions,
+): LintReport;
+export function coloursSet(before: readonly Element[], after: readonly Element[]): Set<string>;
+export function withoutFindings(report: LintReport, code: LintCode): LintReport;
 export function lintSummaryLine(report: LintReport): string;
 export function lintVerdict(report: LintReport): string;
 export function lintFooterPart(report: LintReport | null): string; // 'lint clean', or 'lint unavailable' for null
@@ -255,33 +251,29 @@ re-lints the tab through the view.
 
 - **N1** Nothing to check (an empty tab): no findings, extent null; the summary reads
   `0 crossings · 0 behind · 0 overlaps · empty → clean`.
-- **N2** More than `LINT_MAX_ARROWS` drawable arrows: `edge-crossings` and the crossing count are skipped,
-  `skipped.crossings` is true, the summary's first part reads `crossings skipped (412 arrows)`, and
-  `[lint] crossings skipped` logs. Every other check runs.
-- **N3** A dangling arrow gets its `arrow-dangling` finding and takes part in nothing else: its resolved points are
-  `{0,0}` placeholders (`endpointPosition`).
-- **N5** An `on-arrow` end resolves through `endpointPosition`; a chain deeper than its guard resolves to `{0,0}`
-  and the arrow counts as dangling.
+- **N2** Gone (part 4): no pair check, so nothing is skipped above `LINT_MAX_ARROWS`.
+- **N3** Gone (part 4): no arrow is dangling; a stored arrow is a retired element.
+- **N5** Gone (part 4): no `on-arrow` end is resolved.
 - **N6** Non-finite geometry: the element is skipped by every check and counted in `[lint] run` as `skipped`.
-- **N7** Two arrows meeting at one anchor do not cross (`CROSSING_ENDPOINT_TOLERANCE_PX`); collinear overlap is not a
-  crossing; two paths crossing twice count once.
-- **N8** A self-loop (both ends on one box) takes part in crossings and `arrow-behind-box`, never in
-  `flow-backwards`.
+- **N7** Gone (part 4): nothing crosses.
+- **N8** Gone (part 4): no self-loop is judged.
 - **N9** `label-overflow` judges the estimate, not a browser's font: the same measure every headless render (the
   MCP's PNG, the api's `render.svg`) wraps with, so the lint agrees with the preview an agent sees.
 - **N10** Rich text is measured as its plain `label` at the element's base size (LN7).
 - **N11** A sticky with `textSize: 'scale'` fits its text by design and never overflows.
-- **N12** A box wholly inside another (an icon on a square, a table on a `page` shape) is not a `box-overlap`.
-- **N13** A stored lane, stack, boundary or frame is a backdrop (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3): no box to any check, so the boxes drawn
-  over it never overlap it and no arrow runs behind it. A tab holding one is a framed tab (`framedTab`).
+- **N12** Gone (part 4): no box is judged for overlap.
+- **N13** A stored lane, stack, boundary or frame is a backdrop (docs/specs/002-project-scope/not-in-livehuddle.md
+  "The element engine", part 3): no box to any check.
 - **N15** A tab theme no catalogue entry names: `colour-on-themed` is skipped and `[lint] theme unresolved` logs at debug.
-- **N18** Two arrows with the same ends: messages name both `orders→bus`; fixes and JSON use each arrow's ref, since
-  `orders->bus` would be ambiguous.
+- **N18** Gone (part 4): no message names an arrow.
 - **N19** A label holding control characters, quotes or newlines: `quoteLabel` strips C0 and C1 controls, collapses
   whitespace, cuts at `LINT_LABEL_QUOTE_MAX` with `…` and JSON-escapes it.
 - **N20** The lint throws: the caller logs `[lint] failed`; a changeset still lands with `lint unavailable`, the MCP
   prints `lint unavailable`, the view answers 500.
-- **N21** A changeset's whole result tab is linted, so faults a person drew earlier appear in an agent's verdict too.
+- **N21** A changeset's whole result tab is linted, so faults a person drew earlier appear in an agent's verdict too
+  (`colour-on-themed` aside, which names only what the write coloured).
+- **N22** A stored arrow, stroke, path or annotation: no check reads it; a stroke, path or annotation is no box, and
+  an arrow's line and card count only toward the extent.
 
 ## Security and trust
 
@@ -289,27 +281,26 @@ re-lints the tab through the view.
   gate (read-only tokens included). It never writes.
 - Text output is printed to terminals: every quoted label goes through `quoteLabel` (N19), so a label cannot inject
   terminal escapes. Refs are slugs or hex prefixes by construction.
-- Abuse: a crafted tab of 10,000 elements (`MAX_ELEMENTS_PER_TAB`) cannot make the lint quadratic in arrows: the
-  pair check is bounded by `LINT_MAX_ARROWS`, and the box and arrow-to-box checks ask the element grid.
+- Abuse: a crafted tab of 10,000 elements (`MAX_ELEMENTS_PER_TAB`) cannot make the lint quadratic: every check is a
+  pass over the boxes or the texts, `text-overflow` a sweep sorted by top edge, and stored arrows are read only for
+  the extent.
 - Logs carry counts and codes only: no ids, refs, labels or theme ids.
 
 ## Performance and limits
 
 Worst cases, per run:
 
-| Check                   | Cost                                                             | Bound                                            |
-| ----------------------- | ---------------------------------------------------------------- | ------------------------------------------------ |
-| `edge-crossings`        | `n(n−1)/2` bounds tests, then `pathsCross` (segments × segments) | `n ≤ 300`: 44,850 pairs; about 2 ms on one core  |
-| `box-overlap`           | One grid query per box, separating-axes test per candidate       | Linear in boxes times neighbourhood              |
-| `arrow-behind-box`      | One grid query per arrow, `pathPassesThrough` per candidate      | `PATH_MAX_SAMPLES_PER_SEGMENT` (512) per segment |
-| `label-collision`       | `arrowLabelPass`: what every render of the tab already pays      | Labelled arrows × obstacles                      |
-| `label-overflow`        | One `wrapLabel` per labelled box                                 | Linear in label characters                       |
-| Flow, duplicate, colour | One pass over arrows or boxes                                    | Linear                                           |
+| Check              | Cost                                                     | Bound                      |
+| ------------------ | -------------------------------------------------------- | -------------------------- |
+| `label-overflow`   | One `wrapLabel` per labelled box                         | Linear in label characters |
+| `duplicate-label`  | One pass over boxes into a map by normalised label       | Linear                     |
+| `colour-on-themed` | One pass over boxed elements; theme sets built per field | Linear                     |
+| `text-overflow`    | One wrap per text, then a sweep sorted by top edge       | `n log n` in texts         |
+| Extent             | `contentBounds` over the visible elements                | Linear                     |
 
-- Budget: a tab of 300 boxes and 300 arrows lints within `LINT_BUDGET_CPU_MS` of CPU, the spec's "a few
-  milliseconds" for the pair checks with room for the label pass (LN35): measured at about 10 ms (16 ms under
-  coverage). The gate is growth: four times the tab costs under eight times as much, since coverage on a CI runner
-  pushed the absolute figure past 50 ms.
+- Budget: a tab of 300 boxes and 300 stored arrows lints within `LINT_BUDGET_CPU_MS` of CPU (LN35): measured at about
+  2 ms. The gate is growth: four times the tab costs under eight times as much, since coverage on a CI runner makes an
+  absolute figure flake.
 - Changesets: one lint per changeset in the api worker, inside the request it already handles; no extra subrequest.
   The view lints the tab it read; MCP `create_document` adds one view request per created tab.
 - Bundle: the api and MCP workers already bundle `@livehuddle/document`; `diagram-lint` adds only its own sources.
@@ -319,9 +310,8 @@ Worst cases, per run:
 
 The lint has no web surface; its text output is its interface (CLI, MCP text, changeset footer).
 
-- **Summary line**: `{crossings} · {behind} behind · {overlaps} · {extent} → {verdict}`.
-  - crossings: `1 crossing`, `{n} crossings`, or `crossings skipped ({n} arrows)`;
-  - overlaps: `1 overlap`, `{n} overlaps`;
+- **Summary line**: `{crossings} · {behind} behind · {overlaps} · {extent} → {verdict}`, the shared format; in
+  livehuddle the first three always read `0 crossings · 0 behind · 0 overlaps`.
   - extent: `{w}×{h}` (U+00D7, rounded px) or `empty`;
   - verdict: `clean`, or the non-zero of `1 error` / `{n} errors`, `1 warning` / `{n} warnings`, `{n} info`, joined
     by `, ` (LN22).
@@ -331,51 +321,32 @@ The lint has no web surface; its text output is its interface (CLI, MCP text, ch
   `… {n} more {code}` (LN20).
 - **Changeset footer**: `lintFooterPart`: `lint clean`, `lint 2 warnings, 1 info`, or `lint unavailable`.
 
-Messages, with `{a}` a box ref, `{x→y}` an arrow named by its ends (`arrowName`, the arrow's ref when an end is not a
-box), `{label}` a `quoteLabel`:
+Messages, with `{a}` and `{b}` refs and `{label}` a `quoteLabel`:
 
-| Code               | Message                                                                                                       |
-| ------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `box-overlap`      | `{a} overlaps {b}`                                                                                            |
-| `arrow-dangling`   | `{arrow} points at a missing element`                                                                         |
-| `arrow-behind-box` | `{x→y} passes behind {a}[, {b}…]`                                                                             |
-| `edge-crossings`   | `{x→y}, {x→y}, {x→y} +{k}: {n} crossings among {m} arrows, limit {l}`                                         |
-| `label-collision`  | `{x→y} label overlaps {a}[, {b}…]`; struck: `{x→y} label struck by {p→q}[, …]`                                |
-| `label-overflow`   | `{a} needs {n} lines, holds {h}`                                                                              |
-| `node-isolated`    | `{a} has no arrows`                                                                                           |
-| `duplicate-label`  | `{a}, {b}[, …] share {label}`                                                                                 |
-| `flow-backwards`   | `{x→y} points {dir}, against the flow {flow}`                                                                 |
-| `aspect-extreme`   | `drawing: {w}×{h}, {r} times {wider than tall \| taller than wide}`                                           |
-| `colour-on-themed` | `{a} sets its {fill \| stroke \| fill and stroke} on a themed tab`                                            |
-| `text-overflow`    | `{a} needs {n} lines, holds {m}`, or `{a} prints over {b}`; fix `set {a} height={h}`, or `move {b} below:{a}` |
+| Code               | Message                                                            |
+| ------------------ | ------------------------------------------------------------------ |
+| `label-overflow`   | `{a} needs {n} lines, holds {h}`                                   |
+| `duplicate-label`  | `{a}, {b}[, …] share {label}`                                      |
+| `colour-on-themed` | `{a} sets its {fill \| stroke \| fill and stroke} on a themed tab` |
+| `text-overflow`    | `{a} prints over {b}`                                              |
 
 Fixes (LN29). A fix is edit operations in line form: `; ` runs them in order, `, or ` separates alternatives, and
-`<ref>` and `<text>` are placeholders an agent fills in. `{arrow}` is `arrowSelector`: `x->y` when exactly one arrow joins them
-that way, else the arrow's ref (N18).
+`<ref>` and `<text>` are placeholders an agent fills in.
 
-| Code               | Fix                                                                                                                                                                                                                                                                                                                                                  |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `box-overlap`      | `move {b} right-of:{a}`                                                                                                                                                                                                                                                                                                                              |
-| `arrow-dangling`   | `rm {arrow}`                                                                                                                                                                                                                                                                                                                                         |
-| `arrow-behind-box` | The first other line style (`angled`, `curved`, `straight`, `restyle.ts`) whose route passes behind no box but its ends: `set {arrow} line={style}`; none: `move {box} by={dx},{dy}`, the first box clear of the line by `LINT_MOVE_CLEAR` across its first run through it, the shorter way                                                          |
-| `edge-crossings`   | `layout type:shape`; on a framed tab (N13), of the most-crossed arrows (up to `LINT_REFS_PER_FINDING_MAX`), the first whose line style (`angled`, `curved`, `straight`) strictly lowers its own crossings, `set {arrow} line={style}`; none: `move a box so {arrow} crosses fewer lines` (advice: a suggested style that added crossings oscillated) |
-| `label-collision`  | `set {arrow} label="<at most {n} characters>"`; struck, with a clear spot (the first of 0.25, 0.75, 0.33, 0.67, 0.5, 0.15, 0.85 along its own line whose plate meets no box and no line): `set {arrow} labelOffset={"t":{t},"offset":0}`                                                                                                             |
-| `label-overflow`   | `set {a} text=sm` (when larger), else `set {a} label="<text>" note="<text>"`                                                                                                                                                                                                                                                                         |
-| `node-isolated`    | `connect <ref> -> {a}`                                                                                                                                                                                                                                                                                                                               |
-| `duplicate-label`  | `set {b} label="<text>"`                                                                                                                                                                                                                                                                                                                             |
-| `flow-backwards`   | `rewire {arrow} from={y} to={x}`                                                                                                                                                                                                                                                                                                                     |
-| `aspect-extreme`   | `layout type:shape direction={down \|                                                                                                                                                                                                                                                                                                                |
-| `colour-on-themed` | `set {a} fill= stroke=` (the fields set)                                                                                                                                                                                                                                                                                                             |
+| Code               | Fix                                                                          |
+| ------------------ | ---------------------------------------------------------------------------- |
+| `label-overflow`   | `set {a} text=sm` (when larger), else `set {a} label="<text>" note="<text>"` |
+| `duplicate-label`  | `set {b} label="<text>"`                                                     |
+| `colour-on-themed` | `set {a} fill= stroke=` (the fields set)                                     |
+| `text-overflow`    | `move {b} below:{a}`                                                         |
 
 ## Observability
 
-| Fingerprint                      | Level | Where                            | Fields                                                                                                                              |
-| -------------------------------- | ----- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `[lint] run`                     | info  | `lintTab`                        | `elements`, `boxes`, `arrows`, `skipped`, `errors`, `warnings`, `infos`, one count per code with findings, `crossingsSkipped`, `ms` |
-| `[lint] crossings skipped`       | warn  | `lintTab`                        | `arrows`, `max`                                                                                                                     |
-| `[lint] theme unresolved`        | debug | `colour-on-themed`               | none (never the theme id)                                                                                                           |
-| `[lint] failed`                  | error | changeset route, view route, MCP | `where` (`changeset`, `view`, `mcp`), the error's message and stack                                                                 |
-| `[element-grid] skipped element` | debug | `buildElementGrid`               | Existing; fires for a box with an unusable rect                                                                                     |
+| Fingerprint               | Level | Where                            | Fields                                                                                                |
+| ------------------------- | ----- | -------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `[lint] run`              | info  | `lintTab`                        | `elements`, `boxes`, `skipped`, `errors`, `warnings`, `infos`, one count per code with findings, `ms` |
+| `[lint] theme unresolved` | debug | `colour-on-themed`               | none (never the theme id)                                                                             |
+| `[lint] failed`           | error | changeset route, view route, MCP | `where` (`changeset`, `view`, `mcp`), the error's message and stack                                   |
 
 `LintOptions.log` defaults to `consoleLintLogger` (`console.info` / `warn` / `debug` by fingerprint); the CLI passes
 its debug logger, which writes to stderr only when debugging is on, so stdout stays data (LN30). No telemetry pair is
@@ -383,58 +354,50 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Mcp·Used
 
 ## Testing
 
-| Spec rule                                                                                               | Test                                                                                                                                                                                                                                         |
-| ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Each code fires on its fixture and not on its clean twin (11 × 2, and `text-overflow`)                  | `packages/diagram-lint/src/checks/<code>.test.ts`                                                                                                                                                                                            |
-| Errors judge the graph: boxes no arrow connects may overlap; a free line never dangles                  | `packages/diagram-lint/src/checks/box-overlap.test.ts` › "leaves decoration alone", `packages/diagram-lint/src/checks/arrow-dangling.test.ts`                                                                                                |
-| A box wholly inside another is not an overlap                                                           | `packages/diagram-lint/src/checks/box-overlap.test.ts` › "one holds the other wholly"                                                                                                                                                        |
-| `node-isolated` judges shapes only, when most boxes are connected                                       | `packages/diagram-lint/src/checks/node-isolated.test.ts`                                                                                                                                                                                     |
-| A stored backdrop is no box; a tab holding one is framed: no layout fix, a restyle or a move            | `packages/diagram-lint/src/checks/box-overlap.test.ts` › "a stored backdrop", `packages/diagram-lint/src/checks/aspect-extreme.test.ts` › "a stored backdrop", `packages/diagram-lint/src/checks/edge-crossings.test.ts` › "stored backdrop" |
-| A themed element: theme colours, presets, swatches and type defaults are not reported                   | `packages/diagram-lint/src/checks/colour-on-themed.test.ts` (every built-in theme, Default, an unknown id)                                                                                                                                   |
-| Severity per code is the spec's                                                                         | `packages/api-schema/src/lint.test.ts`                                                                                                                                                                                                       |
-| Refs are the views' refs                                                                                | `packages/diagram-lint/src/lint.test.ts` › "prints the refs the views print"                                                                                                                                                                 |
-| Deterministic: same tab, same report, same order                                                        | `packages/diagram-lint/src/lint.test.ts` › "is deterministic", `../packages/diagram-lint/src/order.test.ts`                                                                                                                                  |
-| Every tab fix parses and applies as edit operations (placeholders filled), and every code has a fixture | `packages/diagram-lint/src/fixes.test.ts` › "cover every code"                                                                                                                                                                               |
-| Bounded: above `LINT_MAX_ARROWS` only crossings skip, summary says so                                   | `packages/diagram-lint/src/checks/edge-crossings.test.ts` › "skips the pair check"                                                                                                                                                           |
-| Pair checks stay within budget                                                                          | `packages/diagram-lint/src/performance.test.ts`: 75 to 300 boxes and arrows under 8× the CPU (`cpuMsOf`)                                                                                                                                     |
-| Logs `[lint] run` with counts, never content                                                            | `packages/diagram-lint/src/lint.test.ts` › "logs one run with counts, never content"                                                                                                                                                         |
-| Summary line, plurals, verdict, footer part, `empty`, `clean`                                           | `../packages/diagram-lint/src/format.test.ts`                                                                                                                                                                                                |
-| One finding a line, refs first, fix last, columns, elision; the spec's example byte for byte            | `../packages/diagram-lint/src/format.test.ts`                                                                                                                                                                                                |
-| `quoteLabel` strips controls and cuts                                                                   | `../packages/diagram-lint/src/format.test.ts` › "quoteLabel"                                                                                                                                                                                 |
-| Boxes sized for their label never overflow their labels                                                 | `packages/diagram-lint/src/checks/label-overflow.test.ts` › "sized for its label"                                                                                                                                                            |
-| Templates draw without errors                                                                           | `packages/diagram-lint/src/templates.test.ts`: every `@livehuddle/templates` kind lints with 0 errors                                                                                                                                        |
-| Headless renders and the lint measure alike; `drawsStandardLabel`, `labelRoom`                          | `packages/document/src/svg-render-label-room.test.ts`                                                                                                                                                                                        |
-| The api serves the lint as a view, text and `json=1`, read gate, failure                                | `apps/api/src/routes/document-views-route.test.ts` › "the lint over REST", `apps/api/src/routes/document-views-lint-failure.test.ts`                                                                                                         |
-| A changeset's footer carries the verdict; whole tab; dry run; revert; failure                           | `apps/api/src/routes/changesets.test.ts`, `apps/api/src/changesets/lint.test.ts`, `apps/api/src/changesets/lint-failure.test.ts`                                                                                                             |
-| MCP write results carry the summary line                                                                | `livediagram/apps/mcp/src/create-document-placement.test.ts` › "create_document lint", `livediagram/apps/mcp/src/changeset-client.test.ts`, `livediagram/apps/mcp/src/image-result.test.ts`                                                  |
-| `tab lint`, `--json`, exit 1 on errors                                                                  | the CLI's `tab` command tests (CLI blueprint)                                                                                                                                                                                                |
+| Spec rule                                                                                                   | Test                                                                                                                                                                                        |
+| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Each code that fires does so on its fixture and not on its clean twin (four codes)                          | `packages/diagram-lint/src/checks/<code>.test.ts`                                                                                                                                           |
+| A themed element: theme colours, presets, swatches and type defaults are not reported; a stored arrow never | `packages/diagram-lint/src/checks/colour-on-themed.test.ts` (every built-in theme, Default, an unknown id)                                                                                  |
+| A write is judged on the colours it set                                                                     | `packages/diagram-lint/src/checks/colour-on-themed.test.ts` › "colour-on-themed, judged on what set the colour", `packages/diagram-lint/src/colours-set.test.ts`                            |
+| Severity per code is the spec's                                                                             | `packages/api-schema/src/lint.test.ts`                                                                                                                                                      |
+| Refs are the views' refs                                                                                    | `packages/diagram-lint/src/lint.test.ts` › "prints the refs the views print"                                                                                                                |
+| Deterministic: same tab, same report, same order                                                            | `packages/diagram-lint/src/lint.test.ts` › "is deterministic", `../packages/diagram-lint/src/order.test.ts`                                                                                 |
+| Measures: the arrow and overlap ones stay 0, extent and boxes counted                                       | `packages/diagram-lint/src/lint.test.ts` › "counts by severity and measures extent, with no arrow drawn as one"                                                                             |
+| Non-finite rects are skipped (N6)                                                                           | `packages/diagram-lint/src/lint.test.ts` › "skips boxes without a usable rect (N6)"                                                                                                         |
+| Every tab fix parses and applies as edit operations (placeholders filled), for every code that fires        | `packages/diagram-lint/src/fixes.test.ts` › "cover every code that still fires"                                                                                                             |
+| Cost grows with the tab, not faster                                                                         | `packages/diagram-lint/src/performance.test.ts`: 75 to 300 boxes and stored arrows under 8× the CPU (`cpuMsOf`)                                                                             |
+| Logs `[lint] run` with counts, never content                                                                | `packages/diagram-lint/src/lint.test.ts` › "logs one run with counts, never content"                                                                                                        |
+| Summary line, plurals, verdict, footer part, `empty`, `clean`                                               | `../packages/diagram-lint/src/format.test.ts`                                                                                                                                               |
+| One finding a line, refs first, fix last, columns, elision; the spec's example byte for byte                | `../packages/diagram-lint/src/format.test.ts`                                                                                                                                               |
+| `quoteLabel` strips controls and cuts                                                                       | `../packages/diagram-lint/src/format.test.ts` › "quoteLabel"                                                                                                                                |
+| Boxes sized for their label never overflow their labels                                                     | `packages/diagram-lint/src/checks/label-overflow.test.ts` › "never fires on a box sized for its label"                                                                                      |
+| Templates draw without errors                                                                               | `packages/diagram-lint/src/templates.test.ts`: every `@livehuddle/templates` kind lints with 0 errors                                                                                       |
+| Headless renders and the lint measure alike; `drawsStandardLabel`, `labelRoom`                              | `packages/document/src/svg-render-label-room.test.ts`                                                                                                                                       |
+| The api serves the lint as a view, text and `json=1`, read gate, failure                                    | `apps/api/src/routes/document-views-route.test.ts` › "the lint over REST", `apps/api/src/routes/document-views-lint-failure.test.ts`                                                        |
+| A changeset's footer carries the verdict; whole tab; dry run; revert; failure                               | `apps/api/src/routes/changesets.test.ts`, `apps/api/src/changesets/lint.test.ts`, `apps/api/src/changesets/lint-failure.test.ts`                                                            |
+| MCP write results carry the summary line                                                                    | `livediagram/apps/mcp/src/create-document-placement.test.ts` › "create_document lint", `livediagram/apps/mcp/src/changeset-client.test.ts`, `livediagram/apps/mcp/src/image-result.test.ts` |
+| `tab lint`, `--json`, exit 1 on errors                                                                      | the CLI's `tab` command tests (CLI blueprint)                                                                                                                                               |
 
 ## Constants and configuration
 
-| Constant                    | Value | Provenance                                                                                                                                                   | Safe range  |
-| --------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- |
-| `LINT_CROSSINGS_PER_ARROW`  | 0.25  | Spec                                                                                                                                                         | 0.1 to 1    |
-| `LINT_MAX_ASPECT`           | 3     | Spec                                                                                                                                                         | 2 to 5      |
-| `LINT_MAX_ARROWS`           | 300   | Spec                                                                                                                                                         | 100 to 1000 |
-| `LINT_OVERLAP_TOLERANCE_PX` | 2     | `PATH_INSIDE_INSET_PX`: touching is not overlapping (LN3)                                                                                                    | 0 to 8      |
-| `LABEL_ESTIMATE_CHAR_EM`    | 0.55  | `labelMeasure`'s headless fallback, lifted into a name (LN4)                                                                                                 | 0.5 to 0.6  |
-| `LINT_MEASURE_EPOCH`        | -1    | A `fontEpoch` no browser uses, so estimates never share cached widths (LN33)                                                                                 | any < 0     |
-| `LINT_GRAPH_MIN_CONNECTED`  | 2     | A graph has at least one arrow between two boxes (LN11)                                                                                                      | 2 to 4      |
-| `LINT_GRAPH_MIN_SHARE`      | 0.5   | "Otherwise a graph": most boxes are connected (LN11)                                                                                                         | 0.5 to 0.9  |
-| `LINT_MOVE_CLEAR`           | 16    | A label plate's height and some: a moved box clears the line it sat on                                                                                       | 8 to 32     |
-| `LINT_LABEL_RUN_PAD`        | 16    | Room a label keeps either end of its run, as graph input's `LABEL_RUN_MARGIN`; `{n}` = (longest run − 2 × pad) ÷ the plate's width per character, at least 3 | 8 to 24     |
-| `LINT_FLOW_MIN_ARROWS`      | 3     | A direction needs a few arrows to be a flow (LN15)                                                                                                           | 2 to 6      |
-| `LINT_FLOW_MIN_SHARE`       | 0.6   | A clear majority; a radial layout has none (LN15)                                                                                                            | 0.5 to 0.8  |
-| `LINT_FLOW_TOLERANCE_PX`    | 8     | Sideways arrows between neighbours in one rank are not backwards (LN15)                                                                                      | 0 to 24     |
-| `LINT_ASPECT_MIN_BOXES`     | 3     | One or two boxes have a shape, not a layout (LN16)                                                                                                           | 2 to 5      |
-| `LINT_MAX_LINES_PER_CODE`   | 10    | Keeps the report near 100 tokens on a hand-coloured tab (LN20)                                                                                               | 3 to 50     |
-| `LINT_REFS_PER_FINDING_MAX` | 3     | Arrows named in the `edge-crossings` message; JSON lists all (LN9)                                                                                           | 1 to 10     |
-| `LINT_LABEL_QUOTE_MAX`      | 40    | `GRAPH_LABEL_MAX`: a heading's length (LN21)                                                                                                                 | 20 to 80    |
-| `LINT_MESSAGE_COLUMN_MAX`   | 48    | The fix column stays inside a 100-column terminal (LN19)                                                                                                     | 32 to 64    |
-| `LINT_BUDGET_CPU_MS`        | 50    | 300 × 300 with the label pass; a measured aim, the gate is growth (LN35)                                                                                     | 20 to 200   |
+| Constant                    | Value | Provenance                                                                 | Safe range |
+| --------------------------- | ----- | -------------------------------------------------------------------------- | ---------- |
+| `LINT_OVERLAP_TOLERANCE_PX` | 2     | `PATH_INSIDE_INSET_PX`: touching is not overlapping (LN3); `text-overflow` | 0 to 8     |
+| `LABEL_ESTIMATE_CHAR_EM`    | 0.55  | `labelMeasure`'s headless fallback, lifted into a name (LN4)               | 0.5 to 0.6 |
+| `LINT_MAX_LINES_PER_CODE`   | 10    | Keeps the report near 100 tokens on a hand-coloured tab (LN20)             | 3 to 50    |
+| `LINT_LABEL_QUOTE_MAX`      | 40    | `GRAPH_LABEL_MAX`: a heading's length (LN21)                               | 20 to 80   |
+| `LINT_MESSAGE_COLUMN_MAX`   | 48    | The fix column stays inside a 100-column terminal (LN19)                   | 32 to 64   |
+| `LINT_BUDGET_CPU_MS`        | 50    | 300 boxes and 300 stored arrows; a measured aim, the gate is growth (LN35) | 20 to 200  |
+
+The shared constants file also exports the arrow and graph constants livediagram's checks use
+(`LINT_CROSSINGS_PER_ARROW`, `LINT_MAX_ARROWS`, `LINT_MEASURE_EPOCH`, `LINT_GRAPH_MIN_CONNECTED`,
+`LINT_GRAPH_MIN_SHARE`, `LINT_FLOW_*`, `LINT_REFS_PER_FINDING_MAX`, `LINT_RING_SPREAD`, `LINT_LABEL_RUN_PAD`,
+`LINT_MOVE_CLEAR`); livehuddle re-exports them and no check of its own reads them. `LINT_MAX_ASPECT` and
+`LINT_ASPECT_MIN_BOXES` went with `aspect-extreme` (part 4).
 
 No environment variable, binding or migration; deploying needs nothing.
 
 ## Defaults ledger
 
-LN2 to LN40 in [DEFAULTS.md](DEFAULTS.md).
+LN2 to LN40 in [DEFAULTS.md](DEFAULTS.md); the rows that judged arrows or the graph they drew are marked gone with
+part 4.

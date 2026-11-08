@@ -3,7 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@liveplanner/project';
 import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import { storedTabStatsOf } from './tab-stats';
-import { seedTabs, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
+import { seedTabs, getTabRow, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
 
 // Every writer of a tab body keeps its `tab_stats` row in step
 // (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come from"), proven against
@@ -128,15 +128,28 @@ describe('swapTabData (participant and Q&A writes)', () => {
     const db = withProject();
     await upsertTab(db.env, 'A', tab('t1'), 0);
     const before = statsRow(db.sql, 't1');
-    const stored = db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get('t1')!.data as string;
     const next = { elements: [shape('x', 4)] };
     const nextData = JSON.stringify(next);
     expect(
-      await swapTabData(db.env, 'A', 't1', 'stale', nextData, storedTabStatsOf(next, nextData)),
+      await swapTabData(
+        db.env,
+        'A',
+        't1',
+        { rev: 99, updatedAt: 0 },
+        nextData,
+        JSON.parse(nextData) as never,
+      ),
     ).toBe(false);
     expect(statsRow(db.sql, 't1')).toEqual(before);
     expect(
-      await swapTabData(db.env, 'A', 't1', stored, nextData, storedTabStatsOf(next, nextData)),
+      await swapTabData(
+        db.env,
+        'A',
+        't1',
+        (await getTabRow(db.env, 'A', 't1'))!,
+        nextData,
+        JSON.parse(nextData) as never,
+      ),
     ).toBe(true);
     expect(statsRow(db.sql, 't1')).toEqual(expected(db.sql, 't1'));
     expect(statsRow(db.sql, 't1')).toMatchObject({ element_count: 1, comment_count: 4 });

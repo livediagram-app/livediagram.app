@@ -268,8 +268,13 @@ Exporting 600 frames takes about 11 ms (200 about 4 ms). On the canvas a redraw 
 ink, so it lays the face out once rather than once per part: a 200-card board redraws in about 50 ms (it took
 105 to 280 ms, and its 120-part cap left 80 cards plain), and only after a real change, never on a hover.
 
-A sketched face costs one still copy of its DOM, taken once it settles (so a zoom, which restyles faces every
-frame, copies each once afterwards), and one light wobble filter. On a Sketch tab of 200 charts, copying every face
+A sketched face costs one still copy of its DOM, taken once it settles, and one light wobble filter. A zoom restyles
+no face (a face's editable line follows the zoom only while it is being edited, for its focus ring), so a zoom by
+itself copies and re-draws no face. The faces on a board take their finish together, Marker's and Sketch's pass over
+their parts and Sketch's copy alike: every face that mounts, settles or meets its late lettering at the same moment
+is cleared, then read, then drawn, so the board is laid out once for all of them rather than once per face. Opening a
+board of 2,000 such faces measured about 1,400 layouts under Marker and 5,000 under Sketch when each face took alone,
+and 30 to 110 together, its longest task falling from 17-47 s to under 1.5 s on a loaded machine. On a Sketch tab of 200 charts, copying every face
 takes 6-14 ms, a pan costs nothing, and a zoom keeps every task under 50 ms; the icons' heavier two-pass wobble
 broke that budget on faces, so faces take one pass. WebKit is the exception: it re-runs a live filter on every
 repaint wherever it is layered, so there a face's wobble is left out (the face draws whole), and a Sketch pan costs what a Flexible one does.

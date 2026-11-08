@@ -51,8 +51,8 @@ describe('add <kind>', () => {
     });
   });
 
-  it('makes text, stickies, annotations and link cards from their factories', () => {
-    for (const kind of ['text', 'sticky', 'annotation', 'link-card']) {
+  it('makes text, stickies and link cards from their factories', () => {
+    for (const kind of ['text', 'sticky', 'link-card']) {
       expect(added(`add ${kind}`).type).toBe(kind);
     }
     expect(added('add shape')).toMatchObject({ shape: 'square' });
@@ -63,7 +63,20 @@ describe('add <kind>', () => {
     expect(applied(outcome).warnings).toEqual([
       { code: 'shape_coerced', ref: 'box', message: 'box kind "rectangle" drawn as square' },
     ]);
-    expect(refused(run('add arrow')).details).toEqual(['kind="arrow": use connect']);
+    // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4: arrows, lines, drawings, paths
+    // and annotations are retired.
+    expect(refused(run('add arrow')).details).toEqual([
+      'kind="arrow": arrows are no longer supported in livehuddle',
+    ]);
+    for (const [kind, rule] of [
+      ['line', 'lines'],
+      ['freehand', 'drawings'],
+      ['path', 'paths'],
+      ['annotation', 'annotations'],
+    ])
+      expect(refused(run(`add ${kind}`)).details).toEqual([
+        `kind="${kind}": ${rule} are no longer supported in livehuddle`,
+      ]);
     expect(refused(run('add image')).code).toBe('invalid_value');
     // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": tables are retired, as embeds are.
     expect(refused(run('add table')).details).toEqual([

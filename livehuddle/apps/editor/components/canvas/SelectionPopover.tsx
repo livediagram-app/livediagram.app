@@ -14,7 +14,6 @@ import {
   SendToBackIcon,
   TextIcon,
 } from '@liveworkspace/workbench/components/canvas/selection-popover-icons';
-import { EditPointsIcon } from '@/components/palette/palette-icons';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import { TurnButtons } from '@liveworkspace/workbench/components/canvas/TurnButtons';
 import type { Rect } from '@livehuddle/document';
@@ -35,8 +34,6 @@ type SelectionPopoverProps = {
   // True when the element already has text: the button reads "Edit Text";
   // false = "Add Text". Defaults to edit for older callers.
   hasText?: boolean;
-  // Open a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"): a path only.
-  onEditPoints?: () => void;
   // Turn a piece of furniture a quarter (docs/specs/009-elements/furniture-facing.md "Turning a placed piece"): a piece
   // that turns only.
   onTurn?: (quarters: 1 | -1) => void;
@@ -91,7 +88,6 @@ export function SelectionPopover({
   onDelete,
   onEditText,
   hasText = true,
-  onEditPoints,
   onTurn,
   onDuplicate,
   onFormatPainter,
@@ -192,19 +188,6 @@ export function SelectionPopover({
                 onClick={onEditText}
               >
                 <TextIcon />
-              </PopoverButton>
-              <Divider />
-            </>
-          ) : null}
-
-          {onEditPoints ? (
-            <>
-              <PopoverButton
-                label="Edit Points"
-                description="Adjust the path's points, corners and curves."
-                onClick={onEditPoints}
-              >
-                <EditPointsIcon />
               </PopoverButton>
               <Divider />
             </>

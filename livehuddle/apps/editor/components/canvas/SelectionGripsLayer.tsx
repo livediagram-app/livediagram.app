@@ -12,8 +12,8 @@ import { createPortal } from 'react-dom';
 // face's settings button, both z-10), below the remote cursors (40).
 export const SELECTION_GRIPS_Z_INDEX = 30;
 
-// Where the portals land: HTML grips in `box`, SVG grips (an arrow's) in `arrows`.
-export type SelectionGripHosts = { box: HTMLElement; arrows: SVGGElement };
+// Where the portals land: the grips are HTML, in `box`.
+export type SelectionGripHosts = { box: HTMLElement };
 
 export const SelectionGripsContext = createContext<SelectionGripHosts | null>(null);
 
@@ -28,9 +28,8 @@ export function SelectionGripsLayer({
   children?: ReactNode;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
-  const arrowsRef = useRef<SVGGElement>(null);
   useLayoutEffect(() => {
-    onHosts({ box: boxRef.current!, arrows: arrowsRef.current! });
+    onHosts({ box: boxRef.current! });
     return () => onHosts(null);
   }, [onHosts]);
   return (
@@ -40,12 +39,6 @@ export function SelectionGripsLayer({
       style={{ zIndex: SELECTION_GRIPS_Z_INDEX }}
     >
       {children}
-      {/* An arrow's grips are SVG in canvas coordinates, as in the arrow's own <svg>. */}
-      <svg className="absolute inset-0 h-full w-full" style={{ overflow: 'visible' }} aria-hidden>
-        {/* Hosts the arrows' grips; carries a very large move's offset for them (docs/specs/008-canvas/drag-preview.md). */}
-        <g ref={arrowsRef} data-ride-plane="" />
-      </svg>
-      {/* After the arrow grips: a free arrow's frame handles sit over its end grips. */}
       {/* Where the layer is, so it can carry a very large move's offset for the grips in it. */}
       <div ref={boxRef} data-ride-plane="" className="absolute inset-0" />
     </div>
@@ -56,11 +49,4 @@ export function SelectionGripsLayer({
 export function BoxGripsPortal({ children }: { children: ReactNode }) {
   const hosts = useContext(SelectionGripsContext);
   return hosts ? createPortal(children, hosts.box) : null;
-}
-
-// SVG grips, in canvas coordinates, moved into the layer's <svg>, tagged so the arrow's grips ride a move's
-// offset with it (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
-export function ArrowGripsPortal({ arrowId, children }: { arrowId: string; children: ReactNode }) {
-  const hosts = useContext(SelectionGripsContext);
-  return hosts ? createPortal(<g data-ride-id={arrowId}>{children}</g>, hosts.arrows) : null;
 }

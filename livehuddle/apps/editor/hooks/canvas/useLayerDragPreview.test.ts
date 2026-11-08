@@ -1,12 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  createElementGridTracker,
-  createPinnedArrow,
-  createShape,
-  type Element,
-} from '@livehuddle/document';
+import { createShape, retiredArrowEnds, type Element } from '@livehuddle/document';
 import { applyOverlay, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
-import { buildArrowLinks } from '@/components/canvas/drag-affected-arrows';
+import { buildRetiredArrowLinks } from '@/components/canvas/retired-arrow-links';
+import { storedPinnedArrow } from '@/test/retired-elements';
 import {
   createLayerPreviewStore,
   shownWithOverlay,
@@ -19,11 +15,10 @@ import {
 const a = createShape('square', 0, 0);
 const b = createShape('square', 400, 0);
 const c = createShape('square', 0, 400);
-const ab = createPinnedArrow(a.id, 'e', b.id, 'w');
+// A stored arrow, retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4).
+const ab = storedPinnedArrow('ab', a.id, 'e', b.id, 'w');
 const BOARD: Element[] = [a, b, c, ab];
 const ordered = BOARD.map((element) => ({ element, layerOpacity: 1 }));
-const NONE = { layout: null, knockouts: [] };
-const tracker = createElementGridTracker();
 
 function inputs(over: Partial<LayerPreviewInputs> = {}): LayerPreviewInputs {
   return {
@@ -31,14 +26,7 @@ function inputs(over: Partial<LayerPreviewInputs> = {}): LayerPreviewInputs {
     ordered,
     drawnElements: BOARD,
     elementIndex: new Map(BOARD.map((el) => [el.id, el])),
-    arrowLinks: buildArrowLinks(BOARD),
-    gridFor: (els) => tracker.gridFor(els),
-    arrowLabels: {
-      renderOf: () => NONE,
-      labelRectOf: () => null,
-      draftLayout: () => null,
-    },
-    tabFinish: undefined,
+    arrowLinks: buildRetiredArrowLinks(BOARD),
     ...over,
   };
 }
@@ -87,7 +75,7 @@ describe('shownWithOverlay', () => {
 });
 
 describe('the layer preview store', () => {
-  it('tells only the reshaped element and the arrows on it, and draws them from the preview', () => {
+  it('tells only the reshaped element and the stored arrow pinned to it, and draws them from the preview', () => {
     const store = createLayerPreviewStore();
     const told = { a: vi.fn(), b: vi.fn(), c: vi.fn(), ab: vi.fn() };
     store.subscribe(a.id, told.a);
@@ -103,7 +91,8 @@ describe('the layer preview store', () => {
     expect(told.b).not.toHaveBeenCalled();
     expect(told.c).not.toHaveBeenCalled();
     expect(store.entryOf(a.id)?.element).toBe(movedA);
-    expect(store.entryOf(ab.id)?.geometry).toBeDefined();
+    // The arrow's ends worked out against the board as the preview has it: the pinned end follows.
+    expect(store.entryOf(ab.id)?.ends).toEqual(retiredArrowEnds(ab as never, [movedA, b, c, ab]));
     expect(store.entryOf(c.id)).toBeUndefined();
     expect(store.structure()).toBeNull();
   });
@@ -130,8 +119,8 @@ describe('the layer preview store', () => {
     setLocalPreview('t', [{ ...a, width: 121 }, b, c, ab], BOARD);
     store.update(base);
     told.mockClear();
-    // The layer re-renders (a peer's cursor): a new object, a new gridFor closure, the same fields.
-    store.update({ ...base, gridFor: (els) => tracker.gridFor(els) });
+    // The layer re-renders (a peer's cursor): a new object, the same fields.
+    store.update({ ...base });
     expect(told).not.toHaveBeenCalled();
   });
 
@@ -180,23 +169,29 @@ describe('the layer preview store', () => {
     expect((store.entryOf('copy')?.element as { x: number } | undefined)?.x).toBe(50);
   });
 
-  it('draws no arrow geometry on a board without arrows', () => {
+  it('draws no arrow ends when the board holds no links', () => {
     const store = createLayerPreviewStore();
     setLocalPreview('t', [{ ...a, width: 121 }, b, c, ab], BOARD);
-    store.update(inputs({ elementIndex: null, arrowLinks: null }));
+    store.update(inputs({ arrowLinks: null }));
     expect(store.entryOf(ab.id)).toBeUndefined();
     expect((store.entryOf(a.id)?.element as { width: number } | undefined)?.width).toBe(121);
   });
 
-  it('rides a move on a board without arrows, which has no element index', () => {
+  it('rides a move on a board without arrows', () => {
     const store = createLayerPreviewStore();
     setLocalPreview('t', [{ ...a, x: 30 }, { ...c, x: 30 }, b], [a, b, c]);
-    store.update(inputs({ drawnElements: [a, b, c], elementIndex: null, arrowLinks: null }));
+    store.update(
+      inputs({
+        drawnElements: [a, b, c],
+        elementIndex: new Map([a, b, c].map((el) => [el.id, el])),
+        arrowLinks: null,
+      }),
+    );
     expect(store.entryOf(a.id)).toBeUndefined();
     expect(store.entryOf(c.id)).toBeUndefined();
   });
 
-  it('keeps a moved element and the arrow between moved ends out of its entries: they ride', () => {
+  it('keeps moved elements out of its entries (they ride), and draws the stored arrow on them from its ends', () => {
     const store = createLayerPreviewStore();
     const told = { a: vi.fn(), ab: vi.fn() };
     store.subscribe(a.id, told.a);
@@ -205,9 +200,23 @@ describe('the layer preview store', () => {
     store.update(inputs());
     expect(store.entryOf(a.id)).toBeUndefined();
     expect(store.entryOf(b.id)).toBeUndefined();
-    expect(store.entryOf(ab.id)).toBeUndefined();
     expect(told.a).not.toHaveBeenCalled();
-    expect(told.ab).not.toHaveBeenCalled();
+    // A stored arrow never rides: its ends follow the boxes it is pinned to.
+    expect(store.entryOf(ab.id)?.ends?.from.y).toBe(
+      retiredArrowEnds(ab as never, BOARD).from.y + 9,
+    );
+    expect(told.ab).toHaveBeenCalledTimes(1);
+  });
+
+  // docs/specs/002-project-scope/blueprints/element-engine.md D23: nothing throws when what a stored arrow is
+  // pinned to goes; its loose end takes its other end's point (retiredArrowEnds).
+  it('draws a stored arrow whose pinned box the preview removes, at its other end', () => {
+    const store = createLayerPreviewStore();
+    setLocalPreview('t', [b, c, ab], BOARD);
+    expect(() => store.update(inputs())).not.toThrow();
+    const ends = store.entryOf(ab.id)?.ends;
+    expect(ends).toBeDefined();
+    expect(ends!.from).toEqual(ends!.to);
   });
 
   it('stops telling an element once it unsubscribes', () => {
@@ -218,35 +227,5 @@ describe('the layer preview store', () => {
     setLocalPreview('t', [{ ...a, width: 121 }, b, c, ab], BOARD);
     store.update(inputs());
     expect(told).not.toHaveBeenCalled();
-  });
-});
-
-describe('a previewed arrow with a label', () => {
-  it('lays its label out against the board as the preview shows it, keeping the others it cuts', () => {
-    const labelled = { ...ab, label: 'Yes' } as Element;
-    const board = [a, b, c, labelled];
-    const kept = { x: 0, y: 0, width: 1, height: 1 };
-    const own = { x: 5, y: 5, width: 2, height: 2 };
-    const placed = { x: 9, y: 9, width: 3, height: 3 };
-    const draftLayout = vi.fn(() => ({ knockout: placed }));
-    const store = createLayerPreviewStore();
-    // A reshape, not a move: a move rides an offset instead (below).
-    const movedA = { ...a, y: 40, width: 160 };
-    setLocalPreview('t', [movedA, b, c, labelled], board);
-    store.update(
-      inputs({
-        ordered: board.map((element) => ({ element, layerOpacity: 1 })),
-        drawnElements: board,
-        elementIndex: new Map(board.map((el) => [el.id, el])),
-        arrowLinks: buildArrowLinks(board),
-        arrowLabels: {
-          renderOf: () => ({ layout: { knockout: own }, knockouts: [kept, own] }),
-          labelRectOf: () => null,
-          draftLayout,
-        } as unknown as LayerPreviewInputs['arrowLabels'],
-      }),
-    );
-    expect(draftLayout).toHaveBeenCalledWith(labelled, 'Yes', [movedA, b, c, labelled]);
-    expect(store.entryOf(ab.id)?.label?.knockouts).toEqual([kept, placed]);
   });
 });

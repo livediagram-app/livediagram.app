@@ -6,11 +6,11 @@ import { tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 const actions = () =>
   ({
     addShape: vi.fn(),
-    beginFreehand: vi.fn(),
+    addSticky: vi.fn(),
     cancelDraw: vi.fn(),
   }) as unknown as PaletteTileActions & {
     addShape: ReturnType<typeof vi.fn>;
-    beginFreehand: ReturnType<typeof vi.fn>;
+    addSticky: ReturnType<typeof vi.fn>;
     cancelDraw: ReturnType<typeof vi.fn>;
   };
 
@@ -19,7 +19,7 @@ const square = {
   label: 'Square',
   action: { type: 'shape', kind: 'square' },
 } as never;
-const pen = { id: 'pen', label: 'Pen', action: { type: 'freehand' } } as never;
+const sticky = { id: 'sticky', label: 'Sticky Note', action: { type: 'sticky' } } as never;
 
 describe('a palette tile pressed', () => {
   it('arms its tool, and puts it down when pressed again while armed', () => {
@@ -29,14 +29,14 @@ describe('a palette tile pressed', () => {
     tileHandler(square, a, { type: 'shape', kind: 'square' } as never)();
     expect(a.cancelDraw).toHaveBeenCalledTimes(1);
     expect(a.addShape).toHaveBeenCalledTimes(1);
-    tileHandler(pen, a, { type: 'freehand' } as never)();
+    tileHandler(sticky, a, { type: 'sticky' } as never)();
     expect(a.cancelDraw).toHaveBeenCalledTimes(2);
   });
 
   it('arms another tool over an armed one', () => {
     const a = actions();
-    tileHandler(pen, a, { type: 'shape', kind: 'square' } as never)();
-    expect(a.beginFreehand).toHaveBeenCalled();
+    tileHandler(sticky, a, { type: 'shape', kind: 'square' } as never)();
+    expect(a.addSticky).toHaveBeenCalled();
     expect(a.cancelDraw).not.toHaveBeenCalled();
   });
 });

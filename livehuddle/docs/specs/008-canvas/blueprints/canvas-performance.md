@@ -13,13 +13,13 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/components/canvas/CanvasElementList.tsx`                  | Every element in paint order, memoised so an editor render that changes none skips them; the element plane      |
 | `apps/editor/hooks/canvas/useLayerDragPreview.ts`                      | The layer's preview store: a drag frame renders each previewed element, not the layer                           |
 | `apps/editor/hooks/canvas/useSnapGuideState.ts`                        | `SnapGuideStore`: the drag's snap guides, read only by `CanvasChrome`                                           |
-| `apps/editor/components/canvas/arrow-view-frame.ts`                    | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
-| `apps/editor/components/canvas/ArrowView.tsx`                          | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
+| `livediagram/apps/editor/components/canvas/arrow-view-frame.ts`        | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
+| `livediagram/apps/editor/components/canvas/ArrowView.tsx`              | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
 | `apps/editor/components/canvas/BoxedElementView.tsx`                   | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                                                  |
 | `packages/document/src/element-grid.ts`                                | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
-| `packages/document/src/arrow-behind.ts`                                | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
-| `packages/document/src/svg-render-arrows.ts`                           | The export builds one grid per render and queries it                                                            |
-| `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                     | `draftLayout` identity-stable across passes                                                                     |
+| `livediagram/packages/document/src/arrow-behind.ts`                    | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
+| `livediagram/packages/document/src/svg-render-arrows.ts`               | The export builds one grid per render and queries it                                                            |
+| `livediagram/apps/editor/hooks/canvas/useArrowLabelLayouts.ts`         | `draftLayout` identity-stable across passes                                                                     |
 | `apps/editor/lib/stock-colour-projector.ts`                            | Same board in, same array out (`lastIn` / `lastOut`)                                                            |
 | `apps/editor/hooks/canvas/useSettledElements.ts`                       | What the Map draws: frozen during element gestures, throttled otherwise                                         |
 | `apps/editor/components/canvas/Minimap.tsx`                            | Draws `useSettledElements(elements)`                                                                            |
@@ -248,12 +248,15 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### The Map is one image
 
 - `Minimap`'s memo builds the board's markup (`svgBoxed` / `svgArrow`, frames first, arrows on
-  top) and wraps it in a standalone document over the padded content box (`PAD_FRACTION`,
-  `PAD_MIN`): `<svg xmlns viewBox width height>` + `svgShadowDefs(elements)` + the markup. Arrowheads
+  top) and wraps it in a standalone document over the padded content box (`minimapPicture`, `MinimapMap` in
+  `@liveworkspace/workbench`): `<svg xmlns viewBox width height>` + `svgShadowDefs(elements)` + the markup. Arrowheads
   are inline polygons and masks travel with their arrows, so nothing references the page's defs.
 - It is shown as one SVG `<image>` at that box in the map's world-space `viewBox`, from a
-  `data:image/svg+xml;charset=utf-8,` URL (pure: no object URL to create or revoke). The window
-  overlay, navigation and paper colour are unchanged.
+  `data:image/svg+xml;charset=utf-8,` URL (pure: no object URL to create or revoke), on the paper
+  colour. The window and the dim are a second `<svg>` over it (`data-minimap-view`, same box and
+  `viewBox`, `pointer-events-none`, `will-change: transform`), so a pan repaints that layer alone;
+  presses land on the picture's `<svg>`, whose `getScreenCTM` maps them to the board. Each app's
+  `Minimap` builds the picture and puts `MinimapMap` in its own panel.
 - No labels: the memo draws `elements.map(withoutLabel)` (each element without `label` / `richText`),
   so the picture carries no `<text>` and the arrow label pass has nothing to lay out. Measured on the
   reference board: the picture drops from 417 KB to 305 KB (550 texts, 642 lines gone), and Chrome's

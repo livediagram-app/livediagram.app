@@ -161,35 +161,6 @@ export function formatRejections(errors: readonly EditRejection[]): string[] {
   return [...lines, 'nothing was applied'];
 }
 
-// `connect a -> b` where an arrow a→b exists, without `again`.
-export function arrowExists(operation: number, ends: string, existing: string): EditRejection {
-  return {
-    code: 'arrow_exists',
-    operation,
-    details: [`${ends} already has an arrow:`, `  ${existing}`],
-    hint: 'add again for a second arrow, or set the existing one',
-  };
-}
-
-// `insert … between a b` with no a→b arrow: the arrows touching a and b, to choose from.
-export function notConnected(
-  operation: number,
-  ends: string,
-  touching: readonly string[],
-  a: string,
-  b: string,
-): EditRejection {
-  return {
-    code: 'not_connected',
-    operation,
-    details: [
-      `no arrow ${ends}`,
-      ...(touching.length ? ['arrows touching them:', ...touching.map((t) => `  ${t}`)] : []),
-    ],
-    hint: `connect ${a} -> ${b} first, or insert between the ends of one of these`,
-  };
-}
-
 // `test` found a value other than the one it expected.
 export function testFailed(
   operation: number,

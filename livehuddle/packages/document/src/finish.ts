@@ -6,7 +6,6 @@
 // A finish only changes what an element leaves unset (its corner, border width, arrow thickness, shadow,
 // font) plus how a line is drawn (Sketch, see sketch.ts; Marker, see marker.ts). An explicit pick on the element always wins. Pure
 // functions, read by the canvas and every export so the two agree.
-import { ARROW_THICKNESS_PX, type ArrowStyle, type ArrowThickness } from './arrow-style';
 import { DEFAULT_ICON_WEIGHT, type IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { BorderStroke } from '@liveworkspace/model-core/border-style';
 import { DEFAULT_BORDER_STROKE } from '@liveworkspace/model-core/border-style';
@@ -56,12 +55,7 @@ export function finishDrawsBodyByHand(finish: Finish, type: string): boolean {
 }
 
 /** The element types that carry their own finish (the spec's "Where it is set"). */
-const FINISH_ELEMENT_TYPES: ReadonlySet<Element['type']> = new Set([
-  'shape',
-  'arrow',
-  'text',
-  'sticky',
-]);
+const FINISH_ELEMENT_TYPES: ReadonlySet<Element['type']> = new Set(['shape', 'text', 'sticky']);
 
 export function supportsFinish(el: { type: string }): boolean {
   return FINISH_ELEMENT_TYPES.has(el.type as Element['type']);
@@ -85,26 +79,6 @@ export function finishCornerFallbackPx(kindDefaultPx: number, finish: Finish): n
 /** A border's width preset: the element's own, else Thin under Professional, else the default. */
 export function finishBorderStroke(own: BorderStroke | undefined, finish: Finish): BorderStroke {
   return own ?? (finish === 'professional' ? 'thin' : DEFAULT_BORDER_STROKE);
-}
-
-/** An arrow's thickness: its own when set, else Thin under Professional, else the resolved default. */
-export function finishArrowThickness(
-  resolved: ArrowThickness,
-  isOwnSet: boolean,
-  finish: Finish,
-): ArrowThickness {
-  return !isOwnSet && finish === 'professional' ? 'thin' : resolved;
-}
-
-/** An arrow's line width, px: its own when set, else 1 px under Professional, a marker's nib under Marker, else
- *  2 px. Under Marker a Thin (1 px or finer) arrow is drawn at the nib too: a marker has no fine-liner. Read by the
- *  canvas and the export alike. */
-export function finishArrowWidthPx(own: number | undefined, finish: Finish): number {
-  if (finish === 'marker' && (own === undefined || own <= ARROW_THICKNESS_PX.thin))
-    return MARKER_LINE_PX;
-  if (own !== undefined) return own;
-  if (finish === 'professional') return ARROW_THICKNESS_PX.thin;
-  return finish === 'marker' ? MARKER_LINE_PX : 2;
 }
 
 /** Whether the soft default shadow on boxes and the sticky's paper peel draw. An element's own shadow
@@ -243,17 +217,6 @@ export function finishSplitsFace(el: { type: string; shape?: string; iconId?: st
     default:
       return false;
   }
-}
-
-/** Whether a freshly drawn arrow may take a draw-time avoidance curve. */
-export function finishCurvesNewArrows(finish: Finish): boolean {
-  return finish !== 'professional';
-}
-
-/** The style a freshly drawn arrow takes when the person drawing it picked none: a right-angled connector
- *  under Professional, the formal diagram look; otherwise none (straight, or the avoidance curve). */
-export function finishNewArrowStyle(finish: Finish): ArrowStyle | undefined {
-  return finish === 'professional' ? 'angled' : undefined;
 }
 
 /** Whether a shape's kind takes Sketch's hatching and Marker's colouring at all, whatever its fill and whatever sits

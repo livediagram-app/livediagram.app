@@ -52,6 +52,25 @@ function depthIn(p: FencePoint, box: Rect): number {
  * at its doorway), and the outline of each piece of scenery's footprint (docs/specs/009-elements/office.md), all
  * blocked the same way.
  */
+/** Whether two fence lists draw the same lines, in the same order: an edit that moved no wall keeps the old list. */
+export function sameFences(p: readonly FenceSegment[], q: readonly FenceSegment[]): boolean {
+  if (p === q) return true;
+  if (p.length !== q.length) return false;
+  for (let i = 0; i < p.length; i++) {
+    const s = p[i]!;
+    const t = q[i]!;
+    if (s.a.x !== t.a.x || s.a.y !== t.a.y || s.b.x !== t.b.x || s.b.y !== t.b.y) return false;
+    const r = s.solid;
+    const u = t.solid;
+    if (
+      r !== u &&
+      (!r || !u || r.x !== u.x || r.y !== u.y || r.width !== u.width || r.height !== u.height)
+    )
+      return false;
+  }
+  return true;
+}
+
 export function fenceSegments(elements: readonly AvatarSceneElement[]): FenceSegment[] {
   const out: FenceSegment[] = [];
   // Doors (livehuddle's docs/specs/009-elements/room-builder.md "Door") cut the room walls they stand on.
@@ -178,15 +197,115 @@ function firstRefusal(
 }
 
 /**
+ * The fences that could refuse a step from `from` reaching no further than `radius` (the step's length plus the
+ * reach), in their order: those whose box comes within `radius`, and a footprint whose box `from` stands inside (its
+ * edges refuse a step deeper in however far they are). A big board's list is looked up in a grid of its fences, built
+ * once per list, so a step reads only the cells around it rather than every wall on the board.
+ */
+export function fencesNear(
+  from: FencePoint,
+  radius: number,
+  fences: readonly FenceSegment[],
+): FenceSegment[] {
+  const left = from.x - radius;
+  const right = from.x + radius;
+  const top = from.y - radius;
+  const bottom = from.y + radius;
+  const near = (fence: FenceSegment) => {
+    const { a, b } = fence;
+    return (
+      (Math.max(a.x, b.x) >= left &&
+        Math.min(a.x, b.x) <= right &&
+        Math.max(a.y, b.y) >= top &&
+        Math.min(a.y, b.y) <= bottom) ||
+      (fence.solid !== undefined && depthIn(from, fence.solid) > 0)
+    );
+  };
+  const x0 = Math.floor(left / FENCE_CELL);
+  const x1 = Math.floor(right / FENCE_CELL);
+  const y0 = Math.floor(top / FENCE_CELL);
+  const y1 = Math.floor(bottom / FENCE_CELL);
+  // A short list, or a reach wider than the grid helps with, scans the list.
+  if (fences.length < FENCE_INDEX_MIN || !((x1 - x0 + 1) * (y1 - y0 + 1) <= FENCE_CELLS_MAX))
+    return fences.filter(near);
+  const index = fenceIndexOf(fences);
+  const seen = new Set<number>(index.big);
+  for (let cx = x0; cx <= x1; cx++)
+    for (let cy = y0; cy <= y1; cy++) {
+      const cell = index.cells.get(cellKey(cx, cy));
+      if (cell) for (const i of cell) seen.add(i);
+    }
+  const out: FenceSegment[] = [];
+  for (const i of [...seen].sort((p, q) => p - q)) if (near(fences[i]!)) out.push(fences[i]!);
+  return out;
+}
+
+// Below this many fences a scan of the list is as quick as the grid.
+const FENCE_INDEX_MIN = 64;
+// The grid's cell, in canvas px: a room's wall spans a few, a step's box one to four.
+const FENCE_CELL = 256;
+// A fence whose box (a footprint's included) covers more cells than this is checked on every step instead.
+const FENCE_CELLS_MAX = 1024;
+
+type FenceIndex = { cells: Map<number, number[]>; big: number[] };
+const fenceIndexes = new WeakMap<readonly FenceSegment[], FenceIndex>();
+
+// Two cells may share a key far apart: harmless, as every fence a lookup finds is still checked by its box.
+function cellKey(cx: number, cy: number): number {
+  return cx * 1_000_003 + cy;
+}
+
+function fenceIndexOf(fences: readonly FenceSegment[]): FenceIndex {
+  const known = fenceIndexes.get(fences);
+  if (known) return known;
+  const index: FenceIndex = { cells: new Map(), big: [] };
+  fences.forEach((fence, i) => {
+    const { a, b, solid } = fence;
+    let minX = Math.min(a.x, b.x);
+    let maxX = Math.max(a.x, b.x);
+    let minY = Math.min(a.y, b.y);
+    let maxY = Math.max(a.y, b.y);
+    if (solid) {
+      minX = Math.min(minX, solid.x);
+      maxX = Math.max(maxX, solid.x + solid.width);
+      minY = Math.min(minY, solid.y);
+      maxY = Math.max(maxY, solid.y + solid.height);
+    }
+    const x0 = Math.floor(minX / FENCE_CELL);
+    const x1 = Math.floor(maxX / FENCE_CELL);
+    const y0 = Math.floor(minY / FENCE_CELL);
+    const y1 = Math.floor(maxY / FENCE_CELL);
+    if (!((x1 - x0 + 1) * (y1 - y0 + 1) <= FENCE_CELLS_MAX)) {
+      index.big.push(i);
+      return;
+    }
+    for (let cx = x0; cx <= x1; cx++)
+      for (let cy = y0; cy <= y1; cy++) {
+        const key = cellKey(cx, cy);
+        const cell = index.cells.get(key);
+        if (cell) cell.push(i);
+        else index.cells.set(key, [i]);
+      }
+  });
+  fenceIndexes.set(fences, index);
+  return index;
+}
+
+/**
  * One step of walking with fences in the way: the step itself when nothing refuses it, else the
  * part of it that runs along the refusing fence when that is clear, else no step at all.
  */
 export function fenceStep(
   from: FencePoint,
   to: FencePoint,
-  fences: readonly FenceSegment[],
+  allFences: readonly FenceSegment[],
   reach = FENCE_REACH,
 ): { pos: FencePoint; blocked: boolean } {
+  if (allFences.length === 0) return { pos: to, blocked: false };
+  // Every point this step tests (the step's end, a slide along a fence, the approach's halvings) lies within the
+  // step's length of `from`, so only the fences near it can refuse any of them: test those, in the same order, rather
+  // than every wall on the board up to nine times a frame.
+  const fences = fencesNear(from, Math.hypot(to.x - from.x, to.y - from.y) + reach, allFences);
   if (fences.length === 0) return { pos: to, blocked: false };
   const fence = firstRefusal(from, to, fences, reach);
   if (!fence) return { pos: to, blocked: false };

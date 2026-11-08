@@ -2,10 +2,6 @@ import {
   isBoxed,
   isFixedSizeShape,
   isRetiredBackdrop,
-  type Anchor,
-  type ArrowElement,
-  type BendPlan,
-  type FrameHandle,
   type BoxedElement,
   type Element,
   type IconPosition,
@@ -48,11 +44,7 @@ export function inheritedSizeFor(
   base: BoxedElement,
   selected: Element | null | undefined,
 ): { width: number; height: number } {
-  // Annotations are a fixed marker size (docs/specs/009-elements/annotations.md): never inherit the
-  // selection's dimensions, so a marker added while a big shape is selected
-  // doesn't balloon. It stays its intrinsic 44×44.
-  if (base.type === 'annotation') return { width: base.width, height: base.height };
-  // Same for the kinds whose silhouette IS the element: a portal's ring
+  // The kinds whose silhouette IS the element: a portal's ring
   // (docs/specs/009-elements/portal-element.md) and the fixed-size Selection Mode button (docs/specs/009-elements/mode-button.md). Inheriting
   // whatever box happened to be selected — a wide banner, a thin rail — hands
   // you something that doesn't read as the thing you asked for, and for a
@@ -138,182 +130,34 @@ export {
   type ShapeBounds,
 } from './resize-geometry';
 
-export type ArrowEnd = 'from' | 'to';
-
 export const SNAP_THRESHOLD = 24;
 // Pixel range within which a dragged element's edges/centres snap to
 // align with another element's edges/centres. Tight enough that nudging
 // off the line takes deliberate motion.
 export const ALIGN_SNAP_THRESHOLD = 6;
-// Arrow-to-arrow snapping (docs/specs/008-canvas/arrow-to-arrow.md). REVEAL is the perpendicular distance at
-// which a nearby arrow's snap dots appear while dragging an endpoint; THRESHOLD
-// (tighter) is where the endpoint actually connects — also used when committing
-// a freshly-drawn arrow so it can land on a line without a follow-up nudge. Both
-// a touch more generous than the element-anchor snap so a thin line is catchable.
-export const ARROW_SNAP_REVEAL_PX = 36;
-export const ARROW_SNAP_THRESHOLD_PX = 12;
-
 // Viewport zoom bounds, shared by the +/- buttons and the pinch / wheel zoom
 // (@liveworkspace/workbench/lib/zoom-range.ts).
 export { ZOOM_MAX, ZOOM_MIN } from '@liveworkspace/workbench/lib/zoom-range';
 
-// Discriminated union covering every in-flight drag the canvas can be
-// holding. Each variant carries the start-of-gesture state the
+// The in-flight drag the canvas can be holding: a boxed move or resize. (The arrow
+// gestures left with the element engine's part 4, docs/specs/002-project-scope/not-in-livehuddle.md
+// "The element engine".) It carries the start-of-gesture state the
 // pointer-move handler needs to project the current cursor delta into
 // canvas coordinates.
-export type DragState =
-  | {
-      kind: 'boxed';
-      primaryId: string;
-      mode: DragMode;
-      startClientX: number;
-      startClientY: number;
-      // Every selected element's start bounds (keyed by id) so a
-      // multi-select move/resize can update each one without losing
-      // its original position.
-      startBounds: Map<string, ShapeBounds>;
-      // Free arrow endpoints (keyed by arrow id) captured at grab time, for
-      // arrows pulled into a frame-section move: their free ends translate
-      // with the section (pinned ends rebind). Empty for a normal drag.
-      startArrowEnds: Map<
-        string,
-        { from?: { x: number; y: number }; to?: { x: number; y: number } }
-      >;
-      // The full element array as it stood at grab time (a reference to the
-      // then-current immutable array, so this is cheap). The shift-duplicate
-      // identity swap (docs/specs/008-canvas/shift-drag-duplicate.md) restores the dragged elements AND every arrow
-      // connected to them from here when it parks the originals — a plain
-      // position park would keep the anchor faces the auto-rebind pass
-      // re-picked while the originals were still the ones moving, visibly
-      // shifting arrows on shapes that never moved.
-      startElements: Element[];
-      aspectLocked: boolean;
-    }
-  | {
-      kind: 'arrow-endpoint';
-      arrowId: string;
-      end: ArrowEnd;
-      startClientX: number;
-      startClientY: number;
-      startCanvasX: number;
-      startCanvasY: number;
-      // Quick-connect "click to place": the gesture started from a click
-      // (not a press-drag). `clickToPlace` means we're still waiting on the
-      // first pointer-up to decide — a real drag commits as usual, a plain
-      // click flips to `following`, where the endpoint trails the cursor and
-      // the NEXT click places it. Absent for normal anchor drags.
-      clickToPlace?: boolean;
-      following?: boolean;
-      // Where the pointer actually went DOWN, for the click-vs-drag test.
-      // Distinct from startClient* in click-to-place mode, where startClient
-      // is anchored to the element's anchor (not the far-out ring button).
-      pressClientX?: number;
-      pressClientY?: number;
-      // Touch quick-connect (docs/specs/008-canvas/canvas-and-palette.md). A finger can't drag the + ring the way
-      // a mouse can, so the touch gesture enters a REAL drag (drag to a target
-      // and it connects) but a plain tap has to mean something too. This
-      // carries the source anchor so the pointer-up can attach the far end to
-      // whatever sits on that side, falling back to a short free stub.
-      tapPlace?: { anchor: Anchor; sourceId: string; placeOutPx: number };
-      // True when the user is repositioning an EXISTING arrow's endpoint,
-      // as opposed to drawing a new arrow (which alone gets the draw-time
-      // collision curve and the modifier hint).
-      reposition?: boolean;
-    }
-  | {
-      // Bending an arrow by dragging its line (docs/specs/008-canvas/arrow-bending.md): the plan is made
-      // once at the press, each move applies it to the total delta.
-      kind: 'arrow-bend';
-      arrowId: string;
-      startClientX: number;
-      startClientY: number;
-      plan: BendPlan;
-    }
-  | {
-      // Scaling a free arrow from its frame handles (docs/specs/008-canvas/arrow-bending.md): the
-      // opposite side stays put; start snapshot + total delta each move.
-      kind: 'arrow-scale';
-      arrowId: string;
-      handle: FrameHandle;
-      startClientX: number;
-      startClientY: number;
-      box: { x: number; y: number; width: number; height: number };
-      start: ArrowElement;
-    }
-  | {
-      // Whole-arrow translation. Only fires for arrows with both
-      // endpoints `kind: 'free'` (pinned endpoints stay anchored to
-      // their elements, so there's nothing to drag).
-      kind: 'arrow-translate';
-      arrowId: string;
-      startClientX: number;
-      startClientY: number;
-      startFromX: number;
-      startFromY: number;
-      startToX: number;
-      startToY: number;
-    }
-  | {
-      // Curve-handle drag: the user grabbed the small handle that
-      // sits on a curved arrow's quadratic Bezier control point and
-      // is moving it. We capture the chord midpoint + the existing
-      // offset at gesture start so the on-move handler can compute
-      // a fresh offset from the current pointer position regardless
-      // of where the user originally grabbed.
-      kind: 'arrow-curve';
-      arrowId: string;
-      startClientX: number;
-      startClientY: number;
-      // Chord midpoint at the start of the drag, in canvas coords.
-      // Captured here rather than recomputed on every move so the
-      // gesture survives the endpoints moving mid-drag (eg. another
-      // user nudges a connected element).
-      startMidX: number;
-      startMidY: number;
-      // Pointer-to-control offset captured at the moment the user
-      // grabbed the handle. Lets the move handler compute the new
-      // control point as `pointer + (control - pointer at start)`,
-      // so the handle stays exactly under the cursor.
-      grabDx: number;
-      grabDy: number;
-      // Index into the arrow's `curvePoints` when dragging a specific
-      // control point of a multi-bend curve. Undefined = the legacy single
-      // `curveOffset` bow handle.
-      pointIndex?: number;
-    }
-  | {
-      // Elbow-handle drag: same shape as arrow-curve but for angled
-      // arrows. The user grabbed the elbow point and is dragging it
-      // to bend the arrow's right-angle break somewhere else. We
-      // capture the auto-elbow position (the corner the arrow would
-      // draw without offset) + the pointer-to-elbow grab offset so
-      // the elbow tracks the cursor with a stable grab handle.
-      kind: 'arrow-elbow';
-      arrowId: string;
-      startClientX: number;
-      startClientY: number;
-      // Auto-computed elbow corner at the start of the gesture, in
-      // canvas coords. The new elbowOffset is computed as
-      // `(currentElbow - startBaseElbow)` so the gesture survives
-      // endpoint moves the same way arrow-curve does.
-      startBaseX: number;
-      startBaseY: number;
-      grabDx: number;
-      grabDy: number;
-    }
-  | {
-      // Label drag: the user grabbed an arrow's text label and is
-      // sliding it along the line / to either side. We capture the
-      // pointer start in client coords + the label's anchor point at
-      // grab time so the move handler reconstructs the dragged point
-      // (anchor + pointer delta) and projects it back onto the line.
-      kind: 'arrow-label';
-      arrowId: string;
-      startClientX: number;
-      startClientY: number;
-      // The label's anchor point (canvas coords) when the drag began,
-      // so the new placement tracks `anchor + delta` projected onto
-      // the line — the label stays under the cursor.
-      startAnchorX: number;
-      startAnchorY: number;
-    };
+export type DragState = {
+  kind: 'boxed';
+  primaryId: string;
+  mode: DragMode;
+  startClientX: number;
+  startClientY: number;
+  // Every selected element's start bounds (keyed by id) so a
+  // multi-select move/resize can update each one without losing
+  // its original position.
+  startBounds: Map<string, ShapeBounds>;
+  // The full element array as it stood at grab time (a reference to the
+  // then-current immutable array, so this is cheap). The shift-duplicate
+  // identity swap (docs/specs/008-canvas/shift-drag-duplicate.md) restores the dragged elements from
+  // here when it parks the originals.
+  startElements: Element[];
+  aspectLocked: boolean;
+};

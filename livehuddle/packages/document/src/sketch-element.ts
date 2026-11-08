@@ -3,7 +3,6 @@
 // coordinates (0..width, 0..height), so moving an element never changes it and the canvas can memoise it on
 // size alone. The canvas overlay and the SVG export both draw from this, so the two cannot disagree.
 import { actorFigureRect } from './actor-figure';
-import { ARROWHEAD_SIZE_PX, type ArrowheadShape, type ArrowheadSize } from './arrow-style';
 import { SELF_PAINTING_SHAPES } from './colors';
 import {
   BORDER_DASH_ARRAY,
@@ -25,9 +24,6 @@ import { FILLED_ROLES } from './shape-hit';
 import {
   outlineOfBox,
   outlineOfPart,
-  outlineOfPath,
-  pathEndTangents,
-  sketchArrowHead,
   sketchAreaPath,
   sketchHatching,
   sketchSeed,
@@ -186,56 +182,4 @@ export function sketchElementPaint(
   } else if (el.type === 'sticky') strokePx = STICKY_EDGE_PX;
   const drawing = sketchElement(el, { strokePx, radiusPx, fill, backdrop });
   return drawing ? { drawing, strokePx, dash } : null;
-}
-
-/** The arrowhead shapes Sketch redraws as two loose strokes; circles and diamonds keep their marks because
- *  they carry meaning (UML composition, ER cardinality). */
-const SKETCHED_HEAD_SHAPES: ReadonlySet<ArrowheadShape> = new Set([
-  'triangle',
-  'triangle-hollow',
-  'line',
-]);
-
-type SketchArrowOptions = {
-  /** The line's width, px. */
-  strokePx: number;
-  /** The head preset and shape, sized like the marker: `ARROWHEAD_SIZE_PX[size]` line widths long. */
-  headSize: ArrowheadSize;
-  headShape: ArrowheadShape;
-  /** Which ends carry a head. */
-  startHead: boolean;
-  endHead: boolean;
-  /** One pass while a flow animation runs, so its dash and draw maths hold. */
-  passes: 1 | 2;
-};
-
-/** A sketched arrow: its line, and its heads when their shape is redrawn (`heads` empty otherwise, the
- *  caller keeps the markers). Null for a line too short to sketch. */
-export function sketchArrow(
-  id: string,
-  pathD: string,
-  o: SketchArrowOptions,
-): { line: string; heads: string; sketchedHeads: boolean } | null {
-  const tangents = pathEndTangents(pathD);
-  if (!tangents) return null;
-  const seed = sketchSeed(id);
-  const line = sketchStrokes(outlineOfPath(pathD), seed, o.passes);
-  const sketchedHeads = SKETCHED_HEAD_SHAPES.has(o.headShape);
-  if (!sketchedHeads) return { line, heads: '', sketchedHeads };
-  // The marker's tip sits a tenth of its length past the path's end (refX 9 of a 10-unit box).
-  const length = ARROWHEAD_SIZE_PX[o.headSize] * o.strokePx;
-  const head = (at: { x: number; y: number }, dir: { x: number; y: number }, s: number) =>
-    sketchArrowHead(
-      { x: at.x + dir.x * length * 0.1, y: at.y + dir.y * length * 0.1 },
-      dir,
-      length,
-      s,
-    );
-  const heads = [
-    o.startHead ? head(tangents.start.at, tangents.start.dir, seed + 1) : '',
-    o.endHead ? head(tangents.end.at, tangents.end.dir, seed + 2) : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-  return { line, heads, sketchedHeads };
 }

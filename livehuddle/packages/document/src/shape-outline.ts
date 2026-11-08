@@ -16,6 +16,7 @@ import { ACTOR_HULL, ACTOR_VIEWBOX, shapePathData, shapePolygonVertices } from '
 import { actorFigureRect } from './actor-figure';
 import { sampleSvgPath } from '@liveworkspace/model-core/svg-path-outline';
 import type { ShapeKind } from './shape-kind';
+import { insidePolygon } from './inside-polygon';
 
 // Half circles (a stadium's ends) and half ellipses (a cylinder's caps) are
 // polygonised with this many segments each: under half a pixel of error at
@@ -160,19 +161,6 @@ export function projectOntoOutline(outline: AnchorOutline, centre: Point, p: Poi
   return { x: centre.x + dx * bestT, y: centre.y + dy * bestT };
 }
 
-// Even-odd containment for a simple polygon.
-function insidePolygon(points: readonly Point[], p: Point): boolean {
-  let inside = false;
-  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-    const a = points[i]!;
-    const b = points[j]!;
-    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) {
-      inside = !inside;
-    }
-  }
-  return inside;
-}
-
 // Whether `p` (world coordinates) lies inside the element's anchoring
 // outline by more than `inset` px. Rotation is undone about the element
 // centre first, the same pivot anchorPosition rotates about.
@@ -208,7 +196,7 @@ export function pointInsideLocalOutline(
     return ((local.x - outline.cx) / rx) ** 2 + ((local.y - outline.cy) / ry) ** 2 < 1;
   }
   const pts = outline.points;
-  if (!insidePolygon(pts, local)) return false;
+  if (!insidePolygon(local, pts)) return false;
   for (let i = 0; i < pts.length; i++) {
     if (distToSegment(local, pts[i]!, pts[(i + 1) % pts.length]!) <= inset) return false;
   }

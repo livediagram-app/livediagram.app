@@ -1,15 +1,10 @@
 // @vitest-environment jsdom
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import {
-  ANIMATION_SET_VALUES,
-  ARROW_FLOWS,
-  ICON_ANIMATIONS,
-  type AnimationSetId,
-} from '@livehuddle/document';
+import { ANIMATION_SET_VALUES, ICON_ANIMATIONS, type AnimationSetId } from '@livehuddle/document';
 import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
 import { AnimationSetPreview, previewFrame } from './animation-set-previews';
-import { ArrowFlowPreview, IconAnimationPreview } from './animation-previews-existing';
+import { IconAnimationPreview } from './animation-previews-existing';
 import { useFrozenAnimations } from '@liveworkspace/workbench/components/palette/useFrozenAnimations';
 import { renderHook } from '@testing-library/react';
 
@@ -32,9 +27,7 @@ describe('animation tile miniatures', () => {
     );
   });
 
-  it('render the existing sets on their real renderers', () => {
-    for (const f of ARROW_FLOWS)
-      expect(renderToStaticMarkup(<ArrowFlowPreview flow={f} />)).toContain('<svg');
+  it('render the icon set on its real renderer', () => {
     for (const a of ICON_ANIMATIONS)
       expect(renderToStaticMarkup(<IconAnimationPreview animation={a} />)).toContain('lvd-icon-');
   });

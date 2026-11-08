@@ -25,7 +25,6 @@ import {
   ACTION_CARD_MAX,
   createElementAction,
   elementActions,
-  isBoxed,
   type ElementAction,
   type ElementActionAssignee,
   type ElementActionStatus,
@@ -119,7 +118,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
           : {
               ...t,
               elements: t.elements.map((el) => {
-                if (el.id !== elementId || !isBoxed(el)) return el;
+                if (el.id !== elementId) return el;
                 const next = fn(elementActions(el));
                 const {
                   action: _one,

@@ -105,12 +105,6 @@ export function elementTelemetryType(element: Element): string {
     case 'path':
       return 'Path';
     case 'freehand':
-      // Three tools share this element kind and the draw paths report them
-      // separately, so a copy must too. `pen` marks the highlighter and
-      // `straightEdges` the polygon tool (docs/specs/008-canvas/polygon-tool.md); a plain pencil stroke
-      // has neither.
-      if (element.pen === 'highlighter') return 'Highlighter';
-      if (element.straightEdges) return element.closed ? 'Polygon' : 'Polyline';
       return 'Freehand';
     case 'shape': {
       // A brand mark reports as TechIcon rather than by its shape, matching

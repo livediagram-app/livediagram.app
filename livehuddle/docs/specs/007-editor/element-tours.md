@@ -4,7 +4,7 @@ An **element tour** teaches one complex element type, on the element itself: wha
 how to change it. It is started from the footer's Start Tour button while an element of that type is selected, and it
 walks through the real element the person selected, not a sample.
 
-It sits beside the [Avatar tour](../008-canvas/avatar-tour.md) and [Show Me](show-me.md) (started from a
+It sits beside [the Receptionist](../008-canvas/receptionist.md) and [Show Me](show-me.md) (started from a
 button on one surface). Like every tour it never offers itself: the one way in is the Start Tour button
 ([Tours](editor-tour.md#where-it-appears)).
 
@@ -32,14 +32,14 @@ section is still called **Show Me**. "Element tour" is the code's and the specs'
 ## On the Start Tour button
 
 - **Most specific first.** While a toured element is selected its tour is the one the button offers, ahead of a tool
-  in hand and the Avatar tour (`TOUR_OFFER_RANK.element`).
+  in hand and Ask Receptionist (`TOUR_OFFER_RANK.element`).
 - **When it is on offer**, all of these hold:
   - exactly one element is selected, of a toured kind;
   - the person may edit it (an Editor);
   - the editor is usable: hydrated, no welcome overlay, no start panel open, not an embed, not on a phone (narrower
     than 640px, or a phone held sideways: `useIsMobileViewport`).
 - **Gone once taken, back from Settings.** Starting an element's tour takes that kind off the button
-  ([Tours](editor-tour.md#where-it-appears)): selecting another element of the kind offers the Avatar tour
+  ([Tours](editor-tour.md#where-it-appears)): selecting another element of the kind offers Ask Receptionist
   instead, if one is owed, or no button. Its switch in Settings' **Show Me** section (below) puts it back.
 - **A press** starts the tour on its first step, on the selected element. A press while another tour is on screen
   does nothing. Deselecting the element takes its tour off the button.
@@ -58,7 +58,7 @@ section is still called **Show Me**. "Element tour" is the code's and the specs'
 
 ## Settings
 
-Settings' **Getting Started** category holds element tours in their own section, **Show Me**, below the Avatar tour's
+Settings' **Getting Started** category holds element tours in their own section, **Show Me**, below Receptionist's Welcome's
 **Offer Again** section. It is a closed accordion (people rarely look for it): its header names the section and
 how many are on (`1 of 1 On`). Opened, it shows the section's line, then one switch per toured kind, named for the
 element alone: **Portal**, linking the Portals article. There is no switch over them all while the Portal is the

@@ -1,6 +1,8 @@
 // The working state made into the next tab (docs/specs/024-agents/blueprints/edit-operations.md
-// "Finalise"): touched elements normalised and their shape kinds coerced, then checked, arrows
-// re-anchored around moved boxes, and the whole tab validated. Untouched elements pass through as the same objects (I2).
+// "Finalise"): touched elements normalised and their shape kinds coerced, then checked, and the whole tab validated.
+// Untouched elements pass through as the same objects (I2). A stored arrow is a retired element (docs/specs/
+// 002-project-scope/not-in-livehuddle.md "The element engine", part 4): nothing re-anchors it, and its pinned ends
+// follow the boxes they name when it is drawn.
 
 import type { EditRejection } from '@livehuddle/api-schema';
 import {
@@ -9,15 +11,10 @@ import {
   elementValidationIssue,
   isValidTab,
   normaliseElement,
-  rebindArrowAnchorsAfterMove,
-  type ArrowElement,
   type Element,
-  type ElementId,
-  type Endpoint,
   type Tab,
 } from '@livehuddle/document';
 import { kindOf } from './element-text';
-import { ROUTE_KEYS, rerouted } from './operations/connect';
 import { sameValue } from './equality';
 import { invalidResult } from './rejections';
 import { currentElements, replaceElement, type EditState } from './state';
@@ -26,7 +23,7 @@ import { ALIAS_FIELDS } from './fields';
 
 type Raw = Record<string, unknown>;
 
-const GEOMETRY: ReadonlySet<string> = new Set(['x', 'y', 'width', 'height', 'from', 'to']);
+const GEOMETRY: ReadonlySet<string> = new Set(['x', 'y', 'width', 'height']);
 
 function normaliseTouched(state: EditState, log: EditLog): void {
   for (const [id, { operation, written }] of state.touched) {
@@ -74,41 +71,6 @@ function touchedIssue(state: EditState): EditRejection | null {
   return null;
 }
 
-const boxOf = (el: Element) => (el.type === 'arrow' ? null : [el.x, el.y, el.width, el.height]);
-
-// Boxes present before and after whose position or size changed.
-function movedBoxes(before: ReadonlyMap<ElementId, Element>, next: Element[]): Set<ElementId> {
-  const moved = new Set<ElementId>();
-  for (const el of next) {
-    const was = before.get(el.id);
-    const box = boxOf(el);
-    if (!was || !box || was === el) continue;
-    if (box.some((v, i) => v !== boxOf(was)?.[i])) moved.add(el.id);
-  }
-  return moved;
-}
-
-// An arrow the rebind re-anchored with one end's box moved and the other still is drawn afresh (EO31): kept, its
-// route ran from the new anchor through the moved box. Both ends moved, the arrow moved whole and its route holds.
-function rerouteRebound(
-  landed: Element[],
-  rebound: Element[],
-  moved: ReadonlySet<ElementId>,
-): Element[] {
-  if (rebound === landed) return rebound;
-  const anchorOf = (end: Endpoint) => (end as { anchor?: string }).anchor;
-  const endsMoved = (a: ArrowElement) =>
-    [a.from, a.to].filter((end) => end.kind === 'pinned' && moved.has(end.elementId)).length;
-  return rebound.map((el, i) => {
-    const was = landed[i];
-    if (el.type !== 'arrow' || !was || was === el || was.type !== 'arrow') return el;
-    const ends = (a: ArrowElement) => `${anchorOf(a.from)}>${anchorOf(a.to)}`;
-    const reanchored = ends(el) !== ends(was);
-    const routed = ROUTE_KEYS.some((k) => el[k] !== undefined);
-    return reanchored && routed && endsMoved(el) === 1 ? rerouted(el, rebound) : el;
-  });
-}
-
 // Why a whole tab fails validation: the first invalid element, the element cap, a repeated id, or
 // the tab's own id and name.
 export function tabRejection(tab: Tab): EditRejection {
@@ -131,11 +93,8 @@ export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
   normaliseTouched(state, log);
   const issue = touchedIssue(state);
   if (issue) return issue;
-  const current = [...currentElements(state)];
-  const moved = movedBoxes(state.before, current);
-  const rebound = rerouteRebound(current, rebindArrowAnchorsAfterMove(current, moved), moved);
   // An element that ends as it began is the element it began as (E1, I2).
-  const elements = rebound.map((el) => {
+  const elements = currentElements(state).map((el) => {
     const was = state.before.get(el.id);
     return was && was !== el && sameValue(was, el) ? was : el;
   });

@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   PEN_INK,
-  createFreehand,
-  createPath,
   createShape,
   penColourHex,
+  type ShapeElement,
   type Tab,
 } from '@livehuddle/document';
 import { canvasSurface } from '@livehuddle/document';
@@ -14,13 +13,7 @@ import { renderTabToSvg } from './export-tab';
 // Export what the author is looking at (docs/specs/007-editor/editor-modes.md "One look"): the
 // tab's Diagram backdrop for the export's appearance, whoever exports and in whichever mode, and
 // every stock colour stored by name in its version for that canvas.
-const path = createPath(
-  [
-    { x: 0, y: 0, mode: 'corner' },
-    { x: 10, y: 10, mode: 'corner' },
-  ],
-  false,
-);
+const strokeOf = (tab: Tab, i: number) => (tab.elements[i] as ShapeElement).strokeColor;
 
 describe('tabAsSeen', () => {
   it('draws a themed tab’s canvas in the export’s half, and a picked canvas as it is', () => {
@@ -31,24 +24,14 @@ describe('tabAsSeen', () => {
     expect(tabAsSeen({ ...picked, elements: [] }, 'dark').backgroundColor).toBe('#123456');
   });
 
-  it('exports a named marker colour in its version for the appearance, on any tab', () => {
-    const stroke = {
-      ...createFreehand(
-        [
-          { x: 0, y: 0 },
-          { x: 9, y: 9 },
-        ],
-        false,
-      ),
-      penWidth: 1.5,
-      penColour: 'red' as const,
-    };
-    const tab = { id: 't', name: 'Tab', elements: [stroke] } as Tab;
-    expect(tabAsSeen(tab, 'light').elements[0]!.strokeColor).toBe(penColourHex('red', 'light'));
-    expect(tabAsSeen(tab, 'dark').elements[0]!.strokeColor).toBe(penColourHex('red', 'dark'));
+  it('exports a named line colour in its version for the appearance, on any tab', () => {
+    const named = { ...createShape('square', 0, 0), penColour: 'red' as const };
+    const tab = { id: 't', name: 'Tab', elements: [named] } as Tab;
+    expect(strokeOf(tabAsSeen(tab, 'light'), 0)).toBe(penColourHex('red', 'light'));
+    expect(strokeOf(tabAsSeen(tab, 'dark'), 0)).toBe(penColourHex('red', 'dark'));
   });
 
-  it('exports named text, path and Ink colours in their version for the appearance', () => {
+  it('exports named text, line and Ink colours in their version for the appearance', () => {
     const text = {
       id: 'x',
       type: 'text' as const,
@@ -59,14 +42,16 @@ describe('tabAsSeen', () => {
       label: 'Hello',
       penTextColour: 'green' as const,
     };
-    const named = { ...path, penColour: 'violet' as const };
+    const named = { ...createShape('circle', 0, 40), penColour: 'violet' as const };
     const inked = { ...createShape('square', 40, 0), penColour: 'ink' as const };
     const tab = { id: 't', name: 'Tab', elements: [text, named, inked] } as Tab;
     for (const board of ['light', 'dark'] as const) {
       const seen = tabAsSeen(tab, board);
-      expect(seen.elements[0]!.textColor).toBe(penColourHex('green', board));
-      expect(seen.elements[1]!.strokeColor).toBe(penColourHex('violet', board));
-      expect(seen.elements[2]!.strokeColor).toBe(PEN_INK[board]);
+      expect((seen.elements[0] as { textColor?: string }).textColor).toBe(
+        penColourHex('green', board),
+      );
+      expect(strokeOf(seen, 1)).toBe(penColourHex('violet', board));
+      expect(strokeOf(seen, 2)).toBe(PEN_INK[board]);
       const svg = renderTabToSvg(seen);
       expect(svg).toContain(penColourHex('green', board));
       expect(svg).toContain(penColourHex('violet', board));

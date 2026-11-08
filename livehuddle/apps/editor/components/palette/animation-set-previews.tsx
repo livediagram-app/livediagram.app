@@ -5,8 +5,7 @@
 // (ANIMATION_PREVIEW_FRAME) and plays it on hover.
 
 import type { CSSProperties } from 'react';
-import type { AnimationSetId, PathElement } from '@livehuddle/document';
-import { PathSvg } from '@/components/canvas/path/PathSvg';
+import type { AnimationSetId } from '@livehuddle/document';
 import { planTextAnimation, renderUnits } from '@/components/canvas/animated-words';
 import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
 import { BRAND_RAMP } from '@livehuddle/ui';
@@ -207,29 +206,23 @@ function StickyPreview({ value }: { value: string | null }) {
   );
 }
 
-// A small zig-zag path, drawn by the real path renderer so its masks and overlays are the
-// canvas's own.
+// A small zig-zag line wearing the Drawing set's class. The pens and paths that carried this set
+// left with the element engine's part 4 (docs/specs/002-project-scope/not-in-livehuddle.md "The
+// element engine"), so the tile draws its own line.
 function DrawingPreview({ value }: { value: string | null }) {
-  const path = {
-    id: `tile-${value ?? 'none'}`,
-    type: 'path',
-    x: 0,
-    y: 0,
-    width: 38,
-    height: 22,
-    closed: false,
-    strokeWidth: 'thick',
-    nodes: [
-      { nx: 0, ny: 0.9, mode: 'corner' },
-      { nx: 0.33, ny: 0.1, mode: 'corner' },
-      { nx: 0.66, ny: 0.9, mode: 'corner' },
-      { nx: 1, ny: 0.1, mode: 'corner' },
-    ],
-    ...(value ? { animation: value } : {}),
-  } as unknown as PathElement;
   return (
     <span className="relative block h-[22px] w-[38px]" style={BODY_VARS}>
-      <PathSvg element={path} fill="transparent" stroke={ACCENT} />
+      <svg width="38" height="22" viewBox="0 0 38 22" fill="none" aria-hidden>
+        <polyline
+          className={value ? `${ANIMATION_CLASS_PREFIX.drawing}${value}` : undefined}
+          points="2,20 13,2 25,20 36,2"
+          stroke={ACCENT}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          pathLength={1}
+        />
+      </svg>
     </span>
   );
 }

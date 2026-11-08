@@ -70,32 +70,6 @@ function words(operation: EditOperation): string[] {
           ? [`by=${operation.by[0]},${operation.by[1]}`]
           : placementText(operation.place)),
       ];
-    case 'connect':
-      return [
-        'connect',
-        operation.from,
-        '->',
-        operation.to,
-        ...idText(operation.id),
-        ...fieldsText(operation.fields),
-      ];
-    case 'rewire':
-      return [
-        'rewire',
-        operation.target,
-        ...(operation.from !== undefined ? [`from=${oneWord(operation.from)}`] : []),
-        ...(operation.to !== undefined ? [`to=${oneWord(operation.to)}`] : []),
-      ];
-    case 'insert':
-      return [
-        'insert',
-        operation.kind,
-        ...idText(operation.id),
-        ...fieldsText(operation.fields),
-        'between',
-        oneWord(operation.between[0]),
-        oneWord(operation.between[1]),
-      ];
     case 'order':
       return [
         'order',
@@ -107,12 +81,7 @@ function words(operation: EditOperation): string[] {
             : `below=${oneWord(operation.below)}`,
       ];
     case 'layout':
-      return [
-        'layout',
-        operation.target,
-        ...(operation.style ? [`style=${operation.style}`] : []),
-        ...(operation.direction ? [`direction=${operation.direction}`] : []),
-      ];
+      return ['layout', operation.target];
   }
 }
 

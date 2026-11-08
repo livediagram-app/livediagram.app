@@ -36,19 +36,19 @@ export function tabStatsOfData(data: string): { stats: StoredTabStats; corrupt: 
 }
 
 // The upsert every tab write batches after its `tabs` statement (the foreign key needs the row).
-// `ifStoredData`: only when the tab now stores exactly that body, for a conditional write (a swap)
+// `ifStoredRev`: only when the tab is now at that revision, written at `writtenAt`, for a conditional write (a swap)
 // whose stats must land only if the write did.
 export function tabStatsStatement(
   env: PlanEnv,
   tabId: string,
   stats: StoredTabStats,
   writtenAt: number,
-  ifStoredData?: string,
+  ifStoredRev?: number,
 ): D1PreparedStatement {
   const guard =
-    ifStoredData === undefined
+    ifStoredRev === undefined
       ? 'WHERE true'
-      : 'WHERE EXISTS (SELECT 1 FROM tabs WHERE id = ?1 AND data = ?8)';
+      : 'WHERE EXISTS (SELECT 1 FROM tabs WHERE id = ?1 AND rev = ?8 AND updated_at = ?6)';
   return env.PLAN_DB.prepare(
     `INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at, kind)
      SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7 ${guard}
@@ -67,7 +67,7 @@ export function tabStatsStatement(
     stats.dataBytes,
     writtenAt,
     stats.kind,
-    ...(ifStoredData === undefined ? [] : [ifStoredData]),
+    ...(ifStoredRev === undefined ? [] : [ifStoredRev]),
   );
 }
 

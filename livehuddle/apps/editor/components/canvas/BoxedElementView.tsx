@@ -1,4 +1,4 @@
-import { memo, useRef, useState } from 'react';
+import { memo, useRef } from 'react';
 import {
   BORDER_DASH_ARRAY,
   DEFAULT_BOX_RADIUS_PX,
@@ -50,7 +50,6 @@ import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators, indicatorClusterRect } from '@/components/canvas/ElementIndicators';
 import { indicatorBacking } from '@/components/canvas/indicator-items';
 import { useElementIndicators } from '@/components/canvas/useElementIndicators';
-import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
@@ -163,12 +162,6 @@ function BoxedElementViewImpl({
       />
     ) : null;
 
-  // Annotation marker (docs/specs/009-elements/annotations.md): a fixed-size note circle. Hovering it
-  // floats its note above everything; clicking it (handled in the drag
-  // engine's click-vs-drag test) opens the editable note popover.
-  const isAnnotation = element.type === 'annotation';
-  const [hovering, setHovering] = useState(false);
-
   // Right-click selects the element + asks the page to open a
   // context menu at the cursor. The page also keeps showing the
   // SelectionPopover (handled by the normal selection flow), so the
@@ -188,7 +181,6 @@ function BoxedElementViewImpl({
       wrapperRef,
       isEditing,
       remotelyLocked,
-      isAnnotation,
       isMultiSelected,
       isSelected,
       isPaintMode,
@@ -198,13 +190,12 @@ function BoxedElementViewImpl({
       onBeginDrag,
       onBeginEdit,
       onEditLink,
-      onOpenNote,
       imageContext,
       onContextSelect,
     });
 
   // A label being typed wears the text cursor and rises; a path in its edit mode does neither.
-  const editLook = editingLook(element, isEditing);
+  const editLook = editingLook(isEditing);
   const cursor = remotelyLocked
     ? 'cursor-not-allowed'
     : isPaintMode
@@ -220,8 +211,7 @@ function BoxedElementViewImpl({
   // colour so the realtime "X is here" signal is glanceable from anywhere
   // on the canvas — not just from the small initial-badge.
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
-  // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
-  const ringed = isSelected && !(element.type === 'path' && isEditing);
+  const ringed = isSelected;
   const variant = describeVariant(
     element,
     ringed,
@@ -230,21 +220,13 @@ function BoxedElementViewImpl({
     surface,
     finish,
   );
-  // A whiteboard pen stroke and a path are picked by their drawn line, not their box
-  // (docs/specs/023-draw-mode/draw-mode.md "Selecting", path-tool.md "Selecting and erasing");
-  // once selected, the box drags either as any element, and the line still catches pointers
-  // outside the box, so a press on its outer half never falls to the board.
+  // A whiteboard shape is picked by its drawn outline (docs/specs/023-draw-mode/draw-mode.md
+  // "Selecting", ShapeHitOutline below); once selected, its box catches pointers too.
   const selected = isSelected || isMultiSelected;
-  const hitLine =
-    (element.type === 'freehand' &&
-      element.penWidth !== undefined &&
-      element.pen !== 'highlighter') ||
-    (element.type === 'path' && !isEditing);
-  // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
   const onWhiteboard = useCanvasPicksByOutline();
   const shapeHit = outlineHit(element, { onWhiteboard, selected });
-  // Not yet selected, only the drawn line picks it: the rest of its box lets pointers through.
-  const passThrough = (hitLine && !selected) || shapeHit === 'outline';
+  // Not yet selected, only the drawn outline picks it: the rest of its box lets pointers through.
+  const passThrough = shapeHit === 'outline';
 
   // The element's drawn corner, which its border overlay and its indicators both follow.
   const shapeKind = element.type === 'shape' ? element.shape : undefined;
@@ -348,8 +330,6 @@ function BoxedElementViewImpl({
       }}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
-      onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
-      onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
       className={`group group/el absolute origin-center touch-none select-none ${
         // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
@@ -391,8 +371,8 @@ function BoxedElementViewImpl({
         // is typing isn't hidden behind elements painted above it. (The
         // selection handles live in the grips layer, SelectionChromeLayer.)
         ...(editLook.raise ? { zIndex: 10 } : {}),
-        // Only the drawn line picks an element not yet selected (its hit
-        // line, in FreehandSvg / ShapeHitOutline); the rest of its box lets pointers through.
+        // Only the drawn outline picks a whiteboard shape not yet selected (ShapeHitOutline); the
+        // rest of its box lets pointers through.
         ...(passThrough ? { pointerEvents: 'none' as const } : {}),
       }}
     >
@@ -460,7 +440,6 @@ function BoxedElementViewImpl({
           {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
           <ElementFaceRouter
-            hitLine={hitLine}
             element={element}
             isEditing={isEditing}
             isSelected={isSelected}
@@ -529,8 +508,6 @@ function BoxedElementViewImpl({
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
 
-      {/* The annotation marker IS the note affordance, so it suppresses
-          the generic note badge (it would be redundant). */}
       {indicators.layout ? (
         <ElementIndicators
           element={element}
@@ -553,17 +530,6 @@ function BoxedElementViewImpl({
         showAnchors={showAnchors}
         onBeginDrag={onBeginDrag}
       />
-
-      {/* Hover preview: float this annotation's note above every element
-          (docs/specs/009-elements/annotations.md). Suppressed while selected — the click/edit popover owns
-          that surface then — and only when there's note text to show. */}
-      {isAnnotation && hovering && !isSelected && !isEditing && element.note ? (
-        <AnnotationHoverNote
-          elementId={element.id}
-          note={element.note}
-          noteRich={element.noteRich}
-        />
-      ) : null}
     </div>
   );
 }

@@ -83,15 +83,10 @@ export function DashboardSettings({
   // dashboard's steps aside until it is restored (plan-tabs.md "Dashboard Settings").
   const covered = useMaximisedPlanId() !== null;
   // Show Me: the tour of arranging and filling this dashboard, run on the page (plan-tabs.md "Show Me").
-  const { tour, freeze } = useDashboardTour(!canEdit || covered);
+  const { tour, offered } = useDashboardTour(!canEdit || covered);
   // The Dashboards tour, on the footer's Start Tour button while the dashboard is open (plan-tour.md "The Dashboards
   // tour").
-  useDashboardTourOffer({
-    tour,
-    freeze,
-    canWork: canEdit && !covered,
-    slots: () => slotsNow(layout),
-  });
+  useDashboardTourOffer({ tour, offered, canWork: canEdit && !covered });
   if (!canEdit || covered) return null;
   return createPortal(
     <div
@@ -120,7 +115,7 @@ export function DashboardSettings({
               <DashboardShowMeButton
                 tour={tour}
                 onStart={() => {
-                  freeze(slotsNow(layout));
+                  offered(false);
                   close();
                 }}
               />
@@ -128,7 +123,7 @@ export function DashboardSettings({
           />
         )}
       </SettingsCog>
-      <DashboardTourStage tour={tour} />
+      <DashboardTourStage tour={tour} layout={layout} />
     </div>,
     canvas,
   );
@@ -343,10 +338,4 @@ function NameField({ name, onRename }: { name: string; onRename: (name: string) 
       onBlur={save}
     />
   );
-}
-
-// What Show Me can point at on this dashboard, as it is now.
-function slotsNow(layout: DashboardLayout): { hasEmpty: boolean; hasFilled: boolean } {
-  const slots = layout.rows.flatMap((r) => r.slots);
-  return { hasEmpty: slots.some((s) => !s.content), hasFilled: slots.some((s) => !!s.content) };
 }

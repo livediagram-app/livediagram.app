@@ -1,10 +1,6 @@
 'use client';
 
-import { useCallback, type ComponentProps } from 'react';
-import type { Element } from '@livehuddle/document';
 import type { DragState } from '@/lib/canvas';
-import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
-import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import {
   PaletteTray,
@@ -14,20 +10,17 @@ import { useShiftHeld } from '@liveworkspace/workbench/hooks/ui/useShiftHeld';
 
 // The modifier hint (docs/specs/008-canvas/canvas-and-palette.md): a passive top-centre pill naming what
 // a modifier does right now.
-// The chain / branch / lock / multi-select powers are invisible until tried,
+// The lock / multi-select powers are invisible until tried,
 // and a held modifier nobody has heard of is a feature nobody finds. One
 // concise message, picked most-specific-first; nothing while typing (the hook
 // filters that), while another mode banner owns the slot, or with nothing to
 // act on. Same chrome as the mode banners, minus the action button.
 export function ModifierHintBanner({
   drag,
-  selectedKind,
   hasElements,
   suppressed,
 }: {
   drag: DragState | null;
-  // The primary selection's flavour, for the no-drag hints.
-  selectedKind: 'arrow' | 'other' | null;
   // False on an empty canvas — nothing to multi-select.
   hasElements: boolean;
   // True while a mode banner (paint / group / draw) owns the top slot,
@@ -36,44 +29,15 @@ export function ModifierHintBanner({
 }) {
   const shiftHeld = useShiftHeld();
   if (suppressed || !shiftHeld) return null;
-  const message = shiftHintMessage(drag, selectedKind, hasElements);
+  const message = shiftHintMessage(drag, hasElements);
   if (!message) return null;
   return <Hint modifier="⇧ Shift">{message}</Hint>;
-}
-
-// The selected element's flavour for the no-drag hints: an arrow, anything else, or none.
-export function selectedKindOf(
-  elements: readonly Element[],
-  selectedId: string | null,
-): 'arrow' | 'other' | null {
-  const el = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
-  if (!el) return null;
-  return el.type === 'arrow' ? 'arrow' : 'other';
-}
-
-// The banner with its selection read from the store (docs/specs/008-canvas/blueprints/selection-store.md):
-// a selection change renders this, not the editor view that places it.
-export function ModifierHint({
-  elements,
-  readOnly = false,
-  ...banner
-}: {
-  elements: readonly Element[];
-  // A read-only session (a Participant, a Viewer) never splits an arrow, so a selected arrow gets the
-  // general hint, not the branch one (docs/specs/013-workspace/share-roles.md).
-  readOnly?: boolean;
-} & Omit<ComponentProps<typeof ModifierHintBanner>, 'selectedKind'>) {
-  const kind = useSelectionOf(
-    useCallback((s: Selection) => selectedKindOf(elements, s.selectedId), [elements]),
-  );
-  const selectedKind = readOnly && kind === 'arrow' ? 'other' : kind;
-  return <ModifierHintBanner {...banner} selectedKind={selectedKind} />;
 }
 
 const KEY_CHIP =
   'rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-sans text-[10px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300';
 
-// In the Toolbar layout the hint hangs from the strip as its tray (docs/specs/007-editor/toolbar-layout.md);
+// In the Toolbar layout the hint sits just under the strip as its tray (docs/specs/007-editor/toolbar-layout.md);
 // elsewhere it is a top-centre pill.
 function Hint({ modifier, children }: { modifier: string; children: React.ReactNode }) {
   const strip = usePaletteStripBox();
@@ -96,20 +60,10 @@ function Hint({ modifier, children }: { modifier: string; children: React.ReactN
   );
 }
 
-function shiftHintMessage(
-  drag: DragState | null,
-  selectedKind: 'arrow' | 'other' | null,
-  hasElements: boolean,
-): string | null {
-  // Drawing a NEW arrow's endpoint (quick-connect drag or follow mode):
-  // releasing / clicking with Shift chains the next arrow (docs/specs/008-canvas/canvas-and-palette.md).
-  if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition) {
-    return 'Click places it and starts another arrow';
-  }
+function shiftHintMessage(drag: DragState | null, hasElements: boolean): string | null {
   // Resizing: Shift locks the aspect ratio.
-  if (drag?.kind === 'boxed' && drag.mode !== 'move') return 'Proportions locked';
-  // Mid-gesture otherwise (move, curve handles, …): Shift does nothing.
+  if (drag && drag.mode !== 'move') return 'Proportions locked';
+  // Mid-move: Shift does nothing.
   if (drag) return null;
-  if (selectedKind === 'arrow') return 'Drag an arrowhead to split it into a branch';
   return hasElements ? 'Click elements to select several' : null;
 }

@@ -13,36 +13,9 @@ import {
 // "Imported and pasted content"). The quick style panel's rows on such a selection (Marker colour and width, "6
 // elements") were a whiteboard's, and no board is a whiteboard since Draw mode went; the colours stay. Dark mode.
 
-const points = (n: number, y: number) =>
-  Array.from({ length: n }, (_, i) => ({ nx: i / (n - 1), ny: (Math.sin(i / 2) + 1) / 2 + y * 0 }));
-
-// A synthesised board: two marker strokes, a blue rectangle and a green label (both by name), a
-// custom-grey arrow, a text box, a path, a sticky and an image placeholder.
+// A synthesised board: a blue rectangle and a green label (both by name), a text box, a sticky and an image
+// placeholder. Only kinds livehuddle makes (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
 const BOARD = [
-  {
-    id: 'stroke-1',
-    type: 'freehand',
-    x: 120,
-    y: 120,
-    width: 220,
-    height: 40,
-    points: points(12, 0),
-    closed: false,
-    penWidth: 1.5,
-    streamline: 0.2,
-  },
-  {
-    id: 'stroke-2',
-    type: 'freehand',
-    x: 120,
-    y: 190,
-    width: 220,
-    height: 40,
-    points: points(12, 1),
-    closed: false,
-    penWidth: 2.5,
-    penColour: 'red',
-  },
   {
     id: 'rect',
     type: 'shape',
@@ -56,14 +29,6 @@ const BOARD = [
     label: 'Plan',
   },
   {
-    id: 'arrow',
-    type: 'arrow',
-    from: { kind: 'free', x: 600, y: 170 },
-    to: { kind: 'free', x: 760, y: 170 },
-    strokeColor: '#868e96',
-    arrowheadShape: 'line',
-  },
-  {
     id: 'text',
     type: 'text',
     x: 120,
@@ -75,21 +40,6 @@ const BOARD = [
     font: 'caveat',
     textSize: 'md',
     penTextColour: 'violet',
-  },
-  {
-    id: 'path',
-    type: 'path',
-    x: 400,
-    y: 260,
-    width: 160,
-    height: 80,
-    closed: false,
-    nodes: [
-      { nx: 0, ny: 1, mode: 'corner' },
-      { nx: 0.5, ny: 0, mode: 'corner' },
-      { nx: 1, ny: 1, mode: 'corner' },
-    ],
-    penColour: 'orange',
   },
   {
     id: 'sticky',

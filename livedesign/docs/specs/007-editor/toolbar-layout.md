@@ -313,12 +313,12 @@ panels in their corners, the bottom-row popovers over their buttons. What change
 - The strip sits at `top-3`, centred, at `z-toolbar`. The top-centre stack
   (follow-me pill, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
   down to clear it.
-- **Messages hang from the strip, as its tray.** The messages that tell you what the next press does (the
-  mode banners: a tile in hand; the Format tool and the format painter) and the modifier hint (Shift, Alt) attach to the strip's bottom edge instead of floating
-  under it as pills:
-  - One shared look, the **palette tray**: the strip's own surface (white, hairline border, dark in dark mode),
-    no top border, so it joins the strip's bottom edge with no gap; its bottom corners round as the strip's do,
-    and a soft shadow falls below it.
+- **Messages sit just under the strip, as its tray.** The messages that tell you what the next press does (the
+  mode banners: a tile in hand; the Format tool and the format painter) and the modifier hint (Shift, Alt) sit just under the strip instead of floating
+  in the top-centre stack as pills:
+  - One shared look, the **palette tray**: a card of the strip's own surface (white, hairline border all
+    round, all four corners rounded and the strip's shadow, dark in dark mode), 6 px below the strip's bottom edge:
+    close enough to read as the strip's, apart so the two don't look stuck together.
   - Centred under the strip's card and never wider than it, on a phone too (where the card sits beside the
     menu button). It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
     after a resize (the category bar dropping its names left the tray off-centre until it watched that box).

@@ -8,7 +8,6 @@ import {
   type ViewLine,
   type ViewResult,
 } from '@liveworkspace/document-views/budget';
-import { ownLineText, type ViewEdge } from './edges';
 import {
   arrayField,
   isObject,
@@ -76,23 +75,13 @@ export function findView(
     matches.push({ ref, kind: model.kindOf(el), label: textField(el, 'label'), field, path: [] });
     counts.set(field, (counts.get(field) ?? 0) + 1);
   };
-  const edgeMatches = (edge: ViewEdge) =>
-    edge.label !== null && normaliseFind(edge.label).includes(wanted);
-  const printEdge = (edge: ViewEdge) => {
-    lines.push({ text: ownLineText(edge), noun: LINE });
-    record(edge.ref, edge.arrow, 'edge');
-  };
-
   for (const node of nodesOf(model.tree.roots)) {
     const fields = matchedFields(node.el, wanted);
     if (fields.length > 0) {
       lines.push({ text: outlineLine(model, node), noun: LINE });
       for (const field of fields) record(refOf(node), node.el, field);
     }
-    for (const edge of model.edges.bySource.get(node.el.id) ?? [])
-      if (edgeMatches(edge)) printEdge(edge);
   }
-  for (const edge of model.edges.ownLine) if (edgeMatches(edge)) printEdge(edge);
 
   const summary = FIND_FIELDS.flatMap((field) => {
     const count = counts.get(field) ?? 0;

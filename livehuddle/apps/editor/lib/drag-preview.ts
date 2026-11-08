@@ -119,13 +119,10 @@ export function setPeerPreview(
   changedNow();
 }
 
-// An element moved by a ride's offset: a box's position, an arrow's free ends (its pinned ends follow their boxes).
+// An element moved by a ride's offset: a box's position. A stored arrow never moves (docs/specs/002-project-scope/
+// not-in-livehuddle.md "The element engine"); its pinned ends follow their boxes as it is drawn.
 function shifted(el: Element, dx: number, dy: number): Element {
-  if (el.type === 'arrow') {
-    const move = (end: typeof el.from) =>
-      end.kind === 'free' ? { ...end, x: end.x + dx, y: end.y + dy } : end;
-    return { ...el, from: move(el.from), to: move(el.to) };
-  }
+  if (el.type === 'arrow') return el;
   return 'x' in el && 'y' in el ? { ...el, x: el.x + dx, y: el.y + dy } : el;
 }
 

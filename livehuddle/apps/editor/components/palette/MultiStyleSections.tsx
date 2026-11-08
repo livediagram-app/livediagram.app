@@ -4,14 +4,12 @@ import {
   TextColourIcon,
 } from '@/components/palette/context-menu-icons';
 import {
-  defaultArrowStrokeColor,
   defaultFillColor,
   defaultStrokeColor,
   supportsAccentEdge,
   DEFAULT_ICON_WEIGHT,
   defaultTextColor,
   shownBorderRadius,
-  type ArrowElement,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
@@ -47,7 +45,7 @@ import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 // matching member. Rendered in two parts so the parent can fold the
 // 'style' half (Colours / Border) into the Style side-flyout alongside
 // the preset sections — mirroring the single-element menu — while the
-// 'motion' half (Animation / arrow Animation / tech-icon size) stays a
+// 'motion' half (Animation / tech-icon size) stays a
 // top-level row set. The parent derives the per-kind sources once and
 // passes them with the shared accordion / colour scaffold so every
 // section folds into the same exclusive set.
@@ -56,7 +54,6 @@ export function MultiStyleSections({
   props,
   scaffold,
   boxedSel,
-  arrowSrc,
   colourable,
   textSrc,
   fillSrc,
@@ -72,7 +69,6 @@ export function MultiStyleSections({
   props: EditorContextMenuProps;
   scaffold: ReturnType<typeof useContextMenuScaffold>;
   boxedSel: BoxedElement[];
-  arrowSrc: ArrowElement | undefined;
   colourable: boolean;
   textSrc: Element | undefined;
   fillSrc: BoxedElement | undefined;
@@ -96,9 +92,9 @@ export function MultiStyleSections({
   // The accent edge (docs/specs/008-canvas/accent-edge.md) reads off the first member that takes one.
   const accentEdgeSrc = boxedSel.find(supportsAccentEdge);
   // First line-art icon: gates + feeds the Weight row, which applies to every line-art icon.
-  // First member that takes a finish (shape, arrow, text, sticky, table): gates + feeds the Finish tiles,
+  // First member that takes a finish (shape, text, sticky): gates + feeds the Finish tiles,
   // whose commit sets every such member (docs/specs/008-canvas/finish.md).
-  const finishSrc = [...boxedSel, ...(arrowSrc ? [arrowSrc] : [])].find(supportsFinish);
+  const finishSrc = boxedSel.find(supportsFinish);
   const lineIconSrc = boxedSel.find(
     (el): el is ShapeElement =>
       el.type === 'shape' && el.shape === 'icon' && !isTechIconId(el.iconId),
@@ -109,7 +105,7 @@ export function MultiStyleSections({
           the selection, each applying to that set's members only. */}
       {part === 'motion' ? (
         <AnimationSections
-          elements={arrowSrc ? [...boxedSel, arrowSrc] : boxedSel}
+          elements={boxedSel}
           keyPrefix="m-"
           sectionProps={sectionProps}
           flyoutProps={scaffold.flyoutProps}
@@ -160,20 +156,6 @@ export function MultiStyleSections({
                 defaultStrokeColor(strokeSrc, surface),
               )}
               ink={inkSwatch(strokeSrc, 'line', surface)}
-              {...strokeColorHandlers}
-              {...colorProps('m-border')}
-              {...props.colourPalette}
-            />
-          ) : arrowSrc ? (
-            // Arrow-only selection: no boxed stroke member, so the stroke
-            // setter surfaces as the arrows' Line swatch (same control the
-            // single-arrow menu shows). Mixed selections use the Border row
-            // above — its setter recolours the arrows too.
-            <ColourRow
-              label="Line"
-              icon={<BorderColourIcon />}
-              value={shownColour(arrowSrc, 'line', surface, defaultArrowStrokeColor(surface))}
-              ink={inkSwatch(arrowSrc, 'line', surface)}
               {...strokeColorHandlers}
               {...colorProps('m-border')}
               {...props.colourPalette}

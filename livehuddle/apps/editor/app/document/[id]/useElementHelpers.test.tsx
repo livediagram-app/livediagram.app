@@ -2,7 +2,6 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
-  createArrow,
   createShape,
   doorOnRoom,
   type Element,
@@ -10,6 +9,7 @@ import {
   type StickyElement,
   type Tab,
 } from '@livehuddle/document';
+import { storedArrow } from '@/test/retired-elements';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@liveworkspace/workbench/lib/format-config';
 import { useElementHelpers } from './useElementHelpers';
@@ -165,7 +165,7 @@ describe('applyFormatFromSource', () => {
     source = 'a',
     lock: { element?: string; layer?: string; tab?: boolean } = {},
   ) {
-    const line: Element = { ...createArrow(0, 0, 10, 0), id: 'line' };
+    const line = storedArrow('line', { x: 0, y: 0 }, { x: 10, y: 0 });
     const elements = [...ROW, line].map((el) =>
       el.id === lock.element ? { ...el, locked: true } : el,
     );
@@ -209,7 +209,7 @@ describe('applyFormatFromSource', () => {
     const { paint, commit, setFormatSourceId } = paintHarness('once');
     telemetry.track.mockClear();
     paint('a'); // the source itself
-    paint('line'); // the other kind: a note's look onto an arrow
+    paint('line'); // a stored arrow, retired: the Format tool never paints it
     expect(commit).not.toHaveBeenCalled();
     expect(setFormatSourceId).not.toHaveBeenCalled();
     expect(telemetry.track).not.toHaveBeenCalled();

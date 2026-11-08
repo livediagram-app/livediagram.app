@@ -160,11 +160,19 @@ export const PLAN_TOUR_SHEETS_PICKED = chart(
   { types: ['PlanTourSheets'] },
 );
 
+export const PLAN_TOUR_WORK_KEPT = chart(
+  'UI',
+  'Selected',
+  'Plan Tours: Practice Kept',
+  "The Plan tour's practice work kept at its finish: the Practice Sprint's cards as real cards, or Five Small Wins' sheet as a tab.",
+  { types: ['PlanTourKeepCards', 'PlanTourKeepSheet'] },
+);
+
 export const PLAN_TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
   'Plan Tour Steps Viewed',
-  'A step of the Plan tour shown.',
+  'A mission of the Plan tour shown (a step card until November 2026).',
   { typeIn: (t) => (t ?? '').startsWith('PlanTourStep') },
 );
 
@@ -196,6 +204,7 @@ export const PLAN_TOUR: MetricStack = {
     PLAN_TOUR_BOARDS_PICKED,
     PLAN_TOUR_SHEETS_PICKED,
     PLAN_TOUR_STEPS_VIEWED,
+    PLAN_TOUR_WORK_KEPT,
     PLAN_TOURS_COMPLETED,
     PLAN_TOURS_SKIPPED,
   ],

@@ -95,16 +95,6 @@ export const MODE_OPTIONS = chart(
   { typeIn: (t) => /^Format/.test(t ?? '') },
 );
 
-// Shape recognition on a pen stroke (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"): Alt, or the chip on a
-// touch screen, flipping the stroke being drawn between ink and the shape it reads as. Tabs set to open in Diagram or
-// Draw mode, beside it until Work Tracker #586, went with those modes.
-export const WHITEBOARD_RECOGNITION = chart(
-  'Draw',
-  'Toggled',
-  'Shape Recognition',
-  'A pen stroke flipped between ink and the shape it reads as, with Alt or the chip on a touch screen.',
-);
-
 // ---- Editing tab -------------------------------------------------------------
 // Tools that organise the work rather than draw it. Tab folders (docs/specs/006-document/tab-folders.md) are
 // typed rather than bare because the bare Tab/Folder events belong to
@@ -570,11 +560,24 @@ export const SHORTCUTS_OPENED = opened(
   (t) => t === 'Shortcuts',
 );
 
-// The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
-export const AVATAR_TOUR_OFFERED = opened(
-  'Avatar Tour Offered',
-  'The Avatar tour offered, the first time someone walks as an avatar. Since 25 October 2026, the Start Tour button in the footer showing it.',
-  (t) => t === 'AvatarTourOffer',
+// The Receptionist's bubble opening (docs/specs/008-canvas/receptionist.md "Telemetry"); charted in his stack on the
+// Visitors tab.
+export const RECEPTIONIST_WELCOMES = opened(
+  'Receptionist Welcomes',
+  'The Receptionist\u2019s welcome opened, the first time someone arrives on his Avatar Pad.',
+  (t) => t === 'ReceptionistWelcome',
+);
+
+export const RECEPTIONIST_ASKED = opened(
+  'Receptionist Asked',
+  'The Receptionist asked over, from a press on him or Ask Receptionist in the footer.',
+  (t) => t === 'AskReceptionist',
+);
+
+export const RECEPTIONIST_BELLS = opened(
+  'Bells Answered',
+  'The Receptionist\u2019s bubble opened at a Reception Desk for the person who rang its bell.',
+  (t) => t === 'ReceptionistBell',
 );
 
 // The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
@@ -687,16 +690,6 @@ export const CUSTOM_SWATCHES = chart(
   { types: ['QuickSwatchCustom', 'QuickSwatchReset'], rising: 'neutral' },
 );
 
-// The Highlighter's next-stroke settings (docs/specs/008-canvas/highlighter.md "Settings"), chosen in
-// the quick style panel while its tile is armed. Restyling a drawn highlight is an Element change.
-export const HIGHLIGHTER_SETTINGS = chart(
-  'UI',
-  'Changed',
-  'Highlighter Settings',
-  "The Highlighter's colour or width changed for the next stroke, in the quick style panel.",
-  { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
-);
-
 // The Tab Style popover's Finish filter beside its Looks carousel (docs/specs/011-theme/
 // canvas-and-theme-dialog.md).
 export const LOOKS_FILTERED = chart(
@@ -719,7 +712,6 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_SWATCHES,
     LOOKS_FILTERED,
-    HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { section: 'lookfeel', label: 'See Each Preset in Features › Look & Feel' },

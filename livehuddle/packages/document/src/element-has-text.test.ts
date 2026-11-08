@@ -37,10 +37,15 @@ describe('elementHasText', () => {
 describe('elementSupportsText', () => {
   const el = (partial: Record<string, unknown>) => partial as unknown as Element;
 
-  it('is true for an unlabelled shape / sticky / arrow', () => {
+  it('is true for an unlabelled shape / sticky', () => {
     expect(elementSupportsText(el({ type: 'shape', shape: 'square' }))).toBe(true);
     expect(elementSupportsText(el({ type: 'sticky' }))).toBe(true);
-    expect(elementSupportsText(el({ type: 'arrow' }))).toBe(true);
+  });
+
+  // Retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4): no text to edit.
+  it('is false for a stored arrow, drawing, path or annotation', () => {
+    for (const type of ['arrow', 'freehand', 'path', 'annotation'])
+      expect(elementSupportsText(el({ type })), type).toBe(false);
   });
 
   it('is false for the self-drawing shapes', () => {

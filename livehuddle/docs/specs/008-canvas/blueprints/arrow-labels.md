@@ -1,6 +1,6 @@
 # Arrow labels: blueprint
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/008-canvas/blueprints/arrow-labels.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-element-engine)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/008-canvas/blueprints/arrow-labels.md) is the one to read and change. livehuddle has no tool, gesture, setter or renderer for it: a stored arrow or line is a [retired element](../../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as a faint dashed line between its ends with its placeholder, named **Arrow** or **Line**, on the middle, which an Editor can delete. It never moves, and nothing attaches to it. The rest of this page describes it as livediagram has it.
 
 Derived from [Arrow labels](../arrow-labels.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and
@@ -8,21 +8,21 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                    | Role                                                                                     |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/document/src/arrow-label-layout.ts`           | The layout engine: route, open run, width rule, wrap, slide, beside, knockout            |
-| `../packages/model-core/src/arrow-label-wrap.ts`        | Word metrics, greedy wrap on cached widths, balanced wrap                                |
-| `../packages/model-core/src/arrow-label.ts`             | `arrowLabelFontSize`: the caption size presets                                           |
-| `packages/document/src/svg-render.ts`                   | `contentBounds` counts routes and label plates; one pass per render                      |
-| `packages/document/src/svg-render-arrows.ts`            | Export: multi-line caption, plate, knockout mask from the same layout                    |
-| `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`      | One `arrowLabelPass` per element change; `draftLayout`; `labelRectOf`; `sameLabelRender` |
-| `apps/editor/components/canvas/Canvas.tsx`              | Calls the hook; feeds `labelRectOf` to the selection derivation                          |
-| `apps/editor/components/canvas/CanvasElementsLayer.tsx` | Hands each `ArrowView` its render from the `arrowLabels` it is given                     |
-| `apps/editor/lib/canvas-selection.ts`                   | Toolbar anchors span each selected arrow's selection extent                              |
-| `apps/editor/lib/export-tab.ts`                         | PNG / PDF rasterise arrows from `svgArrow`; SVG export shares one pass                   |
-| `components/canvas/Minimap.tsx`                         | One pass, with its own mask-id prefix                                                    |
-| `apps/editor/components/canvas/ArrowView.tsx`           | Knockout mask on the line + halo; renders the layout it is given                         |
-| `apps/editor/components/canvas/ArrowLabel.tsx`          | Multi-line SVG caption; textarea editor laid out by the same engine                      |
+| File                                                           | Role                                                                                     |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `livediagram/packages/document/src/arrow-label-layout.ts`      | The layout engine: route, open run, width rule, wrap, slide, beside, knockout            |
+| `../packages/model-core/src/arrow-label-wrap.ts`               | Word metrics, greedy wrap on cached widths, balanced wrap                                |
+| `../packages/model-core/src/arrow-label.ts`                    | `arrowLabelFontSize`: the caption size presets                                           |
+| `packages/document/src/svg-render.ts`                          | `contentBounds` counts routes and label plates; one pass per render                      |
+| `livediagram/packages/document/src/svg-render-arrows.ts`       | Export: multi-line caption, plate, knockout mask from the same layout                    |
+| `livediagram/apps/editor/hooks/canvas/useArrowLabelLayouts.ts` | One `arrowLabelPass` per element change; `draftLayout`; `labelRectOf`; `sameLabelRender` |
+| `apps/editor/components/canvas/Canvas.tsx`                     | Calls the hook; feeds `labelRectOf` to the selection derivation                          |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`        | Hands each `ArrowView` its render from the `arrowLabels` it is given                     |
+| `apps/editor/lib/canvas-selection.ts`                          | Toolbar anchors span each selected arrow's selection extent                              |
+| `apps/editor/lib/export-tab.ts`                                | PNG / PDF rasterise arrows from `svgArrow`; SVG export shares one pass                   |
+| `components/canvas/Minimap.tsx`                                | One pass, with its own mask-id prefix                                                    |
+| `livediagram/apps/editor/components/canvas/ArrowView.tsx`      | Knockout mask on the line + halo; renders the layout it is given                         |
+| `livediagram/apps/editor/components/canvas/ArrowLabel.tsx`     | Multi-line SVG caption; textarea editor laid out by the same engine                      |
 
 ## Domain and naming
 
@@ -192,7 +192,7 @@ when too short, beside side flips on an obstacle, placed knockout on and off, ow
 only. Export parity: `svg-render.test.ts` asserts the export wraps and masks the same lines.
 Selection: `canvas-selection.test.ts` (an arrow's bounds span its label, unlabelled arrow unchanged,
 boxed element unaffected, multi-toolbar spans labels), `useArrowLabelLayouts.test.ts` (`labelPlate`),
-and `e2e/arrow-labels.spec.ts` (the toolbar never overlaps a label above its line across 100 to
+and `livediagram/apps/editor/e2e/arrow-labels.spec.ts` (the toolbar never overlaps a label above its line across 100 to
 170 % zoom).
 
 ## Constants

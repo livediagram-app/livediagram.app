@@ -20,7 +20,7 @@ function titleCase(s: string): string {
 }
 
 // A short, human-readable name for what an element IS, e.g. 'Square',
-// 'Table', 'Icon', 'Text', 'Sticky', 'Arrow'. Title-cased so callers that
+// 'Icon', 'Text', 'Sticky'. Title-cased so callers that
 // uppercase (e.g. a selection caption) read naturally.
 export function elementKindLabel(el: Element): string {
   switch (el.type) {
@@ -35,24 +35,15 @@ export function elementKindLabel(el: Element): string {
       return 'Sticky';
     case 'image':
       return 'Image';
-    case 'freehand':
-      // The marker pen (docs/specs/008-canvas/highlighter.md) and polygon tool (docs/specs/008-canvas/polygon-tool.md) both commit
-      // freehands; name them by what the user drew (matching the live
-      // app's kindLabel in element-names.ts).
-      if (el.pen === 'highlighter') return 'Highlight';
-      if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';
-      return 'Sketch';
-    case 'path':
-      return 'Path';
-    case 'annotation':
-      return 'Annotation';
     case 'link-card':
       return 'Link';
     case 'video':
     case 'table':
+    case 'freehand':
+    case 'path':
+    case 'annotation':
+    case 'arrow':
       // A retired element type (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
       return retiredElementName(el);
-    case 'arrow':
-      return 'Arrow';
   }
 }

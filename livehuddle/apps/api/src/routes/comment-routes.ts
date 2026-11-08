@@ -133,9 +133,10 @@ export async function newComment(
 const COMMENT_ROUTE_NAMES: Record<number, string> = { 4: 'list', 6: 'add', 7: 'delete' };
 
 // Appends `comment` to the thread of `elementId`, as the editor does (it unresolves a resolved thread).
+// Any element takes one, a stored arrow included (its card shows it, part 4 of the element engine).
 function appended(tab: TabDTO, elementId: string, comment: Comment): Mutation {
   const target = tab.elements.find((el) => el.id === elementId);
-  if (!target || target.type === 'arrow') return notFound();
+  if (!target) return notFound();
   const { authorId: _a, tokenId: _t, ...publicComment } = comment;
   const next = applyElementDelta(target, { kind: 'comment-add', comment });
   return {

@@ -5,7 +5,6 @@
 // under its own telemetry token so panel use reads apart from menu use.
 
 import { useMemo } from 'react';
-import type { PendingDraw } from '@/lib/draw-mode';
 import type {
   Element,
   QuickSwatchRole,
@@ -16,15 +15,6 @@ import type {
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { canvasSurface, PEN_INK } from '@livehuddle/document';
-import {
-  applyHighlighterStyle,
-  strokesHighlighterStyle,
-  toolHighlighterStyle,
-} from '@/lib/quick-style-highlighter';
-import {
-  highlighterWidthPx,
-  type HighlighterWidthId,
-} from '@liveworkspace/workbench/lib/highlighter-config';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { resolveTabBackdrop } from '@/lib/themes';
 import {
@@ -58,10 +48,6 @@ export type QuickStyleApi = {
   setStrokeStyle: (style: QuickStrokeStyle) => void;
   setTextAlign: (align: TextAlignX) => void;
   setIconAlign: (align: QuickIconAlign) => void;
-  // The Highlighter rows (docs/specs/008-canvas/highlighter.md "Settings"): the selected
-  // highlights, else the armed tile's next stroke.
-  setHighlighterColour: (colour: string) => void;
-  setHighlighterWidth: (width: HighlighterWidthId) => void;
   // A row's More colours (docs/specs/004-interface-design/colour-picker.md "Skins"): any colour
   // from the full picker, a standard one by name on a line or text.
   setColour: (role: QuickSwatchRole, colour: string) => void;
@@ -83,17 +69,6 @@ export type QuickStyleDeps = {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   memory: StyleMemoryApi;
   swatchOverrides: SwatchOverridesApi;
-  // The highlighter's settings for the next stroke (useShapeDrawing), which the Highlighter rows
-  // show and set while its tile is armed with nothing selected.
-  highlighter?: {
-    colour: string;
-    width: number;
-    setColour: (colour: string) => void;
-    setWidth: (width: number) => void;
-  };
-  // The draw intent in hand: an armed highlighter with nothing selected makes the Highlighter rows set its next
-  // stroke.
-  toolIntent?: PendingDraw | null;
 };
 
 export function useQuickStyle(
@@ -113,38 +88,10 @@ export function useQuickStyle(
   const { appearance } = useAppearance();
   const board = canvasSurface(resolveTabBackdrop(activeTab, appearance).backgroundColor);
   const ink = PEN_INK[board];
-  const intent = deps.toolIntent ?? null;
-  // The Highlighter rows: the selected highlights first; with nothing selected, the armed tile.
-  const hlColour = deps.highlighter?.colour;
-  const hlWidth = deps.highlighter?.width;
-  const highlighter = useMemo(() => {
-    if (editsBlocked) return undefined;
-    const strokes = strokesHighlighterStyle(selected);
-    if (strokes) return strokes;
-    const armed = intent?.type === 'freehand' && intent.variant === 'highlighter';
-    return selected.length === 0 && armed && hlColour !== undefined && hlWidth !== undefined
-      ? toolHighlighterStyle(hlColour, hlWidth)
-      : undefined;
-  }, [editsBlocked, selected, intent, hlColour, hlWidth]);
-  const baseView = useMemo(
+  const view = useMemo(
     () => (editsBlocked ? null : quickStyleView(selected, theme, overrides, ink)),
     [editsBlocked, selected, theme, overrides, ink],
   );
-  // The Highlighter rows join whatever else the panel shows; alone, they are the whole panel. A
-  // mixed selection's caption counts every styled element, highlights included.
-  const view = useMemo((): QuickStyleView | null => {
-    if (!highlighter) return baseView;
-    const styled = baseView?.targetIds.length ?? 0;
-    const caption =
-      highlighter.subject.kind === 'strokes' && styled > 0
-        ? `${styled + highlighter.subject.ids.length} elements`
-        : baseView?.caption;
-    return {
-      ...(baseView ?? { targetIds: [], sections: {} }),
-      highlighter,
-      ...(caption ? { caption } : {}),
-    };
-  }, [baseView, highlighter]);
 
   // Map the view's targets through `apply`, as one commit, then remember it.
   const run = (apply: (el: Element) => Element, telemetryType: string) => {
@@ -158,29 +105,8 @@ export function useQuickStyle(
     track('Element', 'Changed', telemetryType);
   };
 
-  const runHighlighter = (patch: { colour?: string; width?: HighlighterWidthId }) => {
-    const style = view?.highlighter;
-    if (!style || editsBlocked) return;
-    if (style.subject.kind === 'tool') {
-      // The next stroke's setting, not a change to the board.
-      if (patch.colour !== undefined && patch.colour !== style.colour.value) {
-        track('UI', 'Changed', 'HighlighterColour');
-        deps.highlighter?.setColour(patch.colour);
-      }
-      if (patch.width !== undefined && patch.width !== style.width.value) {
-        track('UI', 'Changed', 'HighlighterWidth');
-        deps.highlighter?.setWidth(highlighterWidthPx(patch.width));
-      }
-      return;
-    }
-    const ids = new Set(style.subject.ids);
-    commit((els) => els.map((el) => (ids.has(el.id) ? applyHighlighterStyle(el, patch) : el)));
-    track('Element', 'Changed', patch.colour !== undefined ? 'QuickStroke' : 'QuickStrokeWidth');
-  };
-
   return {
     view,
-    setHighlighterColour: (colour) => runHighlighter({ colour }),
     setColour: (role, colour) =>
       run(
         (el) =>
@@ -191,7 +117,6 @@ export function useQuickStyle(
               : applyTextColorToEl(el, colour),
         role === 'stroke' ? 'QuickStroke' : role === 'fill' ? 'QuickBackground' : 'QuickTextColour',
       ),
-    setHighlighterWidth: (width) => runHighlighter({ width }),
     setStroke: (slot) => run((el) => applyQuickStroke(el, theme, slot, overrides), 'QuickStroke'),
     setBackground: (slot) =>
       run((el) => applyQuickFill(el, theme, slot, overrides), 'QuickBackground'),

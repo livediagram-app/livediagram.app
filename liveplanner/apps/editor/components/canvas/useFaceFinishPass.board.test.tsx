@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cleanup, render } from '@testing-library/react';
+import { act, cleanup, render } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MARKER_FACE_MAX_FRAMES, MARKER_FACE_MAX_PARTS } from '@liveplanner/project';
+import { flushFaceTakes } from '@liveworkspace/workbench/components/canvas/face-take-batch';
 import { COLUMN_HOVER_ATTR } from '@/components/plan/useColumnHover';
 import { SPOTLIGHT_X, SPOTLIGHT_Y } from '@/components/plan/useCardSpotlight';
 import { drawMarkerFace, useFaceFinishPass } from './useFaceFinishPass';
@@ -75,6 +76,8 @@ const cardsOf = (root: ParentNode) => [...root.querySelectorAll('[data-plan-card
 describe('a busy Plan board in marker', () => {
   it(`outlines every card, past ${MARKER_FACE_MAX_PARTS} parts`, () => {
     const { container } = render(<Board />);
+    // Taken with the board's other faces at the end of the task that mounted it (face-take-batch.ts).
+    act(() => flushFaceTakes());
     const cards = cardsOf(container);
     expect(cards).toHaveLength(CARDS);
     expect(
@@ -85,6 +88,7 @@ describe('a busy Plan board in marker', () => {
   it('keeps every card’s ink, untouched, while the pointer moves over the board', async () => {
     vi.useFakeTimers();
     const { container } = render(<Board />);
+    await act(async () => {});
     const cards = cardsOf(container);
     const before = cards.map(inkOf);
     // The pointer crosses every column and card: the column's tint and the card's light, written as the hooks do.
@@ -105,6 +109,7 @@ describe('a busy Plan board in marker', () => {
   it('still re-takes on a real change, drawing every card the same', async () => {
     vi.useFakeTimers();
     const { container, rerender } = render(<Board />);
+    await act(async () => {});
     const ink = cardsOf(container).map((card) => inkOf(card)!.innerHTML);
     rerender(<Board title="Task" />);
     await vi.advanceTimersByTimeAsync(2000);
@@ -116,6 +121,7 @@ describe('a busy Plan board in marker', () => {
 
   it(`outlines at most ${MARKER_FACE_MAX_FRAMES} cards`, () => {
     const { container } = render(<Board cards={MARKER_FACE_MAX_FRAMES + 10} />);
+    act(() => flushFaceTakes());
     expect(container.querySelectorAll('[data-marker-ink]')).toHaveLength(MARKER_FACE_MAX_FRAMES);
   });
 });

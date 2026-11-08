@@ -15,16 +15,10 @@ import { tileDragStart } from './palette-tile-drag';
 export type PaletteTileActions = {
   addShape: (kind: ShapeKind, opts?: AddShapeOptions) => void;
   addText: () => void;
-  beginFreehand: () => void;
-  beginHighlighter: () => void;
-  beginShapePen: () => void;
-  beginPolygon: () => void;
   // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.
   beginRoomWalls?: () => void;
-  addArrow: (ends?: import('@livehuddle/document').ArrowEnds) => void;
   addSticky: () => void;
   addImage: () => void;
-  addAnnotation: () => void;
   addLinkCard: () => void;
   addSticker: (stickerId: string) => void;
   addComponent: (kind: ComponentKind) => void;
@@ -59,25 +53,12 @@ export function tileHandler(
         });
     case 'text':
       return actions.addText;
-    case 'freehand':
-      return actions.beginFreehand;
-    case 'highlighter':
-      return actions.beginHighlighter;
-    case 'shape-pen':
-      return actions.beginShapePen;
-    case 'polygon':
-      return actions.beginPolygon;
     case 'room-walls':
       return actions.beginRoomWalls ?? (() => {});
-    case 'arrow':
-      // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
-      return () => actions.addArrow(a.ends);
     case 'sticky':
       return actions.addSticky;
     case 'image':
       return actions.addImage;
-    case 'annotation':
-      return actions.addAnnotation;
     case 'link-card':
       return actions.addLinkCard;
     case 'sticker':
@@ -88,8 +69,7 @@ export function tileHandler(
 }
 
 // Whether this tile is the armed draw-to-size intent (the pressed
-// highlight). Only the annotation drops immediately and never arms, so it is
-// the only kind with no active state (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
+// highlight, docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
 export function tileActive(
   def: PaletteTileDef,
   pendingDraw: PendingDraw | null | undefined,
@@ -108,14 +88,6 @@ export function tileActive(
       );
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
-    // The three pens share the freehand intent, split by the variant
-    // payload — each tile lights only for its own arm (docs/specs/008-canvas/two-pens.md).
-    case 'freehand':
-      return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
-    case 'highlighter':
-      return pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter';
-    case 'shape-pen':
-      return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
     case 'room-walls':
       return pendingDraw.type === 'room-walls';
     case 'sticky':
@@ -124,7 +96,6 @@ export function tileActive(
     // sticker id), but the catalogue is open-ended and the picker renders
     // hundreds of tiles, so pressed-state matching per sticker buys
     // nothing the mode banner and cursor don't already say.
-    case 'annotation':
     case 'sticker':
       return false;
     default:

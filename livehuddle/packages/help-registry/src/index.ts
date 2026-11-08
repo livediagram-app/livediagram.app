@@ -391,7 +391,7 @@ export const articles: Article[] = [
     title: 'Copy and Paste',
     description: 'Move elements between tabs, spaces and windows through the system clipboard.',
     keywords:
-      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between documents diagrams another document another tab second window screenshot paste image offset reconnect arrows system clipboard canvas space spaces',
+      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between documents diagrams another document another tab second window screenshot paste image offset system clipboard canvas space spaces',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -752,11 +752,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'avatar-tour',
-    title: 'The Avatar Tour',
+    title: 'The Receptionist',
     description:
-      'A short, optional walkthrough of Avatar mode, offered the first time you walk as an avatar and replayable from Settings.',
+      'The Receptionist walks the Space, greets everyone who arrives on the Avatar Pad, and shows you how the Space works when you ask.',
     keywords:
-      'avatar tour walkthrough onboarding intro introduction getting started guide tutorial first time learn character walk dress outfit hair behaviour reactions speech bubble message say talk chat push shove replay rerun settings',
+      'receptionist receptionist host guide ask help welcome avatar tour walkthrough onboarding intro introduction getting started guide tutorial first time learn character walk dress outfit hair behaviour reactions speech bubble message say talk chat push shove replay rerun settings',
     category: 'Edit or Walk',
     categorySlug: 'selection-modes/avatar-mode',
     parentSlug: 'avatar-mode',
@@ -1572,8 +1572,8 @@ export const articles: Article[] = [
   {
     slug: 'multicolour-themes',
     title: 'Multicolour Themes',
-    description: 'Tint each branch of a hierarchy its own hue.',
-    keywords: 'multicolor rainbow branch hue tint colorful colourful',
+    description: 'Give each element the next hue in a palette.',
+    keywords: 'multicolor rainbow hue tint colorful colourful palette',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',

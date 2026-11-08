@@ -82,7 +82,7 @@ describe('the palette tray', () => {
     }
   });
 
-  it('hangs a mode banner from the strip, flush with its bottom edge and no wider', () => {
+  it('sits a mode banner just under the strip, apart from it and no wider', () => {
     mountStrip();
     const onAction = vi.fn();
     render(<Banner onAction={onAction} />);
@@ -92,10 +92,10 @@ describe('the palette tray', () => {
     const slot = tray.parentElement!;
     expect(slot.style.left).toBe('300px');
     expect(slot.style.width).toBe('600px');
-    // Up a pixel over the strip's bottom border (12 + 46 - 1).
-    expect(slot.style.top).toBe('57px');
-    expect(tray.className).toContain('rounded-b-xl');
-    expect(tray.className).toContain('border-t-0');
+    // A small gap under the strip's bottom edge (12 + 46 + 6), a card of its own.
+    expect(slot.style.top).toBe('64px');
+    expect(tray.className).toContain('rounded-xl');
+    expect(tray.className).not.toContain('border-t-0');
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onAction).toHaveBeenCalledTimes(1);
   });

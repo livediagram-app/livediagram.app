@@ -1169,7 +1169,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone left the card type editor's Show Me tour before its end.",
   'UI|Ended|DashboardTourCompleted':
     "Someone reached the end of the dashboard's tour: Dashboard Settings' Show Me, or the Dashboards tour it offers.",
-  'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
+  'UI|Ended|DashboardTourSkipped':
+    "Someone left Layout View, the Dashboards tour (from the footer or Dashboard Settings' Show Me), before its end.",
   'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
   'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
   'UI|Ended|SlideTourCompleted': "Someone reached the end of a slide page's Show Me tour.",
@@ -1462,6 +1463,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
   'UI|Selected|WorkshopTourFromWelcome':
     "Someone pressed Show me Workshop on the welcome tour's closing card, going straight into the Workshop tour. Retired in October 2026, when the welcome tour became the Diagram tour and stopped running in Workshop.",
+  'UI|Selected|PlanTourKeepCards':
+    'Someone finished the Practice Sprint and kept its practice cards as real cards on their board.',
+  'UI|Selected|PlanTourKeepSheet':
+    'Someone finished Five Small Wins and kept the practice sheet as a new Sheet tab, Practice Budget.',
   'UI|Selected|PlanTourBoards':
     "Someone picked Boards on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example board). Nothing sends this since 25 October 2026: the Start Tour button names one track and runs it.",
   'UI|Selected|PlanTourSheets':
@@ -2201,14 +2206,31 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PlanTourStepAddCards':
     'The Plan tour reached its "Add Cards" step, pointing at a column\'s Add card (adding example cards until October 2026).',
   'UI|View|PlanTourStepMoveCard':
-    'The Plan tour reached its "Move Work Along" step, pointing at a card on the board (moving an example card until October 2026).',
+    'The Plan tour\'s Practice Sprint reached its "Move One On" mission, asking the person to drag a practice card into the next column (a "Move Work Along" step card until November 2026).',
+  'UI|View|PlanTourStepOpenCard':
+    'The Plan tour\'s Practice Sprint reached its "Open One" mission, asking the person to open a practice card.',
+  'UI|View|PlanTourStepDueDate':
+    'The Plan tour\'s Practice Sprint reached its "Give It a Date" mission, asking for a due date on a practice card.',
+  'UI|View|PlanTourStepShipCard':
+    'The Plan tour\'s Practice Sprint reached its "Ship It" mission, asking the person to drag a practice card into the done column.',
+  'UI|View|PlanTourStepTypeValue':
+    'The Plan tour\'s Five Small Wins reached its "Type a Number" challenge on the practice sheet.',
+  'UI|View|PlanTourStepSum':
+    'The Plan tour\'s Five Small Wins reached its "Add It Up" challenge, a SUM formula on the practice sheet.',
+  'UI|View|PlanTourStepFillDown':
+    'The Plan tour\'s Five Small Wins reached its "Fill It Down" challenge on the practice sheet.',
+  'UI|View|PlanTourStepCurrency':
+    'The Plan tour\'s Five Small Wins reached its "Make It Money" challenge, a currency format on the practice sheet.',
+  'UI|View|PlanTourStepChart':
+    'The Plan tour\'s Five Small Wins reached its "Chart It" challenge, a chart from the practice sheet.',
   'UI|View|PlanTourStepCardPanel':
     'The Plan tour reached its "The Card Panel" step, opening a card\'s panel.',
   'UI|View|PlanTourStepBoardHeader': 'The Plan tour reached its "The Board Header" step.',
   'UI|View|PlanTourStepCardTypes': 'The Plan tour reached its "Card Types" step.',
   'UI|View|PlanTourStepPalette':
     'The Plan tour reached its "The Plan palette" step, opening the palette\'s categories.',
-  'UI|View|PlanTourStepOutro': 'The Plan tour reached its closing "You\'re ready to plan" card.',
+  'UI|View|PlanTourStepOutro':
+    'The Plan tour reached the finish of its Practice Sprint or Five Small Wins, every mission done (a closing "You\'re ready to plan" card until November 2026).',
   'UI|View|PlanTourStepSheet':
     'The Plan tour\'s Spreadsheets track reached its "Your Sheet" step, highlighting the person\'s sheet (placing an example sheet until October 2026).',
   'UI|View|PlanTourStepCells':

@@ -4,7 +4,7 @@
 // forms share one validation.
 
 import type { FieldValue } from './types';
-import { arrowParts, hasQuotes, tokeniseLine, unquotedPrefix, type Word } from './tokenise';
+import { hasQuotes, unquotedPrefix, type Word } from './tokenise';
 import {
   EDIT_OPERATION_NAMES,
   FLAG_MEMBERS,
@@ -20,23 +20,18 @@ type LineResult = { raw: Record<string, unknown> } | { error: LineError };
 const SPECIAL_KEYS: Readonly<Partial<Record<EditOperationName, readonly string[]>>> = {
   add: ['id'],
   move: ['by'],
-  connect: ['id'],
-  rewire: ['from', 'to'],
-  insert: ['id'],
   order: ['above', 'below'],
-  layout: ['style', 'direction'],
 };
 
 // The flags each operation takes.
 const FLAGS: Readonly<Partial<Record<EditOperationName, readonly FlagWord[]>>> = {
   set: ['all'],
-  rm: ['all', 'keep-arrows'],
+  rm: ['all'],
   move: ['all'],
-  connect: ['again'],
 };
 
 // The special keys whose value is a selector, kept as written.
-const SELECTOR_KEYS_OF: ReadonlySet<string> = new Set(['from', 'to', 'above', 'below']);
+const SELECTOR_KEYS_OF: ReadonlySet<string> = new Set(['above', 'below']);
 const PLACEMENT_WORDS: ReadonlySet<string> = new Set([...PLACEMENT_RELATIONS, 'at']);
 const FIELD_KEY = /^([a-zA-Z][a-zA-Z-]*)=/;
 const KEYED = /^([a-zA-Z][a-zA-Z-]*):/;
@@ -214,73 +209,22 @@ export function parseOperationWords(
   const needSelector = (terms: readonly Word[]) =>
     terms.length ? null : fail(rest[0], end, 'a selector: a ref, a "label" or key:value terms');
 
-  if (name === 'add' || name === 'insert') {
+  if (name === 'add') {
     const [kindWord, ...more] = rest;
     if (!kindWord || hasQuotes(kindWord) || /[:=~]/.test(kindWord.value))
       return fail(kindWord, end, 'a kind: square, text, sticky, …');
-    let between: string[] | null = null;
-    let tail = more;
-    if (name === 'insert') {
-      const at = more.findIndex((w) => !hasQuotes(w) && w.value === 'between');
-      if (at < 0 || !more[at + 1] || !more[at + 2])
-        return fail(undefined, lineEnd, 'between <a> <b>');
-      between = [more[at + 1]!.raw, more[at + 2]!.raw];
-      tail = [...more.slice(0, at), ...more.slice(at + 3)];
-    }
-    const c = collect(name, tail);
+    const c = collect(name, more);
     if ('column' in c) return { error: c };
     if (c.terms.length) {
       // A `word:ref` that is no placement (`right:n3` for `right-of:n3`) is told which ones there are; "quote values
       // with spaces" said nothing about it.
       const stray = c.terms[0]!;
-      const keyed = name === 'add' && KEYED.test(unquotedPrefix(stray));
+      const keyed = KEYED.test(unquotedPrefix(stray));
       return fail(stray, end, keyed ? PLACEMENT_EXPECTED : 'key=value or a placement');
     }
     const raw: Record<string, unknown> = { op: name, kind: kindWord.value };
     if (c.special.id !== undefined) raw.id = c.special.id;
-    if (between) raw.between = between;
-    return { raw: withOptional(raw, c, name === 'add' ? ['fields', 'place'] : ['fields']) };
-  }
-
-  if (name === 'connect') {
-    const isArrow = (w: Word) => !hasQuotes(w) && w.value === '->';
-    const arrows = rest.filter(isArrow);
-    const joined = rest.filter((w) => !isArrow(w) && !fieldOf(w) && arrowParts(w) !== null);
-    // One arrow has two ends: `a -> b -> c` or `a->b->c` is refused, never read as `a -> b` (EO24a).
-    const extra = arrows[1] ?? joined.find((w) => arrows.length > 0 || arrowParts(w)!.length > 2);
-    if (extra ?? joined[1]) return fail(extra ?? joined[1], end, 'one -> in connect: <a> -> <b>');
-    const arrow = rest.findIndex(isArrow);
-    let fromTerms: Word[];
-    let tail: Word[];
-    if (arrow >= 0) {
-      fromTerms = rest.slice(0, arrow);
-      tail = rest.slice(arrow + 1);
-    } else {
-      // `a->b` as one word, either end may be quoted: `"Sign in"->"Pay"`.
-      const at = joined[0] ? rest.indexOf(joined[0]) : -1;
-      if (at < 0) return fail(rest[0], end, 'connect <a> -> <b>');
-      const [a, b] = arrowParts(rest[at]!) as [string, string];
-      const column = rest[at]!.column;
-      // Each part is cut from a word that already tokenised, at a -> outside quotes, so it tokenises too.
-      const part = (text: string, offset: number): Word[] =>
-        (tokeniseLine(text) as { words: Word[] }).words.map((w) => ({
-          ...w,
-          column: column + offset,
-        }));
-      fromTerms = [...rest.slice(0, at), ...part(a, 0)];
-      tail = [...part(b, a.length + 2), ...rest.slice(at + 1)];
-    }
-    const c = collect(name, tail);
-    if ('column' in c) return { error: c };
-    if (!fromTerms.length) return fail(rest[0], end, 'connect <a> -> <b>');
-    if (!c.terms.length) return fail(rest[arrow], end, 'a selector after ->');
-    const raw: Record<string, unknown> = {
-      op: name,
-      from: selectorOf(fromTerms),
-      to: selectorOf(c.terms),
-    };
-    if (c.special.id !== undefined) raw.id = c.special.id;
-    return { raw: withOptional(raw, c, ['fields']) };
+    return { raw: withOptional(raw, c, ['fields', 'place']) };
   }
 
   const c = collect(name, rest);

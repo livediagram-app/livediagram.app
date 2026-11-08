@@ -1,7 +1,8 @@
 # Tours and the Start Tour button
 
 How every tour in the editor is offered and run: the footer's **Start Tour** button, the engine the tours share, how a
-step reads and moves, and the look. The tours themselves are the [Avatar tour](../008-canvas/avatar-tour.md), the
+step reads and moves, and the look. The tours themselves are [the Receptionist](../008-canvas/receptionist.md) (who replaced the Avatar tour, Work
+Tracker #58, and offers **Ask Receptionist** on the button), the
 [element tours](element-tours.md) and [Show Me](show-me.md). The Workshop tour left livehuddle (Work Tracker #423,
 [Workshop tour](../012-collaboration/workshop-tour.md)).
 livediagram's Diagram tour and Draw tour are not part of livehuddle (cut with Diagram and Draw,
@@ -23,7 +24,7 @@ livediagram's Diagram tour and Draw tour are not part of livehuddle (cut with Di
   Search, Settings or the appearance switch.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
   `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): the selected element's own
-  tour first, then a tool in hand or a surface on the tab (the Avatar tour), then the Workshop tour. Between two of the same rank, the one published last wins. With
+  tour first, then a tool in hand or a surface on the tab (Ask Receptionist), then the Workshop tour. Between two of the same rank, the one published last wins. With
   no tour on offer the button is not drawn.
 - **Gone once taken, back from Settings.** A tour taken is off the button: once the person starts it (and so
   finishes or skips it), its host stops offering it, so the button makes room for a tour not yet taken, or is not
@@ -131,7 +132,7 @@ of their steps ask the person to try things.
   step's target lands and again when a heal brings it back, never while the step is up, so the person can scroll away.
 - **A target has to render to count.** Chrome a surface hides can stay in the DOM (`display:none`), so an
   anchor with no client rects is treated as absent: it is never clicked and never measured. That is the safety
-  net; the step list itself is built up front from the tour's context (`workshopTourSteps({ canShare })`, `avatarTourSteps({ canSpeak, mobile })`) so the "N of M"
+  net; the step list itself is built up front from the tour's context (`workshopTourSteps({ canShare })`) so the "N of M"
   count stays honest instead of a hidden step burning its timeout mid-tour.
 - **What counts as a dialog** is one signal, the modal guard (`../packages/workbench/src/lib/modal-guard.ts`): a count of open modal
   dialogs, fed by the editor's `Dialog` (so every dialog built on it counts with no extra work) and by the

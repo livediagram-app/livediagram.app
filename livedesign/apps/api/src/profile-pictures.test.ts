@@ -2,9 +2,9 @@
 // docs/specs/014-identity/profile-and-email-notifications.md "Avatars"): a picture is kept only from an account
 // session and only when it is a Google picture URL, and it reaches only account sessions and signed-in readers.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { rosterFrames, type RosterEntry } from '@liveworkspace/api-kit/room-roster';
 import { __forgetProfiles } from './accounts/profiles';
 import { helloPresence } from './design-room-rules';
-import { rosterFrames, type RosterEntry } from './room-roster';
 import { newSessionAttachment, verifiedSessionOf } from './room-session';
 import { handleParticipants } from './routes/participants';
 import { makeTestRouteContext } from './routes/test-route-context';
@@ -43,7 +43,10 @@ describe('the hello rule', () => {
 });
 
 describe('the roster', () => {
-  const entry = (presence: ParticipantPresence, account: boolean): RosterEntry => ({
+  const entry = (
+    presence: ParticipantPresence,
+    account: boolean,
+  ): RosterEntry<ParticipantPresence> => ({
     ws: {} as WebSocket,
     presence,
     personTag: null,
@@ -54,10 +57,12 @@ describe('the roster', () => {
     const ada = entry({ id: 'a', name: 'Ada', color: '#f00', picture: PICTURE }, true);
     const bea = entry({ id: 'b', name: 'Bea', color: '#0f0' }, true);
     const visitor = entry({ id: 'v', name: 'Visitor', color: '#00f' }, false);
-    const [toAda, toBea, toVisitor] = [...rosterFrames([ada, bea, visitor], [])];
-    expect(toAda!.participants.map((p) => p.picture)).toEqual([undefined, undefined]);
-    expect(toBea!.participants.find((p) => p.id === 'a')?.picture).toBe(PICTURE);
-    const seen = toVisitor!.participants.find((p) => p.id === 'a')!;
+    const [toAda, toBea, toVisitor] = [...rosterFrames([ada, bea, visitor], [])].map(
+      (f) => (JSON.parse(f.frame) as { participants: ParticipantPresence[] }).participants,
+    );
+    expect(toAda!.map((p) => p.picture)).toEqual([undefined, undefined]);
+    expect(toBea!.find((p) => p.id === 'a')?.picture).toBe(PICTURE);
+    const seen = toVisitor!.find((p) => p.id === 'a')!;
     expect('picture' in seen).toBe(false);
     expect(seen.name).toBe('Ada');
   });

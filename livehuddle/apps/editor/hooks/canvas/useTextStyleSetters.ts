@@ -1,5 +1,4 @@
 import {
-  isBoxed,
   type Element,
   type Tab,
   type TextAlignX,
@@ -7,6 +6,7 @@ import {
   type TextSize,
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
+import { isStyleable } from '@/lib/style-presets';
 import { hugsText, hugTextSize } from '@/lib/text-hug';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 
@@ -46,7 +46,7 @@ export function useTextStyleSetters({
     if (ids.size === 0) return;
     commitHugging(ids, (els) =>
       els.map((el) => {
-        if (!ids.has(el.id) || !(isBoxed(el) || el.type === 'arrow')) return el;
+        if (!ids.has(el.id) || !isStyleable(el)) return el;
         // A picked size is the size: it replaces a Shift-resize scale.
         if (el.type === 'text') {
           const { textScale: _scale, ...rest } = el;
@@ -67,7 +67,7 @@ export function useTextStyleSetters({
     if (ids.size === 0) return;
     commitHugging(ids, (els) =>
       els.map((el) => {
-        if (!ids.has(el.id) || !(isBoxed(el) || el.type === 'arrow')) return el;
+        if (!ids.has(el.id) || !isStyleable(el)) return el;
         if (!font) {
           const copy = { ...el };
           delete (copy as { font?: string }).font;
@@ -84,7 +84,7 @@ export function useTextStyleSetters({
     if (ids.size === 0) return;
     commit((els) =>
       els.map((el) =>
-        ids.has(el.id) && isBoxed(el) ? { ...el, textAlignX: x, textAlignY: y } : el,
+        ids.has(el.id) && isStyleable(el) ? { ...el, textAlignX: x, textAlignY: y } : el,
       ),
     );
     track('Element', 'Changed', 'TextAlign');
@@ -98,15 +98,12 @@ export function useTextStyleSetters({
     field: 'textBold' | 'textItalic' | 'textUnderline' | 'textStrikethrough',
   ) => {
     const primary = selectionPrimary();
-    if (!primary || !(isBoxed(primary) || primary.type === 'arrow')) return;
+    // A retired element keeps its stored look (docs/specs/002-project-scope/blueprints/element-engine.md).
+    if (!primary || !isStyleable(primary)) return;
     const next = !(primary[field] ?? false);
     const ids = currentSelectionIds();
     commitHugging(ids, (els) =>
-      els.map((el) =>
-        ids.has(el.id) && (isBoxed(el) || el.type === 'arrow')
-          ? withTextStyle(el, field, next)
-          : el,
-      ),
+      els.map((el) => (ids.has(el.id) && isStyleable(el) ? withTextStyle(el, field, next) : el)),
     );
     // Telemetry type is the style name (Bold / Italic / Underline /
     // Strikethrough) — `field` minus its 'text' prefix, title-cased.

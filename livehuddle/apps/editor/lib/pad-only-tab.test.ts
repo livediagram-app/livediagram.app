@@ -33,8 +33,8 @@ describe('padOnlyTabCentre', () => {
       x: 300,
       y: -120,
     });
-    const [pad] = buildTemplate('blank-session', 0, 0);
-    expect(pad!.type === 'shape' && pad.y + pad.height / 2).toBe(BLANK_PAD_DROP);
+    const pad = buildTemplate('blank-session', 0, 0)[0]!;
+    expect(pad.type === 'shape' && pad.y + pad.height / 2).toBe(BLANK_PAD_DROP);
   });
 
   it('is null for an empty tab and for one with anything besides pads, which the entry fits', () => {

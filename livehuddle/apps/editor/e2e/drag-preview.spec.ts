@@ -9,8 +9,8 @@ import {
   serverNewUrl,
 } from './fixtures';
 
-// docs/specs/008-canvas/drag-preview.md: while a drag lasts, the moved box and the arrow pinned to it
-// move on screen while nothing is written; the document changes once, on release; Escape puts the box
+// docs/specs/008-canvas/drag-preview.md: while a drag lasts, the moved box moves on screen while
+// nothing is written; the document changes once, on release; Escape puts the box
 // back; one undo takes the drag back. Dark mode; synthesised board.
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
@@ -37,12 +37,6 @@ const BOARD = [
     height: 80,
     fillColor: '#ffffff',
   },
-  {
-    id: 'ab',
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
-    to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
-  },
 ];
 
 async function savedX(page: Page, id: string): Promise<number | undefined> {
@@ -64,8 +58,6 @@ async function savedX(page: Page, id: string): Promise<number | undefined> {
 }
 
 const box = (page: Page, id: string) => page.locator(`${CANVAS} [data-element-id="${id}"]`).first();
-const arrowPath = (page: Page) =>
-  page.locator(`${CANVAS} svg[data-arrow-svg] path[d]`).first().getAttribute('d');
 
 async function openBoard(page: Page) {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -90,18 +82,16 @@ async function grab(page: Page) {
 }
 
 test.describe('drag preview', () => {
-  test('moves the box and its arrow on screen while writing nothing, then writes once on release', async ({
+  test('moves the box on screen while writing nothing, then writes once on release', async ({
     page,
     pageErrors,
   }) => {
     await openBoard(page);
-    const pathBefore = await arrowPath(page);
     const { before } = await grab(page);
 
-    // Mid-drag: drawn where the pointer is, the arrow follows, nothing saved (past the autosave's wait).
+    // Mid-drag: drawn where the pointer is, nothing saved (past the autosave's wait).
     const mid = (await box(page, 'a').boundingBox())!;
     expect(mid.x).toBeGreaterThan(before.x + 60);
-    expect(await arrowPath(page)).not.toBe(pathBefore);
     await page.waitForTimeout(1500);
     expect(await savedX(page, 'a')).toBe(300);
 

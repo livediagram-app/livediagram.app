@@ -78,10 +78,7 @@ describe('rejection builders', () => {
     expect(unknownOperation('sett', 1)).toEqual({
       code: 'unknown_operation',
       operation: 1,
-      details: [
-        '"sett" is not an operation',
-        'operations: add set rm move connect rewire insert order layout test',
-      ],
+      details: ['"sett" is not an operation', 'operations: add set rm move order layout test'],
       hint: 'did you mean set?',
     });
     expect(unknownOperation('paint', 1).hint).toBeUndefined();
@@ -127,7 +124,7 @@ describe('rejection builders', () => {
       details: ['id "n3" is taken by square "Login"'],
       hint: 'use id n3-3',
     });
-    expect(idTaken(1, byId('a1'), taken).details).toEqual(['id "a1" is taken by arrow']);
+    expect(idTaken(1, byId('a1'), taken).details).toEqual(['id "a1" is taken by ? arrow']);
   });
 
   it('invalid_result names the element, field and rule', () => {

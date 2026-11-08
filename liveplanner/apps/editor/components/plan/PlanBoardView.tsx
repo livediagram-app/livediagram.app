@@ -25,6 +25,7 @@ import {
   itemStatus,
   cardIsFaceDown,
   normaliseBoardSetup,
+  isQuickFilterEmpty,
   projectBoard,
   type Item,
   type LaneHead,
@@ -40,9 +41,11 @@ import { track } from '@/lib/telemetry';
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
 import { useBoardCsv } from '@/hooks/plan/useBoardCsv';
 import { cellStatus, laneMove } from './plan-board-moves';
-import { DropGap, LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
+import { DropGap, LaneRow, PlanDragGhost } from './PlanBoardCells';
+import { PlanBoardCellCards, type CellCardsBase } from './PlanBoardCellCards';
 import {
   cardsMovingRefused,
+  columnCardMoves,
   cardsStayedMessage,
   moveStatusRefusal,
   typeStatusRefusal,
@@ -92,6 +95,7 @@ import { useCardFanIn } from './useCardFanIn';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { MaximisePlanButton, MaximisableSlot } from './MaximisedPlanLayer';
 import { FocusElementButton } from './FocusElementButton';
+import { practiceShipColumn } from './PracticeMarks';
 
 // A board's corner radius when it has none of its own (Quick Style's Corners sets one).
 const PLAN_BOARD_RADIUS_PX = 12;
@@ -118,6 +122,7 @@ function keepBoardPress(e: React.PointerEvent<HTMLElement>): void {
   e.stopPropagation();
 }
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
+const NO_COLUMNS: never[] = [];
 const NO_STATUSES: ReadonlyMap<string, string> = new Map();
 const NONE_SHUT: ReadonlySet<string> = new Set();
 
@@ -176,6 +181,11 @@ export function PlanBoardView({
     () => (fullSetup && simplified ? slotSetup(fullSetup) : fullSetup),
     [fullSetup, simplified],
   );
+  // The column the Practice Sprint ships to, only while there are practice cards (PracticeMarks).
+  const shipColumnId = useMemo(
+    () => (setup && plan?.practiceIds?.size ? practiceShipColumn(setup)?.id : undefined),
+    [setup, plan?.practiceIds],
+  );
   const [quick, setQuick] = useState<QuickFilter>({});
   // A phone draws the board its own way (phone-board.ts): no widgets, so no quick filter either; nor does a slot board.
   const phone = useIsMobileViewport();
@@ -207,9 +217,18 @@ export function PlanBoardView({
     [statusNames, items, types],
   );
   // What the header's widgets count: the items the board shows, before the quick filter.
+  // With no quick filter on (the usual case) the board's own projection already holds them: no second projection.
+  const quickOn = !isQuickFilterEmpty(applied);
   const shownItems = useMemo(
-    () => (setup ? boardItems(projectBoard(setup, items, undefined, types, statusNames)) : []),
-    [setup, items, types, statusNames],
+    () =>
+      !setup
+        ? []
+        : boardItems(
+            quickOn || !projection
+              ? projectBoard(setup, items, undefined, types, statusNames)
+              : projection,
+          ),
+    [setup, items, types, statusNames, quickOn, projection],
   );
   // Selected (alone or with others): the header shows its move handle.
   const selected = useSelectionOf(
@@ -487,6 +506,55 @@ export function PlanBoardView({
     [latest],
   );
 
+  // A slot board sizes its columns from its measured width (slot-board.ts), its cards Minimal when they are narrow.
+  const slotBoard = look.columns === 'slot';
+  const slotUnit = slotBoard
+    ? slotColumnUnit(bodySize?.width ?? null, setup?.columns ?? NO_COLUMNS)
+    : null;
+  const cardSize = slotBoard ? slotCardSize(look.cardSize, slotUnit) : look.cardSize;
+  // What every card draws with (PlanBoardCellCards), one identity while none of it changes, so a cell whose own
+  // cards and gap are as they were is skipped.
+  const cellBase = useMemo<CellCardsBase>(
+    () => ({
+      palette,
+      // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
+      setupFields: CARD_FIELDS,
+      cardSize,
+      stacked: slotBoard,
+      touch: look.cardTouch,
+      interactive,
+      canMove: canEditCards,
+      onPress: cardHandlers.onPress,
+      onOpen: cardHandlers.onOpen,
+      onKey: cardHandlers.onKey,
+      onMenu: cardHandlers.onMenu,
+      ...(interactive && canEditCards ? { onLongPress: cardHandlers.onLongPress } : {}),
+      cardVote,
+      setup,
+      selfId: plan?.self?.id ?? '',
+      presence: plan?.presence,
+      selected: selection.ids,
+      liftedId: dragging?.itemId,
+      carried,
+    }),
+    [
+      palette,
+      cardSize,
+      slotBoard,
+      look.cardTouch,
+      interactive,
+      canEditCards,
+      cardHandlers,
+      cardVote,
+      setup,
+      plan?.self?.id,
+      plan?.presence,
+      selection.ids,
+      dragging?.itemId,
+      carried,
+    ],
+  );
+
   if (!setup || !projection) {
     return (
       <div
@@ -515,13 +583,9 @@ export function PlanBoardView({
   // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
   const addTypes = boardAddTypes(setup, types);
 
-  // A slot board sizes its columns from its measured width (slot-board.ts), its cards Minimal when they are narrow.
-  const slotBoard = look.columns === 'slot';
-  const slotUnit = slotBoard ? slotColumnUnit(bodySize?.width ?? null, setup.columns) : null;
   const columnTemplate = slotBoard
     ? slotColumnTemplate(bodySize?.width ?? null, setup.columns)
     : boardColumnTemplate(setup.columns, look.columns, shutColumns);
-  const cardSize = slotBoard ? slotCardSize(look.cardSize, slotUnit) : look.cardSize;
   // A slot board's column + (its head's, the cards' Add card row otherwise; rows keep their own rows' buttons, an All
   // Cards board's rows by status being the one kind a slot board keeps).
   const addInHead = simplified && !withLanes;
@@ -801,8 +865,12 @@ export function PlanBoardView({
                     if (!plan) return;
                     const moving = [...items.values()].filter((it) => itemStatus(it) === from);
                     const stay = cardsMovingRefused(moving, plan.types, to);
-                    for (const it of moving)
-                      if (!stay.has(it.id)) plan.moveItem(it.id, { status: to, before: null });
+                    // One write, one undo step and one room op for the whole column, never one per card.
+                    const moves = columnCardMoves(moving, stay, to);
+                    if (plan.moveItems && moves.length) {
+                      plan.moveItems(moves);
+                      track('Plan', 'Moved', 'Board');
+                    } else for (const m of moves) plan.moveItem(m.id, m.move);
                     // One announcement for the cards whose type leaves the status out, never one each.
                     if (stay.size) plan.announce(cardsStayedMessage(stay.size, columnName(to)));
                   }}
@@ -887,6 +955,8 @@ export function PlanBoardView({
                         const firstEmpty =
                           empty && canEditCards && laneIndex === 0 && col === projection.columns[0];
                         const done = isDoneColumn(setup, col.column);
+                        // Where the Practice Sprint's cards ship (plan-tour.md "Boards: Practice Sprint").
+                        const ships = col.column.id === shipColumnId;
                         // Every type the board takes may be added in any cell: a type's left-out statuses only
                         // stop a card moving there (docs/specs/026-plan/item-types.md "An item type").
                         const cellTypes = addTypes;
@@ -925,38 +995,20 @@ export function PlanBoardView({
                                     />
                                   ))
                                 : null}
-                              {cell.map((item) => (
-                                <PlanBoardCard
-                                  key={item.id}
-                                  item={item}
-                                  palette={palette}
-                                  placeholderBefore={
-                                    slotHere?.beforeId === item.id && held?.itemId !== item.id
-                                      ? held?.height
-                                      : undefined
-                                  }
-                                  lifted={dragging?.itemId === item.id || carried.has(item.id)}
-                                  selected={selection.ids.has(item.id)}
-                                  done={done}
-                                  // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
-                                  setupFields={CARD_FIELDS}
-                                  cardSize={cardSize}
-                                  stacked={slotBoard}
-                                  touch={look.cardTouch}
-                                  faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
-                                  presence={plan?.presence.get(item.id)}
-                                  interactive={interactive}
-                                  canMove={canEditCards}
-                                  onPress={cardHandlers.onPress}
-                                  onOpen={cardHandlers.onOpen}
-                                  onKey={cardHandlers.onKey}
-                                  onMenu={cardHandlers.onMenu}
-                                  cardVote={cardVote}
-                                  {...(interactive && canEditCards
-                                    ? { onLongPress: cardHandlers.onLongPress }
-                                    : {})}
-                                />
-                              ))}
+                              <PlanBoardCellCards
+                                cards={cell}
+                                base={cellBase}
+                                done={done}
+                                ships={ships}
+                                busy={busy}
+                                simplified={simplified}
+                                gapBefore={
+                                  slotHere && slotHere.beforeId !== held?.itemId
+                                    ? slotHere.beforeId
+                                    : null
+                                }
+                                gapHeight={held?.height}
+                              />
                               {slotHere && slotHere.beforeId === null ? (
                                 <DropGap
                                   height={held!.height}

@@ -8,22 +8,21 @@ describe('STYLE_KEYS', () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it('writes only fields an element of its target stores', () => {
+  // A stored arrow is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+  // part 4) that no style key writes, so only the box keys are checked.
+  it('writes only fields a boxed element stores', () => {
     const fieldsOf = (lists: readonly (readonly string[])[]) => new Set(lists.flat());
     const boxFields = fieldsOf(
       Object.entries(ELEMENT_FIELD_NAMES)
         .filter(([type]) => type !== 'arrow')
         .map(([, names]) => names),
     );
-    const arrowFields = fieldsOf([ELEMENT_FIELD_NAMES.arrow]);
     for (const { field, on } of STYLE_KEYS) {
       if (on !== 'arrows') expect(boxFields.has(field)).toBe(true);
-      if (on !== 'boxes') expect(arrowFields.has(field)).toBe(true);
     }
   });
 
-  it('gives arrows their line keys and boxes theirs', () => {
-    expect(styleKeysFor('arrow').map((k) => k.key)).toEqual(['stroke', 'line']);
+  it('gives boxes their keys', () => {
     expect(styleKeysFor('shape').map((k) => k.key)).toEqual([
       'fill',
       'stroke',

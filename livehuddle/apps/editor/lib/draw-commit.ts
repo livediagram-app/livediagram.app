@@ -1,5 +1,5 @@
 import { dropsAtOwnSize, isFixedSizeShape } from '@livehuddle/document';
-import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
+import { inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
   createImage,
@@ -9,33 +9,22 @@ import {
   createSticky,
   createText,
   defaultIconAnimation,
-  snapToArrowPoint,
-  type ArrowElement,
-  type ArrowEnds,
+  isBoxed,
   type ComponentKind,
   type Element,
-  type Endpoint,
   type Tab,
 } from '@livehuddle/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import type { ThemeDefinition } from '@livehuddle/document';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
 // lifted out of useShapeDrawing: each builder interprets the gesture's
-// raw start + end canvas points for its intent kind (box vs line vs
+// raw start + end canvas points for its intent kind (box vs
 // composite) and returns the minted element(s). The hook stays the
 // owner of everything stateful — the functional commit, selection,
 // telemetry, and the image-picker follow-up.
-
-// Stroke for a new arrow when the active theme has no explicit
-// `elementStroke` (the Brand theme). brand-500 — matches the shape
-// default stroke (`defaultStrokeColor`) so an added arrow reads as the
-// accent like every other new element, instead of ArrowView's slate-700
-// fallback (which looked like an un-themed black line + arrowhead).
-export const NEW_ARROW_THEME_STROKE_FALLBACK = '#0ea5e9';
 
 // A press with under 16 canvas-px of travel in either axis is a tap /
 // stray click rather than a real drag; every intent branch shares the
@@ -61,62 +50,6 @@ export function drawnDragBox(
   return { x: left, y: top, width: drawnWidth, height: drawnHeight };
 }
 
-// Arrow branch. A stray click lays the default 160px horizontal arrow
-// across the click point (so the user isn't left wondering why nothing
-// appeared); a real drag uses the dragged endpoints as-is. Y is always
-// anchored at startY for a click (a click wants a flat line). Each
-// drawn endpoint snaps onto a nearby arrow's line at draw time
-// (docs/specs/008-canvas/arrow-to-arrow.md) so drawing a message onto another arrow connects
-// immediately; a stray click lays the placeholder free (no snapping).
-export function buildDrawnArrow(
-  startX: number,
-  startY: number,
-  endX: number,
-  endY: number,
-  elements: Element[],
-  theme: ThemeDefinition,
-  // The whiteboard's Line / Arrow shapes (docs/specs/023-draw-mode/draw-mode.md): their heads, and
-  // no colour so the board's ink shows.
-  opts: { ends?: ArrowEnds; unpainted?: boolean } = {},
-): ArrowElement {
-  const isClick = isDrawTap(startX, startY, endX, endY);
-  const arrowStartX = isClick ? startX - 80 : startX;
-  const arrowEndX = isClick ? startX + 80 : endX;
-  const arrowEndY = isClick ? startY : endY;
-  const snapDrawn = (x: number, y: number): Endpoint => {
-    if (isClick) return { kind: 'free', x, y };
-    const hit = snapToArrowPoint({ x, y }, elements, ARROW_SNAP_THRESHOLD_PX, '');
-    return hit ? { kind: 'on-arrow', arrowId: hit.arrowId, t: hit.t } : { kind: 'free', x, y };
-  };
-  return {
-    id: crypto.randomUUID(),
-    type: 'arrow',
-    from: snapDrawn(arrowStartX, startY),
-    to: snapDrawn(arrowEndX, arrowEndY),
-    arrowEnds: opts.ends ?? 'none',
-    ...(opts.unpainted
-      ? {}
-      : { strokeColor: theme.elementStroke ?? NEW_ARROW_THEME_STROKE_FALLBACK }),
-  };
-}
-
-// The arrow a draw gesture lands, dressed as it lands: in the theme's stroke, then in its tool's remembered style. The live preview and the commit both build it here, so what the drag shows is what the
-// release lands, down to the stroke width and the arrowhead.
-export function buildDressedDrawnArrow(
-  intent: Extract<PendingDraw, { type: 'arrow' }>,
-  startX: number,
-  startY: number,
-  endX: number,
-  endY: number,
-  board: { elements: Element[]; theme: ThemeDefinition },
-  styleNewElement: <T extends Element>(el: T) => T,
-): ArrowElement {
-  const drawn = buildDrawnArrow(startX, startY, endX, endY, board.elements, board.theme, {
-    ends: intent.ends,
-  });
-  return styleNewElement(drawn);
-}
-
 // Component branch (docs/specs/008-canvas/canvas-and-palette.md): a tap drops the component at its natural size
 // centred on the tap, while a drag sizes it to the dragged box like any shape; an aspect-locked one (the Avatar)
 // keeps its square, fitted into the box.
@@ -129,7 +62,7 @@ export function buildDrawnComponent(
 ): Element {
   if (isDrawTap(startX, startY, endX, endY)) return createComponent(kind, startX, startY);
   const made = createComponent(kind, (startX + endX) / 2, (startY + endY) / 2);
-  if (made.type === 'arrow') return made;
+  if (!isBoxed(made)) return made;
   const box = drawnDragBox({ type: 'component', kind }, startX, startY, endX, endY);
   const side = Math.min(box.width, box.height);
   const size = made.aspectLocked ? { width: side, height: side } : box;
@@ -144,8 +77,7 @@ export function buildDrawnComponent(
 // Boxed branch (shape / text / sticky / image / link card).
 // A tap drops the element centred on the tap at its inherited size (the
 // armed-time selection's size, else the factory default; circle/diamond stay
-// square); a real drag sizes it to the dragged box (16px floor). Mirrors the
-// arrow branch's stray-click handling.
+// square); a real drag sizes it to the dragged box (16px floor).
 export function buildDrawnBoxed(
   intent: Extract<PendingDraw, { type: 'shape' | 'text' | 'sticky' | 'image' | 'link-card' }>,
   startX: number,

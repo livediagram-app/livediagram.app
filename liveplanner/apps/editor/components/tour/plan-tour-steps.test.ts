@@ -1,257 +1,242 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+
+// The Plan tour's missions (docs/specs/026-plan/plan-tour.md "Boards: Practice Sprint", "Sheets: Five Small Wins"):
+// each is done by what the person really did, and the subject is the board or Sheet they see.
+
+import type { Item } from '@liveplanner/items';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
+  a1Range,
   boardRoot,
-  firstCardOn,
+  FINISH_STEP,
   needsReveal,
-  sheetRoot,
-  visiblePlanWork,
-  planTourSteps,
+  overWipColumn,
   planTourStepTelemetryType,
-  type PlanTourApi,
+  sheetMissions,
+  sheetRoot,
+  sprintMissions,
+  visiblePlanWork,
+  wipNote,
+  type PracticeSheetCtx,
+  type SprintCtx,
+  type SprintShape,
 } from './plan-tour-steps';
 
-// The Plan tour's steps (docs/specs/026-plan/plan-tour.md "The steps"): they run on the person's own board or
-// Sheet (the tour subject) and only point at it, opening nothing but a card's panel.
+const card = (id: string, fields: Record<string, unknown>): Item =>
+  ({ id, type: 'task', key: 0, rank: 'a', fields }) as unknown as Item;
 
-const api = (over: Partial<PlanTourApi> = {}): PlanTourApi => ({
-  boardId: () => 'board1',
-  sheetElementId: () => 'sheet1',
-  firstCardId: () => 'card1',
-  openCard: vi.fn(),
-  closeCard: vi.fn(),
-  reveal: vi.fn(),
-  addTourCard: vi.fn(async () => 'tour-card'),
-  moveTourCard: vi.fn(),
-  openTourCard: vi.fn(),
-  tourCardId: () => 'tour-card',
-  ...over,
+const SHAPE: SprintShape = {
+  boardId: 'b0',
+  firstStatus: 'todo',
+  nextStatus: 'doing',
+  nextName: 'Doing',
+  shipStatus: 'done',
+  shipName: 'Done',
+  hasDue: true,
+  phone: false,
+};
+const ctxOf = (practice: Item[], openItemId: string | null = null): SprintCtx => ({
+  ...SHAPE,
+  practice,
+  openItemId,
 });
-const PLAN_TOUR_STEPS = planTourSteps('boards');
-const step = (id: string) => PLAN_TOUR_STEPS.find((s) => s.id === id)!;
-const SHEET_STEPS = planTourSteps('sheets');
-const sheetStep = (id: string) => SHEET_STEPS.find((s) => s.id === id)!;
+const dealt = () => [card('p1', { status: 'todo' }), card('p2', { status: 'todo' })];
 
 afterEach(() => {
-  vi.clearAllMocks();
   document.body.innerHTML = '';
 });
 
-describe('PLAN_TOUR_STEPS', () => {
-  it('runs six steps, then the outro', () => {
-    expect(PLAN_TOUR_STEPS.map((s) => s.id)).toEqual([
-      'board',
-      'add-cards',
+describe('sprintMissions', () => {
+  it('runs move, open, date and ship in order', () => {
+    expect(sprintMissions(SHAPE).map((m) => m.id)).toEqual([
       'move-card',
-      'card-panel',
-      'board-header',
-      'card-types',
-      'outro',
+      'open-card',
+      'due-date',
+      'ship-card',
     ]);
-    expect(PLAN_TOUR_STEPS[0]!.card).toBeUndefined();
-    expect(PLAN_TOUR_STEPS.at(-1)!.card).toBe('outro');
-    expect(PLAN_TOUR_STEPS.filter((s) => !s.card)).toHaveLength(6);
   });
 
-  it('keeps its copy short and free of em dashes', () => {
-    for (const s of [...PLAN_TOUR_STEPS, ...SHEET_STEPS]) {
-      expect(s.body.length, s.id).toBeLessThanOrEqual(180);
-      expect(`${s.title}${s.body}`).not.toContain('\u2014');
-    }
-  });
-
-  it('titles every step in Title Case', () => {
-    for (const s of [...PLAN_TOUR_STEPS, ...SHEET_STEPS].filter((x) => !x.card))
-      for (const word of s.title.split(' ').filter((w) => w !== 'the'))
-        expect(word.charAt(0), s.id).toBe(word.charAt(0).toUpperCase());
-  });
-
-  // Spec "The tour subject": the board as drawn (its body), never its canvas node, hidden under a maximised or
-  // tab-filling body.
-  it("points the board steps at the person's drawn board, its first column, card and header", () => {
-    const a = api();
-    // The opening step is a card with no ring: one round the whole board would light most of the screen.
-    expect(step('board').selector).toBeUndefined();
-    // The add and move steps point at the card the tour added, where it is now.
-    expect(step('add-cards').selector!(a)).toBe(
-      '[data-plan-board="board1"] [data-plan-card="tour-card"]',
-    );
-    expect(step('move-card').selector!(a)).toBe(
-      '[data-plan-board="board1"] [data-plan-card="tour-card"]',
-    );
-    expect(step('card-panel').selector!(a)).toBe('[role="dialog"][aria-label^="Item #"]');
-    expect(step('board-header').selector!(a)).toBe(
-      '[data-plan-board="board1"] [data-board-header]',
-    );
-    for (const s of PLAN_TOUR_STEPS) expect(s.selector?.(a) ?? '').not.toContain('data-element-id');
-  });
-
-  it('has no anchor without a board or a card', () => {
-    const a = api({ boardId: () => null, firstCardId: () => null });
-    expect(step('add-cards').selector!(a)).toBeNull();
-    expect(step('move-card').selector!(a)).toBeNull();
-    expect(step('board-header').selector!(a)).toBeNull();
-  });
-
-  // Spec "Tour content": the only content it makes is its own card, taken away when it ends (PlanTourHost).
-  it('brings the board into view, works its own card, and closes the panel after', async () => {
-    const a = api();
-    const preparing = PLAN_TOUR_STEPS.filter((s) => s.prepare).map((s) => s.id);
-    expect(preparing).toEqual([
-      'board',
-      'add-cards',
+  it('skips the date without a Due field, and the moves on a one-column board', () => {
+    expect(sprintMissions({ ...SHAPE, hasDue: false }).map((m) => m.id)).toEqual([
       'move-card',
-      'card-panel',
-      'board-header',
-      'card-types',
+      'open-card',
+      'ship-card',
     ]);
-    await step('board').prepare!(a);
-    expect(a.reveal).toHaveBeenCalledWith('boards');
-    step('card-panel').cleanup!(a);
-    expect(a.closeCard).toHaveBeenCalledTimes(1);
-    await step('board-header').prepare!(a);
-    expect(a.closeCard).toHaveBeenCalledTimes(2);
+    expect(sprintMissions({ ...SHAPE, nextStatus: 'todo' }).map((m) => m.id)).toEqual([
+      'open-card',
+      'due-date',
+    ]);
   });
 
-  it('adds its own card, moves it along and opens it, on any board', async () => {
-    const a = api();
-    expect(planTourSteps('boards').map((s) => s.id)).toEqual([
-      'board',
-      'add-cards',
-      'move-card',
-      'card-panel',
-      'board-header',
-      'card-types',
-      'outro',
-    ]);
-    await step('add-cards').prepare!(a);
-    expect(a.addTourCard).toHaveBeenCalledTimes(1);
-    expect(step('add-cards').selector!(a)).toContain('[data-plan-card="tour-card"]');
-    await step('move-card').prepare!(a);
-    expect(a.moveTourCard).toHaveBeenCalledTimes(1);
-    await step('card-panel').prepare!(a);
-    expect(a.openTourCard).toHaveBeenCalledTimes(1);
+  it('checks each mission from the practice cards as they are', () => {
+    const [move, open, due, ship] = sprintMissions(SHAPE);
+    expect(move!.done(ctxOf(dealt()))).toBe(false);
+    expect(move!.done(ctxOf([card('p1', { status: 'doing' })]))).toBe(true);
+    expect(open!.done(ctxOf(dealt()))).toBe(false);
+    expect(open!.done(ctxOf(dealt(), 'someone-else'))).toBe(false);
+    expect(open!.done(ctxOf(dealt(), 'p2'))).toBe(true);
+    expect(due!.done(ctxOf([card('p1', { status: 'todo', due: '' })]))).toBe(false);
+    expect(due!.done(ctxOf([card('p1', { status: 'todo', due: '2026-11-09' })]))).toBe(true);
+    expect(ship!.done(ctxOf([card('p1', { status: 'doing' })]))).toBe(false);
+    expect(ship!.done(ctxOf([card('p1', { status: 'done' })]))).toBe(true);
   });
 
-  it('says the board is left as it was', () => {
-    expect(step('outro').body).toMatch(/just as you left it/);
-    expect(step('outro').prepare).toBeUndefined();
+  it('words drag and open for a phone, and rings the target columns', () => {
+    const phone = sprintMissions({ ...SHAPE, phone: true });
+    expect(phone[0]!.why).toMatch(/^Hold/);
+    expect(phone[0]!.hints[0]!.text).toMatch(/Hold a card/);
+    expect(phone[1]!.why).toMatch(/^Tap/);
+    expect(phone[1]!.hints[0]!.text).toBe('Tap any dashed card.');
+    const desk = sprintMissions(SHAPE);
+    expect(desk[0]!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} [data-plan-status="doing"]`);
+    expect(desk[1]!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} [data-practice]`);
+    expect(desk[2]!.hints[1]!.ring!()).toBe('[role="dialog"] [data-item-field="due"]');
+    expect(desk[3]!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} [data-plan-status="done"]`);
   });
 });
 
-describe("planTourSteps('sheets')", () => {
-  it('runs five sheet steps, then its own outro', () => {
-    expect(SHEET_STEPS.map((s) => s.id)).toEqual([
-      'sheet',
-      'cells',
-      'formulas',
-      'sheet-toolbar',
-      'sheet-settings',
-      'outro',
-    ]);
-    expect(SHEET_STEPS.filter((s) => !s.card)).toHaveLength(5);
-    expect(SHEET_STEPS.at(-1)!.body).toContain('your sheet');
+describe('overWipColumn', () => {
+  const cols = [
+    { status: 'todo', name: 'To Do' },
+    { status: 'doing', name: 'Doing', wipLimit: 1 },
+  ];
+  it('names the first column over its limit, or null', () => {
+    expect(overWipColumn(cols, [card('a', { status: 'doing' })])).toBeNull();
+    expect(
+      overWipColumn(cols, [
+        card('a', { status: 'doing' }),
+        card('b', { status: 'doing' }),
+        card('c', {}),
+      ]),
+    ).toEqual({ name: 'Doing', limit: 1 });
+  });
+  it('says what the amber count means', () => {
+    expect(wipNote({ name: 'Doing', limit: 1 })).toMatch(/^Doing is over its limit of 1/);
+  });
+});
+
+describe('sheetMissions', () => {
+  // A practice sheet from a map of A1 values; formulas are the cells listed in `formulas`.
+  const sheet = (
+    values: Record<string, number | string>,
+    formulas: string[] = [],
+    currency: string[] = [],
+    charted = false,
+  ): PracticeSheetCtx => ({
+    value: (a1) => values[a1] ?? null,
+    isFormula: (a1) => formulas.includes(a1),
+    currency: (a1) => currency.includes(a1),
+    charted,
+  });
+  const BASE = {
+    B2: 1200,
+    C2: 1200,
+    B3: 400,
+    C3: 436,
+    B4: 150,
+    B5: 200,
+    C5: 265,
+    B6: 500,
+    C6: 500,
+  };
+
+  it('runs the five challenges in order, each with its cells', () => {
+    const m = sheetMissions(false);
+    expect(m.map((x) => x.id)).toEqual(['type-value', 'sum', 'fill-down', 'currency', 'chart']);
+    expect(m[0]!.cells).toEqual(['C4']);
+    expect(m[2]!.cells).toEqual(['D2', 'D3', 'D4', 'D5', 'D6']);
   });
 
-  it("points each step at a part of the person's sheet", () => {
-    const a = api();
-    const on = '[data-plan-sheet="sheet1"]';
-    // The opening step is a card with no ring, and the cells step rings A1 alone, never the whole grid.
-    expect(sheetStep('sheet').selector).toBeUndefined();
-    expect(sheetStep('cells').selector!(a)).toBe(`${on} [data-sheet-a1]`);
-    expect(sheetStep('formulas').selector!(a)).toBe(`${on} [data-sheet-formula-bar]`);
-    expect(sheetStep('sheet-toolbar').selector!(a)).toBe(`${on} [role="toolbar"]`);
-    expect(sheetStep('sheet-settings').selector!(a)).toBe(
-      `${on} button[aria-label="Sheet Settings"]`,
+  it('checks each challenge from the cells', () => {
+    const [type, sum, fill, money, chart] = sheetMissions(false);
+    expect(type!.done(sheet(BASE))).toBe(false);
+    expect(type!.done(sheet({ ...BASE, C4: 122 }))).toBe(true);
+    const spent = 1200 + 436 + 122 + 265 + 500;
+    expect(sum!.done(sheet({ ...BASE, C4: 122, C7: spent }))).toBe(false);
+    expect(sum!.done(sheet({ ...BASE, C4: 122, C7: spent }, ['C7']))).toBe(true);
+    expect(sum!.done(sheet({ ...BASE, C4: 122, C7: 1 }, ['C7']))).toBe(false);
+    const left = { D3: -36, D4: 28, D5: -65, D6: 0 };
+    const D = ['D3', 'D4', 'D5', 'D6'];
+    expect(fill!.done(sheet({ ...BASE, C4: 122, ...left }, D))).toBe(true);
+    expect(fill!.done(sheet({ ...BASE, C4: 122, ...left }, ['D3']))).toBe(false);
+    expect(fill!.done(sheet({ ...BASE, C4: 122, ...left, D4: 0 }, D))).toBe(false);
+    expect(money!.done(sheet({}))).toBe(false);
+    expect(money!.done(sheet({ B2: 1, C2: 2 }, [], ['B2']))).toBe(false);
+    expect(money!.done(sheet({ B2: 1, C2: 2, A2: 'Rent' }, [], ['B2', 'C2']))).toBe(true);
+    expect(chart!.done(sheet({}))).toBe(false);
+    expect(chart!.done(sheet({}, [], [], true))).toBe(true);
+  });
+
+  it('gives a finger Fill Down from the menu, and rings cells and the category switcher', () => {
+    const touch = sheetMissions(true)[2]!;
+    expect(touch.hints[0]!.text).toMatch(/Fill Down/);
+    expect(touch.hints[1]!.text).toBe('These five cells.');
+    const desk = sheetMissions(false);
+    expect(desk[2]!.hints[0]!.text).toMatch(/drag the small square/);
+    expect(desk[0]!.hints[1]!.ring!()).toBe('[data-practice-sheet] [data-practice-cell~="C4"]');
+    expect(desk[3]!.hints[1]!.ring!()).toBe(
+      '[data-practice-sheet] [aria-label="Toolbar category"]',
     );
-    const none = api({ sheetElementId: () => null });
-    for (const id of ['cells', 'formulas', 'sheet-toolbar', 'sheet-settings'])
-      expect(sheetStep(id).selector!(none), id).toBeNull();
+    expect(desk[4]!.hints[1]!.ring!()).toBe(desk[3]!.hints[1]!.ring!());
   });
 
-  it('brings the sheet into view and opens its settings, and never selects a cell or places anything', async () => {
-    expect(SHEET_STEPS.filter((s) => s.prepare || s.cleanup).map((s) => s.id)).toEqual([
-      'sheet',
-      'sheet-settings',
-    ]);
-    const a = api();
-    await sheetStep('sheet').prepare!(a);
-    expect(a.reveal).toHaveBeenCalledWith('sheets');
+  it('reads a range row by row', () => {
+    expect(a1Range('A1', 'B2')).toEqual(['A1', 'B1', 'A2', 'B2']);
   });
 });
 
-describe('firstCardOn', () => {
-  it("reads the board's first drawn card", () => {
-    document.body.innerHTML =
-      '<div data-plan-board="b1"><div data-plan-card="c1"></div><div data-plan-card="c2"></div></div>' +
-      '<div data-plan-board="b2"></div>';
-    expect(firstCardOn('b1')).toBe('c1');
-    expect(firstCardOn('b2')).toBeNull();
-    expect(firstCardOn(null)).toBeNull();
-  });
-});
-
-// Spec "The tour subject": the board or Sheet the person sees.
-describe('visiblePlanWork', () => {
-  const box = (el: Element, r: Partial<DOMRect>) =>
-    vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({
-      left: 0,
-      top: 0,
-      right: 100,
-      bottom: 100,
-      width: 100,
-      height: 100,
-      ...r,
-    } as DOMRect);
-
-  it('is null with nothing on the tab', () => {
+describe('tour subject', () => {
+  it('picks the body over the canvas, then one on screen, then the first', () => {
     expect(visiblePlanWork([], boardRoot)).toBeNull();
-  });
-
-  it('takes the one maximised or filling the tab first', () => {
     document.body.innerHTML =
-      '<div data-plan-board="b1"></div><div data-canvas-cover><div><div data-plan-board="b2"></div></div></div>';
-    expect(visiblePlanWork(['b1', 'b2'], boardRoot)).toBe('b2');
+      '<div data-plan-board="b0"></div><div data-canvas-cover><div data-plan-board="b1"></div></div>';
+    expect(visiblePlanWork(['b0', 'b1'], boardRoot)).toBe('b1');
+    document.body.innerHTML = '<div data-plan-sheet="s0"></div><div data-plan-sheet="s1"></div>';
+    expect(visiblePlanWork(['s0', 's1'], sheetRoot)).toBe('s0');
+    const s1 = document.querySelector('[data-plan-sheet="s1"]')!;
+    s1.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, right: 10, bottom: 10, width: 10, height: 10 }) as DOMRect;
+    expect(visiblePlanWork(['s0', 's1'], sheetRoot)).toBe('s1');
   });
 
-  it('then one on screen, then the first', () => {
-    document.body.innerHTML = '<div data-plan-sheet="s1"></div><div data-plan-sheet="s2"></div>';
-    box(document.querySelector(sheetRoot('s1'))!, { left: -500, right: -400 });
-    box(document.querySelector(sheetRoot('s2'))!, {});
-    expect(visiblePlanWork(['s1', 's2'], sheetRoot)).toBe('s2');
-    box(document.querySelector(sheetRoot('s2'))!, { top: 5000, bottom: 5100 });
-    expect(visiblePlanWork(['s1', 's2'], sheetRoot)).toBe('s1');
-  });
-});
-
-describe('needsReveal', () => {
-  it('leaves a maximised or tab-filling body alone, and asks for one off the window', () => {
-    document.body.innerHTML =
-      '<div data-canvas-cover><div data-plan-board="b1"></div></div><div data-plan-board="b2"></div>';
-    expect(needsReveal(boardRoot('b1'))).toBe(false);
-    const b2 = document.querySelector(boardRoot('b2'))!;
-    vi.spyOn(b2, 'getBoundingClientRect').mockReturnValue({
-      left: 10,
-      top: 10,
-      right: 110,
-      bottom: 110,
-    } as DOMRect);
-    expect(needsReveal(boardRoot('b2'))).toBe(false);
-    vi.spyOn(b2, 'getBoundingClientRect').mockReturnValue({
-      left: -300,
-      top: 10,
-      right: -200,
-      bottom: 110,
-    } as DOMRect);
-    expect(needsReveal(boardRoot('b2'))).toBe(true);
+  it('reveals a body only when it is drawn on the canvas and off screen', () => {
     expect(needsReveal(null)).toBe(false);
+    expect(needsReveal(boardRoot('none'))).toBe(true);
+    document.body.innerHTML =
+      '<div data-canvas-cover><div data-plan-board="b1"></div></div><div data-plan-board="b0"></div>';
+    expect(needsReveal(boardRoot('b1'))).toBe(false);
+    expect(needsReveal(boardRoot('b0'))).toBe(false);
+    const b0 = document.querySelector('[data-plan-board="b0"]')!;
+    b0.getBoundingClientRect = () => ({ left: -5, top: 0, right: 10, bottom: 10 }) as DOMRect;
+    expect(needsReveal(boardRoot('b0'))).toBe(true);
   });
 });
 
-describe('planTourStepTelemetryType', () => {
-  it('names a step PlanTourStep<Id>', () => {
-    expect(planTourStepTelemetryType('add-cards')).toBe('PlanTourStepAddCards');
-    expect(planTourStepTelemetryType('outro')).toBe('PlanTourStepOutro');
-    expect(planTourStepTelemetryType('sheet-settings')).toBe('PlanTourStepSheetSettings');
+describe('telemetry', () => {
+  it('names a mission view and the finish', () => {
+    expect(planTourStepTelemetryType('move-card')).toBe('PlanTourStepMoveCard');
+    expect(planTourStepTelemetryType(FINISH_STEP.id)).toBe('PlanTourStepOutro');
+  });
+});
+
+describe('mission titles', () => {
+  it('are in Title Case, small words aside', async () => {
+    const { layoutMissions } = await import('./layout-missions');
+    const { dashboardFromPreset } = await import('@liveplanner/project');
+    let n = 0;
+    const layout = dashboardFromPreset('two-by-two', () => `id${n++}`);
+    const titles = [
+      ...sprintMissions(SHAPE),
+      ...sheetMissions(false),
+      ...layoutMissions(layout, false),
+      ...layoutMissions(
+        { ...layout, rows: layout.rows.map((r) => ({ ...r, slots: r.slots.slice(0, 1) })) },
+        false,
+      ),
+    ].map((m) => m.title);
+    const small = new Set(['a', 'an', 'the', 'of', 'to', 'in', 'on', 'and']);
+    for (const t of titles)
+      for (const [i, w] of t.split(' ').entries())
+        if (i === 0 || !small.has(w)) expect(w[0], t).toBe(w[0]!.toUpperCase());
   });
 });

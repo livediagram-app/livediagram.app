@@ -303,6 +303,17 @@ function isLeftLivehuddleEvent(category: string, action: string, type: string | 
   return false;
 }
 
+// The Avatar tour (replaced 2026-11-08 by the Receptionist, livehuddle/docs/specs/008-canvas/receptionist.md): its
+// offer, start, steps and ends. Its Settings switch carries on as the Receptionist's Welcome (the same preference).
+const AVATAR_TOUR_UI = new Set([
+  'Opened|AvatarTourOffer',
+  'Closed|AvatarTourOffer',
+  'Started|AvatarTour',
+  'Ended|AvatarTourCompleted',
+  'Ended|AvatarTourSkipped',
+]);
+const AVATAR_TOUR_STEP = /^AvatarTourStep/;
+
 // Element and Tab Locking (removed 2026-11-07, Work Tracker #625; livehuddle/docs/specs/002-project-scope/
 // not-in-livehuddle.md "Element and Tab Locking"): an element or a tab locked or unlocked. The facilitator's own
 // Facilitator·Changed·Unlocked is another feature, and carries on.
@@ -339,6 +350,8 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (isAiAssistantEvent(category, action, type)) return true;
   if (isPagesModeEvent(category, action, type)) return true;
   if (isPlanModeEvent(category, action, type)) return true;
+  if (category === 'UI' && AVATAR_TOUR_UI.has(`${action}|${type ?? ''}`)) return true;
+  if (category === 'UI' && action === 'View' && AVATAR_TOUR_STEP.test(type ?? '')) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))

@@ -1,50 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   alignmentGuides,
-  arrowSnapPoints,
   distributionSnap,
-  snapArrowPoint,
   snapResizeBounds,
   snapToAlignment,
-  snapToArrowPoint,
-  type ArrowElement,
   type ShapeElement,
 } from './index';
-
-const hLine = (id: string, x1: number, x2: number, y: number): ArrowElement => ({
-  id,
-  type: 'arrow',
-  from: { kind: 'free', x: x1, y },
-  to: { kind: 'free', x: x2, y },
-});
-
-describe('arrow-to-arrow snapping (docs/specs/008-canvas/arrow-to-arrow.md)', () => {
-  it('offers evenly-spaced snap points scaled to the arrow length', () => {
-    const pts = arrowSnapPoints(hLine('a', 0, 240, 0), []);
-    // ~one point every 24px → 10 divisions → 11 points, endpoints included.
-    expect(pts.length).toBe(11);
-    expect(pts[0]).toMatchObject({ x: 0, y: 0, t: 0 });
-    expect(pts[pts.length - 1]).toMatchObject({ x: 240, y: 0, t: 1 });
-  });
-
-  it('snaps a nearby cursor to the closest division on the line', () => {
-    const line = hLine('a', 0, 240, 0);
-    // Cursor near t≈0.5 (x=120) but 6px off the line → snaps onto x=120,y=0.
-    const hit = snapToArrowPoint({ x: 122, y: 6 }, [line], 12, 'dragged');
-    expect(hit).not.toBeNull();
-    expect(hit!.arrowId).toBe('a');
-    expect(hit!.x).toBeCloseTo(120, 5);
-    expect(hit!.y).toBeCloseTo(0, 5);
-  });
-
-  it('returns null when no arrow line is within the threshold', () => {
-    expect(snapToArrowPoint({ x: 120, y: 80 }, [hLine('a', 0, 240, 0)], 12, 'dragged')).toBeNull();
-  });
-
-  it('never snaps to the dragged arrow itself', () => {
-    expect(snapToArrowPoint({ x: 120, y: 0 }, [hLine('a', 0, 240, 0)], 12, 'a')).toBeNull();
-  });
-});
 
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -362,43 +323,36 @@ describe('distributionSnap', () => {
       const out = distributionSnap(box(200, 195, 100, 100), [a, b], new Set(['a']), 10);
       expect(out.dy).toBe(0); // B has no other-axis neighbour left
     });
-  });
-});
 
-describe('snapArrowPoint', () => {
-  const pt = (x: number, y: number) => ({ x, y });
+    // Two boxes level above (or below) `n`, both overlapping it across: its gap to either is 50, and the copied span
+    // sits under whichever comes first on the board, however the search indexes them.
+    const n = shape('n', { x: 50, y: 100, width: 100, height: 50 });
+    const borrowed = (els: ShapeElement[]) =>
+      distributionSnap(box(203, 100, 50, 50), els, new Set(), 10).guides.find((g) => g.axis === 'x')
+        ?.spans[1];
 
-  it('leaves the point alone when nothing is within the threshold', () => {
-    const out = snapArrowPoint(pt(50, 50), [pt(0, 0), pt(200, 200)], [], 10);
-    expect(out.point).toEqual({ x: 50, y: 50 });
-    expect(out.guides).toEqual([]);
-  });
+    it('borrows from the earlier of two equally near neighbours above', () => {
+      const left = shape('left', { x: 0, y: 0, width: 90, height: 50 });
+      const right = shape('right', { x: 100, y: 0, width: 100, height: 50 });
+      expect(borrowed([left, right, n])).toEqual({ axis: 'y', from: 50, to: 100, cross: 70 });
+      expect(borrowed([right, left, n])).toEqual({ axis: 'y', from: 50, to: 100, cross: 125 });
+    });
 
-  it('squares the bend to a right angle against its neighbours', () => {
-    // Prev vertex at x=100, next vertex at y=200. A point dragged near
-    // (104, 196) should snap to x=100 (vertical in-leg) and y=200
-    // (horizontal out-leg) → a clean corner at (100, 200).
-    const out = snapArrowPoint(pt(104, 196), [pt(100, 0), pt(300, 200)], [], 10);
-    expect(out.point).toEqual({ x: 100, y: 200 });
-    expect(out.guides.find((g) => g.axis === 'x')?.position).toBe(100);
-    expect(out.guides.find((g) => g.axis === 'y')?.position).toBe(200);
-  });
+    it('borrows from the earlier of two equally near neighbours below', () => {
+      const left = shape('left', { x: 0, y: 200, width: 90, height: 50 });
+      const right = shape('right', { x: 100, y: 200, width: 100, height: 50 });
+      expect(borrowed([left, right, n])).toEqual({ axis: 'y', from: 150, to: 200, cross: 70 });
+      expect(borrowed([right, left, n])).toEqual({ axis: 'y', from: 150, to: 200, cross: 125 });
+    });
 
-  it('snaps to a nearby element centre / edge', () => {
-    const target = shape('t', { x: 200, y: 200, width: 100, height: 100 });
-    // Element centre is (250, 250); a point near it on X snaps to 250.
-    const out = snapArrowPoint(pt(246, 0), [], [target], 10);
-    expect(out.point.x).toBe(250);
-  });
-
-  it('excludes the pinned-endpoint element so the bend does not cling to it', () => {
-    const host = shape('host', { x: 200, y: 200, width: 100, height: 100 });
-    const out = snapArrowPoint(pt(246, 0), [], [host], 10, new Set(['host']));
-    expect(out.point.x).toBe(246); // host skipped → nothing to snap to
-  });
-
-  it('takes the nearest candidate when several are in range', () => {
-    const out = snapArrowPoint(pt(103, 0), [pt(100, 0), pt(108, 0)], [], 10);
-    expect(out.point.x).toBe(100); // |103-100|=3 beats |103-108|=5
+    it('finds no gap to borrow among boxes with no width', () => {
+      const a = shape('a', { x: 0, y: 0, width: 0, height: 50 });
+      const b = shape('b', { x: 0, y: 100, width: 0, height: 50 });
+      expect(distributionSnap(box(47, 100, 50, 50), [a, b], new Set(), 10)).toEqual({
+        dx: 0,
+        dy: 0,
+        guides: [],
+      });
+    });
   });
 });

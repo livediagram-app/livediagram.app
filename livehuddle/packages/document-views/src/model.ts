@@ -9,10 +9,8 @@ import {
   type RefTable,
   type Tab,
 } from '@livehuddle/document';
-import { edgesOf, type Edges } from './edges';
 import { countElements, threadCounts, type HeaderFacts } from './header';
 import { buildViewTree, type ViewTree } from './tree';
-import { pinnedIds } from './visibility';
 
 // What the caller knows beyond the tab: its revision, and the document's tab ids in order (VW4).
 // `selected`: the owner's live selection for `show selected`; null or absent when it was not read (VW68).
@@ -29,7 +27,6 @@ export type ViewModel = {
   tabRefOf: (tabId: string) => string;
   kindOf: (el: Element) => string;
   tree: ViewTree;
-  edges: Edges;
   facts: HeaderFacts;
 };
 
@@ -75,8 +72,7 @@ export function buildViewModel(tab: Tab, context: ViewContext = {}): ViewModel {
     kinds.set(el, kind);
     return kind;
   };
-  const tree = buildViewTree(printed, new Set(printed.flatMap(pinnedIds)));
-  const edges = edgesOf(printed, refs, new Set(tree.nodes.keys()));
+  const tree = buildViewTree(printed);
   const facts = headerFacts(tab, printed, tabRefOf, context.rev);
-  return { tab, printed, refs, tabRefOf, kindOf, tree, edges, facts };
+  return { tab, printed, refs, tabRefOf, kindOf, tree, facts };
 }

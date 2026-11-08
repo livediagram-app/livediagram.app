@@ -57,6 +57,11 @@ import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { AvatarWalker } from '@liveworkspace/avatar/components/AvatarWalker';
+import {
+  AvatarAtFeet,
+  AvatarSelfWalker,
+  WithAvatarFeet,
+} from '@liveworkspace/avatar/components/AvatarSelfWalker';
 import { AvatarPadArrivals } from '@liveworkspace/avatar/components/AvatarPadArrivals';
 import { parseAvatarStatus } from '@liveworkspace/avatar/status';
 import { headPoint } from '@liveworkspace/avatar/speech';
@@ -715,11 +720,8 @@ function CanvasView(props: CanvasProps) {
             avatar panel are two ways to set off one effect, not two effects.
             Positioned at the character's canvas point, inside the transformed
             wrapper, so it pans and zooms with the canvas it is celebrating. */}
-            {avatar.pos && avatarBurst ? (
-              <div
-                className="pointer-events-none absolute"
-                style={{ left: avatar.pos.x, top: avatar.pos.y, width: 0, height: 0 }}
-              >
+            {avatarBurst ? (
+              <AvatarAtFeet poseStore={avatar.poseStore}>
                 <ReactionBurst
                   reaction={avatarBurst.reaction}
                   seed={avatarBurst.seed}
@@ -729,54 +731,51 @@ function CanvasView(props: CanvasProps) {
                   height={AVATAR_BURST_PX}
                   onDone={() => setAvatarBurst(null)}
                 />
-              </div>
+              </AvatarAtFeet>
             ) : null}
-            {avatar.pos ? (
-              <AvatarWalker
-                pos={avatar.pos}
-                facing={avatar.facing}
-                config={avatarLook.config}
-                walking={avatar.walking}
-                stepFrame={avatar.stepFrame}
-                lift={avatar.lift}
-                wave={avatar.wave}
-                pose={avatar.pose}
-                seated={avatar.seatedOn !== null}
-                holding={avatar.holding}
-                status={avatarStatus}
-                shirt={props.selfParticipant.color}
-                standingOn={avatarStandingOn}
-                self
-              />
-            ) : null}
+            {/* Your character, subscribed to its own pose: a step renders it and not this canvas
+              (docs/specs/008-canvas/canvas-performance.md "Walking renders your character, not the canvas"). */}
+            <AvatarSelfWalker
+              poseStore={avatar.poseStore}
+              config={avatarLook.config}
+              seated={avatar.seatedOn !== null}
+              holding={avatar.holding}
+              status={avatarStatus}
+              shirt={props.selfParticipant.color}
+              standingOn={avatarStandingOn}
+            />
             {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
             <AvatarPadArrivals arrivals={padArrivals} />
             {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
               own head while you type. */}
             {speechBubbles.length > 0 || speech.composerOpen ? (
-              <AvatarSpeechLayer
-                bubbles={speechBubbles}
-                activeTabId={props.activeTabId ?? ''}
-                zoom={viewportZoom}
-                view={{
-                  offsetX: viewportOffset.x,
-                  width: mainSize.width,
-                  offsetY: viewportOffset.y,
-                  height: mainSize.height,
-                }}
-                peers={props.remoteAvatars}
-                self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
-                composer={
-                  speech.composerOpen && avatar.pos
-                    ? {
-                        head: headPoint(avatar.pos, avatarScale(avatarLook.config.size)),
-                        coolingDown: speech.coolingDown,
-                        onSend: (text) => speech.send(text, 'composer'),
-                        onCancel: speech.closeComposer,
-                      }
-                    : null
-                }
-              />
+              <WithAvatarFeet poseStore={avatar.poseStore} follow={speech.composerOpen}>
+                {(feet) => (
+                  <AvatarSpeechLayer
+                    bubbles={speechBubbles}
+                    activeTabId={props.activeTabId ?? ''}
+                    zoom={viewportZoom}
+                    view={{
+                      offsetX: viewportOffset.x,
+                      width: mainSize.width,
+                      offsetY: viewportOffset.y,
+                      height: mainSize.height,
+                    }}
+                    peers={props.remoteAvatars}
+                    self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
+                    composer={
+                      speech.composerOpen && feet
+                        ? {
+                            head: headPoint(feet, avatarScale(avatarLook.config.size)),
+                            coolingDown: speech.coolingDown,
+                            onSend: (text) => speech.send(text, 'composer'),
+                            onCancel: speech.closeComposer,
+                          }
+                        : null
+                    }
+                  />
+                )}
+              </WithAvatarFeet>
             ) : null}
           </div>
 

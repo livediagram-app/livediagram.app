@@ -1,20 +1,33 @@
 # Plan tour
 
-A guided tour of [Plan mode](plan-mode.md) on the person's own board or Sheet, started from the footer's
-**Start Boards Tour** or **Start Sheets Tour** button while one is open. It runs on the shared tour engine
-([Editor tours](../007-editor/editor-tour.md)): the same anchored step cards, glide, dimming, Skip, Back and last
-card as every other tour, so the tours read as one product. Where this spec is silent, the
-[Editor tours](../007-editor/editor-tour.md) rules hold.
+A hands-on tour of [Plan mode](plan-mode.md), one per kind of plan work, started from the footer's **Start Boards
+Tour**, **Start Sheets Tour** or **Start Dashboards Tour** button. Each track teaches by doing, on real controls, in
+a way that suits what the surface is for:
+
+- **Boards** run a **Practice Sprint**: three practice cards are dealt onto the person's own board, and they drag
+  them through it to Done.
+- **Sheets** run **Five Small Wins**: five short challenges on a practice sheet, each checked the moment it is right.
+- **Dashboards** run **Layout View**: the dashboard shows its twelve-column grid, and the person resizes a slot and a
+  row and watches them snap.
+
+None of them is a row of step cards: each is a short list of **missions**, shown one at a time in the
+[mission strip](#the-mission-strip), that tick themselves off as the person does them, however they found the way.
+The footer button, the synced taken record, Settings › Tours and one-tour-at-a-time are the shared ones
+([Editor tours](../007-editor/editor-tour.md)); where this spec is silent, those rules hold.
 
 ## Domain language
 
-| Term             | Means                                                                                             |
-| ---------------- | ------------------------------------------------------------------------------------------------- |
-| **Plan tour**    | This tour                                                                                         |
-| **Diagram tour** | The retired Diagram mode tour, [Editor tours](../007-editor/editor-tour.md)                       |
-| **tour track**   | Which half of Plan the tour shows: **Boards** or **Sheets**                                       |
-| **tour subject** | The board or [Sheet](../029-sheets/sheet.md) the tour shows: the person's own, on the open tab    |
-| **plan work**    | A board (`plan-board` element) or a Sheet (`plan-sheet` element) on the open tab, of any tab kind |
+| Term               | Means                                                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| **Plan tour**      | This tour, all three tracks                                                                                           |
+| **tour track**     | Which surface the tour teaches: **Boards**, **Sheets** or **Dashboards**                                              |
+| **tour subject**   | The board or dashboard the tour runs on: the person's own, on the open tab                                            |
+| **plan work**      | A board (`plan-board` element) or a Sheet (`plan-sheet` element) on the open tab, of any tab kind                     |
+| **mission**        | One thing to do (move a card, write a total, drag a divider), checked from what the person really did                 |
+| **mission strip**  | The small panel that shows the current mission, its hints and the track's progress                                    |
+| **practice card**  | A card that lives on this screen alone, for the Practice Sprint ([Practice cards](#practice-cards))                   |
+| **practice sheet** | The Sheets track's own sheet, in its own dialog, never saved unless kept ([Five Small Wins](#sheets-five-small-wins)) |
+| **Layout View**    | The Dashboards track: the dashboard drawn with its grid, spans and heights showing                                    |
 
 ## Where it appears
 
@@ -29,8 +42,10 @@ card as every other tour, so the tours read as one product. Where this spec is s
   ones with work on the tab, the first not yet taken, Boards between equals. Once every track with work on the tab is
   taken, the Plan tour is off the button (it names another tour, or is not drawn). A press runs that track on the board
   or Sheet on screen (the [tour subject](#tour-subject)). There is no choice card.
-- **On the person's own board or Sheet, never an example.** The tour places no board or Sheet: it runs on the
-  tour subject (see [Tour subject](#tour-subject)).
+- **On the person's own board, or a practice sheet.** The Boards track runs on the board on screen (the
+  [tour subject](#tour-subject)); the Sheets track opens its own practice sheet beside the person's, so a Sheet on the
+  tab is what offers it, never what it changes. Neither places a board or Sheet on the tab unless the person keeps
+  the practice work.
 - **Taken, on every device**, through the synced `planTourTracks` user preference
   ([User preferences](../007-editor/user-preferences.md)): however a run ends (completed or skipped mid-way), the
   track it ran is taken, and it is written as the run starts too, so a reload mid-tour leaves it taken. That
@@ -51,107 +66,175 @@ card as every other tour, so the tours read as one product. Where this spec is s
 
 ## The Dashboards tour
 
-The Plan tour's third track, a tour of its own on a dashboard (`DashboardTour.tsx`): the steps of the dashboard's
-Show Me ([Plan tabs](plan-tabs.md) "Show Me": rows of slots, filling a slot, a slot's cog, Dashboard Settings),
-started from the footer's **Start Dashboards Tour** button. Its cards read **Show Me** whichever way it started.
+The Plan tour's third track, on a dashboard: [Layout View](#dashboards-layout-view), started from the footer's
+**Start Dashboards Tour** button. Dashboard Settings › **Show Me** runs the same Layout View
+([Plan tabs](plan-tabs.md) "Show Me").
 
 - **On offer** while an Editor's dashboard is on screen: not to a Participant or a Viewer, not in an embed, not
   while a maximised slot covers the page. It ranks above the Plan and Forms tours, so on a dashboard the button
   names it. Once taken it is off the button until its **Dashboards Tour** row is on again, and it never offers
   itself on a banner.
 - **As it starts, and however it ends** (completed or skipped), a run from the button marks the `dashboards` track
-  taken (`planTourTracks`), on every device. Show Me from Dashboard Settings runs the same steps and records nothing.
-- **Telemetry**: `UI` · `Opened` · `DashboardTourOffer` the first time the button shows it in a page load,
-  `UI` · `Started` · `DashboardTour` on a press (as on Show Me's), and Show Me's `DashboardTourCompleted` |
-  `DashboardTourSkipped` at the end.
+  taken (`planTourTracks`), on every device. Show Me from Dashboard Settings runs the same missions and records
+  nothing.
 
-## Tour content
+## The mission strip
 
-The Boards track makes one thing of its own, the example card: a card titled **Your First Card**, of the board's first
-card type (`task` when it takes every type), added to its first column, moved to its second, opened, and deleted when
-the tour ends, however it ends. Its writes have no undo step (`writeQuiet`), so Undo never brings it back, and it is
-recorded as tour content (`plan-tour-content` in localStorage) while it exists, so a reload mid-tour still takes it away
-(`usePlanTourLeftovers`). The Sheets track makes nothing.
+Every track shows its missions in one small panel, the **mission strip**, the same on all three:
+
+- **Where it sits.** On a computer it floats centred near the bottom of the window, above the footer, at most 26 rem
+  wide, clear of the work. On a phone (narrower than 640 px) it is a bottom sheet across the window's width, above
+  the footer, with rounded top corners. The Sheets track's strip sits at the bottom of its practice dialog.
+- **What it shows.** The track's name (**Practice Sprint**, **Five Small Wins**, **Layout View**), one pip per
+  mission (filled once done, ringed for the current one), the current mission as a short instruction, one line on
+  why it matters, a **Hint** button where the mission has hints, and **End**.
+- **Nothing is in the way.** The strip is not a dialog: the page under it stays fully usable, nothing is dimmed, and
+  there is no Next. A mission is done when the person does it, by any route (a drag, a menu, a key), and the strip
+  moves on by itself.
+- **Done, then next.** When a mission is done its pip fills with a tick and the strip shows what was just learned
+  for 1.6 seconds (the **lesson**), then the next mission slides in. With reduced motion it changes without
+  sliding.
+- **Hints climb.** Each press of **Hint** shows the next of the mission's hints: first a nudge in words, then where
+  to look, with a pulsing ring round the control or the place it means. A hint never does the mission for them.
+- **The end.** After the last mission the strip shows the track's finish: a line of thanks, the track's own choices
+  (keep the practice work or let it go), and **Learn More**, the track's help article in a new tab. **End** at any
+  time ends the tour as skipped and takes away everything practice.
+- **Spoken.** Each new mission and each lesson is announced politely to a screen reader (`aria-live="polite"`), and
+  the strip's buttons are reachable by keyboard. **Escape** belongs to the page under it, never the strip.
+
+## Practice cards
+
+The Practice Sprint's cards live **on this screen alone**:
+
+- They are laid into the board's store here and never sent: no write that touches one goes to the server, so no
+  collaborator sees one, nothing is saved, no header widget changes for anyone else, and Undo never records one.
+- They act like any card of the board's first card type (`task` when it takes every type): they are drawn, dragged
+  (by pointer, finger or **Shift** and an arrow key), moved through the card's menu, opened and edited. A write that
+  touches both practice and real cards (a selection dragged together) sends only its real part.
+- They look like practice: a dashed brand-coloured border over a see-through face, and a **Practice** tag where the
+  card's number would be. They have no number of their own, so the next real card keeps the number the server
+  gives it.
+- A fresh read of the board (a reconnect, a refetch) lays them back over it as they were.
+- They go when the tour ends, however it ends, unless the person keeps them; a reload takes them away too, since
+  they were never anywhere but this screen. Their comments, attachments and links are not offered (those are saved
+  elsewhere): a practice card's panel says so in their place.
 
 ## Tour subject
 
-- The tour subject is the board (Boards track) or Sheet (Sheets track) on the open tab **that the person sees**,
-  read from what is drawn when the button is pressed: one maximised or filling its tab (a Board tab, a Sheet tab)
-  first, then one on screen, then the first in the tab's element order. A Board tab and a Sheet tab hold exactly
-  one.
-- **Its steps point at it as drawn**, wherever that is: on the canvas, maximised, or filling its tab. They never
-  point at its place on the canvas while it is drawn over the canvas, where it is hidden.
-- **On screen.** Its first step brings it into view when it sits on the canvas out of the window: the view pans to
-  it, zooming out only if it is too big to fit. One maximised or filling its tab is already on screen.
-- **Never over Start Planning.** An empty Plan tab shows Start Planning, so the tour is on offer only once the tab
-  has a board or Sheet (see [Where it appears](#where-it-appears)).
-- **It changes nothing.** The tour adds no element, card, row or cell, moves nothing, selects no cell and writes
-  nothing, so there is nothing to take away, nothing in the project's history, and nothing a collaborator
-  sees. Undo after the tour is exactly as before it.
-- The one thing it opens is a card's panel (the Boards track's **The Card Panel**, on the board's first card),
-  which is the person's own view, saved nowhere, and closed on leaving the step or the tour.
-- A step whose part of the subject is missing is left out up front: **Move Work Along** and **The Card Panel**
-  need a card, so a board with no cards shows neither.
+- The tour subject is the board or dashboard on the open tab **that the person sees**, read from what is drawn when
+  the button is pressed: one maximised or filling its tab first, then one on screen, then the first in the tab's
+  element order.
+- **On screen.** The Boards track brings its board into view when it sits on the canvas out of the window: the view
+  pans to it, zooming out only if it is too big to fit.
+- **Never over Start Planning.** An empty Plan tab shows Start Planning, so the Boards and Sheets tracks are on offer
+  only once the tab has a board or Sheet.
+- **The person's work is theirs.** The Boards track changes nothing real unless the person keeps the practice cards.
+  The Sheets track works on its own practice sheet, never the person's, and adds a Sheet tab only when they keep
+  it. The Dashboards track's missions are the person's own changes to their dashboard, each one undo step, as ever.
 - If the tour subject goes mid-tour (deleted, by the person or a collaborator), the tour ends as skipped.
-- **Leftover records.** The tour places no Example Board or Example Sheet and records nothing, but it sweeps any
-  a stored leftover record names, so such content is removed on the next visit. A leftover Example Sheet goes with
-  its element, never the element alone: until a Sheet has drawn to take the sheet, the element and the record stay,
-  and the sweep tries again every 2 seconds.
+- **Leftover records.** Older tours placed an example card, Board or Sheet and recorded it; any such record is
+  still swept on the next visit, its content removed. Nothing new is recorded.
 
-## The steps
+## Boards: Practice Sprint
 
-A press starts the track's first step; then its steps, then its last card, a step card in the same popover that
-sits outside the step count. There is no welcome card: the button already named the track. Copy is one or two
-short sentences per step and speaks of the person's board or sheet ("your board"); the exact strings live in
-`apps/editor/components/tour/plan-tour-steps.ts`. The cards are named for their track, never the mode (**Boards
-tour**, **Sheets tour**).
+1. **The deal.** Three practice cards, **Draft the plan**, **Book a room** and **Send the invite**, are dealt one after
+   another into the board's first column, each dropping in and settling (80 ms apart; placed at once with reduced
+   motion).
+2. **Missions**, in order:
+   - **Move one on** (`move-card`): drag a practice card into the next column. Done when any practice card leaves
+     the first column. Lesson: work moves left to right; on a real card everyone in the plan sees it move. Hints:
+     "Press and drag a dashed card to the right", then a ring round the next column. On a phone the instruction says
+     to hold a card, then drag it.
+   - **Open one** (`open-card`): open a practice card. Done when its panel opens. Lesson: everything about one piece
+     of work lives here, saved as you type. Hint: a ring round a practice card.
+   - **Give it a date** (`due-date`): set a practice card's due date. Only when the card type has a **Due** field.
+     Done when a practice card has one. Lesson: dates show on the card, and on calendars and dashboards. Hint: a ring
+     round the panel's Due field (the card's panel opens if none is).
+   - **Ship it** (`ship-card`): drag a practice card into the board's last column (the column marked done, else the
+     rightmost). Done when one lands there; it shows a **Shipped** stamp, the track's one flourish. Lesson: done is
+     a column too; the header's widgets count what is in it. Hint: a ring round that column.
+3. **WIP limits.** When, during the sprint, a column with a WIP limit goes over it (the count turning amber), the
+   strip shows that once, in place of the current mission's why: "In Progress is over its limit of 3, so its count
+   turns amber. Finish something before starting more." A board with no limits never mentions them.
+4. **The finish** (`outro`): "Sprint done." with **Keep as Real Cards** (the practice cards become real cards where
+   they are, one undo step) and **Clear Them** (they go). Either ends the tour as completed, as does **Learn More**
+   followed by either.
 
-A step rings a control, never a whole board, column or sheet: a ring that size would light most of the screen, so
-the opening step of each track is a card on its own (centred, counted, no ring).
+## Sheets: Five Small Wins
 
-### Boards
+The track opens the **practice sheet**: a dialog (most of the window on a computer, the whole screen on a phone)
+holding a real Sheet, its toolbar, formula bar and grid, filled with a small budget. It is the same Sheet as any
+other, but kept in memory: nothing in it is sent or saved, and the person's own sheet is untouched.
 
-Six steps, on the tour's own example card (below).
+| Row | A (Category) | B (Planned)   | C (Actual) | D (Left) |
+| --- | ------------ | ------------- | ---------- | -------- |
+| 1   | Category     | Planned       | Actual     | Left     |
+| 2   | Rent         | 1200          | 1200       | `=B2-C2` |
+| 3   | Groceries    | 400           | 436        |          |
+| 4   | Transport    | 150           |            |          |
+| 5   | Fun          | 200           | 265        |          |
+| 6   | Savings      | 500           | 500        |          |
+| 7   | Total        | `=SUM(B2:B6)` |            |          |
 
-1. **Your Board**: a centred card, no spotlight; it brings the board on screen. Columns are the stages work moves
-   through, left to right.
-2. **Add Cards**: adds the example card, **Your First Card**, to the board's first column and highlights it.
-3. **Move Work Along**: moves the example card to the next column and highlights it there; drag a card on as the work
-   moves on, and everyone in the project sees it move.
-4. **The Card Panel**: opens the example card's panel and highlights it. Everything about a piece of work is here,
-   saved as it is typed.
-5. **The Board Header**: highlights the board's header. Its widgets count and filter the board; more come from
-   the + at their end, and a column's cog sets the board up.
-6. **Card Types**: highlights the Card Types button. Each type has its own colour and fields, changed or made
-   there.
-7. **You're ready to plan** (outro): a help-centre link to the Plan mode article (new tab) and **Start
-   Planning**, which completes the tour.
+Row 1 is a bold header and is frozen. The mission's cell (or cells) glow in the brand colour, and turn green the
+moment the mission is done.
 
-### Spreadsheets
+1. **Type a number** (`type-value`): "Transport came to 122. Type it into C4." Done when C4 holds the number 122.
+   Lesson: numbers, dates and percentages are read as you type them. Hints: "Click C4, type 122, press Enter", then a
+   ring round C4.
+2. **Add it up** (`sum`): "Total what you spent in C7." Done when C7 holds a formula whose value is the sum of C2:C6.
+   Lesson: start with = to write a formula; click or drag over cells to point at them. Hints: "Type =SUM( and drag
+   over C2 to C6", then the whole answer, `=SUM(C2:C6)`.
+3. **Fill it down** (`fill-down`): "D2 works out what's left. Fill it down to D6." Done when D3 to D6 each hold the
+   planned minus the actual for their row. Lesson: a filled formula follows its row. Hints: on a computer, "Drag the
+   small square at D2's corner down to D6"; on a touch screen, "Select D2 to D6, then Fill Down from the cell's
+   menu"; then a ring round D2 to D6.
+4. **Make it money** (`currency`): "Show B2 to D7 as currency." Done when every number in B2:D7 shows as currency.
+   Lesson: the toolbar acts on whatever is selected. Hints: "Select B2 to D7, then Numbers › Number Format", then a
+   ring round the toolbar's category switcher.
+5. **Chart it** (`chart`): "Chart planned against actual." Done when the person picks any chart from Data › Insert
+   Chart with cells selected. The chart is drawn in the strip from the cells they picked: in a plan it lands beside
+   the sheet. Lesson: charts follow the cells, so they change when the numbers do. Hints: "Select A1 to C6, then
+   Data › Insert Chart", then a ring round the switcher.
+6. **The finish** (`outro`): "Five for five." with **Keep This Sheet** (a new Sheet tab, **Practice Budget**, holding
+   the practice sheet as it now is; it opens) and **Done** (the dialog closes and the practice sheet goes). Either
+   ends the tour as completed.
 
-Five steps.
+Closing the dialog (its close button, or End in the strip) ends the tour as skipped. **Escape** stays with the sheet (it cancels a cell's edit), so it never closes the practice by accident.
 
-1. **Your Sheet**: a centred card, no ring; it brings the Sheet on screen. A sheet is a spreadsheet in the
-   project: cells, formulas and charts.
-2. **Type Into Cells**: highlights cell A1 alone (scrolled out of view, the step is left out). A click selects a
-   cell and typing fills it; Enter moves down, Tab across, and numbers, dates and percentages are read as typed.
-3. **Formulas**: highlights the formula bar, which shows the selected cell's value or formula; the tour selects
-   nothing. A cell starting with `=` is a formula; clicking cells while writing one points at them.
-4. **The Toolbar**: highlights the Sheet's toolbar. Its category switcher picks the tools beside it (Text,
-   Cells, Numbers, Data, Charts, Functions), acting on the selected cells.
-5. **Sheet Settings**: highlights the Sheet's cog. The title, CSV import and download, gridlines, sizes, freeze
-   and named ranges live there.
-6. **You're ready to plan** (outro): a help-centre link to the Sheets article (new tab) and **Start**,
-   which completes the tour.
+## Dashboards: Layout View
 
-### Both tracks
+While the track runs, the dashboard shows **Layout View**: over each row its twelve column guides, faint and
+dashed; on each slot a chip with its span (**8 / 12**); on each row a chip with its height (**320 px**); and the
+dividers between slots and each row's bottom edge shown as they are on hover. Chips update live as things change. The
+page stays fully usable; Layout View draws nothing that takes a click.
 
-- Back from a step goes to the step before and shows it again. Leaving a
-  step closes what it opened (the card panel). Plan has no palette, so neither track has a palette step.
-- A step whose target never appears is skipped, as in every tour; a step list filtered up front keeps the
-  count honest. The steps are the same on a desktop and a phone.
-- If the tour can no longer run where it started (the person's edit rights go, they leave Plan, they open
-  another tab, or the tour subject is deleted) it ends as skipped.
+1. **Resize two slots** (`resize-slots`): drag the divider between two slots, or focus it and press an arrow key.
+   Done when any slot's span changes. Lesson: slots snap to twelfths and a row's spans always add to twelve. Hints:
+   "Drag the bar between two slots", then a ring round the first divider. Only when a row has two slots or more;
+   otherwise **Add a slot beside** (`add-slot`) takes its place: done when a row gains a slot (a slot's cog › Add a
+   Slot › Add Slot to the Right, or Dashboard Settings), hint a ring round the first slot's cog.
+2. **Change a row's height** (`row-height`): drag a row's bottom edge, or focus it and press an arrow key. Done when
+   any row's height changes. Lesson: rows grow to fit what they hold; a tall one suits a board or a Gantt. Hint: a
+   ring round the first row's edge. Not for a dashboard whose rows all fill the page.
+3. **Fill a slot** (`fill-slot`): only when a slot is empty when the tour starts. Done when an empty slot is filled.
+   Lesson: a slot shows a tab, a board, a metric, a chart or a note, live from the plan. Hint: a ring round the first
+   empty slot's Add to Slot.
+4. **The finish** (`outro`): "That's the grid." with **Done**, and the line "Dashboard Settings starts you from
+   another layout any time."
+
+**On a phone** a dashboard's rows stack and its dividers and edges are hidden, so Layout View shows only the chips
+(each span reading as it does on a wider screen) and the missions are those that work there: **Fill a slot** when a
+slot is empty, then the finish, which says that slots sit side by side on a wider screen.
+
+The missions are fixed when the tour starts, so filling the empty slot mid-tour keeps the count. Every change is the
+person's own, one undo step, and stays when the tour ends.
+
+## Ending early
+
+- If the tour can no longer run where it started (the person's edit rights go, they leave Plan, they open another
+  tab, or the tour subject is deleted) it ends as skipped, taking away anything practice.
+- **End** and closing the practice dialog end it as skipped; the finish's choices end it as completed.
 
 ## Share roles
 
@@ -163,19 +246,24 @@ settings) is an Editor's to use.
 
 The editor tours' funnel, with its own tokens, so the tours chart apart:
 
-- **Offer**: `UI` · `Opened` · `PlanTourOffer` the first time the Start Tour button shows this tour in a page
-  load.
-- **Start**: `UI` · `Started` · `PlanTour` on a press of the button (or a Settings rerun).
-- **Stage views**: `UI` · `View` · `PlanTourStep<Id>` once per step entry (`PlanTourStepBoard`,
-  `PlanTourStepAddCards`, `PlanTourStepMoveCard`, `PlanTourStepCardPanel`, `PlanTourStepBoardHeader`,
-  `PlanTourStepCardTypes`; `PlanTourStepSheet`, `PlanTourStepCells`, `PlanTourStepFormulas`,
-  `PlanTourStepSheetToolbar`, `PlanTourStepSheetSettings`; `PlanTourStepOutro` for either outro).
-- **End**: `UI` · `Ended` · `PlanTourCompleted` | `PlanTourSkipped`.
+- **Offer**: `UI` · `Opened` · `PlanTourOffer` the first time the Start Tour button shows the Boards or Sheets track
+  in a page load; `UI` · `Opened` · `DashboardTourOffer` for the Dashboards track.
+- **Start**: `UI` · `Started` · `PlanTour` on a press of the button (or a Settings rerun); `UI` · `Started` ·
+  `DashboardTour` for Layout View, from the button or Show Me.
+- **Missions**: `UI` · `View` · `PlanTourStep<Id>` once each time a Boards or Sheets mission shows
+  (`PlanTourStepMoveCard`, `PlanTourStepOpenCard`, `PlanTourStepDueDate`, `PlanTourStepShipCard`;
+  `PlanTourStepTypeValue`, `PlanTourStepSum`, `PlanTourStepFillDown`, `PlanTourStepCurrency`, `PlanTourStepChart`;
+  `PlanTourStepOutro` for either finish).
+- **End**: `UI` · `Ended` · `PlanTourCompleted` | `PlanTourSkipped`; `DashboardTourCompleted` |
+  `DashboardTourSkipped` for Layout View.
+- **Kept**: `UI` · `Selected` · `PlanTourKeepCards` and `PlanTourKeepSheet` when the finish keeps the practice work.
 - **Settings rows**: `UI` · `Toggled` · `BoardsTourSeenOn` | `BoardsTourSeenOff` and `SheetsTourSeenOn` |
-  `SheetsTourSeenOff`, describing the preference as the Diagram tour's row does (`PlanTourSeenOn` |
-  `PlanTourSeenOff` until the row split per track in October 2026).
-- The tour sends no `Element`, `Plan` or `Sheet` events: opening a card's panel from the tour is not counted as
-  the person opening it.
+  `SheetsTourSeenOff`, describing the preference as the Diagram tour's row does.
+- The practice cards and the practice sheet send no `Element`, `Plan` or `Sheet` events; the Dashboards track's
+  changes are the person's own and are counted as ever.
+- Retired with the step-card tours (November 2026): `PlanTourStepBoard`, `PlanTourStepAddCards`,
+  `PlanTourStepCardPanel`, `PlanTourStepBoardHeader`, `PlanTourStepCardTypes`, `PlanTourStepSheet`,
+  `PlanTourStepCells`, `PlanTourStepFormulas`, `PlanTourStepSheetToolbar`, `PlanTourStepSheetSettings`.
 
 ## Power user mode (retired)
 

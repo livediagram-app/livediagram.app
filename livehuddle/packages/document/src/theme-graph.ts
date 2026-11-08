@@ -1,5 +1,5 @@
 import type { Element } from './index';
-import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
+import { assignBranches, ROOT_BRANCH } from './hierarchy';
 import { rederiveColorPresetForTheme } from './theme-presets';
 import { rederiveQuickSwatches } from './quick-swatch-rederive';
 import {
@@ -71,8 +71,7 @@ function branchEntryFor(
     stroke: theme.elementStroke ?? TRUNK_FALLBACK.stroke,
     text: theme.elementText ?? TRUNK_FALLBACK.text,
   };
-  const index =
-    el.type === 'arrow' ? branchOfArrow(el, branches) : (branches.get(el.id) ?? ROOT_BRANCH);
+  const index = branches.get(el.id) ?? ROOT_BRANCH;
   if (index === ROOT_BRANCH || palette.length === 0) return root;
   return palette[((index % palette.length) + palette.length) % palette.length]!;
 }
@@ -186,23 +185,5 @@ export function resetThemeElementsToTheme(elements: Element[], theme: ThemeDefin
   const branches = theme.palette ? branchMapFor('reset', theme, elements) : null;
   return elements.map((el) =>
     rederiveQuickSwatches(resetThemeElement(el, elementThemeView(theme, el, branches)), theme),
-  );
-}
-
-// Force every ARROW back to the theme's stroke, overwriting any
-// per-arrow custom colour, while leaving non-arrow elements untouched.
-// Picking a theme runs the preserve-customs `switchThemeElements` for
-// shapes/text/etc., then this on top so connectors ALWAYS track the
-// theme rather than drifting once a user has hand-coloured one (a tidy
-// recolour reads as broken if the lines stay the old hue). Palette-aware:
-// each arrow snaps to its branch's stroke via the same per-element view
-// every other transform uses, so there's no parallel colour path.
-export function resetArrowsToTheme(elements: Element[], theme: ThemeDefinition): Element[] {
-  const branches = theme.palette ? branchMapFor('reset-arrows', theme, elements) : null;
-  return elements.map((el) =>
-    el.type === 'arrow'
-      ? // A bound stroke (docs/specs/008-canvas/quick-style-panel.md) follows its slot instead.
-        rederiveQuickSwatches(resetThemeElement(el, elementThemeView(theme, el, branches)), theme)
-      : el,
   );
 }

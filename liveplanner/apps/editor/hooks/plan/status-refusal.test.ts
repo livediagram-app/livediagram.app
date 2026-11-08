@@ -5,6 +5,7 @@ import {
   cardsStayedMessage,
   moveStatusRefusal,
   typeStatusRefusal,
+  columnCardMoves,
 } from './status-refusal';
 
 // docs/specs/026-plan/item-types.md "An item type": only a move into a left-out status is refused.
@@ -63,5 +64,15 @@ describe('a removed column’s cards', () => {
     expect(cardsMovingRefused(cards, types, 'todo').size).toBe(0);
     expect(cardsStayedMessage(1, 'Done')).toBe("1 card stayed: its type can't be Done");
     expect(cardsStayedMessage(2, 'Done')).toBe("2 cards stayed: their types can't be Done");
+  });
+});
+
+describe('columnCardMoves', () => {
+  it('moves every card but those that stay, as one batch to the end of the new column', () => {
+    const moving = Array.from({ length: 500 }, (_, i) => ({ id: `c${i}` }));
+    const moves = columnCardMoves(moving, new Set(['c3']), 'done');
+    expect(moves).toHaveLength(499);
+    expect(moves[0]).toEqual({ id: 'c0', move: { status: 'done', before: null } });
+    expect(moves.some((m) => m.id === 'c3')).toBe(false);
   });
 });

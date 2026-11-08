@@ -44,18 +44,15 @@ describe('elementTelemetryType', () => {
     expect(elementTelemetryType(box({ type: 'arrow' }))).toBe('Arrow');
   });
 
-  // Three tools share the freehand element kind and the draw paths report
-  // them separately, so a COPY of one has to land in the same bucket.
-  it('splits the three freehand tools apart', () => {
-    const free = (over: Record<string, unknown>) =>
-      elementTelemetryType(box({ type: 'freehand', closed: false, ...over }));
-    expect(free({})).toBe('Freehand');
-    expect(free({ pen: 'highlighter' })).toBe('Highlighter');
-    expect(free({ straightEdges: true })).toBe('Polyline');
-    expect(free({ straightEdges: true, closed: true })).toBe('Polygon');
-    // The highlighter wins over straightEdges — a highlighter stroke is
-    // never polygon-drawn, but the check order should be explicit.
-    expect(free({ pen: 'highlighter', straightEdges: true })).toBe('Highlighter');
+  // A stored pen stroke of any pen reports as one kind: the tools that told them apart are gone
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+  it('reports every stored pen stroke as Freehand', () => {
+    expect(
+      elementTelemetryType(box({ type: 'freehand', pen: 'highlighter' } as Partial<Element>)),
+    ).toBe('Freehand');
+    expect(
+      elementTelemetryType(box({ type: 'freehand', straightEdges: true } as Partial<Element>)),
+    ).toBe('Freehand');
   });
 });
 

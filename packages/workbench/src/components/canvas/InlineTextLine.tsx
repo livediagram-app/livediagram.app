@@ -168,8 +168,9 @@ export function InlineTextLine({
         style={{
           ...style,
           // Selection chrome scales with the canvas everywhere else; a focus
-          // ring drawn in element space would thicken as you zoom in.
-          outlineWidth: 1 / zoom,
+          // ring drawn in element space would thicken as you zoom in. Only while it shows (editing follows focus):
+          // a zoom restyling every line on the board made every Sketch and Marker face take its finish again.
+          ...(editing ? { outlineWidth: 1 / zoom } : {}),
         }}
       />
       {animated && showAnimated ? (

@@ -22,9 +22,10 @@ export const ROOT_BRANCH = -1;
 // (graph-less) boxed elements each take the next index in document
 // order so a flat canvas still gets rainbow variety.
 //
-// Arrows are NOT in the returned map — they take the colour of the
-// branch they feed into, resolved by the caller from their endpoints
-// (see `branchOfArrow`).
+// Arrows are NOT in the returned map: a stored arrow is a retired element
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+// part 4) and keeps every colour it stored; its pinned ends are only read to
+// tell which boxes hang together.
 export function assignBranches(elements: Element[]): Map<ElementId, number> {
   const boxedIds = new Set<ElementId>();
   for (const el of elements) {
@@ -105,20 +106,4 @@ export function assignBranches(elements: Element[]): Map<ElementId, number> {
   }
 
   return branches;
-}
-
-// The branch an arrow should be coloured by: the limb it feeds INTO
-// (its `to` element's branch), falling back to where it comes FROM,
-// then the trunk. Free endpoints contribute no branch.
-export function branchOfArrow(
-  arrow: Extract<Element, { type: 'arrow' }>,
-  branches: Map<ElementId, number>,
-): number {
-  if (arrow.to.kind === 'pinned' && branches.has(arrow.to.elementId)) {
-    return branches.get(arrow.to.elementId)!;
-  }
-  if (arrow.from.kind === 'pinned' && branches.has(arrow.from.elementId)) {
-    return branches.get(arrow.from.elementId)!;
-  }
-  return ROOT_BRANCH;
 }

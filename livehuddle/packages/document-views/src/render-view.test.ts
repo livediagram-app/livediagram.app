@@ -38,7 +38,12 @@ describe('renderView', () => {
       const json = JSON.stringify(result.json);
       expect(json).toContain('"ref":"0b34"');
       expect(json).toContain('"elements":30');
-      const textRefs = new Set(result.text.match(/\b[0-9a-f]{4}\b/g));
+      // A stored arrow has no box: layout prints it `no geometry` and lists it in no JSON box.
+      const placed = result.text
+        .split('\n')
+        .filter((line) => !line.endsWith(' no geometry'))
+        .join('\n');
+      const textRefs = new Set(placed.match(/\b[0-9a-f]{4}\b/g));
       const jsonRefs = new Set(json.match(/"[0-9a-f]{4}"/g)?.map((r) => r.slice(1, -1)));
       // find's text carries each match's whole outline line; its JSON lists the matches.
       const [from, to] = view === 'find' ? [jsonRefs, textRefs] : [textRefs, jsonRefs];
@@ -58,7 +63,7 @@ describe('renderView', () => {
       fit: { state: 'attributes-dropped' },
     });
     expect(render({ view: 'graph' })).toMatchObject({ fit: { state: 'full' } });
-    expect(render({ view: 'graph', budget: 100 })).toMatchObject({
+    expect(render({ view: 'layout', budget: 100 })).toMatchObject({
       fit: { state: 'lines-dropped' },
     });
   });
@@ -119,12 +124,12 @@ describe('renderView refusals (R4, R5, E17, E18)', () => {
     });
   });
 
-  it('shows an arrow but refuses one as a subtree (VW41), and refuses find without q', () => {
+  // A stored arrow is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+  // part 4): it shows, and it roots a view, like any other.
+  it('shows a stored arrow and takes one as a subtree, and refuses find without q', () => {
     expect(render({ view: 'show', ref: 'arr' }, tab).ok).toBe(true);
-    expect(render({ view: 'outline', only: 'arr' }, tab)).toEqual({
-      ok: false,
-      refusal: { error: 'invalid_value', message: 'only takes an element, not an arrow' },
-    });
+    const only = render({ view: 'outline', only: 'arr' }, tab);
+    expect(only.ok && only.text.split('\n').slice(1)).toEqual(['? arrow arr']);
     expect(render({ view: 'find', q: '' }, tab)).toMatchObject({
       ok: false,
       refusal: { error: 'invalid_value' },

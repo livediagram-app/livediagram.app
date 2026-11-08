@@ -36,44 +36,17 @@ export type AddOperation = AddElementOperation | AddKindOperation;
 
 export type SetOperation = { op: 'set'; target: Selector; fields: Fields; all?: true };
 
-export type RmOperation = { op: 'rm'; target: Selector; all?: true; keepArrows?: true };
+export type RmOperation = { op: 'rm'; target: Selector; all?: true };
 
 export type MoveOperation = { op: 'move'; target: Selector; all?: true } & (
   { place: Placement } | { by: [number, number] }
 );
 
-export type ConnectOperation = {
-  op: 'connect';
-  from: Selector;
-  to: Selector;
-  id?: string;
-  fields?: Fields;
-  again?: true;
-};
-
-// One end, or both at once (a reversal never passes through a self-loop).
-export type RewireOperation = { op: 'rewire'; target: Selector } & (
-  { from: Selector; to?: Selector } | { from?: undefined; to: Selector }
-);
-
-export type InsertOperation = {
-  op: 'insert';
-  kind: string;
-  id?: string;
-  fields?: Fields;
-  between: [Selector, Selector];
-};
-
 export type OrderOperation = { op: 'order'; target: Selector } & (
   { to: 'front' | 'back' } | { above: Selector } | { below: Selector }
 );
 
-export type LayoutOperation = {
-  op: 'layout';
-  target: Selector;
-  style?: 'flow' | 'tree';
-  direction?: 'down' | 'right';
-};
+export type LayoutOperation = { op: 'layout'; target: Selector };
 
 export type TestOperation = { op: 'test'; target: Selector; fields: Fields };
 
@@ -82,9 +55,6 @@ export type EditOperation =
   | SetOperation
   | RmOperation
   | MoveOperation
-  | ConnectOperation
-  | RewireOperation
-  | InsertOperation
   | OrderOperation
   | LayoutOperation
   | TestOperation;

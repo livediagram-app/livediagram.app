@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createFreehand, createImage } from './factories';
+import { createImage } from './factories';
 import type { Element, Tab } from './index';
 import {
   addedByAdder,
@@ -59,16 +59,8 @@ describe('applyParticipantOp: add', () => {
       { id: 'tx', type: 'text', ...box, label: 'Hi' },
       { ...createImage(0, 0), id: 'i' },
       shape('x'),
-      {
-        ...createFreehand(
-          [
-            { x: 0, y: 0 },
-            { x: 5, y: 5 },
-          ],
-          false,
-        ),
-        id: 'f',
-      },
+      // A stored pen stroke (a retired element): refused like any other add.
+      { id: 'f', type: 'freehand', ...box },
     ];
     for (const el of elements) {
       for (const key of [ME, null]) {

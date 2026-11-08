@@ -12,12 +12,13 @@ import {
   type ShapeAnimation,
   type ShapeElement,
   inAnimationSet,
+  isRetiredElement,
   shapeAnimationsFor,
 } from '@livehuddle/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';
-import { FlowTiles, IconAnimationTiles } from '@/components/palette/context-menu-tiles';
+import { IconAnimationTiles } from '@/components/palette/context-menu-tiles';
 import { AnimationSetTiles } from '@/components/palette/AnimationSetTiles';
 import { setAnimationState } from '@/lib/animation-set-writes';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -33,27 +34,21 @@ type Handlers = Pick<
   | 'onSetIconAnimationSpeed'
   | 'onSetIconAnimationRepeat'
   | 'onPreviewIconAnimation'
-  | 'onSetArrowFlow'
-  | 'onSetFlowSpeed'
-  | 'onSetFlowRepeat'
-  | 'onPreviewArrowFlow'
   | 'elementStyle'
 >;
 
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 
-// The categories in menu order. Body sets come before the words they carry; arrows come last.
-type OwnCategory = 'icon' | 'arrow';
+// The categories in menu order. Body sets come before the words they carry.
+type OwnCategory = 'icon';
 type Category = AnimationSetId | OwnCategory;
-const ORDER: readonly Category[] = ['shape', 'sticky', 'drawing', 'media', 'icon', 'text', 'arrow'];
+const ORDER: readonly Category[] = ['shape', 'sticky', 'media', 'icon', 'text'];
 const OWN_NAME: Record<OwnCategory, string> = {
   icon: 'Icon',
-  arrow: 'Arrow',
 };
 
 // The element-owned category a shape takes, if any (each read and written by its own tiles below).
 function ownCategoryOf(el: Element): OwnCategory | undefined {
-  if (el.type === 'arrow') return 'arrow';
   if (el.type !== 'shape') return undefined;
   if (el.shape === 'icon') return 'icon';
   return undefined;
@@ -64,8 +59,10 @@ const nameOf = (c: Category) =>
 
 /** The categories a selection shows, in order. */
 export function animationCategoriesOf(elements: readonly Element[]): Category[] {
-  const present = new Set<Category>(animationSetsOf(elements));
-  for (const el of elements) {
+  // A retired element (a stored arrow, pen stroke or path among them) is never animated: it takes no category.
+  const live = elements.filter((el) => !isRetiredElement(el));
+  const present = new Set<Category>(animationSetsOf(live));
+  for (const el of live) {
     const own = ownCategoryOf(el);
     if (own) present.add(own);
   }
@@ -108,8 +105,7 @@ export function AnimationSections({
       key={c}
       title={categories.length === 1 ? 'Animation' : nameOf(c)}
       icon={<AnimationMenuGlyph />}
-      // The arrow keeps its old section key so a remembered open state carries over.
-      {...sectionProps(c === 'arrow' ? `${keyPrefix}flow` : `${keyPrefix}animation-${c}`)}
+      {...sectionProps(`${keyPrefix}animation-${c}`)}
     >
       <CategoryBody category={c} elements={elements} h={h} />
     </MenuAccordionSection>
@@ -148,22 +144,6 @@ function CategoryBody({
         onSetSpeed={h.onSetIconAnimationSpeed}
         onSetRepeat={h.onSetIconAnimationRepeat}
         onPreview={h.onPreviewIconAnimation}
-        onPreviewEnd={h.onAnimationPreviewEnd}
-      />
-    );
-  }
-  if (category === 'arrow') {
-    const arrow = elements.find((el) => el.type === 'arrow');
-    if (arrow?.type !== 'arrow') return null;
-    return (
-      <FlowTiles
-        flow={arrow.flow ?? null}
-        speed={arrow.flowSpeed ?? DEFAULT_ANIMATION_SPEED}
-        repeat={arrow.flowRepeat ?? true}
-        onSet={h.onSetArrowFlow}
-        onSetSpeed={h.onSetFlowSpeed}
-        onSetRepeat={h.onSetFlowRepeat}
-        onPreview={h.onPreviewArrowFlow}
         onPreviewEnd={h.onAnimationPreviewEnd}
       />
     );

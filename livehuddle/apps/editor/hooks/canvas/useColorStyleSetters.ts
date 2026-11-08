@@ -1,5 +1,5 @@
 // The colour / opacity setters for the current selection, lifted out of
-// useElementStyle into its own sibling (like the arrow / shape / text /
+// useElementStyle into its own sibling (like the shape / text /
 // data-shape setter hooks). These deliberately bypass `commit`: they
 // fire on every drag tick of a colour / slider control, so they write
 // via the non-history tab mutator and checkpoint once per burst (see
@@ -7,7 +7,7 @@
 // file makes it auditable. `resetColorsSelected` (the "Reset to Theme"
 // action) lives here too since it is the inverse of these writes.
 
-import type { Element, ElementShadow, Tab } from '@livehuddle/document';
+import { isRetiredElement, type Element, type ElementShadow, type Tab } from '@livehuddle/document';
 import { getTheme } from '@/lib/themes';
 import { resetElementColours } from '@/lib/reset-colours';
 import {
@@ -70,21 +70,9 @@ export function useColorStyleSetters(deps: {
   const setTextColorSelected = (color: string) =>
     commitSelectedStyle('textColor', (el) => applyTextColorToEl(el, color));
 
-  // The arrowhead's own colour (docs/specs/008-canvas/canvas-and-palette.md arrow styles), for a head that should
-  // not match its line.
-  const setArrowheadColorSelected = (color: string) =>
-    commitSelectedStyle('arrowheadColor', (el) =>
-      el.type === 'arrow' ? { ...el, arrowheadColor: color } : el,
-    );
-
-  // The plate behind an arrow's label (docs/specs/008-canvas/canvas-and-palette.md "Caption").
-  const setLabelFillSelected = (color: string) =>
-    commitSelectedStyle('labelFill', (el) =>
-      el.type === 'arrow' ? { ...el, labelFill: color } : el,
-    );
-
+  // A retired element keeps its stored look (its placeholder draws the same whatever it holds).
   const setOpacitySelected = (opacity: number) =>
-    commitSelectedStyle('elementOpacity', (el) => ({ ...el, opacity }));
+    commitSelectedStyle('elementOpacity', (el) => (isRetiredElement(el) ? el : { ...el, opacity }));
 
   // Shadow sliders (docs/specs/008-canvas/element-shadows.md): four axes, same one-undo-step-per-gesture
   // policy as opacity. `null` clears (the Shadow section's None tile
@@ -116,8 +104,6 @@ export function useColorStyleSetters(deps: {
     setFillColorSelected,
     setStrokeColorSelected,
     setTextColorSelected,
-    setArrowheadColorSelected,
-    setLabelFillSelected,
     setOpacitySelected,
     setShadowSelected,
     resetColorsSelected,

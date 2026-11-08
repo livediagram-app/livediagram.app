@@ -65,11 +65,21 @@ export const RETIRED_TYPE_NAMES: Readonly<Record<string, string>> = {
   video: 'Embed',
   // Tables (part 2), with their cell links and styles.
   table: 'Table',
+  // Part 4: arrows and lines (named Line when stored without heads, retiredElementName), every pen and highlighter
+  // stroke, paths and annotation markers.
+  arrow: 'Arrow',
+  freehand: 'Drawing',
+  path: 'Path',
+  annotation: 'Annotation',
 };
 
-export const RETIRED_ELEMENT_TYPES: ReadonlySet<string> = new Set(Object.keys(RETIRED_TYPE_NAMES));
+// The boxed retired types: every one but the arrow, which has two ends rather than a box (./retired-arrow).
+export const RETIRED_ELEMENT_TYPES: ReadonlySet<string> = new Set(
+  Object.keys(RETIRED_TYPE_NAMES).filter((type) => type !== 'arrow'),
+);
 
-// Is this an element type the element engine deleted?
+// Is this a boxed element type the element engine deleted? (A stored arrow is retired too, but has no box:
+// isRetiredElement answers for both.)
 export function isRetiredElementType(type: unknown): boolean {
   return typeof type === 'string' && RETIRED_ELEMENT_TYPES.has(type);
 }
@@ -101,7 +111,7 @@ export function isRetiredBackdrop(el: MaybeShape): boolean {
 // Is this an element livehuddle cannot draw: a shape of a kind it deleted or never had, or an element of a type it
 // deleted?
 export function isRetiredElement(el: MaybeShape): boolean {
-  if (isRetiredElementType(el.type)) return true;
+  if (el.type === 'arrow' || isRetiredElementType(el.type)) return true;
   return el.type === 'shape' && !(typeof el.shape === 'string' && SHAPE_KINDS.has(el.shape));
 }
 
@@ -110,7 +120,9 @@ export function retiredElementName(el: {
   type?: unknown;
   shape?: unknown;
   session?: unknown;
+  arrowEnds?: unknown;
 }): string {
+  if (el.type === 'arrow' && el.arrowEnds === 'none') return 'Line';
   if (typeof el.type === 'string' && Object.hasOwn(RETIRED_TYPE_NAMES, el.type))
     return RETIRED_TYPE_NAMES[el.type]!;
   const kind = typeof el.shape === 'string' ? el.shape : '';

@@ -1,5 +1,7 @@
 # Path tool
 
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/023-draw-mode/path-tool.md) is the one to read and change. livehuddle has no tool, gesture, setter or renderer for it: a stored path is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder named **Path**, which an Editor can delete. The rest of this page describes it as livediagram has it.
+
 Status: shipped
 
 The **Path tool** is a vector pen for whiteboards, in the manner of Figma's and Illustrator's pen

@@ -122,9 +122,9 @@ describe('SettingsCategoryPane tours', () => {
       />,
     );
     const workshop = screen.getByRole('switch', { name: 'Workshop Tour' });
-    expect(screen.getByRole('switch', { name: 'Diagram Tour' }).getAttribute('aria-checked')).toBe(
-      'false',
-    );
+    expect(
+      screen.getByRole('switch', { name: 'Watch It Built' }).getAttribute('aria-checked'),
+    ).toBe('false');
     expect(workshop.getAttribute('aria-checked')).toBe('false');
     expect(screen.getByRole('switch', { name: 'Draw Tour' }).getAttribute('aria-checked')).toBe(
       'true',

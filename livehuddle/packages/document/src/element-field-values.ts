@@ -4,7 +4,6 @@
 // used to be stored and drawn wrong in silence (`textSize: "xl"` drew tiny overlapping text).
 
 import { ACCENT_EDGES } from './accent-edge';
-import { ARROWHEAD_SHAPES } from './arrow-style';
 import { BORDER_DASH_ARRAY } from '@liveworkspace/model-core/border-style';
 import { FONTS } from '@liveworkspace/model-core/fonts';
 import { ICON_WEIGHTS } from '@liveworkspace/model-core/icon-weight';
@@ -14,10 +13,6 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   textAlignX: ['left', 'center', 'right'],
   textAlignY: ['top', 'middle', 'bottom'],
   iconPosition: ['left', 'right', 'above', 'below'],
-  arrowStyle: ['straight', 'angled', 'curved'],
-  arrowEnds: ['to', 'from', 'both', 'none'],
-  arrowheadShape: ARROWHEAD_SHAPES,
-  arrowheadStartShape: ARROWHEAD_SHAPES,
   strokeStyle: Object.keys(BORDER_DASH_ARRAY),
   borderRadius: ['none', 'sm', 'md', 'lg', 'full'],
   // A box's accent edge (docs/specs/008-canvas/accent-edge.md).

@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  canvasSurface,
   contrastRatio,
-  defaultArrowStrokeColor,
   THEME_LINE_CONTRAST,
   THEME_TEXT_CONTRAST,
   viewElementInTheme,
@@ -17,8 +15,9 @@ import { TAB_LOOKS, withLookApplied, type TabLook } from './tab-looks';
 import { resolveTabBackdrop, themeViewMap } from './themes';
 
 // docs/specs/011-theme/canvas-and-theme-dialog.md "Looks": every one-click look stays readable in both appearances.
-// A look is applied (in the light half, as a light-mode picker would) to a tab holding a box and an arrow, then drawn
-// for a light and a dark viewer: the box's text on its fill at 4.5:1, its outline and the arrow on the canvas at 3:1.
+// A look is applied (in the light half, as a light-mode picker would) to a tab holding a box, then drawn for a light
+// and a dark viewer: the box's text on its fill at 4.5:1, its outline on the canvas at 3:1. (A stored arrow draws in the
+// placeholder's own ink, whatever the look: docs/specs/002-project-scope/not-in-livehuddle.md "The element engine".)
 const tab = (): Tab =>
   ({
     id: 't',
@@ -33,12 +32,6 @@ const tab = (): Tab =>
         width: 100,
         height: 60,
         label: 'Box',
-      },
-      {
-        id: 'a',
-        type: 'arrow',
-        from: { kind: 'free', x: 0, y: 100 },
-        to: { kind: 'free', x: 100, y: 100 },
       },
     ],
   }) as unknown as Tab;
@@ -70,9 +63,8 @@ describe('every look and mashup is accessible in both appearances', () => {
         const styled = withLookApplied(tab(), look);
         const map = themeViewMap(styled.theme, appearance);
         const canvas = resolveTabBackdrop(styled, appearance).backgroundColor;
-        const [box, arrow] = styled.elements.map((el) => viewElementInTheme(el, map)) as [
+        const [box] = styled.elements.map((el) => viewElementInTheme(el, map)) as [
           Element & { fillColor?: string; strokeColor?: string; textColor?: string },
-          Element & { strokeColor?: string },
         ];
         const problems: string[] = [];
         if (
@@ -82,10 +74,6 @@ describe('every look and mashup is accessible in both appearances', () => {
           problems.push(`text ${box.textColor} on ${box.fillColor}`);
         if (box.strokeColor && below(box.strokeColor, canvas, THEME_LINE_CONTRAST))
           problems.push(`outline ${box.strokeColor} on ${canvas}`);
-        // An uncoloured arrow (Default leaves it unset) draws in the canvas's ink.
-        const arrowInk = arrow.strokeColor ?? defaultArrowStrokeColor(canvasSurface(canvas));
-        if (below(arrowInk, canvas, THEME_LINE_CONTRAST))
-          problems.push(`arrow ${arrowInk} on ${canvas}`);
         expect(problems).toEqual([]);
       });
     }

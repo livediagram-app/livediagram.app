@@ -35,16 +35,6 @@ const moved = (a: BoxedElement, b: BoxedElement) =>
   Math.abs(a.width - b.width) > EPSILON ||
   Math.abs(a.height - b.height) > EPSILON;
 
-// What an arrow's route is made of, for telling whether a tidy changed it.
-const arrowShape = (a: Extract<Element, { type: 'arrow' }>) =>
-  JSON.stringify([
-    a.from,
-    a.to,
-    a.arrowStyle ?? 'straight',
-    a.curvePoints ?? null,
-    a.elbowOffset ?? null,
-  ]);
-
 /** The verdict on replacing `before` with `after` (the same elements, tidied). */
 export function cleanupVerdict(before: Element[], after: Element[]): CleanupVerdict {
   const was = new Map(before.filter(isBoxed).map((b) => [b.id, b]));
@@ -53,13 +43,9 @@ export function cleanupVerdict(before: Element[], after: Element[]): CleanupVerd
     const w = was.get(b.id);
     return !w || moved(w, b);
   });
-  const wasArrow = new Map(before.map((e) => [e.id, e]));
-  const changedArrows = after.some((el) => {
-    if (el.type !== 'arrow') return false;
-    const w = wasArrow.get(el.id);
-    return !w || w.type !== 'arrow' || arrowShape(w) !== arrowShape(el);
-  });
-  if (changedBoxes.length === 0 && !changedArrows) return { kind: 'unchanged' };
+  // A stored arrow is never written by a tidy (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+  // engine"), so the boxes alone say whether anything changed.
+  if (changedBoxes.length === 0) return { kind: 'unchanged' };
 
   // A moved box that left a box which held it (and did not move with it).
   const nowById = new Map(now.map((b) => [b.id, b]));

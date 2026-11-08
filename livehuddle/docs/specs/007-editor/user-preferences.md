@@ -257,9 +257,13 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Avatar tour's taken record (docs/specs/008-canvas/avatar-tour.md).
-  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
+  // The Receptionist's welcome given (docs/specs/008-canvas/receptionist.md "The welcome"), kept under the retired Avatar tour's key
+  // so nobody who took that tour is welcomed again. Surfaced in Settings as Tours › "Receptionist's Welcome" (inverted).
+  // Missing / undefined === not welcomed.
   avatarTourSeen?: boolean;
+  // The topics the Receptionist has answered for this person (docs/specs/008-canvas/receptionist.md "Asking the Receptionist"), by topic id,
+  // each once, in the order heard: the ticks in his bubble.
+  receptionistTopicsSeen?: string[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started.
   // Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
   elementTourKinds?: ElementTourKind[];
@@ -670,7 +674,7 @@ and the dialog stays as the one complete, browsable index of them.
   Pan: a phone has no middle button.
 
   **Getting Started** is a category of its own: one switch per guided tour, **Workshop
-  Tour** and **Avatar Tour**, each with a line saying where it is on offer and a **Learn more**
+  Tour** and **Receptionist's Welcome**, each with a line saying where it is on offer and a **Learn more**
   to its article, under one **Offer Again** section note: switch one back on
   and close Settings to take it again, straight away if it is on offer where you
   are, otherwise from the footer's Start Tour button when you get there. (Until
@@ -686,7 +690,7 @@ and the dialog stays as the one complete, browsable index of them.
   PREFERENCE (switching on is `...SeenOff`), so each dashboard series keeps its
   meaning.
 
-  **Avatar Tour** is inverted against `avatarTourSeen` ([Avatar tour](../008-canvas/avatar-tour.md)); closing the dialog with it turned on from off reruns it when it is on offer where you are. There is no Workshop Tour row: the tour left livehuddle ([Workshop tour](../012-collaboration/workshop-tour.md)).
+  **Receptionist's Welcome** is inverted against `avatarTourSeen` ([the Receptionist](../008-canvas/receptionist.md)); closing the dialog with it turned on from off has the Receptionist give his welcome again while you walk on a tab with him. There is no Workshop Tour row: the tour left livehuddle ([Workshop tour](../012-collaboration/workshop-tour.md)).
 
   Below those tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
   accordion naming how many are on ([Element tours](element-tours.md#settings)): one switch per toured kind, named

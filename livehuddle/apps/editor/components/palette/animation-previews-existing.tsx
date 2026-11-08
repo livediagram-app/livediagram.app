@@ -1,65 +1,14 @@
-// Live miniatures for the animation sets that predate the per-kind sets: arrow flow and icon glyph
+// Live miniatures for the animation sets that predate the per-kind sets: icon glyph
 // motion (docs/specs/028-animation/element-animations.md
 // "The menu"). Each renders the canvas's own renderer (or its own classes) at tile size, so a tile
 // shows exactly what picking it does; AnimationPreviewTile freezes it and plays it on hover.
 
-import { useRef, type CSSProperties } from 'react';
-import type { ArrowElement, ArrowFlow, IconAnimation } from '@livehuddle/document';
-import { ArrowFlowOverlays, FLOW_PATH_CLASS, FLOW_PATH_DASH } from '@/components/canvas/arrow-flow';
+import type { IconAnimation } from '@livehuddle/document';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { BRAND_RAMP } from '@livehuddle/ui';
 
 // The tiles' own art wears the app's brand (brand-500), as the palette around them does.
 const ACCENT = BRAND_RAMP[500];
-const ARROW_D = 'M3 15 C 13 3, 25 19, 37 7';
-
-/** A short curved arrow running the flow's real path class, dash and travelling dots. */
-export function ArrowFlowPreview({ flow }: { flow: ArrowFlow | null }) {
-  const dotRef = useRef<SVGCircleElement>(null);
-  const cometRef = useRef<SVGGElement>(null);
-  const cls = flow ? FLOW_PATH_CLASS[flow] : undefined;
-  return (
-    <svg width="44" height="22" viewBox="0 0 44 22" overflow="visible">
-      <path
-        d={ARROW_D}
-        fill="none"
-        stroke={ACCENT}
-        strokeWidth={2}
-        strokeLinecap="round"
-        pathLength={flow === 'draw' ? 1 : undefined}
-        className={cls}
-        strokeDasharray={flow ? FLOW_PATH_DASH[flow] : undefined}
-        style={
-          {
-            '--lvd-flow-speed': 1,
-            '--lvd-flow-w': '2px',
-            '--lvd-flow-color': ACCENT,
-          } as CSSProperties
-        }
-      />
-      <path
-        d="M33.5 4.5 L38.5 6.5 L36 11"
-        fill="none"
-        stroke={ACCENT}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {flow === 'dots' || flow === 'comet' ? (
-        <ArrowFlowOverlays
-          arrow={{ flow } as ArrowElement}
-          pathD={ARROW_D}
-          strokeWidth={2}
-          baseStroke={ACCENT}
-          flowFactor={1}
-          dotRef={dotRef}
-          cometRef={cometRef}
-        />
-      ) : null}
-    </svg>
-  );
-}
-
 // Icon motions that move the glyph: they rest over a faint ghost of where it started.
 const ICON_MOVES = new Set<IconAnimation>([
   'spin',

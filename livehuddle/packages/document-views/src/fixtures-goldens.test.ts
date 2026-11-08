@@ -14,7 +14,9 @@ describe('the agent-built tab', () => {
     expect(isValidTab(tab)).toBe(true);
     const { text } = outlineView(buildViewModel(tab));
     await expect(text).toMatchFileSnapshot(golden('agent-built.outline.txt'));
-    expect(text).toContain('→ payments "charge"');
+    // A stored arrow prints on its own line (part 4 of the element engine), never on its source's.
+    expect(text).toContain('? arrow charge "charge"');
+    expect(text).not.toContain(' → ');
   });
 });
 
@@ -41,7 +43,8 @@ describe('the edge-case tab (E2 to E28, R25)', () => {
   it('prints every case, never dropping an unknown kind', async () => {
     const { text, json } = outlineView(buildViewModel(edgeCasesTab()));
     await expect(text).toMatchFileSnapshot(golden('edge-cases.outline.txt'));
-    // Four unknown kinds, and two stored boundaries (part 3 of the element engine).
-    expect(json.header).toMatchObject({ unknown: 6 });
+    // Four unknown kinds, two stored boundaries (part 3 of the element engine), and eight stored arrows and four
+    // stored strokes (part 4).
+    expect(json.header).toMatchObject({ unknown: 18 });
   });
 });

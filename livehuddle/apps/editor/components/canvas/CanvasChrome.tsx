@@ -61,8 +61,7 @@ type ChromeExtras = {
   // Snapped pointer position while a draw is armed but not yet started
   // (pre-press start-snap preview); null when not armed / not snapped.
   drawHover: { x: number; y: number } | null;
-  penPoints: { x: number; y: number }[] | null;
-  // Polygon tool in-flight state (docs/specs/008-canvas/polygon-tool.md): the placed vertices and
+  // The Room Builder's in-flight state (docs/specs/009-elements/room-builder.md): the placed corners and
   // the live rubber-band cursor position, both canvas coords.
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
@@ -163,7 +162,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     onCancelIdentity,
     onUndo,
     pendingDraw,
-    penPoints,
     polygonVertices,
     polygonCursor,
     readOnly,
@@ -208,10 +206,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     pendingDraw,
     elements,
     drawHover,
-    penPoints,
     snapGuides,
     snapTargets,
-    whiteboard: false,
   });
 
   // Walking is being in the room, not editing it (docs/specs/008-canvas/avatar-mode.md "No editing chrome while
@@ -384,7 +380,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
       <CanvasDrawPreview
         drawDrag={drawDrag}
-        penPoints={penPoints}
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
         pendingDraw={pendingDraw}

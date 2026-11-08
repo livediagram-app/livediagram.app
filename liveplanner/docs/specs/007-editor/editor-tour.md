@@ -87,11 +87,11 @@ of their steps ask the person to try things.
 ## Mechanics
 
 - **One engine, every tour.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /
-  Skip) and what it draws (`TourStage`: `TourSpotlight`, `TourPopover`) are shared by the
-  [Plan tour](../026-plan/plan-tour.md), the Forms tour, the card type editor's Show Me and the
-  [element tours](element-tours.md); each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
-  `selector` resolved when it runs (the Plan tour's board and cards), and an anchorless card's `prepare` runs
-  too. The last card's words (`TourCardCopy`) are a prop. The engine, the stage, the card, the spotlight, the
+  Skip) and what it draws (`TourStage`: `TourSpotlight`, `TourPopover`) are shared by the Forms tour, the card
+  type editor's Show Me and the [element tours](element-tours.md); each tour's host owns its offer, its steps and
+  what ending means. A step anchors by `data-tour-id`, or by a `selector` resolved when it runs, and an anchorless
+  card's `prepare` runs too. The [Plan tour](../026-plan/plan-tour.md)'s three tracks are hands-on instead: they
+  run missions in a mission strip of their own and share only the offer and the one-tour-at-a-time store. The last card's words (`TourCardCopy`) are a prop. The engine, the stage, the card, the spotlight, the
   shield, the tour colours and the Start Tour button live once in `@liveworkspace/workbench/components/tour`; the
   editor keeps only its steps and hosts.
 - The engine drives the **real UI**, not screenshots: steps have a `prepare` phase that opens the actual panel

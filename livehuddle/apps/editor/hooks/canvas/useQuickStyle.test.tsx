@@ -1,23 +1,24 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import {
-  createFreehand,
-  createShape,
-  defaultScheme,
-  type Element,
-  type Tab,
-} from '@livehuddle/document';
-import type { PendingDraw } from '@/lib/draw-mode';
+import { createShape, defaultScheme, type Element, type Tab } from '@livehuddle/document';
+import { storedFreehand } from '@/test/retired-elements';
 import { useQuickStyle } from './useQuickStyle';
 
 // docs/specs/008-canvas/quick-style-panel.md: each choice is one commit over the selection, remembered.
 describe('useQuickStyle on a selection', () => {
   const square = { ...createShape('square', 0, 0), id: 'q1' } as Element;
   const sticky = { id: 'n1', type: 'sticky', x: 0, y: 0, width: 9, height: 9 } as Element;
+  // A stored highlighter stroke: retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+  // part 4), so the panel neither styles nor counts it.
+  const highlight = storedFreehand(
+    'h1',
+    { x: 0, y: 0, width: 40, height: 10 },
+    { pen: 'highlighter', strokeColor: '#fde047' },
+  );
 
   function setup(selection: string[]) {
-    let elements: Element[] = [square, sticky];
+    let elements: Element[] = [square, sticky, highlight];
     const tab = { id: 't', name: 'Tab', elements } as unknown as Tab;
     const commit = vi.fn((map: (els: Element[]) => Element[]) => {
       elements = map(elements);
@@ -56,78 +57,13 @@ describe('useQuickStyle on a selection', () => {
     expect(elements()[0]).not.toMatchObject({ fillColor: '#abcdef' });
     expect(memory.forget).toHaveBeenCalledWith(['shape:square']);
   });
-});
 
-// docs/specs/008-canvas/highlighter.md "Settings": the Highlighter rows, on a diagram tab.
-describe('useQuickStyle Highlighter rows', () => {
-  const highlight = {
-    ...createFreehand(
-      [
-        { x: 0, y: 0 },
-        { x: 40, y: 10 },
-      ],
-      false,
-    ),
-    id: 'h1',
-    pen: 'highlighter',
-    strokeColor: '#fde047',
-  } as Element;
-  const box = { ...createShape('square', 100, 0), id: 'b1' } as Element;
-
-  function diagram(selection: string[], toolIntent: PendingDraw | null = null) {
-    let elements: Element[] = [highlight, box];
-    const tab = { id: 't', name: 'Tab', elements } as unknown as Tab;
-    const commit = vi.fn((map: (els: Element[]) => Element[]) => {
-      elements = map(elements);
-    });
-    const highlighter = { colour: '#fde047', width: 14, setColour: vi.fn(), setWidth: vi.fn() };
-    const { result } = renderHook(() =>
-      useQuickStyle({
-        activeTab: tab,
-        theme: defaultScheme('light'),
-        selectionIds: new Set(selection),
-        editsBlocked: false,
-        liveElements: () => elements,
-        commit,
-        memory: {
-          recordEdit: vi.fn(),
-          forget: vi.fn(),
-          styleNewElement: <T,>(el: T) => el,
-        } as never,
-        swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() },
-        highlighter,
-        toolIntent,
-      }),
-    );
-    return { result, commit, highlighter, elements: () => elements };
-  }
-
-  it('shows the armed tile’s next stroke, and sets it without touching the board', () => {
-    const { result, commit, highlighter } = diagram([], {
-      type: 'freehand',
-      variant: 'highlighter',
-    });
-    expect(result.current.view?.highlighter?.subject).toEqual({
-      kind: 'tool',
-      name: 'Highlighter',
-    });
-    act(() => result.current.setHighlighterColour('#86efac'));
-    act(() => result.current.setHighlighterWidth('thin'));
-    expect(highlighter.setColour).toHaveBeenCalledWith('#86efac');
-    expect(highlighter.setWidth).toHaveBeenCalledWith(8);
-    expect(commit).not.toHaveBeenCalled();
-  });
-
-  it('shows no Highlighter rows with nothing selected and nothing armed', () => {
-    expect(diagram([]).result.current.view).toBeNull();
-  });
-
-  it('restyles the selected highlights in one commit, and counts a mixed selection', () => {
-    const { result, commit, elements } = diagram(['h1', 'b1']);
-    expect(result.current.view?.caption).toBe('2 elements');
-    act(() => result.current.setHighlighterWidth('bold'));
-    expect(commit).toHaveBeenCalledTimes(1);
-    expect(elements()[0]).toMatchObject({ penWidth: 22 });
-    expect(elements()[1]).toBe(box);
+  it('leaves a stored highlighter stroke as it is, and shows nothing for it alone', () => {
+    expect(setup(['h1']).result.current.view).toBeNull();
+    const { result, elements } = setup(['q1', 'h1']);
+    expect(result.current.view?.targetIds).toEqual(['q1']);
+    act(() => result.current.setColour('stroke', '#abcdef'));
+    act(() => result.current.clearStyles());
+    expect(elements()[2]).toBe(highlight);
   });
 });

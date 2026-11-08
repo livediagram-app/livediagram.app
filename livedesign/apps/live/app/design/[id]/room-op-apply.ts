@@ -1,8 +1,10 @@
+import { applyMergedElementOps } from '@liveworkspace/workbench/lib/merged-element-ops';
+import type { RemoteOp } from '@liveworkspace/workbench/lib/remote-op-log';
 import { carryConnection } from '@liveworkspace/workbench/components/connect/tab-connection';
 import {
   settleTabFields,
   applyElementDelta,
-  applyElementOp,
+  applyElementOps,
   applyRoomElementOp,
   mergeIncomingElement,
   type ElementDelta,
@@ -60,17 +62,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
           ? [...tabs, { ...op.tab, id: op.tabId, elements: [] }]
           : tabs;
       if (ops.length === 0) return withTab;
-      return updateTab(withTab, op.tabId, (tab) => {
-        let elements = tab.elements;
-        for (const elOp of ops) {
-          const merged =
-            elOp.kind === 'update' || elOp.kind === 'add'
-              ? mergeOpOverLocal({ ...tab, elements }, elOp)
-              : elOp;
-          elements = applyElementOp(elements, merged);
-        }
-        return elements === tab.elements ? tab : { ...tab, elements };
-      });
+      return applyElementRun(withTab, op.tabId, ops);
     }
     case 'tab-meta':
       // Non-element fields (docs/specs/012-collaboration/realtime-conflict-resolution.md). `folder` stays owned by design-meta
@@ -159,6 +151,38 @@ export function applyDeltaToTabs(
     elements[i] = next;
     return { ...tab, elements };
   });
+}
+
+// A run of element ops on one tab, each merged over the element as the ops before it left it, all applied in one
+// pass (applyMergedElementOps): a changeset's ops, or a run of peers' `el` ops an undo snapshot takes together
+// (remoteRoomOp). It costs the tab's size plus the ops', not one walk of the tab per op.
+function applyElementRun(tabs: Tab[], tabId: string, ops: readonly unknown[]): Tab[] {
+  return updateTab(tabs, tabId, (tab) => {
+    const elements = applyMergedElementOps(
+      tab.elements,
+      ops as ElementOp[],
+      mergeIncomingElement,
+      applyElementOps,
+    );
+    return elements === tab.elements ? tab : { ...tab, elements };
+  });
+}
+
+// The op as the undo history logs it (historyApplyRemoteOp, docs/specs/012-collaboration/realtime-conflict-resolution.md
+// "Locked decisions"): a pure function of the tabs, and for an element op (a peer's `el`, a changeset that creates
+// no tab) the run it can join with the ops beside it, so a snapshot catching up on many of them walks the tab once.
+export function remoteRoomOp(op: RoomOp): RemoteOp<Tab[]> {
+  const apply = (tabs: Tab[]) => applyRoomOpToTabs(tabs, op);
+  const run = elementRunOf(op);
+  return run ? Object.assign(apply, { run: { ...run, applyAll: applyElementRun } }) : apply;
+}
+
+// The element ops an op applies to one tab whatever else the tabs hold: a non-patch `el` op, or a changeset that
+// creates no tab. Anything else is applied alone.
+function elementRunOf(op: RoomOp): { key: string; items: readonly ElementOp[] } | null {
+  if (op.kind === 'el') return op.op.kind === 'patch' ? null : { key: op.tabId, items: [op.op] };
+  if (op.kind === 'changeset' && !op.tab) return { key: op.tabId, items: op.elementOps ?? [] };
+  return null;
 }
 
 // Replace one tab by id, keeping the array (and so the autosave's identity

@@ -34,6 +34,13 @@ import { itemWriteMayWait } from '@/lib/offline-queue/queue-roles';
 import { isConnectionFailure } from '@/lib/offline-queue/reconnect';
 import type { ItemUndoStep } from './item-undo-journal';
 import { useItemQueue, withWaitingItems } from './useItemQueue';
+import {
+  addPracticeItems,
+  applyPracticeWrite,
+  keepPracticeItems,
+  splitPracticeWrite,
+  withoutPracticeItems,
+} from './practice-items';
 
 // A burst of revision gaps refetches once (blueprint item-store.md "Constants").
 const ITEM_REFETCH_DEBOUNCE_MS = 400;
@@ -55,6 +62,12 @@ export type PlanItems = {
   writeQuiet: (write: ItemWrite, opts?: { silent?: boolean }) => Promise<boolean>;
   receive: (op: ItemsRoomOp) => void;
   refetch: () => void;
+  // Practice cards (docs/specs/026-plan/plan-tour.md "Practice cards"): made here alone, never sent. `practise` lays
+  // them in (false when the store refuses them), `endPractice` takes them away, sending the ones kept as real cards
+  // (one undo step). Any write touching one applies here alone, with no undo step.
+  practiceIds: ReadonlySet<string>;
+  practise: (creates: Extract<ItemWrite, { kind: 'create' }>['creates']) => boolean;
+  endPractice: (keep: boolean) => Promise<void>;
   // This person's owner id: the author id their own comments carry (the delete-own check).
   ownerId: string;
   // Who is asking for which project, and through which share link (an Image field's uploads and reads, docs/specs/
@@ -68,6 +81,9 @@ export type PlanItems = {
 // a reconnect or a resync. Every write but a vote is undoable through `pushUndo`.
 // What a refused change says, by its reason (the store's or the api's), so a too-long field is named, not a
 // generic failure.
+// No practice cards: one set, so a screen without them never re-renders for a new empty one.
+const NO_PRACTICE: ReadonlySet<string> = new Set();
+
 export function refusalMessage(code: string): string {
   switch (code) {
     case 'title_too_long':
@@ -162,6 +178,9 @@ export function usePlanItems(opts: {
   const refetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Items whose last write was refused or failed: the next load takes the server's copy of them as it is.
   const unconfirmedRef = useRef(new Set<string>());
+  // The practice cards on this screen (practice-items.ts): the ref for writes, the state for drawing.
+  const practiceRef = useRef<ReadonlySet<string>>(NO_PRACTICE);
+  const [practiceIds, setPracticeIds] = useState<ReadonlySet<string>>(NO_PRACTICE);
 
   useEffect(() => {
     let live = true;
@@ -207,8 +226,13 @@ export function usePlanItems(opts: {
       serverRevRef.current = fetched.rev;
       unconfirmed.forEach((id) => unconfirmedRef.current.delete(id));
       // What waits for the connection is laid back over the server's copy.
+      // Practice cards are never read back: they are laid over the fresh copy as they were.
       setStore((prev) =>
-        withWaitingItems(refetchedItemStore(prev, fetched, unconfirmed), queueOf(), layBy()),
+        keepPracticeItems(
+          withWaitingItems(refetchedItemStore(prev, fetched, unconfirmed), queueOf(), layBy()),
+          prev,
+          practiceRef.current,
+        ),
       );
       setStatus('ready');
     } catch (err) {
@@ -294,10 +318,21 @@ export function usePlanItems(opts: {
   // Applies, sends and settles one write; false when it was refused (the store is refetched). `made` is what the api
   // stored; a write refused after part of it landed (ItemWritePartlyLanded) is not ok, with the part in `made`.
   const send = useCallback(
-    async (write: ItemWrite, silent = false): Promise<{ ok: boolean; made: Item[] }> => {
+    async (input: ItemWrite, silent = false): Promise<{ ok: boolean; made: Item[] }> => {
       const s = scopeRef.current;
       const by = selfRef.current;
       if (!s || !by) return { ok: false, made: [] };
+      // A practice card's part applies here alone; only the real cards' part (if any) goes on.
+      const split = splitPracticeWrite(input, practiceRef.current);
+      if (split.practice) {
+        const next = applyPracticeWrite(storeRef.current, split.practice, by, Date.now());
+        if (next) {
+          storeRef.current = next;
+          setStore(next);
+        }
+        if (!split.real) return { ok: next !== null, made: [] };
+      }
+      const write = split.real ?? input;
       const local = applyItemWrite(storeRef.current, write, { now: Date.now(), by });
       if (!local.ok) {
         // Refused before it is sent: nothing changes, and the person is told why (the field goes back).
@@ -353,7 +388,13 @@ export function usePlanItems(opts: {
 
   const write = useCallback(
     async (input: ItemWrite, opts?: WriteOptions): Promise<boolean> => {
-      const w = withCreateIds(input);
+      const split = splitPracticeWrite(withCreateIds(input), practiceRef.current);
+      // Practice cards take no undo step and tell no one (send applies their part here).
+      if (split.practice) {
+        const ok = (await send(split.practice)).ok;
+        if (!split.real) return ok;
+      }
+      const w = split.real!;
       const before = storeRef.current;
       const inverse = inverseItemWrites(before, w);
       // A person's own change, seen before it is applied (the Actions board deletes a deleted card's action).
@@ -399,7 +440,69 @@ export function usePlanItems(opts: {
     [send],
   );
 
+  const practise = useCallback(
+    (creates: Extract<ItemWrite, { kind: 'create' }>['creates']): boolean => {
+      const by = selfRef.current;
+      if (!by) return false;
+      const write = withCreateIds({ kind: 'create', creates });
+      if (write.kind !== 'create') return false;
+      const next = addPracticeItems(storeRef.current, write, by, Date.now());
+      if (!next) return false;
+      const ids = new Set(practiceRef.current);
+      write.creates.forEach((c) => c.id && ids.add(c.id));
+      practiceRef.current = ids;
+      setPracticeIds(ids);
+      storeRef.current = next;
+      setStore(next);
+      return true;
+    },
+    [selfRef],
+  );
+
+  const endPractice = useCallback(
+    async (keep: boolean): Promise<void> => {
+      const ids = practiceRef.current;
+      if (ids.size === 0) return;
+      const kept = keep ? storeRef.current.items.filter((i) => ids.has(i.id)) : [];
+      practiceRef.current = new Set();
+      setPracticeIds(practiceRef.current);
+      const next = withoutPracticeItems(storeRef.current, ids);
+      storeRef.current = next;
+      setStore(next);
+      if (kept.length === 0) return;
+      // Kept: made again as real cards, where they were, in one undoable write.
+      const sorted = [...kept].sort((a, b) => (a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : 0));
+      await write({
+        kind: 'create',
+        creates: sorted.map((i) => {
+          const { status, ...fields } = i.fields;
+          return {
+            id: i.id,
+            type: i.type,
+            fields,
+            ...(typeof status === 'string' ? { place: { status } } : {}),
+          };
+        }),
+      });
+    },
+    [write],
+  );
+
   const items = useMemo(() => new Map(store.items.map((i) => [i.id, i])), [store.items]);
 
-  return { store, items, status, self, write, writeQuiet, receive, refetch, ownerId, scope };
+  return {
+    store,
+    items,
+    status,
+    self,
+    write,
+    writeQuiet,
+    receive,
+    refetch,
+    ownerId,
+    scope,
+    practiceIds,
+    practise,
+    endPractice,
+  };
 }

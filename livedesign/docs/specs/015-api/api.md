@@ -510,7 +510,7 @@ In order, for every inbound frame: a frame over 256 KiB is dropped; a per-sessio
 - **Mutation ops** are rewritten before they go anywhere: `opForTheWire` strips every comment `authorId` (a guest's credential), and `stampCommentAuthor` sets a posted comment's author name and colour to the sending session's presence, whatever the frame claimed. The rewritten op gets the next `seq`, lands in the catch-up log, relays to every other socket, is recorded in the ledger when it is an `el-delta`, and the sender receives a `cursor` frame naming the `seq` its own op took, echoing the op frame's `ref` when it carried one (a positive integer), so the sender knows that op is sequenced.
 - Every outbound op frame to a tab-scoped session is filtered or redacted for its scope (`opForScope`), live and in catch-up.
 
-On `hello` the room builds the session's presence itself (`helloPresence`): the id is a server-minted per-socket random (never the connector's owner id), the role is the verified one, and every claimed string is length-clamped. It then sends the joiner a `cursor` frame, and broadcasts presence (each socket gets the roster minus its own entry).
+On `hello` the room builds the session's presence itself (`helloPresence`): the id is a server-minted per-socket random (never the connector's owner id), the role is the verified one, and every claimed string is length-clamped. It then sends the joiner a `cursor` frame, and broadcasts presence (each socket gets the roster minus its own entry). A repeat `hello` whose presence equals, by value, the one the session already holds broadcasts nothing and notes no multiplayer session: only a first `hello` or a changed one rebuilds the roster, so one socket at the frame-rate cap cannot make the room rebuild every socket's roster. The roster is built by `rosterFrames` (`@liveworkspace/api-kit/room-roster`, every product's room): each entry is serialised once, with its picture and without, and each socket's frame is joined from those strings, so a broadcast to 100 sockets measured 2.5 ms of CPU when each socket's roster was stringified whole and 0.3 ms now.
 
 ### Ordering and catch-up
 
@@ -525,7 +525,7 @@ Besides the design's content (**Storage**), its key-value storage holds:
 
 Per-session state (presence id, verified role, person tag, tab scope, admitting share code, workbench pairing, presence) lives in each socket's serialized attachment, so it survives hibernation; only the rate-cap windows and the catch-up log reset on a wake.
 
-The room's other parts each have a module in `apps/api/src/`: the session attachment and the verified upgrade headers (`room-session.ts`), the role gate on client ops (`room-op-gate.ts`, the [Share roles](../013-workspace/share-roles.md) level ladder), the worker-only internal endpoints (`room-internal.ts`), the access-change closes (`../packages/api-kit/src/room-access.ts`) and the presence roster each socket is sent (`room-roster.ts`).
+The room's other parts each have a module in `apps/api/src/`: the session attachment and the verified upgrade headers (`room-session.ts`), the role gate on client ops (`room-op-gate.ts`, the [Share roles](../013-workspace/share-roles.md) level ladder), the worker-only internal endpoints (`room-internal.ts`), the access-change closes (`../packages/api-kit/src/room-access.ts`) and the presence roster each socket is sent (`room-roster.ts` in `@liveworkspace/api-kit`, shared by every product's room).
 
 ### What the room reports
 

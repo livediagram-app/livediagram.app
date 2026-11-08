@@ -22,7 +22,8 @@ describe('colour-on-themed', () => {
     ]);
   });
 
-  it('reports an arrow\x27s stroke too', () => {
+  // A stored arrow is a retired element with no theme colour fields (part 4 of the element engine).
+  it('leaves a stored arrow’s stroke alone', () => {
     const report = lint(
       themed(
         undefined,
@@ -31,7 +32,7 @@ describe('colour-on-themed', () => {
         arrow('x', 'a', 'b', ['e', 'w'], { strokeColor: '#ff00ff' }),
       ),
     );
-    expect(of(report, 'colour-on-themed').map((f) => f.refs[0])).toEqual(['x']);
+    expect(of(report, 'colour-on-themed')).toEqual([]);
   });
 
   it('leaves theme colours, presets, swatches, marker names and stickies alone', () => {

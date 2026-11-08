@@ -28,6 +28,7 @@ export const SpeechCard = forwardRef(function SpeechCard(
     tail = true,
     children,
     floating,
+    maxWidth,
   }: {
     colour?: string;
     name?: string;
@@ -41,6 +42,8 @@ export const SpeechCard = forwardRef(function SpeechCard(
     children: ReactNode;
     // A floating bubble is read-only and inert to the pointer; the composer takes presses.
     floating?: boolean;
+    // Screen px the card may grow to, past the 240 a spoken line wraps at: livehuddle's the Receptionist holds a row of replies.
+    maxWidth?: number;
   },
   ref: Ref<HTMLDivElement>,
 ) {
@@ -48,10 +51,10 @@ export const SpeechCard = forwardRef(function SpeechCard(
   return (
     <div
       ref={ref}
-      className={`relative max-w-[240px] rounded-2xl border-[1.5px] bg-white px-3 py-2 text-[13px] leading-snug text-slate-800 shadow-lg shadow-slate-900/10 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${
+      className={`relative ${maxWidth ? '' : 'max-w-[240px]'} rounded-2xl border-[1.5px] bg-white px-3 py-2 text-[13px] leading-snug text-slate-800 shadow-lg shadow-slate-900/10 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${
         colour ? '' : 'border-brand-500'
       } ${floating ? 'pointer-events-none select-none' : 'pointer-events-auto'}`}
-      style={tint}
+      style={maxWidth ? { ...tint, maxWidth } : tint}
     >
       {children}
       {name ? (

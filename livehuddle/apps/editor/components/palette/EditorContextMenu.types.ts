@@ -1,12 +1,6 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 import type {
   AnimationSpeed,
-  ArrowEnds,
-  ArrowFlow,
-  ArrowheadShape,
-  ArrowheadSize,
-  ArrowStyle,
-  ArrowThickness,
   BorderRadius,
   BorderStroke,
   BorderStyle,
@@ -27,7 +21,6 @@ import type {
   TextSize,
   TextSizePreset,
 } from '@livehuddle/document';
-import type { ArrowPreset } from '@/components/palette/StylePresets';
 import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
 import type { ShapeColorPreset } from '@/lib/themes';
 
@@ -94,15 +87,6 @@ export type EditorContextMenuProps = {
   onCommitTextColor: (color: string) => void;
   onPreviewFillColor: (color: string) => void;
   onCommitFillColor: (color: string) => void;
-  // The arrowhead's own colour, for a head that should not match its line.
-  onSetArrowheadColor: (color: string) => void;
-  onPreviewArrowheadColor: (color: string) => void;
-  onCommitArrowheadColor: (color: string) => void;
-  // The plate behind an arrow's caption (docs/specs/008-canvas/canvas-and-palette.md). Absent = none, which is
-  // how a label has always drawn.
-  onSetLabelFill: (color: string) => void;
-  onPreviewLabelFill: (color: string) => void;
-  onCommitLabelFill: (color: string) => void;
   onPreviewStrokeColor: (color: string) => void;
   onCommitStrokeColor: (color: string) => void;
   onPreviewBorderStroke: (value: BorderStroke) => void;
@@ -143,6 +127,8 @@ export type EditorContextMenuProps = {
   onSetRoomWalls: (walls: import('@livehuddle/document').RoomWalls) => void;
   // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md): Who Can Speak and Show Cameras.
   onSetStage: (patch: import('./StageMenuSection').StagePatch) => void;
+  // The Receptionist on the tab's first Avatar Pad (docs/specs/008-canvas/receptionist.md "Asking him to leave").
+  onSetPadReceptionist?: (here: boolean) => void;
   // Screen (docs/specs/009-elements/screen-and-room-sign.md): its Video Link, undefined to clear it.
   onSetScreenUrl?: (url: string | undefined) => void;
   // The social pieces (docs/specs/009-elements/social-pieces.md): a World Clock's zones, a Jukebox's source.
@@ -163,17 +149,11 @@ export type EditorContextMenuProps = {
   // Hover-to-preview (docs/specs/010-palette/style-presets.md): on a desktop pointer, hovering a preset tile
   // shows it live on the selected element; it only sticks on click. The
   // `onPreview*` callbacks apply the ephemeral preview; `onPreviewStyleEnd`
-  // reverts it when the pointer leaves the tile without clicking. Shared across
-  // the shape style and arrow preset rows.
+  // reverts it when the pointer leaves the tile without clicking.
   onPreviewShapeColorPreset: (preset: ShapeColorPreset) => void;
-  onPreviewArrowPreset: (preset: ArrowPreset) => void;
   onPreviewStyleEnd: () => void;
-  // Arrow style presets (docs/specs/010-palette/style-presets.md): one-click line looks (pattern / thickness /
-  // optional flow animation) for the selected arrow, plus a reset.
-  onApplyArrowPreset: (preset: ArrowPreset) => void;
-  onResetArrowStyle: () => void;
   // Animated elements: one category per animation set (docs/specs/028-animation/element-animations.md),
-  // a flow animation on arrows, and a glyph animation on icons. `null` clears it. The onSet* commit;
+  // and a glyph animation on icons. `null` clears it. The onSet* commit;
   // the onPreview* play it live on hover (desktop) and onAnimationPreviewEnd reverts when the
   // pointer leaves the tile (the shared useStylePreview flow). A set's handlers write only its
   // members of the selection.
@@ -181,19 +161,15 @@ export type EditorContextMenuProps = {
   onPreviewSetAnimation: (set: AnimationSetId, value: string | null) => void;
   onSetSetAnimationSpeed: (set: AnimationSetId, value: AnimationSpeed) => void;
   onSetSetAnimationRepeat: (set: AnimationSetId, value: boolean) => void;
-  onSetArrowFlow: (value: ArrowFlow | null) => void;
   onSetIconAnimation: (value: IconAnimation | null) => void;
   onSetIconAnimationSpeed: (value: AnimationSpeed) => void;
-  onPreviewArrowFlow: (value: ArrowFlow | null) => void;
   onPreviewIconAnimation: (value: IconAnimation | null) => void;
   onAnimationPreviewEnd: () => void;
-  onSetFlowSpeed: (value: AnimationSpeed) => void;
   // Repeat toggles (docs/specs/008-canvas/canvas-and-palette.md): true (the default) loops, false plays once.
   onSetIconAnimationRepeat: (value: boolean) => void;
-  onSetFlowRepeat: (value: boolean) => void;
   onResetColors: () => void;
-  // Whole-element text formatting — surfaced for arrows that carry a label
-  // (boxed elements format via the inline rich-text toolbar instead).
+  // Whole-element text formatting for the selection (a single boxed element formats via the inline rich-text
+  // toolbar instead).
   onToggleTextBold: () => void;
   onToggleTextItalic: () => void;
   onToggleTextUnderline: () => void;
@@ -208,18 +184,6 @@ export type EditorContextMenuProps = {
   onPreviewFont: (font: string | null) => void;
   onSetPadding: (padding: Padding) => void;
   onPreviewPadding: (padding: Padding) => void;
-  // Arrow Line + Pointer controls (docs/specs/008-canvas/canvas-and-palette.md), surfaced for arrows via the
-  // shared ArrowLine / Pointer controls.
-  onSetArrowThickness: (v: ArrowThickness) => void;
-  onSetArrowStyle: (v: ArrowStyle) => void;
-  onSetArrowStrokeStyle: (v: BorderStyle) => void;
-  // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md).
-  onSetArrowRouteBehind: (v: boolean) => void;
-  // Start exactly at the pinned anchor, out of the fan (arrow-anchors.md).
-  onSetArrowExactStart: (v: boolean) => void;
-  onSetArrowEnds: (v: ArrowEnds) => void;
-  onSetArrowheadSize: (v: ArrowheadSize) => void;
-  onSetArrowheadShape: (v: ArrowheadShape) => void;
   // Morph shape elements to another kind in place (preserving size/colour).
   // Id-scoped: the single menu passes just the clicked element, the multi
   // menu every morphable member. Commit + hover-preview pair.
@@ -260,8 +224,7 @@ export type EditorContextMenuProps = {
   onAssignAction: (elementId: string) => void;
   // The selected elements (multi-selection / group members), so the 'multi'
   // menu can surface the formatting categories that match their types (Colours
-  // / Text / Border for boxed, Line + Pointer for arrows). The format setters
-  // above apply to the whole selection. Duplicate / Group / Export /
-  // Delete are NOT here — the selection toolbar carries those.
+  // / Text / Border for boxed). The format setters above apply to the whole selection. Duplicate / Group / Export /
+  // Delete are NOT here: the selection toolbar carries those.
   selectionElements: Element[];
 };

@@ -920,12 +920,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     },
     rows: [
       tourSwitch('tourSeen', {
-        // The Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
-        label: 'Diagram Tour',
+        // The Diagram tab's tour, Watch It Built (docs/specs/007-editor/watch-it-built.md; the stepped Diagram tour
+        // until 8 November 2026, the welcome tour until October 2026).
+        label: 'Watch It Built',
         event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
         keywords:
           'tour walkthrough onboarding tutorial intro welcome getting started diagram shapes arrows palette replay',
-        description: 'On a Diagram tab: the palette, selecting, the element menu and tabs.',
+        description: 'A cursor builds a small diagram so you can see how it is done.',
         helpArticle: 'diagramTour',
       }),
       tourSwitch('workshopTourSeen', {

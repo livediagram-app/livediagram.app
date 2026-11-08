@@ -9,14 +9,12 @@ import { tileById, tileDisplayName, type PaletteTileDef } from './palette-tile-d
 // --- The element types on the tab --------------------------------------------------------------
 // A tile and an element meet on a signature: the element type, plus the creation-time choice that
 // tells two tiles of one type apart where the element records it (the shape kind and its session,
-// mode or scale; a sticky's workshop kind; a pen; an embed's provider; an
-// arrow's or a line's ends). Where an element does not record the choice, the tiles share a signature and the first in layout order stands for them.
+// mode or scale; a sticky's workshop kind). Where an element does not record the choice, the tiles share a signature and the first in layout order stands for them.
 
 const shapeSig = (kind: string, choice?: string) => `shape:${kind}:${choice ?? ''}`;
 
 /** The signature a tile places, or null for a tile that places no one element type (the icon,
- *  sticker and tech catalogue tiles, the shape pen's recognised shapes, a board's header widget,
- *  the hero and avatar composites). */
+ *  sticker and tech catalogue tiles, a board's header widget, the hero and avatar composites). */
 export function tileSignature(tile: PaletteTileDef): string | null {
   const a = tile.action;
   switch (a.type) {
@@ -27,17 +25,8 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       return null;
     case 'sticky':
       return 'sticky';
-    case 'freehand':
-      return 'freehand:';
-    case 'highlighter':
-      return 'freehand:highlighter';
-    case 'polygon':
-      return 'path';
-    case 'arrow':
-      return a.ends === 'none' ? 'arrow:none' : 'arrow:';
     case 'text':
     case 'image':
-    case 'annotation':
     case 'link-card':
       return a.type;
     default:
@@ -52,10 +41,6 @@ export function elementSignature(el: Element): string {
       return shapeSig(el.shape, el.mode);
     case 'sticky':
       return 'sticky';
-    case 'freehand':
-      return `freehand:${el.pen ?? ''}`;
-    case 'arrow':
-      return el.arrowEnds === 'none' ? 'arrow:none' : 'arrow:';
     default:
       return el.type;
   }

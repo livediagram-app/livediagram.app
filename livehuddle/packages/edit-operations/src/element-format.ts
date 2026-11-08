@@ -4,7 +4,6 @@
 
 import {
   ELEMENT_FIELD_NAMES,
-  isRetiredElementType,
   LIVE_ELEMENT_FIELDS,
   STICKY_PRESETS,
   TEXT_PX_MAX,
@@ -15,8 +14,14 @@ import {
   withArticle,
 } from '@livehuddle/document';
 import { fillSlotNames } from './colours';
-import { aliasesOf, ARROW_STYLES, BORDER_STYLES, TEXT_SIZES } from './fields';
-import { AGENT_SHAPE_KINDS, buildKind, NOT_ADDED, OTHER_KINDS } from './operations/add-kind';
+import { aliasesOf, BORDER_STYLES, TEXT_SIZES } from './fields';
+import {
+  AGENT_SHAPE_KINDS,
+  buildKind,
+  NOT_ADDED,
+  OTHER_KINDS,
+  type Built,
+} from './operations/add-kind';
 
 export const SCHEMA_KIND_MAX_TOKENS = 300;
 
@@ -41,18 +46,20 @@ export function addableKinds(): string[] {
   return [...OTHER_KINDS, ...AGENT_SHAPE_KINDS];
 }
 
+// A kind `add` refuses because livehuddle no longer has it, not because the editor makes it.
+const isRetiredKind = (kind: string) => NOT_ADDED[kind]!.includes('no longer supported');
+
 export function elementKindsText(): string {
   return [
     'Element kinds: add <kind> makes one; livehuddle schema <kind> shows its fields.',
     `  ${OTHER_KINDS.join(', ')}`,
     '  shapes:',
     ...wrapped(AGENT_SHAPE_KINDS, '    ', ', '),
-    '  arrow: connect <a> -> <b>',
     `  ${Object.keys(NOT_ADDED)
-      .filter((k) => k !== 'arrow' && !isRetiredElementType(k))
+      .filter((k) => !isRetiredKind(k))
       .join(', ')}: made in the editor`,
-    // The retired element types (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
-    `  ${Object.keys(NOT_ADDED).filter(isRetiredElementType).join(', ')}: no longer supported in livehuddle`,
+    // The retired kinds (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+    `  ${Object.keys(NOT_ADDED).filter(isRetiredKind).join(', ')}: no longer supported in livehuddle`,
   ].join('\n');
 }
 
@@ -61,7 +68,12 @@ const fillValues = (el: Element) =>
     ? [...STICKY_PRESETS.map((p) => p.id.replace(/^sticky-/, '')), '#rrggbb']
     : [...fillSlotNames(THEMES[0]!).keys(), '#rrggbb'];
 
-function aliasValue(el: Element, alias: ReturnType<typeof aliasesOf>[number]): string {
+type Alias = ReturnType<typeof aliasesOf>[number];
+// `line` is a stored arrow's alias, and a stored arrow is never a kind `add` makes (part 4 of the element engine).
+type MadeAlias = Exclude<Alias, 'line'>;
+const isMadeAlias = (alias: Alias): alias is MadeAlias => alias !== 'line';
+
+function aliasValue(el: Element, alias: MadeAlias): string {
   switch (alias) {
     case 'label':
     case 'note':
@@ -77,8 +89,6 @@ function aliasValue(el: Element, alias: ReturnType<typeof aliasesOf>[number]): s
       return BORDER_STYLES.join('|');
     case 'text':
       return `${TEXT_SIZES.join('|')}|${TEXT_PX_MIN}-${TEXT_PX_MAX}`;
-    case 'line':
-      return ARROW_STYLES.join('|');
   }
 }
 
@@ -124,6 +134,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   corridor: ['variant'],
   // docs/specs/009-elements/office.md "Stage": who may speak from it, and whether its speakers are seen tab-wide.
   stage: ['stageSpeakers', 'stageCameras'],
+  // docs/specs/008-canvas/receptionist.md "Asking him to leave": whether the pad's Receptionist was asked to leave.
+  'avatar-pad': ['receptionistLeft'],
   // docs/specs/009-elements/social-pieces.md: a world clock's zones and a jukebox's source.
   'world-clock': ['clockZones'],
   jukebox: ['jukeboxSource', 'chairFacing'],
@@ -137,18 +149,16 @@ function storedFieldsOf(kind: string, el: Element): readonly string[] {
   return ELEMENT_FIELD_NAMES[el.type].filter((f) => !HIDDEN_FIELDS.has(f));
 }
 
-// One kind's format, or null for a kind `add` and `connect` do not know.
+// One kind's format, or null for a kind `add` does not make.
 export function elementFormatText(kind: string): string | null {
-  const isArrow = kind === 'arrow';
-  if (!isArrow && !addableKinds().includes(kind)) return null;
-  const built = isArrow ? null : buildKind(kind);
-  const el = (built && 'el' in built ? built.el : { type: 'arrow' }) as Element;
-  const head = isArrow
-    ? 'arrow: connect <a> -> <b> [id=<id>] key=value… [again]'
-    : `${kind}: ${el.type === 'shape' ? 'a shape' : withArticle(el.type)}. add ${kind} [id=<id>] key=value… [<placement>]`;
-  const size =
-    'width' in el ? [`Size: ${el.width}×${el.height} at first, grown to fit its label.`] : [];
-  const aliases = aliasesOf(el).map((a) => `${a}=${aliasValue(el, a)}`);
+  if (!addableKinds().includes(kind)) return null;
+  // Every kind `add` makes builds, as a box: the refused kinds are not addable (part 4 of the element engine).
+  const { el } = buildKind(kind) as Built;
+  const head = `${kind}: ${el.type === 'shape' ? 'a shape' : withArticle(el.type)}. add ${kind} [id=<id>] key=value… [<placement>]`;
+  const size = [`Size: ${el.width}×${el.height} at first, grown to fit its label.`];
+  const aliases = aliasesOf(el)
+    .filter(isMadeAlias)
+    .map((a) => `${a}=${aliasValue(el, a)}`);
   const fields = storedFieldsOf(kind, el);
   return [
     head,

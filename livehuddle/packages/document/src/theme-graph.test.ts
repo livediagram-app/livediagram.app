@@ -1,9 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createPinnedArrow, createShape } from './factories';
+import { createShape } from './factories';
 import type { Element } from './index';
 import {
   recolourElementsForTheme,
-  resetArrowsToTheme,
   resetThemeElementsToTheme,
   switchThemeElements,
   TRUNK_FALLBACK,
@@ -16,6 +15,14 @@ import { THEMES } from './themes-data';
 
 const theme = (id: string): ThemeDefinition => THEMES.find((t) => t.id === id)!;
 const box = (id: string): Element => ({ ...createShape('square', 0, 0), id });
+// A stored arrow pinned at both ends: retired, but read for which boxes hang together (./hierarchy).
+let arrows = 0;
+const createPinnedArrow = (from: string, fromAnchor: 's', to: string, toAnchor: 'n'): Element => ({
+  id: `arrow-${++arrows}`,
+  type: 'arrow',
+  from: { kind: 'pinned', elementId: from, anchor: fromAnchor },
+  to: { kind: 'pinned', elementId: to, anchor: toAnchor },
+});
 const fillOf = (elements: Element[], id: string) =>
   (elements.find((el) => el.id === id) as { fillColor?: string }).fillColor;
 
@@ -94,12 +101,10 @@ describe('wrapper logs', () => {
     recolourElementsForTheme(tree(), rainbow);
     switchThemeElements(tree(), rainbow, theme('pastel'));
     resetThemeElementsToTheme(tree(), rainbow);
-    resetArrowsToTheme(tree(), rainbow);
     expect(info.mock.calls.map((c): unknown => c[0])).toEqual([
       '[theme-graph] recolour theme=rainbow elements=5 branches=2',
       '[theme-graph] switch theme=pastel elements=5 branches=2',
       '[theme-graph] reset theme=rainbow elements=5 branches=2',
-      '[theme-graph] reset-arrows theme=rainbow elements=5 branches=2',
     ]);
   });
 
@@ -109,7 +114,6 @@ describe('wrapper logs', () => {
     recolourElementsForTheme(tree(), single);
     switchThemeElements(tree(), single, single);
     resetThemeElementsToTheme(tree(), single);
-    resetArrowsToTheme(tree(), single);
     expect(info).not.toHaveBeenCalled();
   });
 });

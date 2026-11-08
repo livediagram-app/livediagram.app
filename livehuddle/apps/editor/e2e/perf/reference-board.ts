@@ -1,17 +1,13 @@
 // The reference board (docs/specs/008-canvas/canvas-performance.md "The reference board"): one
 // synthetic board, built from a seed, so every run of the performance probe measures the same thing
-// and no user content is involved. 1,000 elements in the mix real boards have, spread over four
-// screens by three, every arrow pinned from a shape to one of its nearest neighbours and routed
-// behind boxes as drawn.
+// and no user content is involved. 1,000 elements of the kinds livehuddle makes, spread over four
+// screens by three. (Its arrows, pen strokes and paths left with the element engine's part 4,
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine".)
 
 import {
-  createFreehand,
-  createPath,
-  createPinnedArrow,
   createShape,
   createSticky,
   createText,
-  type Anchor,
   type Element,
   type ShapeKind,
 } from '@livehuddle/document';
@@ -21,22 +17,16 @@ export const REFERENCE_SEED = 1;
 export const REFERENCE_COUNT = 1000;
 // Four 1440 px screens wide, three 900 px screens high.
 export const REFERENCE_AREA = { width: 5760, height: 2700 };
-// An arrow joins a shape to one of this many nearest shapes, as real diagrams join neighbours.
-export const ARROW_NEIGHBOURS = 3;
 
 // The spec's mix, as shares of the board.
 const MIX = [
-  ['shape', 0.4],
-  ['arrow', 0.3],
-  ['freehand', 0.1],
-  ['text', 0.1],
-  ['path', 0.05],
-  ['sticky', 0.05],
+  ['shape', 0.6],
+  ['text', 0.25],
+  ['sticky', 0.15],
 ] as const;
 type Kind = (typeof MIX)[number][0];
 
 const SHAPE_KINDS: ShapeKind[] = ['square', 'circle', 'diamond', 'cylinder'];
-const SIDES: Anchor[] = ['n', 'e', 's', 'w'];
 
 // mulberry32: a small, well-mixed 32-bit PRNG, the same numbers on every machine.
 function prng(seed: number): () => number {
@@ -67,68 +57,21 @@ export function buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COU
     y: Math.round(rand() * (REFERENCE_AREA.height - h)),
   });
 
-  // Everything but the arrows first, so each arrow can find its shape's neighbours.
-  const placed = kinds.map((kind, i): Element | null => {
+  return kinds.map((kind, i): Element => {
     const id = `ref-${i}`;
     switch (kind) {
       case 'shape': {
         const shape = createShape(pick(SHAPE_KINDS), 0, 0);
         return { ...shape, ...at(shape.width, shape.height), id, label: `Step ${i}` };
       }
-      case 'arrow':
-        return null;
-      case 'freehand': {
-        const { x, y } = at(220, 120);
-        const points = Array.from({ length: 24 }, (_, k) => ({
-          x: x + k * 9,
-          y: y + 60 + Math.sin(k / 3 + rand()) * 50,
-        }));
-        return { ...createFreehand(points, false), id };
-      }
       case 'text': {
         const text = createText(0, 0);
         return { ...text, ...at(text.width, text.height), id, label: `Note ${i}` };
-      }
-      case 'path': {
-        const { x, y } = at(160, 120);
-        const closed = i % 2 === 1;
-        const corners = [
-          { x, y },
-          { x: x + 160, y: y + 20 },
-          { x: x + 120, y: y + 120 },
-          { x: x + 20, y: y + 90 },
-        ].map((p) => ({ ...p, mode: 'corner' as const }));
-        const path = createPath(corners, closed);
-        return { ...path, id, ...(closed ? { fillColor: '#bfdbfe' } : {}) };
       }
       case 'sticky': {
         const sticky = createSticky(0, 0);
         return { ...sticky, ...at(sticky.width, sticky.height), id, label: `Idea ${i}` };
       }
     }
-  });
-  const shapes = placed.filter(
-    (el): el is Extract<Element, { type: 'shape' }> => el?.type === 'shape',
-  );
-  const centre = (el: (typeof shapes)[number]) => ({
-    x: el.x + el.width / 2,
-    y: el.y + el.height / 2,
-  });
-  const nearest = (from: (typeof shapes)[number]) => {
-    const c = centre(from);
-    return shapes
-      .filter((el) => el !== from)
-      .sort(
-        (a, b) =>
-          Math.hypot(centre(a).x - c.x, centre(a).y - c.y) -
-          Math.hypot(centre(b).x - c.x, centre(b).y - c.y),
-      )
-      .slice(0, ARROW_NEIGHBOURS);
-  };
-  return placed.map((el, i) => {
-    if (el) return el;
-    const from = pick(shapes);
-    const to = pick(nearest(from));
-    return { ...createPinnedArrow(from.id, pick(SIDES), to.id, pick(SIDES)), id: `ref-${i}` };
   });
 }

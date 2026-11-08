@@ -10,8 +10,6 @@
 // rendering.
 
 import {
-  arrowLabelFontStack,
-  arrowLabelPass,
   isBoxed,
   paintOrder,
   exportFontIds,
@@ -29,7 +27,6 @@ import {
   EXPORT_PADDING,
   r2,
   supportsShadow,
-  svgArrow,
   sketchBackdropIds,
   svgBoxed,
   svgFontDefs,
@@ -42,6 +39,7 @@ import {
   resolveStickerArtLoaded,
 } from '@liveworkspace/workbench/lib/icon-registry';
 import { drawBoxed } from './export-tab-canvas-draw';
+import { svgRetiredArrowMarkup } from './retired-arrow-card';
 import type { ExportImageMap } from './export-tab-images';
 
 // Shared options for the image exports (PNG / SVG / PDF). `pattern` paints the tab's backdrop pattern (grid / dots /
@@ -139,14 +137,9 @@ export async function renderTabToCanvas(
   // `ordered` is the canvas's paint order, frames first (docs/specs/006-document/layers.md "Stacking").
   const els = tab.elements;
   const ordered = paintOrder(tab.elements);
-  // Every caption laid out once, as the canvas and the SVG export do
-  // (docs/specs/008-canvas/arrow-labels.md); the bounds include the plates.
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
   const backdrops = sketchBackdropIds(els, tab.finish);
-  const labels = arrowLabelPass(tab.elements, {
-    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
-  });
-  const bounds = contentBounds(els, labels);
+  const bounds = contentBounds(els);
   const pad = EXPORT_PADDING;
   const draw = bounds;
   // 2x for crisp output, lowered so no side passes the largest canvas every browser draws.
@@ -170,9 +163,7 @@ export async function renderTabToCanvas(
   // paper being exported onto (docs/specs/007-editor/editor-app.md), so a dark canvas exports dark-canvas
   // elements rather than pale ones.
   const surface = canvasSurface(bgColor);
-  // The paper under the content: a hollow arrowhead is filled with it, as on the canvas.
-  const paper = bgColor;
-  ctx.fillStyle = paper;
+  ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, w / scale, h / scale);
   const bg = backgroundPatternDefs(tab, opts);
   if (bg) {
@@ -250,11 +241,11 @@ export async function renderTabToCanvas(
       // Fall through to drawBoxed's plain box below.
     }
   }
-  // One pass in the canvas's paint order (docs/specs/006-document/layers.md): arrows and boxes
+  // One pass in the canvas's paint order (docs/specs/006-document/layers.md): stored arrows and boxes
   // interleave by array order, so an arrow sent behind a box stays behind it.
-  // Arrows rasterise from the SAME markup the SVG export emits (heads, fans,
-  // wrapped captions, knockouts, route-behind gaps), batched: each run of
-  // consecutive arrows becomes one full-size layer. Endpoint resolution keeps
+  // A stored arrow's placeholder (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine")
+  // rasterises from the SAME markup the SVG export emits, batched: each run of
+  // consecutive arrows becomes one full-size layer. End resolution keeps
   // the FULL list, so an arrow pinned to a hidden element still lands where
   // the canvas draws it.
   const ax = bounds.x - pad;
@@ -272,18 +263,9 @@ export async function renderTabToCanvas(
   };
   for (const el of ordered) {
     if (el.type === 'arrow') {
-      const svg = svgArrow(
-        el,
-        tab.elements,
-        surface,
-        tabFont,
-        labels,
-        undefined,
-        els,
-        paper,
-        tab.finish,
+      arrowRun.push(
+        svgRetiredArrowMarkup(el, tab.elements, { surface, tabFont, tabFinish: tab.finish }),
       );
-      arrowRun.push(svg);
       continue;
     }
     await flushArrows();
@@ -330,10 +312,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const ordered = paintOrder(tab.elements);
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
   const backdrops = sketchBackdropIds(els, tab.finish);
-  const labels = arrowLabelPass(tab.elements, {
-    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
-  });
-  const bounds = contentBounds(els, labels);
+  const bounds = contentBounds(els);
   const pad = EXPORT_PADDING;
   const draw = bounds;
   const vbX = draw.x - pad;
@@ -343,9 +322,6 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const bgColor = tab.backgroundColor ?? EXPORT_BG;
   // See the PNG path: unpainted elements take the exported paper's ink.
   const surface = canvasSurface(bgColor);
-  // As the PNG path: a hollow head takes this paper, and an arrow breaks only
-  // behind the boxes this export draws (`els`), never a hidden one.
-  const paper = bgColor;
   const parts: string[] = [];
   parts.push(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
@@ -371,30 +347,33 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
       `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${bg.fill}"/>`,
     );
   }
-  // Boxed elements first, then arrows on top (same z-order as the canvas), frame sections behind
-  // the rest (docs/specs/008-canvas/canvas-and-palette.md).
+  // The canvas's paint order (docs/specs/006-document/layers.md "Stacking"): a stored arrow's placeholder
+  // interleaves with the boxes by array order, as on the canvas.
   const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
   {
     const inner: string[] = [];
     for (const el of ordered) {
-      if (el.type !== 'arrow')
+      if (el.type === 'arrow') {
         inner.push(
-          svgBoxed(el, {
-            resolveImageHref,
-            resolveIconArt: resolveIconArtLoaded,
-            resolveStickerArt: resolveStickerArtLoaded,
+          svgRetiredArrowMarkup(el, tab.elements, {
+            surface,
             tabFont: tab.font,
             tabFinish: tab.finish,
-            sketchBackdrop: backdrops.has(el.id),
-            surface,
           }),
         );
-    }
-    for (const el of ordered) {
-      if (el.type === 'arrow')
-        inner.push(
-          svgArrow(el, tab.elements, surface, tab.font, labels, undefined, els, paper, tab.finish),
-        );
+        continue;
+      }
+      inner.push(
+        svgBoxed(el, {
+          resolveImageHref,
+          resolveIconArt: resolveIconArtLoaded,
+          resolveStickerArt: resolveStickerArtLoaded,
+          tabFont: tab.font,
+          tabFinish: tab.finish,
+          sketchBackdrop: backdrops.has(el.id),
+          surface,
+        }),
+      );
     }
     parts.push(inner.join('\n'));
   }

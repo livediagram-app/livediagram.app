@@ -51,27 +51,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "Anchor": {
-    "enum": [
-      "n",
-      "nne",
-      "ne",
-      "ene",
-      "e",
-      "ese",
-      "se",
-      "sse",
-      "s",
-      "ssw",
-      "sw",
-      "wsw",
-      "w",
-      "wnw",
-      "nw",
-      "nnw"
-    ],
-    "type": "string"
-  },
   "AnimationSpeed": {
     "enum": [
       "slowest",
@@ -80,117 +59,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fast"
     ],
     "type": "string"
-  },
-  "AnnotationElement": {
-    "additionalProperties": false,
-    "properties": {
-      "action": {
-        "$ref": "#/components/schemas/ElementAction"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "aspectLocked": {
-        "type": "boolean"
-      },
-      "commentThread": {
-        "$ref": "#/components/schemas/CommentThread"
-      },
-      "fillColor": {
-        "type": "string"
-      },
-      "font": {
-        "type": "string"
-      },
-      "headerFill": {
-        "type": "string"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "$ref": "#/components/schemas/ElementId"
-      },
-      "label": {
-        "type": "string"
-      },
-      "link": {
-        "$ref": "#/components/schemas/ElementLink"
-      },
-      "note": {
-        "type": "string"
-      },
-      "noteRich": {
-        "items": {
-          "$ref": "#/components/schemas/TextRun"
-        },
-        "type": "array"
-      },
-      "opacity": {
-        "type": "number"
-      },
-      "padding": {
-        "$ref": "#/components/schemas/Padding"
-      },
-      "rotation": {
-        "type": "number"
-      },
-      "strokeColor": {
-        "type": "string"
-      },
-      "textAlignX": {
-        "$ref": "#/components/schemas/TextAlignX"
-      },
-      "textAlignY": {
-        "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textBold": {
-        "type": "boolean"
-      },
-      "textColor": {
-        "type": "string"
-      },
-      "textItalic": {
-        "type": "boolean"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/TextSize"
-      },
-      "textStrikethrough": {
-        "type": "boolean"
-      },
-      "textUnderline": {
-        "type": "boolean"
-      },
-      "type": {
-        "const": "annotation",
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      },
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "x",
-      "y",
-      "width",
-      "height"
-    ],
-    "type": "object"
   },
   "ApiToken": {
     "additionalProperties": false,
@@ -266,254 +134,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "at"
     ],
     "type": "object"
-  },
-  "ArrowElement": {
-    "additionalProperties": false,
-    "properties": {
-      "arrowEnds": {
-        "$ref": "#/components/schemas/ArrowEnds"
-      },
-      "arrowStyle": {
-        "$ref": "#/components/schemas/ArrowStyle"
-      },
-      "arrowheadColor": {
-        "type": "string"
-      },
-      "arrowheadShape": {
-        "$ref": "#/components/schemas/ArrowheadShape"
-      },
-      "arrowheadSize": {
-        "$ref": "#/components/schemas/ArrowheadSize"
-      },
-      "arrowheadStartShape": {
-        "$ref": "#/components/schemas/ArrowheadShape"
-      },
-      "curveOffset": {
-        "additionalProperties": false,
-        "properties": {
-          "dx": {
-            "type": "number"
-          },
-          "dy": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "dx",
-          "dy"
-        ],
-        "type": "object"
-      },
-      "curvePoints": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "dx": {
-              "type": "number"
-            },
-            "dy": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "dx",
-            "dy"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "elbowOffset": {
-        "additionalProperties": false,
-        "properties": {
-          "dx": {
-            "type": "number"
-          },
-          "dy": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "dx",
-          "dy"
-        ],
-        "type": "object"
-      },
-      "exactEnd": {
-        "type": "boolean"
-      },
-      "exactStart": {
-        "type": "boolean"
-      },
-      "finish": {
-        "$ref": "#/components/schemas/Finish"
-      },
-      "flow": {
-        "$ref": "#/components/schemas/ArrowFlow"
-      },
-      "flowRepeat": {
-        "type": "boolean"
-      },
-      "flowSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "font": {
-        "type": "string"
-      },
-      "from": {
-        "$ref": "#/components/schemas/Endpoint"
-      },
-      "id": {
-        "$ref": "#/components/schemas/ElementId"
-      },
-      "label": {
-        "type": "string"
-      },
-      "labelFill": {
-        "type": "string"
-      },
-      "labelMaxWidth": {
-        "type": "number"
-      },
-      "labelOffset": {
-        "additionalProperties": false,
-        "properties": {
-          "offset": {
-            "type": "number"
-          },
-          "t": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "t",
-          "offset"
-        ],
-        "type": "object"
-      },
-      "link": {
-        "$ref": "#/components/schemas/ElementLink"
-      },
-      "opacity": {
-        "type": "number"
-      },
-      "penColour": {
-        "$ref": "#/components/schemas/PenColourName"
-      },
-      "penTextColour": {
-        "$ref": "#/components/schemas/PenColourName"
-      },
-      "routeBehind": {
-        "type": "boolean"
-      },
-      "strokeColor": {
-        "type": "string"
-      },
-      "strokeStyle": {
-        "$ref": "#/components/schemas/BorderStyle"
-      },
-      "strokeSwatch": {
-        "$ref": "#/components/schemas/QuickSwatchSlot"
-      },
-      "strokeWidth": {
-        "type": "number"
-      },
-      "textBold": {
-        "type": "boolean"
-      },
-      "textColor": {
-        "type": "string"
-      },
-      "textItalic": {
-        "type": "boolean"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/TextSize"
-      },
-      "textStrikethrough": {
-        "type": "boolean"
-      },
-      "textUnderline": {
-        "type": "boolean"
-      },
-      "to": {
-        "$ref": "#/components/schemas/Endpoint"
-      },
-      "type": {
-        "const": "arrow",
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "from",
-      "to"
-    ],
-    "type": "object"
-  },
-  "ArrowEnds": {
-    "enum": [
-      "from",
-      "to",
-      "both",
-      "none"
-    ],
-    "type": "string"
-  },
-  "ArrowFlow": {
-    "enum": [
-      "dashes",
-      "dots",
-      "beads",
-      "pulse",
-      "grow",
-      "glow",
-      "heartbeat",
-      "breathe",
-      "shimmer",
-      "signal",
-      "draw",
-      "comet",
-      "rainbow",
-      "strobe",
-      "wind"
-    ],
-    "type": "string"
-  },
-  "ArrowStyle": {
-    "enum": [
-      "straight",
-      "curved",
-      "angled"
-    ],
-    "type": "string"
-  },
-  "ArrowheadShape": {
-    "enum": [
-      "triangle",
-      "triangle-hollow",
-      "line",
-      "circle",
-      "circle-hollow",
-      "diamond",
-      "diamond-hollow",
-      "one",
-      "zero-or-one",
-      "many",
-      "zero-or-many",
-      "one-or-many"
-    ],
-    "type": "string"
-  },
-  "ArrowheadSize": {
-    "enum": [
-      "small",
-      "medium",
-      "large",
-      "extra-large"
-    ],
-    "type": "string"
   },
   "BackgroundPattern": {
     "enum": [
@@ -602,15 +222,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/ImageElement"
-      },
-      {
-        "$ref": "#/components/schemas/FreehandElement"
-      },
-      {
-        "$ref": "#/components/schemas/PathElement"
-      },
-      {
-        "$ref": "#/components/schemas/AnnotationElement"
       },
       {
         "$ref": "#/components/schemas/LinkCardElement"
@@ -1997,7 +1608,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/BoxedElement"
       },
       {
-        "$ref": "#/components/schemas/ArrowElement"
+        "$ref": "#/components/schemas/RetiredArrowElement"
       }
     ]
   },
@@ -2296,73 +1907,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "Endpoint": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "kind": {
-            "const": "free",
-            "type": "string"
-          },
-          "x": {
-            "type": "number"
-          },
-          "y": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "kind",
-          "x",
-          "y"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "anchor": {
-            "$ref": "#/components/schemas/Anchor"
-          },
-          "elementId": {
-            "$ref": "#/components/schemas/ElementId"
-          },
-          "kind": {
-            "const": "pinned",
-            "type": "string"
-          }
-        },
-        "required": [
-          "kind",
-          "elementId",
-          "anchor"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "arrowId": {
-            "$ref": "#/components/schemas/ElementId"
-          },
-          "kind": {
-            "const": "on-arrow",
-            "type": "string"
-          },
-          "t": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "kind",
-          "arrowId",
-          "t"
-        ],
-        "type": "object"
-      }
-    ]
-  },
   "FieldChange": {
     "additionalProperties": false,
     "properties": {
@@ -2499,152 +2043,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name",
       "createdAt",
       "updatedAt"
-    ],
-    "type": "object"
-  },
-  "FreehandElement": {
-    "additionalProperties": false,
-    "properties": {
-      "action": {
-        "$ref": "#/components/schemas/ElementAction"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "aspectLocked": {
-        "type": "boolean"
-      },
-      "borderRadius": {
-        "$ref": "#/components/schemas/BorderRadius"
-      },
-      "closed": {
-        "type": "boolean"
-      },
-      "commentThread": {
-        "$ref": "#/components/schemas/CommentThread"
-      },
-      "fillColor": {
-        "type": "string"
-      },
-      "font": {
-        "type": "string"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "$ref": "#/components/schemas/ElementId"
-      },
-      "label": {
-        "type": "string"
-      },
-      "link": {
-        "$ref": "#/components/schemas/ElementLink"
-      },
-      "note": {
-        "type": "string"
-      },
-      "noteRich": {
-        "items": {
-          "$ref": "#/components/schemas/TextRun"
-        },
-        "type": "array"
-      },
-      "opacity": {
-        "type": "number"
-      },
-      "packedPoints": {
-        "description": "The stroke's points, normalised into its box, and a pen's pressure at each when it reported one, packed into one block: base64 of a version byte, a flags byte and a little-endian record per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.",
-        "format": "byte",
-        "type": "string"
-      },
-      "padding": {
-        "$ref": "#/components/schemas/Padding"
-      },
-      "pen": {
-        "const": "highlighter",
-        "type": "string"
-      },
-      "penColour": {
-        "$ref": "#/components/schemas/PenColourName"
-      },
-      "penWidth": {
-        "type": "number"
-      },
-      "rotation": {
-        "type": "number"
-      },
-      "straightEdges": {
-        "type": "boolean"
-      },
-      "streamline": {
-        "type": "number"
-      },
-      "strokeColor": {
-        "type": "string"
-      },
-      "strokeStyle": {
-        "$ref": "#/components/schemas/BorderStyle"
-      },
-      "strokeWidth": {
-        "$ref": "#/components/schemas/BorderStroke"
-      },
-      "textAlignX": {
-        "$ref": "#/components/schemas/TextAlignX"
-      },
-      "textAlignY": {
-        "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textBold": {
-        "type": "boolean"
-      },
-      "textColor": {
-        "type": "string"
-      },
-      "textItalic": {
-        "type": "boolean"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/TextSize"
-      },
-      "textStrikethrough": {
-        "type": "boolean"
-      },
-      "textUnderline": {
-        "type": "boolean"
-      },
-      "themeLockFill": {
-        "type": "boolean"
-      },
-      "type": {
-        "const": "freehand",
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      },
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "x",
-      "y",
-      "width",
-      "height",
-      "packedPoints",
-      "closed"
     ],
     "type": "object"
   },
@@ -3853,202 +3251,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "PathElement": {
-    "additionalProperties": false,
-    "properties": {
-      "action": {
-        "$ref": "#/components/schemas/ElementAction"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "aspectLocked": {
-        "type": "boolean"
-      },
-      "borderRadius": {
-        "$ref": "#/components/schemas/BorderRadius"
-      },
-      "closed": {
-        "type": "boolean"
-      },
-      "commentThread": {
-        "$ref": "#/components/schemas/CommentThread"
-      },
-      "fillColor": {
-        "type": "string"
-      },
-      "fillSwatch": {
-        "$ref": "#/components/schemas/QuickSwatchSlot"
-      },
-      "font": {
-        "type": "string"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "$ref": "#/components/schemas/ElementId"
-      },
-      "label": {
-        "type": "string"
-      },
-      "link": {
-        "$ref": "#/components/schemas/ElementLink"
-      },
-      "nodes": {
-        "items": {
-          "$ref": "#/components/schemas/PathNode"
-        },
-        "type": "array"
-      },
-      "note": {
-        "type": "string"
-      },
-      "noteRich": {
-        "items": {
-          "$ref": "#/components/schemas/TextRun"
-        },
-        "type": "array"
-      },
-      "opacity": {
-        "type": "number"
-      },
-      "padding": {
-        "$ref": "#/components/schemas/Padding"
-      },
-      "penColour": {
-        "$ref": "#/components/schemas/PenColourName"
-      },
-      "rotation": {
-        "type": "number"
-      },
-      "strokeColor": {
-        "type": "string"
-      },
-      "strokeStyle": {
-        "$ref": "#/components/schemas/BorderStyle"
-      },
-      "strokeSwatch": {
-        "$ref": "#/components/schemas/QuickSwatchSlot"
-      },
-      "strokeWidth": {
-        "$ref": "#/components/schemas/BorderStroke"
-      },
-      "subpaths": {
-        "items": {
-          "items": {
-            "$ref": "#/components/schemas/PathNode"
-          },
-          "type": "array"
-        },
-        "type": "array"
-      },
-      "textAlignX": {
-        "$ref": "#/components/schemas/TextAlignX"
-      },
-      "textAlignY": {
-        "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textBold": {
-        "type": "boolean"
-      },
-      "textColor": {
-        "type": "string"
-      },
-      "textItalic": {
-        "type": "boolean"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/TextSize"
-      },
-      "textStrikethrough": {
-        "type": "boolean"
-      },
-      "textUnderline": {
-        "type": "boolean"
-      },
-      "type": {
-        "const": "path",
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      },
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "x",
-      "y",
-      "width",
-      "height",
-      "nodes",
-      "closed"
-    ],
-    "type": "object"
-  },
-  "PathHandleMode": {
-    "enum": [
-      "corner",
-      "mirrored",
-      "aligned"
-    ],
-    "type": "string"
-  },
-  "PathNode": {
-    "additionalProperties": false,
-    "properties": {
-      "handleIn": {
-        "$ref": "#/components/schemas/PathPoint"
-      },
-      "handleOut": {
-        "$ref": "#/components/schemas/PathPoint"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/PathHandleMode"
-      },
-      "nx": {
-        "type": "number"
-      },
-      "ny": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "mode",
-      "nx",
-      "ny"
-    ],
-    "type": "object"
-  },
-  "PathPoint": {
-    "additionalProperties": false,
-    "properties": {
-      "nx": {
-        "type": "number"
-      },
-      "ny": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "nx",
-      "ny"
-    ],
-    "type": "object"
-  },
   "PenColourName": {
     "anyOf": [
       {
@@ -4393,6 +3595,152 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "RetiredAnchor": {
+    "enum": [
+      "n",
+      "nne",
+      "ne",
+      "ene",
+      "e",
+      "ese",
+      "se",
+      "sse",
+      "s",
+      "ssw",
+      "sw",
+      "wsw",
+      "w",
+      "wnw",
+      "nw",
+      "nnw"
+    ],
+    "type": "string"
+  },
+  "RetiredArrowElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "arrowEnds": {
+        "enum": [
+          "from",
+          "to",
+          "both",
+          "none"
+        ],
+        "type": "string"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "from": {
+        "$ref": "#/components/schemas/RetiredEndpoint"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "to": {
+        "$ref": "#/components/schemas/RetiredEndpoint"
+      },
+      "type": {
+        "const": "arrow",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "from",
+      "to"
+    ],
+    "type": "object"
+  },
+  "RetiredEndpoint": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "free",
+            "type": "string"
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "kind",
+          "x",
+          "y"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "anchor": {
+            "$ref": "#/components/schemas/RetiredAnchor"
+          },
+          "elementId": {
+            "$ref": "#/components/schemas/ElementId"
+          },
+          "kind": {
+            "const": "pinned",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "elementId",
+          "anchor"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "arrowId": {
+            "$ref": "#/components/schemas/ElementId"
+          },
+          "kind": {
+            "const": "on-arrow",
+            "type": "string"
+          },
+          "t": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "kind",
+          "arrowId",
+          "t"
+        ],
+        "type": "object"
+      }
+    ]
+  },
   "RetiredTypeElement": {
     "additionalProperties": false,
     "properties": {
@@ -4486,7 +3834,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "type": {
         "enum": [
           "video",
-          "table"
+          "table",
+          "freehand",
+          "path",
+          "annotation"
         ],
         "type": "string"
       },
@@ -4789,6 +4140,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "reaction": {
         "$ref": "#/components/schemas/Reaction"
+      },
+      "receptionistLeft": {
+        "type": "boolean"
       },
       "richText": {
         "items": {

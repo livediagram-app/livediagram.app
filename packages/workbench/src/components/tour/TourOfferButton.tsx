@@ -34,9 +34,12 @@ export function TourOfferButton({ labelled = true }: { labelled?: boolean }) {
     // oxlint-disable-next-line react/exhaustive-deps
   }, [id]);
   if (!offer) return null;
-  const label = startTourLabel(offer.name);
+  const label = offer.label ?? startTourLabel(offer.name);
   return (
-    <HoverCard title={label} description="A short guided walk round it, on your own work.">
+    <HoverCard
+      title={label}
+      description={offer.description ?? 'A short guided walk round it, on your own work.'}
+    >
       <button
         type="button"
         onClick={offer.start}

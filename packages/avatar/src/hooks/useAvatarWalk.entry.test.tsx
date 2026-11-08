@@ -38,7 +38,7 @@ describe('useAvatarWalk entering from a button', () => {
   it('brings a low spot out from behind the bottom chrome, adding to the view', () => {
     // 760 px down an 800 px view: 80 px inside the 120 px follow margin.
     const { result, setViewportOffset } = pressAt({ x: 500, y: 760 });
-    expect(result.current.pos).toEqual({ x: 500, y: 760 });
+    expect(result.current.readPos()).toEqual({ x: 500, y: 760 });
     expect(setViewportOffset).toHaveBeenCalledTimes(1);
     expect(setViewportOffset).toHaveBeenCalledWith({ x: 40, y: -100 });
   });
@@ -55,7 +55,7 @@ describe('useAvatarWalk entering from a button', () => {
 
   it('brings in a spot the press put just past the bottom edge, under the chrome', () => {
     const { result, setViewportOffset } = pressAt({ x: 500, y: 830 });
-    expect(result.current.pos).toEqual({ x: 500, y: 830 });
+    expect(result.current.readPos()).toEqual({ x: 500, y: 830 });
     expect(setViewportOffset).toHaveBeenCalledWith({ x: 40, y: -170 });
   });
 });

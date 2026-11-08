@@ -221,7 +221,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   each streak layer (stroke colour, `MARKER_STREAK_OPACITY`, `nibPx` wide), each ink layer (stroke colour,
   `MARKER_INK_OPACITY`, `strokePx`, the dash) and the details (`MARKER_DETAIL_PX`, the ink opacity), each its own
   `<path>` so crossings pool.
-- `components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width
+- `livediagram/apps/editor/components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width
   (`finishArrowWidthPx`) and the memoised `handDrawnArrow` (`flowing` while a flow runs). Under Marker `ArrowView`
   sets `strokeOpacity` to the ink opacity on the line, draws `lineOver` as a second path (same stroke, dash and
   mask), and fills a `headFill` head in the head colour at the ink opacity. `ArrowView` draws the
@@ -245,10 +245,12 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   video and annotations. `BoxedElementView` wraps everything it draws over the body (accent edge to
   `ElementFaceRouter`) in `../packages/workbench/src/components/canvas/SketchFace.tsx` when the resolved finish is Sketch (never Marker) and the predicate
   holds. `SketchFace` renders an empty `[data-sketch-ink]` div (`aria-hidden`, `inert`) then a
-  `[data-sketch-words]` div holding the face, both `absolute inset-0`, no z-index. In a layout effect it fills the
+  `[data-sketch-words]` div holding the face, both `absolute inset-0`, no z-index. From a layout effect it fills the
   ink div with `sketchInkCopy(live)` (a `cloneNode` with `img, video, iframe, canvas, [data-sketch-skip]` removed and
   every `id` stripped), and re-takes it from a `MutationObserver` on the live div, `SKETCH_INK_SETTLE_MS` after the
-  last change, never later than `SKETCH_INK_MAX_WAIT_MS` after the first. `app/sketch-face.css` hides the live
+  last change, never later than `SKETCH_INK_MAX_WAIT_MS` after the first. Each copy goes through
+  `face-take-batch.ts` in the `copy` stage (after the faces' own pass), and `watch.taken()` drops the changes it already
+  holds. `app/sketch-face.css` hides the live
   layer's backgrounds, borders, shadows (not on `:focus-visible`) and SVG shapes (`opacity: 0`), and gives the ink
   layer `filter: url(#lvd-sketch-face)`, `pointer-events: none`, transparent text fill and hidden SVG text.
 - `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,
@@ -277,7 +279,17 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   live art shows, unwobbled.
 - `../packages/workbench/src/components/canvas/settle-watch.ts`: `watchUntilSettled(live, take, { resize })`, the settle wait `SketchFace` and
   `SketchArtPicture` share (a `MutationObserver` on the subtree, and a `ResizeObserver` after its first report when
-  `resize` is set), with `SKETCH_INK_SETTLE_MS` and `SKETCH_INK_MAX_WAIT_MS`.
+  `resize` is set), with `SKETCH_INK_SETTLE_MS` and `SKETCH_INK_MAX_WAIT_MS`. It returns the cleanup with
+  `taken()`, which drops the changes waiting to be reported (`takeRecords`) and the pending wait, for a take that has
+  just read the face.
+- `../packages/workbench/src/components/canvas/face-take-batch.ts`: `scheduleFaceTake(root, { prepare, read }, when,
+stage)` queues one take per root and stage (`face`, then `copy`); `flushFaceTakes` runs every queued take's
+  `prepare`, then every `read` (which only reads, returning its writes), then every write, then what each write
+  returns, so a batch forces one layout however many faces it holds. `when` is `now` (a microtask: a mounting face,
+  before its first paint) or `frame` (the next animation frame: a settled face, late lettering). A take that throws
+  stops no other; the first error is rethrown after the batch.
+- `../packages/workbench/src/components/canvas/InlineTextLine.tsx` sets `outlineWidth: 1 / zoom` only while editing,
+  so a zoom writes nothing into a face.
 - Lettering of faces: the `BoxedElementView` wrapper sets `fontFamily` to the element's resolved stack when there is
   one, so words a face writes itself inherit it.
 
@@ -331,7 +343,9 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
   inline shadows); `app/face-finish.css` squares (`border-radius`, SVG `rect` `rx`/`ry` but `[data-finish-pill]`),
   flattens (`--tw-shadow`, hover `--tw-translate-y`) and thins (`border-2`, `stroke-width="2"`) under Professional and
   hides each redrawn part's own line under Marker (`[data-marker-drawn]`, `[data-marker-rules]`).
-  `useFaceFinishPass(rootRef, finish, id)` re-takes on settle (`watchUntilSettled` with `ignore` for its own
+  `useFaceFinishPass(rootRef, finish, id)` takes through `face-take-batch.ts` (`markerFaceTake`: `prepare` clears
+  the last take, `read` reads every part, its write draws them; `drawMarkerFace` runs one alone), `now` on mount and
+  `frame` after, watching from its first take, and re-takes on settle (`watchUntilSettled` with `ignore` for its own
   changes, `resize`, and once fonts load): Professional marks SVG pills `data-finish-pill`; Marker draws each
   positioned bordered HTML box (and the face's own box) as an `<svg data-marker-ink>` inside it, each SVG part as a
   `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules.
@@ -496,7 +510,7 @@ per command letter.
 | variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
 | menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
 | backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                                                              |
-| Professional new arrows angled; avoidance per finish         | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
+| Professional new arrows angled; avoidance per finish         | `livediagram/apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                         |
 | which palette tiles take the finish                          | `apps/editor/components/palette/palette-tile-finish.test.ts`                                                 |
 | applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                      |
 | preview draws each finish, stable, in the tab's font         | `apps/editor/lib/finish-preview.test.ts`                                                                     |
@@ -509,6 +523,7 @@ per command letter.
 | one door to both pens; Marker in the export; backdrops       | `packages/document/src/hand-drawn.test.ts`                                                                   |
 | export split, body placement, defs, fonts                    | `packages/document/src/svg-render-sketch.test.ts`                                                            |
 | ink copy, settle and longest wait, single render             | `../packages/workbench/src/components/canvas/SketchFace.test.tsx`                                            |
+| a board's takes: one read pass per batch, stages, cancel     | `../packages/workbench/src/components/canvas/face-take-batch.test.ts`                                        |
 | face split per finish, element font on the wrapper           | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
 | WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
 | WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                     |

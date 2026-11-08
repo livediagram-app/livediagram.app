@@ -289,7 +289,12 @@ export function usePlanCardDrag(opts: {
       }
       // A press that has not travelled the shared slop is still a click.
       if (!dragRef.current && !travelled) return;
-      if (!dragRef.current) optsRef.current.onDragging(p.itemId);
+      if (!dragRef.current) {
+        optsRef.current.onDragging(p.itemId);
+        // Carrying a card selects no text (docs/specs/026-plan/plan-board.md "A drag stays smooth"): any selection
+        // the press began is dropped.
+        window.getSelection()?.removeAllRanges();
+      }
       const { outside, overTrash } = dragPlace(
         e.clientX,
         e.clientY,
@@ -411,15 +416,23 @@ export function usePlanCardDrag(opts: {
         end();
       }
     };
+    // A press on a card starts no text selection: the mouse's drag would otherwise select the page's text as it went,
+    // and with text selected Safari took over a second on a busy board each time the card crossed the board's edge
+    // (docs/specs/026-plan/plan-board.md "A drag stays smooth").
+    const noSelect = (e: Event) => {
+      if (pressedRef.current) e.preventDefault();
+    };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', end);
     window.addEventListener('keydown', onKey, true);
+    document.addEventListener('selectstart', noSelect);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', end);
       window.removeEventListener('keydown', onKey, true);
+      document.removeEventListener('selectstart', noSelect);
     };
   }, [boardRef, end, leaveTarget, pointer]);
 

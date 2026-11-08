@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createArrow, createPinnedArrow, createShape, type Element } from '@livehuddle/document';
+import { createShape, type Element } from '@livehuddle/document';
 import { DRAG_PREVIEW_MAX_ELEMENTS, DRAG_PREVIEW_MAX_RIDE_IDS } from '@livehuddle/api-schema';
 import {
   clearLocalPreview,
@@ -21,7 +21,13 @@ import {
 
 const a = { ...createShape('square', 0, 0), id: 'a', label: 'secret' };
 const b = { ...createShape('square', 400, 0), id: 'b' };
-const ab = { ...createPinnedArrow('a', 'e', 'b', 'w'), id: 'ab' };
+// A stored (retired) arrow between them: a drag never writes it.
+const ab = {
+  id: 'ab',
+  type: 'arrow',
+  from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+  to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
+} as Element;
 const doc: Element[] = [a, b, ab];
 
 function setup(live = true) {
@@ -63,19 +69,6 @@ describe('useDragPreviewBroadcast', () => {
     expect(ops(sent).at(-1)).toEqual({ kind: 'drag-preview', tabId: 't', end: true });
   });
 
-  it("sends an arrow's geometry only", () => {
-    const sent = setup();
-    const bent = { ...ab, curveOffset: { dx: 0, dy: 30 }, label: 'not sent' };
-    act(() => setLocalPreview('t', [a, b, bent], doc));
-    expect(ops(sent)).toEqual([
-      {
-        kind: 'drag-preview',
-        tabId: 't',
-        patches: [{ id: 'ab', from: ab.from, to: ab.to, curveOffset: { dx: 0, dy: 30 } }],
-      },
-    ]);
-  });
-
   it('sends nothing for a large gesture that does not only move, nor in a document nobody shares', () => {
     const many = Array.from({ length: DRAG_PREVIEW_MAX_ELEMENTS + 1 }, (_, i) => ({
       ...createShape('square', i, 0),
@@ -102,8 +95,7 @@ describe('a very large move', () => {
     ...createShape('square', i * 10, 0),
     id: `e${i}`,
   }));
-  const free = { ...createArrow(0, 0, 50, 50), id: 'free' };
-  const board: Element[] = [...many, free];
+  const board: Element[] = [...many];
   const moved = (dx: number, dy: number, { resized = -1, skip = -1 } = {}) => [
     ...many.map((el, i) =>
       i === skip
@@ -112,11 +104,6 @@ describe('a very large move', () => {
           ? { ...el, x: el.x + dx, y: el.y + dy, width: 1 }
           : { ...el, x: el.x + dx, y: el.y + dy },
     ),
-    {
-      ...free,
-      from: { kind: 'free' as const, x: dx, y: dy },
-      to: { kind: 'free' as const, x: 50 + dx, y: 50 + dy },
-    },
   ];
   type Ride = { dx: number; dy: number; ids?: string[]; patches: { id: string }[] };
   const rideOf = (op: unknown) => (op as { ride: Ride }).ride;
@@ -128,8 +115,7 @@ describe('a very large move', () => {
     expect(op).not.toHaveProperty('patches');
     const ride = rideOf(op);
     expect(ride).toMatchObject({ dx: 5, dy: 3 });
-    expect(ride.ids).toHaveLength(N);
-    expect(ride.ids).toContain('free');
+    expect(ride.ids).toHaveLength(N - 1);
     expect(ride.ids).not.toContain('e2');
     expect(ride.patches.map((p) => p.id)).toEqual(['e2']);
   });
@@ -146,19 +132,19 @@ describe('a very large move', () => {
       vi.advanceTimersByTime(DRAG_PREVIEW_SEND_MS);
     });
     act(() => setLocalPreview('t', moved(7, 3, { skip: 0 }), board));
-    expect(rideOf(ops(sent).at(-1)).ids).toHaveLength(N);
+    expect(rideOf(ops(sent).at(-1)).ids).toHaveLength(N - 1);
     act(() => {
       vi.advanceTimersByTime(DRAG_PREVIEW_RIDE_IDS_MS);
     });
     act(() => setLocalPreview('t', moved(8, 3, { skip: 0 }), board));
-    expect(rideOf(ops(sent).at(-1)).ids).toHaveLength(N);
+    expect(rideOf(ops(sent).at(-1)).ids).toHaveLength(N - 1);
     // The gesture ends; the next one names its ids on its first message.
     act(() => clearLocalPreview('landed'));
     act(() => {
       vi.advanceTimersByTime(DRAG_PREVIEW_SEND_MS);
     });
     act(() => setLocalPreview('t', moved(1, 1), board));
-    expect(rideOf(ops(sent).at(-1)).ids).toHaveLength(N + 1);
+    expect(rideOf(ops(sent).at(-1)).ids).toHaveLength(N);
   });
 
   it('names the ids again after a gesture that shrank to patches grows back', () => {
@@ -167,13 +153,13 @@ describe('a very large move', () => {
     act(() => {
       vi.advanceTimersByTime(DRAG_PREVIEW_SEND_MS);
     });
-    act(() => setLocalPreview('t', [{ ...many[0]!, x: 99 }, ...many.slice(1), free], board));
+    act(() => setLocalPreview('t', [{ ...many[0]!, x: 99 }, ...many.slice(1)], board));
     expect(ops(sent).at(-1)).toHaveProperty('patches');
     act(() => {
       vi.advanceTimersByTime(DRAG_PREVIEW_SEND_MS);
     });
     act(() => setLocalPreview('t', moved(5, 3), board));
-    expect(rideOf(ops(sent).at(-1)).ids).toHaveLength(N + 1);
+    expect(rideOf(ops(sent).at(-1)).ids).toHaveLength(N);
   });
 });
 

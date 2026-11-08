@@ -748,8 +748,8 @@ export const CATALOGUE: AppCatalogue = {
         {
           kind: 'toggle',
           id: 'tourSeen',
-          label: 'Diagram Tour',
-          description: 'On a Diagram tab: the palette, selecting, the element menu and tabs.',
+          label: 'Watch It Built',
+          description: 'A cursor builds a small diagram so you can see how it is done.',
           keywords:
             'tour walkthrough onboarding tutorial intro welcome getting started diagram shapes arrows palette replay',
           section: 'Offer Again',

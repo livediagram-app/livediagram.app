@@ -1,25 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { LINT_CODES } from '@livehuddle/api-schema';
+import { LINT_CODES, type LintCode } from '@livehuddle/api-schema';
 import type { Element, Tab } from '@livehuddle/document';
 import { applyEditOperations, parseEditOperations } from '@livehuddle/edit-operations';
-import { arrow, box, frame, lint } from './fixtures/build';
+import { box, lint } from './fixtures/build';
 
-// One drawing per code, each drawing that code's fault.
+// One drawing per code that still fires, each drawing that code's fault. The arrow codes went with the arrows, with
+// box-overlap and aspect-extreme, which judged the graph they drew (part 4 of the element engine): the codes stay on
+// the wire.
 const DRAWINGS: Element[][] = [
-  [box('a', 0, 0), box('b', 60, 20), arrow('j', 'a', 'b')],
-  [box('a', 0, 0), arrow('gone', 'a', 'missing')],
-  [box('a', 0, 0), box('m', 200, 0), box('b', 400, 0), arrow('x', 'a', 'b')],
-  (() => {
-    const els: Element[] = [];
-    for (let i = 0; i < 4; i++) els.push(box(`s${i}`, 0, i * 100), box(`t${i}`, 600, i * 100));
-    for (let i = 0; i < 4; i++) els.push(arrow(`x${i}`, `s${i}`, `t${3 - i}`));
-    return els;
-  })(),
-  [
-    box('a', 0, 0),
-    box('b', 160, 0),
-    arrow('x', 'a', 'b', ['e', 'w'], { label: 'A long label that will not fit' }),
-  ],
   [
     box('a', 0, 0, {
       label: 'An extremely long label that cannot possibly fit in this small box',
@@ -29,35 +17,15 @@ const DRAWINGS: Element[][] = [
       label: 'An extremely long label that cannot possibly fit in this small box',
     }),
   ],
-  [box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b'), box('alone', 0, 200)],
-  [frame('f', 0, 0, 200, 200), box('a', 120, 20)],
-  [
-    frame('core', 0, 0, 200, 400),
-    box('a', 40, 40),
-    box('b', 40, 300),
-    box('x', 400, 40),
-    box('y', 400, 300),
-    box('z', 400, 500),
-    arrow('1', 'a', 'x'),
-    arrow('2', 'b', 'y'),
-    arrow('3', 'a', 'z'),
-    // One arrow inside: a frame none of whose arrows run inside is a role group, split by design.
-    arrow('4', 'a', 'b'),
-  ],
   [box('a', 0, 0, { label: 'Same' }), box('b', 300, 0, { label: 'same' })],
-  [
-    box('a', 0, 0),
-    box('b', 0, 200),
-    box('c', 0, 400),
-    box('d', 0, 600),
-    box('top', 300, -200),
-    arrow('1', 'a', 'b', ['s', 'n']),
-    arrow('2', 'b', 'c', ['s', 'n']),
-    arrow('3', 'c', 'd', ['s', 'n']),
-    arrow('ret', 'd', 'top', ['n', 's']),
-  ],
-  [box('a', 0, 0), box('b', 600, 0), box('c', 1200, 0)],
   [box('a', 0, 0, { fillColor: '#123456', strokeColor: '#654321' })],
+];
+
+const FIRING: readonly LintCode[] = [
+  'label-overflow',
+  'duplicate-label',
+  'colour-on-themed',
+  'text-overflow',
 ];
 
 // Two texts printed over each other (text-overflow).
@@ -72,8 +40,9 @@ describe('tab fixes', () => {
     { id: 't', name: 'T', elements: OVERPRINT } satisfies Tab,
   ].flatMap((tab) => lint(tab).findings.map((finding) => ({ finding, tab })));
 
-  it('cover every code', () => {
-    expect(new Set(findings.map(({ finding }) => finding.code))).toEqual(new Set(LINT_CODES));
+  it('cover every code that still fires', () => {
+    expect(new Set(findings.map(({ finding }) => finding.code))).toEqual(new Set(FIRING));
+    expect(FIRING.every((code) => LINT_CODES.includes(code))).toBe(true);
   });
 
   it.each(findings.map(({ finding, tab }) => [finding.code, finding.fix, tab] as const))(

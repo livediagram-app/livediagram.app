@@ -118,7 +118,7 @@ describe('settings catalogue', () => {
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
-      ['tourSeen', 'toggle', 'Diagram Tour', 'diagramTour'],
+      ['tourSeen', 'toggle', 'Watch It Built', 'diagramTour'],
       ['workshopTourSeen', 'toggle', 'Workshop Tour', 'workshopTour'],
       ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],

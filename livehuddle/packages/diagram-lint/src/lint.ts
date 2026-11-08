@@ -1,18 +1,16 @@
 // The diagram lint (docs/specs/024-agents/diagram-lint.md; blueprint "Behaviour and state"): a pure
 // check of how a tab is drawn, returning its measures and findings in a fixed order.
 
-import type { LintCode, LintReport, LintSeverity } from '@livehuddle/api-schema';
+import type { LintReport, LintSeverity } from '@livehuddle/api-schema';
 import type { Tab } from '@livehuddle/document';
 import { LINT_CHECKS } from './checks';
 import { textOverprint } from './checks/text-overflow';
-import { LINT_MAX_ARROWS } from './constants';
 import { prepareLintContext } from './context';
 import { consoleLintLogger, type LintLogger } from '@liveworkspace/diagram-lint/log';
-import { crossingPairs, lintExtent } from './measures';
+import { lintExtent } from './measures';
 import { sortFindings } from './order';
 
 export type LintOptions = {
-  flow?: 'down' | 'right';
   log?: LintLogger;
   // The elements whose colours a changeset set (coloursSet): colour-on-themed names only those, so a template's own
   // colours are never put to the agent as its doing. Absent, every element is judged.
@@ -29,44 +27,40 @@ export function lintTab(
   const checks = TAB_CHECKS;
   const started = performance.now();
   const log = options.log ?? consoleLintLogger;
-  const ctx = prepareLintContext(tab, options.flow ? { flow: options.flow } : {});
-  const crossings = crossingPairs(ctx);
-  if (!crossings)
-    log('[lint] crossings skipped', { arrows: ctx.drawable.length, max: LINT_MAX_ARROWS });
+  const ctx = prepareLintContext(tab);
   const coloured = options.coloured;
   const findings = sortFindings(
-    checks.flatMap((check) => check({ ...ctx, crossings, log, ...(coloured ? { coloured } : {}) })),
+    checks.flatMap((check) => check({ ...ctx, log, ...(coloured ? { coloured } : {}) })),
   );
-  const count = (code: LintCode) => findings.filter((f) => f.code === code).length;
   const counts: Record<LintSeverity, number> = { error: 0, warning: 0, info: 0 };
   const perCode: Record<string, number> = {};
   for (const f of findings) {
     counts[f.severity]++;
     perCode[f.code] = (perCode[f.code] ?? 0) + 1;
   }
+  // The arrow and overlap measures stay on the wire at nothing: no arrow is drawn as one, and no box is joined to
+  // another, since part 4 of the element engine.
   const report: LintReport = {
     measures: {
-      crossings: crossings?.pairs ?? null,
-      behind: count('arrow-behind-box'),
-      overlaps: count('box-overlap'),
+      crossings: 0,
+      behind: 0,
+      overlaps: 0,
       extent: lintExtent(ctx),
-      arrows: ctx.drawable.length,
+      arrows: 0,
       boxes: ctx.boxes.length,
     },
     findings,
     counts,
-    skipped: { crossings: crossings === null },
+    skipped: { crossings: false },
   };
   log('[lint] run', {
     elements: tab.elements.length,
     boxes: ctx.boxes.length,
-    arrows: ctx.drawable.length,
     skipped: ctx.skipped,
     errors: counts.error,
     warnings: counts.warning,
     infos: counts.info,
     ...perCode,
-    crossingsSkipped: crossings === null,
     ms: Math.round(performance.now() - started),
   });
   return report;

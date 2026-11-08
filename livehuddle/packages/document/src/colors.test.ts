@@ -1,19 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   contrastRatio,
   MIN_TEXT_CONTRAST,
-  ARROW_THICKNESS_PX,
-  ARROWHEAD_SHAPES,
-  ARROWHEAD_SIZE_PX,
-  DEFAULT_ARROW_THICKNESS,
-  DEFAULT_ARROWHEAD_SHAPE,
-  DEFAULT_ARROWHEAD_SIZE,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
-  arrowStyleOf,
-  arrowThicknessOf,
-  arrowheadShapeOf,
-  arrowheadSizeOf,
   createShape,
   deriveShapeColours,
   deriveTextColorForBg,
@@ -27,20 +18,17 @@ import {
   shade,
   supportsBorderRadius,
   supportsFillColor,
-  type ArrowElement,
   type Element,
-  type ArrowThickness,
-  type ArrowheadSize,
+  type RetiredArrowElement,
   type ShapeKind,
 } from './index';
-import { tableKeys } from '@liveworkspace/model-core/table-keys';
 
 const channels = (hex: string): [number, number, number] => {
   const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex)!;
   return [parseInt(m[1]!, 16), parseInt(m[2]!, 16), parseInt(m[3]!, 16)];
 };
 
-const arrow = (overrides: Partial<ArrowElement> = {}): ArrowElement => ({
+const arrow = (overrides: Partial<RetiredArrowElement> = {}): RetiredArrowElement => ({
   id: 'e',
   type: 'arrow',
   from: { kind: 'free', x: 0, y: 0 },
@@ -83,10 +71,11 @@ describe('hexToRgb / rgbToHex', () => {
   // It runs for every label drawn, so a named colour is a map read, not a scan.
   it('reads 100k mixed colours in well under a second', () => {
     const inputs = ['#0ea5e9', '#fff', 'red', 'cornflowerblue', '#0ea5e980', 'nope'];
-    const start = performance.now();
-    for (let i = 0; i < 100_000; i++) hexToRgb(inputs[i % inputs.length]!);
-    // Measured about 15 ms; the budget leaves room for a busy CI machine.
-    expect(performance.now() - start).toBeLessThan(500);
+    // CPU time, not wall-clock: a busy machine's wait for a core is not the reader's cost. Measured about 15 ms.
+    const spent = cpuMsOf(() => {
+      for (let i = 0; i < 100_000; i++) hexToRgb(inputs[i % inputs.length]!);
+    });
+    expect(spent).toBeLessThan(cpuBudgetMs(150));
   });
 
   it('writes channels back rounded and clamped into 0-255', () => {
@@ -174,83 +163,6 @@ describe('deriveShapeColours', () => {
     expect(tr).toBeLessThanOrEqual(pr);
     expect(tg).toBeLessThanOrEqual(pg);
     expect(tb).toBeLessThanOrEqual(pb);
-  });
-});
-
-describe('arrow preset resolvers', () => {
-  it('arrowThicknessOf defaults to medium when unset', () => {
-    expect(arrowThicknessOf(arrow())).toBe('medium');
-  });
-
-  it('arrowThicknessOf snaps a raw width to the nearest named preset', () => {
-    expect(arrowThicknessOf(arrow({ strokeWidth: 1 }))).toBe('thin');
-    expect(arrowThicknessOf(arrow({ strokeWidth: 4 }))).toBe('thick');
-    expect(arrowThicknessOf(arrow({ strokeWidth: 6.5 }))).toBe('extra-thick');
-    // Halfway-ish values snap to the closest preset, not a fixed side.
-    expect(arrowThicknessOf(arrow({ strokeWidth: 1.2 }))).toBe('thin');
-  });
-
-  it('arrowheadSizeOf defaults to medium and otherwise echoes the field', () => {
-    expect(arrowheadSizeOf(arrow())).toBe('medium');
-    expect(arrowheadSizeOf(arrow({ arrowheadSize: 'large' }))).toBe('large');
-  });
-
-  it('arrowStyleOf defaults to straight and otherwise echoes the field', () => {
-    expect(arrowStyleOf(arrow())).toBe('straight');
-    expect(arrowStyleOf(arrow({ arrowStyle: 'curved' }))).toBe('curved');
-    expect(arrowStyleOf(arrow({ arrowStyle: 'angled' }))).toBe('angled');
-  });
-
-  it('arrowheadShapeOf defaults to triangle and otherwise echoes the field', () => {
-    expect(arrowheadShapeOf(arrow())).toBe('triangle');
-    expect(arrowheadShapeOf(arrow({ arrowheadShape: 'diamond-hollow' }))).toBe('diamond-hollow');
-  });
-
-  it('ARROWHEAD_SHAPES lists the default first and has no duplicates', () => {
-    expect(ARROWHEAD_SHAPES[0]).toBe(DEFAULT_ARROWHEAD_SHAPE);
-    expect(new Set(ARROWHEAD_SHAPES).size).toBe(ARROWHEAD_SHAPES.length);
-  });
-});
-
-describe('ARROW_THICKNESS_PX lookup', () => {
-  it('maps every ArrowThickness preset to a positive pixel width', () => {
-    const presets = tableKeys<ArrowThickness>(ARROW_THICKNESS_PX);
-    expect(presets.length).toBeGreaterThan(3);
-    for (const p of presets) {
-      expect(typeof ARROW_THICKNESS_PX[p]).toBe('number');
-      expect(ARROW_THICKNESS_PX[p]).toBeGreaterThan(0);
-    }
-  });
-
-  it('orders thicknesses monotonically so the Pointer accordion icons read correctly', () => {
-    expect(ARROW_THICKNESS_PX.thin).toBeLessThan(ARROW_THICKNESS_PX.medium);
-    expect(ARROW_THICKNESS_PX.medium).toBeLessThan(ARROW_THICKNESS_PX.thick);
-    expect(ARROW_THICKNESS_PX.thick).toBeLessThan(ARROW_THICKNESS_PX['extra-thick']);
-  });
-
-  it('DEFAULT_ARROW_THICKNESS has a non-zero pixel mapping so the default stroke paints', () => {
-    expect(ARROW_THICKNESS_PX[DEFAULT_ARROW_THICKNESS]).toBeGreaterThan(0);
-  });
-});
-
-describe('ARROWHEAD_SIZE_PX lookup', () => {
-  it('maps every ArrowheadSize preset to a positive marker size', () => {
-    const presets = tableKeys<ArrowheadSize>(ARROWHEAD_SIZE_PX);
-    expect(presets.length).toBeGreaterThan(3);
-    for (const p of presets) {
-      expect(typeof ARROWHEAD_SIZE_PX[p]).toBe('number');
-      expect(ARROWHEAD_SIZE_PX[p]).toBeGreaterThan(0);
-    }
-  });
-
-  it('orders sizes monotonically (small < medium < large < extra-large)', () => {
-    expect(ARROWHEAD_SIZE_PX.small).toBeLessThan(ARROWHEAD_SIZE_PX.medium);
-    expect(ARROWHEAD_SIZE_PX.medium).toBeLessThan(ARROWHEAD_SIZE_PX.large);
-    expect(ARROWHEAD_SIZE_PX.large).toBeLessThan(ARROWHEAD_SIZE_PX['extra-large']);
-  });
-
-  it('DEFAULT_ARROWHEAD_SIZE has a non-zero pixel mapping so the default head paints', () => {
-    expect(ARROWHEAD_SIZE_PX[DEFAULT_ARROWHEAD_SIZE]).toBeGreaterThan(0);
   });
 });
 

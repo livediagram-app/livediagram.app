@@ -84,7 +84,6 @@ export function useEditorCommands(open: boolean): {
     setRotationSelected,
     turnSelected,
     clearAnimationsSelected,
-    setArrowFlowSelected,
     setMarkerSelected,
     openComments,
     openNote,
@@ -132,12 +131,10 @@ export function useEditorCommands(open: boolean): {
         turnsWithFacing(el.shape),
     );
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
-  const hasAnimation = single
-    ? single.type === 'arrow'
-      ? !!single.flow
-      : isBoxed(single) &&
-        (!!single.animation || !!(single as { textAnimation?: string }).textAnimation)
-    : false;
+  const hasAnimation =
+    !!single &&
+    isBoxed(single) &&
+    (!!single.animation || !!(single as { textAnimation?: string }).textAnimation);
 
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
   // visitors keep the view-safe subset, editors get the full catalogue.
@@ -184,8 +181,7 @@ export function useEditorCommands(open: boolean): {
     sendToBack: sendSelectedToBack,
     rotate: setRotationSelected,
     turn: turnSelected,
-    clearAnimation: () =>
-      single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
+    clearAnimation: () => clearAnimationsSelected(),
     setMarker: setMarkerSelected,
     addComment: () => {
       if (selectedId) openComments(selectedId);

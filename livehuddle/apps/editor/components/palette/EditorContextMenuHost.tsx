@@ -57,12 +57,6 @@ export function EditorContextMenuHost() {
     previewTextColor,
     commitTextColor,
     previewFillColor,
-    setLabelFillSelected,
-    commitLabelFill,
-    previewLabelFill,
-    setArrowheadColorSelected,
-    commitArrowheadColor,
-    previewArrowheadColor,
     commitFillColor,
     previewStrokeColor,
     commitStrokeColor,
@@ -87,6 +81,7 @@ export function EditorContextMenuHost() {
     setRoomDoorSelected,
     setRoomWallsSelected,
     setStageSelected,
+    setPadReceptionistSelected,
     setScreenUrlSelected,
     setClockZonesSelected,
     setJukeboxSourceSelected,
@@ -99,26 +94,19 @@ export function EditorContextMenuHost() {
     commitShapeColorPreset,
     previewShapeColorPreset,
     resetShapeStyleSelected,
-    commitArrowPreset,
-    previewArrowPreset,
     clearStylePreview,
     previewElementStyle,
     commitElementStyle,
     burstSelectedStyle,
     commitElements,
-    resetArrowStyleSelected,
     commitSetAnimation,
-    commitArrowFlow,
     commitIconAnimation,
     previewSetAnimation,
-    previewArrowFlow,
     previewIconAnimation,
     setIconAnimationSpeedSelected,
     setSetAnimationSpeedSelected,
-    setFlowSpeedSelected,
     setSetAnimationRepeatSelected,
     setIconAnimationRepeatSelected,
-    setFlowRepeatSelected,
     resetColorsSelected,
     toggleTextStyleSelected,
     commitTextSize,
@@ -127,14 +115,6 @@ export function EditorContextMenuHost() {
     previewFont,
     commitPadding,
     previewPadding,
-    setArrowThicknessSelected,
-    setArrowStyleSelected,
-    setArrowStrokeStyleSelected,
-    setArrowRouteBehindSelected,
-    setArrowExactStartSelected,
-    setArrowEndsSelected,
-    setArrowheadSizeSelected,
-    setArrowheadShapeSelected,
     commitShapeKind,
     previewShapeKind,
     resetAspectRatioSelected,
@@ -210,12 +190,6 @@ export function EditorContextMenuHost() {
       onCommitTextColor={commitTextColor}
       onPreviewFillColor={previewFillColor}
       onCommitFillColor={commitFillColor}
-      onSetArrowheadColor={setArrowheadColorSelected}
-      onPreviewArrowheadColor={previewArrowheadColor}
-      onCommitArrowheadColor={commitArrowheadColor}
-      onSetLabelFill={setLabelFillSelected}
-      onPreviewLabelFill={previewLabelFill}
-      onCommitLabelFill={commitLabelFill}
       onPreviewStrokeColor={previewStrokeColor}
       onCommitStrokeColor={commitStrokeColor}
       onPreviewBorderStroke={previewBorderStroke}
@@ -239,6 +213,7 @@ export function EditorContextMenuHost() {
       onSetRoomDoor={setRoomDoorSelected}
       onSetRoomWalls={setRoomWallsSelected}
       onSetStage={setStageSelected}
+      onSetPadReceptionist={setPadReceptionistSelected}
       onSetScreenUrl={setScreenUrlSelected}
       onSetClockZones={setClockZonesSelected}
       onSetJukeboxSource={setJukeboxSourceSelected}
@@ -252,8 +227,6 @@ export function EditorContextMenuHost() {
       onApplyShapeColorPreset={commitShapeColorPreset}
       onPreviewShapeColorPreset={previewShapeColorPreset}
       onResetShapeStyle={resetShapeStyleSelected}
-      onApplyArrowPreset={commitArrowPreset}
-      onPreviewArrowPreset={previewArrowPreset}
       onPreviewStyleEnd={clearStylePreview}
       elementStyle={{
         preview: (map) => previewElementStyle(map),
@@ -265,20 +238,15 @@ export function EditorContextMenuHost() {
           track('Element', 'Changed', telemetryType);
         },
       }}
-      onResetArrowStyle={resetArrowStyleSelected}
       onSetSetAnimation={commitSetAnimation}
-      onSetArrowFlow={commitArrowFlow}
       onSetIconAnimation={commitIconAnimation}
       onPreviewSetAnimation={previewSetAnimation}
-      onPreviewArrowFlow={previewArrowFlow}
       onPreviewIconAnimation={previewIconAnimation}
       onAnimationPreviewEnd={clearStylePreview}
       onSetIconAnimationSpeed={setIconAnimationSpeedSelected}
       onSetSetAnimationSpeed={setSetAnimationSpeedSelected}
-      onSetFlowSpeed={setFlowSpeedSelected}
       onSetSetAnimationRepeat={setSetAnimationRepeatSelected}
       onSetIconAnimationRepeat={setIconAnimationRepeatSelected}
-      onSetFlowRepeat={setFlowRepeatSelected}
       onResetColors={resetColorsSelected}
       onToggleTextBold={() => toggleTextStyleSelected('textBold')}
       onToggleTextItalic={() => toggleTextStyleSelected('textItalic')}
@@ -290,14 +258,6 @@ export function EditorContextMenuHost() {
       onPreviewFont={previewFont}
       onSetPadding={commitPadding}
       onPreviewPadding={previewPadding}
-      onSetArrowThickness={setArrowThicknessSelected}
-      onSetArrowStyle={setArrowStyleSelected}
-      onSetArrowStrokeStyle={setArrowStrokeStyleSelected}
-      onSetArrowRouteBehind={setArrowRouteBehindSelected}
-      onSetArrowExactStart={setArrowExactStartSelected}
-      onSetArrowEnds={setArrowEndsSelected}
-      onSetArrowheadSize={setArrowheadSizeSelected}
-      onSetArrowheadShape={setArrowheadShapeSelected}
       onSetShapeKind={commitShapeKind}
       onPreviewShapeKind={previewShapeKind}
       onResetAspectRatio={resetAspectRatioSelected}

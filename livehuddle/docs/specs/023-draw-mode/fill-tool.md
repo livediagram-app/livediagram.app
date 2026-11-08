@@ -1,5 +1,7 @@
 # Fill tool
 
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/023-draw-mode/fill-tool.md) is the one to read and change. livehuddle has no tool, gesture, setter or renderer for it: a stored pen, highlighter or polygon stroke is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder named **Drawing**, which an Editor can delete. The rest of this page describes it as livediagram has it.
+
 Status: shipped
 
 The **Fill tool** is a paint bucket for whiteboards: pick a colour, click a finished shape, and it

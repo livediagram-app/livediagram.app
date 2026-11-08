@@ -1,5 +1,7 @@
 # The whiteboard tools (Draw mode's engine)
 
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/023-draw-mode/draw-mode.md) is the one to read and change. livehuddle has no tool, gesture, setter or renderer for it: a stored pen, highlighter or polygon stroke is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder named **Drawing**, which an Editor can delete. The rest of this page describes it as livediagram has it.
+
 **Draw mode is gone** ([Editor modes](../007-editor/editor-modes.md)): every board is a Workshop, with no mode switch
 and no whiteboard dock. What Draw mode was built on stays for now, because Workshop still reaches it: its marker pens
 are picked up from the palette's Search (each `draw:marker-…` tile), and the path tool, the fill tool, text boxes that

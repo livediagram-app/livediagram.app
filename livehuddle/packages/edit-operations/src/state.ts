@@ -12,7 +12,6 @@ import {
   THEMES,
   type ThemeDefinition,
   type Element,
-  type BoxedElement,
   type ElementId,
   type RefTable,
   type Tab,
@@ -24,30 +23,19 @@ import { RESERVED_WORDS } from './vocabulary';
 
 // The first operation that touched an element, and the fields operations wrote on it in the order
 // written: how its ~ line orders them.
-// Why an element moved without an operation naming it.
-export type MoveReason = 'make room' | 'laid out';
+// Why an element moved without an operation naming it: `layout` swept it into a row.
+export type MoveReason = 'laid out';
 
 // `moved` marks an element only moved along, which prints as a » line and is not normalised.
-// How `layout` laid elements out, as its `»` line says.
-export type LaidOut = { style: 'flow' | 'tree'; direction?: 'down' | 'right' };
 
 export type Touch = {
   operation: number;
   written: string[];
   fit?: Fit;
   moved?: MoveReason;
-  // The summed shift of an element moved along, when the move had one.
-  shift?: [number, number];
-  // How `layout` laid it out.
-  layout?: LaidOut;
-  // The arrow a new arrow copied its style from (insert).
-  styleOf?: ElementId;
   // Where `order` put it: front, back, or above or below a ref.
   ordered?: string;
 };
-
-// Why an element left: named by an operation, or pinned to one that was.
-export type Removal = { pinnedTo?: ElementId };
 
 export type EditState = {
   readonly tab: Tab;
@@ -62,7 +50,8 @@ export type EditState = {
   readonly targets: ElementId[];
   // The same ids as a set, so noting one is O(1) however many a selector resolves.
   readonly targetSet: Set<ElementId>;
-  readonly removed: Map<ElementId, Removal>;
+  // What operations removed; nothing goes with an element any more (D23).
+  readonly removed: Set<ElementId>;
   readonly warnings: EditWarning[];
   readonly makeId: () => string;
   readonly log: EditLog;
@@ -104,7 +93,7 @@ export function createState(tab: Tab, options: ApplyOptions, log: EditLog): Edit
     created: [],
     targets: [],
     targetSet: new Set(),
-    removed: new Map(),
+    removed: new Set(),
     warnings: [],
     makeId: options.makeId ?? (() => crypto.randomUUID()),
     log,
@@ -166,35 +155,17 @@ export function putElement(state: EditState, el: Element, operation: number): vo
   touch(state, el.id, operation);
 }
 
-// Writes an element an operation moved without naming it (made room for, laid out).
+// Writes an element an operation moved without naming it (`layout` laid it out).
 export function moveElement(
   state: EditState,
   el: Element,
   operation: number,
   reason: MoveReason,
-  how: { shift?: [number, number]; layout?: LaidOut } = {},
 ): void {
   putElement(state, el, operation);
   const touched = touch(state, el.id, operation);
   if (touched.written.length > 0 || !state.before.has(el.id)) return;
   touched.moved ??= reason;
-  if (how.layout) touched.layout = how.layout;
-  const { shift } = how;
-  if (shift)
-    touched.shift = [(touched.shift?.[0] ?? 0) + shift[0], (touched.shift?.[1] ?? 0) + shift[1]];
-}
-
-// Adds a new element at a place in the element order: directly after `after`.
-export function insertElement(
-  state: EditState,
-  el: Element,
-  operation: number,
-  at: { after: ElementId },
-): void {
-  putElement(state, el, operation);
-  state.order.splice(state.order.lastIndexOf(el.id), 1);
-  state.order.splice(state.order.indexOf(at.after) + 1, 0, el.id);
-  written(state, { added: false });
 }
 
 // The element order replaced, as `order` rearranges it.
@@ -209,15 +180,10 @@ export function replaceElement(state: EditState, el: Element): void {
   written(state, { added: false });
 }
 
-export function removeElement(
-  state: EditState,
-  id: ElementId,
-  operation: number,
-  removal: Removal,
-): void {
+export function removeElement(state: EditState, id: ElementId, operation: number): void {
   state.byId.delete(id);
   written(state, { added: true });
-  state.removed.set(id, removal);
+  state.removed.add(id);
   touch(state, id, operation);
 }
 
@@ -245,12 +211,6 @@ export function refsOf(state: EditState): RefTable {
 // How refusals name working elements: by ref.
 export function namingOf(state: EditState): Naming {
   return { refOf: (id) => refsOf(state).refOf(id) };
-}
-
-// A working element with a box, or undefined for an arrow or an id no element holds.
-export function boxedOf(state: EditState, id: ElementId): BoxedElement | undefined {
-  const el = state.byId.get(id);
-  return el?.type === 'arrow' ? undefined : el;
 }
 
 // A pre-existing element joins the targets the first time an operation resolves it (EO46).

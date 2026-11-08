@@ -5,7 +5,7 @@
 // refusal (too big, the card full) is said in a toast. Any other card takes no drop.
 import { useState, type DragEvent } from 'react';
 import { ITEM_TYPES, typeIn, type Item } from '@liveplanner/items';
-import { usePlan } from './PlanContext';
+import { usePlanCard, usePlanLatest } from './PlanCardContext';
 import { imageFilesOf, useAttachmentUpload } from './use-attachment-upload';
 
 export type CardFileDrop = {
@@ -21,7 +21,8 @@ export type CardFileDrop = {
 const NO_HANDLERS: CardFileDrop['handlers'] = {};
 
 export function useCardFileDrop(item: Item, faceDown: boolean): CardFileDrop {
-  const plan = usePlan();
+  const plan = usePlanCard();
+  const latest = usePlanLatest();
   const type = typeIn(plan?.types ?? ITEM_TYPES, item.type);
   const takes = !faceDown && !!plan?.canEditCards && type.fields.includes('attachments');
   const upload = useAttachmentUpload(item.id, takes, { watchOffline: false });
@@ -49,7 +50,7 @@ export function useCardFileDrop(item: Item, faceDown: boolean): CardFileDrop {
         e.preventDefault();
         e.stopPropagation();
         void upload.add(files).then((failure) => {
-          if (failure) plan?.notify?.(failure);
+          if (failure) latest.current?.notify?.(failure);
         });
       },
     },

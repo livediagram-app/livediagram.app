@@ -161,7 +161,7 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   }, []);
 
-  // Tours › "Diagram Tour" (docs/specs/007-editor/editor-tour.md): turning its row on from off and closing reruns the
+  // Tours › "Watch It Built" (docs/specs/007-editor/editor-tour.md): turning its row on from off and closing reruns the
   // tour in place, as the footer's Start Tour button does.
   const tourSeen = settings.tourSeen === true;
   const tourSeenAtOpen = useRef(tourSeen);

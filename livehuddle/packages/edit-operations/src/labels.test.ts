@@ -20,7 +20,7 @@ const arrow = {
 } as Element;
 const sticky = { id: 'k', type: 'sticky', x: 0, y: 0, width: 100, height: 100 } as Element;
 
-describe("applyLabel (EO18): the MCP spec's three examples", () => {
+describe("applyLabel (EO18): the spec's three examples", () => {
   it('drops a bracketed aside into the note', () => {
     expect(applyLabel(square, 'Web client (React SPA served from the CDN)', undefined)).toEqual({
       label: 'Web client',
@@ -89,7 +89,9 @@ describe('fitToLabel (EO22)', () => {
     expect(
       fitToLabel(square, { ...square, label: longer, fixedSize: true } as Element).fit,
     ).toEqual({});
-    expect(fitToLabel(square, { ...square, label: longer, textSize: 'scale' }).fit).toEqual({});
+    expect(
+      fitToLabel(square, { ...square, label: longer, textSize: 'scale' } as Element).fit,
+    ).toEqual({});
     expect(fitToLabel(sticky, { ...sticky, label: longer }).fit).toEqual({});
     expect(fitToLabel(arrow, square).fit).toEqual({});
   });
