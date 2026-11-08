@@ -117,7 +117,7 @@ function ExplorerImpl({
     getSessionSharePassword,
   );
 
-  // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
+  // Open, the panel reaches under the palette strip: the trays just under it step aside (PaletteTray).
   const shown = popoverOpen === true;
   useEffect(() => {
     if (!shown) return;

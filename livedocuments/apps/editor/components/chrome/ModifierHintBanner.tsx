@@ -73,7 +73,7 @@ export function ModifierHint({
 const KEY_CHIP =
   'rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-sans text-[10px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300';
 
-// In the Toolbar layout the hint hangs from the strip as its tray (docs/specs/007-editor/toolbar-layout.md);
+// In the Toolbar layout the hint sits just under the strip as its tray (docs/specs/007-editor/toolbar-layout.md);
 // elsewhere it is a top-centre pill.
 function Hint({ modifier, children }: { modifier: string; children: React.ReactNode }) {
   const strip = usePaletteStripBox();

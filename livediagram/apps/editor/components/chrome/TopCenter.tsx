@@ -42,9 +42,9 @@ const TONE_CLASS: Record<BannerTone, string> = {
 // events for itself.
 const STACK_TOP: Record<'toolbar' | 'tray' | 'dock' | 'none', string> = {
   toolbar: 'top-[4.25rem]',
-  // A message hangs from the strip as its tray (docs/specs/007-editor/toolbar-layout.md): the stack starts
-  // under the tray (the strip's 58 px, the tray's 34 px, then the stack's 8 px gap).
-  tray: 'top-[6.25rem]',
+  // A message sits just under the strip as its tray (docs/specs/007-editor/toolbar-layout.md): the stack starts
+  // under the tray (the strip's 58 px, the tray's 6 px gap and 36 px, then the stack's 8 px gap).
+  tray: 'top-[6.75rem]',
   // The Draw dock is the strip's height now (docs/specs/023-draw-mode/draw-mode.md), so the same.
   dock: 'top-[4.25rem]',
   none: 'top-[4.75rem] sm:top-3',
