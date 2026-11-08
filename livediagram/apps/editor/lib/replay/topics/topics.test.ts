@@ -42,20 +42,23 @@ describe.each(ALL_TOPIC_CARDS.map((c) => [c.id, c] as const))('%s', (id, card) =
   it.each([
     ['desktop', env],
     ['phone', phone],
-  ])('draws the same frame for the same moment on a %s, opening only what the player can open', (_on, at) => {
-    const layout = topic.layout(at);
-    topic.chapters.forEach((chapter, i) => {
-      for (let ms = 0; ms <= chapter.ms; ms += 250) {
-        const frame = topic.frame(i, ms, layout);
-        expect(topic.frame(i, ms, layout)).toEqual(frame);
-        for (const o of frame.open ?? []) expect(Object.keys(OPENABLES)).toContain(o);
-        const ids = frame.elements.map((e) => e.id);
-        expect(new Set(ids).size).toBe(ids.length);
-        if (frame.selectedId) expect(ids).toContain(frame.selectedId);
-        if (frame.menu) expect(ids).toContain(frame.menu.on);
-      }
-    });
-  });
+  ])(
+    'draws the same frame for the same moment on a %s, opening only what the player can open',
+    (_on, at) => {
+      const layout = topic.layout(at);
+      topic.chapters.forEach((chapter, i) => {
+        for (let ms = 0; ms <= chapter.ms; ms += 250) {
+          const frame = topic.frame(i, ms, layout);
+          expect(topic.frame(i, ms, layout)).toEqual(frame);
+          for (const o of frame.open ?? []) expect(Object.keys(OPENABLES)).toContain(o);
+          const ids = frame.elements.map((e) => e.id);
+          expect(new Set(ids).size).toBe(ids.length);
+          if (frame.selectedId) expect(ids).toContain(frame.selectedId);
+          if (frame.menu) expect(ids).toContain(frame.menu.on);
+        }
+      });
+    },
+  );
 
   it('moves Example inside each chapter, in time order', () => {
     const layout = topic.layout(env);

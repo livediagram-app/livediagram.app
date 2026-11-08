@@ -438,21 +438,19 @@ function watchRows(
   };
   return [
     parent,
-    ...CURRICULUM[mode].map(
-      (t): SettingsToggleRowSpec => ({
-        kind: 'toggle',
-        key: `watchTopic-${t.id}`,
-        section: 'Offer Again',
-        parent: key,
-        label: t.title,
-        description: t.line,
-        keywords: `tour replay learn watch ${mode} ${t.title.toLowerCase()}`,
-        helpArticle: 'diagramTour',
-        event: { category: 'UI', on: `Watch${t.telemetry}SeenOff`, off: `Watch${t.telemetry}SeenOn` },
-        read: (p) => !topicTaken(p, t.id),
-        write: (p, v) => (v ? offerTopicAgain(p, t.id) : markTopicTaken(p, t.id)),
-      }),
-    ),
+    ...CURRICULUM[mode].map((t): SettingsToggleRowSpec => ({
+      kind: 'toggle',
+      key: `watchTopic-${t.id}`,
+      section: 'Offer Again',
+      parent: key,
+      label: t.title,
+      description: t.line,
+      keywords: `tour replay learn watch ${mode} ${t.title.toLowerCase()}`,
+      helpArticle: 'diagramTour',
+      event: { category: 'UI', on: `Watch${t.telemetry}SeenOff`, off: `Watch${t.telemetry}SeenOn` },
+      read: (p) => !topicTaken(p, t.id),
+      write: (p, v) => (v ? offerTopicAgain(p, t.id) : markTopicTaken(p, t.id)),
+    })),
   ];
 }
 
@@ -1001,7 +999,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
         keywords:
           'tour walkthrough onboarding tutorial intro welcome getting started diagram shapes arrows palette look theme style search tidy replay learn',
-        description: 'Short replays of Diagram, offered from Start Tour until you have watched each.',
+        description:
+          'Short replays of Diagram, offered from Start Tour until you have watched each.',
       }),
       ...watchRows('draw', 'drawTourSeen', {
         label: 'Watch It Built in Draw',

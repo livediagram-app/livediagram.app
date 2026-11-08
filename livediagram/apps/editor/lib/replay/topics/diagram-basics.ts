@@ -138,7 +138,8 @@ export const basics: Topic<BasicsLayout> = {
         if (tile && ms < ADD.drag2[1]) hold = centreOf(carriedB);
       }
       const paletteOpen =
-        (ms >= ADD.open1 && ms < ADD.drag1[0] + 200) || (ms >= ADD.open2 && ms < ADD.drag2[0] + 200);
+        (ms >= ADD.open1 && ms < ADD.drag1[0] + 200) ||
+        (ms >= ADD.open2 && ms < ADD.drag2[0] + 200);
       return frameOf(els, { open: paletteOpen ? ['palette'] : [], hold });
     }
     if (id === 'connect') {
@@ -161,10 +162,13 @@ export const basics: Topic<BasicsLayout> = {
     }
     const base: Element[] = [a, arrow];
     if (id === 'label') {
-      return frameOf([...base, { ...b, label: typedAt(B_LABEL, ms, LABEL.type[0], LABEL.type[1]) }], {
-        selectedId: ms >= LABEL.select ? b.id : null,
-        typing: ms >= LABEL.select && ms < LABEL.type[1] + 500,
-      });
+      return frameOf(
+        [...base, { ...b, label: typedAt(B_LABEL, ms, LABEL.type[0], LABEL.type[1]) }],
+        {
+          selectedId: ms >= LABEL.select ? b.id : null,
+          typing: ms >= LABEL.select && ms < LABEL.type[1] + 500,
+        },
+      );
     }
     // Style.
     const path = ms >= STYLE.presets ? ['Style', 'Presets'] : ms >= STYLE.flyout ? ['Style'] : [];

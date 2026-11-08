@@ -8,9 +8,8 @@ vi.mock('@/lib/replay/curriculum', () => ({
     workshop: [],
   },
 }));
-const { markTopicTaken, offerTopicAgain, setModeTopics, topicsOwed, topicTaken } = await import(
-  './watch-topics'
-);
+const { markTopicTaken, offerTopicAgain, setModeTopics, topicsOwed, topicTaken } =
+  await import('./watch-topics');
 
 describe('watch topics', () => {
   it('counts the older tourSeen as The Basics taken, and nothing else', () => {

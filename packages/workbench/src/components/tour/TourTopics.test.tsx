@@ -14,7 +14,14 @@ const topics = [
 
 describe('TourTopics', () => {
   it('shows the heading, its line and a row per topic, Done only on a taken one', () => {
-    render(<TourTopics heading="What would you like to learn?" line="Short replays." topics={topics} onPick={() => {}} />);
+    render(
+      <TourTopics
+        heading="What would you like to learn?"
+        line="Short replays."
+        topics={topics}
+        onPick={() => {}}
+      />,
+    );
     expect(screen.getByRole('heading', { name: 'What would you like to learn?' })).toBeTruthy();
     expect(screen.getByText('Short replays.')).toBeTruthy();
     const rows = screen.getAllByRole('button');
@@ -25,8 +32,19 @@ describe('TourTopics', () => {
   });
 
   it('carries each id in the attribute asked for', () => {
-    render(<TourTopics heading="H" line="L" topics={topics} onPick={() => {}} idAttribute="data-tour-track" />);
-    expect(screen.getAllByRole('button').map((r) => r.getAttribute('data-tour-track'))).toEqual(['basics', 'look']);
+    render(
+      <TourTopics
+        heading="H"
+        line="L"
+        topics={topics}
+        onPick={() => {}}
+        idAttribute="data-tour-track"
+      />,
+    );
+    expect(screen.getAllByRole('button').map((r) => r.getAttribute('data-tour-track'))).toEqual([
+      'basics',
+      'look',
+    ]);
   });
 
   it('picks a topic by its row, a taken one too', () => {

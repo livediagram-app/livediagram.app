@@ -26,9 +26,7 @@ export function ReplayScope({ children }: { children: ReactNode }) {
         ...replay.tab,
         elements: [...ctx.activeTab.elements, ...replay.elements],
       },
-      ...(replay.prefs
-        ? { userPreferences: { ...ctx.userPreferences, ...replay.prefs } }
-        : {}),
+      ...(replay.prefs ? { userPreferences: { ...ctx.userPreferences, ...replay.prefs } } : {}),
       contextMenu: replay.menu,
       setContextMenu: setReplayMenu,
       closeContextMenu: closeReplayMenu,

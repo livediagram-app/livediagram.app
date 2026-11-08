@@ -13,7 +13,12 @@ const topics = [
 ];
 const mount = (onPick = vi.fn(), onClose = vi.fn()) => {
   render(
-    <WatchStartPanel topics={topics} canvasRef={{ current: null }} onPick={onPick} onClose={onClose} />,
+    <WatchStartPanel
+      topics={topics}
+      canvasRef={{ current: null }}
+      onPick={onPick}
+      onClose={onClose}
+    />,
   );
   return { onPick, onClose };
 };

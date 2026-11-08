@@ -168,7 +168,6 @@ export const OPENABLES: Record<string, Openable> = {
   'dock-pen-second': byDock('second', 'second', true),
 };
 
-
 /** Open what `want` names and close what the replay opened that it no longer names: the last opened first, so a panel
  *  inside a dialog closes before the dialog does (closing the dialog first, the panel's Back would reopen its home). */
 export function syncOpen(want: readonly string[], opened: Set<string>) {

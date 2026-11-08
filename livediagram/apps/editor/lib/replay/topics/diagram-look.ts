@@ -1,4 +1,9 @@
-import { bestAnchorTowards, type ArrowElement, type Element, type Tab } from '@livediagram/document';
+import {
+  bestAnchorTowards,
+  type ArrowElement,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import { lookMatches, tabLookById, withLookApplied, type TabLook } from '@/lib/tab-looks';
 import { frameOf, type Chapter, type Frame, type Topic, type TopicEnv } from '../topic';
 import { boxedShape } from './shared';
@@ -41,7 +46,11 @@ export const CANVAS = { open: 1500, pick: 4000 } as const;
 
 export const LOOK_IDS = { a: 'wib-look-a', b: 'wib-look-b', c: 'wib-look-c' } as const;
 
-type Look = { readonly look: TabLook; readonly tab: Partial<Tab>; readonly elements: readonly Element[] };
+type Look = {
+  readonly look: TabLook;
+  readonly tab: Partial<Tab>;
+  readonly elements: readonly Element[];
+};
 
 export type LookLayout = {
   readonly elements: readonly Element[];
@@ -76,18 +85,33 @@ function demo(env: TopicEnv): Element[] {
   const h = narrow ? 48 : 60;
   const gap = narrow ? 24 : 70;
   const row = labels.length * w + (labels.length - 1) * gap;
-  const left = narrow ? centre.x - row / 2 : Math.max(centre.x - size.width / 2 + 60, centre.x - row - 40);
+  const left = narrow
+    ? centre.x - row / 2
+    : Math.max(centre.x - size.width / 2 + 60, centre.x - row - 40);
   const top = narrow ? centre.y - size.height / 2 + 120 : centre.y - size.height / 2 + 150;
   const ids = [LOOK_IDS.a, LOOK_IDS.b, LOOK_IDS.c];
   const shapes = labels.map((label, i) =>
-    boxedShape(tab, ids[i]!, label, w, h, left + i * (w + gap) + w / 2, top, i === 1 ? 'hexagon' : 'square'),
+    boxedShape(
+      tab,
+      ids[i]!,
+      label,
+      w,
+      h,
+      left + i * (w + gap) + w / 2,
+      top,
+      i === 1 ? 'hexagon' : 'square',
+    ),
   );
   const arrows: ArrowElement[] = shapes.slice(1).map((to, i) => {
     const from = shapes[i]!;
     return {
       id: `wib-look-arrow-${i}`,
       type: 'arrow',
-      from: { kind: 'pinned', elementId: from.id, anchor: bestAnchorTowards(from, { x: to.x, y: to.y + h / 2 }) },
+      from: {
+        kind: 'pinned',
+        elementId: from.id,
+        anchor: bestAnchorTowards(from, { x: to.x, y: to.y + h / 2 }),
+      },
       to: {
         kind: 'pinned',
         elementId: to.id,
@@ -100,7 +124,11 @@ function demo(env: TopicEnv): Element[] {
 }
 
 const lookTile = (look: TabLook) =>
-  ({ kind: 'find', selector: '[data-tour-id="tab-style-looks"] button', text: look.label }) as const;
+  ({
+    kind: 'find',
+    selector: '[data-tour-id="tab-style-looks"] button',
+    text: look.label,
+  }) as const;
 
 export const look: Topic<LookLayout> = {
   id: 'diagram-look',
@@ -143,7 +171,10 @@ export const look: Topic<LookLayout> = {
     }
     if (id === 'look-pick') {
       const worn: Look | null = ms >= PICK.second ? second : ms >= PICK.first ? first : null;
-      return withTab(worn ? worn.elements : layout.elements, worn?.tab, { open: ['tab-style'], ...top });
+      return withTab(worn ? worn.elements : layout.elements, worn?.tab, {
+        open: ['tab-style'],
+        ...top,
+      });
     }
     const open = ms >= CANVAS.open ? ['tab-style', 'tab-style-canvas'] : ['tab-style'];
     return withTab(second.elements, ms >= CANVAS.pick ? canvas.tab : second.tab, { open, ...top });
@@ -186,6 +217,10 @@ export const look: Topic<LookLayout> = {
   },
 };
 
-function withTab(elements: readonly Element[], tab: Partial<Tab> | undefined, rest: Partial<Frame>): Frame {
+function withTab(
+  elements: readonly Element[],
+  tab: Partial<Tab> | undefined,
+  rest: Partial<Frame>,
+): Frame {
   return frameOf(elements, tab ? { ...rest, tab } : rest);
 }

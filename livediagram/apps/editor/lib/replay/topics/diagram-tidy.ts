@@ -67,7 +67,16 @@ export const tidy: Topic<TidyLayout> = {
     // A phone gets the same flow, drawn smaller; tidied, it runs four rows down, so it starts high.
     const k = size.width < 700 ? 0.6 : 0.85;
     const shapes = STEPS.map((s) =>
-      boxedShape(tab, s.id, s.label, s.w * k, s.h * k, centre.x + s.dx * k, centre.y + s.dy * k, s.kind),
+      boxedShape(
+        tab,
+        s.id,
+        s.label,
+        s.w * k,
+        s.h * k,
+        centre.x + s.dx * k,
+        centre.y + s.dy * k,
+        s.kind,
+      ),
     );
     const stroke = shapes[0]!.strokeColor;
     const arrows: ArrowElement[] = JOINS.map(([a, b], i) => {

@@ -86,8 +86,7 @@ export const shape: Topic<ShapeLayout> = {
       frameOf([el], { selectedId: SHAPE_ID, ...rest });
     if (id === 'shape-border') {
       if (ms < BORDER.menu) return frameOf([layout.plain]);
-      const path =
-        ms >= BORDER.border ? ['Style', 'Border'] : ms >= BORDER.style ? ['Style'] : [];
+      const path = ms >= BORDER.border ? ['Style', 'Border'] : ms >= BORDER.style ? ['Style'] : [];
       const el =
         ms >= BORDER.dashed ? layout.dashed : ms >= BORDER.thick ? layout.thick : layout.plain;
       return one(el, { menu: { on: SHAPE_ID, path } });
@@ -98,7 +97,8 @@ export const shape: Topic<ShapeLayout> = {
         menu: { on: SHAPE_ID, path },
       });
     }
-    const path = ms >= FONT.font ? ['Text', 'Font'] : ms >= FONT.text ? ['Text'] : ['Style', 'Shadow'];
+    const path =
+      ms >= FONT.font ? ['Text', 'Font'] : ms >= FONT.text ? ['Text'] : ['Style', 'Shadow'];
     const el = ms >= FONT.pick ? layout.lettered : layout.shadowed;
     if (ms >= FONT.close) return frameOf([el]);
     return one(el, { menu: { on: SHAPE_ID, path } });

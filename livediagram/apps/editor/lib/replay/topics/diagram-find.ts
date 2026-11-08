@@ -1,5 +1,13 @@
 import type { Element, ShapeElement } from '@livediagram/document';
-import { between, centreOf, frameOf, typedAt, type Chapter, type CursorTarget, type Topic } from '../topic';
+import {
+  between,
+  centreOf,
+  frameOf,
+  typedAt,
+  type Chapter,
+  type CursorTarget,
+  type Topic,
+} from '../topic';
 import { boxedShape, carried, tileMoved, type Tile } from './shared';
 
 // Find Anything (docs/specs/007-editor/watch-it-built.md "The curriculum"): the palette strip's Search
@@ -70,7 +78,16 @@ export const find: Topic<FindLayout> = {
     const y = centre.y - (narrow ? 160 : 200);
     const dx = narrow ? 90 : 150;
     const db = boxedShape(tab, FIND_IDS.db, 'Orders', 120, 90, centre.x - dx, y, 'cylinder');
-    const decision = boxedShape(tab, FIND_IDS.decision, 'In stock?', 150, 100, centre.x + dx, y - 5, 'diamond');
+    const decision = boxedShape(
+      tab,
+      FIND_IDS.decision,
+      'In stock?',
+      150,
+      100,
+      centre.x + dx,
+      y - 5,
+      'diamond',
+    );
     return { db, decision, dbTile: null, decisionTile: null };
   },
 
@@ -137,4 +154,3 @@ export const find: Topic<FindLayout> = {
     return [{ at: SEARCH.press, to: SEARCH_BUTTON, press: true }];
   },
 };
-
