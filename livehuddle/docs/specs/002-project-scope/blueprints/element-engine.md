@@ -1,7 +1,7 @@
 # The element engine: blueprint
 
 Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" and "Retired elements". It holds parts 1 to
-3 of Work Tracker #459 and the rules every later part follows.
+4 of Work Tracker #459 and the rules every later part follows.
 
 ## Domain and naming
 
@@ -19,6 +19,13 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
 - Part 2's name: the type `table` is **Table**.
 - Part 3's names (shape kinds): Lane, Stack, Boundary, Timeline (`timeline-rail`), Diagram Key, Card, Callout,
   Badge, Step Number (`step`), Pointer Note.
+- Part 4's names (element types): **Arrow** (`arrow`; **Line** when its `arrowEnds` is `none`), **Drawing**
+  (`freehand`), **Path** (`path`), **Annotation** (`annotation`) (D24).
+- **Retired arrow**: a stored `arrow`, typed `RetiredArrowElement` (`retired-arrow.ts`): `id`, `type: 'arrow'`, `from`,
+  `to` (a `RetiredEndpoint`: `free` with `x`, `y`; `pinned` with `elementId`, `anchor`; `on-arrow` with `arrowId`,
+  `t`), and the optional shared fields the generic paths read (`label`, `arrowEnds`, `opacity`, `link`,
+  `commentThread`, `action`, `note`, `noteRich`). It is in `Element` but not in `BoxedElement`: `isBoxed` is false
+  for it. `RetiredTypeElement` takes `freehand`, `path` and `annotation` (boxed, as `video` and `table`).
 - **Retired backdrop**: `isRetiredBackdrop(el)` (`retired-kinds.ts`), a stored `frame`, `lane`, `stack` or `boundary`;
   `paintOrder` draws it first (D19).
 
@@ -63,6 +70,27 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
   kept by load and save like any unknown field; `HeroCaptionCard` and the export's caption go (D20). The tab's
   `tagColours` stays on `Tab` as an opaque stored value (`tagColours?: unknown`), never read.
 
+- Part 4 (arrows): `retiredArrowEnds(arrow, elements)` resolves both ends each time it is asked (no cache, nothing
+  stored): `free` to its point; `pinned` to `ANCHOR_FRACTIONS[anchor]` across the element's box, turned about the
+  box's centre by its `rotation`; `on-arrow` to `from + t * (to - from)` of that arrow's own resolved ends, at most
+  `RETIRED_ARROW_MAX_HOPS` (4) deep. An end that does not resolve (its element missing, not boxed, a cycle, a
+  non-finite number) takes the other end's point; with neither, both sit at `{ x: 0, y: 0 }` (D22).
+  `retiredArrowCard(arrow, elements)` is the 160 by 56 box centred on the two ends' midpoint; `elementBounds` returns
+  the union of that card and the line's box, so a marquee, fit-to-content, the selection toolbar and the minimap
+  read a retired arrow through it. `RetiredArrowView` (editor) draws the line (`pointer-events: none`) and, over it,
+  `RetiredElementFace` in a wrapper at the card's box that selects on press, opens the context menu and shows the
+  selection ring; it takes no drag. The export draws the same line and card (`svg-render-retired.ts`).
+- Part 4: the drag, nudge, resize, duplicate-drag and arrow-gesture paths skip a retired arrow; removing an element
+  removes only the ids asked (the pinned-arrow cascade is deleted, D23); a copy carries a retired arrow verbatim with
+  a new id, its pinned `elementId`s remapped to the copies only when the pinned element was copied with it.
+- Part 4 deletes the arrow engine (`arrow-*.ts`, `anchors.ts`, `anchor-*.ts`, `orthogonal-router.ts`,
+  `svg-render-arrows.ts`; `@liveworkspace/model-core`'s shared arrow helpers stay for the other products), the pen
+  and path engine (`freehand-points.ts`, `pen-stroke.ts`, `whiteboard-stroke.ts`, `stroke-*.ts`, `path-*.ts`,
+  `legacy-stroke-points.ts`), the annotation's factory and face, and the editor's whiteboard intents (`pen`, `path`,
+  `fill`), `LiveInk`, `WhiteboardPenPreview`, the path draft and edit layers and every arrow gesture hook. A load-time
+  rewrite that only served them (the stroke points' and the bends' settling) goes, so stored fields are never
+  touched.
+
 ## Interfaces and contracts
 
 - `RETIRED_ELEMENT_TYPES: ReadonlySet<string>`, `RETIRED_TYPE_NAMES: Readonly<Record<string, string>>`,
@@ -90,6 +118,10 @@ height }`.
   helpers that read them (`table.ts`, `table-header-colours.ts`, `svg-render-table.ts`). Shared fields a table
   also used (`headerFill`, a link) stay on the kinds that keep them.
 
+- Part 4: `RETIRED_ARROW_CARD_WIDTH = 160`, `RETIRED_ARROW_CARD_HEIGHT = 56`, `RETIRED_ARROW_MAX_HOPS = 4`,
+  `retiredArrowEnds(arrow, elements): { from: Point; to: Point }`, `retiredArrowCard(arrow, elements): Rect`,
+  `isRetiredArrow(el): el is RetiredArrowElement`.
+
 ## Errors and edge cases
 
 - A retired element with a zero or non-finite box draws an empty card (the layout clamps to 0) and shows no button.
@@ -105,6 +137,9 @@ height }`.
   toolbar's Delete, the Delete key, the context menu and the multi-selection remove it. There is no button outside
   the card: one there read as the next card's Delete at a phone's Fit zoom.
 - A retired type with no `label` shows no label line.
+- A retired arrow whose pinned element is moved re-resolves on the next draw; one whose pinned element is deleted
+  keeps the dangling `elementId` as stored and draws that end on the other end's point (D22, D23). An `on-arrow` cycle
+  stops at four hops. A free end with a non-finite coordinate counts as unresolved.
 
 ## Security and trust
 
@@ -156,6 +191,14 @@ height }`.
 - `packages/edit-operations` and `packages/document-views`: an agent's `add` of a retired kind gets a square with a
   warning, `add video` and `add table` are refused, and the views print a retired element as `?` with no state or summary.
 
+- Part 4: `retired-kinds.test.ts` holds an arrow pinned at both ends with a label, bends, a flow and heads, a line
+  (`arrowEnds: 'none'`), a pen stroke with pressures, a highlighter stroke, a path with a contour and an annotation
+  with a note: each loads deep-equal, saves unchanged, validates and is named. `retired-arrow.test.ts` resolves free,
+  pinned (rotated), on-arrow, missing, cyclic and non-finite ends and the card. `svg-render-retired.test.ts` draws a
+  retired arrow's line and card and a stroke's placeholder. `RetiredArrowView.test.tsx` draws the line and card,
+  selects on press, gives Delete to an Editor only (not a Participant, not a Viewer), and survives its pinned element
+  moving and being deleted. Edit operations refuse `add arrow` and `connect`.
+
 ## Constants and configuration
 
 - `RETIRED_DELETE_MIN_WIDTH = 72`, `RETIRED_DELETE_MIN_HEIGHT = 48` (screen px): the smallest card that can hold the
@@ -165,4 +208,4 @@ height }`.
 
 ## Defaults ledger
 
-- D17 to D20 in [DEFAULTS.md](DEFAULTS.md).
+- D17 to D24 in [DEFAULTS.md](DEFAULTS.md).

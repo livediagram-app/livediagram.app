@@ -457,7 +457,7 @@ A **retired element** is a stored element whose kind livehuddle no longer has: t
 `idea-box`, `qa-board`, `agenda`, `decision`, `roll-call`, `quiz`), the `reaction-pad` that went with the
 presenting tools, the `frame` ([The Frame](#the-frame)), the diagram tools' kinds [the element engine](#the-element-engine)
 has deleted so far, any other shape kind livehuddle does not know, and an element of a retired element type (an
-`type` the engine deleted: `video`, then `table`).
+`type` the engine deleted: `video`, then `table`, then `arrow`, `freehand`, `path` and `annotation`).
 
 - **Kept untouched.** Its kind and every field it carries (a poll's question, a board's notes, its responses) stay in
   the document exactly as stored. Nothing in livehuddle reads or writes them, so a save, a sync, a copy and an undo
@@ -534,8 +534,8 @@ image and the link card.
 | 1    | The content widgets and the embeds: the data charts (`pie-chart`, `bar-chart`, `line-chart`, `legend`), progress (`progress-bar`, `progress-ring`), `rating`, `code-block`, `checklist`, the Page (`page`), the web components but the card (`banner`, `stat-row`, `process`, `site-header`), and the video and website embeds (the `video` element type) | Done  |
 | 2    | Tables (the `table` element type) and their cell links and styles                                                                                                                                                                                                                                                                                         | Done  |
 | 3    | The layout containers: `lane`, `stack`, `boundary`, the Timeline (`timeline-rail`), `diagram-key`, `card` and `callout`, `badge`, `step`, `pointer-note`, an image's hero caption, and the graph input and cluster layout that draw groups as boundaries                                                                                                  | Done  |
-| 4    | Arrows and lines (the `arrow` type, its routing, anchors and gestures), the pens and paths (`freehand`, `path`), annotations (`annotation`), with card #583's pen leftovers                                                                                                                                                                               | Next  |
-| 5    | The diagram shapes (`square`, `circle`, `diamond` and the rest of the Shapes category) and the agent-side diagram code left (`diagram-lint`, the edit operations' diagram verbs)                                                                                                                                                                          | Later |
+| 4    | Arrows and lines (the `arrow` type, its routing, anchors and gestures), the pens and paths (`freehand`, `path`), annotations (`annotation`), with card #583's pen leftovers                                                                                                                                                                               | Done  |
+| 5    | The diagram shapes (`square`, `circle`, `diamond` and the rest of the Shapes category) and the agent-side diagram code left (`diagram-lint`, the edit operations' diagram verbs)                                                                                                                                                                          | Next  |
 
 What every part does:
 
@@ -591,6 +591,40 @@ What every part does:
     factories, defaults, validation rules, export renderer, animation rules, agent view state and summary, help
     articles and specs; the stack's reflow, the lane's seam snapping, the boundary's nesting tint, the attachment
     engine, the diagram key's derived rows, and the Timeline's concept animations.
+- **Part 4, arrows, pens, paths and annotations.** The `arrow`, `freehand`, `path` and `annotation` element types
+  join `RETIRED_ELEMENT_TYPES`. A stored one keeps every field it stored (an arrow's ends and what they are pinned to,
+  its label, heads, style, bends and flow; a stroke's packed points, pen and pressures; a path's nodes and contours;
+  an annotation's note) and is named **Arrow** (**Line** when it has no heads), **Drawing**, **Path** or
+  **Annotation**. Details:
+  - **A stroke, a path and an annotation** have a box, so each draws as the placeholder in its own box, as a table
+    does. An annotation's 44 by 44 marker is too small for the Delete button: an Editor selects it and uses the
+    toolbar's Delete.
+  - **An arrow has no box**: it is two ends, each a free point, pinned to an element's anchor, or a point along another
+    arrow. A retired arrow draws as a faint dashed straight line between its ends, in the placeholder's quiet ink,
+    with the placeholder card (160 by 56) centred on the line's middle. The card is what selects, takes comments, opens
+    the context menu and holds the Delete button; the line takes no press. A free end sits at its point, a pinned end
+    at its anchor on its element's box (turned with the element), and an end on another arrow at its fraction of that
+    arrow's straight line (four hops at most). An end whose element is gone, or is not one with a box, takes the
+    other end's point; an arrow with neither end left draws its card at the canvas origin, so it can still be
+    selected and deleted.
+  - **It does not move.** A retired arrow is not dragged, nudged, resized or carried by a selection's drag: its free
+    ends stay where they were drawn and its pinned ends follow the elements they are pinned to, as they always did,
+    because they are worked out each time it is drawn. Nothing about it is written back.
+  - **What it pinned to.** Moving an element a retired arrow is pinned to moves that end of the line with it. Deleting
+    one leaves the arrow exactly as stored (Delete no longer takes the arrows pinned to an element with it); that end
+    then sits on the other end's point. Copying a selection copies a retired arrow as stored, with a new id.
+  - **The whiteboard engine goes with them**: the pen, Path and Fill intents and their gestures (the stroke capture,
+    the live ink and the whiteboard pen preview, the path draft and point editing, the fill's region search), shape
+    recognition, the arrow's gestures (drawing, re-pinning an end, bending, the label editor and its drag), the
+    anchors and their dots, routing (the orthogonal router, route-behind, collision avoidance, the fans), the arrow
+    menus and presets, and the arrow and pen sections of format painting, style memory, quick style and Tab Style.
+  - **Agents.** `connect` (an arrow from one element to another) is gone, a changeset naming it is refused as unknown
+    vocabulary, and `add arrow`, `add line`, `add freehand`, `add path` and `add annotation` are refused ("arrows are
+    no longer supported in livehuddle", and the like). Views print a stored one as `?`; the edges view lists no
+    edge. The diagram lint's arrow checks (crossings, arrows behind boxes, arrow names) go with them.
+  - **Gone with the code**: each kind's face, its menu sections, its palette tile definition, its factory, defaults,
+    validation, export renderer, animation rules (the arrow's flow), agent view state and summary, help sections and
+    specs, which turn to **Gone from livehuddle** banners.
 - **The count.** Part 1 started from a read-only count: the build machine's two local document stores hold no tab,
   and no checked-in fixture outside a test names a deleted kind. Production tabs live in each document's Durable
   Object, which no read-only query reaches, so the owner counts them after merging and the placeholder keeps them
@@ -721,4 +755,11 @@ comments on it; a Viewer sees it).
   lane, stack and boundary paint at the back and carry nothing; an image's `heroCaption` loads and saves unchanged and
   is not drawn (`svg-render-retired.test.ts`); the canvas draws each kind's placeholder and only an Editor gets its
   Delete (`RetiredElementFace.test.tsx`); the api refuses a `graph` replace (`request.test.ts`).
+  Part 4: a stored tab holding an arrow (pinned at both ends, with a label, bends and flow), a line, a pen stroke, a
+  highlighter stroke, a path and an annotation loads deep-equal, saves unchanged, passes validation and is named
+  (`retired-kinds.test.ts`); a retired arrow's ends resolve free, pinned, on another arrow and with its element gone
+  (`retired-arrow.test.ts`), and the export draws its line and card (`svg-render-retired.test.ts`); the canvas draws
+  each placeholder, a retired arrow's line and card, and only an Editor gets its Delete, never a Participant or a
+  Viewer (`RetiredElementFace.test.tsx`, `RetiredArrowView.test.tsx`); moving and deleting what an arrow pinned to
+  leaves the arrow as stored; `connect` and `add arrow` are refused (`packages/edit-operations`).
 - Every part: the help path tests (`repo-paths-in-docs`, `article-links`, the heading anchors) pass.
