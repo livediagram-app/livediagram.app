@@ -7,11 +7,12 @@ import { createShape, type Element } from './index';
 // a search that paired every neighbour with every other (and scanned the board for each one's own gaps) made each move
 // quadratic: 74-87 ms at 5,000 boxes before, about 10 ms after, on a laptop.
 //
-// The budget holds only for optimised code. A pass that runs before V8's background compiler has finished costs 10 to
-// 20 times more (91 ms here with TurboFan off), and on CI's busy two-core runners three warm-ups were not enough time for
-// it: every product measured 136 to 272 ms there against 120. So the warm-up runs for a second of wall time on a small
-// board (cheap however slow), then the timed passes stop at the first one inside the budget, up to ten. A quadratic
-// search never gets inside it however many passes it takes (66 ms after ten passes here, against 40).
+// About 10 ms was still too slow for CI, which runs this under v8 coverage on busy two-core runners: 137 to 272 ms
+// there against 120. Coverage multiplied the remaining work (76 ms here), which was several comparator sorts of the
+// whole board per move and, for each neighbour's own gaps, a walk through every other column's boxes. The search now
+// sorts by radix and finds each neighbour's gaps among the boxes in its own column: 1.6 ms here, 7.5 under coverage.
+// The warm-up gives V8's background compiler time to finish first, and the timed passes stop at the first one inside
+// the budget, up to ten. A quadratic search never gets inside it however many passes it takes.
 const WARM_UP_MS = 1000;
 const MIN_WARM_UPS = 20;
 const MAX_PASSES = 10;
