@@ -45,7 +45,7 @@ again.
 
 Four steps, then an outro card, which sits outside the step count. There is no welcome card. Three steps ring one
 of the dock's groups by its `data-tour-id` (`dock-drawing`, `dock-shapes`, `dock-settings`, carried by every dock
-group as `dock-<group>`); one rings the [Quick style panel](../008-canvas/quick-style-panel.md) (`quick-style`). The exact strings live in `apps/editor/components/tour/draw-tour-steps.ts`.
+group as `dock-<group>`); one rings the [Quick style panel](../008-canvas/quick-style-panel.md) (`quick-style`). The exact strings lived in the tour's steps file, removed with it.
 
 1. **Pens and Tools**: rings the Drawing tools group. Select, three markers, Text, the Path tool and the Eraser;
    pressing the marker in hand again changes its colour and width.

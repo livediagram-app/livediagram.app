@@ -116,7 +116,7 @@ reader hears each chapter's words. Reduced motion steps chapter end states inste
 
 ## Testing
 
-- `topics/topics.test.ts`: every topic against its card (length, mode), chapter and telemetry ids unique across the
+- `lib/replay/topics/topics.test.ts`: every topic against its card (length, mode), chapter and telemetry ids unique across the
   curriculum, touch words, no em dashes, frames pure and opening only known chrome on a desktop and a phone, waypoints
   inside their chapters. Each topic has its own test of its beats.
 - `replay-dom.test.ts`, `replay-dom-openables.test.ts`: finding by words and accessible names, section rows only,

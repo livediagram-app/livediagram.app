@@ -44,7 +44,7 @@ taken away when the tour ends, however it ends. Nothing reaches the document's h
 
 Six steps, then an outro card, which sits outside the step count. There is no welcome card: a press of the button
 starts the first step. The palette
-itself is the Diagram tour's, so this tour does not repeat it. The exact strings live in `apps/editor/components/tour/workshop-tour-steps.ts`.
+itself is the Diagram tour's, so this tour does not repeat it. The exact strings lived in the tour's steps file, removed with it.
 
 1. **Collaborate**: rings **Ask** and **Session** on the palette's category bar
    ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), the session kit: Ask puts a question to

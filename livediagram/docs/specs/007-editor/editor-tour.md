@@ -95,7 +95,7 @@ the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), t
 
 None: with the button as the one way in there is nothing to hand over from `/new`, which does not wait for the
 document count on create. The Settings rerun crosses no navigation, so it is a window
-event (`livediagram:tour-relaunch`, `lib/diagram-tour.ts`).
+event (`livediagram:tour-relaunch`, the `diagram-tour` module, since removed).
 
 ## The stepped tour (retired)
 
