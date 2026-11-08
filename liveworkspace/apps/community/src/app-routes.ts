@@ -185,10 +185,11 @@ async function publish(
   };
 
   const found = await getPostForDocument(env, app, document);
+  // Hidden after reports is final: nobody reviews it, so its author can't edit it, and the document's next owner
+  // can't publish over it either (that would clear its reports and list it again).
+  if (found && rowState(found) === 'hidden') return conflict('post_hidden');
   if (found && found.owner === input.owner) {
     if (body.create === true) return conflict('already_published');
-    // Hidden after reports is final: nobody reviews it, so its author can't edit it either.
-    if (rowState(found) === 'hidden') return conflict('post_hidden');
     await updatePost(env, found.id, input);
     console.log('[community] updated', { app, postId: found.id });
     const row = await getPostForDocument(env, app, document);
