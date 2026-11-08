@@ -15,17 +15,17 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                   | Role                                                                                      |
-| ------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `apps/editor/lib/tab-cleanup.ts`                       | `cleanupElements`: the one transform the command runs; settles a layout                   |
-| `apps/editor/lib/tidy-engine.ts`                       | `loadTidyEngine`, `tidyEngine`, `withTidyEngine`: the tidiers loaded on demand            |
-| `apps/editor/lib/tidy-verdict.ts`                      | `assessCleanup`, `cleanupVerdict`: whether Auto-align would help, and its notice          |
-| `apps/editor/lib/auto-align.ts`, `auto-align-lines.ts` | Auto-align: per-element sizes, positions by shared lines, even spacing, the overlap guard |
-| `apps/editor/hooks/canvas/useTabCanvas.ts`             | `autoAlignTab`: judge, refuse with a notice or commit one undoable step                   |
-| `apps/editor/lib/editor-commands.ts`                   | The `auto-align` command, **Auto-align to Grid**                                          |
-| `livediagram/packages/document/src/auto-layout-tidy.ts`            | The tidy profile (livediagram's Tidy Up; kept for Work Tracker #459 to decide)            |
-| `livediagram/packages/document/src/auto-layout-route.ts`           | Square arrow routes around the boxes                                                      |
-| `../packages/model-core/src/auto-layout-route-grid.ts` | Bucket grid of the boxes a route must clear                                               |
+| File                                                     | Role                                                                                      |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `apps/editor/lib/tab-cleanup.ts`                         | `cleanupElements`: the one transform the command runs; settles a layout                   |
+| `apps/editor/lib/tidy-engine.ts`                         | `loadTidyEngine`, `tidyEngine`, `withTidyEngine`: the tidiers loaded on demand            |
+| `apps/editor/lib/tidy-verdict.ts`                        | `assessCleanup`, `cleanupVerdict`: whether Auto-align would help, and its notice          |
+| `apps/editor/lib/auto-align.ts`, `auto-align-lines.ts`   | Auto-align: per-element sizes, positions by shared lines, even spacing, the overlap guard |
+| `apps/editor/hooks/canvas/useTabCanvas.ts`               | `autoAlignTab`: judge, refuse with a notice or commit one undoable step                   |
+| `apps/editor/lib/editor-commands.ts`                     | The `auto-align` command, **Auto-align to Grid**                                          |
+| `livediagram/packages/document/src/auto-layout-tidy.ts`  | The tidy profile (livediagram's Tidy Up; kept for Work Tracker #459 to decide)            |
+| `livediagram/packages/document/src/auto-layout-route.ts` | Square arrow routes around the boxes                                                      |
+| `../packages/model-core/src/auto-layout-route-grid.ts`   | Bucket grid of the boxes a route must clear                                               |
 
 ## Domain and naming
 

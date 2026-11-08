@@ -9,28 +9,28 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                       | Role                                                                |
-| ---------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                   | `AnnotationElement`                                                 |
-| `packages/document/src/index.ts`                           | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
-| `packages/document/src/factories.ts`                       | `createAnnotation`, `ANNOTATION_SIZE`                               |
-| `packages/document/src/colors.ts`                          | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
-| `packages/document/src/themes.ts`                          | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
-| `packages/document/src/svg-render-describe.ts`             | Export shape: an ellipse                                            |
-| `apps/editor/lib/canvas.ts`                                | `inheritedSizeFor` keeps the marker size                            |
-| `apps/editor/lib/themes.ts`                                | `deriveNewBoxedColours` treats an annotation like a shape           |
-| `apps/editor/lib/draw-mode.ts`                             | Annotation is absent from draw-to-size                              |
-| `apps/editor/app/document/[id]/useElementCreation.ts`      | `addAnnotation`: viewport-centre drop + telemetry                   |
-| `apps/editor/components/palette/palette-tile-defs.tsx`     | Tile `tools:annotation`, `toolGroup: 'write'`                       |
-| `apps/editor/components/palette/PaletteTileGrid.tsx`       | Routes the tile to `addAnnotation`, never arms a draw               |
-| `apps/editor/components/canvas/element-variant.ts`         | The round, bordered wrapper style                                   |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`      | Renders `AnnotationGlyph` as the face                               |
-| `livediagram/apps/editor/components/canvas/AnnotationMarker.tsx`       | `AnnotationGlyph`, `AnnotationHoverNote`                            |
-| `apps/editor/components/canvas/BoxedElementView.tsx`       | Hover state, preview gate, badge suppression                        |
-| `apps/editor/components/canvas/useBoxedElementGestures.ts` | Double-click opens the note [QD9]                                   |
-| `apps/editor/components/canvas/element-parts.tsx`          | `SelectionChromeLayer`: resize handles for a selected marker [QD8]  |
-| `apps/editor/components/palette/EditorContextMenu.tsx`     | Size section shown, Rotation hidden for an annotation [QD8]         |
-| `packages/document/src/export-tab-text.ts`                 | Markdown outline [QD11]                                             |
+| File                                                             | Role                                                                |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `packages/document/src/element-types.ts`                         | `AnnotationElement`                                                 |
+| `packages/document/src/index.ts`                                 | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
+| `packages/document/src/factories.ts`                             | `createAnnotation`, `ANNOTATION_SIZE`                               |
+| `packages/document/src/colors.ts`                                | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
+| `packages/document/src/themes.ts`                                | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
+| `packages/document/src/svg-render-describe.ts`                   | Export shape: an ellipse                                            |
+| `apps/editor/lib/canvas.ts`                                      | `inheritedSizeFor` keeps the marker size                            |
+| `apps/editor/lib/themes.ts`                                      | `deriveNewBoxedColours` treats an annotation like a shape           |
+| `apps/editor/lib/draw-mode.ts`                                   | Annotation is absent from draw-to-size                              |
+| `apps/editor/app/document/[id]/useElementCreation.ts`            | `addAnnotation`: viewport-centre drop + telemetry                   |
+| `apps/editor/components/palette/palette-tile-defs.tsx`           | Tile `tools:annotation`, `toolGroup: 'write'`                       |
+| `apps/editor/components/palette/PaletteTileGrid.tsx`             | Routes the tile to `addAnnotation`, never arms a draw               |
+| `apps/editor/components/canvas/element-variant.ts`               | The round, bordered wrapper style                                   |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`            | Renders `AnnotationGlyph` as the face                               |
+| `livediagram/apps/editor/components/canvas/AnnotationMarker.tsx` | `AnnotationGlyph`, `AnnotationHoverNote`                            |
+| `apps/editor/components/canvas/BoxedElementView.tsx`             | Hover state, preview gate, badge suppression                        |
+| `apps/editor/components/canvas/useBoxedElementGestures.ts`       | Double-click opens the note [QD9]                                   |
+| `apps/editor/components/canvas/element-parts.tsx`                | `SelectionChromeLayer`: resize handles for a selected marker [QD8]  |
+| `apps/editor/components/palette/EditorContextMenu.tsx`           | Size section shown, Rotation hidden for an annotation [QD8]         |
+| `packages/document/src/export-tab-text.ts`                       | Markdown outline [QD11]                                             |
 
 ## Domain and naming
 

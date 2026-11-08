@@ -8,22 +8,22 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                       | Role                                                                                            |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `livediagram/packages/document/src/arrow-bend.ts`                      | Pure bend maths: grab plan, bow through a point, insert, segment slide                          |
-| `../packages/workbench/src/lib/double-press.ts`            | The press ledger: double-press pairing and echo detection                                       |
-| `apps/editor/lib/canvas.ts`                                | `DragState` gains `arrow-bend`                                                                  |
-| `livediagram/apps/editor/hooks/canvas/useArrowDragHandlers.ts`         | `beginArrowBend`: plans a bend from a line press; `beginArrowTranslate` for the frame           |
-| `livediagram/apps/editor/hooks/canvas/arrow-drag-apply.ts`             | Applies an `arrow-bend` tick from the start snapshot plus the delta                             |
-| `apps/editor/hooks/canvas/useEditorDrag.ts`                | Engage threshold for every arrow drag except drawing a new arrow                                |
-| `livediagram/apps/editor/components/canvas/ArrowView.tsx`              | Line press begins a bend; records presses; move frame for free arrows                           |
-| `livediagram/apps/editor/components/canvas/SelectedArrowHandles.tsx`   | Endpoint, curve, bend-point and elbow handles; every press passes `guardPress`                  |
-| `livediagram/apps/editor/components/canvas/FreeArrowSelection.tsx`     | The free arrow's selection: ring (move bands) + the shared `ResizeHandles` / `EdgeResizeHandle` |
-| `livediagram/packages/document/src/arrow-scale.ts`                     | `scaleFreeArrow`: ends and bends scaled from the opposite side                                  |
-| `apps/editor/components/canvas/CanvasElementsLayer.tsx`    | Mounts `FreeArrowSelection` beside a selected free arrow's `<svg>`                              |
-| `apps/editor/components/canvas/element-parts.tsx`          | Resize handles refuse a paired press (`handlePressStarts`)                                      |
-| `apps/editor/components/canvas/useBoxedElementGestures.ts` | Body presses are recorded; a paired press starts no drag                                        |
-| `apps/editor/hooks/ui/usePressWithoutDrag.ts`              | Reads `DOUBLE_PRESS_MS` from the ledger module                                                  |
+| File                                                                 | Role                                                                                            |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `livediagram/packages/document/src/arrow-bend.ts`                    | Pure bend maths: grab plan, bow through a point, insert, segment slide                          |
+| `../packages/workbench/src/lib/double-press.ts`                      | The press ledger: double-press pairing and echo detection                                       |
+| `apps/editor/lib/canvas.ts`                                          | `DragState` gains `arrow-bend`                                                                  |
+| `livediagram/apps/editor/hooks/canvas/useArrowDragHandlers.ts`       | `beginArrowBend`: plans a bend from a line press; `beginArrowTranslate` for the frame           |
+| `livediagram/apps/editor/hooks/canvas/arrow-drag-apply.ts`           | Applies an `arrow-bend` tick from the start snapshot plus the delta                             |
+| `apps/editor/hooks/canvas/useEditorDrag.ts`                          | Engage threshold for every arrow drag except drawing a new arrow                                |
+| `livediagram/apps/editor/components/canvas/ArrowView.tsx`            | Line press begins a bend; records presses; move frame for free arrows                           |
+| `livediagram/apps/editor/components/canvas/SelectedArrowHandles.tsx` | Endpoint, curve, bend-point and elbow handles; every press passes `guardPress`                  |
+| `livediagram/apps/editor/components/canvas/FreeArrowSelection.tsx`   | The free arrow's selection: ring (move bands) + the shared `ResizeHandles` / `EdgeResizeHandle` |
+| `livediagram/packages/document/src/arrow-scale.ts`                   | `scaleFreeArrow`: ends and bends scaled from the opposite side                                  |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`              | Mounts `FreeArrowSelection` beside a selected free arrow's `<svg>`                              |
+| `apps/editor/components/canvas/element-parts.tsx`                    | Resize handles refuse a paired press (`handlePressStarts`)                                      |
+| `apps/editor/components/canvas/useBoxedElementGestures.ts`           | Body presses are recorded; a paired press starts no drag                                        |
+| `apps/editor/hooks/ui/usePressWithoutDrag.ts`                        | Reads `DOUBLE_PRESS_MS` from the ledger module                                                  |
 
 ## Domain and naming
 

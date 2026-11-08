@@ -496,7 +496,7 @@ per command letter.
 | variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
 | menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
 | backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                                                              |
-| Professional new arrows angled; avoidance per finish         | `livediagram/apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
+| Professional new arrows angled; avoidance per finish         | `livediagram/apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                         |
 | which palette tiles take the finish                          | `apps/editor/components/palette/palette-tile-finish.test.ts`                                                 |
 | applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                      |
 | preview draws each finish, stable, in the tab's font         | `apps/editor/lib/finish-preview.test.ts`                                                                     |

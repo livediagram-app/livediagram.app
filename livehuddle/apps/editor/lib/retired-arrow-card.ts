@@ -23,7 +23,6 @@ import {
   type Tab,
 } from '@livehuddle/document';
 
-
 /** The card as a boxed element: the arrow's own fields (its label, comments, link, note and action for the
  *  indicators, its heads for its name) at the card's box, centred on the line's middle. */
 export function retiredArrowCardElement(
