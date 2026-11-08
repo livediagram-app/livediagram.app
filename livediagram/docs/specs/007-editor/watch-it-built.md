@@ -20,7 +20,7 @@ multiplayer canvas, so the tour also previews working together.
 
 | Term               | Means                                                                                                |
 | ------------------ | ---------------------------------------------------------------------------------------------------- |
-| **Watch It Built** | This tour. In the interface: **Watch It Built** on the footer button and in Settings' Tours category |
+| **Watch It Built** | This tour. In the interface: **Watch It Built** on the footer button and in Settings' Getting Started category |
 | **The replay**     | One run of it, from the press to its end                                                             |
 | **Example**        | The replay's cursor and its name chip                                                                |
 | **Demo elements**  | What the replay builds: drawn on the canvas, never part of the document                              |

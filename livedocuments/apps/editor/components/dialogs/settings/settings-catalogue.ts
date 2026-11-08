@@ -360,7 +360,7 @@ function panelSwitch(
   };
 }
 
-// A tour's switch (docs/specs/007-editor/user-preferences.md "Tours"). INVERTED against its stored
+// A tour's switch (docs/specs/007-editor/user-preferences.md "Getting Started"). INVERTED against its stored
 // preference: the switch asks "offer me this tour?", the preference records "already seen". The
 // telemetry tokens still track the PREFERENCE, not the switch, so each dashboard series keeps
 // meaning what it always has: switching ON sets `<tour>Seen` false, which is '<Tour>SeenOff'.
@@ -402,7 +402,7 @@ function elementTourSwitch(
 const ELEMENT_TOURS_SECTION = 'Show Me';
 
 // One page kind's track of the Pages tour (lib/tour-tracks.ts), as its own row nested under Pages Tours, the switch
-// over every kind (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on
+// over every kind (docs/specs/007-editor/user-preferences.md "Getting Started"). On while the track is owed; off answers it, on
 // forgets its answer. Each track is named for itself ("Slides Tour"). The tour's single seen flag is cleared, so only the
 // answered list speaks for the tracks.
 function pagesTourTrackSwitch(
@@ -896,7 +896,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    // The guided tours (docs/specs/007-editor/user-preferences.md "Tours"), a tour of several tracks one switch per
+    // The guided tours (docs/specs/007-editor/user-preferences.md "Getting Started"), a tour of several tracks one switch per
     // track ("Slides Tour"). A tour starts from the footer's Start Tour button
     // (docs/specs/007-editor/pages-tour.md "Where it appears"), and its switch turns itself off once taken.
     id: 'tours',

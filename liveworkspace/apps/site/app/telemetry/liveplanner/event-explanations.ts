@@ -1334,7 +1334,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the Notifications category in the Settings dialog.',
   'UI|Opened|SettingsPanels': 'Someone opened the Panels category in the Settings dialog.',
   'UI|Opened|SettingsPrivacy': 'Someone opened the Privacy category in the Settings dialog.',
-  'UI|Opened|SettingsTours': 'Someone opened the Tours category in the Settings dialog.',
+  'UI|Opened|SettingsTours': 'Someone opened the Getting Started category in the Settings dialog.',
   'UI|Opened|SettingsTokens': 'Someone opened the API Tokens category in the Settings dialog.',
   'UI|Opened|Share': 'Someone opened the Share dialog.',
   'UI|Opened|Shortcuts': 'Someone opened the keyboard-shortcuts dialog.',

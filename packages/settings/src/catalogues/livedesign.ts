@@ -444,7 +444,8 @@ export const CATALOGUE: AppCatalogue = {
           label: 'Automatically Open Explorer',
           description:
             'Opening the homepage while signed in takes you straight to your Explorer. A link to the homepage from inside the app still shows it.',
-          keywords: 'automatically open explorer redirect home homepage start landing skip straight',
+          keywords:
+            'automatically open explorer redirect home homepage start landing skip straight',
           key: 'autoOpenExplorer',
           on: true,
           off: false,

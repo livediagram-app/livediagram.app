@@ -105,7 +105,7 @@ describe('SettingsCategoryPane: targeting a section', () => {
   });
 });
 
-// Tours (docs/specs/007-editor/user-preferences.md "Tours"): each switch writes its own preference,
+// Tours (docs/specs/007-editor/user-preferences.md "Getting Started"): each switch writes its own preference,
 // inverted, and sends its own token.
 describe('SettingsCategoryPane tours', () => {
   const TOURS = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;

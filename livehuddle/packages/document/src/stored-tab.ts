@@ -27,36 +27,16 @@ export function migrateStoredTab<
   // A tab saved with layers (./retired-layers) loses them, so every element is visible and free to pick, and one
   // saved with a dot vote (./retired-vote), a Session strip timer (./retired-timer) or a lock on the tab or its
   // elements (./retired-locks) loses that.
-  return upgradeStoredTab(
-    dropRetiredLocks(
-      dropRetiredTimer(dropRetiredVote(dropRetiredLayers(dropRetiredPlan(dropRetiredPages(tab))))),
-    ),
+  const kept = dropRetiredLocks(
+    dropRetiredTimer(dropRetiredVote(dropRetiredLayers(dropRetiredPlan(dropRetiredPages(tab))))),
   );
-}
-
-/**
- * Every stored-tab upgrade but the Pages and Plan drops, for the move from the historical livediagram.app
- * (docs/migration.md at the monorepo root, step 3): its migrate tool hands a tab's Pages and Plan content to
- * livedocuments, livedesign and liveplanner, which don't run livehuddle's older read migrations, so the tab comes
- * back in today's shape with its pages, articles, dashboard, form and their elements still in it. Never for a tab
- * livehuddle itself opens.
- */
-export function migrateStoredTabKeepingRetired<
-  T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
->(tab: T): T {
-  return upgradeStoredTab(tab);
-}
-
-function upgradeStoredTab<
-  T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
->(tab: T): T {
   // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
   // Its own fields that renderers read raw (the background colours) are settled before anything reads them.
   // A tab on a custom theme, which are gone (./retired-custom-themes), opens on Default.
   // A diagram pattern (dots, graph paper, ruled lines...) opens as the floor nearest it (./floors.ts).
   const schemed = migrateRetiredPattern(
     dropCustomTheme(
-      migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab)))),
+      migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(kept)))),
     ),
   );
   if (!Array.isArray(schemed.elements)) return schemed;

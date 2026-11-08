@@ -157,7 +157,7 @@ another project is kept. Nothing writes a record any more.
   malformed value is dropped, never thrown. A record from before the Sheets track (`boardId`) reads as its
   `elementId`.
 - Settings switches: **Plan Tours** (`tourTracksSwitch`, key `planTourSeen`, label **Plan Tours**, the second toggle
-  row in the Tours category; reads on while any of `PLAN_TOUR_TRACKS` is owed; off writes `planTourSeen: true` with
+  row in the Getting Started category; reads on while any of `PLAN_TOUR_TRACKS` is owed; off writes `planTourSeen: true` with
   every track answered, on removes `planTourTracks` and clears `planTourSeen`; events `PlanTourSeenOff` /
   `PlanTourSeenOn`), then one row per track nested beneath it (`tourTrackSwitch`, `parent: 'planTourSeen'`), keys
   `planTourSeen-boards`, `planTourSeen-sheets` and `planTourSeen-dashboards`, labels **Boards Tour**, **Sheets Tour**

@@ -113,7 +113,7 @@ describe('settings catalogue', () => {
     expect(row.event.off).toBe('WorkshopTourSeenOn');
   });
 
-  // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
+  // docs/specs/007-editor/user-preferences.md "Getting Started": a category of its own, one switch per tour in
   // the order the tours come.
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;

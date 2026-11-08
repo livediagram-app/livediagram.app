@@ -12,7 +12,7 @@ the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), t
 
 | Term             | Means                                                                                                       |
 | ---------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Diagram tour** | The Diagram tab's tour. In the interface: **Watch It Built**, on the button and in Settings' Tours category |
+| **Diagram tour** | The Diagram tab's tour. In the interface: **Watch It Built**, on the button and in Settings' Getting Started category |
 | **welcome tour** | A name kept only in code identifiers and telemetry tokens                                                   |
 | **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)                    |
 
@@ -45,7 +45,7 @@ the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), t
 - **Gone once taken, back from Settings.** A tour taken is off the button: once the person starts it (and so
   finishes or skips it), its host stops offering it, so the button makes room for a tour not yet taken, or is not
   drawn at all. It comes back when its switch in Settings' **Getting Started** category is turned on again (on means "offer
-  me this tour", [User preferences](user-preferences.md) "Tours"), and turning a switch on and closing Settings
+  me this tour", [User preferences](user-preferences.md) "Getting Started"), and turning a switch on and closing Settings
   also runs that tour if it could run right then. Every tour's host reads the same synced record its Settings row
   reads, so the button and the row never disagree. The rule lives once in the shared offer (`useOfferTour`'s `seen`, `tour-offer.ts`): a host passes whether its
   tour is taken, and a taken tour is never published. Until 1 November 2026 a taken tour stayed on the button for

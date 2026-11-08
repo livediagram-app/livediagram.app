@@ -12,7 +12,7 @@ a way that suits what the surface is for:
 
 None of them is a row of step cards: each is a short list of **missions**, shown one at a time in the
 [mission strip](#the-mission-strip), that tick themselves off as the person does them, however they found the way.
-The footer button, the synced taken record, Settings › Tours and one-tour-at-a-time are the shared ones
+The footer button, the synced taken record, Settings › Getting Started and one-tour-at-a-time are the shared ones
 ([Editor tours](../007-editor/editor-tour.md)); where this spec is silent, those rules hold.
 
 ## Domain language

@@ -12,7 +12,7 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 | The taken record    | `UserPreferences.workshopTourSeen` (synced), read by Settings only                                  |
 | The rerun signal    | `WORKSHOP_TOUR_RELAUNCH_EVENT`, `requestWorkshopTourRelaunch` in `apps/editor/lib/workshop-tour.ts` |
 | The one-tour slot   | `ActiveTour` `'workshop'` in `apps/editor/lib/tour-active.ts`                                       |
-| The Settings switch | `workshopTourSeen`, "Workshop Tour", third toggle row in the Tours category                         |
+| The Settings switch | `workshopTourSeen`, "Workshop Tour", third toggle row in the Getting Started category                         |
 | The help article    | `canvas/workshop-mode/workshop-tour` (`helpArticle: 'workshopTour'`)                                |
 
 ## Behaviour and state
