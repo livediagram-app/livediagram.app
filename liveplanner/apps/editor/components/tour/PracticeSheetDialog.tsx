@@ -109,7 +109,7 @@ export function PracticeSheetDialog({
           }
         }}
       >
-        <header className="flex items-start gap-3 border-b border-slate-200 px-5 pb-3 pt-4 dark:border-slate-800">
+        <div className="flex items-start gap-3 border-b border-slate-200 px-5 pb-3 pt-4 dark:border-slate-800">
           <div className="min-w-0 flex-1">
             <h2 className="text-[16px] font-semibold text-slate-900 dark:text-white">
               Practice Sheet
@@ -119,7 +119,7 @@ export function PracticeSheetDialog({
             </p>
           </div>
           <DialogCloseButton compact onClick={() => onEnd({ outcome: 'skipped', kept: false })} />
-        </header>
+        </div>
         {practice ? (
           <PracticeBody practice={practice} onEnd={onEnd} />
         ) : (

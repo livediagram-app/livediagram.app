@@ -20,7 +20,7 @@ export function PracticeMarks({ shipped }: { shipped: boolean }) {
     <>
       <span
         aria-hidden
-        className="pointer-events-none absolute right-1.5 top-1.5 z-[1] rounded-full bg-brand-600 px-1.5 py-px text-[length:calc(10px*var(--plan-text-scale,1))] font-semibold leading-4 text-white shadow-[0_1px_2px_rgba(15,23,42,0.18)] dark:bg-brand-500"
+        className="pointer-events-none absolute right-1.5 top-1.5 z-[1] rounded-full bg-brand-700 px-1.5 py-px text-[length:calc(10px*var(--plan-text-scale,1))] font-semibold leading-4 text-white shadow-[0_1px_2px_rgba(15,23,42,0.18)] dark:bg-brand-600"
       >
         Practice
       </span>

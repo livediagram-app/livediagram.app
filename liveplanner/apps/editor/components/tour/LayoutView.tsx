@@ -193,7 +193,7 @@ function RowGuides({ row, condensed }: { row: RowBox; condensed: boolean }) {
         <span
           key={`${row.id}:${row.heightPx}`}
           data-layout-height=""
-          className="absolute -translate-x-full -translate-y-full animate-fade-in whitespace-nowrap rounded-md bg-brand-600 px-1.5 py-0.5 font-mono text-[11px] font-medium tabular-nums text-white shadow-[0_1px_2px_rgba(15,23,42,0.25)] dark:bg-brand-500"
+          className="absolute -translate-x-full -translate-y-full animate-fade-in whitespace-nowrap rounded-md bg-brand-700 px-1.5 py-0.5 font-mono text-[11px] font-medium tabular-nums text-white shadow-[0_1px_2px_rgba(15,23,42,0.25)] dark:bg-brand-600"
           style={{ left: row.left + row.width - 8, top: row.top + row.height - 8 }}
         >
           {row.heightPx} px

@@ -80,7 +80,7 @@ export function MissionStrip<Ctx>({
             : 'rounded-2xl shadow-[0_18px_40px_-18px_rgba(15,23,42,0.45),0_2px_6px_-2px_rgba(15,23,42,0.12)] dark:shadow-[0_18px_40px_-18px_rgba(0,0,0,0.7),0_2px_6px_-2px_rgba(0,0,0,0.4)]'
       }`}
     >
-      <header className="flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <span className="text-[12px] font-semibold text-slate-500 dark:text-slate-400">{name}</span>
         <Segments count={count} index={index} phase={phase} />
         <span className="flex-1" />
@@ -94,7 +94,7 @@ export function MissionStrip<Ctx>({
           <EndIcon />
           End
         </Button>
-      </header>
+      </div>
       {/* The mission, its lesson or the finish, spoken as each arrives. */}
       <div aria-live="polite" className="min-h-[3.25rem]">
         {phase === 'finish' ? (
@@ -125,7 +125,7 @@ export function MissionStrip<Ctx>({
         ) : null}
       </div>
       {phase === 'doing' && mission && (run.hint || run.moreHints) ? (
-        <footer className="flex items-start gap-2">
+        <div className="flex items-start gap-2">
           {run.hint ? (
             <p
               key={run.hintLevel}
@@ -147,7 +147,7 @@ export function MissionStrip<Ctx>({
               {run.hintLevel === 0 ? 'Hint' : 'More Help'}
             </Button>
           ) : null}
-        </footer>
+        </div>
       ) : null}
     </section>
   );

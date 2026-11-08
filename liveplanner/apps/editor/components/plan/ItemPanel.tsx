@@ -304,7 +304,7 @@ function ItemPanelContent({
         onType={onType}
       />
       {practice ? (
-        <span className="rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white dark:bg-brand-500">
+        <span className="rounded-full bg-brand-700 px-2 py-0.5 text-[11px] font-semibold text-white dark:bg-brand-600">
           Practice
         </span>
       ) : (
