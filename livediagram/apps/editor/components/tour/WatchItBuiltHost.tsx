@@ -63,10 +63,9 @@ export function WatchItBuiltHost() {
     ctx.activeTab.locked !== true;
   const owed = mode ? topicsOwed(ctx.userPreferences, mode).length : 0;
 
-  // The panel closes if the mode it was opened for goes, or the editor can no longer take it.
-  useEffect(() => {
-    if (run && run.topic === null && (!ready || run.mode !== mode)) setRun(null);
-  }, [run, ready, mode]);
+  // The panel closes if the mode it was opened for goes, or the editor can no longer take it: adjusted while
+  // rendering (React's pattern for state that follows other values), so it never paints a frame stale.
+  if (run && run.topic === null && (!ready || run.mode !== mode)) setRun(null);
 
   const open = () => {
     if (!mode || run || otherTour) return;

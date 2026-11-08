@@ -26,7 +26,7 @@ describe('Stickies and Stickers', () => {
   it('lays three stickies in a row and fits them to a phone-wide view', () => {
     expect(layout.notes.map((n) => n.type)).toEqual(['sticky', 'sticky', 'sticky']);
     expect(layout.notes[1]!.x - layout.notes[0]!.x).toBe(layout.notes[0]!.width + 24);
-    const phone = stickies.layout({ centre, tab, size: { width: 390, height: 700 } } as never);
+    const phone = stickies.layout({ centre, tab, size: { width: 390, height: 700 } });
     const right = phone.notes[2]!.x + phone.notes[2]!.width;
     expect(phone.notes[0]!.x).toBeGreaterThanOrEqual(centre.x - 195);
     expect(right).toBeLessThanOrEqual(centre.x + 195);

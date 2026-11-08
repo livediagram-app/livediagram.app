@@ -203,7 +203,8 @@ export function openMenuPath(path: readonly string[]) {
 export function typeInto(selector: string, text: string) {
   const input = findNode(selector) as HTMLInputElement | null;
   if (!input || input.value === text) return;
-  const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value')?.set;
-  setter?.call(input, text);
+  // The prototype's setter, so React's value tracker sees a change, called through Reflect on the input itself.
+  const proto = Object.getPrototypeOf(input) as object;
+  Reflect.set(proto, 'value', text, input);
   input.dispatchEvent(new Event('input', { bubbles: true }));
 }

@@ -1048,7 +1048,8 @@ html {
 /* Watch It Built (docs/specs/007-editor/blueprints/watch-it-built.md "The fade"): while a replay runs, the person's own
    elements sit back at a quarter strength so the demo reads; demo ids start wib-. Outermost element nodes only, so a
    nested part is not faded twice. Important, because a shape's wrapper sets its own opacity inline. */
-:root[data-replay] [data-element-id]:not([data-element-id^='wib-']):not([data-element-id] [data-element-id]) {
+:root[data-replay]
+  [data-element-id]:not([data-element-id^='wib-']):not([data-element-id] [data-element-id]) {
   opacity: 0.25 !important;
   transition: opacity 250ms ease;
 }
@@ -1067,6 +1068,6 @@ html {
 }
 @media (prefers-reduced-motion: no-preference) {
   :root:not(.reduce-motion) [data-replay-press] {
-    animation: lvd-replay-press 420ms ease-out forwards;
+    animation: lvd-replay-press 240ms ease-out forwards;
   }
 }
