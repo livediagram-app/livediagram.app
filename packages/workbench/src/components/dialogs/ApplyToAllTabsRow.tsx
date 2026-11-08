@@ -3,18 +3,24 @@
 // The foot of the Tab Style dialog's home (docs/specs/011-theme/canvas-and-theme-dialog.md "Apply to All Tabs" in
 // each product): one grouped settings row, iOS style, that puts this tab's style on every tab of the document. An
 // Editor's only; the dialog leaves it out for anyone else. With one tab there is nothing to align, so it shows nothing.
+// The note names locked tabs only in an app that locks them (`tabLocks`, on unless the app says otherwise: livehuddle
+// has no tab locks, livehuddle/docs/specs/011-theme/canvas-and-theme-dialog.md "Apply to All Tabs").
 import { Glyph } from '@liveworkspace/ui';
 
 export function ApplyToAllTabsRow({
   tabCount,
   applying,
   onApply,
+  tabLocks = true,
 }: {
   // Tabs in the document, this one included.
   tabCount: number;
   // Busy while the other tabs load and take the style.
   applying: boolean;
   onApply: () => void;
+  // Whether this app can lock a tab. A locked tab keeps its own style, so the note says so; an app with no locks says
+  // nothing about them.
+  tabLocks?: boolean;
 }) {
   if (tabCount < 2) return null;
   const others = tabCount - 1;
@@ -53,7 +59,7 @@ export function ApplyToAllTabsRow({
         </button>
       </div>
       <p className="px-3 text-[11px] text-slate-500 dark:text-slate-400">
-        Locked tabs keep their own style. Undo puts every tab back.
+        {tabLocks ? 'Locked tabs keep their own style. ' : ''}Undo puts every tab back.
       </p>
     </section>
   );

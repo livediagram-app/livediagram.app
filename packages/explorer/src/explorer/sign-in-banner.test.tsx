@@ -43,6 +43,15 @@ describe('a guest’s sign-in banner', () => {
     expect(screen.queryByRole('region', { name: 'Sign in' })).toBeNull();
   });
 
+  // liveworkspace/docs/specs/010-site/site.md "Guests": livehuddle has no MCP server, so its reasons name the API.
+  it("lists livehuddle's own reasons, with no MCP", async () => {
+    render(<Explorer {...props({ app: 'livehuddle', signedIn: false, signInBanner: {} })} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Learn More' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Why sign in' });
+    expect(dialog.textContent).toContain('Use the API');
+    expect(dialog.textContent).not.toContain('MCP');
+  });
+
   it('is never shown to an account, or without the host asking for it', async () => {
     render(<Explorer {...props({ signedIn: true, signInBanner: {} })} />);
     render(<Explorer {...props({ signedIn: false })} />);
