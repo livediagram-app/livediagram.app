@@ -46,10 +46,9 @@ export function applyMove(
       return {
         code: 'invalid_value',
         operation: index,
-        details: [
-          `${operation.target}: arrows move with their ends; use by=dx,dy for a free arrow`,
-        ],
-        hint: 'move the boxes an arrow joins, or give by=dx,dy',
+        // A stored arrow is a retired element that never moves (part 4 of the element engine).
+        details: [`${operation.target}: a stored arrow does not move`],
+        hint: 'move a box',
       };
     const size = { width: bounds.width, height: bounds.height };
     const placed = resolvePlacement(state, operation.place, size, moving, index, bounds);
@@ -58,8 +57,9 @@ export function applyMove(
   }
   if (dx === 0 && dy === 0) return null;
   for (const id of moving) {
-    const el = shifted(state.byId.get(id)!, dx, dy);
-    writeFields(state, el, index, el.type === 'arrow' ? ['from', 'to'] : ['x', 'y']);
+    const was = state.byId.get(id)!;
+    const el = shifted(was, dx, dy);
+    if (el !== was) writeFields(state, el, index, ['x', 'y']);
   }
   return null;
 }

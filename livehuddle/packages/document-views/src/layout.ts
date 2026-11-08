@@ -1,14 +1,13 @@
 // The layout view (docs/specs/024-agents/blueprints/document-views.md "layout", VW31, VW32): exact
 // geometry relative to the content origin, or coarse rows of the canvas.
 import type { LayoutView, ViewDoor } from '@livehuddle/api-schema';
-import { contentOrigin, type Endpoint } from '@livehuddle/document';
+import { contentOrigin } from '@livehuddle/document';
 import {
   fitLines,
   fitOf,
   type ViewLine,
   type ViewResult,
 } from '@liveworkspace/document-views/budget';
-import type { ViewEdge } from './edges';
 import { boxOf, numberField } from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
@@ -18,22 +17,9 @@ import { nodesOf, subtreeItems, type ViewNode } from './tree';
 type LayoutOptions = { budget?: number; door?: ViewDoor; only?: string; coarse?: boolean };
 
 const BOX = { one: 'box', many: 'boxes' };
-const ARROW = { one: 'arrow', many: 'arrows' };
 const ROW = { one: 'row', many: 'rows' };
 
 export type Origin = { x: number; y: number };
-
-// An arrow end in content-origin terms: `ref.anchor`, `arrow:ref@t`, or `x,y` for a free end.
-export function layoutEndText(end: Endpoint, model: ViewModel, origin: Origin): string {
-  switch (end.kind) {
-    case 'pinned':
-      return `${model.refs.refOf(end.elementId)}.${end.anchor}`;
-    case 'on-arrow':
-      return `arrow:${model.refs.refOf(end.arrowId)}@${end.t.toFixed(2)}`;
-    default:
-      return `${Math.round(end.x - origin.x)},${Math.round(end.y - origin.y)}`;
-  }
-}
 
 function rowRefs(model: ViewModel, siblings: readonly ViewNode[]): string[][] {
   const { rows, loose } = rowsOf(siblings);
@@ -55,14 +41,6 @@ function coarseLayout(model: ViewModel, options: LayoutOptions) {
 
 function exactLayout(model: ViewModel, options: LayoutOptions, origin: Origin) {
   const nodes = nodesOf(subtreeItems(model.tree, options.only));
-  const inScope = new Set(nodes.map((n) => n.el.id));
-  const arrows = model.edges.all.filter(
-    (edge) =>
-      options.only === undefined ||
-      [edge.arrow.from, edge.arrow.to].some(
-        (end) => end.kind === 'pinned' && inScope.has(end.elementId),
-      ),
-  );
   type Placed = LayoutView['boxes'][number];
   const records = nodes.map((node): { line: ViewLine; box: Placed | null } => {
     const ref = model.refs.refOf(node.el.id);
@@ -82,17 +60,9 @@ function exactLayout(model: ViewModel, options: LayoutOptions, origin: Origin) {
       box: placed,
     };
   });
-  const arrowJson = arrows.map((edge: ViewEdge) => ({
-    ref: edge.ref,
-    from: layoutEndText(edge.arrow.from, model, origin),
-    to: layoutEndText(edge.arrow.to, model, origin),
-    style: edge.arrow.arrowStyle ?? 'straight',
-  }));
-  const arrowLines = arrowJson.map((a): ViewLine => ({
-    text: `${a.ref} ${a.from} → ${a.to}${a.style === 'straight' ? '' : ` ${a.style}`}`,
-    noun: ARROW,
-  }));
-  return { lines: [...records.map((r) => r.line), ...arrowLines], records, arrows: arrowJson };
+  // A stored arrow (a retired element, part 4 of the element engine) has no box: it prints `no geometry` like any
+  // element without one, and the `arrows` list stays on the wire, empty.
+  return { lines: records.map((r) => r.line), records, arrows: [] as LayoutView['arrows'] };
 }
 
 // Coordinates are printed from the content origin; a stored one is the printed one plus it, said once on the

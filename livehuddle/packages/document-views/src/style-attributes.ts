@@ -2,7 +2,6 @@
 // attributes", VW50): each style key's field when present and different from what the kind's factory
 // writes, keyed as edit operations write it.
 import {
-  createPinnedArrow,
   createShape,
   createSticky,
   createText,
@@ -29,8 +28,6 @@ function factoryOutput(el: Element): object | null {
       return createText(0, 0);
     case 'sticky':
       return createSticky(0, 0);
-    case 'arrow':
-      return createPinnedArrow('from', 'e', 'to', 'w');
     default:
       return null;
   }

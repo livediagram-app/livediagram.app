@@ -1,16 +1,16 @@
 // The outline (docs/specs/024-agents/document-views.md "The outline"): one line per element, flat (nothing
-// nests since part 3 of the element engine, docs/specs/002-project-scope/not-in-livehuddle.md), outgoing arrows on
-// their source's line, fitted to a budget down a fixed ladder (blueprint "Budgets", VW38).
+// nests since part 3 of the element engine, docs/specs/002-project-scope/not-in-livehuddle.md), fitted to a budget
+// down a fixed ladder (blueprint "Budgets", VW38). A stored arrow prints on its own line as `? arrow`, like any
+// retired element (part 4): no arrow is an edge.
 import type { FreehandRunJson, OutlineNode, OutlineView, ViewDoor } from '@livehuddle/api-schema';
 import { isKnownElement, type Element } from '@livehuddle/document';
 import { attributesOf, isOpenCommentsAttribute } from './attributes';
-import { edgeJson, edgeText, ownLineText, type ViewEdge } from './edges';
 import { estimateTokens, type ViewResult } from '@liveworkspace/document-views/budget';
 import { buildElision, elisionLine } from '@liveworkspace/document-views/elision';
 import { textField } from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
-import { styleAttributesOf, styleBaselines, type StyleBaselines } from './style-attributes';
+import { styleBaselines, type StyleBaselines } from './style-attributes';
 import { LABEL_CUT_CHARS } from './constants';
 import { jsonString } from '@liveworkspace/document-views/text';
 import {
@@ -36,16 +36,13 @@ const LEVELS: readonly Level[] = [0, 1, 2];
 
 type OutlineState = 'full' | 'notes-dropped' | 'attributes-dropped' | 'lines-dropped';
 
-type EntryLine =
-  | { kind: 'node'; node: ViewNode }
-  | { kind: 'run'; run: FreehandRunItem }
-  | { kind: 'arrow'; edge: ViewEdge };
+type EntryLine = { kind: 'node'; node: ViewNode } | { kind: 'run'; run: FreehandRunItem };
 
 type Entry = {
   line: EntryLine;
   // The line at each level.
   texts: readonly [string, string, string];
-  // Printed elements this line carries: a node and the arrows on its line, a run's strokes, an arrow.
+  // Printed elements this line carries: a node, or a run's strokes.
   elements: number;
 };
 
@@ -68,12 +65,6 @@ function attributesAt(attributes: readonly ViewAttribute[], level: Level): ViewA
   return level === 1 ? attributes.filter((a) => a.key !== 'note') : [...attributes];
 }
 
-function edgeExtras(edge: ViewEdge, style: StyleBaselines | null, level: Level): string[] {
-  return style === null || level === 2
-    ? []
-    : styleAttributesOf(edge.arrow, style).map((a) => a.text);
-}
-
 function nodeLine(
   model: ViewModel,
   node: ViewNode,
@@ -82,15 +73,13 @@ function nodeLine(
 ): string {
   const label = textField(node.el, 'label');
   const attributes = attributesAt(nodeAttributes(model, node.el, style), level);
-  const edges = model.edges.bySource.get(node.el.id) ?? [];
   const parts = [
     model.kindOf(node.el),
     model.refs.refOf(node.el.id),
     ...(label === null ? [] : [jsonString(label, LABEL_CUT_CHARS)]),
     ...attributes.map((a) => a.text),
   ];
-  const arrows = edges.map((edge) => edgeText(edge, edgeExtras(edge, style, level)));
-  return `${parts.join(' ')}${arrows.length ? ` → ${arrows.join(', ')}` : ''}`;
+  return parts.join(' ');
 }
 
 function runLine(run: FreehandRunItem): string {
@@ -101,10 +90,9 @@ function runLine(run: FreehandRunItem): string {
 function buildEntries(
   model: ViewModel,
   items: readonly ViewItem[],
-  ownLine: readonly ViewEdge[],
   style: StyleBaselines | null,
 ): Entry[] {
-  const entries: Entry[] = items.map((item): Entry => {
+  return items.map((item): Entry => {
     if (isViewRun(item)) {
       const text = runLine(item);
       return {
@@ -114,22 +102,12 @@ function buildEntries(
       };
     }
     const texts = LEVELS.map((level) => nodeLine(model, item, level, style));
-    const edges = model.edges.bySource.get(item.el.id)?.length ?? 0;
     return {
       line: { kind: 'node', node: item },
       texts: [texts[0]!, texts[1]!, texts[2]!],
-      elements: 1 + edges,
+      elements: 1,
     };
   });
-  for (const edge of ownLine) {
-    const texts = LEVELS.map((level) => ownLineText(edge, edgeExtras(edge, style, level)));
-    entries.push({
-      line: { kind: 'arrow', edge },
-      texts: [texts[0]!, texts[1]!, texts[2]!],
-      elements: 1,
-    });
-  }
-  return entries;
 }
 
 // The fitted shape: the detail level, and how many of the leading lines are kept.
@@ -224,7 +202,8 @@ function nodeJson(
     attributes: attributesAt(nodeAttributes(model, node.el, style), level).map(
       ({ key, value }) => ({ key, value }),
     ),
-    edges: (model.edges.bySource.get(node.el.id) ?? []).map(edgeJson),
+    // Kept on the wire, empty: no arrow is an edge since part 4 of the element engine.
+    edges: [],
     // Kept on the wire, empty: nothing nests since part 3 of the element engine.
     children: [],
     collapsed: 0,
@@ -235,8 +214,7 @@ export function outlineView(model: ViewModel, options: OutlineOptions = {}): Out
   const door = options.door ?? 'cli';
   const style = options.style ? styleBaselines() : null;
   const items = subtreeItems(model.tree, options.only);
-  const ownLine = options.only === undefined ? model.edges.ownLine : [];
-  const entries = buildEntries(model, items, ownLine, style);
+  const entries = buildEntries(model, items, style);
   const header = headerLine(model.facts);
   const m = measure(entries, header);
   const { fit, state, fullTokens } = fitOutline(entries, m, options.budget, door);
@@ -246,13 +224,13 @@ export function outlineView(model: ViewModel, options: OutlineOptions = {}): Out
 
   const json: OutlineView = {
     header: viewHeader('outline', model.facts),
-    // Entries are the items, then the own-line arrows: the kept lines are a prefix of both, in that order.
     nodes: items
       .slice(0, fit.kept)
       .map((item) =>
         isViewRun(item) ? runJson(model, item) : nodeJson(model, item, fit.level, style),
       ),
-    ownLineArrows: ownLine.slice(0, Math.max(0, fit.kept - items.length)).map(edgeJson),
+    // Kept on the wire, empty: a stored arrow prints as a node since part 4 of the element engine.
+    ownLineArrows: [],
     elision,
   };
   return { text, json, state, fullTokens, fit: { estimate: fullTokens, state } };

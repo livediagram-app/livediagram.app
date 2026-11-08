@@ -14,15 +14,15 @@ describe('validateEditOperations', () => {
     const input = [
       { op: 'add', element: { id: 'x', type: 'sticky', x: 0, y: 0, width: 10, height: 10 } },
       { op: 'set', target: 'n3', fields: { label: 'Sign in', note: null }, all: true },
-      { op: 'rm', target: 'n7', keepArrows: true },
+      { op: 'rm', target: 'n7', all: true },
     ];
     expect(validateEditOperations(input)).toEqual({ operations: input });
   });
 
   it('reads a false flag as absent', () => {
-    expect(
-      validateEditOperations([{ op: 'rm', target: 'n7', all: false, keepArrows: false }]),
-    ).toEqual({ operations: [{ op: 'rm', target: 'n7' }] });
+    expect(validateEditOperations([{ op: 'rm', target: 'n7', all: false }])).toEqual({
+      operations: [{ op: 'rm', target: 'n7' }],
+    });
   });
 
   it('accepts an empty list', () => {
@@ -57,6 +57,21 @@ describe('validateEditOperations', () => {
     ]);
   });
 
+  // Part 4: no arrow is made or rewired any more, so `connect`, `rewire` and `insert` went with the arrows.
+  it('reads connect, rewire and insert as words that are not operations', () => {
+    expect(
+      errorsOf([
+        { op: 'connect', from: 'n3', to: 'n4' },
+        { op: 'rewire', target: 'a3', to: 'n5' },
+        { op: 'insert', kind: 'diamond', between: ['n3', 'n4'] },
+      ]).map((e) => [e.code, e.details[0]]),
+    ).toEqual([
+      ['unknown_operation', '"connect" is not an operation'],
+      ['unknown_operation', '"rewire" is not an operation'],
+      ['unknown_operation', '"insert" is not an operation'],
+    ]);
+  });
+
   it('reads every operation of the vocabulary', () => {
     const input = [
       {
@@ -69,12 +84,9 @@ describe('validateEditOperations', () => {
       { op: 'add', kind: 'text', place: { rel: 'at', x: 0, y: -20 } },
       { op: 'move', target: 'n4', place: { rel: 'align', ref: 'f2' }, all: true },
       { op: 'move', target: 'type:sticky', by: [10, -5] },
-      { op: 'connect', from: 'n3', to: 'verify', id: 'a9', fields: { label: 'ok' }, again: true },
-      { op: 'rewire', target: 'a3', to: 'verify' },
-      { op: 'insert', kind: 'diamond', between: ['n3', 'n4'], fields: { label: 'Valid?' } },
       { op: 'order', target: 'n3', to: 'front' },
       { op: 'order', target: 'n3', below: 'n4' },
-      { op: 'layout', target: 'type:square', style: 'tree', direction: 'right' },
+      { op: 'layout', target: 'type:square' },
       { op: 'test', target: 'n3', fields: { label: 'Login' } },
     ];
     expect(validateEditOperations(input)).toEqual({ operations: input });
@@ -86,7 +98,6 @@ describe('validateEditOperations', () => {
         { op: 'add' },
         { op: 'add', kind: 'square', element: {} },
         { op: 'move', target: 'n1' },
-        { op: 'rewire', target: 'a1' },
         { op: 'order', target: 'n1', to: 'front', above: 'n2' },
         { op: 'add', element: {}, id: 'x' },
       ]).map((e) => e.details[0]),
@@ -94,7 +105,6 @@ describe('validateEditOperations', () => {
       'add takes exactly one of "kind", "element" (in a line: add <kind> key=value…)',
       'add takes exactly one of "kind", "element" (in a line: add <kind> key=value…)',
       'move takes exactly one of "place", "by" (in a line: a placement such as below:n3 or right-of:n3, or by=dx,dy)',
-      'rewire takes at least one of "from", "to" (in a line: from=<x>, to=<y> or both)',
       'order takes exactly one of "to", "above", "below" (in a line: front, back, above=<x> or below=<x>)',
       'add with "element" takes no "id": the element carries it',
     ]);
@@ -138,7 +148,7 @@ describe('validateEditOperations', () => {
       {
         code: 'parse_error',
         operation: 1,
-        details: ['unknown member "keep"; rm takes target, all, keepArrows'],
+        details: ['unknown member "keep"; rm takes target, all'],
       },
     ]);
   });
@@ -152,7 +162,6 @@ describe('validateEditOperations', () => {
         { op: 'rm', target: 'n1', all: 'yes' },
         { op: 'add', element: 'square' },
         { op: 'move', target: 'n1', by: [1] },
-        { op: 'insert', kind: 'square', between: ['n1'] },
         { op: 'order', target: 'n1', to: 'middle' },
       ]).map((e) => [e.operation, e.details[0]]),
     ).toEqual([
@@ -162,19 +171,19 @@ describe('validateEditOperations', () => {
       [4, 'member "all": expected true or false'],
       [5, 'member "element": expected an object'],
       [6, 'member "by": expected [dx, dy] numbers'],
-      [7, 'member "between": expected [a, b] selectors'],
-      [8, 'member "to": expected front or back'],
+      [7, 'member "to": expected front or back'],
     ]);
     expect(
       errorsOf([
-        { op: 'connect', from: 'n1', to: '' },
-        { op: 'layout', target: 'n1', style: 'grid' },
-        { op: 'layout', target: 'n1', direction: 'up' },
+        { op: 'order', target: 'n1', above: '' },
+        { op: 'layout', target: 'n1', style: 'flow' },
+        { op: 'layout', target: 'n1', direction: 'down' },
       ]).map((e) => e.details[0]),
     ).toEqual([
-      'member "to": expected a non-empty string',
-      'member "style": expected flow, tree',
-      'member "direction": expected down or right',
+      'member "above": expected a non-empty string',
+      // The layered layout went with the arrows (part 4): `layout` sweeps rows and takes no style or direction.
+      'unknown member "style"; layout takes target',
+      'unknown member "direction"; layout takes target',
     ]);
   });
 

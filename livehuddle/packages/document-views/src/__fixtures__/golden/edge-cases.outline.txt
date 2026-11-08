@@ -1,11 +1,11 @@
-tab edge-tab "Edge cases" · 30 elements: 22 boxes, 8 arrows · 6 unknown
+tab edge-tab "Edge cases" · 30 elements: 22 boxes, 8 arrows · 18 unknown
 square huge "Huge"
 ? boundary frame-a "A"
 ? boundary frame-b "B"
 square both "In both"
-square bare → quoted "one", quoted "two" ~dotted ~both, secret
-square quoted "Line one\nsays \"hi\" → there | here" → free
-square tilted → tilted, arrow:par-1
+square bare
+square quoted "Line one\nsays \"hi\" → there | here"
+square tilted
 square secret
 ? hologram holo "Unknown type"
 ? blob blob
@@ -15,9 +15,15 @@ square abcd "Slug prefix"
 square abcd9 "Longer id"
 ? table ragged
 sticky customer "Customer"
-freehand lone
+? freehand lone
 square splitter
 freehand ×3 (1 closed)
 ? hologram nowhere "No geometry"
-arrow free-src free → bare
-arrow rider-src arrow:par-2 → tilted
+? arrow par-1 "one"
+? arrow par-2 "two"
+? arrow loop
+? arrow to-secret
+? arrow free-src
+? arrow free-dst
+? arrow rider
+? arrow rider-src

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { encodeStrokePoints, type Element, type Tab } from '@livehuddle/document';
+import { type Element, type Tab } from '@livehuddle/document';
 import { applyEditOperations } from '../apply';
 import { parseEditOperations } from '../parse';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
@@ -42,7 +42,7 @@ describe('set', () => {
 
   it('unsets a field given null', () => {
     const tab = checkoutFlow();
-    tab.elements[3] = { ...tab.elements[3]!, note: 'Ask for SSO' } as (typeof tab.elements)[number];
+    tab.elements[3] = { ...tab.elements[3]!, note: 'Ask for SSO' };
     const outcome = run([set('n3', { note: null })], tab);
     expect(applied(outcome).tab.elements.find((el) => el.id === 'n3')).not.toHaveProperty('note');
     expect(lines(outcome)).toEqual(['~ n3  note "Ask for SSO"→']);
@@ -157,10 +157,8 @@ describe('set', () => {
   it('refuses a field the element type does not store, listing its fields', () => {
     const rejection = refused(run([set('a1', { widht: 10 })]));
     expect(rejection.code).toBe('unknown_field');
-    expect(rejection.details[0]).toBe('arrow has no field "widht"');
-    expect(rejection.details[1]).toMatch(
-      /^fields: label stroke text-color border text line, then id type from to /,
-    );
+    expect(rejection.details[0]).toBe('? arrow has no field "widht"');
+    expect(rejection.details[1]).toMatch(/^fields: label note line, then id type from to /);
   });
 
   it('refuses prototype keys as unknown_field', () => {
@@ -171,29 +169,6 @@ describe('set', () => {
     expect(refused(run([{ op: 'set', target: 'n3', fields }])).details[0]).toBe(
       'square has no field "__proto__"',
     );
-  });
-
-  it('takes a stroke in its former points, packed as the MCP packs them', () => {
-    const tab = checkoutFlow();
-    tab.elements.push({
-      id: 's1',
-      type: 'freehand',
-      closed: false,
-      packedPoints: encodeStrokePoints([{ nx: 0, ny: 0 }]),
-      x: 400,
-      y: 0,
-      width: 100,
-      height: 100,
-    });
-    const points = [
-      { nx: 0, ny: 0 },
-      { nx: 1, ny: 1 },
-    ];
-    const stroke = applied(run([set('s1', { points })], tab)).tab.elements.find(
-      (el) => el.id === 's1',
-    )!;
-    expect(stroke).not.toHaveProperty('points');
-    expect(stroke).toHaveProperty('packedPoints');
   });
 
   it('names the nearest elements when the target matches nothing', () => {
@@ -287,44 +262,23 @@ function withTall(el: Element): Tab {
   return { ...tab, elements: [...tab.elements, el] };
 }
 
-describe('set: an arrow given new ends', () => {
-  it('drops its route, unless the same set writes one', () => {
+// A stored arrow is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part
+// 4): a set writes what it names and nothing reroutes it.
+describe('set: a stored arrow given new ends', () => {
+  it('keeps its stored route as it was', () => {
     const tab = checkoutFlow();
     const bent: Tab = {
       ...tab,
       elements: tab.elements.map((el) =>
-        el.id === 'a1' ? ({ ...el, curvePoints: [{ dx: 40, dy: 0 }] } as Element) : el,
+        el.id === 'a1' ? ({ ...el, curvePoints: [{ dx: 40, dy: 0 }] } as unknown as Element) : el,
       ),
     };
     const from = { kind: 'pinned', elementId: 'n1', anchor: 'e' };
-    const after = (fields: Record<string, unknown>) =>
-      applied(run([set('a1', fields)], bent)).tab.elements.find((e) => e.id === 'a1') as Element & {
-        curvePoints?: unknown;
-      };
-    expect(after({ from }).curvePoints).toBeUndefined();
-    expect(after({ from, curvePoints: [{ dx: 10, dy: 10 }] }).curvePoints).toEqual([
-      { dx: 10, dy: 10 },
-    ]);
-    expect(after({ label: 'Go' }).curvePoints).toEqual([{ dx: 40, dy: 0 }]);
-  });
-
-  it('bends an angled arrow twice between its new ends, so it meets both square', () => {
-    const tab = checkoutFlow();
-    const a1 = tab.elements.find((e) => e.id === 'a1') as Element & { to: { elementId: string } };
-    const angled: Tab = {
-      ...tab,
-      elements: tab.elements.map((el) =>
-        el.id === 'a1'
-          ? ({ ...el, arrowStyle: 'angled', curvePoints: [{ dx: 40, dy: 0 }] } as Element)
-          : el.id === a1.to.elementId
-            ? ({ ...el, x: (el as { x: number }).x + 300 } as Element)
-            : el,
-      ),
-    };
-    const moved = applied(
-      run([set('a1', { from: { kind: 'pinned', elementId: 'n1', anchor: 's' } })], angled),
-    ).tab.elements.find((e) => e.id === 'a1') as Element & { curvePoints?: unknown[] };
-    expect(moved.curvePoints).toHaveLength(2);
+    const after = applied(run([set('a1', { from })], bent)).tab.elements.find(
+      (e) => e.id === 'a1',
+    ) as Element & { curvePoints?: unknown; from?: unknown };
+    expect(after.from).toEqual(from);
+    expect(after.curvePoints).toEqual([{ dx: 40, dy: 0 }]);
   });
 });
 

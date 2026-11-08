@@ -7,9 +7,9 @@ import type { EditRejection } from '@livehuddle/api-schema';
 import {
   ELEMENT_GRID_CELL,
   ELEMENT_GRID_MAX_CELLS,
+  isBoxed,
   isRetiredBackdrop,
   type Element,
-  type Endpoint,
   type ElementId,
 } from '@livehuddle/document';
 import { resolveOne } from './selectors';
@@ -27,18 +27,14 @@ export type Placed = {
   ref?: Element;
 };
 
-const shiftEnd = (end: Endpoint, dx: number, dy: number): Endpoint =>
-  end.kind === 'free' ? { ...end, x: end.x + dx, y: end.y + dy } : end;
-
-// The element shifted by the delta: a box moves; an arrow moves its free ends.
+// The element shifted by the delta: a box moves. A stored arrow (a retired element, docs/specs/002-project-scope/
+// not-in-livehuddle.md "The element engine", part 4) never moves.
 export function shifted(el: Element, dx: number, dy: number): Element {
-  if (el.type === 'arrow')
-    return { ...el, from: shiftEnd(el.from, dx, dy), to: shiftEnd(el.to, dx, dy) };
-  return { ...el, x: el.x + dx, y: el.y + dy };
+  return isBoxed(el) ? { ...el, x: el.x + dx, y: el.y + dy } : el;
 }
 
 export const boxOf = (el: Element): Box | null =>
-  el.type === 'arrow' ? null : { x: el.x, y: el.y, width: el.width, height: el.height };
+  isBoxed(el) ? { x: el.x, y: el.y, width: el.width, height: el.height } : null;
 
 const centre = (b: Box) => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
 
@@ -147,23 +143,6 @@ function beside(ref: Box, side: Side, size: { width: number; height: number }, g
   }
 }
 
-// `after:x`: the side the flow of x's outgoing arrows points to, `below` without any (EO24).
-function sideAfter(state: EditState, ref: Element, refBox: Box): Side {
-  const from = centre(refBox);
-  const targets = currentElements(state).flatMap((el) => {
-    if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.from.elementId !== ref.id) return [];
-    if (el.to.kind !== 'pinned') return [];
-    const target = state.byId.get(el.to.elementId);
-    const box = target && boxOf(target);
-    return box ? [centre(box)] : [];
-  });
-  if (targets.length === 0) return 'below';
-  const dx = targets.reduce((sum, t) => sum + t.x - from.x, 0);
-  const dy = targets.reduce((sum, t) => sum + t.y - from.y, 0);
-  if (Math.abs(dx) >= Math.abs(dy)) return dx >= 0 ? 'right-of' : 'left-of';
-  return dy >= 0 ? 'below' : 'above';
-}
-
 // `align:x` on the axis where `box`'s centre is already nearer x's; the column on a tie (EO50).
 function aligned(box: Box, ref: Box): Box {
   const [c, r] = [centre(box), centre(ref)];
@@ -244,7 +223,8 @@ export function resolvePlacement(
       return { x: Math.round(box.x), y: Math.round(box.y), ref };
     }
     default: {
-      const side = placement.rel === 'after' ? sideAfter(state, ref, refBox) : placement.rel;
+      // `after:x` reads as below x: no arrow gives x a direction since part 4 of the element engine (EO24).
+      const side = placement.rel === 'after' ? 'below' : placement.rel;
       let start = beside(refBox, side, size, gap);
       // `below:<container> align:<x>`: beside the reference, centred on x across the side.
       if (placement.alignTo !== undefined) {

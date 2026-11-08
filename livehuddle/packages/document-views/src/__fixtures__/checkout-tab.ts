@@ -2,18 +2,18 @@
 // §3.1, appendix), built from the document factories with every id, time and position pinned.
 import {
   createComment,
-  createPinnedArrow,
   createShape,
   createSticky,
   createText,
-  type Anchor,
-  type ArrowElement,
+  type RetiredAnchor,
+  type RetiredArrowElement,
   type Comment,
   type Element,
   type ShapeElement,
   type ShapeKind,
   type Tab,
 } from '@livehuddle/document';
+import { createPinnedArrow } from './build';
 import { storedTableAt } from './build';
 
 export const CHECKOUT_TAB_ID = '0b3481f3-59fb-4bd0-a21a-152f1ba9bba5';
@@ -76,9 +76,9 @@ function arrow(
   n: number,
   from: string,
   to: string,
-  extra: Partial<ArrowElement> = {},
-  anchors: [Anchor, Anchor] = ['e', 'w'],
-): ArrowElement {
+  extra: Record<string, unknown> = {},
+  anchors: [RetiredAnchor, RetiredAnchor] = ['e', 'w'],
+): RetiredArrowElement {
   return {
     ...createPinnedArrow(from, anchors[0], to, anchors[1]),
     id: pinnedId(prefix, n),

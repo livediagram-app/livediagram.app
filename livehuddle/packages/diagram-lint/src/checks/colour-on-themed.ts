@@ -3,7 +3,7 @@
 // have no theme fields; a colour stored by name (a marker colour) is a binding. A theme id no catalogue
 // entry names: the check is skipped and logged (N15).
 
-import { endpointPosition, themeColourFields, type Element } from '@livehuddle/document';
+import { isBoxed, themeColourFields, type BoxedElement } from '@livehuddle/document';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import { themeColourSet, type ColourField } from '../theme-colours';
@@ -16,7 +16,7 @@ const FIELDS: readonly { field: ColourField; alias: 'fill' | 'stroke'; swatch: s
   { field: 'strokeColor', alias: 'stroke', swatch: 'strokeSwatch' },
 ];
 
-function offTheme(theme: string | undefined, el: Element): ('fill' | 'stroke')[] | null {
+function offTheme(theme: string | undefined, el: BoxedElement): ('fill' | 'stroke')[] | null {
   const themed = new Set(themeColourFields(el).map((f) => f.element));
   const bound = Reflect.get(el, 'colorPreset') !== undefined;
   const out: ('fill' | 'stroke')[] = [];
@@ -34,6 +34,9 @@ function offTheme(theme: string | undefined, el: Element): ('fill' | 'stroke')[]
 export const colourOnThemed: Check = (ctx) => {
   const findings = [];
   for (const el of ctx.visible) {
+    // A stored arrow is a retired element (part 4 of the element engine): its stored colours are not the agent's to
+    // change.
+    if (!isBoxed(el)) continue;
     // A write is judged on the colours it set, not on those a template or a person set before it.
     if (ctx.coloured && !ctx.coloured.has(el.id)) continue;
     const fields = offTheme(ctx.theme, el);
@@ -48,7 +51,7 @@ export const colourOnThemed: Check = (ctx) => {
       refs: [ref],
       message: `${ref} sets its ${fields.join(' and ')} on a themed tab`,
       fix: fixes.colourOnThemed(ref, fields),
-      at: el.type === 'arrow' ? endpointPosition(el.from, ctx.index) : { x: el.x, y: el.y },
+      at: { x: el.x, y: el.y },
     });
   }
   return findings;

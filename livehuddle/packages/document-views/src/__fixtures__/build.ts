@@ -1,13 +1,28 @@
 // Small builders for the unit tests: fixed ids and geometry on the document factories' elements.
 import {
-  createFreehand,
-  createPinnedArrow,
   createShape,
-  type ArrowElement,
   type Element,
+  type RetiredAnchor,
+  type RetiredArrowElement,
   type ShapeElement,
   type ShapeKind,
 } from '@livehuddle/document';
+
+// A stored arrow pinned at both ends (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4):
+// a retired element, kept as stored. The id is a placeholder the caller replaces.
+export function createPinnedArrow(
+  from: string,
+  fromAnchor: RetiredAnchor,
+  to: string,
+  toAnchor: RetiredAnchor,
+): RetiredArrowElement {
+  return {
+    id: 'arrow',
+    type: 'arrow',
+    from: { kind: 'pinned', elementId: from, anchor: fromAnchor },
+    to: { kind: 'pinned', elementId: to, anchor: toAnchor },
+  };
+}
 
 export function shapeAt(
   kind: ShapeKind,
@@ -39,25 +54,26 @@ export function retiredShapeAt(
   } as unknown as ShapeElement;
 }
 
+// A stored pen stroke (part 4): a retired element on its box.
 export function strokeAt(id: string, x: number, y: number, closed = false): Element {
   return {
-    ...createFreehand(
-      [
-        { x, y },
-        { x: x + 20, y: y + 10 },
-      ],
-      closed,
-    ),
     id,
-  };
+    type: 'freehand',
+    x,
+    y,
+    width: 20,
+    height: 10,
+    closed,
+    packedPoints: 'AQAAAAAA',
+  } as unknown as Element;
 }
 
 export function arrowBetween(
   id: string,
   from: string,
   to: string,
-  extra: Partial<ArrowElement> = {},
-): ArrowElement {
+  extra: Record<string, unknown> = {},
+): RetiredArrowElement {
   return { ...createPinnedArrow(from, 'e', to, 'w'), id, ...extra };
 }
 

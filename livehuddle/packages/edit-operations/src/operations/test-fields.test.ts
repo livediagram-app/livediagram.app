@@ -75,10 +75,10 @@ describe('test', () => {
     expect(logged).toContainEqual(['[edit-ops] test-failed', { operation: 1, fields: 1 }]);
   });
 
-  it('reads an alias under its stored name, and compares arrays', () => {
+  it('reads an alias under its stored name, and compares arrays of objects', () => {
     expect(refused(run('test n3 text=md')).details).toEqual(['n3 text: expected md, actual sm']);
     const outcome = applyEditOperations(checkoutFlow(), [
-      { op: 'test', target: 'a1', fields: { curvePoints: [{ x: 1, y: 2 }] } },
+      { op: 'test', target: 'n1', fields: { noteRich: [{ text: 'Begin', bold: true }] } },
     ]);
     expect(refused(outcome).code).toBe('test_failed');
   });

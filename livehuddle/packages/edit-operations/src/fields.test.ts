@@ -54,7 +54,8 @@ describe('aliasesOf', () => {
   it('gives each element the aliases its type takes, style keys included', () => {
     const style = ['stroke', 'text-color', 'border'];
     expect(aliasesOf(square)).toEqual(['label', 'note', 'shape', 'fill', ...style, 'text']);
-    expect(aliasesOf(arrow)).toEqual(['label', ...style, 'text', 'line']);
+    // A stored arrow (a retired element since part 4 of the element engine) keeps only what it stored.
+    expect(aliasesOf(arrow)).toEqual(['label', 'note', 'line']);
     expect(aliasesOf(text)).toEqual(['label', 'note', ...aliasesOf(text).slice(2)]);
     expect(aliasesOf(image)).toContain('label');
   });
@@ -210,10 +211,8 @@ describe('writeFieldsOnto', () => {
     expect(refusal(square, proto).code).toBe('unknown_field');
     const unknown = refusal(arrow, { fill: 'red' });
     expect(unknown.details).toEqual([
-      'arrow has no field "fill"',
-      expect.stringMatching(
-        /^fields: label stroke text-color border text line, then id type from to /,
-      ),
+      '? arrow has no field "fill"',
+      expect.stringMatching(/^fields: label note line, then id type from to /),
     ]);
   });
 
@@ -253,7 +252,8 @@ describe('writeFieldsOnto', () => {
     expect(refusal(square, { text: 12.5 }).details).toHaveLength(1);
   });
 
-  it("writes a stroke's former point fields", () => {
+  // The pen engine went with part 4 of the element engine: a stored stroke takes no former point fields.
+  it("refuses a stroke's former point fields", () => {
     const stroke = {
       id: 'f',
       type: 'freehand',
@@ -263,6 +263,6 @@ describe('writeFieldsOnto', () => {
       height: 1,
       closed: false,
     } as unknown as Element;
-    expect(nextOf(write(stroke, { points: [{ x: 0, y: 0 }] })).points).toEqual([{ x: 0, y: 0 }]);
+    expect(refusal(stroke, { points: [{ x: 0, y: 0 }] }).code).toBe('unknown_field');
   });
 });

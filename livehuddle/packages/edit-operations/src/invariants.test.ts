@@ -13,11 +13,8 @@ const SAMPLES: Readonly<Record<(typeof EDIT_OPERATION_NAMES)[number], string>> =
   set: 'set n3 label="Sign in" fill=green',
   rm: 'rm n7',
   move: 'move f2 by=300,0',
-  connect: 'connect n2 -> n8 label=skip',
-  rewire: 'rewire a6 to=n8',
-  insert: 'insert square id=verify label="Verify email" between n3 n4',
   order: 'order f2 front',
-  layout: 'layout n5 n6 n7 n8 direction=right',
+  layout: 'layout n5 n6 n7 n8',
   test: 'test n3 label=Login',
 };
 

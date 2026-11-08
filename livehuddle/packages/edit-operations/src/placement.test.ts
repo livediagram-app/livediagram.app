@@ -70,7 +70,9 @@ describe('the four sides (n3 is 0,200 140x60)', () => {
 });
 
 describe('after', () => {
-  it("follows the flow of the reference's outgoing arrows, below without any", () => {
+  // A stored arrow is a retired element that gives nothing a direction (docs/specs/002-project-scope/
+  // not-in-livehuddle.md "The element engine", part 4): `after` is below, whatever arrows the reference stored.
+  it('places below the reference, whatever arrows it stored', () => {
     expect(place({ rel: 'after', ref: 'n3' })).toMatchObject({
       x: 20,
       y: 780 + PLACEMENT_GAP,
@@ -84,14 +86,12 @@ describe('after', () => {
       });
       return place({ rel: 'after', ref: 'src', gap: 1000 }, tab);
     };
-    expect(flow(300, 0)).toMatchObject({ x: 2100 });
-    expect(flow(-300, 0)).toMatchObject({ x: -100 });
-    expect(flow(0, 300)).toMatchObject({ y: 2040 });
-    expect(flow(0, -300)).toMatchObject({ y: -40 });
+    expect(flow(300, 0)).toMatchObject({ x: 1000, y: 2040 });
+    expect(flow(0, -300)).toMatchObject({ x: 1000, y: 2040 });
     expect(place({ rel: 'after', ref: 't1', gap: 0 })).toMatchObject({ y: 660 });
   });
 
-  it('reads only arrows pinned at both ends to boxes', () => {
+  it('places below past stored arrows of any kind', () => {
     const tab = withElements(
       box('src', 1000, 1000),
       {

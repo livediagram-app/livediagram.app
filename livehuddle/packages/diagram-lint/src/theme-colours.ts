@@ -7,18 +7,16 @@ import {
   DEFAULT_SCHEME_ID,
   DEFAULT_SCHEME_LIGHT,
   THEMES,
-  defaultArrowStrokeColor,
   defaultFillColor,
   defaultStrokeColor,
-  type Element,
+  type BoxedElement,
   type ThemeDefinition,
 } from '@livehuddle/document';
 
 export type ColourField = 'fillColor' | 'strokeColor';
 
 // What an element of this type paints when nothing sets the colour.
-function typeDefault(el: Element, field: ColourField, surface: 'light' | 'dark'): string {
-  if (el.type === 'arrow') return defaultArrowStrokeColor(surface);
+function typeDefault(el: BoxedElement, field: ColourField, surface: 'light' | 'dark'): string {
   return field === 'fillColor' ? defaultFillColor(el, surface) : defaultStrokeColor(el, surface);
 }
 
@@ -34,7 +32,7 @@ const lower = (colour: string) => colour.toLowerCase();
 // Every colour the theme would paint in `field` on `el`, lower-cased; null for an unknown theme.
 export function themeColourSet(
   themeId: string | undefined,
-  el: Element,
+  el: BoxedElement,
   field: ColourField,
 ): ReadonlySet<string> | null {
   const themes = themesOf(themeId);

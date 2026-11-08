@@ -154,7 +154,7 @@ describe('formatResultFooter', () => {
 
 describe('result line builders', () => {
   const naming = { refOf: (id: string) => id, origin: { x: -40, y: 0 } };
-  it('builds a + line for a box and an arrow', () => {
+  it('builds a + line for a box, and for a stored arrow with no place', () => {
     expect(addedLine(byId('n3'), naming)).toEqual({
       mark: '+',
       ref: 'n3',
@@ -166,20 +166,10 @@ describe('result line builders', () => {
     expect(addedLine(byId('a6'), naming)).toEqual({
       mark: '+',
       ref: 'a6',
-      kind: 'arrow',
+      // A retired element since part 4 of the element engine: no ends, no place.
+      kind: '? arrow',
       label: 'yes',
-      ends: ['n6', 'n7'],
     });
-  });
-
-  it('prints a free end as a point from the origin', () => {
-    const loose = {
-      id: 'l',
-      type: 'arrow',
-      from: { kind: 'free', x: -40, y: 5 },
-      to: { kind: 'pinned', elementId: 'n1', anchor: 'n' },
-    } as Element;
-    expect(addedLine(loose, naming)).toMatchObject({ ends: ['@0,5', 'n1'] });
   });
 
   it('groups what moved without a shift by its reason alone', () => {
@@ -195,7 +185,7 @@ describe('result line builders', () => {
           ['n2', { written: [], moved: 'laid out' as const }],
           ['n1', { written: [], moved: 'laid out' as const }],
         ]),
-        removed: new Map(),
+        removed: new Set(),
         warnings: [],
         theme: getBuiltInTheme(undefined),
         origin: { x: -40, y: 0 },
@@ -205,15 +195,10 @@ describe('result line builders', () => {
     expect(lines).toEqual([{ mark: '»', refs: ['n1', 'n2'], reason: 'laid out' }]);
   });
 
-  it('builds a - line, with the element an arrow went with', () => {
-    expect(removedLine(byId('a1'), naming, { pinnedTo: 'n1' })).toEqual({
-      mark: '-',
-      ref: 'a1',
-      kind: 'arrow',
-      ends: ['n1', 'n2'],
-      reason: 'pinned',
-      pinnedTo: 'n1',
-    });
+  // A stored arrow is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+  // part 4): it prints as `?`, with no ends, and nothing goes with another element.
+  it('builds a - line, a stored arrow as any retired element', () => {
+    expect(removedLine(byId('a1'), naming)).toEqual({ mark: '-', ref: 'a1', kind: '? arrow' });
     expect(removedLine(byId('n1'), naming)).toEqual({
       mark: '-',
       ref: 'n1',

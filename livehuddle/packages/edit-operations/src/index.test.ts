@@ -28,8 +28,6 @@ describe('the public surface', () => {
     expect([...formatResultLines(outcome.results), footer]).toEqual([
       '~ n3  label "Login"→"Sign in"',
       '- n7  square "Charge card"',
-      '- a6  arrow n6→n7 "yes" (pinned to n7)',
-      '- a7  arrow n7→n8 (pinned to n7)',
       'dry run · rev 41 · lint unavailable · nothing written',
     ]);
   });
@@ -41,9 +39,9 @@ describe('the public surface', () => {
   });
 
   it('keeps the whole vocabulary and the wire codes', () => {
-    expect(EDIT_OPERATION_NAMES).toHaveLength(10);
-    expect(EDIT_OPERATION_NAMES).not.toContain('wrap');
-    expect(EDIT_OPERATION_NAMES).not.toContain('unwrap');
+    expect(EDIT_OPERATION_NAMES).toHaveLength(7);
+    for (const gone of ['wrap', 'unwrap', 'connect', 'rewire', 'insert'])
+      expect(EDIT_OPERATION_NAMES).not.toContain(gone);
     expect(EDIT_REJECTION_CODES).toContain('test_failed');
     expect(EDIT_REJECTION_CODES).not.toContain('element_locked');
   });

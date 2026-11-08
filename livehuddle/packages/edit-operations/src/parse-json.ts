@@ -9,8 +9,6 @@ import type { EditOperation, ParseOutcome } from './types';
 import {
   EDIT_MAX_ERRORS,
   EDIT_OPERATION_NAMES,
-  LAYOUT_DIRECTIONS,
-  LAYOUT_STYLES,
   OPERATION_MEMBERS,
   ORDER_ENDS,
   PLACEMENT_GAP_MAX,
@@ -58,21 +56,19 @@ export function placementIssue(value: unknown): string | null {
   return null;
 }
 
-// The rule one member breaks, or null. `to` is an end in `order` and a selector elsewhere.
-function memberIssue(name: EditOperationName, raw: Raw, member: string): string | null {
+// The rule one member breaks, or null. `to` is an end in `order`.
+function memberIssue(raw: Raw, member: string): string | null {
   const value = raw[member];
   switch (member) {
     case 'target':
-    case 'from':
     case 'above':
     case 'below':
     case 'kind':
     case 'id':
       return isText(value) ? null : expected(member, 'a non-empty string');
+    // `to` is a member of `order` alone since `connect` and `rewire` went (part 4 of the element engine).
     case 'to':
-      if (name === 'order')
-        return isOneOf(ORDER_ENDS, value) ? null : expected(member, ORDER_ENDS.join(' or '));
-      return isText(value) ? null : expected(member, 'a non-empty string');
+      return isOneOf(ORDER_ENDS, value) ? null : expected(member, ORDER_ENDS.join(' or '));
     case 'fields':
     case 'element':
       return isRecord(value) ? null : expected(member, 'an object');
@@ -82,16 +78,6 @@ function memberIssue(name: EditOperationName, raw: Raw, member: string): string 
       return Array.isArray(value) && value.length === 2 && value.every(isFiniteNumber)
         ? null
         : expected(member, '[dx, dy] numbers');
-    case 'between':
-      return Array.isArray(value) && value.length === 2 && value.every(isText)
-        ? null
-        : expected(member, '[a, b] selectors');
-    case 'style':
-      return isOneOf(LAYOUT_STYLES, value) ? null : expected(member, LAYOUT_STYLES.join(', '));
-    case 'direction':
-      return isOneOf(LAYOUT_DIRECTIONS, value)
-        ? null
-        : expected(member, LAYOUT_DIRECTIONS.join(' or '));
     default:
       return typeof value === 'boolean' ? null : expected(member, 'true or false');
   }
@@ -102,9 +88,6 @@ const REQUIRED: Readonly<Record<EditOperationName, readonly string[]>> = {
   set: ['target', 'fields'],
   rm: ['target'],
   move: ['target'],
-  connect: ['from', 'to'],
-  rewire: ['target'],
-  insert: ['kind', 'between'],
   order: ['target'],
   layout: ['target'],
   test: ['target', 'fields'],
@@ -113,16 +96,13 @@ const REQUIRED: Readonly<Record<EditOperationName, readonly string[]>> = {
 // Members of which exactly one, at most one (`atMostOne`) or at least one (`atLeastOne`) is given,
 // and how the line form says them.
 const CHOICES: Readonly<
-  Partial<
-    Record<EditOperationName, { members: readonly string[]; atLeastOne?: true; inLines: string }>
-  >
+  Partial<Record<EditOperationName, { members: readonly string[]; inLines: string }>>
 > = {
   add: { members: ['kind', 'element'], inLines: 'add <kind> key=value…' },
   move: {
     members: ['place', 'by'],
     inLines: 'a placement such as below:n3 or right-of:n3, or by=dx,dy',
   },
-  rewire: { members: ['from', 'to'], atLeastOne: true, inLines: 'from=<x>, to=<y> or both' },
   order: { members: ['to', 'above', 'below'], inLines: 'front, back, above=<x> or below=<x>' },
 };
 
@@ -133,10 +113,8 @@ function choiceIssue(name: EditOperationName, raw: Raw): string | null {
     (member) => raw[member] !== undefined && raw[member] !== false,
   );
   if (given.length === 1) return null;
-  if (given.length > 1 && choice.atLeastOne) return null;
   const quoted = choice.members.map((member) => `"${member}"`).join(', ');
-  const which = choice.atLeastOne ? 'at least' : 'exactly';
-  return `${which} one of ${quoted} (in a line: ${choice.inLines})`;
+  return `exactly one of ${quoted} (in a line: ${choice.inLines})`;
 }
 
 // Booleans present only when `true`, so `false` reads as absent.
@@ -162,7 +140,7 @@ export function validateEditOperation(
     );
   for (const member of members.slice(1)) {
     if (!REQUIRED[name].includes(member) && raw[member] === undefined) continue;
-    const issue = memberIssue(name, raw, member);
+    const issue = memberIssue(raw, member);
     if (issue) return parseError(operation, issue);
   }
   const choice = choiceIssue(name, raw);

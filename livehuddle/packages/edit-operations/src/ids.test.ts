@@ -12,7 +12,7 @@ describe('newElementId (EO8, EO9)', () => {
     const s = state();
     expect(newElementId(s, { label: 'Verify email', kind: 'square' }, 1)).toBe('verify-email');
     expect(newElementId(s, { kind: 'arrow' }, 1)).toBe('arrow');
-    expect(newElementId(s, { label: 'Between', kind: 'square' }, 1)).toBe('between-2');
+    expect(newElementId(s, { label: 'Front', kind: 'square' }, 1)).toBe('front-2');
     // A container's name is no keyword since the containers went (not-in-livehuddle.md "The element engine", part 3).
     expect(newElementId(s, { label: 'Lane', kind: 'square' }, 1)).toBe('lane');
     putElement(s, sticky('verify-email'), 1);
@@ -26,7 +26,7 @@ describe('newElementId (EO8, EO9)', () => {
     expect(newElementId(s, { given: 'Verify', kind: 'square' }, 1)).toMatchObject({
       code: 'invalid_value',
     });
-    expect(newElementId(s, { given: 'between', kind: 'square' }, 1)).toMatchObject({
+    expect(newElementId(s, { given: 'front', kind: 'square' }, 1)).toMatchObject({
       code: 'invalid_value',
     });
     expect(newElementId(s, { given: 'n3', kind: 'square' }, 2)).toMatchObject({
@@ -34,7 +34,7 @@ describe('newElementId (EO8, EO9)', () => {
       operation: 2,
     });
     putElement(s, sticky('temp'), 1);
-    removeElement(s, 'temp', 1, {});
+    removeElement(s, 'temp', 1);
     expect(newElementId(s, { given: 'temp', kind: 'square' }, 1)).toMatchObject({
       code: 'invalid_value',
       details: ['id="temp": used by an element this changeset removed'],

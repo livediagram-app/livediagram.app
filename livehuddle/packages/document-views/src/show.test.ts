@@ -11,7 +11,7 @@ const elementOf = (model: ReturnType<typeof buildViewModel>, id: string) =>
   model.printed.find((el) => el.id === id)!;
 
 describe('showView (R17, VW34)', () => {
-  it('prints one element in full with its arrows both ways', async () => {
+  it('prints one element in full, with no arrow in or out', async () => {
     const model = checkout();
     const { text, json } = showView(model, elementOf(model, CHECKOUT_IDS.orders));
     await expect(text).toMatchFileSnapshot(golden('checkout.show-146b.txt'));
@@ -23,8 +23,9 @@ describe('showView (R17, VW34)', () => {
       fields: { label: 'Orders service', iconId: 'server', x: 720 },
       omitted: [],
     });
-    expect(json.incoming.map((e) => e.ref)).toEqual(['111e']);
-    expect(json.outgoing.map((e) => e.ref)).toEqual(['c41d', '892e', '3462']);
+    // A stored arrow joins nothing since part 4 of the element engine; the lists stay on the wire, empty.
+    expect(json.incoming).toEqual([]);
+    expect(json.outgoing).toEqual([]);
     expect(json.fields).not.toHaveProperty('id');
   });
 
@@ -38,7 +39,7 @@ describe('showView (R17, VW34)', () => {
     expect(sticky.at(-1)).toBe('  omitted: commentThread.comments[].authorId');
   });
 
-  it("prints an arrow's ends, rotation and odd cells, and an element without geometry", () => {
+  it("prints a stored arrow's stored ends, rotation and odd cells, and an element without geometry", () => {
     const a = storedTableAt(0, 0, {
       id: 'a',
       width: 100,
@@ -70,11 +71,12 @@ describe('showView (R17, VW34)', () => {
       '? hologram odd',
       '  note: "n"',
     ]);
+    // A stored arrow is a retired element (part 4): its ends are stored fields, and nothing rides it.
     const arrowText = showView(model, elementOf(model, 'arr')).text.split('\n');
-    expect(arrowText[1]).toBe('arrow arr "go"');
-    expect(arrowText[2]).toBe('  3,4 → e.w');
-    expect(arrowText).toContain('  ← e "Box" [rider]');
-    expect(showView(model, elementOf(model, 'e')).text).toContain('  ← free label="go" [arr]');
+    expect(arrowText[1]).toBe('? arrow arr "go"');
+    expect(arrowText).toContain('  from: {"kind":"free","x":3,"y":4}');
+    expect(arrowText.some((line) => line.startsWith('  ←'))).toBe(false);
+    expect(showView(model, elementOf(model, 'e')).text).not.toContain('[arr]');
   });
 
   it('fits a budget by whole lines', () => {

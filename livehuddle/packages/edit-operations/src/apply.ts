@@ -9,8 +9,6 @@ import { diffToElementOps, invertElementOps, type ElementId, type Tab } from '@l
 import { finalise } from './finalise';
 import { applyAdd } from './operations/add';
 import { applyAddKind } from './operations/add-kind';
-import { applyConnect, applyRewire } from './operations/connect';
-import { applyInsert } from './operations/insert';
 import { applyLayout } from './operations/layout';
 import { applyMove } from './operations/move';
 import { applyOrder } from './operations/order';
@@ -41,12 +39,6 @@ function applyOperation(
       return applyRm(state, operation, index);
     case 'move':
       return applyMove(state, operation, index);
-    case 'connect':
-      return applyConnect(state, operation, index);
-    case 'rewire':
-      return applyRewire(state, operation, index);
-    case 'insert':
-      return applyInsert(state, operation, index);
     case 'order':
       return applyOrder(state, operation, index);
     case 'test':
@@ -67,7 +59,7 @@ function rejected(
   return { errors: [rejection] };
 }
 
-// The id an operation names for what it makes (`add … id=`, `connect … id=`), if any. A raw-element `add` is never
+// The id an operation names for what it makes (`add … id=`), if any. A raw-element `add` is never
 // skipped (it misses no target), so its own id needs no entry.
 function madeId(operation: EditOperation): string | undefined {
   return 'id' in operation && typeof operation.id === 'string' ? operation.id : undefined;

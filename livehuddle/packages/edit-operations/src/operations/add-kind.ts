@@ -8,7 +8,6 @@ import {
   SHAPE_DEFAULT_SIZE,
   SHAPE_KINDS,
   coerceShapeKind,
-  createAnnotation,
   createLinkCard,
   createShape,
   createSticky,
@@ -32,21 +31,23 @@ import type { AddKindOperation, Fields } from '../types';
 
 // Kinds an edit operation cannot make, and what to use instead.
 export const NOT_ADDED: Readonly<Record<string, string>> = {
-  arrow: 'use connect',
   image: 'images are uploaded in the editor',
   // An embed is retired (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): a stored one still
   // draws as its placeholder, and nothing makes a new one.
   video: 'embeds are no longer supported in livehuddle',
   // A table is retired too (part 2 of the element engine).
   table: 'tables are no longer supported in livehuddle',
-  freehand: 'strokes are drawn in the editor',
-  path: 'paths are drawn in the editor',
+  // Arrows, lines, pen strokes, paths and annotations are retired too (part 4).
+  arrow: 'arrows are no longer supported in livehuddle',
+  line: 'lines are no longer supported in livehuddle',
+  freehand: 'drawings are no longer supported in livehuddle',
+  path: 'paths are no longer supported in livehuddle',
+  annotation: 'annotations are no longer supported in livehuddle',
 };
 
 const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
   text: () => createText(0, 0),
   sticky: () => createSticky(0, 0),
-  annotation: () => createAnnotation(0, 0),
   'link-card': () => createLinkCard(0, 0),
 };
 
@@ -101,8 +102,7 @@ function paint<T extends Element>(el: T, theme: ThemeDefinition): T {
   return recolourElementForTheme(el, theme) as T;
 }
 
-// A new element of `kind` with its fields, sized for its label, painted and placed; shared by
-// `add` and `insert`, which places it itself.
+// A new element of `kind` with its fields, sized for its label, painted and placed.
 export function createKind(
   state: EditState,
   spec: { kind: string; id?: string; fields?: Fields },

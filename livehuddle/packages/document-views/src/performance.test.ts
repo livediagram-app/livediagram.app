@@ -42,7 +42,7 @@ function tabOf(perFrame: number) {
   return { id: 'growth', name: 'Growth', elements };
 }
 
-// The fastest of a few renders, full and fitted to the MCP budget: the least noisy estimate.
+// The fastest of a few renders, full and fitted to an agent's 8,000-token budget: the least noisy estimate.
 function fastestRender(tab: ReturnType<typeof tabOf>): number {
   let fastest = Infinity;
   for (let run = 0; run < RUNS; run++) {

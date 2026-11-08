@@ -89,7 +89,7 @@ describe('diffView (R17, VW36)', () => {
     ).toEqual(['~ square n note added']);
   });
 
-  it('names arrow ends, size, rotation, style and other fields', () => {
+  it('names size, rotation, style and other fields, and a stored arrow’s moved ends as other fields', () => {
     const [a, b, c] = ['a', 'b', 'c'].map((id, i) => shapeAt('square', id, i * 200, 0));
     const ab = arrowBetween('ab', 'a', 'b');
     expect(
@@ -110,7 +110,8 @@ describe('diffView (R17, VW36)', () => {
       '~ square a resized +20,-10 · rotated',
       '~ square b restyled',
       '~ square c +2 other fields',
-      '~ arrow ab from a → c · to b → free',
+      // A stored arrow is a retired element (part 4 of the element engine): its ends are stored fields.
+      '~ ? arrow ab +2 other fields',
     ]);
     expect(changeLines([a!], [{ ...a!, opacity: 0.5 }])).toEqual(['~ square a +1 other field']);
     // A retired kind (docs/specs/002-project-scope/not-in-livehuddle.md), a stack among them, prints as unknown and
@@ -121,22 +122,6 @@ describe('diffView (R17, VW36)', () => {
     expect(changeLines([a!], [{ ...a!, shape: 'code-block' } as unknown as Element])).toEqual([
       '~ ? code-block a kind square → ? code-block',
     ]);
-  });
-
-  it('names an end moved from one arrow to another, and not one sliding along the same arrow', () => {
-    const [a, b] = ['a', 'b'].map((id, i) => shapeAt('square', id, i * 200, 0));
-    const [ab, ba] = [arrowBetween('ab', 'a', 'b'), arrowBetween('ba', 'b', 'a')];
-    const rides = {
-      ...arrowBetween('r', 'a', 'a'),
-      to: { kind: 'on-arrow' as const, arrowId: 'ab', t: 0.5 },
-    };
-    const before = [a!, b!, ab, ba, rides];
-    expect(
-      changeLines(before, [a!, b!, ab, ba, { ...rides, to: { ...rides.to, t: 0.2 } }]),
-    ).toEqual(['~ arrow r +1 other field']);
-    expect(
-      changeLines(before, [a!, b!, ab, ba, { ...rides, to: { ...rides.to, arrowId: 'ba' } }]),
-    ).toEqual(['~ arrow r to arrow:ab → arrow:ba']);
   });
 
   // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md) has no state attribute: a change to what

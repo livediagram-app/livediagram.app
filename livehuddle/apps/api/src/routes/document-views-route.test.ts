@@ -129,9 +129,9 @@ describe('tab views over REST (R23)', () => {
     expect(res.headers.get('ETag')).toBe('W/"1"');
     const text = await res.text();
     expect(text.split('\n').slice(0, 4)).toEqual([
-      'tab t1 "Architecture" · 6 elements: 5 boxes, 1 arrow · 1 unknown · threads 1 open/1 · rev 1',
+      'tab t1 "Architecture" · 6 elements: 5 boxes, 1 arrow · 2 unknown · threads 1 open/1 · rev 1',
       '? boundary frame-1 "Services"',
-      'square orders "Orders service" comments=1 open → payments "charge"',
+      'square orders "Orders service" comments=1 open',
       'square payments "Payments"',
     ]);
     expect(logged('[views] rendered outline')).toMatchObject({ doc: 'D', tab: 't1', elements: 6 });
@@ -189,9 +189,10 @@ describe('tab views over REST (R23)', () => {
     db.sql.prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'").run(data);
     const text = await (await tabView(db, 'view=outline')).text();
     expect(text).toContain('? hologram holo "x"');
-    // A stored boundary (part 3) counts too: a kind the views no longer know.
+    // A stored boundary (part 3) and a stored arrow (part 4) count too: kinds the views no longer know.
     expect(logged('[views] unknown kinds')).toEqual({
       tab: 't1',
+      arrow: 1,
       hologram: 1,
       'shape:blob': 1,
       'shape:boundary': 1,
@@ -336,15 +337,12 @@ describe('ref refusals over REST (R4, R5, E17, E18)', () => {
     });
   });
 
-  it('refuses an arrow as a subtree (VW41)', async () => {
+  it('takes a stored arrow as a subtree like any retired element (VW41, part 4 of the element engine)', async () => {
     quiet();
     const db = await setUp();
     const res = await tabView(db, 'view=layout&only=arrow-1');
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({
-      error: 'invalid_value',
-      message: 'only takes an element, not an arrow',
-    });
+    expect(res.status).toBe(200);
+    expect((await res.text()).split('\n').at(-1)).toBe('arrow-1 no geometry');
   });
 });
 
@@ -445,7 +443,7 @@ describe('the overview over REST', () => {
     const lines = (await res.text()).split('\n');
     expect(lines[0]).toMatch(/^doc D "Checkout" · 10 tabs · edited just now$/);
     expect(lines[1]).toBe(
-      '  tab t1 "Architecture" · 6 elements: 5 boxes, 1 arrow · 1 unknown · threads 1 open/1 · rev 1',
+      '  tab t1 "Architecture" · 6 elements: 5 boxes, 1 arrow · 2 unknown · threads 1 open/1 · rev 1',
     );
     expect(lines).toHaveLength(11);
     expect(logged('[views] overview')).toMatchObject({ doc: 'D', tabs: 10, batches: 2 });

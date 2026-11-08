@@ -19,14 +19,9 @@ describe('lintResult', () => {
   it('lints the whole tab, logging with where it ran', () => {
     const infos: unknown[][] = [];
     vi.spyOn(console, 'info').mockImplementation((...args: unknown[]) => void infos.push(args));
-    const joined = {
-      id: 'x',
-      type: 'arrow',
-      from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
-      to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
-    } as Element;
-    const report = lintResult({ elements: [box('a', 0), box('b', 60), joined] }, where);
-    expect(report?.counts.error).toBe(1);
+    const twin = { ...box('b', 300), label: 'Same' } as Element;
+    const report = lintResult({ elements: [{ ...box('a', 0), label: 'Same' }, twin] }, where);
+    expect(report?.findings.map((f) => f.code)).toEqual(['duplicate-label']);
     expect(infos[0]).toEqual([
       '[lint] run',
       expect.objectContaining({ documentId: 'D', tabId: 't1' }),
@@ -44,7 +39,7 @@ describe('lintResult', () => {
     expect(codes({ elements: [box('a', 0)] })).toEqual(['colour-on-themed']);
   });
 
-  it('logs the lint\x27s warnings and debug lines at their levels', () => {
+  it('logs the lint’s debug lines at their level, and a stored arrow raises no warning', () => {
     const warns: unknown[][] = [];
     const debugs: unknown[][] = [];
     vi.spyOn(console, 'info').mockImplementation(() => {});
@@ -63,7 +58,7 @@ describe('lintResult', () => {
       },
       where,
     );
-    expect(warns[0]?.[0]).toBe('[lint] crossings skipped');
+    expect(warns).toEqual([]);
     expect(debugs[0]?.[0]).toBe('[lint] theme unresolved');
   });
 });

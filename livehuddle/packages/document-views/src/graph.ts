@@ -1,49 +1,20 @@
 // The graph view (docs/specs/024-agents/blueprints/document-views.md "graph", VW30): the elements an
-// arrow touches, then every arrow in its stored direction with its ref.
+// arrow touches, then every arrow. A stored arrow is a retired element (docs/specs/002-project-scope/
+// not-in-livehuddle.md "The element engine", part 4) that joins nothing, so the graph lists no node and no edge, and
+// names every element as unconnected.
 import type { GraphView, ViewDoor } from '@livehuddle/api-schema';
-import {
-  fitLines,
-  fitOf,
-  type ViewLine,
-  type ViewResult,
-} from '@liveworkspace/document-views/budget';
-import { LABEL_CUT_CHARS } from './constants';
-import { edgeJson, endText, type ViewEdge } from './edges';
-import { textField } from '@liveworkspace/document-views/fields';
+import { fitLines, fitOf, type ViewResult } from '@liveworkspace/document-views/budget';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
-import { jsonString } from '@liveworkspace/document-views/text';
-import { nodesOf, type ViewNode } from './tree';
-import { pinnedIds } from './visibility';
+import { nodesOf } from './tree';
 
 type GraphOptions = { budget?: number; door?: ViewDoor };
 
-const NODE = { one: 'node', many: 'nodes' };
-const ARROW = { one: 'arrow', many: 'arrows' };
-
-function labelText(label: string | null): string {
-  return label === null ? '' : ` ${jsonString(label, LABEL_CUT_CHARS)}`;
-}
-
-function arrowLine(edge: ViewEdge): string {
-  return `${endText(edge.from)} -> ${endText(edge.to)}${labelText(edge.label)} [${edge.ref}]`;
-}
-
 export function graphView(model: ViewModel, options: GraphOptions = {}): ViewResult<GraphView> {
-  const connected = new Set(model.edges.all.flatMap((edge) => pinnedIds(edge.arrow)));
-  const all = nodesOf(model.tree.roots);
-  const nodes = all.filter((node) => connected.has(node.el.id));
-  const nodeLine = (node: ViewNode) =>
-    `${model.kindOf(node.el)} ${model.refs.refOf(node.el.id)}${labelText(textField(node.el, 'label'))}`;
-  const lines: ViewLine[] = [
-    ...nodes.map((node) => ({ text: nodeLine(node), noun: NODE })),
-    ...(nodes.length > 0 && model.edges.all.length > 0 ? [{ text: '' }] : []),
-    ...model.edges.all.map((edge) => ({ text: arrowLine(edge), noun: ARROW })),
-  ];
-  const unconnected = all.length - nodes.length;
+  const unconnected = nodesOf(model.tree.roots).length;
   const fitted = fitLines({
     header: headerLine(model.facts),
-    lines,
+    lines: [],
     budget: options.budget,
     door: options.door ?? 'cli',
     fixed:
@@ -59,20 +30,13 @@ export function graphView(model: ViewModel, options: GraphOptions = {}): ViewRes
           }
         : null,
   });
-  const keptNodes = Math.min(nodes.length, fitted.kept);
-  const keptArrows = Math.max(0, fitted.kept - lines.length + model.edges.all.length);
   return {
     text: fitted.text,
     fit: fitOf(fitted),
     json: {
       header: viewHeader('graph', model.facts),
-      nodes: nodes.slice(0, keptNodes).map((node) => ({
-        ref: model.refs.refOf(node.el.id),
-        id: node.el.id,
-        kind: model.kindOf(node.el),
-        label: textField(node.el, 'label'),
-      })),
-      arrows: model.edges.all.slice(0, keptArrows).map(edgeJson),
+      nodes: [],
+      arrows: [],
       elision: fitted.elision,
     },
   };

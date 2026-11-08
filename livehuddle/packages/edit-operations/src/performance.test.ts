@@ -16,7 +16,8 @@ import type { EditOperation } from './types';
 const FRAMES = 10;
 const GROWTH = 4;
 const RATIO_CEILING = 8;
-const RUNS = 3;
+// Fastest of five: a run takes a few milliseconds now, so one garbage collection in three runs moved a ratio.
+const RUNS = 5;
 // Sized to time tens of milliseconds an apply; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
@@ -66,8 +67,8 @@ function changesetOf(rounds: number): EditOperation[] {
     lines.push(
       `set n${frame}x${r} label="Renamed ${r}"`,
       `add sticky id=s${r} label="Note ${r}" right-of:n${frame}x${r}`,
-      `connect n${frame}x${r} -> s${r}`,
-      `insert square id=i${r} between n${frame}x${r + 1} n${frame}x${r + 2}`,
+      `order s${r} back`,
+      `layout s${r} n${frame}x${r}`,
       `move s${r} by=10,0`,
       `test n${frame}x${r} label="Renamed ${r}"`,
     );
@@ -145,8 +146,9 @@ describe('performance', () => {
   it('walks past a row of boxes in time linear in the row', { timeout: TIMEOUT_MS }, () => {
     const add = parseEditOperations('add square right-of:r0 gap:0');
     if ('errors' in add) throw new Error('add');
-    const small = fastestApply(rowOf(500), add.operations);
-    const large = fastestApply(rowOf(500 * GROWTH), add.operations);
+    // A row of 1,000: at 500 the small apply was so quick that timer noise reached the ceiling (9.2 against 8).
+    const small = fastestApply(rowOf(1000), add.operations);
+    const large = fastestApply(rowOf(1000 * GROWTH), add.operations);
     expect(large / small).toBeLessThan(RATIO_CEILING);
   });
 

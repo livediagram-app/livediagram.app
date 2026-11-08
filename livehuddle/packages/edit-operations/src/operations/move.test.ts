@@ -62,21 +62,6 @@ describe('move', () => {
     expect(lines(outcome)).toEqual(['~ f2  @0,280→@500,280']);
   });
 
-  it('moves an arrow with one pinned end by its free end alone', () => {
-    const half = {
-      id: 'half',
-      type: 'arrow',
-      from: { kind: 'free', x: 0, y: 900 },
-      to: { kind: 'pinned', elementId: 'n8', anchor: 'n' },
-    } as Element;
-    const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, half] };
-    const moved = applied(run('move half by=10,0', tab)).tab.elements.find((e) => e.id === 'half');
-    expect(moved).toMatchObject({
-      from: { kind: 'free', x: 10, y: 900 },
-      to: { kind: 'pinned', elementId: 'n8' },
-    });
-  });
-
   it('moves several with all, and nothing for a zero move (E4)', () => {
     expect(lines(run('move type:stadium by=0,10 all'))).toEqual([
       '~ n1  @40,0→@40,10',
@@ -85,7 +70,9 @@ describe('move', () => {
     expect(lines(run('move n3 by=0,0'))).toEqual([]);
   });
 
-  it('moves a free arrow by an offset, and refuses to place one', () => {
+  // A stored arrow is a retired element that never moves (docs/specs/002-project-scope/not-in-livehuddle.md "The
+  // element engine", part 4, D21): an offset leaves it as stored, and a placement is refused.
+  it('leaves a stored arrow where it is, by an offset or a placement', () => {
     const loose = {
       id: 'loose',
       type: 'arrow',
@@ -93,11 +80,10 @@ describe('move', () => {
       to: { kind: 'free', x: 60, y: 900 },
     } as Element;
     const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, loose] };
-    expect(lines(run('move loose by=5,5', tab))).toEqual([
-      '~ loose  from @40,900→@45,905 · to @100,900→@105,905',
-    ]);
+    expect(lines(run('move loose by=5,5', tab))).toEqual([]);
+    expect(applied(run('move loose by=5,5', tab)).tab.elements.at(-1)).toEqual(loose);
     expect(refused(run('move loose below:n8', tab)).details).toEqual([
-      'loose: arrows move with their ends; use by=dx,dy for a free arrow',
+      'loose: a stored arrow does not move',
     ]);
   });
 
