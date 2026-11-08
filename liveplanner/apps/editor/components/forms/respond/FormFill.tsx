@@ -16,6 +16,9 @@ import { useFormFill, type FillState, type SubmitOutcome } from './useFormFill';
 // The form's colour, as its look (form-look.ts) sets it on an ancestor: the builder's page or the form link's.
 export const FORM_ACCENT = 'var(--form-accent)';
 
+// A mouse press on Back, Next or Submit leaves focus in the field (see the buttons).
+const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
+
 export function FormFill({
   form,
   submit,
@@ -211,11 +214,15 @@ export function FormFill({
         </p>
       ) : null}
 
-      {/* Back and Next / Submit at the bottom right; the note sits to their left (first on a phone, its own line). */}
+      {/* Back and Next / Submit at the bottom right; the note sits to their left (first on a phone, its own line).
+          A press keeps focus where it is (keepFocus): leaving a field checks it, and its error line pushed the button
+          down between the press and the release, so the click missed and the first Submit did nothing. Next and
+          Submit check that field with the rest. */}
       <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
         {!first ? (
           <button
             type="button"
+            onMouseDown={keepFocus}
             onClick={fill.back}
             className="form-box form-ink h-11 cursor-pointer rounded-lg border border-slate-300 bg-white px-5 text-[15px] font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
@@ -225,6 +232,7 @@ export function FormFill({
         {lastSection ? (
           <Button
             variant="none"
+            onMouseDown={keepFocus}
             onClick={() => void fill.send()}
             busy={fill.status === 'sending'}
             className="flex h-11 cursor-pointer items-center gap-2 form-box rounded-lg bg-[var(--form-accent)] px-6 text-[15px] font-semibold text-[var(--form-on-accent)] shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80 dark:focus-visible:ring-offset-slate-950"
@@ -240,6 +248,7 @@ export function FormFill({
         ) : (
           <button
             type="button"
+            onMouseDown={keepFocus}
             onClick={() => fill.next()}
             className="h-11 cursor-pointer form-box rounded-lg bg-[var(--form-accent)] px-6 text-[15px] font-semibold text-[var(--form-on-accent)] shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
           >
