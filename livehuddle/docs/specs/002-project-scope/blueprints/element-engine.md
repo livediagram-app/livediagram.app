@@ -1,7 +1,7 @@
 # The element engine: blueprint
 
-Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" and "Retired elements". It holds parts 1 and
-2 of Work Tracker #459 and the rules every later part follows.
+Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" and "Retired elements". It holds parts 1 to
+3 of Work Tracker #459 and the rules every later part follows.
 
 ## Domain and naming
 
@@ -17,6 +17,10 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
   `RETIRED_SHAPE_NAMES[shape]` for a shape and `RETIRED_TYPE_NAMES[type]` for a type, else `UNKNOWN_ELEMENT_NAME`.
 - Part 1's names: Pie Chart, Bar Chart, Line Chart, Legend, Progress Bar, Progress Ring, Rating, Code Block, Checklist, Page, Banner, Stat Row, Process, Site Header; the type `video` is **Embed**.
 - Part 2's name: the type `table` is **Table**.
+- Part 3's names (shape kinds): Lane, Stack, Boundary, Timeline (`timeline-rail`), Diagram Key, Card, Callout,
+  Badge, Step Number (`step`), Pointer Note.
+- **Retired backdrop**: `isRetiredBackdrop(el)` (`retired-kinds.ts`), a stored `frame`, `lane`, `stack` or `boundary`;
+  `paintOrder` draws it first (D19).
 
 ## Behaviour and state
 
@@ -41,6 +45,23 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
   selects the card shows the button under the finger before the tap's click lands, so a click deletes only when its
   press began on the button, or comes from the keyboard (`detail` 0).
 
+- Part 3 deletes the load-time rewrites that served its kinds: the callout-to-card migration and
+  `railToTimeline` (`element-normalise.ts`). A stored `callout` stays a `callout`; `railCount` and `railLabels` stay
+  as stored.
+- Part 3 deletes the containment rule (`isContainer`, `isContainerKind`, `deriveContainers`, `containerContents`);
+  `containment.ts` keeps the box geometry (`boxCentre`, `boxHoldsPoint`, `smallestHolder`, `contentOrigin`) that
+  views and placement read. The editor's drag moves only what is selected (and nothing attached: the attachment
+  engine, `attachment.ts`, is deleted with the badge, step and pointer note). Agent views print a flat outline.
+- Part 3 deletes the graph input (`graph-input.ts`, `graph-look*.ts`, `graph-lanes.ts`, `graph-header.ts`,
+  `graph-branches.ts`, `graph-notches.ts`, `graph-cycle.ts`, `graph-limits.ts`, `graph-authoring.ts`), the cluster
+  layout (`auto-layout-clusters.ts`, `auto-layout-cluster-*.ts`) and `buildTabFromGraph`. The general layout engine
+  (`auto-layout.ts`, the edit operations' `layout`) stays for part 5. The api's changeset `replace` and seeded tabs
+  take no `graph`; edit operations lose `wrap`, `unwrap`, the `in:` selector, the `inside:` placement, growing a
+  container to hold (`grow-container.ts`) and a container's scope in make-room. The diagram lint loses its graph
+  entry points (`lintGraph`, `compare`) and its group checks; `lintTab` is unchanged.
+- An image's `heroCaption` stays on the `ImageElement` type as an opaque stored value (`heroCaption?: unknown`), never
+  read; `HeroCaptionCard` and the export's caption go (D20). The tab's `tagColours` stays on `Tab` the same way.
+
 ## Interfaces and contracts
 
 - `RETIRED_ELEMENT_TYPES: ReadonlySet<string>`, `RETIRED_TYPE_NAMES: Readonly<Record<string, string>>`,
@@ -56,6 +77,10 @@ height }`.
 
 - Nothing is written on load. A retired element's stored fields are never read beyond `type`, `shape`, `label`,
   `session` (a session button's name) and the box, so a save writes back what was read.
+- Part 3's removed `ShapeElement` fields: `headerFill`, `headerSize`, `titleOrientation` (the lane's), `pageTitle`,
+  `pageSubtitle`, `cardMedia`, `cardHeader`, `tags`, `chipLook`, `attachedTo`, `attachAt`, `stepSequence`,
+  `pointerTip`, `keyRows`, `keyMeanings`, `stack*`, `boundaryStyle`, `conceptRows`, `conceptAnim*`, `railCount`,
+  `railLabels`. A stored one stays on the object at run time.
 - The removed fields leave the `ShapeElement` type (`pieSlices`, `lineSeries`, `legendItems`, `progress*`, `rating*`,
   `code*`, `checklistItems`, `stats`, `processSteps`, `navLinks`, `chart*`); a stored one
   stays on the object at run time.
@@ -122,6 +147,11 @@ height }`.
   commit.
 - `CanvasSelectionToolbars.retired.test.tsx` (editor): the selection toolbar's Delete removes a selected retired
   element for an Editor and is not offered when read-only (a Participant or a Viewer).
+- Part 3: `retired-kinds.test.ts` holds one of each layout container kind with the fields it stored (it loads and
+  saves deep-equal and is named), a stored `callout` and a Timeline with `railCount` stay as stored, and a stored
+  lane, stack and boundary paint at the back and carry nothing; an image with a `heroCaption` loads and saves
+  deep-equal and its export draws no caption (`svg-render-retired.test.ts`); `RetiredElementFace.test.tsx` draws each
+  part 3 placeholder and gives Delete to an Editor only; the api's `request.test.ts` refuses a `graph` replace.
 - `packages/edit-operations` and `packages/document-views`: an agent's `add` of a retired kind gets a square with a
   warning, `add video` and `add table` are refused, and the views print a retired element as `?` with no state or summary.
 
@@ -134,4 +164,4 @@ height }`.
 
 ## Defaults ledger
 
-- D17, D18 in [DEFAULTS.md](DEFAULTS.md).
+- D17 to D20 in [DEFAULTS.md](DEFAULTS.md).

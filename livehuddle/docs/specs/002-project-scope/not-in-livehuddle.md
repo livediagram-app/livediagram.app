@@ -95,7 +95,7 @@ and [its spec there](../../../../livediagram/docs/specs/008-canvas/canvas-and-pa
   square (the shape coercion every unknown kind gets). The graph tool's groups and its shape key, a Mermaid
   subgraph, and an Excalidraw frame are drawn as a [boundary](../009-elements/boundary.md) (Inset style: the title
   inside the top-left corner) instead, and the edit operation is `wrap <sel…> in boundary|lane`. Those are the
-  diagram engine's (#459): when it leaves, they go with it.
+  diagram engine's (#459), and left with part 3 of it ([The element engine](#the-element-engine)).
 
 ## The Vote
 
@@ -233,7 +233,8 @@ are the ones to read:
   JSON import and the other export formats still send them, with their own types.
 - **The groups-to-Boundary code.** A Mermaid subgraph and an Excalidraw frame came in as boundaries
   ([The Frame](#the-frame)); both importers are gone, so that mapping is gone with them. The cluster layout
-  (`auto-layout-clusters`) still draws a `graph`'s groups as boundaries, so it stays until #459.
+  (`auto-layout-clusters`) drew a `graph`'s groups as boundaries until the element engine's part 3 deleted it with the
+  graph input ([The element engine](#the-element-engine)).
 
 ## Quick Connect
 
@@ -530,8 +531,8 @@ image and the link card.
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
 | 1    | The content widgets and the embeds: the data charts (`pie-chart`, `bar-chart`, `line-chart`, `legend`), progress (`progress-bar`, `progress-ring`), `rating`, `code-block`, `checklist`, the Page (`page`), the web components but the card (`banner`, `stat-row`, `process`, `site-header`), and the video and website embeds (the `video` element type) | Done  |
 | 2    | Tables (the `table` element type) and their cell links and styles                                                                                                                                                                                                                                                                                         | Done  |
-| 3    | The layout containers: `lane`, `stack`, `boundary`, the Timeline (`timeline-rail`), `diagram-key`, `card` and `callout`, `badge`, `step`, `pointer-note`, an image's hero caption, and the graph input and cluster layout that draw groups as boundaries                                                                                                  | Next  |
-| 4    | Arrows and lines (the `arrow` type, its routing, anchors and gestures), the pens and paths (`freehand`, `path`), annotations (`annotation`), with card #583's pen leftovers                                                                                                                                                                               | Later |
+| 3    | The layout containers: `lane`, `stack`, `boundary`, the Timeline (`timeline-rail`), `diagram-key`, `card` and `callout`, `badge`, `step`, `pointer-note`, an image's hero caption, and the graph input and cluster layout that draw groups as boundaries                                                                                                  | Done  |
+| 4    | Arrows and lines (the `arrow` type, its routing, anchors and gestures), the pens and paths (`freehand`, `path`), annotations (`annotation`), with card #583's pen leftovers                                                                                                                                                                               | Next  |
 | 5    | The diagram shapes (`square`, `circle`, `diamond` and the rest of the Shapes category) and the agent-side diagram code left (`diagram-lint`, the edit operations' diagram verbs)                                                                                                                                                                          | Later |
 
 What every part does:
@@ -558,6 +559,36 @@ What every part does:
   placeholder named **Table**. Gone with it: the table face and its cell editor, the cell menu and cell link picker,
   the row and column controls, the table looks in Style Presets, the table animations, the cell search results
   (Search no longer matches a table's cell text; agents' `find` still does) and the export's grid.
+- **Part 3, the layout containers.** A stored `lane`, `stack`, `boundary`, `timeline-rail`, `diagram-key`, `card`,
+  `callout`, `badge`, `step` or `pointer-note` keeps every field it stored (a lane's heading, a stack's arrangement, a
+  boundary's style, a Timeline's milestones, a key's rows and meanings, a card's slots and tags, a badge's look and
+  the host it was attached to, a step's number, a pointer note's tip) and draws as the placeholder named **Lane**,
+  **Stack**, **Boundary**, **Timeline**, **Diagram Key**, **Card**, **Callout**, **Badge**, **Step Number** or
+  **Pointer Note**. Details:
+  - **No migration rewrites one.** A stored `callout` stays a `callout` (it no longer becomes a card on read), and a
+    Timeline saved with the old point fields (`railCount`, `railLabels`) keeps them (no milestones are made from them).
+  - **Containers carry nothing.** The containment rule (a lane, stack or boundary holds whatever its box holds, and
+    carries it when it moves) goes with them: dragging a stored lane, stack or boundary moves only its placeholder,
+    and what sat in it stays put. Like a stored Frame, the three still paint behind everything else, so their
+    placeholders never cover what sat on them.
+  - **Attachments let go.** A stored badge, step or pointer note keeps its `attachedTo` and `attachAt` as stored, but
+    no longer follows its host: it stays where it is when the host moves, and stays when the host is deleted.
+  - **The hero caption.** An image's caption card (`heroCaption`) is no longer drawn on the canvas or in the export;
+    the field stays on the image exactly as stored. The image itself is unchanged.
+  - **Tag colours.** The tab's tag colour map (`tagColours`), which only cards and the diagram key read, is kept on
+    the tab as stored and never read; its menu block is gone.
+  - **The graph input goes.** An api seed or a changeset `replace` with a `graph` (nodes and edges by id) is refused
+    (400: a `replace` takes exactly one of template or elements; a seeded tab needs `elements` or a template), so no
+    layout engine draws a graph's groups as boundaries or its lanes as swimlanes. The cluster layout
+    (`auto-layout-clusters`) and the graph's look and lane code go with it, and so do the diagram lint's graph
+    entry points, which linted a graph input before it was laid out. A tab's lint is unchanged.
+  - **Agents.** `add lane`, `add boundary` and the rest of part 3's kinds get a square (any kind livehuddle does not
+    know); `wrap … in boundary|lane` and `unwrap` are gone, and so are the `in:` selector and the `inside:` placement,
+    which named a container. A changeset that names them is refused as unknown vocabulary.
+  - **Gone with the code**: each kind's face, menu section, palette tile and Build category entry, setters,
+    factories, defaults, validation rules, export renderer, animation rules, agent view state and summary, help
+    articles and specs; the stack's reflow, the lane's seam snapping, the boundary's nesting tint, the attachment
+    engine, the diagram key's derived rows, and the Timeline's concept animations.
 - **The count.** Part 1 started from a read-only count: the build machine's two local document stores hold no tab,
   and no checked-in fixture outside a test names a deleted kind. Production tabs live in each document's Durable
   Object, which no read-only query reaches, so the owner counts them after merging and the placeholder keeps them
@@ -647,7 +678,7 @@ comments on it; a Viewer sees it).
   their old help addresses.
 - The Frame: a stored Frame loads as a retired element named Frame, still paints at the back and carries nothing
   (`retired-kinds.test.ts`); the keyboard map has no `F` (`useEditorKeyboardShortcuts.test.ts`); the agent schema
-  offers no frame, and a graph's groups come out as boundaries (`auto-layout-clusters.test.ts`).
+  offers no frame.
 - Vote: a stored tab with a `vote` field loads and saves without it (`retired-vote.test.ts`), a `tab-meta` patch
   carrying one is dropped, the room drops a `vote` op at the op gate, the strip offers no Vote button, telemetry
   filters `Voted` and `Revealed` out at ingest, and the router pins the old voting help addresses.
@@ -683,4 +714,9 @@ comments on it; a Viewer sees it).
   Part 2: a stored table (cells, cell styles and links included) loads deep-equal, saves unchanged, passes
   validation and is named Table (`retired-kinds.test.ts`); the canvas draws its placeholder and only an Editor gets
   its Delete (`RetiredElementFace.test.tsx`); `add table` is refused (`packages/edit-operations`).
+  Part 3: a stored tab holding each layout container kind loads deep-equal, saves unchanged, passes validation and is
+  named (`retired-kinds.test.ts`); a stored `callout` stays a callout and a Timeline's old point fields stay; a stored
+  lane, stack and boundary paint at the back and carry nothing; an image's `heroCaption` loads and saves unchanged and
+  is not drawn (`svg-render-retired.test.ts`); the canvas draws each kind's placeholder and only an Editor gets its
+  Delete (`RetiredElementFace.test.tsx`); the api refuses a `graph` replace (`request.test.ts`).
 - Every part: the help path tests (`repo-paths-in-docs`, `article-links`, the heading anchors) pass.
