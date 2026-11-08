@@ -121,9 +121,9 @@ Two deliberate non-changes:
 its own build**: each deploy builds its sites for its environment. Staging's build differs
 from production's in exactly one value:
 
-| Variable                 | Production                                       | Staging                                                                                                                                                       |
-| ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livedesign.app`) | the staging mcp worker's `workers.dev` address (`https://livedesign-mcp-staging.<subdomain>.workers.dev`, set in the root `.github/scripts/deploy-group.mjs`) |
+| Variable                 | Production                                       | Staging                                                                                                                           |
+| ------------------------ | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livedesign.app`) | `https://mcp-staging.livedesign.app`, the staging mcp worker's custom domain (set in the root `.github/scripts/deploy-group.mjs`) |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and

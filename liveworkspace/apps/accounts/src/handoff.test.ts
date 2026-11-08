@@ -14,6 +14,7 @@ import {
   HANDOFF_BIND_PARAM,
   HANDOFF_NONCE_COOKIE,
   HANDOFF_TTL_SECONDS,
+  handoffNonceCookie,
   signInOnAppAddress,
 } from './handoff.ts';
 import { addClient, testD1 } from './test-d1.ts';
@@ -407,5 +408,15 @@ describe('the app origin a request came through', () => {
     );
     expect(appOriginOfProxy(proxied('evil.example'), 'production')).toBeNull();
     expect(appOriginOfProxy(proxied('livediagram.app', false), 'production')).toBeNull();
+  });
+});
+
+// accounts.md "Staging never takes production's cookies": production's nonce reaches staging on the domain, so
+// every other deployment's has its own name, and production's is dropped there (own-cookies.ts).
+describe('the nonce cookie’s name', () => {
+  it('is lw_handoff in production and its own elsewhere', () => {
+    expect(handoffNonceCookie('production')).toBe(HANDOFF_NONCE_COOKIE);
+    expect(handoffNonceCookie('staging')).toBe('lw_handoff_staging');
+    expect(handoffNonceCookie('development')).toBe('lw_handoff_development');
   });
 });

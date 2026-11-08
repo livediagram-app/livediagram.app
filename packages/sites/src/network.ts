@@ -2,19 +2,55 @@
 // app's router names it when it forwarded the request, and the range around an address that one person
 // typically holds.
 
-import { WORKSPACE_CLIENT_IP_HEADER, WORKSPACE_PROXY_HEADER } from './workspace-proxy';
+import {
+  WORKSPACE_CLIENT_IP_HEADER,
+  WORKSPACE_PROXY_HEADER,
+  WORKSPACE_PROXY_SECRET_HEADER,
+} from './workspace-proxy';
 
 const IPV4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.\d{1,3}$/;
 
+// Whether `sent` is the secret, in time that depends on the secret's length alone: no early exit, and a wrong
+// length still walks the whole secret.
+function sameProxySecret(sent: string, secret: string): boolean {
+  let diff = sent.length ^ secret.length;
+  for (let i = 0; i < secret.length; i++) diff |= secret.charCodeAt(i) ^ (sent.charCodeAt(i) || 0);
+  return diff === 0;
+}
+
 /**
- * The visitor's address: the one an app's router names (WORKSPACE_CLIENT_IP_HEADER, beside WORKSPACE_PROXY_HEADER)
- * when it forwarded the request, else the connection's own. A request through a router comes from the router, so
- * without this every visitor of an app's address would share one limit. `via` says it was named by a router; a
- * caller can name any address there, so a limit keyed on it should keep the two apart.
+ * The address an app's router names (WORKSPACE_CLIENT_IP_HEADER), when it may be believed, else null. accounts and
+ * the index are publicly routed, so anyone can send the header: it counts only beside the routers' shared secret
+ * (WORKSPACE_PROXY_SECRET_HEADER matching `proxySecret`, the receiver's `WORKSPACE_PROXY_SECRET`). A receiver with no
+ * secret set believes it as named, so the secret can reach the routers before the receivers without every app's
+ * visitors counting as their router's one address meanwhile.
  */
-export function visitorAddress(request: Request): { address: string; via: boolean } {
-  const client = request.headers.get(WORKSPACE_CLIENT_IP_HEADER);
-  if (client && request.headers.has(WORKSPACE_PROXY_HEADER)) return { address: client, via: true };
+export function trustedClientAddress(
+  request: Request,
+  proxySecret: string | undefined,
+): string | null {
+  const named = request.headers.get(WORKSPACE_CLIENT_IP_HEADER)?.trim();
+  if (!named) return null;
+  const secret = proxySecret?.trim();
+  if (!secret) return named;
+  const sent = request.headers.get(WORKSPACE_PROXY_SECRET_HEADER);
+  return sent !== null && sameProxySecret(sent, secret) ? named : null;
+}
+
+/**
+ * The visitor's address: the one an app's router names (trustedClientAddress, beside WORKSPACE_PROXY_HEADER) when it
+ * forwarded the request, else the connection's own. A request through a router comes from the router, so without
+ * this every visitor of an app's address would share one limit. `via` says it was named by a router, so a limit keyed
+ * on it keeps the two apart.
+ */
+export function visitorAddress(
+  request: Request,
+  proxySecret: string | undefined,
+): { address: string; via: boolean } {
+  const client = request.headers.has(WORKSPACE_PROXY_HEADER)
+    ? trustedClientAddress(request, proxySecret)
+    : null;
+  if (client) return { address: client, via: true };
   return { address: request.headers.get('CF-Connecting-IP') ?? 'unknown', via: false };
 }
 

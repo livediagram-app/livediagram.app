@@ -315,6 +315,18 @@ describe('POST notify-action', () => {
     expect(room.notifyAction).not.toHaveBeenCalled();
   });
 
+  it('refuses a caller who can open the canvas but not edit it, and takes an edit grant', async () => {
+    // Assigning is an edit (assigned-actions.md §2, §7): a view grant must not send email in anyone's name.
+    grants.set('view-doc', grant('view-doc', { level: 'view' }));
+    grants.set('participate-doc', grant('participate-doc', { level: 'participate' }));
+    grants.set('edit-link-doc', grant('edit-link-doc', { team: null, level: 'edit' }));
+    expect((await assign({ documentId: 'view-doc' })).status).toBe(403);
+    expect((await assign({ documentId: 'participate-doc' })).status).toBe(403);
+    expect(room.notifyAction).not.toHaveBeenCalled();
+    expect((await assign({ documentId: 'edit-link-doc' })).status).toBe(202);
+    expect(room.documentRoom).toHaveBeenCalledWith(expect.anything(), 'edit-link-doc');
+  });
+
   it('answers 404 when the canvas sends nothing (no such canvas any more)', async () => {
     room.notifyAction.mockResolvedValue(false);
     expect((await assign({})).status).toBe(404);

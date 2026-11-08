@@ -46,7 +46,7 @@ describe('parseGuestToken', () => {
 });
 
 describe('refresh window', () => {
-  it('asks again with fewer than 30 days left', () => {
+  it('asks again with fewer than 15 days left', () => {
     const now = Date.now();
     expect(guestTokenNeedsRefresh(null, now)).toBe(true);
     const fresh = {

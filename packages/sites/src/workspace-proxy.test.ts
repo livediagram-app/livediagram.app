@@ -17,6 +17,7 @@ import {
   SIGN_IN_PAGE_ROUTES,
   SITE_ASSETS_ROUTE,
   WORKSPACE_CLIENT_IP_HEADER,
+  WORKSPACE_PROXY_SECRET_HEADER,
   forwardToIndex,
   forwardToDrive,
   isDrivePath,
@@ -384,6 +385,21 @@ describe("signing in on the app's own address", () => {
     );
   });
 
+  it("proves the address with the router's secret, never with one the caller sent", async () => {
+    const doFetch = upstream(new Response('{}'));
+    const signIn = () =>
+      new Request('https://www.livediagram.app/api/workspace/auth/sign-in/email-otp', {
+        headers: { 'CF-Connecting-IP': '203.0.113.9', [WORKSPACE_PROXY_SECRET_HEADER]: 'forged' },
+      });
+    await routeToWorkspace(signIn(), { app: 'livediagram', fetch: doFetch, proxySecret: 's3cret' });
+    await routeToWorkspace(signIn(), { app: 'livediagram', fetch: doFetch });
+    const [withSecret, without] = doFetch.mock.calls.map(([req]) => (req as Request).headers);
+    expect(withSecret!.get(WORKSPACE_PROXY_SECRET_HEADER)).toBe('s3cret');
+    expect(withSecret!.get(WORKSPACE_CLIENT_IP_HEADER)).toBe('203.0.113.9');
+    // No secret on this router: the caller's forgery is dropped, and nothing is sent in its place.
+    expect(without!.has(WORKSPACE_PROXY_SECRET_HEADER)).toBe(false);
+  });
+
   it("passes the pages' cookies neither way", async () => {
     const doFetch = upstream(new Response('<html>', { headers: { 'Set-Cookie': 'x=1; Path=/' } }));
     const response = await routeToWorkspace(
@@ -425,7 +441,9 @@ describe('forwardToIndex', () => {
         'CF-Connecting-IP': '198.51.100.7',
       },
     });
-    await forwardToIndex(request, new URL(request.url), PRODUCTION_INDEX_ORIGIN, doFetch);
+    await forwardToIndex(request, new URL(request.url), PRODUCTION_INDEX_ORIGIN, {
+      fetch: doFetch,
+    });
     expect(seen[0]!.url).toBe('https://www.liveworkspace.app/api/index/items?app=livediagram');
     expect(seen[0]!.method).toBe('POST');
     expect(seen[0]!.headers.get('Authorization')).toBe('Bearer t');
@@ -435,19 +453,37 @@ describe('forwardToIndex', () => {
     const spoofed = new Request('https://www.livediagram.app/api/index/items', {
       headers: { [WORKSPACE_CLIENT_IP_HEADER]: '203.0.113.1' },
     });
-    await forwardToIndex(spoofed, new URL(spoofed.url), 'https://index.test', doFetch);
+    await forwardToIndex(spoofed, new URL(spoofed.url), 'https://index.test', { fetch: doFetch });
     expect(seen[1]!.headers.has(WORKSPACE_CLIENT_IP_HEADER)).toBe(false);
+  });
+
+  it("proves the address with the router's secret, and drops a caller's forged proof", async () => {
+    const seen: Request[] = [];
+    const doFetch = (async (input: RequestInfo | URL) => {
+      seen.push(input as Request);
+      return new Response('ok');
+    }) as typeof fetch;
+    const forged = () =>
+      new Request('https://www.livediagram.app/api/index/items', {
+        headers: { 'CF-Connecting-IP': '198.51.100.7', [WORKSPACE_PROXY_SECRET_HEADER]: 'forged' },
+      });
+    const sent = forged();
+    await forwardToIndex(sent, new URL(sent.url), PRODUCTION_INDEX_ORIGIN, {
+      fetch: doFetch,
+      proxySecret: ' s3cret ',
+    });
+    const again = forged();
+    await forwardToIndex(again, new URL(again.url), PRODUCTION_INDEX_ORIGIN, { fetch: doFetch });
+    expect(seen[0]!.headers.get(WORKSPACE_PROXY_SECRET_HEADER)).toBe('s3cret');
+    expect(seen[1]!.headers.has(WORKSPACE_PROXY_SECRET_HEADER)).toBe(false);
   });
 
   it('refuses to forward to its own site, rather than loop', async () => {
     const doFetch = upstream(new Response('ok'));
     const request = new Request('https://www.livediagram.app/api/index/items');
-    const res = await forwardToIndex(
-      request,
-      new URL(request.url),
-      'https://www.livediagram.app',
-      doFetch,
-    );
+    const res = await forwardToIndex(request, new URL(request.url), 'https://www.livediagram.app', {
+      fetch: doFetch,
+    });
     expect(res.status).toBe(508);
     expect(doFetch).not.toHaveBeenCalled();
   });
@@ -488,10 +524,16 @@ describe('forwardToDrive', () => {
       return new Response('ok');
     }) as unknown as typeof fetch;
     const request = new Request('https://liveplanner.app/api/drive/config?x=1', {
-      headers: { Cookie: 'session=1', Authorization: 'Bearer t' },
+      headers: {
+        Cookie: 'session=1',
+        Authorization: 'Bearer t',
+        [WORKSPACE_PROXY_SECRET_HEADER]: 'forged',
+      },
     });
     await forwardToDrive(request, new URL(request.url), PRODUCTION_DRIVE_ORIGIN, doFetch);
     expect(seen[0]!.url).toBe(`${PRODUCTION_DRIVE_ORIGIN}/api/drive/config?x=1`);
+    // Drive counts no address: no proof goes there, and a caller's never passes on.
+    expect(seen[0]!.headers.has(WORKSPACE_PROXY_SECRET_HEADER)).toBe(false);
     expect(seen[0]!.headers.get('Cookie')).toBeNull();
     expect(seen[0]!.headers.get('Authorization')).toBe('Bearer t');
   });

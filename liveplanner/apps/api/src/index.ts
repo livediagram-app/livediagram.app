@@ -21,6 +21,7 @@ import {
   UNAVAILABLE_RETRY_AFTER_SECONDS,
 } from '@liveworkspace/api-kit/request-failure';
 import { MAX_BODY_BYTES } from './limits';
+import { withCappedBody } from '@liveworkspace/api-kit/request-body';
 import { MAX_IMAGE_BYTES } from '@liveworkspace/media';
 import { handleImages } from './routes/images';
 import { handleAccount } from './routes/account';
@@ -215,9 +216,10 @@ async function routeApiRequest(
   if (tokenAuth?.readOnly && isWrite && !isSelfRevoke) {
     return forbidden('read_only_token');
   }
-  // Reject oversized bodies up front (cheap Content-Length gate) so a hostile
-  // payload never reaches a route's req.json(). The per-field / per-tab caps
-  // in the routes catch the rest; this is the blunt outer bound.
+  // Reject oversized bodies up front so a hostile payload never reaches a route's
+  // req.json(): a declared Content-Length over the cap is refused before a byte is
+  // read, and any other body is read through the counter below. The per-field /
+  // per-tab caps in the routes catch the rest; this is the blunt outer bound.
   if (isWrite) {
     const len = Number(request.headers.get('content-length'));
     // An Image field's upload carries raw bytes with its own, larger cap (docs/specs/026-plan/item-types.md
@@ -226,6 +228,12 @@ async function routeApiRequest(
     if (Number.isFinite(len) && len > cap) {
       return payloadTooLarge();
     }
+    // A body that declares no length (a chunked upload, where Number(null) is 0) passes the check above, and
+    // the routes read a body whole, so the body itself is read here through a byte counter that stops at the
+    // same cap and answers the same 413, whatever the headers say (docs/specs/015-api/api.md "Rate limiting").
+    const capped = await withCappedBody(request, cap);
+    if (!capped) return payloadTooLarge();
+    request = capped;
   }
   // Room-ticket mints (docs/specs/015-api/api.md) are exempt like /api/events: the mint
   // is the auth handshake for opening the realtime room, and a 429 —

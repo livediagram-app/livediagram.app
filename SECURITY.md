@@ -20,6 +20,7 @@ Each app's help centre holds its full policy, covering scope, rules for testing,
 | liveplanner.app   | [liveplanner.app/help/policies/report-a-vulnerability](https://www.liveplanner.app/help/policies/report-a-vulnerability/)         |
 | livedocuments.app | [livedocuments.app/help/policies/report-a-vulnerability](https://www.livedocuments.app/help/policies/report-a-vulnerability/)     |
 | livedesign.app    | [livedesign.app/help/policies/report-a-vulnerability](https://www.livedesign.app/help/policies/report-a-vulnerability/)           |
+| livehuddle.app    | [livehuddle.app/help/policies/report-a-vulnerability](https://www.livehuddle.app/help/policies/report-a-vulnerability/)           |
 
 Every site also publishes these details at `/.well-known/security.txt`.
 

@@ -533,21 +533,63 @@ describe('share-password guesses', () => {
     expect(elsewhere.status).toBe(200);
   });
 
-  it('limits every guess at one item, whichever network they come from', async () => {
+  it('limits every wrong guess at one item, whichever network they come from', async () => {
     const { link } = await protectedLink('limit-right-2');
     const env = {
       ...h.db.env,
       SHARE_GUESS_VISITOR_LIMITER: limiter(100),
       SHARE_GUESS_ITEM_LIMITER: limiter(2),
     };
-    const from = (ip: string) =>
+    const from = (ip: string, password = 'nope') =>
       call(`/share/${link.code}`, {
         env,
-        headers: { 'X-Share-Password': 'nope', 'CF-Connecting-IP': ip },
+        headers: { 'X-Share-Password': password, 'CF-Connecting-IP': ip },
       });
     expect((await from('203.0.113.1')).status).toBe(403);
     expect((await from('203.0.113.2')).status).toBe(403);
     expect((await from('203.0.113.3')).status).toBe(429);
+    expect((await from('203.0.113.4')).status).toBe(429);
+    // The item is over its limit, but a real visitor with the right password still gets in.
+    expect((await from('198.51.100.20', 'limit-right-2')).status).toBe(200);
+  });
+
+  it('keeps a real visitor in while someone floods the link, and bounds the flood per network', async () => {
+    const { item, link } = await protectedLink('limit-right-5');
+    const visitors = limiter(10);
+    const items = limiter(30);
+    const env = {
+      ...h.db.env,
+      SHARE_GUESS_VISITOR_LIMITER: visitors,
+      SHARE_GUESS_ITEM_LIMITER: items,
+    };
+    const guess = (password: string, ip: string) =>
+      call(`/share/${link.code}`, {
+        env,
+        headers: { 'X-Share-Password': password, 'CF-Connecting-IP': ip },
+      });
+    // One network floods with 40 wrong guesses: its first 10 are checked, the rest refused before any PBKDF2.
+    const flood: number[] = [];
+    for (let i = 0; i < 40; i++) flood.push((await guess(`wrong-${i}`, '203.0.113.66')).status);
+    expect(flood.filter((s) => s === 403)).toHaveLength(10);
+    expect(flood.filter((s) => s === 429)).toHaveLength(30);
+    expect(items.keys).toHaveLength(10);
+    // Four more networks push the item past its 30: their wrong guesses are 429 now.
+    for (const ip of ['203.0.113.67', '203.0.113.68', '203.0.113.69']) {
+      for (let i = 0; i < 10; i++) await guess(`wrong-${ip}-${i}`, ip);
+    }
+    expect((await guess('wrong-again', '203.0.113.70')).status).toBe(429);
+    // The right password still opens the item, on the share page and the grant's door.
+    expect((await guess('limit-right-5', '198.51.100.30')).status).toBe(200);
+    const grant = await call(`/items/${item.id}/grant`, {
+      method: 'POST',
+      env,
+      headers: {
+        'X-Share-Code': link.code,
+        'X-Share-Password': 'limit-right-5',
+        'CF-Connecting-IP': '198.51.100.31',
+      },
+    });
+    expect(grant.status).toBe(200);
   });
 
   it('counts a visitor by the address their app’s router names, and an app’s server by the item alone', async () => {
@@ -580,6 +622,47 @@ describe('share-password guesses', () => {
     expect(items.keys).toHaveLength(2);
   });
 
+  it('counts a named address only beside the routers’ secret, once the index has one', async () => {
+    const { link } = await protectedLink('limit-right-6');
+    const visitors = limiter(100);
+    const env = {
+      ...h.db.env,
+      SHARE_GUESS_VISITOR_LIMITER: visitors,
+      SHARE_GUESS_ITEM_LIMITER: limiter(100),
+      WORKSPACE_PROXY_SECRET: 'router-secret',
+    };
+    const named = { 'X-Share-Password': 'nope', 'X-Liveworkspace-Client-IP': '198.51.100.9' };
+    // A direct caller naming a made-up address: counted by its own connection.
+    await call(`/share/${link.code}`, {
+      env,
+      headers: { ...named, 'CF-Connecting-IP': '203.0.113.50' },
+    });
+    await call(`/share/${link.code}`, {
+      env,
+      headers: {
+        ...named,
+        'CF-Connecting-IP': '203.0.113.50',
+        'X-Liveworkspace-Proxy-Secret': 'guess',
+      },
+    });
+    // A router with the secret: the address it names.
+    await call(`/share/${link.code}`, {
+      env,
+      headers: {
+        ...named,
+        'CF-Connecting-IP': '2a06:98c0::1',
+        'CF-Worker': 'livediagram.app',
+        'X-Liveworkspace-Proxy-Secret': 'router-secret',
+      },
+    });
+    // A router without it yet: a Worker's subrequest, so the item's limit alone.
+    await call(`/share/${link.code}`, {
+      env,
+      headers: { ...named, 'CF-Connecting-IP': '2a06:98c0::1', 'CF-Worker': 'livediagram.app' },
+    });
+    expect(visitors.keys).toEqual(['203.0.113.50', '203.0.113.50', 'via:198.51.100.9']);
+  });
+
   it('spends no try on a visit without a password, nor on one this isolate has already checked', async () => {
     const { link } = await protectedLink('limit-right-4');
     const visitors = limiter(100);
@@ -593,10 +676,11 @@ describe('share-password guesses', () => {
     expect(items.limit).not.toHaveBeenCalled();
     const right = { 'X-Share-Password': 'limit-right-4', 'CF-Connecting-IP': '203.0.113.9' };
     expect((await call(`/share/${link.code}`, { env, headers: right })).status).toBe(200);
-    expect(items.limit).toHaveBeenCalledTimes(1);
+    // The right password counts against the visitor (before it is checked), never against the item.
+    expect(visitors.limit).toHaveBeenCalledTimes(1);
     // A visitor already in: their app asks again and again (each grant renewal), and costs nothing more.
     expect((await call(`/share/${link.code}`, { env, headers: right })).status).toBe(200);
-    expect(items.limit).toHaveBeenCalledTimes(1);
+    expect(items.limit).not.toHaveBeenCalled();
     expect(visitors.limit).toHaveBeenCalledTimes(1);
   });
 });

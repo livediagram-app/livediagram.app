@@ -254,7 +254,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity**: every owner is a liveworkspace identity, sent as `Authorization: Bearer <token>` and verified with `createPersonVerifier` against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`):
-  - **Guest**: liveworkspace's year-long guest token (`livediagram:v2:guest-token` in `localStorage`, from the accounts site's guest handoff via `/api/auth/guest`). Its id, `guest_<uuid>`, is the owner id, the same in every liveworkspace app. Full feature set (persistence, share links, real-time collab).
+  - **Guest**: liveworkspace's 45-day guest token (`livediagram:v2:guest-token` in `localStorage`, from the accounts site's guest handoff via `/api/auth/guest`). Its id, `guest_<uuid>`, is the owner id, the same in every liveworkspace app. Full feature set (persistence, share links, real-time collab).
   - **Account**: an account access token. Its `sub` claim (`user_…`) is the owner id.
   - An owner id is never a credential; only a verified token says who is asking. Without the accounts site configured there are no guests either.
 - The two paths coexist forever: a signed-in user can still hand a share link to a guest who edits without auth.

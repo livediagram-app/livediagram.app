@@ -722,3 +722,41 @@ describe("liveworkspace's Community page under this address (@liveworkspace/comm
     }
   });
 });
+
+describe("the visitor's address, proved to liveworkspace", () => {
+  it('sends the router secret beside it to accounts and the index, never a caller-sent copy', async () => {
+    const seen: Request[] = [];
+    vi.stubGlobal('fetch', (req: Request) => {
+      seen.push(req);
+      return Promise.resolve(new Response('ok'));
+    });
+    try {
+      const { env } = makeEnv();
+      const withSecret = { ...env, WORKSPACE_PROXY_SECRET: 'router-secret' };
+      const visit = (path: string, routerEnv: Env) =>
+        router.fetch(
+          new Request(`https://www.livedesign.app${path}`, {
+            headers: {
+              'CF-Connecting-IP': '203.0.113.7',
+              'X-Liveworkspace-Client-IP': '198.51.100.1',
+              'X-Liveworkspace-Proxy-Secret': 'forged',
+            },
+          }),
+          routerEnv,
+        );
+      await visit('/api/index/items', withSecret);
+      await visit('/api/workspace/account/me', withSecret);
+      await visit('/api/index/items', env);
+      expect(seen.map((r) => r.headers.get('X-Liveworkspace-Proxy-Secret'))).toEqual([
+        'router-secret',
+        'router-secret',
+        null,
+      ]);
+      expect(seen.every((r) => r.headers.get('X-Liveworkspace-Client-IP') === '203.0.113.7')).toBe(
+        true,
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

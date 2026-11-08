@@ -16,7 +16,10 @@ import { mergeGuestSettings } from './settings.ts';
 
 export const GUEST_PATH = '/guest';
 export const GUEST_COOKIE = 'lw_guest';
-export const GUEST_TOKEN_TTL_SECONDS = 365 * 24 * 60 * 60;
+// 45 days (a year before 2026-11; docs/specs/003-accounts/accounts.md "Guests"). An app hands off again once fewer
+// than 15 are left (@liveworkspace/index-client GUEST_TOKEN_REFRESH_BEFORE_MS), and the cookie names the same guest.
+// Not 30: pages built before refresh at 30 days left, and would hand off again on every load.
+export const GUEST_TOKEN_TTL_SECONDS = 45 * 24 * 60 * 60;
 // Browsers cap a cookie's life (Chrome at 400 days), so the cookie is set again on every hand-off
 // and only lapses after that long without one.
 const COOKIE_MAX_AGE_SECONDS = 10 * 365 * 24 * 60 * 60;

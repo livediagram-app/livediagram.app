@@ -116,6 +116,9 @@
     "./components/dialogs/settings/settings-choice-illustrations": "./src/components/dialogs/settings/settings-choice-illustrations.tsx",
     "./components/dialogs/settings/settings-illustration-kit": "./src/components/dialogs/settings/settings-illustration-kit.tsx",
     "./components/dialogs/settings/settings-illustrations": "./src/components/dialogs/settings/settings-illustrations.tsx",
+    "./components/oauth/OauthConsentPage": "./src/components/oauth/OauthConsentPage.tsx",
+    "./components/oauth/OauthDevicePage": "./src/components/oauth/OauthDevicePage.tsx",
+    "./components/oauth/oauth-chrome": "./src/components/oauth/oauth-chrome.tsx",
     "./components/palette/CanvasModalCard": "./src/components/palette/CanvasModalCard.tsx",
     "./components/palette/ContextMenu": "./src/components/palette/ContextMenu.tsx",
     "./components/palette/PaletteDropdown": "./src/components/palette/PaletteDropdown.tsx",
@@ -351,6 +354,8 @@
     "./lib/live-filter-cost": "./src/lib/live-filter-cost.ts",
     "./lib/live-image": "./src/lib/live-image.ts",
     "./lib/local-storage-safe": "./src/lib/local-storage-safe.ts",
+    "./lib/mcp-consent-session": "./src/lib/mcp-consent-session.ts",
+    "./lib/mcp-device-session": "./src/lib/mcp-device-session.ts",
     "./lib/modal-guard": "./src/lib/modal-guard.ts",
     "./lib/motion-preference": "./src/lib/motion-preference.ts",
     "./lib/move-row": "./src/lib/move-row.ts",
@@ -431,6 +436,7 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",

@@ -1,6 +1,6 @@
 /* The home page's illustrations (liveworkspace/docs/specs/010-site/site.md "The front door"): a slow current along
  * the lines that join the apps, cursors drifting as people work, and the cards settling as the page
- * opens. Paced as content, not chrome (motion-budget.test.ts lists this file), and all of it stops
+ * opens, and a hearing ring's ripple. Paced as content, not chrome (motion-budget.test.ts lists this file), and all of it stops
  * for anyone who asks for reduced motion. */
 
 @keyframes lw-flow {
@@ -63,6 +63,18 @@
   }
 }
 
+/* livehuddle's hearing ring: a ripple running out from the speaker's feet to the ring's edge. */
+@keyframes lw-hear {
+  0% {
+    transform: scale(0.15);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
 .lw-flow {
   stroke-dasharray: 6 10;
   animation: lw-flow 2.4s linear infinite;
@@ -88,14 +100,26 @@
   animation: lw-ping 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
+.lw-hear {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lw-hear 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lw-flow,
   .lw-drift-a,
   .lw-drift-b,
   .lw-float,
   .lw-rise,
-  .lw-ping {
+  .lw-ping,
+  .lw-hear {
     animation: none;
+  }
+
+  /* Held still, the hearing ring is its edge alone. */
+  .lw-hear {
+    opacity: 0;
   }
 }
 

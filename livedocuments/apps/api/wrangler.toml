@@ -3,6 +3,11 @@ name = "livedocuments-api"
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
+# No public *.workers.dev address or preview URLs: a copy there would skip the zone's WAF and
+# rate-limit rules. The Worker is reached only at its custom domain or over a service binding
+# (docs/specs/016-platform/deployment.md "Custom domain").
+workers_dev = false
+preview_urls = false
 
 # Local dev port, off wrangler's 8787 default so a livedocuments stack runs beside
 # livediagram's and liveplanner's (the router's API_ORIGIN and the docs name the same port).
@@ -236,6 +241,8 @@ name = "EMAIL"
 # and the router's service bindings depend on this exact string.
 [env.staging]
 name = "livedocuments-api-staging"
+workers_dev = false
+preview_urls = false
 
 # TELEMETRY_ENABLED and the image caps come from `hosted-vars.json`, exactly as
 # for production (see the top of this file), and so does TELEMETRY_URL: staging's

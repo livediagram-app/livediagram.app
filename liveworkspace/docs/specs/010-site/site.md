@@ -109,7 +109,9 @@ moves between them, and the one account that joins them.
    Signed in, they are hidden. Beside it, the platform's prism
    with the apps' logos round it at the points of a pentagon, each joined to it by a line in its accent, read
    clockwise in the
-   order work moves through them, and a collaborator's cursor at each. Each app there is a link to its
+   order work moves through them, and someone at work in each, drawn as that app shows them: a cursor in
+   livediagram, livedocuments and livedesign, a ring and name on the card they hold in liveplanner (whose boards and
+   sheets draw no cursors), and a character in livehuddle. Each app there is a link to its
    site that lifts and rings in its accent on hover, and holds still while pointed at. On phones (below
    `sm`) it is left out, and the hero's words, calls to action and promises are centred. **Height:** from `sm`
    it fills the first screen under the 64px header, capped at 72rem and never shorter than its content, the words
@@ -118,8 +120,9 @@ moves between them, and the one account that joins them.
 2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
-   and a photo being cropped; a Space's stand-up room with its timer running, its notes voted on and people walked
-   in), and a button in its deep accent naming the work: **Start Diagramming**, **Start Planning**, **Start Writing**,
+   and a photo being cropped; a Space's Team Pod, characters round its meeting table, one of them talking inside her
+   hearing ring, the Timer on its wall, a teammate walking up from the plants and the Call dock below, with no
+   cursor), and a button in its deep accent naming the work: **Start Diagramming**, **Start Planning**, **Start Writing**,
    **Start Designing**, **Start Huddling**. Below `lg` the window sits between the summary and the three things it does.
    Every logo is the app's own UI package `Brand`, with its hover
    shimmer, "live" in the app's deep shade on light and its own 400 on dark, which reads at AA on a dark card where its 500
@@ -132,10 +135,11 @@ moves between them, and the one account that joins them.
    the same promises", ten tiles that fill every row, each with a small piece of the product drawn
    in the apps' colours (`components/landing/PromiseArt.tsx`) above its words and no icon: one
    account (the large tile, the sign-in box beside each app signed in, with Create your account);
-   live by default (a canvas with people in it); share by link (the share box); one Explorer for
-   everything (full width: the words beside a folder holding a Canvas, a Plan, a Document and a
-   Design, two by two); one Inbox; teams across every app; one key for scripts and AI (a token in a
-   terminal); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
+   live by default (people in the work as each app shows them: a cursor on a canvas, a ring on a held card, a
+   character in a Space; the words promise real-time collaboration, never a cursor in every app); share by link (the share box); one Explorer for
+   everything (full width: the words beside a folder holding a Canvas, a Plan, a Document, a
+   Design and a Space, two by two with the Space across the foot); one Inbox; teams across every app; one key for scripts and AI (a token in a
+   terminal, checked against every app's API by a script, since there is no liveworkspace CLI); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
    and one close for every app); completely free.
 4. **Closing call to action**: "One account. Every app. Always live."
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
@@ -146,7 +150,7 @@ moves between them, and the one account that joins them.
    terms "Terms of Use" from one constant, `TERMS_LABEL` in `@liveworkspace/sites`.
 
 The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their
-ambient motion (the current along the lines, drifting cursors, the cards settling) is in
+ambient motion (the current along the lines, drifting cursors and characters, a hearing ring's ripple, the cards settling) is in
 `app/landing-motion.css`, paced as content, and stops for reduced motion.
 
 ### Privacy and terms (`/privacy`, `/terms`)

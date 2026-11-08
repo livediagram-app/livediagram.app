@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Env } from './env.ts';
-import { networkOf, overCodeLimit } from './rate-limit.ts';
+import { networkOf, overCodeLimit, rangeOf } from './rate-limit.ts';
 
 function limiter(success: boolean) {
   return { limit: vi.fn(async () => ({ success })) };
@@ -61,12 +61,31 @@ describe('overCodeLimit', () => {
 });
 
 describe('the network a code request comes from', () => {
-  const at = (headers: Record<string, string>) =>
-    networkOf(
-      new Request('https://liveworkspace.app/api/auth/x', {
-        headers,
-      }),
+  const at = (headers: Record<string, string>, secret?: string) =>
+    networkOf(new Request('https://liveworkspace.app/api/auth/x', { headers }), {
+      WORKSPACE_PROXY_SECRET: secret,
+    });
+
+  it('counts a named address only beside the routers’ secret, once this Worker has one', () => {
+    const named = {
+      'cf-connecting-ip': '198.51.100.40',
+      'x-liveworkspace-proxy': 'livediagram',
+      'x-liveworkspace-client-ip': '203.0.113.9',
+    };
+    expect(at({ ...named, 'x-liveworkspace-proxy-secret': 'router-secret' }, 'router-secret')).toBe(
+      'via:203.0.113.9',
     );
+    // A direct caller rotating made-up addresses: counted by its own connection each time.
+    expect(at(named, 'router-secret')).toBe('198.51.100.40');
+    expect(at({ ...named, 'x-liveworkspace-proxy-secret': 'guess' }, 'router-secret')).toBe(
+      '198.51.100.40',
+    );
+    expect(
+      rangeOf(new Request('https://liveworkspace.app/api/account/x', { headers: named }), {
+        WORKSPACE_PROXY_SECRET: 'router-secret',
+      }),
+    ).toBe('198.51.100.0/24');
+  });
 
   it('is the visitor’s, named by an app’s router, apart from direct visitors', () => {
     expect(

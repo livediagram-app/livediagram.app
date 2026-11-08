@@ -91,9 +91,9 @@ Two deliberate non-changes:
 `NEXT_PUBLIC_*` values are baked into the static export by `next build`, so **staging is its own build**. It differs
 from production's in one value:
 
-| Variable                 | Production                                          | Staging                                     |
-| ------------------------ | --------------------------------------------------- | ------------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livedocuments.app`) | the staging MCP worker's `workers.dev` host |
+| Variable                 | Production                                          | Staging                                                                         |
+| ------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livedocuments.app`) | `https://mcp-staging.livedocuments.app`, the staging MCP worker's custom domain |
 
 Everything else matches: `NEXT_PUBLIC_API_BASE` stays unset so staging resolves `/api` same-origin through its own
 router, and `NEXT_PUBLIC_TELEMETRY_ENABLED` (from the hosted profile, [Deployment](deployment.md) "Hosted profile")

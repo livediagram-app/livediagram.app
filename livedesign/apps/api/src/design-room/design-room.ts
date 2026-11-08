@@ -983,6 +983,7 @@ export class DesignRoom extends DurableObject<Env> {
     const renewal = await renewRoomGrant(indexService, env, ticket, session.designId, {
       level: session.verifiedRole,
       tab: session.tabScope,
+      pairing: session.workbenchPairing ?? null,
     });
     if (renewal.kind === 'invalid') {
       console.warn('[grant] renewal refused', { reason: 'invalid' });

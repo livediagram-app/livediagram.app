@@ -25,7 +25,7 @@ import { getParticipant } from '../person/profiles';
 import { elementUrl, pusher, pushItemOf, pushTag } from '../person/push';
 import { appBaseUrl } from '../email/client';
 import { badRequest, forbidden, json, notFound } from '../responses';
-import { gateRead, readBody, requireOwner, type PlanRouteContext } from './context';
+import { gateEdit, gateRead, readBody, requireOwner, type PlanRouteContext } from './context';
 
 // Body caps: generous against any real action, tight against abuse.
 export const ACTION_NAME_MAX = 200;
@@ -97,6 +97,9 @@ export async function handleNotifyAction(ctx: PlanRouteContext, id: string): Pro
   // The caller has joined the team (their token says so) and can open the plan (their grant).
   if (!(ctx.teams ?? []).some((t) => t.id === teamId)) return notFound();
   if (!(await gateRead(ctx, id))) return notFound();
+  // Assigning is an edit (assigned-actions.md §2, §7): a Viewer or Participant, who can open the plan and so name
+  // it, is refused outright rather than allowed to send email in someone else's name.
+  if (!(await gateEdit(ctx, id))) return forbidden();
   const plan = await getProjectMeta(ctx.env, id);
   if (!plan) return notFound();
   const people = await teamPeople(ctx.env, teamId);

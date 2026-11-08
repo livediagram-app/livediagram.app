@@ -181,6 +181,8 @@ service bindings. From the router ([Router app](router-app.md)):
 - `/help/*` goes to the help centre (prefix stripped); `/telemetry` redirects to liveworkspace's dashboard.
 - Everything else goes to marketing.
 
+No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules.
+
 ## Rollback
 
 A rollback is **Deploy Production** with an older `ref`: a commit older than production's own redeploys every

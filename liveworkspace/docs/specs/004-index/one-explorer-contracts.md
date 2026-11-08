@@ -79,7 +79,9 @@ A guest's id lives on liveworkspace.app, so it is the same in every app.
 3. The app keeps the token (local storage) and sends it as the Bearer token.
 
 Guest token: a JWT signed with accounts' keys, `iss` the accounts issuer, `aud` the client's API
-resource, `sub: guest_<uuid>`, `kind: "guest"`, valid for a year. A newer one replaces it silently.
+resource, `sub: guest_<uuid>`, `kind: "guest"`, valid for 45 days (a year before 2026-11). A newer one replaces it
+silently. The app hands off again on the first page load that needs it once it has fewer than 15 days left
+(`GUEST_TOKEN_REFRESH_BEFORE_MS`), and accounts' `lw_guest` cookie names the same guest again.
 
 **Becoming an account.** When someone signs in or signs up on liveworkspace.app with an `lw_guest`
 cookie, accounts tells the index (`POST /internal/merge`, accounts' own key), which moves the guest's
@@ -309,9 +311,10 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
 - `GET /share/:code`: public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
   opens it, except through a public link (no Shared entry, no "joined" notice, no visit on the Timeline); 401
   `password_required`, 403 `password_invalid` (a public link: 404). A password not already found right
-  is a guess, limited per visitor's network (10 a minute) and per item (30 a minute) on every door that takes one
-  (this, `POST /items/:id/grant` and any read with `X-Share-Password`): over either, 429 `rate_limited` with
-  `Retry-After` in seconds, even for the right one.
+  is a guess, limited per visitor's network (10 a minute, before it is checked) and, for a wrong one, per item (30 a
+  minute) on every door that takes one (this, `POST /items/:id/grant` and any read with `X-Share-Password`): over
+  either, 429 `rate_limited` with `Retry-After` in seconds. Over the visitor's limit that is so even for the right
+  one; the item's never turns the right one away, except for a request that names no visitor (an app's server).
 - `PUT /items/:id/share-password {password}`: a new password is 6 to 256 characters after trimming
   (`SHARE_PASSWORD_MIN`, `SHARE_PASSWORD_MAX`): shorter is 400 `password_too_short`, longer `invalid_password`; one
   set before the minimum keeps working. Spaces alone, or null, clear it. Setting a new password or changing it holds for
@@ -381,13 +384,16 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   `tab` confining it to one tab). A caller without one, such as an API token from the CLI or an AI tool,
   gets one from the index as a delegated caller (above), cached until a minute before it lapses.
 - **WebSocket**: a socket cannot send headers, so the grant rides the upgrade as `?t=<grant>`. A session
-  the app opens for a paired tool seals its own limits into the ticket:
-  `<grant>~<pairing>~<cap>~<HMAC(INDEX_KEY)>`, so neither can be raised. When the pairing ends (unpaired, its token
+  the app opens for a paired tool gets no grant it could read: its ticket is `rt2~<sealed>`, the grant, the pairing
+  and the cap encrypted together (AES-GCM, key derived from INDEX_KEY), so the session can neither raise its limits
+  nor take the owner's full-level grant out of the ticket and use it bare (`?t=` or `X-Index-Grant`). A room opens
+  the seal with the same key. When the pairing ends (unpaired, its token
   revoked, its account closed), accounts asks the index to close its sockets and the index tells each item
   (`POST <app>/api/internal/items/:id/workbench-close` `{pairingId}`, [workbench.md](../011-workbench/workbench.md)).
 - **Renewal**: the room sends `{kind: "grant-renew", expiresAt}` 30 seconds before a socket's grant runs out; the
-  editor answers `{kind: "grant", grant}` with a fresh one. A fresh grant saying the same moves the lapse
-  on; one with another level or tab closes the socket (4005) so it reconnects as what it now is; none in
+  editor answers `{kind: "grant", grant}` with a fresh one (a paired tool's session answers with a fresh sealed
+  ticket). A fresh grant saying the same moves the lapse on; one with another level, tab or pairing (a paired
+  session's renewal must be sealed to its own pairing, and is held to its cap) closes the socket (4005) so it reconnects as what it now is; none in
   time closes it (4007). Revoking a link closes the sockets that link admitted. Only open sockets count: one the
   room has closed can stay listed until its peer answers the close (a laptop asleep never does), and it has nothing
   left to ask or lapse, so it never sets the room's alarm.

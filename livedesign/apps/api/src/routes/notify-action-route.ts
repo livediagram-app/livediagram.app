@@ -24,7 +24,7 @@ import { isAccountOwner } from '../accounts/client';
 import { getParticipant } from '../accounts/profiles';
 import { designUrl, elementUrl, pusher, pushItemOf, pushTag } from '../accounts/push';
 import { badRequest, forbidden, json, notFound } from '../responses';
-import { gateRead, readBody, requireOwner, type DesignRouteContext } from './context';
+import { gateEdit, gateRead, readBody, requireOwner, type DesignRouteContext } from './context';
 
 // Body caps: generous against any real action, tight against abuse.
 export const ACTION_NAME_MAX = 200;
@@ -97,6 +97,9 @@ export async function handleNotifyAction(ctx: DesignRouteContext, id: string): P
   // The caller has joined the team (their token says so) and can open the design (their grant).
   if (!(ctx.teams ?? []).some((t) => t.id === teamId)) return notFound();
   if (!(await gateRead(ctx, id))) return notFound();
+  // Assigning is an edit (assigned-actions.md §2, §7): a Viewer or Participant, who can open the design and so name
+  // it, is refused outright rather than allowed to send email in someone else's name.
+  if (!(await gateEdit(ctx, id))) return forbidden();
   const design = await getDesignMeta(ctx.env, id);
   if (!design) return notFound();
   const people = await teamPeople(ctx.env, teamId);

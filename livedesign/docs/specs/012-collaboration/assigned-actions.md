@@ -210,8 +210,9 @@ The server, not the client, establishes every fact that matters:
 - verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
   an invited member) is a joined OR invited member of `<teamId>` (404
   otherwise, so there is no probing which users exist);
-- verifies the caller can access `designId` (owner, team library, or
-  shared-with, by the index's grant), and reads the **design name from the design itself**, not the body;
+- verifies the caller can **edit** `designId` (owner, team library, or
+  shared-with, by the index's grant at Editor: assigning is an edit, §2 and §7; a Viewer's or
+  Participant's grant answers 403, no grant 404), and reads the **design name from the design itself**, not the body;
 - resolves the assignee's address from trusted server state
   (the team's people and the account's verified address, asked of liveworkspace), never a client header
   ([Transactional email](../014-identity/transactional-email.md) §7, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);

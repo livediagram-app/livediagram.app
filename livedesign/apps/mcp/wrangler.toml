@@ -13,6 +13,11 @@ compatibility_flags = ["nodejs_compat"]
 # with its DNS record and certificate. Another host is set here instead, then
 # CONSENT_BASE_URL + the live app's NEXT_PUBLIC_MCP_ORIGIN point at it.
 routes = [{ pattern = "mcp.livedesign.app", custom_domain = true }]
+# No public *.workers.dev address or preview URLs: a copy there would skip the zone's WAF and
+# rate-limit rules. The Worker is reached only at its custom domain or over a service binding
+# (docs/specs/016-platform/deployment.md "Custom domain").
+workers_dev = false
+preview_urls = false
 
 # Pin a fixed local dev port so `pnpm dev` doesn't race the api worker:
 # both `wrangler dev` invocations otherwise default to 8787. livedesign runs
@@ -68,6 +73,8 @@ id = "c7d13d51126249cdad42f6eed08e4610"
 [env.staging]
 name = "livedesign-mcp-staging"
 routes = [{ pattern = "mcp-staging.livedesign.app", custom_domain = true }]
+workers_dev = false
+preview_urls = false
 
 [env.staging.vars]
 # The consent page lives in the STAGING live app — a staging OAuth flow must

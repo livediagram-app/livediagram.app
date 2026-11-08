@@ -57,11 +57,20 @@ Scope, by file:
 
 ### Password guesses (`share-guesses.ts`)
 
-A password not already found right in this isolate is a guess, counted twice before it is checked:
-`SHARE_GUESS_VISITOR_LIMITER` (10 a minute) keyed by the visitor and `SHARE_GUESS_ITEM_LIMITER` (30 a minute) keyed
-`item:<id>`. Over either: `429 { error: 'rate_limited' }`, `Retry-After: 60`. The visitor is
-`via:<address>` from `X-Liveworkspace-Client-IP` (IPv6 cut to its /64), null for a Worker subrequest (`CF-Worker`:
-only the item's limit applies), else `clientRateKey`. No password sent, or one already checked, spends nothing.
+A password not already found right in this isolate is a guess (`linkAccess` with `guessRefusal` and
+`wrongGuessRefusal`). Over a limit the answer is `429 { error: 'rate_limited' }`, `Retry-After: 60`.
+
+1. A visitor's guess counts against `SHARE_GUESS_VISITOR_LIMITER` (10 a minute) keyed by the visitor, before PBKDF2:
+   over it, 429 and nothing derived.
+2. It is checked. Right: the item opens, whatever the item's own count. Wrong: it counts against
+   `SHARE_GUESS_ITEM_LIMITER` (30 a minute) keyed `item:<id>`, and over that is 429 instead of 403 `password_invalid`.
+3. A guess with no visitor (a Worker subrequest, `CF-Worker`) counts against the item before it is checked, its only
+   bound: over it, 429 even for the right password.
+
+The visitor is `via:<address>` from `X-Liveworkspace-Client-IP` (IPv6 cut to its /64) when it is trusted
+(`trustedClientAddress`, `@liveworkspace/sites/network`: the index's `WORKSPACE_PROXY_SECRET` matches the request's
+`X-Liveworkspace-Proxy-Secret`, or is unset), null for a Worker subrequest, else `clientRateKey`. No password sent, or
+one already checked, spends nothing. The same trusted address is what a copy names to its app (`clientIpOf`).
 
 ### Hashing (`password-hash.ts`)
 

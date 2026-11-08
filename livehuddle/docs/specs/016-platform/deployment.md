@@ -120,7 +120,7 @@ From the router:
 - `/telemetry` → a 301 to liveworkspace's telemetry dashboard, `https://www.liveworkspace.app/telemetry?app=livehuddle.app`.
 - Everything else → marketing.
 
-The other workers have no hostname: they are reached only over the router's service bindings, and at their `*.workers.dev` URLs for direct testing.
+The other workers have no hostname: they are reached only over the router's service bindings. No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules.
 
 ## Rollback
 

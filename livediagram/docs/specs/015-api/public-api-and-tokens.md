@@ -369,7 +369,7 @@ After the sunset the alias module and this section go; `/api/diagrams…` then a
 ## 4. Guest identity: a verified guest token
 
 A guest is liveworkspace's guest ([Auth + guest access](../014-identity/auth-and-guest-access.md#guest-identity)):
-a year-long guest token minted by the liveworkspace accounts site, whose id is
+a 45-day guest token minted by the liveworkspace accounts site, whose id is
 `guest_<uuid>`, the same in every liveworkspace app. The editor sends it as
 `Authorization: Bearer <guest token>`, exactly as it sends an account's access
 token, and the api verifies both with `createPersonVerifier` from
@@ -424,7 +424,7 @@ hardening landed first:
   required fields, endpoints, array bounds + unique ids. The document routes run
   incoming tabs (create-seed + tab PUT) through `isValidTab` and reject
   malformed trees with `400`.
-- **Size caps**: a global Content-Length body cap, per-tab byte cap, and
+- **Size caps**: a global body cap (by Content-Length, then by counting the bytes read), per-tab byte cap, and
   name / participant / share-password caps
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Document
   and tab names are shortened to the 60-character name cap rather than

@@ -421,9 +421,9 @@ function mintAccessToken(sub, email) {
   return `${header}.${payload}.${b64url(signature)}`;
 }
 
-// A guest token shaped like the accounts Worker's (liveworkspace/apps/accounts/src/guests.ts): a year long,
+// A guest token shaped like the accounts Worker's (liveworkspace/apps/accounts/src/guests.ts): 45 days long,
 // told apart from an access token by `kind: "guest"`.
-const GUEST_TOKEN_TTL_SECONDS = 365 * 24 * 60 * 60;
+const GUEST_TOKEN_TTL_SECONDS = 45 * 24 * 60 * 60;
 function mintGuestToken(guestId = `guest_${randomUUID()}`) {
   const now = Math.floor(Date.now() / 1000);
   const header = b64url(JSON.stringify({ alg: 'RS256', kid: ACCOUNTS_KID, typ: 'JWT' }));

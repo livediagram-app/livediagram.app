@@ -221,7 +221,7 @@ An open API magnifies the cost of weak input handling, so every caller's input i
   required fields, endpoints, array bounds + unique ids. The document routes run
   incoming tabs (create-seed + tab PUT) through `isValidTab` and reject
   malformed trees with `400`.
-- **Size caps**: a global Content-Length body cap, per-tab byte cap, and
+- **Size caps**: a global body cap (by Content-Length, then by counting the bytes read), per-tab byte cap, and
   name / theme-definition / participant / share-password caps
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Document
   and tab names are shortened to the 60-character name cap rather than

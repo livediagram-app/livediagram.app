@@ -10,6 +10,8 @@ import {
 import type { CSSProperties, ReactNode } from 'react';
 import { type ListedApp, listedApps } from '@/lib/apps';
 import { AppMark } from './AppLogo';
+import { HeldBy } from './AppWindow';
+import { Character } from './Character';
 import { Cursor } from './Cursor';
 
 // The illustrations on "What every app shares" (liveworkspace/docs/specs/010-site/site.md "The front door"): each
@@ -60,16 +62,18 @@ function Dots() {
   );
 }
 
-// Live by default: a canvas with people in it, one moving a card, one typing in a note.
+// Live by default: people at work together, each drawn as their app shows them: Ada's cursor on a livediagram
+// canvas, Sam's ring and name on the liveplanner card he holds (a board draws no cursors), and Ana walking a
+// livehuddle Space as her character.
 export function LiveArt() {
   const diagram = appById('livediagram.app');
-  const planner = appById('liveplanner.app');
+  const huddle = appById('livehuddle.app');
   return (
     <ArtFrame>
       <Dots />
       <div className="absolute top-3 right-3 flex items-center gap-2 rounded-full bg-white/90 py-1 pr-2.5 pl-1 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:ring-slate-700">
         <div className="flex -space-x-1.5">
-          {['bg-sky-500', 'bg-violet-500', 'bg-amber-400'].map((c) => (
+          {['bg-sky-500', 'bg-violet-500', 'bg-emerald-500'].map((c) => (
             <span
               key={c}
               className={`size-5 rounded-full ring-2 ring-white dark:ring-slate-900 ${c}`}
@@ -91,11 +95,15 @@ export function LiveArt() {
         <span className="absolute -right-1 -bottom-1 size-2 rounded-sm bg-white ring-2 ring-[var(--lw-ink)] dark:bg-slate-900 dark:ring-[var(--lw-ink-dark)]" />
       </div>
       <Cursor name="Ada" colour={diagram.deep} className="absolute top-[88px] left-[118px]" />
-      <div className="absolute right-6 bottom-5 w-32 rotate-2 rounded-md bg-amber-100 px-2.5 py-2 text-[11px] leading-snug text-amber-950 shadow-md dark:bg-amber-300">
-        Ship it on Friday
-        <span className="ml-px inline-block h-3 w-px translate-y-0.5 animate-pulse bg-amber-950 motion-reduce:animate-none" />
+      <div className="absolute bottom-3 left-3 w-28 -rotate-2 rounded-lg bg-white px-2.5 py-2 text-[11px] font-medium text-slate-800 shadow-md ring-2 ring-violet-600 dark:bg-slate-900 dark:text-slate-100 dark:ring-violet-400">
+        <HeldBy name="Sam" />
+        Pick a date
       </div>
-      <Cursor name="Sam" colour={planner.deep} className="lw-drift-b absolute right-2 bottom-1" />
+      <Character
+        name="Ana"
+        look={{ shirt: huddle.accent, hair: '#78350f', skin: '#f5d0b0', long: true }}
+        className="lw-drift-b absolute right-12 bottom-3 w-6"
+      />
     </ArtFrame>
   );
 }
@@ -244,17 +252,24 @@ export function TeamsArt() {
           )}
         </span>
       </div>
-      <svg viewBox="0 0 240 18" className="h-4 w-60 text-slate-300 dark:text-slate-600" fill="none">
-        {[30, 90, 150, 210].map((x) => (
+      {/* A line from the team to each app's column, the five columns' middles on a 320-wide grid. */}
+      <svg
+        viewBox="0 0 320 18"
+        preserveAspectRatio="none"
+        className="h-4 w-full max-w-80 text-slate-300 dark:text-slate-600"
+        fill="none"
+      >
+        {[32, 96, 160, 224, 288].map((x) => (
           <path
             key={x}
-            d={`M120 1 C120 10 ${x} 8 ${x} 17`}
+            d={`M160 1 C160 10 ${x} 8 ${x} 17`}
             stroke="currentColor"
             strokeWidth="1.25"
+            vectorEffect="non-scaling-stroke"
           />
         ))}
       </svg>
-      <div className="grid w-full max-w-72 grid-cols-4 gap-1.5">
+      <div className="grid w-full max-w-80 grid-cols-5 gap-1.5">
         {listedApps().map((app) => (
           <div
             key={app.id}
@@ -272,7 +287,8 @@ export function TeamsArt() {
   );
 }
 
-// One key for scripts and AI: a token at work from the command line, good in every app.
+// One key for scripts and AI: a token at work from the command line, a script asking each app's API who it is
+// (`GET /api/tokens/current`, which every app answers). There is no liveworkspace CLI, so no command pretends to be one.
 export function KeyArt() {
   return (
     <ArtFrame surface="bg-slate-950 ring-slate-800 dark:ring-slate-700">
@@ -288,13 +304,13 @@ export function KeyArt() {
           <span className="text-slate-500">••••</span>3f9a
         </div>
         <div className="text-slate-300">
-          <span className="text-emerald-400">$</span> liveworkspace list --all
+          <span className="text-emerald-400">$</span> ./check-token.sh
         </div>
         {listedApps().map((app) => (
           <div key={app.id} className="flex items-center gap-2 text-slate-400">
             <span style={{ color: app.accent }}>●</span>
             <span className="w-24 text-slate-300">{app.name}</span>
-            <span className="text-emerald-400">ok</span>
+            <span className="text-emerald-400">200 OK</span>
           </div>
         ))}
       </div>

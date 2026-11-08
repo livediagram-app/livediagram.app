@@ -86,11 +86,15 @@ export async function personOf(request: Request, env: Env): Promise<Person | nul
   };
 }
 
-export function shareOf(request: Request): ShareCredentials | null {
+export function shareOf(request: Request, env: Env): ShareCredentials | null {
   const code = request.headers.get(SHARE_CODE_HEADER);
   if (!isShareCode(code)) return null;
   const password = request.headers.get(SHARE_PASSWORD_HEADER);
-  return { code: code.toUpperCase(), password: password || null, visitor: guessVisitorOf(request) };
+  return {
+    code: code.toUpperCase(),
+    password: password || null,
+    visitor: guessVisitorOf(request, env),
+  };
 }
 
 // What the Drive mirror's service names itself in X-Index-App when it acts for a person.
@@ -146,7 +150,7 @@ export async function callerOf(request: Request, env: Env): Promise<Caller | nul
   if (delegated === 'guest') return 'guest';
   // Neither the mirror nor the export ever comes in through a link.
   if (delegated?.drive || delegated?.export) return { person: delegated, share: null };
-  return { person: delegated ?? (await personOf(request, env)), share: shareOf(request) };
+  return { person: delegated ?? (await personOf(request, env)), share: shareOf(request, env) };
 }
 
 // The app this request speaks for, or null when it doesn't carry that app's key.
