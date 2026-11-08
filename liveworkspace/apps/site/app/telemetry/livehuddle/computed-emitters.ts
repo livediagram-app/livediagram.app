@@ -321,10 +321,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Notice-board', 'Calendar-wall'],
   },
   'apps/editor/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/editor/hooks/canvas/commit-freehand.ts Element·Added': {
-    values: ['Square', 'Circle', 'Diamond', 'Triangle'],
-    open: 'the shape the Shape Pen recognised',
-  },
   'apps/editor/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },
