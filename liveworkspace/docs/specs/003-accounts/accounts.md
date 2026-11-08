@@ -865,7 +865,7 @@ guest's id has no account row and writes as before.
 
 - A setting's name is 1 to 64 letters, digits, `_`, `.` or `-`.
 - A patch must be a plain JSON object; anything else is refused (`settings_not_object`,
-  `invalid_setting_key`).
+  `invalid_setting_key`). It may name any number of keys that fit the 16 KB.
 - A scope holds at most 16 KB of JSON. A patch over that is refused at once with a 400; one that
   would take the stored row over it fails the whole write with a 413 (`settings_too_large`), enforced
   by a check on the table, so concurrent writes can't slip past it.
