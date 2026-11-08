@@ -976,6 +976,24 @@ html {
     }
   }
 }
+/* A practice card (docs/specs/026-plan/plan-tour.md "Practice cards"): a dashed brand edge over a see-through face, so
+ * it reads as practice beside the board's real cards, never as one of them. */
+[data-practice] .plan-card {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--color-brand-500) 65%, transparent);
+  background-color: color-mix(in srgb, var(--card-bg) 70%, transparent);
+  box-shadow: none;
+}
+[data-practice] .plan-card:hover {
+  border-color: var(--color-brand-500);
+}
+
+/* Layout View (docs/specs/026-plan/plan-tour.md "Dashboards: Layout View"): a dashboard's dividers and row edges stay
+ * shown while the tour runs, as they are on hover. */
+[data-layout-view] [data-dashboard-row] [role='separator'][aria-label^='Resize'] {
+  opacity: 1;
+}
+
 /* Under Sketch the drawn copy is still: the card under the pointer lays a 4% wash of the ink over its drawing. */
 [data-sketch-words]:not([data-sketch-measure]) .plan-card-hover:hover {
   background-color: color-mix(in srgb, var(--card-ink) 4%, transparent) !important;
@@ -1081,4 +1099,10 @@ main:has(> [data-canvas-cover] [data-fill-tab-board]) > [data-canvas-content] {
 }
 main:has(> [data-canvas-cover]) > [data-canvas-content] [data-selection-grips] {
   visibility: hidden;
+}
+
+/* The practice sheet's dialog (docs/specs/026-plan/plan-tour.md "Sheets: Five Small Wins"): the Sheet toolbar's
+   dropdowns portal to the page at the overlay layer, which is under a dialog; while it is open they sit above it. */
+:root[data-practice-sheet-open] body > [data-palette-dropdown-menu] {
+  z-index: var(--z-popover);
 }

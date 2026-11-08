@@ -22,7 +22,7 @@ export function ShowMeButton<Api>({
   tour,
   onStart,
 }: {
-  tour: TourEngine<Api>;
+  tour: Pick<TourEngine<Api>, 'active' | 'start'>;
   onStart: () => void | Promise<void>;
 }) {
   const loading = useRef(false);

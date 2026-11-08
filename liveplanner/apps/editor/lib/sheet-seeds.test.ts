@@ -109,3 +109,17 @@ describe('a sheet type placed from Start Planning', () => {
     expect(setupStartOf(sheetId)).toBeUndefined();
   });
 });
+
+// docs/specs/026-plan/plan-tour.md "Sheets: Five Small Wins": a kept practice sheet keeps its title; a paste's copy
+// is marked as one.
+describe('a seed that keeps its title', () => {
+  it('is marked only when stashed so, and a later plain stash clears it', async () => {
+    const { stashSheetSeeds, seedKeepsTitle } = await import('./sheet-seeds');
+    const seed = { id: 'kept-1', tabId: 't', title: 'Practice Budget' } as never;
+    stashSheetSeeds([seed], { keepTitle: true });
+    expect(seedKeepsTitle('kept-1')).toBe(true);
+    stashSheetSeeds([seed]);
+    expect(seedKeepsTitle('kept-1')).toBe(false);
+    expect(seedKeepsTitle('never-stashed')).toBe(false);
+  });
+});

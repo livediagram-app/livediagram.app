@@ -28,6 +28,7 @@ import { usePlan } from './PlanContext';
 import { PersonDisc } from './PersonDisc';
 import { ColourDot } from './ColourSwatches';
 import { PlanCardFace } from './PlanCardFace';
+import { PracticeMarks } from './PracticeMarks';
 import { useCardFileDrop } from './card-file-drop';
 import type { PlanPalette } from './plan-palette';
 import { PLAN_HEADING_STYLE, planTextScaleVars } from '@/lib/plan-font';
@@ -129,6 +130,7 @@ export const PlanBoardCard = memo(function PlanBoardCard({
   lifted,
   selected = false,
   done,
+  ships = false,
   setupFields,
   cardSize,
   stacked = false,
@@ -151,6 +153,8 @@ export const PlanBoardCard = memo(function PlanBoardCard({
   // One of this person's selected cards (docs/specs/026-plan/plan-board.md "Several cards at once"): the brand ring.
   selected?: boolean;
   done: boolean;
+  // The column the Practice Sprint ships to: a practice card here wears the Shipped stamp.
+  ships?: boolean;
   setupFields: Parameters<typeof PlanCardFace>[0]['fields'];
   cardSize: Parameters<typeof PlanCardFace>[0]['size'];
   // A slot board's narrow column: a Minimal card's title over its bits (PlanCardFace `stacked`).
@@ -173,7 +177,13 @@ export const PlanBoardCard = memo(function PlanBoardCard({
   // "Voting on Plan cards"): the card carries the vote's stepper, unless it is face down.
   cardVote?: CardVote | null;
 }) {
-  const types = usePlan()?.types ?? ITEM_TYPES;
+  const plan = usePlan();
+  const types = plan?.types ?? ITEM_TYPES;
+  // A practice card of the Boards tour (docs/specs/026-plan/plan-tour.md "Practice cards"): drawn as practice.
+  const practiceIds = plan?.practiceIds;
+  const practice = practiceIds?.has(item.id) === true;
+  // Its place in the deal, for its drop-in delay (canvas-motion.css practice-deal): three cards at most.
+  const dealIndex = practice && practiceIds ? [...practiceIds].indexOf(item.id) : 0;
   const hold = useLongPress((x, y) => onLongPress?.(item, { x, y }));
   // A card that takes a finger as a scroll is picked up by a hold: past it, its finger stops scrolling
   // (usePlanCardDrag holdCardTouch). Non-passive from the start, so the browser waits on it.
@@ -199,6 +209,7 @@ export const PlanBoardCard = memo(function PlanBoardCard({
         data-plan-card={item.id}
         aria-label={`${faceDown ? 'Hidden card' : itemAccessibleName(item, types)}${selected ? ', selected' : ''}`}
         data-selected={selected || undefined}
+        data-practice={practice || undefined}
         // touch-none: a finger on a card drags it, never scrolls the board under it (a maximised board scrolls); on a
         // phone board one column a screen it scrolls, and a card held still is carried (phone-board.ts).
         className={`relative ${touch} rounded-[var(--plan-card-r,12px)] outline-none transition-opacity focus-visible:ring-2`}
@@ -208,6 +219,7 @@ export const PlanBoardCard = memo(function PlanBoardCard({
           ['--tw-ring-color' as string]: palette.focus,
           // The ring sits outside the card's own box, so every card size and a cover keep their layout.
           ...(selected ? { boxShadow: `0 0 0 2px ${palette.focus}` } : {}),
+          ...(practice ? { ['--practice-deal-i' as string]: dealIndex } : {}),
         }}
         aria-busy={fileDrop.uploading || undefined}
         {...fileDrop.handlers}
@@ -243,6 +255,7 @@ export const PlanBoardCard = memo(function PlanBoardCard({
           muted={done}
           presence={presence}
         />
+        {practice ? <PracticeMarks shipped={ships} /> : null}
         {fileDrop.over || fileDrop.uploading ? (
           <span
             aria-hidden
