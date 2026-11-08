@@ -415,7 +415,10 @@ Long lists stay small in the DOM:
   changed ("2 hours ago"), each with its exact value in the title. Columns show by the list's own width (container
   queries, since the pane sits beside the sidebar): Name and Updated always; Type and Size from 36rem; Comments and
   Access from 48rem; Created from 64rem. A header press sorts, its arrow showing the direction.
-- **Cards** are revealed 60 at a time.
+- **Cards** are revealed 60 at a time, and of those only the rows of item cards on screen (and three either side)
+  are in the DOM (`useCardWindow`): every item card in a view is the same height, so the rows follow by arithmetic
+  from where the run of item-only rows starts, with spacers above and below. Folders, and the items sharing the
+  last folder row, always draw. Without layout (tests) every revealed card draws.
 
 The filter lens (`q` on a list view; liveplanner/docs/specs/013-workspace/explorer-filters.md) is parsed on the
 reader's side (`src/lens/`) and sent to the index as filters (`q`, `apps`, `source`, `since`, `owner`, `intent`, `space`;
@@ -434,7 +437,8 @@ the history entry, and a newer list read cancels the older one.
 - `what-happened.test.tsx` covers What Happened: others' doings only from one page, groups and summaries, New,
   no seen mark, the section left out when empty or failed, All with app marks, and See Timeline. Its rules, and
   10,000 events grouped under a budget, are in `timeline/whatHappened.test.ts`.
-- `perf.test.tsx` renders 2,000 items in each layout under a time budget.
+- `perf.test.tsx` renders 2,000 items in each layout under a time budget, and holds the Cards layout to a screenful
+  of cards after all 2,000 are revealed.
 - `explorer/audit/audit-log.test.tsx` covers the Audit Log: admins only, closed until opened, every filter as the
   read takes it, Show More and its failure, the empty, no-match, refused and failed states, and Export CSV across
   files, its cap and a failure, with 50,000 rows joined under a CPU budget. `explorer/audit/rows.test.ts` holds

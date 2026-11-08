@@ -522,7 +522,11 @@ export function EditorView() {
                       </AreaErrorBoundary>
                       {/* Find and replace over the canvas (docs/specs/007-editor/find-and-replace.md). */}
                       <AreaErrorBoundary area="Search">
-                        <FindHost find={ctx.find} canvasMainRef={ctx.canvasMainRef} />
+                        <FindHost
+                          deps={ctx.findDeps}
+                          openerRef={ctx.findOpenRef}
+                          canvasMainRef={ctx.canvasMainRef}
+                        />
                       </AreaErrorBoundary>
                       {ctx.searchOpen ? (
                         <AreaErrorBoundary area="Search">

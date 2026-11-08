@@ -160,6 +160,9 @@ missing.
   (linear in the text, whatever the query), never a regular expression built from the query.
 - The search runs 150 ms after typing stops (`FIND_DEBOUNCE_MS`), never per keystroke, and only
   while the bar is open; a closed bar costs nothing.
+- Typing in the bar re-renders the bar alone: the find state (the query, the replacement, the
+  options, the match in hand) lives with the bar, never in the editor around it, so a key typed into
+  the Find or Replace field never re-renders the editor, the canvas or the pages.
 - Highlights in the writing are decorations mapped through each edit, rebuilt only when the matches
   change; element rings are drawn for the elements holding matches alone.
 - Budget, measured: a 100-page article (`MAX_PAGES`, 3,000 paragraphs and 1,000 elements, about

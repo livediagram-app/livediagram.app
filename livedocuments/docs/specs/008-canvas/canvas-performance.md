@@ -53,6 +53,12 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   border-image computed from its recipe ([Canvas and palette](canvas-and-palette.md) "Sticky notes
   read as paper"); it takes no pointer, so a click or a drop beside a note reaches the board. A filter a person chooses for one element (an element shadow, the Sketch finish)
   stays a filter.
+- **Nothing in canvas space blurs what is behind it.** Chrome drawn in the canvas world (a page's
+  title bar, an empty page's Choose a Layout invite) wears no backdrop filter: it sits under the
+  element layer, and Safari then repainted every element above it on each frame of a drag, about
+  110 ms a frame at an iPad's size with 20 pages and 2,000 elements (measured in livedesign, which
+  shares the title bar: a one-element drag went from 3.4 s of frames over 50 ms to 0.1 s without it). Such a card is near-opaque instead
+  (`bg-white/95`), which looks the same.
 - **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
   one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
   pan or a glide renders what shows the view (the canvas and its counter-scaled parts, the zoom
@@ -122,6 +128,26 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   re-renders the editor without touching an element; every display projection of the board (stock
   colours, hidden layers) then returns the same array it returned before, so nothing derived from
   the board (the Map, the arrow frames, the endpoint spread) recomputes.
+- **An update that changes nothing renders nothing.** Settling the tab without changing it (an
+  article laying itself out after a keystroke, which finds its pages, zones and margin notes where
+  they were) hands the editor back the very history it had (`withPresent`,
+  `@liveworkspace/workbench/lib/remote-op-log`, shared by every editor's history), so React renders
+  nothing for it. A new
+  history object for an unchanged tab re-rendered the whole editor, every page's title bar among it,
+  on every key typed into a long article.
+- **Chrome on every page draws no backdrop filter.** What every page wears (its title bar) is a
+  plain card: Safari runs a backdrop filter again whenever anything behind it repaints, so a
+  hundred title bars' blur ran on every keystroke of a 100-page article, about 60 ms a key in WebKit
+  at iPad size. Chrome that shows once (a popover, a dialog) may blur.
+- **A render of the pages re-renders only the pages it changed.** Each page's sheet and chrome (its
+  label, title bar and invite) renders from what that page shows alone, and the editor's actions
+  reach it through handles that keep their identity; so a pause in typing, a pan or a panel opening
+  re-renders the pages that changed (none, or the one written on), not every page's title bar.
+- **Pictures of every page redraw only the pages that changed.** The Contents pictures and the Map
+  read an article's writing (its lines as soft bars) once for every page, in one pass over the
+  article's lines, never once per page; a page whose own elements, lines of writing and article
+  style are as they were keeps its picture, so a pause in typing redraws the page written on (and
+  those its new line pushed along), not the hundred.
 
 ## Later
 

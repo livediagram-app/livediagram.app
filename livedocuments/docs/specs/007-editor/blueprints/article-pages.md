@@ -531,7 +531,8 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
   Margin-note markers are left out (`isArticleNoteMarker`). PDF renders each page through the
   canvas (`exportPagesAsPdf`).
 - **The Map and slide thumbnails**: `pageWritingBars(page, ink)` (`handle.bars`) as soft rects
-  through `articleOpsToSvg`; the Map recomputes on `writing` identity and on
+  through `articleOpsToSvg`; the Map and the Contents pictures read every page's at once with
+  `writingBarsByPage` (`lib/article/page-writing-bars.ts`, [Canvas performance](../../008-canvas/blueprints/canvas-performance.md) "Pictures of every page"); the Map recomputes on `writing` identity and on
   `useArticleLaidOutSeq()` (as do slide thumbnails, `useSlideThumbnails`).
 - **Present** (`presentedPages(view, tab, presentingPageId, articles)`, `lib/presented-pages.ts`):
   the view narrowed to the page, `rowPages` the whole row (the writing lays out across all its

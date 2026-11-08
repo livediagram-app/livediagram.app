@@ -8,7 +8,7 @@ painters: a ProseMirror plugin in the writing and a ring overlay on the canvas. 
 
 | Term            | Identifier                                                                                                                                 |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Find bar        | `FindBar` (`apps/editor/components/find/FindBar.tsx`), mounted by `FindHost` (`components/find/FindHost.tsx`)                              |
+| Find bar        | `FindBar` (`apps/editor/components/find/FindBar.tsx`), mounted by `FindHost` (`components/find/FindHost.tsx`), which holds the find state  |
 | query, options  | `query: string`, `FindOptions = { matchCase: boolean; wholeWord: boolean }` (`lib/find/find-text.ts`)                                      |
 | searched text   | `FindTarget` (`lib/find/find-targets.ts`): `{ key, pageId, text, held, ref }`                                                              |
 | where a text is | `FindRef`: `block` (flow, blockId), `field` (element id, `label`/`pageTitle`/`pageSubtitle`/`code`), `cell` (id, r, c), `item` (id, index) |
@@ -154,6 +154,12 @@ are.` when any held (`1 match ... was left as it is.`).
   and 4 to 13 ms search warm, a whole-word miss 7 ms, Replace All of 4,000 matches 15 ms (budgets 80, 40 and 120 ms
   through `cpuBudgetMs`); the worst case (`'a'.repeat(200_000)` against `'a'.repeat(499) + 'b'`) under 60 ms.
 - `blocksByPage` is read once per recompute per mounted article (one layout read of each block).
+- The find state lives in `FindHost`, which runs `useFindReplace(deps)`: `useEditorState` builds the `FindDeps` (the
+  tab, the pages, the role, the editor's doors) on each render and keeps only a `FindDoor` (`canReplace`, and `openBar`
+  through `findOpenRef`, which FindHost assigns with `useAssignRef`). A key typed into the bar sets FindHost's state
+  alone; the editor, the canvas and the pages do not render for it. Measured on a 100-page article in WebKit
+  at 1180x820: typing a five-letter query, the editor's renders 12 → 0, the pages' title bars 576 → 0, every
+  component's renders 13,312 → 105; five Enters through the matches 11,145 → 80; opening the bar 2,241 → 38.
 - Decorations rebuilt only on a store change; mapped otherwise.
 
 ## Presentation and UX
@@ -193,6 +199,7 @@ are.` when any held (`1 match ... was left as it is.`).
 | Writing highlights                                                      | `lib/article/article-find-plugin.test.ts`                        |
 | Cmd+F where the browser keeps it                                        | `hooks/editor/find-shortcut.test.ts`                             |
 | Hook end to end: debounce, steps, Replace, Replace All, each role       | `hooks/editor/useFindReplace.test.tsx`                           |
+| Typing in the bar re-renders the bar alone; the editor's door opens it  | `components/find/FindHost.test.tsx`                              |
 | Shortcut list                                                           | `components/dialogs/shortcut-sections.test.ts`                   |
 
 ## Defaults ledger

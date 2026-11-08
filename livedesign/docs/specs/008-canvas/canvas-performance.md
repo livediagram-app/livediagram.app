@@ -53,6 +53,12 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   border-image computed from its recipe ([Canvas and palette](canvas-and-palette.md) "Sticky notes
   read as paper"); it takes no pointer, so a click or a drop beside a note reaches the board. A filter a person chooses for one element (an element shadow, the Sketch finish)
   stays a filter.
+- **Nothing in canvas space blurs what is behind it.** Chrome drawn in the canvas world (a page's
+  title bar, an empty page's Choose a Layout invite) wears no backdrop filter: it sits under the
+  element layer, and Safari then repainted every element above it on each frame of a drag, about
+  110 ms a frame on a design of 20 pages and 2,000 elements at an iPad's size (a one-element drag
+  went from 3.4 s of frames over 50 ms to 0.1 s without it). Such a card is near-opaque instead
+  (`bg-white/95`), which looks the same.
 - **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
   one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
   pan or a glide renders what shows the view (the canvas and its counter-scaled parts, the zoom
@@ -122,6 +128,11 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   re-renders the editor without touching an element; every display projection of the board (stock
   colours, hidden layers) then returns the same array it returned before, so nothing derived from
   the board (the Map, the arrow frames, the endpoint spread) recomputes.
+- **An update that changes nothing renders nothing.** A tick of the tabs that changes none of them
+  (a settle that finds everything where it was) hands the editor back the very history it had
+  (`withPresent`, `@liveworkspace/workbench/lib/remote-op-log`), so React renders nothing for it. A
+  new history object for an unchanged tab re-rendered the whole editor; in livedocuments that was
+  every keystroke of a long article.
 
 ## Later
 

@@ -14,6 +14,7 @@ import {
   svgArrow,
   sketchBackdropIds,
   svgBoxed,
+  type ArticleDrawOp,
   type CanvasSurface,
   type Slide,
   type Tab,
@@ -41,6 +42,8 @@ export type SlideThumbOptions = {
   // A picture's URL by image id (thumb-images.ts's thumbImageHref): an image element and a page's
   // picture fill draw it, and without one (or before it arrives) the placeholder and the tone.
   resolveImageHref?: (imageId: string) => string | undefined;
+  // An article page's writing as soft bars, read for many pages at once (writingBarsByPage); read here when absent.
+  writingBars?: readonly ArticleDrawOp[];
 };
 
 /** The tab's arrow labels as the canvas lays them out, for slideThumbFor's `labels`. */
@@ -79,7 +82,7 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
     if (page.background?.fill) surface = frame.surface;
     parts.push(frame.backgroundSvg);
     // An article page's writing, as lines of text.
-    const bars = pageWritingBars(page, undefined, tab);
+    const bars = opts.writingBars ?? pageWritingBars(page, undefined, tab);
     if (bars.length) parts.push(articleOpsToSvg(bars));
   }
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).

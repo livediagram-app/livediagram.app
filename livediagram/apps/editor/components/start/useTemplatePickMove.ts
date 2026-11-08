@@ -11,7 +11,6 @@ import {
 } from '@liveworkspace/explorer';
 import { templateFamilyOf, type TemplateKind } from '@livediagram/templates';
 import { creationIntentOf, DEFAULT_FOLDER_OPTIONS, indexIntentOf } from '@livediagram/api-schema';
-import { buildTemplatedTab } from '@/lib/template-builders';
 import { useToast } from '@/hooks/ui/useToast';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
@@ -40,22 +39,27 @@ export function useTemplatePickMove(at: {
       // Taken now, before the template's elements land and the effect above would drop it.
       const handoff = takeTemplatePick(documentId, tabId);
       if (!handoff || handoff.placementChosen) return;
-      // What the template makes the canvas, as a create would record it; only the mode it opens in files it.
-      const intent = indexIntentOf(
-        creationIntentOf(
-          buildTemplatedTab(kind, 'brand', 'intent', 'Tab 1'),
-          templateFamilyOf(kind),
-        ),
-      );
-      void moveOnTemplatePick(indexClient, {
-        app: 'livediagram',
-        itemId: documentId,
-        handoff,
-        intent: intent ?? '',
-        noun: nounOf,
-      }).then((message) => {
-        if (message) toast.info(message);
-      });
+      // What the template makes the canvas, as a create would record it; only the mode it opens in files it. The
+      // builders load on this pick, as useTemplateFlow's do, so they stay out of the editor's first load.
+      void import('@/lib/template-builders')
+        .then(({ buildTemplatedTab }) => {
+          const intent = indexIntentOf(
+            creationIntentOf(
+              buildTemplatedTab(kind, 'brand', 'intent', 'Tab 1'),
+              templateFamilyOf(kind),
+            ),
+          );
+          return moveOnTemplatePick(indexClient, {
+            app: 'livediagram',
+            itemId: documentId,
+            handoff,
+            intent: intent ?? '',
+            noun: nounOf,
+          });
+        })
+        .then((message) => {
+          if (message) toast.info(message);
+        });
     },
     [documentId, tabId, toast],
   );

@@ -546,7 +546,12 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   in the RFC. "Last opened" writes are the most frequent; they are batched and debounced. If the
   index ever reports "overloaded", it can be split by owner.
 - **Explorer lists** are index queries with indexes on owner, team, folder, app and last-opened, and
-  are paged.
+  are paged. On screen a long list holds only what is in view: List and Details rows are windowed, and
+  the Cards layout (the default) reveals 60 cards at a time and keeps only the rows of item cards on
+  screen, and a few either side, in the DOM, with spacers for the rest. Before that, a 2,000-item
+  library scrolled to its end held 1,800 cards (35,000 nodes), and on an iPad in WebKit starting a
+  rename blocked for 190 to 1,150 ms and each reveal for 250 to 330 ms; windowed, it holds 30 cards and
+  neither blocks a frame for 50 ms (measured 2026-11-08).
 - **Durable Objects** cost what the RFC estimates (roughly $14 a month at a million items), with
   hibernating WebSockets.
 - **Content-derived summaries** (element counts for cards, whether it is empty) are pushed by the object on
