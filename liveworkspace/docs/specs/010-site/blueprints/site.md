@@ -262,7 +262,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `account`     | 4     |
 | `drive`       | 5     |
 | `explorer`    | 6     |
-| `landing`     | 8     |
+| `landing`     | 10    |
 | `settings`    | 7     |
 | `status`      | 5     |
 | `teams`       | 3     |
