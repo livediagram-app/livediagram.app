@@ -20,25 +20,6 @@ export type ShapeKind =
   | 'parallelogram'
   | 'hexagon'
   | 'document'
-  // Lane (docs/specs/009-elements/lane.md): a titled horizontal band that carries its contents.
-  | 'lane'
-  // Callout: a card with an accent badge, a heading line and a body (label).
-  | 'callout'
-  // Card (docs/specs/009-elements/card.md): a diagram node with slots (header band, media, title, meta line,
-  // body, tags). The Callout is its preset; a stored `callout` migrates to one on read.
-  | 'card'
-  // Badge and Step number (docs/specs/009-elements/badge.md, step-number.md): small marks that may attach to a
-  // point on a host element (`attachedTo` / `attachAt`) and travel with it.
-  | 'badge'
-  | 'step'
-  // Pointer note (docs/specs/009-elements/pointer-note.md): a note with a leader to a tip that may attach to a point.
-  | 'pointer-note'
-  // Diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
-  | 'diagram-key'
-  // Stack (docs/specs/009-elements/stack.md): a container that lays out what it holds in a row, column or grid.
-  | 'stack'
-  // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
-  | 'boundary'
   // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
   // into a selection mode — Avatar by default. Which mode lives in the
   // element's `mode` field.
@@ -170,8 +151,6 @@ export type ShapeKind =
   | 'star'
   // Speech bubble / callout: a rounded body with a tail at the bottom-left.
   | 'speech-bubble'
-  // The Timeline (docs/specs/009-elements/timeline.md): milestones along a spine.
-  | 'timeline-rail'
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered
   // a jump to it, on your tab.
   | 'focus-button'

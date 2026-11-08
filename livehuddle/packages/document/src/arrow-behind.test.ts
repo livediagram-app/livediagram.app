@@ -103,9 +103,10 @@ describe('routeBehindHoles', () => {
     expect(routeBehindHoles(arrow(), from, to, [wellPast])).toEqual([]);
   });
 
-  it('ignores swimlanes, which a hand-off arrow crosses by design', () => {
+  // A stored lane is a retired backdrop (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+  it('ignores a stored lane, which a hand-off arrow crosses by design', () => {
     const holes = routeBehindHoles(arrow(), from, to, [
-      box('lane', -100, -100, { shape: 'lane', width: 800, height: 400 }),
+      box('lane', -100, -100, { shape: 'lane' as ShapeElement['shape'], width: 800, height: 400 }),
     ]);
     expect(holes).toEqual([]);
   });

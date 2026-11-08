@@ -19,7 +19,7 @@
 // bowed clear at draw time simply never crosses anything, so the two
 // don't fight.
 
-import { isContainerKind } from './containment';
+import { isRetiredBackdrop } from './retired-kinds';
 import {
   pointInRect,
   rectsIntersect,
@@ -60,7 +60,8 @@ function isOccluder(el: Element): el is BoxedElement {
   if (el.type === 'text' || el.type === 'annotation' || el.type === 'freehand') return false;
   if (el.type === 'path') return el.closed && el.fillColor !== 'transparent';
   if (el.type === 'shape' && el.fillColor === 'transparent') return false;
-  return !(el.type === 'shape' && isContainerKind(el.shape));
+  // A stored lane's, stack's or boundary's placeholder lies behind what sat on it (retired-kinds.ts).
+  return !isRetiredBackdrop(el);
 }
 
 // The arrow's own bounding box, padded by the margin so a box just past an endpoint still registers.

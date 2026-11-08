@@ -21,7 +21,6 @@ import type { Element, ShapeKind, Tab } from './index';
 import { ALL_ANCHORS } from './arrow-types';
 import { isPenColourName } from './pen-colours';
 import { ADDER_KEY_LENGTH } from '@liveworkspace/model-core/adder';
-import { PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
 import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
@@ -64,7 +63,6 @@ export const PATH_COORD_MAX = 1e6;
 // a 14 px label reads from 1.4 px to 560 px, past any real board, short of an abuse payload.
 export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
-const isHeadingStr = (v: unknown) => typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
 const PATH_HANDLE_MODES = new Set(['corner', 'mirrored', 'aligned']);
 
 // Exported so the MCP schema resource (livediagram/docs/specs/015-api/mcp-server.md §4.5) lists the real element
@@ -184,13 +182,6 @@ function boxIssue(o: Record<string, unknown>): ElementValidationIssue | null {
 }
 
 const IMAGE_FIELD_CHECKS: readonly FieldCheck[] = [
-  // Hero caption card (docs/specs/009-elements/web-components-and-no-groups.md): two bounded
-  // single-line strings.
-  {
-    field: 'heroCaption',
-    valid: (c) => isRecord(c) && isHeadingStr(c.title) && isHeadingStr(c.subtitle),
-    rule: `{ title, subtitle } of at most ${PAGE_HEADING_MAX} characters each`,
-  },
   // Image search credit (docs/specs/009-elements/image-search.md).
   { field: 'credit', valid: isImageCredit, rule: 'an image credit' },
 ];

@@ -12,19 +12,9 @@
 import { isSelfDrawingShape } from './data-shapes';
 import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgFace } from './svg-render-faces';
 import { SHAPE_KINDS } from './shape-kinds';
-import { svgWebComponent } from './svg-render-web';
-import { isWebComponentShape } from './web-components';
-import { isChipShape } from './chip';
-import { svgChip } from './svg-render-chip';
-import { svgBoundary } from './svg-render-boundary';
-import { svgTimeline } from './svg-render-timeline';
-import type { TagColour } from './tag-colours';
 import type { Finish } from './finish';
-import { svgPointerNote } from './svg-render-pointer-note';
-import { svgDiagramKey } from './svg-render-diagram-key';
-import { isConceptShape } from './concept';
 import type { BoxedElement, ShapeKind } from './index';
-import { defaultTextColor, type CanvasSurface } from './colors';
+import type { CanvasSurface } from './colors';
 import type { ResolveEmojiArt, ResolveIconArt } from './svg-render-describe';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
@@ -34,14 +24,7 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     isSelfDrawingShape(kind) ||
     BEHAVIOUR_FACE_SHAPES.has(kind) ||
     // A retired element's placeholder (svg-render-retired.ts), which the canvas drawers know nothing of.
-    !SHAPE_KINDS.has(kind) ||
-    isWebComponentShape(kind) ||
-    isChipShape(kind) ||
-    kind === 'boundary' ||
-    kind === 'pointer-note' ||
-    kind === 'diagram-key' ||
-    isConceptShape(kind) ||
-    kind === 'lane'
+    !SHAPE_KINDS.has(kind)
   );
 }
 
@@ -64,52 +47,18 @@ export function svgElementBody(
     label: string;
     /** The paper under the element, for the faces whose base follows it. */
     surface?: CanvasSurface;
-    /** Resolves an icon id to its art, for a card's media glyph. */
+    /** Resolves an icon id to its art. No livehuddle body draws one since the card left; kept so the shared preview
+     *  resolvers (@liveworkspace/icons/resolve) still fit. */
     resolveIconArt?: ResolveIconArt;
     /** Resolves an emoji to its art. No livehuddle face writes one since the Reaction Pad left; kept so the shared
      *  preview resolvers (@liveworkspace/icons/resolve) still fit. */
     resolveEmojiArt?: ResolveEmojiArt;
-    // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
-    tagColours?: readonly TagColour[];
     /** The finish the element is drawn in (docs/specs/008-canvas/finish.md), for the faces that draw their own lines. */
     finish?: Finish;
   },
 ): string {
   if (el.type !== 'shape') return '';
-  const { labelColor, fontFamily, stroke, fill, label } = o;
-  // A Timeline's milestones (docs/specs/009-elements/timeline.md).
-  if (isConceptShape(el.shape)) {
-    const rows = el.conceptRows ?? [];
-    return rows.length > 0 ? svgTimeline(el, rows, { stroke, fill, labelColor, fontFamily }) : '';
-  }
-  // A pointer note's leader and tip (docs/specs/009-elements/pointer-note.md); its box and label are the usual.
-  if (el.shape === 'pointer-note') return svgPointerNote(el, { stroke });
-  // A diagram key's title and rows (docs/specs/009-elements/diagram-key.md); its box is the usual.
-  if (el.shape === 'diagram-key')
-    return svgDiagramKey(el, { stroke, fill, labelColor, label, fontFamily });
-  // A boundary's tint and title (docs/specs/009-elements/boundary.md).
-  if (el.shape === 'boundary')
-    return svgBoundary(el, {
-      stroke,
-      labelColor,
-      label,
-      fontFamily,
-      resolveIconArt: o.resolveIconArt,
-    });
-  // A badge or step number's pill or disc (docs/specs/009-elements/badge.md); its label draws over it as usual.
-  if (isChipShape(el.shape))
-    return svgChip(el, { stroke, fill, ink: el.textColor ?? defaultTextColor(el, o.surface) });
-  // The web components (docs/specs/009-elements/web-components-and-no-groups.md) lay out their own text, label included.
-  if (isWebComponentShape(el.shape))
-    return svgWebComponent(el, {
-      stroke,
-      fill,
-      labelColor,
-      label,
-      fontFamily,
-      resolveIconArt: o.resolveIconArt,
-      tagColours: o.tagColours,
-    });
+  const { labelColor, fontFamily, stroke, label } = o;
   // The Behaviour faces (docs/specs/009-elements/mode-button.md to /137), which all exported as the same blank
   // labelled box as each other.
   return svgFace(

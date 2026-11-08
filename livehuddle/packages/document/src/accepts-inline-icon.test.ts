@@ -23,11 +23,7 @@ describe('acceptsInlineIcon', () => {
 });
 
 describe('positionsInlineIcon', () => {
-  it('takes an icon on a card, callout or boundary but leaves its place to the kind', () => {
-    for (const kind of ['card', 'callout', 'boundary'] as const) {
-      expect(acceptsInlineIcon(createShape(kind, 0, 0)), kind).toBe(true);
-      expect(positionsInlineIcon(createShape(kind, 0, 0)), kind).toBe(false);
-    }
+  it('places an icon where its position says on every kind that takes one', () => {
     expect(positionsInlineIcon(createShape('square', 0, 0))).toBe(true);
     expect(positionsInlineIcon(createShape('icon', 0, 0))).toBe(false);
   });

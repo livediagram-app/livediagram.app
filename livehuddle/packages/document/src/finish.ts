@@ -123,12 +123,6 @@ export function finishFaceShadows(finish: Finish): boolean {
 // like an unset corner. A test holds this to the factory (finish.test.ts).
 export const FACTORY_CORNERS: Readonly<Record<string, string>> = {
   banner: 'lg',
-  callout: 'md',
-  card: 'md',
-  'pointer-note': 'md',
-  'diagram-key': 'md',
-  stack: 'md',
-  boundary: 'md',
   'stat-row': 'md',
   'site-header': 'md',
   'mode-button': 'lg',

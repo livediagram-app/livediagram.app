@@ -188,16 +188,6 @@ export function duplicateElements(
         const mapped = idMap.get(shape.portalTarget);
         if (mapped !== undefined) shape.portalTarget = mapped;
       }
-      // An attached badge or step (docs/specs/009-elements/badge.md) follows its host's copy; copied alone it lands
-      // detached.
-      if (shape.attachedTo !== undefined) {
-        const host = idMap.get(shape.attachedTo);
-        if (host !== undefined) shape.attachedTo = host;
-        else {
-          delete shape.attachedTo;
-          delete shape.attachAt;
-        }
-      }
       next = shape;
     }
     // An element link pointing AT a copied element follows the copy too. The
@@ -214,9 +204,8 @@ export function duplicateElements(
 }
 
 // The element-id fields this product's elements hold besides an arrow's ends: a portal's partner
-// (docs/specs/009-elements/portal-element.md) and an attached badge's, step's or pointer note's host
-// (docs/specs/009-elements/badge.md).
-const ELEMENT_REF_FIELDS = ['portalTarget', 'attachedTo'] as const;
+// (docs/specs/009-elements/portal-element.md).
+const ELEMENT_REF_FIELDS = ['portalTarget'] as const;
 
 // Re-point element-to-element references after a caller renamed some element ids (old to new in `idMap`), by the
 // shared walk (`@liveworkspace/model-core/id-remap`). duplicateElements has its own richer pass (offsets, dropping

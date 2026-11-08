@@ -11,7 +11,6 @@ import {
   TEXT_SCALE_MIN,
 } from './validate';
 import { SELECTION_MODES } from './selection-mode';
-import { CARD_TAG_MAX, CARD_TAGS_MAX } from './card';
 import { IMAGE_CREDIT_TEXT_MAX, IMAGE_CREDIT_URL_MAX } from './image-credit';
 import { MAX_FREEHAND_POINTS, encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
@@ -39,12 +38,6 @@ describe('isValidElement', () => {
         to: { kind: 'free', x: 10, y: 20 },
       }),
     ).toBe(true);
-  });
-
-  it('reads the orientation of a lane title as upright or nothing', () => {
-    const lane = { id: 'l', type: 'shape', shape: 'lane', ...box };
-    expect(isValidElement({ ...lane, titleOrientation: 'upright' })).toBe(true);
-    expect(isValidElement({ ...lane, titleOrientation: 'sideways' })).toBe(false);
   });
 
   it('bounds the exact end of an arrow and its own label width', () => {
@@ -494,26 +487,12 @@ describe('elementValidationIssue', () => {
     const issue = elementValidationIssue({
       id: 'a',
       type: 'shape',
-      shape: 'card',
-      cardMedia: 'cobol',
+      shape: 'mode-button',
+      mode: 'cobol',
       ...box,
     });
-    expect(issue?.field).toBe('cardMedia');
-    expect(issue?.rule).toContain('badge');
-  });
-
-  it('names an over-cap array with its cap', () => {
-    const issue = elementValidationIssue({
-      id: 'a',
-      type: 'shape',
-      shape: 'card',
-      tags: Array.from({ length: CARD_TAGS_MAX + 1 }, () => 'x'),
-      ...box,
-    });
-    expect(issue).toEqual({
-      field: 'tags',
-      rule: `an array of at most ${CARD_TAGS_MAX} strings of at most ${CARD_TAG_MAX} characters`,
-    });
+    expect(issue?.field).toBe('mode');
+    expect(issue?.rule).toContain('avatar');
   });
 
   it('checks a stored table on its box alone (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine")', () => {

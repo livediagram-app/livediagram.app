@@ -7,34 +7,23 @@ import { isFloorShape } from './office';
 import { isRetiredBackdrop } from './retired-kinds';
 
 // The paint tier of an element, back to front:
-// - boundaries and stacks, an office's rooms and rugs, and a stored Frame's placeholder are backdrops that paint
-//   below everything else, the larger first, and a Window last among them, so its light falls on the floor under the
-//   furniture whichever was placed first;
-// - attached badges, step numbers and pointer notes paint above everything else.
+// - an office's rooms and rugs, and the placeholder of a stored Frame, lane, stack or boundary are backdrops that
+//   paint below everything else, the larger first, and a Window last among them, so its light falls on the floor
+//   under the furniture whichever was placed first.
 // Array order decides within a tier.
 function paintTier(el: Element): number {
-  // Boundaries are backdrops (docs/specs/009-elements/boundary.md "A container"), and so are a stored Frame (a retired
-  // element, docs/specs/002-project-scope/not-in-livehuddle.md "The Frame") and an office's
+  // A stored Frame, lane, stack or boundary is a backdrop (a retired element, docs/specs/002-project-scope/
+  // not-in-livehuddle.md "The Frame" and "The element engine"), and so are an office's
   // floors (docs/specs/009-elements/office.md): a room and a rug lie under the furniture however they were added (drawn
   // to size, pasted, by an agent), and the larger paints first, so a rug lies on its room's floor.
   if (
     el.type === 'shape' &&
     (isRetiredBackdrop(el) ||
-      el.shape === 'boundary' ||
-      el.shape === 'stack' ||
       // A Window (docs/specs/009-elements/room-builder.md "Window"): its patch of light lies on the floor.
       el.shape === 'window' ||
       isFloorShape(el.shape))
   )
     return 0;
-  // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything else, so a
-  // later element never covers the mark on its host.
-  if (
-    el.type === 'shape' &&
-    el.attachedTo &&
-    (el.shape === 'badge' || el.shape === 'step' || el.shape === 'pointer-note')
-  )
-    return 2;
   return 1;
 }
 
@@ -49,13 +38,13 @@ function backdropRank(el: Element): number {
 }
 
 // A stable sort by tier. Returns the SAME array when it is already in tier
-// order, which is every tab without backdrops or attached chips out of place.
+// order, which is every tab without backdrops out of place.
 // Runs on every render: one pass fills three typed arrays, and the sort runs only when something is out of place.
 export function paintOrder(elements: Element[]): Element[] {
   const n = elements.length;
   const tiers = new Uint8Array(n);
   const ranks = new Uint8Array(n);
-  // Among the backdrops the larger paints first, so a boundary nested in another is never hidden behind it; the garden
+  // Among the backdrops the larger paints first, so a rug on a room is never hidden behind it; the garden
   // paths and the windows keep their array order among themselves (backdropRank), so their area is left at 0.
   const areas = new Float64Array(n);
   for (let i = 0; i < n; i += 1) {

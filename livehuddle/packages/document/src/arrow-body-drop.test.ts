@@ -41,18 +41,17 @@ describe('bodyDropAnchor', () => {
     expect(bodyDropAnchor({ x: 350, y: 30 }, els, { x: 0, y: 30 }, null)?.elementId).toBe('over');
   });
 
-  it('passes over containers, chips, pictures, drawings and the shape the other end is on', () => {
+  it('passes over a stored container, pictures, drawings and the shape the other end is on', () => {
     const frame = box('frame', 0, 0, { shape: 'boundary', width: 1000, height: 1000 });
     const inner = box('inner', 400, 400);
     const point = { x: 450, y: 430 };
-    // A container alone is drawn across, not onto.
+    // A stored boundary (a retired backdrop) alone is drawn across, not onto.
     expect(bodyDropAnchor(point, [frame], { x: 0, y: 0 }, null)).toBeNull();
     // A member inside it is still a target.
     expect(bodyDropAnchor(point, [frame, inner], { x: 0, y: 430 }, null)?.elementId).toBe('inner');
     // The end's own source: no loop back while the arrow leaves it.
     expect(bodyDropAnchor(point, [frame, inner], { x: 0, y: 430 }, 'inner')).toBeNull();
     const at = (el: Element) => bodyDropAnchor({ x: 50, y: 30 }, [el], { x: -200, y: 30 }, null);
-    expect(at(box('badge', 0, 0, { shape: 'badge' }))).toBeNull();
     expect(
       at({ id: 'img', type: 'image', x: 0, y: 0, width: 100, height: 60 } as Element),
     ).toBeNull();

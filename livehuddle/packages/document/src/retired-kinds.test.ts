@@ -14,7 +14,6 @@ import { elementKindLabel } from './element-kind-label';
 import { isKnownElement, kindWordOf } from './element-refs';
 import { createShape } from './factories';
 import { paintOrder } from './paint-order';
-import { containerContents, isContainer } from './containment';
 import { resetThemeElement, switchThemeElement } from './themes';
 import { THEMES } from './themes-data';
 import { normaliseElements } from './element-normalise';
@@ -194,6 +193,79 @@ const RETIRED: Record<string, unknown>[] = [
   box('kpis', 'stat-row', 10800, { stats: [{ value: '1.2k', caption: 'Users' }] }),
   box('steps', 'process', 11200, { processSteps: ['Plan', 'Build', 'Ship'] }),
   box('nav', 'site-header', 11600, { label: 'Brand', navLinks: ['Home', 'About'] }),
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: the layout containers.
+  box('swim', 'lane', 12000, {
+    label: 'Ops',
+    headerFill: '#e0f2fe',
+    headerSize: 96,
+    titleOrientation: 'upright',
+    textAlignX: 'left',
+    padding: 'lg',
+  }),
+  box('row', 'stack', 12400, {
+    stackDirection: 'grid',
+    stackAlign: 'center',
+    stackGap: 12,
+    stackPadding: 8,
+    stackColumns: 3,
+  }),
+  box('vpc', 'boundary', 12800, {
+    label: 'VPC',
+    boundaryStyle: 'c4',
+    pageSubtitle: 'eu-west-1',
+    iconId: 'cloud',
+    animation: 'pulse',
+  }),
+  box('plan-line', 'timeline-rail', 13200, {
+    conceptRows: [
+      { label: 'Kick-off', note: 'Jan' },
+      { label: 'Launch', note: 'Sep' },
+    ],
+    conceptAnim: 'build',
+    conceptAnimSpeed: 'fast',
+    conceptAnimRepeat: true,
+  }),
+  box('legend-key', 'diagram-key', 13600, {
+    label: 'Key',
+    keyRows: [
+      { id: 'line:dashed', kind: 'line', style: 'dashed' },
+      { id: 'tag:pci', kind: 'tag', tag: 'PCI', color: '#e11d48' },
+    ],
+    keyMeanings: { 'line:dashed': 'Async' },
+  }),
+  box('svc', 'card', 14000, {
+    label: 'Takes card payments.',
+    cardMedia: 'tile',
+    cardHeader: true,
+    iconId: 'credit-card',
+    pageTitle: 'Payments',
+    pageSubtitle: 'Stripe, EU region',
+    tags: ['PCI', 'v2'],
+    accentEdge: 'left',
+  }),
+  box('heads-up', 'callout', 14400, {
+    pageTitle: 'Heads up',
+    label: 'A short note with some supporting detail.',
+  }),
+  box('beta', 'badge', 14800, {
+    label: 'Beta',
+    chipLook: 'tinted',
+    attachedTo: 'svc',
+    attachAt: 'top-right',
+  }),
+  box('step-3', 'step', 15200, {
+    label: '3',
+    attachedTo: 'svc',
+    attachAt: 'top-left',
+    stepSequence: true,
+  }),
+  box('why', 'pointer-note', 15600, {
+    label: 'Stale for 60 s after a price change',
+    pointerTip: { x: -24, y: 120 },
+    attachedTo: 'svc',
+    attachAt: 'bottom',
+    rotation: 15,
+  }),
 ];
 
 const storedTab = (): Tab =>
@@ -423,9 +495,109 @@ describe('a stored Frame', () => {
   it('still paints behind what sat on it, wherever it is in the array', () => {
     expect(paintOrder([member, frame]).map((el) => el.id)).toEqual(['section', 'member']);
   });
+});
 
-  it('is no longer a container: moving it carries nothing', () => {
-    expect(isContainer(frame)).toBe(false);
-    expect([...containerContents([frame, member], new Set(['section']))]).toEqual(['section']);
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: the layout containers, kept exactly
+// as stored, named, and painted where they painted.
+describe('a stored layout container', () => {
+  const PART_3 = [
+    'lane',
+    'stack',
+    'boundary',
+    'timeline-rail',
+    'diagram-key',
+    'card',
+    'callout',
+    'badge',
+    'step',
+    'pointer-note',
+  ];
+  const stored = (): Element[] =>
+    structuredClone(RETIRED.filter((el) => PART_3.includes(el.shape as string))) as unknown as Element[];
+
+  it('is a retired kind, named as a person knew it', () => {
+    const names = stored().map((el) => retiredElementName(el));
+    expect(names).toEqual([
+      'Lane',
+      'Stack',
+      'Boundary',
+      'Timeline',
+      'Diagram Key',
+      'Card',
+      'Callout',
+      'Badge',
+      'Step Number',
+      'Pointer Note',
+    ]);
+    for (const el of stored()) {
+      expect(isRetiredElement(el), el.id).toBe(true);
+      expect(elementKindLabel(el), el.id).toBe(retiredElementName(el));
+    }
+  });
+
+  it('loads and saves deep-equal: no callout becomes a card, no Timeline is rebuilt, no badge settles', () => {
+    const tab = { id: 't4', name: 'Map', elements: stored() } as unknown as Tab;
+    const saved = JSON.parse(JSON.stringify(migrateStoredTab(structuredClone(tab))));
+    expect(saved).toEqual(tab);
+    expect(migrateIncomingTab(structuredClone(tab))).toEqual(tab);
+    const callout = saved.elements.find((el: { id: string }) => el.id === 'heads-up');
+    expect(callout.shape).toBe('callout');
+    const rail = { ...box('old-rail', 'timeline-rail', 0, { railCount: 5, railLabels: ['a', 'b'] }) };
+    expect(migrateStoredElements([structuredClone(rail)] as unknown as Element[])).toEqual([rail]);
+  });
+
+  it('keeps every field through a theme switch, a theme reset and an agent normalise', () => {
+    for (const el of stored()) {
+      expect(switchThemeElement(el, THEMES[0]!, THEMES[1]!), el.id).toEqual(el);
+      expect(resetThemeElement(el, THEMES[1]!), el.id).toEqual(el);
+    }
+    expect(normaliseElements(stored())).toEqual(stored());
+  });
+
+  it('paints a stored lane, stack and boundary at the back, and an attached badge where the array puts it', () => {
+    const member = { ...createShape('square', 40, 80), id: 'member' } as Element;
+    const [lane, stack, boundary] = stored();
+    const badge = stored().find((el) => el.id === 'beta')!;
+    expect(paintOrder([member, badge, lane!, stack!, boundary!]).map((el) => el.id)).toEqual([
+      'swim',
+      'row',
+      'vpc',
+      'member',
+      'beta',
+    ]);
+  });
+
+  it('is a box, bounded by what it stored, and valid on its box', () => {
+    for (const el of stored()) {
+      expect(isBoxed(el), el.id).toBe(true);
+      expect(isValidElement(el), el.id).toBe(true);
+    }
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: an image's hero caption is no longer
+// drawn, and the image keeps it exactly as stored.
+describe("an image's stored hero caption", () => {
+  const hero = {
+    id: 'cover',
+    type: 'image',
+    x: 0,
+    y: 0,
+    width: 520,
+    height: 300,
+    imageId: null,
+    objectFit: 'cover',
+    borderRadius: 'lg',
+    heroCaption: { title: 'Welcome', subtitle: 'To the team' },
+    fillColor: '#4f46e5',
+    textColor: '#ffffff',
+  };
+
+  it('loads and saves deep-equal, and the image is still an image', () => {
+    const tab = { id: 't5', name: 'Hello', elements: [structuredClone(hero)] } as unknown as Tab;
+    const saved = JSON.parse(JSON.stringify(migrateStoredTab(structuredClone(tab))));
+    expect(saved).toEqual(tab);
+    expect(isRetiredElement(hero)).toBe(false);
+    expect(isValidElement(hero)).toBe(true);
   });
 });

@@ -5,14 +5,9 @@
 
 import { ACCENT_EDGES } from './accent-edge';
 import { ARROWHEAD_SHAPES } from './arrow-style';
-import { ATTACH_POINTS } from './attachment';
 import { BORDER_DASH_ARRAY } from '@liveworkspace/model-core/border-style';
-import { BOUNDARY_STYLES } from './boundary';
-import { CARD_MEDIA } from './card';
-import { CHIP_LOOKS } from './chip';
 import { FONTS } from '@liveworkspace/model-core/fonts';
 import { ICON_WEIGHTS } from '@liveworkspace/model-core/icon-weight';
-import { STACK_ALIGNS, STACK_DIRECTIONS } from './stack';
 
 export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> = {
   textSize: ['sm', 'md', 'lg', 'scale'],
@@ -25,15 +20,8 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   arrowheadStartShape: ARROWHEAD_SHAPES,
   strokeStyle: Object.keys(BORDER_DASH_ARRAY),
   borderRadius: ['none', 'sm', 'md', 'lg', 'full'],
-  // The diagram-building kinds (docs/specs/009-elements/): accent edge, card, badge / step, boundary.
+  // A box's accent edge (docs/specs/008-canvas/accent-edge.md).
   accentEdge: ACCENT_EDGES,
-  cardMedia: CARD_MEDIA,
-  chipLook: CHIP_LOOKS,
-  attachAt: ATTACH_POINTS,
-  boundaryStyle: BOUNDARY_STYLES,
-  // A stack's arrangement (docs/specs/009-elements/stack.md).
-  stackDirection: STACK_DIRECTIONS,
-  stackAlign: STACK_ALIGNS,
   // A line-art icon's stroke (icon-weight.ts): an icon's strokeWidth is not its weight.
   iconWeight: ICON_WEIGHTS,
   // The editor's faces (fonts.ts): a family name ("serif", "Georgia") drew in the tab's font in silence.

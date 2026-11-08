@@ -45,6 +45,17 @@ export const RETIRED_SHAPE_NAMES: Readonly<Record<string, string>> = {
   'stat-row': 'Stat Row',
   process: 'Process',
   'site-header': 'Site Header',
+  // Part 3: the layout containers.
+  lane: 'Lane',
+  stack: 'Stack',
+  boundary: 'Boundary',
+  'timeline-rail': 'Timeline',
+  'diagram-key': 'Diagram Key',
+  card: 'Card',
+  callout: 'Callout',
+  badge: 'Badge',
+  step: 'Step Number',
+  'pointer-note': 'Pointer Note',
 };
 
 // The element TYPES the element engine deleted (docs/specs/002-project-scope/not-in-livehuddle.md "The element
@@ -79,9 +90,12 @@ export const RETIRED_ELEMENT_NOTE = 'No longer supported in livehuddle';
 type MaybeShape = { type: string; shape?: unknown };
 
 // A stored Frame (docs/specs/002-project-scope/not-in-livehuddle.md "The Frame") was a backdrop: what sat on it was
-// drawn above it. Its placeholder keeps that place at the back, so it never covers what sat on it.
+// drawn above it. So were the containers part 3 of the element engine deleted (a lane, a stack, a boundary). Their
+// placeholders keep that place at the back, so they never cover what sat on them.
+const RETIRED_BACKDROPS: ReadonlySet<string> = new Set(['frame', 'lane', 'stack', 'boundary']);
+
 export function isRetiredBackdrop(el: MaybeShape): boolean {
-  return el.type === 'shape' && el.shape === 'frame';
+  return el.type === 'shape' && typeof el.shape === 'string' && RETIRED_BACKDROPS.has(el.shape);
 }
 
 // Is this an element livehuddle cannot draw: a shape of a kind it deleted or never had, or an element of a type it

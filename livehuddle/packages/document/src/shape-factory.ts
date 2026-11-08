@@ -33,9 +33,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   parallelogram: { width: 160, height: 100 },
   hexagon: { width: 140, height: 120 },
   document: { width: 140, height: 110 },
-  // Lane (docs/specs/009-elements/lane.md): a band, not a box — wide enough to lay a flow across and
-  // tall enough for a row of steps.
-  lane: { width: 900, height: 200 },
   // Reaction pad: a press-me square, sized like the other Behaviour buttons.
   // Stadium / pill — the conventional flowchart "Start / End" terminator
   // shape. Wider than tall by default; the CSS `border-radius: 9999px`
@@ -67,8 +64,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // creation path widens it for a word badge off STICKER_ASPECT, since the
   // default table is per-kind and a badge and an emoji are one kind.
   sticker: { width: 104, height: 104 },
-  // Timeline (docs/specs/009-elements/timeline.md): four milestones, words above and below.
-  'timeline-rail': { width: 720, height: 240 },
   // Mode button (docs/specs/009-elements/mode-button.md): a square-ish tile, sized for an icon ABOVE its
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
@@ -185,22 +180,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
   timer: TIMER_PIECE_SIZE.timer,
   stopwatch: TIMER_PIECE_SIZE.stopwatch,
-  // The Callout (docs/specs/009-elements/card.md), at the size the grouped composite it replaced arrived at.
-  callout: { width: 380, height: 116 },
-  // Card (docs/specs/009-elements/card.md): room for a title, a meta line, two body lines and a tag row.
-  card: { width: 300, height: 150 },
-  // Badge (docs/specs/009-elements/badge.md): fitted to its text on every commit (badgeSize); this is "New" (BADGE_NEW_LABEL).
-  badge: { width: 40, height: 24 },
-  // Step number (docs/specs/009-elements/step-number.md): a small disc.
-  step: { width: 28, height: 28 },
-  // Pointer note (docs/specs/009-elements/pointer-note.md): a short note; its tip hangs below it (D190).
-  'pointer-note': { width: 180, height: 64 },
-  // Diagram key (docs/specs/009-elements/diagram-key.md): one row's height until it settles (D191).
-  'diagram-key': { width: 260, height: 68 },
-  // Stack (docs/specs/009-elements/stack.md): an empty row to drop into (D192).
-  stack: { width: 360, height: 160 },
-  // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
-  boundary: { width: 480, height: 300 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -405,19 +384,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       aspectLocked: true,
     };
   }
-  if (kind === 'lane') {
-    return {
-      ...base,
-      // The title lives in the left gutter (docs/specs/009-elements/lane.md), so it aligns to the
-      // leading edge rather than floating over the work.
-      textAlignX: 'left',
-      textAlignY: 'middle',
-      // A generous inset so the title sits IN its gutter rather than against
-      // the lane's edge — the default padding put it hard up on the border.
-      padding: 'lg',
-      label: 'Lane',
-    };
-  }
   // The actor is a figure with its label beneath the legs, not text
   // inside a box. Lock the aspect ratio so resizing never warps the
   // stickman, and default the label to the bottom band.
@@ -435,104 +401,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // an icon carries would undo the die-cut look.
   if (kind === 'sticker') {
     return { ...base, aspectLocked: true };
-  }
-  // A Timeline's milestones, each with its when (docs/specs/009-elements/timeline.md).
-  if (kind === 'timeline-rail')
-    return {
-      ...base,
-      conceptRows: [
-        { label: 'Kick-off', note: 'Jan' },
-        { label: 'First prototype', note: 'Mar' },
-        { label: 'Beta with customers', note: 'Jun' },
-        { label: 'Launch', note: 'Sep' },
-      ],
-    };
-  // Boundary (docs/specs/009-elements/boundary.md): a titled, dashed container.
-  if (kind === 'boundary')
-    return {
-      ...base,
-      label: 'Region',
-      strokeStyle: 'dashed',
-      borderRadius: 'md',
-      textSize: 'sm',
-      textBold: true,
-      // The title sits in its tab or corner (boundaryLayout), so the label takes the region whole.
-      textAlignX: 'left',
-      textAlignY: 'middle',
-      padding: 'none',
-    };
-  // Badge (docs/specs/009-elements/badge.md): a word to start from; a step takes its number when it lands
-  // (settleChips), so it starts with none.
-  // Their text is centred with no padding: the face is the pill, the label its word.
-  if (kind === 'badge')
-    return { ...base, label: 'New', textSize: 'sm', textBold: true, padding: 'none' };
-  if (kind === 'stack')
-    return {
-      ...base,
-      label: '',
-      strokeStyle: 'dashed',
-      strokeWidth: 'thin',
-      borderRadius: 'md',
-      textSize: 'sm',
-      textAlignX: 'left',
-      textAlignY: 'top',
-    };
-  if (kind === 'diagram-key')
-    return {
-      ...base,
-      label: 'Key',
-      textSize: 'sm',
-      textBold: true,
-      textAlignX: 'left',
-      textAlignY: 'top',
-      // The title sits in its own 20 px band (diagramKeyLayout); padding there clipped its descenders.
-      padding: 'none',
-      borderRadius: 'md',
-      strokeWidth: 'thin',
-    };
-  if (kind === 'pointer-note')
-    return {
-      ...base,
-      label: 'Stale for 60 s after a price change',
-      textSize: 'sm',
-      textAlignX: 'left',
-      textAlignY: 'top',
-      borderRadius: 'md',
-      strokeColor: '#d97706',
-      fillColor: '#fffbeb',
-      textColor: '#78350f',
-      pointerTip: { x: -24, y: 120 },
-    };
-  if (kind === 'step')
-    return { ...base, aspectLocked: true, textSize: 14, textBold: true, padding: 'none' };
-  // Card (docs/specs/009-elements/card.md): every slot but the band on, so the first one shows what a card is made of.
-  if (kind === 'card') {
-    return {
-      ...base,
-      cardMedia: 'tile',
-      iconId: 'credit-card',
-      pageTitle: 'Payments',
-      pageSubtitle: 'Stripe, EU region',
-      label: 'Takes card payments and issues refunds.',
-      tags: ['PCI', 'v2'],
-      textSize: 'sm',
-      textAlignX: 'left',
-      textAlignY: 'top',
-      strokeWidth: 'thin',
-      borderRadius: 'md',
-    };
-  }
-  if (kind === 'callout') {
-    return {
-      ...base,
-      pageTitle: 'Heads up',
-      label: 'A short note with some supporting detail.',
-      textSize: 'sm',
-      textAlignX: 'left',
-      textAlignY: 'top',
-      strokeWidth: 'thin',
-      borderRadius: 'md',
-    };
   }
   return base;
 }

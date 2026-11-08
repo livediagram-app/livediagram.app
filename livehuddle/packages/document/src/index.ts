@@ -6,7 +6,6 @@
 // Value import from the data-shapes LEAF module (it imports only types from
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
-import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import { isRetiredElementType } from './retired-kinds';
 import type { TabKind } from './tab-kind';
@@ -168,8 +167,9 @@ export type Tab = {
   // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
   // `customColoursOf`; every picker in the document offers them as Custom Colours.
   customColours?: string[];
-  // Tag colours (docs/specs/009-elements/tag-colours.md): a card tag mapped to a colour, read with `tagColoursOf`.
-  tagColours?: TagColour[];
+  // A retired tag colour map (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3): only
+  // cards and the diagram key read it, so a stored one rides through a save untouched and is never read.
+  tagColours?: unknown;
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
@@ -231,16 +231,6 @@ export * from './accent-edge';
 // has, their names, and the placeholder card every surface draws them as.
 export * from './retired-kinds';
 export * from './retired-placeholder';
-export * from './card';
-export * from './chip';
-export * from './attachment';
-export * from './pointer-note';
-export * from './tag-colours';
-export * from './diagram-key';
-export * from './stack';
-export * from './boundary';
-export * from './concept';
-export * from './concept-timeline';
 export * from './shape-variants';
 export * from './piece-variants';
 export * from './door-art';
@@ -318,7 +308,6 @@ export * from '@liveworkspace/model-core/arrow-label-wrap';
 export * from './arrow-bend';
 export * from './arrow-scale';
 export * from '@liveworkspace/model-core/label-font';
-export * from './lane-gutter';
 export * from './arrow-style';
 export * from './er-heads';
 export * from '@liveworkspace/model-core/border-style';
@@ -402,7 +391,6 @@ export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
-export * from './web-components';
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.
 export * from './behaviour-shapes';
@@ -419,7 +407,7 @@ export * from '@liveworkspace/model-core/person-card';
 export * from './factories';
 export * from './whiteboard';
 export * from './whiteboard-stroke';
-export * from './graph-authoring';
+export * from './label-box-size';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
@@ -451,18 +439,12 @@ export * from './auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
 export { tidyLayoutElements } from './auto-layout-tidy';
 
-// Cluster-aware graph layout: a graph's groups as boundaries.
-export * from './auto-layout-clusters';
-export { frameHeadingRect } from './auto-layout-cluster-seats';
 // The layout engine's gaps, which edit operations place and make room by.
 export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 
 // Authoring input the api's changesets build from (livediagram/docs/specs/015-api/mcp-server.md §4.7,
-// §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
+// §4.7a): raw elements made safe and finished tabs built.
 export * from './element-normalise';
-export * from './graph-input';
-export { KINK_RUN, arrowEndKey } from './graph-notches';
-export * from './graph-limits';
 export * from './tab-builders';
 
 // Shared by the editor's text export + import and reusable by the api.
@@ -604,14 +586,12 @@ export * from '@liveworkspace/model-core/fonts';
 // helpers a presentation is built from. Kept here rather than in apps/editor
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
-export * from './lane-seam-snapping';
-// Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
+// Refs, slug ids, kind words, the content origin and the style keys (docs/specs/024-agents/document-views.md):
 // how views, edit operations and the lint name and place elements alike.
 export * from './element-refs';
-export * from './containment';
+export * from './content-origin';
 export * from '@liveworkspace/model-core/style-keys';
 export * from '@liveworkspace/model-core/tab-names';
-export { lineChars } from './svg-render-web';
 export * from './drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.
 export { indefiniteArticle, withArticle } from '@liveworkspace/model-core/indefinite-article';

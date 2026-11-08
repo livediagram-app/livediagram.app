@@ -48,8 +48,6 @@ describe('every kind with a body draws one', () => {
   // exported as a rounded rectangle with its own name centred in it, which is
   // not a degraded render, it is a blank.
   const WITH_BODY: ShapeKind[] = [
-    'timeline-rail',
-    'lane',
     'chair',
     'portal',
     'mode-button',

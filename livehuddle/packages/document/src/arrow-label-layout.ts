@@ -10,7 +10,7 @@
 // Pure and shared: the canvas and every export lay labels out through here,
 // so an exported label wraps at the same words and sits at the same spot.
 
-import { isContainerKind } from './containment';
+import { isRetiredBackdrop } from './retired-kinds';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { arrowLabelFontSize } from '@liveworkspace/model-core/arrow-label';
 import {
@@ -333,7 +333,8 @@ function placementOf(
 // ---------------------------------------------------------------------
 
 function isObstacle(el: BoxedElement): boolean {
-  return !(el.type === 'shape' && isContainerKind(el.shape));
+  // A stored lane's, stack's or boundary's placeholder lies behind what sat on it (retired-kinds.ts).
+  return !isRetiredBackdrop(el);
 }
 
 function hitsAny(rect: Rect, boxes: Rect[]): boolean {

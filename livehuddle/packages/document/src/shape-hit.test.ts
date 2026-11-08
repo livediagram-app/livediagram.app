@@ -41,7 +41,7 @@ describe('pickedByOutline', () => {
     expect(pickedByOutline(shape(kind))).toBe(true);
   });
 
-  it.each<ShapeKind>(['icon', 'plant', 'callout', 'chair', 'mode-button'])(
+  it.each<ShapeKind>(['icon', 'plant', 'chair', 'mode-button'])(
     'keeps the box of a %s, which paints its own face',
     (kind) => {
       expect(pickedByOutline(shape(kind))).toBe(false);
@@ -62,10 +62,6 @@ describe('hasVisibleFill', () => {
     expect(hasVisibleFill(shape('square', { fillColor: 'none' }))).toBe(false);
     expect(hasVisibleFill(shape('square', { fillColor: '#fde68a' }))).toBe(true);
     expect(hasVisibleFill(shape('square', { fillColor: undefined }))).toBe(true);
-  });
-
-  it('reads a boundary with no fill of its own as see-through', () => {
-    expect(hasVisibleFill(shape('boundary', { fillColor: undefined }))).toBe(false);
   });
 });
 

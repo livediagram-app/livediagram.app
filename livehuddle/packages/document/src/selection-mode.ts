@@ -32,8 +32,6 @@ export function isSelectionMode(value: unknown): value is SelectionMode {
 // another stops looking like part of the product.
 const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set([
   'mode-button',
-  // A badge fits its text (docs/specs/009-elements/badge.md): it is never resized by hand.
-  'badge',
 ]);
 
 export function isFixedSizeShape(kind: string): boolean {

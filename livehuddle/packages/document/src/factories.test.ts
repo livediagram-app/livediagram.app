@@ -96,11 +96,7 @@ describe('boxed-element factories', () => {
   });
 
   it('scaleElements scales boxed position + size about the origin, 2x', () => {
-    const before = createComponent('callout', 0, 0, {
-      accent: '#000',
-      surface: '#fff',
-      ink: '#111',
-    });
+    const before = createComponent('avatar', 10, 20);
     if (before.type === 'arrow') throw new Error('expected boxed');
     const scaled = scaleElements([before], 0, 0, 2)[0]!;
     if (scaled.type === 'arrow') throw new Error('expected boxed');

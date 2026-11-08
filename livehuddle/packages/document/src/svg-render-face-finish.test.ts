@@ -6,7 +6,7 @@ import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
 
 // docs/specs/008-canvas/finish.md "Faces".
 describe('faceFinishOf', () => {
-  const board = { ...createShape('timeline-rail', 0, 0), id: 'b' };
+  const board = { ...createShape('mode-button', 0, 0), id: 'b' };
   const square = { ...createShape('square', 0, 0), id: 's' };
 
   it('names the finish of a face that draws its own parts', () => {
@@ -21,8 +21,8 @@ describe('faceFinishOf', () => {
   });
 
   it("lets an element's own corner win over Professional's square corners", () => {
-    expect(faceFinishOf({ ...board, borderRadius: 'lg' }, 'professional')).toBeUndefined();
-    expect(faceFinishOf({ ...board, borderRadius: 'lg' }, 'marker')).toBe('marker');
+    expect(faceFinishOf({ ...board, borderRadius: 'sm' }, 'professional')).toBeUndefined();
+    expect(faceFinishOf({ ...board, borderRadius: 'sm' }, 'marker')).toBe('marker');
   });
 });
 

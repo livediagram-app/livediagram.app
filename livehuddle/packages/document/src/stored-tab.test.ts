@@ -134,9 +134,9 @@ describe('a stored whiteboard tab', () => {
 });
 
 // Untrusted input (an api write, a realtime peer, a file, a paste) is migrated BEFORE it is validated, and the
-// migrations' settle steps read an element's fields as their types. A malformed element must reach validation as it
-// came, to be refused there, never throw: a step chip whose label was a number threw in settleChips, so a tab PUT
-// answered 500 and a file import broke instead of being refused.
+// migrations read an element's fields. A malformed element must reach validation as it came, to be refused there,
+// never throw: a step chip whose label was a number once threw in a settle step, so a tab PUT answered 500 and a file
+// import broke instead of being refused. An element whose fields cannot be read stands in for any such throw.
 describe('migrating untrusted input', () => {
   const box = {
     id: 'a',
@@ -148,7 +148,12 @@ describe('migrating untrusted input', () => {
     height: 10,
     label: 'A',
   };
-  const badStep = { ...box, id: 's', shape: 'step', label: 5 };
+  const badStep = {
+    id: 's',
+    get type(): string {
+      throw new Error('unreadable');
+    },
+  };
 
   it('hands a tab that a migration cannot read back as it came', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -160,14 +165,18 @@ describe('migrating untrusted input', () => {
 
   it('hands elements that a migration cannot read back as they came, non-objects dropped', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    expect(migrateIncomingElements([box, badStep, 7])).toEqual([box, badStep]);
+    const out = migrateIncomingElements([box, badStep, 7]);
+    expect(out).toHaveLength(2);
+    expect(out[0]).toBe(box);
+    expect(out[1]).toBe(badStep);
     warn.mockRestore();
   });
 
-  it('still migrates input it can read', () => {
-    const step = { ...badStep, label: '' };
-    const [, settled] = migrateIncomingElements([box, step]);
-    expect(settled).not.toBe(step);
-    expect((settled as { label?: string }).label).toBe('1');
+  // A stored step is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+  // part 3): nothing numbers it any more, so it reads back exactly as it came, an unreadable label and all.
+  it('reads a stored step back as it came, its label unnumbered', () => {
+    const step = { ...box, id: 's', shape: 'step', label: 5 };
+    const [, read] = migrateIncomingElements([box, structuredClone(step)]);
+    expect(read).toEqual(step);
   });
 });

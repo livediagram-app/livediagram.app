@@ -1,11 +1,9 @@
 // Pure tab builders (livediagram/docs/specs/015-api/mcp-server.md, docs/specs/024-agents/edit-operations.md):
-// validated elements or a node/edge graph turned into a finished, themed, persistable Tab. Render-free, so every caller
+// validated elements turned into a finished, themed, persistable Tab. Render-free, so every caller
 // builds tabs the same way. Template tabs are `buildTemplateTab` in @livehuddle/templates.
 
 import { withFacingBends } from './arrow-orthogonal';
-import { settleDiagramKeys } from './diagram-key';
 import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto-layout';
-import { layoutGraph, type GraphInput } from './graph-input';
 import { recolourElementsForTheme } from './theme-graph';
 import { getBuiltInTheme } from './themes';
 import { coerceShapeKind } from './validate';
@@ -43,8 +41,7 @@ export function buildTab(
     el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
   );
   // An angled arrow left as an L between ends that face each other bends twice instead (layout-cleanup.md).
-  // A diagram key's rows follow the tab's lines (diagram-key.md), settled as the editor settles them on commit.
-  const laidOut = settleDiagramKeys(withFacingBends(applyLayout(layout, coerced)));
+  const laidOut = withFacingBends(applyLayout(layout, coerced));
   return {
     id: tabId,
     name,
@@ -55,16 +52,4 @@ export function buildTab(
     patternColor: theme.patternColor,
     ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
   };
-}
-
-// Build a tab from a node/edge graph (livediagram/docs/specs/015-api/mcp-server.md §4.7): capped, laid out in its
-// chosen style and direction, arrows routed (graph-input.ts), then themed. The
-// layout is already done, so buildTab keeps it.
-export function buildGraphTab(
-  tabId: string,
-  name: string,
-  graph: GraphInput,
-  themeId: string | undefined,
-): Tab {
-  return buildTab(tabId, name, layoutGraph(graph), 'preserve', themeId);
 }
