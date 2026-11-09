@@ -1,6 +1,8 @@
+// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createPresenceCoalescer,
+  HIDDEN_FLUSH_MS,
   type CursorPos,
   type PresenceCoalescer,
 } from './presence-coalescer';
@@ -203,5 +205,72 @@ describe('createPresenceCoalescer with lean avatar packets', () => {
     h.presence.avatar('peer', { tabId: 't1', avatar: lean(3) });
     runFrame();
     expect(h.avatars().get('peer')?.avatar.config).toBeUndefined();
+  });
+});
+
+// docs/specs/012-collaboration/proximity-audio.md "Someone who arrives later": a hidden page gets no animation frames,
+// so a character that walked up while the tab was hidden never reached the call and nobody subscribed to them.
+describe('createPresenceCoalescer in a hidden page', () => {
+  let visibility: DocumentVisibilityState = 'visible';
+  beforeEach(() => {
+    visibility = 'visible';
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visibility);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+  const hide = () => {
+    visibility = 'hidden';
+    document.dispatchEvent(new Event('visibilitychange'));
+  };
+
+  it('commits on a timer while hidden, asking for no frame', () => {
+    const h = setup();
+    hide();
+    h.presence.avatar('joiner', { tabId: 't1', avatar: avatarOf(5) });
+    h.presence.avatar('joiner', { tabId: 't1', avatar: avatarOf(6) });
+    expect(rafCalls).toBe(0);
+    vi.advanceTimersByTime(HIDDEN_FLUSH_MS);
+    expect(h.commits()).toBe(1);
+    expect(h.avatars().get('joiner')?.avatar.x).toBe(6);
+    h.presence.cancel();
+  });
+
+  it('moves a frame asked for before the page hid onto the timer', () => {
+    const h = setup();
+    h.presence.avatar('joiner', { tabId: 't1', avatar: avatarOf(1) });
+    expect(rafCalls).toBe(1);
+    const before = cancelled;
+    hide();
+    expect(cancelled).toBeGreaterThan(before);
+    vi.advanceTimersByTime(HIDDEN_FLUSH_MS);
+    expect(h.avatars().get('joiner')?.avatar.x).toBe(1);
+    h.presence.cancel();
+  });
+
+  it('goes back to frames once the page shows', () => {
+    const h = setup();
+    hide();
+    h.presence.cursor('peer', { tabId: 't1', x: 1, y: 1 });
+    vi.advanceTimersByTime(HIDDEN_FLUSH_MS);
+    visibility = 'visible';
+    h.presence.cursor('peer', { tabId: 't1', x: 2, y: 2 });
+    expect(rafCalls).toBe(1);
+    runFrame();
+    expect(h.cursors().get('peer')).toEqual({ tabId: 't1', x: 2, y: 2 });
+    h.presence.cancel();
+  });
+
+  it('cancels a pending timer and stops listening on teardown', () => {
+    const h = setup();
+    const remove = vi.spyOn(document, 'removeEventListener');
+    hide();
+    h.presence.avatar('joiner', { tabId: 't1', avatar: avatarOf(1) });
+    h.presence.cancel();
+    vi.advanceTimersByTime(HIDDEN_FLUSH_MS * 4);
+    expect(h.commits()).toBe(0);
+    expect(remove).toHaveBeenCalledWith('visibilitychange', expect.any(Function));
   });
 });

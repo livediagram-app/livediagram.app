@@ -65,12 +65,19 @@ it sent with the selection and tab focus (`lastSaid`) and sends it on every new 
 mutation (publish, subscribe batch, close batch) runs through one promise queue; a subscribe or close is reconciled
 against the wanted set when it runs, so a peer walking in and out while a request is in flight makes no stale call.
 
-**Audio graph** (`lib/calls/audio-graph.ts`): one `AudioContext`, resumed by the Join press. Per heard peer:
+**Audio graph** (`lib/calls/audio-graph.ts`): one `AudioContext`, made in the join (a press when there is one). Per heard peer:
 `MediaStreamAudioSourceNode → GainNode → StereoPannerNode → destination`, values set with `setTargetAtTime(…,
 GLIDE_S)`. `place(id, gain, pan)` sets each value only when it moved by `PLACE_EPSILON` or more from the one last
 set for that voice, or when it lands exactly on 0 or 1 (silence and full volume are always reached); the first place
 after `attach` always sets both. A muted `<audio>` element holds each remote stream (Chrome plays a WebRTC stream into Web Audio only while
 an element holds it). The microphone feeds an `AnalyserNode` (`fftSize` 512) read every `VOICE_SAMPLE_MS`.
+
+**Waking the sound** (`lib/calls/audio-wake.ts`, spec "Someone who arrives later"): `AudioWake` watches the call's
+context's `statechange`. While it is not `running` (never started without a press, or suspended or interrupted
+later) it waits for the next `pointerdown`, `keydown` or `touchend` on the window (capture phase) and tries
+`resume()` then, on `visibilitychange` to visible, on window `focus` and `pageshow`, and on every voice attached
+(`ProximityCall` calls `wake.nudge()` from `onTrack`). It reports held or running to the store
+(`CallSelf.audioHeld`); running again drops the listeners. Event driven: nothing polls.
 
 ## Interfaces and contracts
 
@@ -119,7 +126,9 @@ held frames for one step. The editor's store is memory only and empties on leavi
 - The kill switch pauses calls mid-call (the room's `calls-mode` op, or a `paused` refusal): the call ends as leaving
   the mode does, into **Calls Paused**.
 - Microphone refused (on the first unmute): `micState: 'blocked'`, still hearing; the button says how to allow it and a press asks the browser again.
-- Connection fails (`iceconnectionstate` `failed`): phase `error`, the Retry press starts fresh.
+- Connection fails (`iceconnectionstate` `failed`: a laptop that slept, a network change, TURN credentials past
+  `TURN_TTL_S`): renewed as a gone session is (`ProximityCall.renew('connection')`), in the same `RENEW_MAX` budget;
+  past it, phase `error`, and the Retry press starts fresh.
 - Session gone (`410 calls_session_gone` on any step, spec "A session that expires"): `SfuSession` raises
   `onSessionGone` (only the current session's counts), and `ProximityCall.renew` closes it, mints and proves a new one,
   republishes the open microphone (`CallMic.republish`; a released one is unpublished, so the next unmute publishes
@@ -194,6 +203,9 @@ held frames for one step. The editor's store is memory only and empties on leavi
   (`zoneAt`, its outline or box) less every other room the ring reaches that you are not inside. A faint fill, a steady edge and a ripple (`animate-hearing-ripple`) in your
   colour; shown while your own bars would (unmuted, `level > 0`, in a call or the preview mic) and you are not a stage speaker; opacity fades over 200 ms
   and the ripple is dropped while silent. Reduced motion stops the ripple.
+- **Click to Hear** (`AudioHeldSegment`): while `audioHeld` and somebody is heard, a warn segment before the
+  microphone (headphones glyph, name Click to Hear, title Sound Held Back); a press resumes the context (any press
+  would, the segment says so).
 - The microphone starts **Muted**; **Mic Off** is only the moment while an unmuted microphone opens ("Your microphone
   is opening"); a Viewer's reads **Listening**.
 
@@ -226,6 +238,10 @@ token. The editor logs through `debugLog('calls', …)`.
 | Session gone: renew, republish, prove, cap                    | `apps/editor/lib/calls/proximity-call.test.ts`                      |
 | Editor allows camera, microphone and screen for self          | `apps/editor/src/worker.test.ts`                                    |
 | Join, leave with the mode or tab, rejoin after failure        | `apps/editor/lib/calls/useProximityCall.test.tsx`                   |
+| Held sound resumes on a voice, a show, a focus, a press       | `apps/editor/lib/calls/audio-wake.test.ts`                          |
+| A failed connection renews, within the budget                 | `apps/editor/lib/calls/proximity-call.test.ts`                      |
+| Characters committed while the page is hidden                 | `apps/editor/app/document/[id]/presence-coalescer.test.ts`          |
+| Click to Hear while held and someone is heard                 | `apps/editor/components/calls/CallStripGroup.test.tsx`              |
 | A voice moved less than `PLACE_EPSILON` is left; 0 and 1 land | `apps/editor/lib/calls/audio-graph.test.ts`                         |
 | 20 heard voices: AudioParam events a second, bounded          | `apps/editor/lib/calls/call-receiver.perf.test.ts`                  |
 | 50 walkers: the call's scene about 10 a second                | `apps/editor/components/canvas/CanvasCharactersLayer.perf.test.tsx` |

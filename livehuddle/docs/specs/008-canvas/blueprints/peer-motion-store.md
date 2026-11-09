@@ -10,7 +10,7 @@ what shows them, not the editor**. The same shape as the [Viewport store](viewpo
 | `../packages/workbench/src/lib/state-store.ts`            | `createStateStore(initial)`: one value outside React, a setState-shaped `set`                           |
 | `apps/editor/lib/peer-motion.ts`                          | `createPeerMotion`, `PeerMotion`, `PeerRowsSource`, `CursorPos`, `PeerAvatar`                           |
 | `apps/editor/app/document/[id]/usePresenceState.ts`       | Makes the store once; `setRemoteCursors` / `setRemoteAvatars` are its setters                           |
-| `apps/editor/app/document/[id]/presence-coalescer.ts`     | Unchanged contract: writes both maps once a frame through those setters                                 |
+| `apps/editor/app/document/[id]/presence-coalescer.ts`     | Writes both maps once a frame through those setters; on a timer while the page is hidden                |
 | `apps/editor/app/document/[id]/usePresenceRows.ts`        | Builds `peerRows` by value; `participantsByTab` memoised                                                |
 | `apps/editor/hooks/collab/usePeerRows.ts`                 | `usePeerCursorRows`, `usePeerAvatarRows`: subscribe and join with presence                              |
 | `apps/editor/components/canvas/PeerCursors.tsx`           | The cursor layer: the element layer's only subscriber to cursors                                        |
@@ -85,6 +85,10 @@ poseStore))` (memoised on the two stores and the places) whose facts are `peerFa
   publishes at once; only a step within the same place waits.
 - The store is never written during render: the coalescer writes in an animation frame, the roster's
   prune in a socket handler.
+- A hidden page gets no animation frames, so while it is hidden the coalescer writes on a `HIDDEN_FLUSH_MS` (250 ms)
+  timer instead, which the browser runs about once a second there; a frame already asked for when the page hides is
+  swapped for the timer. Otherwise someone who walked up while the tab was hidden never reached the call's scene
+  ([Proximity audio](../../012-collaboration/proximity-audio.md#someone-who-arrives-later)).
 - A prune that removes nobody returns the same map, so it notifies nobody.
 - A peer who leaves drops out of the rows at once: `livePresenceById` changes, so `peerRows` does, and
   the subscribers rebuild their rows on the next render.
