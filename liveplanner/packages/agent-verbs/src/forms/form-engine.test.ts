@@ -4,7 +4,7 @@ import { presetSetup } from '@liveplanner/items';
 import { fakeApi } from '../testing/fake-api';
 import { sheetJson, sheetServer } from '../testing/sheets';
 import { bugForm, formPlan, formTabBody } from '../testing/forms';
-import { addForm, changeForm, readForm, shareForm } from './form-calls';
+import { SETTINGS_KEEP_CLOSED, addForm, changeForm, readForm, shareForm } from './form-calls';
 
 // The form verbs' calls (docs/specs/030-forms/forms.md "Agents", blueprint §15 "Engine flow"): one read, every
 // change checked, then card types, the form and its responses tabs written in that order.
@@ -625,6 +625,21 @@ describe('the calls’ every path', () => {
     expect(await shareForm(none.client, 'doc', undefined, 'delete_link')).toMatchObject({
       code: 'form_not_published',
     });
+  });
+
+  // A form past its Close On or at its Response Limit read "already taking responses" (or "opened again") while it
+  // stayed closed.
+  it('says which setting keeps a published form closed', async () => {
+    const past = api(LINK, {
+      '/projects/doc/tabs/form': { tab: formTabBody({ ...bugForm(), closesAt: 1 }) },
+    });
+    const r = await shareForm(past.client, 'doc', undefined, 'publish');
+    expect(r.ok && r.lines).toEqual([SETTINGS_KEEP_CLOSED.closes_at]);
+    const full = api(LINK, {
+      '/projects/doc/tabs/form': { tab: formTabBody({ ...bugForm(), limit: 4 }) },
+    });
+    const f = await shareForm(full.client, 'doc', undefined, 'publish');
+    expect(f.ok && f.lines).toEqual([SETTINGS_KEEP_CLOSED.limit]);
   });
 
   it('refuses a publish the api refuses, in its words', async () => {

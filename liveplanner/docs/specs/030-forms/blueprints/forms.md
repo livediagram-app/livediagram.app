@@ -554,7 +554,9 @@ tabs], source, itemTypes? }`, then the new sheet's headers. Otherwise, in order:
   route with `rev` the tab's, the responses tabs and boards.
 - **share_form**: an unknown action → `action_unknown`. `publish`: problems → `form_not_ready` listing them; no link →
   `POST form-link`; closed → `PUT { open: true }`; open → nothing. `close` → `PUT { open: false }`; `delete_link` →
-  `DELETE`; either without a link → `form_not_published`. Then the link read again.
+  `DELETE`; either without a link → `form_not_published`. Then the link read again; after a `publish` whose reading
+  is still `closed` by `closes_at` or `limit`, the line is replaced by the setting that keeps it closed
+  (`SETTINGS_KEEP_CLOSED`).
 - **try_form** (`tryForm`): the reads as `readForm`'s. Each answer's key through `resolveQuestion` (an unknown or
   ambiguous one refused as it names them); a `single` with `other` given text that is no option sends `OTHER_ANSWER`
   with the text in `other`, a `multi` likewise for the picks that are no option (joined ", "). `checkResponse` over
