@@ -23,7 +23,7 @@ beforeEach(() => {
         new Response(
           JSON.stringify({
             teamId: 't1',
-            teamName: 'Ops',
+            teamName: 'צוות',
             organisation: '\u202Eevil org',
             memberCount: 3,
             signedIn: true,
@@ -49,8 +49,27 @@ describe('JoinPage', () => {
   it('isolates the organisation, so its direction never turns the member count around', async () => {
     act(() => root.render(<JoinPage />));
     await act(async () => new Promise((r) => setTimeout(r, 0)));
-    const bdi = container.querySelector('bdi');
+    const bdi = container.querySelector('p bdi');
     expect(bdi?.textContent).toBe('\u202Eevil org');
     expect(bdi?.parentElement?.textContent).toBe('\u202Eevil org · 3 members');
+  });
+
+  it('isolates the team’s name in its heading and on Join, so a right-to-left name keeps the button the right way round', async () => {
+    act(() => root.render(<JoinPage />));
+    await act(async () => new Promise((r) => setTimeout(r, 0)));
+    expect(container.querySelector('h1 bdi')?.textContent).toBe('צוות');
+    const join = [...container.querySelectorAll('button')].find((b) =>
+      b.textContent?.startsWith('Join'),
+    );
+    expect(join?.textContent).toBe('Join \u2068צוות\u2069');
+  });
+
+  it('holds its header, card and footer in a column at least the window high, so a short page keeps its footer at the foot', async () => {
+    act(() => root.render(<JoinPage />));
+    await act(async () => new Promise((r) => setTimeout(r, 0)));
+    const shell = container.querySelector('[data-join-shell]')!;
+    expect(shell.className).toContain('min-h-dvh');
+    expect(shell.className).toContain('flex-col');
+    expect(shell.querySelector(':scope > main')?.className).toContain('flex-1');
   });
 });

@@ -50,9 +50,10 @@ import { ROW_HEIGHT, useFolderBits, useItemBits, type RowOptions } from './rows'
 import { useWindowedRange } from './useWindow';
 
 // Name, Type, Comments, Access, Size, Created, Updated, the menu: each column shows from the list's width up (a
-// container query: the pane, not the window, is what they share), the name taking what is left.
+// container query: the pane, not the window, is what they share), the name taking what is left. Type is wide enough
+// for its chip (the app's mark and a word like "Document") without cutting the word.
 const GRID =
-  'grid items-center gap-3 grid-cols-[minmax(0,1fr)_6rem_2rem] @xl:grid-cols-[minmax(0,1fr)_5.5rem_5.5rem_6rem_2rem] @3xl:grid-cols-[minmax(0,1fr)_5.5rem_6rem_6.5rem_5.5rem_6rem_2rem] @5xl:grid-cols-[minmax(0,1fr)_5.5rem_6rem_6.5rem_5.5rem_6.5rem_6rem_2rem]';
+  'grid items-center gap-3 grid-cols-[minmax(0,1fr)_6rem_2rem] @xl:grid-cols-[minmax(0,1fr)_6.5rem_5.5rem_6rem_2rem] @3xl:grid-cols-[minmax(0,1fr)_6.5rem_6rem_6.5rem_5.5rem_6rem_2rem] @5xl:grid-cols-[minmax(0,1fr)_6.5rem_6rem_6.5rem_5.5rem_6.5rem_6rem_2rem]';
 
 const CELL = 'min-w-0 items-center';
 const cellClass = (id: DetailsColumnId) => {

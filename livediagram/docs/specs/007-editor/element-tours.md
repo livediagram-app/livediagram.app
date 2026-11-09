@@ -64,6 +64,7 @@ Settings' **Getting Started** category holds element tours in their own section,
 how many are on (`1 of 1 On`). Opened, it shows the section's line, then **Show Me on Every Element**, one switch
 over them all (on while any is not yet taken; off marks every kind taken, on forgets every run), with one switch per
 toured kind nested beneath it, named for the element alone: **Sankey Diagram**, linking the Sankey Diagram article.
+The kinds stay listed while the switch over them is off, so one can be offered again on its own.
 On means "not yet taken": switching one on forgets its run and puts that kind's tour back on the Start Tour button
 whenever such an element is selected; off takes it off the button. The accordion opens on its own when Settings is
 opened on one of its rows (a search result) or on the section. The switch over them all is **Show Me on Every

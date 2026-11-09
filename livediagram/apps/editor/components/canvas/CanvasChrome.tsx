@@ -226,6 +226,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     commentRows,
     actionRows,
     onOpenCanvasTheme,
+    canvasThemeOpen,
     onConfirmIdentity,
     offscreenContent,
     onFitToScreen,
@@ -701,6 +702,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                     : undefined
                 }
                 onOpenTheme={onOpenCanvasTheme && !whiteboard ? onOpenCanvasTheme : undefined}
+                themeOpen={!!canvasThemeOpen}
               />
             ) : null}
             <ViewZoomControls

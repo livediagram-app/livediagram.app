@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { accountApi, errorMessage } from '@/lib/account-api';
-import { joinTokenFrom, INVITES_PATH } from '@/lib/teams';
+import { isolatedName, joinTokenFrom, INVITES_PATH } from '@/lib/teams';
 import { Button } from '@liveworkspace/ui';
 import { ACCOUNT_BUTTON as BUTTON } from '@liveworkspace/settings-ui';
 import { JoinShell, Notice } from './JoinPage';
@@ -85,7 +85,7 @@ export function DeclinePage() {
       )}
       {state.kind === 'ready' && state.status === 'invited' && (
         <Notice
-          title={`Decline the invitation to ${state.teamName}?`}
+          title={`Decline the invitation to ${isolatedName(state.teamName)}?`}
           body="You won’t join the team, and its admins will see you declined. To accept instead, sign in with the address it was sent to."
         >
           <Button
@@ -104,18 +104,18 @@ export function DeclinePage() {
       {state.kind === 'ready' && state.status === 'declined' && (
         <Notice
           title="Invitation declined"
-          body={`You won’t join ${state.teamName}. Its admins can see you declined, and can invite you again later. Nothing else happens.`}
+          body={`You won’t join ${isolatedName(state.teamName)}. Its admins can see you declined, and can invite you again later. Nothing else happens.`}
         />
       )}
       {state.kind === 'ready' && state.status === 'expired' && (
         <Notice
           title="This invitation has expired"
-          body={`Nobody answered the invitation to ${state.teamName} within 28 days, so it closed. There’s nothing to decline.`}
+          body={`Nobody answered the invitation to ${isolatedName(state.teamName)} within 28 days, so it closed. There’s nothing to decline.`}
         />
       )}
       {state.kind === 'ready' && state.status === 'joined' && (
         <Notice
-          title={`You’re already in ${state.teamName}`}
+          title={`You’re already in ${isolatedName(state.teamName)}`}
           body="This link can’t undo a membership. To leave the team, open it from your teams."
         />
       )}

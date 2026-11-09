@@ -16,7 +16,8 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
   button** (Layers on its left) in every mode ([Editor app](../007-editor/editor-app.md) "Mobile chrome"), and opens
   the dialog on its home. Its icon is a painter's palette with filled paint wells, in the button's own colour like every other chrome icon, so it reads as "how this tab
   looks" at a glance. It shows on **every viewport, mobile included**, and stays hidden in zen mode and in
-  read-only / embed views.
+  read-only / embed views. While the dialog is open the button reads as expanded (`aria-expanded`), as Tidy Up and
+  Layers do for their popovers.
 - The header is a title row with the **help icon beside the close button** on the right.
 - Every control applies **live** to the active tab, so the canvas updates behind the dialog. There is no
   Apply/Cancel: the dialog is an editor, not a wizard. Closing (the X, Escape, or a backdrop click) just dismisses

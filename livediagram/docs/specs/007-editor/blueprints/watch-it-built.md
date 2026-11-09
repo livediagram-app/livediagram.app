@@ -40,6 +40,10 @@ Draw's dock draws inside the scope, but its model is built by `useEditorState` o
 only by pressing its own button, and a marker's flyout only while the button reads as in hand (`aria-pressed`),
 where a press opens the flyout and never picks the pen up.
 
+The two providers are there whether or not a replay runs, holding the editor's own context and selection store
+outside one, so the canvas never remounts as a replay starts or ends (it once did, and the Quick Style panel, placed
+against the canvas it had measured, landed off the screen afterwards).
+
 Everything else (autosave, the unload save, the offline copy, room ops, undo, export) reads the real `tabs`, which
 the replay never touches.
 
@@ -88,7 +92,8 @@ Seek (a chapter press, reduced motion's Next) just sets `(chapter, 0)`: a frame 
 
 A topic lays its demo out round the view's centre in canvas coordinates (`computeViewportCenter`, which zoom does not
 enter: the canvas scales about the view's centre), given the view's size in canvas units so a phone gets a smaller or
-stacked demo. Demo content stays above the player. Screen and canvas map through the view: a canvas point sits
+stacked demo. Demo content stays above the player, and clear of it when it moves to the top: Look and Feel's row keeps
+a fixed screen distance (240 px, 200 on a phone) below the view's top at any zoom, through the layout's `zoom`. Screen and canvas map through the view: a canvas point sits
 `(point - centre) * zoom` from the canvas box's middle. While the Tab Style dialog is open (it flies up at the bottom
 right, or is a phone's sheet) a frame asks for `player: 'top'`.
 

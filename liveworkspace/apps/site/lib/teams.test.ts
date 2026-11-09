@@ -3,11 +3,18 @@ import {
   AVATAR_TONES,
   avatarTone,
   INVITES_PATH,
+  isolatedName,
   joinTokenFrom,
   memberCountLabel,
   teamInitials,
   teamPath,
 } from './teams';
+
+describe('a team’s name in a sentence', () => {
+  it('is isolated, so a bidi override in it ends with it', () => {
+    expect(isolatedName('\u202Eevil')).toBe('\u2068\u202Eevil\u2069');
+  });
+});
 
 describe('where teams are', () => {
   it('opens a team, and the invitations, in the Explorer', () => {

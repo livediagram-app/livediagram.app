@@ -1,7 +1,10 @@
 'use client';
 
 import { useMemo, type ReactNode, type SetStateAction } from 'react';
-import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import {
+  SelectionStoreProvider,
+  useOptionalSelectionStore,
+} from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EditorContext, useEditorContext } from './EditorContext';
 import { replayStore, useReplayState } from '@/lib/replay/replay-store';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu.types';
@@ -14,9 +17,13 @@ const closeReplayMenu = () => replayStore.set({ menu: null });
 // element menu see the demo drawn in: the active tab's elements with the demo's after them, the replay's held menu and
 // the replay's own selection, and any look the replay is showing (the tab's theme or background, the person's Draw
 // board) over the real one. Nothing else in the editor sees any of it, so it is never saved, sent or undone.
+// The providers are there whether or not a replay runs, holding the editor's own values outside one: a tree that
+// changed shape as a replay started and ended remounted the whole canvas both times, and anything measured against
+// the old canvas (the Quick Style panel's place) was measured against a detached one.
 export function ReplayScope({ children }: { children: ReactNode }) {
   const ctx = useEditorContext();
   const replay = useReplayState();
+  const editorSelection = useOptionalSelectionStore();
   const value = useMemo(() => {
     if (!replay.active) return null;
     return {
@@ -33,10 +40,14 @@ export function ReplayScope({ children }: { children: ReactNode }) {
       selectionStore: replayStore.selection,
     };
   }, [ctx, replay]);
-  if (!value) return <>{children}</>;
+  const selection = value ? replayStore.selection : editorSelection;
   return (
-    <EditorContext.Provider value={value}>
-      <SelectionStoreProvider store={replayStore.selection}>{children}</SelectionStoreProvider>
+    <EditorContext.Provider value={value ?? ctx}>
+      {selection ? (
+        <SelectionStoreProvider store={selection}>{children}</SelectionStoreProvider>
+      ) : (
+        children
+      )}
     </EditorContext.Provider>
   );
 }

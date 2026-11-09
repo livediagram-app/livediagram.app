@@ -6,6 +6,12 @@
 /** The Explorer's Invites, where invitations are answered and teams made. */
 export const INVITES_PATH = '/explorer/invites';
 
+/** A team's name inside a sentence, isolated (FSI … PDI): it is someone's typing, so a right-to-left name or one
+ *  holding a bidi override never turns the words or the question mark after it around. */
+export function isolatedName(name: string): string {
+  return `\u2068${name}\u2069`;
+}
+
 /** A team's view in the Explorer. */
 export function teamPath(id: string): string {
   return `/explorer/team?id=${encodeURIComponent(id)}`;

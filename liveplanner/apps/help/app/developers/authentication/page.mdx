@@ -19,7 +19,7 @@ External API calls authenticate with an **API token**: a long-lived, revocable c
 
 ## Get a token
 
-Tokens are made in Settings, not through the API. In liveplanner, open **Settings**, choose **Account**, then **API Tokens** beneath it, and make the token there; the same list is in every liveworkspace app's Settings and on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens). The secret is shown **once** at creation; copy it then, because it is never displayed again. See [API Tokens](/help/account-and-data/api-tokens/) for the full walkthrough, including the read-only option, the six-month lifetime and the 20-token limit.
+Tokens are made in Settings, not through the API. In liveplanner, open **Settings**, choose **Developers**, then **API Tokens** beneath it, and make the token there; the same list is in every liveworkspace app's Settings and on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens). The secret is shown **once** at creation; copy it then, because it is never displayed again. See [API Tokens](/help/account-and-data/api-tokens/) for the full walkthrough, including the read-only option, the six-month lifetime and the 20-token limit.
 
 Tokens have the form `lwt_` followed by a random string, so they are easy to spot in logs and secret scanners.
 
@@ -58,7 +58,7 @@ The editor itself does not use an API token. When you are signed in it sends you
 <Note>
   A token has your account's full read and write access to your plans. Treat it like a password:
   keep it out of source control and shared logs, and never put it in client-side code that ships to
-  a browser. If a token might have leaked, revoke it in **Settings**, **Account**, **API Tokens**
+  a browser. If a token might have leaked, revoke it in **Settings**, **Developers**, **API Tokens**
   and create a replacement.
 </Note>
 

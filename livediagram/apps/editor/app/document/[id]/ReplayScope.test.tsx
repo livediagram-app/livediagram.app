@@ -5,6 +5,7 @@
 // sees the editor unchanged.
 
 import { act, cleanup, render } from '@testing-library/react';
+import { useEffect } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createShape } from '@livediagram/document';
 import {
@@ -74,6 +75,28 @@ describe('ReplayScope', () => {
     expect(probe.store).toBe(replayStore.selection);
     // The editor's own tab is untouched.
     expect(outer.activeTab.elements).toEqual([mine]);
+  });
+
+  it('never remounts what it holds as a replay starts or ends', () => {
+    const mounts = { count: 0 };
+    function Counted() {
+      useEffect(() => {
+        mounts.count += 1;
+      }, []);
+      return null;
+    }
+    render(
+      <EditorContext.Provider value={outer}>
+        <SelectionStoreProvider store={editorSelection}>
+          <ReplayScope>
+            <Counted />
+          </ReplayScope>
+        </SelectionStoreProvider>
+      </EditorContext.Provider>,
+    );
+    act(() => replayStore.set({ active: true, elements: [demo] }));
+    act(() => replayStore.reset());
+    expect(mounts.count).toBe(1);
   });
 
   it("keeps the menu's opens and closes in the replay", () => {

@@ -21,7 +21,8 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   [colour picker](../004-interface-design/colour-picker.md) in a popover), a **label**, and a **value**, plus
   add / remove. The line chart's 2-D grid is too wide for the narrow menu, so
   the category instead **summarises the series** (a colour dot + name) and an
-  **Edit Data** button opens a **modal** (`LineDataDialog`): a row per category,
+  **Edit Data** button closes the menu and opens a **modal** (`LineDataDialog`; the menu once stayed drawn over it,
+  as it did over Edit Code and Edit Sequence): a row per category,
   a column per series, add / remove either axis, and an **Import CSV** button
   (header row = series names, first column = category labels). The chart +
   legend redraw live from the data.
@@ -171,8 +172,9 @@ groups all three (they're all in `isSelfDrawingShape` too).
   aware) turns a pasted/uploaded CSV into categories + series. The separator is whichever of `,`, `;` and tab the
   header row uses most (a comma on a tie), so a spreadsheet saved where `;` separates (and `,` is the decimal point)
   or as tab-separated text imports rather than reading as one column and doing nothing. A value reads as the number a
-  spreadsheet wrote it as: a thousands separator (`"1,234"`, or `1.234,5` in a `;` file), a leading currency sign
-  (`$`, `€`, `£`, `¥`) and a trailing `%` are formatting, not a reason to read 0. Anything else non-numeric reads 0.
+  spreadsheet wrote it as: a thousands separator (`"1,234"`, or `1.234,5` and `1.234` in a `;` file), a currency
+  sign before or after the number (`$10`, `10 €`; `$`, `€`, `£`, `¥`) and a trailing `%` are formatting, not a reason
+  to read 0. Anything else non-numeric reads 0.
 - Setters in `useChartSetters.ts`, exposed through `useElementStyle.ts`: `setPieDataSelected(slices)` (pie / bar),
   `setLineDataSelected(categories, series)` (line), + `setChartLegendSelected` /
   `setChartLegendPositionSelected` / `setPieAnim*Selected`, all gated to chart

@@ -32,7 +32,8 @@ export function TokensPanel() {
       />
       {made && (
         <SecretReveal
-          title={`Here’s ${made.name}. Copy it now: it won’t be shown again.`}
+          // Quoted and isolated (FSI … PDI), so a right-to-left name never turns the rest of the sentence around.
+          title={`Here’s “\u2068${made.name}\u2069”. Copy it now: it won’t be shown again.`}
           secret={made.secret}
           onDone={() => {
             setMade(null);
@@ -48,7 +49,7 @@ export function TokensPanel() {
           tabIndex={-1}
           className="text-base font-semibold text-slate-900 outline-none dark:text-white"
         >
-          Your tokens
+          Your Tokens
         </h2>
         {load.state === 'loading' && (
           <div
@@ -113,7 +114,7 @@ function CreateToken({
   return (
     <Panel>
       <form onSubmit={(event) => void submit(event)}>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-white">Make a token</h2>
+        <h2 className="text-base font-semibold text-slate-900 dark:text-white">Make a Token</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           For your own scripts and tools. It acts as you in every app, for six months.
         </p>
@@ -130,7 +131,7 @@ function CreateToken({
           {/* Keeps the keyboard while it makes the token (busy-buttons.md): disabled, the focused button dropped it
               to the top of Settings. */}
           <Button type="submit" variant="none" className={`${BUTTON.primary} shrink-0`} busy={busy}>
-            Make token
+            Make Token
           </Button>
         </div>
         <label className="mt-3 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
@@ -164,7 +165,7 @@ function TokenRow({ token, onRevoked }: { token: ApiToken; onRevoked: () => Prom
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate font-semibold text-slate-900 dark:text-white">
-              {token.name}
+              <bdi>{token.name}</bdi>
               {token.readOnly && (
                 <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   Read only

@@ -100,7 +100,7 @@ export function WatchItBuiltPlayer({
     const size = host
       ? { width: host.width / view.zoom, height: host.height / view.zoom }
       : { width: 1200, height: 800 };
-    layoutRef.current = topic.layout({ centre, size, tab: ctx.activeTab });
+    layoutRef.current = topic.layout({ centre, size, tab: ctx.activeTab, zoom: view.zoom });
     pauseTelemetry();
     ctx.closeContextMenu();
     document.documentElement.setAttribute('data-replay', '');
@@ -122,12 +122,6 @@ export function WatchItBuiltPlayer({
     trackDuringPause(() => track('UI', 'View', tourStepTelemetryType(chapters[0]!.id)));
   };
   const beginRef = useLatest(begin);
-  const startedRef = useRef(false);
-  useEffect(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
-    beginRef.current();
-  }, [beginRef]);
 
   // Everything it opened closed, the demo gone, the canvas back; telemetry runs again.
   const teardown = () => {
@@ -160,13 +154,17 @@ export function WatchItBuiltPlayer({
     startedOnRef.current ??= tabId;
     if (mode !== startedMode.current || startedOnRef.current !== tabId) endRef.current('skipped');
   }, [active, mode, tabId, endRef]);
-  // Leaving the page mid-run leaves nothing behind.
-  useEffect(
-    () => () => {
+  // It begins as it mounts, and leaving the page mid-run leaves nothing behind. One effect does both, so a remount
+  // (React's StrictMode mounts, unmounts and mounts again in development) begins again after the teardown instead of
+  // playing on with the demo, the fade and the freeze already gone.
+  useEffect(() => {
+    beginRef.current();
+    return () => {
+      // The latest teardown on purpose: teardownRef always holds the current render's (useLatest).
+      // oxlint-disable-next-line react/exhaustive-deps
       if (replayStore.get().active) teardownRef.current();
-    },
-    [teardownRef],
-  );
+    };
+  }, [beginRef, teardownRef]);
 
   // The clock: one frame loop, only while playing.
   useEffect(() => {

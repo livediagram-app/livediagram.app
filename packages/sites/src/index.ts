@@ -339,6 +339,12 @@ export function siteOfApp(app: AppName): Site {
   return REGISTERED_APP_SITES.find((s) => s.id === id) ?? PLATFORM_SITE;
 }
 
+/** A name in the possessive, the way the copy writes it: livediagram’s, but livedocuments’ (a name ending in s takes
+ *  the apostrophe alone). */
+export function possessive(name: string): string {
+  return name.endsWith('s') ? `${name}’` : `${name}’s`;
+}
+
 /** The app a site serves (a held app's too), or null for liveworkspace itself. */
 export function appOfSite(id: SiteId): AppName | null {
   return (Object.keys(APP_ITEMS) as AppName[]).find((app) => APP_ITEMS[app].site === id) ?? null;

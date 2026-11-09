@@ -36,7 +36,7 @@ export const LEVEL_PASS: Record<Level, PassStyle> = {
   },
   participate: {
     title: 'Participant',
-    blurb: 'Comments, votes and works items. Can’t reshape it.',
+    blurb: 'Comments, votes and works on items. Can’t reshape it.',
     Icon: () => <VoteIcon />,
     solid: 'bg-teal-700 text-white dark:bg-teal-600/60',
     // Dark mode keeps teal-700 under the white label: teal-600 read 3.67:1, under WCAG AA's 4.5.

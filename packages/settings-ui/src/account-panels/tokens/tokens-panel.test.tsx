@@ -75,7 +75,7 @@ describe('API Tokens', () => {
     await settle();
     await press('Revoke');
     await press('Revoke now');
-    expect(document.activeElement?.textContent).toBe('Your tokens');
+    expect(document.activeElement?.textContent).toBe('Your Tokens');
   });
 
   it('says so and selects the token when the browser refuses the clipboard', async () => {
@@ -83,17 +83,17 @@ describe('API Tokens', () => {
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
     act(() => root.render(withAccountHost(<TokensPanel />)));
     await settle();
-    await press('Make token');
+    await press('Make Token');
     await press('Copy');
     expect(writeText).toHaveBeenCalledWith('lwt_secret');
     expect(container.querySelector('[role=alert]')?.textContent).toMatch(/didn’t let us copy/);
     expect(window.getSelection()?.toString()).toBe('lwt_secret');
   });
 
-  it('keeps Make token focusable while it makes one, and makes only one for a second press', async () => {
+  it('keeps Make Token focusable while it makes one, and makes only one for a second press', async () => {
     act(() => root.render(withAccountHost(<TokensPanel />)));
     await settle();
-    const make = button('Make token');
+    const make = button('Make Token');
     make.focus();
     // Two presses before the answer: the second is ignored, and the button never turns disabled (which dropped
     // the keyboard to the top of Settings).
@@ -110,8 +110,16 @@ describe('API Tokens', () => {
   it('returns focus to the name field when the new token is put away', async () => {
     act(() => root.render(withAccountHost(<TokensPanel />)));
     await settle();
-    await press('Make token');
+    await press('Make Token');
     await press('Done');
     expect(document.activeElement?.getAttribute('aria-label')).toBe('Token name');
+  });
+
+  it('quotes and isolates a token’s name, so a right-to-left name keeps the sentence the right way round', async () => {
+    act(() => root.render(withAccountHost(<TokensPanel />)));
+    await settle();
+    expect(container.querySelector('bdi')?.textContent).toBe('Weekly report');
+    await press('Make Token');
+    expect(container.textContent).toContain('Here’s “\u2068New\u2069”. Copy it now');
   });
 });

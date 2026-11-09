@@ -344,6 +344,16 @@ describe('WatchItBuiltPlayer clock', () => {
     }
   });
 
+  it('plays under StrictMode: the dev remount begins again after its teardown', () => {
+    editor();
+    render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />, {
+      reactStrictMode: true,
+    });
+    expect(replayStore.get().active).toBe(true);
+    expect(document.documentElement.hasAttribute('data-replay')).toBe(true);
+    expect(telemetry.state.paused).toBe(true);
+  });
+
   it('leaves nothing behind when it unmounts mid-run', () => {
     editor();
     const { unmount } = render(

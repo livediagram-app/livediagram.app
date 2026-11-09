@@ -24,6 +24,7 @@ export function LayersThemeStrip({
   tidyUp,
   layers,
   onOpenTheme,
+  themeOpen = false,
 }: {
   // The Tidy Up button: its popover's state and toggle. Absent, the strip has none.
   tidyUp?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
@@ -31,6 +32,9 @@ export function LayersThemeStrip({
   layers?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
   // The Theme & canvas button. Absent, the strip has none.
   onOpenTheme?: (() => void) | undefined;
+  // The Tab Style dialog is open. The button says so (`aria-expanded`), as Tidy Up and Layers do for their popovers,
+  // which is also what the guest sign-in banner steps aside for (sign-in-encouragement.md).
+  themeOpen?: boolean;
 }) {
   const named = useDockNames();
   if (!tidyUp && !layers && !onOpenTheme) return null;
@@ -71,6 +75,7 @@ export function LayersThemeStrip({
             onPointerDown={(e) => e.stopPropagation()}
             onClick={onOpenTheme}
             aria-label="Theme and canvas"
+            aria-expanded={themeOpen}
             className={`flex h-11 items-center justify-center transition ${
               named ? 'gap-2 px-3.5 text-sm font-medium' : 'w-11'
             } ${layers || tidyUp ? 'border-l border-slate-100 dark:border-slate-800' : ''} ${CLUSTER_CONTROL_REST}`}

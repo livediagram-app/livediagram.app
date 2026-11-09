@@ -129,6 +129,18 @@ describe('previews on liveworkspace.app', () => {
     expect(commits).toBeLessThan(items.length * 4);
     view.unmount();
   });
+
+  it('draws the item icon, not a blank box, when there is no picture (404 or 503)', async () => {
+    const fetch = vi.fn(
+      async (url: string) => new Response('', { status: url.includes('/gone') ? 404 : 503 }),
+    );
+    vi.stubGlobal('fetch', fetch);
+    const view = mountPreviews([item({ id: 'gone' }), item({ id: 'down' })]);
+    await until(() => view.fallbacks() === 2);
+    expect(view.images()).toBe(0);
+    expect(view.host.querySelectorAll('[data-preview-fallback] svg')).toHaveLength(2);
+    view.unmount();
+  });
 });
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -149,7 +161,9 @@ function mountPreviews(items: Item[], onCommit?: () => void) {
     ),
   );
   return {
+    host,
     images: () => host.querySelectorAll('img').length,
+    fallbacks: () => host.querySelectorAll('[data-preview-fallback]').length,
     unmount: () => {
       act(() => root.unmount());
       host.remove();

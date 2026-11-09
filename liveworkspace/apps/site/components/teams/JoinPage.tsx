@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { accountApi, errorMessage, type JoinPreview } from '@/lib/account-api';
 import { signInHref, signUpHref } from '@/lib/accounts';
-import { joinTokenFrom, memberCountLabel, teamPath, INVITES_PATH } from '@/lib/teams';
+import { isolatedName, joinTokenFrom, memberCountLabel, teamPath, INVITES_PATH } from '@/lib/teams';
 import { Footer } from '../Footer';
 import { Header } from '../Header';
 import { Button } from '@liveworkspace/ui';
@@ -98,7 +98,7 @@ export function JoinPage() {
             You’re invited to join
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight break-words text-slate-900 dark:text-white">
-            {state.preview.teamName}
+            <bdi>{state.preview.teamName}</bdi>
           </h1>
           {/* The organisation is someone's typing, isolated so its direction never turns the count around. */}
           <p className="mt-2 text-slate-600 dark:text-slate-400">
@@ -121,7 +121,7 @@ export function JoinPage() {
                 className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}
                 onClick={() => void join()}
               >
-                {busy ? 'Joining…' : `Join ${state.preview.teamName}`}
+                {busy ? 'Joining…' : `Join ${isolatedName(state.preview.teamName)}`}
               </Button>
               <a
                 href={INVITES_PATH}
@@ -162,10 +162,12 @@ export function JoinPage() {
   );
 }
 
-// The frame of the join and decline pages: the site's header and footer around one centred card.
+// The frame of the join and decline pages (and the Drive pages): the site's header and footer around one centred
+// card. A column at least the window's height, so the card's main takes the room left and the footer sits at the
+// foot of the window rather than halfway up it with bare page below.
 export function JoinShell({ children }: { children: ReactNode }) {
   return (
-    <>
+    <div data-join-shell="" className="flex min-h-dvh flex-col">
       <Header />
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-4 py-16 sm:px-6 sm:py-24">
         <div className="rounded-3xl border border-slate-200 bg-white px-6 py-10 shadow-xl shadow-slate-900/5 sm:px-10 sm:py-12 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30">
@@ -173,7 +175,7 @@ export function JoinShell({ children }: { children: ReactNode }) {
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
 

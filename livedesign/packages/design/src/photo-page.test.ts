@@ -216,4 +216,21 @@ describe('a photo page in exports', () => {
     expect(none).toContain('-checker');
     expect(pageExportFrame(page).transparent).toBe(true);
   });
+
+  // docs/specs/031-photo/photo-pages.md "Background": the checkerboard of a view in dark chrome is slate-900 and
+  // slate-800, so a Contents picture of an empty photo matches the dark canvas rather than glaring white.
+  it('draws the checkerboard in the paper it is drawn on', async () => {
+    const { pageExportFrame } = await import('./index');
+    const page = {
+      ...newPhotoPage('ph', 400, 200),
+      index: 0,
+      rect: { x: 0, y: 0, width: 400, height: 200 },
+    };
+    const light = pageExportFrame(page).backgroundSvg;
+    expect(light).toContain('fill="#ffffff"');
+    const dark = pageExportFrame(page, { paper: '#0f172a' }).backgroundSvg;
+    expect(dark).toContain('fill="#0f172a"');
+    expect(dark).toContain('fill="#1e293b"');
+    expect(dark).not.toContain('fill="#ffffff"');
+  });
 });

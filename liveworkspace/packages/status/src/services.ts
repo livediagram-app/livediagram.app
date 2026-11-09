@@ -8,6 +8,7 @@ import {
   APP_SITES,
   LOCAL_PORTS,
   PLATFORM_SITE,
+  possessive,
   type Site,
   type SiteId,
 } from '@liveworkspace/sites';
@@ -244,7 +245,7 @@ export function appGroup(site: Site, env: StatusEnvironment): ServiceGroup {
     {
       id: `${g}:marketing`,
       name: 'Marketing site',
-      description: `${site.name}’s home page, features, comparisons and FAQ.`,
+      description: `${possessive(site.name)} home page, features, comparisons and FAQ.`,
       icon: 'megaphone',
       label: 'HEAD /robots.txt',
       check: reach(`${origin}/robots.txt`),
