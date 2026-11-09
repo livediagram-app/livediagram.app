@@ -544,3 +544,24 @@ describe('delete_design on a design already in the Trash', () => {
     expect(result.content[0]!.text).toContain('already in the Trash');
   });
 });
+
+describe('a tab given both a template and elements', () => {
+  const box = { id: 'b1', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 60 };
+
+  it('is refused on add_tab and create_design, rather than built with its elements dropped', async () => {
+    const { registered } = harness('ok');
+    const tool = (name: string) => registered.find((r) => r.name === name)!;
+    const added = (await tool('add_tab').handler(
+      { designId: 'd_1', name: 'Logo', template: 'blank-logo', elements: [box] },
+      AUTHED,
+    )) as { isError?: boolean; content: { text: string }[] };
+    expect(added.isError).toBe(true);
+    expect(added.content[0]!.text).toContain('not both');
+    const created = (await tool('create_design').handler(
+      { name: 'A design', tabs: [{ name: 'Logo', template: 'blank-logo', elements: [box] }] },
+      AUTHED,
+    )) as { isError?: boolean; content: { text: string }[] };
+    expect(created.isError).toBe(true);
+    expect(created.content[0]!.text).toContain('Tab "Logo"');
+  });
+});
