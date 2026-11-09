@@ -2,6 +2,7 @@
 // its main's elements placed in its box, overrides applied, and a tab with every instance expanded for an export.
 // Pure and linear: one pass over the main's elements per instance, one lookup per instance.
 import type { ArrowElement, Endpoint } from './arrow-types';
+import { isPointerTip } from './pointer-note';
 import type { BoxedElement, Element, ShapeElement } from './index';
 import {
   INSTANCE_ID_SEPARATOR,
@@ -159,6 +160,8 @@ export function resolveInstance(
     const at = { x: ix + boxed.x * sx, y: iy + boxed.y * sy };
     const c = rotateAbout({ x: at.x + w / 2, y: at.y + h / 2 }, centre, deg);
     const rotation = (boxed.rotation ?? 0) + deg;
+    // A pointer note's tip is an offset from its top-left: a position, so it scales with the box.
+    const tip = (boxed as { pointerTip?: unknown }).pointerTip;
     const placed = {
       ...boxed,
       ...common,
@@ -166,6 +169,7 @@ export function resolveInstance(
       y: c.y - h / 2,
       width: w,
       height: h,
+      ...(isPointerTip(tip) ? { pointerTip: { x: tip.x * sx, y: tip.y * sy } } : {}),
       ...(rotation ? { rotation } : {}),
       ...(attachedRef(boxed, idOf) ?? {}),
     } as BoxedElement;
