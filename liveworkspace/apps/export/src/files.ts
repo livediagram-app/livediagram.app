@@ -57,14 +57,23 @@ export function tabsOfEnvelope(text: string): { id: string; name: string }[] {
   return [];
 }
 
-/** A list of names made unique by numbering the repeats (`Sprint`, `Sprint 2`), case-insensitively. */
+/** A list of names made unique by numbering the repeats (`Sprint`, `Sprint 2`), case-insensitively. Every name given
+ *  out is held, so a numbered one never lands on a name the list has as well (`Sprint`, `Sprint`, `Sprint 2` is
+ *  `Sprint`, `Sprint 2`, `Sprint 2 2`): two files of one name in a zip, and one is lost on unzipping. */
 export function uniqueNames(names: readonly string[]): string[] {
   const seen = new Map<string, number>();
+  const taken = new Set<string>();
   return names.map((name) => {
     const key = name.toLowerCase();
-    const count = (seen.get(key) ?? 0) + 1;
+    let count = seen.get(key) ?? 0;
+    let out: string;
+    do {
+      count += 1;
+      out = count === 1 ? name : `${name} ${count}`;
+    } while (taken.has(out.toLowerCase()));
     seen.set(key, count);
-    return count === 1 ? name : `${name} ${count}`;
+    taken.add(out.toLowerCase());
+    return out;
   });
 }
 

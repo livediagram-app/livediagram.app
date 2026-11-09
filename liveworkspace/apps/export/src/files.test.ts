@@ -61,6 +61,19 @@ describe('names', () => {
     ]);
   });
 
+  it('never numbers one onto a name the list has too', () => {
+    expect(uniqueNames(['Sprint', 'Sprint', 'Sprint 2'])).toEqual([
+      'Sprint',
+      'Sprint 2',
+      'Sprint 2 2',
+    ]);
+    expect(uniqueNames(['Sprint 2', 'Sprint', 'sprint'])).toEqual([
+      'Sprint 2',
+      'Sprint',
+      'sprint 3',
+    ]);
+  });
+
   it('numbers pictures in order, wider past 99', () => {
     expect(pictureNames([{ name: 'Main' }, { name: '' }])).toEqual(['01 Main.png', '02 Tab.png']);
     expect(pictureNames(Array.from({ length: 100 }, () => ({ name: 'T' })))[0]).toBe('001 T.png');
