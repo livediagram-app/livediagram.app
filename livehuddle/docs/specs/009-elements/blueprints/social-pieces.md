@@ -23,6 +23,7 @@ Derived from [Social pieces](../social-pieces.md).
 | `apps/editor/components/canvas/collab/PondView.tsx`              | The pond at its own size                                                                                         |
 | `apps/editor/components/canvas/collab/useSocialPieces.ts`        | Which jukebox's area you stand in, the Insert Coin bubble, the audio element                                     |
 | `apps/editor/lib/minute-clock.ts`                                | The one shared minute timer (`useMinuteNow`)                                                                     |
+| `apps/editor/lib/zone-time.ts`                                   | `zoneTime` (a zone's wall time and day shift), `typedClockZone` (Add Zone's input as the browser's own name)     |
 | `apps/editor/lib/jukebox-listening.ts`                           | The viewer's off / on / muted choice (this device), the shared audio element                                     |
 | `apps/editor/components/palette/SocialMenuSections.tsx`          | `WorldClockMenuSection`, `JukeboxMenuSection`                                                                    |
 | `apps/editor/app/social-motion.css`                              | The CSS loops, none under reduced motion                                                                         |

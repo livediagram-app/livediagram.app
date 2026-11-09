@@ -7,10 +7,8 @@ import { useId, useMemo, useState, type KeyboardEvent } from 'react';
 import {
   CLOCK_LABEL_MAX,
   CLOCK_ZONES_MAX,
-  isClockZone,
   isJukeboxSource,
   JUKEBOX_SOURCE_MAX,
-  zoneCityLabel,
   type ClockZone,
   type ShapeElement,
 } from '@livehuddle/document';
@@ -18,6 +16,7 @@ import { MenuAccordionSection } from '@liveworkspace/workbench/components/primit
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { Tooltip } from '@livehuddle/ui';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { typedClockZone } from '@/lib/zone-time';
 
 type SectionProps = (id: string) => { open: boolean; onToggle: () => void };
 
@@ -49,15 +48,6 @@ function knownZones(): string[] {
   }
 }
 
-function zoneKnown(zone: string): boolean {
-  try {
-    new Intl.DateTimeFormat(undefined, { timeZone: zone });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export function WorldClockMenuSection({
   target,
   sectionProps,
@@ -74,9 +64,8 @@ export function WorldClockMenuSection({
   const suggestions = useMemo(() => knownZones(), []);
   const full = zones.length >= CLOCK_ZONES_MAX;
   const add = () => {
-    const z = zone.trim().replace(/ /g, '_');
-    const next = { zone: z, label: zoneCityLabel(z) };
-    if (!z || full || !isClockZone(next) || !zoneKnown(z)) {
+    const next = typedClockZone(zone);
+    if (!next || full) {
       setError(true);
       return;
     }
