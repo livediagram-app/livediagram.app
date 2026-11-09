@@ -683,7 +683,12 @@ They come in groups, a short hairline between, read left to right: **how the pag
 page's Mirror and Guides, a photo page's controls, a device frame, Layout, Background), then **the
 page itself** (its lock, then its cog), last at the corner. A group with nothing to show is left out
 with its hairline. The label beside it shows the page's name in the label's strong ink and the rest
-muted, so the name reads first.
+muted, so the name reads first. **The label wears the same card** (`PageLabelCard`,
+`../packages/workbench/src/components/canvas/PageLabelCard.tsx`, shared with livedocuments): its text on the
+bar's near-solid white card (dark in dark mode), hairline border and soft shadow, as tall as the bar, so it
+reads over whatever is behind it, the canvas or another page, and the two read as a pair. One press target
+inside it, quiet until hovered as the bar's buttons are; a name too long for its room truncates and the
+label's hover card says it whole. No backdrop blur, as on the bar.
 
 **On a phone, fewer buttons.** A phone (the mobile viewport) has no room for a row of small controls, so its bar is
 simplified, each button a 44 px touch target and its icon alone but Appearance:

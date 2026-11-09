@@ -12,6 +12,7 @@ import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
 import { LogoTitleBar } from './LogoTitleBar';
 import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { PageCog, PageTitleBar } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
+import { PageLabelCard } from '@liveworkspace/workbench/components/canvas/PageLabelCard';
 import { PageBackgroundButton } from './PageBackgroundButton';
 import { appearanceRows, PageAppearanceButton } from './PageAppearanceButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
@@ -35,7 +36,7 @@ import {
   pageUnits,
   type LaidOutPage,
 } from '@livedesign/design';
-import { HoverCard, lucideGlyph, Tooltip } from '@livedesign/ui';
+import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { PageLayoutPreview } from './PageLayoutPreview';
 import {
@@ -339,36 +340,16 @@ export function CanvasPages({
                 ...steady(zoom, 'bottom left'),
               }}
             >
-              <HoverCard
-                title={label}
-                description="Press to fit this page to the screen."
-                className="min-w-0 max-w-full"
-              >
-                <button
-                  type="button"
-                  // The Pages tour's anchor (docs/specs/007-editor/pages-tour.md); the first page's leads.
-                  data-tour-id="page-name"
-                  {...drag.handlers(page.id)}
-                  onClick={() => {
-                    if (!drag.endsDrag()) goToPage(page);
-                  }}
-                  onDoubleClick={(e) => e.stopPropagation()}
-                  className={`group/label pointer-events-auto block max-w-full truncate whitespace-nowrap rounded-md px-1.5 py-1 text-xs text-slate-500 transition hover:bg-white/80 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800/80 ${
-                    edit && reorderable ? 'cursor-grab active:cursor-grabbing' : ''
-                  }`}
-                >
-                  {/* Its name leads, the size and kind after it quieter, so a row of pages scans by name. */}
-                  {labelParts.name ? (
-                    <span className="font-semibold text-slate-700 group-hover/label:text-slate-900 dark:text-slate-200 dark:group-hover/label:text-white">
-                      {labelParts.name}
-                    </span>
-                  ) : null}
-                  {labelParts.name && labelParts.rest ? ' · ' : null}
-                  <span className="font-medium group-hover/label:text-slate-600 dark:group-hover/label:text-slate-300">
-                    {labelParts.rest}
-                  </span>
-                </button>
-              </HoverCard>
+              <PageLabelCard
+                label={label}
+                name={labelParts.name}
+                rest={labelParts.rest}
+                grab={!!edit && reorderable}
+                {...drag.handlers(page.id)}
+                onClick={() => {
+                  if (!drag.endsDrag()) goToPage(page);
+                }}
+              />
             </div>
             {edit ? (
               <div
