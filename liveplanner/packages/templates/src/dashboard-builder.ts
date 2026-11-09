@@ -157,8 +157,14 @@ export function buildDashboardTab(
 ): { tab: Tab; dropped: number } {
   const views = dashboardViewElements(spec);
   const { dashboard, dropped } = dashboardLayoutOf(spec, views, tabId);
+  // Only the views a kept row places: one in a row left off would stay on the tab, unseen and counted.
+  const placed = new Set<string>();
+  for (const row of dashboard?.rows ?? [])
+    for (const slot of row.slots)
+      if (slot.content?.type === 'element') placed.add(slot.content.elementId);
+  const elements = [...views.metrics, ...views.charts].filter((el) => placed.has(el.id));
   const tab = stampTabKind({
-    ...buildTab(tabId, name, [...views.metrics, ...views.charts], 'preserve', themeId),
+    ...buildTab(tabId, name, elements, 'preserve', themeId),
     kind: 'dashboard' as const,
     ...(dashboard ? { dashboard } : {}),
   });
