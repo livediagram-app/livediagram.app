@@ -183,6 +183,11 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
 `CLEAN`, `SUBSTITUTE`, `REPLACE`, `FIND`, `SEARCH`, `REPT`, `EXACT`, `TEXT`, `VALUE`, `CHAR`, `CODE`, `SPLIT`,
 `JOIN`, `REGEXMATCH`, `REGEXEXTRACT`, `REGEXREPLACE`, `HYPERLINK`.
 
+- Text positions and lengths count UTF-16 code units, as Google Sheets does: an emoji or another character outside
+  the Basic Multilingual Plane is 2 (`LEN("😀a")` is 3). `LEN`, `LEFT`, `RIGHT`, `MID`, `REPLACE`, `FIND` and
+  `SEARCH` all count the same way, so `MID(t, FIND(x, t), n)` starts at `x` whatever comes before it. A fractional
+  position, count or `SUBSTITUTE` instance number is truncated (`SUBSTITUTE(t, "-", "+", 2.7)` replaces the 2nd),
+  and `SUBSTITUTE`'s instances never overlap (the 2nd `"aa"` in `"aaaa"` starts at the 3rd character).
 - `SPLIT` reads each part as Google Sheets does: one that reads as a number (or a percentage) is that number, and one
   written as an ISO date, `YYYY-MM-DD` (a time after it allowed, `2026-10-26 12:00`), is that date. Other
   date-looking text (`26/10/2026`, `Oct 26 2026`, `2026-1-5`) stays text, as its day and month read differently by
