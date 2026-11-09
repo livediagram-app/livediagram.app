@@ -5,6 +5,8 @@
 // the box and a place on a page. Pure.
 import {
   ARTICLE_TOP_MIN_PX,
+  ARTICLE_ZONE_MAX,
+  articleHeaderBandPx,
   articleMarginPx,
   PAGE_GAP,
   type ArticleStyle,
@@ -78,14 +80,20 @@ export function pagePlaceOf(
  *  page's column at Normal margins. */
 const ARTICLE_FALLBACK_TEXT_WIDTH = 600;
 
-/** An article's text width (one column), from its pages laid out among `pages`. */
-export function articleTextWidth(
+/** An article's text area (one column's width and height, a header's band taken off the top as the
+ *  writing's own frame takes it), from its pages laid out among `pages`. Before it has pages: the
+ *  fallback width, and no height but the tallest zone's. */
+export function articleTextBox(
   pages: readonly LaidOutPage[],
   flow: string,
   style: ArticleStyle | undefined,
-): number {
+): { width: number; height: number } {
   const own = pages.filter((p) => p.flow === flow);
-  return own.length
-    ? flowFrame(own, articleMarginPx(style)).columnWidth
-    : ARTICLE_FALLBACK_TEXT_WIDTH;
+  if (!own.length) return { width: ARTICLE_FALLBACK_TEXT_WIDTH, height: ARTICLE_ZONE_MAX };
+  const frame = flowFrame(
+    own,
+    articleMarginPx(style),
+    ARTICLE_TOP_MIN_PX + articleHeaderBandPx(style),
+  );
+  return { width: frame.columnWidth, height: frame.height };
 }

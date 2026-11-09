@@ -89,11 +89,12 @@ export function zonePlanFor(
   added: readonly Element[],
   all: readonly Element[],
   textWidth: number,
+  textHeight: number = ARTICLE_ZONE_MAX,
 ): ZonePlan {
   const bounds = boundsOf(added, all);
   const single = added.length === 1 ? added[0]! : null;
   if (single && isBoxed(single) && !isDrawingElement(single)) {
-    const scale = objectZoneScale(single, textWidth);
+    const scale = objectZoneScale(single, textWidth, textHeight);
     return {
       zone: 'object',
       width: zoneSide(single.width * scale),
@@ -104,17 +105,30 @@ export function zonePlanFor(
   }
   const width = Math.round(textWidth);
   const height = Math.round(
-    Math.max(ARTICLE_DRAWING_MIN_HEIGHT, bounds.height + 2 * ARTICLE_DRAWING_PAD),
+    Math.min(
+      zoneHeightMax(textHeight),
+      Math.max(ARTICLE_DRAWING_MIN_HEIGHT, bounds.height + 2 * ARTICLE_DRAWING_PAD),
+    ),
   );
   const scale = Math.min(1, (width - 2 * ARTICLE_DRAWING_PAD) / bounds.width);
   return { zone: 'drawing', width, height, bounds, scale };
 }
 
-/** How much an object is scaled to sit in its zone: never past the text width, nor past the tallest a zone is
- *  (ARTICLE_ZONE_MAX, which a stored zone is read back within), so a tall picture never runs over the writing
- *  after it. Never grown. */
-function objectZoneScale(obj: { width: number; height: number }, textWidth: number): number {
-  return Math.min(1, textWidth / obj.width, ARTICLE_ZONE_MAX / obj.height);
+/** How much an object is scaled to sit in its zone: never past the text width, nor past the text area's height
+ *  or the tallest a zone is (ARTICLE_ZONE_MAX, which a stored zone is read back within), so a tall picture never
+ *  runs over the writing after it or off its page. Never grown. */
+function objectZoneScale(
+  obj: { width: number; height: number },
+  textWidth: number,
+  textHeight: number,
+): number {
+  return Math.min(1, textWidth / obj.width, zoneHeightMax(textHeight) / obj.height);
+}
+
+/** The tallest a zone may be: one page's text area (a taller one could never sit on a page), never past
+ *  ARTICLE_ZONE_MAX. */
+export function zoneHeightMax(textHeight: number = ARTICLE_ZONE_MAX): number {
+  return Math.max(ARTICLE_ZONE_MIN, Math.min(ARTICLE_ZONE_MAX, Math.floor(textHeight)));
 }
 
 /** A zone's side as the writing stores it (parseArticleBlock's bounds), so a fitted zone reads back the same. */
@@ -209,7 +223,12 @@ type ArticlesTab = Pick<Tab, 'elements'> & { pages?: unknown; articles?: unknown
  * the text width) to keep its elements inside with ARTICLE_DRAWING_PAD to spare, and never shrinks past
  * them. The same tab back when nothing changes.
  */
-export function withZonesFitted<T extends ArticlesTab>(tab: T, flow: string, textWidth: number): T {
+export function withZonesFitted<T extends ArticlesTab>(
+  tab: T,
+  flow: string,
+  textWidth: number,
+  textHeight: number = ARTICLE_ZONE_MAX,
+): T {
   const doc = articlesOf(tab)[flow];
   if (!doc) return tab;
   const pages = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
@@ -233,7 +252,7 @@ export function withZonesFitted<T extends ArticlesTab>(tab: T, flow: string, tex
         changed = true;
         continue;
       }
-      const scale = objectZoneScale(obj, textWidth);
+      const scale = objectZoneScale(obj, textWidth, textHeight);
       const width = Math.round(obj.width * scale);
       const height = Math.round(obj.height * scale);
       // The zone as the writing stores it: never past the bounds a stored zone is read back within.
@@ -261,8 +280,12 @@ export function withZonesFitted<T extends ArticlesTab>(tab: T, flow: string, tex
     const width = Math.round(
       Math.min(textWidth, Math.max(b.width, box.x + box.width + ARTICLE_DRAWING_PAD - rect.x)),
     );
+    // Grown to keep its elements, but never past what a page holds (nor what a stored zone reads back as).
     const height = Math.round(
-      Math.max(b.height, box.y + box.height + ARTICLE_DRAWING_PAD - rect.y),
+      Math.min(
+        Math.max(b.height, zoneHeightMax(textHeight)),
+        Math.max(b.height, box.y + box.height + ARTICLE_DRAWING_PAD - rect.y),
+      ),
     );
     if (width !== b.width || height !== b.height) {
       blocks.push({ ...b, width, height });
@@ -440,6 +463,7 @@ export function withZoneSize<T extends ArticlesTab>(
   zoneId: string,
   size: { width?: number; height?: number },
   textWidth: number,
+  textHeight: number = ARTICLE_ZONE_MAX,
 ): T {
   const doc = articlesOf(tab)[flow];
   const zone = doc?.blocks.find((b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone');
@@ -462,7 +486,7 @@ export function withZoneSize<T extends ArticlesTab>(
   const height =
     size.height === undefined
       ? zone.height
-      : Math.round(Math.min(ARTICLE_ZONE_MAX, Math.max(leastH, size.height)));
+      : Math.round(Math.min(zoneHeightMax(textHeight), Math.max(leastH, size.height)));
   const width =
     size.width === undefined
       ? zone.width

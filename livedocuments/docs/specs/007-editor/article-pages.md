@@ -277,15 +277,16 @@ laid out with it, holding ordinary canvas elements that move with it.
 - **Object zone** (`zone: 'object'`): one element (an image, a chart, a table, a code element, a
   video, an icon, a sticker, a sticky note, a component), the zone hugging it exactly, with no
   boundary of its own. Resizing the element
-  resizes the zone. The element is never wider than the text nor taller than the tallest zone
-  (`ARTICLE_ZONE_MAX`, 2,000 px): one past either is scaled down to fit, keeping its shape, so a
-  tall picture (a phone screenshot) never runs over the writing after it.
+  resizes the zone. The element is never wider than the text nor taller than a page's text area
+  (and never past the tallest zone, `ARTICLE_ZONE_MAX`, 2,000 px): one past either is scaled down to fit,
+  keeping its shape, so a tall picture (a phone screenshot) always sits whole on a page and never runs over
+  the writing after it.
 - **Drawing zone** (`zone: 'drawing'`): an area of the page for shapes, text labels
   and the arrows between them, worked on with the canvas's own tools. It is a size of its own (by
   default the text width x 240 px) with grips on its bottom edge (taller or shorter), its right
   edge (wider or narrower, up to the text width, a wrapped zone two thirds of it) and its
   bottom-right corner (both); it grows to keep its elements inside it with 24 px to spare, and never
-  shrinks past them. Each grip is a focus stop: the arrow keys grow or shrink the zone a step
+  shrinks past them. It is never taller than a page's text area, by its grips or by growing. Each grip is a focus stop: the arrow keys grow or shrink the zone a step
   (Shift: ten steps), one edit each; Escape during a grip drag puts the zone back as it was.
 - **An object in the writing connects to nothing**: no quick-connect pluses show on an element of
   an article page that is not a drawing element.
