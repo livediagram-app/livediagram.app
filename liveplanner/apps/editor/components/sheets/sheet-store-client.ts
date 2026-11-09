@@ -537,8 +537,8 @@ export class SheetStore {
     return null;
   }
 
-  // Rows or columns deleted from a sheet shrink the ranges into it held by the tab's other loaded sheets (formulas.md
-  // "Other sheets"), in the same change, so one undo puts them back; the api shrinks them too, for writers that are not
+  // Rows or columns deleted from a sheet shrink the ranges into it held by the tab's other loaded sheets, and a sort
+  // keeps them on their rows (formulas.md "Other sheets"), in the same change, so one undo puts them back; the api shrinks them too, for writers that are not
   // an editor (and finds nothing left to do after this). Linear in the tab's formula references.
   private withReaders(
     edits: readonly { sheetId: string; write: SheetWrite }[],
@@ -547,7 +547,16 @@ export class SheetStore {
     const named = new Set(edits.map((e) => e.sheetId));
     for (const { sheetId, write } of edits) {
       if (write.kind !== 'layout') continue;
-      if (!write.changes.some((c) => c.k === 'deleteRows' || c.k === 'deleteCols')) continue;
+      if (
+        !write.changes.some(
+          (c) =>
+            c.k === 'deleteRows' ||
+            c.k === 'deleteCols' ||
+            c.k === 'orderRows' ||
+            c.k === 'orderCols',
+        )
+      )
+        continue;
       const target = this.entries.get(sheetId)?.view;
       if (!target) continue;
       for (const [id, entry] of this.entries) {

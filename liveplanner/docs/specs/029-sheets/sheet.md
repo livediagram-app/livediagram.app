@@ -607,6 +607,9 @@ coloured in one theme reads in the other (`@liveplanner/project` `cellColours`):
 - Order: numbers ascending, then text (ignoring case), then true/false, then errors, then empty cells last, both
   ways.
 - A sort moves whole rows, formats with them. A formula moved with its row keeps pointing at its own row's cells.
+- A range over more than one sorted row stays on those rows, as in Google Sheets and Excel: `=SUM(C5:C12)` still
+  reads C5:C12 after a sort, wherever its rows went, in any sheet on the tab. So do named ranges, validation rules and
+  conditional formatting ranges. A single cell, or a range within one row (`=SUM(B5:D5)`), moves with its row.
 - A sort is one change, undone in one step.
 - A sort over rows a merge spans (a merge of more than one row: Merge Cells down, not Merge Across) is refused, as in
   Google Sheets and Excel, with "Unmerge the cells that span rows before sorting.": moving its rows apart would
