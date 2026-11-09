@@ -116,6 +116,11 @@ describe('the size a root tag states', () => {
       ),
     ).toEqual({ width: 0.5, height: 12.5 });
     expect(statedSize('<svg width="1234.567" height="3">')?.width).toBe(Math.fround(1234.567));
+    expect(
+      statedSize(
+        `<?xml?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"><!-- one -->\t<!-- two --><svg\twidth = "7." height="8">`,
+      ),
+    ).toEqual({ width: 7, height: 8 });
   });
 
   it('leaves to resvg any size it would read another way', () => {
@@ -131,8 +136,34 @@ describe('the size a root tag states', () => {
       '<svgx width="200" height="80"/>',
       `${' '.repeat(5000)}<svg width="200" height="80"/>`,
       'no svg',
+      '<!-- open<svg width="200" height="80"/>',
+      '<?xml version="1.0"<svg width="200" height="80"/>',
+      '<?xml version="1.0"><svg width="200" height="80"/>',
+      '<?xml><svg width="200" height="80"/>',
+      '<!-- x --><?xml?><svg width="200" height="80"/>',
+      '<!DOCTYPE svg [<!ENTITY w "200">]><svg width="200" height="80"/>',
+      '<!DOCTYPE svg<svg width="200" height="80"/>',
+      '<!DOCTYPE a><!DOCTYPE b><svg width="200" height="80"/>',
+      'text<svg width="200" height="80"/>',
+      '<svg width=200 height="80"/>',
+      '<svg disabled width="200" height="80"/>',
+      '<svg width="200" height="80',
+      '<svg width="200"height="80"/>',
     ])
       expect(statedSize(svg), svg).toBeNull();
+  });
+
+  // The worst cases for the patterns this replaced: exponential on `--><!--`, polynomial on tabs and zeros.
+  it('reads hostile prologues and attributes in one pass', () => {
+    const started = process.cpuUsage();
+    for (const svg of [
+      `<!--${'--><!--'.repeat(600)}<svg width="200" height="80"/>`,
+      `<svg${'\t'.repeat(100_000)}`,
+      `<svg width="0${'00'.repeat(100_000)}x" height="80"/>`,
+    ])
+      expect(statedSize(svg), svg).toBeNull();
+    const { user, system } = process.cpuUsage(started);
+    expect((user + system) / 1000).toBeLessThan(500);
   });
 });
 
