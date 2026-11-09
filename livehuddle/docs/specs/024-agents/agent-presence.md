@@ -52,6 +52,8 @@ presence as that person's agent, and comments are how people and agents talk on 
 - An agent comments through the comment endpoints; the comment's author is the token's owner.
 - The comment endpoints gain **reply**, **resolve** and **reopen** (today only add and delete exist), each relayed to
   the room as an `el-delta` like add. Agents and people use the same endpoints.
+- A thread holds at most 500 comments. An add or a reply to a full thread answers 409 `thread_full` and writes,
+  relays and emails nothing, so no caller is told a comment was posted that nobody stored.
 - An editor that may comment but not edit resolves and reopens through these endpoints, as it adds; an editor that
   may edit keeps the room and its save.
 - `GET /api/documents/:id/comments?status=open|resolved|all` lists threads across tabs with their element's ref and
@@ -66,9 +68,9 @@ as a share link: reading needs read access; comments, session answers and presen
 (`gateParticipate`); changesets need the edit gate. A participate token comments, takes part and sets presence and
 submits no changesets; a view token reads and writes nothing, comments and presence included.
 
-Until [share roles](../013-workspace/share-roles.md) are built, `gateParticipate` names today's rule: read access to
-the document or tab, as a view link may already comment, with a read-only token refused every write at the choke
-point. It becomes the Participant check when share roles land, and no route changes then.
+`gateParticipate` is the Participant check of [share roles](../013-workspace/share-roles.md): a token whose grant is
+a Viewer's sets and clears no presence (403), however its own level reads, since a status line and focus rings are
+put in front of everyone in the room. A read-only token is refused every write at the choke point.
 
 ## Limits
 
