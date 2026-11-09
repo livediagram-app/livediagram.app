@@ -124,7 +124,8 @@ Follows the spec's table. Precisely:
   (`title`, `subtitle`, `heading N`, `quote`, `intense quote`, a code name: `code`, `html preformatted`,
   `source code`, `macro text`), else an `w:outlineLvl` (0 is Heading 1), else the style id read as a name (no
   styles part).
-- List: `w:numPr` on the paragraph, else on its style chain; `numId` `0` is none; the level's `w:numFmt` (a
+- List: `w:numPr`'s `w:numId` and `w:ilvl`, each the paragraph's own, else its style chain's (a paragraph in a
+  list style may state only its level); `numId` `0` is none; the level's `w:numFmt` (a
   `w:num`'s `w:lvlOverride` with its own `w:lvl` first; an abstract numbering with no levels and a
   `w:numStyleLink`, as Word's built-in multilevel lists write, takes the levels of the numbering its numbering
   style names, at most 4 links deep):
@@ -155,19 +156,24 @@ Follows the spec's table. Precisely:
   "Contents".
 - Breaks: `w:br` `type="page"` ends the paragraph and adds a page break (the rest continues as a new paragraph of
   the same style); `w:pageBreakBefore` adds one before the paragraph; other `w:br` and `w:cr` are `\n`; `w:tab`
-  a space; `w:noBreakHyphen` `-`.
+  and `w:ptab` a space; `w:noBreakHyphen` `-`.
 - Pictures: `w:drawing` → `wp:inline` or `wp:anchor`, `wp:extent` (EMU) is its size, `wp:docPr` `descr` (else
   `title`) its alt text; `pic:pic` with `a:blip r:embed` is a picture (the paragraph splits round it), `r:link`
   is `linkedImages`; a chart `charts`, a diagram `diagrams`, a `wps`/`wpg` shape `textBoxes`. `w:pict`'s
-  `v:imagedata r:id` is a picture, a `v:textbox` `textBoxes`. `w:object` is `embedded`.
+  `v:imagedata r:id` is a picture, its size the `v:shape` style's `width` and `height` in `px` (no unit), `pt`,
+  `pc`, `in`, `cm` or `mm`, at 96 px to the inch (any other unit reads as 0); a `v:textbox` `textBoxes`.
+  `w:object` is `embedded`.
 - Footnotes: `readFootnotes` reads `word/footnotes.xml` (by the document's footnotes relationship) into a map of
   id to text, leaving out the separator notes (any with a `w:type`), each note's paragraphs joined by a space and
   passed through `cleanFootnoteText`; a `w:footnoteReference` whose id is in the map is a run `{ text: '*', fn }`.
+  A note's text is read as the body's is: `w:t`, `w:tab`, `w:br` and `w:cr` a space, `w:noBreakHyphen` `-`,
+  walking into the same containers, leaving out `w:del`, `w:moveFrom` and hidden runs (`runHidden`).
 - Counted: a `w:footnoteReference` with no note, `w:endnoteReference` (`footnotes`), `w:commentReference` (`comments`),
   `m:oMath` / `m:oMathPara` (`equations`), `w:altChunk` (`embedded`), a header or footer reference in any
   `w:sectPr` (`headersFooters`, once), each `w:tbl` (`tables`).
 - A table: a table block (`tableFromGrid`), each `w:tr` a row and each `w:tc` a cell, its paragraphs joined by
-  `\n`; rows and cells inside `w:sdt` / `w:sdtContent` and `w:customXml` are walked into. A row's
+  `\n`, a paragraph inside a `w:sdt` or `w:customXml` in the cell joined the same way; rows and cells inside
+  `w:sdt` / `w:sdtContent` and `w:customXml` are walked into. A row's
   `w:trPr/w:gridBefore` adds that many empty cells before its first, and a cell's `w:tcPr/w:gridSpan` that many
   less one empty cells after it (each bounded by `MAX_ARTICLE_TABLE_COLS`), so cells keep their grid columns; a
   `w:vMerge` continuation cell is empty in its own right. A first row with `w:tblHeader` (not `false` or `0`) is
@@ -205,11 +211,15 @@ Follows the spec's table. Precisely:
   shape's, layout's and master placeholder's `a:lstStyle`, else the master's `p:txStyles` for its type, else left;
   `a:bodyPr anchor` (`ctr` middle, `b` bottom, else top), inherited like the box.
 - Bold or italic when every run with text has `b="1"` / `i="1"`.
-- `p:pic`: a picture item (`a:srcRect` with any edge set: `cropped`); a picture carrying `a:videoFile` /
+- `p:pic`: a picture item, its box its own `a:xfrm`, else (a picture in a placeholder) its placeholder's on the
+  layout, else on the master, matched as a text placeholder is (`a:srcRect` with any edge set: `cropped`); a
+  picture carrying `a:videoFile` /
   `a:audioFile` / a media extension is `media`, not a picture; `r:link` `linkedImages`.
 - `p:grpSp`: its children mapped through `a:off`, `a:ext`, `a:chOff`, `a:chExt`.
 - `p:graphicFrame`: by `a:graphicData uri`: a table `tables`, a chart `charts`, a diagram `diagrams`, an OLE
   object `embedded`. `p:cxnSp`, `p:contentPart` and text-less `p:sp` (not a placeholder) are `shapes`.
+- Any shape, picture, group, frame or connector whose `p:cNvPr` has `hidden` `1` or `true` (hidden in the
+  Selection Pane) is left out with everything in it, and not counted.
 - Past `OFFICE_MAX_SLIDE_ITEMS` items on a slide the rest count `crowded`.
 - Notes: the `notesSlide` relationship's body placeholder's text, lines joined with `\n`, cut at
   `OFFICE_NOTES_MAX`.

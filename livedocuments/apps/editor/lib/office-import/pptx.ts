@@ -130,8 +130,16 @@ function pictureShape(pic: XmlElement, map: GroupMap, ctx: SlideContext): void {
     addSkip(ctx.tally, 'media');
     return;
   }
+  // A picture put into a placeholder has no box of its own: it sits in its layout's, then its master's, as text does.
   const own = boxOf(pic);
-  if (!own) return;
+  const ph = own ? undefined : placeholderOf(pic);
+  const box = own
+    ? map(own)
+    : ph
+      ? (boxOf(inheritedShape(spTreeOf(ctx.inherit.layout), ph, true)) ??
+        boxOf(inheritedShape(spTreeOf(ctx.inherit.master), ph, false)))
+      : undefined;
+  if (!box) return;
   const blipFill = child(pic, 'p:blipFill');
   const blip = child(blipFill, 'a:blip');
   const embed = blip?.attrs['r:embed'];
@@ -140,7 +148,6 @@ function pictureShape(pic: XmlElement, map: GroupMap, ctx: SlideContext): void {
     addSkip(ctx.tally, 'linkedImages');
     return;
   }
-  const box = map(own);
   const crop = child(blipFill, 'a:srcRect');
   const cropped = !!crop && ['l', 't', 'r', 'b'].some((k) => (intAttr(crop, k) ?? 0) !== 0);
   const cNvPr = path(pic, 'p:nvPicPr', 'p:cNvPr');
@@ -168,6 +175,8 @@ function graphicFrame(frame: XmlElement, ctx: SlideContext): void {
 
 function shapes(tree: XmlElement | undefined, map: GroupMap, ctx: SlideContext): void {
   for (const el of kids(tree)) {
+    // A shape hidden in PowerPoint's Selection Pane is neither shown nor printed: left out, as hidden text is.
+    if (isHiddenShape(el)) continue;
     switch (el.name) {
       case 'p:sp':
         textShape(el, map, ctx);
@@ -190,6 +199,13 @@ function shapes(tree: XmlElement | undefined, map: GroupMap, ctx: SlideContext):
         break;
     }
   }
+}
+
+/** Whether a shape's `p:cNvPr` (in its `p:nv…Pr`) has `hidden` set. */
+function isHiddenShape(el: XmlElement): boolean {
+  const nv = kids(el).find((c) => c.name.startsWith('p:nv'));
+  const hidden = child(nv, 'p:cNvPr')?.attrs.hidden;
+  return hidden === '1' || hidden === 'true';
 }
 
 /** A notes slide's body text, its lines joined, cut at OFFICE_NOTES_MAX. */

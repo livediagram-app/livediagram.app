@@ -83,6 +83,17 @@ describe('imagesAsLinks', () => {
     );
   });
 
+  it('keeps an image address with balanced parentheses whole, and leaves no stray `!`', () => {
+    const href = 'https://e.com/Mercury_(planet).jpg';
+    expect(imagesAsLinks(`![Mercury](${href}) and ![](${href})`)).toBe(
+      `[Mercury](${href}) and [${href}](${href})`,
+    );
+    const tab = buildTabFromMarkdown(`![Mercury](${href})`);
+    if (!tab.ok) throw new Error(tab.error);
+    const [doc] = Object.values(tab.tab.articles ?? {});
+    expect(doc!.blocks[0]).toMatchObject({ runs: [{ text: 'Mercury', href }] });
+  });
+
   it('leaves code as written: an inline span and a fence', () => {
     expect(imagesAsLinks('Write `![x](y)` for ![a](b)')).toBe('Write `![x](y)` for [a](b)');
     const fenced = '```md\n![x](y)\n```\n![a](b)';
@@ -114,7 +125,12 @@ describe('imagesAsLinks', () => {
 
   it('reads a worst-case line in a few ms of CPU', () => {
     const line = '!['.repeat(20_000) + '](' + '('.repeat(20_000) + '`'.repeat(5_000) + 'x';
-    const ms = cpuMsOf(() => imagesAsLinks(line));
+    // Images whose addresses open parentheses they never close, each one deep.
+    const opens = '![a](' + '(b'.repeat(20_000) + ' ' + '![a](b(c'.repeat(5_000);
+    const ms = cpuMsOf(() => {
+      imagesAsLinks(line);
+      expect(imagesAsLinks(opens)).toBe(opens);
+    });
     expect(ms).toBeLessThan(cpuBudgetMs(60));
   });
 });

@@ -498,4 +498,70 @@ describe('readDocx, footnotes', () => {
     // A reference to no footnote, and an endnote, are still left out and counted.
     expect(tally).toEqual({ footnotes: 2 });
   });
+
+  it('reads a footnote as the body is read: tabs a space, moved, deleted and hidden text left out', async () => {
+    const { blocks } = await read({
+      body: p(`${r('Body')}<w:r><w:footnoteReference w:id="3"/></w:r>`),
+      footnotes:
+        '<w:footnote w:id="3"><w:p><w:r><w:t>Q3</w:t><w:tab/><w:t>figures</w:t><w:noBreakHyphen/><w:t>only</w:t></w:r>' +
+        '<w:moveFrom><w:r><w:t> moved away</w:t></w:r></w:moveFrom><w:del><w:r><w:t> deleted</w:t></w:r></w:del>' +
+        '<w:r><w:rPr><w:vanish/></w:rPr><w:t> hidden</w:t></w:r>' +
+        '<w:moveTo><w:r><w:t> moved here</w:t></w:r></w:moveTo>' +
+        '<mc:AlternateContent><mc:Choice><w:r><w:t>.</w:t></w:r></mc:Choice><mc:Fallback><w:r><w:t>.</w:t></w:r></mc:Fallback></mc:AlternateContent>' +
+        '</w:p></w:footnote>',
+    });
+    const runs = (blocks[0] as Extract<ArticleBlock, { type: 'paragraph' }>).runs;
+    expect(runs[1]).toEqual({ text: '*', fn: 'Q3 figures-only moved here.' });
+  });
+});
+
+describe('readDocx, moved text, VML sizes and cell content controls', () => {
+  it('leaves text a tracked change moves away out of the body, at block and run level', async () => {
+    const { blocks } = await read({
+      body: [
+        p(`${r('Kept')}<w:moveFrom>${r(' gone')}</w:moveFrom><w:moveTo>${r(' here')}</w:moveTo>`),
+        `<w:moveFrom>${p(r('Moved paragraph'))}</w:moveFrom>`,
+      ].join(''),
+    });
+    expect(blocks.map(textOf)).toEqual(['Kept here']);
+  });
+
+  it('takes a list paragraph’s numbering and level each from its own, else its style’s, and a positional tab as a space', async () => {
+    const { blocks } = await read({
+      body: [
+        // The style gives the numbering, the paragraph only its level.
+        p(r('Top'), styled('ListBullet')),
+        p(r('Nested'), `${styled('ListBullet')}<w:numPr><w:ilvl w:val="1"/></w:numPr>`),
+        // Its own numbering with no level of its own takes level 0.
+        p(r('Numbered'), `${styled('ListBullet')}<w:numPr><w:numId w:val="2"/></w:numPr>`),
+        p(`${r('Name')}<w:r><w:ptab w:relativeTo="margin" w:alignment="right"/></w:r>${r('Page')}`),
+      ].join(''),
+    });
+    expect(blocks.map(kindOf)).toEqual(['bullet0', 'bullet1', 'numbered0', 'body']);
+    expect(blocks.map(textOf)).toEqual(['Top', 'Nested', 'Numbered', 'Name Page']);
+  });
+
+  it.each([
+    ['width:2in;height:72pt', 192, 96],
+    ['width:2.54cm;height:25.4mm', 96, 96],
+    ['position:absolute;width:6pc;height:50', 96, 50],
+    ['mso-width-percent:0;width:10em;height:20px', 0, 20],
+  ])('reads a VML picture sized %s as px', async (style, widthPx, heightPx) => {
+    const { blocks } = await read({
+      rels: [{ id: 'img', type: 'image', target: 'media/a.png' }],
+      body: p(
+        `<w:r><w:pict><v:shape style="${style}"><v:imagedata r:id="img"/></v:shape></w:pict></w:r>`,
+      ),
+    });
+    expect(blocks[0]).toMatchObject({ picture: { widthPx, heightPx } });
+  });
+
+  it('starts a cell paragraph inside a content control or custom XML on a new line', async () => {
+    const cell = (inner: string) => `<w:tc>${inner}</w:tc>`;
+    const { blocks } = await read({
+      body: `<w:tbl><w:tr>${cell(p(r('Name')) + `<w:sdt><w:sdtContent>${p(r('Ada'))}${p(r('Byron'))}</w:sdtContent></w:sdt>` + `<w:customXml>${p(r('Lovelace'))}</w:customXml>`)}</w:tr></w:tbl>`,
+    });
+    const table = blocks[0] as Extract<ArticleBlock, { type: 'table' }>;
+    expect(table.rows[0]!.cells[0]!.map((x) => x.text).join('')).toBe('Name\nAda\nByron\nLovelace');
+  });
 });

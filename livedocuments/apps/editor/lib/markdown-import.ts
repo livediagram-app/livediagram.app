@@ -72,8 +72,9 @@ export function buildTabFromMarkdown(
 // An image (`![alt](address)`) read as a link named by its alt text, the address when it has none
 // (docs/specs/020-import-export/markdown-import.md "What it reads"): the reader takes `!` as text, which left a
 // stray `!` before a link. Code (a fence, or an inline span) is left as written. Only the import reads it so.
-// Linear: the alt text stops at a `[` and the address at a `(`, so no start rescans what a later one will.
-const IMAGE = /!\[([^[\]\n]*)\]\(([^()\s]+)\)/y;
+// Its address may hold parentheses balanced one deep (`…/Mercury_(planet).jpg`), as a link's may. Linear: the alt text
+// stops at a `[` and the address at its first unbalanced `(`, so no start rescans what a later one will.
+const IMAGE = /!\[([^[\]\n]*)\]\(((?:[^()\s]|\([^()\s]*\))+)\)/y;
 
 export function imagesAsLinks(markdown: string): string {
   if (!markdown.includes('![')) return markdown;
