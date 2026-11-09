@@ -49,8 +49,10 @@ Three details it has to get right:
   element changed, added or deleted since the last save, judged against the save
   baseline by content, is applied to the fetched copy, as is each tab field
   changed here, including one cleared here (a look reset's font or finish), which
-  the fetched copy loses too. The next save then sends exactly those edits. A
-  reconnect after offline work keeps it.
+  the fetched copy loses too. An article's writing goes back block by block, as a
+  peer's article ops do: the blocks written here since the last save are applied to
+  the fetched article, so the blocks a peer wrote in the same article meanwhile stay.
+  The next save then sends exactly those edits. A reconnect after offline work keeps it.
 - **`lastSavedTabsRef` moves with it.** Otherwise the next autosave tick diffs
   fresh server content against a stale baseline and PUTs the pre-resync tabs
   straight back over it.
