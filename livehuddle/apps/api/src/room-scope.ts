@@ -6,12 +6,19 @@
 // withheld from, and refused from, a scoped session.
 
 // Ops that carry no tab and say nothing about one, which a scoped session
-// still receives: the worker's share-link and Trash notices.
-const TAB_LESS_DELIVERED = new Set(['share-revoked', 'share-rescoped', 'document-trashed']);
+// still receives: the worker's share-link and Trash notices, and a nudge, which names a person and is only ever
+// sent to that one session (docs/specs/012-collaboration/nudge.md "Share roles": anyone may be nudged).
+const TAB_LESS_DELIVERED = new Set([
+  'share-revoked',
+  'share-rescoped',
+  'document-trashed',
+  'nudge',
+]);
 
 // The tab-less ops a scoped session may itself send.
-// A follow (docs/specs/012-collaboration/follow-me-viewport.md) names a person, not a tab, so a scoped visitor may follow too.
-const TAB_LESS_SENDABLE = new Set(['follow']);
+// A follow (docs/specs/012-collaboration/follow-me-viewport.md) names a person, not a tab, so a scoped visitor may follow too,
+// and a nudge (nudge.md) names a person as well, so a scoped Participant may nudge; the role gate still drops a Viewer's.
+const TAB_LESS_SENDABLE = new Set(['follow', 'nudge']);
 
 type LooseOp = { kind?: unknown; tabId?: unknown; tabs?: unknown };
 
