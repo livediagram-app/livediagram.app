@@ -138,6 +138,25 @@ describe('applyEditOperations', () => {
   });
 
   describe('finalise', () => {
+    // docs/specs/009-elements/badge.md "The cap holds for agents".
+    it('refuses a badge label over 24 and a step label over 3, naming the element and the cap', () => {
+      const chip = { x: 400, y: 0, width: 40, height: 24 };
+      const badge = refused(
+        run([add({ id: 'b1', type: 'shape', shape: 'badge', label: 'x'.repeat(25), ...chip })]),
+      );
+      expect(badge.code).toBe('invalid_result');
+      expect(badge.details).toEqual(["b1 label: a badge's label is at most 24 characters"]);
+      expect(
+        refused(run([add({ id: 's1', type: 'shape', shape: 'step', label: '1234', ...chip })]))
+          .details,
+      ).toEqual(["s1 label: a step's label is at most 3 characters"]);
+      // At the cap is fine.
+      applied(
+        run([add({ id: 'b2', type: 'shape', shape: 'badge', label: 'x'.repeat(24), ...chip })]),
+      );
+      applied(run([add({ id: 's2', type: 'shape', shape: 'step', label: '12a', ...chip })]));
+    });
+
     it('coerces an off-vocabulary shape kind with a warning', () => {
       const outcome = run([add({ id: 'r', type: 'shape', shape: 'rectangle', ...box })]);
       expect(applied(outcome).tab.elements.at(-1)).toMatchObject({ shape: 'square' });

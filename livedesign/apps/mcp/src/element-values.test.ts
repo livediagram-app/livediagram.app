@@ -60,6 +60,17 @@ describe('elementsIssue', () => {
 
 // create_design names what is wrong with an element, as add_tab and update_design do.
 describe('tabElementsIssue', () => {
+  // docs/specs/009-elements/badge.md "The cap holds for agents".
+  it('names a badge or step whose label is over its cap, and the cap', () => {
+    expect(tabElementsIssue([box({ id: 'b', shape: 'badge', label: 'z'.repeat(25) })])).toBe(
+      'element "b": a badge\'s label is at most 24 characters.',
+    );
+    expect(tabElementsIssue([box({ id: 's', shape: 'step', label: '1000' })])).toBe(
+      'element "s": a step\'s label is at most 3 characters.',
+    );
+    expect(tabElementsIssue([box({ id: 's', shape: 'step', label: '100' })])).toBeNull();
+  });
+
   it("names the element and the field a rule refuses (a card's seventh tag)", () => {
     const card = box({ id: 'svc', shape: 'card', tags: ['a', 'b', 'c', 'd', 'e', 'f', 'g'] });
     expect(tabElementsIssue([card])).toMatch(
