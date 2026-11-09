@@ -156,8 +156,9 @@ Every write takes what a person would say, and stores the ids:
   by name ("Severity"), any field a row can group by; anything else is refused naming those there are.
   `sortBy` sets [Sort Cards](plan-board.md#the-board-set-up): up to two `{ field, direction }`, the field by name
   ("Priority", "Due Date", a custom field such as "Value") or id, the direction `ascending` (lowest or earliest
-  first, a Choice in option order; the default) or `descending`; an empty list turns sorting off. A field the board
-  cannot sort by, the same field twice or more than two levels are refused naming the fields there are. The answer
+  first, a Choice in option order; the default) or `descending`; an empty list turns sorting off. The fields are
+  those of the card types the board takes once the change is made, so one call may take a type and sort by its
+  field. A field the board cannot sort by, the same field twice or more than two levels are refused naming the fields there are. The answer
   names the sort. The CLI's `board set` takes it as `--sort "Priority descending, Due Date"` (`none` turns it off).
   `doneColumns` names the columns whose cards count as done ([Done columns](plan-board.md#done-columns): Completion,
   Points and the Done phase the charts read), whole: the named ones count, every other does not, and `[]` makes
