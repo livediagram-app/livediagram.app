@@ -184,6 +184,19 @@ function on(el: XmlElement | undefined): boolean {
 
 type RunMarks = Omit<ArticleRun, 'text' | 'href' | 'color' | 'hl' | 'note' | 'nk' | 'fn'>;
 
+/** Whether a run is hidden text (`w:vanish`, its own or its character style's; the run's own wins), which Word
+ *  neither shows nor prints. */
+export function runHidden(rPr: XmlElement | undefined, styles: DocxStyles): boolean {
+  const own = child(rPr, 'w:vanish');
+  if (own) return on(own);
+  const rStyle = child(rPr, 'w:rStyle')?.attrs['w:val'];
+  for (const layer of styles.runStyle(rStyle)) {
+    const vanish = child(layer, 'w:vanish');
+    if (vanish) return on(vanish);
+  }
+  return false;
+}
+
 /** The marks run properties carry, their character style's first (the run's own win). */
 export function runMarks(rPr: XmlElement | undefined, styles: DocxStyles): RunMarks {
   const rStyle = child(rPr, 'w:rStyle')?.attrs['w:val'];

@@ -24,6 +24,7 @@ import { OfficeImportError } from './errors';
 import {
   readNumbering,
   readStyles,
+  runHidden,
   runMarks,
   type DocxNumbering,
   type DocxStyles,
@@ -309,6 +310,8 @@ class DocxWalker {
     }
     // A table of contents' entries are the contents block's to draw (with the article's own page numbers).
     if (this.inToc()) return;
+    // Hidden text is neither shown nor printed in Word.
+    if (runHidden(rPr, this.styles)) return;
     const link = href ?? [...this.fields].reverse().find((f) => f.href)?.href;
     const marks = runMarks(rPr, this.styles);
     if (text.trim() !== '' && !marks.code) this.allMono = false;

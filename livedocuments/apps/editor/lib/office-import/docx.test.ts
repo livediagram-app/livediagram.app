@@ -360,6 +360,21 @@ describe('readDocx, the edges', () => {
     ]);
   });
 
+  it('leaves hidden text out, its own or its character style’s, and keeps text unhidden again', async () => {
+    const { blocks } = await read({
+      styles: `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:style w:type="character" w:styleId="Secret"><w:name w:val="Secret"/><w:rPr><w:vanish/></w:rPr></w:style></w:styles>`,
+      body: [
+        p(r('Shown') + r(' hidden', '<w:vanish/>') + r(' too', '<w:rStyle w:val="Secret"/>')),
+        p(
+          r(' back', '<w:rStyle w:val="Secret"/><w:vanish w:val="0"/>') +
+            r('!', '<w:vanish w:val="false"/>'),
+        ),
+        p(r('All hidden', '<w:vanish/>')),
+      ].join(''),
+    });
+    expect(blocks.map(textOf)).toEqual(['Shown', 'back!']);
+  });
+
   it('reads a header flag turned off as no header row', async () => {
     const { blocks } = await read({
       body: `<w:tbl><w:tr><w:trPr><w:tblHeader w:val="false"/></w:trPr><w:tc>${p(r('A'))}</w:tc></w:tr></w:tbl>`,

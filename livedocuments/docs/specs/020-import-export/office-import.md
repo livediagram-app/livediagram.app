@@ -58,6 +58,7 @@ document's body, in the order it is written. The article flows onto as many page
 | A table                                                                     | A table block: its rows and cells, a repeated header row as the header row, merged cells read as one; a table inside a cell as text |
 | Empty paragraphs (spacing)                                                  | Left out                                                                                                                            |
 | Tracked insertions; tracked deletions                                       | Kept as written; left out                                                                                                           |
+| Hidden text (Word's Hidden font effect, which it neither shows nor prints)  | Left out                                                                                                                            |
 | A table of contents (a TOC field)                                           | A contents block listing Heading 1 to the deepest level it lists (at most 3); its title, entries and Word's page numbers left out   |
 | Content controls, smart tags, fields                                        | Their content or result                                                                                                             |
 

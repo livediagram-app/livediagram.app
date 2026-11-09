@@ -136,7 +136,8 @@ Follows the spec's table. Precisely:
 - Runs: `w:b`, `w:i`, `w:strike` / `w:dstrike`, `w:u` (not `none`), `w:vertAlign`; a toggle is off when its
   `w:val` is `0`, `false` or `off`. A run's character style adds its own `b` / `i` and the names `strong` and
   `emphasis`. A run in a monospace font (`w:rFonts` ascii or hAnsi, or its character style's) is `code` (D64:
-  the font list in `docx-styles.ts`). A paragraph is a code block when its style is a code style or every run
+  the font list in `docx-styles.ts`); a hidden run (`runHidden`: its own `w:vanish`, else its character style's, off
+  when its `w:val` says so) adds no text. A paragraph is a code block when its style is a code style or every run
   with text is monospace; consecutive code paragraphs join with `\n`.
 - Containers walked into: `w:hyperlink`, `w:ins`, `w:moveTo`, `w:smartTag`, `w:customXml`, `w:sdt` /
   `w:sdtContent`, `w:fldSimple`, `w:dir`, `w:bdo`, `mc:AlternateContent` (its first `mc:Choice` only). Skipped:
