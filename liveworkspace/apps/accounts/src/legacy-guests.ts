@@ -9,6 +9,7 @@ import {
   legacyGuestOwner,
   type LegacyGuestClaimAnswer,
 } from '@liveworkspace/migration/contract';
+import { ANONYMISED_PERSON } from '@liveworkspace/index-client';
 import type { Env } from './env.ts';
 import { guestMergeConfig, mergeGuestInto, type MergeConfig } from './guests.ts';
 import { GUEST_ID, USER_ID } from './ids.ts';
@@ -163,4 +164,19 @@ export async function claimLegacyGuest(
     into: into.startsWith('guest_') ? 'guest' : 'account',
   });
   return { status: 200, body: { merged: true } };
+}
+
+// Closing an account (delete-account.ts, in the batch that leaves its teams): the guests it claimed stay claimed, by
+// ANONYMISED_PERSON, so a later claim is `claimed`; a hold it has goes. legacy_guest has no foreign key to the user.
+export function legacyGuestCloseStatements(db: D1Database, userId: string): D1PreparedStatement[] {
+  return [
+    db
+      .prepare('UPDATE legacy_guest SET claimedBy = ? WHERE claimedBy = ?')
+      .bind(ANONYMISED_PERSON, userId),
+    db
+      .prepare(
+        'UPDATE legacy_guest SET claimingBy = NULL, claimingUntil = NULL WHERE claimingBy = ?',
+      )
+      .bind(userId),
+  ];
 }
