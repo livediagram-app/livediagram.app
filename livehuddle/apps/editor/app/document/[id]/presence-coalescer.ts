@@ -22,6 +22,16 @@ export type AvatarEntry = { tabId: string; avatar: AvatarPacket } | null;
 // It is the only thing in the room that knows a packet is not an
 // event: everything else there translates one op into one state
 // change, and this deliberately does not.
+/**
+ * A hidden page gets no animation frames, so while it is hidden the flush runs on this timer instead (the browser runs
+ * it about once a second there). Without it, someone who walked up while the tab was hidden never reached the call,
+ * so nobody heard them until the tab showed again (docs/specs/012-collaboration/proximity-audio.md "Someone who
+ * arrives later").
+ */
+export const HIDDEN_FLUSH_MS = 250;
+
+const pageHidden = () => typeof document !== 'undefined' && document.visibilityState === 'hidden';
+
 export type PresenceCoalescer = {
   cursor(from: string, pos: CursorPos): void;
   avatar(from: string, entry: AvatarEntry): void;
@@ -31,7 +41,7 @@ export type PresenceCoalescer = {
    * roster's prune, it would put their cursor back on every screen until the next roster.
    */
   prune(present: ReadonlySet<string>): void;
-  /** Drop a pending frame on teardown, so a flush can't land after unmount. */
+  /** Drop a pending frame or timer on teardown, so a flush can't land after unmount. */
   cancel(): void;
 };
 
@@ -48,9 +58,19 @@ export function createPresenceCoalescer({
   // avatar publishes at the same ~30 Hz.
   const pendingAvatars = new Map<string, AvatarEntry>();
   let presenceRafId: number | null = null;
+  let hiddenTimer: ReturnType<typeof setTimeout> | null = null;
 
+  const cancelPending = () => {
+    if (presenceRafId !== null) cancelAnimationFrame(presenceRafId);
+    presenceRafId = null;
+    if (hiddenTimer !== null) clearTimeout(hiddenTimer);
+    hiddenTimer = null;
+  };
+
+  // Only one of the two is ever pending (schedule), and the one that fired is spent.
   const flushPresence = () => {
     presenceRafId = null;
+    hiddenTimer = null;
     if (pendingCursors.size > 0) {
       const moves = new Map(pendingCursors);
       pendingCursors.clear();
@@ -81,8 +101,21 @@ export function createPresenceCoalescer({
   };
 
   const schedule = () => {
-    if (presenceRafId === null) presenceRafId = requestAnimationFrame(flushPresence);
+    if (hiddenTimer !== null) return;
+    if (pageHidden()) {
+      // A frame asked for before the page hid would never come: the timer takes its place.
+      if (presenceRafId !== null) cancelAnimationFrame(presenceRafId);
+      presenceRafId = null;
+      hiddenTimer = setTimeout(flushPresence, HIDDEN_FLUSH_MS);
+      return;
+    }
+    presenceRafId ??= requestAnimationFrame(flushPresence);
   };
+  // The page hiding with a frame pending (the last packet before it hid) moves that flush onto the timer.
+  const onVisibility = () => {
+    if (presenceRafId !== null && pageHidden()) schedule();
+  };
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibility);
 
   return {
     cursor(from, pos) {
@@ -109,8 +142,10 @@ export function createPresenceCoalescer({
       }
     },
     cancel() {
-      if (presenceRafId !== null) cancelAnimationFrame(presenceRafId);
-      presenceRafId = null;
+      cancelPending();
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibility);
+      }
     },
   };
 }

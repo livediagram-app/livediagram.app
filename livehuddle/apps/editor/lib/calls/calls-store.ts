@@ -96,6 +96,9 @@ export type CallSelf = {
   level: VoiceLevel;
   // The presence ids you hear now.
   heard: ReadonlySet<string>;
+  // The browser holds the call's sound back (suspended or interrupted): the dock offers Click to Hear while you hear
+  // somebody (proximity-audio.md "Someone who arrives later").
+  audioHeld: boolean;
   // Somebody walks within the hearing radius of you, so they can hear you (the indicator's Live).
   someoneNear: boolean;
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): `off` shows Calls Paused.
@@ -127,6 +130,8 @@ export type CallActions = {
   // Join again after a failure or a pause (walking in joins by itself).
   join: () => void;
   toggleMute: () => void;
+  // Click to Hear: start the sound the browser held back.
+  hear?: () => void;
   toggleCamera: () => void;
   toggleScreen: () => void;
   raiseHand: () => void;
@@ -142,6 +147,7 @@ const OFF: CallSelf = {
   muted: false,
   level: 0,
   heard: EMPTY_HEARD,
+  audioHeld: false,
   someoneNear: false,
   mode: 'on',
   canShare: false,

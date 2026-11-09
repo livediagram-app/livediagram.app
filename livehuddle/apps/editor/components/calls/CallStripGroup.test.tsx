@@ -9,6 +9,7 @@ import {
   type CallSelf,
 } from '@/lib/calls/calls-store';
 import {
+  AUDIO_HELD_TEXT,
   CALLS_PAUSED_ANNOUNCEMENT,
   CallStripGroup,
   MicMeter,
@@ -29,6 +30,7 @@ const WithShare = () => (
 const actions = {
   join: vi.fn(),
   toggleMute: vi.fn(),
+  hear: vi.fn(),
   toggleCamera: vi.fn(),
   toggleScreen: vi.fn(),
   raiseHand: vi.fn(),
@@ -69,6 +71,21 @@ describe('CallStripGroup', () => {
       show(state as Parameters<typeof show>[0]);
       expect(screen.queryByRole('link', { name: 'Learn about calls' })).toBeNull();
     }
+  });
+
+  // proximity-audio.md "Someone who arrives later": sound the browser holds back is offered back, never for nothing.
+  it('offers Click to Hear while the sound is held back and somebody is heard', () => {
+    render(<CallStripGroup />);
+    show({ phase: 'live', muted: true, audioHeld: true, heard: new Set() });
+    expect(screen.queryByRole('button', { name: 'Click to hear' })).toBeNull();
+    show({ phase: 'live', muted: true, audioHeld: true, heard: new Set(['p1']) });
+    const hear = screen.getByRole('button', { name: 'Click to hear' });
+    expect(hear.className).toContain('amber');
+    fireEvent.click(hear);
+    expect(actions.hear).toHaveBeenCalledTimes(1);
+    expect(AUDIO_HELD_TEXT.title).toBe('Sound Held Back');
+    show({ phase: 'live', muted: true, audioHeld: false, heard: new Set(['p1']) });
+    expect(screen.queryByRole('button', { name: 'Click to hear' })).toBeNull();
   });
 
   // Walking in joins by itself (proximity-audio.md "Who is in a call"): no Join Audio, no Listen In, no Leave.

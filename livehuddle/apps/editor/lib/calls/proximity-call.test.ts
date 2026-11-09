@@ -503,13 +503,62 @@ describe('ProximityCall', () => {
     await makeCall().call.start();
     expect(callSelf().phase).toBe('error');
 
+    // A failed connection renews first (proximity-audio.md "Someone who arrives later"); past the budget, Retry.
     const { call } = makeCall();
     await call.start();
-    sfu.instances.at(-1)!.events.onFailed();
+    for (let i = 0; i <= RENEW_MAX; i++) {
+      sfu.instances.at(-1)!.events.onFailed();
+      await settle();
+    }
     expect(callSelf().phase).toBe('error');
     expect(graph.close).toHaveBeenCalled();
     call.stop();
     call.update(scene([]));
+  });
+
+  // proximity-audio.md "Someone who arrives later": sound the browser holds back wakes when a voice arrives, and the
+  // dock hears that it is held.
+  it('says the sound is held, and tries to start it when a voice arrives or Click to Hear is pressed', async () => {
+    const target = new EventTarget();
+    const context = {
+      state: 'suspended',
+      resume: vi.fn(() => new Promise<void>(() => {})),
+      addEventListener: target.addEventListener.bind(target),
+      removeEventListener: target.removeEventListener.bind(target),
+    };
+    const call = new ProximityCall({
+      caller,
+      canSpeak: true,
+      context: context as unknown as AudioContext,
+      send: () => {},
+    });
+    expect(callSelf().audioHeld).toBe(true);
+    await call.start();
+    const resumes = context.resume.mock.calls.length;
+    receiveCallOp('p1', {
+      kind: 'call-track',
+      tabId: 't1',
+      track: { sessionId: 'p1s', trackName: 'mic', token: 'a' },
+    });
+    call.update(scene([['p1', 10]]));
+    sfu.instances[0]!.events.onTrack('p1s', 'mic', {});
+    expect(context.resume).toHaveBeenCalledTimes(resumes + 1);
+    call.resumeAudio();
+    expect(context.resume).toHaveBeenCalledTimes(resumes + 2);
+    context.state = 'running';
+    target.dispatchEvent(new Event('statechange'));
+    expect(callSelf().audioHeld).toBe(false);
+    context.state = 'suspended';
+    target.dispatchEvent(new Event('statechange'));
+    expect(callSelf().audioHeld).toBe(true);
+    call.stop();
+    expect(callSelf().audioHeld).toBe(false);
+    // Ended: the context's later moves say nothing.
+    context.state = 'running';
+    target.dispatchEvent(new Event('statechange'));
+    context.state = 'suspended';
+    target.dispatchEvent(new Event('statechange'));
+    expect(callSelf().audioHeld).toBe(false);
   });
 
   it('leaving before the session arrives releases nothing it never had', async () => {
@@ -1598,6 +1647,34 @@ describe('ProximityCall renewing a session Realtime dropped', () => {
     await settle();
     expect(api.apiCallSession).toHaveBeenCalledTimes(2);
     expect(callSelf()).toMatchObject({ phase: 'live', mode: 'on' });
+    call.stop();
+  });
+
+  // proximity-audio.md "Someone who arrives later": a laptop that slept, a network change, relay credentials past
+  // their four hours. It used to fail into Retry, and only a press or a reload brought the voices back.
+  it('renews a connection that failed, with no press, and hears again on the new session', async () => {
+    const { call, proved } = makeCall();
+    await call.start();
+    receiveCallOp('p1', {
+      kind: 'call-track',
+      tabId: 't1',
+      track: { sessionId: 'their', trackName: 'mic', token: 'tok' },
+    });
+    call.update(scene([['p1', 10]]));
+    api.apiCallSession.mockResolvedValueOnce(renewed);
+    sfu.instances[0]!.events.onFailed();
+    await settle();
+    expect(api.apiCallSession).toHaveBeenCalledTimes(2);
+    expect(sfu.instances[0]!.close).toHaveBeenCalledTimes(1);
+    expect(proved.at(-1)).toEqual({ kind: 'call-session', sessionId: 'me2', sessionToken: 's.y' });
+    expect(sfu.instances[1]!.want).toHaveBeenLastCalledWith([
+      { sessionId: 'their', trackName: 'mic', token: 'tok' },
+    ]);
+    expect(callSelf().phase).toBe('live');
+    // The closed connection failing again later is not this call's any more.
+    sfu.instances[0]!.events.onFailed();
+    await settle();
+    expect(api.apiCallSession).toHaveBeenCalledTimes(2);
     call.stop();
   });
 

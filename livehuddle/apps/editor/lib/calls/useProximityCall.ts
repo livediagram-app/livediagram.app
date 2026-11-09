@@ -266,6 +266,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
         track('Canvas', 'Used', 'ScreenShare');
         void preview.start('screen');
       },
+      hear: () => callRef.current?.resumeAudio(),
       raiseHand: () => callRef.current?.raiseHand(),
       lowerHand: () => callRef.current?.lowerHand(),
     });
