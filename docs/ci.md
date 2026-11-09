@@ -235,7 +235,8 @@ split.
   `node .github/scripts/file-size-guard.mjs --update` and commit the smaller baseline, so it stays tight.
 - **The baseline only shrinks:** `--update` refuses to write while a file outside it is over the limit.
   A listed file may grow (a data file gains rows), since the list is the exception, not a size cap.
-- It takes about 0.3 seconds on the whole repository. Its tests run with
+- It takes about 1.2 seconds of CPU time on the whole repository, most of it reading the files. Its
+  tests run with
   `node --test .github/scripts/*.test.mjs`.
 
 ## Drift report

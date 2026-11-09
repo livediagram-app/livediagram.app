@@ -10,7 +10,7 @@
 //   node .github/scripts/file-size-guard.mjs --update   shrink the baseline to what is left
 //
 // It takes the tracked files from the index (`git ls-files`) and counts each candidate's lines: about
-// 0.3 s on the whole repository.
+// 1.2 s of CPU time on the whole repository, most of it reading the files.
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -160,7 +160,9 @@ function main() {
       return 1;
     }
     writeFileSync(path.join(ROOT, BASELINE), formatBaseline(current.map((c) => c.file)));
-    console.log(`[file-size-guard] baseline: ${baseline.length} -> ${current.length} files (${took})`);
+    console.log(
+      `[file-size-guard] baseline: ${baseline.length} -> ${current.length} files (${took})`,
+    );
     return 0;
   }
   const failure = report(diff);
