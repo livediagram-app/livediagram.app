@@ -151,7 +151,7 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     {
       portal: { kind: 'tab-focus', tabId: 't2' },
       follow: { kind: 'follow', target: 'p2' },
-      followed: { kind: 'viewport', tabId: 't', x: 0, y: 0, zoom: 1 },
+      followed: { kind: 'viewport', tabId: 't', pan: { x: 0, y: 0 }, zoom: 1 },
     },
     EVERYONE,
   );
@@ -491,8 +491,8 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
   row(
     'Pan, zoom, export',
     {
-      pan: { kind: 'viewport', tabId: 't', x: 40, y: 0, zoom: 1 },
-      zoom: { kind: 'viewport', tabId: 't', x: 0, y: 0, zoom: 2 },
+      pan: { kind: 'viewport', tabId: 't', pan: { x: 40, y: 0 }, zoom: 1 },
+      zoom: { kind: 'viewport', tabId: 't', pan: { x: 0, y: 0 }, zoom: 2 },
       cursor: { kind: 'cursor', tabId: 't', x: 1, y: 2 },
       select: { kind: 'select', tabId: 't', ids: ['col'] },
     },

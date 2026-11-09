@@ -774,7 +774,12 @@ describe('DocumentRoom op-role enforcement', () => {
       const viewer = connect(room, 'viewer', 'view');
       editor.ws.sent.length = 0;
 
-      sendFrame(room, viewer.ws, { kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } });
+      // A camera is parsed at the gate (follow-me-viewport.md), so its well-formed shape is sent.
+      const op =
+        kind === 'viewport'
+          ? { kind, tabId: 't', pan: { x: 1, y: 2 }, zoom: 1 }
+          : { kind, tabId: 't', x: 1, y: 2 };
+      sendFrame(room, viewer.ws, { kind: 'op', op });
 
       expect(opsReceived(editor.ws)).toHaveLength(1);
     });
