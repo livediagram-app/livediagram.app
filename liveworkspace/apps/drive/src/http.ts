@@ -1,11 +1,12 @@
 // Responses and request bodies. Every refusal is `{ "error": "<code>" }` (`DriveErrorCode`) with a 4xx/5xx status
 // (liveworkspace/docs/specs/005-drive/drive.md "The service").
 
+import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import type { DriveErrorCode } from '@liveworkspace/drive';
 import { json as plainJson } from '@liveworkspace/index-app/worker-http';
 
 // The largest JSON body a route reads: every body is a few ids, a code and a state.
-const MAX_BODY_BYTES = 16 * 1024;
+export const MAX_BODY_BYTES = 16 * 1024;
 
 /** A JSON answer, never cached: everything here is one person's. */
 export function json(body: unknown, init: ResponseInit = {}): Response {
@@ -36,12 +37,21 @@ export const noContent = () => new Response(null, { status: 204 });
 
 export const notFound = () => fail('not_found');
 
-/** The JSON object a request carries, or null for a missing, oversized or malformed one. */
+/** The JSON object a request carries, or null for a missing, oversized, broken-off or malformed one. Read through a
+ *  byte counter (api-kit's readCappedBody), so a chunked body, which declares no length, is never held past the cap. */
 export async function readObject(request: Request): Promise<Record<string, unknown> | null> {
   const length = Number(request.headers.get('Content-Length') ?? '0');
   if (length > MAX_BODY_BYTES) return null;
-  const text = await request.text().catch(() => '');
-  if (text.length > MAX_BODY_BYTES) return null;
+  if (request.body === null) return {};
+  let text: string;
+  try {
+    const bytes = await readCappedBody(request.body as ReadableStream<Uint8Array>, MAX_BODY_BYTES);
+    if (bytes === null) return null;
+    text = new TextDecoder().decode(bytes);
+  } catch {
+    // A body that broke off mid-read is no body, not an empty one.
+    return null;
+  }
   if (!text) return {};
   try {
     const value = JSON.parse(text) as unknown;
