@@ -262,6 +262,39 @@ describe('handleImages', () => {
       expect(res.status).toBe(404);
     });
 
+    // docs/specs/009-elements/images.md "Readers": a Community post's link hidden or off the Community opens nothing,
+    // its images too.
+    it("404s through a Community post's link once the post no longer opens the document", async () => {
+      const id = await uploaded();
+      const post = { code: 'POST', open: true };
+      const asked: string[] = [];
+      const env = {
+        ...db.env,
+        DOCUMENT_ROOM: {
+          idFromName: (name: string) => name,
+          get: () => ({
+            servesImage: async () => true,
+            community: async () => {
+              asked.push('community');
+              return post;
+            },
+          }),
+        },
+      } as unknown as Env;
+      const read = (shareCode: string | null) => {
+        resolveDocumentGrant.mockResolvedValue({ ...VIEW, shareCode });
+        return call('GET', `/api/images/${id}?d=d1`, { owner: 'visitor', env });
+      };
+      expect((await read('POST')).status).toBe(200);
+      post.open = false;
+      expect((await read('POST')).status).toBe(404);
+      // Another link of the document still reads; a read with no link never asks about the post.
+      expect((await read('OTHER')).status).toBe(200);
+      asked.length = 0;
+      expect((await read(null)).status).toBe(200);
+      expect(asked).toEqual([]);
+    });
+
     // docs/specs/013-workspace/workbench-embeds.md: a workbench session reads images through its own document
     // only, never by owning them, so it cannot walk its owner's gallery by id.
     describe('under a workbench session', () => {

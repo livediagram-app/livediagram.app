@@ -150,7 +150,16 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         const grant = await resolveDesignGrant(ctx, d);
         if (grant instanceof Response) return grant;
         if (grant) {
-          allowed = await designRoom(env, d).servesImage(imageId, grant.tab);
+          const room = designRoom(env, d);
+          // A Community post's link opens nothing once the post is hidden or off the Community (grantOn's
+          // rule, docs/specs/009-elements/images.md "Readers"): the image read runs outside the room, where
+          // grantOn never sees the post, so it asks the room, beside the serve check. Only a link visitor's read
+          // asks.
+          const [serves, post] = await Promise.all([
+            room.servesImage(imageId, grant.tab),
+            grant.shareCode ? room.community() : null,
+          ]);
+          allowed = serves && !(post && !post.open && post.code === grant.shareCode);
           if (!allowed) console.warn('[images] not servable by design', { designId: d, imageId });
         }
       }

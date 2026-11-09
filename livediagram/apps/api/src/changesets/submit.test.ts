@@ -5,7 +5,7 @@ import { seedTabs } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { parseChangesetRequest } from './request';
-import { nextOrderIndex, submitChangeset } from './submit';
+import { submitChangeset } from './submit';
 
 // The pipeline's attempt loop and relay (docs/specs/024-agents/blueprints/agent-changesets.md "The
 // pipeline" steps 9 and 10), on real SQLite with an injected interleaving.
@@ -128,14 +128,5 @@ describe('submitChangeset', () => {
       '[changeset] relay-failed',
       expect.objectContaining({ documentId: 'D' }),
     );
-  });
-});
-
-// docs/specs/006-document/per-tab-storage.md "New tabs and the tab order": a changeset's new tab goes after the last.
-describe('nextOrderIndex', () => {
-  it('is one past the highest place, not the count, after a middle tab left', () => {
-    expect(nextOrderIndex([{ orderIndex: 0 }, { orderIndex: 2 }])).toBe(3);
-    expect(nextOrderIndex([{ orderIndex: 4 }, { orderIndex: 1 }])).toBe(5);
-    expect(nextOrderIndex([])).toBe(0);
   });
 });

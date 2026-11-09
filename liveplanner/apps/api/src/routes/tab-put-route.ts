@@ -123,7 +123,7 @@ export async function handleTabPut(
     ) {
       return conflict('empty_tab_overwrite_blocked');
     }
-    const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
+    const orderIndex = existingTab?.orderIndex ?? existing.nextOrderIndex;
     // Newly added comments carry the resolved owner's participant record, never the client's claim
     // (docs/specs/014-identity/auth-and-guest-access.md). getProject already joined the owner's
     // row: reused when the writer IS the owner, the common autosave case.

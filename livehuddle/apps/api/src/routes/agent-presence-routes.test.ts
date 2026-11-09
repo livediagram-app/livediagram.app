@@ -128,6 +128,30 @@ describe('PUT presence', () => {
     expect(pending).toEqual([]);
   });
 
+  it('refuses a token whose grant is a Viewer’s, to set or to clear', async () => {
+    const grant: ItemGrant = {
+      item: 'd1',
+      level: 'view',
+      tab: null,
+      sub: 'guest_00000000-0000-4000-8000-000000000003',
+      team: null,
+      exp: 9_999_999_999,
+      shareCode: 'VIEWCODE',
+      token: 'signed',
+    };
+    expect((await call({ body: { status: 'here' }, owner: 'visitor', grant })).status).toBe(403);
+    expect((await call({ method: 'DELETE', owner: 'visitor', grant })).status).toBe(403);
+    expect(put).not.toHaveBeenCalled();
+    expect(del).not.toHaveBeenCalled();
+    // A Participant's grant takes part.
+    const res = await call({
+      body: {},
+      owner: 'visitor',
+      grant: { ...grant, level: 'participate' },
+    });
+    expect(res.status).toBe(200);
+  });
+
   it('refuses a session, a stranger, a missing tab, and a malformed body', async () => {
     expect(await (await call({ body: {}, token: null })).json()).toEqual({
       error: 'presence_requires_token',

@@ -229,6 +229,23 @@ describe('reply, resolve and reopen', () => {
   });
 });
 
+// A thread at its cap (COMMENTS_MAX, docs/specs/024-agents/agent-presence.md "Comments").
+describe('a full thread', () => {
+  it('answers 409 thread_full to an add or a reply on a full thread, writing and emailing nothing', async () => {
+    const full = Array.from({ length: 500 }, (_, i) => comment(`c${i}`));
+    seed([shape('a', { commentThread: { resolved: false, comments: full } })]);
+    const rev = (await stored()).rev;
+    const add = await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: 'more' } });
+    expect(add.status).toBe(409);
+    expect(await add.json()).toEqual({ error: 'thread_full' });
+    const reply = await call({ path: '/tabs/t1/comments/c0/reply', body: { text: 'more' } });
+    expect(reply.status).toBe(409);
+    expect((await stored()).rev).toBe(rev);
+    expect((await threadOf('a'))!.comments).toHaveLength(500);
+    expect(pending).toEqual([]);
+  });
+});
+
 describe('delete-own', () => {
   it('deletes the caller’s own comment only', async () => {
     seed([
