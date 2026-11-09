@@ -96,7 +96,8 @@ async function handlePut(ctx: DesignRouteContext, w: Writer): Promise<Response> 
   const read = await readBody(ctx);
   if (read instanceof Response) return read;
   const stored = await readComponentRow(ctx.env, w.componentId);
-  if (stored && (await outOfScope(ctx, w))) return forbidden();
+  // Stored or not: another tab may already draw a main nothing has stored yet (placed a moment ago, or pasted).
+  if (await outOfScope(ctx, w)) return forbidden();
   const main: Record<string, unknown> = { ...read, updatedAt: stampAfter(stored?.main) };
   if (!isValidDesignComponent(main) || main.id !== w.componentId) {
     return badRequest('invalid component');
