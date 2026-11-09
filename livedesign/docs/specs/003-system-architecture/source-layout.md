@@ -58,6 +58,14 @@ Rules:
 - Cross-app primitives keep migrating to `@livedesign/ui` (see review #4/#5:
   `Button`, `TextInput`); domain folders are for app-local code.
 
+## `apps/live/app/design/[id]/editor-state/`
+
+The editor's state, one slice per concern (`use<Concern>.ts`), composed in a fixed order by `../useEditorState.ts`,
+and `editor-view.ts`, the view-model built from them ([architecture](../../development/architecture.md#editor-state)).
+Slice names come from the vocabulary every product's editor shares (`useEditorDocument`, `useEditorSelection`,
+`useEditorTools`, `useEditorViewport`, `useEditorCollaboration`, `useEditorPersistence`, `useEditorComments`,
+`useEditorHistory`, ...); a product-only concern is `useEditor<Name>` (`useEditorComponents`).
+
 ## Execution
 
 Each directory moves **atomically in its own pass**, never a partial move

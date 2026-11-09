@@ -2,7 +2,7 @@
 // web-performance.md): the pixel engine, its filters, PSD and the GPU compositor are hundreds of KiB, and the editor's
 // first load, and every other Pages tab's, must never carry them. The editor's always-loaded files reach the photo
 // editor only through a dynamic import.
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -29,6 +29,10 @@ describe('a photo page’s code', () => {
       'hooks/editor/usePhotoEditor.ts',
       'hooks/editor/usePhotoFraming.ts',
       'app/design/[id]/useEditorState.ts',
+      // useEditorState composes its slices from editor-state/: each is as always-loaded as it is.
+      ...readdirSync(join(root, 'app/design/[id]/editor-state'))
+        .filter((name) => name.endsWith('.ts') && !name.includes('.test.'))
+        .map((name) => `app/design/[id]/editor-state/${name}`),
     ])
       expect(
         staticImports(read(file)).filter((m) => PHOTO_ONLY.test(m)),
