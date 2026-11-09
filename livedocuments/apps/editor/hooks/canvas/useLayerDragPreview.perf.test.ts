@@ -79,8 +79,10 @@ describe('the layer preview store’s frame', () => {
       for (let i = 0; i < 5; i++) best = Math.min(best, cpuMsOf(frame));
       if (process.env.PERF_LOG)
         console.log(`preview frame, ${dragged} dragged ${best.toFixed(2)} ms`);
-      // Measured 3.3 to 3.9 ms (7 to 7.6 ms before the crossings and fans were kept per gesture).
-      expect(best).toBeLessThan(cpuBudgetMs(6));
+      // Measured 3.3 to 5.5 ms here and 5.8 to 9.5 ms under coverage on an M-series Mac (7 to 7.6 ms before the
+      // crossings and fans were kept per gesture), and 18 to 27 ms on CI's shared runners under coverage. The budget
+      // is the spec's own, "A drag frame's arrow work": at most 16 ms of CPU, 48 ms on CI.
+      expect(best).toBeLessThan(cpuBudgetMs(16));
     });
 
   // A union resize of every box (docs/specs/008-canvas/canvas-performance.md "A frame's arrow work is linear in what
