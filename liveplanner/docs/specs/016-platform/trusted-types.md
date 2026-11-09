@@ -38,8 +38,9 @@ in its header.
 - **`liveworkspace-markup`** turns markup that liveplanner's own builders produced into `TrustedHTML`
   (`trustedHtml(markup)`). Its callers are the builders that escape every piece of content they place: the icon,
   sticker and template SVG builders (`@liveworkspace/icons`, `@liveplanner/templates`), the headless tab renderer's
-  thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that
-  the markup came from one of those builders, which is why nothing else may call it.
+  thumbnails, the JSON-LD block, and the inline boot scripts in each layout. `trustedHtml` is the escape hatch: it does not sanitise; the trust is that the markup came from one of those
+  builders, so the sinks test lets it be called only in a layout and the files listed as builder markup. Markup that
+  carries people's content goes through the sanitiser instead ([The sanitiser](#the-sanitiser)).
 - **Outside the browser** (the static prerender, tests without Trusted Types) the helpers pass strings through.
 
 ### Server-rendered markup
@@ -55,6 +56,36 @@ a root `app/layout.tsx` (never re-rendered on navigation), a `'use client'` modu
 in the browser), or an app module that only client modules import. A sink in a shared package must be a client
 module itself, since any server page may render it: `JsonLd` is one. `trusted-types-sinks.test.ts` holds every
 file to this.
+
+## The sanitiser
+
+The policies prove markup went through one of ours; they do not make it safe. Markup that carries people's content
+(their text, links and pictures, arriving from imports, pastes, the server and other people over the room) is
+sanitised before any sink shows it.
+
+- **`sanitizedHtml(markup, profile)`** (`@liveworkspace/trusted-types/sanitize`) runs it through DOMPurify, in an
+  instance of our own with our rules, and mints the result through `liveworkspace-markup`, so no header names another
+  policy. DOMPurify parses through the same policy and creates none of its own.
+- **Every sink of a document's drawing goes through it**: the export preview, the split view's other pane, the Move to Layer thumbnails, and a sequence diagram's face.
+- **Profiles**: `svg`, a whole drawing set into an HTML element; `svg-content`, an `<svg>`'s or `<g>`'s children,
+  sanitised inside an `<svg>` so they parse as SVG; `document`, a whole page for an iframe's `srcdoc`.
+- **What it removes**: `<script>`, every event handler, `javascript:` and every other scheme but http(s), mailto, tel
+  and the like, `<foreignObject>`, `<use>`, `<animate>` and `<set>`, frames and embeds, and any `href` that would load
+  from outside the drawing other than a link's or a picture's; a `blob:` URL is kept on a picture alone.
+- **What it keeps**: everything our renderers draw, unchanged: gradients, clips, masks, markers, patterns, filters,
+  `<style>` (the export's webfont import), text, links (http(s) and `#`), pictures (`data:`, `blob:`, http(s) and
+  same-origin paths), `class`, `style`, `role`, `aria-*` and `data-*`. Every template's drawing parses the same
+  before and after.
+- **What stays on `trustedHtml`** (unsanitised): each layout's inline boot scripts, and markup that is static or that
+  our builders make from typed data alone: the catalogue's icons and stickers, a look's sample preview, device
+  frames, and the face-finish ink (`useFaceFinishPass`), drawn per element from its geometry and the colours
+  `dropUnsafeColours` already checked on the way in. That ink is a hot path (every element, every frame of a
+  redraw), so it stays off the sanitiser.
+- **Cost**: each result is cached by its markup (least recently used out first, at most 256 results and 4 million
+  characters held), so a re-render that hands back the same drawing costs a lookup. DOMPurify lives in a module of
+  its own, so it reaches only the chunks that render such markup, never a page that has none.
+- **Outside the browser** (the prerender, a test without a DOM) it answers an empty string, never the markup
+  unsanitised.
 
 ## Third parties
 
