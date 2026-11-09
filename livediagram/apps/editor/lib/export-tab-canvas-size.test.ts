@@ -4,7 +4,12 @@
 // element's border and corners there, were cut off.
 import { describe, expect, it } from 'vitest';
 import { EXPORT_PADDING, type Tab } from '@livediagram/document';
-import { MAX_EXPORT_CANVAS_SIDE, renderTabToCanvas } from './export-tab';
+import {
+  exportScale,
+  MAX_EXPORT_CANVAS_AREA,
+  MAX_EXPORT_CANVAS_SIDE,
+  renderTabToCanvas,
+} from './export-tab';
 
 const tab = (width: number, height: number): Tab => ({
   id: 'tab-1',
@@ -32,5 +37,30 @@ describe('renderTabToCanvas size', () => {
     expect([whole.width, whole.height]).toEqual([padded(100, 2), padded(80, 2)]);
     const huge = await renderTabToCanvas(tab(40000.3, 10), { scale: 2 });
     expect(huge.width).toBeLessThanOrEqual(MAX_EXPORT_CANVAS_SIDE);
+  });
+
+  // iOS Safari draws nothing on a canvas past 16.7 MP, however short its sides: an 8000 x 6000 tab at 2x was a
+  // 16128 x 12128 canvas (195.6 MP) under the side cap, and its PNG came out blank there; now 4723 x 3552.
+  it('keeps a big tab under the canvas area limit, with its shape', async () => {
+    const big = await renderTabToCanvas(tab(8000, 6000), { scale: 2 });
+    expect(big.width * big.height).toBeLessThanOrEqual(MAX_EXPORT_CANVAS_AREA);
+    expect(big.width * big.height).toBeGreaterThan(MAX_EXPORT_CANVAS_AREA * 0.99);
+    expect(big.width / big.height).toBeCloseTo(padded(8000, 1) / padded(6000, 1), 2);
+  });
+
+  it('never rounds a part pixel past the area limit', () => {
+    const sizes: [number, number][] = [
+      [8048.3, 6048.7],
+      [4096.5, 4096.5],
+      [100000, 170],
+      [3001, 9973.1],
+    ];
+    for (const [w, h] of sizes) {
+      const s = exportScale(2, w, h);
+      expect(Math.ceil(w * s) * Math.ceil(h * s)).toBeLessThanOrEqual(MAX_EXPORT_CANVAS_AREA);
+      expect(Math.max(w, h) * s).toBeLessThanOrEqual(MAX_EXPORT_CANVAS_SIDE);
+    }
+    // A tab that fits keeps its full 2x.
+    expect(exportScale(2, 2000, 2000)).toBe(2);
   });
 });

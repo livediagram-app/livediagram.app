@@ -300,6 +300,9 @@ route, never a save.
 
 - Tab reorder is an `UPDATE document_tabs SET order_index = ?` per
   tab, in one transaction in the document's object. Acceptable for the small tab counts (< 20) we see in practice.
+  Only the tabs the document holds are written, each once (the last place a request names it): a request naming
+  ids the document lacks, or one id many times, writes no more than the document's own tabs, so a body of a million
+  ids can't hold the room up for a statement each.
 
 ## What this does NOT change
 

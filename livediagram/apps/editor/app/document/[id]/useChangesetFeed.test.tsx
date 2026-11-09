@@ -40,7 +40,7 @@ const op = (over: Partial<ChangesetRoomOp> = {}): ChangesetRoomOp => ({
   ...over,
 });
 
-function setup(seen = new Map([['t1', 1]])) {
+function setup(seen = new Map([['t1', 1]]), canUndo = true) {
   let tabs: Tab[] = [{ id: 't1', name: 'T', elements: [] }];
   const toast = {
     error: vi.fn(),
@@ -74,6 +74,7 @@ function setup(seen = new Map([['t1', 1]])) {
         journal: { current: createRemoteOpJournal() },
       },
       toast,
+      canUndo,
       ...deps,
     }),
   );
@@ -110,6 +111,13 @@ describe('useChangesetFeed', () => {
         { label: 'Undo', ariaLabel: "Undo Webber's changes" },
       ],
     });
+  });
+
+  // The api refuses a revert to a session that can't edit, so a Viewer's or Participant's Undo could only fail.
+  it('offers a session that cannot edit Show alone', () => {
+    const { result, lastToast } = setup(new Map([['t1', 1]]), false);
+    act(() => result.current.receiveChangeset(op()));
+    expect(lastToast().actions.map((a) => a.label)).toEqual(['Show']);
   });
 
   it('skips what this editor already holds', () => {

@@ -156,8 +156,11 @@ export async function handleDocumentSubresources(
       // An agent or the CLI (a token) may not delete the last tab (docs/specs/015-api/mcp-server.md
       // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
       // the other in one save can reach here first.
+      // Read before the gates' awaits, the count is checked again in the delete itself, so two token deletes at
+      // once can't take a document's last two tabs.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
-      const removed = await deleteTabRow(env, id, tabId);
+      const removed = await deleteTabRow(env, id, tabId, { keepLast: !!ctx.token });
+      if (removed === 'last') return conflict('last_tab');
       // A connected tab has left its host: the index deletes its connection and its pass (connected-tabs.md
       // "Removing"), off the response path.
       if (removed?.connection)
