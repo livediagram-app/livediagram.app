@@ -308,7 +308,7 @@ export default {
     const now = Date.now();
     await step('index purges', async () => {
       const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
-      if (purges.sent + purges.failed > 0)
+      if (purges.sent + purges.failed + purges.dropped > 0)
         console.log('[accounts] index purges', JSON.stringify(purges));
     });
     // Every run: Timeline events the index hasn't taken yet go again (index-timeline.ts), the oldest beyond

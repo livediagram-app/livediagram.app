@@ -25,6 +25,8 @@ const PURGE_TIMEOUT_MS = 15_000;
 export const PURGE_RETRY_CRON = '*/15 * * * *';
 // Requests the cron sends per run, oldest try first.
 export const PURGES_PER_RUN = 25;
+// A request whose account is still open this long after its first try (a closing nobody finished) is dropped.
+export const STALE_PURGE_DAYS = 30;
 // From this many failed tries on, each failure is logged as an error, not a warning.
 const LOUD_AFTER = 3;
 
@@ -136,12 +138,27 @@ export async function purgeFromIndex(
 
 // The cron: every request still waiting, the never-tried and longest-waiting first. Only for an account that is gone:
 // one whose closing stopped before the user was deleted waits for it to be tried again, and is never sent while the
-// person can still sign in.
+// person can still sign in. One still waiting STALE_PURGE_DAYS after its first try is dropped first, so closings nobody
+// finished can't pile up: a later close records its own.
 export async function retryPendingPurges(
   db: D1Database,
   config: IndexPurgeConfig,
   now = Date.now(),
-): Promise<{ sent: number; failed: number; waiting: number }> {
+): Promise<{ sent: number; failed: number; waiting: number; dropped: number }> {
+  const { results: stale } = await db
+    .prepare(
+      `DELETE FROM pending_purges WHERE createdAt < ?
+         AND EXISTS (SELECT 1 FROM "user" u WHERE u.id = pending_purges.userId)
+       RETURNING json_array_length(teamIds) AS teams`,
+    )
+    .bind(now - STALE_PURGE_DAYS * 86_400_000)
+    .all<{ teams: number }>();
+  if (stale.length > 0) {
+    console.warn('[accounts] index purges dropped, their accounts never closed', {
+      dropped: stale.length,
+      teams: stale.reduce((n, r) => n + r.teams, 0),
+    });
+  }
   const { results } = await db
     .prepare(
       `SELECT userId, teamIds, attempts FROM pending_purges p WHERE ${ACCOUNT_GONE}
@@ -154,5 +171,5 @@ export async function retryPendingPurges(
   const waiting = await db
     .prepare(`SELECT COUNT(*) AS n FROM pending_purges p WHERE ${ACCOUNT_GONE}`)
     .first<number>('n');
-  return { sent, failed: results.length - sent, waiting: waiting ?? 0 };
+  return { sent, failed: results.length - sent, waiting: waiting ?? 0, dropped: stale.length };
 }
