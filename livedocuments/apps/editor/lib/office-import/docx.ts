@@ -577,21 +577,26 @@ class DocxWalker {
 
   /** A cell's paragraphs into the runs, `between` them (a line break in a table block's cell). */
   private cell(tc: XmlElement, between: string): void {
-    let first = true;
-    for (const el of kids(tc)) {
-      if (el.name === 'w:p') {
+    this.cellParts(tc, between, { first: true });
+  }
+
+  /** The cell's paragraphs and tables under `el`, a content control or custom XML walked into with the same `at`, so
+   *  a paragraph inside one still follows the one before it with `between`. */
+  private cellParts(el: XmlElement | undefined, between: string, at: { first: boolean }): void {
+    for (const c of kids(el)) {
+      if (c.name === 'w:p') {
         const before = this.runs.length;
-        if (!first) this.runs.push({ text: between });
-        for (const c of kids(el)) this.inline(c, undefined);
-        if (this.runs.length > before) first = false;
-      } else if (el.name === 'w:tbl') {
+        if (!at.first) this.runs.push({ text: between });
+        for (const r of kids(c)) this.inline(r, undefined);
+        if (this.runs.length > before) at.first = false;
+      } else if (c.name === 'w:tbl') {
         const outer = this.runs;
-        this.table(el);
+        this.table(c);
         this.runs = outer;
-      } else if (el.name === 'w:sdt') {
-        this.cell({ ...el, children: child(el, 'w:sdtContent')?.children ?? [] }, between);
-      } else if (el.name === 'w:customXml') {
-        this.cell(el, between);
+      } else if (c.name === 'w:sdt') {
+        this.cellParts(child(c, 'w:sdtContent'), between, at);
+      } else if (c.name === 'w:customXml') {
+        this.cellParts(c, between, at);
       }
     }
   }
@@ -622,31 +627,63 @@ function trimRuns(runs: ArticleRun[]): ArticleRun[] {
   return out;
 }
 
-/** A VML shape's width and height (`width:120pt;height:80pt` or px), in px. */
+// The CSS lengths a VML shape's style gives its size in, as px (96 to the inch); no unit is px.
+const VML_PX_PER: Record<string, number> = {
+  '': 1,
+  px: 1,
+  pt: 96 / 72,
+  pc: 16,
+  in: 96,
+  cm: 96 / 2.54,
+  mm: 96 / 25.4,
+};
+
+/** A VML shape's width and height (`width:120pt;height:3cm`), in px; an unknown unit reads as 0. */
 function vmlSize(style: string): { width: number; height: number } {
   const read = (key: string) => {
-    const m = new RegExp(`${key}\\s*:\\s*([\\d.]+)(pt|px|in)?`, 'i').exec(style);
-    if (!m) return 0;
-    const v = Number(m[1]);
-    const unit = (m[2] ?? 'px').toLowerCase();
-    return Math.round(unit === 'pt' ? (v * 96) / 72 : unit === 'in' ? v * 96 : v);
+    const m = new RegExp(`(?:^|;)\\s*${key}\\s*:\\s*([\\d.]+)\\s*([a-z]*)`, 'i').exec(style);
+    const per = m ? VML_PX_PER[m[2]!.toLowerCase()] : undefined;
+    const px = per === undefined ? 0 : Number(m![1]) * per;
+    return Number.isFinite(px) ? Math.round(px) : 0;
   };
   return { width: read('width'), height: read('height') };
 }
 
 /** A document's footnotes by id, each its paragraphs' text as one plain line (the separators Word keeps there are
  *  left out). */
-export function readFootnotes(root: XmlElement | undefined): Map<string, string> {
+export function readFootnotes(
+  root: XmlElement | undefined,
+  styles: DocxStyles = readStyles(undefined),
+): Map<string, string> {
   const out = new Map<string, string>();
   for (const note of kids(root)) {
     const id = note.attrs['w:id'];
     if (note.name !== 'w:footnote' || !id || note.attrs['w:type']) continue;
-    const paragraphs = findAll(note, 'w:p').map((p) => findAll(p, 'w:t').map(textOf).join(''));
+    const paragraphs = findAll(note, 'w:p').map((p) => footnoteText(p, styles));
     const text = cleanFootnoteText(paragraphs.join(' ').trim());
     out.set(id, text);
   }
   return out;
 }
+
+/** A footnote paragraph's shown text, read as the body's is: tabs and breaks a space, text a tracked change deletes
+ *  or moves away and hidden runs left out. A paragraph or table nested inside adds nothing here: `findAll` reads
+ *  each paragraph on its own. */
+function footnoteText(el: XmlElement, styles: DocxStyles): string {
+  let text = '';
+  for (const c of kids(el)) {
+    if (c.name === 'w:r') {
+      if (runHidden(child(c, 'w:rPr'), styles)) continue;
+      for (const t of kids(c)) {
+        if (t.name === 'w:t') text += textOf(t);
+        else if (t.name === 'w:tab' || t.name === 'w:br' || t.name === 'w:cr') text += ' ';
+        else if (t.name === 'w:noBreakHyphen') text += '-';
+      }
+    } else if (!FOOTNOTE_SKIPPED.has(c.name)) text += footnoteText(c, styles);
+  }
+  return text;
+}
+const FOOTNOTE_SKIPPED = new Set(['w:p', 'w:tbl', 'w:del', 'w:moveFrom', 'w:pPr', 'mc:Fallback']);
 
 export async function readDocx(pkg: OfficePackage): Promise<DocxRead> {
   const root = await pkg.readXml(pkg.mainPath);
@@ -657,7 +694,8 @@ export async function readDocx(pkg: OfficePackage): Promise<DocxRead> {
   };
   const styles = readStyles(await partOf('styles'));
   const numbering = readNumbering(await partOf('numbering'), styles);
-  const walker = new DocxWalker(styles, numbering, rels, readFootnotes(await partOf('footnotes')));
+  const footnotes = readFootnotes(await partOf('footnotes'), styles);
+  const walker = new DocxWalker(styles, numbering, rels, footnotes);
   walker.body(child(root, 'w:body'));
   if (walker.overflow) throw new OfficeImportError('too-many-blocks', walker.blocks.length);
   return { blocks: walker.blocks, pictures: walker.pictures, tally: walker.tally };

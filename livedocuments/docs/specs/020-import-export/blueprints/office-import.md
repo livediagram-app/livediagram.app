@@ -159,15 +159,20 @@ Follows the spec's table. Precisely:
 - Pictures: `w:drawing` → `wp:inline` or `wp:anchor`, `wp:extent` (EMU) is its size, `wp:docPr` `descr` (else
   `title`) its alt text; `pic:pic` with `a:blip r:embed` is a picture (the paragraph splits round it), `r:link`
   is `linkedImages`; a chart `charts`, a diagram `diagrams`, a `wps`/`wpg` shape `textBoxes`. `w:pict`'s
-  `v:imagedata r:id` is a picture, a `v:textbox` `textBoxes`. `w:object` is `embedded`.
+  `v:imagedata r:id` is a picture, its size the `v:shape` style's `width` and `height` in `px` (no unit), `pt`,
+  `pc`, `in`, `cm` or `mm`, at 96 px to the inch (any other unit reads as 0); a `v:textbox` `textBoxes`.
+  `w:object` is `embedded`.
 - Footnotes: `readFootnotes` reads `word/footnotes.xml` (by the document's footnotes relationship) into a map of
   id to text, leaving out the separator notes (any with a `w:type`), each note's paragraphs joined by a space and
   passed through `cleanFootnoteText`; a `w:footnoteReference` whose id is in the map is a run `{ text: '*', fn }`.
+  A note's text is read as the body's is: `w:t`, `w:tab`, `w:br` and `w:cr` a space, `w:noBreakHyphen` `-`,
+  walking into the same containers, leaving out `w:del`, `w:moveFrom` and hidden runs (`runHidden`).
 - Counted: a `w:footnoteReference` with no note, `w:endnoteReference` (`footnotes`), `w:commentReference` (`comments`),
   `m:oMath` / `m:oMathPara` (`equations`), `w:altChunk` (`embedded`), a header or footer reference in any
   `w:sectPr` (`headersFooters`, once), each `w:tbl` (`tables`).
 - A table: a table block (`tableFromGrid`), each `w:tr` a row and each `w:tc` a cell, its paragraphs joined by
-  `\n`; rows and cells inside `w:sdt` / `w:sdtContent` and `w:customXml` are walked into. A row's
+  `\n`, a paragraph inside a `w:sdt` or `w:customXml` in the cell joined the same way; rows and cells inside
+  `w:sdt` / `w:sdtContent` and `w:customXml` are walked into. A row's
   `w:trPr/w:gridBefore` adds that many empty cells before its first, and a cell's `w:tcPr/w:gridSpan` that many
   less one empty cells after it (each bounded by `MAX_ARTICLE_TABLE_COLS`), so cells keep their grid columns; a
   `w:vMerge` continuation cell is empty in its own right. A first row with `w:tblHeader` (not `false` or `0`) is
