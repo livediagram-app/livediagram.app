@@ -36,6 +36,16 @@ function cacheOf(wb: Workbook): Cache {
   return cache;
 }
 
+// Each rule object's own number, so the caches above key on the rule as it stands: a rule edited in the form keeps
+// its id (the preview draws it on every keystroke), and an id alone would keep drawing its first version.
+const RULE_KEYS = new WeakMap<FormatRule, number>();
+let ruleKeys = 0;
+function ruleKey(rule: FormatRule): number {
+  let k = RULE_KEYS.get(rule);
+  if (k === undefined) RULE_KEYS.set(rule, (k = ++ruleKeys));
+  return k;
+}
+
 const EMPTY: readonly FormatRule[] = [];
 
 // Each rule's condition, read once per locale.
@@ -59,7 +69,7 @@ export function formatRulesAt(layout: SheetLayout, r: number, c: number): Format
 // A scale rule's numbers, sorted, worked out once per recalculation.
 function scaleNumbers(wb: Workbook, sheetId: string, rule: FormatRule): number[] {
   const cache = cacheOf(wb);
-  const key = `${sheetId}|${rule.id}`;
+  const key = `${sheetId}|${ruleKey(rule)}`;
   const known = cache.scales.get(key);
   if (known) return known;
   const sheet = wb.sheet(sheetId);
@@ -143,7 +153,7 @@ function formulaMet(
   const cache = cacheOf(wb);
   const dr = r - p.r1;
   const dc = c - p.c1;
-  const key = `${sheetId}|${rule.id}|${dr}|${dc}`;
+  const key = `${sheetId}|${ruleKey(rule)}|${dr}|${dc}`;
   let moved = cache.moved.get(key);
   if (!moved) {
     moved = dr === 0 && dc === 0 ? rule.fx : shiftForCopy(rule.fx, dr, dc, wb.ctxFor(sheetId));
