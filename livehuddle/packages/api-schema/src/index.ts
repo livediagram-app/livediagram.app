@@ -293,6 +293,7 @@ export * from './call-hand';
 export * from './call-control';
 // Knock (docs/specs/012-collaboration/knock.md).
 export * from './knock';
+export * from './avatar-push';
 // The reception bell (docs/specs/009-elements/workday-pieces.md "The wire").
 export * from './bell';
 // A game at a piece, the Ping-Pong Table's first (docs/specs/009-elements/social-pieces.md "The wire").

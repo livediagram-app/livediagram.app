@@ -43,7 +43,6 @@ function setup(over: Partial<WayfindingInput> = {}) {
     onFollowLink: vi.fn(),
     onTravelToTab,
     mainRef: null,
-    readZoom: () => 1,
     setViewportOffset: vi.fn(),
     ...over,
   };

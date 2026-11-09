@@ -152,6 +152,22 @@ describe('dropping a note', () => {
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ error: 'box_full' });
   });
+
+  it('lets only one of two racing drops take the last place', async () => {
+    const insert = sql.sql.prepare(
+      "INSERT INTO suggestions (id, document_id, tab_id, element_id, text, day) VALUES (?, 'd1', 't1', 'b', 'x', '2026-11-07')",
+    );
+    for (let i = 0; i < SUGGESTIONS_MAX - 1; i += 1) insert.run(`s${i}`);
+    const [a, b] = await Promise.all([
+      drop('Left', { owner: VISITOR, code: 'TAKE' }),
+      drop('Right', { owner: VISITOR, code: 'TAKE' }),
+    ]);
+    expect([a.status, b.status].sort()).toEqual([201, 409]);
+    const { n } = sql.sql
+      .prepare("SELECT COUNT(*) AS n FROM suggestions WHERE element_id = 'b'")
+      .get() as { n: number };
+    expect(n).toBe(SUGGESTIONS_MAX);
+  });
 });
 
 describe('reading and removing', () => {

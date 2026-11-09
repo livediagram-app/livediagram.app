@@ -27,9 +27,12 @@ vi.mock('../calls/calls-mode', async (load) => {
 const room = vi.hoisted(() => ({
   answers: null as null | ((asks: { sessionId: string }[]) => string[]),
   asked: [] as { subscriber: string; asks: unknown }[],
+  // The Space's Community post, when it has one (docs/specs/025-community/community.md).
+  post: null as null | { code: string; open: boolean },
 }));
 vi.mock('../document-client', () => ({
   documentRoom: () => ({
+    community: async () => room.post,
     callsHearing: async (subscriber: string, asks: { sessionId: string }[]) => {
       room.asked.push({ subscriber, asks });
       return room.answers ? room.answers(asks) : asks.map(() => 'heard');
@@ -109,6 +112,7 @@ beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   room.answers = null;
   room.asked = [];
+  room.post = null;
 });
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -159,6 +163,25 @@ describe('the gates, in order', () => {
     grant = grantAt('edit', true);
     expect((await call('POST', 'session')).status).toBe(410);
     expect(upstream).toEqual([]);
+  });
+
+  // docs/specs/025-community/community.md: a Community post's link is a content-only pass, never the room, so never
+  // a call in it, whether the post is listed or hidden.
+  it('refuses a Community post’s link with 403 community_link, before it says whether calls are on', async () => {
+    grant = { ...grantAt('view'), shareCode: 'POST' };
+    for (const open of [true, false]) {
+      room.post = { code: 'POST', open };
+      const res = await call('POST', 'session');
+      expect(res.status).toBe(403);
+      expect(await res.json()).toEqual({ error: 'community_link' });
+      expect((await call('POST', 'tracks', { sessionId: 'x' })).status).toBe(403);
+      // Calls off: still the Community refusal, never `calls_off`.
+      expect((await call('POST', 'session', undefined, {})).status).toBe(403);
+    }
+    expect(upstream).toEqual([]);
+    // An ordinary view link on a Space with a post still listens in.
+    grant = grantAt('view');
+    expect((await call('POST', 'session')).status).toBe(200);
   });
 
   it('mints a session on production once the secrets are set', async () => {

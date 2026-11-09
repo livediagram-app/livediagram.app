@@ -6,14 +6,7 @@
 import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
 import type { SuggestionsResponse } from '@livehuddle/api-schema';
 import { SUGGESTION_TEXT_MAX, SUGGESTIONS_MAX } from '@livehuddle/document';
-import {
-  countSuggestions,
-  deleteSuggestion,
-  getDocument,
-  getTab,
-  insertSuggestion,
-  listSuggestions,
-} from '../db';
+import { deleteSuggestion, getDocument, getTab, insertSuggestion, listSuggestions } from '../db';
 import { badRequest, conflict, json, methodNotAllowed, noContent, notFound } from '../responses';
 import {
   deniedEdit,
@@ -67,12 +60,8 @@ async function drop(ctx: DocumentRouteContext, id: string, tabId: string): Promi
   const box = tab?.elements.find((el) => el.id === elementId);
   if (!box || box.type !== 'shape' || box.shape !== 'suggestion-box') return notFound();
   const where = { documentId: id, tabId, elementId };
-  if ((await countSuggestions(ctx.env, where)) >= SUGGESTIONS_MAX) return conflict('box_full');
-  await insertSuggestion(ctx.env, where, {
-    id: crypto.randomUUID(),
-    text,
-    day: utcDay(Date.now()),
-  });
+  const note = { id: crypto.randomUUID(), text, day: utcDay(Date.now()) };
+  if (!(await insertSuggestion(ctx.env, where, note, SUGGESTIONS_MAX))) return conflict('box_full');
   // Neither the caller nor the text: the log is read by people too.
   console.info('[suggestions] dropped', { documentId: id, tabId });
   return json({}, { status: 201 });
