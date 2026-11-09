@@ -144,6 +144,23 @@ describe('swapTabChanges', () => {
     expect(m.stored()).toEqual(['a', 'b']);
   });
 
+  it('keeps the changes already written alone when a later one hits a store error', async () => {
+    const m = memoryStore([], JSON.stringify({ items: ['a', 'b'] }).length);
+    const write = m.store.write;
+    let writes = 0;
+    m.store.write = async (expected, data, body) => {
+      // The drain's write (over the cap), then a alone, then b alone fails on the disk.
+      writes++;
+      if (writes === 3) throw new Error('disk');
+      return write(expected, data, body);
+    };
+    const out = await swapTabChanges(m.store, [add('a'), add('b'), add('c')]);
+    expect(out[0]).toEqual({ ok: true, answer: 0 });
+    expect(out[1]).toMatchObject({ ok: 'threw' });
+    expect(out[2]).toEqual({ ok: true, answer: 1 });
+    expect(m.stored()).toEqual(['a', 'c']);
+  });
+
   it('throws what the store throws that is not the cap', async () => {
     const m = memoryStore();
     m.store.write = async () => {
