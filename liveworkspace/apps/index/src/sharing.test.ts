@@ -612,14 +612,25 @@ describe('share-password guesses', () => {
       },
     });
     expect(visitors.keys).toEqual(['via:2001:0db8:0001:0002::/64']);
+    // An IPv4 visitor named as IPv4-mapped IPv6 is that IPv4 address, not one /64 for every such visitor.
+    await call(`/share/${link.code}`, {
+      env,
+      headers: {
+        'X-Share-Password': 'nope',
+        'CF-Connecting-IP': '2a06:98c0::1',
+        'CF-Worker': 'livediagram.app',
+        'X-Liveworkspace-Client-IP': '::ffff:198.51.100.7',
+      },
+    });
+    expect(visitors.keys.at(-1)).toBe('via:198.51.100.7');
     // An app's server asking for a visitor (a Worker's subrequest, from Cloudflare's own address): the item's limit
     // only, so one visitor can't use up every other visitor's tries.
     await call(`/share/${link.code}`, {
       env,
       headers: { 'X-Share-Password': 'nope', 'CF-Connecting-IP': '2a06:98c0::1', 'CF-Worker': 'x' },
     });
-    expect(visitors.keys).toHaveLength(1);
-    expect(items.keys).toHaveLength(2);
+    expect(visitors.keys).toHaveLength(2);
+    expect(items.keys).toHaveLength(3);
   });
 
   it('counts a named address only beside the routers’ secret, once the index has one', async () => {
