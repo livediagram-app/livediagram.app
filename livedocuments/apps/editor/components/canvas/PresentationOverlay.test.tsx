@@ -200,6 +200,69 @@ describe('PresentationOverlay', () => {
     expect(say).toHaveBeenLastCalledWith('Slide 2 of 2, Tab');
   });
 
+  // docs/specs/012-collaboration/presentation-mode.md "The presenter stays on their slide": a collaborator moving a
+  // slide before the one on screen shifts its place, and is no move.
+  it('keeps the auto-advance timer and says nothing when the slide on screen only changes place', () => {
+    const say = vi.mocked(announce);
+    say.mockClear();
+    const onGo = vi.fn();
+    const deck = (steps: PresentationStep[], at: number) => (
+      <PresentationOverlay
+        steps={steps}
+        canvasTool="select"
+        onSetCanvasTool={vi.fn()}
+        at={at}
+        onGo={onGo}
+        onExit={vi.fn()}
+        direction="forward"
+        config={{ ...DEFAULT_PRESENTATION_CONFIG, autoAdvanceSeconds: 2 }}
+        onChangeConfig={vi.fn()}
+      />
+    );
+    const extra: PresentationStep = { slide: slide('z'), tab, index: 2 };
+    const { rerender } = render(deck(STEPS, 0));
+    tick(1500);
+    // A peer puts a slide before slide a: still on a, now at 1 of 3.
+    rerender(deck([extra, ...STEPS], 1));
+    tick(600);
+    expect(onGo).toHaveBeenCalledTimes(1);
+    expect(say).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes an open jump list on a click outside it rather than advancing, and on a step', () => {
+    render(<Deck />);
+    press('g');
+    expect(screen.getByRole('dialog', { name: 'Jump to a slide' })).toBeTruthy();
+    const catcher = document.querySelector('[data-presentation-surface] > div[aria-hidden]')!;
+    act(() => {
+      catcher.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(screen.queryByRole('dialog', { name: 'Jump to a slide' })).toBeNull();
+    expect(screen.getByText('1 / 2', { exact: false })).toBeTruthy();
+    press('g');
+    press('ArrowRight');
+    expect(screen.queryByRole('dialog', { name: 'Jump to a slide' })).toBeNull();
+  });
+
+  it('leaves a chord to the browser: Cmd+G, Ctrl+L and Alt+Left do nothing to the deck', () => {
+    const onSetCanvasTool = vi.fn();
+    render(<Deck onSetCanvasTool={onSetCanvasTool} />);
+    press('ArrowRight');
+    const chord = (key: string, init: KeyboardEventInit) => {
+      const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+      act(() => {
+        window.dispatchEvent(e);
+      });
+      return e;
+    };
+    expect(chord('g', { metaKey: true }).defaultPrevented).toBe(false);
+    expect(screen.queryByRole('dialog', { name: 'Jump to a slide' })).toBeNull();
+    chord('l', { ctrlKey: true });
+    expect(onSetCanvasTool).not.toHaveBeenCalled();
+    chord('ArrowLeft', { altKey: true });
+    expect(screen.getByText('2 / 2', { exact: false })).toBeTruthy();
+  });
+
   it('leaves a pointing tool armed at Start in hand on the way out', () => {
     const onSetCanvasTool = vi.fn();
     const { unmount } = render(<Deck canvasTool="laser" onSetCanvasTool={onSetCanvasTool} />);
