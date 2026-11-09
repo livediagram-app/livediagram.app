@@ -4,7 +4,7 @@
 // the page, cut off at its edges by the frame itself; and every element without colours of its own is inked for the
 // page. The background is one SVG fragment, so the editor's SVG export, its PNG / PDF rasteriser and an agent's
 // preview (apps/mcp) paint the same. Pure.
-import type { CanvasSurface } from './colors';
+import { isLightColor, type CanvasSurface } from './colors';
 import type { Element } from './index';
 import { endpointPosition } from './geometry';
 import { pageIsDark, pageSurface } from './page-content';
@@ -127,24 +127,30 @@ function photoImageSvg(
   return `<image x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" preserveAspectRatio="none" href="${xmlEscape(href)}"/>`;
 }
 
-// The transparency checkerboard's squares and colours where a photo's picture is not to hand.
+// The transparency checkerboard's squares and colours where a photo's picture is not to hand: its two tones on light
+// paper, and on dark paper (a view in dark chrome) slate-900 and slate-800, as the canvas draws it
+// (docs/specs/031-photo/photo-pages.md "Background").
 const PHOTO_CHECKER = 16;
-const PHOTO_CHECKER_LIGHT = '#ffffff';
-const PHOTO_CHECKER_DARK = '#e2e8f0';
+const PHOTO_CHECKER_TONES = {
+  light: ['#ffffff', '#e2e8f0'],
+  dark: ['#0f172a', '#1e293b'],
+} as const;
 
 /** A photo page whose picture is not to hand: the checkerboard and a picture glyph at its centre. */
 function photoPlaceholderSvg(
   r: { x: number; y: number; width: number; height: number },
   id: string,
+  paper: string,
 ): string {
   const c = PHOTO_CHECKER;
+  const [base, square] = PHOTO_CHECKER_TONES[isLightColor(paper) ? 'light' : 'dark'];
   const glyph = Math.max(24, Math.min(r.width, r.height) * 0.12);
   const gx = r.x + r.width / 2 - glyph / 2;
   const gy = r.y + r.height / 2 - glyph / 2;
   return (
     `<defs><pattern id="${id}-checker" patternUnits="userSpaceOnUse" x="${r2(r.x)}" y="${r2(r.y)}" width="${c * 2}" height="${c * 2}">` +
-    `<rect width="${c * 2}" height="${c * 2}" fill="${PHOTO_CHECKER_LIGHT}"/><rect width="${c}" height="${c}" fill="${PHOTO_CHECKER_DARK}"/>` +
-    `<rect x="${c}" y="${c}" width="${c}" height="${c}" fill="${PHOTO_CHECKER_DARK}"/></pattern></defs>` +
+    `<rect width="${c * 2}" height="${c * 2}" fill="${base}"/><rect width="${c}" height="${c}" fill="${square}"/>` +
+    `<rect x="${c}" y="${c}" width="${c}" height="${c}" fill="${square}"/></pattern></defs>` +
     `<rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" fill="url(#${id}-checker)"/>` +
     `<g transform="translate(${r2(gx)} ${r2(gy)}) scale(${r2(glyph / 24)})" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">` +
     `<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></g>`
@@ -203,7 +209,7 @@ export function pageExportFrame(
     !!device || (transparentPaper && page.kind === 'logo' && !fill) || page.kind === 'photo';
   if (page.kind === 'photo') {
     const href = photoHref?.(page.id);
-    parts.push(href ? photoImageSvg(r, href) : photoPlaceholderSvg(r, id));
+    parts.push(href ? photoImageSvg(r, href) : photoPlaceholderSvg(r, id, paper));
   } else if (fill?.kind === 'gradient') {
     const l = pageGradientLine(fill, r);
     parts.push(
