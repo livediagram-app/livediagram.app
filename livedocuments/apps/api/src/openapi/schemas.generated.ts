@@ -4268,6 +4268,42 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "MapPin": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "lat": {
+        "type": "number"
+      },
+      "lon": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "lat",
+      "lon"
+    ],
+    "type": "object"
+  },
+  "MapRegion": {
+    "enum": [
+      "world",
+      "europe",
+      "africa",
+      "asia",
+      "middle-east",
+      "north-america",
+      "south-america",
+      "oceania"
+    ],
+    "type": "string"
+  },
   "MediaAnimation": {
     "enum": [
       "kenburns",
@@ -5591,6 +5627,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "number"
   },
+  "QuoteLook": {
+    "enum": [
+      "card",
+      "plain"
+    ],
+    "type": "string"
+  },
   "RatingAnim": {
     "enum": [
       "pop",
@@ -6264,6 +6307,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "$ref": "#/components/schemas/ElementId"
       },
+      "imageId": {
+        "type": "string"
+      },
       "label": {
         "type": "string"
       },
@@ -6293,6 +6339,24 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "locked": {
         "type": "boolean"
+      },
+      "mapCountry": {
+        "type": "string"
+      },
+      "mapHighlights": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "mapPins": {
+        "items": {
+          "$ref": "#/components/schemas/MapPin"
+        },
+        "type": "array"
+      },
+      "mapRegion": {
+        "$ref": "#/components/schemas/MapRegion"
       },
       "marker": {
         "$ref": "#/components/schemas/ShapeMarker"
@@ -6385,6 +6449,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pyramidVariant": {
         "$ref": "#/components/schemas/PyramidVariant"
       },
+      "quoteLook": {
+        "$ref": "#/components/schemas/QuoteLook"
+      },
       "railCount": {
         "type": "number"
       },
@@ -6474,6 +6541,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "stackPadding": {
         "type": "number"
+      },
+      "statCountUp": {
+        "type": "boolean"
       },
       "stats": {
         "items": {
@@ -6596,6 +6666,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "stat-row",
       "process",
       "site-header",
+      "quote",
       "tab-window",
       "stadium",
       "cloud",
@@ -6621,6 +6692,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "checklist",
       "legend",
       "sankey",
+      "map",
       "icon",
       "sticker"
     ],
@@ -6892,6 +6964,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "properties": {
       "caption": {
+        "type": "string"
+      },
+      "change": {
         "type": "string"
       },
       "value": {
@@ -7471,6 +7546,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "height": {
         "type": "number"
       },
+      "highlightColumn": {
+        "type": "number"
+      },
       "id": {
         "$ref": "#/components/schemas/ElementId"
       },
@@ -7996,6 +8074,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rotation": {
         "type": "number"
       },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
+      },
       "sizing": {
         "$ref": "#/components/schemas/TextSizing"
       },
@@ -8084,8 +8165,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color": {
         "type": "string"
       },
+      "gradient": {
+        "type": "string"
+      },
       "heading": {
         "$ref": "#/components/schemas/RunHeading"
+      },
+      "highlight": {
+        "type": "string"
       },
       "italic": {
         "type": "boolean"
