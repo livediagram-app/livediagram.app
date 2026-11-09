@@ -7,6 +7,14 @@ describe('titleCase', () => {
     expect(titleCase('arrow to the right')).toBe('Arrow To The Right');
     expect(titleCase('PNG')).toBe('PNG');
   });
+
+  it('knows a word past its accents and apostrophes', () => {
+    expect(titleCase('Résumé')).toBe('Résumé');
+    expect(titleCase('café menu')).toBe('Café Menu');
+    expect(titleCase('don’t stop')).toBe('Don’t Stop');
+    expect(titleCase("it's here")).toBe("It's Here");
+    expect(titleCase('check-in ü-bahn')).toBe('Check-In Ü-Bahn');
+  });
 });
 
 describe('headlineCase', () => {

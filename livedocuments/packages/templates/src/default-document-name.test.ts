@@ -10,6 +10,10 @@ describe('untitledNameForTemplate', () => {
     expect(untitledNameForTemplate('blank-slide-deck')).toBe('Untitled Slide Deck');
     expect(untitledNameForTemplate('blank')).toBe('Untitled document');
   });
+
+  it('keeps an accented title as it is written', () => {
+    expect(untitledNameForTemplate('resume')).toBe('Untitled Résumé');
+  });
 });
 
 describe('isDefaultDocumentName', () => {
@@ -19,6 +23,9 @@ describe('isDefaultDocumentName', () => {
       'Untitled Illustration',
       'Untitled Slide Deck',
       'Untitled Event Poster',
+      'Untitled Résumé',
+      // As a résumé was named before titleCase knew accented letters.
+      'Untitled RéSumé',
     ])
       expect(isDefaultDocumentName(name)).toBe(true);
   });

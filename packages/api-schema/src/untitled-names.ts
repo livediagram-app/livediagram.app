@@ -16,6 +16,8 @@ export const UNTITLED_DOCUMENT_NAMES: ReadonlySet<string> = new Set([
   'Untitled Article',
   'Untitled Infographic',
   'Untitled Flashcards',
+  // Its Résumé, as the name was cased before titleCase knew accented letters.
+  'Untitled RéSumé',
   // liveplanner.
   'Untitled Plan',
   // livehuddle: its blank, Blank Space (it made "Untitled Workshop" and "Untitled canvas", listed above, before).
