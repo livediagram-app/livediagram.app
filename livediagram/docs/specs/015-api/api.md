@@ -234,7 +234,7 @@ document 30 days in the Trash, then deletes it for good and has the document's o
 
 The whole-tab autosave (`PUT /api/documents/<id>/tabs/<tabId>`, about every 600 ms while someone edits) reads
 only what it needs of the document, in one query (`getDocumentForSave`: owner, team, name, the owner's participant
-name and colour, and the tab count), where it ran the full document read (the row with its share-code and
+name and colour, and the next tab place, one past the highest held), where it ran the full document read (the row with its share-code and
 Community subqueries, then the owner's participant and the tab summaries) as two sequential round trips. The stored
 tab, the changesets the editor had not seen and the realtime room's ledger are then read together; the ledger is
 merged after the changesets, as before. A denied save still answers 403.

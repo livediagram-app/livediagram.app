@@ -118,7 +118,9 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       tabId,
       stored,
       next,
-      orderIndex: stored?.orderIndex ?? document.tabs.length,
+      // A new tab goes one past the highest place held, not at the count (docs/specs/006-document/per-tab-storage.md
+      // "New tabs and the tab order"): after a middle tab's delete the count is the last tab's own place.
+      orderIndex: stored?.orderIndex ?? nextOrderIndex(document.tabs),
       author: args.author,
       tokenId: args.tokenId,
       summary: request.summary,
@@ -296,4 +298,11 @@ function priorOf(
 ): StoredTab['tab'] | 'template' | null {
   if (body.kind === 'replace' && 'template' in body.replace) return 'template';
   return stored?.tab ?? null;
+}
+
+// One past the highest place among a document's tabs; 0 with none.
+export function nextOrderIndex(tabs: readonly { orderIndex: number }[]): number {
+  let max = -1;
+  for (const t of tabs) if (t.orderIndex > max) max = t.orderIndex;
+  return max + 1;
 }

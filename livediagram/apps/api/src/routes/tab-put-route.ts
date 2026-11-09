@@ -121,7 +121,7 @@ export async function handleTabPut(
     // A Q&A board's notes are owned by the qa endpoint (docs/specs/012-collaboration/qa-board.md):
     // keep whichever copy has the higher `qaRev`.
     if (existingTab) body.elements = preferNewerQaAll(existingTab.elements, body.elements);
-    const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
+    const orderIndex = existingTab?.orderIndex ?? existing.nextOrderIndex;
     // Newly added comments carry the resolved owner's profile, never the client's claim
     // (docs/specs/014-identity/auth-and-guest-access.md). Remembered per isolate for a minute
     // (liveworkspace/profiles.ts), so an autosave costs no accounts call. Without a profile (a
