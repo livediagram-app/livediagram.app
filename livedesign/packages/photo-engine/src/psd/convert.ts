@@ -5,7 +5,7 @@
 import { compositePhoto, type PixelsLookup, type TextRasterizer } from '../composite/composite';
 import { newLayerId } from '../model/ids';
 import { PHOTO_TILE } from '../model/limits';
-import { normaliseStack } from '../model/stack';
+import { maskOffsetOf, normaliseStack } from '../model/stack';
 import type { GroupLayer, Photo, PhotoLayer, PixelLayer } from '../model/types';
 import { alphaBounds, cropRaster, type Raster } from '../raster/raster';
 import { TiledRaster } from '../raster/tiles';
@@ -149,11 +149,7 @@ function psdMask(
 }
 
 /** The PSD of a photo. `pixels` reads its layers' and masks' pixels; `text` draws text layers. */
-export function psdFromPhoto(
-  photo: Photo,
-  pixels: PixelsLookup,
-  text?: TextRasterizer,
-): PsdDesign {
+export function psdFromPhoto(photo: Photo, pixels: PixelsLookup, text?: TextRasterizer): PsdDesign {
   const all = { x: 0, y: 0, width: photo.width, height: photo.height };
   const byParent = new Map<string | undefined, PhotoLayer[]>();
   for (const l of photo.layers) {
@@ -226,7 +222,8 @@ export function psdFromPhoto(
         );
         picture = { raster: r, x: 0, y: 0 };
       }
-      const at = l.layerKind === 'pixel' ? (l.offset ?? { x: 0, y: 0 }) : { x: 0, y: 0 };
+      // An unlinked mask sits at its own offset, as it draws.
+      const at = maskOffsetOf(l);
       out.push({
         kind: 'layer',
         name: l.name,

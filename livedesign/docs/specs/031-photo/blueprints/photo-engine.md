@@ -124,7 +124,7 @@ type LayerMask = {
   pixels: LayerPixels;
   enabled?: false;
   linked?: false;
-  offset?: { x: number; y: number };
+  offset?: { x: number; y: number }; // an unlinked mask's place; `maskOffsetOf(layer)` answers it
 };
 type LayerEffects = { shadow?: Shadow; glow?: Glow; stroke?: Stroke; overlay?: Overlay };
 type LayerBase = {

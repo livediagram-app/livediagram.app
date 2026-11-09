@@ -4,6 +4,7 @@
 // white is its empty, so a mask that hides anything is written over the photo and the layer's extent.
 import {
   createMask,
+  maskOffsetOf,
   setLayer,
   TiledRaster,
   type Mask8,
@@ -78,8 +79,7 @@ export function applyMask(s: PhotoSession, id: string): string | null {
   const raster = s.raster(id);
   const b = raster.contentBounds();
   if (b) {
-    const mo =
-      layer.mask.linked === false ? (layer.mask.offset ?? { x: 0, y: 0 }) : offsetOf(layer);
+    const mo = maskOffsetOf(layer);
     const o = offsetOf(layer);
     const pic = raster.read(b);
     const grey = s
@@ -118,7 +118,7 @@ export function invertMask(s: PhotoSession, id: string): void {
   const layer = s.layer(id);
   if (!layer?.mask) return;
   const rect = cover(s, layer);
-  const mo = layer.mask.linked === false ? (layer.mask.offset ?? { x: 0, y: 0 }) : offsetOf(layer);
+  const mo = maskOffsetOf(layer);
   const local = { x: rect.x - mo.x, y: rect.y - mo.y, width: rect.width, height: rect.height };
   const raster = s.raster(id, 'mask');
   const grey = raster.readChannel(local);
@@ -132,7 +132,7 @@ export function invertMask(s: PhotoSession, id: string): void {
 export function selectMask(s: PhotoSession, id: string): void {
   const layer = s.layer(id);
   if (!layer?.mask) return;
-  const mo = layer.mask.linked === false ? (layer.mask.offset ?? { x: 0, y: 0 }) : offsetOf(layer);
+  const mo = maskOffsetOf(layer);
   const rect = { x: 0, y: 0, width: s.photo.width, height: s.photo.height };
   const m = createMask(rect);
   m.data.set(

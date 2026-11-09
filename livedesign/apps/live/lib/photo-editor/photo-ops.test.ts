@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createMask, setLayer, type PixelLayer, type TextLayer } from '@livedesign/photo-engine';
+import {
+  createMask,
+  setLayer,
+  TiledRaster,
+  type PixelLayer,
+  type TextLayer,
+} from '@livedesign/photo-engine';
 import { clearSelection, fillSelection } from './edit-ops';
 import {
   canvasSize,
@@ -76,6 +82,28 @@ describe('changing the size', () => {
     await h.s.settled();
     expect(pixel(h, 0, 0)).toEqual([0, 255, 0, 255]);
     expect(lastCommit(h)?.label).toBe('Flip Vertical');
+  });
+
+  it('flips an unlinked mask with the picture, where it draws, keeping its own offset', async () => {
+    const h = harness(
+      photoOf(4, 2, [
+        pixelLayer('a', {
+          mask: { pixels: { tiles: {} }, linked: false, offset: { x: 1, y: 0 } },
+        }),
+      ]),
+      { a: solid(4, 2, [255, 255, 255, 255]) },
+    );
+    // The mask hides its own (0, 0): photo (1, 0), at its offset.
+    const m = new TiledRaster(1, 255);
+    m.writeChannel({ x: 0, y: 0, width: 1, height: 1 }, new Uint8Array([0]));
+    h.s.replacePixels('a', 'mask', m);
+    expect(pixel(h, 1, 0)[3]).toBe(0);
+    flipImage(h.s, true);
+    await h.s.settled();
+    // Flipped across a 4 px photo, the hidden pixel is at x 2, and nothing else is hidden.
+    expect(pixel(h, 2, 0)[3]).toBe(0);
+    expect(pixel(h, 1, 0)[3]).toBe(255);
+    expect(pixel(h, 3, 0)[3]).toBe(255);
   });
 
   it('takes a second turn made before the first has landed from the new size', async () => {

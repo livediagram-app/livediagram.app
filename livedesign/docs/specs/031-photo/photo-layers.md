@@ -38,7 +38,8 @@ with the fields of its kind:
 - `parent`: the id of the group it is in; absent is the photo's top level. Groups nest up to five deep.
 - `mask`: `{ pixels, enabled?, linked? }`: the mask's pixels (a grey layer the photo's size,
   [Photo store](photo-store.md) "Tiles"), `enabled: false` turns it off without removing it, `linked: false` keeps
-  it still while the layer moves.
+  it still while the layer moves, at its own `offset`: it is drawn, exported (PNG and PSD) and reworked by a
+  change of size (a turn, a flip, a crop) there, never at the layer's offset.
 - `effects` (pixel and text layers): any of `shadow` (colour, opacity, angle, distance, size, spread), `glow`
   (colour, opacity, size, spread), `stroke` (colour, size, position **Outside**, **Inside** or **Centre**) and
   `overlay` (colour, opacity, blend), each with `enabled`.

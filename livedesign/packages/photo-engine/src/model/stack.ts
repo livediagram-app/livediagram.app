@@ -137,3 +137,11 @@ export function listedLayers(
   }
   return out;
 }
+
+/** Where a layer's mask pixels sit in the photo: a linked mask (the default) at its pixel layer's
+ *  offset (every other kind sits at the origin), an unlinked one at its own offset. Every path that
+ *  reads or writes a mask (composite, GPU view, PSD export, reworking the size) places it here. */
+export function maskOffsetOf(l: PhotoLayer): { x: number; y: number } {
+  if (l.mask?.linked === false) return l.mask.offset ?? { x: 0, y: 0 };
+  return l.layerKind === 'pixel' && l.offset ? l.offset : { x: 0, y: 0 };
+}
