@@ -268,6 +268,8 @@ export const FUNCTION_DOCS: Readonly<Record<string, FunctionDoc>> = {
   VALUE: D('text', 'Text that looks like a number, as the number', '=VALUE("1,234.5")'),
   CHAR: D('number', 'The character of a code', '=CHAR(9733)'),
   CODE: D('text', 'The code of the first character', '=CODE("A")'),
+  UNICHAR: D('number', 'The character of a Unicode code point', '=UNICHAR(128512)'),
+  UNICODE: D('text', 'The Unicode code point of the first character', '=UNICODE("😀")'),
   SPLIT: D(
     'text, delimiter, [split_by_each], [remove_empty]',
     'Splits text into cells across a row',
