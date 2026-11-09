@@ -19,9 +19,9 @@ import { reportServerEvent } from '../server-telemetry';
 import type { TabDTO } from '../types';
 import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
 import {
-  deniedOnTab,
+  deniedParticipate,
   gateEdit,
-  gateRead,
+  gateParticipate,
   grantOn,
   missingProject,
   type PlanRouteContext,
@@ -78,8 +78,10 @@ async function presenceRoute(ctx: PlanRouteContext): Promise<Response | null> {
   if (!token || !owner) return refuse(403, { error: 'presence_requires_token' });
   const doc = await getProject(env, projectId);
   if (!doc) return missingProject(ctx, projectId);
-  if (!(await gateRead(ctx, projectId, doc.ownerId, doc.teamId, tabId)))
-    return deniedOnTab(ctx, doc);
+  // A Viewer's token shows nothing to the room (docs/specs/024-agents/agent-presence.md
+  // "Token levels"): a status line and focus rings are a write in front of everyone.
+  if (!(await gateParticipate(ctx, projectId, doc.ownerId, doc.teamId, tabId)))
+    return deniedParticipate(ctx, doc, tabId);
 
   // A clear skips the tab check, so an entry on a deleted tab can still go (PR34).
   if (request.method === 'DELETE') {

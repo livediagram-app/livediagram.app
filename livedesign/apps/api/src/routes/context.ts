@@ -175,8 +175,8 @@ export async function gateRead(
 }
 
 // The Participant gate (docs/specs/013-workspace/share-roles.md): every write a Participant may make beside an
-// Editor (comments). A Viewer only looks, so it is refused. Agent
-// presence stays on gateRead: an agent acts at its owner's level.
+// Editor (comments). A Viewer only looks, so it is refused. Agent presence too
+// (docs/specs/024-agents/agent-presence.md): a status line and focus rings are put in front of everyone.
 export async function gateParticipate(
   ctx: RouteContext,
   designId: string,
