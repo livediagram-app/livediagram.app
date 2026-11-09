@@ -2,19 +2,39 @@
 
 // Archived's This Browser group (liveworkspace/docs/specs/004-index/one-explorer.md "Archived"): what the host app
 // keeps only in this browser and the person archived here (this-browser.ts `setThisBrowserArchived`). Each row has its
-// local picture and the This Browser pill, and is closed: a click says it is archived, Change Folder moves it back to
-// This Browser (or, signed in, syncs it into the account), and Delete removes it for good where the host deletes in
-// place. Nothing on liveworkspace.app, which can't read the app's store.
+// local picture and the This Browser pill, and is closed: a click says it is archived, Rename writes its new name into
+// the app's offline store (this-browser-record.ts, as its editor would), Change Folder moves it back to This Browser
+// (or, signed in, syncs it into the account), and Delete removes it for good where the host deletes in place. Nothing
+// on liveworkspace.app, which can't read the app's store.
 
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { localArchived, ChangedAgo, ThisBrowserPill, THIS_BROWSER_COPY } from './ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
 import { LIST_CARD, MUTED } from '../ui/classes';
-import { FolderOutlineIcon, TrashIcon } from '../ui/icons';
+import { FolderOutlineIcon, PencilIcon, TrashIcon } from '../ui/icons';
+import { RENAME_INPUT } from '../ui/classes';
+import { InlineRenameInput } from '../ui/InlineRenameInput';
+import { renameThisBrowserRecord } from '../this-browser-record';
+import { quoted } from '../quoted';
 import { PaneIconButton } from '../panel/pane-parts';
 import { useExplorer } from './context';
 import { useHostExtras } from './host';
 import { LocalPreview } from './LocalPreview';
+
+/** Renames one archived here, in the app's offline store and This Browser's list; a toast says when it couldn't. */
+export function useRenameLocal(): (item: ThisBrowserItem, title: string) => Promise<boolean> {
+  const { app, toast } = useExplorer();
+  return useCallback(
+    async (item: ThisBrowserItem, title: string) => {
+      const next = title.trim();
+      if (!next || next === item.title) return true;
+      const done = (await renameThisBrowserRecord(app, item.id, next)) === 'renamed';
+      if (!done) toast.error(`Couldn’t rename ${quoted(item.title || 'Untitled')}. Try again.`);
+      return done;
+    },
+    [app, toast],
+  );
+}
 
 /** The host's items archived in this browser, newest first. */
 export function useThisBrowserArchived(): ThisBrowserItem[] {
@@ -77,7 +97,29 @@ function ArchivedLocalRow({
   onDelete?: () => void;
 }) {
   const { app } = useExplorer();
+  const rename = useRenameLocal();
+  const [renaming, setRenaming] = useState(false);
   const name = item.title || 'Untitled';
+  if (renaming)
+    return (
+      <li
+        data-this-browser-row={item.id}
+        data-archived=""
+        className="flex items-center gap-3 px-4 py-3"
+      >
+        <LocalPreview app={app} iconSize={14} className="h-8 w-8 shrink-0 rounded-lg" />
+        <InlineRenameInput
+          initial={item.title}
+          ariaLabel={`Rename ${name}`}
+          onCommit={(title) => {
+            setRenaming(false);
+            void rename(item, title);
+          }}
+          onCancel={() => setRenaming(false)}
+          className={RENAME_INPUT}
+        />
+      </li>
+    );
   return (
     <li data-this-browser-row={item.id} data-archived="" className="flex items-center">
       <button
@@ -99,6 +141,9 @@ function ArchivedLocalRow({
         </span>
       </button>
       <span className="mr-3 flex shrink-0 items-center gap-1">
+        <PaneIconButton label={`Rename ${name}`} onClick={() => setRenaming(true)}>
+          <PencilIcon />
+        </PaneIconButton>
         <PaneIconButton label={`Change Folder: ${name}`} onClick={onMove}>
           <FolderOutlineIcon />
         </PaneIconButton>
