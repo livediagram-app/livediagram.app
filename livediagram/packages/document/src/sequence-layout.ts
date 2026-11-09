@@ -60,7 +60,9 @@ export function layoutSequence(
   const { participants, items } = diagram;
   const index = new Map(participants.map((p, i) => [p.id, i]));
   const longestHead = Math.max(0, ...participants.map((p) => glyphWidth(p.label, HEAD_PX)));
-  const headW = Math.round(Math.max(HEAD_MIN_W, longestHead + 48));
+  // As wide as the longest name needs, up to a gap's widest less the air between heads: past it the name wraps in
+  // its box. Unbounded, a long name's head outgrew the capped pitch and the heads overprinted one another.
+  const headW = Math.round(Math.min(PITCH_MAX - 40, Math.max(HEAD_MIN_W, longestHead + 48)));
   // The pitch: the head box, or the longest message label on one line in one gap, as a message keeps its label in its
   // first gap (spread over the whole span, a long label wrapped narrow there and cut its own line; two lines each
   // crowded the message above, rows being one height). Up to PITCH_MAX, past which a label wraps and lifts.

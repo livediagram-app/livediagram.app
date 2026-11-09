@@ -108,6 +108,22 @@ describe('layoutSequence', () => {
     expect(messages.every((m) => m.routeBehind === false)).toBe(true);
   });
 
+  it('never overprints one head with the next, however long a name', () => {
+    // The pitch was capped at 520 px but a head was as wide as its name: a 45-character name drew the heads over
+    // each other.
+    const name = 'Customer Identity and Access Management Service';
+    const g = graphFromMermaid(
+      `sequenceDiagram\n participant A as ${name}\n participant B as ${name}\n participant C\n A->>B: hi\n B->>C: ok`,
+    );
+    if (!g.ok) throw new Error(g.error);
+    const heads = layoutGraph(g.graph, { makeEdgeId: () => 'x' }).filter(
+      (e) => e.type === 'shape' && ['A', 'B', 'C'].includes(e.id),
+    ) as { x: number; width: number }[];
+    expect(heads).toHaveLength(3);
+    for (let i = 1; i < heads.length; i++)
+      expect(heads[i]!.x).toBeGreaterThanOrEqual(heads[i - 1]!.x + heads[i - 1]!.width);
+  });
+
   it("fits a long message's label in its first gap on one line, its plate clear of its own line", () => {
     const long = 'GET /authorize (code_challenge, S256, state)';
     const g = graphFromMermaid(
