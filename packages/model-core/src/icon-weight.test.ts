@@ -23,5 +23,8 @@ describe('icon weight', () => {
     expect(iconWeightPx(undefined)).toBe(1.25);
     expect(iconWeightPx('bold')).toBe(2);
     expect(iconWeightPx('heavy' as never)).toBe(1.25);
+    // A prototype key is unknown too, not Object.prototype's member.
+    expect(iconWeightPx('constructor' as never)).toBe(1.25);
+    expect(iconWeightPx('toString' as never)).toBe(1.25);
   });
 });

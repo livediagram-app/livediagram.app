@@ -17,7 +17,10 @@ export const DEFAULT_ICON_WEIGHT: IconWeight = 'regular';
 // The stroke a remote participant's selection highlight draws on an icon they hold.
 export const ICON_REMOTE_HIGHLIGHT_PX = 3;
 
-// On-screen px for a stored weight; unset or unknown (hand-edited data) reads as regular.
+// On-screen px for a stored weight; unset or unknown (hand-edited data) reads as regular. An own-key
+// check, so a stored `"constructor"` or `"toString"` is unknown too, never the object's inherited member.
 export function iconWeightPx(weight: IconWeight | undefined): number {
-  return (weight && ICON_WEIGHT_PX[weight]) || ICON_WEIGHT_PX[DEFAULT_ICON_WEIGHT];
+  return weight !== undefined && Object.hasOwn(ICON_WEIGHT_PX, weight)
+    ? ICON_WEIGHT_PX[weight]
+    : ICON_WEIGHT_PX[DEFAULT_ICON_WEIGHT];
 }

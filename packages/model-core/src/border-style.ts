@@ -84,7 +84,12 @@ export function cornerRadiusPx(
   fallbackPx: number,
 ): number {
   if (preset === 'full') return BORDER_RADIUS_PX.full;
-  const wanted = preset === undefined ? fallbackPx : BORDER_RADIUS_PX[preset];
+  // An unknown preset (hand-edited or imported data, `"xl"` or `"constructor"`) reads as unset, never as an
+  // undefined or inherited value that would make the radius NaN.
+  const wanted =
+    preset !== undefined && Object.hasOwn(BORDER_RADIUS_PX, preset)
+      ? BORDER_RADIUS_PX[preset]
+      : fallbackPx;
   const shorter = Math.min(width, height);
   const room = Number.isFinite(shorter) && shorter > 0 ? CORNER_RADIUS_MAX_SHARE * shorter : 0;
   return Math.max(0, Math.min(wanted, room));

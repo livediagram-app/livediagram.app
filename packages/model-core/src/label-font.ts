@@ -81,10 +81,12 @@ export const NOTE_FONT_PX: Record<TextSizePreset, number> = {
  */
 export const RUN_XS_PX = 10;
 
-/** The px a run's own size draws at, on the single-line or the multi-line scale. */
+/** The px a run's own size draws at, on the single-line or the multi-line scale. An unknown stored size
+ *  (imported or hand-written) draws at `md`, as readTextSize reads one, never at an undefined (NaN) size. */
 export function runFontPx(size: RunSize, multiline = false): number {
   if (size === 'xs') return RUN_XS_PX;
-  return (multiline ? NOTE_FONT_PX : LABEL_FONT_PX)[size];
+  const table = multiline ? NOTE_FONT_PX : LABEL_FONT_PX;
+  return size === 'sm' || size === 'lg' ? table[size] : table.md;
 }
 
 /**
