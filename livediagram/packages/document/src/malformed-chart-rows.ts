@@ -9,10 +9,22 @@ import type { Element } from './index';
 import { asText } from '@liveworkspace/model-core/as-text';
 import { isRecord } from '@liveworkspace/model-core/is-record';
 
-/** Whether a pie or bar slice reads as one: an object with a text label. */
+/** Whether a pie or bar slice reads as one: an object with a text label and a finite number value. */
 export function isChartSlice(v: unknown): boolean {
-  return isRecord(v) && typeof v.label === 'string';
+  return (
+    isRecord(v) &&
+    typeof v.label === 'string' &&
+    typeof v.value === 'number' &&
+    Number.isFinite(v.value)
+  );
 }
+
+// A slice's value as the marks can draw it: a number, or a numeric text read as its number, else 0.
+// Text reached `toFixed` in Show Values and threw; a missing value made a pie's total NaN.
+const sliceValue = (v: unknown): number => {
+  const n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN;
+  return Number.isFinite(n) ? n : 0;
+};
 
 /** Whether a line series reads as one: an object with a text name and a list of values. */
 export function isChartSeries(v: unknown): boolean {
@@ -27,7 +39,11 @@ export function isChartCategory(v: unknown): boolean {
 // Each field's row test and its repair (null drops the row: a slice or series stands alone, a
 // category keeps its place).
 const ROWS: readonly [string, (v: unknown) => boolean, (v: unknown) => unknown][] = [
-  ['pieSlices', isChartSlice, (v) => (isRecord(v) ? { ...v, label: asText(v.label) } : null)],
+  [
+    'pieSlices',
+    isChartSlice,
+    (v) => (isRecord(v) ? { ...v, label: asText(v.label), value: sliceValue(v.value) } : null),
+  ],
   [
     'lineSeries',
     isChartSeries,
