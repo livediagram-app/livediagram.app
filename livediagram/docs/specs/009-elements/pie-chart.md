@@ -168,7 +168,11 @@ groups all three (they're all in `isSelfDrawingShape` too).
   node's label (`n1["Pie Chart<br/>Apples: 30<br/>Pears: 20"]`), never a blank box. A chart with no rows is its
   heading alone.
 - CSV import (line): `parseCsvLineData` in `apps/editor/lib/csv.ts` (quoted-field
-  aware) turns a pasted/uploaded CSV into categories + series.
+  aware) turns a pasted/uploaded CSV into categories + series. The separator is whichever of `,`, `;` and tab the
+  header row uses most (a comma on a tie), so a spreadsheet saved where `;` separates (and `,` is the decimal point)
+  or as tab-separated text imports rather than reading as one column and doing nothing. A value reads as the number a
+  spreadsheet wrote it as: a thousands separator (`"1,234"`, or `1.234,5` in a `;` file), a leading currency sign
+  (`$`, `€`, `£`, `¥`) and a trailing `%` are formatting, not a reason to read 0. Anything else non-numeric reads 0.
 - Setters in `useChartSetters.ts`, exposed through `useElementStyle.ts`: `setPieDataSelected(slices)` (pie / bar),
   `setLineDataSelected(categories, series)` (line), + `setChartLegendSelected` /
   `setChartLegendPositionSelected` / `setPieAnim*Selected`, all gated to chart
