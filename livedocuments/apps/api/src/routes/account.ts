@@ -24,18 +24,29 @@ const PURGE_PAGE = 200;
 async function purgeOwnDocuments(ctx: RouteContext): Promise<{ documents: number; more: boolean }> {
   const client = indexFor(ctx.env, { kind: 'bearer', token: ctx.bearer ?? null });
   if (!client) return { documents: 0, more: false };
-  const query = { app: INDEX_APP, team: 'personal', limit: PURGE_PAGE } as const;
+  const query = { app: INDEX_APP, team: 'personal' } as const;
   const listings = [
-    (cursor?: string) => client.listItems({ ...query, ...(cursor ? { cursor } : {}) }),
-    (cursor?: string) => client.listTrash({ ...query, ...(cursor ? { cursor } : {}) }),
+    (limit: number, cursor?: string) =>
+      client.listItems({ ...query, limit, ...(cursor ? { cursor } : {}) }),
+    (limit: number, cursor?: string) =>
+      client.listTrash({ ...query, limit, ...(cursor ? { cursor } : {}) }),
   ];
   let documents = 0;
   let pages = 0;
-  for (const list of listings) {
+  for (const [at, list] of listings.entries()) {
     let cursor: string | undefined;
     do {
-      if (pages++ === PURGE_PAGES) return { documents, more: true };
-      const page = await list(cursor);
+      if (pages++ === PURGE_PAGES) {
+        // The budget ran out. Mid-listing, more are left; at the start of the next listing (the live one ended on
+        // the last page), one look at each listing still to read says whether anything is: a person with exactly
+        // 1,000 live documents and an empty Trash is done, not asked again.
+        if (cursor) return { documents, more: true };
+        for (const rest of listings.slice(at)) {
+          if ((await rest(1)).items.length > 0) return { documents, more: true };
+        }
+        return { documents, more: false };
+      }
+      const page = await list(PURGE_PAGE, cursor);
       for (const item of page.items) {
         if (item.ownerId !== ctx.accountUserId) continue;
         await client.deleteItem(item.id, { permanent: true });
