@@ -227,10 +227,12 @@ export async function startOnCard(
   if (!item) return itemNotFound();
   const field = readThreadField(body, typeOfItem(caller, item));
   if (field instanceof Response) return field;
-  if ((await threadCountOfItem(ctx.env, projectId, itemId)) >= CARD_THREADS_MAX)
-    return refusal('threads_full');
   const comment = await newComment(ctx, caller.owner, body);
   if (comment instanceof Response) return comment;
+  // Counted after newComment's profile read (a call out of the room), with nothing awaited from here to the insert
+  // but the plan's own SQLite: two starts counted before that call would both pass the cap.
+  if ((await threadCountOfItem(ctx.env, projectId, itemId)) >= CARD_THREADS_MAX)
+    return refusal('threads_full');
   const now = Date.now();
   const thread = startThread({
     id: newThreadId(() => crypto.getRandomValues(new Uint32Array(1))[0]! / 2 ** 32),
