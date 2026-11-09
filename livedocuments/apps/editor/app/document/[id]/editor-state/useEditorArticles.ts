@@ -13,7 +13,7 @@ import type { EditorCollaboration } from './useEditorCollaboration';
 import type { EditorViewport } from './useEditorViewport';
 import type { EditorComments } from './useEditorComments';
 import type { EditorPages } from './useEditorPages';
-import type { EditorHistory } from './useEditorHistory';
+import type { EditorHistory } from './useEditorUndoState';
 
 // The article pages' writing (useArticles) and the page deck controls, folded into the Pages mode view.
 //

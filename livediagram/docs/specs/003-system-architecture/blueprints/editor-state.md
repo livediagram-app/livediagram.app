@@ -12,7 +12,7 @@ All under `apps/editor/app/document/[id]/`.
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `useEditorState.ts`                      | The composer: calls every slice in order, passes each the slices before it, returns every slice's `view` spread in that order. No state, no effects, no logic.        |
 | `editor-state/useEditorDocument.ts`      | Surface flags, workbench session, sign-in, toast and confirm, the load flags, the participant, loaded-tab sets, document id, `hydrated`, the save baseline refs       |
-| `editor-state/useEditorHistory.ts`       | `useDocumentHistory`, the Watch It Built freeze, `tickTabs`, the `commitTabs` choke point, checkpoints, `tabSummaries`                                                |
+| `editor-state/useEditorUndoState.ts`     | `useDocumentHistory`, the Watch It Built freeze, `tickTabs`, the `commitTabs` choke point, checkpoints, `tabSummaries`                                                |
 | `editor-state/useEditorSelection.ts`     | Tab scope and `useEditorUiState` (active tab, selection, editing, format source)                                                                                      |
 | `editor-state/useEditorDialogs.ts`       | Panel layout, dialogs, context menu, the join screen flags                                                                                                            |
 | `editor-state/useEditorTools.ts`         | Laser, eraser and format settings, the canvas tool, the Format tool, the shortcuts switch, `pickCanvasTool`, `pressModeButton`                                        |

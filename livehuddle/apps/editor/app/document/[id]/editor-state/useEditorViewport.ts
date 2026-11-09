@@ -12,7 +12,7 @@ import { holdsOnlyPads } from '@/lib/pad-only-tab';
 import { STRIP_MORPH_MS } from '@/lib/strip-morph';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

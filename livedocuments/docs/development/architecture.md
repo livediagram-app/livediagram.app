@@ -61,7 +61,7 @@ The editor route (`apps/editor/app/document/[id]/`) is split three ways so no fi
 (document, selection, tools, viewport, collaboration, persistence, comments, history, dialogs) plus this product's own:
 `useEditorDocument`, `useEditorSelection`, `useEditorTools`, `useEditorSession`, `useEditorPersistence`,
 `useEditorCollaboration`, `useEditorViewport`, `useEditorComments`, `useEditorPages`, `useEditorLayers`,
-`useEditorHistory`, `useEditorArticles`, `useEditorTabs`, `useEditorElements`, `useEditorStyle`, `useEditorInput`,
+`useEditorUndoState`, `useEditorArticles`, `useEditorTabs`, `useEditorElements`, `useEditorStyle`, `useEditorInput`,
 `useEditorWorkbench`.
 
 - Each slice takes the slices before it (`{ documentSlice, selectionSlice, ... }`, typed by the `Editor<Concern>` type

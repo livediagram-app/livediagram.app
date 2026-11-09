@@ -5,7 +5,7 @@ import type { PollCandidate } from '@/lib/poll-collaborators';
 import { withoutAgentRows } from '@/lib/agent-presence-rows';
 import { usePresenceRows } from '../usePresenceRows';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

@@ -7,7 +7,7 @@ import type { EditorPages } from './useEditorPages';
 //
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
-export function useEditorHistory({
+export function useEditorUndoState({
   documentSlice,
   selectionSlice,
   pagesSlice,
@@ -16,8 +16,6 @@ export function useEditorHistory({
   selectionSlice: EditorSelection;
   pagesSlice: EditorPages;
 }) {
-  // Unmemoised by the React Compiler, as the one hook it was cut from was (see ../useEditorState.ts).
-  'use no memo';
   const { canHistoryUndo, canHistoryRedo, undoHistory, redoHistory, tickTabs } = documentSlice;
   const { activeId, setSelectedId, setEditingId, setFormatSourceId } = selectionSlice;
   const { activeTabLocked, editsBlocked } = pagesSlice;
@@ -38,4 +36,4 @@ export function useEditorHistory({
   return { tick, undo, redo, canUndo, canRedo };
 }
 
-export type EditorHistory = ReturnType<typeof useEditorHistory>;
+export type EditorHistory = ReturnType<typeof useEditorUndoState>;

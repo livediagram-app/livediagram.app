@@ -7,7 +7,7 @@ import { useEditorComments } from './editor-state/useEditorComments';
 import { useEditorComponents } from './editor-state/useEditorComponents';
 import { useEditorDocument } from './editor-state/useEditorDocument';
 import { useEditorElements } from './editor-state/useEditorElements';
-import { useEditorHistory } from './editor-state/useEditorHistory';
+import { useEditorUndoState } from './editor-state/useEditorUndoState';
 import { useEditorInput } from './editor-state/useEditorInput';
 import { useEditorLayers } from './editor-state/useEditorLayers';
 import { useEditorPages } from './editor-state/useEditorPages';
@@ -86,7 +86,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     collaborationSlice,
     pagesSlice,
   });
-  const historySlice = useEditorHistory({ documentSlice, selectionSlice, pagesSlice });
+  const historySlice = useEditorUndoState({ documentSlice, selectionSlice, pagesSlice });
   const tabsSlice = useEditorTabs({
     documentSlice,
     selectionSlice,

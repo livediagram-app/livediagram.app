@@ -63,7 +63,7 @@ The editor route (`apps/live/app/design/[id]/`) is split three ways so no file b
 (document, selection, tools, viewport, collaboration, persistence, comments, history, dialogs) plus this product's own:
 `useEditorDocument`, `useEditorSelection`, `useEditorTools`, `useEditorSession`, `useEditorPersistence`,
 `useEditorCollaboration`, `useEditorViewport`, `useEditorComments`, `useEditorPages`, `useEditorComponents`,
-`useEditorLayers`, `useEditorHistory`, `useEditorTabs`, `useEditorElements`, `useEditorStyle`, `useEditorInput`,
+`useEditorLayers`, `useEditorUndoState`, `useEditorTabs`, `useEditorElements`, `useEditorStyle`, `useEditorInput`,
 `useEditorWorkbench`.
 
 - Each slice takes the slices before it (`{ documentSlice, selectionSlice, ... }`, typed by the `Editor<Concern>` type

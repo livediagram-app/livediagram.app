@@ -8,7 +8,7 @@ import { deriveTabLoadState, patchTab } from '../editor-page-helpers';
 import { useCollabDeepLink } from '../useCollabDeepLink';
 import { activeElementsCommit } from '../active-elements-commit';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';

@@ -14,7 +14,7 @@ Derived from [The badge](../badge.md) and [The step number](../step-number.md). 
 | `packages/document/src/layers.ts`                                                                                         | `paintTier`: an attached chip paints in the top tier                     |
 | `packages/document/src/duplicate.ts`                                                                                      | `attachedTo` follows a copied host, else the copy is detached            |
 | `packages/document/src/svg-render-chip.ts`                                                                                | `svgChip`: the headless body                                             |
-| `apps/editor/app/document/[id]/editor-state/useEditorHistory.ts`                                                          | `settleChips(prev, next)` at the commit choke point, after flowcharts    |
+| `apps/editor/app/document/[id]/editor-state/useEditorUndoState.ts`                                                        | `settleChips(prev, next)` at the commit choke point, after flowcharts    |
 | `apps/editor/components/canvas/ChipFace.tsx`                                                                              | The pill / disc face                                                     |
 | `apps/editor/components/palette/ChipMenuSection.tsx`                                                                      | Look tiles, Detach, Renumber Steps, Play in Order                        |
 | `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`, `useNudgeSelection.ts`, `useClipboard.ts`, `useElementDuplication.ts` | `withAttached` beside `withSheetCharts`                                  |

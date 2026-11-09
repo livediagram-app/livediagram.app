@@ -2,7 +2,7 @@
 
 import type { EditorSurface } from './editor-surface';
 import { useEditorDocument } from './editor-state/useEditorDocument';
-import { useEditorHistory } from './editor-state/useEditorHistory';
+import { useEditorUndoState } from './editor-state/useEditorUndoState';
 import { useEditorSelection } from './editor-state/useEditorSelection';
 import { useEditorDialogs } from './editor-state/useEditorDialogs';
 import { useEditorTools } from './editor-state/useEditorTools';
@@ -29,7 +29,7 @@ import { useEditorKeyboard } from './editor-state/useEditorKeyboard';
 // spread in that order, the same object EditorContext has always carried.
 export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const fromDocument = useEditorDocument(opts);
-  const fromHistory = useEditorHistory({ fromDocument });
+  const fromHistory = useEditorUndoState({ fromDocument });
   const fromSelection = useEditorSelection({ fromDocument });
   const fromDialogs = useEditorDialogs({ fromDocument, fromSelection });
   const fromTools = useEditorTools({ fromDocument, fromSelection });

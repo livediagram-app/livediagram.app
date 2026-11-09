@@ -16,7 +16,7 @@ import { useDocumentTrashed } from '../useDocumentTrashed';
 import { useIdentityBootstrap } from '../useIdentityBootstrap';
 import { useEditorPersistence as usePersistenceState } from '../editor-persistence';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

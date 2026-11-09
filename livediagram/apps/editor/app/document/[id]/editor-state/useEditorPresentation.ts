@@ -8,7 +8,7 @@ import { useSlideDeck } from '../useSlideDeck';
 import { slideFitOptions } from '@/lib/presentation-config';
 import { apiSaveDocumentMeta } from '@/lib/api-client';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorToolsSlice } from './useEditorTools';

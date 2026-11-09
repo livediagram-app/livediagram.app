@@ -4,7 +4,7 @@ import { useStartingTool } from '@/hooks/editor/useStartingTool';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useOpenWalking } from '../useOpenWalking';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

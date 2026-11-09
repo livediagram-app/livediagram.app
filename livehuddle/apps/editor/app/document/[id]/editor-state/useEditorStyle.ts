@@ -5,7 +5,7 @@ import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useElementStyle } from '@/hooks/canvas/useElementStyle';
 import { useStylePreview } from '@/hooks/canvas/useStylePreview';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

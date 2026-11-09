@@ -54,7 +54,7 @@ returns their view-models spread into the one object `EditorContext` carries. It
 with every component that reads the context; splitting or regrouping slices never changes it.
 
 - A slice is named for its concern from the vocabulary every product's editor shares: `useEditorDocument` (load,
-  tabs, document meta), `useEditorSelection`, `useEditorHistory` (undo, redo and the commit), `useEditorTools`,
+  tabs, document meta), `useEditorSelection`, `useEditorUndoState` (undo, redo and the commit), `useEditorTools`,
   `useEditorViewport`, `useEditorCollaboration` (room state, presence, peers), `useEditorPersistence` (save, sync,
   offline), `useEditorComments` and `useEditorDialogs`. A concern only this product has gets a `useEditor<Name>` of
   its own.

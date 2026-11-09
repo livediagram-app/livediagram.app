@@ -8,7 +8,7 @@ import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePresenceState } from '../usePresenceState';
 import { useEditorRealtime } from '../editor-realtime';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 
 // Sharing and the realtime room's state: the share role and its read-only preview, a Participant's session,

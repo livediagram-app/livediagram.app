@@ -52,7 +52,7 @@ marketing/      off-site copy + media for listings and promotion (see docs/specs
 
 The editor route (`apps/editor/app/document/[id]/`) is split three ways so no file becomes a god component:
 
-- `useEditorState.ts` is the orchestration hook: it calls the slices in `editor-state/` in order (one hook per concern, `useEditorDocument`, `useEditorHistory`, `useEditorSelection` and the rest), hands each the slices before it, and returns their view-models spread into one ([Editor state](../specs/003-system-architecture/blueprints/editor-state.md)).
+- `useEditorState.ts` is the orchestration hook: it calls the slices in `editor-state/` in order (one hook per concern, `useEditorDocument`, `useEditorUndoState`, `useEditorSelection` and the rest), hands each the slices before it, and returns their view-models spread into one ([Editor state](../specs/003-system-architecture/blueprints/editor-state.md)).
 - `EditorContext.tsx` carries that view-model as `EditorContextValue = ReturnType<typeof useEditorState>`.
 - `EditorView.tsx` renders the JSX, leaving `editor-page.tsx` a thin page shell.
 

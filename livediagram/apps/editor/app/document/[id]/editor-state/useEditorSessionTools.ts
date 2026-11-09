@@ -7,7 +7,7 @@ import { track } from '@/lib/telemetry';
 import { pollResultElement } from '@/lib/poll-capture';
 import { useTabSession } from '@/hooks/persistence/useTabSession';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorRoomSlice } from './useEditorRoom';

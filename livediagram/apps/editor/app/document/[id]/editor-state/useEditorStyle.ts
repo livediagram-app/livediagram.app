@@ -7,7 +7,7 @@ import { useStylePreview } from '@/hooks/canvas/useStylePreview';
 import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
 import { useFlowchartSetters } from '@/hooks/canvas/useFlowchartSetters';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

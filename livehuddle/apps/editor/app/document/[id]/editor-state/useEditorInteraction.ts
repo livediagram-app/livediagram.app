@@ -8,7 +8,7 @@ import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
 import { useSelectionEditing } from '../useSelectionEditing';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorToolsSlice } from './useEditorTools';

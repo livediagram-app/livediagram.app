@@ -19,7 +19,7 @@ import {
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 

@@ -64,7 +64,7 @@ The editor's state, one slice per concern (`use<Concern>.ts`), composed in a fix
 and `editor-view.ts`, the view-model built from them ([architecture](../../development/architecture.md#editor-state)).
 Slice names come from the vocabulary every product's editor shares (`useEditorDocument`, `useEditorSelection`,
 `useEditorTools`, `useEditorViewport`, `useEditorCollaboration`, `useEditorPersistence`, `useEditorComments`,
-`useEditorHistory`, ...); a product-only concern is `useEditor<Name>` (`useEditorComponents`).
+`useEditorUndoState`, ...); a product-only concern is `useEditor<Name>` (`useEditorComponents`).
 
 ## Execution
 

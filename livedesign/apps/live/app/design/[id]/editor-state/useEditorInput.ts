@@ -22,7 +22,7 @@ import type { EditorComments } from './useEditorComments';
 import type { EditorPages } from './useEditorPages';
 import type { EditorComponents } from './useEditorComponents';
 import type { EditorLayers } from './useEditorLayers';
-import type { EditorHistory } from './useEditorHistory';
+import type { EditorHistory } from './useEditorUndoState';
 import type { EditorTabs } from './useEditorTabs';
 import type { EditorElements } from './useEditorElements';
 import type { EditorStyle } from './useEditorStyle';

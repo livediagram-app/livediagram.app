@@ -13,7 +13,7 @@ import { useElementHelpers } from '../useElementHelpers';
 import { useCollabDeepLink } from '../useCollabDeepLink';
 import { activeElementsCommit } from '../active-elements-commit';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

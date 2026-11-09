@@ -12,7 +12,7 @@ import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
 import { useElementCreation } from '../useElementCreation';
 import { useInlineIconMutators } from '../useInlineIconMutators';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorToolsSlice } from './useEditorTools';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

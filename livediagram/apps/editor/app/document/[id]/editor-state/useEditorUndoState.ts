@@ -13,7 +13,7 @@ import type { EditorDocumentSlice } from './useEditorDocument';
 // flowcharts laid out, new elements stamped onto the active layer). A slice of useEditorState
 // (../useEditorState.ts): it takes the slices composed before it and returns its own, with `view`, its part of
 // the editor's view-model.
-export function useEditorHistory({ fromDocument }: { fromDocument: EditorDocumentSlice }) {
+export function useEditorUndoState({ fromDocument }: { fromDocument: EditorDocumentSlice }) {
   const { initialTabs } = fromDocument;
   // Read at call time by commitTabs and the checkpoint guards below, and filled where their values exist:
   // the active layer's stamp in useEditorLayers, whether a photo draft is open in useEditorEventStorming.
@@ -180,4 +180,4 @@ export function useEditorHistory({ fromDocument }: { fromDocument: EditorDocumen
   };
 }
 
-export type EditorHistorySlice = ReturnType<typeof useEditorHistory>;
+export type EditorHistorySlice = ReturnType<typeof useEditorUndoState>;

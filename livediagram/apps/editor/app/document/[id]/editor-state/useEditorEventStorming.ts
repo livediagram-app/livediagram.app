@@ -6,7 +6,7 @@ import { warmBoundaryModel } from '@/lib/photo-model/client';
 import { usePhotoDraft } from '@/hooks/canvas/usePhotoDraft';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorCommentsSlice } from './useEditorComments';
 import type { EditorViewportSlice } from './useEditorViewport';

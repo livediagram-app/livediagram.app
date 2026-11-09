@@ -10,7 +10,7 @@ import type { CanvasTool } from '@/components/palette/palette.types';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useFormatTool } from '../useFormatTool';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 
 // The canvas tool (Select, Hand, Laser, Eraser, Format and the rest), its per-browser settings, the shortcuts

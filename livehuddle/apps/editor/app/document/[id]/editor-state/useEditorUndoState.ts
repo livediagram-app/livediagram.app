@@ -8,7 +8,7 @@ import type { EditorDocumentSlice } from './useEditorDocument';
 // The document's tabs and their undo history, and the one commit choke point every edit passes (a committed tab
 // stamped with its kind). A slice of useEditorState (../useEditorState.ts): it takes the slices composed before
 // it and returns its own, with `view`, its part of the editor's view-model.
-export function useEditorHistory({ fromDocument }: { fromDocument: EditorDocumentSlice }) {
+export function useEditorUndoState({ fromDocument }: { fromDocument: EditorDocumentSlice }) {
   const { initialTabs } = fromDocument;
   const {
     tabs,
@@ -101,4 +101,4 @@ export function useEditorHistory({ fromDocument }: { fromDocument: EditorDocumen
   };
 }
 
-export type EditorHistorySlice = ReturnType<typeof useEditorHistory>;
+export type EditorHistorySlice = ReturnType<typeof useEditorUndoState>;

@@ -15,7 +15,7 @@ import { usePresenceBroadcast } from '../usePresenceBroadcast';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useChangesetFeed } from '../useChangesetFeed';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';

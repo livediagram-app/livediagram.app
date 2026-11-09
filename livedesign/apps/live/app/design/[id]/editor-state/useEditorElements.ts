@@ -23,7 +23,7 @@ import type { EditorViewport } from './useEditorViewport';
 import type { EditorComments } from './useEditorComments';
 import type { EditorPages } from './useEditorPages';
 import type { EditorLayers } from './useEditorLayers';
-import type { EditorHistory } from './useEditorHistory';
+import type { EditorHistory } from './useEditorUndoState';
 import type { EditorTabs } from './useEditorTabs';
 
 // Making and changing elements: the selection and placement helpers, the checklist tick, images, notes, logo and

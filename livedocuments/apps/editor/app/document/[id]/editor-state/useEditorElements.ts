@@ -17,7 +17,7 @@ import type { EditorViewport } from './useEditorViewport';
 import type { EditorComments } from './useEditorComments';
 import type { EditorPages } from './useEditorPages';
 import type { EditorLayers } from './useEditorLayers';
-import type { EditorHistory } from './useEditorHistory';
+import type { EditorHistory } from './useEditorUndoState';
 import type { EditorArticles } from './useEditorArticles';
 import type { EditorTabs } from './useEditorTabs';
 

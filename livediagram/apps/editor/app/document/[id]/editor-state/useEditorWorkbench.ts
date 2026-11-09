@@ -3,7 +3,7 @@
 import { useWorkbenchEnd } from '../useWorkbenchEnd';
 import { useWorkbenchMessages } from '../useWorkbenchMessages';
 import type { EditorDocumentSlice } from './useEditorDocument';
-import type { EditorHistorySlice } from './useEditorHistory';
+import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
