@@ -85,7 +85,8 @@ many new responses and the total, never what anyone answered. A push that doesn'
   delivery, for de-duplicating.
 - **Slack**: an incoming-webhook URL (`https://hooks.slack.com/services/…`), whose channel Slack fixed when it was
   made. Messages arrive as one sentence ("Ada moved “Fix sign-in” from Doing to Done on “Sprint 4”", "3 new responses to “Bug Report” on “Triage”") with an
-  **Open in liveplanner** link and the app and event beneath.
+  **Open in liveplanner** link and the app and event beneath. Every text Slack reads as markup, the notification
+  text included, has its `&`, `<` and `>` escaped, so a name like `<!channel>` pings no one and can't hide a link.
 - **Microsoft Teams**: a Workflows webhook URL (the "Post to a channel when a webhook request is received" flow,
   on `*.logic.azure.com` or `*.powerplatform.com`), taking an Adaptive Card: the same sentence, the app and event,
   and an **Open in …** button. Office 365 connector webhooks are retired, so they are not offered.

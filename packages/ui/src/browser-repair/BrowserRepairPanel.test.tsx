@@ -76,8 +76,11 @@ describe('BrowserRepairPanel', () => {
       />,
     );
     const toggle = screen.getByRole('button', { name: /repair this browser/i });
+    // It names the confirm only while the confirm is on the page.
+    expect(toggle.getAttribute('aria-controls')).toBeNull();
     fireEvent.click(toggle);
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(document.getElementById(toggle.getAttribute('aria-controls')!)).not.toBeNull();
     expect(screen.getByText(/guest identity, Offline Mode documents/)).toBeTruthy();
     expect(screen.getByText(/clears livediagram.s saved settings/)).toBeTruthy();
     // Nothing cleared until the confirm.

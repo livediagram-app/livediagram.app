@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode, RefObject } from 'react';
+import { useId, type ReactNode, type RefObject } from 'react';
 import { CheckIcon, GlyphDisc } from '@liveworkspace/ui';
 import type { App, WebhookEvent, WebhookKind, WebhookWho } from '@liveworkspace/index-client';
 import { GroupGlyph, KindMark, PersonGlyph, TeamGlyph } from './marks';
@@ -204,13 +204,15 @@ export function WhoPicker({
   value: WebhookWho;
   onChange: (who: WebhookWho) => void;
 }) {
+  // Each picker's own radio group: two webhooks' editors open at once must never share one.
+  const name = `webhook-who-${useId()}`;
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {WHO_CHOICES.map(({ who, label, hint }) => (
         <OptionTile
           key={who}
           type="radio"
-          name="webhook-who"
+          name={name}
           checked={value === who}
           onChange={() => onChange(who)}
           leading={<WhoMark who={who} />}
@@ -295,12 +297,14 @@ export function EventPicker({
     else next.delete(event);
     onChange(next);
   };
+  // Each picker's own heading ids, so two at once (two webhooks' editors) each name their groups.
+  const idPrefix = useId();
   return (
     <div data-webhook-events="" className={`${EVENTS_CARD} flex flex-col pb-1`}>
       {eventGroupsFor(app).map((group) => (
-        <div key={group.id} role="group" aria-labelledby={`webhook-events-${group.id}`}>
+        <div key={group.id} role="group" aria-labelledby={`${idPrefix}-events-${group.id}`}>
           <p
-            id={`webhook-events-${group.id}`}
+            id={`${idPrefix}-events-${group.id}`}
             className="flex items-center gap-1.5 px-3.5 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
           >
             <GroupGlyph id={group.id} />

@@ -178,14 +178,17 @@ export function formatMs(ms: number): string {
   return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(ms < 10_000 ? 1 : 0)} s`;
 }
 
-/** "just now", "12 s ago", "3 min ago". */
+/** "just now", "12 s ago", "3 min ago", "5 h ago", "2 days ago": a run that stopped days back reads in days. */
 export function formatAgo(at: number, now: number): string {
   const s = Math.max(0, Math.round((now - at) / 1000));
   if (s < 5) return 'just now';
   if (s < 60) return `${s} s ago`;
   const m = Math.floor(s / 60);
   if (m < 60) return `${m} min ago`;
-  return `${Math.floor(m / 60)} h ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} h ago`;
+  const d = Math.floor(h / 24);
+  return d === 1 ? '1 day ago' : `${d} days ago`;
 }
 
 // The checks made since the page was opened, oldest first, as a row of slots: the empty ones still to come. The

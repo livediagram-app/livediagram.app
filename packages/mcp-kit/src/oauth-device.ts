@@ -21,6 +21,7 @@ import type { Context, Hono } from 'hono';
 import { builtInClient, type OauthEnv } from './oauth-clients';
 import { formText } from './oauth-form';
 import type { OauthServer } from './oauth';
+import { overWindowLimit, type RateWindow } from './rate-window';
 
 type DeviceRecord = {
   clientId: string;
@@ -58,8 +59,8 @@ function startedInOf(req: Request): StartedIn | undefined {
 
 // KV refuses a TTL under a minute.
 const KV_MIN_TTL_S = 60;
-const START_LIMIT = { max: 20, windowS: 3600 };
-const LOOKUP_LIMIT = { max: 30, windowS: 600 };
+const START_LIMIT: RateWindow = { max: 20, windowS: 3600 };
+const LOOKUP_LIMIT: RateWindow = { max: 30, windowS: 600 };
 const SIX_MONTHS_S = 60 * 60 * 24 * 180;
 
 // The poll's own state: when it last polled and the interval it has earned. Never written by the page.
@@ -72,23 +73,18 @@ const userCodeKey = (code: string) => `usercode:${code}`;
 const log = (event: string, fields: Record<string, unknown> = {}) =>
   console.info(`[oauth] device ${event}`, fields);
 
-// A per-IP counter in KV over a fixed window, as registration counts; true when the caller is over it.
+// A per-IP counter in KV over a fixed window, as registration counts (rate-window.ts); true when the caller is over it.
 async function overLimit(
   env: OauthEnv,
   name: string,
   ip: string,
-  limit: { max: number; windowS: number },
+  limit: RateWindow,
 ): Promise<boolean> {
-  const key = `${name}:${ip}`;
-  const count = Number((await env.OAUTH_KV.get(key)) ?? '0');
-  if (count >= limit.max) {
-    console.warn(
-      `[oauth] device ${name === 'device-start' ? 'authorization' : 'lookup'} rate-limited`,
-    );
-    return true;
-  }
-  await env.OAUTH_KV.put(key, String(count + 1), { expirationTtl: limit.windowS });
-  return false;
+  if (!(await overWindowLimit(env.OAUTH_KV, name, ip, limit))) return false;
+  console.warn(
+    `[oauth] device ${name === 'device-start' ? 'authorization' : 'lookup'} rate-limited`,
+  );
+  return true;
 }
 
 // The caller's rate-limit key, as the api's limiters key it: an IPv6 address by its /64.

@@ -20,6 +20,7 @@ import {
 import { reservedNameRefusal } from './oauth-names';
 import { formText } from './oauth-form';
 import { handleDeviceToken, registerDeviceRoutes } from './oauth-device';
+import { overWindowLimit, type RateWindow } from './rate-window';
 
 // What a product's authorization server is configured with: where its signed-in consent and device pages live
 // (its editor, `CONSENT_BASE_URL` or the hosted app), and the clients it ships.
@@ -70,6 +71,8 @@ type AuthCode = {
 const CLIENT_TTL = 60 * 60 * 24 * 30; // 30 days
 const SESSION_TTL = 60 * 10; // 10 minutes
 const CODE_TTL = 60 * 5; // 5 minutes
+// Client registrations per address.
+const REGISTER_LIMIT: RateWindow = { max: 20, windowS: 60 * 60 };
 
 function randomId(): string {
   return crypto.randomUUID().replace(/-/g, '');
@@ -125,12 +128,11 @@ export function registerOauthRoutes<E extends OauthEnv>(
   // --- Dynamic client registration (RFC 7591) ---
   app.post('/oauth/register', async (c) => {
     // Per-IP cap (docs/specs/015-api/mcp-server.md §3.2) so an open registration endpoint can't be used
-    // to flood KV. KV-backed, sliding hour window; good enough for DCR abuse.
+    // to flood KV: 20 an hour, over a fixed window (rate-window.ts); good enough for DCR abuse.
     // Keyed as the api's limiters are: an IPv6 caller by its /64, so rotating addresses inside it buys nothing.
-    const rateKey = `reg-rate:${clientRateKey(c.req.raw, 'unknown')}`;
-    const count = Number((await c.env.OAUTH_KV.get(rateKey)) ?? '0');
-    if (count >= 20) return c.json({ error: 'rate_limited' }, 429);
-    await c.env.OAUTH_KV.put(rateKey, String(count + 1), { expirationTtl: 3600 });
+    const ip = clientRateKey(c.req.raw, 'unknown');
+    if (await overWindowLimit(c.env.OAUTH_KV, 'reg-rate', ip, REGISTER_LIMIT))
+      return c.json({ error: 'rate_limited' }, 429);
 
     const body = objectOrEmpty(await c.req.json().catch(() => null)) as {
       redirect_uris?: unknown;

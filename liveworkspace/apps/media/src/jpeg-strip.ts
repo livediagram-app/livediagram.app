@@ -22,8 +22,11 @@
 // Length bytes are BIG-ENDIAN and include the two length bytes
 // themselves but NOT the marker. The scan stream after SOS is
 // length-less raw bytes terminated by FFD9 (with FF00 being a
-// stuffed 0xFF inside the stream); we copy everything from SOS
-// forward verbatim, which preserves the image bytes exactly.
+// stuffed 0xFF inside the stream); we copy each scan verbatim, which
+// preserves the image bytes exactly, and walk on past it: a progressive
+// JPEG's later scans can carry APPn and COM between them. Nothing after
+// EOI is kept: a phone's second picture (MPF, a gain map) with its own
+// Exif and GPS, or a motion photo's video, would carry them past us.
 
 const SOI = 0xd8;
 const EOI = 0xd9;
@@ -177,22 +180,40 @@ export function stripJpegMetadata(input: ArrayBuffer): ArrayBuffer {
     i++;
 
     if (marker === EOI) {
-      // End of image: copy and stop.
+      // End of image: copy and stop. What follows (another picture, a video) is dropped.
       out[outOffset++] = 0xff;
       out[outOffset++] = EOI;
       break;
     }
 
     if (marker === SOS) {
-      // Start of scan: copy the SOS segment + every remaining byte
-      // verbatim through EOI. The entropy-coded stream has no
-      // length prefix, so the only safe thing is "copy until end".
+      // Start of scan: its header, then the entropy-coded stream, copied verbatim. The stream has no
+      // length; it ends at the first 0xFF that isn't a stuffed byte (FF00), a restart marker (FFD0..FFD7)
+      // or fill (FFFF). The walk goes on from there: a progressive JPEG's later scans, the tables and
+      // metadata between them, and EOI. A stream that never ends (no EOI) is copied to the end of the file.
+      if (i + 1 >= src.length) {
+        throw new Error('stripJpegMetadata: truncated input, expected scan header length');
+      }
+      const headerEnd = i + ((src[i]! << 8) | src[i + 1]!);
+      if (headerEnd > src.length) throw new Error('stripJpegMetadata: scan header overruns input');
+      let end = headerEnd;
+      for (;;) {
+        end = src.indexOf(0xff, end);
+        if (end < 0 || end + 1 >= src.length) {
+          end = src.length;
+          break;
+        }
+        const next = src[end + 1]!;
+        if (next === 0x00 || (next >= 0xd0 && next <= 0xd7)) end += 2;
+        else if (next === 0xff) end += 1;
+        else break;
+      }
       out[outOffset++] = 0xff;
       out[outOffset++] = SOS;
-      out.set(src.subarray(i), outOffset);
-      outOffset += src.length - i;
-      i = src.length;
-      break;
+      out.set(src.subarray(i, end), outOffset);
+      outOffset += end - i;
+      i = end;
+      continue;
     }
 
     // Markers without a payload (RST0..RST7, TEM). No length, no

@@ -95,7 +95,8 @@ const slackEscape = (text: string) =>
 export function slackBodyOf(event: DeliveryEvent, summary = summaryOf(event)): unknown {
   const link = event.url ? `\n<${event.url}|Open in ${appName(event.app)}>` : '';
   return {
-    text: summary,
+    // The notification and preview text: Slack reads its markup too, so a title can't ping a channel or hide a link.
+    text: slackEscape(summary),
     blocks: [
       { type: 'section', text: { type: 'mrkdwn', text: `${slackEscape(summary)}${link}` } },
       { type: 'context', elements: [{ type: 'mrkdwn', text: slackEscape(footerOf(event)) }] },

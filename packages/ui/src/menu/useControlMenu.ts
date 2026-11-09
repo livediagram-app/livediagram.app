@@ -4,6 +4,7 @@ import { useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, us
 import { MENU_PARENT_ATTR, MENU_SURFACE_ATTR } from './menu-constants';
 import { focusablesOf, isTextEditFocused, openedFromKeyboard, ownsFocus } from './menu-dom';
 import { MenuTreeContext, type MenuTree } from './menu-tree';
+import { isComposingKey } from '../composing-key';
 import {
   focusedOutside,
   returnFocusAfterCommit,
@@ -64,7 +65,8 @@ export function useControlMenu({
   useEffect(() => {
     if (!element) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      // An input method's Escape drops its word, never the menu (composing-key.ts).
+      if (e.key !== 'Escape' || e.defaultPrevented || isComposingKey(e)) return;
       e.preventDefault();
       (latest.current.onEscape ?? latest.current.onClose)();
     };

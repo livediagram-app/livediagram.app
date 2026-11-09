@@ -117,7 +117,7 @@ export function BrowserRepairPanel({
           variant="secondary"
           size="sm"
           aria-expanded={confirming}
-          aria-controls={confirmId}
+          aria-controls={confirming ? confirmId : undefined}
           onClick={() => setConfirming((c) => !c)}
         >
           <RefreshIcon size={14} />

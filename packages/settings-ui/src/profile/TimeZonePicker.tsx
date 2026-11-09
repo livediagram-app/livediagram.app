@@ -315,9 +315,12 @@ function ZoneList({
       const entry = entries[activeIndex];
       if (entry) onPick(entry.value);
     } else if (event.key === 'Escape') {
-      // The list's alone: the panel stays open behind it.
+      // The list's alone: the panel stays open behind it. Stopped immediately: under Next, React listens on the
+      // document, the node a Dialog's own Escape listener sits on too, and stopPropagation never stops a listener
+      // on the same node (as DateInput's Escape).
       event.preventDefault();
       event.stopPropagation();
+      event.nativeEvent.stopImmediatePropagation();
       onClose();
     }
   }

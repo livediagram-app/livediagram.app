@@ -7,6 +7,7 @@ import { lucideGlyph } from './icons/lucide-glyph';
 import { Portal } from './Portal';
 import { POPOVER_VIEWPORT_MARGIN as EDGE, clampIntoRange } from './popover';
 import { usePopoverLayer } from './popover-stack';
+import { isComposingKey } from './composing-key';
 
 // A small confirmation popover anchored beside a trigger element, with an
 // arrow pointing back at it. The lightweight alternative to the full-
@@ -138,7 +139,8 @@ export function ConfirmPopover({
       e.stopPropagation();
       onCancel();
       anchor.focus();
-    } else if (e.key === 'Enter') {
+    } else if (e.key === 'Enter' && !isComposingKey(e)) {
+      // An input method's Enter picks its word (composing-key.ts), never confirms.
       // A focused button presses itself: Enter on Cancel cancels. Taking every Enter as Confirm deleted
       // the thing a keyboard user had just tabbed to Cancel to keep.
       if (e.target instanceof HTMLButtonElement && ref.current?.contains(e.target)) return;
