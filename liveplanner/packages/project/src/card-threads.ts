@@ -33,8 +33,10 @@ export type CardThread = {
   // '' for a thread moved from a card's old single thread: its title is worked out (threadTitle).
   title: string;
   resolved: boolean;
-  // Who resolved it and when, while resolved.
+  // Who resolved it and when, while resolved: their name, and their hashed person id (itemPersonId, public as a
+  // card's makers' are) so a closed account's anonymising finds them. A thread resolved before it was kept has none.
   resolvedBy?: string;
+  resolvedById?: string;
   resolvedAt?: number;
   // Oldest first, never empty.
   comments: Comment[];
@@ -177,18 +179,20 @@ export type ThreadChange =
   | { kind: 'add'; comment: Comment }
   | { kind: 'edit'; commentId: string; text: string; mentions?: CommentMention[] }
   | { kind: 'remove'; commentId: string }
-  | { kind: 'resolve'; resolved: boolean; by: string }
+  | { kind: 'resolve'; resolved: boolean; by: string; byId?: string }
   | { kind: 'rename'; title: string }
   | { kind: 'addCard'; card: CardRef }
   | { kind: 'removeCard'; projectId: string; itemId: string }
   // One person's reaction on one comment, on or off (docs/specs/012-collaboration/comment-reactions.md): `by` is
-  // their public collab key, `name` the name the server stamped. Not activity: the thread keeps its place.
+  // their public collab key, `name` the name the server stamped, `person` their hashed person id where the server
+  // stamped it (a This Browser plan's own change has none). Not activity: the thread keeps its place.
   | {
       kind: 'react';
       commentId: string;
       emoji: CommentReactionId;
       by: string;
       name: string;
+      person?: string;
       on: boolean;
     };
 
@@ -231,7 +235,13 @@ export function applyThreadChange(
       const comments = [...thread.comments, change.comment];
       if (threadBytes(comments) > THREAD_BYTES) return { ok: false, reason: 'comments_full' };
       // A reply reopens a resolved thread, as on the canvas.
-      return next({ comments, resolved: false, resolvedBy: undefined, resolvedAt: undefined });
+      return next({
+        comments,
+        resolved: false,
+        resolvedBy: undefined,
+        resolvedById: undefined,
+        resolvedAt: undefined,
+      });
     }
     case 'edit': {
       const at = thread.comments.findIndex((c) => c.id === change.commentId);
@@ -260,8 +270,18 @@ export function applyThreadChange(
     case 'resolve': {
       if (thread.resolved === change.resolved) return { ok: false, reason: 'unchanged' };
       return change.resolved
-        ? next({ resolved: true, resolvedBy: change.by, resolvedAt: now })
-        : next({ resolved: false, resolvedBy: undefined, resolvedAt: undefined });
+        ? next({
+            resolved: true,
+            resolvedBy: change.by,
+            resolvedById: change.byId,
+            resolvedAt: now,
+          })
+        : next({
+            resolved: false,
+            resolvedBy: undefined,
+            resolvedById: undefined,
+            resolvedAt: undefined,
+          });
     }
     case 'rename': {
       if (change.title.length > THREAD_TITLE_MAX) return { ok: false, reason: 'title_too_long' };

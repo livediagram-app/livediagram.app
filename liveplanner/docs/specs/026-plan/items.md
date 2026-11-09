@@ -102,6 +102,14 @@ they are the same family: filled in automatically, never typed.
     anonymising, which rewrites the name to **Deleted account**, and the migration door).
 - **People** are shown as the item holds them today, a name and colour beside the hashed id, never more: the same
   identity the panel's foot has always shown.
+- **A closed account** reads **Deleted account** in Created By and Last Edited By on every card it made or last
+  edited, in grey, never its old name. The anonymising matches the card's person by their hashed id (the column holds
+  the person, not their account id) and writes the Deleted account person (id `deleted`) in its place; a card from
+  before cards held a person, which names the raw account id, is matched and rewritten the same way. A card that
+  reads only `deleted` (an older anonymising's bare word) reads as the Deleted account person too. A sheet's
+  last editor reads Deleted account the same way, and so do a card thread's **Resolved by** and a closed account's
+  reactions on a card thread's comments: both keep the resolver's or reactor's hashed id beside the name for this. A
+  thread resolved, or a reaction left, before they kept it has only a name, which stays.
 - **No guessing**: a card stored without a maker or a time (an import from an older file, a row that lost its
   person, which reads as an empty id) shows nothing for that field, and sorts and lanes as having no value; it is
   never filled from another field. Undoing a card's delete, or duplicating a card, makes it anew: stamped then, by

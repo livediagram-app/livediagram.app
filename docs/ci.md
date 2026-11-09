@@ -187,6 +187,15 @@ test waits for a core and failed at random on `main`, where CPU time barely move
 still catches a real regression. A test that seeds a large fixture sets its own timeout (seeding isn't
 what it measures) and times only the work under test.
 
+Coverage never judges a budget. Instrumentation runs the same work several times slower, and budgets read
+under it were the commonest red on CI (15 of 25 failed runs in November 2026, each a miss of 1% to 50%). In a
+coverage run `cpuBudgetMs` is unbounded: the test still runs and its lines still count. **`vitest-budgets`**
+(from `@liveworkspace/vitest-config`) then reruns, without coverage, every test file that imports
+`@liveworkspace/vitest-config/cpu-time`, where the budget holds. Each workspace's `test:coverage` runs
+`vitest run --coverage && vitest-budgets`, and each editor shard runs its share after its coverage run
+(`vitest-budgets --shard=n/3`). A budget used as a test timeout is a wall-clock limit, not a CPU budget, and
+never goes through `cpuBudgetMs`.
+
 The Checks job's **Speed budgets use CPU time** step (`.github/scripts/cpu-budget-guard.mjs`, also in
 the pre-push hook) fails a change that adds `performance.now()` to a test file. Older budgets are left
 for a pass of their own, and so is a copy of one: a line another product already has at the same path

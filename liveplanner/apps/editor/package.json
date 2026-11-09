@@ -11,7 +11,7 @@
     "build:signed-in": "node scripts/build-signed-in.mjs",
     "lint": "oxlint",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage && vitest-budgets",
     "test:e2e": "playwright test --project=chromium --project=sites",
     "test:e2e:smoke": "playwright test --project=chromium",
     "test:e2e:sites": "playwright test --project=sites",
