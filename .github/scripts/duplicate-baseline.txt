@@ -216,12 +216,12 @@ livedesign/packages/design/src/svg-render-page.ts	livediagram/packages/document/
 livedesign/packages/design/src/svg-render-pointer-note.ts	livediagram/packages/document/src/svg-render-pointer-note.ts	livedocuments/packages/document/src/svg-render-pointer-note.ts	liveplanner/packages/project/src/svg-render-pointer-note.ts
 livedesign/packages/design/src/svg-render-sankey.ts	livedocuments/packages/document/src/svg-render-sankey.ts
 livedesign/packages/design/src/svg-render-sketch.ts	livediagram/packages/document/src/svg-render-sketch.ts	livedocuments/packages/document/src/svg-render-sketch.ts	livehuddle/packages/document/src/svg-render-sketch.ts	liveplanner/packages/project/src/svg-render-sketch.ts
-livedesign/packages/design/src/svg-render-table.ts	livediagram/packages/document/src/svg-render-table.ts	livedocuments/packages/document/src/svg-render-table.ts
+livedesign/packages/design/src/svg-render-table.ts	livediagram/packages/document/src/svg-render-table.ts
 livedesign/packages/design/src/svg-render-timeline.ts	livediagram/packages/document/src/svg-render-timeline.ts	livedocuments/packages/document/src/svg-render-timeline.ts	liveplanner/packages/project/src/svg-render-timeline.ts
 livedesign/packages/design/src/svg-render-web.ts	livediagram/packages/document/src/svg-render-web.ts	liveplanner/packages/project/src/svg-render-web.ts
 livedesign/packages/design/src/svg-shape-fit.ts	livediagram/packages/document/src/svg-shape-fit.ts	livedocuments/packages/document/src/svg-shape-fit.ts	liveplanner/packages/project/src/svg-shape-fit.ts
 livedesign/packages/design/src/table-header-colours.ts	livedocuments/packages/document/src/table-header-colours.ts
-livedesign/packages/design/src/table.ts	livediagram/packages/document/src/table.ts	livedocuments/packages/document/src/table.ts	liveplanner/packages/project/src/table.ts
+livedesign/packages/design/src/table.ts	livediagram/packages/document/src/table.ts	liveplanner/packages/project/src/table.ts
 livedesign/packages/design/src/tag-colours.ts	livediagram/packages/document/src/tag-colours.ts	livedocuments/packages/document/src/tag-colours.ts	liveplanner/packages/project/src/tag-colours.ts
 livedesign/packages/design/src/theme-graph.ts	livediagram/packages/document/src/theme-graph.ts	livedocuments/packages/document/src/theme-graph.ts
 livedesign/packages/design/src/theme-halves.ts	livedocuments/packages/document/src/theme-halves.ts
