@@ -25,8 +25,10 @@ Derived from [Team pieces](../team-pieces.md). Implementation detail only; the s
   `lib/calendar-month.ts`: 6 rows of 7 cells, Monday first, each cell `{ day: 'YYYY-MM-DD', inMonth, isToday }`.
   Notes are bucketed by `noteDay(note)` (its `day`, else the viewer's local day of `at`), once per render, in a `Map`.
 - The popover and the reader share `CalendarNotes` (`CalendarWallPopover.tsx`): state `{ cursor: { year, month },
-selected: 'YYYY-MM-DD' }`, starting on today. ‹ and › step `cursor` a month; Today resets both. A day button sets
-  `selected` (and the cursor to its month when it was a spill-over day).
+selected: 'YYYY-MM-DD' }`, starting on today. ‹ and › step `cursor` a month (`stepMonth`, held to
+  `NOTE_DAY_YEAR_MIN` January to `NOTE_DAY_YEAR_MAX` December; `canStepMonth` disables the arrow at either end);
+  Today resets both. A day button sets `selected` (and the cursor to its month when it was a spill-over day); a
+  spill-over day `isNoteDay` refuses (December 1999, January 2101) is an empty grid cell, never a button.
 - Pin: `{ kind: 'notice-pin', note: { ...NoticeNote, day: selected } }` through `editor.applyElementDelta`; unpin:
   `{ kind: 'notice-unpin', noteId, by }`. Who may pin and unpin is the Notice Board's rule exactly (`mayPin`,
   `mayUnpin`), factored into `components/canvas/collab/useNoteSigner.ts` so both pieces read one copy.
@@ -64,8 +66,8 @@ sent | failed`, the text cleared on `sent`.
 
 ## Interfaces and contracts
 
-- `isNoticeNote` accepts `day` when it is a real calendar date `YYYY-MM-DD` (`isNoteDay`: four-digit year 2000 to
-  2100, month 1 to 12, day within the month); anything else refuses the note (its delta lands nowhere, its tab
+- `isNoticeNote` accepts `day` when it is a real calendar date `YYYY-MM-DD` (`isNoteDay`: four-digit year
+  `NOTE_DAY_YEAR_MIN` 2000 to `NOTE_DAY_YEAR_MAX` 2100, month 1 to 12, day within the month); anything else refuses the note (its delta lands nowhere, its tab
   fails validation).
 - `POST …/suggestions` body `{ elementId: string, text: string }`: `text` trimmed, 1 to `SUGGESTION_TEXT_MAX` (500)
   characters else 400 `missing text` / `text too long`; `elementId` missing 400. The box must be an element of the

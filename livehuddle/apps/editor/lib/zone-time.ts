@@ -1,5 +1,7 @@
 // A time zone's wall time for the World Clock (docs/specs/009-elements/social-pieces.md "World Clock"), shared by
-// its face on the canvas and its reader (docs/specs/008-canvas/avatar-mode.md "The reader").
+// its face on the canvas and its reader (docs/specs/008-canvas/avatar-mode.md "The reader"), and the zone an Editor
+// types into its menu.
+import { isClockZone, zoneCityLabel, type ClockZone } from '@livehuddle/document';
 
 const timeFormats = new Map<string, Intl.DateTimeFormat | null>();
 const partFormats = new Map<string, Intl.DateTimeFormat | null>();
@@ -59,4 +61,22 @@ export function zoneTime(
     text: text.format(at),
     dayShift: Math.round((dayOf(there) - dayOf(here)) / 86_400_000),
   };
+}
+
+/**
+ * The zone an Editor typed in the World Clock's Add Zone field, stored by the name the browser gives it, with the
+ * label its city suggests: "europe/london" is Europe/London, labelled London, and an alias like "US/Eastern" is
+ * America/New_York. Spaces are underscores ("New York" is New_York). Null for a zone this browser does not know.
+ */
+export function typedClockZone(raw: string): ClockZone | null {
+  const typed = raw.trim().replace(/ /g, '_');
+  if (!typed) return null;
+  let zone: string;
+  try {
+    zone = new Intl.DateTimeFormat(undefined, { timeZone: typed }).resolvedOptions().timeZone;
+  } catch {
+    return null;
+  }
+  const next = { zone, label: zoneCityLabel(zone) };
+  return isClockZone(next) ? next : null;
 }

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { isNoteDay } from '@livehuddle/document';
 import {
   CALENDAR_WEEKS,
   calendarMonth,
+  canStepMonth,
   cursorOf,
   longDay,
   monthTitle,
@@ -57,6 +59,26 @@ describe('stepping and naming months', () => {
     expect(stepMonth({ year: 2026, month: 11 }, 1)).toEqual({ year: 2027, month: 0 });
     expect(stepMonth({ year: 2026, month: 0 }, -1)).toEqual({ year: 2025, month: 11 });
     expect(stepMonth({ year: 2026, month: 5 }, -18)).toEqual({ year: 2024, month: 11 });
+  });
+
+  // A note's day is 2000 to 2100 (isNoteDay): a month past either end offered Pin to a day the room drops unseen.
+  it('stops at January 2000 and December 2100, the months a note can be pinned in', () => {
+    expect(stepMonth({ year: 2100, month: 11 }, 1)).toEqual({ year: 2100, month: 11 });
+    expect(stepMonth({ year: 2000, month: 0 }, -1)).toEqual({ year: 2000, month: 0 });
+    expect(stepMonth({ year: 2100, month: 5 }, 24)).toEqual({ year: 2100, month: 11 });
+    expect(canStepMonth({ year: 2100, month: 11 }, 1)).toBe(false);
+    expect(canStepMonth({ year: 2100, month: 10 }, 1)).toBe(true);
+    expect(canStepMonth({ year: 2000, month: 0 }, -1)).toBe(false);
+    expect(canStepMonth({ year: 2000, month: 1 }, -1)).toBe(true);
+    // Every day either end month shows in its own month is one a note can be pinned to.
+    for (const cursor of [
+      stepMonth({ year: 2000, month: 0 }, -1),
+      stepMonth({ year: 2100, month: 11 }, 1),
+    ]) {
+      for (const cell of calendarMonth(cursor, '').filter((c) => c.inMonth)) {
+        expect(isNoteDay(cell.day)).toBe(true);
+      }
+    }
   });
 
   it('reads the month of a day', () => {

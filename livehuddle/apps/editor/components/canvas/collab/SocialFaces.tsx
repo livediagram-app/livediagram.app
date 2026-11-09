@@ -308,7 +308,10 @@ function WorldClockFace({ element, walking }: { element: ShapeElement; walking: 
         className="absolute inset-0 h-full w-full"
         role="img"
         aria-label={zones
-          .map((z) => `${z.label}: ${zoneTime(z.zone || undefined, now)?.text ?? 'unknown'}`)
+          .map(
+            (z) =>
+              `${z.label || 'Local'}: ${zoneTime(z.zone || undefined, now)?.text ?? 'unknown'}`,
+          )
           .join(', ')}
       >
         {zones.map((z, i) => {
