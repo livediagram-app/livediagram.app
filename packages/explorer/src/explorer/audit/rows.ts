@@ -128,11 +128,18 @@ export function auditGroups(items: string): readonly AuditGroup[] {
 
 const DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-// A `YYYY-MM-DD` day's local midnight, or undefined for none (or a day that isn't one).
+// A `YYYY-MM-DD` day's local midnight, or undefined for none (or a day that isn't one: 2026-02-31 is no day, not
+// 3 March). The year is set on its own, as the constructor reads 0 to 99 as 1900 to 1999.
 function midnight(day: string | undefined, plusDays = 0): number | undefined {
   const m = day ? DAY.exec(day) : null;
   if (!m) return undefined;
-  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]) + plusDays).getTime();
+  const [year, month, date] = [Number(m[1]), Number(m[2]) - 1, Number(m[3])];
+  const at = new Date(2000, 0, 1);
+  at.setFullYear(year, month, date);
+  if (at.getFullYear() !== year || at.getMonth() !== month || at.getDate() !== date)
+    return undefined;
+  at.setDate(date + plusDays);
+  return at.getTime();
 }
 
 /** From and To as whole days in the reader's time zone, both included: To is sent as the next day's midnight. A From

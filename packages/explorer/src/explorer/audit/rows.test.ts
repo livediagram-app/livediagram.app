@@ -147,6 +147,18 @@ describe('dayRange', () => {
     });
     expect(dayRange('nope', undefined)).toEqual({ from: undefined, to: undefined });
   });
+
+  it('bounds nothing with a day that is not on the calendar, rather than rolling it into the next month', () => {
+    expect(dayRange('2026-02-31', '2026-13-01')).toEqual({ from: undefined, to: undefined });
+    expect(dayRange('2026-00-10', '2026-04-00')).toEqual({ from: undefined, to: undefined });
+    expect(dayRange('2028-02-29', '2026-02-29')).toEqual({
+      from: undefined,
+      to: new Date(2028, 2, 1).getTime(),
+    });
+    const early = new Date(2000, 0, 1);
+    early.setFullYear(50, 0, 1);
+    expect(dayRange('0050-01-01', undefined).from).toBe(early.getTime());
+  });
 });
 
 describe('fileSlug', () => {

@@ -40,10 +40,12 @@ describe('useTimelineFeed', () => {
     act(() => result.current.loadMore());
     await waitFor(() => expect(result.current.loadingMore).toBe(false));
     expect(result.current.error).toBe(false);
+    expect(result.current.moreFailed).toBe(true);
     expect(result.current.events.map((e) => e.id)).toEqual(['a', 'b']);
     expect(result.current.hasMore).toBe(true);
 
     act(() => result.current.loadMore());
+    expect(result.current.moreFailed).toBe(false);
     await waitFor(() => expect(result.current.events).toHaveLength(3));
     expect(timeline.mock.calls.map(([q]) => q?.cursor)).toEqual([undefined, 'c1', 'c1']);
     expect(result.current.hasMore).toBe(false);

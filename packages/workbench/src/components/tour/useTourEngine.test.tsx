@@ -227,6 +227,36 @@ describe('useTourEngine', () => {
     vi.useRealTimers();
   });
 
+  it('heals a taken-away target even when the step\u2019s prepare throws on the way back', async () => {
+    vi.useFakeTimers();
+    found.selectors.add('#one');
+    let calls = 0;
+    const steps: TourStepOf<Api>[] = [
+      {
+        id: 'one',
+        title: 'One',
+        body: '',
+        selector: () => '#one',
+        prepare: () => {
+          calls += 1;
+          if (calls > 1) throw new Error('menu gone');
+        },
+      },
+    ];
+    const t = run(steps);
+    act(() => t.hook.result.current.start());
+    await act(async () => void (await vi.advanceTimersByTimeAsync(10)));
+    (document.body.lastElementChild as HTMLElement).remove();
+    const fresh = () => document.body.lastElementChild as HTMLElement;
+    await act(async () => void (await vi.advanceTimersByTimeAsync(160)));
+    expect(calls).toBe(2);
+    // The target came back regardless, and the ring follows it.
+    fresh().getBoundingClientRect = () => ({ left: 7, top: 7, width: 3, height: 3 }) as DOMRect;
+    await act(async () => void (await vi.advanceTimersByTimeAsync(160)));
+    expect(t.hook.result.current.targetRect).toEqual({ left: 7, top: 7, width: 3, height: 3 });
+    vi.useRealTimers();
+  });
+
   it('lets the ring go when a taken-away target cannot be brought back', async () => {
     vi.useFakeTimers();
     found.selectors.add('#one');

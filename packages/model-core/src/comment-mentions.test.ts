@@ -24,6 +24,13 @@ describe('mentionHandle', () => {
     expect(mentionHandle('  Zoë  O’Brien ')).toBe('zoe-o-brien');
     expect(mentionHandle('!!!')).toBe('');
   });
+
+  it('never ends on a dash when a long name is cut, so the handle reads back as a chip', () => {
+    const handle = mentionHandle(`${'a'.repeat(99)} B`);
+    expect(handle).toBe('a'.repeat(99));
+    const mention = { ...tom, handle };
+    expect(mentionSegments(`hi @${handle}`, [mention]).at(-1)?.mention).toEqual(mention);
+  });
 });
 
 describe('assignHandles', () => {
@@ -35,6 +42,18 @@ describe('assignHandles', () => {
       { name: '' },
     ]);
     expect(out.map((p) => p.handle)).toEqual(['sam-lee', 'sam-lee-2', 'priya-k', 'teammate']);
+  });
+
+  it('keeps a suffixed handle within the field limit, so saving never drops it', () => {
+    const long = 'a'.repeat(120);
+    const [first, second] = assignHandles([{ name: long }, { name: long }]).map((p) => p.handle);
+    expect(first).toHaveLength(100);
+    expect(second).toBe(`${'a'.repeat(98)}-2`);
+    const [, dashed] = assignHandles([
+      { name: `${'a'.repeat(98)} bb` },
+      { name: `${'a'.repeat(98)} bb` },
+    ]);
+    expect(dashed!.handle).toBe(`${'a'.repeat(98)}-2`);
   });
 
   it('never suffixes onto a handle someone already has', () => {

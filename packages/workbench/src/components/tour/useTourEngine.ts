@@ -286,7 +286,13 @@ export function useTourEngine<Api>({
         setAwaitingTarget(true);
         void (async () => {
           try {
-            await step.prepare?.(apiRef.current);
+            // As on entering the step: a failed prepare falls through to the target wait, never an unhandled
+            // rejection that leaves the ring framing a target that is gone and stops every later heal.
+            try {
+              await step.prepare?.(apiRef.current);
+            } catch {
+              // The wait below decides.
+            }
             const next = await waitForAnchor(step, apiRef.current);
             if (token === runTokenRef.current) {
               targetElRef.current = next;
