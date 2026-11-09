@@ -278,6 +278,9 @@ column, with every answer mapped, except that
 
 The confirmation adds "This was a preview: its card, marked Preview, is on <board>." A destination that cannot take
 a card refuses with "Preview can't add its card until Responses Go To names a board and column."
+A form whose responses go to a sheet, in a plan kept only in this browser, refuses with "Preview can't add its row
+while this plan is only in this browser. Sync it to liveplanner to try it.": the api writes a sheet's rows, and it has
+no copy of the plan. A board's card is made in the editor there, as for a form with no link yet.
 
 ### Question types
 
