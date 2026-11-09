@@ -19,7 +19,8 @@ The import reads Markdown the way pasting it into an article page does, so a fil
 - **`[TOC]`** alone on a line: a table of contents.
 - **Images** (`![alt](address)`): a link named by its alt text (the address when there is none), so nothing is
   lost and no stray `!` is left. An article holds no picture from an address; add the picture from Media. Only
-  the import reads it so: an agent's Markdown and an article's paste read as before.
+  the import reads it so: an agent's Markdown and an article's paste read as before. An image inside code (a fence,
+  or a code span, which CommonMark closes only on a backtick run as long as the one it opened with) stays as written.
 
 Every other line is a paragraph. The article flows onto as many pages as the writing needs, in the tab's theme.
 
