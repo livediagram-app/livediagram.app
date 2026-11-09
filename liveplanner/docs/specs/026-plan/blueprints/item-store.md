@@ -630,6 +630,13 @@ history.retention` with the count.
   door, the schema's own steps and `anonymisePlan`.
 - `anonymisePlan` sets the `by` of the rows the person wrote (`by ->> '$.id'` = their hashed `itemPersonId`) to the
   Deleted account author: history names authors by hashed id, so the raw-id `anonymiseJsonText` would miss them.
+- It does the same for the cards' `created_by` and `updated_by` and a sheet's `updated_by`, which hold a JSON person
+  keyed by the hashed id too. One `UPDATE items` sets each column that names them to the Deleted account person: the
+  column's id is read through `CASE WHEN json_valid(col) THEN col ->> '$.id' END` and matched against the hash, or
+  the whole column against the raw id (a row from before cards held a person). The rows are first narrowed by a
+  `LIKE` on the hash or raw id, so JSON is read only on rows that mention them, and the `CASE` keeps a row whose
+  column is not JSON from failing the batch. `parsePerson` (`db/items.ts`) reads a bare `deleted` as that same
+  person, so a row an older anonymising wrote reads Deleted account, not Someone.
 - Copies (`exportPlanCopy`), project files and offline records carry no history: none of them reads the table.
 
 ### REST
