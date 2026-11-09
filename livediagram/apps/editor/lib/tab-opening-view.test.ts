@@ -1,3 +1,4 @@
+import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Element as CanvasElement } from '@livediagram/document';
@@ -109,9 +110,7 @@ describe('pickMainElement', () => {
       els.push(shape(`s${i}`, (i % 300) * 150, Math.floor(i / 300) * 100));
       els.push(arrow(`a${i}`, `s${i}`, `s${(i + 1) % 50_000}`));
     }
-    const started = performance.now();
-    pickMainElement(els);
-    expect(performance.now() - started).toBeLessThan(1000);
+    expect(cpuMsOf(() => void pickMainElement(els))).toBeLessThan(1000);
   });
 });
 
