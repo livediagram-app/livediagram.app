@@ -206,7 +206,8 @@ describe('page ls and page set', () => {
       message: 'one change at a time: --add and --delete; give several with --changes <file>',
     });
     expect(await run({ page: '2', delete: true, name: 'Cover' })).toMatchObject({
-      message: 'one change at a time: --delete and --name, --size or --orientation; give several with --changes <file>',
+      message:
+        'one change at a time: --delete and --name, --size or --orientation; give several with --changes <file>',
     });
     expect(await run({ page: '2', layout: 'quote', size: 'a3' })).toMatchObject({ code: 'usage' });
     expect(await run({ page: '2', move: 1, duplicate: true })).toMatchObject({ code: 'usage' });

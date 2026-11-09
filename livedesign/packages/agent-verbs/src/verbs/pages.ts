@@ -120,7 +120,9 @@ export const pageSet = defineVerb({
   output: doneOutput,
   run: async (ctx, input) => {
     if (input.changes !== undefined && flagsNamed(input).length)
-      throw usage(`give --changes or the flags for one change, not both (${flagsNamed(input).join(', ')})`);
+      throw usage(
+        `give --changes or the flags for one change, not both (${flagsNamed(input).join(', ')})`,
+      );
     const changes =
       input.changes !== undefined ? await changesFrom(ctx, input.changes) : [changeFrom(input)];
     const at = await where(ctx, input.doc, input.tab);
@@ -225,9 +227,13 @@ function changeFrom(flags: ChangeFlags): PageChange {
   };
   const several = changesNamed(flags, fields);
   if (several.length > 1)
-    throw usage(`one change at a time: ${several.join(' and ')}; give several with --changes <file>`);
+    throw usage(
+      `one change at a time: ${several.join(' and ')}; give several with --changes <file>`,
+    );
   if (flags.add && flags.page !== undefined)
-    throw usage('--add takes no --page: the new page goes at the end (place it with --changes and "at")');
+    throw usage(
+      '--add takes no --page: the new page goes at the end (place it with --changes and "at")',
+    );
   if (flags.add)
     return {
       op: 'add',

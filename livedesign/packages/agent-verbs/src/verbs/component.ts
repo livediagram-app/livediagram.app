@@ -148,9 +148,7 @@ function mainNamed(library: readonly DesignComponent[], word: string): DesignCom
   const lower = word.toLowerCase();
   const named = library.filter((c) => c.name.toLowerCase() === lower);
   if (named.length === 1) return named[0]!;
-  const matches = named.length
-    ? named
-    : library.filter((c) => c.id.startsWith(word));
+  const matches = named.length ? named : library.filter((c) => c.id.startsWith(word));
   if (matches.length === 1) return matches[0]!;
   throw new VerbRefusal({
     status: matches.length ? 400 : 404,

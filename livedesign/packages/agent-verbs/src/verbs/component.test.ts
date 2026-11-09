@@ -218,11 +218,19 @@ describe('component set', () => {
     expect(set).toMatchObject({ id: 'side', name: 'Side' });
     // A unique id prefix names its main.
     expect(
-      await componentSet.run!(ctx, componentSet.input.parse({ doc: 'Auth flow', component: 'si', name: 'S' })),
+      await componentSet.run!(
+        ctx,
+        componentSet.input.parse({ doc: 'Auth flow', component: 'si', name: 'S' }),
+      ),
     ).toMatchObject({ id: 'side' });
     // Two mains of one name are refused as ambiguous, the prefixes aside.
     expect(
-      await refusal(componentSet.run!(ctx, componentSet.input.parse({ doc: 'Auth flow', component: 'CARD', name: 'x' }))),
+      await refusal(
+        componentSet.run!(
+          ctx,
+          componentSet.input.parse({ doc: 'Auth flow', component: 'CARD', name: 'x' }),
+        ),
+      ),
     ).toMatchObject({ code: 'target_ambiguous', lines: ['card "Card"', 'dup "card"'] });
   });
 
@@ -233,10 +241,19 @@ describe('component set', () => {
       await refusal(
         componentSet.run!(
           ctx,
-          componentSet.input.parse({ doc: 'Auth flow', component: 'nav', archived: true, restore: true }),
+          componentSet.input.parse({
+            doc: 'Auth flow',
+            component: 'nav',
+            archived: true,
+            restore: true,
+          }),
         ),
       ),
-    ).toMatchObject({ status: 400, code: 'usage', message: 'give --archived or --restore, not both' });
+    ).toMatchObject({
+      status: 400,
+      code: 'usage',
+      message: 'give --archived or --restore, not both',
+    });
     expect(patches).toEqual([]);
   });
 
