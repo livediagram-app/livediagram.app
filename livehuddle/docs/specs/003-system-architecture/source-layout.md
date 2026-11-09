@@ -49,7 +49,7 @@ three-line leaves with thousand-line screens.
 ## The editor's state
 
 `apps/editor/app/document/[id]/useEditorState.ts` is the editor's one state hook, and it holds no logic of its own:
-it composes the slices in the folder beside it, `editor-state/`, one hook per file named `use<Concern>.ts`, and
+it composes the slices in the folder beside it, `app/document/[id]/editor-state/`, one hook per file named `use<Concern>.ts`, and
 returns their view-models spread into the one object `EditorContext` carries. Its return is the editor's contract
 with every component that reads the context; splitting or regrouping slices never changes it.
 

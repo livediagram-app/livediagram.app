@@ -60,7 +60,7 @@ Rules:
 
 ## `apps/live/app/design/[id]/editor-state/`
 
-The editor's state, one slice per concern (`use<Concern>.ts`), composed in a fixed order by `../useEditorState.ts`,
+The editor's state, one slice per concern (`use<Concern>.ts`), composed in a fixed order by `app/design/[id]/useEditorState.ts`,
 and `editor-view.ts`, the view-model built from them ([architecture](../../development/architecture.md#editor-state)).
 Slice names come from the vocabulary every product's editor shares (`useEditorDocument`, `useEditorSelection`,
 `useEditorTools`, `useEditorViewport`, `useEditorCollaboration`, `useEditorPersistence`, `useEditorComments`,

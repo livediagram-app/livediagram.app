@@ -54,11 +54,11 @@ marketing/      off-site copy + media for listings and promotion (see docs/specs
 
 The editor route (`apps/editor/app/project/[id]/`) is split three ways so no file becomes a god component:
 
-- `useEditorState.ts` is the composer: it calls the editor's state slices in a fixed order, hands each the slices before it, and returns the view-model `editor-state/editor-view.ts` assembles from them.
+- `useEditorState.ts` is the composer: it calls the editor's state slices in a fixed order, hands each the slices before it, and returns the view-model `app/project/[id]/editor-state/editor-view.ts` assembles from them.
 - `EditorContext.tsx` carries that view-model as `EditorContextValue = ReturnType<typeof useEditorState>`.
 - `EditorView.tsx` renders the JSX, leaving `editor-page.tsx` a thin page shell.
 
-The slices live in `editor-state/`, one hook per file, in the order the composer calls them:
+The slices live in `app/project/[id]/editor-state/`, one hook per file, in the order the composer calls them:
 
 | Slice                    | What it holds                                                                                                                   |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -79,7 +79,7 @@ The slices live in `editor-state/`, one hook per file, in the order the composer
 | `useEditorInteraction`   | Element links, label editing, canvas accessibility, vote review, nudging and dragging                                           |
 | `useEditorShortcuts`     | The clipboard, Zen mode, keyboard shortcuts, the workbench's messages, Focus                                                    |
 
-A slice takes the slices composed before it, never one after it, and returns what later slices and the view read. The few values a slice reads from a later one (the active layer's stamp, a changeset's Show, the Plan slice) are read only inside callbacks, through the getters typed in `editor-state/editor-late.ts`. Slices run in the same order every render, which is the order their effects run in, so a new hook goes into the slice its concern belongs to, at the point its inputs exist. A spec that says a hook is "composed in `useEditorState`" means in one of these slices. No file is past ~500 lines; new behaviour goes into its own sub-hook, composed into its slice.
+A slice takes the slices composed before it, never one after it, and returns what later slices and the view read. The few values a slice reads from a later one (the active layer's stamp, a changeset's Show, the Plan slice) are read only inside callbacks, through the getters typed in `app/project/[id]/editor-state/editor-late.ts`. Slices run in the same order every render, which is the order their effects run in, so a new hook goes into the slice its concern belongs to, at the point its inputs exist. A spec that says a hook is "composed in `useEditorState`" means in one of these slices. No file is past ~500 lines; new behaviour goes into its own sub-hook, composed into its slice.
 
 ## The shared packages
 

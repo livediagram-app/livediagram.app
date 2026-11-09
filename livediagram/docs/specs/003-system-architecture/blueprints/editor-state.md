@@ -8,33 +8,33 @@ the split behaviour-neutral.
 
 All under `apps/editor/app/document/[id]/`.
 
-| File                                     | Owns                                                                                                                                                                  |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useEditorState.ts`                      | The composer: calls every slice in order, passes each the slices before it, returns every slice's `view` spread in that order. No state, no effects, no logic.        |
-| `editor-state/useEditorDocument.ts`      | Surface flags, workbench session, sign-in, toast and confirm, the load flags, the participant, loaded-tab sets, document id, `hydrated`, the save baseline refs       |
-| `editor-state/useEditorUndoState.ts`     | `useDocumentHistory`, the Watch It Built freeze, `tickTabs`, the `commitTabs` choke point, checkpoints, `tabSummaries`                                                |
-| `editor-state/useEditorSelection.ts`     | Tab scope and `useEditorUiState` (active tab, selection, editing, format source)                                                                                      |
-| `editor-state/useEditorDialogs.ts`       | Panel layout, dialogs, context menu, the join screen flags                                                                                                            |
-| `editor-state/useEditorTools.ts`         | Laser, eraser and format settings, the canvas tool, the Format tool, the shortcuts switch, `pickCanvasTool`, `pressModeButton`                                        |
-| `editor-state/useEditorCollaboration.ts` | `useEditorRealtime`, element deltas, idea posts, presence state, the role preview, the Participant session                                                            |
-| `editor-state/useEditorPersistence.ts`   | Preferences, the persistence slice, share state, document list, Trash, `tabsRef`, autosave, Sync and Take Offline in place, identity bootstrap, the self-save effects |
-| `editor-state/useEditorRoom.ts`          | Live poll, resync, changeset feed, reaction bursts, facilitator, Q&A board, `useRoomConnection`, presence broadcast, per-tab load, `retryActiveTabLoad`               |
-| `editor-state/useEditorComments.ts`      | Comment threads, teams, mentions, `activeTab`, comment reactions, comment rows, assigned actions, action rows                                                         |
-| `editor-state/useEditorModes.ts`         | Editor mode, custom and tag colours, the mode's default tool, the vote's cursor privacy                                                                               |
-| `editor-state/useEditorViewport.ts`      | Outbound broadcasts, drag preview, `fireReaction`, the stranded-tab guard, the viewport, keyboard avoidance, `pressFocusButton`                                       |
-| `editor-state/useEditorPresentation.ts`  | Slide deck, presenting, the pre-show view, `keyboardEnabled`, slide framing and refit, the `zenMode` override                                                         |
-| `editor-state/useEditorFollowing.ts`     | Publishing our view, follow-me, focus landing and invites, the changeset reveal, capabilities, pinch zoom, the deep-link capture, tab-entry effects                   |
-| `editor-state/useEditorPresence.ts`      | Presence rows and the poll's roster                                                                                                                                   |
-| `editor-state/useEditorEditing.ts`       | The edit gates, the Inbox deep link, `commit`, `commitActiveTab`, style memory and its recording commits                                                              |
-| `editor-state/useEditorLayers.ts`        | Layers, creation gates, lane settling, the tour square, undo and redo, the placement helpers                                                                          |
-| `editor-state/useEditorEventStorming.ts` | Photo import and the note acts                                                                                                                                        |
-| `editor-state/useEditorTabs.ts`          | Tab actions, connected tabs, tab name publishing, folders, document actions, the template flow, the tab's canvas look, Apply to All Tabs                              |
-| `editor-state/useEditorSessionTools.ts`  | Timer and vote, Behaviour elements, collaboration elements, the Quiz, Keep Results                                                                                    |
-| `editor-state/useEditorCreation.ts`      | Images, notes, drawing, paths, growth, outline, palette creation, inline icons, cell links, selection actions, snap colours, whiteboard dock, Fill, Eraser            |
-| `editor-state/useEditorStyle.ts`         | Element style, flowchart setters, `quickStyleDeps`, portal setters, style and cleanup previews                                                                        |
-| `editor-state/useEditorInteraction.ts`   | Element links, selection editing, canvas accessibility, vote review, nudge, drag, entity actions, clipboard, board scenes, library shapes                             |
-| `editor-state/useEditorKeyboard.ts`      | `toggleZenMode` and `useEditorKeyboardShortcuts`                                                                                                                      |
-| `editor-state/useEditorWorkbench.ts`     | Workbench messages and ends                                                                                                                                           |
+| File                                                       | Owns                                                                                                                                                                  |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useEditorState.ts`                                        | The composer: calls every slice in order, passes each the slices before it, returns every slice's `view` spread in that order. No state, no effects, no logic.        |
+| `app/document/[id]/editor-state/useEditorDocument.ts`      | Surface flags, workbench session, sign-in, toast and confirm, the load flags, the participant, loaded-tab sets, document id, `hydrated`, the save baseline refs       |
+| `app/document/[id]/editor-state/useEditorUndoState.ts`     | `useDocumentHistory`, the Watch It Built freeze, `tickTabs`, the `commitTabs` choke point, checkpoints, `tabSummaries`                                                |
+| `app/document/[id]/editor-state/useEditorSelection.ts`     | Tab scope and `useEditorUiState` (active tab, selection, editing, format source)                                                                                      |
+| `app/document/[id]/editor-state/useEditorDialogs.ts`       | Panel layout, dialogs, context menu, the join screen flags                                                                                                            |
+| `app/document/[id]/editor-state/useEditorTools.ts`         | Laser, eraser and format settings, the canvas tool, the Format tool, the shortcuts switch, `pickCanvasTool`, `pressModeButton`                                        |
+| `app/document/[id]/editor-state/useEditorCollaboration.ts` | `useEditorRealtime`, element deltas, idea posts, presence state, the role preview, the Participant session                                                            |
+| `app/document/[id]/editor-state/useEditorPersistence.ts`   | Preferences, the persistence slice, share state, document list, Trash, `tabsRef`, autosave, Sync and Take Offline in place, identity bootstrap, the self-save effects |
+| `app/document/[id]/editor-state/useEditorRoom.ts`          | Live poll, resync, changeset feed, reaction bursts, facilitator, Q&A board, `useRoomConnection`, presence broadcast, per-tab load, `retryActiveTabLoad`               |
+| `app/document/[id]/editor-state/useEditorComments.ts`      | Comment threads, teams, mentions, `activeTab`, comment reactions, comment rows, assigned actions, action rows                                                         |
+| `app/document/[id]/editor-state/useEditorModes.ts`         | Editor mode, custom and tag colours, the mode's default tool, the vote's cursor privacy                                                                               |
+| `app/document/[id]/editor-state/useEditorViewport.ts`      | Outbound broadcasts, drag preview, `fireReaction`, the stranded-tab guard, the viewport, keyboard avoidance, `pressFocusButton`                                       |
+| `app/document/[id]/editor-state/useEditorPresentation.ts`  | Slide deck, presenting, the pre-show view, `keyboardEnabled`, slide framing and refit, the `zenMode` override                                                         |
+| `app/document/[id]/editor-state/useEditorFollowing.ts`     | Publishing our view, follow-me, focus landing and invites, the changeset reveal, capabilities, pinch zoom, the deep-link capture, tab-entry effects                   |
+| `app/document/[id]/editor-state/useEditorPresence.ts`      | Presence rows and the poll's roster                                                                                                                                   |
+| `app/document/[id]/editor-state/useEditorEditing.ts`       | The edit gates, the Inbox deep link, `commit`, `commitActiveTab`, style memory and its recording commits                                                              |
+| `app/document/[id]/editor-state/useEditorLayers.ts`        | Layers, creation gates, lane settling, the tour square, undo and redo, the placement helpers                                                                          |
+| `app/document/[id]/editor-state/useEditorEventStorming.ts` | Photo import and the note acts                                                                                                                                        |
+| `app/document/[id]/editor-state/useEditorTabs.ts`          | Tab actions, connected tabs, tab name publishing, folders, document actions, the template flow, the tab's canvas look, Apply to All Tabs                              |
+| `app/document/[id]/editor-state/useEditorSessionTools.ts`  | Timer and vote, Behaviour elements, collaboration elements, the Quiz, Keep Results                                                                                    |
+| `app/document/[id]/editor-state/useEditorCreation.ts`      | Images, notes, drawing, paths, growth, outline, palette creation, inline icons, cell links, selection actions, snap colours, whiteboard dock, Fill, Eraser            |
+| `app/document/[id]/editor-state/useEditorStyle.ts`         | Element style, flowchart setters, `quickStyleDeps`, portal setters, style and cleanup previews                                                                        |
+| `app/document/[id]/editor-state/useEditorInteraction.ts`   | Element links, selection editing, canvas accessibility, vote review, nudge, drag, entity actions, clipboard, board scenes, library shapes                             |
+| `app/document/[id]/editor-state/useEditorKeyboard.ts`      | `toggleZenMode` and `useEditorKeyboardShortcuts`                                                                                                                      |
+| `app/document/[id]/editor-state/useEditorWorkbench.ts`     | Workbench messages and ends                                                                                                                                           |
 
 ## The slice contract
 
