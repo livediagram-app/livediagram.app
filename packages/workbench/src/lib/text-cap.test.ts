@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { capInsertion, fitInsertion } from './text-cap';
 
 // docs/specs/009-elements/badge.md "The element": the editor stops taking text at a badge's or step's cap.
@@ -28,12 +29,12 @@ describe('capInsertion', () => {
 
   it('stays cheap on a long paste', () => {
     const long = 'x'.repeat(1_000_000);
-    const start = process.cpuUsage();
-    for (let i = 0; i < 1000; i++) capInsertion(long, 10, 0, 24);
     expect(capInsertion(long, 10, 0, 24)).toHaveLength(14);
     // Each call slices only what fits (about 20 ns measured); a thousand stay far inside one keystroke's budget.
-    const { user, system } = process.cpuUsage(start);
-    expect((user + system) / 1000).toBeLessThan(250);
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 1000; i++) capInsertion(long, 10, 0, 24);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
 });
 

@@ -151,7 +151,11 @@ export function renderLabel(
         onSetAlign={onSetAlign}
         inline={inlineIcon}
         maxLength={
-          isChip(element) ? (element.shape === 'badge' ? BADGE_LABEL_MAX : STEP_LABEL_MAX) : undefined
+          isChip(element)
+            ? element.shape === 'badge'
+              ? BADGE_LABEL_MAX
+              : STEP_LABEL_MAX
+            : undefined
         }
       />
     );

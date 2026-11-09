@@ -154,8 +154,7 @@ describe('the product names', () => {
 });
 
 describe('discover', () => {
-  const meta = (body: string) =>
-    io({ fetch: async () => new Response(body, { status: 200 }) } as never).io;
+  const meta = (body: string) => io({ fetch: async () => new Response(body, { status: 200 }) }).io;
   const log = () => {};
 
   it('takes metadata whose endpoints are on the issuer', async () => {
@@ -172,7 +171,10 @@ describe('discover', () => {
     for (const body of [
       '<html>oops</html>',
       'null',
-      JSON.stringify({ authorization_endpoint: 'not a url', token_endpoint: 'https://host.test/t' }),
+      JSON.stringify({
+        authorization_endpoint: 'not a url',
+        token_endpoint: 'https://host.test/t',
+      }),
       JSON.stringify({ authorization_endpoint: 'https://host.test/a', token_endpoint: 7 }),
       JSON.stringify({
         authorization_endpoint: 'https://host.test/a',

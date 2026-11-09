@@ -49,7 +49,7 @@ describe('useAccountData', () => {
     const { pending, wrapper } = deferredHost();
     const { result, unmount } = renderHook(() => useAccountData('/teams'), { wrapper });
     await act(async () => {
-      pending[0]!.resolve({ ok: false, error: 'offline' });
+      pending[0]!.resolve({ ok: false, status: 0, error: 'offline' });
       await Promise.resolve();
     });
     expect(result.current[0]).toEqual({ state: 'error', error: 'offline' });

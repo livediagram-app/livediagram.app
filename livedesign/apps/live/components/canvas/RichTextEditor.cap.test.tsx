@@ -16,9 +16,7 @@ function edit(kind: 'step' | 'badge' | 'square', label: string) {
   const onCommit = vi.fn();
   const element: ShapeElement = { ...createShape(kind, 0, 0), label };
   const { container } = render(
-    <>
-      {renderLabel(element, label, 'md', 'center', 'middle', 8, true, onCommit, () => {}, true)}
-    </>,
+    <>{renderLabel(element, label, 'md', 'center', 'middle', 8, true, onCommit, () => {}, true)}</>,
   );
   const editor = container.querySelector<HTMLElement>('[contenteditable]')!;
   act(() => {
@@ -29,7 +27,8 @@ function edit(kind: 'step' | 'badge' | 'square', label: string) {
     window.getSelection()!.removeAllRanges();
     window.getSelection()!.addRange(range);
   });
-  const paste = (text: string) => fireEvent.paste(editor, { clipboardData: { getData: () => text } });
+  const paste = (text: string) =>
+    fireEvent.paste(editor, { clipboardData: { getData: () => text } });
   const commit = () => fireEvent.keyDown(editor, { key: 'Escape' });
   return { editor, onCommit, paste, commit };
 }

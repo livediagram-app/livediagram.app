@@ -78,7 +78,8 @@ export async function discover(io: CliIo, issuer: string, log: DebugLog): Promis
     meta.device_authorization_endpoint,
   ];
   // An endpoint that isn't an absolute URL counts as pointing elsewhere.
-  const originOf = (e: unknown) => (typeof e === 'string' && URL.canParse(e) ? new URL(e).origin : null);
+  const originOf = (e: unknown) =>
+    typeof e === 'string' && URL.canParse(e) ? new URL(e).origin : null;
   const foreign = endpoints.find((e) => e !== undefined && originOf(e) !== origin);
   if (!meta.authorization_endpoint || !meta.token_endpoint || foreign)
     throw authError(
