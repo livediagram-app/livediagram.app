@@ -212,8 +212,26 @@ export function homeEnd(
   grid: Grid,
   lastFilled: CellPos,
 ): Selection {
-  if (toSheet) return single(which === 'home' ? { r: 0, c: 0 } : lastFilled);
-  return single({ r: sel.active.r, c: which === 'home' ? 0 : Math.max(0, grid.cols - 1) });
+  const to = toSheet
+    ? which === 'home'
+      ? { r: 0, c: 0 }
+      : lastFilled
+    : { r: sel.active.r, c: which === 'home' ? 0 : Math.max(0, grid.cols - 1) };
+  return single(shownFrom(to, which === 'home' ? 1 : -1, grid));
+}
+
+// The nearest shown cell from `pos`, stepping `step` along its row and column past hidden ones (Home, a hidden
+// column A, lands in B), as a merge's top-left: a move never ends where nothing can be seen, nor inside a merge.
+function shownFrom(pos: CellPos, step: 1 | -1, grid: Grid): CellPos {
+  const near = (at: number, n: number, hidden: (k: number) => boolean) => {
+    for (let k = at; k >= 0 && k < n; k += step) if (!hidden(k)) return k;
+    for (let k = at - step; k >= 0 && k < n; k -= step) if (!hidden(k)) return k;
+    return at;
+  };
+  const r = near(pos.r, grid.rows, (k) => grid.hiddenRow(k));
+  const c = near(pos.c, grid.cols, (k) => grid.hiddenCol(k));
+  const m = grid.mergeAt(r, c);
+  return m ? { r: m.r1, c: m.c1 } : { r, c };
 }
 
 export function inSelection(sel: Selection, r: number, c: number): boolean {
@@ -234,13 +252,36 @@ function primaryRange(sel: Selection): GridRange {
   return sel.ranges[sel.ranges.length - 1]!;
 }
 
-// Enter / Tab inside a selection of more than one cell: the active cell walks the range and wraps.
+// Enter / Tab inside a selection of more than one cell: the active cell walks the range and wraps, past hidden rows
+// and columns and the cells a merge covers (a merge is one cell, its top-left). A range with no cell to stop on
+// leaves the active cell where it is.
 export function cycleInRange(
   sel: Selection,
   dir: 'next-row' | 'prev-row' | 'next-col' | 'prev-col',
+  grid?: Grid,
 ): Selection {
   const range = primaryRange(sel);
-  let { r, c } = sel.active;
+  const cells = (range.r2 - range.r1 + 1) * (range.c2 - range.c1 + 1);
+  let at = sel.active;
+  for (let i = 0; i < cells; i++) {
+    at = cycleStep(range, at, dir);
+    if (!grid || stopsOn(at, grid)) return { ...sel, active: at };
+  }
+  return sel;
+}
+
+function stopsOn({ r, c }: CellPos, grid: Grid): boolean {
+  if (grid.hiddenRow(r) || grid.hiddenCol(c)) return false;
+  const m = grid.mergeAt(r, c);
+  return !m || (m.r1 === r && m.c1 === c);
+}
+
+function cycleStep(
+  range: GridRange,
+  from: CellPos,
+  dir: 'next-row' | 'prev-row' | 'next-col' | 'prev-col',
+): CellPos {
+  let { r, c } = from;
   const width = range.c2 - range.c1 + 1;
   const height = range.r2 - range.r1 + 1;
   if (dir === 'next-row' || dir === 'prev-row') {
@@ -266,5 +307,5 @@ export function cycleInRange(
       r = range.r1 + ((r - range.r1 - 1 + height) % height);
     }
   }
-  return { ...sel, active: { r, c } };
+  return { r, c };
 }

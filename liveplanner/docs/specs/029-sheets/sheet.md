@@ -398,7 +398,8 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
 
 - Typing `=` starts a formula. While the caret is where a reference can go, a click on a cell (or a drag across a
   range, or the arrow keys) puts its reference in the formula; each reference in the formula is coloured, and the
-  cells it names are outlined in the same colour.
+  cells it names are outlined in the same colour. Shift with the arrows grows that reference into a range from the
+  cell first pointed at, a cell a press (`=B3`, then `=B3:B4`, `=B3:B5`), as Shift grows the selection.
 - **F4** cycles the reference at the caret through `A1`, `$A$1`, `A$1`, `$A1`.
 - A function name typed shows a list of matching functions with a line on each; Tab or Enter picks one and opens
   its bracket. Inside a function's brackets, a hint card shows its arguments, the current one bold, with an example.
@@ -434,7 +435,8 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
 
 - With more than one cell selected, **Enter** and **Tab** (and their Shift forms) walk the active cell through the
   selection and wrap. A merged cell is one cell: a clicked merge is a single cell, so Enter edits it and Tab moves
-  on, never into the cells it covers.
+  on, never into the cells it covers. The walk passes hidden rows and columns (a filter's too) and a merge's covered
+  cells, as Home, End and their Ctrl forms do: the active cell never lands where nothing can be seen.
 - While the grid has focus, its keys are the grid's: the canvas's single-key shortcuts (tools, Delete for the
   element) do not fire. Escape hands the keys back to the canvas.
 - A Sheet that fills the view (its Sheet tab, or maximised) takes the focus when it opens and nothing else holds it,
