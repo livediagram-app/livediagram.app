@@ -115,6 +115,42 @@ describe('uploadImageFile, validation', () => {
   });
 });
 
+// A pasted file with no or a generic type (a Finder copy is application/octet-stream) is labelled by its bytes.
+describe('uploadImageFile, a file with no image type', () => {
+  const PNG = [
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d, 0x49, 0x48, 0x44, 0x52,
+  ];
+
+  it('uploads a real PNG declared as octet-stream, or as nothing, as image/png', async () => {
+    apiUploadImageMock.mockResolvedValue({
+      image: {
+        id: 'img-1',
+        contentType: 'image/png',
+        byteSize: 16,
+        width: 640,
+        height: 480,
+        createdAt: 1,
+      },
+      deduped: false,
+    });
+    for (const type of ['application/octet-stream', '']) {
+      apiUploadImageMock.mockClear();
+      await uploadImageFile('owner-a', makeFile(PNG, type, 'Screenshot'));
+      expect(apiUploadImageMock.mock.calls[0]![1].contentType).toBe('image/png');
+    }
+  });
+
+  it('still refuses untyped bytes that are no accepted image', async () => {
+    const file = makeFile(
+      [0x3c, 0x73, 0x76, 0x67, 0x20, 0, 0, 0, 0, 0, 0, 0, 0],
+      'application/octet-stream',
+    );
+    const err = await uploadImageFile('owner-a', file).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ImageUploadError);
+    expect(apiUploadImageMock).not.toHaveBeenCalled();
+  });
+});
+
 describe('uploadImageFile, happy path', () => {
   it('hashes the bytes with SHA-256, reads dimensions, and forwards everything to apiUploadImage', async () => {
     apiUploadImageMock.mockResolvedValueOnce({

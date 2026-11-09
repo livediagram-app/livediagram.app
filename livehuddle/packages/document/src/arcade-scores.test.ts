@@ -53,6 +53,11 @@ describe('a score', () => {
     expect(isArcadeScore(score('a', 10, 1, { by: '' }))).toBe(false);
     expect(isArcadeScore(score('a', 10, 1, { by: 'b'.repeat(129) }))).toBe(false);
     expect(isArcadeScore(score('a', 10, Number.NaN))).toBe(false);
+    // A time the table can show as a day: past Date's range, formatting it throws for everyone opening the machine.
+    expect(isArcadeScore(score('a', 10, 8.64e15))).toBe(true);
+    expect(isArcadeScore(score('a', 10, 1e16))).toBe(false);
+    expect(isArcadeScore(score('a', 10, -1))).toBe(false);
+    expect(isArcadeScore(score('a', 10, 1.5))).toBe(false);
     expect(isArcadeScore(null)).toBe(false);
     expect(isArcadeScore('a')).toBe(false);
   });
@@ -105,6 +110,10 @@ describe('the table', () => {
     expect(arcadeTableWith(full, score('s0', 999))).toBe(null);
     expect(arcadeTableWith(full, score('x', 1))).toBe(null);
     expect(arcadeTableWith(full, { id: 'x' })).toBe(null);
+  });
+  it('keeps only the fields a score has, so nothing the wire lacks is stored on the machine', () => {
+    const padded = { ...score('x', 5), pad: 'x'.repeat(100_000) };
+    expect(arcadeTableWith(undefined, padded)).toEqual([score('x', 5)]);
   });
   it('is checked on a stored element', () => {
     const machine = (arcadeScores: unknown) => ({

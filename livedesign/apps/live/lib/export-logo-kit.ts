@@ -4,7 +4,7 @@
 // one last high-quality scale), rather than drawing the page ten times. A template's notes about the
 // page are left out of every file.
 import type { LaidOutPage, Tab } from '@livedesign/design';
-import { sanitizeFilename } from './export-pages';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import { encodeIco } from './ico-writer';
 import { exportTabAsSvg, renderTabToCanvas, type ImageExportOpts } from './export-tab';
 import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
@@ -101,5 +101,5 @@ export async function exportLogoKit(
 export function logoKitFileName(designName: string, page: LaidOutPage, pageCount: number): string {
   const pageName = page.name ?? (pageCount > 1 ? `Page ${page.index + 1}` : '');
   const base = `${designName || 'design'}${pageName ? ` - ${pageName}` : ''}`;
-  return `${sanitizeFilename(base)} - Logo Kit.zip`;
+  return `${sanitizeFilename(base, 'design')} - Logo Kit.zip`;
 }

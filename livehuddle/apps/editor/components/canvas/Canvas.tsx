@@ -105,7 +105,6 @@ function CanvasView(props: CanvasProps) {
   const viewportZoom = useViewportOf(zoomOf);
   // The view when a handler runs, for what is handed down and must keep its identity across pans and zooms.
   const viewportStore = useViewportStore();
-  const readZoom = useCallback(() => viewportStore.get().zoom, [viewportStore]);
   const readViewportOffset = useCallback(() => viewportStore.get().offset, [viewportStore]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -236,7 +235,6 @@ function CanvasView(props: CanvasProps) {
     readViewportOffset,
     viewportZoom,
     setViewportOffset,
-    readZoom,
   });
   const {
     avatar,

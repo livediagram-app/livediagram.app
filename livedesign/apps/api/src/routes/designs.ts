@@ -25,7 +25,15 @@ import {
   type CreationIntent,
 } from '@livedesign/api-schema';
 import { getDesign, readReorderEntries, reorderTabs, seedTabs } from '../db';
-import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
+import {
+  badRequest,
+  CORS_HEADERS,
+  designTrashed,
+  forbidden,
+  json,
+  notFound,
+  payloadTooLarge,
+} from '../responses';
 import { designDates, isDesignSource } from '@livedesign/api-schema';
 import {
   redactDesignForCommunity,
@@ -257,6 +265,10 @@ async function designTabs(ctx: DesignRouteContext, id: string): Promise<Response
 export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'designs') return notFound();
+  // A design in the Trash answers its owner and team 410 `design_trashed`, as the index's grant says
+  // (docs/specs/013-workspace/trash.md "While a design is in the Trash"): every read and write of it, so an editor
+  // left open on another device stops and says why. A link reaches nothing there, so its visitor gets a 404.
+  if (ctx.grant?.trashed && segments.length >= 3) return designTrashed();
   if (segments.length === 2) {
     if (request.method === 'POST') {
       const read = await readBody(ctx);

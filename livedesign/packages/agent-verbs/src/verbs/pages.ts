@@ -119,6 +119,10 @@ export const pageSet = defineVerb({
   }),
   output: doneOutput,
   run: async (ctx, input) => {
+    if (input.changes !== undefined && flagsNamed(input).length)
+      throw usage(
+        `give --changes or the flags for one change, not both (${flagsNamed(input).join(', ')})`,
+      );
     const changes =
       input.changes !== undefined ? await changesFrom(ctx, input.changes) : [changeFrom(input)];
     const at = await where(ctx, input.doc, input.tab);
@@ -180,12 +184,56 @@ type ChangeFlags = {
   delete?: boolean;
 };
 
+const usage = (message: string) =>
+  new VerbRefusal({ status: 400, code: 'usage', message, hint: CHANGES_HINT });
+
+// The change flags given, by their CLI names.
+function flagsNamed(flags: ChangeFlags): string[] {
+  const named: [string, unknown][] = [
+    ['--add', flags.add],
+    ['--page', flags.page],
+    ['--name', flags.name],
+    ['--size', flags.size],
+    ['--orientation', flags.orientation],
+    ['--layout', flags.layout],
+    ['--move', flags.move],
+    ['--duplicate', flags.duplicate],
+    ['--background-to-all', flags.backgroundToAll],
+    ['--delete', flags.delete],
+  ];
+  return named.filter(([, v]) => v !== undefined && v !== false).map(([n]) => n);
+}
+
+// The changes the flags name: one is made, more are refused rather than all but one dropped.
+function changesNamed(flags: ChangeFlags, fields: object): string[] {
+  const named: [string, unknown][] = [
+    ['--add', flags.add],
+    ['--delete', flags.delete],
+    ['--duplicate', flags.duplicate],
+    ['--background-to-all', flags.backgroundToAll],
+    ['--move', flags.move !== undefined],
+    // An add lays its page out and names, sizes and turns it; a page given also takes them as one change.
+    ['--layout', !flags.add && flags.layout],
+    ['--name, --size or --orientation', !flags.add && Object.keys(fields).length > 0],
+  ];
+  return named.filter(([, v]) => Boolean(v)).map(([n]) => n);
+}
+
 function changeFrom(flags: ChangeFlags): PageChange {
   const fields = {
     ...(flags.name !== undefined ? { name: flags.name } : {}),
     ...(flags.size ? { size: flags.size as PageSizeId } : {}),
     ...(flags.orientation ? { orientation: flags.orientation } : {}),
   };
+  const several = changesNamed(flags, fields);
+  if (several.length > 1)
+    throw usage(
+      `one change at a time: ${several.join(' and ')}; give several with --changes <file>`,
+    );
+  if (flags.add && flags.page !== undefined)
+    throw usage(
+      '--add takes no --page: the new page goes at the end (place it with --changes and "at")',
+    );
   if (flags.add)
     return {
       op: 'add',

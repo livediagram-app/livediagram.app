@@ -10,9 +10,11 @@ import {
   cardsMatchingFilters,
   laneFieldsOf,
   laneGroups,
+  statusLabel,
   swimlaneGroupingsFor,
   type SwimlaneBy,
 } from './board';
+import { PRIORITY_LABELS, isPriority } from './fields';
 import type { Item } from './item';
 import { ITEM_TYPES, LEGACY_PARENT_GROUPING, type ItemTypeDef } from './item-types';
 
@@ -144,8 +146,9 @@ export function searchValues(
   return groups.lanes.map((l) => ({ key: l.key, label: l.label, count: counts.get(l.key) ?? 0 }));
 }
 
-// A filter's chip: its field's name and its value's, as the lanes name them; a value no card has any more keeps
-// its key as its name.
+// A filter's chip: its field's name and its value's, as the lanes name them; a value no card has any more is named
+// from its key as its lane would be ("State: Done", "Assignee: No assignee"), and a person's that no card names
+// any more keeps its key.
 export function searchFilterLabel(
   filter: CardSearchFilter,
   items: Iterable<Item>,
@@ -160,7 +163,38 @@ export function searchFilterLabel(
   const value = searchValues(cards, filter, types, statusNames, cards).find(
     (v) => v.key === filter.key,
   );
-  return { field, value: value?.label ?? (filter.key || 'Empty') };
+  return { field, value: value?.label ?? keyLabel(filter, types, statusNames) };
+}
+
+// A lane's name from its key alone (board.ts lanesOf): `s:` a state, `t:` a type, `p:` a priority, `f:` a field's
+// value as JSON, '' the empty lane.
+function keyLabel(
+  filter: CardSearchFilter,
+  types: readonly ItemTypeDef[],
+  statusNames?: ReadonlyMap<string, string>,
+): string {
+  const { by, key } = filter;
+  if (key === '') {
+    if (by === 'status') return 'No status';
+    if (by === 'assignee') return 'No assignee';
+    if (by === 'priority') return 'No priority';
+    const f = by === 'field' ? laneFieldsOf(types, true).find((x) => x.id === filter.field) : null;
+    return f ? `No ${f.label}` : 'Empty';
+  }
+  const rest = key.slice(2);
+  if (by === 'status' && key.startsWith('s:')) return statusLabel(rest, statusNames);
+  if (by === 'type' && key.startsWith('t:')) return types.find((t) => t.id === rest)?.label ?? rest;
+  if (by === 'priority' && key.startsWith('p:') && isPriority(rest)) return PRIORITY_LABELS[rest];
+  if (by === 'field' && key.startsWith('f:') && !key.startsWith('f:p:')) {
+    try {
+      const v: unknown = JSON.parse(rest);
+      if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+      if (typeof v === 'string' || typeof v === 'number') return String(v);
+    } catch {
+      // Not a value's key: named by the key, below.
+    }
+  }
+  return key;
 }
 
 // The filter a press on one value of a category field makes (a Breakdown's or Donut's): the field and the row that

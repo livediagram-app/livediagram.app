@@ -80,7 +80,7 @@ Each step runs in `step()`: a throw logs `[accounts] cron step failed: <name>` a
 
 | Cron           | Steps, in order                                                                                                                                                                                                                                                                                                              |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*/15 * * * *` | 1. `index purges`: up to 25 `pending_purges` rows whose user is gone sent again. 2. `timeline`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only.                                                                                                                               |
+| `*/15 * * * *` | 1. `index purges`: rows whose user still exists, 30 days after their first try, dropped; then up to 25 `pending_purges` rows whose user is gone sent again. 2. `timeline`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only.                                                    |
 | `17 * * * *`   | The same three (the lifecycle runs every stage), then 4. `invitation sweep`; 5. the token expiry emails, then, in the 09:17 UTC run only, the token Timeline notes (and a flush); then `server events`; 6. `code days`: up to 5,000 ended `sign_in_code_limit` windows deleted; 7. in the 09:17 UTC run only, `idle guests`. |
 
 The hourly run's emails keep to the send window ([email.md](email.md) "The send window"): the window is read from
@@ -511,6 +511,7 @@ redo it (or drop it once upstream batches the lookup) and keep that test passing
 | `USER_ID`                           | `/^user_[A-Za-z0-9]{1,64}$/`                                             | `ids.ts`             |
 | `PURGE_RETRY_CRON`                  | `'*/15 * * * *'`                                                         | `index-purge.ts`     |
 | `PURGES_PER_RUN`                    | `25`                                                                     | `index-purge.ts`     |
+| `STALE_PURGE_DAYS`                  | `30`                                                                     | `index-purge.ts`     |
 | `TIMELINE_BATCH`                    | `100`                                                                    | `index-timeline.ts`  |
 | `TIMELINE_SCOPES_MAX`               | `250`                                                                    | `index-timeline.ts`  |
 | `TIMELINE_CALLS_PER_RUN`            | `10`                                                                     | `index-timeline.ts`  |

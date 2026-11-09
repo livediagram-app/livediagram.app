@@ -92,8 +92,8 @@ type-your-email confirmation, then the code emailed to the account) is the **Del
 removes livedesign's data first, then closes the liveworkspace account, which closes it in every liveworkspace app
 ([Auth + guest access](auth-and-guest-access.md) "Deleting an account"): the data first, so a failure leaves a
 signed-in person who can try again. The person's own designs go for good through the index, **including every one
-in their [Trash](../013-workspace/trash.md)**, which the dialog and the Danger Zone row both say; up to 1,000 a
-run, so a person with more is told to try again. Team designs stay with the team.
+in their [Trash](../013-workspace/trash.md)**, which the dialog and the Danger Zone row both say; ten at a time and up to
+1,000 a run, so a person with more is told to try again. Team designs stay with the team.
 
 **Teams on deletion** are liveworkspace's: the accounts Worker removes the memberships and hands a team's designs on
 ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Teams"). When the index reports the

@@ -76,12 +76,17 @@ async function markHeld(env: DesignEnv, designId: string, ids: readonly string[]
   const bucket = env.PHOTO_BLOBS;
   if (!bucket) return;
   const fresh = await newToDesign(env, ids);
-  await Promise.all(fresh.map((id) => bucket.put(photoBlobMarkerKey(id, designId), new Uint8Array())));
+  await Promise.all(
+    fresh.map((id) => bucket.put(photoBlobMarkerKey(id, designId), new Uint8Array())),
+  );
 }
 
 /**
  * The tab's refs to `blobs`, after the design's markers. A ref made again is renewed: the blob was just named,
- * so the sweep's grace starts over.
+ * so the sweep's grace starts over. With a `cap`, the refs are written only when the tab's bytes and the blobs it
+ * does not hold yet stay within it, checked in the same statement that writes them, so two batches checked at
+ * once never take the tab past it together (docs/specs/031-photo/photo-store.md "Checks"). False when the cap
+ * refused them.
  */
 export async function recordBlobs(
   env: DesignEnv,
@@ -89,20 +94,27 @@ export async function recordBlobs(
   tabId: string,
   blobs: readonly PhotoBlobMeta[],
   now = Date.now(),
-): Promise<void> {
-  if (blobs.length === 0) return;
+  cap: number | null = null,
+): Promise<boolean> {
+  if (blobs.length === 0) return true;
   await markHeld(
     env,
     designId,
     blobs.map((b) => b.id),
   );
-  await env.DESIGN_DB.prepare(
+  const written = await env.DESIGN_DB.prepare(
     `INSERT INTO photo_blob_refs (tab_id, blob_id, created_at, content_type, byte_size)
-     SELECT ?1, value ->> '$.id', ?2, value ->> '$.type', value ->> '$.size' FROM json_each(?3) WHERE true
+     SELECT ?1, value ->> '$.id', ?2, value ->> '$.type', value ->> '$.size' FROM json_each(?3)
+      WHERE ?4 IS NULL
+         OR (SELECT COALESCE(SUM(byte_size), 0) FROM photo_blob_refs WHERE tab_id = ?1)
+          + (SELECT COALESCE(SUM(j.value ->> '$.size'), 0) FROM json_each(?3) AS j
+              WHERE NOT EXISTS (SELECT 1 FROM photo_blob_refs AS r
+                                 WHERE r.tab_id = ?1 AND r.blob_id = j.value ->> '$.id')) <= ?4
      ON CONFLICT (tab_id, blob_id) DO UPDATE SET created_at = excluded.created_at`,
   )
-    .bind(tabId, now, JSON.stringify(blobs))
+    .bind(tabId, now, JSON.stringify(blobs), cap)
     .run();
+  return cap === null || (written.meta.changes ?? 0) > 0;
 }
 
 /** A blob's content type, when the tab holds a ref to it. */
@@ -143,7 +155,11 @@ export async function blobRefsOfTabs(
 
 // Blobs a design no longer holds: its markers go, then each blob no design marks any more is deleted. A failure
 // is logged and leaves bytes behind, never a ref without bytes.
-export async function releaseBlobs(env: Env, designId: string, ids: readonly string[]): Promise<number> {
+export async function releaseBlobs(
+  env: Env,
+  designId: string,
+  ids: readonly string[],
+): Promise<number> {
   const bucket = env.PHOTO_BLOBS;
   if (!bucket || ids.length === 0) return 0;
   let deleted = 0;
@@ -156,7 +172,11 @@ export async function releaseBlobs(env: Env, designId: string, ids: readonly str
       deleted++;
     }
   } catch (err) {
-    console.error('[photo-blobs] release failed', { designId, count: ids.length, err: String(err) });
+    console.error('[photo-blobs] release failed', {
+      designId,
+      count: ids.length,
+      err: String(err),
+    });
   }
   return deleted;
 }

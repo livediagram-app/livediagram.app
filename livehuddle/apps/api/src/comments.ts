@@ -1,6 +1,6 @@
 import {
   MAX_COLOR_LEN,
-  MAX_PARTICIPANT_NAME_LEN,
+  cutParticipantName,
   type CommentListStatus,
   type DocumentCommentThread,
 } from '@livehuddle/api-schema';
@@ -121,7 +121,9 @@ export function rewriteCommentAuthors(
           const claimed = prior.authorId === undefined && c.authorId === writer.id;
           // The words and the time lock the same way for anyone but the comment's author: an
           // edit-role writer may delete someone else's comment, never put words in their mouth.
-          const own = claimed || (prior.authorId !== undefined && prior.authorId === writer.id);
+          // A claim takes the id only: the id on a saved copy is the saver's to write, so any Editor could claim a
+          // comment credited from the room, and its words stay as the room credited them.
+          const own = prior.authorId !== undefined && prior.authorId === writer.id;
           // The token id locks the same way (agent-presence I7): only the server stamps it.
           const { mentions: _sent, tokenId: _token, ...body } = c;
           return {
@@ -298,7 +300,7 @@ export function threadsOfTab(
 
 // The name a writer without a profile posted their comment under, clamped as presence clamps it.
 function claimedName(name: unknown): string {
-  const trimmed = typeof name === 'string' ? name.trim().slice(0, MAX_PARTICIPANT_NAME_LEN) : '';
+  const trimmed = typeof name === 'string' ? cutParticipantName(name.trim()) : '';
   return trimmed || UNKNOWN_AUTHOR_NAME;
 }
 

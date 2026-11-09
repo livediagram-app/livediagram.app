@@ -1,3 +1,4 @@
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   cleanSankeyFlows,
   cleanSankeyName,
@@ -85,11 +86,11 @@ export function useSankeySetters({
   const setSankeyOptionSelected = (patch: Partial<SankeyPatch>) => {
     const next = { ...patch };
     if ('sankeyUnit' in next) {
-      const unit = next.sankeyUnit?.trim().slice(0, SANKEY_UNIT_MAX);
+      const unit = cutText(next.sankeyUnit?.trim() ?? '', SANKEY_UNIT_MAX);
       next.sankeyUnit = unit ? unit : undefined;
     }
     if ('sankeyLeftoverName' in next) {
-      const name = cleanSankeyName(next.sankeyLeftoverName ?? '').slice(0, SANKEY_NAME_MAX);
+      const name = cutText(cleanSankeyName(next.sankeyLeftoverName ?? ''), SANKEY_NAME_MAX);
       next.sankeyLeftoverName = name && name !== SANKEY_LEFTOVER_NAME ? name : undefined;
     }
     const anim = 'sankeyAnim' in next || 'sankeyAnimSpeed' in next || 'sankeyAnimRepeat' in next;

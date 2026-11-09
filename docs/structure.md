@@ -9,7 +9,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ agent-verbs              the parts of every product's CLI and MCP verbs that read no element union: addressing, refusals, argv lines
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
 │  ├─ app-doors                the platform's calls on each app's internal doors (export, import, link), for the Drive mirror and the data export
-│  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, a write body's byte cap, rate-limit keys, link unfurls, refusal logs, the realtime room's element-op gate, a Durable Object alarm's one-second floor, the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
+│  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, a write body's byte cap, rate-limit keys, link unfurls, refusal logs, the realtime room's element-op gate, a Durable Object alarm's one-second floor, the server renders' image embedder (`embedImages`), the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check, the one return-path check
 │  ├─ avatar                   Avatar mode's parts that read no element union: walker, sprite, walking, speech, action keys, pads, fences, office walls; each product binds its storage prefix and telemetry
@@ -26,7 +26,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ community-site           the routers' Community step: the app's head on liveworkspace.app's Community page, the sitemap
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ data-export              Download Your Data's contract: limits, export keys and states, the link's message, the doors' paths
-│  ├─ diagram-lint             the numbers and line formats livediagram's and livedocuments' diagram lint judge by
+│  ├─ diagram-lint             the numbers, line formats and ring test livediagram's and livedocuments' diagram lint judge by
 │  ├─ document-views           the agent views of a document that read no element union (budgets, elision, fields), for livediagram and livedocuments
 │  ├─ drive                    the Drive mirror's contract: cadence, formats, the plan, wire shapes, backoff
 │  ├─ edit-operations          the edit engine's parts that read no element union: element text, equality, result lines
@@ -225,7 +225,8 @@ Each step is its own PR, and both products build and pass their tests after ever
      newer `cellText`), field reads, view attributes, budgets and elision (with the `ViewDoor` and `Elision` shapes they
      read, the same as each `api-schema`'s), reading order and freehand runs over any element, and the shared view
      constants. `@liveworkspace/diagram-lint` holds the report text over a product's own codes, label quoting, the
-     logger, the shared `LINT_*` numbers and `createSortFindings`: 22 files, about 1,200 lines with their tests, about
+     logger, the shared `LINT_*` numbers and `createSortFindings` (since joined by `node-isolated`'s ring test over any
+     box, `createRingTest`): 22 files, about 1,200 lines with their tests, about
      1,100 lines fewer in each product. Each product's package keeps its name and surface, binds `Placed` and
      `FreehandRun` to its `Element` and `sortFindings` to its `LINT_CODES` and `LINT_SEVERITY`. Still in each product:
      the views, the lint context and checks, typed on its `Element` and `Tab`, and the wire types in its `api-schema`,
@@ -340,7 +341,7 @@ Each step is its own PR, and both products build and pass their tests after ever
      api's OpenAPI document names (`TrashedProject`, `ProjectSource`, `DesignCommentThread`, …) keep a local
      declaration, so `/api/openapi.json` did not change. The SHA-256 digest four packages each held is one copy in
      `@liveworkspace/model-core/sha256`. Each module is a subpath and each product's `api-schema` re-exports it, so
-     no caller changed. Still per product: what is typed on its element model (`drag-preview`, `embed-images`), its
+     no caller changed. Still per product: what is typed on its element model (`drag-preview`, and `embed-images`' ids, over `@liveworkspace/api-kit/embed-images`), its
      vocabularies (telemetry, lint, room ops, changesets, views, CTA surfaces, page views), the workbench messages
      (their types carry the product's prefix) and its envelopes, which name its noun.
    - `ui`, third slice, with `template-previews` and the licences bindings: the palette icons and the diagram build
@@ -440,7 +441,7 @@ Each step is its own PR, and both products build and pass their tests after ever
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:
      - `api-kit`: the api Workers' responses and CORS (each product's `responses.ts` binds its
-       extra headers and keeps its own answers), rate-limit keys (an IPv6 caller by its /64), link
+       extra headers and keeps its own answers), rate-limit keys (an IPv6 caller by its /64, an IPv4-mapped one by its IPv4 address), link
        unfurls, the refusal log and the `cloudflare:workers` test shim, plus the protocol helpers
        their `api-schema`s re-export (bearer and loopback reads, base64, the API-token shape, OAuth
        device codes and PKCE).

@@ -17,5 +17,6 @@ export const {
   fetchTeamLibraries,
   readLibraries,
   matchFiles: matchDesigns,
+  searchFiles: searchDesigns,
   listAllFiles: listAllDesigns,
 } = createFind<DesignSummary, Folder, 'designs'>(AGENT_PRODUCT);

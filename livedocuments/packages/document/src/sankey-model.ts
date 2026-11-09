@@ -6,6 +6,7 @@
 // A LEAF module (it imports only types), like data-shapes.ts, so factories.ts can seed a new diagram from
 // SANKEY_DEFAULT_FLOWS at module-init time without walking into the index <-> factories cycle.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import type { ShapeKind } from './shape-kind';
 
 /** One flow: `value` of something moving from the node named `from` to the node named `to`. */
@@ -104,7 +105,7 @@ export function isSankeyShape(kind: ShapeKind): boolean {
 
 /** A node name as it is matched and stored: trimmed, inner whitespace collapsed, capped. */
 export function cleanSankeyName(name: string): string {
-  return name.replace(/\s+/g, ' ').trim().slice(0, SANKEY_NAME_MAX);
+  return cutText(name.replace(/\s+/g, ' ').trim(), SANKEY_NAME_MAX);
 }
 
 /** Why a flow is not drawn (the editor names it beside the row). */

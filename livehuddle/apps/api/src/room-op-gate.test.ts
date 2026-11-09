@@ -94,6 +94,19 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ ...letSpeak, ...extra }, as('edit'))).toEqual(relayed(letSpeak));
   });
 
+  // docs/specs/008-canvas/avatar-mode.md "You can push each other": from anyone, but a direction that is not a
+  // number would send the peer's character to NaN, so a malformed push reaches nobody.
+  it('addresses a shove from any level as its checked copy, and drops a malformed one', () => {
+    const push = { kind: 'avatar-push', tabId: 't', targetId: 'p2', dx: 0, dy: -2 };
+    const unit = { ...push, dy: -1 };
+    expect(gateClientOp({ ...push, name: 'x' }, as('view'))).toEqual(relayed(unit));
+    expect(gateClientOp(push, as('edit'))).toEqual(relayed(unit));
+    expect(gateClientOp({ ...push, dx: 'a' }, as('view'))).toEqual(DROP);
+    expect(gateClientOp({ ...push, dy: {} }, as('edit'))).toEqual(DROP);
+    expect(gateClientOp({ ...push, dx: 0, dy: 0 }, as('edit'))).toEqual(DROP);
+    expect(gateClientOp({ ...push, targetId: 7 }, as('edit'))).toEqual(DROP);
+  });
+
   // docs/specs/016-platform/calls-kill-switch.md "The room tells its clients": a silent publisher's nudge.
   it('lets a calls-check through from a speaker only, and only well formed', () => {
     const check = { kind: 'calls-check', tabId: 't' };

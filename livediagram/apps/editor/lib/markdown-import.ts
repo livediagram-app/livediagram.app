@@ -28,6 +28,7 @@ import {
   type TableElement,
   type Tab,
 } from '@livediagram/document';
+import { atxHeadingText } from '@liveworkspace/model-core/markdown-heading';
 import type { ImportOutcome } from './import-tab';
 import { getTheme, recolourElementsForTheme } from './themes';
 
@@ -203,7 +204,8 @@ export function parseMarkdown(markdown: string): ParsedMarkdown {
     const heading = trimmed.match(/^(#{1,6})\s+(.*)$/);
     if (heading) {
       const level = heading[1]!.length;
-      const label = cleanInline(heading[2]!.replace(/\s+#+\s*$/, '')); // drop closing ###
+      // The closing `###` dropped by a scan, never `\s+#+\s*$`, which retried every space of a long run (1.6 s).
+      const label = cleanInline(atxHeadingText(heading[2]!));
       if (!label || !hasRoom()) continue;
       while (headingStack.length > 0 && headingStack[headingStack.length - 1]!.level >= level) {
         headingStack.pop();

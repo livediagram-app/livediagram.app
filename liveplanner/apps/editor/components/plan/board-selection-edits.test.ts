@@ -106,6 +106,28 @@ describe('selection edits', () => {
     ]);
   });
 
+  it('leaves out a card with no room for another label, and a field its type requires', () => {
+    // One card past its limit, or one required field cleared, used to have the api refuse the whole write.
+    const full = card('full', 'task', { labels: Array.from({ length: 12 }, (_, i) => `l${i}`) });
+    const room = card('room', 'task');
+    expect(labelPatches([full, room], types, 'new', 'add')).toEqual([
+      { id: 'room', patch: { set: { labels: ['new'] } } },
+    ]);
+    const strict: ItemTypeDef[] = [
+      type(
+        'task',
+        ['f-size'],
+        [{ id: 'f-size', label: 'Size', kind: 'choice', options: ['S'], required: true }],
+      ),
+      type('note', ['f-size'], [{ id: 'f-size', label: 'Size', kind: 'choice', options: ['S'] }]),
+    ];
+    const t = card('t', 'task', { 'f-size': 'S' });
+    const n = card('n', 'note', { 'f-size': 'S' });
+    expect(fieldPatches([t, n], strict, 'f-size', null)).toEqual([
+      { id: 'n', patch: { clear: ['f-size'] } },
+    ]);
+  });
+
   it('flags every card, or takes every flag off when all are flagged', () => {
     const a = card('a', 'task', { flagged: true });
     const b = card('b', 'task');

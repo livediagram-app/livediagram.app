@@ -250,6 +250,23 @@ describe('TimeSpentField', () => {
     expect(entryWhen(T0 - 86_400_000, T0)).toBe('Yesterday, 14:00');
     expect(entryWhen(new Date(2026, 9, 3, 16, 45).getTime(), T0)).toMatch(/16:45$/);
   });
+
+  it('says Yesterday just after the midnight that ends a 23-hour day', () => {
+    // London springs forward on Sunday 29 March 2026; at 00:30 on Monday, 24 hours back is Saturday.
+    const zone = process.env['TZ'];
+    process.env['TZ'] = 'Europe/London';
+    try {
+      const now = Date.UTC(2026, 2, 29, 23, 30);
+      expect(entryWhen(Date.UTC(2026, 2, 29, 9, 0), now)).toBe('Yesterday, 10:00');
+      // Two days back shows its date, in the viewer's locale ("28 Mar" or "Mar 28"), as the entry above does.
+      const saturday = entryWhen(Date.UTC(2026, 2, 28, 12, 0), now);
+      expect(saturday).not.toMatch(/^(Today|Yesterday)/);
+      expect(saturday).toMatch(/\b28\b.*, 12:00$/);
+    } finally {
+      if (zone === undefined) delete process.env['TZ'];
+      else process.env['TZ'] = zone;
+    }
+  });
 });
 
 describe('the card face', () => {

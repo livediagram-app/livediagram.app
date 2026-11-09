@@ -417,7 +417,13 @@ export function pageEdits({
     // The last page goes with everything on the tab, leaving it empty: no pages, no elements, so Start Making Pages opens again, brought back if it was closed
     // (docs/specs/007-editor/start-diagramming.md "Start Making Pages"). Undo puts it all back.
     if (units.length <= 1) {
-      commitTab((t) => ({ ...t, elements: [], pages: [] }));
+      // Read again at commit time: a peer may have added a page, locked this one or deleted it since this render.
+      commitTab((t) => {
+        const now = pagesOf(t);
+        if (!now.some((p) => p.id === pageId) || pageLockRefuses(now, pageId)) return null;
+        if (pageUnits(now).length > 1) return edited(t, pageRemoved(t, pageId));
+        return { ...t, elements: [], pages: [] };
+      });
       restoreEmptyCard(startClosedKey(tabId, 'pages'));
       debugLog('[page] last page removed', { tabId, pageId });
       return;

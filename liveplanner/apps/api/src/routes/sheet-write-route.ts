@@ -179,7 +179,9 @@ export async function storeSheetWrite(
   by: SheetPerson,
   scopeTab: string | null,
   // A write planned against the sheet at this rev (a form's response row): applied only to that rev, else answered
-  // sheet_busy for the caller to plan again, so a plan never lands on a sheet that changed under it.
+  // sheet_busy for the caller to plan again, so a plan never lands on a sheet that changed under it. Such a write is
+  // stored whole or not at all: one whose cells would not all land is refused (write_invalid) before anything is
+  // stored, so a response that gives its number back never leaves part of its row behind.
   { atRev }: { atRev?: number } = {},
 ): Promise<Response> {
   for (let attempt = 0; attempt < SHEET_WRITE_RETRIES; attempt++) {
@@ -224,6 +226,8 @@ export async function storeSheetWrite(
     }
     const applied = landed.applied;
     const cells = applied.kind === 'title' ? [] : (applied.cells ?? []);
+    if (atRev !== undefined && write.kind !== 'title' && cells.length < (write.cells?.length ?? 0))
+      return sheetRejected('write_invalid', 409);
     const caps = await capsProblem(ctx, projectId, head, cells);
     if (caps) return caps;
     const now = Date.now();

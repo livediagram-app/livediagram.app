@@ -88,6 +88,14 @@ async function upgrade(env: Env, path: string) {
 }
 
 describe('WebSocket upgrade', () => {
+  it('answers 410 design_trashed, never reaching the room, for a grant on a design in the Trash', async () => {
+    const { env, seen } = roomEnv();
+    const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit', trashed: true });
+    const res = await upgrade(env, `/api/designs/p1/ws?t=${encodeURIComponent(t)}`);
+    expect(res?.status).toBe(410);
+    expect(seen).toHaveLength(0);
+  });
+
   it("admits an owner's grant as an editor, overwriting every spoofed trust header", async () => {
     const { env, seen } = roomEnv();
     const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit', owner: 'user_o', team: 't1' });
@@ -192,6 +200,20 @@ describe('WebSocket upgrade', () => {
 });
 
 describe('POST room-ticket', () => {
+  it('answers 410 design_trashed, and no ticket, for a design its grant says is in the Trash', async () => {
+    const { env } = roomEnv();
+    const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit', trashed: true });
+    const res = await handleDesignRoomRoutes(
+      makeTestRouteContext('POST', '/api/designs/p1/room-ticket', {
+        env,
+        headers: { [INDEX_GRANT_HEADER]: t },
+        grant: null,
+      }),
+    );
+    expect(res?.status).toBe(410);
+    expect(await res!.json()).toEqual({ error: 'design_trashed' });
+  });
+
   it('answers the grant the editor sent as the ticket, with no adder key for an editor', async () => {
     const { env } = roomEnv();
     const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });

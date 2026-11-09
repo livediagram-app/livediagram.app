@@ -351,6 +351,12 @@ describe('readTrackerFile', () => {
     expect(refusal(many.join('\n'))).toEqual({ refusal: 'too_many_cards', count: 2001 });
   });
 
+  it('reads a file that starts with a byte order mark', () => {
+    // The CLI reads a file as it is: a Trello export saved with a BOM was "not valid JSON".
+    expect(read(`\ufeff${trelloJson}`).source).toBe('trello');
+    expect(read(`\ufeff${jiraCsv}`).source).toBe('jira');
+  });
+
   it('says each refusal in the words of the spec', () => {
     expect(trackerRefusalMessage({ refusal: 'not_json' })).toBe("That file isn't valid JSON.");
     expect(trackerRefusalMessage({ refusal: 'unknown_source' })).toBe(

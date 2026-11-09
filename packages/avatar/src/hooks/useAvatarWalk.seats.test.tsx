@@ -163,6 +163,27 @@ describe('useAvatarWalk seats', () => {
     expect(result.current.readPos()!.x).toBeGreaterThan(50);
   });
 
+  // A hand-made push whose direction is not a number would walk the character to NaN for good
+  // (docs/specs/008-canvas/avatar-mode.md "You can push each other"): it is ignored.
+  it('ignores a push whose direction is not a finite number', () => {
+    const { result } = setup();
+    act(() => result.current.sitOn('chair', { x: 50, y: 70 }, 'down'));
+    act(() => result.current.standUp());
+    const before = result.current.readPos();
+    for (const [dx, dy] of [
+      ['a', 0],
+      [NaN, 1],
+      [Infinity, 0],
+      [0, 0],
+    ] as const) {
+      act(() => result.current.shove(dx as number, dy));
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(result.current.readPos()).toEqual(before);
+    }
+  });
+
   // Any movement stands you up (docs/specs/009-elements/chair.md, Work Tracker #560): a click, a tap and a route all
   // reach walkTo, so one test covers them.
   it('a walk while seated stands up, frees the seat at once and walks there', () => {

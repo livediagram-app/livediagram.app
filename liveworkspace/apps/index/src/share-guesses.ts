@@ -10,8 +10,7 @@
 // A visit without a password, or with one already checked here, spends nothing, so a visitor already in isn't counted
 // again on every grant renewal.
 
-import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
-import { expandIpv6 } from '@liveworkspace/sites/network';
+import { addressRateKey, clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { trustedClientAddress } from '@liveworkspace/sites/network';
 import { SHARE_GUESS_RETRY_AFTER_S } from './config';
 import type { Env } from './env';
@@ -25,17 +24,14 @@ import { fail, json } from './http';
  *   - from an app's server asking for a visitor (a Worker's subrequest, which Cloudflare marks `CF-Worker`), null: its
  *     address is Cloudflare's, shared by every visitor of every app, so only the item's limit applies;
  *   - otherwise the connection's own, as every api keys its limits (api-kit's clientRateKey).
- * IPv4 keeps the exact address and IPv6 its /64.
+ * IPv4 keeps the exact address and IPv6 its /64 (an IPv4-mapped IPv6 address is its IPv4 address).
  */
 export function guessVisitorOf(
   request: Request,
   env: Pick<Env, 'WORKSPACE_PROXY_SECRET'>,
 ): string | null {
   const named = trustedClientAddress(request, env.WORKSPACE_PROXY_SECRET);
-  if (named) {
-    const hextets = expandIpv6(named);
-    return `via:${hextets ? `${hextets.slice(0, 4).join(':')}::/64` : named}`;
-  }
+  if (named) return `via:${addressRateKey(named)}`;
   if (request.headers.has('CF-Worker')) return null;
   return clientRateKey(request);
 }

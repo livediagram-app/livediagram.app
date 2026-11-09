@@ -7,6 +7,34 @@ import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 // docs/specs/007-editor/logo-pages.md "Mirror".
 describe('mirrorElement', () => {
+  it("reflects a badge's point on its host and a pointer note's tip", () => {
+    const badge = {
+      id: 'b',
+      type: 'shape',
+      shape: 'badge',
+      x: 290,
+      y: 90,
+      width: 20,
+      height: 20,
+      attachedTo: 'h',
+      attachAt: 'top-right',
+    } as ShapeElement;
+    expect(mirrorElement(badge, 512)).toMatchObject({ x: 714, attachAt: 'top-left' });
+    expect(mirrorElement({ ...badge, attachAt: 'left' }, 512).attachAt).toBe('right');
+    expect(mirrorElement({ ...badge, attachAt: 'bottom' }, 512).attachAt).toBe('bottom');
+    const note = {
+      id: 'n',
+      type: 'shape',
+      shape: 'pointer-note',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 40,
+      pointerTip: { x: -30, y: 60 },
+    } as ShapeElement;
+    expect(mirrorElement(note, 200).pointerTip).toEqual({ x: 130, y: 60 });
+  });
+
   it('reflects a shape box across the axis and turns it the other way', () => {
     const s: ShapeElement = {
       id: 's',

@@ -6,7 +6,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type {
   ChangesetRequest,
-  DocumentListResponse,
   DocumentResponse,
   ShareLinkResponse,
   TabResponse,
@@ -41,7 +40,7 @@ import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { deleteRefusal, fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
+import { deleteRefusal, searchDocuments } from '@livediagram/agent-verbs';
 import {
   deepLink,
   errorResult,
@@ -92,14 +91,10 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpFindDocuments, async (args, extra) => {
     const token = requireToken(extra);
     // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a document filed into a
-    // team leaves the personal list, so both must be swept.
-    const [{ documents: liveDocs }, teamLibraries] = await Promise.all([
-      apiJson<DocumentListResponse>(env, token, '/documents'),
-      fetchTeamLibraries(clientFor(env, token)),
-    ]);
-    const matched = matchDocuments(liveDocs, teamLibraries, args.query, args.limit ?? 20).map(
-      (d) => ({ ...d, url: deepLink(env, d.id) }),
-    );
+    // team leaves the personal list, so both are searched, at the index in one
+    // request (@liveworkspace/agent-verbs/find `searchFiles`).
+    const found = await searchDocuments(clientFor(env, token), args.query, args.limit ?? 20);
+    const matched = found.map((d) => ({ ...d, url: deepLink(env, d.id) }));
     return textResult({ count: matched.length, documents: matched });
   });
 

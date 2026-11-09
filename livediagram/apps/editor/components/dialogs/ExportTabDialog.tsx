@@ -22,20 +22,24 @@ import {
 } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
 import { tabToExcalidrawText } from '@/lib/excalidraw-export';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
-/** A file name safe on every platform (docs/specs/020-import-export/export-fidelity.md "File names"): brackets
- *  are dropped, anything else but letters, digits, dots, dashes and spaces becomes a dash, and no dash is left at
- *  either end, so "Plan (v2)?" reads "Plan v2" and never "Plan -v2-". */
-export function sanitizeFilename(name: string): string {
-  return name
-    .replace(/[()[\]{}]+/g, '')
-    .replace(/[^A-Za-z0-9._\- ]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/\s+/g, ' ')
-    .replace(/^[-\s]+|[-\s]+$/g, '');
+/** A tab export's file name before its extension (docs/specs/020-import-export/export-fidelity.md "File names"):
+ *  `<document> - <tab>`, ` - selection` added for a selection, through the shared `sanitizeFilename`, so it is
+ *  safe on every platform, keeps letters in any script, and a name of nothing safe downloads as "document". */
+export function tabExportBaseName(
+  documentName: string,
+  tabName: string,
+  isSelection: boolean,
+): string {
+  const suffix = isSelection ? ' - selection' : '';
+  return sanitizeFilename(
+    `${documentName || 'document'} - ${tabName || 'tab'}${suffix}`,
+    'document',
+  );
 }
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
@@ -200,10 +204,7 @@ export function ExportTabDialog({
   const [previewReady, setPreviewReady] = useState(false);
 
   const isSelection = scope === 'selection';
-  const suffix = isSelection ? ' - selection' : '';
-  const baseName = sanitizeFilename(
-    `${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`,
-  );
+  const baseName = tabExportBaseName(documentName, tab.name, isSelection);
 
   // A new image load (format picked, tab or image context changed) is not ready until it lands;
   // adjusted during render so the panel never shows the previous load as ready.

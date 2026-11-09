@@ -9,6 +9,7 @@ const { index } = vi.hoisted(() => ({
     links: [] as { code: string; tabId: string | null }[],
     revoked: [] as string[],
     items: [] as Record<string, unknown>[],
+    queries: [] as unknown[],
   },
 }));
 vi.mock('../index-service', async (importOriginal) => ({
@@ -16,7 +17,10 @@ vi.mock('../index-service', async (importOriginal) => ({
   indexFor: () => ({
     listShareLinks: async () => ({ links: index.links, passwordSet: false }),
     revokeShareLink: async (code: string) => void index.revoked.push(code),
-    listItems: async () => ({ items: index.items, nextCursor: null }),
+    listItems: async (query: unknown) => {
+      index.queries.push(query);
+      return { items: index.items, nextCursor: null };
+    },
   }),
 }));
 
@@ -570,5 +574,17 @@ describe('the document list', () => {
     expect(await res.json()).toMatchObject({
       documents: [{ id: 'A', name: 'Roadmap', ownerId: 'owner', savedAt: 2, createdAt: 1 }],
     });
+  });
+
+  it('searches mine and every joined team at the index, one page, when asked, and refuses a bad ask', async () => {
+    const db = sqliteD1();
+    const list = (path: string) =>
+      handleDocumentList(makeTestRouteContext('GET', path, { env: db.env, owner: 'owner' }));
+    index.queries = [];
+    expect((await list('/api/documents?team=all&q=road&limit=20')).status).toBe(200);
+    expect(index.queries).toEqual([{ app: 'livediagram', q: 'road', limit: 20 }]);
+    const refused = await list('/api/documents?limit=500');
+    expect(refused.status).toBe(400);
+    expect(await refused.json()).toEqual({ error: 'invalid_query' });
   });
 });

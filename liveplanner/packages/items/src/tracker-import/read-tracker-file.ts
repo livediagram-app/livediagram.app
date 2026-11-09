@@ -44,9 +44,12 @@ function titleOf(board: TrackerBoard, fileName: string | undefined): string {
 }
 
 function readBoard(
-  text: string,
+  raw: string,
   parseRows: (text: string) => readonly Row[],
 ): TrackerBoard | TrackerRefusal {
+  // A byte order mark (a file saved by a Windows editor, read as it is by the CLI) is no part of the text, and
+  // JSON.parse refuses one.
+  const text = raw.startsWith('\ufeff') ? raw.slice(1) : raw;
   if (text.trimStart().startsWith('{')) {
     let json: unknown;
     try {

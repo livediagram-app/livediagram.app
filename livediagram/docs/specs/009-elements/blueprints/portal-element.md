@@ -57,7 +57,8 @@ Banned synonyms: "door" (it survives only as the persisted palette tile id `tool
 1. Resolve; `null` does nothing.
 2. If `to.tabId !== activeTabId`, call `onFollowLink({ kind: 'tab', tabId })`.
 3. Measure the viewport (`mainRef.current.getBoundingClientRect()`); if present, set the offset to
-   `viewportOffsetCentredOn(to.portal, size, zoom)`. A callback ref has no rect and skips this.
+   `viewportOffsetCentredOn(to.portal, size)`: `size / 2` less the portal's centre, at any zoom (the canvas
+   scales about the viewport's centre, so the zoom never enters it). A callback ref has no rect and skips this.
 4. `teleportTo(portalExitPoint(to.portal), to.portal.id)`: clears the walk target and held keys,
    places the feet, sets `arrivedPortalRef` and `lastUnderFeetRef` to the exit portal.
 
@@ -114,7 +115,7 @@ export function resolvePortalDestination(from: ShapeElement,
   ctx: { elements: Element[]; tabs?: Tab[]; activeTabId?: string }): PortalDestination | null;
 export function portalExitPoint(portal: PortalBox): { x: number; y: number };
 export function viewportOffsetCentredOn(portal: PortalBox,
-  size: { width: number; height: number }, zoom: number): { x: number; y: number };
+  size: { width: number; height: number }): { x: number; y: number };
 export function usePortalTravel(deps: PortalTravelDeps): {
   enterPortal: (from: ShapeElement) => void;
   resolvePortal: (element: ShapeElement) => { targetName: string | null; travel?: () => void };
@@ -126,7 +127,6 @@ export function usePortalTravel(deps: PortalTravelDeps): {
 | `portalTarget` absent                     | Valid; unlinked unless an incoming link exists |
 | `portalTarget` a non-empty string         | Valid, resolved at press time                  |
 | `portalTarget` empty string or non-string | `isValidElement` returns `false`               |
-| `zoom <= 0` in `viewportOffsetCentredOn`  | Treated as `1`                                 |
 
 ## Data and persistence
 
@@ -220,7 +220,7 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Every broken link resolves to unlinked (E1-E3)         | `resolvePortalTarget` block                     | `apps/editor/lib/portals.test.ts`                     |
 | Incoming link and precedence (E4, E5)                  | "leads back down an INCOMING link", "prefers …" | `apps/editor/lib/portals.test.ts`                     |
 | Cross-tab resolution (E6)                              | `resolvePortalDestination` block                | `apps/editor/lib/portals.test.ts`                     |
-| Exit point, camera centring with zoom                  | `portalExitPoint`, `viewportOffsetCentredOn`    | `apps/editor/lib/portals.test.ts`                     |
+| Exit point, camera centring at any zoom                | `portalExitPoint`, `viewportOffsetCentredOn`    | `apps/editor/lib/portals.test.ts`                     |
 | Travel order, ignored exit, unlinked inert (I4)        | `usePortalTravel` block                         | `apps/editor/components/canvas/portal-travel.test.ts` |
 | Not votable                                            | "rejects the interactive Behaviour shapes"      | `packages/document/src/session.test.ts`               |
 | Export draws a ring                                    | "draws more than a box and a label"             | `packages/document/src/export-consistency.test.ts`    |

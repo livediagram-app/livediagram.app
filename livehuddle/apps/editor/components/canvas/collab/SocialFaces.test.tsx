@@ -90,6 +90,15 @@ describe('the reader while walking', () => {
     expect(document.querySelector('[data-notice-reader]')).toBeNull();
   });
 
+  it('names a World Clock zone with no label Local to a screen reader, as its dial does', () => {
+    // An unlabelled zone read as ": 10:00", with no name before the time.
+    render(
+      <SocialFace element={piece('world-clock', { clockZones: [{ zone: 'UTC', label: '' }] })} />,
+    );
+    const face = screen.getByRole('img');
+    expect(face.getAttribute('aria-label')).toMatch(/^Local: /);
+  });
+
   it('opens every World Clock zone large, past the three the face shows', () => {
     const zones = ['London', 'Paris', 'Tokyo', 'Sydney'].map((label) => ({
       zone: 'UTC',

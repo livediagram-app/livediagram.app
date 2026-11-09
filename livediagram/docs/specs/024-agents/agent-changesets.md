@@ -177,7 +177,8 @@ field, and nothing is applied. A relaxed tab is never refused for residue.
   summary of the latest changeset in it, when it has one; adds and removals count as changed). **Show** brings the
   touched elements into view; **Undo** reverts. Changesets from one token within `CHANGESET_TOAST_COALESCE_MS`
   share a toast, and Undo on it reverts each, newest first. After Undo it reads "Undone", or "Undone, 2 kept
-  because they changed since".
+  because they changed since". Undo is offered only to a session that may edit (the revert's own rule, above): a Viewer
+  or a Participant, or an Editor previewing as one, sees Show alone, since the api would refuse the revert.
 - The toast stays up for the answer time ([Toasts](../004-interface-design/toasts.md#timing), 10 seconds, paused
   while hovered or focused), or until dismissed; a newer burst from the same token replaces it. It is an information toast, so
   the "Show notifications" preference silences it; the outline still shows.

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { createTable } from './factories';
+import {
+  elementValidationIssue,
+  MAX_TABLE_CELLS,
+  MAX_TABLE_COLS,
+  MAX_TABLE_ROWS,
+} from './validate';
 import {
   addTableColumn,
   addTableRow,
@@ -212,5 +219,55 @@ describe('parseClipboardTableText', () => {
     expect(isTabularClipboard([['hello']])).toBe(false);
     expect(isTabularClipboard([['a', 'b']])).toBe(true);
     expect(isTabularClipboard([['a'], ['b']])).toBe(true);
+  });
+});
+
+// A spreadsheet quotes a cell that holds a line break, a tab or a quote, doubling its quotes. Split on every
+// newline, a two-line cell became two rows and shifted every row under it.
+describe('parseClipboardTableText quoted cells', () => {
+  it('reads a quoted cell as one cell', () => {
+    expect(parseClipboardTableText('"Line 1\nLine 2"\tB\r\nC\tD\r\n')).toEqual([
+      ['Line 1\nLine 2', 'B'],
+      ['C', 'D'],
+    ]);
+    expect(parseClipboardTableText('"He said ""hi"""\t"a\tb"')).toEqual([['He said "hi"', 'a\tb']]);
+  });
+
+  it('keeps a quote that does not close a cell as text', () => {
+    expect(parseClipboardTableText('5" pipe\t"x\n"y')).toEqual([['5" pipe', '"x'], ['"y']]);
+    expect(parseClipboardTableText('"open\tb')).toEqual([['"open', 'b']]);
+  });
+
+  it('stays linear on quotes that never close', () => {
+    const text = '"' + '\t""'.repeat(200_000);
+    const ms = cpuMsOf(() => parseClipboardTableText(text));
+    expect(ms).toBeLessThan(cpuBudgetMs(150));
+  });
+});
+
+// A table past the caps every save checks is refused by the room and by every save of its tab, so a big
+// spreadsheet paste left a tab whose edits were all lost on reload.
+describe('table growth stays within the save caps', () => {
+  const grid = (rows: number, cols: number) =>
+    Array.from({ length: rows }, () => Array.from({ length: cols }, () => 'x'));
+
+  it('cuts a paste at the row, column and cell caps', () => {
+    const tall = pasteIntoTable(t(), 0, 0, grid(1_500, 2));
+    expect(tableRowCount(tall)).toBe(MAX_TABLE_ROWS);
+    const wide = pasteIntoTable(t(), 0, 0, grid(2, 1_500));
+    expect(tableColCount(wide)).toBe(MAX_TABLE_COLS);
+    const big = pasteIntoTable(t(), 0, 0, grid(300, 200));
+    expect(tableColCount(big)).toBe(200);
+    expect(tableRowCount(big)).toBe(MAX_TABLE_CELLS / 200);
+    for (const table of [tall, wide, big]) expect(elementValidationIssue(table)).toBeNull();
+  });
+
+  it('adds no row or column at a cap', () => {
+    const full = pasteIntoTable(t(), 0, 0, grid(MAX_TABLE_ROWS, 2));
+    expect(addTableRow(full)).toBe(full);
+    expect(addTableColumn(full).cells[0]).toHaveLength(tableColCount(full) + 1);
+    const dense = pasteIntoTable(t(), 0, 0, grid(250, 200));
+    expect(addTableRow(dense)).toBe(dense);
+    expect(addTableColumn(dense)).toBe(dense);
   });
 });

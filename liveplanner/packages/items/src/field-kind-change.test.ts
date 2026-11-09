@@ -241,6 +241,24 @@ describe('more pairs', () => {
     });
   });
 
+  it('makes each item of a list one label, commas and all', () => {
+    expect(
+      changedValue(
+        { kind: 'multichoice', options: ['Yes, with notes', 'No'] },
+        { kind: 'labels' },
+        ['Yes, with notes'],
+      ),
+    ).toEqual({ kind: 'rewritten', value: ['Yes, with notes'], trimmed: false });
+    const lopez = { id: 'p-lopez', name: 'Lopez; Ana', color: '#2563eb' };
+    expect(
+      changedValue({ kind: 'person', multiple: true }, { kind: 'labels' }, [lopez, ALI]),
+    ).toEqual({ kind: 'rewritten', value: ['Lopez; Ana', 'Ali'], trimmed: false });
+    // A text is still a line of labels.
+    expect(changedValue({ kind: 'text' }, { kind: 'labels' }, 'ui, bug')).toMatchObject({
+      value: ['ui', 'bug'],
+    });
+  });
+
   it('keeps one card of several, and a lone value as it is', () => {
     expect(changedValue({ kind: 'card', multiple: true }, { kind: 'card' }, ['a', 'b'])).toEqual({
       kind: 'rewritten',

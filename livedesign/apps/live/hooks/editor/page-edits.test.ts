@@ -132,6 +132,48 @@ describe('Page edits', () => {
     expect(emptyCardDismissed('t:pages')).toBe(false);
   });
 
+  // start-diagramming.md "Start Making Pages": the tab is read again as the last page's delete lands.
+  it("deleting the last page keeps a peer's page, lock or delete that landed since", () => {
+    const one = (): Tab =>
+      ({
+        id: 't',
+        name: 'T',
+        elements: [box('a', 0)],
+        pages: [{ id: 'page-1', orientation: 'portrait' }],
+      }) as unknown as Tab;
+    const run = (peer: Tab) => {
+      let tabs = [one()];
+      const edits = pageEdits({
+        tabId: 't',
+        tab: tabs[0]!,
+        current: pagesOf(tabs[0]),
+        elements: tabs[0]!.elements,
+        commitTabs: (map) => {
+          tabs = map([peer]);
+        },
+        onGoTo: vi.fn(),
+        onLayoutPlaced: vi.fn(),
+        toastInfo: vi.fn(),
+        currentPage: () => null,
+      });
+      edits.removePage!('page-1');
+      return tabs[0]!;
+    };
+    const added = run(twoPages());
+    expect(pagesOf(added).map((p) => p.id)).toEqual(['page-2']);
+    expect(added.elements.map((e) => e.id)).toEqual(['b']);
+    const locked = {
+      ...one(),
+      pages: [{ id: 'page-1', orientation: 'portrait', locked: true }],
+    } as unknown as Tab;
+    expect(run(locked)).toBe(locked);
+    const replaced = {
+      ...one(),
+      pages: [{ id: 'page-9', orientation: 'portrait' }],
+    } as unknown as Tab;
+    expect(run(replaced)).toBe(replaced);
+  });
+
   it('deletes a page with its content, and the next page closes the gap', () => {
     const h = harness(twoPages());
     h.edits().removePage!('page-1');

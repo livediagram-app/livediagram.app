@@ -105,6 +105,21 @@ function openNotePiece(el: Element): ShapeElement | null {
 }
 
 // The board with its notes set, the field dropped when none are left.
+// A pinned note's own fields alone: a field the wire does not define is never stored on the board, so a pin padded
+// with junk can't grow the tab past what a save takes.
+function noteFields(n: NoticeNote): NoticeNote {
+  return {
+    id: n.id,
+    ...(n.title === undefined ? {} : { title: n.title }),
+    text: n.text,
+    author: n.author,
+    by: n.by,
+    at: n.at,
+    ...(n.color === undefined ? {} : { color: n.color }),
+    ...(n.day === undefined ? {} : { day: n.day }),
+  };
+}
+
 function withNotes(el: ShapeElement, notes: NoticeNote[]): ShapeElement {
   const { noticeNotes: _drop, ...rest } = el;
   return notes.length > 0 ? { ...rest, noticeNotes: notes } : rest;
@@ -184,7 +199,7 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       // A replay, or a board already full: the note does not land (two pins racing for the last place settle in
       // the room's order).
       if (notes.length >= NOTES_MAX || notes.some((n) => n.id === delta.note.id)) return el;
-      return withNotes(board, [...notes, delta.note]);
+      return withNotes(board, [...notes, noteFields(delta.note)]);
     }
     case 'notice-unpin': {
       const board = openNotePiece(el);

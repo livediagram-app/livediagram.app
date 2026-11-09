@@ -241,6 +241,8 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
 // (duplicate, select-all, lock, z-order, zoom), so it is prevented and does nothing; `ignore` is every other key, left
 // to the browser and the board (copy and cut of the board's text included), never reaching the canvas.
 type CoveredKeyRole = 'run' | 'swallow' | 'ignore';
+// A Set, not `'[]{}'.includes(key)`: an empty key (synthetic events, some IMEs) is a substring of every string.
+const BRACKET_KEYS = new Set(['[', ']', '{', '}']);
 const isZoomChordKey = (key: string) => key === '=' || key === '+' || key === '-' || key === '0';
 export function coveredKeyRole(
   e: Pick<KeyboardEvent, 'key' | 'code' | 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey'>,
@@ -256,7 +258,7 @@ export function coveredKeyRole(
       (lower === 'l' && e.shiftKey) ||
       isZoomChordKey(e.key) ||
       (e.shiftKey &&
-        (e.code === 'BracketRight' || e.code === 'BracketLeft' || '[]{}'.includes(e.key)))
+        (e.code === 'BracketRight' || e.code === 'BracketLeft' || BRACKET_KEYS.has(e.key)))
     )
       return 'swallow';
     return 'ignore';

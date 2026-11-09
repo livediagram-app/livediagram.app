@@ -204,7 +204,9 @@ TURN key, and makes every call on the browser's behalf, after checking the calle
 - `PUT /api/documents/:id/calls/close`: stop subscriptions or the microphone, by `mid`.
 
 Every route answers **503 `calls_off`** while calls are off (close excepted while the kill switch alone pauses
-them), **404** without a grant on the Space, and **403 `calls_listen_only`** for a Viewer's publish. The kill switch
+them), **404** without a grant on the Space, **403 `community_link`** through a Community post's link (its
+visitors never join the Space's room, so they never call in it either), and **403 `calls_listen_only`** for a
+Viewer's publish. The kill switch
 checks every session and track against its mode ([Calls kill switch](../016-platform/calls-kill-switch.md#wired-in)).
 
 ### A session that expires

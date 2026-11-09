@@ -5,7 +5,14 @@
 // baseline, by content, since a peer's op makes new objects on both sides) is applied to the fetched elements; so
 // is each tab field changed here. The baseline then moves to the fetched copy, so the next save sends exactly
 // these edits. Pure.
-import type { Element, Tab } from '@livedocuments/document';
+import {
+  applyArticleOps,
+  articlesOf,
+  diffArticleFlow,
+  type ArticleFlow,
+  type Element,
+  type Tab,
+} from '@livedocuments/document';
 
 const same = (a: unknown, b: unknown) => a === b || JSON.stringify(a) === JSON.stringify(b);
 
@@ -30,6 +37,13 @@ export function rebaseLocalEdits(fetched: Tab, screen: Tab, baseline: Tab | unde
   for (const key of keys) {
     if (key === 'elements') continue;
     if (same(screen[key], baseline[key])) continue;
+    // The writing goes back block by block, as a peer's article ops do (docs/specs/007-editor/article-pages.md
+    // "Collaboration"): taking the whole field dropped the blocks a peer wrote while this editor was away, and the
+    // next save then sent their removal to everyone.
+    if (key === 'articles') {
+      Object.assign(fields, { articles: rebaseArticles(fetched, screen, baseline) });
+      continue;
+    }
     if (key in screen) Object.assign(fields, { [key]: screen[key] });
     else cleared.push(key);
   }
@@ -48,5 +62,24 @@ export function rebaseLocalEdits(fetched: Tab, screen: Tab, baseline: Tab | unde
   ];
   const out: Tab = { ...fetched, ...fields, elements };
   for (const key of cleared) delete out[key];
+  if (out.articles === undefined) delete out.articles;
   return out;
+}
+
+// The fetched articles with what was written here since the last save applied to them: each article changed here
+// as its ops from the baseline, each removed here removed. Undefined when none is left.
+function rebaseArticles(
+  fetched: Tab,
+  screen: Tab,
+  baseline: Tab,
+): Record<string, ArticleFlow> | undefined {
+  const was = articlesOf(baseline);
+  const now = articlesOf(screen);
+  const out = { ...articlesOf(fetched) };
+  for (const flow of Object.keys(was)) if (!(flow in now)) delete out[flow];
+  for (const [flow, doc] of Object.entries(now)) {
+    if (was[flow] !== undefined && same(was[flow], doc)) continue;
+    out[flow] = applyArticleOps(out[flow], diffArticleFlow(was[flow], doc));
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }

@@ -15,7 +15,7 @@ import {
 } from './item';
 import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types';
 import { inheritingTypesOf } from './type-inheritance';
-import { ITEM_UNKNOWN_STRING_MAX } from './limits';
+import { ITEM_LABELS_MAX, ITEM_LABEL_MAX, ITEM_UNKNOWN_STRING_MAX } from './limits';
 import { richFieldOf } from './rich-text-field';
 import { holdsSeveral, storedCardIds, storedPeople } from './several-values';
 import type { ItemPatchOf } from './store';
@@ -103,6 +103,20 @@ const asDef = (f: KindShape): CustomFieldDef => ({ id: '', label: '', ...f });
 const lower = (s: string) => s.trim().toLowerCase();
 
 // A value's parts, each a line of text: a list's items (options, labels, people's names), else the value as one.
+// The kinds whose value is a list of items, each one part.
+const LIST_KINDS: ReadonlySet<CustomFieldKind> = new Set(['multichoice', 'labels', 'person']);
+
+// Labels from a list's items, one each, as a Labels field keeps them: trimmed, cut to ITEM_LABEL_MAX, no repeats,
+// at most ITEM_LABELS_MAX.
+function listLabels(parts: readonly string[]): string[] | undefined {
+  const out: string[] = [];
+  for (const part of parts) {
+    const l = part.trim().slice(0, ITEM_LABEL_MAX).trim();
+    if (l && !out.includes(l) && out.length < ITEM_LABELS_MAX) out.push(l);
+  }
+  return out.length ? out : undefined;
+}
+
 function partsOf(from: KindShape, value: ItemFieldValue, ctx: KindChangeContext): string[] {
   switch (from.kind) {
     case 'multichoice':
@@ -216,7 +230,11 @@ export function changedValue(
       return rewritten(picks.length ? picks : undefined, picks.length < parts.length);
     }
     case 'labels': {
-      const labels = customValueOfText(asDef(to), parts.join(','), ctx.people ?? []);
+      // A list's items are a label each, whatever they hold ("Yes, with notes", "Lopez, Ana"); only a text is read as
+      // a line of labels split at its commas.
+      const labels = LIST_KINDS.has(from.kind)
+        ? listLabels(parts)
+        : customValueOfText(asDef(to), parts.join(','), ctx.people ?? []);
       return rewritten(labels, Array.isArray(labels) && labels.length < parts.length);
     }
     case 'person': {

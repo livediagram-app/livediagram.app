@@ -40,6 +40,23 @@ function grow(sheet: Sheet, at: { r: number; c: number }, rows: number, cols: nu
   return { changes, rowIds, colIds, truncated: addRows < needRows || addCols < needCols };
 }
 
+// The cells a paste filled, selected after it: cut at the grid's end when the paste was, so the selection never
+// reaches past the sheet's last row or column.
+function landed(
+  r: number,
+  c: number,
+  rows: number,
+  cols: number,
+  g: { rowIds: readonly string[]; colIds: readonly string[] },
+): GridRange {
+  return {
+    r1: r,
+    c1: c,
+    r2: Math.min(r + rows, g.rowIds.length) - 1,
+    c2: Math.min(c + cols, g.colIds.length) - 1,
+  };
+}
+
 // How many times the copied block repeats to fill the selection (a whole multiple of it), else once.
 function tiles(sel: GridRange, rows: number, cols: number): { rows: number; cols: number } {
   const h = sel.r2 - sel.r1 + 1;
@@ -101,12 +118,7 @@ export function pasteClip(
     }
   return {
     edits: [{ sheetId, write: write(g.changes, cells) }],
-    range: {
-      r1: sel.r1,
-      c1: sel.c1,
-      r2: Math.min(sel.r1 + size.rows, g.rowIds.length) - 1,
-      c2: Math.min(sel.c1 + size.cols, g.colIds.length) - 1,
-    },
+    range: landed(sel.r1, sel.c1, size.rows, size.cols, g),
     truncated: g.truncated,
   };
 }
@@ -190,7 +202,7 @@ export function pasteCut(
     edits.push({ sheetId, write: { kind: 'layout', changes: g.changes } });
   return {
     edits,
-    range: { r1: at.r, c1: at.c, r2: at.r + clip.rows - 1, c2: at.c + clip.cols - 1 },
+    range: landed(at.r, at.c, clip.rows, clip.cols, g),
     truncated: g.truncated,
   };
 }
@@ -241,7 +253,7 @@ export function pasteExternal(
     }
   return {
     edits: [{ sheetId, write: write(g.changes, cells) }],
-    range: { r1: sel.r1, c1: sel.c1, r2: sel.r1 + size.rows - 1, c2: sel.c1 + size.cols - 1 },
+    range: landed(sel.r1, sel.c1, size.rows, size.cols, g),
     truncated: g.truncated,
   };
 }

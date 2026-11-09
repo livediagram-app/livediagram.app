@@ -417,5 +417,11 @@ describe('share roles (docs/specs/009-elements/components.md "Share roles")', ()
     expect((await call(db, 'PUT', '/api/designs/D/components/c2', main('c2'), scoped)).status).toBe(
       403,
     );
+    // Another tab draws a main nothing has stored yet (placed by a peer a moment ago, or pasted): a scoped make of
+    // it would set what that tab draws, so it is refused too.
+    db.sql.prepare("INSERT INTO component_refs (tab_id, component_id) VALUES ('t2', 'c8')").run();
+    expect((await call(db, 'PUT', '/api/designs/D/components/c8', main('c8'), scoped)).status).toBe(
+      403,
+    );
   });
 });

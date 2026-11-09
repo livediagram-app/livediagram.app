@@ -7,27 +7,35 @@ import type { DocumentEnv } from '../types';
 
 export type SuggestionBox = { documentId: string; tabId: string; elementId: string };
 
-/** How many notes a box holds now. */
-export async function countSuggestions(env: DocumentEnv, box: SuggestionBox): Promise<number> {
-  const row = await env.DOCUMENT_DB.prepare(
-    'SELECT COUNT(*) AS n FROM suggestions WHERE document_id = ? AND tab_id = ? AND element_id = ?',
-  )
-    .bind(box.documentId, box.tabId, box.elementId)
-    .first<{ n: number }>();
-  return row?.n ?? 0;
-}
-
-/** Drop one note in a box. */
+/**
+ * Drop one note in a box holding fewer than `max`; whether it landed. The count and the insert are one statement, so
+ * two drops racing for a box's last place can't both land past the cap (a count, then an insert, could).
+ */
 export async function insertSuggestion(
   env: DocumentEnv,
   box: SuggestionBox,
   note: Suggestion,
-): Promise<void> {
-  await env.DOCUMENT_DB.prepare(
-    'INSERT INTO suggestions (id, document_id, tab_id, element_id, text, day) VALUES (?, ?, ?, ?, ?, ?)',
+  max: number,
+): Promise<boolean> {
+  const res = await env.DOCUMENT_DB.prepare(
+    `INSERT INTO suggestions (id, document_id, tab_id, element_id, text, day)
+       SELECT ?, ?, ?, ?, ?, ?
+        WHERE (SELECT COUNT(*) FROM suggestions WHERE document_id = ? AND tab_id = ? AND element_id = ?) < ?`,
   )
-    .bind(note.id, box.documentId, box.tabId, box.elementId, note.text, note.day)
+    .bind(
+      note.id,
+      box.documentId,
+      box.tabId,
+      box.elementId,
+      note.text,
+      note.day,
+      box.documentId,
+      box.tabId,
+      box.elementId,
+      max,
+    )
     .run();
+  return (res.meta.changes ?? 0) > 0;
 }
 
 /** A box's notes, newest first. */

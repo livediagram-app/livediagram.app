@@ -269,7 +269,9 @@ laid out with it, holding ordinary canvas elements that move with it.
 - **Object zone** (`zone: 'object'`): one element (an image, a chart, a table, a code element, a
   video, an icon, a sticker, a sticky note, a component), the zone hugging it exactly, with no
   boundary of its own. Resizing the element
-  resizes the zone.
+  resizes the zone. The element is never wider than the text nor taller than the tallest zone
+  (`ARTICLE_ZONE_MAX`, 2,000 px): one past either is scaled down to fit, keeping its shape, so a
+  tall picture (a phone screenshot) never runs over the writing after it.
 - **Drawing zone** (`zone: 'drawing'`): an area of the page for shapes, text labels
   and the arrows between them, worked on with the canvas's own tools. It is a size of its own (by
   default the text width x 240 px) with grips on its bottom edge (taller or shorter), its right
@@ -489,8 +491,9 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
   signal, not the page's palette.
 
 - **The marker** carries its own count, so no badge strip rides on it. A click on it, or a plain
-  click on its tinted text, opens its thread, or its action (the Assign Action dialog while none is
-  assigned). Hovering lifts it with a shadow; selected, it wears the selection ring as any element
+  click on its tinted text, opens its thread, or its action (for an Editor, the Assign Action dialog
+  while none is assigned; a Viewer or a Participant, who assigns nothing, gets nothing from an
+  unassigned one). Hovering lifts it with a shadow; selected, it wears the selection ring as any element
   does. On a touch screen its press area grows past the chip to 44 px wide and 38 px tall at full
   size (half the 6 px gap above and below), so stacked markers never take each other's presses.
 - **Its name** says which it is and where it stands, for a screen reader: "Comment, 2 open",

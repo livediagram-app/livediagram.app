@@ -718,6 +718,13 @@ passes its imported module and fonts; the CLI reads `resvg.wasm`, `Inter-Regular
 (`CliIo.readAsset`; the build copies them, with `Inter-OFL.txt`), and only when a render verb runs (CLI31). A missing
 file exits 7 naming it.
 
+`renderPng(svg, scale, maxSide)` draws a drawing whose longer side passes `maxSide` (the MCP's 2,048 px preview)
+at the zoom that fits. That zoom comes from the root `<svg>` tag's `width` and `height` when both are plain
+numbers (`statedSize`; any order, quoted either way, read as resvg's 32-bit floats), so the SVG is parsed once;
+with a unit, a percentage, a `style`, a missing side or anything but a prologue before the tag, resvg parses it
+first to learn its size and again at the zoom. Both paths give the same PNG bytes (a test holds them equal);
+parsing a 0.5 MB drawing costs about 0.6 to 1.5 s in the wasm, so the one parse halves a big preview's render.
+
 ### The pull file
 
 The `livediagram.document` envelope (`DocumentEnvelope`, schema version 1, from the moved `document-envelope.ts`),

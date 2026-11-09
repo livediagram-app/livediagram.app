@@ -196,12 +196,17 @@ the one the api stores ([Tab and document name length](../006-document/name-leng
 Search/list the caller's documents: the **personal library AND every joined
 team's shared library** ([Team shared documents](../013-workspace/team-shared-documents.md)). A document
 filed into a team leaves its owner's personal list entirely, so the personal
-`GET /api/documents` alone is not "the user's documents": the tool sweeps
-`GET /api/teams` + `GET /api/teams/:id/library` alongside it (the api accepts
-the token identity on those reads, [Public API and API tokens §3.4](public-api-and-tokens.md)),
-merges, and ranks newest-saved first. The team sweep is best-effort: a teams
-failure degrades to personal-only results, never an error. Input: optional
-`query` (name match), `limit`. Returns a compact list:
+`GET /api/documents` alone is not "the user's documents": the tool asks
+`GET /api/documents?team=all&q=<query>&limit=<limit>`, which the api answers from one index page over mine and
+every joined team, searched and capped there, newest saved first, beside `GET /api/teams` for the teams' names
+(the api accepts the token identity on those reads; [Public API and API tokens §3.4](public-api-and-tokens.md)).
+Before, it read every library whole (`GET /api/teams/:id/library` for each team, at most 1,000 documents each)
+and matched here: the index's search finds what that missed past the 1,000th. The teams' names are best-effort:
+a teams failure names a team's document by its team id, never an error. Input: optional `query`, each word found
+in the name or the folder's name (ASCII case-insensitive; a document whose name holds the query as typed still
+matches, and so now does one holding its words apart or in its folder's name), `limit`. A query with a
+non-ASCII character, which the index would fold differently, or one the index refuses (over 200 characters or
+16 words), is matched as before: the whole sweep, the name containing the query in any case. Returns a compact list:
 `{ id, name, updatedAt, library, url }` where `library` is `personal` or the
 team's name and `url` is the `livedocuments.app` deep link to open it. **No image
 here**, kept lightweight so the model can scan many results cheaply, then

@@ -121,6 +121,30 @@ describe('embedTargetFor', () => {
     );
   });
 
+  // An unlisted video plays only with its privacy hash, and a channel or group page puts the id further in.
+  it('keeps an unlisted Vimeo video’s hash, and reads channel and group links', () => {
+    const embed = (url: string) => embedTargetFor(url)?.embedUrl;
+    expect(embed('https://vimeo.com/76979871/a1b2c3d4e5')).toBe(
+      'https://player.vimeo.com/video/76979871?h=a1b2c3d4e5',
+    );
+    expect(embed('https://player.vimeo.com/video/76979871?h=a1b2c3d4e5&badge=0')).toBe(
+      'https://player.vimeo.com/video/76979871?h=a1b2c3d4e5',
+    );
+    expect(embed('https://vimeo.com/channels/staffpicks/76979871')).toBe(
+      'https://player.vimeo.com/video/76979871',
+    );
+    expect(embed('https://vimeo.com/groups/motion/videos/76979871')).toBe(
+      'https://player.vimeo.com/video/76979871',
+    );
+    // A hash that isn't one is never passed on.
+    expect(embed('https://player.vimeo.com/video/76979871?h=<script>')).toBe(
+      'https://player.vimeo.com/video/76979871',
+    );
+    expect(embed('https://vimeo.com/76979871/zzzzzzzz')).toBe(
+      'https://player.vimeo.com/video/76979871',
+    );
+  });
+
   it('recognises Loom', () => {
     const t = embedTargetFor('https://www.loom.com/share/abcdefghij0123456789');
     expect(t?.embedUrl).toBe('https://www.loom.com/embed/abcdefghij0123456789');
@@ -149,6 +173,26 @@ describe('embedTargetFor', () => {
     ).toBe('https://docs.google.com/document/d/abc123/preview');
     expect(embedTargetFor('https://docs.google.com/spreadsheets/d/xyz/edit#gid=0')?.embedUrl).toBe(
       'https://docs.google.com/spreadsheets/d/xyz/preview',
+    );
+  });
+
+  it('previews a link to the file itself or to presenting it, which Google refuses to frame', () => {
+    const embed = (url: string) => embedTargetFor(url)?.embedUrl;
+    expect(embed('https://docs.google.com/document/d/abc123')).toBe(
+      'https://docs.google.com/document/d/abc123/preview',
+    );
+    expect(embed('https://docs.google.com/spreadsheets/d/xyz/?usp=sharing')).toBe(
+      'https://docs.google.com/spreadsheets/d/xyz/preview',
+    );
+    expect(embed('https://docs.google.com/presentation/d/s1/present?slide=id.p')).toBe(
+      'https://docs.google.com/presentation/d/s1/preview',
+    );
+    expect(embed('https://docs.google.com/document/u/1/d/abc123')).toBe(
+      'https://docs.google.com/document/u/1/d/abc123/preview',
+    );
+    // Published pages frame as they are.
+    expect(embed('https://docs.google.com/document/d/e/2PACX-1/pub')).toBe(
+      'https://docs.google.com/document/d/e/2PACX-1/pub',
     );
   });
 

@@ -145,6 +145,12 @@ describe('what each rule allows', () => {
     expect(isEmail(text)).toBe(false);
     expect(performance.now() - t0).toBeLessThan(50);
   });
+  it('checks a typed number against a Text rule as its cell shows it, as the invalid mark does', () => {
+    const pct = rule({ is: 'text', op: 'contains', a: '%' });
+    expect(inputAllowed(pct, { n: 0.12 }, x, { nf: 'percent' })).toBe(true);
+    expect(inputAllowed(pct, { n: 0.12 }, x)).toBe(false);
+    expect(valueInvalid(pct, 0.12, '12%', x)).toBe(false);
+  });
   it('a formula, an empty value and an error are never refused as typed', () => {
     expect(inputAllowed(LIST, { f: { t: '1', r: [] } }, x)).toBe(true);
     expect(inputAllowed(LIST, { s: '' }, x)).toBe(true);

@@ -44,6 +44,28 @@ describe('contentClusters', () => {
   });
 });
 
+describe('withPageSplit and arrows to another page', () => {
+  it('measures an arrow to the next page by where it really goes, never by the origin', () => {
+    const pages: Page[] = [
+      { id: 'p1', orientation: 'landscape', size: 'fit', fit: { width: 4000, height: 2000 } },
+      { id: 'p2', orientation: 'portrait' },
+    ];
+    const [r1, r2] = layOutPages(pages).map((p) => p.rect);
+    // A in p1's top-left corner, B near p1's centre (the canvas origin), C at the top of p2.
+    const a = box('A', r1!.x + 200, r1!.y + 100, 100, 100);
+    const b = box('B', r1!.x + r1!.width / 2 + 50, r1!.y + r1!.height / 2 + 50, 100, 100);
+    const c = box('C', r2!.x + 100, r1!.y + 100, 100, 100);
+    const tab = { elements: [a, b, c, arrow('ac', 'A', 'C')], pages };
+    // The arrow's midpoint is on p1, so it is p1's content.
+    expect(elementIdsOnPage(tab.elements, layOutPages(pages), 'p1')).toEqual(
+      new Set(['A', 'B', 'ac']),
+    );
+    const out = withPageSplit(tab, 'p1');
+    expect(out).not.toBeNull();
+    expect(out!.pages).toHaveLength(3);
+  });
+});
+
 describe('pageAround', () => {
   const at = (x: number, y: number, r: number, b: number) => ({ x, y, r, b });
 

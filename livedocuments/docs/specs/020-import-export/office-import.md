@@ -52,7 +52,7 @@ document's body, in the order it is written. The article flows onto as many page
 | A hyperlink to an http, https or mailto address (relationship or field)                                   | A link (anything else keeps its text, unlinked)                                                                                     |
 | A page break (a break run, or "page break before" on a paragraph)                                         | A page break                                                                                                                        |
 | A line break                                                                                              | A line break in the block; a tab is a space                                                                                         |
-| A footnote                                                                                                | A footnote at its reference, its text plain (paragraphs joined by a space)                                                          |
+| A footnote                                                                                                | A footnote at its reference, its text plain (paragraphs joined by a space, tracked changes and hidden text as in the body)          |
 | A picture, inline or floating                                                                             | An in-line object zone holding an image, its shape kept, at most the text's width and the page's text height                        |
 | Paragraph alignment (centre, right, justify)                                                              | The same alignment                                                                                                                  |
 | A table                                                                                                   | A table block: its rows and cells, a repeated header row as the header row, merged cells read as one; a table inside a cell as text |
@@ -85,12 +85,15 @@ sits on the slide, scaled from the deck's size to the page's.
   on the page (past the editor's largest size, 48 px, that size scaled up, as a resized headline is); bold or
   italic when every run is; the first paragraph's alignment, else its list style's (the shape's, its layout's,
   its master's), else the master's text style's.
-- **Pictures** become **image** elements in the picture's box; a cropped picture fills its box (cover).
+- **Pictures** become **image** elements in the picture's box (a picture put into a placeholder, with no place of
+  its own, in its layout's, then its master's); a cropped picture fills its box (cover).
 - **Groups** are opened: their members are placed through the group's own scaling.
 - **Speaker notes** become the slide's notes in the Slide Deck as **one note card** holding the notes page's text
   (its paragraphs as lines), the same cards the page's **Notes** button and the presenter view show
   ([Speaker note cards](../012-collaboration/speaker-note-cards.md)); the speaker can split it into cards afterwards.
 - A **hidden slide** is a page whose slide is hidden in the Slide Deck.
+- A **hidden shape** (hidden in PowerPoint's Selection Pane, so neither shown nor printed) is left out, as Word's
+  hidden text is.
 
 What is **not** brought across, and named in the report when the deck had it: tables, charts and diagrams
 (SmartArt), videos and audio, embedded objects, linked pictures, and shapes and lines with no text. Colours,

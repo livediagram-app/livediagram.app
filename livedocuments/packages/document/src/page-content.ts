@@ -2,6 +2,7 @@
 // (docs/specs/007-editor/pages-mode.md): duplicating a page with everything on it, and
 // replacing a page's content with a layout. Plus the page's own surface, so elements with no colour
 // of their own are inked for a dark page (re-inking colours of their own is page-ink.ts). Pure: tab in, tab out, one tab edit each.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   canvasSurface,
   contrastRatio,
@@ -87,7 +88,7 @@ export function withDuplicatedPage<T extends Pick<Tab, 'elements'>>(
     id: newPageId,
     // A copy is unlocked (docs/specs/007-editor/pages-mode.md "Locking a page").
     locked: undefined,
-    ...(source.name ? { name: `${source.name} copy`.slice(0, PAGE_NAME_MAX) } : {}),
+    ...(source.name ? { name: cutText(`${source.name} copy`, PAGE_NAME_MAX) } : {}),
   };
   const next = [...pages.slice(0, index + 1), copy, ...pages.slice(index + 1)];
   const before = layOutPages(pages);

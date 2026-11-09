@@ -139,6 +139,37 @@ describe('hard line breaks', () => {
     });
     expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
+
+  it('reads a link whose address holds balanced parentheses whole, as CommonMark does', () => {
+    const href = 'https://en.wikipedia.org/wiki/Mercury_(planet)';
+    expect(parseInline(`See [Mercury](${href}).`)).toEqual([
+      { text: 'See ' },
+      { text: 'Mercury', href },
+      { text: '.' },
+    ]);
+    expect(shape(`- [Mercury](${href})\n\n| a |\n|---|\n| [M](${href}) |`)).toMatchObject([
+      { type: 'list', runs: [{ text: 'Mercury', href }] },
+      { type: 'table', rows: [{}, { cells: [[{ text: 'M', href }]] }] },
+    ]);
+    expect(looksLikeMarkdown(`Read [Mercury](${href}) first`)).toBe(true);
+    // An unbalanced one still ends at its first `)`.
+    expect(parseInline('[a](https://x.dev/a)b)')).toEqual([
+      { text: 'a', href: 'https://x.dev/a' },
+      { text: 'b)' },
+    ]);
+  });
+
+  it('reads runs of open parentheses in link addresses in linear time', () => {
+    const opens = `[a](${'(b'.repeat(25_000)}`;
+    const pairs = `[a](${'b(c)'.repeat(12_000)}`;
+    const ms = cpuMsOf(() => {
+      expect(parseInline(opens)).toHaveLength(1);
+      expect(parseInline(pairs)).toHaveLength(1);
+      expect(looksLikeMarkdown(`x${opens}`)).toBe(false);
+      expect(looksLikeMarkdown(`x${'[a]((b'.repeat(10_000)}`)).toBe(false);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
+  });
 });
 
 describe('pasted tables and contents', () => {

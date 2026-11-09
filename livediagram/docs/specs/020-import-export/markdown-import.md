@@ -20,7 +20,9 @@ than pattern-matching a specific exporter.
 Input is treated as a hierarchical outline:
 
 - **ATX headings** (`#`..`######`): depth = number of `#`. A deeper
-  heading nests under the nearest shallower one.
+  heading nests under the nearest shallower one. A closing `#` run after a space is dropped
+  (`## Section ##` reads "Section"), while a `#` ending a word stays (`## C#`), by the shared
+  `atxHeadingText` (`../packages/model-core/src/markdown-heading.ts`), a scan linear in the line.
 - **List items** (`-`, `*`, `+`, `1.`, `1)`), nested by indentation
   (tabs normalised to spaces). Lists attach under the current heading;
   nested items attach under their parent item. Task-list checkboxes

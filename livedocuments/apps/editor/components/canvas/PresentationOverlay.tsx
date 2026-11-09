@@ -135,6 +135,7 @@ export function PresentationOverlay({
       // Advancing closes what is open, so the next slide starts clean; the notes stay, on the next slide's
       // first card, so a speaker's cards are up for the whole talk.
       setSettingsOpen(false);
+      setJumpOpen(false);
       setCardOf(null);
       setDetail(null);
       if (next < 0) return;
@@ -166,14 +167,24 @@ export function PresentationOverlay({
   //
   // The move is an effect event, so the timer runs from the slide's arrival
   // whatever re-renders meanwhile (a peer's edit, the clock's own tick): a
-  // timer restarted on every render would never fire.
+  // timer restarted on every render would never fire. It restarts on an arrival
+  // (`slideEnteredAt`, set by `go` alone), never on the slide's place in the run:
+  // a collaborator moving or hiding a slide before it shifts `at` and is no move.
   const advance = useEffectEvent(() => go(at + 1));
   useEffect(() => {
     const seconds = config.autoAdvanceSeconds;
     if (seconds <= 0 || atEnd || notesVisible || settingsOpen || jumpOpen || detail) return;
     const id = window.setTimeout(advance, seconds * 1000);
     return () => window.clearTimeout(id);
-  }, [at, atEnd, config.autoAdvanceSeconds, detail, jumpOpen, notesVisible, settingsOpen]);
+  }, [
+    slideEnteredAt,
+    atEnd,
+    config.autoAdvanceSeconds,
+    detail,
+    jumpOpen,
+    notesVisible,
+    settingsOpen,
+  ]);
 
   // Browser fullscreen where available, on the whole document (docs/specs/012-collaboration/presentation-mode.md
   // "Full screen"). It needs a user gesture and can be refused; the overlay is already full-viewport either way, so
@@ -201,12 +212,13 @@ export function PresentationOverlay({
   // mounted while presenting, so a second would be two regions competing to
   // speak over each other.
   //
-  // Said when the slide changes (or the deck's length does), never on an edit
-  // to the deck: `steps` is a new list on every deck or tab change, and a
-  // screen reader repeating the slide on each keystroke someone else types is
-  // noise.
+  // Said when the slide changes, never on an edit to the deck: `steps` is a new
+  // list on every deck or tab change, and a screen reader repeating the slide on
+  // each keystroke someone else types is noise. A collaborator moving, hiding or
+  // adding a slide shifts the place and the count but is no move, so it says
+  // nothing either (docs/specs/012-collaboration/presentation-mode.md "The
+  // presenter stays on their slide").
   const slideId = step?.slide.id;
-  const sayCount = steps.length;
   // The words are read as they are when the slide arrives (an effect event): renaming it mid-run says nothing.
   const sayWhere = useEffectEvent(() => {
     if (atEnd) {
@@ -221,7 +233,7 @@ export function PresentationOverlay({
   });
   useEffect(() => {
     sayWhere();
-  }, [at, atEnd, slideId, sayCount]);
+  }, [atEnd, slideId]);
 
   // Give the tool back on the way out. Exiting already restores the tab, the
   // viewport and the chrome (docs/specs/012-collaboration/presentation-mode.md); a presenter who armed the laser for one
@@ -295,6 +307,9 @@ export function PresentationOverlay({
       else onExit();
       return;
     }
+    // A chord is the browser's or the system's (Cmd/Ctrl+G finds the next match, Alt+Left goes back), never the
+    // deck's single-key G, S, L or arrows.
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
     // The pointing tools (docs/specs/012-collaboration/presentation-mode.md). Neither touches the document, and the
     // laser was built for exactly this room — docs/specs/008-canvas/laser-panel.md opens by calling it
     // "the presenting tool". Pressing the same key again puts the pointer
@@ -373,6 +388,10 @@ export function PresentationOverlay({
     }
     if (settingsOpen) {
       setSettingsOpen(false);
+      return;
+    }
+    if (jumpOpen) {
+      setJumpOpen(false);
       return;
     }
     if (atEnd) {

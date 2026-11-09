@@ -24,6 +24,26 @@ type Pan = { x: number; y: number };
 
 const samePan = (a: Pan, b: Pan) => a.x === b.x && a.y === b.y;
 
+const sized = (
+  s: { width: number; height: number } | null | undefined,
+): s is { width: number; height: number } => !!s && s.width > 0 && s.height > 0;
+
+/**
+ * The offset that shows a follower what sits mid-screen for the presenter. The canvas scales about its own centre, so
+ * the point at the middle is `size / 2 - offset`: on a canvas of another size the presenter's pan is shifted by half
+ * the difference. Without both sizes (a peer from before `size` was sent), the raw pan.
+ */
+export function followedPan(
+  seen: RemoteViewport,
+  own: { width: number; height: number } | null,
+): Pan {
+  if (!sized(seen.size) || !sized(own)) return seen.pan;
+  return {
+    x: seen.pan.x + (own.width - seen.size.width) / 2,
+    y: seen.pan.y + (own.height - seen.size.height) / 2,
+  };
+}
+
 export function useFollowMe({
   remoteViewports,
   livePresenceIds,
@@ -34,6 +54,7 @@ export function useFollowMe({
   followerIds = [],
   nameOf = () => 'Someone',
   sendFollow = () => {},
+  readCanvasSize = () => null,
 }: {
   remoteViewports: Map<string, RemoteViewport>;
   // Who is still in the room, so a follow ends by itself when they leave.
@@ -54,9 +75,12 @@ export function useFollowMe({
   nameOf?: (participantId: string) => string;
   // Tell the room who we follow now (null: nobody), so the person followed can be told.
   sendFollow?: (target: string | null) => void;
+  // Our own canvas's size now, so the presenter's centre lands in the middle of ours; null before it is laid out.
+  readCanvasSize?: () => { width: number; height: number } | null;
 }) {
   const [followingId, setFollowingId] = useState<string | null>(null);
   const onNoticeRef = useLatest(onNotice);
+  const readSizeRef = useLatest(readCanvasSize);
   // The last view WE wrote while following. Any other view appearing in the store is the user moving
   // the canvas.
   const appliedRef = useRef<{ pan: Pan; zoom: number } | null>(null);
@@ -151,9 +175,10 @@ export function useFollowMe({
     const seen = remoteViewports.get(followingId);
     if (!seen) return;
     if (seen.tabId !== activeId) onFollowTab(seen.tabId);
-    appliedRef.current = { pan: seen.pan, zoom: seen.zoom };
-    viewport.setView({ zoom: seen.zoom, offset: seen.pan });
-  }, [followingId, remoteViewports, activeId, onFollowTab, viewport]);
+    const pan = followedPan(seen, readSizeRef.current());
+    appliedRef.current = { pan, zoom: seen.zoom };
+    viewport.setView({ zoom: seen.zoom, offset: pan });
+  }, [followingId, remoteViewports, activeId, onFollowTab, viewport, readSizeRef]);
 
   return { followingId, startFollowing, stopFollowing, followerCount: followerIds.length };
 }

@@ -131,7 +131,7 @@ closing the panel shows the first page with its own **What Is This Page For?** (
 a page kind (Blank Logo, a blank wireframe) lands one page of that kind, already chosen, so it asks nothing and the
 start does not come back over it.
 
-**The last page can be deleted.** Deleting it clears the tab, its pages and its elements, as one edit that Undo puts back, and brings Start Making Pages back even if it was closed. The agents'
+**The last page can be deleted.** Deleting it clears the tab, its pages and its elements, as one edit that Undo puts back, and brings Start Making Pages back even if it was closed. The tab is read again as the delete lands: a page a peer added since takes only this page away, and a lock or delete a peer made since takes nothing. The agents'
 page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`).
 
 ## Default folders

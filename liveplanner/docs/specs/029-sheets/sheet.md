@@ -456,6 +456,7 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   typed.
 - A paste into a selection larger than what was copied, whose size is a whole multiple of it, repeats it to fill.
 - A paste past the grid's edge grows the grid, up to its limit; a paste past the limit is cut at it, and says so.
+  What landed is selected after any paste, never cells past the grid's last row or column.
 - **Paste Values Only** pastes values, no formulas and no formats; **Paste Formatting Only** (the cell menu)
   pastes only formats.
 
@@ -609,8 +610,10 @@ coloured in one theme reads in the other (`@liveplanner/project` `cellColours`):
 - A sort is one change, undone in one step.
 - A sort over rows a merge spans (a merge of more than one row: Merge Cells down, not Merge Across) is refused, as in
   Google Sheets and Excel, with "Unmerge the cells that span rows before sorting.": moving its rows apart would
-  stretch the merge over whatever lands between them. Custom Sort refuses only for a merge inside its range; an
-  agent's sort is refused the same way (`merge_split`).
+  stretch the merge over whatever lands between them. Custom Sort moves only its range's cells, so a merge stays on
+  its row while they move: it refuses for any merge in its sorted rows, a Merge Across too, with "Unmerge the cells in
+  the range before sorting." (a merge in a kept header row is fine), else another row's values would land under the
+  merge, hidden. An agent's sort is refused the same way (`merge_split`).
 
 ### Filter
 

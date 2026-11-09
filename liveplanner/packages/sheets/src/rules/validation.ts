@@ -8,6 +8,7 @@ import { displayValue } from '../number-format';
 import { isError, isArray, numberText, scalarOf, type Scalar, type Value } from '../formula/values';
 import {
   cellKey,
+  type CellFormat,
   type CellInput,
   type DropdownOption,
   type SheetLayout,
@@ -193,11 +194,22 @@ function inputScalar(input: CellInput): Exclude<Scalar, null> | null {
   return null;
 }
 
-// Whether a rule allows an input as stored. A formula's value is checked where it is drawn, never here.
-export function inputAllowed(rule: ValidationRule, input: CellInput, ctx: RuleCtx): boolean {
+// Whether a rule allows an input as stored. A formula's value is checked where it is drawn, never here. A Text rule
+// reads a number as its cell shows it in `format` (data-validation.md "Rule types"), as the invalid mark does.
+export function inputAllowed(
+  rule: ValidationRule,
+  input: CellInput,
+  ctx: RuleCtx,
+  format?: CellFormat,
+): boolean {
   if ('f' in input) return true;
   const v = inputScalar(input);
-  return v === null || scalarAllowed(rule, v, ctx);
+  if (v === null) return true;
+  const shown =
+    rule.is === 'text' && typeof v === 'number'
+      ? displayValue(v, format, ctx.locale).text
+      : undefined;
+  return scalarAllowed(rule, v, ctx, shown);
 }
 
 // Whether a cell's value (as worked out) breaks its rule: drawn with the invalid mark.

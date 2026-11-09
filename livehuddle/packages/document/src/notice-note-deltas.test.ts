@@ -44,6 +44,13 @@ const apply = (el: ShapeElement, ...deltas: ElementDelta[]) =>
 const ids = (el: ShapeElement) => (el.noticeNotes ?? []).map((n) => n.id);
 
 describe('notice-pin and notice-unpin', () => {
+  it('stores only the fields a note has, so a padded pin cannot grow the tab', () => {
+    const full: NoticeNote = { ...note('a'), title: 'T', color: 'yellow', day: '2026-11-09' };
+    const padded = { ...full, pad: 'x'.repeat(100_000) } as NoticeNote;
+    expect(apply(board(), pin(padded)).noticeNotes).toEqual([full]);
+    expect(apply(board(), pin(note('b'))).noticeNotes).toEqual([note('b')]);
+  });
+
   it('pins a note at the end and unpins it by id and signer', () => {
     const pinned = apply(board(), pin(note('a')), pin(note('b', 'adder-b')));
     expect(ids(pinned)).toEqual(['a', 'b']);

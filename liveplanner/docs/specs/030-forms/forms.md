@@ -355,7 +355,9 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
 | Checkbox        | Checkbox                                             |
 
 - A Single or Multiple Choice question may map to a Choice or Multiple Choice field only while the field holds every
-  option it offers and it has no Other (an Other answer is no option of the field). Mapped, it keeps the field's
+  option it offers and it has no Other (an Other answer is no option of the field), case aside. A pick is kept as
+  the field spells the option ("Yes" for a question's "yes"), so the card sits in that option's row and matches its
+  filter. Mapped, it keeps the field's
   options in step: an option added or renamed on the question is added to the field. The field never loses an
   option this way (a card may hold it): one removed or renamed on the question stays on the field.
 - A mapping whose field is later deleted, hidden from the type, or no longer fits (its kind or options changed)
@@ -631,7 +633,9 @@ board settings, for switching back.
   On or at its Response Limit reads **Closed**, as its link is, and is not locked), the count ("14 responses · 3 new",
   new to this reader), which opens the destination's tab (its tooltip names it), and, for an Editor while the form has
   any problem, **Problems with this Form** with a warning triangle to the right of the count, which opens Share Form
-  where they are listed. The count is read when the tab opens and every 30 seconds while it is shown.
+  where they are listed. The count is read when the tab opens and every 30 seconds while it is shown; a read still
+  in flight when the person publishes, switches Accepting Responses or deletes the link is dropped, so the state
+  they set never flips back to what that read saw.
 - **Not Taking Responses**: for an Editor, a form that has been published but takes no responses now shows a red
   (danger) warning right after the count, before Problems with this Form (amber), so a paused form is never missed:
   the warning triangle and **Not Taking Responses**, a button whose tooltip says why and what it opens. The reasons,

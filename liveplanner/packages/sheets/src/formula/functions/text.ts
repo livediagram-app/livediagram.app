@@ -164,7 +164,8 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
       .toLowerCase()
       .replace(/(^|[^\p{L}\p{N}'])(\p{L})/gu, (_m, a: string, b: string) => a + b.toUpperCase()),
   ),
-  TRIM: textFn(1, 1, 1, ([t]) => t!.replace(/ +/g, ' ').trim()),
+  // Spaces only, as in Excel and Google Sheets: a line break, a tab or a non-breaking space at either end stays.
+  TRIM: textFn(1, 1, 1, ([t]) => t!.replace(/ +/g, ' ').replace(/^ | $/g, '')),
   CLEAN: textFn(1, 1, 1, ([t]) => [...t!].filter((ch) => ch.charCodeAt(0) >= 32).join('')),
   SUBSTITUTE: textFn(3, 4, 3, ([t, from, to], [nth]) => {
     if (from === '') return t!;

@@ -16,7 +16,7 @@ import { isSafeColourValue } from '@liveplanner/project';
 import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 import {
   MAX_COLOR_LEN,
-  MAX_PARTICIPANT_NAME_LEN,
+  cutParticipantName,
   type AccessLevel,
   type ParticipantPresence,
 } from '@liveplanner/api-schema';
@@ -51,7 +51,7 @@ export function helloPresence(
   const c = claimed ?? {};
   const presence: ParticipantPresence = {
     id: session.presenceId,
-    name: typeof c.name === 'string' ? c.name.slice(0, MAX_PARTICIPANT_NAME_LEN) : '',
+    name: typeof c.name === 'string' ? cutParticipantName(c.name) : '',
     // A colour that could load something from outside is no colour (@liveplanner/project unsafe-colours.ts).
     color:
       typeof c.color === 'string' && isSafeColourValue(c.color)

@@ -137,7 +137,8 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 - `page ls <doc> [--tab]` → the `pages` view.
 - `page set <doc> [--tab] --changes <file|->` (a JSON list, or one change) or flags for one change (`--add wireframe
 --layout wf-sign-in`, `--page 2 --name Cover`, `--page 2 --delete`, `--move`, `--duplicate`, `--background-to-all`, `--size`,
-  `--orientation`).
+  `--orientation`). Flags naming more than one change, `--add` with `--page`, or flags with `--changes` are refused
+  (`usage`) before any request.
 - `page` is a named-only resource in the top-level help (its 500-token budget).
 
 ## Data and persistence

@@ -118,6 +118,23 @@ describe('Blocks fields', () => {
     // Clearing it from a card whose type no longer offers it is still a change.
     const { [BLOCKED_BY.id]: _gone, ...rest } = a.fields;
     expect(blocksValueChanged(TYPES, a, { ...a, type: 'bug', fields: rest })).toBe(BLOCKED_BY.id);
+    // A type change that makes a plain Several Cards field a Blocked By one (a duplicated type's field of the same
+    // id) turns its cards into blockers: a change, though the stored value stays.
+    const plain: ItemTypeDef = {
+      ...TASK,
+      id: 'plain',
+      custom: [{ ...BLOCKED_BY, blocks: undefined }, RELATED],
+    };
+    const both = [...TYPES, plain];
+    const p = { ...card('P', ['x1']), type: 'plain' };
+    expect(blocksValueChanged(both, p, { ...p, type: 'task' })).toBe(BLOCKED_BY.id);
+    expect(
+      blocksValueChanged(
+        both,
+        { ...p, fields: { title: 'P' } },
+        { ...p, type: 'task', fields: { title: 'P' } },
+      ),
+    ).toBeNull();
   });
 
   it('marks Linked as groups and link fields that block', () => {

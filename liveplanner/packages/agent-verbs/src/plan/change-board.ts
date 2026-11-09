@@ -156,10 +156,12 @@ export async function changeBoard(
         code: 'board_unknown',
         message: 'That board changed since it was read: list_items again.',
       };
-    // Sort Cards names the fields the board's own card types offer.
+    // Sort Cards names the fields the board's own card types offer: those it takes after this change, so a call that
+    // takes a type may sort by its field.
     let sortBy: BoardChange['sortBy'];
     if (input.sortBy) {
-      const named = boardSortNamed(input.sortBy, boardAddTypes(setup, state.plan.types));
+      const takes = types === undefined ? setup : { addTypes: types ?? undefined };
+      const named = boardSortNamed(input.sortBy, boardAddTypes(takes, state.plan.types));
       if (!named.ok) return named;
       sortBy = named.sortBy;
     }

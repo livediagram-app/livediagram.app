@@ -62,16 +62,21 @@ export function createPngRenderer(loaders: PngLoaders): {
       };
       const at = (zoom: number) =>
         new Resvg(svg, zoom === 1 ? options : { ...options, fitTo: { mode: 'zoom', value: zoom } });
-      let resvg: ReturnType<typeof at> | null = at(scale);
+      // The SVG's own size (resvg's width / height, before any zoom), read from its root tag when it says it in
+      // plain numbers, so a drawing past the bound is parsed once, at the zoom that fits; parsing a big drawing is
+      // most of a render. Otherwise it is known once parsed, and a drawing past the bound is parsed again.
+      const stated = maxSide === undefined ? null : statedSize(svg);
+      const fitted = (side: number) =>
+        maxSide !== undefined && side * scale > maxSide ? maxSide / side : null;
+      const first = stated ? (fitted(Math.max(stated.width, stated.height)) ?? scale) : scale;
+      let resvg: ReturnType<typeof at> | null = at(first);
       // Freed whatever happens: the wasm's memory is not the garbage collector's.
       try {
-        // The SVG's own size (resvg's width / height, before any zoom) is known once parsed; drawn past the
-        // bound, it is parsed again at the zoom that fits.
-        const side = Math.max(resvg.width, resvg.height);
-        if (maxSide !== undefined && side * scale > maxSide) {
+        const refit = stated ? null : fitted(Math.max(resvg.width, resvg.height));
+        if (refit !== null) {
           resvg.free();
           resvg = null;
-          resvg = at(maxSide / side);
+          resvg = at(refit);
         }
         const image = resvg.render();
         try {
@@ -84,4 +89,82 @@ export function createPngRenderer(loaders: PngLoaders): {
       }
     },
   };
+}
+
+// The width and height a root `<svg>` tag states as plain numbers (user units, which resvg takes as px), as resvg
+// holds them (32-bit floats); null when either is missing, has a unit or a percentage, or is not above zero, when
+// the tag carries a style (which could size it too), or when anything but an XML declaration, a doctype, comments
+// and space comes before it, so resvg's own reading decides.
+// One unambiguous way to read each number, so a long run of digits is matched in one pass.
+const PLAIN_NUMBER = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
+// What may come before the root tag is read only this far.
+const PROLOGUE_MAX = 4096;
+const SPACE = /\s/;
+const NAME = /[^\s=>/]/;
+
+// The prologue and the root tag's attributes are scanned by hand, each character once: a single pattern for
+// "comments, a doctype, comments" backtracks exponentially on runs of `--><!--`.
+const skip = (s: string, i: number, char: RegExp) => {
+  while (char.test(s.charAt(i))) i++;
+  return i;
+};
+
+// An XML declaration, comments, a doctype, comments, in that order, each optional, with space between.
+function plainPrologue(s: string): boolean {
+  // 0: a declaration may still come, 1: a doctype may, 2: only comments.
+  let stage = 0;
+  for (let i = skip(s, 0, SPACE); i < s.length;) {
+    let end = -1;
+    if (s.startsWith('<!--', i)) {
+      const close = s.indexOf('-->', i + 4);
+      if (close >= 0) end = close + 3;
+      stage = Math.max(stage, 1);
+    } else if (stage === 0 && s.startsWith('<?xml', i)) {
+      const close = s.indexOf('>', i + 5);
+      if (close > i + 5 && s[close - 1] === '?') end = close + 1;
+      stage = 1;
+    } else if (stage < 2 && s.startsWith('<!DOCTYPE', i)) {
+      const close = s.indexOf('>', i + 9);
+      const bracket = s.indexOf('[', i + 9);
+      if (close >= 0 && (bracket < 0 || bracket > close)) end = close + 1;
+      stage = 2;
+    }
+    if (end < 0) return false;
+    i = skip(s, end, SPACE);
+  }
+  return true;
+}
+
+// The quoted attributes from `from` on, up to the first thing that is not one.
+function quotedAttributes(s: string, from: number): Map<string, string> {
+  const attributes = new Map<string, string>();
+  for (let i = from; ;) {
+    const nameAt = skip(s, i, SPACE);
+    const nameEnd = skip(s, nameAt, NAME);
+    if (nameAt === i || nameEnd === nameAt) return attributes;
+    const eq = skip(s, nameEnd, SPACE);
+    if (s[eq] !== '=') return attributes;
+    const quoteAt = skip(s, eq + 1, SPACE);
+    const quote = s.charAt(quoteAt);
+    const close = quote === '"' || quote === "'" ? s.indexOf(quote, quoteAt + 1) : -1;
+    if (close < 0) return attributes;
+    attributes.set(s.slice(nameAt, nameEnd), s.slice(quoteAt + 1, close));
+    i = close + 1;
+  }
+}
+
+export function statedSize(svg: string): { width: number; height: number } | null {
+  const open = /<svg(?=[\s>/])/.exec(svg);
+  if (!open || open.index > PROLOGUE_MAX || !plainPrologue(svg.slice(0, open.index))) return null;
+  const attributes = quotedAttributes(svg, open.index + open[0].length);
+  if (attributes.has('style')) return null;
+  const plain = (name: string) => {
+    const value = attributes.get(name);
+    if (value === undefined || !PLAIN_NUMBER.test(value)) return null;
+    const n = Math.fround(Number(value));
+    return n > 0 && Number.isFinite(n) ? n : null;
+  };
+  const width = plain('width');
+  const height = plain('height');
+  return width !== null && height !== null ? { width, height } : null;
 }

@@ -765,6 +765,10 @@ export function holdsNotes(kind: string): boolean {
 
 const pad2 = (v: number) => String(v).padStart(2, '0');
 
+/** The first and last years a note's day may fall in: the Calendar Wall's ‹ and › stop at them. */
+export const NOTE_DAY_YEAR_MIN = 2000;
+export const NOTE_DAY_YEAR_MAX = 2100;
+
 /** A calendar day (`YYYY-MM-DD`, years 2000 to 2100), checked against its month's length. Parsed by position. */
 export function isNoteDay(v: unknown): v is string {
   if (typeof v !== 'string' || v.length !== 10 || v[4] !== '-' || v[7] !== '-') return false;
@@ -773,7 +777,8 @@ export function isNoteDay(v: unknown): v is string {
   const year = Number(v.slice(0, 4));
   const month = Number(v.slice(5, 7));
   const day = Number(v.slice(8, 10));
-  if (year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1) return false;
+  if (year < NOTE_DAY_YEAR_MIN || year > NOTE_DAY_YEAR_MAX || month < 1 || month > 12 || day < 1)
+    return false;
   return day <= new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
 

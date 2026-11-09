@@ -7,55 +7,18 @@ import { emailEnabled, sendEmail } from '../email/client';
 import { accountDeletedEmail } from '../email/templates';
 import { json, missingAuth, notFound } from '../responses';
 import { configured, signedOutCookies } from './auth';
+import { purgeOwnItems } from '@liveworkspace/index-app';
 import { indexFor, INDEX_APP } from '../index-service';
 import type { RouteContext } from './context';
 
-// How many of the person's own documents one account deletion purges through the index: 5 pages of 200. A person
-// with more is told to try again (the delete is idempotent), each run taking the next 1,000.
-const PURGE_PAGES = 5;
-const PURGE_PAGE = 200;
-
 // The person's own documents, gone for good through the index (which has each document's Durable Object drop its
-// content). Team documents stay with the team. Answers how many went and whether some are left.
-//
-// Each listing (live, then the Trash) is walked by its cursor, PURGE_PAGES pages in all: re-reading the first page
-// stopped at a page holding none of the person's own (as if nothing were left, though later pages held some), and
-// answered `more` after the last page even when it had emptied the listing.
+// content), ROOM_PURGE_CONCURRENCY at a time and at most 1,000 a run (@liveworkspace/index-app `purgeOwnItems`).
+// Team documents stay with the team. Answers how many went and whether some are left.
 async function purgeOwnDocuments(ctx: RouteContext): Promise<{ documents: number; more: boolean }> {
   const client = indexFor(ctx.env, { kind: 'bearer', token: ctx.bearer ?? null });
   if (!client) return { documents: 0, more: false };
-  const query = { app: INDEX_APP, team: 'personal' } as const;
-  const listings = [
-    (limit: number, cursor?: string) =>
-      client.listItems({ ...query, limit, ...(cursor ? { cursor } : {}) }),
-    (limit: number, cursor?: string) =>
-      client.listTrash({ ...query, limit, ...(cursor ? { cursor } : {}) }),
-  ];
-  let documents = 0;
-  let pages = 0;
-  for (const [at, list] of listings.entries()) {
-    let cursor: string | undefined;
-    do {
-      if (pages++ === PURGE_PAGES) {
-        // The budget ran out. Mid-listing, more are left; at the start of the next listing (the live one ended on
-        // the last page), one look at each listing still to read says whether anything is: a person with exactly
-        // 1,000 live documents and an empty Trash is done, not asked again.
-        if (cursor) return { documents, more: true };
-        for (const rest of listings.slice(at)) {
-          if ((await rest(1)).items.length > 0) return { documents, more: true };
-        }
-        return { documents, more: false };
-      }
-      const page = await list(PURGE_PAGE, cursor);
-      for (const item of page.items) {
-        if (item.ownerId !== ctx.accountUserId) continue;
-        await client.deleteItem(item.id, { permanent: true });
-        documents++;
-      }
-      cursor = page.nextCursor ?? undefined;
-    } while (cursor);
-  }
-  return { documents, more: false };
+  const { count, more } = await purgeOwnItems(client, INDEX_APP, ctx.accountUserId);
+  return { documents: count, more };
 }
 
 // Deleting the person's account: their livedocuments data, then their liveworkspace account, which

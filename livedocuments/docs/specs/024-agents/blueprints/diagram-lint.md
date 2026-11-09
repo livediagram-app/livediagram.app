@@ -287,12 +287,19 @@ Worst cases, per run:
 | `arrow-behind-box`      | One grid query per arrow, `pathPassesThrough` per candidate      | `PATH_MAX_SAMPLES_PER_SEGMENT` (512) per segment |
 | `label-collision`       | `arrowLabelPass`: what every render of the tab already pays      | Labelled arrows × obstacles                      |
 | `label-overflow`        | One `wrapLabel` per labelled box                                 | Linear in label characters                       |
+| `node-isolated`         | Bounding-box and grid pre-test per isolated shape                | Near-linear; a hub candidate pays `m` distances  |
 | Flow, duplicate, colour | One pass over arrows or boxes; `deriveContainers` once           | Linear, containment `O(n × containers)`          |
 
 - Budget: a tab of 300 boxes and 300 arrows lints within `LINT_BUDGET_CPU_MS` of CPU, the spec's "a few
   milliseconds" for the pair checks with room for the label pass (LN35): measured at about 10 ms (16 ms under
   coverage). The gate is growth: four times the tab costs under eight times as much, since coverage on a CI runner
   pushed the absolute figure past 50 ms.
+- `node-isolated`'s ring test is `createRingTest` in `@liveworkspace/diagram-lint/ring`, shared with the other
+  product's lint. It rejects a shape that cannot be a hub (outside the connected centres' bounding box, or whose
+  farthest connected centre is too far beyond its nearest for every distance to sit within `LINT_RING_SPREAD` of their
+  mean) and runs the plain test, every connected distance, only on the rest, so its answers are the plain test's
+  (an equivalence test over random boards holds it to that). 4,000 isolated beside 4,000 connected shapes: about 400 ms
+  before, under 15 ms after. Shapes really inside a ring each still pay one distance per ring box.
 - Changesets: one lint per changeset in the api worker, inside the request it already handles; no extra subrequest.
   The view lints the tab it read; MCP `create_document` adds one view request per created tab.
 - Bundle: the api and MCP workers already bundle `@livedocuments/document`; `diagram-lint` adds only its own sources.

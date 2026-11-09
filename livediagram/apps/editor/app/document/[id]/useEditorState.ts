@@ -1007,6 +1007,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Declared with the viewport, further down.
     revealInView: (tabId, ids) => revealChangesetRef.current?.(tabId, ids),
     toast,
+    canUndo: canEdit,
   });
   // Realtime room: WebSocket per shared document (presence + ops). See
   // useRoomConnection.
@@ -1521,6 +1522,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     followerIds,
     nameOf: (id) => livePresence.find((p) => p.id === id)?.name ?? 'Someone',
     sendFollow: (target) => roomRef.current?.send({ kind: 'op', op: { kind: 'follow', target } }),
+    readCanvasSize: () => {
+      const node = canvasMainRef.current;
+      return node ? { width: node.offsetWidth, height: node.offsetHeight } : null;
+    },
   });
   useAssignRef(followingRef, followMe.followingId);
 

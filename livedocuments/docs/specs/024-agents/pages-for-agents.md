@@ -136,7 +136,8 @@ Writes an article's text from **Markdown**.
   closes it; code is written with one backtick more than its own longest fence-like line, so code holding a
   ` ``` ` line stays one block. A link's parentheses and backslashes are escaped in its address, so an address
   such as `…/Mercury_(planet)` reads back whole, and a space or other white space in it is percent-encoded
-  (`%20`), since a link's address in Markdown ends at white space. A title or subtitle wrapped in quotes is written
+  (`%20`), since a link's address in Markdown ends at white space. Read, an address may hold unescaped parentheses
+  balanced one deep, as CommonMark has it, so a hand-written `[Mercury](…/Mercury_(planet))` keeps its whole address. A title or subtitle wrapped in quotes is written
   inside the other quote, so its quotes read back, and its own `[^` is written `\[^` (a backslash before a `[`, a
   backslash or its end doubled), so only a footnote's reference reads back as one; without front matter an opening
   divider is written `***`, never read as front matter. A paragraph's, a heading's, a quote's or a list item's line

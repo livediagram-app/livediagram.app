@@ -823,7 +823,9 @@ change them together.
     **Clear** empties it on them all.
   - **Flag** (or **Remove Flag**, when every selected card is flagged).
   - **Archive** (or **Restore**, when every selected card is archived) and **Move to Trash**: an Editor's alone.
-  - A card whose type does not offer the field changed (Assign on a Note with no Assignee) is left as it is; a
+  - A card whose type does not offer the field changed (Assign on a Note with no Assignee) is left as it is, and so
+    is one the change cannot take: a card already holding a card's most labels (12) is given no other, and **Clear**
+    leaves a field its type requires as it is, so the rest of the selection still changes in the one write; a
     column whose status a card's type leaves out keeps that card where it is, with one announcement for all of them
     ("2 cards stayed: their types can't be Done"). When no card takes the change, nothing is written and "No
     selected card changed" is announced.

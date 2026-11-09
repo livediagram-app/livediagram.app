@@ -139,7 +139,7 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
   row(
     'Push another character, sit, take a drink',
     {
-      push: { kind: 'avatar-push', tabId: 't', to: 'p2', dx: 4, dy: 0 },
+      push: { kind: 'avatar-push', tabId: 't', targetId: 'p2', dx: 4, dy: 0 },
       sit: { kind: 'avatar', tabId: 't', avatar: { x: 0, y: 0, seatedOn: 'chair' } },
       drink: { kind: 'avatar', tabId: 't', avatar: { x: 0, y: 0, drink: 'coffee' } },
     },

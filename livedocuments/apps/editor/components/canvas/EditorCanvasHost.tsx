@@ -1,5 +1,6 @@
 'use client';
 
+import { goToElement } from '@/lib/go-to-element';
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
@@ -166,6 +167,8 @@ export function EditorCanvasHost() {
     narrowMultiSelection,
     newDocument,
     openActionPopover,
+    openAssignAction,
+    scrollIntoView,
     completeAction,
     reopenAction,
     openCellLinkPicker,
@@ -263,6 +266,9 @@ export function EditorCanvasHost() {
     if (el.shape === 'code-block') setCodeEditOpenForId(id);
     else if (el.shape === 'sankey' && canEditSankey(can, el)) setSankeyFlowsOpenForId(id);
   };
+  // A Collaborate panel row goes to its card, brought into view (goToElement).
+  const goToRowElement = (id: string) =>
+    goToElement(activeTab.elements, id, setSelectedId, scrollIntoView);
   const backdrop = resolveViewBackdrop(activeTab, appearance);
   // Stock colours stored by name are drawn in their version for this canvas, on every tab
   // (docs/specs/008-canvas/canvas-and-palette.md "Colours"). Display only: the projector
@@ -533,12 +539,12 @@ export function EditorCanvasHost() {
             onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
             onResetCommentsPanel={() => setCommentsPanelPosition(null)}
             onOpenCommentsForElement={(id) => {
-              setSelectedId(id);
+              goToRowElement(id);
               openComments(id);
             }}
             actionRows={actionRows}
             onOpenActionForElement={(id) => {
-              setSelectedId(id);
+              goToRowElement(id);
               openActionPopover(id);
             }}
             onToggleActionDone={
@@ -685,7 +691,9 @@ export function EditorCanvasHost() {
             onSetTextAlign={setTextAlignSelected}
             onFollowLink={followLink}
             onOpenComments={openComments}
-            onOpenAction={openActionPopover}
+            // An action note's marker opens its action, or for an Editor the Assign Action dialog while none is
+            // assigned (docs/specs/007-editor/article-pages.md "Comments and actions"), as a click on its text does.
+            onOpenAction={isReadOnly ? openActionPopover : openAssignAction}
             onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
             onOpenEditDialog={isReadOnly ? undefined : openEditDialog}
             imageContext={imageContext}

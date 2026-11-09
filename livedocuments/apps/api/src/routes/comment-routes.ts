@@ -136,6 +136,9 @@ function appended(tab: TabDTO, elementId: string, comment: Comment): Mutation {
   if (!target || target.type === 'arrow') return notFound();
   const { authorId: _a, tokenId: _t, ...publicComment } = comment;
   const next = applyElementDelta(target, { kind: 'comment-add', comment });
+  // A thread at the cap takes no more (COMMENTS_MAX): said, never answered 201 for a comment nobody stored, nor
+  // written, relayed or emailed about.
+  if (next === target) return json({ error: 'thread_full' }, { status: 409 });
   return {
     elements: tab.elements.map((el) => (el.id === elementId ? next : el)),
     elementId,
@@ -324,6 +327,10 @@ async function reactTo(
     const host = findCommentHost(tab.elements, commentId);
     if (!host) return notFound();
     const el = tab.elements.find((e) => e.id === host.elementId)!;
+    // A resolved thread keeps its chips but takes no new reaction until it is reopened
+    // (docs/specs/012-collaboration/comment-reactions.md "Reacting"); taking one's own away still works.
+    if (on && commentThreadOf(el)?.resolved === true)
+      return json({ error: 'thread_resolved' }, { status: 409 });
     const next = applyElementDelta(el, delta);
     if (next === el) return 'unchanged';
     return {

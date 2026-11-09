@@ -93,23 +93,38 @@ function tagStatements(env: Env, postId: string, tags: string[]): D1PreparedStat
 // Publish: the post and its tags in one batch. A collision on the id fails the batch whole and is
 // retried once with a fresh one; a second post for the same document is a real conflict, rethrown. The owner's cap
 // (COMMUNITY_POSTS_PER_AUTHOR) is checked again inside the insert, so publishes racing past the route's count can't
-// together go over: null when it refused.
+// together go over: null when it refused. `replacing` names a post the document's previous owner made, deleted in the
+// same batch under the same cap check, so a publish that fails or is refused leaves it as it was.
 export async function createPost(
   env: Env,
   app: CommunityApp,
   document: string,
   publish: CommunityAppPublish,
   now: number = Date.now(),
+  replacing?: string,
 ): Promise<string | null> {
   const { input, author } = publish;
+  const underCap = '(SELECT COUNT(*) FROM posts WHERE app = ? AND owner = ?) < ?';
   const attempt = async (): Promise<string | null> => {
     const postId = newPostId();
-    const [made] = await env.COMMUNITY_DB.batch([
+    // The previous owner's post isn't this owner's, so its going leaves the count the insert checks as it was.
+    const replace = replacing
+      ? [
+          env.COMMUNITY_DB.prepare(`DELETE FROM posts WHERE id = ? AND ${underCap}`).bind(
+            replacing,
+            app,
+            publish.owner,
+            COMMUNITY_POSTS_PER_AUTHOR,
+          ),
+        ]
+      : [];
+    const results = await env.COMMUNITY_DB.batch([
+      ...replace,
       env.COMMUNITY_DB.prepare(
         `INSERT INTO posts (id, app, document, share_code, owner, author_name, author_color, author_picture,
            anonymous, title, description, category, tags, search_text, document_state, published_at, updated_at)
          SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-         WHERE (SELECT COUNT(*) FROM posts WHERE app = ? AND owner = ?) < ?`,
+         WHERE ${underCap}`,
       ).bind(
         postId,
         app,
@@ -134,7 +149,7 @@ export async function createPost(
       ),
       ...tagStatements(env, postId, input.tags),
     ]);
-    return made?.meta.changes ? postId : null;
+    return results[replace.length]?.meta.changes ? postId : null;
   };
   try {
     return await attempt();

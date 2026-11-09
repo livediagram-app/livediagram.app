@@ -175,11 +175,14 @@ known gap is the Callout body's indent, a few pixels off the canvas's.
 
 ## File names
 
-A downloaded tab export is named `<Space> - <tab>` (` - selection` added for a selection export), run through
-`sanitizeFilename` (`apps/editor/components/dialogs/ExportTabDialog.tsx`) so it is safe on Windows, macOS and Linux:
-brackets `() [] {}` are dropped, any other character that is not a letter, digit, dot, dash, underscore or space (a
-colon, a slash, a question mark) becomes a dash, repeated dashes collapse to one, and dashes and spaces left at either
-end are trimmed, so `Plan (v2)?` reads `Plan v2` rather than `Plan -v2-`.
+A downloaded tab export is named `<Space> - <tab>` (` - selection` added for a selection export) by
+`tabExportBaseName` (`apps/editor/components/dialogs/ExportTabDialog.tsx`), run through the shared `sanitizeFilename`
+(`../packages/model-core/src/file-name.ts`, the one rule every editor's exports use) so it is safe on Windows, macOS
+and Linux: brackets `() [] {}` are dropped, any other character that is not a letter or digit (in any script, so a
+Japanese or Russian name stays itself), dot, dash, underscore or space (a colon, a slash, a question mark, an emoji)
+becomes a dash, repeated dashes collapse to one, and dashes and spaces left at either end are trimmed, so
+`Plan (v2)?` reads `Plan v2` rather than `Plan -v2-` and `会議 - メモ` stays `会議 - メモ`. A name left with nothing
+downloads as `document`, never a bare `.png`.
 
 ## Checking it
 

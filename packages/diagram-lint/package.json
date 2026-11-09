@@ -11,7 +11,8 @@
     "./format": "./src/format.ts",
     "./log": "./src/log.ts",
     "./order": "./src/order.ts",
-    "./quote": "./src/quote.ts"
+    "./quote": "./src/quote.ts",
+    "./ring": "./src/ring.ts"
   },
   "scripts": {
     "lint": "oxlint",

@@ -4,18 +4,18 @@ Derived from [The card](../card.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `
 components family ([web-components.md](web-components.md)): it reuses their face routing, `InlineTextLine`, `WebRows`
 and the rows menu, and only what differs is written here.
 
-| File                                                                       | Role                                                                                                          |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/card.ts`                                            | `CardMedia`, bounds, `cardLayout`, `cardTagWidth`, `withCardMedia`, `withCardHeader`, `migrateLegacyCallouts` |
-| `packages/document/src/shape-kind.ts`                                      | `'card'` in `ShapeKind` / `SHAPE_KINDS`                                                                       |
-| `packages/document/src/web-components.ts`                                  | `'card'` in `WebComponentShape`; `tags` in `WebRows`                                                          |
-| `packages/document/src/element-types.ts`, `element-fields.ts`              | `cardMedia`, `cardHeader`, `tags`                                                                             |
-| `packages/document/src/validate-shape.ts`                                  | Bounds for the three fields                                                                                   |
-| `packages/document/src/shape-factory.ts`, `component-factories.ts`         | Default size, starting content, the Callout preset                                                            |
-| `packages/document/src/colors.ts`                                          | `card` in `RADIUS_SHAPES`; `acceptsInlineIcon` true                                                           |
-| `packages/document/src/svg-render-card.ts`                                 | `svgCard`: the headless body                                                                                  |
-| `packages/document/src/stored-elements.ts`                                 | `migrateLegacyCallouts` joins `migrateStoredElements`                                                         |
-| `packages/document/src/element-normalise.ts`                               | An agent's `callout` becomes a card on write                                                                  |
+| File                                                                         | Role                                                                                                          |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/card.ts`                                              | `CardMedia`, bounds, `cardLayout`, `cardTagWidth`, `withCardMedia`, `withCardHeader`, `migrateLegacyCallouts` |
+| `packages/document/src/shape-kind.ts`                                        | `'card'` in `ShapeKind` / `SHAPE_KINDS`                                                                       |
+| `packages/document/src/web-components.ts`                                    | `'card'` in `WebComponentShape`; `tags` in `WebRows`                                                          |
+| `packages/document/src/element-types.ts`, `element-fields.ts`                | `cardMedia`, `cardHeader`, `tags`                                                                             |
+| `packages/document/src/validate-shape.ts`                                    | Bounds for the three fields                                                                                   |
+| `packages/document/src/shape-factory.ts`, `component-factories.ts`           | Default size, starting content, the Callout preset                                                            |
+| `packages/document/src/colors.ts`                                            | `card` in `RADIUS_SHAPES`; `acceptsInlineIcon` true                                                           |
+| `packages/document/src/svg-render-card.ts`                                   | `svgCard`: the headless body                                                                                  |
+| `packages/document/src/stored-elements.ts`                                   | `migrateLegacyCallouts` joins `migrateStoredElements`                                                         |
+| `packages/document/src/element-normalise.ts`                                 | An agent's `callout` becomes a card on write                                                                  |
 | `apps/editor/components/canvas/web/CardFace.tsx`                             | The canvas face (`card`, and `callout` before migration)                                                      |
 | `apps/editor/components/palette/CardMenuSection.tsx`                         | Header Band, Media tiles, Tags rows                                                                           |
 | `apps/editor/components/palette/palette-tile-defs.tsx`, `palette-layouts.ts` | Card tile, Callout tile → card preset                                                                         |
@@ -183,22 +183,22 @@ Telemetry only: `Element·Added·Card` on create, `Element·Changed·CardSlots` 
 
 ## Testing
 
-| Rule                                                    | Test file                                                 |
-| ------------------------------------------------------- | --------------------------------------------------------- |
-| Layout per slot combination, dropping, tags overflow    | `packages/document/src/card.test.ts`                      |
-| Writes: media, header, tags bounds (I1)                 | same                                                      |
-| Callout migration (I2), idempotent, untouched array     | same + `stored-elements.test.ts`                          |
-| Validation bounds                                       | same                                                      |
-| Export draws each slot (I3)                             | same (`svgCard`)                                          |
+| Rule                                                    | Test file                                                   |
+| ------------------------------------------------------- | ----------------------------------------------------------- |
+| Layout per slot combination, dropping, tags overflow    | `packages/document/src/card.test.ts`                        |
+| Writes: media, header, tags bounds (I1)                 | same                                                        |
+| Callout migration (I2), idempotent, untouched array     | same + `stored-elements.test.ts`                            |
+| Validation bounds                                       | same                                                        |
+| Export draws each slot (I3)                             | same (`svgCard`)                                            |
 | Face: slots render, lines inert until selected, commits | `apps/editor/components/canvas/web/CardFace.test.tsx`       |
 | Menu section writes                                     | `apps/editor/components/palette/CardMenuSection.test.tsx`   |
 | Callout tile places a card                              | `apps/editor/components/palette/palette-tile-defs.test.tsx` |
 
 ## Constants and configuration
 
-| Name            | Value     | Provenance / safe range                               |
-| --------------- | --------- | ----------------------------------------------------- |
-| `CARD_TAGS_MAX` | 6         | One row of chips at default width; 4 to 8             |
-| `CARD_TAG_MAX`  | 32        | A chip is a word or two; 16 to 40                     |
-| Card size       | 300 × 150 | Fits title, meta, two body lines and a tag row (D179) |
-| Pad clamp       | 10 to 18  | Callout's padding range                               |
+| Name            | Value     | Provenance / safe range                                                                                                |
+| --------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `CARD_TAGS_MAX` | 6         | One row of chips at default width; 4 to 8                                                                              |
+| `CARD_TAG_MAX`  | 32        | A chip is a word or two; 16 to 40. Cut by `cutText` (`../packages/model-core/src/text-cut.ts`), never through an emoji |
+| Card size       | 300 × 150 | Fits title, meta, two body lines and a tag row (D179)                                                                  |
+| Pad clamp       | 10 to 18  | Callout's padding range                                                                                                |

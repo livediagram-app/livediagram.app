@@ -42,5 +42,8 @@ describe('logo page export', () => {
     );
     expect(logoKitFileName('Acme', plain!, 3)).toBe('Acme - Page 1 - Logo Kit.zip');
     expect(logoKitFileName('', plain!, 1)).toBe('design - Logo Kit.zip');
+    // docs/specs/020-import-export/export-fidelity.md "File names": letters in any script stay.
+    expect(logoKitFileName('ロゴ', plain!, 1)).toBe('ロゴ - Logo Kit.zip');
+    expect(logoKitFileName('?', plain!, 1)).toBe('design - Logo Kit.zip');
   });
 });

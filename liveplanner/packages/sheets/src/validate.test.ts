@@ -328,3 +328,26 @@ describe('validateSheetCreate', () => {
     expect(validInput({ f: null })).toBe(false);
   });
 });
+
+describe('a Text rule on a typed number', () => {
+  it('reads it as the cell shows it, in the format the write gives it', () => {
+    const s = base();
+    const rule = {
+      id: 'vr1',
+      r1: R(1),
+      c1: C(1),
+      r2: R(1),
+      c2: C(1),
+      is: 'text' as const,
+      op: 'contains' as const,
+      a: '%',
+    };
+    const ruled: Sheet = { ...s, layout: { ...s.layout, rules: [rule] } };
+    const cell = (f?: object) => ({
+      kind: 'cells',
+      cells: [{ r: R(1), c: C(1), i: { n: 0.12 }, ...(f ? { f } : {}) }],
+    });
+    expect(v(cell({ nf: 'percent' }), ruled)).toEqual({ ok: true });
+    expect(v(cell(), ruled)).toMatchObject({ ok: false, error: 'value_invalid' });
+  });
+});

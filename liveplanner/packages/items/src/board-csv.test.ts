@@ -168,6 +168,34 @@ describe('boardCsvRows', () => {
     ]);
   });
 
+  it('writes each column in the board’s Sort Cards order, and a card in several swimlanes once', () => {
+    const sorted = boardCsvRows(
+      { ...setup, sortBy: [{ field: 'priority', dir: 'desc' }] },
+      items,
+      types,
+    );
+    expect(sorted.slice(1).map((r) => r[1])).toEqual([
+      'Ship it, "now"',
+      'Earlier',
+      'Epic',
+      'Crash',
+    ]);
+    const team: ItemTypeDef = {
+      ...task,
+      fields: [...task.fields, 'f-who'],
+      custom: [
+        ...(task.custom ?? []),
+        { id: 'f-who', label: 'Who', kind: 'person', multiple: true },
+      ],
+    };
+    const both = item({ title: 'Pair', status: 'todo', 'f-who': [ALI, SAM] });
+    const lanes = boardCsvRows(
+      { ...setup, swimlaneBy: 'field', swimlaneField: 'f-who' },
+      mapOf([both]),
+      [team, bug, note],
+    );
+    expect(lanes.slice(1).map((r) => r[1])).toEqual(['Pair']);
+  });
   it('names an unnamed column as the board does, and leaves fields a type lacks empty', () => {
     const rows = boardCsvRows(setup, items, types);
     const crashRow = rows.find((r) => r[1] === 'Crash')!;

@@ -215,9 +215,14 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
   ISO date (`">=2026-01-01"` compares dates), as in Google Sheets; other date forms stay text, as a criterion has no
   locale to read them by.
 - A lookup key with wildcards (`VLOOKUP`, `MATCH`, `XLOOKUP`, `XMATCH`) is a wildcard pattern only, never a
-  comparison: `VLOOKUP("<a*", …)` finds text starting `<a`.
+  comparison: `VLOOKUP("<a*", …)` finds text starting `<a`. `~` escapes a wildcard there as in a criterion:
+  `MATCH("~*", …)` finds a star.
 - `TEXT(value, format)` takes the spreadsheet format codes people use (`"0.00"`, `"#,##0"`, `"0%"`, `"dd/mm/yyyy"`,
   `"mmm yyyy"`, `"hh:mm"`, `"[h]:mm"`, `"£#,##0.00"`, `"@"`).
+  A text section (`"@"`) given a number shows the number in its place. A time is rounded once, to the finest unit
+  its code shows (a second, or the `.0` to `.000` of one), and every part (`ss`, `[m]`, `[h]`) is read from that.
+- `PRODUCT` of no numbers is 0, and `TRIM` takes spaces only (a line break or a non-breaking space stays), as in
+  Excel and Google Sheets.
 - `HYPERLINK(url, [label])` shows the label as a link; Ctrl/⌘ and a click opens it in a new tab (http, https and
   mailto only).
   - The cell's **value is the label** (or the url when there is none), so sorting, CSV, charts, `read_sheet` and

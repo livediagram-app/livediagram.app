@@ -12,6 +12,7 @@ import {
   AVATAR_SPEED,
   AVATAR_WIDTH,
   arrowDirection,
+  centredCamera,
   facingFromDelta,
   followCorrection,
   hitTestAvatar,
@@ -288,18 +289,22 @@ describe('viewportOffsetCentredOn', () => {
     const offset = viewportOffsetCentredOn(
       { x: 500, y: 300, width: 100, height: 100 },
       { width: 1000, height: 800 },
-      1,
     );
     // Portal centre (550, 350) lands at the viewport centre (500, 400).
     expect(offset).toEqual({ x: -50, y: 50 });
   });
 
-  it('accounts for zoom, since the offset is applied before the scale', () => {
-    const offset = viewportOffsetCentredOn(
-      { x: 0, y: 0, width: 100, height: 100 },
-      { width: 1000, height: 800 },
-      2,
-    );
-    expect(offset).toEqual({ x: 200, y: 150 });
+  it('centres at any zoom, since the canvas scales about the viewport centre', () => {
+    const size = { width: 1000, height: 800 };
+    const offset = viewportOffsetCentredOn({ x: 0, y: 0, width: 100, height: 100 }, size);
+    expect(offset).toEqual({ x: 450, y: 350 });
+    // On screen, with scale(z) about the centre: centre + z * (p + offset - centre) is the middle for every zoom.
+    for (const z of [0.25, 0.5, 2, 4]) {
+      expect(size.width / 2 + z * (50 + offset.x - size.width / 2)).toBe(size.width / 2);
+      expect(size.height / 2 + z * (50 + offset.y - size.height / 2)).toBe(size.height / 2);
+      // And the follow camera reads that offset as already centred on the point.
+      const p = { x: 50, y: 50 };
+      expect(centredCamera(offset, p, p, size, z)).toEqual(offset);
+    }
   });
 });

@@ -18,6 +18,7 @@ import {
   trimRuns,
   type TextRun,
 } from '@liveworkspace/model-core/rich-text';
+import { atxHeadingText } from '@liveworkspace/model-core/markdown-heading';
 
 /**
  * One node of an outline: its text (line breaks kept), its bold / italic / underline over that
@@ -108,7 +109,10 @@ function mindOutlineLines(text: string): (MindOutlineRead | null)[] {
     const item = heading ? null : ITEM.exec(body);
     const marker = heading ?? item;
     const rawContent = marker ? body.slice(marker[0].length).trimStart() : body;
-    const marks = trimRuns(mindMarkdownToMarks(rawContent));
+    const marks = trimRuns(
+      // A heading's closing `#`s are dropped (`## Section ##` reads "Section"), as CommonMark reads them.
+      mindMarkdownToMarks(heading ? atxHeadingText(rawContent) : rawContent),
+    );
     const content = runsPlainText(marks);
     const column = indent + body.length - rawContent.length;
     if (!heading && !item && open && indent === open.column) {

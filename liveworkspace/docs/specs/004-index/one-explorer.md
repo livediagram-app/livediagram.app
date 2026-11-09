@@ -308,7 +308,9 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
 - **The Library and Settings.** The Image Gallery and Shape Libraries are read from the app's own API on the same
   origin (`imagesPath`, `shapeLibrariesPath`). The Gallery lists the person's images from every app, and its "Used
   in" badge counts every app's items that place one: another app's item is named with its app and opens there
-  ([media.md](../006-media/media.md#usage)). Signed in, the bottom bar has a Settings button beside Appearance,
+  ([media.md](../006-media/media.md#usage)). An upload is checked against the media service's types and 10 MB cap
+  (`@liveworkspace/api-schema/image-limits`) before the file is read or decoded, so an oversized file is refused
+  at once rather than after it is sent. Signed in, the bottom bar has a Settings button beside Appearance,
   opening the Settings panel in place, filtered to the app with All beside it ([site.md](../010-site/site.md#settings)), as the
   account menu's Settings does; `?settings=` addresses open the same panel here, on the section they name
   ([site.md](../010-site/site.md#the-explorer-explorer)).
@@ -422,7 +424,9 @@ The journeys, one way each:
    the organisation, how many have joined and how many are invited; every member with their role; and, by role:
    - **Invite** (admins): an address and Member or Admin, at the foot of the card. The invitation is emailed.
    - **Invite by Link** (admins): turn the join link on, copy it, make a new one (the old one stops working),
-     or turn it off. It lasts 7 days.
+     or turn it off. It lasts 7 days. Turning it on or off here moves the keyboard to what took the pressed
+     button's place (Copy, or Turn On Link); a press that fails, New Link, or a change from elsewhere leaves it
+     where it is.
    - **Roles and removal** (admins): each row's role select, and its × to remove someone, withdraw an invitation
      or clear a declined or expired one, each confirmed in words that say which. The only admin's own row is
      pinned (no select, no ×), with why.

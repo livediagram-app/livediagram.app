@@ -221,6 +221,48 @@ describe('readPptx, the edges', () => {
     });
   });
 
+  it('places a picture put into a placeholder in its layout’s box, else its master’s', async () => {
+    const inPlaceholder = (ph: string) =>
+      `<p:pic><p:nvPicPr><p:cNvPr id="9" name="Picture"/><p:cNvPicPr/><p:nvPr>${ph}</p:nvPr></p:nvPicPr><p:blipFill><a:blip r:embed="rIdImg"/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr/></p:pic>`;
+    const rels = [{ id: 'rIdImg', type: 'image', target: '../media/image1.png' }];
+    const deck = await read({
+      slides: [
+        { layout: 1, tree: inPlaceholder('<p:ph type="pic" idx="1"/>'), rels },
+        { layout: 2, tree: inPlaceholder('<p:ph idx="1"/>'), rels },
+        // Not a placeholder and no box: drawn nowhere, so left out.
+        { layout: 2, tree: inPlaceholder(''), rels },
+      ],
+      media: { 'ppt/media/image1.png': new Uint8Array([1]) },
+    });
+    expect(deck.slides.map((s) => s.items.map((i) => i.kind === 'picture' && i.box))).toEqual([
+      [{ x: 1524000, y: 3602038, cx: 9144000, cy: 1655762 }],
+      [{ x: 838200, y: 1825625, cx: 10515600, cy: 4351338 }],
+      [],
+    ]);
+    expect(deck.pictures[0]).toMatchObject({ widthPx: 960, heightPx: 174 });
+  });
+
+  it('leaves out shapes, pictures and groups hidden in the Selection Pane', async () => {
+    const hide = (xml: string) => xml.replace('<p:cNvPr ', '<p:cNvPr hidden="1" ');
+    const deck = await read({
+      slides: [
+        {
+          tree: [
+            sp({ id: 2, box: xfrm(0, 0, 100, 100), paras: ap('Shown') }),
+            hide(sp({ id: 3, box: xfrm(0, 0, 100, 100), paras: ap('Hidden') })),
+            hide(pic('rIdImg', xfrm(0, 0, 100, 100))),
+            `<p:grpSp><p:nvGrpSpPr><p:cNvPr id="20" name="Group" hidden="true"/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/>${sp({ id: 21, box: xfrm(0, 0, 100, 100), paras: ap('In a hidden group') })}</p:grpSp>`,
+          ].join(''),
+          rels: [{ id: 'rIdImg', type: 'image', target: '../media/image1.png' }],
+        },
+      ],
+      media: { 'ppt/media/image1.png': new Uint8Array([1]) },
+    });
+    expect(deck.slides[0]!.items.map((i) => (i as SlideTextItem).label)).toEqual(['Shown']);
+    expect(deck.pictures).toEqual([]);
+    expect(deck.tally).toEqual({});
+  });
+
   it('numbers by the list’s scheme and start, restarts deeper levels, and takes numbering from a list style', async () => {
     const at = (text: string, lvl: number, bu: string) =>
       `<a:p><a:pPr lvl="${lvl}">${bu}</a:pPr><a:r><a:t>${text}</a:t></a:r></a:p>`;
