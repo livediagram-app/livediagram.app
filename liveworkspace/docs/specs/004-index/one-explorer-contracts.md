@@ -45,7 +45,9 @@ Two kinds of caller:
 comma-separated, ≤ 50>`. Every person route then answers as that account, but only for the app's own items:
   its lists are filtered to the app (the Trash among them, so `DELETE /trash` empties the app's items only),
   `POST /items` makes only the app's kind, and any other app's item answers 404. A guest id, a link or a
-  malformed person is refused (401).
+  malformed person is refused (401). The routes no agent may use answer `403` before the item is read, so the
+  refusal says nothing about it: managing webhooks ([webhooks.md](webhooks.md), `webhooks_need_account`) and making
+  a connection ([connected-tabs.md](connected-tabs.md)); opening a connection answers `404`.
   `createIndexDelegateClient` in `@liveworkspace/index-client` makes these calls.
 - **The Google Drive mirror's service acting for an account** ([drive.md](../005-drive/drive.md) "Contracts > The index"):
   `Authorization: Bearer <INDEX_KEY_DRIVE>`, `X-Index-App: drive` and `X-Index-Person: <account id>`. It answers
