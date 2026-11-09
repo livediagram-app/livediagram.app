@@ -35,6 +35,39 @@ describe('useFollowMe', () => {
     expect(hook.result.current.followingId).toBe('p1');
   });
 
+  // docs/specs/012-collaboration/follow-me-viewport.md "Zoom is mirrored exactly": less of the canvas, centred on
+  // the same point. The point mid-screen is `size / 2 - offset`, so a raw pan is off by half the size difference.
+  it("keeps the presenter's centre in the middle of a follower's canvas of another size", () => {
+    const { hook, viewport } = setup({
+      remoteViewports: new Map<string, RemoteViewport>([
+        [
+          'p1',
+          { tabId: 'tab1', pan: { x: 0, y: 0 }, zoom: 2, size: { width: 1920, height: 1080 } },
+        ],
+      ]),
+      readCanvasSize: () => ({ width: 1280, height: 720 }),
+    });
+    act(() => hook.result.current.startFollowing('p1'));
+    expect(viewport.get()).toEqual({ zoom: 2, offset: { x: -320, y: -180 } });
+    // Their centre (960, 540) is ours: 1280 / 2 - (-320) = 960.
+    expect(1280 / 2 - viewport.get().offset.x).toBe(1920 / 2);
+    expect(hook.result.current.followingId).toBe('p1');
+  });
+
+  it('follows the raw pan when either size is unknown', () => {
+    const { hook, viewport } = setup({ readCanvasSize: () => ({ width: 1280, height: 720 }) });
+    act(() => hook.result.current.startFollowing('p1'));
+    expect(viewport.get()).toEqual({ zoom: 2, offset: { x: 10, y: 20 } });
+    const other = setup({
+      remoteViewports: new Map<string, RemoteViewport>([
+        ['p1', { tabId: 'tab1', pan: { x: 5, y: 6 }, zoom: 1, size: { width: 800, height: 600 } }],
+      ]),
+      readCanvasSize: () => null,
+    });
+    act(() => other.hook.result.current.startFollowing('p1'));
+    expect(other.viewport.get()).toEqual({ zoom: 1, offset: { x: 5, y: 6 } });
+  });
+
   it('follows the peer as they move on', () => {
     const { hook, args, viewport } = setup();
     act(() => hook.result.current.startFollowing('p1'));

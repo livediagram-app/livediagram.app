@@ -1521,6 +1521,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     followerIds,
     nameOf: (id) => livePresence.find((p) => p.id === id)?.name ?? 'Someone',
     sendFollow: (target) => roomRef.current?.send({ kind: 'op', op: { kind: 'follow', target } }),
+    readCanvasSize: () => {
+      const node = canvasMainRef.current;
+      return node ? { width: node.offsetWidth, height: node.offsetHeight } : null;
+    },
   });
   useAssignRef(followingRef, followMe.followingId);
 
