@@ -268,6 +268,35 @@ describe('parseMermaid: ER syntax from Mermaid’s own examples', () => {
     ]);
   });
 
+  it('reads a block on one line, or closed on an attribute line, and generic types', () => {
+    // A one-line block was refused as "No entities found"; Mermaid reads a block across lines or on one.
+    const g = read(`erDiagram
+  CUSTOMER { string name int id PK }
+  ORDER {
+    List~string~ tags "the tags"
+    int total }
+  EMPTY {}`);
+    expect(g.nodes.map((n) => [n.id, n.fields?.map((f) => [f.type, f.name, f.key ?? ''])])).toEqual(
+      [
+        [
+          'CUSTOMER',
+          [
+            ['string', 'name', ''],
+            ['int', 'id', 'pk'],
+          ],
+        ],
+        [
+          'ORDER',
+          [
+            ['List~string~', 'tags', ''],
+            ['int', 'total', ''],
+          ],
+        ],
+        ['EMPTY', []],
+      ],
+    );
+  });
+
   it('fails a long line that is no relationship quickly', () => {
     const hostile = 'erDiagram\n  A' + ' to'.repeat(4000) + ' x';
     const t0 = performance.now();

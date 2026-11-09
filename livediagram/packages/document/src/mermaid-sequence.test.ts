@@ -68,6 +68,40 @@ describe('parseSequenceDiagram', () => {
     expect(parseSequenceDiagram(`sequenceDiagram\n${many.join('\n')}`).ok).toBe(false);
   });
 
+  it('closes a rect or box with its own end, never the fragment round it', () => {
+    // The rect's `end` closed the loop, so the message after it fell outside the loop.
+    const r = parseSequenceDiagram(
+      'sequenceDiagram\n box Aqua Team\n participant A\n participant B\n end\n loop Poll\n rect rgb(0,0,0)\n A->>B: x\n end\n B->>A: y\n end\n A->>B: after',
+    );
+    if (!r.ok) throw new Error(r.error);
+    expect(r.diagram.items.map((i) => (i.kind === 'message' ? i.label : i.kind))).toEqual([
+      'fragment',
+      'x',
+      'y',
+      'end',
+      'after',
+    ]);
+  });
+
+  it('skips the accessibility lines, decodes entity codes and reads a two-way message', () => {
+    const r = parseSequenceDiagram(
+      'sequenceDiagram\n accTitle: Login\n accDescr {\n  How a user signs in\n }\n A<<->>B: I #9829; you #quot;x#quot;\n A<<-->>B: back',
+    );
+    if (!r.ok) throw new Error(r.error);
+    expect(r.diagram.participants.map((p) => p.id)).toEqual(['A', 'B']);
+    expect(r.diagram.items).toEqual([
+      { kind: 'message', from: 'A', to: 'B', label: 'I ♥ you "x"', style: 'call', both: true },
+      { kind: 'message', from: 'A', to: 'B', label: 'back', style: 'reply', both: true },
+    ]);
+    const g = graphFromMermaid('sequenceDiagram\n A<<->>B: sync');
+    if (!g.ok) throw new Error(g.error);
+    const message = layoutGraph(g.graph).find(
+      (e): e is ArrowElement => e.type === 'arrow' && e.label === 'sync',
+    )!;
+    expect(message.arrowEnds).toBe('both');
+    expect(message.arrowheadStartShape).toBe(message.arrowheadShape);
+  });
+
   it('skips rect blocks and styling rather than failing', () => {
     const read = parseSequenceDiagram('sequenceDiagram\n  rect rgb(0,0,0)\n  A->>B: hi\n  end');
     expect(read.ok).toBe(true);
@@ -106,6 +140,22 @@ describe('layoutSequence', () => {
     expect([...ys].sort((a, b) => a - b)).toEqual(ys);
     expect(messages.find((m) => m.label === '4: 201 Created')!.strokeStyle).toBe('dashed');
     expect(messages.every((m) => m.routeBehind === false)).toBe(true);
+  });
+
+  it('never overprints one head with the next, however long a name', () => {
+    // The pitch was capped at 520 px but a head was as wide as its name: a 45-character name drew the heads over
+    // each other.
+    const name = 'Customer Identity and Access Management Service';
+    const g = graphFromMermaid(
+      `sequenceDiagram\n participant A as ${name}\n participant B as ${name}\n participant C\n A->>B: hi\n B->>C: ok`,
+    );
+    if (!g.ok) throw new Error(g.error);
+    const heads = layoutGraph(g.graph, { makeEdgeId: () => 'x' }).filter(
+      (e) => e.type === 'shape' && ['A', 'B', 'C'].includes(e.id),
+    ) as { x: number; width: number }[];
+    expect(heads).toHaveLength(3);
+    for (let i = 1; i < heads.length; i++)
+      expect(heads[i]!.x).toBeGreaterThanOrEqual(heads[i - 1]!.x + heads[i - 1]!.width);
   });
 
   it("fits a long message's label in its first gap on one line, its plate clear of its own line", () => {

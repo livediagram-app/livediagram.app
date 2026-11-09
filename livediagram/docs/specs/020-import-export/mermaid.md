@@ -34,6 +34,8 @@ Sequence diagrams are drawn by the agents' graph input only (below, [Sequence di
 the editor's import does not take them yet. Other non-graph Mermaid types (gantt, pie, journey, timeline, quadrant, git graph, C4, requirement, ZenUML and the
 `-beta` types: xychart, sankey, block, packet, architecture, radar, treemap, plus kanban) and class diagrams remain
 out of scope; importing one reports a clear error naming the supported types, never a graph of its header words.
+Through the MCP the error names sequence diagrams among them, since the agents' input draws those; the editor's
+import names only the three dialects it takes.
 
 Also deliberately out of scope: `classDef` / `style` / `linkStyle` (the tab
 theme owns colours; Mermaid styling is skipped, never an error) and true
@@ -69,15 +71,19 @@ only the sweep direction differs).
   - `~~~` (invisible link) is parsed and **dropped**: it exists for Mermaid
     layout spacing and would be an invisible-arrow trap on a real canvas.
 
-  An edge to an id with no node still creates the node.
+  An edge to an id with no node still creates the node. An edge id (`A e1@--> B`, Mermaid's handle for styling or
+  animating one edge) is read past, so the edge lands, and the `e1@{ animate: true }` line that styles it is
+  skipped rather than drawn as a box named `e1`.
 
 - **Labels**: `<br/>` (any spelling) becomes a newline in the element label
   and newlines export back as `<br/>`; `&quot;` / `&amp;` are decoded on
   import and `"` re-escapes as `&quot;` on export, so quoted labels
   round-trip. Mermaid's numeric entity codes (`#124;` is `|`, `#37;` is `%`)
-  decode on import. On export a `|` in an edge label is written `#124;`, a
+  decode on import, and so do its named ones (`#quot;`, `#amp;`, `#lt;`, `#gt;`, `#nbsp;`, `#apos;`, `#hellip;`,
+  `#ndash;`, `#mdash;`, `#copy;`, `#reg;`, `#trade;`, `#hearts;`), as Mermaid's documentation writes a quote in a
+  label (`A["A double quote:#quot;"]`); a name outside that list stays as written. On export a `|` in an edge label is written `#124;`, a
   `%%` is written `#37;#37;` (an unquoted edge label would otherwise read it
-  as a comment), a `#` that would read as an entity code is written
+  as a comment), a `#` that would read as an entity code (numeric or named) is written
   `#35;`, a backtick `#96;` (a label wrapped in backticks would read back as a
   markdown string, its marks stripped) and the `<` of a `<br>` typed as text
   `#60;` (it would read back as a line break), so every label round-trips losslessly.
@@ -107,8 +113,10 @@ only the sweep direction differs).
   input's node `link` follows the same rule).
 - Lines it doesn't understand (`classDef`, `style`, `linkStyle`,
   `direction`, comments `%%`) are skipped, not fatal: a real-world paste
-  imports its graph and ignores the decoration. So is a class written on a node (`a:::hot --> b`, `a[Label]:::hot`):
-  the edge after it still lands.
+  imports its graph and ignores the decoration. So is a class written on a node (`a:::hot --> b`, `a[Label]:::hot`),
+  written against the edge or not (`a:::hot-->b`, `a:::my-class-.->b`): the edge after it still lands. So are the
+  accessibility lines, `accTitle: …`, `accDescr: …` and the multi-line `accDescr { … }` block: they describe the
+  diagram for a screen reader and are never boxes.
 - **Statements** end at a newline or a `;`, as in Mermaid: `graph TD; A-->B; B-->C;` is three statements. A `;`
   inside a label (quoted, in a node's brackets or an edge's `|…|`) is label text.
 - **Markdown strings** (``A["`**Bold** text`"]``) keep their words: the backticks and the `**` / `__` / `*` / `_`
@@ -133,7 +141,11 @@ LR` line sets the layout direction (TB default).
   the frame it folded into, rather than a stray box of the id (a state written out under that id stays a state, and
   so does the box when the outer composite holds nothing else, since no frame is drawn). Flowcharts share the rule
   (`foldedEdgeEnds` in `mermaid-shared.ts`).
-- Notes, concurrency separators (`--`), and history states are skipped.
+- A class on a state (`Crash:::badBadEvent --> [*]`, `[*] --> Still:::notMoving`, as Mermaid's own documentation
+  writes them) is styling and skipped: the transition lands and the class never reads as a label. State ids take
+  letters and digits in any script (`开始 --> 结束`), as flowchart ids do.
+- Notes, concurrency separators (`--`), history states, `classDef` / `class` lines and the accessibility lines
+  (`accTitle: …`, `accDescr: …`, `accDescr { … }`) are skipped; `accTitle` and `accDescr` are never states.
 
 ## ER diagram coverage (import)
 
@@ -143,7 +155,9 @@ LR` line sets the layout direction (TB default).
   each attribute (`CUSTOMER { string name PK "comment" }`) is a field row,
   `name` with its type as the row's type text. Key markers become the field's
   key (`PK` primary, `FK` foreign, both `PK FK`, `UK` unique; [The entity](../009-elements/entity.md)
-  "Keys"), drawn in the key gutter as the ER template's are; comments are dropped. The box is sized to its rows (a title band plus a row
+  "Keys"), drawn in the key gutter as the ER template's are; comments are dropped. A block may sit on one line
+  (`CUSTOMER { string name int id PK }`) or close on an attribute's line, as Mermaid reads it, and a type may be
+  generic (`List~string~ tags`). The box is sized to its rows (a title band plus a row
   each). This replaced square boxes whose label held the name and every
   attribute on its own line, which read as a paragraph and did not survive a
   label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
@@ -182,19 +196,23 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
 - **Syntax**: `participant A` / `participant A as Label`, `actor A` (a UML stick figure with its name beneath);
   participants appear in the order declared, then first mentioned. Messages `A->>B: text` (a call: solid, filled
   head), `A-)B: text` (async: solid, open head), `A-->>B: text` and `A-->B: text` (a reply: dashed, open head),
-  `A->B` and `A-xB` (calls); `A->>A` is a self-call. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
+  `A->B` and `A-xB` (calls); `A->>A` is a self-call; `A<<->>B` (and the dashed `A<<-->>B`) is a two-way message,
+  a head at each end. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
   `activate B` / `deactivate B` start and end activations at the message the line follows; a message into B that
   `activate B` follows ends on the bar it starts, not on B's lifeline inside it. An activation the author opened (`+`,
   `activate`) stays open until its `-` or `deactivate`; a reply on the way does not close it. `Note over A,B: text`, `Note right of A: text`,
   `Note left of A: text`; a note over one participant whose bar is open sits beside the bar, as a right-of note
   does (left of it on the last participant, the side with room), since centred it hid the bar, and a beside note keeps clear of the bars. Fragments `loop`, `alt` (with `else`), `opt`, `par` (with `and`), `critical`, `break`,
   each closed by `end`. `autonumber` numbers the messages; `title Text` (or front matter `title:`) heads the
-  diagram. `rect` blocks, `box` groupings, links and styling are read and skipped, never an error.
+  diagram. `rect` blocks, `box` groupings, links, styling and the accessibility lines (`accTitle: …`, `accDescr: …`,
+  `accDescr { … }`) are read and skipped, never an error; the `end` closing a `rect` or `box` closes that block,
+  never the fragment round it. Mermaid's entity codes (`#9829;`, `#quot;`) decode in names, messages and notes.
 - **Activations without markers**: a call to another participant activates it from that message until it replies
   to its caller; one never closed ends after the participant's last message. A self-call nests an activation,
   stepped right. Nested activations step right by half a bar. A diagram that activates anything itself (`activate`, `deactivate`, `+`, `-`) draws
   only those bars: answered calls add none, so an author's bars are never doubled.
-- **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
+- **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, a head
+  as wide as the longest name needs up to 480 px (a longer name wraps in its box, so two heads never overprint), the
   pitch wide enough for the longest message label in one gap (up to 520 px), as a message keeps its label in its
   first gap; messages a row each, edge to edge of the activation bars, labels above their line, wrapped to the gap
   and lifted by however many lines they take so no plate cuts its own line; a self-call loops out of the bar and back

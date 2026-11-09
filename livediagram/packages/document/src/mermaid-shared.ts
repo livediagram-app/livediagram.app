@@ -97,6 +97,23 @@ function decodeEntityCode(code: string, digits: string): string {
   return n <= 0x10ffff ? String.fromCodePoint(n) : code;
 }
 
+// Mermaid's named entity codes (`#quot;`, as its docs write a quote in a label). A name outside these stays as written.
+const NAMED_ENTITIES: Record<string, string> = {
+  quot: '"',
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  nbsp: '\u00a0',
+  apos: "'",
+  hellip: '\u2026',
+  ndash: '\u2013',
+  mdash: '\u2014',
+  copy: '\u00a9',
+  reg: '\u00ae',
+  trade: '\u2122',
+  hearts: '\u2665',
+};
+
 // Label text -> element label: strip surrounding quotes, turn <br> line
 // breaks into real newlines, decode the entities the export emits.
 export function decodeLabel(s: string): string {
@@ -104,11 +121,20 @@ export function decodeLabel(s: string): string {
   if (t.startsWith('"') && t.endsWith('"') && t.length >= 2) t = t.slice(1, -1);
   // A blank quoted label (`n1[" "]`, how the export writes an unlabelled node) is no label.
   if (!t.trim()) return '';
-  return plainMarkdownString(t)
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/&quot;/g, '"')
-    .replace(/#(\d+);/g, decodeEntityCode)
-    .replace(/&amp;/g, '&');
+  return decodeEntities(
+    plainMarkdownString(t)
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/&quot;/g, '"'),
+  ).replace(/&amp;/g, '&');
+}
+
+// Mermaid's entity codes in `s`, numeric (`#124;`) and named (`#quot;`), decoded.
+export function decodeEntities(s: string): string {
+  return s.replace(/#(?:(\d+)|([a-z]+));/gi, (code, digits?: string, name?: string) =>
+    digits !== undefined
+      ? decodeEntityCode(code, digits)
+      : (NAMED_ENTITIES[name!.toLowerCase()] ?? code),
+  );
 }
 
 // Read the id token at the front (letters, digits, _, made of the chars
@@ -190,4 +216,20 @@ export function framedClusters(
   if (framedIds.size)
     for (const c of clusters) c.members = c.members.filter((m) => !framedIds.has(m));
   return clusters.filter((c) => c.members.length > 0);
+}
+
+// Mermaid's accessibility statements, `accTitle: …`, `accDescr: …` and the `accDescr { … }` block: they describe the
+// diagram for a screen reader, never a node. Feed each cleaned line through; true while the line is one to skip.
+// `open` carries a block across lines.
+export function accessibilityLine(line: string, open: { block: boolean }): boolean {
+  if (open.block) {
+    if (line.endsWith('}')) open.block = false;
+    return true;
+  }
+  if (/^acc(?:Title|Descr)\s*:/i.test(line)) return true;
+  if (/^accDescr\s*\{/i.test(line)) {
+    open.block = !line.endsWith('}');
+    return true;
+  }
+  return false;
 }

@@ -31,6 +31,30 @@ describe('parseCsvLineData (docs/specs/009-elements/pie-chart.md)', () => {
     expect(out!.series[0]!.values).toEqual([0, 0]);
   });
 
+  it('reads a spreadsheet saved with semicolons or tabs, not one column and nothing', () => {
+    // Excel where `,` is the decimal point saves `;`-separated: it read as one column and the import did nothing.
+    const semi = parseCsvLineData('Month;Sales;Costs\nJan;10,5;1.234,5\nFeb;20;8');
+    expect(semi!.categories).toEqual(['Jan', 'Feb']);
+    expect(semi!.series).toEqual([
+      { name: 'Sales', values: [10.5, 20] },
+      { name: 'Costs', values: [1234.5, 8] },
+    ]);
+    const tabbed = parseCsvLineData('Month\tSales\nJan\t3\nFeb\t4');
+    expect(tabbed!.series).toEqual([{ name: 'Sales', values: [3, 4] }]);
+  });
+
+  it('keeps the number a spreadsheet formatted: thousands, currency and percent', () => {
+    // `"1,234"` and `$10` read 0.
+    const out = parseCsvLineData(
+      'x,Revenue,Share\nQ1,"1,234",25%\nQ2,$10.50, 7.5 %\nQ3,-$3,"12,34"',
+    );
+    expect(out!.series).toEqual([
+      { name: 'Revenue', values: [1234, 10.5, -3] },
+      // `12,34` is no thousands grouping, so it is not a number in a comma file.
+      { name: 'Share', values: [25, 7.5, 0] },
+    ]);
+  });
+
   it('returns null when there is no usable data', () => {
     expect(parseCsvLineData('')).toBeNull();
     expect(parseCsvLineData('just-a-header,A')).toBeNull();
