@@ -4,6 +4,7 @@
 // refuses nobody: the check never silences a call by failing.
 import {
   CALL_NOT_HEARD,
+  CALL_TRACK_REFUSED,
   type CallSubscribeLocator,
   type CallTrackResult,
   type CallTracksResponse,
@@ -44,15 +45,27 @@ export async function splitByHearing(
   return { allowed, refused };
 }
 
-/** Realtime's answer for the allowed tracks, with a `not_heard` result put back in each refused one's place. */
+/**
+ * Realtime's answer for the allowed tracks, with a `not_heard` result put back in each refused one's place and a
+ * `track_refused` in each forged one's (a token that does not hold: never asked for, whatever the room says).
+ */
 export function withRefusals(
   locators: readonly CallSubscribeLocator[],
   refused: ReadonlySet<number>,
   answer: CallTracksResponse | null,
+  forged: ReadonlySet<number> = new Set(),
 ): CallTracksResponse {
   const tracks: CallTrackResult[] = [];
   let next = 0;
   locators.forEach((locator, i) => {
+    if (forged.has(i)) {
+      tracks.push({
+        sessionId: locator.sessionId,
+        trackName: locator.trackName,
+        errorCode: CALL_TRACK_REFUSED,
+      });
+      return;
+    }
     if (refused.has(i)) {
       tracks.push({
         sessionId: locator.sessionId,

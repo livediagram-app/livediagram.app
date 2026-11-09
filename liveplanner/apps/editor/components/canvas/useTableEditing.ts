@@ -58,6 +58,11 @@ export function useTableEditing({
       ...(appended.rowHeights ? { rowHeights: appended.rowHeights } : {}),
       ...(appended.cellStyles ? { cellStyles: appended.cellStyles } : {}),
     });
+    // At the table's row cap no row is added: the text is committed and the cell stays in edit.
+    if (appended.cells.length === withText.cells.length) {
+      initialTextRef.current = text;
+      return;
+    }
     initialTextRef.current = '';
     setEditing({ r: r + 1, c: 0 });
   };

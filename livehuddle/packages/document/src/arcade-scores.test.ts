@@ -70,6 +70,9 @@ describe('a score', () => {
   it('is posted under the display name, cut, or Guest', () => {
     expect(arcadeName('  Ann  ')).toBe('Ann');
     expect(arcadeName('x'.repeat(40))).toHaveLength(ARCADE_NAME_MAX);
+    // Never between an emoji's two halves, which would post a lone surrogate.
+    const atEdge = arcadeName('x'.repeat(ARCADE_NAME_MAX - 1) + '\u{1F600}');
+    expect(atEdge).toBe('x'.repeat(ARCADE_NAME_MAX - 1));
     expect(arcadeName('')).toBe('Guest');
     expect(arcadeName(undefined)).toBe('Guest');
   });

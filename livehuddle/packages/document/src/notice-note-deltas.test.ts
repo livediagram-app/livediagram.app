@@ -176,8 +176,12 @@ describe('the ledger keeps notes', () => {
 
   it('records pins and unpins, refusing malformed ones and replays', () => {
     const entry = record([pin(note('a')), 1], [unpin('a', 'adder-a'), 2]);
-    expect(Object.keys(entry!.notes!.pins)).toEqual(['a']);
+    // The unpin takes its pin's place: the pair is one event.
+    expect(Object.keys(entry!.notes!.pins)).toEqual([]);
     expect(entry!.notes!.unpins.a).toEqual({ by: 'adder-a', seq: 2 });
+    // One naming another signer removes nothing, so the pin stays.
+    const forged = record([pin(note('b')), 1], [unpin('b', 'adder-x'), 2]);
+    expect(Object.keys(forged!.notes!.pins)).toEqual(['b']);
     expect(recordInLedger(entry, op(pin(note('a'))), 3)).toBeNull();
     expect(recordInLedger(undefined, op(pin({ ...note('a'), text: '' })), 1)).toBeNull();
     expect(
@@ -185,14 +189,53 @@ describe('the ledger keeps notes', () => {
     ).toBeNull();
   });
 
-  it('stops recording past its bound, except an unpin of a pin it holds', () => {
+  it('stays bounded by letting its oldest events go, so new pins are still recorded', () => {
     let entry: ElementLedger | undefined;
     for (let i = 0; i < NOTES_MAX * 4; i++) {
       entry = recordInLedger(entry, op(pin(note(`n${i}`))), i + 1) ?? entry;
     }
-    expect(recordInLedger(entry, op(pin(note('late'))), 999)).toBeNull();
-    expect(recordInLedger(entry, op(unpin('late', 'adder-a')), 999)).toBeNull();
-    expect(recordInLedger(entry, op(unpin('n0', 'adder-a')), 999)).not.toBeNull();
+    const late = recordInLedger(entry, op(pin(note('late'))), 999);
+    expect(late!.notes!.pins).toHaveProperty('late');
+    expect(late!.notes!.pins).not.toHaveProperty('n0');
+    expect(Object.keys(late!.notes!.pins)).toHaveLength(NOTES_MAX * 4);
+    const unpinned = recordInLedger(late!, op(unpin('gone', 'adder-a')), 1000);
+    expect(unpinned!.notes!.unpins).toHaveProperty('gone');
+    expect(Object.keys(unpinned!.notes!.pins)).toHaveLength(NOTES_MAX * 4 - 1);
+    // A replayed unpin overwrites its own event and lets nothing go.
+    const again = recordInLedger(unpinned!, op(unpin('gone', 'adder-a')), 1001);
+    expect(Object.keys(again!.notes!.pins)).toHaveLength(NOTES_MAX * 4 - 1);
+  });
+
+  it("keeps writing a Participant's pins on a busy board, past hundreds of pins and unpins", () => {
+    let entry: ElementLedger | undefined;
+    for (let i = 0; i < NOTES_MAX * 5; i++) {
+      entry = recordInLedger(entry, op(pin(note(`n${i}`, 'adder-p'))), 2 * i + 1) ?? entry;
+      entry = recordInLedger(entry, op(unpin(`n${i}`, 'adder-p')), 2 * i + 2) ?? entry;
+    }
+    entry = recordInLedger(entry, op(pin(note('today', 'adder-p'))), 9999) ?? entry;
+    const written = boardIn(mergeLedgerAnswersIntoTab(tabOf(board()), ledgerOf(entry)));
+    expect(ids(written)).toEqual(['today']);
+  });
+
+  it("never writes a pin refused on a full board once the board has room, given the last write's position", () => {
+    const full = Array.from({ length: NOTES_MAX }, (_, i) => note(`n${i}`, 'adder-e'));
+    // Refused live at seq 1: the board was full. Written through seq 1, then an Editor unpins at seq 2.
+    let entry = record([pin(note('late', 'adder-p')), 1]);
+    const first = boardIn(
+      mergeLedgerAnswersIntoTab(tabOf(board({ noticeNotes: full })), ledgerOf(entry), 0),
+    );
+    expect(ids(first)).not.toContain('late');
+    entry = recordInLedger(entry, op(unpin('n0', 'adder-e')), 2) ?? entry;
+    const roomy = tabOf(board({ noticeNotes: full.slice(1) }));
+    expect(ids(boardIn(mergeLedgerAnswersIntoTab(roomy, ledgerOf(entry), 1)))).not.toContain(
+      'late',
+    );
+  });
+
+  it('stores only the fields a note has', () => {
+    const padded = { ...note('a'), junk: 'x'.repeat(1000) } as NoticeNote;
+    const entry = record([pin(padded), 1]);
+    expect(entry!.notes!.pins.a!.note).not.toHaveProperty('junk');
   });
 
   it('merges the pins a save had not seen, after a whole-element save snapshotted before them', () => {

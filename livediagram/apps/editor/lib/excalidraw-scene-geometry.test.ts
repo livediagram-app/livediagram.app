@@ -53,6 +53,22 @@ describe('absolutePoints', () => {
     expect(c!.y).toBeCloseTo(5);
   });
 
+  it("turns a line drawn leftwards about its points' centre, not x + width / 2", () => {
+    // From (0,0) to (-100,0): its centre is (-50, 0). Turned a quarter, it stands at x = -50.
+    const el = b.line(
+      [
+        [0, 0],
+        [-100, 0],
+      ],
+      { x: 0, y: 0, width: 100, height: 0, angle: Math.PI / 2 },
+    );
+    const [a, c] = absolutePoints(el);
+    expect(a!.x).toBeCloseTo(-50);
+    expect(a!.y).toBeCloseTo(50);
+    expect(c!.x).toBeCloseTo(-50);
+    expect(c!.y).toBeCloseTo(-50);
+  });
+
   it('attaches pressures when given, clamped to 0..1', () => {
     const el = b.freedraw(
       [

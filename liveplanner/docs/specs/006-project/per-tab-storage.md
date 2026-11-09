@@ -51,7 +51,8 @@ Owner / edit-role.
   (id, name, order; no `data`).
 - `GET    /api/projects/:id/tabs/:tabId`: full tab payload (data + everything).
 - `PUT    /api/projects/:id/tabs/:tabId`: upsert a single tab (active edit path).
-- `DELETE /api/projects/:id/tabs/:tabId`: remove a tab.
+- `DELETE /api/projects/:id/tabs/:tabId`: remove a tab. A token (an agent or the CLI) may not remove the plan's last tab (`409 last_tab`); the count is
+  checked in the delete itself, so two token deletes at once can't take the last two tabs between them.
 - `PUT    /api/projects/:id`: project-level fields only (rename,
   tab order, shareable). Body
   carries `tabIds: string[]` in
@@ -294,6 +295,9 @@ client guard, belt and suspenders against the most destructive failure.
 
 - Tab reorder is an `UPDATE plan_tabs SET order_index = ?, folder = ?` per
   tab, in one batch. Acceptable for the small tab counts (< 20) we see in practice.
+  Only the tabs the plan holds are written, each once (the last place a request names it): a request naming
+  ids the plan lacks, or one id many times, writes no more than the plan's own tabs, so a body of a million
+  ids can't hold the room up for a statement each.
 
 ## What this does NOT change
 

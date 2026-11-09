@@ -59,6 +59,7 @@ import {
 import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
 import type { ExportImageMap } from './export-tab-images';
 import { exportChartInk } from './export-chart-ink';
+import { exportScale, MAX_EXPORT_CANVAS_SIDE } from '@liveworkspace/model-core/export-canvas';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
 // the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
@@ -131,28 +132,16 @@ function svgToImage(svg: string): Promise<HTMLImageElement> {
 // PNG / PDF helpers — shared canvas rendering
 // ---------------------------------------------------------------------
 
-// The largest canvas side every browser draws (Safari and Firefox stop at 16384 px; Chrome 32767).
-export const MAX_EXPORT_CANVAS_SIDE = 16384;
+// The largest canvas side and area every browser draws, and the scale that keeps an export inside both (an
+// iOS Safari canvas past 16.7 MP comes out blank, however short its sides): one helper for every product.
+export {
+  exportScale,
+  MAX_EXPORT_CANVAS_AREA,
+  MAX_EXPORT_CANVAS_SIDE,
+} from '@liveworkspace/model-core/export-canvas';
 // How far past a whole pixel a size may be from float arithmetic alone (1024 x 2.0000000001) and still count as
 // that whole pixel when the canvas is sized.
 const PART_PIXEL_NOISE = 1e-6;
-
-// The most pixels a canvas may hold in all: iOS Safari draws nothing on a bigger one (4096 x 4096), however
-// short its sides, so a big tab under the side cap (8000 x 6000 at 2x was 195.6 MP) exported blank there.
-export const MAX_EXPORT_CANVAS_AREA = 16_777_216;
-
-/** The scale an image export draws at: `wanted`, lowered so neither side of a `w` x `h` drawing
- *  passes MAX_EXPORT_CANVAS_SIDE and its whole-pixel canvas holds no more than MAX_EXPORT_CANVAS_AREA. */
-export function exportScale(wanted: number, w: number, h: number): number {
-  const longest = Math.max(w, h, 1);
-  const bySide = Math.min(wanted, MAX_EXPORT_CANVAS_SIDE / longest);
-  const wh = w * h;
-  if (!(wh > 0)) return bySide;
-  // Each side rounds up to a whole pixel (under one more), so solve (w*s + 1)(h*s + 1) <= area for s.
-  const b = w + h;
-  const byArea = (-b + Math.sqrt(b * b + 4 * wh * (MAX_EXPORT_CANVAS_AREA - 1))) / (2 * wh);
-  return Math.min(bySide, byArea);
-}
 
 // The scale each rendered canvas was drawn at, so a caller can size it in CSS
 // px (the single-page PDF prints it at 0.75 pt per CSS px, not per pixel).

@@ -20,6 +20,7 @@
 // from a compile-time constant.
 
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import Link from 'next/link';
 import { useId, useRef, type ReactNode } from 'react';
 import {
@@ -94,7 +95,7 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
   const pillLabel = (() => {
     const raw = user?.firstName ?? user?.username ?? '';
     if (!raw) return null;
-    return raw.length > 16 ? `${raw.slice(0, 15)}…` : raw;
+    return raw.length > 16 ? `${cutText(raw, 15)}…` : raw;
   })();
 
   return (

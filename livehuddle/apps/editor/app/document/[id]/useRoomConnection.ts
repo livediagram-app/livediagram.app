@@ -20,6 +20,7 @@ import {
   type AvatarPresence,
   type ChangesetRoomOp,
   type FacilitatorReason,
+  parseViewport,
 } from '@livehuddle/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
@@ -444,11 +445,16 @@ export function useRoomConnection(opts: {
         // Applied straight through rather than batched with the presence
         // flush — a follower's view should track the presenter's hand, and a
         // 10 Hz stream needs no coalescing.
-        setRemoteViewports((prev) => {
-          const next = new Map(prev);
-          next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom, size: op.size });
-          return next;
-        });
+        // Checked here too (a room from before the gate checked it relays any): a malformed camera is dropped
+        // rather than sending a follower's canvas to a blank view.
+        const seen = parseViewport(op);
+        if (seen) {
+          setRemoteViewports((prev) => {
+            const next = new Map(prev);
+            next.set(from, { tabId: seen.tabId, pan: seen.pan, zoom: seen.zoom, size: seen.size });
+            return next;
+          });
+        }
       } else if (op.kind === 'avatar-knock' || op.kind === 'avatar-knock-answer') {
         // A knock on a room, or the answer to ours (docs/specs/012-collaboration/knock.md): parsed, handed to the
         // canvas, which knows whether we stand inside; never written.

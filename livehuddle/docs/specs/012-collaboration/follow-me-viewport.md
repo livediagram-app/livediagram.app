@@ -20,6 +20,8 @@ move the audience to the pointer.
 
 A new **`viewport` RoomOp**: `{ kind: 'viewport', tabId, pan: {x, y}, zoom, size?: {width, height} }`. `size` is the sender's canvas, read by [Bring Focus](bring-focus.md) to judge whether a peer is already looking at a point, and by Follow Me to keep the presenter's centre in the middle of a follower's canvas of another size (the offset that centres a point depends on the canvas size, so a raw pan copied onto a smaller or larger canvas lands the point off-centre). A peer that sends no `size` is followed by its raw pan.
 
+A `viewport` is presence from any share level, so it is checked (`parseViewport`, `@livehuddle/api-schema`) where the room relays it and again where a screen applies it: a `tabId` of 1 to 128 characters, a finite `pan`, and a finite `zoom` above 0. One that fails reaches nobody, so a malformed camera never sends a follower's canvas to a blank view. A `size` that is not two positive sides up to 100,000 px is left out, read as unknown.
+
 Ephemeral presence exactly like `cursor` / `laser` / `avatar`: throttled, never
 logged, never ordered (no `seq`), never replayed to a reconnecting client.
 

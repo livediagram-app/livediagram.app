@@ -170,7 +170,15 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         // unrelated canvas serves nothing.
         const grant = await resolveDocumentGrant(ctx, d);
         if (grant && !(grant instanceof Response)) {
-          allowed = await documentRoom(env, d).servesImage(imageId, grant.tab);
+          const room = documentRoom(env, d);
+          // A Community post's link opens nothing once the post is hidden or off the Community (grantOn's rule,
+          // docs/specs/015-api/api.md): the image read runs outside the room, where grantOn never sees the post, so
+          // it asks the room, beside the serve check. Only a link visitor's read asks.
+          const [serves, post] = await Promise.all([
+            room.servesImage(imageId, grant.tab),
+            grant.shareCode ? room.community() : null,
+          ]);
+          allowed = serves && !(post && !post.open && post.code === grant.shareCode);
           if (!allowed) {
             console.warn('[images] not servable by document', { documentId: d, imageId });
           }

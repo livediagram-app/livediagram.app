@@ -1,6 +1,12 @@
 'use client';
 
-import type { ElementDelta, NoticeNote, ShapeElement } from '@livehuddle/document';
+import {
+  NOTE_AUTHOR_MAX,
+  type ElementDelta,
+  type NoticeNote,
+  type ShapeElement,
+} from '@livehuddle/document';
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { participantKey } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
@@ -41,7 +47,7 @@ export function useNoteSigner(
     myKey,
     mayPin,
     mayUnpin: (note: NoticeNote) => !!editor && (isEditor || (mayPin && note.by === myKey)),
-    authorName: (editor?.selfParticipant.name || 'Someone').slice(0, 60),
+    authorName: cutText(editor?.selfParticipant.name || 'Someone', NOTE_AUTHOR_MAX),
     send: (delta: ElementDelta) => {
       editor?.applyElementDelta(element.id, delta);
       track('Element', 'Changed', telemetryType);

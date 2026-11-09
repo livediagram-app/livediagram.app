@@ -22,12 +22,26 @@ export const HELD_RETRY_INTERVAL_MS = 2000;
 // `--wait-held` waits at most as long as `wait` may (WAIT_MAX_TIMEOUT_S).
 const WAIT_HELD_MAX_S = 3600;
 
+// A summary's length as the api counts it: C0 controls and DEL removed, trimmed, in code points.
+export function summaryLength(text: string): number {
+  let clean = '';
+  for (const ch of text) {
+    const code = ch.codePointAt(0)!;
+    if (code >= 0x20 && code !== 0x7f) clean += ch;
+  }
+  return [...clean.trim()].length;
+}
+
 export function writeFlagsOf(summaryMax: number) {
   return {
     dryRun: z.boolean().optional().describe('Plan and print the result without writing'),
+    // Measured as each product's api measures it (its changeset request's CS10): control characters removed, trimmed,
+    // then counted in characters (code points), so an emoji or a trailing newline is never refused here alone.
     summary: z
       .string()
-      .max(summaryMax)
+      .refine((s) => summaryLength(s) <= summaryMax, {
+        message: `Too long: at most ${summaryMax} characters`,
+      })
       .optional()
       .describe(`What the change is for, up to ${summaryMax} characters`),
     base: z.coerce

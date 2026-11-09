@@ -74,6 +74,27 @@ describe('mergeImportedTab', () => {
     });
   });
 
+  // docs/specs/020-import-export/markdown-import.md "JSON": restored exactly.
+  it('carries the finish, tag colours, Custom Colours and background animation speed', () => {
+    const out = mergeImportedTab(
+      tab({ finish: 'professional', customColours: ['#000000'] }),
+      tab({
+        finish: 'sketch',
+        tagColours: [{ tag: 'bug', color: '#e11d48' }],
+        customColours: ['#123456'],
+        backgroundAnimationSpeed: 2,
+      }),
+    );
+    expect(out.finish).toBe('sketch');
+    expect(out.tagColours).toEqual([{ tag: 'bug', color: '#e11d48' }]);
+    expect(out.customColours).toEqual(['#123456']);
+    expect(out.backgroundAnimationSpeed).toBe(2);
+    // A file without them leaves the receiving tab's own.
+    const kept = mergeImportedTab(tab({ finish: 'marker', customColours: ['#000000'] }), tab());
+    expect(kept.finish).toBe('marker');
+    expect(kept.customColours).toEqual(['#000000']);
+  });
+
   it('keeps what the import does not specify', () => {
     const mine = tab({
       theme: 'midnight',

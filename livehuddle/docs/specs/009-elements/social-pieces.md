@@ -88,7 +88,8 @@ A cork board in a wooden frame, hung on a wall, that holds pinned notes.
   and an unpin are not undoable, like a comment: they are the room's, and one person's undo never takes them back.
 - **Stored on the element** (`ShapeElement.noticeNotes`, an array oldest first): each `{ id, title?, text, author,
 by, at, color? }`, where `by` is the pinner's adder key (an Editor without one writes their participant key) and
-  `at` the epoch ms it was pinned.
+  `at` the epoch ms it was pinned, a whole number a date can show (0 to 8.64e15), since the face prints its day. A
+  note keeps only those fields: one a pin or an update carries beyond them is never stored.
 - **Notes travel as deltas** ([Collab race hardening](../012-collaboration/collab-race-hardening.md)), never inside a
   whole-element update. A pin is one `notice-pin` delta carrying the note; an unpin is one `notice-unpin` naming the
   note's id and its signer's `by`, and removes the note only while that is still its signer. A whole-element update

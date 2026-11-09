@@ -45,6 +45,14 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     backgroundOpacity: imported.backgroundOpacity ?? receiving.backgroundOpacity,
     patternColor: imported.patternColor ?? receiving.patternColor,
     backgroundPatternScale: imported.backgroundPatternScale ?? receiving.backgroundPatternScale,
+    backgroundAnimationSpeed:
+      imported.backgroundAnimationSpeed ?? receiving.backgroundAnimationSpeed,
+    // The tab's finish, its tag colours and its Custom Colours ride the export as well
+    // (docs/specs/020-import-export/markdown-import.md "JSON"): without them a sketchy board came back clean, and
+    // tagged cards and swatches lost their colours.
+    finish: imported.finish ?? receiving.finish,
+    tagColours: imported.tagColours ?? receiving.tagColours,
+    customColours: imported.customColours ?? receiving.customColours,
     // Tab-level typography rides the export too (docs/specs/006-document/per-tab-storage.md): without these an
     // exported tab using a tab font came back rendering in the default face.
     font: imported.font ?? receiving.font,

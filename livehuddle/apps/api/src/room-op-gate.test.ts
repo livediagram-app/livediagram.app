@@ -320,6 +320,15 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'avatar-bell', tabId: 't' }, as('edit'))).toEqual(DROP);
   });
 
+  // docs/specs/012-collaboration/follow-me-viewport.md: a camera is presence from every level, and only well formed.
+  it('relays a camera from every level, its own fields alone, and drops one a follower could not apply', () => {
+    const cam = { kind: 'viewport', tabId: 't', pan: { x: 1, y: 2 }, zoom: 1 };
+    for (const role of ['edit', 'participate', 'view'])
+      expect(gateClientOp({ ...cam, junk: 1 }, as(role))).toEqual(relayed(cam));
+    expect(gateClientOp({ ...cam, zoom: 0 }, as('view'))).toEqual(DROP);
+    expect(gateClientOp({ ...cam, pan: { x: 'a', y: 0 } }, as('edit'))).toEqual(DROP);
+  });
+
   // docs/specs/009-elements/social-pieces.md "Share roles": an Editor and a Participant play, a Viewer watches.
   it("relays a game's paddle and moments from an Editor or a Participant, never a Viewer's or a malformed one", () => {
     const input = { kind: 'game-input', tabId: 't', pieceId: 'table-1', seat: 0, axis: 0.5 };

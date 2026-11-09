@@ -134,7 +134,9 @@ the DO only stores it):
   current round;
 - ideas: the cards posted this round, in order;
 - checklist ticks: each row's latest state, by index and text.
-- notice board notes: each note pinned and each note unpinned, by id.
+- notice board notes: each note pinned and each note unpinned, by id. An unpin by the note's signer takes its
+  pin's place, and past `NOTES_MAX * 4` events the oldest give way, so a busy board's newest pins are still recorded
+  (the room writes a Participant's pins into the store from here).
 
 A delta for a new round replaces that element's answers and ideas (ticks
 carry over, since rows have no round) and retires the round it replaced. The entry keeps the

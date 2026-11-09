@@ -79,7 +79,9 @@ dialog**, the mirror of the Export dialog. Both lay their format cards out three
 (three left each card about 110px wide there). Above the cards a warning says the import replaces the tab and Undo
 brings it back (naming ⌘Z / Ctrl-Z only where there is a keyboard, a fine pointer). The user picks the format:
 
-- **JSON**: a `.json` tab export, restored exactly.
+- **JSON**: a `.json` tab export, restored exactly: its elements and every tab-level look the file holds (kind,
+  opening mode, layers, theme, background and its animation speed, font, text size, finish, tag colours and Custom
+  Colours); what the file leaves out, the receiving tab keeps.
 - **Mermaid**: a flowchart, keeping every connection ([Mermaid import & export](mermaid.md)).
 - **Markdown**: a `.md` outline, built into a themed tree as above.
 
