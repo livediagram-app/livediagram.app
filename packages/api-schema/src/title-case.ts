@@ -10,8 +10,11 @@
 // identical one-liner had been copy-pasted into each. Keeping one
 // definition stops the two surfaces drifting on how a preset value is
 // capitalised for display.
+//
+// A word is a run of letters and digits in any script, so an accented letter or an apostrophe inside a word
+// never starts another ("Résumé", not "RéSumé"; "Kid’s", not "Kid’S"): `\b\w` knew only ASCII letters.
 export function titleCase(value: string): string {
-  return value.replace(/\b\w/g, (c) => c.toUpperCase());
+  return value.replace(/(?<![\p{L}\p{M}\p{N}_'’])\p{Ll}/gu, (c) => c.toUpperCase());
 }
 
 // The words a UI label keeps lowercase unless they lead it: short articles,

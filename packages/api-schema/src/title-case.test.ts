@@ -7,6 +7,15 @@ describe('titleCase', () => {
     expect(titleCase('arrow to the right')).toBe('Arrow To The Right');
     expect(titleCase('PNG')).toBe('PNG');
   });
+
+  it('keeps an accented letter or an apostrophe inside its word', () => {
+    expect(titleCase('Résumé')).toBe('Résumé');
+    expect(titleCase('café menu')).toBe('Café Menu');
+    expect(titleCase('kid’s party')).toBe('Kid’s Party');
+    expect(titleCase("don't panic")).toBe("Don't Panic");
+    expect(titleCase('élan vital')).toBe('Élan Vital');
+    expect(titleCase('q&a board-room')).toBe('Q&A Board-Room');
+  });
 });
 
 describe('headlineCase', () => {
