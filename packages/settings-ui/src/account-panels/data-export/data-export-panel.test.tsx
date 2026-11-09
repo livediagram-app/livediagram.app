@@ -119,7 +119,9 @@ describe('Settings › Your Data', () => {
     await render();
     expect(container.textContent).toContain('Take Everything With You');
     // Every app's kind, livehuddle's Spaces included (data-export.md: each diagram, plan, document, design and Space).
-    expect(container.textContent).toContain('each diagram, plan, document, design and Space as its own');
+    expect(container.textContent).toContain(
+      'each diagram, plan, document, design and Space as its own',
+    );
     expect(row('personal').getAttribute('data-export-state')).toBe('none');
     expect(button('Download All My Data')).toBeTruthy();
     expect(container.textContent).not.toContain('Your Teams');

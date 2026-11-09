@@ -32,9 +32,14 @@ describe('the status page’s services', () => {
 
   it('names each marketing site in the possessive the copy uses, livedocuments’ with no extra s', () => {
     const marketing = (id: string) =>
-      groups.find((g) => g.id === id)!.services.find((s) => s.name === 'Marketing site')!.description;
-    expect(marketing('livediagram')).toBe('livediagram’s home page, features, comparisons and FAQ.');
-    expect(marketing('livedocuments')).toBe('livedocuments’ home page, features, comparisons and FAQ.');
+      groups.find((g) => g.id === id)!.services.find((s) => s.name === 'Marketing site')!
+        .description;
+    expect(marketing('livediagram')).toBe(
+      'livediagram’s home page, features, comparisons and FAQ.',
+    );
+    expect(marketing('livedocuments')).toBe(
+      'livedocuments’ home page, features, comparisons and FAQ.',
+    );
   });
 
   it('gives every app its API, realtime rooms, editor, marketing site, help centre and router, and an MCP server where it ships one', () => {

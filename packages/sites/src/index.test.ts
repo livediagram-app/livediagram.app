@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { LOCAL_PORTS, PLATFORM_SITE, SITES, possessive, siteUrl, workspaceOriginFor } from './index';
+import {
+  LOCAL_PORTS,
+  PLATFORM_SITE,
+  SITES,
+  possessive,
+  siteUrl,
+  workspaceOriginFor,
+} from './index';
 
 describe('workspaceOriginFor', () => {
   it("is staging's site from a staging app, else the platform's", () => {
