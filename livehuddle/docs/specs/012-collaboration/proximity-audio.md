@@ -32,7 +32,8 @@ microphone, camera and Share Screen buttons still show there, as a [local previe
   Camera and Share buttons should be moved from the palette and put as buttons in the bottom, but for livehuddle,
   center them") shows a greyed **Connecting…** (hover title Connecting Audio). If it fails, a warn **Retry** (Audio
   Unavailable) appears and a press tries again; under the kill switch it reads **Calls Paused** and a press tries
-  again. Neither retries by itself: no loop after a failure or a pause.
+  again. Neither retries by itself: no loop after a failure or a pause. A failed call hears nobody, as a call you left
+  does: nobody's talking bars stay lit as heard.
 
 ## Share roles
 

@@ -317,6 +317,9 @@ export class ProximityCall {
       phase: 'error',
       mic: this.mic.blocked ? 'blocked' : 'closed',
       level: 0,
+      // It hears nobody now, as after Leave Audio: no talking bars stay lit as heard.
+      heard: new Set(),
+      someoneNear: false,
       camera: 'off',
       screen: 'off',
       ...LEFT_STAGE,

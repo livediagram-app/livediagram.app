@@ -1168,6 +1168,19 @@ describe('ProximityCall with a stage', () => {
     call.stop();
   });
 
+  it('a failed call hears nobody: no bars stay lit for people it no longer hears', async () => {
+    setCallLevels([{ id: 'p', role: 'edit' }]);
+    const { call } = makeCall();
+    await call.start();
+    publish('p');
+    call.update(hallScene({ x: 600, y: 130 }, [['p', 600, 120]]));
+    expect(callSelf().heard).toEqual(new Set(['p']));
+    api.apiCallSession.mockRejectedValueOnce(new Error('offline'));
+    sfu.instances.at(-1)!.events.onSessionGone();
+    await settle();
+    expect(callSelf()).toMatchObject({ phase: 'error', someoneNear: false, heard: new Set() });
+  });
+
   it('on the stage: Live to the whole tab, deaf to the audience, and StageSpeak once per stepping on', async () => {
     setCallLevels([{ id: 'audience', role: 'participate' }]);
     const { call } = makeCall({ canShare: true });
