@@ -8,6 +8,7 @@ import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
+import { storeSheetWrite } from './sheet-write-route';
 
 // The sheet store's endpoints (docs/specs/029-sheets/sheet-store.md, blueprint sheet-store.md): gates incl.
 // tab-scoped links, every rejection, the rev guard, the json_each writes, caps, the relay, copies and seeds.
@@ -747,6 +748,33 @@ describe('writes', () => {
         .prepare(`SELECT cell_count AS n, cell_bytes AS b FROM sheets WHERE id = 'sheetA00'`)
         .get(),
     ).toEqual({ n: 0, b: 0 });
+  });
+  it('stores a write planned at a rev whole or not at all (a form response row)', async () => {
+    const s = await sheet();
+    const ctx = makeTestRouteContext('POST', '/api/forms/x/responses', { env: sql.env });
+    const by = { id: 'form:x', name: 'Form', color: '#000' };
+    const cells = [
+      { r: s.layout.rows[0]!, c: s.layout.cols[0]!, i: { n: 1 } },
+      { r: 'gone0000', c: s.layout.cols[0]!, i: { n: 2 } },
+    ];
+    const res = await storeSheetWrite(ctx, 'd1', 'sheetA00', { write: { kind: 'cells', cells } }, by, null, {
+      atRev: s.rev,
+    });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'write_invalid' });
+    expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM sheet_cells').get()).toEqual({ n: 0 });
+    // Every cell landing stores as before.
+    const ok = await storeSheetWrite(
+      ctx,
+      'd1',
+      'sheetA00',
+      { write: { kind: 'cells', cells: cells.slice(0, 1) } },
+      by,
+      null,
+      { atRev: s.rev },
+    );
+    expect(ok.status).toBe(200);
+    expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM sheet_cells').get()).toEqual({ n: 1 });
   });
   it('relays a huge write as a refetch', async () => {
     const s = await sheet();
