@@ -8,22 +8,27 @@ import {
 } from '@livehuddle/api-schema';
 import { linkLevelOffered, type ShareLinkExpiry } from '@liveworkspace/index-client';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import { listAskedOf } from '@liveworkspace/index-app';
 import { countCommunityCopy } from '../community-service';
 import { documentRoom } from '../document-client';
 import { capStoredName } from '../names';
 import { json, noContent } from '../responses';
 import { readOptionalBody, requireOwner, shareAccessOf, type RouteContext } from './context';
 import { INDEX_APP } from '../index-service';
-import { clientFor, listItems, refusal, shareLinkOf, summaryOf } from './index-adapters';
+import { clientFor, listAsked, refusal, shareLinkOf, summaryOf } from './index-adapters';
 
 // GET /api/documents.
 export async function handleDocumentList(ctx: RouteContext): Promise<Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
+  // `?team=all&q=...&limit=...`: mine and every joined team, searched and capped at the index, in one page (the MCP's
+  // find); without them, the personal library, every page.
+  const asked = listAskedOf(ctx.url.searchParams);
+  if ('error' in asked) return json(asked, { status: 400 });
   const client = clientFor(ctx);
   if (client instanceof Response) return client;
   try {
-    const items = await listItems(client, 'personal');
+    const items = await listAsked(client, asked);
     return json({ documents: items.map(summaryOf) });
   } catch (err) {
     return refusal(err);

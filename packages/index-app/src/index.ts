@@ -28,3 +28,4 @@ export * from './item-db';
 export * from './tab-shares';
 export * from './tab-link';
 export * from './connected-tabs';
+export * from './own-items';

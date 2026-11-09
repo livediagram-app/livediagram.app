@@ -17,7 +17,7 @@ function summary(overrides: Partial<Summary>): Summary {
   return { id: 'd1', name: 'Untitled', folderId: null, teamId: null, savedAt: 1, ...overrides };
 }
 
-const { fetchTeamLibraries, listAllFiles, matchFiles, readLibraries } = createFind<
+const { fetchTeamLibraries, listAllFiles, matchFiles, readLibraries, searchFiles } = createFind<
   Summary,
   Folder,
   'sketches'
@@ -182,5 +182,85 @@ describe('readLibraries', () => {
       '/teams': new Error('boom'),
     });
     expect((await readLibraries(noTeams)).teams).toEqual([]);
+  });
+});
+
+describe('searchFiles', () => {
+  // Each request (path and query) answers its body as JSON, or a status with no body when it is a number.
+  function api(routes: Record<string, unknown>): ApiClient & { calls: string[] } {
+    const calls: string[] = [];
+    const client = createApiClient({
+      baseUrl: 'https://x/api',
+      headers: () => ({}),
+      fetch: vi.fn(async (req: Request) => {
+        const url = new URL(req.url);
+        const key = `${url.pathname.replace(/^\/api/, '')}${url.search}`;
+        calls.push(key);
+        const hit = routes[key];
+        if (hit === undefined) return new Response('not found', { status: 404 });
+        if (typeof hit === 'number')
+          return Response.json({ error: 'invalid_query' }, { status: hit });
+        return Response.json(hit);
+      }),
+    });
+    return Object.assign(client, { calls });
+  }
+  const TEAMS = { teams: [{ id: 't1', name: 'Crew' }] };
+
+  it('asks the index once for every library, searched and capped, and names each library', async () => {
+    const client = api({
+      '/sketches?team=all&limit=5&q=road+map': {
+        sketches: [
+          summary({ id: 'b', name: 'Road map', teamId: 't1', savedAt: 9 }),
+          summary({ id: 'a', name: 'Map of the road', savedAt: 5 }),
+          summary({ id: 'c', name: 'Road map', teamId: 'gone', savedAt: 3 }),
+        ],
+      },
+      '/teams': TEAMS,
+    });
+    expect(await searchFiles(client, '  road map ', 5)).toEqual([
+      { id: 'b', name: 'Road map', updatedAt: 9, library: 'Crew' },
+      { id: 'a', name: 'Map of the road', updatedAt: 5, library: 'personal' },
+      { id: 'c', name: 'Road map', updatedAt: 3, library: 'gone' },
+    ]);
+    expect(client.calls.sort()).toEqual(['/sketches?team=all&limit=5&q=road+map', '/teams']);
+  });
+
+  it('lists the newest without a query, and names teams by id when the teams list fails', async () => {
+    const client = api({
+      '/sketches?team=all&limit=2': { sketches: [summary({ id: 'a', teamId: 't1' })] },
+      '/teams': 500,
+    });
+    expect(await searchFiles(client, undefined, 2)).toEqual([
+      { id: 'a', name: 'Untitled', updatedAt: 1, library: 't1' },
+    ]);
+  });
+
+  it('matches a query the index would fold differently, or refuses, over the sweep', async () => {
+    const sweep = {
+      '/sketches': {
+        sketches: [summary({ id: 'a', name: 'Über plan' }), summary({ id: 'b', name: 'Plan' })],
+      },
+      '/teams': TEAMS,
+      '/teams/t1/library': {
+        folders: [],
+        sketches: [summary({ id: 'c', name: 'über', savedAt: 4 })],
+      },
+    };
+    const accented = api(sweep);
+    expect((await searchFiles(accented, 'ÜBER', 5)).map((f) => f.id)).toEqual(['c', 'a']);
+    expect(accented.calls).not.toContain(expect.stringContaining('team=all'));
+    const long = 'plan '.repeat(20).trim();
+    const refused = api({
+      ...sweep,
+      [`/sketches?team=all&limit=5&q=${long.replace(/ /g, '+')}`]: 400,
+    });
+    expect(await searchFiles(refused, long, 5)).toEqual([]);
+    expect(refused.calls).toContain('/teams/t1/library');
+  });
+
+  it('passes any other failure on', async () => {
+    const client = api({ '/sketches?team=all&limit=5': 503, '/teams': TEAMS });
+    await expect(searchFiles(client, '', 5)).rejects.toThrow('api 503');
   });
 });

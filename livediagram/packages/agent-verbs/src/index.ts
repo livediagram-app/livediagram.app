@@ -4,6 +4,7 @@ export {
   fetchTeamLibraries,
   listAllDocuments,
   matchDocuments,
+  searchDocuments,
   readLibraries,
   type FoundDocument,
   type Libraries,
