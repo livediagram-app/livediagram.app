@@ -82,3 +82,35 @@ export function unlockAudioOnGesture(target: Window = window): () => void {
   for (const e of GESTURES) target.addEventListener(e, unlock, true);
   return stop;
 }
+
+/**
+ * Run `play` once sound can be heard: now when the context is running, else when it resumes within `withinMs`
+ * (the browser lets a just-opened tab play, or a press arrives in time). Later than that it never runs, so a
+ * greeting is not heard out of the blue on a first press minutes on. Answers the way to stop waiting.
+ */
+export function whenAudible(withinMs: number, play: () => void): () => void {
+  const ctx = audio();
+  if (!ctx) return NOTHING;
+  if (ctx.state === 'running') {
+    play();
+    return NOTHING;
+  }
+  let waiting = true;
+  const timer = setTimeout(() => {
+    waiting = false;
+  }, withinMs);
+  const stop = () => {
+    waiting = false;
+    clearTimeout(timer);
+  };
+  ctx
+    .resume()
+    .then(() => {
+      if (waiting && ctx.state === 'running') {
+        stop();
+        play();
+      }
+    })
+    .catch(stop);
+  return stop;
+}
