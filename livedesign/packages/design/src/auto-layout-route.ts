@@ -66,11 +66,13 @@ export function routeTidyArrows(input: RouteInput): Map<ElementId, ArrowElement>
   const obstacles = input.obstacles.map((r) => (lr ? swap(r) : r));
   const bands = bandsOf([...nodes.values()]);
   const bandOf = new Map<ElementId, number>();
-  for (const [id, r] of nodes)
-    bandOf.set(
-      id,
-      bands.findIndex((b) => r.y < b.bottom && r.y + r.height > b.top),
-    );
+  // A box's band is the last one starting at or above its top (every box starts inside its band):
+  // an overlap test missed a box of no height, its band -1, and routing it threw.
+  for (const [id, r] of nodes) {
+    let k = 0;
+    while (k + 1 < bands.length && bands[k + 1]!.top <= r.y) k++;
+    bandOf.set(id, k);
+  }
 
   // Every box a leg must clear, built once; each route skips its own two nodes by identity.
   const blockers = [...nodes.values(), ...obstacles];

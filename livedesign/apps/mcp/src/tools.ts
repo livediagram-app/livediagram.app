@@ -83,6 +83,10 @@ import {
   mcpUpdateDesign,
 } from '@livedesign/agent-verbs/mcp';
 
+// A tab is built from a template or from elements: given both, the elements were dropped and the answer said nothing.
+const TEMPLATE_OR_ELEMENTS =
+  'Provide "template" or "elements", not both: a template builds its own pages. Start from the ' +
+  'template, then change its pages with update_design.';
 export function registerTools(server: McpServer, env: Env): void {
   registerPagesTools(server, env);
   // The design's component library (docs/specs/015-api/mcp-server.md §4.9e).
@@ -142,6 +146,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
       // instead of expecting elements.
       if (t.template) {
+        if (t.elements?.length) return errorResult(`Tab "${t.name}": ${TEMPLATE_OR_ELEMENTS}`);
         const kind = resolveTemplate(t.template);
         if (!kind) {
           return errorResult(
@@ -233,6 +238,8 @@ export function registerTools(server: McpServer, env: Env): void {
         `Unknown template "${args.template}". ${closestTemplatesHint(args.template)}Valid kinds: ${validTemplateKinds()}.`,
       );
     }
+    // Both given: the template was built and the elements dropped without a word.
+    if (args.template && args.elements?.length) return errorResult(TEMPLATE_OR_ELEMENTS);
     if (!args.template && !args.elements) {
       return errorResult(
         'Invalid input. Provide "elements", or a "template" kind from list_templates. Check the ' +

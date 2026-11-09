@@ -311,6 +311,40 @@ describe('layer operations', () => {
     expect(pixel(h, 0, 0)).toEqual([10, 0, 0, 255]);
   });
 
+  it('keeps a hidden layer inside a merged group, out of the group, and puts the merge at its place', async () => {
+    const h = harness(
+      photoOf(1, 1, [
+        pixelLayer('under', { visible: false }),
+        pixelLayer('h', { parent: 'g', visible: false }),
+        pixelLayer('c', { parent: 'g' }),
+        { id: 'g', name: 'g', layerKind: 'group' },
+        pixelLayer('top'),
+      ]),
+      { c: solid(1, 1, [10, 0, 0, 255]), top: solid(1, 1, [0, 0, 0, 0]) },
+    );
+    expect(await mergeVisible(h.s)).toBeNull();
+    await h.s.settled();
+    const layers = h.s.photo.layers;
+    expect(layers.map((l) => l.name)).toEqual(['under', 'h', 'c']);
+    expect(layers[1]!.parent).toBeUndefined();
+    expect('parent' in layers[1]!).toBe(false);
+  });
+
+  it('refuses Layer Via Cut on a locked or hidden layer, leaving its pixels', () => {
+    const locked = harness(photoOf(2, 1, [pixelLayer('a', { locks: { all: true } })]), {
+      a: solid(2, 1, [7, 7, 7, 255]),
+    });
+    expect(layerVia(locked.s, true)).toMatch(/locked/);
+    expect(locked.s.raster('a').sample(0, 0, 3)).toBe(255);
+    expect(locked.s.photo.layers).toHaveLength(1);
+    const hidden = harness(photoOf(2, 1, [pixelLayer('a', { visible: false })]), {
+      a: solid(2, 1, [7, 7, 7, 255]),
+    });
+    expect(layerVia(hidden.s, true)).toMatch(/hidden/);
+    // Copy changes nothing on the layer, so a locked one may still be copied from.
+    expect(layerVia(locked.s, false)).toBeNull();
+  });
+
   it('copies and cuts the selection into a new layer', async () => {
     const h = halves();
     h.s.selection = createMask({ x: 0, y: 0, width: 2, height: 2 }, 255);

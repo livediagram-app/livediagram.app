@@ -80,7 +80,12 @@ export async function loadedSession(
   store: PixelsStore,
   inFocus: PhotoSession | null,
 ): Promise<{ session: PhotoSession; done: () => void }> {
-  if (inFocus?.pageId === pageId) return { session: inFocus, done: () => {} };
+  if (inFocus?.pageId === pageId) {
+    // The page in focus may still be fetching its tiles (just opened): its export waits for them, as
+    // one made for another page does, or it came out blank or part drawn.
+    await inFocus.whenLoaded();
+    return { session: inFocus, done: () => {} };
+  }
   const noop = () => {};
   const s = new PhotoSession(photoOfPage(tab, pageId), {
     tabId: tab.id,

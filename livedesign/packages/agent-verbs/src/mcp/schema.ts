@@ -308,8 +308,13 @@ const templateField = z
       'update_design mode "ops". Provide template OR elements, not both.',
   );
 
-const themeField = z
-  .string()
+// A theme id the server knows: an unknown one (a typo, a label such as "Ocean") was taken silently as
+// the default scheme, so the answer claimed a theme the pages never wore.
+const themeId = z.string().refine((id) => THEMES.some((t) => t.id === id), {
+  message: `Unknown theme. One of: ${themeIds}.`,
+});
+
+const themeField = themeId
   .optional()
   .describe(
     'Preset theme id that paints the pages and their elements. One of: ' +
@@ -435,8 +440,7 @@ export const createDesignTab = z.object({
   ).optional(),
   elements: elementArray.optional(),
   template: templateField,
-  theme: z
-    .string()
+  theme: themeId
     .optional()
     .describe('This tab’s theme, one of the theme ids above; the design’s theme when left out.'),
 });

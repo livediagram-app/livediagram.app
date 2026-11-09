@@ -9,7 +9,7 @@ import {
   type Raster,
   type Rect,
 } from '@livedesign/photo-engine';
-import { clearSelection } from './edit-ops';
+import { clearLayer, clearSelection, target } from './edit-ops';
 import { extentOf, placePicture } from './layer-ops';
 import { photoWorkers } from './photo-worker-client';
 import type { PhotoSession } from './session';
@@ -96,18 +96,15 @@ export async function copy(s: PhotoSession, merged = false): Promise<string | nu
 }
 
 export async function cut(s: PhotoSession, background: string): Promise<string | null> {
+  // A layer locked or hidden is refused before anything is copied, as Delete refuses it: Cut went
+  // straight to the raster and cleared a layer locked for its pixels.
+  const t = target(s);
+  if (typeof t === 'string') return t;
   const refused = await copy(s, false);
   if (refused) return refused;
   if (s.selection) return clearSelection(s, background);
-  // No selection: the whole layer's pixels go.
-  const layer = s.layer(s.active);
-  if (layer?.layerKind === 'pixel') {
-    const raster = s.raster(layer.id);
-    for (const k of raster.keys()) raster.clearTile(k);
-    s.changed();
-    s.commitPixels('Cut', [{ layerId: layer.id, target: 'layer' }]);
-  }
-  return null;
+  // No selection: the whole layer's pixels go (its mask's, when the mask is the target).
+  return clearLayer(s, background);
 }
 
 /** Paste: the photo's own copy (in place when asked), or a picture from the system clipboard (`pic`,

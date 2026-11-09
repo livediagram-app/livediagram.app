@@ -70,6 +70,14 @@ describe('raster', () => {
 });
 
 describe('TiledRaster', () => {
+  it('counts the tiles loaded into it, never a write', () => {
+    const t = new TiledRaster();
+    expect(t.loads).toBe(0);
+    t.load('0.0', new Uint8ClampedArray(PHOTO_TILE * PHOTO_TILE * 4));
+    t.writable(1, 0);
+    expect(t.loads).toBe(1);
+  });
+
   const T = PHOTO_TILE;
 
   it('copies a loaded tile before writing it, so tiles loaded from one array stay apart', () => {

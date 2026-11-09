@@ -164,6 +164,11 @@ export class PixelsStore {
         if (res.kind !== 'decode') return null;
         this.keepSource(source.blob, res.raster);
         return res.raster;
+      } catch (err) {
+        // A source that cannot be fetched or decoded reads as missing, as a tile does: a throw left the
+        // session loading forever, so an export or Make Sizes waiting on it never finished.
+        console.warn('[photo] source-missing', { tabId, blob: source.blob, error: String(err) });
+        return null;
       } finally {
         this.sourceLoading.delete(source.blob);
       }
