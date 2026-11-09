@@ -10,3 +10,9 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Content-Security-Policy: require-trusted-types-for 'script'; trusted-types liveworkspace-markup liveworkspace-inert-parse nextjs default; frame-ancestors 'none'
+
+# The build's assets, named by their content's hash under the asset prefix (scripts/asset-prefix.mjs), never change:
+# a year, as each app's router sends for its own (cache-headers.test.ts). Every other file keeps Cloudflare's
+# revalidate-on-every-load default.
+/_liveworkspace/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable

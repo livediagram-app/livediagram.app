@@ -252,11 +252,8 @@ describe('handleImages', () => {
     });
     const index = (items: Record<string, ReturnType<typeof item>>) =>
       indexFor.mockReturnValue({
-        getItem: async (id: string) => {
-          const found = items[id];
-          if (!found) throw new Error('not_found');
-          return { item: found };
-        },
+        // One lookup for every document; the index leaves out the ones it has not.
+        lookupItems: async (ids: string[]) => ({ items: ids.flatMap((id) => items[id] ?? []) }),
       });
 
     it("maps each image to the owner's documents that place it, once each, by name", async () => {
@@ -320,7 +317,7 @@ describe('handleImages', () => {
     });
 
     it('answers an empty map when nothing places them', async () => {
-      indexFor.mockReturnValue({ getItem: vi.fn() });
+      indexFor.mockReturnValue({ lookupItems: vi.fn() });
       expect(await (await call('GET', '/api/images/usage')).json()).toEqual({ usage: {} });
     });
   });

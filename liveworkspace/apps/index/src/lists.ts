@@ -171,13 +171,20 @@ export function filterClauses(
   return { where, args };
 }
 
+// The index a scope-driven list walks (no folder asked), named so the plan keeps it whatever the statistics say:
+// where a few scopes hold most of the items (a small workspace, after ANALYZE), the planner would otherwise scan
+// the table rather than walk each scope's newest few. Each index's condition is in every such list's WHERE.
+function scopeIndex(view: 'all' | 'unsorted' | 'trash' | 'search', app: App | undefined): string {
+  if (view === 'trash') return 'items_trash';
+  if (view === 'unsorted') return 'items_unsorted';
+  return app ? 'items_live_app' : 'items_live';
+}
+
 export function buildListQuery(person: Person, spec: ListSpec, now = Date.now()): BuiltQuery {
   const allScopes = JSON.stringify(scopesOf(person));
   const scopes = spec.scopes ? JSON.stringify(spec.scopes) : allScopes;
   const where: string[] = [];
   const args: unknown[] = [];
-  // Bound before the WHERE's: the search view's gathering.
-  const fromArgs: unknown[] = [];
   let from = 'items i';
   let sortCol = 'i.updated_at';
   let idCol = 'i.id';
@@ -204,6 +211,7 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
         where.push(spec.deep ? `i.folder_id ${SUBTREE}` : 'i.folder_id = ?');
         args.push(spec.folder);
       } else {
+        from = `items i INDEXED BY ${scopeIndex(spec.view, spec.app)}`;
         where.push(`i.scope ${IN_JSON}`);
         args.push(scopes);
       }
@@ -211,22 +219,7 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
       if (spec.view === 'unsorted') where.push('i.folder_id IS NULL');
       break;
     case 'search':
-      // Every live item the person can open: their scopes' (each scope's index), and those reached through a
-      // live link (theirs), gathered first so neither side walks the other's rows; sorted after, so a page
-      // costs what the person can reach.
-      from = `(SELECT li.id FROM items li WHERE li.scope ${IN_JSON} AND li.trashed_at IS NULL
-          UNION SELECT sw.item_id FROM shared_with sw JOIN share_links sl
-            ON sl.code = sw.share_code AND sl.item_id = sw.item_id
-            WHERE sw.person_id = ? AND ${LIVE_LINK('sl')}) reach
-        JOIN items i ON i.id = reach.id`;
-      where.push('i.trashed_at IS NULL');
-      fromArgs.push(scopes, person.id, now);
-      // One team, or only the person's own: what links reach lives elsewhere.
-      if (spec.scopes) {
-        where.push(`i.scope ${IN_JSON}`);
-        args.push(scopes);
-      }
-      break;
+      return buildSearchQuery(person, spec, now);
     case 'recent':
       from = 'opens o JOIN items i ON i.id = o.item_id';
       sortCol = 'o.last_opened_at';
@@ -261,6 +254,26 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
     where.push(spec.deep ? `i.folder_id ${SUBTREE}` : 'i.folder_id = ?');
     args.push(spec.folder);
   }
+  const tail = tailClauses(person, spec, sortCol, idCol);
+  where.push(...tail.where);
+  args.push(...tail.args);
+
+  const sql = `SELECT ${ITEM_COLUMNS}, ${sortCol} AS sort_at FROM ${from}
+    WHERE ${where.join(' AND ')}
+    ORDER BY ${sortCol} DESC, ${idCol} DESC LIMIT ?`;
+  args.push(spec.limit + 1);
+  return { sql, args };
+}
+
+// What every list adds after its own source: the app, the filters, and the page's cursor.
+function tailClauses(
+  person: Person,
+  spec: ListSpec,
+  sortCol: string,
+  idCol: string,
+): { where: string[]; args: unknown[] } {
+  const where: string[] = [];
+  const args: unknown[] = [];
   if (spec.app) {
     where.push('i.app = ?');
     args.push(spec.app);
@@ -272,12 +285,47 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
     where.push(`(${sortCol}, ${idCol}) < (?, ?)`);
     args.push(spec.cursor.at, spec.cursor.id);
   }
+  return { where, args };
+}
 
-  const sql = `SELECT ${ITEM_COLUMNS}, ${sortCol} AS sort_at FROM ${from}
-    WHERE ${where.join(' AND ')}
-    ORDER BY ${sortCol} DESC, ${idCol} DESC LIMIT ?`;
-  args.push(spec.limit + 1);
-  return { sql, args: [...fromArgs, ...args] };
+/**
+ * The search view: every live item the person can open, newest change first. Two sources, each walked in order and
+ * stopped at the page: their scopes' items (each scope's index, newest first), and the items reached through a live
+ * link they opened that live outside those scopes (so nothing is listed twice). The page is the newest of the two,
+ * so it costs the page and the links the person holds, never everything they can reach.
+ */
+function buildSearchQuery(person: Person, spec: ListSpec, now: number): BuiltQuery {
+  const allScopes = JSON.stringify(scopesOf(person));
+  const scopes = spec.scopes ? JSON.stringify(spec.scopes) : allScopes;
+  const folder = spec.folder
+    ? { where: [spec.deep ? `i.folder_id ${SUBTREE}` : 'i.folder_id = ?'], args: [spec.folder] }
+    : { where: [], args: [] };
+  const tail = tailClauses(person, spec, 'i.updated_at', 'i.id');
+  const take = spec.limit + 1;
+  const ordered = (from: string, where: string[]) =>
+    `SELECT * FROM (SELECT ${ITEM_COLUMNS}, i.updated_at AS sort_at FROM ${from}
+      WHERE ${[...where, ...folder.where, ...tail.where].join(' AND ')}
+      ORDER BY i.updated_at DESC, i.id DESC LIMIT ?)`;
+  // A folder drives its own index (items_folder); without one, each scope's newest.
+  const owned = ordered(
+    spec.folder ? 'items i' : `items i INDEXED BY ${scopeIndex('search', spec.app)}`,
+    [`i.scope ${IN_JSON}`, 'i.trashed_at IS NULL'],
+  );
+  const args: unknown[] = [scopes, ...folder.args, ...tail.args, take];
+  // One team, or only the person's own: all they reach there is in those scopes, so links add nothing.
+  if (spec.scopes) return { sql: owned, args };
+  const linked = ordered(
+    `shared_with sw JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
+        JOIN items i ON i.id = sw.item_id`,
+    ['sw.person_id = ?', LIVE_LINK('sl'), 'i.trashed_at IS NULL', `i.scope NOT ${IN_JSON}`],
+  );
+  args.push(person.id, now, allScopes, ...folder.args, ...tail.args, take, take);
+  return {
+    sql: `SELECT * FROM (${owned}
+    UNION ALL ${linked})
+    ORDER BY sort_at DESC, id DESC LIMIT ?`,
+    args,
+  };
 }
 
 export async function listItems(env: Env, person: Person, spec: ListSpec): Promise<ListAnswer> {
@@ -361,8 +409,18 @@ export function buildMineCountQuery(
   return { sql: `SELECT COUNT(*) AS n FROM (${page.sql})`, args: page.args };
 }
 
-/** Whether the person can open anything at all (Search's reach, in the app asked): Home's first-run question. */
+/**
+ * Whether the person can open anything at all (Search's reach, in the app asked): Home's first-run question. Two
+ * existence checks, each stopping at its first live item: one in their scopes, or one reached through a live link.
+ */
 export function buildAnyQuery(person: Person, app: App | undefined, now = Date.now()): BuiltQuery {
-  const page = buildListQuery(person, { view: 'search', limit: 1, ...(app ? { app } : {}) }, now);
-  return { sql: `SELECT EXISTS (${page.sql}) AS found`, args: page.args };
+  const scopes = JSON.stringify(scopesOf(person));
+  const inApp = app ? ' AND i.app = ?' : '';
+  const appArgs = app ? [app] : [];
+  const sql = `SELECT EXISTS (SELECT 1 FROM items i INDEXED BY ${scopeIndex('search', app)}
+      WHERE i.scope ${IN_JSON} AND i.trashed_at IS NULL${inApp})
+    OR EXISTS (SELECT 1 FROM shared_with sw JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
+      JOIN items i ON i.id = sw.item_id
+      WHERE sw.person_id = ? AND ${LIVE_LINK('sl')} AND i.trashed_at IS NULL${inApp}) AS found`;
+  return { sql, args: [scopes, ...appArgs, person.id, now, ...appArgs] };
 }

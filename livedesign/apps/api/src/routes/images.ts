@@ -184,10 +184,9 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   return notFound();
 }
 
-// Designs named per usage answer: a gallery's images are placed on a few designs each, and a name is one index
-// read, run IMAGE_USAGE_READS at a time.
+// Designs named per usage answer: a gallery's images are placed on a few designs each, and all their names are one
+// index lookup.
 export const IMAGE_USAGE_DESIGNS_MAX = 200;
-const IMAGE_USAGE_READS = 8;
 
 // The items, in every app, that place each image (@liveworkspace/media galleryUsage): the gallery lists every app's
 // images, so an image placed only in another app's items is used there, not "Not used".
@@ -199,12 +198,9 @@ async function imageUsage(ctx: RouteContext, media: MediaClient, owner: string):
   if (client instanceof Response) return client;
   const usage = await galleryUsage(
     answered.value.usage,
-    async (app, id) => {
-      const { item } = await client.getItem(id);
-      // Gone, another app's id, trashed or not the caller's to open: not shown.
-      return item.app === app && !item.trashedAt ? item.title : null;
-    },
-    { max: IMAGE_USAGE_DESIGNS_MAX, inFlight: IMAGE_USAGE_READS },
+    async (ids) => (await client.lookupItems(ids)).items,
+    // In the Trash: not shown (gone, another app's id or not the caller's to open, the index leaves out).
+    { max: IMAGE_USAGE_DESIGNS_MAX, keep: (item) => !item.trashedAt },
   );
   return json({ usage });
 }

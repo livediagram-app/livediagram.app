@@ -410,11 +410,13 @@ describe('handleImages', () => {
     };
     const index = (items: Record<string, { title: string; app: string; trashedAt?: number }>) =>
       clientFor.mockReturnValue({
-        getItem: async (id: string) => {
-          const found = items[id];
-          if (!found) throw new Error('not_found');
-          return { item: { id, trashedAt: null, ...found } };
-        },
+        // One lookup for every design; the index leaves out the ones it has not.
+        lookupItems: async (ids: string[]) => ({
+          items: ids.flatMap((id) => {
+            const found = items[id];
+            return found ? [{ id, trashedAt: null, ...found }] : [];
+          }),
+        }),
       });
 
     // An image placed only in a livedocuments document read "Not used": the gallery lists every app's images but

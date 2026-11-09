@@ -914,7 +914,11 @@ path routes on the same hosts, which win over a custom domain, so Cloudflare sen
 the two `.well-known` discovery documents to the accounts Worker, `/api/index*` to the index, `/api/media*` and
 `/api/previews*` to media, `/api/telemetry*` to telemetry, `/api/community*` to the Community, `/api/status*` to
 the status Worker, `/api/drive*` to Drive, and everything else here. Every API has the same routes on both hosts.
-Security headers come from `public/_headers`. `/.well-known/security.txt` is the site's (accounts' routes name only its two
+Security headers come from `public/_headers`, and so does the build assets' caching: everything under
+`/_liveworkspace/_next/static/` is named by its content's hash, so it is `public, max-age=31536000, immutable`, as
+each app's router sends for its own build ([Stale builds](../../../../livediagram/docs/specs/016-platform/stale-builds.md)
+"Caching rules"); the routers pass the header through on every app's address. Everything else keeps Cloudflare's
+`public, max-age=0, must-revalidate`, so a page is checked on every load. `/.well-known/security.txt` is the site's (accounts' routes name only its two
 discovery documents), and the bare-domain redirect leaves `/.well-known/*` alone, so both hosts answer it.
 
 Every page enforces Trusted Types with the policies every app shares (`@liveworkspace/trusted-types`;
