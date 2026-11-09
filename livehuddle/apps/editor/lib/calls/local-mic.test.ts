@@ -44,7 +44,12 @@ afterEach(() => {
 });
 
 function micStream() {
-  const track = { stop: vi.fn() };
+  const listeners = new Map<string, () => void>();
+  const track = {
+    stop: vi.fn(),
+    addEventListener: (name: string, fn: () => void) => listeners.set(name, fn),
+    end: () => listeners.get('ended')?.(),
+  };
   return { track, stream: { getTracks: () => [track] } as unknown as MediaStream };
 }
 
@@ -66,6 +71,20 @@ describe('LocalMic', () => {
     await mic.start();
     expect(getUserMedia).toHaveBeenCalledTimes(1);
     mic.stop();
+  });
+
+  it('closes a microphone the browser ended, as a press would', async () => {
+    const { stream, track } = micStream();
+    const mic = new LocalMic(async () => stream);
+    await mic.start();
+    track.end();
+    expect(track.stop).toHaveBeenCalled();
+    expect(callSelf().previewMic).toBe('off');
+    expect(mic.on).toBe(false);
+    expect(audio.contexts[0]!.close).toHaveBeenCalled();
+    // A late end of a microphone already closed changes nothing.
+    track.end();
+    expect(callSelf().previewMic).toBe('off');
   });
 
   it('a refusal reads Blocked and opens nothing', async () => {

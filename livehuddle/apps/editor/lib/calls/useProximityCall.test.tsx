@@ -119,7 +119,7 @@ afterEach(() => {
 });
 
 function micStream() {
-  const track = { stop: vi.fn(), enabled: true };
+  const track = { stop: vi.fn(), enabled: true, addEventListener: vi.fn() };
   return { getTracks: () => [track], getAudioTracks: () => [track] } as unknown as MediaStream;
 }
 

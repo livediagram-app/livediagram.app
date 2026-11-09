@@ -50,6 +50,13 @@ export class LocalMic {
       return;
     }
     this.stream = stream;
+    // A microphone the browser ends (unplugged, its permission withdrawn) closes, as a press would: never an equaliser
+    // left reading a dead track.
+    for (const t of stream.getTracks()) {
+      t.addEventListener('ended', () => {
+        if (this.stream === stream) this.stop();
+      });
+    }
     const context = new AudioContext();
     this.context = context;
     const analyser = Object.assign(context.createAnalyser(), { fftSize: 512 });
