@@ -44,6 +44,8 @@ describe('SettingsCategoryList sub-categories', () => {
     mount('editor');
     expect(row('Panels').getAttribute('aria-expanded')).toBe('false');
     expect(queryRow('Layers')).toBeNull();
+    // The disclosure names the list only while it is on the page.
+    expect(disclosure().getAttribute('aria-controls')).toBeNull();
   });
 
   it('opens Panels and its sub-categories from the Panels row, in order', () => {

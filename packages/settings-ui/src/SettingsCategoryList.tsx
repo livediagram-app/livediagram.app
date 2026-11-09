@@ -335,7 +335,8 @@ function CategoryRow({
         onClick={disclosure.onToggle}
         disabled={disclosure.locked}
         aria-expanded={disclosure.open}
-        aria-controls={disclosure.controls}
+        // Only while the list it names is on the page: a reference to an absent id points nowhere.
+        aria-controls={disclosure.open ? disclosure.controls : undefined}
         aria-label={disclosure.label}
         className="mr-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition focus-visible:-outline-offset-2 hover:text-slate-700 disabled:cursor-default disabled:opacity-40 disabled:hover:text-slate-400 dark:hover:text-slate-200"
       >
