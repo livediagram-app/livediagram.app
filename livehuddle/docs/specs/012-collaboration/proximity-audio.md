@@ -23,7 +23,7 @@ microphone, camera and Share Screen buttons still show there, as a [local previe
   near you etc, but your mic stays muted by default when joining"). Walking where there is a call (Avatar mode, a
   Space synced to the server, calls on) joins it by itself: you hear the people near you at once, and a Viewer
   listens likewise. A browser keeps sound from a page until it is touched, so if it held the audio back, it starts on
-  your next press or key (a call that ends first stops waiting for it). The call still ends on leaving the mode, the
+  your next press or key (a call that ends or fails first stops waiting for it). The call still ends on leaving the mode, the
   room or the tab; to stop hearing people, set
   [Do Not Disturb](meeting-rooms-and-stage.md#do-not-disturb-part-3-built).
 - **Muted by default.** Your microphone starts **muted and is not opened**, so walking in never shows the browser's
