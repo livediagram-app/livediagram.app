@@ -1,4 +1,4 @@
-import { sha256Hex, type ImageSummary } from '@livedocuments/api-schema';
+import { sha256Hex, sniffImageType, type ImageSummary } from '@livedocuments/api-schema';
 import type { ImageCredit } from '@livedocuments/document';
 import { ApiError, apiUploadImage } from './api-client';
 import { isOfflineIdSync } from './offline/offline-store';
@@ -78,10 +78,25 @@ function validateImageFile(file: File): void {
   }
 }
 
+// A file whose declared type is missing or generic (a Finder copy pastes as `application/octet-stream`, some
+// clipboards strip the type) is labelled by its first bytes, as the server labels what it stores
+// (docs/specs/009-elements/images.md "Server-side enforcement"): a real PNG, JPEG, GIF or WebP goes through, anything
+// else keeps its type and is refused below. Only the first 16 bytes are read.
+async function withSniffedType(file: File): Promise<File> {
+  if (ACCEPTED_IMAGE_TYPES.includes(file.type as AcceptedImageType)) return file;
+  if (file.size === 0 || file.size > MAX_IMAGE_BYTES) return file;
+  const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+  const sniffed = sniffImageType(head);
+  return sniffed
+    ? new File([file], file.name, { type: sniffed, lastModified: file.lastModified })
+    : file;
+}
+
 // Runs the full upload flow for one file picked by the user (via
 // drop, paste, or file input). Returns the uploaded image + the
 // dedupe flag the picker uses to flash "already in your gallery".
-export async function uploadImageFile(ownerId: string, file: File): Promise<UploadResult> {
+export async function uploadImageFile(ownerId: string, picked: File): Promise<UploadResult> {
+  const file = await withSniffedType(picked);
   validateImageFile(file);
   const bytes = await file.arrayBuffer();
   // SHA-256 dedupe key. The server re-verifies this against the
@@ -116,7 +131,8 @@ export async function uploadImageFile(ownerId: string, file: File): Promise<Uplo
 // treat a data-URI imageId as the bytes themselves, the same shape Take
 // Offline produces). The returned "summary" mirrors the upload result so
 // callers stay agnostic: `id` IS the data URI.
-async function embedImageFile(file: File): Promise<UploadResult> {
+async function embedImageFile(picked: File): Promise<UploadResult> {
+  const file = await withSniffedType(picked);
   validateImageFile(file);
   const dims = await readImageDimensions(file);
   if (!dims) {
