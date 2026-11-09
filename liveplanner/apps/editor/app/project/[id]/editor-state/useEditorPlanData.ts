@@ -24,7 +24,7 @@ import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
@@ -40,7 +40,7 @@ import type { EditorPersistenceSlice } from './useEditorPersistence';
 export function useEditorPlanData(
   env: EditorEnvSlice,
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   dialogsSlice: EditorDialogsSlice,
   collaborationSlice: EditorCollaborationSlice,
   persistenceSlice: EditorPersistenceSlice,
@@ -68,7 +68,7 @@ export function useEditorPlanData(
     tabs,
     tickTabs,
     voteSelfId,
-  } = documentSlice;
+  } = projectSlice;
   const { canvasTool, setCanvasTool } = dialogsSlice;
   const {
     applyElementDelta,

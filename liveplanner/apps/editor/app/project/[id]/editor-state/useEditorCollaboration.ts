@@ -17,7 +17,7 @@ import { useEditorPersistence } from '../editor-persistence';
 import { useEditorRealtime } from '../editor-realtime';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 
 // A slice of the editor's state, composed by useEditorState in a fixed order (docs/development/architecture.md
@@ -31,13 +31,13 @@ import type { EditorDialogsSlice } from './useEditorDialogs';
 export function useEditorCollaboration(
   env: EditorEnvSlice,
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   dialogsSlice: EditorDialogsSlice,
 ) {
   const { embedMode, workbench, workbenchMode } = env;
   const { activeId, sessionTabScope, setEditingId, setMultiSelectedIds, setSelectedId } =
     selectionSlice;
-  const { hydrated, projectId, selfParticipant, tickTabs } = documentSlice;
+  const { hydrated, projectId, selfParticipant, tickTabs } = projectSlice;
   const { dialogs } = dialogsSlice;
   // Sharing, session-permission and realtime-room infrastructure: the
   // shareable / team / share-code flags that gate the WS room, owner +

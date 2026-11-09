@@ -10,7 +10,7 @@ import { useCollabDeepLink } from '../useCollabDeepLink';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { activeElementsCommit } from '../active-elements-commit';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
 import type { EditorPlanDataSlice } from './useEditorPlanData';
@@ -30,7 +30,7 @@ const NO_IDS: ReadonlySet<string> = new Set();
 // it, style memory, layers, and an Inbox link arriving at an element.
 export function useEditorEditing(
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   collaborationSlice: EditorCollaborationSlice,
   persistenceSlice: EditorPersistenceSlice,
   planDataSlice: EditorPlanDataSlice,
@@ -41,7 +41,7 @@ export function useEditorEditing(
   const { activeId, selectionStore, setEditingId, setMultiSelectedIds, setSelectedId } =
     selectionSlice;
   const { commitTabs, hydrated, loadedTabIds, markCheckpoint, projectId, tabLoadErrors, tickTabs } =
-    documentSlice;
+    projectSlice;
   const { isReadOnly, openComments, participant, toast } = collaborationSlice;
   const { tabsRef } = persistenceSlice;
   const { activeTab, cardThreads } = planDataSlice;

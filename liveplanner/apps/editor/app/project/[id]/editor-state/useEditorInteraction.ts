@@ -6,7 +6,7 @@ import { useElementLinks } from '@/hooks/canvas/useElementLinks';
 import { useVoteReview } from '@/hooks/canvas/useVoteReview';
 import { useSelectionEditing } from '../useSelectionEditing';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPlanDataSlice } from './useEditorPlanData';
@@ -25,7 +25,7 @@ import type { EditorTabToolsSlice } from './useEditorTabTools';
 // Element links, label editing, canvas accessibility, vote review, the keyboard nudge and dragging.
 export function useEditorInteraction(
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   dialogsSlice: EditorDialogsSlice,
   collaborationSlice: EditorCollaborationSlice,
   planDataSlice: EditorPlanDataSlice,
@@ -46,7 +46,7 @@ export function useEditorInteraction(
     setMultiSelectedIds,
     setSelectedId,
   } = selectionSlice;
-  const { cancelToCheckpoint, markCheckpoint, tabs, tickTabs, voteSelfId } = documentSlice;
+  const { cancelToCheckpoint, markCheckpoint, tabs, tickTabs, voteSelfId } = projectSlice;
   const { shortcutsEnabled } = dialogsSlice;
   const {
     alignmentGuidesRef,

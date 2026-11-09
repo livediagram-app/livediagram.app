@@ -19,7 +19,7 @@ import { usePlanStartProjectName } from '../usePlanStartProjectName';
 import { useElementHelpers } from '../useElementHelpers';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPlanDataSlice } from './useEditorPlanData';
 import type { EditorViewportSlice } from './useEditorViewport';
@@ -36,7 +36,7 @@ import type { EditorPlanSlice } from './useEditorPlan';
 export function useEditorTabs(
   env: EditorEnvSlice,
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   collaborationSlice: EditorCollaborationSlice,
   planDataSlice: EditorPlanDataSlice,
   viewportSlice: EditorViewportSlice,
@@ -68,7 +68,7 @@ export function useEditorTabs(
     tabs,
     tickTabs,
     undoHistory,
-  } = documentSlice;
+  } = projectSlice;
   const {
     canEdit,
     confirm,

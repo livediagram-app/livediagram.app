@@ -1,7 +1,7 @@
 import { writeUserPreferences } from '@/lib/user-preferences';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
@@ -21,7 +21,7 @@ import type { EditorShortcutsSlice } from './useEditorShortcuts';
 export function buildEditorView(slices: {
   env: EditorEnvSlice;
   selectionSlice: EditorSelectionSlice;
-  documentSlice: EditorDocumentSlice;
+  projectSlice: EditorProjectSlice;
   dialogsSlice: EditorDialogsSlice;
   collaborationSlice: EditorCollaborationSlice;
   persistenceSlice: EditorPersistenceSlice;
@@ -39,7 +39,7 @@ export function buildEditorView(slices: {
   const {
     env,
     selectionSlice,
-    documentSlice,
+    projectSlice,
     dialogsSlice,
     collaborationSlice,
     persistenceSlice,
@@ -72,9 +72,9 @@ export function buildEditorView(slices: {
     // The plan's card comment threads, and what this person may do with them (components/plan/threads).
     cardThreads: planDataSlice.cardThreads,
     cardThreadsAccess: {
-      canComment: documentSlice.hydrated && collaborationSlice.participant.can.takePart,
+      canComment: projectSlice.hydrated && collaborationSlice.participant.can.takePart,
       isEditor:
-        documentSlice.hydrated &&
+        projectSlice.hydrated &&
         collaborationSlice.participant.can.level === 'edit' &&
         !collaborationSlice.isReadOnly,
     },
@@ -100,7 +100,7 @@ export function buildEditorView(slices: {
     toggleViewPreview: collaborationSlice.toggleViewPreview,
     // The id the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): every vote reader compares
     // against this, never the owner id.
-    voteSelfId: documentSlice.voteSelfId,
+    voteSelfId: projectSlice.voteSelfId,
     confirm: collaborationSlice.confirm,
     // Clipboard copy, plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection: shortcutsSlice.copySelection,
@@ -221,9 +221,9 @@ export function buildEditorView(slices: {
     deleteMultiSelected: styleSlice.deleteMultiSelected,
     deleteSelected: styleSlice.deleteSelected,
     deleteTab: tabToolsSlice.deleteTabWithCards,
-    projectId: documentSlice.projectId,
-    projectNotFound: documentSlice.projectNotFound,
-    loadError: documentSlice.loadError,
+    projectId: projectSlice.projectId,
+    projectNotFound: projectSlice.projectNotFound,
+    loadError: projectSlice.loadError,
     projectTrashed: collaborationSlice.projectTrashed,
     spawnConnectSelected: styleSlice.spawnConnectSelected,
     duplicateMultiSelected: styleSlice.duplicateMultiSelected,
@@ -236,7 +236,7 @@ export function buildEditorView(slices: {
     fitToScreen: viewportSlice.fitToScreen,
     followLink: interactionSlice.followLink,
     handleCanvasDoubleClick: tabToolsSlice.handleCanvasDoubleClick,
-    hydrated: documentSlice.hydrated,
+    hydrated: projectSlice.hydrated,
     identityOnlyScreenOpen: commentsSlice.identityOnlyScreenOpen,
     importIntoActiveTab: tabsSlice.importIntoActiveTab,
     importTextIntoActiveTab: tabsSlice.importTextIntoActiveTab,
@@ -262,10 +262,10 @@ export function buildEditorView(slices: {
     scrollIntoView: viewportSlice.scrollIntoView,
     livePresence: collaborationSlice.livePresence,
     loadAllTabs: planDataSlice.loadAllTabs,
-    loadedTabIds: documentSlice.loadedTabIds,
-    loadingProject: documentSlice.loadingProject,
+    loadedTabIds: projectSlice.loadedTabIds,
+    loadingProject: projectSlice.loadingProject,
     makeCopy: tabsSlice.makeCopy,
-    nameConfirmed: documentSlice.nameConfirmed,
+    nameConfirmed: projectSlice.nameConfirmed,
     voteReview: interactionSlice.voteReview,
     voteResults: interactionSlice.voteResults,
     jumpToVoteResult: interactionSlice.jumpToVoteResult,
@@ -356,13 +356,13 @@ export function buildEditorView(slices: {
     previewInlineIcon: styleSlice.previewInlineIcon,
     commitInlineIcon: styleSlice.commitInlineIcon,
     resolveThread: collaborationSlice.resolveThread,
-    retryActiveTabLoad: documentSlice.retryActiveTabLoad,
+    retryActiveTabLoad: projectSlice.retryActiveTabLoad,
     lockedByOther: commentsSlice.lockedByOther,
     selectElement: interactionSlice.selectElement,
     selectMarquee: styleSlice.selectMarquee,
-    selfParticipant: documentSlice.selfParticipant,
+    selfParticipant: projectSlice.selfParticipant,
     // The Share dialog's "Sharing as" renames a guest.
-    setSelfParticipant: documentSlice.setSelfParticipant,
+    setSelfParticipant: projectSlice.setSelfParticipant,
     sendSelectedToBack: styleSlice.sendSelectedToBack,
     setArrowEndsSelected: styleSlice.setArrowEndsSelected,
     setArrowStrokeStyleSelected: styleSlice.setArrowStrokeStyleSelected,
@@ -451,7 +451,7 @@ export function buildEditorView(slices: {
     setContextMenu: collaborationSlice.setContextMenu,
     setFillColorSelected: styleSlice.setFillColorSelected,
     setLinkPickerOpenForId: interactionSlice.setLinkPickerOpenForId,
-    setLoadingProject: documentSlice.setLoadingProject,
+    setLoadingProject: projectSlice.setLoadingProject,
     setNote: tabToolsSlice.setNote,
     setOpacitySelected: styleSlice.setOpacitySelected,
     setShadowSelected: styleSlice.setShadowSelected,
@@ -479,9 +479,9 @@ export function buildEditorView(slices: {
     nameProject: tabsSlice.nameProject,
     shiftDupGhostIds: interactionSlice.shiftDupGhostIds,
     snapGuideStore: interactionSlice.snapGuideStore,
-    tabLoadErrors: documentSlice.tabLoadErrors,
-    tabs: documentSlice.tabs,
-    tabSummaries: documentSlice.tabSummaries,
+    tabLoadErrors: projectSlice.tabLoadErrors,
+    tabs: projectSlice.tabs,
+    tabSummaries: projectSlice.tabSummaries,
     projectTeamId: collaborationSlice.projectTeamId,
     setProjectTeamId: collaborationSlice.setProjectTeamId,
     emailEnabled: viewportSlice.emailEnabled,

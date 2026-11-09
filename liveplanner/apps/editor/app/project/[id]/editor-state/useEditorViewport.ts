@@ -8,7 +8,7 @@ import { useCollabDeepLinkCapture } from '../useCollabDeepLink';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { boundsOfElements } from '@/lib/changeset-reveals';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
 import type { EditorPlanDataSlice } from './useEditorPlanData';
@@ -22,13 +22,13 @@ import type { EditorPlanDataSlice } from './useEditorPlanData';
 // tab-entry effects (the #t= pin, fit on entry, an Inbox link captured before them).
 export function useEditorViewport(
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   collaborationSlice: EditorCollaborationSlice,
   persistenceSlice: EditorPersistenceSlice,
   planDataSlice: EditorPlanDataSlice,
 ) {
   const { activeId, readSelection, setActiveId } = selectionSlice;
-  const { hydrated, loadedTabIds } = documentSlice;
+  const { hydrated, loadedTabIds } = projectSlice;
   const { sharePasswordGate } = collaborationSlice;
   const { tabsRef } = persistenceSlice;
   const { activeTab } = planDataSlice;

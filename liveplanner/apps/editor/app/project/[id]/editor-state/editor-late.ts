@@ -5,7 +5,7 @@ import type { usePlanSlice } from '@/hooks/plan/usePlanSlice';
 // changeset's Show, a deep link landing), never while rendering, so the composer hands each one over as a
 // getter of the later slice's value in the same render.
 export type EditorLate = {
-  // The commit choke point's active-layer stamp (useEditorEditing), read by commitTabs (useEditorDocument).
+  // The commit choke point's active-layer stamp (useEditorEditing), read by commitTabs (useEditorProject).
   activeLayerStampRef: () => RefObject<{ tabId: string; layerId: string } | null>;
   // A changeset's Show (useEditorViewport), read by the changeset feed (useEditorPersistence).
   revealChangesetRef: () => RefObject<(tabId: string, ids: readonly string[]) => void>;

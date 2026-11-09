@@ -19,7 +19,7 @@ import type { EditorLate } from './editor-late';
 // points every edit goes through, the tabs' id and name summary, and the load state (the project id, hydration,
 // which tabs have loaded or failed, not found, the load error), the local participant and the last-saved
 // baseline the autosave diffs against.
-export function useEditorDocument(
+export function useEditorProject(
   env: EditorEnvSlice,
   selectionSlice: EditorSelectionSlice,
   late: Pick<EditorLate, 'activeLayerStampRef'>,
@@ -307,4 +307,4 @@ export function useEditorDocument(
   };
 }
 
-export type EditorDocumentSlice = ReturnType<typeof useEditorDocument>;
+export type EditorProjectSlice = ReturnType<typeof useEditorProject>;

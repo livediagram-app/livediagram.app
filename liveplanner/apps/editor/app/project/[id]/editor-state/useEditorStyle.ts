@@ -4,7 +4,7 @@ import { useElementStyle } from '@/hooks/canvas/useElementStyle';
 import { useStylePreview } from '@/hooks/canvas/useStylePreview';
 import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
 import type { EditorPlanDataSlice } from './useEditorPlanData';
@@ -22,7 +22,7 @@ import type { EditorTabToolsSlice } from './useEditorTabTools';
 // styles and Tidy Up.
 export function useEditorStyle(
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   collaborationSlice: EditorCollaborationSlice,
   persistenceSlice: EditorPersistenceSlice,
   planDataSlice: EditorPlanDataSlice,
@@ -33,7 +33,7 @@ export function useEditorStyle(
 ) {
   const { activeId, readSelection, setEditingId, setMultiSelectedIds, setSelectedId } =
     selectionSlice;
-  const { commitTabs, previewingRef, tabs, tickTabs } = documentSlice;
+  const { commitTabs, previewingRef, tabs, tickTabs } = projectSlice;
   const { contextMenu } = collaborationSlice;
   const { tabsRef } = persistenceSlice;
   const { activeTab } = planDataSlice;

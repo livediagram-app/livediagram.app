@@ -9,7 +9,7 @@ import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { usePresenceRows } from '../usePresenceRows';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPlanDataSlice } from './useEditorPlanData';
 
@@ -23,7 +23,7 @@ import type { EditorPlanDataSlice } from './useEditorPlanData';
 export function useEditorComments(
   env: EditorEnvSlice,
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   collaborationSlice: EditorCollaborationSlice,
   planDataSlice: EditorPlanDataSlice,
 ) {
@@ -37,7 +37,7 @@ export function useEditorComments(
     selfParticipant,
     tabs,
     tickTabs,
-  } = documentSlice;
+  } = projectSlice;
   const {
     linkedActionsRef,
     liveAgents,

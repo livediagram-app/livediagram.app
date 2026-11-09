@@ -2,11 +2,11 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@liveplanner/project';
-import { useEditorDocument } from './useEditorDocument';
+import { useEditorProject } from './useEditorProject';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
 
-// The document slice's own logic, which lived inside useEditorState before it was split: the commit choke point's
+// The project slice's own logic, which lived inside useEditorState before it was split: the commit choke point's
 // stamps, the tab summary the link badges read, and the loaded / failed tab bookkeeping (docs/specs/006-project/
 // per-tab-storage.md, docs/specs/006-project/layers.md).
 
@@ -31,11 +31,11 @@ function mount(opts: { tabs?: Tab[]; stamp?: { tabId: string; layerId: string } 
   const selection = { activeId: 't1' } as unknown as EditorSelectionSlice;
   const stampRef = { current: opts.stamp ?? null };
   return renderHook(() =>
-    useEditorDocument(env, selection, { activeLayerStampRef: () => stampRef }),
+    useEditorProject(env, selection, { activeLayerStampRef: () => stampRef }),
   );
 }
 
-describe('useEditorDocument', () => {
+describe('useEditorProject', () => {
   it('stamps the kind only on the tabs a commit changed or added', () => {
     const { result } = mount();
     const untouched = result.current.tabs[1];

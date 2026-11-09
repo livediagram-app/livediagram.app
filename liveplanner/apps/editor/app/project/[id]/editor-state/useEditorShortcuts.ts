@@ -10,7 +10,7 @@ import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShor
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
@@ -32,7 +32,7 @@ import type { EditorInteractionSlice } from './useEditorInteraction';
 export function useEditorShortcuts(
   env: EditorEnvSlice,
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   dialogsSlice: EditorDialogsSlice,
   collaborationSlice: EditorCollaborationSlice,
   persistenceSlice: EditorPersistenceSlice,
@@ -54,7 +54,7 @@ export function useEditorShortcuts(
     setMultiSelectedIds,
     setSelectedId,
   } = selectionSlice;
-  const { hydrated, projectId, selfParticipant, tabs } = documentSlice;
+  const { hydrated, projectId, selfParticipant, tabs } = projectSlice;
   const { dialogs, panelLayout, shortcutsEnabled } = dialogsSlice;
   const { isReadOnly, participant, projectName, projectTrashed, sessionRole, toast } =
     collaborationSlice;

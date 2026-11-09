@@ -64,7 +64,7 @@ The slices live in `app/project/[id]/editor-state/`, one hook per file, in the o
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | `useEditorEnv`           | Where the editor runs (the surface, a workbench's session) and who is signed in                                                 |
 | `useEditorSelection`     | The active tab, the selection, the edit in progress, a tab-scoped session's tab                                                 |
-| `useEditorDocument`      | The tabs and their undo timeline, the commit and tick choke points, the load state, the local participant, the save baseline    |
+| `useEditorProject`       | The tabs and their undo timeline, the commit and tick choke points, the load state, the local participant, the save baseline    |
 | `useEditorDialogs`       | Panel layout, the dialogs, the canvas tool, the shortcuts switch                                                                |
 | `useEditorCollaboration` | Sharing and the session's role, comment threads, preferences, the context menu, the persistence state, presence, the Trash      |
 | `useEditorPersistence`   | Autosave, Sync and Take Offline in place, the identity and project load, the room's resync, agent changesets                    |

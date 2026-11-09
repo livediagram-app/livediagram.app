@@ -16,7 +16,7 @@ import { useTabSession } from '@/hooks/persistence/useTabSession';
 import { useElementCreation } from '../useElementCreation';
 import { useInlineIconMutators } from '../useInlineIconMutators';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
@@ -34,7 +34,7 @@ import type { EditorTabsSlice } from './useEditorTabs';
 // elements, notes, element creation, inline icons, cell links and the delete guards.
 export function useEditorTabTools(
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   dialogsSlice: EditorDialogsSlice,
   collaborationSlice: EditorCollaborationSlice,
   persistenceSlice: EditorPersistenceSlice,
@@ -52,7 +52,7 @@ export function useEditorTabTools(
     tabs,
     tickTabs,
     voteSelfId,
-  } = documentSlice;
+  } = projectSlice;
   const { setCanvasTool } = dialogsSlice;
   const { applyElementDelta, confirm, isStructureReadOnly, livePresence, roomRef, toast } =
     collaborationSlice;

@@ -22,7 +22,7 @@ import { cardLink } from '@/lib/card-address';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
 import type { EditorPlanDataSlice } from './useEditorPlanData';
@@ -39,7 +39,7 @@ import type { EditorEditingSlice } from './useEditorEditing';
 export function useEditorPlan(
   env: EditorEnvSlice,
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   collaborationSlice: EditorCollaborationSlice,
   persistenceSlice: EditorPersistenceSlice,
   planDataSlice: EditorPlanDataSlice,
@@ -57,7 +57,7 @@ export function useEditorPlan(
     selfParticipant,
     tabs,
     tickTabs,
-  } = documentSlice;
+  } = projectSlice;
   const {
     canEdit,
     isReadOnly,

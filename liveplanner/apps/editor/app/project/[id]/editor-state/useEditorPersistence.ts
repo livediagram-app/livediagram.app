@@ -11,7 +11,7 @@ import { useIdentityBootstrap } from '../useIdentityBootstrap';
 import { useChangesetFeed } from '../useChangesetFeed';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
-import type { EditorDocumentSlice } from './useEditorDocument';
+import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorLate } from './editor-late';
 
@@ -25,7 +25,7 @@ import type { EditorLate } from './editor-late';
 export function useEditorPersistence(
   env: EditorEnvSlice,
   selectionSlice: EditorSelectionSlice,
-  documentSlice: EditorDocumentSlice,
+  projectSlice: EditorProjectSlice,
   collaborationSlice: EditorCollaborationSlice,
   late: Pick<EditorLate, 'revealChangesetRef'>,
 ) {
@@ -61,7 +61,7 @@ export function useEditorPersistence(
     setSelfParticipant,
     setTabLoadErrors,
     tabs,
-  } = documentSlice;
+  } = projectSlice;
   const {
     canEdit,
     participant,

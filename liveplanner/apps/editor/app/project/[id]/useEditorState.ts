@@ -5,7 +5,7 @@ import type { EditorLate } from './editor-state/editor-late';
 import { buildEditorView } from './editor-state/editor-view';
 import { useEditorEnv } from './editor-state/useEditorEnv';
 import { useEditorSelection } from './editor-state/useEditorSelection';
-import { useEditorDocument } from './editor-state/useEditorDocument';
+import { useEditorProject } from './editor-state/useEditorProject';
 import { useEditorDialogs } from './editor-state/useEditorDialogs';
 import { useEditorCollaboration } from './editor-state/useEditorCollaboration';
 import { useEditorPersistence } from './editor-state/useEditorPersistence';
@@ -36,21 +36,21 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The active tab, the selection and the edit in progress.
   const selectionSlice = useEditorSelection(env);
   // The tabs and their undo timeline, the commit choke points, and the load state.
-  const documentSlice = useEditorDocument(env, selectionSlice, late);
+  const projectSlice = useEditorProject(env, selectionSlice, late);
   // Panels, dialogs, the canvas tool and the shortcuts switch.
   const dialogsSlice = useEditorDialogs(env);
   // Sharing and the session's role, comments, presence, preferences and the persistence state.
   const collaborationSlice = useEditorCollaboration(
     env,
     selectionSlice,
-    documentSlice,
+    projectSlice,
     dialogsSlice,
   );
   // Autosave, the load itself, the room's resync and agent changesets.
   const persistenceSlice = useEditorPersistence(
     env,
     selectionSlice,
-    documentSlice,
+    projectSlice,
     collaborationSlice,
     late,
   );
@@ -58,7 +58,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const planDataSlice = useEditorPlanData(
     env,
     selectionSlice,
-    documentSlice,
+    projectSlice,
     dialogsSlice,
     collaborationSlice,
     persistenceSlice,
@@ -66,7 +66,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Pan, zoom, fitting, and arriving at a tab.
   const viewportSlice = useEditorViewport(
     selectionSlice,
-    documentSlice,
+    projectSlice,
     collaborationSlice,
     persistenceSlice,
     planDataSlice,
@@ -75,14 +75,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const commentsSlice = useEditorComments(
     env,
     selectionSlice,
-    documentSlice,
+    projectSlice,
     collaborationSlice,
     planDataSlice,
   );
   // What may be edited now, the commit paths, style memory and layers.
   const editingSlice = useEditorEditing(
     selectionSlice,
-    documentSlice,
+    projectSlice,
     collaborationSlice,
     persistenceSlice,
     planDataSlice,
@@ -94,7 +94,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const planSlice = useEditorPlan(
     env,
     selectionSlice,
-    documentSlice,
+    projectSlice,
     collaborationSlice,
     persistenceSlice,
     planDataSlice,
@@ -105,7 +105,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const tabsSlice = useEditorTabs(
     env,
     selectionSlice,
-    documentSlice,
+    projectSlice,
     collaborationSlice,
     planDataSlice,
     viewportSlice,
@@ -115,7 +115,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The tab's look, session tools, notes, element creation and the delete guards.
   const tabToolsSlice = useEditorTabTools(
     selectionSlice,
-    documentSlice,
+    projectSlice,
     dialogsSlice,
     collaborationSlice,
     persistenceSlice,
@@ -127,7 +127,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Selection actions, element style, portals and hover previews.
   const styleSlice = useEditorStyle(
     selectionSlice,
-    documentSlice,
+    projectSlice,
     collaborationSlice,
     persistenceSlice,
     planDataSlice,
@@ -139,7 +139,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Links, label editing, canvas accessibility, vote review, nudging and dragging.
   const interactionSlice = useEditorInteraction(
     selectionSlice,
-    documentSlice,
+    projectSlice,
     dialogsSlice,
     collaborationSlice,
     planDataSlice,
@@ -154,7 +154,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const shortcutsSlice = useEditorShortcuts(
     env,
     selectionSlice,
-    documentSlice,
+    projectSlice,
     dialogsSlice,
     collaborationSlice,
     persistenceSlice,
@@ -169,7 +169,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   return buildEditorView({
     env,
     selectionSlice,
-    documentSlice,
+    projectSlice,
     dialogsSlice,
     collaborationSlice,
     persistenceSlice,
