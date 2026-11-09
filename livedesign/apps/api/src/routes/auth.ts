@@ -233,7 +233,7 @@ function jwtPayload(token: string | null): Record<string, unknown> | null {
 // A header holds bytes, not text: a return path's characters past ASCII go percent-encoded as UTF-8, as a browser
 // sends them, or building the header throws.
 function redirect(location: string, cookies: string[]): Response {
-  const ascii = location.replace(/[^\x00-\x7f]+/g, (run) => encodeURIComponent(run));
+  const ascii = location.replace(/[\u0080-\uffff]+/g, (run) => encodeURIComponent(run));
   const headers = new Headers({ Location: ascii, 'Cache-Control': 'no-store' });
   for (const c of cookies) headers.append('Set-Cookie', c);
   return new Response(null, { status: 302, headers });

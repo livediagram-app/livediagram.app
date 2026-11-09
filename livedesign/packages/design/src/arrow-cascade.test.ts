@@ -55,8 +55,15 @@ describe('withAttachedArrows', () => {
 // docs/specs/008-canvas/canvas-and-palette.md "Delete / Backspace": a kept arrow's end on a removed element is freed
 // where it was drawn, the other end and every other element untouched.
 describe('removeElements', () => {
-  const at = (id: string, x: number): Element =>
-    ({ id, type: 'shape', shape: 'square', x, y: 0, width: 100, height: 60 }) as Element;
+  const at = (id: string, x: number): Element => ({
+    id,
+    type: 'shape',
+    shape: 'square',
+    x,
+    y: 0,
+    width: 100,
+    height: 60,
+  });
   const arrow = (id: string, extra: Partial<ArrowElement> = {}): ArrowElement => ({
     id,
     type: 'arrow',
