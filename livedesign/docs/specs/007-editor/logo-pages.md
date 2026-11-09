@@ -271,7 +271,9 @@ Layout card is open. In screen px at any zoom; they take no presses.
 - **Mirror Copy** (the selection's context menu on a logo page, and the command
   palette) adds a twin of each selected stroke, path, shape, text or image whose centre is on a logo page, reflected across
   that page's centre line, by the same rules, as one edit; text and images are copied to the
-  reflected position unflipped. Arrows are not copied. The twins become the selection.
+  reflected position unflipped. A badge or step copied with its host sits on the reflected point of the host's
+  twin (top-right becomes top-left), and a pointer note's tip is reflected. Arrows are not copied. The twins become
+  the selection.
 
 ## Wordmark type
 
