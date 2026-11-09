@@ -141,9 +141,13 @@ describe('adding', () => {
     const edited = tabOf({
       pages: [photo],
       photos: {
-        p1: { width: 1920, height: 1080, layers: [{ id: 'ly-0000000a', layerKind: 'pixel' }] },
+        p1: {
+          width: 1920,
+          height: 1080,
+          layers: [{ id: 'ly-0000000a', name: 'Paint', layerKind: 'pixel', pixels: { tiles: {} } }],
+        },
       },
-    } as Partial<Tab>);
+    });
     expect(pagesOf(run(edited, [{ op: 'add', kind: 'photo' }]).tab)).toHaveLength(2);
     // An empty one becomes the page asked for, at the size asked for.
     const empty = run(tabOf({ pages: [photo] }), [
