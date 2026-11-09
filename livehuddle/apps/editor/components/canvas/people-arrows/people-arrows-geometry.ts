@@ -3,7 +3,7 @@
 // points and how bold it is. Screen coordinates throughout are relative to the canvas <main>'s top-left corner.
 
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
-import { AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
+import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
 
 export type Point = { x: number; y: number };
 export type Box = { left: number; top: number; right: number; bottom: number };
