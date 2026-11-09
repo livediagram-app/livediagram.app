@@ -1843,6 +1843,16 @@ export const articles: Article[] = [
     parentSlug: 'tools',
   },
   {
+    slug: 'maps',
+    title: 'Maps',
+    description: 'A world, region or country map with highlighted countries and pinned places.',
+    keywords:
+      'map world globe country countries region geography atlas pin pins marker location city cities office offices markets europe',
+    category: 'Palette',
+    categorySlug: 'palette/tools',
+    parentSlug: 'tools',
+  },
+  {
     slug: 'checklists',
     title: 'Checklists',
     description: 'Checkable to-do rows you tick right on the canvas.',

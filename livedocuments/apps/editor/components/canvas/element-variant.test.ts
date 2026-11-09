@@ -291,3 +291,18 @@ describe('describeVariant — finish', () => {
     expect(sticky.style.backgroundColor).toBeDefined();
   });
 });
+
+// docs/specs/008-canvas/element-shadows.md: a text element's shadow sits behind its letters.
+describe('describeVariant — text shadow', () => {
+  it('draws a text shadow, never a box shadow, and nothing without one', () => {
+    const style = describeVariant(
+      make('text', { shadow: { offsetX: 0, offsetY: 2, blur: 8, opacity: 0.18 } }),
+      false,
+      false,
+      null,
+    ).style;
+    expect(style?.textShadow).toBe('0px 2px 8px rgba(15, 23, 42, 0.18)');
+    expect(style?.boxShadow).toBeUndefined();
+    expect(describeVariant(make('text'), false, false, null).style?.textShadow).toBeUndefined();
+  });
+});

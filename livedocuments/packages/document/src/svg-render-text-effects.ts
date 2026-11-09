@@ -20,7 +20,10 @@ export type ExportRunEffects = {
 };
 
 /** A run's effects as an export draws them: only the values a renderer knows. */
-export function exportRunEffects(run: { highlight?: unknown; gradient?: unknown }): ExportRunEffects {
+export function exportRunEffects(run: {
+  highlight?: unknown;
+  gradient?: unknown;
+}): ExportRunEffects {
   const g = textGradientOf(run.gradient);
   return {
     ...(isHighlightColour(run.highlight) ? { highlight: run.highlight } : {}),
@@ -96,4 +99,11 @@ export function svgLineEffects(
     return `url(#${id})`;
   });
   return { bands, defs, fills };
+}
+
+/** Whether an element's label has a highlighted or gradient run, so its picture must come from the SVG. */
+export function hasTextEffects(el: object): boolean {
+  const runs = (el as { richText?: readonly { highlight?: unknown; gradient?: unknown }[] })
+    .richText;
+  return runs?.some((r) => r.highlight !== undefined || r.gradient !== undefined) === true;
 }

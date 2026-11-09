@@ -10,8 +10,9 @@ no tiles, no zoom and no streets, and nothing is fetched from anywhere when it d
 - Drag it in from the palette (Data category, after Rating) as **Add Map**. It drops as a 480 × 260
   world map with no pins and no highlighted countries.
 - **Double-click** it, or press **Edit Map** in its menu, to open the **Map dialog**. Its context
-  menu carries a **Map** section (in the Tools flyout, beside Rating and the charts) with the
-  **View** picker and the Edit Map button.
+  menu carries a **Map** section (in the Tools flyout, beside Rating and the charts) with a line
+  saying what it shows, the Edit Map button and a **View** list of the regions (one country, a
+  long list, is picked in the dialog, where it can be searched).
 - It is a normal boxed element otherwise: move, resize, rotate, lock, theme colours, shadow, and
   every other boxed behaviour. It draws no box border (`SELF_PAINTING_SHAPES`).
 - The map keeps its proportions: it fits its view inside the box, centred, and lets the land around
@@ -38,7 +39,7 @@ no tiles, no zoom and no streets, and nothing is fetched from anywhere when it d
 A dialog titled **Edit Map** with a large live preview on the left and the controls on the right. On
 a phone the preview sits above the controls.
 
-- **View**: the region and country picker, the same list as the menu's.
+- **View**: the regions, then every country, in one picker; a country frames that country.
 - A two-way switch over the preview chooses what a click on it does: **Highlight Countries**
   (the default) toggles the country under the pointer; **Place Pins** drops a pin where it lands. The
   country under the pointer is named in a small readout under the preview.

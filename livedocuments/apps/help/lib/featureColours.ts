@@ -97,6 +97,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   tables: '#0ea5e9',
   'sticky-notes': '#eab308',
   'code-blocks': '#475569',
+  maps: '#0ea5e9',
   checklists: '#22c55e',
   // Palette → Arrow guides
   'arrow-styles': '#3b82f6',

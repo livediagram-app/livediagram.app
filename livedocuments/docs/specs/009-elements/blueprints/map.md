@@ -6,62 +6,65 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                     | Role                                                                                         |
-| -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `packages/document/scripts/build-world-map.mjs`          | Builds the geometry module from the two Natural Earth files                                  |
-| `packages/document/src/map-geometry.generated.ts`        | `MAP_GEOMETRY`: countries and places (subpath `@livedocuments/document/map-geometry` only)   |
-| `packages/document/src/map-model.ts`                     | Types, limits, regions, projection, validators, `MAP_REGIONS`, `provideMapGeometry` / `providedMapGeometry` |
-| `packages/document/src/map-layout.ts`                    | `mapLayout`: view window, transform, country fills, pins and labels, shared by every surface |
-| `packages/document/src/svg-render-map.ts`                | `svgMap`: the export body from `mapLayout`                                                   |
-| `packages/document/src/svg-render-body.ts`               | Routes `'map'` to `svgMap` with the resolved colours                                         |
-| `packages/document/src/shape-factory.ts`                 | Size 480 × 260, no data                                                                      |
-| `packages/document/src/colors.ts`                        | `SELF_PAINTING_SHAPES` membership                                                            |
-| `packages/document/src/validate.ts`, `validate-shape.ts` | Kind accepted; field checks                                                                  |
-| `apps/editor/lib/map-geometry-loader.ts`                 | `loadMapGeometry()` (one dynamic import, cached, provided to the document package), `useMapGeometry()`, `ensureMapGeometryFor(tab)` before an export |
-| `apps/editor/components/canvas/MapView.tsx`              | Canvas drawing (lazy chunk via `ShapeContentRouter`)                                         |
-| `apps/editor/components/canvas/MapDrawing.tsx`           | The pure SVG drawing shared by the view and the dialog preview                               |
-| `apps/editor/components/dialogs/MapDialog.tsx`           | The Edit Map dialog                                                                          |
-| `apps/editor/components/palette/MapMenuSection.tsx`      | The Map section in the Tools flyout                                                          |
-| `apps/editor/hooks/canvas/useMapSetters.ts`              | `setMapSelected(id, patch)`, `setMapViewSelected(view)`                                      |
-| `apps/editor/lib/map-edit.ts`                            | `canEditMap(can, el)`                                                                        |
-| `apps/editor/components/palette/palette-tile-defs.tsx`   | Tile `data:map`                                                                              |
-| `packages/agent-verbs/src/mcp/schema.ts`                 | The `map` paragraph of the element docs                                                      |
-| `packages/licences/src/embedded-works.ts`                | The `natural-earth` entry                                                                    |
+| File                                                     | Role                                                                                                                                                                                                         |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/document/scripts/build-world-map.mjs`          | Builds the geometry module from the two Natural Earth files                                                                                                                                                  |
+| `packages/document/src/map-geometry.generated.ts`        | `MAP_GEOMETRY`: countries and places (subpath `@livedocuments/document/map-geometry` only)                                                                                                                   |
+| `packages/document/src/map-model.ts`                     | Types, limits, regions, projection, validators, `MAP_REGIONS`, `provideMapGeometry` / `providedMapGeometry`                                                                                                  |
+| `packages/document/src/map-layout.ts`                    | `mapLayout`: view window, transform, country fills, pins and labels, shared by every surface                                                                                                                 |
+| `packages/document/src/svg-render-map.ts`                | `svgMap`: the export body from `mapLayout`                                                                                                                                                                   |
+| `packages/document/src/svg-render-body.ts`               | Routes `'map'` to `svgMap` with the resolved colours                                                                                                                                                         |
+| `packages/document/src/shape-factory.ts`                 | Size 480 × 260, no data                                                                                                                                                                                      |
+| `packages/document/src/colors.ts`                        | `SELF_PAINTING_SHAPES` membership                                                                                                                                                                            |
+| `packages/document/src/validate.ts`, `validate-shape.ts` | Kind accepted; field checks                                                                                                                                                                                  |
+| `apps/editor/lib/map-geometry-loader.ts`                 | `loadMapGeometry()` (one dynamic import, cached, provided to the document package), `useMapGeometry()`, `useMapGeometryFor(elements)` for page thumbnails, `ensureMapGeometryFor(elements)` before an export |
+| `apps/editor/components/canvas/MapView.tsx`              | Canvas drawing (lazy chunk via `ShapeContentRouter`)                                                                                                                                                         |
+| `apps/editor/components/canvas/MapDrawing.tsx`           | The pure SVG drawing shared by the view and the dialog preview                                                                                                                                               |
+| `apps/editor/components/dialogs/MapDialog.tsx`           | The Edit Map dialog                                                                                                                                                                                          |
+| `apps/editor/components/dialogs/MapSearchField.tsx`      | Add Country and Find a Place: a combobox over the loaded geometry, `matchCountries`, `matchPlaces`                                                                                                           |
+| `apps/editor/components/dialogs/MapPinRows.tsx`          | The dialog's pin rows: a label each and Remove                                                                                                                                                               |
+| `packages/document/src/map-geometry-ensure.ts`           | `ensureMapGeometry(elements)`: the api's thumbnails and the MCP previews load the geometry before drawing a tab with a map                                                                                   |
+| `apps/editor/components/palette/MapMenuSection.tsx`      | The Map section in the Tools flyout                                                                                                                                                                          |
+| `apps/editor/hooks/canvas/useMapSetters.ts`              | `setMap(id, patch)`, `setMapViewSelected(view)`, `cleanMapPatch`                                                                                                                                             |
+| `apps/editor/lib/map-edit.ts`                            | `canEditMap(can, el)`                                                                                                                                                                                        |
+| `apps/editor/components/palette/palette-tile-defs.tsx`   | Tile `data:map`                                                                                                                                                                                              |
+| `packages/agent-verbs/src/mcp/schema.ts`                 | The `map` paragraph of the element docs                                                                                                                                                                      |
+| `packages/licences/src/embedded-works.ts`                | The `natural-earth` entry                                                                                                                                                                                    |
 
 ## Domain and naming
 
-| Term                 | Identifier                                | Meaning                                                    |
-| -------------------- | ----------------------------------------- | ---------------------------------------------------------- |
-| Map                  | `ShapeKind` `'map'`, `isMapShape`         | The element                                                |
-| Region               | `MapRegion`, `ShapeElement.mapRegion`     | One of `MAP_REGIONS`; absent is `'world'`                  |
-| Country focus        | `ShapeElement.mapCountry`                 | A country code that frames the view                        |
-| Highlighted country  | `ShapeElement.mapHighlights`              | Codes filled in the accent                                 |
-| Pin                  | `MapPin`, `ShapeElement.mapPins`          | `{ id, lat, lon, label? }`                                 |
-| View                 | `MapView` value `{ region } \| { country }` | What the View picker sets: a region or a country focus   |
-| Geometry             | `MapGeometry`                             | `{ width, height, countries, places }`                     |
-| Country row          | `MapCountryRow`                           | `[code, name, d, x0, y0, x1, y1]`                          |
-| Place row            | `MapPlaceRow`                             | `[name, code, lat, lon]`                                   |
-| Layout               | `MapLayoutResult`                         | `{ transform, countries, pins }` in element px             |
+| Term                | Identifier                                  | Meaning                                                |
+| ------------------- | ------------------------------------------- | ------------------------------------------------------ |
+| Map                 | `ShapeKind` `'map'`, `isMapShape`           | The element                                            |
+| Region              | `MapRegion`, `ShapeElement.mapRegion`       | One of `MAP_REGIONS`; absent is `'world'`              |
+| Country focus       | `ShapeElement.mapCountry`                   | A country code that frames the view                    |
+| Highlighted country | `ShapeElement.mapHighlights`                | Codes filled in the accent                             |
+| Pin                 | `MapPin`, `ShapeElement.mapPins`            | `{ id, lat, lon, label? }`                             |
+| View                | `MapView` value `{ region } \| { country }` | What the View picker sets: a region or a country focus |
+| Geometry            | `MapGeometry`                               | `{ width, height, countries, places }`                 |
+| Country row         | `MapCountryRow`                             | `[code, name, d, x0, y0, x1, y1]`                      |
+| Place row           | `MapPlaceRow`                               | `[name, code, lat, lon]`                               |
+| Layout              | `MapLayoutResult`                           | `{ transform, countries, pins }` in element px         |
 
 Banned synonyms: "location" for a pin, "zoom" for the view, "tile".
 
 ## Constants
 
-| Constant              | Value          | Provenance                                        |
-| --------------------- | -------------- | ------------------------------------------------- |
-| `MAP_WORLD_WIDTH`     | 4000           | Plane width; 1 unit is 0.5 px on a 1920 px world  |
-| `MAP_PINS_MAX`        | 40             | Spec                                              |
-| `MAP_HIGHLIGHTS_MAX`  | 60             | Spec                                              |
-| `MAP_PIN_LABEL_MAX`   | 40             | Spec                                              |
-| `MAP_LAT_MAX`         | 85             | Spec                                              |
-| Default size          | 480 × 260      | Spec                                              |
-| Pin radius            | `clamp(min(w, h) * 0.022, 3.5, 9)` px | D194                       |
-| Pin ring              | `max(1.5, r * 0.35)` px in the paper colour | D194                 |
-| Label size            | `clamp(min(w, h) * 0.055, 10, 22)` px, weight 600 | D194           |
-| Label halo            | stroke `max(2, size * 0.22)` px, paper, `paint-order: stroke` | D194 |
-| Border width          | `max(0.5, min(1.2, scale * 6))` px, paper, `stroke-linejoin: round` | D195 |
-| Faint context         | land at 45% opacity when a country is focused | D196                 |
-| Default land          | `#dbe3ec` light paper, `#334155` dark paper | D195                   |
+| Constant             | Value                                                               | Provenance                                       |
+| -------------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
+| `MAP_WORLD_WIDTH`    | 4000                                                                | Plane width; 1 unit is 0.5 px on a 1920 px world |
+| `MAP_PINS_MAX`       | 40                                                                  | Spec                                             |
+| `MAP_HIGHLIGHTS_MAX` | 60                                                                  | Spec                                             |
+| `MAP_PIN_LABEL_MAX`  | 40                                                                  | Spec                                             |
+| `MAP_LAT_MAX`        | 85                                                                  | Spec                                             |
+| Default size         | 480 × 260                                                           | Spec                                             |
+| Pin radius           | `clamp(min(w, h) * 0.022, 3.5, 9)` px                               | D194                                             |
+| Pin ring             | `max(1.5, r * 0.35)` px in the paper colour                         | D194                                             |
+| Label size           | `clamp(min(w, h) * 0.055, 10, 22)` px, weight 600                   | D194                                             |
+| Label halo           | stroke `max(2, size * 0.22)` px, paper, `paint-order: stroke`       | D194                                             |
+| Border width         | `max(0.5, min(1.2, scale * 6))` px, paper, `stroke-linejoin: round` | D195                                             |
+| Faint context        | land at 45% opacity when a country is focused                       | D196                                             |
+| Default land         | `#dbe3ec` light paper, `#334155` dark paper                         | D195                                             |
 
 Regions, as longitude and latitude windows (west, south, east, north), D197:
 
@@ -103,7 +106,7 @@ Newton's method on θ (at most 12 steps, tolerance 1e-9), clamped to `MAP_LAT_MA
 
 1. Double-click a map, or Edit Map in the Map section, opens the dialog when `canEditMap` holds.
 2. The dialog holds a draft `{ mapRegion, mapCountry, mapHighlights, mapPins }`; Done calls
-   `setMapSelected(id, patch)` once if the draft differs, else just closes.
+   `setMap(id, patch)` once if the draft differs, else just closes.
 3. Highlight Countries mode: a click on a country path toggles its code (no-op past the limit, with
    the limit note shown). Place Pins mode: a click adds `{ id: makeId(), lat, lon }` from
    `unprojectPoint`, no label, and focuses that pin's label field.
@@ -117,11 +120,11 @@ Newton's method on θ (at most 12 steps, tolerance 1e-9), clamped to `MAP_LAT_MA
 
 Validation rules (`validate-shape.ts`), each a named rule string:
 
-| Field           | Valid                                                                 |
-| --------------- | --------------------------------------------------------------------- |
-| `mapRegion`     | one of `MAP_REGIONS`                                                  |
-| `mapCountry`    | `isMapCode`: 2 or 3 uppercase letters                                  |
-| `mapHighlights` | array of at most 60 `isMapCode`                                       |
+| Field           | Valid                                                                          |
+| --------------- | ------------------------------------------------------------------------------ |
+| `mapRegion`     | one of `MAP_REGIONS`                                                           |
+| `mapCountry`    | `isMapCode`: 2 or 3 uppercase letters                                          |
+| `mapHighlights` | array of at most 60 `isMapCode`                                                |
 | `mapPins`       | array of at most 40 `{ id: non-empty string, lat, lon in range, label? ≤ 40 }` |
 
 ## Data and persistence

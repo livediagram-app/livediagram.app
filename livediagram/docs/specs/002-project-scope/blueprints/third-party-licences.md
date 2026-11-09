@@ -185,7 +185,8 @@ number }`) and `output_files` (`{ filename: string }`); a source's full path is 
   BSD-2-Clause, BSD-3-Clause, Apache-2.0 must match), else `LicenceIdUnknown`.
 - **Allowlist** (`LICENCE_ALLOWLIST`, D10): `0BSD`, `Apache-2.0`, `BlueOak-1.0.0`, `BSD-2-Clause`,
   `BSD-3-Clause`, `BSL-1.0`, `CC-BY-4.0`, `CC0-1.0`, `ISC`, `MIT`, `MIT-0`, `MPL-2.0`, `OFL-1.1`,
-  `Python-2.0`, `Unlicense`, `Zlib`. The expression is parsed (`AND` binds tighter than `OR`,
+  `Python-2.0`, `Unlicense`, `Zlib`, and `LicenseRef-Public-Domain` for a work its authors put in the public
+  domain with no licence to name (Natural Earth's map data). The expression is parsed (`AND` binds tighter than `OR`,
   parentheses, `WITH <exception>` keeps the base id); `OR` needs one allowed branch, `AND` needs
   all. `UNLICENSED`, an unknown id or an unparsable expression: `LicenceNotAllowed`.
 

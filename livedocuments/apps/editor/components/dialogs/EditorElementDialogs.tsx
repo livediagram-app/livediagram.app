@@ -13,6 +13,8 @@ import {
 
 import { track } from '@/lib/telemetry';
 import { canEditSankey } from '@/lib/sankey-edit';
+import { canEditMap } from '@/lib/map-edit';
+import { MAP_DEFAULT_ACCENT, resolveStockColours } from '@livedocuments/document';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
@@ -33,6 +35,9 @@ const SankeyFlowsDialog = dynamic(
   () => import('@/components/dialogs/SankeyFlowsDialog').then((m) => m.SankeyFlowsDialog),
   { ssr: false },
 );
+const MapDialog = dynamic(() => import('@/components/dialogs/MapDialog').then((m) => m.MapDialog), {
+  ssr: false,
+});
 const ImagePicker = dynamic(
   () => import('@/components/panels/ImagePicker').then((m) => m.ImagePicker),
   { ssr: false },
@@ -67,6 +72,9 @@ export function EditorElementDialogs() {
     sankeyFlowsOpenForId,
     setSankeyFlowsOpenForId,
     sankey,
+    mapDialogOpenForId,
+    setMapDialogOpenForId,
+    mapEdits,
     imagePickerOpenFor,
     selfParticipant,
     removeImageFromElement,
@@ -104,6 +112,7 @@ export function EditorElementDialogs() {
         () => setSankeyFlowsOpenForId(null),
         (el) => el.type === 'shape' && el.shape === 'sankey' && canEditSankey(can, el),
       ],
+      [mapDialogOpenForId, () => setMapDialogOpenForId(null), (el) => canEditMap(can, el)],
       [imagePickerOpenFor?.forElementId ?? null, closeImagePicker, () => !isReadOnly],
     ],
     `${isReadOnly}|${can.level}`,
@@ -253,6 +262,24 @@ export function EditorElementDialogs() {
                 palette={themeChartPalette(getTheme(activeTab.theme))}
                 onCommit={(flows, nodes) => sankey.setSankeyFlows(el.id, flows, nodes)}
                 onClose={() => setSankeyFlowsOpenForId(null)}
+              />
+            );
+          })()
+        : null}
+      {/* Map dialog (docs/specs/009-elements/map.md "The Map dialog"): an Editor's, on an unlocked map. */}
+      {mapDialogOpenForId !== null
+        ? (() => {
+            const el = activeTab.elements.find((e) => e.id === mapDialogOpenForId);
+            if (!el || el.type !== 'shape' || !canEditMap(can, el)) return null;
+            // The preview is light paper, so the accent is the light version of a stock colour.
+            const accent = resolveStockColours(el, 'light').strokeColor ?? MAP_DEFAULT_ACCENT;
+            return (
+              <MapDialog
+                key={el.id}
+                element={el}
+                accent={accent}
+                onCommit={(patch) => mapEdits.setMap(el.id, patch)}
+                onClose={() => setMapDialogOpenForId(null)}
               />
             );
           })()

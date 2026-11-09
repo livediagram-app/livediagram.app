@@ -1070,6 +1070,23 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
+  // Map (docs/specs/009-elements/map.md): the world or a region, countries picked out and places pinned.
+  {
+    id: 'data:map',
+    blurb: 'A world or region map with pins',
+    section: 'data',
+    label: 'Add Map',
+    caption: 'Map',
+    description:
+      'A world, region or country map. Highlight countries and pin places from Edit Map.',
+    action: { type: 'shape', kind: 'map' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M14.1 5.9 9 3.5 3.6 5.6a1 1 0 0 0-.6.9v12.6a.5.5 0 0 0 .7.5L9 17.5l5.1 2.4 5.3-2.1a1 1 0 0 0 .6-.9V4.3a.5.5 0 0 0-.7-.5z" />
+        <path d="M9 3.5v14M14.1 5.9v14" />
+      </Glyph>
+    ),
+  },
   // --- Components (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): each one element that lays itself out -
   {
     id: 'components:banner',

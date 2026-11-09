@@ -74,6 +74,11 @@ const SankeyMenuSections = dynamic(
   { ssr: false },
 );
 
+// So do a map's (docs/specs/009-elements/map.md "The menu").
+const MapMenuSections = dynamic(() => import('./MapMenuSection').then((m) => m.MapMenuSections), {
+  ssr: false,
+});
+
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
 // The element menu's data-shape sections: Progress, Timeline Rail, Rating, and
@@ -139,7 +144,8 @@ export function ElementDataSections({
     isCodeBlock ||
     isChecklist ||
     isLegend ||
-    isSankey;
+    isSankey ||
+    shapeTarget?.shape === 'map';
   return (
     <>
       {showTools ? (
@@ -345,6 +351,15 @@ export function ElementDataSections({
               flyoutProps={flyoutProps('sankey')}
               onPreviewTextSize={props.onPreviewTextSize}
               onPreviewEnd={props.onPreviewStyleEnd}
+            />
+          ) : null}
+          {/* Map (docs/specs/009-elements/map.md "The menu"): Edit Map and the View, for an Editor only. */}
+          {shapeTarget?.shape === 'map' && props.map ? (
+            <MapMenuSections
+              target={shapeTarget}
+              handlers={props.map}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps('map')}
             />
           ) : null}
           {/* Chart (docs/specs/009-elements/pie-chart.md) — display options. Legend placement: Off + 4 sides. */}

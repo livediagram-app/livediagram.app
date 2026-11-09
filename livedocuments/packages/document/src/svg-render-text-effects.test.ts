@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   exportRunEffects,
+  hasTextEffects,
   highlightBandRect,
   sameEffects,
   svgLineEffects,
   textEffectIdPrefix,
 } from './svg-render-text-effects';
 import { svgRichWrappedLabel } from './svg-render-labels';
+import { boxedNeedsSvgRaster } from './svg-render';
+import { createText } from './factories';
 
 describe('text effects in exports (docs/specs/008-canvas/text-effects.md "Rendering")', () => {
   it('keeps only the effects a renderer knows', () => {
@@ -41,7 +44,13 @@ describe('text effects in exports (docs/specs/008-canvas/text-effects.md "Render
       [
         { x: 0, width: 10, size: 10, gradient: { from: '#000', to: '#fff' } },
         { x: 10, width: 10, size: 10 },
-        { x: 20, width: 10, size: 10, highlight: '#fde68a', gradient: { from: '#111', to: '#222' } },
+        {
+          x: 20,
+          width: 10,
+          size: 10,
+          highlight: '#fde68a',
+          gradient: { from: '#111', to: '#222' },
+        },
         { x: 30, width: 0, size: 10, highlight: '#fde68a' },
       ],
       50,
@@ -92,5 +101,17 @@ describe('text effects in exports (docs/specs/008-canvas/text-effects.md "Render
       400,
     );
     expect(svg.startsWith('<text')).toBe(true);
+  });
+
+  it('sends a label with an effect through the SVG for a PNG, and a plain one not', () => {
+    expect(hasTextEffects({})).toBe(false);
+    expect(hasTextEffects({ richText: [{ text: 'a' }] })).toBe(false);
+    expect(hasTextEffects({ richText: [{ text: 'a', highlight: '#fde68a' }] })).toBe(true);
+    expect(hasTextEffects({ richText: [{ text: 'a', gradient: 'sunset' }] })).toBe(true);
+    const text = createText(0, 0);
+    expect(boxedNeedsSvgRaster({ ...text, richText: [{ text: 'a' }] })).toBe(false);
+    expect(boxedNeedsSvgRaster({ ...text, richText: [{ text: 'a', gradient: 'ocean' }] })).toBe(
+      true,
+    );
   });
 });

@@ -7,7 +7,7 @@
 // survives (the editor's blur guard lets focus land in an anchored popover).
 
 import { useState, type ReactNode } from 'react';
-import { HoverCard } from '@livedocuments/ui';
+import { Glyph, HoverCard } from '@livedocuments/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import {
   COLOUR_PICKER_WIDTH,
@@ -27,10 +27,16 @@ const PANEL_WIDTH = COLOUR_PICKER_WIDTH + 2 * COLOUR_POPOVER_PADDING + 2;
 export type TextEffectPatch = { highlight: string | undefined } | { gradient: string | undefined };
 
 /** The toolbar glyph: an "A" over a marker stroke, its letter in a gradient when one is set. */
-function EffectsGlyph({ highlight, gradient }: { highlight: string | null; gradient: string | null }) {
+function EffectsGlyph({
+  highlight,
+  gradient,
+}: {
+  highlight: string | null;
+  gradient: string | null;
+}) {
   const g = textGradientOf(gradient);
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+    <Glyph size={18} units={18} aria-hidden>
       {g ? (
         <defs>
           <linearGradient id="lvd-text-effects-glyph" x1="0" x2="1" y1="0" y2="0">
@@ -56,7 +62,7 @@ function EffectsGlyph({ highlight, gradient }: { highlight: string | null; gradi
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -100,7 +106,9 @@ export function TextEffectsPanel({
         label="Highlight"
         value={highlight ?? NO_HIGHLIGHT}
         leading={[noColour(NO_HIGHLIGHT, 'No Highlight')]}
-        standard={[{ heading: 'Highlights', options: standardGroup('soft', surface, 'hex').options }]}
+        standard={[
+          { heading: 'Highlights', options: standardGroup('soft', surface, 'hex').options },
+        ]}
         yours={yours}
         onPick={(id) => onApply({ highlight: id === NO_HIGHLIGHT ? undefined : id })}
       />
@@ -115,10 +123,10 @@ export function TextEffectsPanel({
             className={`${tile(gradient === null)} text-slate-500 dark:text-slate-400`}
             style={{ background: paper }}
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-              <circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
-              <path d="M3.2 10.8 10.8 3.2" stroke="currentColor" strokeWidth="1.4" />
-            </svg>
+            <Glyph size={14} units={14} aria-hidden>
+              <circle cx="7" cy="7" r="5.5" />
+              <path d="M3.2 10.8 10.8 3.2" />
+            </Glyph>
           </button>
         </HoverCard>
         {TEXT_GRADIENTS.map((g) => (
@@ -165,7 +173,10 @@ export function TextEffectsButton({
   const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
   return (
     <>
-      <HoverCard title="Text Effects" description="Highlight or fill the selected words with a gradient.">
+      <HoverCard
+        title="Text Effects"
+        description="Highlight or fill the selected words with a gradient."
+      >
         <button
           ref={setTrigger}
           type="button"

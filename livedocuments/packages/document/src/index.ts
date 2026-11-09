@@ -404,6 +404,7 @@ export * from './sankey-model';
 // `@livedocuments/document/map-geometry` subpath, never this barrel.
 export * from './map-model';
 export * from './map-layout';
+export * from './map-geometry-ensure';
 export * from './sankey-layout';
 export * from './sankey-frame';
 export * from './sankey-text';

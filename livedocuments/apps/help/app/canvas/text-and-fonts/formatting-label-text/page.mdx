@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { LabelEditingToolbar } from '@liveworkspace/help-site/art/illustrations/label-formatting';
+import { TextEffectsHeadline } from '@/components/illustrations/maps-and-text-effects';
 
 export const metadata = helpMetadata({
   title: 'Formatting Label Text',
@@ -53,7 +54,20 @@ The **Alignment** dropdown (its icon is a few lines of text whose ends follow th
 
 ### Text Colour
 
-The last button is a colour swatch showing the colour of the selected text. Press it to open the colour picker and colour just the selected words, or the whole label when nothing is selected. It offers the same groups as every colour picker in the editor (the theme's colours, the standard colours and your custom colours); see [Colours, Borders and Opacity](/help/canvas/colours-borders-opacity/#the-colour-picker). The label's own colour, under **Style**, then **Colours**, stays the colour for every word you haven't coloured separately.
+The next button is a colour swatch showing the colour of the selected text. Press it to open the colour picker and colour just the selected words, or the whole label when nothing is selected. It offers the same groups as every colour picker in the editor (the theme's colours, the standard colours and your custom colours); see [Colours, Borders and Opacity](/help/canvas/colours-borders-opacity/#the-colour-picker). The label's own colour, under **Style**, then **Colours**, stays the colour for every word you haven't coloured separately.
+
+### Text Effects
+
+The last button, **Text Effects** (an "A" over a marker stroke), makes a word stand out in a headline. Select the words, press it, and pick:
+
+- **Highlight**: a soft marker band behind the lower part of the words, the way a highlighter pen marks a page. **No Highlight** takes it off.
+- **Gradient**: the letters themselves fade from one colour to another. Six presets (**Sunset**, **Ocean**, **Aurora**, **Berry**, **Ember** and **Midnight**) are tuned to read on a light page; **No Gradient** puts the text colour back.
+
+A highlight and a gradient can sit on the same words, and on different words of one label. Both carry into PNG, SVG and PDF exports, and a PowerPoint export keeps them as editable text with PowerPoint's own highlight and gradient fill. For a soft shadow behind a whole text element, use [Shadows](/help/canvas/shadows/).
+
+<Figure caption="A headline with a marker highlight on “Grow”, the Sunset gradient on “faster”, and a Soft shadow behind the text.">
+  <TextEffectsHeadline />
+</Figure>
 
 Clicking the toolbar never loses your selection, so you can make a word bold and then colour it without selecting it again. Click outside the element to finish, or press `Escape` to cancel the edit. Each finished edit is one step you can undo.
 
