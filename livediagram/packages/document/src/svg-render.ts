@@ -163,9 +163,8 @@ export function contentBounds(
     } else {
       // A turned element by its drawn corners (export-fidelity.md "The picture is sized to what is
       // drawn"): its unturned box left a rotated one cut off at the page edge.
-      const box = supportsRotation(el)
-        ? drawnBounds(el)
-        : { x: el.x, y: el.y, width: el.width, height: el.height };
+      const unturned = { x: el.x, y: el.y, width: el.width, height: el.height };
+      const box = supportsRotation(el) ? drawnBounds(el) : unturned;
       points.push({ x: box.x, y: box.y }, { x: box.x + box.width, y: box.y + box.height });
       // A pointer note's tip can sit well outside its box (docs/specs/009-elements/pointer-note.md).
       if (isPointerNote(el)) {
