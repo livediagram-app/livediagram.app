@@ -382,6 +382,85 @@ describe('arrow export', () => {
     expect(arrow.endArrowhead).toBeNull();
   });
 
+  it('exports a single bow through the middle of the curve, not its control point', () => {
+    const scene = parse(
+      tabToExcalidrawText(
+        tab([
+          {
+            id: 'ar',
+            type: 'arrow',
+            from: { kind: 'free', x: 0, y: 0 },
+            to: { kind: 'free', x: 100, y: 0 },
+            arrowStyle: 'curved',
+            curveOffset: { dx: 0, dy: 80 },
+          },
+        ]),
+      ),
+    );
+    const arrow = scene.elements[0]!;
+    // The quadratic's control point is (50, 80); the curve itself peaks halfway there.
+    expect(arrow.points).toEqual([
+      [0, 0],
+      [50, 40],
+      [100, 0],
+    ]);
+    expect(arrow.roundness).toEqual({ type: 2 });
+    expect(arrow.height).toBe(40);
+  });
+
+  it('keeps every bend of a multi-bend angled arrow', () => {
+    const scene = parse(
+      tabToExcalidrawText(
+        tab([
+          {
+            id: 'ar',
+            type: 'arrow',
+            from: { kind: 'free', x: 0, y: 0 },
+            to: { kind: 'free', x: 200, y: 100 },
+            arrowStyle: 'angled',
+            curvePoints: [
+              { dx: -40, dy: 0 },
+              { dx: 40, dy: 0 },
+            ],
+          },
+        ]),
+      ),
+    );
+    const arrow = scene.elements[0]!;
+    expect(arrow.points).toEqual([
+      [0, 0],
+      [60, 50],
+      [140, 50],
+      [200, 100],
+    ]);
+    expect(arrow.roundness).toBeNull();
+  });
+
+  it('turns a vertical-first elbow where the canvas does', () => {
+    const scene = parse(
+      tabToExcalidrawText(
+        tab([
+          ...boxes,
+          {
+            id: 'ar',
+            type: 'arrow',
+            // Leaves a's bottom edge, so its first leg runs vertically.
+            from: { kind: 'pinned', elementId: 'a', anchor: 's' },
+            to: { kind: 'free', x: 300, y: 250 },
+            arrowStyle: 'angled',
+          },
+        ]),
+      ),
+    );
+    const arrow = scene.elements.find((e) => e.type === 'arrow')!;
+    // From (50, 100) down to (300, 250): the corner sits under the start.
+    expect(arrow.points).toEqual([
+      [0, 0],
+      [0, 150],
+      [250, 150],
+    ]);
+  });
+
   it('exports the arrow label as bound text and reverse-maps head shapes', () => {
     const scene = parse(
       tabToExcalidrawText(
