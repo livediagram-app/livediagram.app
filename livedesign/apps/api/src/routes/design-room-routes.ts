@@ -11,7 +11,7 @@ import {
 import { adderKeyFor } from '../adder-key';
 import { noteWorkbenchRoom } from '../auth/workbench-session';
 import { linkCodeOf, indexService } from '../index-service';
-import { forbidden, json, notFound } from '../responses';
+import { designTrashed, forbidden, json, notFound } from '../responses';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { type RouteContext } from './context';
 import { resolveDesignGrant } from './design-grant';
@@ -38,6 +38,8 @@ export async function handleDesignRoomRoutes(ctx: RouteContext): Promise<Respons
     const grant = await resolveDesignGrant(ctx, id);
     if (grant instanceof Response) return grant;
     if (!grant) return notFound();
+    // A design in the Trash opens no room (docs/specs/013-workspace/trash.md): its owner and team are told why.
+    if (grant.trashed) return designTrashed();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     const workbench = ctx.workbench ?? null;
     const role = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
@@ -66,6 +68,7 @@ export async function handleDesignRoomRoutes(ctx: RouteContext): Promise<Respons
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
     const { claims, workbench } = opened;
+    if (claims.trashed) return designTrashed();
     // The grant's level, held to a workbench session's sealed cap.
     const role: AccessLevel = roomTicketLevel(opened);
     const person = linkCodeOf(claims.sub) ? null : claims.sub;

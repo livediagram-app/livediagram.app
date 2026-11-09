@@ -118,6 +118,33 @@ describe('a design read', () => {
   });
 });
 
+describe('a design in the Trash', () => {
+  it('answers its owner and team 410 design_trashed on every read and write, writing nothing', async () => {
+    const db = await design();
+    const grant: DesignGrant = {
+      item: 'P',
+      level: 'edit',
+      tab: null,
+      sub: 'owner',
+      team: null,
+      exp: Math.floor(Date.now() / 1000) + 600,
+      shareCode: null,
+      token: 'g',
+      trashed: true,
+    };
+    const read = await call(db, 'GET', '/api/designs/P', { grant });
+    expect(read.status).toBe(410);
+    expect(await read.json()).toEqual({ error: 'design_trashed' });
+    const writes: [string, string, unknown][] = [
+      ['PUT', '/api/designs/P/tabs/t1/name', { name: 'Gone' }],
+      ['PUT', '/api/designs/P', { name: 'Renamed' }],
+    ];
+    for (const [method, path, body] of writes)
+      expect((await call(db, method, path, { grant, body })).status).toBe(410);
+    expect(db.sql.prepare("SELECT name FROM design WHERE id = 'P'").get()).toEqual({ name: 'Roadmap' });
+  });
+});
+
 describe('a create', () => {
   it("refuses an id that is another person's started design", async () => {
     const db = await design();
