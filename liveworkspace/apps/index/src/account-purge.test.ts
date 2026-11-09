@@ -307,6 +307,86 @@ describe('POST /internal/purge-person', () => {
     expect(rows('SELECT person_id FROM timeline_scope_state')).toEqual([{ person_id: BEA }]);
   });
 
+  it("takes their id off a team's account events about them, and off webhook deliveries they did", async () => {
+    // Team events (no item) that the team still sees: Bea removed Ada, Ada joined, Bea joined; and one whose detail
+    // is not JSON, which must not stop the purge.
+    const accountEvent = (id: string, actor: string, detail: string | null) => {
+      run(
+        `INSERT INTO timeline_events (id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at)
+         VALUES (?, 'liveworkspace', NULL, ?, 'X', 'team_member_removed', 'Team', ?, 1)`,
+        id,
+        actor,
+        detail,
+      );
+      run(
+        `INSERT INTO timeline_event_scopes (scope, event_id, app, occurred_at) VALUES ('t:T', ?, 'liveworkspace', 1)`,
+        id,
+      );
+    };
+    const about = (person: string, name: string) =>
+      JSON.stringify({ teamId: 'T', personId: person, memberName: name });
+    accountEvent('t-removed', BEA, about(ADA, 'ada@example.com'));
+    accountEvent('t-joined', ADA, about(ADA, 'Ada'));
+    accountEvent('t-bea', BEA, about(BEA, 'Bea'));
+    accountEvent('t-odd', BEA, 'not json');
+    accountEvent('t-none', BEA, null);
+    addItem('bea-hooked', BEA);
+    // Bea's webhook on her plan, with a delivery of Ada's edit and one of her own.
+    run(
+      `INSERT INTO webhooks (id, item_id, kind, name, url_sealed, host, events, created_by, created_at)
+       VALUES ('wh-1', 'bea-hooked', 'json', 'Hook', 's', 'example.com', 'all', ?, 1)`,
+      BEA,
+    );
+    for (const [event, actor, state] of [
+      ['ev-ada', ADA, 'delivered'],
+      ['ev-ada-2', ADA, 'pending'],
+      ['ev-bea', BEA, 'delivered'],
+    ] as const) {
+      run(
+        `INSERT INTO webhook_deliveries (webhook_id, event_id, type, app, item_id, title, actor_id, actor_name,
+           occurred_at, state, next_at)
+         VALUES ('wh-1', ?, 'edited', 'liveplanner', 'bea-hooked', 'Plan', ?, ?, 1, ?, 1)`,
+        event,
+        actor,
+        actor === ADA ? 'Ada' : 'Bea',
+        state,
+      );
+    }
+
+    expect((await purge({ personId: ADA, teamIds: [] })).status).toBe(200);
+    await settle();
+    const detailOf = (id: string) =>
+      rows('SELECT detail FROM timeline_events WHERE id = ?', id)[0]?.detail as string | null;
+    expect(JSON.parse(detailOf('t-removed')!)).toEqual({
+      teamId: 'T',
+      personId: ANONYMISED_PERSON,
+      memberName: null,
+    });
+    expect(JSON.parse(detailOf('t-joined')!)).toEqual({
+      teamId: 'T',
+      personId: ANONYMISED_PERSON,
+      memberName: null,
+    });
+    expect(detailOf('t-bea')).toBe(about(BEA, 'Bea'));
+    expect(detailOf('t-odd')).toBe('not json');
+    expect(detailOf('t-none')).toBeNull();
+    expect(
+      rows('SELECT event_id, actor_id, actor_name FROM webhook_deliveries ORDER BY event_id'),
+    ).toEqual([
+      { event_id: 'ev-ada', actor_id: ANONYMISED_PERSON, actor_name: null },
+      { event_id: 'ev-ada-2', actor_id: ANONYMISED_PERSON, actor_name: null },
+      { event_id: 'ev-bea', actor_id: BEA, actor_name: 'Bea' },
+    ]);
+    // Nothing on an account event or a delivery still names her.
+    expect(
+      count(
+        `SELECT COUNT(*) AS n FROM timeline_events WHERE item_id IS NULL AND (actor_id = ?1 OR detail LIKE '%' || ?1 || '%')`,
+        ADA,
+      ),
+    ).toBe(0);
+    expect(count('SELECT COUNT(*) AS n FROM webhook_deliveries WHERE actor_id = ?', ADA)).toBe(0);
+  });
+
   it('is safe to run again, and remembers the request until the linger window ends', async () => {
     arrange();
     await purge({ personId: ADA, teamIds: ['D'] });
