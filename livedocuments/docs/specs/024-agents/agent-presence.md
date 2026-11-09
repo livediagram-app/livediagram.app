@@ -48,6 +48,8 @@ presence as that person's agent, and comments are how people and agents talk on 
 - An agent comments through the comment endpoints; the comment's author is the token's owner.
 - The comment endpoints gain **reply**, **resolve** and **reopen** (today only add and delete exist), each relayed to
   the room as an `el-delta` like add. Agents and people use the same endpoints.
+- A thread holds at most 500 comments. An add or a reply to a full thread answers 409 `thread_full` and writes,
+  relays and emails nothing, so no caller is told a comment was posted that nobody stored.
 - An editor that may comment but not edit resolves and reopens through these endpoints, as it adds; an editor that
   may edit keeps the room and its save.
 - `GET /api/documents/:id/comments?status=open|resolved|all` lists threads across tabs with their element's ref and

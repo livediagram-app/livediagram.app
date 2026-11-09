@@ -68,7 +68,8 @@ Outside an editor (an embed, an export) the chips are not drawn.
   `POST /api/documents/<id>/tabs/<tabId>/comments/<commentId>/react` with `{ emoji, on, key }`. The api checks
   the caller may take part, takes the name from their profile, writes the change at the tab's revision and relays
   the same `comment-react` delta to the room. The editor applies it at once and takes it back if the endpoint
-  refuses. A Viewer is refused (403) and offered nothing.
+  refuses. A Viewer is refused (403) and offered nothing. A new reaction on a comment in a resolved thread is
+  refused (409 `thread_resolved`); taking one's own back still works.
 - The room's ledger keeps each person's latest on or off per comment and emoji, so an Editor's save made before a
   reaction arrived cannot erase it.
 - A tab save keeps whatever reactions it carries, cleaned (malformed ones dropped); an Editor may already change
