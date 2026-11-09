@@ -114,7 +114,9 @@ export async function readSheet(
       chars += JSON.stringify(out).length;
       if (chars > SHEET_READ_CHARS_MAX) {
         cut = at;
-        resume = formatRange({ r1: start.r1 + i, c1: start.c1, r2: start.r2, c2: start.c2 });
+        // To the end of the range asked for, past any rows the cells cap left unread too.
+        const end = read.rest ? parseRangeText(read.rest)!.r2 : start.r2;
+        resume = formatRange({ r1: start.r1 + i, c1: start.c1, r2: end, c2: start.c2 });
         break rows;
       }
       cells.push(out);
@@ -125,7 +127,7 @@ export async function readSheet(
   const note = cut
     ? `Stopped at ${cut}, the most one read answers with: read on with the range ${resume}.`
     : read.truncated
-      ? `Stopped after row ${lastRow}, the most cells one read answers with: read on with a range from row ${lastRow + 1}.`
+      ? `Stopped after row ${lastRow}, the most cells one read answers with: read on with the range ${read.rest}.`
       : undefined;
   return {
     ok: true,

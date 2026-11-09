@@ -408,7 +408,7 @@ describe('the element plane', () => {
     const { container } = mount();
     const plane = container.querySelector('[data-element-plane]');
     expect(plane).not.toBeNull();
-    expect(plane!.className).toBe('contents');
+    expect(plane!.className).toBe('absolute inset-0');
     // Every element: the three boxed ones and the stored arrow, none of them outside it.
     expect(plane!.querySelectorAll('[data-boxed-stub]').length).toBe(3);
     expect(container.querySelectorAll('[data-boxed-stub]').length).toBe(3);

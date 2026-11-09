@@ -80,6 +80,22 @@ describe('purgeOwnItems', () => {
     });
   });
 
+  it('finishes at exactly its cap of live items, reading the Trash past the last page', async () => {
+    const own = (n: number, prefix: string) =>
+      Array.from({ length: n }, (_, i) => item(`${prefix}${i}`));
+    const cap = OWN_PURGE_PAGE * OWN_PURGE_PAGES;
+    expect(await purgeOwnItems(fakeIndex(own(cap, 'e')).client, 'liveplanner', 'me')).toEqual({
+      count: cap,
+      more: false,
+    });
+    const trashLeft = fakeIndex(own(cap, 'f'), own(1, 't'));
+    expect(await purgeOwnItems(trashLeft.client, 'liveplanner', 'me')).toEqual({
+      count: cap,
+      more: true,
+    });
+    expect(trashLeft.deleted).not.toContain('t0');
+  });
+
   it('fails on a refused delete once its batch has settled', async () => {
     const index = fakeIndex([item('a'), item('b'), item('c')], [], 'b');
     await expect(purgeOwnItems(index.client, 'liveplanner', 'me')).rejects.toThrow('index refused');

@@ -890,7 +890,7 @@ null)`, `isLocked(id)`, `setLocked(id, locked)`, `startBlank(id)`. An unknown pa
   nothing.
 - The pure edits (`pages-edits.ts`) answer `{ tab }` (the same tab when nothing changes) or
   `{ refused: PageEditRefusal }` (`unknown_page`, `locked`, `no_orientation`, `size_not_offered`,
-  `pattern_not_offered`, `page_limit`, `photo_limit`, `last_page`, `not_a_wireframe`,
+  `pattern_not_offered`, `background_not_offered` (a photo page, never painted), `page_limit`, `photo_limit`, `last_page`, `not_a_wireframe`,
   `kind_not_offered`).
 - `offersPageKindChoice(pages, id, count)`: true only for the only page, unchosen, empty.
   `withPageKindChosen`: null when the page no longer offers it.

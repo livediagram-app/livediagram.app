@@ -629,3 +629,5 @@ export { lineChars } from './svg-render-web';
 export * from './drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.
 export { indefiniteArticle, withArticle } from '@liveplanner/items';
+// A board's title and column name caps, for the agent write paths above this one (edit-operations).
+export { PLAN_COLUMN_NAME_MAX, PLAN_TITLE_MAX } from '@liveplanner/items';

@@ -1,4 +1,6 @@
 import { ViewZoomControls } from '@/components/canvas/view-readers';
+import type { MarqueeState } from '@liveworkspace/workbench/components/canvas/MarqueeRect';
+import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import { votesSpentBy } from '@liveplanner/project';
 import { participantKey } from '@/lib/identity';
 import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
@@ -68,7 +70,8 @@ type ChromeExtras = {
   // True when every element has scrolled out of view: show the nudge above
   // the Fit button (useOffscreenContent in Canvas).
   offscreenContent: boolean;
-  marquee: { startX: number; startY: number; currentX: number; currentY: number } | null;
+  // The sweep's rect, read only by the marquee rectangle (docs/specs/008-canvas/canvas-performance.md).
+  marquee: ReadableStore<MarqueeState | null>;
   wrapperRef: RefObject<HTMLDivElement | null>;
   activeDockPanel: DockPanel | null;
   setActiveDockPanel: Dispatch<SetStateAction<DockPanel | null>>;

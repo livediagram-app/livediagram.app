@@ -41,9 +41,15 @@ off", not "this diagram has no layout".
   key's rows), stay an even step apart; the step rounds to the grid only when that moves the last
   box no further than the tolerance.
 - **Nothing breaks.** A snap that would make two boxes overlap that did not, or nudge a box part-way
-  out of a lane or frame that held it, is undone for both.
-- **Settled.** Passes repeat (at most 4) until one moves nothing, so running it twice changes
-  nothing: the second press finds the tab already tidy.
+  out of a lane or frame that held it, is undone for both. A box held back this way then stays put as a
+  locked one does, and the boxes that shared a line with it line up with where it is.
+- A group settles on the grid line a member already sits on nearest the group's median, or the
+  median snapped when none does, so a group already partly on the grid never creeps along it.
+- **Settled.** Passes repeat (at most 8) until one moves nothing, so running it twice changes
+  nothing: the second press finds the tab already tidy. A crowd of overlapping boxes that is still
+  moving after that puts the boxes that move back where they were drawn while that leaves a settled
+  tab, and otherwise leaves the tab as it was; either way a second run changes nothing
+  (`apps/editor/lib/auto-align.test.ts` checks it on 1,500 random crowds).
 - Free arrow endpoints snap to the grid; pinned ones follow their boxes.
 
 ## Auto Layout (Tidy up)

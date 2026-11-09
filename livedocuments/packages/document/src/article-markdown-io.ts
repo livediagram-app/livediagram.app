@@ -14,6 +14,7 @@ import {
 } from './article-flow';
 import {
   closesFence,
+  escapeClosingHashes,
   fenceOpening,
   isTableRow,
   parseMarkdownBlocks,
@@ -340,7 +341,8 @@ export function articleToMarkdown(flow: ArticleFlow): string {
             ? brokenMarkdown(b.runs, notes)
             : b.style === 'quote'
               ? prefix + brokenMarkdown(b.runs, notes, prefix)
-              : prefix + escapeLineStart(keepEdgeSpaces(runsMarkdown(b.runs, notes))),
+              : prefix +
+                escapeClosingHashes(escapeLineStart(keepEdgeSpaces(runsMarkdown(b.runs, notes)))),
           '',
         );
         break;

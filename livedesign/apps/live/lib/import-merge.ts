@@ -31,6 +31,12 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     backgroundOpacity: imported.backgroundOpacity ?? receiving.backgroundOpacity,
     patternColor: imported.patternColor ?? receiving.patternColor,
     backgroundPatternScale: imported.backgroundPatternScale ?? receiving.backgroundPatternScale,
+    backgroundAnimationSpeed:
+      imported.backgroundAnimationSpeed ?? receiving.backgroundAnimationSpeed,
+    // The tab's drawing style (docs/specs/008-canvas/finish.md "imported tabs keep their finish") and its tag
+    // colours: without them a Sketch tab came back Flexible and its cards' tags lost their colours.
+    finish: imported.finish ?? receiving.finish,
+    tagColours: imported.tagColours ?? receiving.tagColours,
     // Tab-level typography rides the export too (docs/specs/006-design/per-tab-storage.md): without these an
     // exported tab using a tab font came back rendering in the default face.
     font: imported.font ?? receiving.font,

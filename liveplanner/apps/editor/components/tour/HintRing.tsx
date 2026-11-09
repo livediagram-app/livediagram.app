@@ -2,9 +2,12 @@
 
 // A hint's ring (docs/specs/026-plan/plan-tour.md "Hints climb"): a brand outline round the place a hint means, a
 // column, a cell, a divider. It takes no pointer and dims nothing, so the thing it rings is used as ever. It follows
-// its target (re-measured every TRACK_MS, as the tour engine's ring is) and lets go when the target is gone.
+// its target (re-measured every TRACK_MS, as the tour engine's ring is) and lets go when the target is gone. A hint's
+// ring (`reveal`) first brings its target into view, once, when it sits scrolled out of its column or the window:
+// "where to look" must be somewhere the person can see.
 
 import { useEffect, useState } from 'react';
+import { revealInScrollers } from '@liveworkspace/workbench/components/tour/tour-reveal';
 
 const TRACK_MS = 150;
 // The ring sits this far outside its target.
@@ -34,10 +37,36 @@ function firstDrawn(selectors: readonly string[]): DOMRect | null {
   return null;
 }
 
-export function HintRing({ selector }: { selector: string | readonly string[] }) {
+// The target a hint brings into view: the first drawn that is off the window or not under another layer (a target
+// a dialog covers stays where it is, and the ring moves on to the next).
+function revealTarget(selectors: readonly string[]): HTMLElement | null {
+  for (const s of selectors) {
+    const el = document.querySelector<HTMLElement>(s);
+    const r = el?.getBoundingClientRect();
+    if (!el || !r || (r.width === 0 && r.height === 0)) continue;
+    const onScreen =
+      r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth;
+    if (!onScreen || !covered(el, r)) return el;
+  }
+  return null;
+}
+
+export function HintRing({
+  selector,
+  reveal = false,
+}: {
+  selector: string | readonly string[];
+  // Scroll the target into view as the ring appears (a hint's ring; never the passive one round a mission's control).
+  reveal?: boolean;
+}) {
   const [box, setBox] = useState<Box | null>(null);
   // One string, so a fresh array of the same selectors does not restart the measure.
   const key = typeof selector === 'string' ? selector : selector.join('\n');
+  useEffect(() => {
+    if (!reveal) return;
+    const el = revealTarget(key.split('\n'));
+    if (el) revealInScrollers(el);
+  }, [key, reveal]);
   useEffect(() => {
     const selectors = key.split('\n');
     const measure = () => {

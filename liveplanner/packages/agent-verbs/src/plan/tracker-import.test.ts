@@ -170,6 +170,12 @@ describe('readTrackerInput', () => {
       code: 'source_mismatch',
       message: 'That file is a Trello export, not Jira. Leave source out to read it as it is.',
     });
+    expect(
+      readTrackerInput({ content: 'Task ID,Name,Section/Column\n1,Ship,Doing', source: 'jira' }),
+    ).toMatchObject({
+      ok: false,
+      message: 'That file is an Asana export, not Jira. Leave source out to read it as it is.',
+    });
   });
 });
 

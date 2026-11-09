@@ -142,7 +142,8 @@ anything the CLI does.
    `authEnabled` or `authEnabled: false` makes every api verb exit 4 with the "no sign-in" line: the CLI does not act
    as a guest.
 6. **Floor.** `isBelow(CLI_VERSION, caps.minVersion)` in `runOnline`: a verb whose behaviour is `write` or `destructive` and that reaches the
-   api, below `cli.minVersion`, exits 1 (CLI13). Reads are never refused. A host `projectFormat` above the
+   api, below `cli.minVersion` by semver precedence (a prerelease such as `1.3.0-rc.1` is below `1.3.0`), exits 1
+   (CLI13). Reads are never refused. A host `projectFormat` above the
    bundled `PROJECT_FORMAT` refuses the verbs marked `files` (`pull`, `push`, `export`, `tab diff`, reads of a pull
    file) with exit 1 and the version to install; online commands carry on.
 7. **Address.** `<project>` and `--tab` resolve through `resolveProject` and `resolveTab` (below); elements are left to
@@ -651,7 +652,7 @@ type ApiClientOptions = {
   baseUrl: string; // 'https://liveplanner-api/api' for the MCP binding, caps.apiBase for the CLI
   fetch: (request: Request) => Promise<Response>;
   headers: () => Record<string, string>; // Authorization; X-Liveplanner-Client: mcp | cli; X-Share-Code when addressed by a link
-  onFailure?: (kind: string) => void; // 'Http503' | 'Internal', 5xx and network only
+  onFailure?: (kind: string) => void; // 'Http503' | 'Internal', 5xx and network only (a timeout counts, the caller's own abort not)
   timeoutMs?: number;
 };
 type ApiClient = {

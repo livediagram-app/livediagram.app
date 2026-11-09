@@ -100,8 +100,9 @@ anybody repairs it.
 - **Comments are credited as posted.** The room stamps each comment an editor posts with the sending session's
   presence name and colour (`stampCommentAuthor`). The api stamps a comment new to the store with the saver's
   identity, so `rewriteCommentAuthors` credits a comment the ledger knows with the name the room saw it posted under,
-  leaves its author id empty, and lets the author's own save (the only copy carrying their id) claim it. A comment
-  that already has an author id is never re-claimed. Comment names are the sender's own choice.
+  leaves its author id empty, and lets the author's own save (the only copy carrying their id) claim it. A claim
+  takes the author id only: the words and the time stay as the room credited them, since the id on a saved copy is
+  the saver's to write and a claim proves nothing more. A comment that already has an author id is never re-claimed. Comment names are the sender's own choice.
 - **Ops sent while the socket is down are held, not dropped.** The room client keeps an outbox of document ops
   (bounded at 500) and flushes it, in order, right after the reconnect's hello and sync. Cursors, selections and other
   presence ops are not held.

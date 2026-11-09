@@ -26,8 +26,11 @@ export function useMinuteClock(on: boolean): number {
 // Knocked for ten seconds after a knock, then the button comes back.
 export function useKnockedRecently(): boolean {
   const at = useKnockedAt();
-  // The knock time whose ten seconds have run out; a newer knock reads Knocked until its own timer passes.
-  const [expired, setExpired] = useState(0);
+  // The knock time whose ten seconds have run out; a newer knock reads Knocked until its own timer passes. A sign or
+  // reader opened after the ten seconds starts with them run out, so it never shows Knocked for its first frame.
+  const [expired, setExpired] = useState(() =>
+    at > 0 && Date.now() - at >= KNOCK_THROTTLE_MS ? at : 0,
+  );
   useEffect(() => {
     if (!at) return;
     const timer = setTimeout(

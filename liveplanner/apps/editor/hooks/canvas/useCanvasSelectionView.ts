@@ -5,10 +5,11 @@
 // the chrome re-renders on a selection change; the canvas that hosts it does not.
 
 import { useMemo } from 'react';
+import type { Element } from '@liveplanner/project';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
-import { useCanvasCovered } from '@/hooks/plan/plan-cover-store';
 import { usePreviewedElements } from './usePreviewedElements';
+import { useCanvasCovered } from '@/hooks/plan/plan-cover-store';
 
 export type CanvasSelectionInput = Omit<
   Parameters<typeof deriveCanvasSelection>[0],
@@ -18,6 +19,46 @@ export type CanvasSelectionInput = Omit<
 type CanvasSelectionView = ReturnType<typeof deriveCanvasSelection>;
 
 const whole = <T>(s: T) => s;
+
+// The last selection derived over each list (docs/specs/008-canvas/canvas-performance.md "Selection chrome derives
+// a frame once"): the chrome reading the same input, list and selection gets the same view, derived once a frame.
+const derived = new WeakMap<
+  readonly Element[],
+  {
+    input: CanvasSelectionInput;
+    selectedId: string | null;
+    multiSelectedIds: ReadonlySet<string>;
+    canvasCovered: boolean;
+    view: CanvasSelectionView;
+  }
+>();
+
+export function sharedCanvasSelection(
+  input: CanvasSelectionInput,
+  elements: Element[],
+  selectedId: string | null,
+  multiSelectedIds: ReadonlySet<string>,
+  canvasCovered: boolean,
+): CanvasSelectionView {
+  const last = derived.get(elements);
+  if (
+    last &&
+    last.input === input &&
+    last.selectedId === selectedId &&
+    last.multiSelectedIds === multiSelectedIds &&
+    last.canvasCovered === canvasCovered
+  )
+    return last.view;
+  const view = deriveCanvasSelection({
+    ...input,
+    elements,
+    selectedId,
+    multiSelectedIds,
+    canvasCovered,
+  });
+  derived.set(elements, { input, selectedId, multiSelectedIds, canvasCovered, view });
+  return view;
+}
 
 // The selection reads the elements as a drag in progress on `tabId` shows them
 // (docs/specs/008-canvas/drag-preview.md), so the union handles follow a resize. Read here, by the chrome,
@@ -32,8 +73,7 @@ export function useCanvasSelectionView(
   // covers it, so no selection chrome floats there, whatever is selected.
   const canvasCovered = useCanvasCovered();
   return useMemo(
-    () =>
-      deriveCanvasSelection({ ...input, elements, selectedId, multiSelectedIds, canvasCovered }),
+    () => sharedCanvasSelection(input, elements, selectedId, multiSelectedIds, canvasCovered),
     [input, elements, selectedId, multiSelectedIds, canvasCovered],
   );
 }

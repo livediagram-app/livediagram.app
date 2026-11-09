@@ -7,6 +7,7 @@ import {
   elementKindLabel,
   elementSupportsText,
   isBoxed,
+  isRetiredElement,
   turnsWithFacing,
   type Element,
 } from '@livehuddle/document';
@@ -134,8 +135,9 @@ export function CanvasSelectionToolbars({
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
             // The Format painter's one way in (docs/specs/008-canvas/canvas-and-palette.md "Format painter"): this
             // element's look, painted onto the next ones pressed.
+            // Not from a retired element, which lends no look (useElementHelpers' paint guard).
             onFormatPainter={
-              !readOnly && selected && props.onStartFormatPainter
+              !readOnly && selected && !isRetiredElement(selected) && props.onStartFormatPainter
                 ? () => props.onStartFormatPainter?.(selected.id)
                 : undefined
             }

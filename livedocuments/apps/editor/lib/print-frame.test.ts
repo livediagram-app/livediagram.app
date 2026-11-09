@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PRINT_FRAME_ATTR, PRINT_FRAME_CLEANUP_MS, printInFrame } from './print-frame';
+import {
+  PRINT_FONTS_WAIT_MS,
+  PRINT_FRAME_ATTR,
+  PRINT_FRAME_CLEANUP_MS,
+  printInFrame,
+} from './print-frame';
 
 // docs/specs/020-import-export/print.md "How it prints". jsdom loads no srcdoc, so each test fires the frame's load.
 
@@ -29,6 +34,52 @@ describe('printInFrame', () => {
     load(print);
     await done;
     expect(print).toHaveBeenCalledTimes(1);
+  });
+
+  // The sheets print in their own faces: the dialog waits for the frame's fonts, at most PRINT_FONTS_WAIT_MS.
+  it('waits for the frame fonts before printing, and not past the wait', async () => {
+    const withFonts = (ready: Promise<unknown>) => {
+      const frame = frameNow()!;
+      Object.defineProperty(frame.contentWindow!.document, 'fonts', {
+        value: { ready },
+        configurable: true,
+      });
+      return frame;
+    };
+    const print = vi.fn();
+    let fontsIn!: () => void;
+    const done = printInFrame('<p>a</p>');
+    withFonts(new Promise<void>((r) => (fontsIn = r)));
+    load(print);
+    await Promise.resolve();
+    expect(print).not.toHaveBeenCalled();
+    fontsIn();
+    await done;
+    expect(print).toHaveBeenCalledTimes(1);
+
+    vi.useFakeTimers();
+    const slow = vi.fn();
+    const late = printInFrame('<p>b</p>');
+    withFonts(new Promise(() => {}));
+    load(slow);
+    await vi.advanceTimersByTimeAsync(PRINT_FONTS_WAIT_MS - 1);
+    expect(slow).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    await late;
+    expect(slow).toHaveBeenCalledTimes(1);
+  });
+
+  it('prints only the newest when a second print replaces one still waiting on its fonts', async () => {
+    const first = vi.fn();
+    const one = printInFrame('<p>one</p>');
+    const frame = frameNow()!;
+    Object.defineProperty(frame.contentWindow!.document, 'fonts', {
+      value: { ready: Promise.resolve() },
+    });
+    load(first);
+    frame.remove();
+    await one;
+    expect(first).not.toHaveBeenCalled();
   });
 
   it('removes the frame after printing, or after a minute', async () => {

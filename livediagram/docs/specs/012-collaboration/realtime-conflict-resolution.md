@@ -211,7 +211,9 @@ the editor until a reload, and nothing says so. The client therefore checks its 
    what is on screen, so a restored snapshot already holds the peer's change:
    undoing takes back your own edits alone, never a collaborator's element or a
    tab they added, and the resulting element ops are broadcast as yours. A
-   resync's re-read content replaces only what is on screen.
+   resync's re-read content replaces only what is on screen. A peer's arrow
+   attached to an element your undo takes back (the box you added) stays, its
+   end freed where it was drawn, never naming an element that is gone.
    A snapshot takes the ops when it is restored, not when they arrive: the history keeps the peer ops in
    arrival order (`@liveworkspace/workbench/lib/remote-op-log`) and the log position each snapshot was
    taken at, and Undo, Redo or a cancelled gesture applies only the ops that snapshot lacks, in order, which

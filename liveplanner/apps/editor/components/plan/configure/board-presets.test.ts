@@ -146,6 +146,17 @@ describe('boardPresets', () => {
     expect(boardPresets(setup, [note], [item('note', {})])[0]?.reason).toBeUndefined();
   });
 
+  it('puts "an" before a field that starts with a vowel', () => {
+    const deal = {
+      ...type('deal', ['title', 'status', 'f-outcome']),
+      label: 'Deal',
+      custom: [{ id: 'f-outcome', label: 'Outcome', kind: 'choice', options: ['Won', 'Lost'] }],
+    } as ItemTypeDef;
+    const deals = [item('deal', { 'f-outcome': 'Won' }), item('deal', {}), item('deal', {})];
+    const ps = boardPresets(setup, [deal], deals);
+    expect(ps.find((p) => p.id === 'lane:f-outcome')?.reason).toBe('1 of 3 cards have an Outcome');
+  });
+
   it('offers the card types’ own fields, and never more than nine', () => {
     const deal = {
       ...type('deal', ['title', 'status', 'f-stage', 'f-seats', 'f-renewal', 'f-signed']),

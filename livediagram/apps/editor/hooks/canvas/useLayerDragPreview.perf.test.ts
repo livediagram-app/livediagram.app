@@ -39,9 +39,9 @@ const inputs: LayerPreviewInputs = {
   tabFinish: undefined,
   stackedIds: new Set(),
 };
-const moved = (dx: number) =>
+const moved = (dx: number, dragged = DRAGGED) =>
   BOARD.map((el, i) =>
-    i < DRAGGED ? ({ ...el, x: (el as { x: number }).x + dx } as Element) : el,
+    i < dragged ? ({ ...el, x: (el as { x: number }).x + dx } as Element) : el,
   );
 
 afterEach(() => resetDragPreviewForTests());
@@ -61,6 +61,28 @@ describe('the layer preview store’s frame', () => {
     if (process.env.PERF_LOG) console.log(`preview frame ${best.toFixed(2)} ms`);
     expect(best).toBeLessThan(cpuBudgetMs(16));
   });
+
+  // A very large move (docs/specs/008-canvas/canvas-performance.md "Dragging a very large selection"): half the
+  // board's boxes, and all of them. The moved boxes' crossings where they were are found once a gesture, the fans
+  // are placed again only where they read what moved, and a move that rides whole builds no preview board.
+  const BIG_DRAGS = [1000, 2000];
+  for (const dragged of BIG_DRAGS)
+    it(`updates a ${dragged.toLocaleString('en')}-box drag on a 4,000-element board within budget, each frame`, () => {
+      const store = createLayerPreviewStore();
+      let dx = 0;
+      const frame = () => {
+        dx += 3;
+        setLocalPreview('t', moved(dx, dragged), BOARD);
+        store.update({ ...inputs });
+      };
+      for (let i = 0; i < 3; i++) frame();
+      let best = Infinity;
+      for (let i = 0; i < 5; i++) best = Math.min(best, cpuMsOf(frame));
+      if (process.env.PERF_LOG)
+        console.log(`preview frame, ${dragged} dragged ${best.toFixed(2)} ms`);
+      // Measured 3.3 to 3.9 ms (7 to 7.6 ms before the crossings and fans were kept per gesture).
+      expect(best).toBeLessThan(cpuBudgetMs(6));
+    });
 
   it('does no work when the layer re-renders mid-drag with nothing changed', () => {
     const store = createLayerPreviewStore();

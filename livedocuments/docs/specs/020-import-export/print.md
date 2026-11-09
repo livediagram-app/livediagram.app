@@ -36,6 +36,9 @@ The card opens a panel behind the dialog's `BackBar` ("All formats", the chip **
 - A page prints as the PDF export draws it (`renderTabToSvg` with the page, the same picture PNG and PDF
   rasterise): its background, pattern and elements clipped to its edges, the plain paper white. Printed as
   vector SVG, not a picture of one, so text stays sharp. Hidden layers stay out, as in every page export.
+  Each sheet's drawing keeps to its own gradients, patterns, fades and clips: the sheets share one print
+  document, and two tabs' pages share ids (every tab's first page, a copied tab's elements), so a sheet's ids
+  are made its own.
 - No headers, footers, page numbers or editor chrome: the print document holds only the sheets, with
   `print-color-adjust: exact` so backgrounds print.
 
@@ -44,7 +47,8 @@ The card opens a panel behind the dialog's `BackBar` ("All formats", the chip **
 The pages are drawn into a **print frame**: an `<iframe>` off screen (not `display: none`, which some browsers
 refuse to print), `sandbox="allow-same-origin allow-modals"` (no script runs in it), its document written through
 `srcdoc` as `TrustedHTML` (our own builder's markup, [Trusted Types](../../../../livediagram/docs/specs/016-platform/trusted-types.md)).
-Once it loads, its window's `print()` opens the dialog; the frame is removed after `afterprint`, or after a minute
+Once it loads and its fonts have (the sheets' own faces, as the PDF draws them; a font still loading after three
+seconds prints in the fallback rather than holding the dialog), its window's `print()` opens the dialog; the frame is removed after `afterprint`, or after a minute
 where a browser never sends it. Only one print frame exists at a time: a second Print replaces the first.
 
 This works the same on a phone: iOS and Android open their print sheet from the frame's `print()`.

@@ -103,6 +103,10 @@ export type ImageExportOpts = {
   padding?: number;
   transparent?: boolean;
   surface?: CanvasSurface;
+  // A photo page's elements alone (docs/specs/031-photo/photo-pages.md "Elements on top"): the page's own paint (its
+  // picture's preview, or the checkerboard while there is none) left out, as a Photo export draws them over the
+  // photo's full-size composite. Only a photo page passes it: a device's paint holds its screen's clip.
+  elementsOnly?: boolean;
 };
 
 // How an element moves in a live inline SVG: the wrapper class + inline style for a boxed element, and the moving
@@ -542,8 +546,9 @@ export function renderTabToSvg(source: Tab, opts: ImageExportOpts = {}): string 
   parts.push(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW * size)}" height="${r2(vbH * size)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
   );
-  if (frame) parts.push(frame.backgroundSvg);
-  else if (!opts.transparent)
+  if (frame) {
+    if (!opts.elementsOnly) parts.push(frame.backgroundSvg);
+  } else if (!opts.transparent)
     parts.push(
       `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
     );

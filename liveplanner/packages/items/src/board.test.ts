@@ -257,6 +257,19 @@ describe('normaliseBoardSetup', () => {
     expect(s?.columns).toEqual([{ id: 'a', status: 'review', name: 'Review' }]);
   });
 
+  it('caps columns kept, not entries read: a valid column after dropped ones is kept', () => {
+    const cols = [
+      'junk',
+      { id: 'dup', status: 's0' },
+      ...Array.from({ length: 13 }, (_, i) => ({ id: `c${i}`, status: `s${i}`, name: `S${i}` })),
+    ];
+    const s = normaliseBoardSetup({ columns: cols });
+    expect(s?.columns.map((c) => c.id)).toEqual([
+      'dup',
+      ...Array.from({ length: 11 }, (_, i) => `c${i + 1}`),
+    ]);
+  });
+
   it('drops bad columns and fields, keeps the first of a duplicate status', () => {
     const s = normaliseBoardSetup({
       title: 7,
@@ -365,6 +378,13 @@ describe('item text', () => {
     );
     expect(itemSummary(a)).toBe('#12 [project] Fix login (@Sam Lee, !high)');
     expect(itemSummary(item({ title: 'x' }, { key: 3 }))).toBe('#3 [task] x');
+  });
+
+  // docs/specs/026-plan/plan-tour.md: a practice card (key 0) has no number of its own.
+  it('names a card with no number by its title alone', () => {
+    expect(itemAccessibleName(item({ title: 'Book a room' }, { key: 0 }))).toBe(
+      'Book a room, Task',
+    );
   });
 });
 

@@ -130,7 +130,7 @@ describe('buildArticleTab', () => {
 });
 
 describe('pictureZoneSize', () => {
-  it('falls back to a modest box, and clamps tiny pictures to a zone’s least side', () => {
+  it('falls back to a modest box, and grows tiny pictures to a zone’s least side, keeping their shape', () => {
     expect(pictureZoneSize({ path: 'a', widthPx: 0, heightPx: 0 }, undefined, 650)).toEqual({
       width: 320,
       height: 240,
@@ -140,8 +140,36 @@ describe('pictureZoneSize', () => {
       height: 240,
     });
     expect(pictureZoneSize({ path: 'a', widthPx: 4, heightPx: 2 }, undefined, 650)).toEqual({
-      width: 24,
+      width: 48,
       height: 24,
     });
+  });
+
+  it('scales a picture taller than the page as one to fit the text area, never stretching it', () => {
+    // A4's text area: 602 x 931.
+    expect(
+      pictureZoneSize({ path: 'a', widthPx: 400, heightPx: 3000 }, undefined, 602, 931),
+    ).toEqual({ width: 124, height: 931 });
+    expect(
+      pictureZoneSize({ path: 'a', widthPx: 1204, heightPx: 2400 }, undefined, 602, 931),
+    ).toEqual({ width: 467, height: 931 });
+    // Without a text height, the zone's largest side bounds it, still as one.
+    expect(pictureZoneSize({ path: 'a', widthPx: 300, heightPx: 6000 }, undefined, 602)).toEqual({
+      width: 100,
+      height: 2000,
+    });
+    // Too thin to grow without passing the text width: only then is a side clamped.
+    expect(pictureZoneSize({ path: 'a', widthPx: 602, heightPx: 2 }, undefined, 602, 931)).toEqual({
+      width: 602,
+      height: 24,
+    });
+  });
+
+  it('builds a tall picture’s zone and image inside the page’s text area', () => {
+    const tall = buildArticleTab([pic('t', 'word/media/t.png', 500, 2500)], new Map(), 'Tall');
+    const doc = articlesOf(tall)[Object.keys(articlesOf(tall))[0]!]!;
+    const zone = doc.blocks.find((b): b is ArticleZoneBlock => b.type === 'zone')!;
+    expect(zone).toMatchObject({ width: 186, height: 931 });
+    expect(tall.elements[0]).toMatchObject({ width: 186, height: 931 });
   });
 });

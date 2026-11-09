@@ -68,7 +68,7 @@ clients sit beside it. Ask before editing a `.dev.vars` you didn't make.
   refs and click by ref. The template search box is the reliable way to pick a template.
 - The palette defaults to the Shapes tool: a click-drag on the canvas DRAWS a square instead of
   selecting or moving. Click "Select" in the palette header first when testing drags.
-- The Layers panel opens from the stacked-squares dock button in the bottom-right zoom cluster. Each
+- livediagram only (livedesign has no Layers panel since #1444; its photo editor has a Layers tab): the Layers panel opens from the stacked-squares dock button in the bottom-right zoom cluster. Each
   row: eye toggle, preview, name, ellipsis menu (Layer / Content / Merge; Lock lives under Content).
 - Hover-to-solo: resting the pointer on a layer row for about 1 s makes the canvas render ONLY that
   layer. Move the pointer off the panel before screenshotting canvas state, or you capture the solo

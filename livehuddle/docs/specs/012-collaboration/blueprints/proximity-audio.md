@@ -58,7 +58,8 @@ leaving the room is pruned with the rest of its presence (`pruneCallPeers(presen
 its level and locator.
 
 **Publishing a locator**: on publishing, and when the set of walker ids on the tab gains one, at most once per
-`LOCATOR_RESEND_MS`; `track: null` on leaving.
+`LOCATOR_RESEND_MS`; `track: null` on leaving. The room connector (`lib/api/room.ts`) keeps the last `call-track`
+it sent with the selection and tab focus (`lastSaid`) and sends it on every new socket, right after the hello.
 
 **Subscriptions** (`lib/calls/sfu-session.ts`): one `RTCPeerConnection` and one Realtime session per call. Every
 mutation (publish, subscribe batch, close batch) runs through one promise queue; a subscribe or close is reconciled
@@ -122,6 +123,10 @@ held frames for one step. The editor's store is memory only and empties on leavi
   republishes the open microphone (`CallMic.republish`; a released one is unpublished, so the next unmute publishes
   afresh), the camera and the screen (`CallVideo.republish`), sends its locators and hears again. More than
   `RENEW_MAX` (3) renewals inside `RENEW_WINDOW_MS` (60 s) fail the call (`fail('session')`).
+- A capture still being asked for when the session goes (`CallMic.open`, `CallVideo.toggleCamera` /
+  `toggleScreen`) reads the call's session again once the browser answers and publishes there; with none (the
+  renewal still minting) it keeps the stream and the renewal's `republish` sends it. A camera or screen press while
+  `ProximityCall.renewing` (no session) starts the capture too (`CallVideoHost.renewing`).
 - A publish that fails forgets its sender and stops its transceiver, so a later publish of that name negotiates
   afresh instead of swapping a track into a sender Realtime never accepted.
 - A locator for a session that ended: the subscribe's per-track error is ignored; the peer is retried only when it

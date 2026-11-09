@@ -7,6 +7,7 @@ import {
 import {
   cleanReactions,
   commentWithReactions,
+  cutText,
   isSafeColourValue,
   reactionSummary,
   sanitizeMentions,
@@ -316,7 +317,7 @@ export const UNKNOWN_AUTHOR_COLOR = '#94a3b8';
 
 // The name a new comment was posted under, clamped, for a writer with no profile to read.
 function claimedName(name: unknown): string {
-  const trimmed = typeof name === 'string' ? name.trim().slice(0, MAX_PARTICIPANT_NAME_LEN) : '';
+  const trimmed = typeof name === 'string' ? cutText(name.trim(), MAX_PARTICIPANT_NAME_LEN) : '';
   return trimmed || UNKNOWN_AUTHOR_NAME;
 }
 

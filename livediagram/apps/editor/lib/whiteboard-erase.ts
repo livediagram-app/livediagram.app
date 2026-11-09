@@ -4,15 +4,13 @@
 // it touches (shape-hit.ts, the same outline selecting picks by); Partial cuts strokes. Everything else is the
 // gesture's business (checkpoint, cascade): these are pure.
 import {
-  arrowReferencesAny,
-  endpointPosition,
   eraseStrokePart,
+  freeEndsAttachedTo,
   pathTouchesBrush,
   shapeTouchesBrush,
   strokeTouchesBrush,
-  type ArrowElement,
+  withAttachedArrows,
   type Element,
-  type Endpoint,
   type FreehandElement,
   type ShapeElement,
 } from '@livediagram/document';
@@ -98,21 +96,10 @@ export function partialEraseStep(
     return pieces;
   });
   if (gone.size === 0 && split.size === 0) return null;
-  return out.flatMap((el): Element[] => {
-    if (el.type !== 'arrow') return [el];
-    if (gone.size > 0 && !isProtected(el) && arrowReferencesAny(el, gone)) return [];
-    if (split.size === 0) return [el];
-    return [unpinFrom(el, split)];
-  });
-}
-
-// `arrow` with every end pinned to one of `split` turned free at the spot it resolved to.
-function unpinFrom(arrow: ArrowElement, split: ReadonlyMap<string, Element>): ArrowElement {
-  const free = (end: Endpoint): Endpoint =>
-    end.kind === 'pinned' && split.has(end.elementId)
-      ? { kind: 'free', ...endpointPosition(end, split) }
-      : end;
-  const from = free(arrow.from);
-  const to = free(arrow.to);
-  return from === arrow.from && to === arrow.to ? arrow : { ...arrow, from, to };
+  // The arrows a stroke erased whole takes, and those hung off them in turn (withAttachedArrows); a protected one
+  // stays, as a split stroke's arrows do, with its end freed where it was drawn. One level used to stop short, and a
+  // kept arrow stayed pinned to the erased stroke, drawn and saved at the canvas origin.
+  const taken = gone.size > 0 ? withAttachedArrows(out, gone, isProtected) : gone;
+  const left = taken.size > gone.size ? out.filter((el) => !taken.has(el.id)) : out;
+  return freeEndsAttachedTo(left, (id) => taken.has(id) || split.has(id), elements as Element[]);
 }

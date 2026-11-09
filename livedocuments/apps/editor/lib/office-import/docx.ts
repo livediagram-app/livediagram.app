@@ -8,6 +8,7 @@ import {
   ARTICLE_LIST_MAX_LEVEL,
   MAX_ARTICLE_BLOCK_TEXT,
   MAX_ARTICLE_BLOCKS,
+  MAX_ARTICLE_TABLE_COLS,
   cleanFootnoteText,
   isSafeArticleHref,
   nextArticleBlockId,
@@ -23,6 +24,7 @@ import { OfficeImportError } from './errors';
 import {
   readNumbering,
   readStyles,
+  runHidden,
   runMarks,
   type DocxNumbering,
   type DocxStyles,
@@ -46,7 +48,7 @@ export type DocxBlock = ArticleBlock | { id: string; type: 'picture'; picture: O
 
 export type DocxRead = { blocks: DocxBlock[]; pictures: OfficePicture[]; tally: SkipTally };
 
-type Field = { instr: string; result: boolean; href?: string };
+type Field = { instr: string; result: boolean; href?: string; toc?: true };
 
 type Para = {
   style?: ArticleParagraphStyle;
@@ -92,6 +94,12 @@ const ALIGN: Record<string, ArticleAlign> = {
 };
 
 const HYPERLINK = /^\s*HYPERLINK\s+"([^"]+)"/i;
+// A table of contents field, and the heading levels its \o switch lists ("1-3"). One with \c or \a lists captions
+// (a table of figures), not headings: its result stays as written.
+const TOC_FIELD = /^\s*TOC\b/i;
+const TOC_CAPTIONS = /\\[ca]\b/i;
+const TOC_LEVELS = /\\o\s+"\s*\d+\s*-\s*(\d+)\s*"/i;
+const isContentsField = (instr: string) => TOC_FIELD.test(instr) && !TOC_CAPTIONS.test(instr);
 
 /** A field's link address, when it is a HYPERLINK to an address an article keeps. */
 function fieldHref(instr: string): string | undefined {
@@ -197,6 +205,9 @@ class DocxWalker {
 
   private paragraph(p: XmlElement): void {
     const pPr = child(p, 'w:pPr');
+    // A table of contents' own title: the contents block draws its own.
+    if (this.styles.isTocHeading(child(pPr, 'w:pStyle')?.attrs['w:val']) && !find(p, 'w:fldChar'))
+      return;
     if (pPr && child(pPr, 'w:pageBreakBefore') && this.inTable === 0) this.pageBreak();
     const sectPr = child(pPr, 'w:sectPr');
     if (sectPr) this.section(sectPr);
@@ -297,6 +308,10 @@ class DocxWalker {
       field.instr += text;
       return;
     }
+    // A table of contents' entries are the contents block's to draw (with the article's own page numbers).
+    if (this.inToc()) return;
+    // Hidden text is neither shown nor printed in Word.
+    if (runHidden(rPr, this.styles)) return;
     const link = href ?? [...this.fields].reverse().find((f) => f.href)?.href;
     const marks = runMarks(rPr, this.styles);
     if (text.trim() !== '' && !marks.code) this.allMono = false;
@@ -349,6 +364,7 @@ class DocxWalker {
   private run(r: XmlElement, href: string | undefined): void {
     const rPr = child(r, 'w:rPr');
     for (const c of kids(r)) {
+      if (this.inToc() && c.name !== 'w:fldChar' && c.name !== 'w:instrText') continue;
       switch (c.name) {
         case 'w:t':
           this.text(textOf(c), rPr, href);
@@ -408,11 +424,32 @@ class DocxWalker {
     if (type === 'begin') this.fields.push({ instr: '', result: false });
     else if (type === 'separate') {
       const field = this.fields[this.fields.length - 1];
-      if (field) {
+      if (field && !field.result) {
         field.result = true;
         field.href = fieldHref(field.instr);
+        if (isContentsField(field.instr) && this.inTable === 0 && !this.inToc()) {
+          field.toc = true;
+          this.contents(field.instr);
+        }
       }
     } else if (type === 'end') this.fields.pop();
+  }
+
+  private inToc(): boolean {
+    return this.fields.some((f) => f.toc);
+  }
+
+  /** A Word table of contents as a contents block listing Heading 1 to the deepest level its field lists (at most
+   *  Heading 3); its entries, and their page numbers from Word's own pages, are left for the block to draw. */
+  private contents(instr: string): void {
+    this.flush();
+    const levels = Number(TOC_LEVELS.exec(instr)?.[1] ?? 3);
+    const depth = Math.min(3, Math.max(1, levels));
+    this.push({
+      id: nextArticleBlockId(),
+      type: 'toc',
+      ...(depth === 1 || depth === 2 ? { depth } : {}),
+    });
   }
 
   private picture(
@@ -477,18 +514,25 @@ class DocxWalker {
     this.inTable += 1;
     const grid: ArticleRun[][][] = [];
     let header = false;
-    for (const tr of kids(tbl)) {
-      if (tr.name !== 'w:tr') continue;
+    for (const tr of tableParts(tbl, 'w:tr')) {
+      const trPr = child(tr, 'w:trPr');
       if (grid.length === 0) {
-        const flag = child(child(tr, 'w:trPr'), 'w:tblHeader')?.attrs['w:val'];
-        header = !!child(child(tr, 'w:trPr'), 'w:tblHeader') && flag !== 'false' && flag !== '0';
+        const flag = child(trPr, 'w:tblHeader')?.attrs['w:val'];
+        header = !!child(trPr, 'w:tblHeader') && flag !== 'false' && flag !== '0';
       }
+      // Grid columns the row skips at its start, and those a merged cell covers past its first, are empty cells,
+      // so every cell stays in its own column (bounded: past the table's cap they are cut anyway).
       const row: ArticleRun[][] = [];
-      for (const tc of kids(tr)) {
-        if (tc.name !== 'w:tc') continue;
+      const pad = (n: number | undefined) => {
+        for (let i = 0; i < (n ?? 0) && row.length <= MAX_ARTICLE_TABLE_COLS; i++) row.push([]);
+      };
+      const cells = tableParts(tr, 'w:tc');
+      if (cells.length > 0) pad(intAttr(child(trPr, 'w:gridBefore'), 'w:val'));
+      for (const tc of cells) {
         this.runs = [];
         this.cell(tc, '\n');
         row.push(trimRuns(this.runs));
+        pad((intAttr(child(child(tc, 'w:tcPr'), 'w:gridSpan'), 'w:val') ?? 1) - 1);
       }
       // A row with no cell at all holds nothing to keep.
       if (row.length > 0) grid.push(row);
@@ -512,11 +556,9 @@ class DocxWalker {
     }
     const saved = { para: this.para, runs: this.runs, allMono: this.allMono };
     this.inTable += 1;
-    for (const tr of kids(tbl)) {
-      if (tr.name !== 'w:tr') continue;
+    for (const tr of tableParts(tbl, 'w:tr')) {
       const row: ArticleRun[] = [];
-      for (const tc of kids(tr)) {
-        if (tc.name !== 'w:tc') continue;
+      for (const tc of tableParts(tr, 'w:tc')) {
         this.runs = [];
         this.cell(tc, ' ');
         const cell = trimRuns(this.runs);
@@ -548,9 +590,25 @@ class DocxWalker {
         this.runs = outer;
       } else if (el.name === 'w:sdt') {
         this.cell({ ...el, children: child(el, 'w:sdtContent')?.children ?? [] }, between);
+      } else if (el.name === 'w:customXml') {
+        this.cell(el, between);
       }
     }
   }
+}
+
+/** A table's rows or a row's cells (`name`), in order, looking inside content controls and custom XML. */
+function tableParts(
+  el: XmlElement | undefined,
+  name: string,
+  out: XmlElement[] = [],
+): XmlElement[] {
+  for (const c of kids(el)) {
+    if (c.name === name) out.push(c);
+    else if (c.name === 'w:sdt') tableParts(child(c, 'w:sdtContent'), name, out);
+    else if (c.name === 'w:customXml') tableParts(c, name, out);
+  }
+  return out;
 }
 
 /** Runs with the paragraph's leading and trailing whitespace removed, line breaks inside kept. */
@@ -598,7 +656,7 @@ export async function readDocx(pkg: OfficePackage): Promise<DocxRead> {
     return rel ? pkg.readXml(rel.target) : undefined;
   };
   const styles = readStyles(await partOf('styles'));
-  const numbering = readNumbering(await partOf('numbering'));
+  const numbering = readNumbering(await partOf('numbering'), styles);
   const walker = new DocxWalker(styles, numbering, rels, readFootnotes(await partOf('footnotes')));
   walker.body(child(root, 'w:body'));
   if (walker.overflow) throw new OfficeImportError('too-many-blocks', walker.blocks.length);

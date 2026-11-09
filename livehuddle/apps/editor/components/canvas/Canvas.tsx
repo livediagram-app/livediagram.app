@@ -162,20 +162,21 @@ function CanvasView(props: CanvasProps) {
   // own pointerdown handlers can drive it, and exposes the
   // spaceHeldRef the pointerdown reads to decide pan vs marquee (and
   // spaceHeld, its state twin, for the cursor).
-  const { pan, setPan, marquee, setMarquee, spaceHeldRef, spaceHeld } = useCanvasPanAndMarquee({
-    viewportZoom,
-    setViewportOffset,
-    elements,
-    wrapperRef,
-    onDeselect,
-    onSelectMarquee,
-    onShiftSelect,
-    currentSelection: () => {
-      const { selectedId, multiSelectedIds } = selectionStore.get();
-      return new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]);
-    },
-    isPinchingRef,
-  });
+  const { pan, setPan, marquee, marqueeStore, setMarquee, spaceHeldRef, spaceHeld } =
+    useCanvasPanAndMarquee({
+      viewportZoom,
+      setViewportOffset,
+      elements,
+      wrapperRef,
+      onDeselect,
+      onSelectMarquee,
+      onShiftSelect,
+      currentSelection: () => {
+        const { selectedId, multiSelectedIds } = selectionStore.get();
+        return new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]);
+      },
+      isPinchingRef,
+    });
 
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
@@ -432,6 +433,8 @@ function CanvasView(props: CanvasProps) {
           className={`absolute inset-0 origin-center touch-none ${
             canvasTool === 'avatar' ? 'pointer-events-none' : ''
           } ${pendingDraw ? '' : cursorClass}`}
+          // The same, said to the element plane's children, which take presses of their own (globals.css).
+          data-elements-inert={canvasTool === 'avatar' ? '' : undefined}
           style={{
             // Translate is in canvas-coords (applied first); scale is centred
             // on the wrapper so zooming keeps the viewport centre stable.
@@ -523,7 +526,7 @@ function CanvasView(props: CanvasProps) {
           onAvatarReaction={avatar.playReaction}
           onAvatarBurst={playAvatarBurst}
           offscreenContent={offscreenContent}
-          marquee={marquee}
+          marquee={marqueeStore}
           drawDrag={drawDrag}
           drawHover={drawHover}
           polygonVertices={polygonVertices}

@@ -153,6 +153,24 @@ describe('the calls', () => {
     expect(only).toMatchObject({ ok: true, flow: 'art-1', title: 'Brief' });
     expect((only as { markdown: string }).markdown).toBe('---\ntitle: Brief\n---\n\nHello there\n');
     expect(await readArticle(api, DOC_A, { article: 'brief' })).toMatchObject({ ok: true });
+    // Spacing aside, as write_article names it.
+    expect(await readArticle(api, DOC_A, { article: '  BRIEF ' })).toMatchObject({ ok: true });
+    const spaced = setUp({
+      [ONE]: {
+        ...ARTICLE_TAB,
+        articles: {
+          'art-1': {
+            blocks: [
+              { id: 'b1', type: 'paragraph', style: 'title', runs: [{ text: 'Q3  plan ' }] },
+            ],
+          },
+        },
+      },
+    });
+    expect(await readArticle(spaced.api, DOC_A, { article: 'q3 plan' })).toMatchObject({
+      ok: true,
+      flow: 'art-1',
+    });
     expect(await readArticle(api, DOC_A, { article: 'Plan' })).toMatchObject({
       ok: false,
       code: 'article_unknown',
@@ -225,6 +243,10 @@ describe('page ls and page set', () => {
         { op: 'apply_background_to_all', page: 1 },
       ],
       [
+        { add: 'slide', move: 2, name: 'Cover' },
+        { op: 'add', kind: 'slide', name: 'Cover', at: 2 },
+      ],
+      [
         { page: '2', move: 1 },
         { op: 'move', page: 2, to: 1 },
       ],
@@ -287,6 +309,19 @@ describe('page ls and page set', () => {
     };
     expect(await run({})).toBeInstanceOf(VerbRefusal);
     expect(await run({ page: '2' })).toBeInstanceOf(VerbRefusal);
+    // Flags for two changes, or beside --changes, are refused rather than one of them dropped.
+    for (const flags of [
+      { page: '2', name: 'Cover', layout: 'quote' },
+      { page: '2', delete: true, name: 'X' },
+      { page: '2', move: 1, duplicate: true },
+      { add: 'slide', page: '2' },
+      { add: 'slide', delete: true },
+      { changes: 'c', name: 'X' },
+    ]) {
+      const refused = await run(flags, '[{"op":"add","kind":"slide"}]');
+      expect(refused).toBeInstanceOf(VerbRefusal);
+      expect((refused as Error).message).toContain('more than one change');
+    }
     expect(await run({ changes: 'c' }, 'not json')).toBeInstanceOf(VerbRefusal);
     expect(await run({ changes: 'c' }, '[]')).toBeInstanceOf(VerbRefusal);
     const refused = await run({ page: '9', delete: true });

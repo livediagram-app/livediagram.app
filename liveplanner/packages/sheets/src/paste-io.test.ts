@@ -284,6 +284,8 @@ describe('agents', () => {
     const r = readRange(b.wb, b.sheets[0]!.id, 'A1:B10000');
     expect(r.ok && r.truncated).toBe(true);
     expect(r.ok && r.rows.length).toBe(2500);
+    expect(r.ok && r.rest).toBe('A2501:B10000');
+    expect(readRange(b.wb, b.sheets[0]!.id, 'A1:B10')).not.toHaveProperty('rest');
   });
   it('writes rows from a cell, growing the grid', () => {
     const b = book({}, { rows: 2, cols: 2 });

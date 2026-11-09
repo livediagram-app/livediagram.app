@@ -105,6 +105,7 @@ const PAGED_KINDS = [
   'workshop-kickoff',
   'floor-plan',
   'storyboard',
+  'class-lesson',
 ] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.
@@ -131,7 +132,21 @@ describe('templates on pages', () => {
     'quarterly-review',
     'team-welcome',
     'workshop-kickoff',
+    'class-lesson',
   ]);
+  // Every template that opens on infographic or slide pages of its own is in the list, so a new one is checked as it
+  // lands (Class Lesson was not). The blanks hold no content, and articles and flashcards are written, not placed.
+  it('checks every template that opens on infographic or slide pages', () => {
+    const paged = ALL_KINDS.filter((k) => {
+      const pages = templateCanvasOverrides(k).pages ?? [];
+      return (
+        !k.startsWith('blank-') &&
+        pages.length > 0 &&
+        pages.every((p) => p.kind === 'slide' || p.kind === 'infographic')
+      );
+    });
+    expect([...paged].sort()).toEqual([...PAGED_KINDS].sort());
+  });
   it.each(PAGED_KINDS)('%s: opens on pages of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
     expect(o.pages?.length).toBeGreaterThan(0);

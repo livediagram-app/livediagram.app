@@ -131,7 +131,8 @@ export class ProximityCall {
       send: (signal) => this.beacon.send(signal),
       announce,
     });
-    this.video = new CallVideo({ input, sfu, trackToken, stopped, announce });
+    const renewing = () => this.renewing;
+    this.video = new CallVideo({ input, sfu, trackToken, stopped, renewing, announce });
     this.hand = new RaisedHand((signal) => this.beacon.send(signal));
     this.unsubscribe = [
       onCallTracks(() => this.hear()),

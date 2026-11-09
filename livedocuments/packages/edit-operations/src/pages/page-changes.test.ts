@@ -291,6 +291,13 @@ describe('setting', () => {
   it('unlocks before editing, and refuses an edit of a locked page', () => {
     const tab = tabOf({ pages: [page('p1', { locked: true })] });
     expect(refusal(tab, [{ op: 'set', page: 1, name: 'A' }]).code).toBe('page_locked');
+    // Moving and copying a locked page still work, as in the page panel (pages-for-agents.md "Locks").
+    const two = tabOf({ pages: [page('p1', { locked: true }), page('p2')] });
+    expect(pagesOf(run(two, [{ op: 'move', page: 1, to: 2 }]).tab).map((p) => p.id)).toEqual([
+      'p2',
+      'p1',
+    ]);
+    expect(pagesOf(run(two, [{ op: 'duplicate', page: 1 }]).tab)).toHaveLength(3);
     const out = run(tab, [{ op: 'set', page: 1, name: 'A', locked: false }]);
     expect(pagesOf(out.tab)[0]).toMatchObject({ name: 'A' });
     expect(pagesOf(out.tab)[0]!.locked).toBeUndefined();
@@ -338,7 +345,7 @@ describe('laying out, moving, duplicating, deleting', () => {
     const tab = tabOf({ pages: [page('p1'), page('p2'), page('p3')] });
     const out = run(tab, [{ op: 'move', page: 'p3', to: 1 }]);
     expect(pagesOf(out.tab).map((p) => p.id)).toEqual(['p3', 'p1', 'p2']);
-    expect(out.lines[0]).toBe('Moved page p3 to 1.');
+    expect(out.lines[0]).toBe('Moved page 3 to 1.');
     expect(pagesOf(run(tab, [{ op: 'move', page: 1, to: 99 }]).tab).map((p) => p.id)).toEqual([
       'p2',
       'p3',

@@ -3,6 +3,7 @@ import {
   defaultPadding,
   defaultStrokeColor,
   isBoxed,
+  isRetiredElement,
   isSelfDrawingShape,
   supportsMarkers,
   supportsTextAlign,
@@ -76,7 +77,12 @@ export function MultiSelectionContextMenu({
         // that match the selected element types show, and each control
         // applies to every matching member (the setters are selection-wide).
         // Display values read off the first matching member.
-        const sel = props.selectionElements;
+        const all = props.selectionElements;
+        const allBoxed = all.filter(isBoxed);
+        // A retired member (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") moves, turns and
+        // reorders with the rest, so the placement band takes it, but it keeps its stored look and kind: the
+        // formatting sections read and write only the members livehuddle still has.
+        const sel = all.filter((el) => !isRetiredElement(el));
         const boxedSel = sel.filter(isBoxed);
         // Presets (docs/specs/010-palette/style-presets.md) apply selection-wide, to every preset-eligible
         // shape. The active-tile highlight reads off the first matching member.
@@ -139,8 +145,8 @@ export function MultiSelectionContextMenu({
                   MultiPlacementSections. */}
             <MultiPlacementSections
               props={props}
-              sel={sel}
-              boxedSel={boxedSel}
+              sel={all}
+              boxedSel={allBoxed}
               morphable={morphable}
               sectionProps={sectionProps}
               onClose={onClose}

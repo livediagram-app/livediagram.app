@@ -20,6 +20,7 @@ import {
 import {
   isFixedSizeElement,
   isBoxed,
+  isRetiredElement,
   isSelfDrawingShape,
   supportsRotation,
 } from '@livehuddle/document';
@@ -108,8 +109,12 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // Regular shapes (not the dedicated icon glyph, not a self-drawing data
     // shape which carries its own data) can morph to another common kind in
     // place.
+    // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") keeps its stored look
+    // and kind and has no settings or menu section of its own: no Shape, Opacity or Style, whose writes it ignores.
+    const retired = isRetiredElement(target);
     const morphable =
       target.type === 'shape' &&
+      !retired &&
       !isIcon &&
       // Every self-drawing kind carries its own data (progress / rail /
       // rating / charts / code block / checklist), so none of them morph.
@@ -155,13 +160,17 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             />
             <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
           </MenuTileGrid>
-          <ContextMenuDivider />
           {/* Opacity slider: a non-closing row (dragging stays inside the
             menu, so the outside-click guard leaves it open). */}
-          <OpacityRow
-            value={(target as { opacity?: number }).opacity ?? 1}
-            onChange={props.onSetOpacity}
-          />
+          {retired ? null : (
+            <>
+              <ContextMenuDivider />
+              <OpacityRow
+                value={(target as { opacity?: number }).opacity ?? 1}
+                onChange={props.onSetOpacity}
+              />
+            </>
+          )}
         </MenuAccordionSection>
         {/* Size — the exact box (docs/specs/008-canvas/element-size.md). Gathers the three controls that
             all answer "how big is this": the width / height boxes, the aspect
@@ -233,18 +242,20 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           </MenuAccordionSection>
         ) : null}
         {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ── */}
-        <ElementAppearanceSections
-          props={props}
-          target={target}
-          onClose={onClose}
-          sectionProps={sectionProps}
-          flyoutProps={flyoutProps}
-          colorProps={colorProps}
-          textColorHandlers={textColorHandlers}
-          fillColorHandlers={fillColorHandlers}
-          strokeColorHandlers={strokeColorHandlers}
-          afterGroup
-        />
+        {retired ? null : (
+          <ElementAppearanceSections
+            props={props}
+            target={target}
+            onClose={onClose}
+            sectionProps={sectionProps}
+            flyoutProps={flyoutProps}
+            colorProps={colorProps}
+            textColorHandlers={textColorHandlers}
+            fillColorHandlers={fillColorHandlers}
+            strokeColorHandlers={strokeColorHandlers}
+            afterGroup
+          />
+        )}
         {showContentGroup ? <MenuGroupSeparator /> : null}
         <ElementContentSections
           props={props}

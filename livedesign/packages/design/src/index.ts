@@ -600,6 +600,7 @@ export * from '@liveworkspace/model-core/fonts';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/design-views.md):
 // how views, edit operations and the lint name and place elements alike.
 export * from './element-refs';
+export * from './text-cut';
 export * from './containment';
 export * from '@liveworkspace/model-core/style-keys';
 export * from '@liveworkspace/model-core/tab-names';

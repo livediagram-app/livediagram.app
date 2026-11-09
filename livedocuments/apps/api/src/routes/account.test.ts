@@ -184,6 +184,22 @@ describe('DELETE /api/account', () => {
     });
   });
 
+  it('finishes at exactly 1,000 live documents, reading the Trash past the last page', async () => {
+    const own = (n: number, prefix: string) =>
+      Array.from({ length: n }, (_, i) => ({ id: `${prefix}${i}`, ownerId: 'user_1' }));
+    index.items = own(1000, 'e');
+    index.trash = [];
+    const exact = await remove();
+    expect(exact.status).toBe(200);
+    expect(await exact.json()).toEqual({ deleted: { documents: 1000 } });
+    index.items = own(1000, 'f');
+    index.trash = own(1, 't');
+    index.deleted = [];
+    const trashLeft = await remove();
+    expect(trashLeft.status).toBe(409);
+    expect(index.trash).toHaveLength(1);
+  });
+
   it('says so when the account could not be closed, with the data already gone', async () => {
     authClient.closeAccount.mockRejectedValueOnce(new Error('closing the account failed (500)'));
     const res = await remove();

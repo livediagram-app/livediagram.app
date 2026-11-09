@@ -22,6 +22,7 @@ import { gapCursor } from 'prosemirror-gapcursor';
 import {
   MAX_PAGES,
   applyArticleOps,
+  cleanFootnoteText,
   diffArticleFlow,
   type ArticleBlock,
   type ArticleFlow,
@@ -97,6 +98,7 @@ import {
   insertFootnote,
 } from '@/lib/article/article-footnotes';
 import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
+import { commitWritingOnLeave } from '@/lib/article/article-open-edit';
 import { layoutFootnotes } from '@/lib/article/article-footnote-layout';
 
 // How many times one change may re-measure for repeated header rows settling (each copy drawn can move
@@ -693,17 +695,18 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     });
     viewRef.current = view;
     // The notes at the pages' feet: edited by anyone who may write, each change one edit of the writing.
+    const commitNote = (n: number, text: string) => {
+      const v = viewRef.current;
+      if (!v || !latest.current.editable) return;
+      const pos = footnoteKey.getState(v.state)?.refs[n - 1];
+      const node = pos === undefined ? null : v.state.doc.nodeAt(pos);
+      if (pos === undefined || !node || node.attrs.text === text) return;
+      v.dispatch(v.state.tr.setNodeAttribute(pos, 'text', text));
+      flush();
+    };
     notesRef.current = new FootnoteNotes(mount, {
       editable: () => latest.current.editable,
-      commit: (n, text) => {
-        const v = viewRef.current;
-        if (!v || !latest.current.editable) return;
-        const pos = footnoteKey.getState(v.state)?.refs[n - 1];
-        const node = pos === undefined ? null : v.state.doc.nodeAt(pos);
-        if (pos === undefined || !node || node.attrs.text === text) return;
-        v.dispatch(v.state.tr.setNodeAttribute(pos, 'text', text));
-        flush();
-      },
+      commit: commitNote,
       leave: (n) => {
         const v = viewRef.current;
         const pos = v ? footnoteKey.getState(v.state)?.refs[n - 1] : undefined;
@@ -728,6 +731,12 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       noteRoots: () => notesRef.current?.roots() ?? [],
     });
     const unregister = registerArticleHandle(handleRef.current);
+    // A reload or a closed tab takes what was typed with it: the note being written, then the writing.
+    const stopLeave = commitWritingOnLeave(mount, () => {
+      const note = notesRef.current?.editing();
+      if (note) commitNote(note.n, cleanFootnoteText(note.text));
+      flush();
+    });
     scheduleMeasure();
     // Web fonts arriving change every line's length.
     const fonts = document.fonts;
@@ -740,6 +749,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     return () => {
       fonts?.removeEventListener?.('loadingdone', onFonts);
       unregister();
+      stopLeave();
       if (measureFrame.current !== null) cancelAnimationFrame(measureFrame.current);
       measureFrame.current = null;
       if (caretFrame.current !== null) cancelAnimationFrame(caretFrame.current);

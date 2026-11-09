@@ -23,18 +23,29 @@ export async function purgeOwnItems(
   app: App,
   ownerId: string | null | undefined,
 ): Promise<{ count: number; more: boolean }> {
-  const query = { app, team: 'personal', limit: OWN_PURGE_PAGE } as const;
+  const query = { app, team: 'personal' } as const;
   const listings = [
-    (cursor?: string) => client.listItems({ ...query, ...(cursor ? { cursor } : {}) }),
-    (cursor?: string) => client.listTrash({ ...query, ...(cursor ? { cursor } : {}) }),
+    (limit: number, cursor?: string) =>
+      client.listItems({ ...query, limit, ...(cursor ? { cursor } : {}) }),
+    (limit: number, cursor?: string) =>
+      client.listTrash({ ...query, limit, ...(cursor ? { cursor } : {}) }),
   ];
   let count = 0;
   let pages = 0;
-  for (const list of listings) {
+  for (const [at, list] of listings.entries()) {
     let cursor: string | undefined;
     do {
-      if (pages++ === OWN_PURGE_PAGES) return { count, more: true };
-      const page = await list(cursor);
+      if (pages++ === OWN_PURGE_PAGES) {
+        // The budget ran out. Mid-listing, more are left; at the start of the next listing (the live one ended on
+        // the last page), one look at each listing still to read says whether anything is: a person with exactly
+        // 1,000 live items and an empty Trash is done, not asked again.
+        if (cursor) return { count, more: true };
+        for (const rest of listings.slice(at)) {
+          if ((await rest(1)).items.length > 0) return { count, more: true };
+        }
+        return { count, more: false };
+      }
+      const page = await list(OWN_PURGE_PAGE, cursor);
       const own = page.items.filter((i) => i.ownerId === ownerId);
       for (let i = 0; i < own.length; i += ROOM_PURGE_CONCURRENCY) {
         const batch = own.slice(i, i + ROOM_PURGE_CONCURRENCY);

@@ -7,6 +7,7 @@
 // SANKEY_DEFAULT_FLOWS at module-init time without walking into the index <-> factories cycle.
 
 import type { ShapeKind } from './shape-kind';
+import { cutText } from './text-cut';
 
 /** One flow: `value` of something moving from the node named `from` to the node named `to`. */
 export type SankeyFlow = { from: string; to: string; value: number };
@@ -104,7 +105,7 @@ export function isSankeyShape(kind: ShapeKind): boolean {
 
 /** A node name as it is matched and stored: trimmed, inner whitespace collapsed, capped. */
 export function cleanSankeyName(name: string): string {
-  return name.replace(/\s+/g, ' ').trim().slice(0, SANKEY_NAME_MAX);
+  return cutText(name.replace(/\s+/g, ' ').trim(), SANKEY_NAME_MAX);
 }
 
 /** Why a flow is not drawn (the editor names it beside the row). */

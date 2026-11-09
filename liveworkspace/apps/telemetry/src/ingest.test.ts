@@ -213,6 +213,47 @@ describe('ingest', () => {
     expect(env.rows).toHaveLength(100);
   });
 
+  it('drops a body over 64 KB by its bytes, with or without a Content-Length, and one with no body', async () => {
+    const env = testEnv({ ENVIRONMENT: 'production' });
+    const headers = fromPage('https://www.livediagram.app');
+    // Under 64 K characters, but over 64 KB once each three-byte character is encoded.
+    const wide = JSON.stringify({
+      app: 'livediagram.app',
+      events: [created],
+      pad: '€'.repeat(30_000),
+    });
+    expect(wide.length).toBeLessThan(64 * 1024);
+    expect((await handleIngest(post(wide, headers), env)).status).toBe(204);
+    // A 1 MB chunked body, which declares no length, read through the cap rather than whole.
+    const pulled = vi.fn();
+    const chunk = new TextEncoder().encode(' '.repeat(16 * 1024));
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled();
+        if (pulled.mock.calls.length > 64) controller.close();
+        else controller.enqueue(chunk);
+      },
+    });
+    const chunked = new Request('https://liveworkspace.app/api/telemetry/events', {
+      method: 'POST',
+      headers,
+      body: endless,
+      duplex: 'half',
+    } as RequestInit);
+    expect(chunked.headers.get('Content-Length')).toBeNull();
+    expect((await handleIngest(chunked, env)).status).toBe(204);
+    expect(pulled.mock.calls.length).toBeLessThan(10);
+    const empty = new Request('https://liveworkspace.app/api/telemetry/events', {
+      method: 'POST',
+      headers,
+    });
+    expect((await handleIngest(empty, env)).status).toBe(204);
+    expect(env.rows).toHaveLength(0);
+    // The same batch within the cap is stored.
+    await handleIngest(post({ app: 'livediagram.app', events: [created], pad: '€' }, headers), env);
+    expect(env.rows).toHaveLength(1);
+  });
+
   it('stores nothing while telemetry is off', async () => {
     const env = testEnv({ TELEMETRY_ENABLED: undefined });
     await handleIngest(
