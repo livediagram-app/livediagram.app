@@ -21,7 +21,7 @@ describe('typescriptConfig', () => {
   });
 
   it('skips the type check and says so when the variable is 1', () => {
-    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {});
     expect(typescriptConfig({ [SKIP_TYPECHECK_ENV]: '1' })).toEqual({ ignoreBuildErrors: true });
     expect(log).toHaveBeenCalledWith(expect.stringContaining('skips its type check'));
   });
@@ -39,7 +39,7 @@ describe('isTurbopack', () => {
 
 describe('liveworkspaceNextConfig', () => {
   afterEach(() => vi.restoreAllMocks());
-  const quiet = () => vi.spyOn(console, 'log').mockImplementation(() => {});
+  const quiet = () => vi.spyOn(console, 'info').mockImplementation(() => {});
   const now = new Date('2027-03-01T12:00:00Z');
 
   it('exports statically by default, in dev too', () => {
