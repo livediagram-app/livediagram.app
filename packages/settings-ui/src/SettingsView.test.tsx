@@ -120,6 +120,14 @@ describe('SettingsView on desktop', () => {
 });
 
 describe('SettingsView on a phone', () => {
+  it('says nothing matches above the dimmed categories, not a screen below them', () => {
+    view({ isMobile: true });
+    fireEvent.change(screen.getByLabelText('Search settings'), { target: { value: 'zzzz' } });
+    const note = screen.getByText(/No settings match zzzz/);
+    const list = screen.getByRole('button', { name: /^Editor/ });
+    expect(note.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('starts on the root list, pushes a pane with a back bar, and goes back', () => {
     view({ isMobile: true });
     expect(document.querySelector('[data-settings-pane]')).toBeNull();
