@@ -2,6 +2,7 @@
 
 // A connected tab's page (connected-tabs.md "Opening", "How it looks"): ready until a person asks, a fresh press opens
 // it at once, an open's answer picks the card, marks the tab broken or mended, and renames it for an Editor only.
+import { StrictMode } from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { IndexError, type ConnectionOpen } from '@liveworkspace/index-client';
@@ -36,7 +37,7 @@ const OPEN: ConnectionOpen = {
   preview: '/api/previews/share/code/image.svg',
 };
 
-const setup = (over: Partial<ConnectedTabPageProps> = {}) => {
+const setup = (over: Partial<ConnectedTabPageProps> = {}, { strict = false } = {}) => {
   const navigate = { assign: vi.fn(), openNew: vi.fn() };
   const client = { openConnection: vi.fn().mockResolvedValue(OPEN) };
   const props: ConnectedTabPageProps = {
@@ -54,7 +55,8 @@ const setup = (over: Partial<ConnectedTabPageProps> = {}) => {
     navigate,
     ...over,
   };
-  const view = render(<ConnectedTabPage {...props} />);
+  const page = <ConnectedTabPage {...props} />;
+  const view = render(strict ? <StrictMode>{page}</StrictMode> : page);
   const state = () =>
     view.container
       .querySelector('[data-connected-tab-page]')
@@ -94,6 +96,16 @@ describe('ConnectedTabPage', () => {
     const stale = setup();
     expect(stale.state()).toBe('ready');
     expect(stale.client.openConnection).not.toHaveBeenCalled();
+  });
+
+  // React's development double mount (StrictMode) unmounts the page once and mounts it again: the first open, cut off
+  // by that unmount, must not leave the card turning on "Opening" for good.
+  it('still opens a fresh press when the page is mounted twice, as StrictMode does', async () => {
+    pickConnectedTab('t1');
+    const { client, navigate, state } = setup({}, { strict: true });
+    await waitFor(() => expect(state()).toBe('opened'));
+    expect(navigate.openNew).toHaveBeenCalledTimes(1);
+    expect(client.openConnection).toHaveBeenCalledTimes(1);
   });
 
   it('opens again on each new press of its tab', async () => {

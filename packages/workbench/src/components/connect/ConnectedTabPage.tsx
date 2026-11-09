@@ -72,7 +72,17 @@ function Page({
     latest.current = { name, canEdit, onRename };
   });
   const inFlight = useRef<AbortController | null>(null);
-  useEffect(() => () => inFlight.current?.abort(), []);
+  // Going cuts off an open still on its way. The press it served is forgotten too, so a page mounted again in place (React's
+  // development double mount) takes it afresh rather than turning on "Opening" with nothing behind it.
+  useEffect(
+    () => () => {
+      if (!inFlight.current) return;
+      inFlight.current.abort();
+      inFlight.current = null;
+      handled.current = null;
+    },
+    [],
+  );
 
   const open = useCallback(async () => {
     inFlight.current?.abort();
@@ -87,6 +97,7 @@ function Page({
     const held = await grant();
     if (abort.signal.aborted) return;
     if (!held) {
+      inFlight.current = null;
       setView({ state: 'failed' });
       return;
     }
@@ -99,6 +110,7 @@ function Page({
       ...(navigate ? { navigate } : {}),
     });
     if (abort.signal.aborted) return;
+    inFlight.current = null;
     setConnectedTabBroken(connection.id, isBrokenState(result.view.state));
     setView(result.view);
     const answered = result.open?.name;
