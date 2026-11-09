@@ -38,33 +38,44 @@ export function useCardFanIn(
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     )
       return;
-    const view = grid.getBoundingClientRect();
-    const cards = [...grid.querySelectorAll<HTMLElement>('[data-plan-card]')]
-      .map((el) => ({ el, box: el.getBoundingClientRect() }))
-      .filter(
-        ({ box }) => box.bottom > view.top && box.top < Math.min(view.bottom, window.innerHeight),
-      )
-      .slice(0, MAX_CARDS);
-    if (cards.length === 0 || typeof cards[0]!.el.animate !== 'function') return;
-    // Columns by their left edge, rows by order down each column.
-    const lefts = [...new Set(cards.map(({ box }) => Math.round(box.left)))].sort((a, b) => a - b);
-    const rows = new Map<number, number>();
-    for (const { el, box } of cards) {
-      const col = lefts.indexOf(Math.round(box.left));
-      const row = rows.get(col) ?? 0;
-      rows.set(col, row + 1);
-      const delay = Math.min(col * COLUMN_STEP_MS + row * ROW_STEP_MS, MAX_DELAY_MS);
-      const turn = col % 2 === 0 ? -2.5 : 2.5;
-      el.animate(
-        [
-          {
-            opacity: 0,
-            transform: `translateY(-${12 + row * 4}px) rotate(${turn}deg) scale(0.96)`,
-          },
-          { opacity: 1, transform: 'none' },
-        ],
-        { duration: DURATION_MS, delay, easing: EASE, fill: 'backwards' },
-      );
-    }
+    // A busy board builds its near runs' cards in the render after it mounts (PlanCardRun), which can follow this
+    // effect: with none built yet they are read in the next frame, before it is drawn.
+    if (!grid.querySelector('[data-plan-card]') && grid.querySelector('[data-plan-run]'))
+      requestAnimationFrame(() => fanIn(grid));
+    else fanIn(grid);
   }, [gridRef, ready, count]);
+}
+
+function fanIn(grid: HTMLElement): void {
+  if (!grid.isConnected) return;
+  const view = grid.getBoundingClientRect();
+  const bottom = Math.min(view.bottom, window.innerHeight);
+  // Only cards built (a busy board's near runs), and no more read once MAX_CARDS in view are found.
+  const cards: { el: HTMLElement; box: DOMRect }[] = [];
+  for (const el of grid.querySelectorAll<HTMLElement>('[data-plan-card]')) {
+    const box = el.getBoundingClientRect();
+    if (box.bottom > view.top && box.top < bottom) cards.push({ el, box });
+    if (cards.length >= MAX_CARDS) break;
+  }
+  if (cards.length === 0 || typeof cards[0]!.el.animate !== 'function') return;
+  // Columns by their left edge, rows by order down each column.
+  const lefts = [...new Set(cards.map(({ box }) => Math.round(box.left)))].sort((a, b) => a - b);
+  const rows = new Map<number, number>();
+  for (const { el, box } of cards) {
+    const col = lefts.indexOf(Math.round(box.left));
+    const row = rows.get(col) ?? 0;
+    rows.set(col, row + 1);
+    const delay = Math.min(col * COLUMN_STEP_MS + row * ROW_STEP_MS, MAX_DELAY_MS);
+    const turn = col % 2 === 0 ? -2.5 : 2.5;
+    el.animate(
+      [
+        {
+          opacity: 0,
+          transform: `translateY(-${12 + row * 4}px) rotate(${turn}deg) scale(0.96)`,
+        },
+        { opacity: 1, transform: 'none' },
+      ],
+      { duration: DURATION_MS, delay, easing: EASE, fill: 'backwards' },
+    );
+  }
 }
