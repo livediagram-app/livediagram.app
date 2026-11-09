@@ -15,6 +15,12 @@ export type TrustedTypesSinkOptions = {
   csp: string;
   /** Files (by path suffix) that may call `new DOMParser()` themselves: the inert parse policy's own module. */
   domParserAllowed?: readonly string[];
+  /**
+   * Files (by path, from the product root) that may call the `trustedHtml` escape hatch besides a layout: those
+   * whose markup is static or built by our own escaping builders from typed data (catalogue icons and stickers,
+   * device frames, a look's sample preview, the face-finish ink). Everything else goes through `sanitizedHtml`.
+   */
+  builderMarkup?: readonly string[];
 };
 
 const SKIPPED_DIRS = ['node_modules', 'out', 'dist', 'e2e', 'test-results', 'scripts'];
@@ -35,8 +41,44 @@ const htmlExpressions = (source: string) =>
     source.slice(m.index + m[0].length, m.index + m[0].length + 40),
   );
 
+// What may feed a sink: the escape hatch for builder markup, or the sanitiser.
+const MINTED = /^(?:trustedHtml|sanitizedHtml)\(/;
+// A layout's inline boot scripts are static text of ours, written into a <script>: never sanitised (they are script).
+const LAYOUT = /(^|\/)app\/(.+\/)?layout\.tsx$/;
+
+/** Every markup sink a file feeds by hand (`innerHTML`, `outerHTML`, `srcdoc`, `insertAdjacentHTML`) whose value
+ *  neither `trustedHtml` nor `sanitizedHtml` made, as `file: sink` lines. */
+export function rawDomWrites(file: string, source: string): string[] {
+  return [
+    ...source.matchAll(/\.(?:innerHTML|outerHTML|srcdoc)\s*=(?!=)\s*|\binsertAdjacentHTML\(/g),
+  ]
+    .filter((m) => {
+      const rest = source.slice(m.index + m[0].length);
+      return m[0].startsWith('insertAdjacentHTML')
+        ? !/^[^,]*,\s*(?:trustedHtml|sanitizedHtml)\(/.test(rest)
+        : !MINTED.test(rest);
+    })
+    .map((m) => `${file}: ${m[0].trim()}`);
+}
+
+/** Every `__html` a file hands `dangerouslySetInnerHTML` that neither helper made, as `file: expression` lines. */
+export function rawHtmlProps(file: string, source: string): string[] {
+  return htmlExpressions(source)
+    .filter((expr) => !MINTED.test(expr))
+    .map((expr) => `${file}: ${expr.split('\n')[0]}`);
+}
+
+/** Whether a file calls the `trustedHtml` escape hatch where it may not: outside a layout and the listed builders. */
+export function escapesUnlisted(
+  file: string,
+  source: string,
+  builders: readonly string[],
+): boolean {
+  return /\btrustedHtml\(/.test(source) && !LAYOUT.test(file) && !builders.includes(file);
+}
+
 export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): void {
-  const { root, apps, editorApp, csp, domParserAllowed = [] } = options;
+  const { root, apps, editorApp, csp, domParserAllowed = [], builderMarkup = [] } = options;
   const cache = new Map<string, string>();
   const read = (path: string) => {
     let text = cache.get(path);
@@ -49,29 +91,25 @@ export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): voi
     .map((f) => f.slice(root.length));
 
   describe('Trusted Types sinks', () => {
-    it('hand dangerouslySetInnerHTML only what trustedHtml made', () => {
-      const raw = files.flatMap((f) =>
-        htmlExpressions(read(f))
-          .filter((expr) => !expr.startsWith('trustedHtml('))
-          .map((expr) => `${f}: ${expr.split('\n')[0]}`),
-      );
-      expect(raw).toEqual([]);
+    it('hand dangerouslySetInnerHTML only what trustedHtml or sanitizedHtml made', () => {
+      expect(files.flatMap((f) => rawHtmlProps(f, read(f)))).toEqual([]);
     });
 
     // A DOM sink written by hand meets the same default policy, which refuses it and throws: the canvas's Marker
     // finish set `innerHTML` raw and every Marker tab failed to render in production.
-    it('write markup straight into the DOM only through trustedHtml', () => {
-      const raw = files.flatMap((f) =>
-        [...read(f).matchAll(/\.(?:innerHTML|outerHTML)\s*=(?!=)\s*|\binsertAdjacentHTML\(/g)]
-          .filter((m) => {
-            const rest = read(f).slice(m.index + m[0].length);
-            return m[0].startsWith('insertAdjacentHTML')
-              ? !/^[^,]*,\s*trustedHtml\(/.test(rest)
-              : !rest.startsWith('trustedHtml(');
-          })
-          .map((m) => `${f}: ${m[0]}`),
-      );
-      expect(raw).toEqual([]);
+    it('write markup straight into the DOM only through trustedHtml or sanitizedHtml', () => {
+      expect(files.flatMap((f) => rawDomWrites(f, read(f)))).toEqual([]);
+    });
+
+    // The policy only proves markup went through it; the sanitiser is what makes people's markup safe. So the
+    // pass-through stays with the layouts' boot scripts and the files listed as static or builder markup, and a new
+    // sink of a document's drawing, an import or anything from the network has to be sanitised.
+    it('call the trustedHtml escape hatch only in a layout or a listed builder file', () => {
+      expect(files.filter((f) => escapesUnlisted(f, read(f), builderMarkup))).toEqual([]);
+      // A listed file that no longer calls it comes off the list, so the list never allows more than it needs.
+      expect(
+        builderMarkup.filter((f) => !files.includes(f) || !/\btrustedHtml\(/.test(read(f))),
+      ).toEqual([]);
     });
 
     // A server component's `trustedHtml` runs in the prerender, where there is no Trusted Types, so the RSC payload
