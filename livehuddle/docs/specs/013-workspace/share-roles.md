@@ -155,12 +155,12 @@ true for both, false for an Editor alone.
 
 ## The collab key
 
-A person's **collab key** is the public id their dots, responses ([Per-participant responses](../012-collaboration/participant-responses.md)) and [comment reactions](../012-collaboration/comment-reactions.md) are recorded under. The server derives it; the browser never
+A person's **collab key** is the public id their [comment reactions](../012-collaboration/comment-reactions.md) are recorded under (livehuddle has no dots or responses: an older client's `vote` is dropped as a retired op). The server derives it; the browser never
 chooses it.
 
 - **From who you are.** `collabKeyFor(person)` (`@liveworkspace/api-kit/collab-key`) is the first 32 hex characters
   of SHA-256(`liveworkspace:collab:v1:<person>`), the person being the account or guest id the grant names. It is
-  the same on every device and every document, so a signed-in person's own reactions and answers read as theirs everywhere, and
+  the same on every device and every document, so a signed-in person's own reactions read as theirs everywhere, and
   their two devices count as one person. It gives nothing away: the hash cannot be turned back into the id.
 - **Pinned on the session.** The upgrade forwards it as `X-Verified-Collab-Key`, the session keeps it, and the
   roster's `key` is that value whatever the `hello` claimed. The room then tells the session its own key in a
@@ -169,8 +169,8 @@ chooses it.
   key, as it always did.
 - **A session with no identity** (a link visitor whose guest handoff could not run) gets a random key the room mints
   for that socket. Nobody else can be handed it, so nobody can act under it; it lasts as long as the socket.
-- **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, and
-  drops a dot or a response naming any key but the sender's own, an Editor's included.
+- **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, an
+  Editor's included, so a reaction can only ever be the sender's own.
 - **What stays open.** An Editor's whole-tab save can still write any reaction into the stored tab, as it can change
   anything on the canvas; the room's ledger keeps each person's latest live reaction, so a save made before one
   arrived cannot erase it.

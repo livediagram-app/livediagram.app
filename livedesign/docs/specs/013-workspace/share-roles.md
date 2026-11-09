@@ -152,8 +152,8 @@ chooses it.
   key, as it always did.
 - **A session with no identity** (a link visitor whose guest handoff could not run) gets a random key the room mints
   for that socket. Nobody else can be handed it, so nobody can act under it; it lasts as long as the socket.
-- **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, and
-  drops a dot or a response naming any key but the sender's own, an Editor's included.
+- **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, an
+  Editor's included, so a reaction can only ever be the sender's own.
 - **What stays open.** An Editor's whole-tab save can still write any reaction into the stored tab, as it can change
   anything on the canvas; the room's ledger keeps each person's latest live reaction, so a save made before one
   arrived cannot erase it.
