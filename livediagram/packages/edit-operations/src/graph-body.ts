@@ -68,7 +68,8 @@ const isSequenceItem = (it: unknown): boolean => {
         isString(it.label) &&
         isOneOf(['call', 'async', 'reply'])(it.style) &&
         optional((v) => typeof v === 'boolean')(it.activate) &&
-        optional((v) => typeof v === 'boolean')(it.deactivate)
+        optional((v) => typeof v === 'boolean')(it.deactivate) &&
+        optional((v) => typeof v === 'boolean')(it.both)
       );
     case 'note':
       return (

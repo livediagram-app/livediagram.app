@@ -3,13 +3,14 @@
 // bars you, and how many hands a speaker sees. Pure over the scene and what the room stamped; the call applies it.
 import type { AccessLevel } from '@livehuddle/api-schema';
 import type { CallScene } from './call-config';
-import { callHands, callLetByMe, callLevels } from './calls-store';
+import { callHands, callKeys, callLetByMe, callLevels } from './calls-store';
 import {
   barringStage,
   letSpeakers,
-  mayLetSpeak,
+  letterMay,
   mayLetSpeakSelf,
   staging,
+  type Letter,
   type StageHands,
 } from './stage';
 import type { StageSpeakers } from '@livehuddle/document';
@@ -28,20 +29,21 @@ export type StagedScene = {
 
 /**
  * Stage the scene: `zoned` is everyone's room, `level` your own, `letter` whoever let your hand speak (null for
- * nobody). Reads the hands, the let-speaks you sent and the levels the room stamped from the calls store.
+ * nobody), followed as a person across their reconnect. Reads the hands, the let-speaks you sent and the levels the room stamped from the calls store.
  */
 export function stageScene(
   scene: CallScene,
   zoned: CallZoning,
   level: AccessLevel,
-  letter: string | null,
+  letter: Letter | null,
 ): StagedScene {
   const levels = callLevels();
+  const keys = callKeys();
   const stages = scene.stages ?? [];
   const selfMay = mayLetSpeakSelf(scene.self, level, stages);
   const hands: StageHands = {
-    let: letSpeakers(callHands(), scene.walkers, levels, stages, callLetByMe(), selfMay),
-    self: letter !== null && mayLetSpeak(letter, scene.walkers, levels, stages),
+    let: letSpeakers(callHands(), scene.walkers, levels, stages, callLetByMe(), selfMay, keys),
+    self: letter !== null && letterMay(letter, scene.walkers, levels, stages, keys),
   };
   const stage = staging(scene.self, level, scene.walkers, levels, stages, hands);
   const barredBy = hands.self ? null : barringStage(scene.self, level, stages);

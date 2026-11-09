@@ -7,7 +7,7 @@
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
 import { isSelfDrawingShape } from './data-shapes';
-import { isRetiredElementType } from './retired-kinds';
+import { isRetiredElement, isRetiredElementType } from './retired-kinds';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
 
@@ -261,7 +261,9 @@ export function elementHasText(element: Element): boolean {
 // shows on every text-capable element (an empty one included, so the
 // affordance teaches that text can be added).
 export function elementSupportsText(element: Element): boolean {
-  if (element.type === 'shape') return !isSelfDrawingShape(element.shape);
+  // A deleted shape kind takes no typed label (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
+  if (element.type === 'shape')
+    return !isSelfDrawingShape(element.shape) && !isRetiredElement(element);
   return element.type === 'text' || element.type === 'sticky';
 }
 

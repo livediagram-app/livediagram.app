@@ -13,6 +13,7 @@ import {
 } from '@liveplanner/project';
 import { kindOf } from './element-text';
 import { sameValue } from './equality';
+import { planBoardCapIssue } from './plan-elements';
 import { invalidResult } from './rejections';
 import { currentElements, replaceElement, type EditState } from './state';
 
@@ -29,9 +30,13 @@ function normaliseTouched(state: EditState): void {
 }
 
 function touchedIssue(state: EditState): EditRejection | null {
-  for (const id of state.touched.keys()) {
+  for (const [id, { written }] of state.touched) {
     const el = state.byId.get(id);
-    const issue = el && elementValidationIssue(el);
+    if (!el) continue;
+    // A board's caps hold for the set-up a write gives: an element added, or its planBoard set
+    // (docs/specs/024-agents/edit-operations.md "A board's caps hold for agents").
+    const gaveBoard = !state.before.has(id) || written.includes('planBoard');
+    const issue = elementValidationIssue(el) ?? (gaveBoard ? planBoardCapIssue(el) : null);
     if (issue) return invalidResult(id, kindOf(el), issue);
   }
   return null;

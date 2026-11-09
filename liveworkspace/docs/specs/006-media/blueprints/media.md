@@ -302,7 +302,6 @@ index read per request (5 s), the app's door only on a miss (15 s), stores after
 | `SHARE_CARD_MAX_UPSCALE`                     | `2`                                                  | `share-card.ts`                    | the card                  |
 | `SHARE_CARD_TIMEOUT_MS`                      | `1500`                                               | `packages/media/src/share-page.ts` | the apps' share page head |
 | `GALLERY_USAGE_DOCUMENTS_MAX`                | `200`                                                | `packages/media/src/usage.ts`      | the apps' gallery         |
-| `GALLERY_USAGE_READS_IN_FLIGHT`              | `8`                                                  | `usage.ts`                         | the apps' gallery         |
 
 | Setting                     | Production                                                                                | Staging                                                  |
 | --------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------- |

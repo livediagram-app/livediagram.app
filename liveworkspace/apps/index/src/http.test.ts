@@ -21,6 +21,17 @@ describe('readObject', () => {
       expect(await readObject(put(text)), text).toBeNull();
     expect(await readObject(put('{}', { 'Content-Length': String(600 * 1024) }))).toBeNull();
     expect(await readObject(put(`{"pad":"${'x'.repeat(600 * 1024)}"}`))).toBeNull();
+    // A chunked body declares no length: it is read only as far as the cap, never held whole (64 KiB chunks, 8 MiB).
+    let pulled = 0;
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1;
+        if (pulled > 128) controller.close();
+        else controller.enqueue(new Uint8Array(64 * 1024).fill(0x20));
+      },
+    });
+    expect(await readObject(put(endless))).toBeNull();
+    expect(pulled).toBeLessThan(16);
   });
 
   // Read as `{}`, a body that broke off would have cleared the share password (no `password` is "remove it").

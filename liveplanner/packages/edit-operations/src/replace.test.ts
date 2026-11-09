@@ -157,6 +157,23 @@ describe('applyReplace refusals', () => {
     expect(refusal({ elements: [noId] }).details).toEqual(['an element id: a non-empty string']);
   });
 
+  // docs/specs/024-agents/edit-operations.md "A board's caps hold for agents".
+  it('refuses a board title over its cap, naming the element and the cap', () => {
+    const board = {
+      id: 'b1',
+      type: 'shape',
+      shape: 'plan-board',
+      x: 0,
+      y: 0,
+      width: 400,
+      height: 300,
+      planBoard: { title: 'y'.repeat(81), columns: [] },
+    };
+    expect(refusal({ elements: [board] }).details).toEqual([
+      'b1 planBoard: a board title is at most 80 characters',
+    ]);
+  });
+
   it('refuses two elements with one id', () => {
     const el = newView('g1', 'gantt');
     expect(refusal({ elements: [el, el] }).details).toEqual(['the tab elements: every id once']);

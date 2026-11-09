@@ -18,7 +18,7 @@ export type InternalRoom = {
   handleQaWrite: (request: Request) => Promise<Response>;
   sequenceMutation: (from: string, op: unknown) => number;
   readSelections: (tabId: string, person: string) => Promise<unknown>;
-  readLedger: (tabId: string) => Promise<unknown>;
+  readLedger: (tabId: string, since?: number) => Promise<unknown>;
   epoch: () => string;
 };
 
@@ -113,7 +113,11 @@ export async function answerInternal(
     if (url.searchParams.get('epoch') !== room.epoch()) {
       return Response.json({ elements: {} });
     }
-    return Response.json(await room.readLedger(tabId));
+    // The saver's cursor seq: only the entries that can change its merge go back (room-ledger-store.ts).
+    const since = Number(url.searchParams.get('since') ?? Number.NaN);
+    return Response.json(
+      await room.readLedger(tabId, Number.isInteger(since) && since >= 0 ? since : undefined),
+    );
   }
   return null;
 }

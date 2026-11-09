@@ -42,6 +42,9 @@ const lineOf = (kind: Kind, lo: number, size: number) =>
 const loFor = (kind: Kind, line: number, size: number) =>
   kind === 'start' ? line : kind === 'centre' ? line - size / 2 : line - size;
 
+// Rounds of holding back boxes whose snap was undone, in one pass.
+const MAX_HOLD_ROUNDS = 8;
+
 // The arrow faces that run along each axis: a bottom-to-top arrow joins centres across x.
 const VERTICAL = new Set(['n', 's']);
 const HORIZONTAL = new Set(['e', 'w']);
@@ -65,35 +68,22 @@ export function alignBoxes(
     if (VERTICAL.has(a) && VERTICAL.has(b)) linksX.push(pair);
     else if (HORIZONTAL.has(a) && HORIZONTAL.has(b)) linksY.push(pair);
   }
-  const axis = (pick: 'x' | 'y', links: [ElementId, ElementId][]) =>
-    settleAxis(
-      boxes.map((b) => ({
-        id: b.id,
-        lo: b[pick],
-        size: pick === 'x' ? b.width : b.height,
-        next: pick === 'x' ? sized.get(b.id)!.width : sized.get(b.id)!.height,
-        locked: lockedIds?.has(b.id) ?? false,
-      })),
-      links,
-    );
-  const xs = axis('x', linksX);
-  const ys = axis('y', linksY);
-  // Even spacing is kept: rows of a key, a column of steps.
-  const sizes = (pick: 'x' | 'y') =>
-    new Map(
-      boxes.map((b) => [b.id, pick === 'x' ? sized.get(b.id)!.width : sized.get(b.id)!.height]),
-    );
-  const movable = new Set(boxes.filter((b) => !lockedIds?.has(b.id)).map((b) => b.id));
-  keepEvenSpacing(boxes, 'y', ys, sizes('y'), xs, sizes('x'), movable);
-  keepEvenSpacing(boxes, 'x', xs, sizes('x'), ys, sizes('y'), movable);
-
-  const next = new Map<ElementId, BoxedElement>();
-  for (const b of boxes) {
-    if (lockedIds?.has(b.id)) continue;
-    const s = sized.get(b.id)!;
-    next.set(b.id, { ...s, x: xs.get(b.id)!, y: ys.get(b.id)! });
+  // A box whose snap is undone (step 4) stays where it is, and is then settled as a locked box is: the boxes that
+  // lined up with where the snap would have put it line up with where it is instead, and the lines are worked out
+  // again. Left as a free member, a box held back still pulled its group to a line it never reached, so the next
+  // run grouped the boxes differently and moved them again: the same tab could flip a box 5 px on every press.
+  // Each round holds at least one more box, so this ends; most passes take one round, and a crowd of overlapping
+  // boxes is cut off at MAX_HOLD_ROUNDS (Auto-align's own settle check still has the last word).
+  const held = new Set<ElementId>();
+  const fixed = (id: ElementId) => (lockedIds?.has(id) ?? false) || held.has(id);
+  let next: Map<ElementId, BoxedElement>;
+  for (let round = 0; ; round++) {
+    next = placeBoxes(boxes, sized, fixed, linksX, linksY);
+    const undone = undoNewOverlaps(boxes, next);
+    const fresh = [...undone].filter((id) => !held.has(id));
+    if (fresh.length === 0 || round + 1 >= MAX_HOLD_ROUNDS) break;
+    for (const id of fresh) held.add(id);
   }
-  undoNewOverlaps(boxes, next);
   // A box that ends where it started stays the same object, so a caller can tell a settled pass.
   return elements.map((el) => {
     const n = next.get(el.id);
@@ -101,6 +91,44 @@ export function alignBoxes(
     const same = n.x === el.x && n.y === el.y && n.width === el.width && n.height === el.height;
     return same ? el : n;
   });
+}
+
+// Steps 1 to 3 and even spacing: where each box that is not `fixed` goes. A fixed box (locked, or held back by an
+// undone snap) keeps its place and size, and the others line up with it.
+function placeBoxes(
+  boxes: BoxedElement[],
+  sized: Map<ElementId, BoxedElement>,
+  fixed: (id: ElementId) => boolean,
+  linksX: [ElementId, ElementId][],
+  linksY: [ElementId, ElementId][],
+): Map<ElementId, BoxedElement> {
+  const shape = (b: BoxedElement) => (fixed(b.id) ? b : sized.get(b.id)!);
+  const axis = (pick: 'x' | 'y', links: [ElementId, ElementId][]) =>
+    settleAxis(
+      boxes.map((b) => ({
+        id: b.id,
+        lo: b[pick],
+        size: pick === 'x' ? b.width : b.height,
+        next: pick === 'x' ? shape(b).width : shape(b).height,
+        locked: fixed(b.id),
+      })),
+      links,
+    );
+  const xs = axis('x', linksX);
+  const ys = axis('y', linksY);
+  // Even spacing is kept: rows of a key, a column of steps.
+  const sizes = (pick: 'x' | 'y') =>
+    new Map(boxes.map((b) => [b.id, pick === 'x' ? shape(b).width : shape(b).height]));
+  const movable = new Set(boxes.filter((b) => !fixed(b.id)).map((b) => b.id));
+  keepEvenSpacing(boxes, 'y', ys, sizes('y'), xs, sizes('x'), movable);
+  keepEvenSpacing(boxes, 'x', xs, sizes('x'), ys, sizes('y'), movable);
+
+  const next = new Map<ElementId, BoxedElement>();
+  for (const b of boxes) {
+    if (fixed(b.id)) continue;
+    next.set(b.id, { ...sized.get(b.id)!, x: xs.get(b.id)!, y: ys.get(b.id)! });
+  }
+  return next;
 }
 
 function settleAxis(items: Item[], links: [ElementId, ElementId][]): Map<ElementId, number> {
@@ -161,7 +189,10 @@ function settleAxis(items: Item[], links: [ElementId, ElementId][]): Map<Element
     const held = g.members.find((m) => settled.has(m.id));
     const target = held
       ? lineOf(g.kind, settled.get(held.id)!, held.next)
-      : snapLine(g.kind, median(g.members.map((m) => lineOf(g.kind, m.lo, m.size))));
+      : groupLine(
+          g.kind,
+          g.members.map((m) => lineOf(g.kind, m.lo, m.size)),
+        );
     for (const m of free) settled.set(m.id, loFor(g.kind, target, m.next));
   }
   for (const it of items) if (!settled.has(it.id)) settled.set(it.id, snap(it.lo));
@@ -217,6 +248,21 @@ function keepEvenSpacing(
   }
 }
 
+// The line a group settles on: the grid line a member already sits on nearest the group's median, so a group that
+// is partly on the grid gathers there; or, when none is, the median snapped. Snapping the median alone crept: a
+// group of starts at 200, 205 and 205 has its median at 205, which rounds up to 210, and the next run found the
+// same group 10 px lower, and moved it again, every run.
+function groupLine(kind: Kind, lines: number[]): number {
+  const mid = median(lines);
+  let best: number | null = null;
+  for (const line of lines) {
+    if (snapLine(kind, line) !== line) continue;
+    if (best === null || Math.abs(line - mid) < Math.abs(best - mid)) best = line;
+    else if (Math.abs(line - mid) === Math.abs(best - mid)) best = Math.min(best, line);
+  }
+  return best ?? snapLine(kind, mid);
+}
+
 function median(values: number[]): number {
   const s = [...values].sort((a, b) => a - b);
   const mid = s.length >> 1;
@@ -234,9 +280,13 @@ const holds = (outer: BoxedElement, inner: BoxedElement) =>
 
 // Put back, for both boxes, any snap that made two boxes overlap that did not overlap before, or
 // nudged a box part-way out of a lane or frame that held it. A revert can only undo what the snap
-// did, so a few passes settle it.
-function undoNewOverlaps(before: BoxedElement[], next: Map<ElementId, BoxedElement>): void {
+// did, so a few passes settle it. Answers the boxes it put back.
+function undoNewOverlaps(
+  before: BoxedElement[],
+  next: Map<ElementId, BoxedElement>,
+): Set<ElementId> {
   const original = new Map(before.map((b) => [b.id, b]));
+  const undone = new Set<ElementId>();
   for (let pass = 0; pass < 4; pass++) {
     let changed = false;
     const now = before.map((b) => next.get(b.id) ?? b);
@@ -257,10 +307,12 @@ function undoNewOverlaps(before: BoxedElement[], next: Map<ElementId, BoxedEleme
         for (const id of [a.id, b.id])
           if (next.has(id) && next.get(id) !== original.get(id)) {
             next.set(id, original.get(id)!);
+            undone.add(id);
             changed = true;
           }
       }
     }
-    if (!changed) return;
+    if (!changed) break;
   }
+  return undone;
 }

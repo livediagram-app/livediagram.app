@@ -7,7 +7,14 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { printDocumentHtml, printSheets, printTabCount, type PrintSheet } from './print-pages';
+import { renderTabToSvg } from './export-tab';
+import {
+  printDocumentHtml,
+  printSheets,
+  printTabCount,
+  sheetScopedSvg,
+  type PrintSheet,
+} from './print-pages';
 
 // docs/specs/020-import-export/print.md "What prints".
 
@@ -52,7 +59,7 @@ describe('printSheets', () => {
 
 describe('printDocumentHtml', () => {
   const sheets = printSheets('document', current(deck), [poster, deck, cards]);
-  const html = printDocumentHtml(sheets, (s) => `<svg id="${s.page.id}"></svg>`);
+  const html = printDocumentHtml(sheets, (s) => `<svg data-page="${s.page.id}"></svg>`);
 
   it('sizes each sheet exactly its page through one named @page rule per size', () => {
     const rules = [...html.matchAll(/@page (s\d+x\d+)\{size:(\d+)px (\d+)px;margin:0\}/g)];
@@ -68,7 +75,7 @@ describe('printDocumentHtml', () => {
     expect(html).toContain('print-color-adjust:exact');
     expect(html).toContain('-webkit-print-color-adjust:exact');
     expect(html).toMatch(/@page\{size:794px 1123px;margin:0\}/);
-    expect([...html.matchAll(/<svg id="([^"]+)"/g)].map((m) => m[1])).toEqual([
+    expect([...html.matchAll(/<svg data-page="([^"]+)"/g)].map((m) => m[1])).toEqual([
       'p1',
       's1',
       's2',
@@ -86,7 +93,56 @@ describe('printDocumentHtml', () => {
       Array.from({ length: 200 }, (_, i) => newSlidePage(`s${i}`)),
     );
     const all = printSheets('document', current(many), [many]);
-    const ms = cpuMsOf(() => printDocumentHtml(all, () => '<svg/>'));
-    expect(ms).toBeLessThan(cpuBudgetMs(30));
+    // Each sheet a drawing of 40 gradients and the 40 shapes painted with them (about 6 KB), so the budget covers
+    // making each sheet's ids its own.
+    const drawing = `<svg>${Array.from(
+      { length: 40 },
+      (_, i) =>
+        `<linearGradient id="g${i}"><stop offset="0" stop-color="#fff"/></linearGradient><rect data-element-id="e${i}" fill="url(#g${i})" width="10" height="10"/>`,
+    ).join('')}</svg>`;
+    const ms = cpuMsOf(() => printDocumentHtml(all, () => drawing));
+    expect(ms).toBeLessThan(cpuBudgetMs(60));
+  });
+});
+
+// docs/specs/020-import-export/print.md "What prints": each sheet keeps to its own gradients and patterns.
+describe('sheetScopedSvg', () => {
+  const painted = (id: string, from: string) =>
+    tab(id, [
+      {
+        id: 'page-1',
+        orientation: 'portrait',
+        kind: 'infographic',
+        background: {
+          fill: { kind: 'gradient', from, to: '#ffffff', angle: 90 },
+          pattern: 'dots',
+        },
+      },
+    ]);
+
+  it('gives two tabs drawn with the same ids their own, each url(#…) its own sheet', () => {
+    const a = painted('a', '#ff0000');
+    const b = painted('b', '#0000ff');
+    const sheets = printSheets('document', current(a), [a, b]);
+    const html = printDocumentHtml(sheets, (s) => renderTabToSvg(s.tab, { page: s.page }));
+    const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]!);
+    expect(ids.length).toBeGreaterThan(2);
+    expect(new Set(ids).size).toBe(ids.length);
+    // The second sheet's fill names its own gradient, the blue one.
+    const second = html.split('<section').at(-1)!;
+    const fill = /fill="url\(#([^)]+)\)"/.exec(second)![1]!;
+    expect(fill.startsWith('p1-')).toBe(true);
+    expect(new RegExp(`id="${fill}"[^]*?#0000ff`).test(second)).toBe(true);
+  });
+
+  it('leaves references it does not own, data ids, and a drawing with no ids', () => {
+    const svg =
+      '<svg><linearGradient id="g"/><rect data-element-id="g" fill="url(#g)"/>' +
+      '<use href="#g"/><use xlink:href="#g"/><rect fill="url(#other)"/></svg>';
+    expect(sheetScopedSvg(svg, 3)).toBe(
+      '<svg><linearGradient id="p3-g"/><rect data-element-id="g" fill="url(#p3-g)"/>' +
+        '<use href="#p3-g"/><use xlink:href="#p3-g"/><rect fill="url(#other)"/></svg>',
+    );
+    expect(sheetScopedSvg('<svg><rect/></svg>', 0)).toBe('<svg><rect/></svg>');
   });
 });

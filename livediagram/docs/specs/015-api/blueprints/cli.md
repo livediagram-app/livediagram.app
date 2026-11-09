@@ -144,7 +144,8 @@ anything the CLI does.
    `authEnabled` or `authEnabled: false` makes every api verb exit 4 with the "no sign-in" line: the CLI does not act
    as a guest.
 6. **Floor.** `isBelow(CLI_VERSION, caps.minVersion)` in `runOnline`: a verb whose behaviour is `write` or `destructive` and that reaches the
-   api, below `cli.minVersion`, exits 1 (CLI13). Reads are never refused. A host `documentFormat` above the
+   api, below `cli.minVersion` by semver precedence (a prerelease such as `1.3.0-rc.1` is below `1.3.0`), exits 1
+   (CLI13). Reads are never refused. A host `documentFormat` above the
    bundled `DOCUMENT_FORMAT` refuses the verbs marked `files` (`pull`, `push`, `export`, `tab diff`, reads of a pull
    file) with exit 1 and the version to install; online commands carry on. `graph` is offline and knows no host.
 7. **Address.** `<doc>` and `--tab` resolve through `resolveDocument` and `resolveTab` (below); elements are left to
@@ -296,7 +297,9 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
 - **CLI27a** Before writing, `pull` reads this document's file at the path it would write; when `isLocallyChanged`
   (`apps/cli/src/link/sync-state.ts`, the test `sync` uses for `ahead`) finds a tab hashing other than its pulled
   record, or a tab added or gone, nothing is written and the pull exits 1 with `unpushed_changes`. `--force` skips
-  the check and overwrites.
+  the check and overwrites. The hint names `push` only when push would send something (a tab whose elements hash
+  differs, or one without a record); a file changed only where push sends nothing (a tab's settings, a tab gone,
+  CLI28) says so and names `--force` alone.
 - `push <file>`: parses the pull file (`parsePullFile`), refuses another host than the profile's (exit 2); for each
   tab whose elements hash (`tabHashes`) differs from the pulled one, submits `replace { elements }` with
   `base { rev }` (the tab's pulled revision) and `strict: true`; a tab missing from the document, or from `livediagramSync`, is created
@@ -671,7 +674,7 @@ type ApiClientOptions = {
   baseUrl: string; // 'https://livediagram-api/api' for the MCP binding, caps.apiBase for the CLI
   fetch: (request: Request) => Promise<Response>;
   headers: () => Record<string, string>; // Authorization; X-Livediagram-Client: mcp | cli; X-Share-Code when addressed by a link
-  onFailure?: (kind: string) => void; // 'Http503' | 'Internal', 5xx and network only
+  onFailure?: (kind: string) => void; // 'Http503' | 'Internal', 5xx and network only (a timeout counts, the caller's own abort not)
   timeoutMs?: number;
 };
 type ApiClient = {

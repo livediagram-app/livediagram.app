@@ -7,7 +7,7 @@
 // (chipsShown); in a header band they lead the header, straight after the menu box that holds the board's name.
 import { useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { HoverCard } from '@liveplanner/ui';
+import { HoverCard, withArticle } from '@liveplanner/ui';
 import {
   newItemId,
   type BoardProjection,
@@ -75,14 +75,14 @@ export function BoardCardTypeChips({
       {types.map((t, i) => (
         <HoverCard
           key={t.id}
-          title={`Add a ${t.label}`}
+          title={`Add ${withArticle(t.label)}`}
           description="Click to add one, or drag it onto the board."
           disabled={!!carrying}
         >
           <button
             type="button"
             data-card-type-chip={t.id}
-            aria-label={`Add a ${t.label}`}
+            aria-label={`Add ${withArticle(t.label)}`}
             className={`${HEADER_ARRIVAL_CLASS} flex h-8 shrink-0 cursor-pointer touch-none select-none items-center gap-1.5 rounded-lg text-[13px] font-medium transition hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/10 ${
               named ? 'pl-1.5 pr-2.5' : 'px-1.5'
             } ${carrying === t.id ? 'bg-black/5 dark:bg-white/10' : ''}`}

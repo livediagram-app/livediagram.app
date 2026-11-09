@@ -48,7 +48,8 @@ from before an owner's rename never writes it back.
 
 **The tab must still belong to the canvas.** A grant whose tab is no longer in the canvas reaches nothing, and a
 scoped editor never makes a tab: once the owner deletes its tab, its whole-tab save
-(`PUT /api/documents/:id/tabs/:tabId`) and its changeset submit answer 404 rather than bringing the tab back.
+(`PUT /api/documents/:id/tabs/:tabId`) and its changeset submit answer 404 rather than bringing the tab back. A changeset
+submit to another tab answers 404 too, as the whole-tab save does; one below Editor on its own tab, 403.
 
 ## Realtime
 

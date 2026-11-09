@@ -37,6 +37,7 @@ import {
 import {
   DETAILS_COLUMNS,
   sortDetailsEntries,
+  summaryCount,
   typeLabel,
   type DetailsColumnId,
 } from './details/details-columns';
@@ -384,7 +385,7 @@ const DetailsRow = memo(function DetailsRow({
         <TypeCell app={item.app} label={kind} />
       </span>
       <span className={CELLS.comments}>
-        <CommentsCell count={item.summary.comments} />
+        <CommentsCell count={summaryCount(item, 'comments')} />
       </span>
       <span className={CELLS.access}>
         <AccessCell level={item.access} />

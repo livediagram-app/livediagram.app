@@ -201,7 +201,7 @@ export function getBuiltInTheme(
 // every theme (same rule `addBoxed` applies to ad-hoc sticky creation),
 // and an image renders its bytes so its colour fields are inert (see
 // ImageElement in @livedesign/design).
-type ThemeColourField = {
+export type ThemeColourField = {
   element: 'fillColor' | 'strokeColor' | 'textColor';
   theme: 'elementFill' | 'elementStroke' | 'elementText';
 };

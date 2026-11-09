@@ -64,7 +64,8 @@ changes before it would have done.
   the kind (`withPageKindChosen`) instead of adding a second page, so a fresh Pages tab does not keep an empty
   first page. Likewise a blank of the kind asked for (the tab's only page already of that kind, unnamed and holding
   nothing, as Blank Logo makes it) becomes the page added, so a design made from it does not open on an
-  empty page.
+  empty page. A wireframe blank is one only for the `device` asked for (or none asked), and a photo page only while
+  its picture has no layers, taking the `width` and `height` asked for; any other stays and the new page follows it.
 - **A delete of the page an add took**: once an `add` has taken the first page that way, the empty page is gone, so a
   later `delete` in the same call naming that page (by place or id) means the empty page and is done already: it
   deletes nothing and says so (`Page 1 was the empty first page, which change 1 made the page it added; nothing
@@ -75,7 +76,8 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   orientation; turning one is refused (`no_orientation`).
 - **Backgrounds**: `{ color }` (a hex) is a solid fill, `{ gradient: [from, to], angle? }` a two-stop gradient
   (angle in degrees, default 160, the panel's), `pattern` one of `dots`, `grid`, `lines` or `none`, `{ paper: true }` back to the
-  plain paper. A logo page takes no pattern (`pattern_not_offered`). A new fill re-inks what is on the page as the panel does
+  plain paper. A logo page takes no pattern (`pattern_not_offered`). A photo page takes no background at all, its photo being
+  its background: a `background` for one, or `apply_background_to_all` from one, is refused (`background_not_offered`). A new fill re-inks what is on the page as the panel does
   (`pageInkFor`, [Re-inking](../007-editor/pages-mode.md#re-inking)), from the colours as they are (the
   editor's session memory is the editor's).
 - **Apply to all**: `apply_background_to_all` gives every other page of the page's kind (every wireframe page, say) its

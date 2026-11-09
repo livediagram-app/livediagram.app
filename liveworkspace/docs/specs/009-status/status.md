@@ -37,7 +37,9 @@ A Cron Trigger runs at minute 7 of every hour (`"7 * * * *"`), in production and
    - incidents: outages only. A run of consecutive down checks is one incident, from its first down check to the
      first check after it that answered (up, or slow: a slow answer is still an answer), with how many checks it
      spanned and its first error. A down service opens one or extends its open one; one that answers again closes
-     it. A slow hour is no incident: it shows in the day's bar, not in the list;
+     it. A service taken off the list (its app retired, say) is never checked again, so its open incident closes with
+     the first run that no longer lists it, and is pruned like any other; the read API sends only the incidents of
+     services on the list. A slow hour is no incident: it shows in the day's bar, not in the list;
    - pruning: checks, days and closed incidents older than 90 days go.
 5. **Snapshot.** The two answers of the read API are built once here and stored as two rows of `snapshots`, so
    reading them is one row, however many people have the page open.

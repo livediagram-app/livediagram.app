@@ -109,6 +109,16 @@ function wildcardSource(pattern: string): string {
   return out;
 }
 
+// The character of a code point; #VALUE! for one that is no character: below 1, past U+10FFFF, or half a
+// surrogate pair (a lone half is broken text, not a character).
+function charOf(n: number): Value {
+  const code = Math.trunc(n);
+  if (code < 1 || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return err('#VALUE!');
+  return String.fromCodePoint(code);
+}
+
+const codeOf = (t: string): Value => (t === '' ? err('#VALUE!') : t.codePointAt(0)!);
+
 export const TEXT_FUNCTIONS: Record<string, FnDef> = {
   CONCAT: fn(1, MANY, (args, f) => {
     const ts = texts(flatScalars(args, f));
@@ -212,7 +222,8 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
   }),
   VALUE: scalarFn(1, 1, ([v], f) => {
     if (typeof v === 'number') return v;
-    if (v === null) return 0;
+    // Empty text is 0, as an empty cell is (Google Sheets: VALUE("") is 0).
+    if (v === null || v === '') return 0;
     if (typeof v !== 'string') return isError(v!) ? v : err('#VALUE!');
     const t = v.trim();
     const pct = t.endsWith('%') ? parseLocaleNumber(t.slice(0, -1).trim(), f.locale) : null;
@@ -224,11 +235,11 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
     const date = parseDateText(t, localeDayFirst(f.locale));
     return date ? date.serial : err('#VALUE!', `"${t}" is not a number`);
   }),
-  CHAR: textFn(1, 1, 0, (_t, [n]) => {
-    const code = Math.trunc(n!);
-    return code < 1 || code > 0x10ffff ? err('#VALUE!') : String.fromCodePoint(code);
-  }),
-  CODE: textFn(1, 1, 1, ([t]) => (t === '' ? err('#VALUE!') : t!.codePointAt(0)!)),
+  // Codes are whole code points (CODE("😀") is 128512), so CHAR(CODE(t)) is t's first character.
+  CHAR: textFn(1, 1, 0, (_t, [n]) => charOf(n!)),
+  CODE: textFn(1, 1, 1, ([t]) => codeOf(t!)),
+  UNICHAR: textFn(1, 1, 0, (_t, [n]) => charOf(n!)),
+  UNICODE: textFn(1, 1, 1, ([t]) => codeOf(t!)),
   SPLIT: fn(2, 4, (args, f) => {
     const text = textArg(args[0]!, f);
     const delim = textArg(args[1]!, f);

@@ -130,7 +130,10 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   can't edit it, takes no drop). Each upload goes through
   `POST /api/images?p=` as an Image field's does, then joins the end of the list in one write. Several files upload
   one after another; a file past the card's 20, or one the media service refuses, is skipped and said under the
-  zone ("That image is over 10 MB.", "A card holds up to 20 images."), the rest still land.
+  zone ("That image is over 10 MB.", "A card holds up to 20 images."), the rest still land. The room is counted
+  again when the uploads end, against the card as it is then (someone else may have filled it meanwhile), and the
+  announcement names only the pictures that landed ("Image attached", "3 images attached"); none landing writes
+  nothing.
 - **Each picture** is a row: a 40 px square thumbnail (cropped to fill), its name and its size ("1.2 MB"), with a
   **Cover** tag on the cover. Pressing the row **opens** the picture full size in a new browser tab. Its **⋯** menu
   holds **Open**, **Download** (saves it under its name), **Set as Cover** (or **Remove Cover** on the cover) and

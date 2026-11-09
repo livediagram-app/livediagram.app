@@ -170,6 +170,36 @@ describe('the writing', () => {
     expect(out.lines[0]).toBe('Appended to the article "Untitled" (f): 2 blocks added, 3 blocks.');
   });
 
+  it('sets the title and subtitle in place from an append’s front matter, never mid-article', () => {
+    const tab = withArticle('f', {
+      blocks: [para('1', 'Old title', 'title'), para('2', 'Body')],
+    });
+    const out = write(tab, {
+      markdown: '---\ntitle: New title\nsubtitle: Sub\n---\nMore',
+      mode: 'append',
+    });
+    const doc = articlesOf(out.tab).f!;
+    expect(texts(doc)).toEqual(['New title', 'Sub', 'Body', 'More']);
+    expect(doc.blocks[0]!.id).toBe('1');
+    expect(doc.blocks.map((b) => ('style' in b ? b.style : undefined))).toEqual([
+      'title',
+      'subtitle',
+      undefined,
+      undefined,
+    ]);
+    expect(out.lines[0]).toBe('Appended to the article "New title" (f): 2 blocks added, 4 blocks.');
+    // With no title yet, the title goes first; a subtitle alone goes first too.
+    const bare = withArticle('g', { blocks: [para('1', 'Body')] });
+    expect(
+      texts(
+        articlesOf(write(bare, { markdown: '---\ntitle: T\n---\nMore', mode: 'append' }).tab).g,
+      ),
+    ).toEqual(['T', 'Body', 'More']);
+    expect(
+      texts(articlesOf(write(bare, { markdown: '---\nsubtitle: S\n---\n', mode: 'append' }).tab).g),
+    ).toEqual(['S', 'Body']);
+  });
+
   it('writes a Markdown table as a table block, and a [TOC] line as contents', () => {
     const out = write(tabOf(), { markdown: '[TOC]\n\n| a | b |\n|---|---|\n| 1 | 2 |' });
     const doc = Object.values(articlesOf(out.tab))[0]!;

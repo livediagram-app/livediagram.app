@@ -79,7 +79,9 @@ const background = z
       .describe('A pattern over the fill: dots, grid, lines, or none. Logo pages take none.'),
     paper: z.literal(true).optional().describe('Back to the plain paper.'),
   })
-  .describe('The page’s background: one of color, gradient or paper, and optionally a pattern.');
+  .describe(
+    'The page’s background: one of color, gradient or paper, and optionally a pattern. A photo page has none.',
+  );
 const layout = z
   .string()
   .describe(

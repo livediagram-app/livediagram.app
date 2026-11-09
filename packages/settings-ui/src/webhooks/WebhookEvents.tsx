@@ -95,10 +95,10 @@ function EventsEditor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const next = offered.filter((event) => draft.has(event));
+  // As sets: the server's order needn't match the app's, and a reorder alone isn't a change to save.
+  const saved = new Set(webhook.events);
   const unchanged =
-    who === webhook.who &&
-    next.length === webhook.events.length &&
-    next.every((event, i) => event === webhook.events[i]);
+    who === webhook.who && next.length === saved.size && next.every((event) => saved.has(event));
 
   async function save() {
     setBusy(true);

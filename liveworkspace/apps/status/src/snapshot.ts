@@ -81,8 +81,10 @@ export function buildHistory(input: {
   }
 
   const since = dayStart(from);
+  // Only the listed services': a retired one's incidents would take a place of the INCIDENTS_MAX for nothing.
+  const listed = new Set(serviceIds);
   const entries: IncidentEntry[] = incidents
-    .filter((i) => i.endedAt === null || i.endedAt >= since)
+    .filter((i) => listed.has(i.service) && (i.endedAt === null || i.endedAt >= since))
     .toSorted((a, b) => b.startedAt - a.startedAt)
     .slice(0, INCIDENTS_MAX)
     .map((i) => [i.service, i.startedAt, i.endedAt, LETTER[i.worst], i.checks, i.error]);

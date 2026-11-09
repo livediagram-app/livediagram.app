@@ -162,7 +162,8 @@ In order of precedence:
 
 - `pull <doc>` writes `<slug>.livediagram.json`: the document, its tabs and each tab's revision. `--svg` adds a
   picture per tab. A pull never drops edits not yet pushed: when the file there changed since its pull, it is
-  refused, naming `push`, and kept; `--force` drops those edits and pulls anyway.
+  refused, naming `push`, and kept; `--force` drops those edits and pulls anyway. When the only changes are ones
+  push does not send (a tab's name, theme or background, a tab removed), the refusal says so and names `--force`.
 - `push <file>` sends each changed tab as a changeset based on the pulled revision. A tab changed on the server
   since is refused as a conflict, naming it; the person pulls again. Nothing is overwritten blindly. Only elements
   are pushed: a changed tab name, theme or background, and a tab gone from the file, are named as not pushed, and

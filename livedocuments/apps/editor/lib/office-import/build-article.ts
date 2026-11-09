@@ -35,11 +35,14 @@ const PARK_PITCH = ARTICLE_ZONE_MAX + 200;
 const clampSide = (v: number) =>
   Math.round(Math.min(ARTICLE_ZONE_MAX, Math.max(ARTICLE_ZONE_MIN, v)));
 
-/** The box a picture takes in the writing: its own size (else the stored image's), at most the text width. */
+/** The box a picture takes in the writing: its own size (else the stored image's), scaled as one so it fits the
+ *  text area (`textWidth` x `textHeight`) and a zone's largest side, and grown, as far as that allows, to a zone's
+ *  least side; only a picture too thin for both keeps a side clamped. */
 export function pictureZoneSize(
   picture: OfficePicture,
   outcome: PictureOutcome | undefined,
   textWidth: number,
+  textHeight: number = ARTICLE_ZONE_MAX,
 ): { width: number; height: number } {
   const stored = outcome && outcome !== 'over-cap' && outcome.ok ? outcome : undefined;
   let w = picture.widthPx;
@@ -48,7 +51,12 @@ export function pictureZoneSize(
     w = stored?.width ?? FALLBACK_W;
     h = stored?.height ?? FALLBACK_H;
   }
-  const scale = Math.min(1, textWidth / w);
+  const most = Math.min(
+    textWidth / w,
+    Math.min(textHeight, ARTICLE_ZONE_MAX) / h,
+    ARTICLE_ZONE_MAX / w,
+  );
+  const scale = Math.max(Math.min(1, most), Math.min(most, ARTICLE_ZONE_MIN / Math.min(w, h)));
   return { width: clampSide(w * scale), height: clampSide(h * scale) };
 }
 
@@ -88,6 +96,7 @@ export function buildArticleTab(
   const chosen = withPageKindChosen(blank, pagesOf(blank)[0]!.id, 'article', flow)!;
   const page = layOutPages(pagesOf(chosen))[0]!;
   const textWidth = pageDimensions(page).width - 2 * articleMarginPx(undefined);
+  const textHeight = pageDimensions(page).height - 2 * articleMarginPx(undefined);
 
   const elements: Element[] = [];
   const out: ArticleBlock[] = [];
@@ -98,7 +107,7 @@ export function buildArticleTab(
       continue;
     }
     const outcome = outcomes.get(zipKey(b.picture.path));
-    const size = pictureZoneSize(b.picture, outcome, textWidth);
+    const size = pictureZoneSize(b.picture, outcome, textWidth, textHeight);
     const at = { page: page.id, x: PARK_X, y: slot * PARK_PITCH };
     slot += 1;
     out.push({ id: b.id, type: 'zone', zone: 'object', ...size, at });

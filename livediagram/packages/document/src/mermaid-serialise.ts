@@ -42,7 +42,7 @@ function escapeLabel(label: string): string {
   return label
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')
-    .replace(/#(?=\d+;)/g, '#35;')
+    .replace(/#(?=(?:\d+|[a-z]+);)/gi, '#35;')
     .replace(/%%/g, '#37;#37;')
     .replace(/`/g, '#96;')
     .replace(/<(?=br\s*\/?>)/gi, '#60;')

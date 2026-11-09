@@ -52,6 +52,10 @@ type ArrowViewProps = {
   // where the label will land.
   draftLayout: (arrow: ArrowElement, text: string) => ArrowLabelLayout | null;
   isSelected: boolean;
+  // The arrow is the one selected element: only then does it wear its edit grips (ends, curve, elbow), as a box
+  // wears its handles (docs/specs/008-canvas/canvas-performance.md "Grips go on the one selection"). Defaults to
+  // isSelected for a view outside the selection store.
+  showGrips?: boolean;
   isPaintMode: boolean;
   isEditing: boolean;
   // Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md): caret at end instead of select-all when the
@@ -117,6 +121,7 @@ function ArrowViewImpl({
   labelRender,
   draftLayout,
   isSelected,
+  showGrips = isSelected,
   isPaintMode,
   isEditing,
   editCursorAtEnd = false,
@@ -509,7 +514,7 @@ function ArrowViewImpl({
 
       {/* The grips draw in the canvas grips layer, above every element (docs/specs/008-canvas/canvas-and-palette.md
           "Resize"), while their presses keep this view's React event path. */}
-      {isSelected && !isPaintMode && !readOnly ? (
+      {showGrips && !isPaintMode && !readOnly ? (
         <ArrowGripsPortal arrowId={arrow.id}>
           <SelectedArrowHandles
             arrow={arrow}

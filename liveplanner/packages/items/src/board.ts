@@ -1063,7 +1063,9 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
   const seenIds = new Set<string>();
   const seenStatus = new Set<string>();
   const columns: PlanColumn[] = [];
-  for (const c of input['columns'].slice(0, PLAN_COLUMNS_MAX)) {
+  // The cap counts columns kept, not entries read: a valid column after a dropped one is still kept.
+  for (const c of input['columns'] as unknown[]) {
+    if (columns.length >= PLAN_COLUMNS_MAX) break;
     if (!isObj(c)) continue;
     const { id, status: rawStatus, name, wipLimit, color } = c;
     if (typeof id !== 'string' || !id || id.length > 40 || seenIds.has(id)) continue;

@@ -33,7 +33,8 @@ import {
   type ClientCredentials,
   type TokenSet,
 } from './oauth';
-import { safeReturnPath } from './return-path';
+import { decodePkceCookie, encodePkceCookie } from './pkce-cookie';
+import { normalisedReturnPath } from './return-path';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // The once-per-browser-session mark, in each app's own sessionStorage.
@@ -130,32 +131,6 @@ function pkceCookie(cookies: SilentCookies, value: string, maxAge: number, path:
   return `${cookies.pkce}=${value}; Path=${path}; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
 }
 
-type SilentPkce = { state: string; verifier: string; returnTo: string };
-
-function encodePkce(value: SilentPkce): string {
-  const bytes = new TextEncoder().encode(JSON.stringify(value));
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function decodePkce(raw: string | null): SilentPkce | null {
-  if (!raw) return null;
-  try {
-    const binary = atob(raw.replace(/-/g, '+').replace(/_/g, '/'));
-    const parsed = JSON.parse(
-      new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0))),
-    ) as SilentPkce;
-    return typeof parsed.state === 'string' &&
-      typeof parsed.verifier === 'string' &&
-      typeof parsed.returnTo === 'string'
-      ? parsed
-      : null;
-  } catch {
-    return null;
-  }
-}
-
 function redirect(location: string, cookies: string[]): Response {
   const headers = new Headers({
     location,
@@ -188,7 +163,8 @@ export async function startSilentSignIn(input: SilentStartInput): Promise<Respon
   const { request, cookies } = input;
   const url = new URL(request.url);
   const raw = url.searchParams.get('return');
-  const returnTo = safeReturnPath(raw, input.fallbackReturn);
+  // Percent-encoded ASCII: it goes back in a Location header, and rides the cookie (pkce-cookie.ts).
+  const returnTo = normalisedReturnPath(raw, input.fallbackReturn);
   const header = request.headers.get('cookie');
   if (
     readCookie(header, cookies.signedOut) === SIGNED_OUT_VALUE ||
@@ -212,7 +188,7 @@ export async function startSilentSignIn(input: SilentStartInput): Promise<Respon
   return redirect(to, [
     pkceCookie(
       cookies,
-      encodePkce({ state, verifier, returnTo }),
+      encodePkceCookie({ state, verifier, returnTo }),
       SILENT_PKCE_MAX_AGE_SECONDS,
       input.cookiePath ?? '/api/auth',
     ),
@@ -246,7 +222,9 @@ export interface SilentFinishInput {
  */
 export async function finishSilentSignIn(input: SilentFinishInput): Promise<SilentFinish | null> {
   const url = new URL(input.request.url);
-  const pending = decodePkce(readCookie(input.request.headers.get('cookie'), input.cookies.pkce));
+  const pending = decodePkceCookie(
+    readCookie(input.request.headers.get('cookie'), input.cookies.pkce),
+  );
   const state = url.searchParams.get('state');
   if (!pending || !state || pending.state !== state) return null;
   const cleared = [pkceCookie(input.cookies, '', 0, input.cookiePath ?? '/api/auth')];

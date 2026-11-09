@@ -63,7 +63,7 @@ type BackgroundSpread<T> =
       applied: number;
       skipped: number;
     }
-  | { refused: 'unknown_page' | 'no_other_pages' };
+  | { refused: 'unknown_page' | 'no_other_pages' | 'background_not_offered' };
 
 /** A page's background onto every other page of its kind (Apply to All Logo Pages, and so on): one
  *  edit, each page re-inked for it. A locked page keeps its own and is counted as skipped; a page
@@ -77,6 +77,8 @@ export function pageBackgroundSpread<T extends PagesTab>(
   const source = pages.find((p) => p.id === pageId);
   if (!source) return { refused: 'unknown_page' };
   const kind = pageKindOf(source);
+  // Photo pages have no background to give (photo-pages.md "Background").
+  if (kind === 'photo') return { refused: 'background_not_offered' };
   const own = pagesSharing(pages, pageId);
   const targets = pages.filter((p) => pageKindOf(p) === kind && !own.has(p.id));
   if (targets.length === 0) return { refused: 'no_other_pages' };

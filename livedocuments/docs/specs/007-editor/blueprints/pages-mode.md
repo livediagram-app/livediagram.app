@@ -409,7 +409,10 @@ with content copied in; geometry and look are always the placed element's.
   `objectFit: 'cover'`.
 - Shapes: `previous` shapes with content (`hasContent`: a non-blank string or any value in
   `SHAPE_CONTENT`) and a non-placeholder `contentKey`, in reading order, each into the next free
-  `placed` shape of the same `shape` kind: its `SHAPE_CONTENT` fields.
+  `placed` shape of the same `shape` kind: its `SHAPE_CONTENT` fields. A slot `holdsWords` when its trimmed label
+  is not blank or it has `richText`. A shape whose only content is its words (`label`, `richText`) takes the
+  first free slot that holds words (none: not carried); any other takes the next free slot, and into a slot that
+  holds no words its `label` and `richText` are left out.
 - Everything else (arrows, unmatched elements, other types) is not carried.
 - The hover preview (`InfographicLayoutPreview`, given `view.elements` and `view.pages`) builds
   `buildPageLayoutOver` in a `useMemo` on the layout, the rect and the content, and resolves carried
@@ -689,7 +692,11 @@ joinedMenuCardWidth(joinedWidth, toolbarScale)` (the sidebar less the card's 12 
   its row's `paddingLeft` (in the toolbar's surface px), so the strip centres beside the sidebar;
   `useStripCrowded`, `useBarLabels`, `useBarFold` measure its room with `stripRoomBesideMenu` (the
   editor less the box and the gap on both sides, or, on a `data-menu-joined` box, the box
-  and a gap on the left and a gap from the right edge, so a strip that fills it keeps the gap from the sidebar too). `TabNameInBox` lets its name and its rename
+  and a gap on the left and a gap from the right edge, so a strip that fills it keeps the gap from the sidebar too).
+  `useStripCrowding` returns that crowding with `clear` (the box's right edge less the editor's left, plus
+  `STRIP_MENU_GAP_PX`); crowded with the article dock, `ToolbarPalette` pads its row's left by
+  `max(clear, besideWidth)` and draws the card as a phone's (`CardWidth` `flex min-w-0 max-w-full`, the card
+  `min-w-0`, all but the `data-strip-rail` dock `shrink-0`), so the dock's rail scrolls beside the box. `TabNameInBox` lets its name and its rename
   box shrink (`min-w-0`) inside the fixed width.
   - The strip's room (toolbar-layout.md "The strip's room"): `useBarFold` (`../packages/workbench/src/components/palette/useBarFold.ts`,
     on while the bar is bare and off on a phone) measures the whole bare bar once (`BarMeasure`: each

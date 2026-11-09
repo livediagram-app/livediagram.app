@@ -12,6 +12,8 @@ const SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120"><rect width="240" height="120" fill="#fff"/><text x="20" y="60">Web app</text></svg>';
 const PNG = [0x89, 0x50, 0x4e, 0x47];
 
+// How many times the tab's render was fetched.
+let renders = 0;
 const host: Route = (_r, url) => {
   const path = url.pathname;
   if (path === '/api/capabilities')
@@ -27,7 +29,10 @@ const host: Route = (_r, url) => {
         tabs: [{ id: 'main', name: 'Main', orderIndex: 0 }],
       },
     });
-  if (path === `/api/designs/${DOC}/tabs/main/render.svg`) return new Response(SVG);
+  if (path === `/api/designs/${DOC}/tabs/main/render.svg`) {
+    renders += 1;
+    return new Response(SVG);
+  }
   if (path === `/api/designs/${DOC}/tabs/main`)
     return new Response(JSON.stringify({ tab: { id: 'main', name: 'Main', elements: [] } }), {
       headers: { ETag: 'W/"2"' },
@@ -81,8 +86,10 @@ describe('tab render', () => {
 });
 
 describe('export --format png', () => {
-  it('writes each tab as a PNG beside the other formats', async () => {
+  it('writes each tab as a PNG beside the other formats, from one render of the tab', async () => {
+    renders = 0;
     const { code, out, io } = await cli(['export', '--all', '--to', 'b', '--format', 'png,svg']);
+    expect(renders).toBe(1);
     expect(code).toBe(0);
     expect(out.trim().split('\n')).toEqual([
       'b/shop/main.png',

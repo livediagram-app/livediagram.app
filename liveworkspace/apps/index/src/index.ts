@@ -17,6 +17,7 @@ import { publicKeys } from './grants';
 import { fail, forbidden, json, notFound, unauthorized } from './http';
 import { handleInbox } from './inbox';
 import { createItem, handleItem, handleItemList, handleTrash } from './items';
+import { handleItemLookup } from './lookup';
 import { handleMerge } from './merge';
 import { drainPersonMerges } from './person-merges';
 import { handleFavourites, handlePlacementDefaults, handleRecentHidden } from './personal';
@@ -85,6 +86,12 @@ async function route(ctx: RouteContext): Promise<Response> {
       if (method === 'POST') return createItem({ ...ctx, person });
       return notFound();
     }
+    // Many items at once, each as `GET /items/:id` would answer it (lookup.ts).
+    if (id === 'lookup' && segments.length === 2 && method === 'POST') {
+      const person = ctx.caller.person;
+      if (!person) return unauthorized();
+      return handleItemLookup({ ...ctx, person });
+    }
     if (segments[2] === 'share' || segments[2] === 'share-password') {
       return segments.length === 3 ? handleItemShare(ctx, id) : notFound();
     }
@@ -142,6 +149,7 @@ const routeLabel = createApiRouteLabel(
     'search',
     'summary',
     'previews',
+    'lookup',
     'collab',
     'forms',
     'grant',

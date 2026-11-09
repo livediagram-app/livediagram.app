@@ -11,10 +11,31 @@ import {
   nextComponentName,
   placeableComponents,
 } from './components';
-import { box, instanceOf, navMain } from './components.test.fixtures';
+import { arrow, box, instanceOf, navMain } from './components.test.fixtures';
 import type { Element } from './index';
 
 describe('applyComponentPatch', () => {
+  it("frees a kept arrow's end where it was drawn when the patch removes what it was pinned to", () => {
+    const link = arrow(
+      'link',
+      { kind: 'pinned', elementId: 'brand', anchor: 'e' },
+      { kind: 'pinned', elementId: 'icon', anchor: 'w' },
+    );
+    const main = navMain();
+    main.elements = [...main.elements, link];
+    const next = applyComponentPatch(main, { remove: ['icon'] }, 2);
+    const kept = next.elements.find((e) => e.id === 'link');
+    // The icon's west edge, mid-height: where the end was drawn, never the frame's origin.
+    expect(kept).toMatchObject({
+      from: { kind: 'pinned', elementId: 'brand' },
+      to: { kind: 'free', x: 170, y: 20 },
+    });
+    // An arrow the same patch upserts wins over the freed copy.
+    const upserted = { ...link, to: { kind: 'free' as const, x: 1, y: 2 } };
+    const both = applyComponentPatch(main, { remove: ['icon'], upsert: [upserted] }, 3);
+    expect(both.elements.find((e) => e.id === 'link')).toEqual(upserted);
+  });
+
   it('removes, upserts, appends, reorders, renames and archives', () => {
     const main = navMain();
     const next = applyComponentPatch(

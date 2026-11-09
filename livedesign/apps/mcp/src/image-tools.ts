@@ -11,7 +11,7 @@ import {
   type GalleryImage,
 } from '@livedesign/agent-verbs';
 import { mcpListImages } from '@livedesign/agent-verbs/mcp';
-import type { Element, Tab } from '@livedesign/design';
+import { cutText, type Element, type Tab } from '@livedesign/design';
 import { ApiError, apiJson } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { imageResult } from './image-result';
@@ -60,7 +60,7 @@ export async function imageIdIssue(
 
 const caption = (n: number, name: string, drawn: boolean) => {
   const text = `${n}. ${name}`;
-  const cut = text.length > CAPTION_MAX ? `${text.slice(0, CAPTION_MAX - 1)}…` : text;
+  const cut = text.length > CAPTION_MAX ? `${cutText(text, CAPTION_MAX - 1)}…` : text;
   return drawn ? cut : `${cut}\n(too large to draw here)`;
 };
 

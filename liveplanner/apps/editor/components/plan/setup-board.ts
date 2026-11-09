@@ -75,7 +75,9 @@ export function setUpBoard(
   // this board only: its cards keep their state.
   const kept = new Map(setup.columns.map((c) => [c.status, c]));
   let next: PlanBoardSetup = { ...setup, columns: [] };
-  for (const c of columns.slice(0, PLAN_COLUMNS_MAX)) {
+  // The cap counts columns made, so one a pick could not add (a duplicate status) never takes a later one's place.
+  for (const c of columns) {
+    if (next.columns.length >= PLAN_COLUMNS_MAX) break;
     const old = c.kind === 'existing' ? kept.get(c.status) : undefined;
     if (old) {
       next = { ...next, columns: [...next.columns, old] };

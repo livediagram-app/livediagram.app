@@ -13,11 +13,16 @@ export type ConfigFile = {
 
 const VALUE = /^("(?:[^"\\]|\\.)*"|true|false)$/;
 
-// A line up to the first `#` that follows whitespace: a trailing comment off, as `/\s+#.*$/` would take it, by a scan
-// rather than that pattern, which is quadratic on a long run of whitespace (CodeQL js/polynomial-redos).
+// A line up to the first `#` that follows whitespace outside a quoted string: a trailing comment off, by a linear scan
+// rather than a pattern like `/\s+#.*$/`, which is quadratic on a long run of whitespace (CodeQL js/polynomial-redos).
+// A `#` inside a value (`host = "https://example.com/ #x"`) is part of the value.
 function withoutComment(raw: string): string {
-  for (let i = 1; i < raw.length; i++) {
-    if (raw[i] === '#' && /\s/.test(raw[i - 1]!)) return raw.slice(0, i);
+  let quoted = false;
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+    if (quoted && c === '\\') i++;
+    else if (c === '"') quoted = !quoted;
+    else if (!quoted && c === '#' && i > 0 && /\s/.test(raw[i - 1]!)) return raw.slice(0, i);
   }
   return raw;
 }

@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { PaletteTray, usePaletteStripBox, useToolbarBox } from './PaletteTray';
+import {
+  PALETTE_TRAY_MIN_WIDTH_PX,
+  PaletteTray,
+  traySlot,
+  usePaletteStripBox,
+  useToolbarBox,
+} from './PaletteTray';
 
 // docs/specs/007-editor/toolbar-layout.md "Layout details": messages hang from the strip as its tray.
 
@@ -169,5 +175,40 @@ describe('trayHost', () => {
     document.body.append(pane);
     stripIn(pane);
     expect(trayHost()).toEqual({ node: pane, dx: 640, dy: 48 });
+  });
+});
+
+describe('traySlot', () => {
+  it("is the strip's own place and width when the strip is wide enough", () => {
+    expect(traySlot({ left: 300, width: 600, top: 12, bottom: 58 }, 1280)).toEqual({
+      left: 300,
+      width: 600,
+    });
+  });
+
+  it('keeps its minimum width, centred under a narrow strip (a locked article: the selection mode and Search)', () => {
+    // A 126 px strip centred at 640: the 360 px slot runs from 460 to 820.
+    expect(traySlot({ left: 577, width: 126, top: 12, bottom: 58 }, 1280)).toEqual({
+      left: 460,
+      width: PALETTE_TRAY_MIN_WIDTH_PX,
+    });
+  });
+
+  it('stays 8 px inside the window', () => {
+    expect(traySlot({ left: 700, width: 100, top: 12, bottom: 58 }, 800)).toEqual({
+      left: 432,
+      width: PALETTE_TRAY_MIN_WIDTH_PX,
+    });
+    expect(traySlot({ left: 0, width: 100, top: 12, bottom: 58 }, 800)).toEqual({
+      left: 8,
+      width: PALETTE_TRAY_MIN_WIDTH_PX,
+    });
+  });
+
+  it("keeps the strip's width on a phone, where a long message wraps instead", () => {
+    expect(traySlot({ left: 72, width: 200, top: 12, bottom: 58 }, 390)).toEqual({
+      left: 72,
+      width: 200,
+    });
   });
 });

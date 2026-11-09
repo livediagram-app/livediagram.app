@@ -250,6 +250,10 @@ export function applyParticipantOp(
   if (isHeld(tab, stored)) return refuse('locked', restore);
   // An instance, or an element of an open edit session, is not Participant content (its words included).
   if (touchesComponent(stored)) return refuse('component', restore);
+  // An op carrying a component field is refused whoever added the element (components.md "Share roles"): merged
+  // onto someone else's, the field was dropped and the op answered applied, so the sender's screen kept an instance
+  // nobody else had and no correction put it back.
+  if (touchesComponent(incoming)) return refuse('component', restore);
   const own = addedByAdder(stored, adderKey);
   const merged = own ? mergeOwn(stored, incoming) : mergeOthers(stored, incoming);
   if (!isValidElement(merged)) return refuse('invalid', restore);

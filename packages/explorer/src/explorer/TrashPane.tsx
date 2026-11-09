@@ -17,6 +17,7 @@ import { useExplorer } from './context';
 import { EmptyPane } from './EmptyPane';
 import { ThisBrowserTrashGroup, useThisBrowserTrashed } from './ThisBrowser';
 import { quoted } from '../quoted';
+import { compareNames } from '../data/name-order';
 
 export const TRASH_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -30,9 +31,14 @@ export function trashGroups(
 ): TrashGroup[] {
   const mine: ShownItem[] = [];
   const teams = new Map<string, ShownItem[]>();
+  // Pushed in place: a copy of the team's list per item made a big team Trash quadratic, on every render.
   for (const item of items) {
     if (!item.teamId) mine.push(item);
-    else teams.set(item.teamId, [...(teams.get(item.teamId) ?? []), item]);
+    else {
+      const rows = teams.get(item.teamId);
+      if (rows) rows.push(item);
+      else teams.set(item.teamId, [item]);
+    }
   }
   const groups: TrashGroup[] = [];
   if (mine.length > 0)
@@ -43,7 +49,8 @@ export function trashGroups(
     teamId,
     rows,
   }));
-  teamGroups.sort((a, b) => a.title.localeCompare(b.title));
+  // By name as every list of names is (name-order.ts), so "Team 2" comes before "Team 10".
+  teamGroups.sort((a, b) => compareNames(a.title, b.title));
   return [...groups, ...teamGroups];
 }
 

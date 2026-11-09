@@ -35,6 +35,8 @@ interface ResponseBody {
 }
 
 const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
+// A number as the box sends it once read in the respondent's locale: decimal digits, a sign, a point, an exponent.
+const PLAIN_NUMBER = /^[+-]?(\d+(\.\d*)?|\.\d+)(e[+-]?\d+)?$/i;
 
 export function isDateAnswer(v: string): boolean {
   const m = DATE.exec(v);
@@ -91,7 +93,13 @@ export function checkAnswer(q: FormQuestion, raw: unknown, other?: unknown): Ans
         : { value: t };
     }
     case 'number': {
-      const n = typeof raw === 'number' ? raw : typeof raw === 'string' ? Number(raw.trim()) : NaN;
+      // Text only as a plain decimal number: Number() alone would also take "0x1A" (26), "0b11" or "0o7".
+      const n =
+        typeof raw === 'number'
+          ? raw
+          : typeof raw === 'string' && PLAIN_NUMBER.test(raw.trim())
+            ? Number(raw.trim())
+            : NaN;
       if (!Number.isFinite(n)) return { error: 'not_a_number' };
       if (q.whole && !Number.isInteger(n)) return { error: 'not_whole' };
       if (q.min !== undefined && n < q.min) return { error: 'below_min' };

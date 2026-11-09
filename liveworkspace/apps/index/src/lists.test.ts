@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import type { Person } from './auth';
 import { decodeCursor } from './codec';
 import { inboxQueries } from './inbox';
-import { buildListQuery, type ListSpec } from './lists';
+import { buildAnyQuery, buildListQuery, type ListSpec } from './lists';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
 
 useHarness();
@@ -267,6 +267,101 @@ describe('filters', () => {
 });
 
 describe('search', () => {
+  // The search view is the person's scopes' items and those reached through a live link, merged in order: it pages
+  // through exactly what that reach holds, each item once (one in a scope and shared too), in the same order.
+  it('the search view pages through the whole reach, each item once, newest first', () => {
+    const db = h.db.sql;
+    const ada: Person = { id: 'user_a', kind: 'account', teams: ['team1'] };
+    const insert = db.prepare(
+      `INSERT INTO items (id, app, kind, owner_id, team_id, scope, title, summary, created_at, updated_at, trashed_at)
+       VALUES (?, ?, 'plan', ?, ?, ?, ?, '{}', ?, ?, ?)`,
+    );
+    const link = db.prepare(
+      'INSERT INTO share_links (code, item_id, level, expires_at, created_at) VALUES (?, ?, ?, ?, 0)',
+    );
+    const seen = db.prepare(
+      'INSERT INTO shared_with (person_id, item_id, share_code, last_seen) VALUES (?, ?, ?, 0)',
+    );
+    const apps = ['liveplanner', 'livediagram'];
+    db.exec('BEGIN');
+    for (let i = 0; i < 300; i++) {
+      // Hers, her team's, and others' (some of which reach her through a link); ties on updated_at too.
+      const kind = i % 4;
+      const owner = kind < 2 ? 'user_a' : `user_${i % 7}`;
+      const team = kind === 1 ? 'team1' : null;
+      const scope = team ? `t:${team}` : `p:${owner}`;
+      const trashed = i % 11 === 0 ? 5 : null;
+      insert.run(
+        `s-${i}`,
+        apps[i % 2]!,
+        owner,
+        team,
+        scope,
+        `T ${i % 3 === 0 ? 'road' : 'x'}`,
+        i,
+        Math.floor(i / 3),
+        trashed,
+      );
+      // A link on every third: some to her own (in scope too), some expired.
+      if (i % 3 === 0) {
+        link.run(`c-${i}`, `s-${i}`, 'view', i % 9 === 0 ? 1 : null);
+        seen.run('user_a', `s-${i}`, `c-${i}`);
+      }
+    }
+    db.exec('COMMIT');
+    const now = 1000;
+    const reference = (spec: Pick<ListSpec, 'app' | 'words' | 'scopes'>) => {
+      const scopes = JSON.stringify(spec.scopes ?? ['p:user_a', 't:team1']);
+      const rows = db
+        .prepare(
+          `SELECT i.id FROM items i WHERE i.trashed_at IS NULL
+            AND (i.scope IN (SELECT value FROM json_each(?)) OR (? AND EXISTS (SELECT 1 FROM shared_with sw
+              JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
+              WHERE sw.person_id = 'user_a' AND sw.item_id = i.id AND (sl.expires_at IS NULL OR sl.expires_at > ?))))
+            AND (? IS NULL OR i.app = ?) AND (? IS NULL OR i.title LIKE ?)
+          ORDER BY i.updated_at DESC, i.id DESC`,
+        )
+        .all(
+          scopes,
+          spec.scopes ? 0 : 1,
+          now,
+          spec.app ?? null,
+          spec.app ?? null,
+          spec.words?.[0] ?? null,
+          `%${spec.words?.[0] ?? ''}%`,
+        );
+      return rows.map((r) => String((r as { id: string }).id));
+    };
+    const walk = (spec: ListSpec) => {
+      const ids: string[] = [];
+      let cursor: ListSpec['cursor'];
+      for (;;) {
+        const { sql, args } = buildListQuery(ada, { ...spec, ...(cursor ? { cursor } : {}) }, now);
+        const rows = db.prepare(sql).all(...(args as SQLInputValue[])) as {
+          id: string;
+          sort_at: number;
+        }[];
+        const page = rows.slice(0, spec.limit);
+        ids.push(...page.map((r) => r.id));
+        if (rows.length <= spec.limit) return ids;
+        cursor = { at: page.at(-1)!.sort_at, id: page.at(-1)!.id };
+      }
+    };
+    const cases: Pick<ListSpec, 'app' | 'words' | 'scopes'>[] = [
+      {},
+      { app: 'livediagram' },
+      { words: ['road'] },
+      { scopes: ['t:team1'] },
+    ];
+    for (const filters of cases) {
+      const expected = reference(filters);
+      expect(expected.length).toBeGreaterThan(10);
+      const got = walk({ view: 'search', limit: 7, ...filters });
+      expect(got, JSON.stringify(filters)).toEqual(expected);
+      expect(new Set(got).size).toBe(got.length);
+    }
+  });
+
   it('matches titles and folder names', async () => {
     const ada = await person('user_a');
     const f = await body<{ folder: { id: string } }>(
@@ -379,6 +474,66 @@ describe('query plans', () => {
       ).toBe(true);
     });
   }
+
+  // The search view and Home's first-run question stop at the page (or the first item): neither gathers everything
+  // the person can reach into a UNION's temporary b-tree first.
+  it('the search view and Home’s any walk in order, never gathering the whole reach', () => {
+    const searches: ListSpec[] = [
+      { view: 'search', limit: 50 },
+      { view: 'search', limit: 50, app: 'liveplanner' },
+      { view: 'search', limit: 50, words: ['road'], cursor },
+      { view: 'search', limit: 50, scopes: ['t:team1'] },
+      { view: 'search', limit: 50, folder: 'f1', deep: true },
+    ];
+    const queries = [
+      ...searches.map((spec) => buildListQuery(ada, spec)),
+      buildAnyQuery(ada, undefined),
+      buildAnyQuery(ada, 'livediagram'),
+    ];
+    for (const { sql, args } of queries) {
+      const lines = plan(sql, args);
+      const text = lines.join('\n');
+      expect(text).not.toMatch(/UNION USING TEMP B-TREE/);
+      expect(text).not.toMatch(/\bSCAN (i|items|reach)\b/);
+    }
+  });
+
+  // With statistics where a few scopes hold most items (a small workspace after ANALYZE), the planner would rather
+  // scan the table; the scope lists name their index so the plan holds.
+  it('keeps every list on its index after ANALYZE, where a few scopes hold most items', () => {
+    const db = h.db.sql;
+    const insert = db.prepare(
+      `INSERT INTO items (id, app, kind, owner_id, team_id, scope, folder_id, title, summary, created_at, updated_at, trashed_at)
+       VALUES (?, 'liveplanner', 'plan', ?, ?, ?, ?, ?, '{}', ?, ?, ?)`,
+    );
+    db.exec('BEGIN');
+    for (let i = 0; i < 6000; i++) {
+      const team = ['team1', 'team2', null][i % 3]!;
+      const scope = team ? `t:${team}` : 'p:user_a';
+      insert.run(`a-${i}`, 'user_a', team, scope, null, `Item ${i}`, i, i, i % 9 === 0 ? i : null);
+    }
+    for (let i = 0; i < 300; i++) {
+      insert.run(`o-${i}`, `user_${i % 3}`, null, `p:user_${i % 3}`, null, `O ${i}`, i, i, null);
+    }
+    db.exec('COMMIT');
+    db.exec('ANALYZE');
+    for (const [name, spec, index] of specs) {
+      const { sql, args } = buildListQuery(ada, spec);
+      const lines = plan(sql, args);
+      expect(
+        lines.filter((l) => /\bSCAN (i|items)\b/.test(l)),
+        `${name}\n${lines.join('\n')}`,
+      ).toEqual([]);
+      expect(
+        lines.some((l) => l.includes(`INDEX ${index} (`)),
+        `${name}\n${lines.join('\n')}`,
+      ).toBe(true);
+    }
+    for (const app of [undefined, 'liveplanner' as const]) {
+      const { sql, args } = buildAnyQuery(ada, app);
+      expect(plan(sql, args).filter((l) => /\bSCAN (i|items)\b/.test(l))).toEqual([]);
+    }
+  });
 
   it('the Inbox walks indexes', () => {
     const q = inboxQueries('user_a', ['p:user_a', 't:team1'], null, 100);

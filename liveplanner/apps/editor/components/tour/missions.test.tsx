@@ -7,7 +7,12 @@ import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-li
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { modalClosed, modalOpened, openModalCount } from '@liveworkspace/workbench/lib/modal-guard';
 import { useMissions, type Mission } from './missions';
+import { revealInScrollers } from '@liveworkspace/workbench/components/tour/tour-reveal';
 import { HintRing } from './HintRing';
+
+vi.mock('@liveworkspace/workbench/components/tour/tour-reveal', () => ({
+  revealInScrollers: vi.fn(() => true),
+}));
 import { Emphasis, MissionStrip } from './MissionStrip';
 
 type Ctx = { a: boolean; b: boolean };
@@ -316,6 +321,23 @@ describe('HintRing', () => {
       else delete (document as { elementFromPoint?: unknown }).elementFromPoint;
       vi.useRealTimers();
     }
+  });
+
+  // docs/specs/026-plan/plan-tour.md "Hints climb": a hint's ring brings a target scrolled out of view back into it
+  // (Add card at the foot of a long column); the passive ring round a mission's control never scrolls anything.
+  it('brings a hint’s target into view, and only a hint’s', () => {
+    const reveal = vi.mocked(revealInScrollers);
+    reveal.mockClear();
+    drawn('below', 30);
+    const below = document.getElementById('below')!;
+    below.getBoundingClientRect = () =>
+      ({ left: 30, top: 5000, bottom: 5020, right: 70, width: 40, height: 20 }) as DOMRect;
+    const passive = render(<HintRing selector="#below" />);
+    expect(reveal).not.toHaveBeenCalled();
+    passive.unmount();
+    render(<HintRing selector={['#missing', '#below']} reveal />);
+    expect(reveal).toHaveBeenCalledTimes(1);
+    expect(reveal).toHaveBeenCalledWith(below);
   });
 
   it('takes one selector too', () => {

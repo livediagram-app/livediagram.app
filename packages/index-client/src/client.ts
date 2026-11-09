@@ -194,6 +194,10 @@ export function createIndexClient({
       call<{ item: Item; grant: GrantResponse }>('/items', { method: 'POST', body: input }),
     getItem: (id: string, share?: ShareAccess | null) =>
       call<ItemRead>(`/items/${enc(id)}`, { share }),
+    // Up to ITEM_LOOKUP_IDS_MAX items in one request, each as getItem would answer it without a share password, in
+    // the order asked; those it would refuse are left out.
+    lookupItems: (ids: readonly string[]) =>
+      call<{ items: Item[] }>('/items/lookup', { method: 'POST', body: { ids } }),
     updateItem: (id: string, input: UpdateItemInput) =>
       call<{ item: Item }>(`/items/${enc(id)}`, { method: 'PATCH', body: input }),
     // To the Trash, or with `permanent` gone for good.

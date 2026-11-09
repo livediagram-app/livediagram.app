@@ -29,7 +29,7 @@ import {
 import { readForm, type FormDefinition } from '@liveplanner/forms';
 import { dashboardSpecIssue } from './dashboard-body';
 import { tabRejection } from './finalise';
-import { PLAN_KINDS_HINT, planElementIssue } from './plan-elements';
+import { PLAN_KINDS_HINT, planBoardCapIssue, planElementIssue } from './plan-elements';
 import { invalidResult, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
@@ -82,7 +82,8 @@ function fromElements(raw: unknown, themeId: string | undefined, kept: ReadonlyS
   // Elements the tab already holds keep their own look; only new ones take a raw element's defaults.
   const normalised = normaliseElements(raw, { kept }) as unknown[];
   for (const el of normalised) {
-    const issue = elementValidationIssue(el);
+    // A board's caps hold for agent writes (docs/specs/024-agents/edit-operations.md).
+    const issue = elementValidationIssue(el) ?? planBoardCapIssue(el);
     if (issue) {
       // Every element passed planElementIssue above, so each is a Plan shape with its kind.
       const subject = el as { id?: unknown; shape: string };

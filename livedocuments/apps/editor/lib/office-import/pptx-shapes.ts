@@ -121,10 +121,65 @@ export type TextBody = {
 
 const on = (v: string | undefined) => v === '1' || v === 'true';
 
+/** What a paragraph's list says about its marker: none (false), a bullet (true), or a number (its `a:buAutoNum`). */
+export type BulletSpec = boolean | XmlElement;
+
+const roman = (n: number): string => {
+  const parts: [number, string][] = [
+    [1000, 'm'],
+    [900, 'cm'],
+    [500, 'd'],
+    [400, 'cd'],
+    [100, 'c'],
+    [90, 'xc'],
+    [50, 'l'],
+    [40, 'xl'],
+    [10, 'x'],
+    [9, 'ix'],
+    [5, 'v'],
+    [4, 'iv'],
+    [1, 'i'],
+  ];
+  let out = '';
+  let left = n;
+  for (const [value, digits] of parts) {
+    while (left >= value) {
+      out += digits;
+      left -= value;
+    }
+  }
+  return out;
+};
+
+// a to z, then aa to zz, and so on, as PowerPoint letters a list past z.
+const letters = (n: number): string =>
+  String.fromCharCode(97 + ((n - 1) % 26)).repeat(Math.ceil(n / 26));
+
+/** The marker an `a:buAutoNum` writes for the `n`th paragraph it numbers, counted from its `startAt`: "1. ", "b) ",
+ *  "(iii) ", ... by its scheme; a scheme past these (circled, East Asian, ...) as "1. ". */
+export function autoNumberMarker(autoNum: XmlElement, n: number): string {
+  const at = Math.max(1, Math.min(32767, (intAttr(autoNum, 'startAt') ?? 1) + n - 1));
+  const m = /^(alpha|roman|arabic)(Lc|Uc)?(Period|ParenR|ParenBoth|Plain)$/.exec(
+    autoNum.attrs.type ?? '',
+  );
+  if (!m) return `${at}. `;
+  const lower = m[1] === 'alpha' ? letters(at) : m[1] === 'roman' ? roman(at) : String(at);
+  const text = m[2] === 'Uc' ? lower.toUpperCase() : lower;
+  const wrapped =
+    m[3] === 'ParenR'
+      ? `${text})`
+      : m[3] === 'ParenBoth'
+        ? `(${text})`
+        : m[3] === 'Plain'
+          ? text
+          : `${text}.`;
+  return `${wrapped} `;
+}
+
 /** A text body as one label: a line a paragraph, bullets and numbers written in, two spaces of indent a level. */
 export function readTextBody(
   txBody: XmlElement | undefined,
-  bulletedByDefault: (level: number) => boolean,
+  bulletedByDefault: (level: number) => BulletSpec,
 ): TextBody | undefined {
   if (!txBody) return undefined;
   const lines: string[] = [];
@@ -134,8 +189,8 @@ export function readTextBody(
   let bold = 0;
   let italic = 0;
   let underline = 0;
-  // Numbered paragraphs count along consecutive ones at the same level.
-  const counters = new Map<number, number>();
+  // Numbered paragraphs count along consecutive ones at the same level in the same scheme and start.
+  const counters = new Map<number, { scheme: string; n: number }>();
   for (const p of kids(txBody)) {
     if (p.name !== 'a:p') continue;
     const pPr = child(p, 'a:pPr');
@@ -163,14 +218,21 @@ export function readTextBody(
     if (alignX === undefined && text.trim() !== '') alignX = alignOf(pPr) ?? 'inherit';
     let marker = '';
     if (text.trim() !== '') {
-      if (child(pPr, 'a:buAutoNum')) {
-        const n = (counters.get(level) ?? 0) + 1;
-        counters.set(level, n);
-        marker = `${n}. `;
+      // A paragraph ends the numbering of every level deeper than its own.
+      for (const deeper of counters.keys()) if (deeper > level) counters.delete(deeper);
+      const own: BulletSpec | undefined = child(pPr, 'a:buNone')
+        ? false
+        : (child(pPr, 'a:buAutoNum') ?? (child(pPr, 'a:buChar') ? true : undefined));
+      const spec = own ?? bulletedByDefault(level);
+      if (typeof spec !== 'boolean') {
+        const scheme = `${spec.attrs.type ?? ''} ${spec.attrs.startAt ?? ''}`;
+        const was = counters.get(level);
+        const n = was?.scheme === scheme ? was.n + 1 : 1;
+        counters.set(level, { scheme, n });
+        marker = autoNumberMarker(spec, n);
       } else {
         counters.delete(level);
-        if (child(pPr, 'a:buChar') || (bulletedByDefault(level) && !child(pPr, 'a:buNone')))
-          marker = '• ';
+        if (spec) marker = '• ';
       }
     } else counters.clear();
     lines.push(text.trim() === '' ? '' : `${'  '.repeat(level)}${marker}${text}`);
@@ -246,22 +308,25 @@ export function fontScaleOf(shape: XmlElement | undefined): number {
   return scale !== undefined && scale > 0 ? scale / 100_000 : 1;
 }
 
-/** Whether a list style's level turns bullets on (true), off (false), or says nothing (undefined). */
-function levelBullet(lstStyle: XmlElement | undefined, level: number): boolean | undefined {
+/** What a list style's level says: bullets off (false), a bullet (true), a number (its `a:buAutoNum`), or nothing
+ *  (undefined). */
+function levelBullet(lstStyle: XmlElement | undefined, level: number): BulletSpec | undefined {
   const lvl = child(lstStyle, `a:lvl${level + 1}pPr`);
   if (child(lvl, 'a:buNone')) return false;
-  if (child(lvl, 'a:buChar') || child(lvl, 'a:buAutoNum')) return true;
+  const autoNum = child(lvl, 'a:buAutoNum');
+  if (autoNum) return autoNum;
+  if (child(lvl, 'a:buChar')) return true;
   return undefined;
 }
 
-/** Whether a shape's paragraphs at a level are bulleted when they say nothing themselves: the first list style that
- *  says (the shape's, its layout's, its master's, then the master's body text style for a body placeholder), else a
- *  body placeholder's are and every other shape's are not. */
+/** The marker a shape's paragraphs at a level take when they say nothing themselves (none, a bullet or a number): the
+ *  first list style that says (the shape's, its layout's, its master's, then the master's body text style for a body
+ *  placeholder), else a body placeholder's are bulleted and every other shape's are not. */
 export function bulletDefault(
   shapes: readonly (XmlElement | undefined)[],
   master: XmlElement | undefined,
   type: PlaceholderType | undefined,
-): (level: number) => boolean {
+): (level: number) => BulletSpec {
   return (level) => {
     for (const s of shapes) {
       const said = levelBullet(path(s, 'p:txBody', 'a:lstStyle'), level);

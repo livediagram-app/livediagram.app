@@ -6,9 +6,27 @@ import { trustedHtml } from '@livedocuments/ui';
 export const PRINT_FRAME_ATTR = 'data-print-frame';
 // Removed after the print dialog closes, or after this where a browser never says it did.
 export const PRINT_FRAME_CLEANUP_MS = 60_000;
+// The longest the dialog waits for the sheets' fonts (the drawings fetch their faces): a slow or failed font prints
+// in the fallback face after this rather than never printing.
+export const PRINT_FONTS_WAIT_MS = 3_000;
 
-/** Prints `html` (our own builder's markup, printDocumentHtml) from a print frame; resolves once the print dialog
- *  has been asked for. */
+// The frame's fonts loaded, or the wait run out: the sheets print in their own faces, as the PDF draws them.
+function fontsSettled(win: Window): Promise<void> {
+  const ready = (win.document as Document | undefined)?.fonts?.ready;
+  if (!ready) return Promise.resolve();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<void>((settle) => (timer = setTimeout(settle, PRINT_FONTS_WAIT_MS)));
+  return Promise.race([
+    ready.then(
+      () => undefined,
+      () => undefined,
+    ),
+    late,
+  ]).finally(() => clearTimeout(timer));
+}
+
+/** Prints `html` (our own builder's markup, printDocumentHtml) from a print frame once it loads and its fonts have
+ *  (fontsSettled); resolves once the print dialog has been asked for. */
 export function printInFrame(html: string, doc: Document = document): Promise<void> {
   doc.querySelector(`iframe[${PRINT_FRAME_ATTR}]`)?.remove();
   const frame = doc.createElement('iframe');
@@ -36,15 +54,23 @@ export function printInFrame(html: string, doc: Document = document): Promise<vo
         };
         win.addEventListener('afterprint', done, { once: true });
         const timer = setTimeout(done, PRINT_FRAME_CLEANUP_MS);
-        try {
-          win.focus();
-          win.print();
-          resolve();
-        } catch (e) {
-          done();
-          // The dialog names a throw that is not an Error.
-          reject(e);
-        }
+        void fontsSettled(win).then(() => {
+          // A second print replaced this one while its fonts loaded: only the newest prints.
+          if (!frame.isConnected) {
+            done();
+            resolve();
+            return;
+          }
+          try {
+            win.focus();
+            win.print();
+            resolve();
+          } catch (e) {
+            done();
+            // The dialog names a throw that is not an Error.
+            reject(e);
+          }
+        });
       },
       { once: true },
     );

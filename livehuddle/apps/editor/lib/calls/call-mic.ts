@@ -57,7 +57,7 @@ export class CallMic {
 
   /** Open the microphone (a speaker's) and publish it, or swap it back in after a close. One capture at a time. */
   async open(): Promise<void> {
-    const sfu = this.host.sfu();
+    let sfu = this.host.sfu();
     if (this.stream || this.opening || this.blocked || !sfu || !this.host.trackToken()) return;
     let stream: MediaStream;
     this.opening = true;
@@ -70,12 +70,22 @@ export class CallMic {
       return;
     }
     this.opening = false;
+    // The session as it is now: one renewed while the browser asked replaced the one the press found. None (still
+    // being renewed): the renewal publishes this microphone once its session is up (republish).
+    sfu = this.host.sfu();
     if (this.host.stopped()) {
       for (const t of stream.getTracks()) t.stop();
       return;
     }
     this.stream = stream;
     const track = stream.getAudioTracks()[0]!;
+    // A microphone the browser ends (unplugged, its permission withdrawn) is released, never left published silent:
+    // unmuted, it opens again at once, on whichever microphone the browser has now (Mic Blocked with none).
+    track.addEventListener('ended', () => {
+      if (this.stream !== stream || this.host.stopped()) return;
+      this.close();
+      if (!this.muted && this.host.input.canSpeak) void this.open();
+    });
     track.enabled = !this.muted;
     this.host.graph.listenTo(stream);
     setCallSelf({ mic: 'open' });
@@ -84,7 +94,7 @@ export class CallMic {
     // the microphone been open, so it is never left open for good.
     this.keepFor(this.company);
     if (this.published) {
-      await sfu.replaceMic(track);
+      await sfu?.replaceMic(track);
       return;
     }
     await this.publish(sfu, track);
@@ -92,7 +102,8 @@ export class CallMic {
 
   // Publish the open microphone. A refused publish (already logged by the session) leaves it unpublished, and a
   // session Realtime dropped is renewed by the call, which publishes it again (republish).
-  private async publish(sfu: SfuSession, track: MediaStreamTrack): Promise<void> {
+  private async publish(sfu: SfuSession | null, track: MediaStreamTrack): Promise<void> {
+    if (!sfu) return;
     this.published = true;
     try {
       await sfu.publish(track);

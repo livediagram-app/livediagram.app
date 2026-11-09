@@ -17,18 +17,16 @@ export const DEFAULT_PAGE_SCOPE: Record<PageExportFormat, PageScope> = {
 };
 
 // Filesystem-safe filename (docs/specs/020-import-export/export-fidelity.md "File names"): brackets are
-// dropped, any other character that isn't alphanumeric, a dot, a dash, an underscore or a space becomes a
-// dash, runs of dashes collapse and dashes at the ends are trimmed, so "(9:16)" reads "9-16" and the name
-// is safe on Windows, macOS and Linux.
+// dropped, any other character that isn't a letter or digit (in any script, so "会議メモ" stays itself), a dot, a
+// dash, an underscore or a space becomes a dash, runs of dashes collapse and dashes and spaces at the ends are
+// trimmed, so "(9:16)" reads "9-16", "? - Board" reads "Board", and the name is safe on Windows, macOS and Linux.
 export function sanitizeFilename(name: string): string {
   return name
     .replace(/[()[\]{}]+/g, '')
-    .replace(/[^A-Za-z0-9._\- ]+/g, '-')
+    .replace(/[^\p{L}\p{M}\p{N}._\- ]+/gu, '-')
     .replace(/-+/g, '-')
     .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/^-|-$/g, '')
-    .trim();
+    .replace(/^[-\s]+|[-\s]+$/g, '');
 }
 
 /** A page's label as the export names it (its name, or "Page n", then its size). */

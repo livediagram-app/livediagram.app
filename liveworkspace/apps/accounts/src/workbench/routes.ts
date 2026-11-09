@@ -649,10 +649,10 @@ async function liveTokenIdsOf(
   if (ids.length === 0) return new Set();
   const { results } = await db
     .prepare(
-      `SELECT id FROM api_token WHERE userId = ? AND id IN (${ids.map(() => '?').join(', ')})
+      `SELECT id FROM api_token WHERE userId = ? AND id IN (SELECT value FROM json_each(?))
          AND revokedAt IS NULL AND expiresAt > ?`,
     )
-    .bind(userId, ...ids, now)
+    .bind(userId, JSON.stringify(ids), now)
     .all<{ id: string }>();
   return new Set(results.map((r) => r.id));
 }

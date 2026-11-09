@@ -191,6 +191,7 @@ async function deliver(ctx: Ctx, stage: LifecycleStage, row: Due, now: number): 
       .first<number>('send_attempts');
     if (failed === MAX_SEND_ATTEMPTS) {
       console.warn(`[lifecycle] giving up on an account after ${failed} failed sends`, error);
+      await parkAccount(db, row.user_id, now);
     } else {
       console.error(`[lifecycle] ${stage} send failed`, error);
     }
@@ -207,6 +208,21 @@ async function deliver(ctx: Ctx, stage: LifecycleStage, row: Due, now: number): 
       .run();
   }
   return 'sent';
+}
+
+// Given up on: every stage it is still owed is stamped with the give-up time. It was off every due list already
+// (`send_attempts < MAX_SEND_ATTEMPTS`, never reset without a send getting through), so nothing more is ever
+// sent; the stamps take it out of each stage's partial index too, so no later run walks past it at the head
+// of the list.
+async function parkAccount(db: D1Database, userId: string, now: number): Promise<void> {
+  const owed = STAGE_ORDER.map((stage) => STAGES[stage].column);
+  await db
+    .prepare(
+      `UPDATE email_lifecycle SET ${owed.map((c) => `${c} = COALESCE(${c}, ?)`).join(', ')}
+       WHERE user_id = ?`,
+    )
+    .bind(...owed.map(() => now), userId)
+    .run();
 }
 
 async function runStage(

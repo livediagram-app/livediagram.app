@@ -36,14 +36,17 @@ const REL_WORDS_RE = new RegExp(
   String.raw`^${NAME}\s+(${CARD_WORDS})\s+(to|optionally to)\s+(${CARD_WORDS})\s+${NAME}\s*(?::\s*(\S.*))?$`,
   'i',
 );
-// `CUSTOMER {` opens an attribute block; `CUSTOMER {}` is an empty one.
-const BLOCK_OPEN_RE = new RegExp(String.raw`^${NAME}\s*\{\s*(\})?$`);
+// `CUSTOMER {` opens an attribute block; whatever follows the `{` on its line is the block's first attributes, and a
+// `}` ending it closes the block there (`CUSTOMER {}`, `CUSTOMER { string name int id PK }`), as Mermaid reads a block
+// across lines or on one.
+const BLOCK_OPEN_RE = new RegExp(String.raw`^${NAME}\s*\{(.*)$`);
 // A bare entity name declares it.
 const BARE_RE = new RegExp(String.raw`^${NAME}$`);
 // `string name PK, FK "comment"` — keep the type, name and key markers, drop
-// the comment.
+// the comment. A type may be generic, as Mermaid writes one (`List~string~`). Sticky: a block's text is read one
+// attribute after another, so several may share a line.
 const ATTR_RE =
-  /^([A-Za-z0-9_()[\]]+)\s+([A-Za-z0-9_-]+)(?:\s+((?:PK|FK|UK)(?:\s*,\s*(?:PK|FK|UK))*))?/;
+  /\s*([A-Za-z0-9_()[\]~]+)\s+([A-Za-z0-9_-]+)(?:\s+((?:PK|FK|UK)(?:\s*,\s*(?:PK|FK|UK))*))?(?:\s*"[^"]*")?/y;
 
 export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
   const nodes = new Map<string, GraphNode>();
@@ -74,6 +77,19 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
     block = null;
   };
 
+  // Text inside an open block: its attributes, one after another, then the block closed if a `}` ends it.
+  const readBlockText = (text: string) => {
+    const closes = text.trimEnd().endsWith('}');
+    const body = closes ? text.trimEnd().slice(0, -1) : text;
+    ATTR_RE.lastIndex = 0;
+    for (let attr = ATTR_RE.exec(body); attr; attr = ATTR_RE.exec(body)) {
+      // The PK / FK / UK markers are the field's key (docs/specs/009-elements/entity.md "Keys").
+      const key = attr[3] ? entityKeyOf(attr[3].split(/\s*,\s*/)) : undefined;
+      block!.attrs.push({ name: attr[2]!, type: attr[1]!, ...(key ? { key } : {}) });
+    }
+    if (closes) closeBlock();
+  };
+
   for (const rawLine of rawLines) {
     const line = cleanLine(rawLine);
     if (!line) continue;
@@ -85,16 +101,7 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
     }
 
     if (block) {
-      if (line === '}') {
-        closeBlock();
-        continue;
-      }
-      const attr = ATTR_RE.exec(line);
-      if (attr) {
-        // The PK / FK / UK markers are the field's key (docs/specs/009-elements/entity.md "Keys").
-        const key = attr[3] ? entityKeyOf(attr[3].split(/\s*,\s*/)) : undefined;
-        block.attrs.push({ name: attr[2]!, type: attr[1]!, ...(key ? { key } : {}) });
-      }
+      readBlockText(line);
       continue;
     }
 
@@ -103,7 +110,7 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
       const id = nameOf(open, 1);
       touch(id, open[3]);
       block = { id, attrs: [] };
-      if (open[4]) closeBlock(); // `NAME {}` on one line
+      readBlockText(open[4]!);
       continue;
     }
 

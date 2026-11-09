@@ -1,6 +1,7 @@
 // One pass (liveworkspace/docs/specs/005-drive/drive.md "The service", "Cadence"), run by the object's alarm: a token, the root, the
-// push channel, the person's whole picture from the index, the gate (changes.getStartPageToken) and inbound, then
-// outbound in batches of DRIVE_PASS_MAX_WRITES, and the next alarm: the next batch straight away (after the write
+// push channel, the person's picture from the index (what changed, or whole: picture.ts), the gate
+// (changes.getStartPageToken) and inbound, then outbound in batches of DRIVE_PASS_MAX_WRITES, and the next alarm:
+// the next batch straight away (after the write
 // interval once DRIVE_PASS_STALLS_MAX passes in a row moved nothing on), else the soonest of the next content write
 // that falls due, the fallback check and the channel's renewal.
 
@@ -131,7 +132,8 @@ export async function runPass(rt: Runtime): Promise<PassOutcome> {
     const root = await ensureRoot(rt, connection);
     await maintainChannel(rt);
     const { index } = rt;
-    let picture = await index.picture();
+    // What changed since the last pass, or the whole picture on Check now, for a fresh root, or when due (picture.ts).
+    let picture = await index.picture({ full: flush || root.fresh });
     state = PassState.build(rt, index, root.rootId, picture);
     let adopted = root.fresh ? await adoptExisting(state) : 0;
     const read = await inbound(state);

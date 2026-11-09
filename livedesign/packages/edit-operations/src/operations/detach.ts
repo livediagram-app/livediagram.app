@@ -57,6 +57,25 @@ export function applyDetach(
       details: [`${target}: its main ${el.componentId} is not in the design`],
       hint: COMPONENTS_HINT,
     };
+  // An arrow in the main attached to an element the main no longer holds (a patch's `remove` can leave one) has no
+  // place to land once detached: refused by name rather than placed pinned to nothing.
+  const held = new Set(main.elements.map((m) => m.id));
+  for (const m of main.elements) {
+    if (m.type !== 'arrow') continue;
+    for (const end of [m.from, m.to]) {
+      const to =
+        end.kind === 'pinned' ? end.elementId : end.kind === 'on-arrow' ? end.arrowId : null;
+      if (to !== null && !held.has(to))
+        return {
+          code: 'invalid_value',
+          operation,
+          details: [
+            `${target}: its main's arrow ${m.id} is attached to ${to}, which the main no longer holds`,
+          ],
+          hint: COMPONENTS_HINT,
+        };
+    }
+  }
   const current = currentElements(state) as Element[];
   const freed = current.filter((a): a is ArrowElement => a.type === 'arrow' && pinnedTo(a, el.id));
   for (const arrow of freed) {
@@ -68,10 +87,17 @@ export function applyDetach(
   // changeset hold.
   let next = 0;
   const newId = () => {
-    // One call a main element, so `next` never runs past them.
-    const source = main.elements[next++]!;
-    const label = el.componentOverrides?.[source.id]?.label ?? Reflect.get(source, 'label');
-    const id = mintId(state, typeof label === 'string' ? label : undefined, kindWordOf(source));
+    // One call a main element; a further one (an arrow end or a host naming an id the main no longer holds, as a
+    // patch's `remove` can leave) mints a plain id rather than reading past the main's elements.
+    const source = main.elements[next++];
+    const label = source
+      ? (el.componentOverrides?.[source.id]?.label ?? Reflect.get(source, 'label'))
+      : undefined;
+    const id = mintId(
+      state,
+      typeof label === 'string' ? label : undefined,
+      source ? kindWordOf(source) : 'element',
+    );
     state.taken.add(id);
     return id;
   };
