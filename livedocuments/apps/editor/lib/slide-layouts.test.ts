@@ -21,8 +21,8 @@ import { isIconId } from '@liveworkspace/icons/search';
 // layout fitting a 16:9 and a 4:3 slide inside its margins, save a full-bleed picture or panel,
 // which runs to the slide's own edges and no further.
 describe('slide layouts', () => {
-  it('are the sixty-one of the spec, at least nine to a category, each unique', () => {
-    expect(SLIDE_LAYOUTS).toHaveLength(61);
+  it('are the sixty-three of the spec, at least nine to a category, each unique', () => {
+    expect(SLIDE_LAYOUTS).toHaveLength(63);
     expect(new Set(SLIDE_LAYOUTS.map((l) => l.id)).size).toBe(SLIDE_LAYOUTS.length);
     for (const c of SLIDE_LAYOUT_CATEGORIES) {
       expect(
@@ -127,4 +127,44 @@ describe('slide layouts', () => {
       });
     }
   }
+});
+
+// docs/specs/009-elements/quote.md and comparison-tables.md "Templates": the slides built on the quote and the table.
+describe('the quote and pricing slides', () => {
+  const [page] = layOutPages([newSlidePage('s', SLIDE_PAGE_SIZE_IDS[0])]);
+  const build = (id: string) => buildPageLayout(id as never, page!);
+  const quotes = (els: Element[]) =>
+    els.filter((e) => e.type === 'shape' && e.shape === 'quote') as Extract<
+      Element,
+      { type: 'shape' }
+    >[];
+
+  it('Quote and Picture places one Plain quote with its name and role', () => {
+    const [q, ...rest] = quotes(build('slide-quote-image'));
+    expect(rest).toEqual([]);
+    expect(q!.quoteLook).toBe('plain');
+    expect(q!.pageTitle).toBe('Sam Rivera');
+    expect(q!.pageSubtitle).toBeTruthy();
+  });
+
+  it('Testimonials places two Card quotes, each with an initial portrait', () => {
+    const qs = quotes(build('slide-testimonial'));
+    expect(qs).toHaveLength(2);
+    for (const q of qs) {
+      expect(q.quoteLook).toBeUndefined();
+      expect(q.cardMedia).toBe('initial');
+      expect(q.pageTitle && q.pageSubtitle).toBeTruthy();
+    }
+  });
+
+  it('Pricing Table is one table of ticks and crosses, its middle plan highlighted', () => {
+    const tables = build('slide-pricing-table').filter((e) => e.type === 'table');
+    expect(tables).toHaveLength(1);
+    const t = tables[0] as Extract<Element, { type: 'table' }>;
+    expect(t.highlightColumn).toBe(2);
+    expect(t.headerRow).toBe(true);
+    const flat = t.cells.flat();
+    expect(flat).toContain('✓');
+    expect(flat).toContain('✗');
+  });
 });

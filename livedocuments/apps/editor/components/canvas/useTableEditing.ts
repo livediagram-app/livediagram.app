@@ -1,15 +1,17 @@
 import type { Dispatch, RefObject, SetStateAction } from 'react';
-import { addTableRow, setTableCell, type TableElement } from '@livedocuments/document';
+import {
+  addTableRow,
+  setTableCell,
+  type TableElement,
+  type TablePatch,
+} from '@livedocuments/document';
 
 type Cell = { r: number; c: number } | null;
 
 type TableEditingDeps = {
   element: TableElement;
   readOnly: boolean;
-  onCommitTable: (
-    id: string,
-    patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
-  ) => void;
+  onCommitTable: (id: string, patch: TablePatch) => void;
   editorRef: RefObject<HTMLDivElement | null>;
   initialTextRef: RefObject<string>;
   setEditing: Dispatch<SetStateAction<Cell>>;

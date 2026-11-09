@@ -68,7 +68,9 @@ export function inheritedSizeFor(
       isConceptShape(base.shape) ||
       // A chart, a meter, a rating, a timeline rail, a legend, a sticker: each draws its own content to its own
       // proportions. A progress bar tapped while a legend was selected came out a 200 x 170 blob.
-      isSelfDrawingShape(base.shape))
+      isSelfDrawingShape(base.shape) ||
+      // A quote is laid out to its own box (docs/specs/009-elements/quote.md): a 100 x 60 one has no room for its source.
+      base.shape === 'quote')
   ) {
     return { width: base.width, height: base.height };
   }

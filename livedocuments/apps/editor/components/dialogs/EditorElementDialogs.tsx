@@ -3,7 +3,7 @@
 import { withArticle } from '@livedocuments/ui';
 import dynamic from 'next/dynamic';
 import {
-  isBoxed,
+  elementImageId,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   EMBED_PROVIDER_HINT,
@@ -267,7 +267,7 @@ export function EditorElementDialogs() {
             const targetId = imagePickerOpenFor.forElementId;
             if (!targetId) return null;
             const el = activeTab.elements.find((e) => e.id === targetId);
-            return el && isBoxed(el) && el.type === 'image' ? el.imageId : null;
+            return el ? elementImageId(el) : null;
           })()}
           onRemove={
             imagePickerOpenFor.forElementId

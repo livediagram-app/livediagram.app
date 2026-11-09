@@ -338,6 +338,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       label: label?.text ?? el.label ?? '',
       surface,
       resolveIconArt: opts.resolveIconArt,
+      resolveImageHref: opts.resolveImageHref,
       tagColours: opts.tagColours,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a

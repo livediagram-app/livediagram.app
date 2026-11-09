@@ -1,5 +1,5 @@
-// The web components (docs/specs/009-elements/web-components-and-no-groups.md): Banner, Card, Stat row, Process steps and
-// Header as single shape kinds, plus the Hero's caption card on an image. The Callout is a Card preset.
+// The web components (docs/specs/009-elements/web-components-and-no-groups.md): Banner, Card, Stat row, Process steps,
+// Header and Quote (docs/specs/009-elements/quote.md) as single shape kinds, plus the Hero's caption card on an image. The Callout is a Card preset.
 //
 // They used to be bundles of primitives held together by a shared groupId,
 // which meant a resize was a uniform zoom of loose boxes and a stray drag
@@ -19,7 +19,8 @@ import { CONCEPT_ROWS, boundConceptRows, isConceptShape, type ConceptRow } from 
 
 // --- Vocabulary -------------------------------------------------------------
 
-export type WebComponentShape = 'banner' | 'card' | 'stat-row' | 'process' | 'site-header';
+export type WebComponentShape =
+  'banner' | 'card' | 'stat-row' | 'process' | 'site-header' | 'quote';
 
 export function isWebComponentShape(kind: ShapeKind): kind is WebComponentShape {
   return (
@@ -27,7 +28,8 @@ export function isWebComponentShape(kind: ShapeKind): kind is WebComponentShape 
     kind === 'card' ||
     kind === 'stat-row' ||
     kind === 'process' ||
-    kind === 'site-header'
+    kind === 'site-header' ||
+    kind === 'quote'
   );
 }
 
@@ -45,11 +47,14 @@ export const ACCENT_BAR_TEXT = '#ffffff';
 
 // --- Rows -------------------------------------------------------------------
 
-export type StatItem = { value: string; caption: string };
+// A stat (docs/specs/009-elements/stat-row.md): its value, what it counts and, optionally, how it moved.
+export type StatItem = { value: string; caption: string; change?: string };
 
 // Per-string bound for every row of text these elements carry: a stat's value
 // or caption, a step, a nav link. Short on purpose; these are labels.
 export const WEB_TEXT_MAX = 80;
+// A stat's change line ("▲ 24% on last year"): a few characters on one line.
+export const STAT_CHANGE_MAX = 24;
 export const STATS_MIN = 1;
 export const STATS_MAX = 6;
 export const PROCESS_MIN_STEPS = 2;
@@ -72,23 +77,49 @@ export const HERO_DEFAULT_CAPTION: HeroCaption = {
 };
 
 // Trim + bound a row string the way every write path should.
-function clampWebText(s: string): string {
-  return cutText(s.replace(/\s+/g, ' ').trim(), WEB_TEXT_MAX);
+function clampWebText(s: string, max = WEB_TEXT_MAX): string {
+  return cutText(s.replace(/\s+/g, ' ').trim(), max);
+}
+
+// One stat bounded the way validate.ts bounds it: an empty change is no change, stored as nothing.
+function clampStat(st: StatItem): StatItem {
+  const value = clampWebText(st.value);
+  const caption = clampWebText(st.caption);
+  const change = clampWebText(st.change ?? '', STAT_CHANGE_MAX);
+  return change ? { value, caption, change } : { value, caption };
+}
+
+/** Whether any stat of a row carries a change, which gives every card of the row a change line. */
+export function statsHaveChange(stats: readonly StatItem[] | undefined): boolean {
+  return !!stats?.some((st) => !!st.change);
 }
 
 // --- Layout -----------------------------------------------------------------
 
 export type LayoutRect = Rect;
 
-// Stat row: the cards share the width equally with a fixed gap, and the
-// value's size follows the card height, so a taller row gets bigger numbers
-// rather than more empty card. Rects are element-relative.
+// Stat row (docs/specs/009-elements/stat-row.md): the cards share the width equally with a fixed gap, and the
+// value's size follows the card height, so a taller row gets bigger numbers rather than more empty card. Each card's
+// lines (value, caption and, when the row has one, the change pill) stack centred; their rects are card-relative and
+// the same for every card, so the cards line up whether or not their own stat has a change. Cards are
+// element-relative.
 const STAT_GAP = 16;
+export const STAT_VALUE_MAX_PX = 96;
+export type StatRowLayout = {
+  cards: LayoutRect[];
+  value: LayoutRect;
+  caption: LayoutRect;
+  change: LayoutRect | null;
+  valuePx: number;
+  captionPx: number;
+  changePx: number;
+};
 export function statRowLayout(
   width: number,
   height: number,
   count: number,
-): { cards: LayoutRect[]; valuePx: number; captionPx: number } {
+  hasChange = false,
+): StatRowLayout {
   const n = Math.max(1, count);
   const gap = Math.min(STAT_GAP, (width * 0.2) / Math.max(1, n - 1));
   const cardW = Math.max(0, (width - gap * (n - 1)) / n);
@@ -98,11 +129,25 @@ export function statRowLayout(
     width: cardW,
     height,
   }));
-  // Height drives the numbers, width caps them so a long value still fits a
-  // narrow card.
-  const valuePx = Math.round(clamp(Math.min(height * 0.34, cardW * 0.28), 12, 72));
+  // Height drives the numbers, width caps them so a long value still fits a narrow card. A change line takes a
+  // little of the height, so the value gives some back.
+  const share = hasChange ? 0.28 : 0.34;
+  const valuePx = Math.round(clamp(Math.min(height * share, cardW * 0.28), 12, STAT_VALUE_MAX_PX));
   const captionPx = Math.round(clamp(valuePx * 0.45, 10, 22));
-  return { cards, valuePx, captionPx };
+  const changePx = captionPx;
+  const valueH = valuePx * 1.15;
+  const captionH = captionPx * 1.3;
+  const changeH = hasChange ? changePx * 1.7 : 0;
+  const blockH = valueH + 2 + captionH + (hasChange ? 6 + changeH : 0);
+  const top = Math.max(0, (height - blockH) / 2);
+  const inset = Math.min(8, cardW * 0.06);
+  const lineW = Math.max(0, cardW - inset * 2);
+  const value = { x: inset, y: top, width: lineW, height: valueH };
+  const caption = { x: inset, y: top + valueH + 2, width: lineW, height: captionH };
+  const change = hasChange
+    ? { x: inset, y: caption.y + captionH + 6, width: lineW, height: changeH }
+    : null;
+  return { cards, value, caption, change, valuePx, captionPx, changePx };
 }
 
 // Process steps: the steps spread evenly across the width, connectors run
@@ -275,17 +320,15 @@ const ROW_KIND: Record<Exclude<keyof WebRows, 'conceptRows'>, ShapeKind> = {
 export function withWebRows<T extends { shape: ShapeKind }>(el: T, rows: WebRows): T {
   const patch: WebRows = {};
   if (rows.stats && el.shape === ROW_KIND.stats) {
-    const next = rows.stats
-      .slice(0, STATS_MAX)
-      .map((st) => ({ value: clampWebText(st.value), caption: clampWebText(st.caption) }));
+    const next = rows.stats.slice(0, STATS_MAX).map(clampStat);
     if (next.length >= STATS_MIN) patch.stats = next;
   }
   if (rows.processSteps && el.shape === ROW_KIND.processSteps) {
-    const next = rows.processSteps.slice(0, PROCESS_MAX_STEPS).map(clampWebText);
+    const next = rows.processSteps.slice(0, PROCESS_MAX_STEPS).map((s) => clampWebText(s));
     if (next.length >= PROCESS_MIN_STEPS) patch.processSteps = next;
   }
   if (rows.navLinks && el.shape === ROW_KIND.navLinks) {
-    patch.navLinks = rows.navLinks.slice(0, NAV_LINKS_MAX).map(clampWebText);
+    patch.navLinks = rows.navLinks.slice(0, NAV_LINKS_MAX).map((s) => clampWebText(s));
   }
   if (rows.tags && el.shape === ROW_KIND.tags) {
     // No tags is a card with no tag row, stored as nothing.

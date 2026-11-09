@@ -172,6 +172,7 @@ while that load runs the button reads **Starting** and is disabled. Its hover ca
 - **Advance** with `→`, `Space`, `Page Down`, or click. **Back** with `←`, `Page Up`. `Home` / `End` jump to the ends. A chord (`Cmd`, `Ctrl` or `Alt` held) is the browser's, never the deck's: `Cmd+G` finds the next match and `Alt+←` goes back, rather than opening the jump list or stepping a slide.
 - **The editor's own shortcuts are off** for as long as a deck is running. The overlay consumes the keys it uses, but everything else propagated straight through, so pressing `G` in front of a room armed a parallelogram on a canvas you cannot draw on and the next click dropped it. One derived flag (`keyboardEnabled = shortcutsEnabled && !presenting`) feeds every keyboard surface (the shortcut hook and the canvas a11y traversal) rather than the overlay swallowing keys it does not understand, so a surface added later is covered by the flag it already takes.
 - Advancing past the last slide shows an end state; one more advance exits.
+- **Numbers count up.** A stat row on a slide counts each of its numbers up from zero as the slide comes on, once, and holds them; reduced motion shows them at once ([Stat row](../009-elements/stat-row.md) "Count-up when presented"). The editor's canvas tells its elements it is presenting through one context (`PresentingContext`), which nothing else reads.
 
 ### Motion
 

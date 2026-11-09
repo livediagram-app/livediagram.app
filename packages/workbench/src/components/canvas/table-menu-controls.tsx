@@ -124,6 +124,7 @@ export function TableHeaderMenu({
   onAdd,
   onMove,
   onDelete,
+  highlight,
 }: {
   axis: 'col' | 'row';
   index: number;
@@ -131,6 +132,9 @@ export function TableHeaderMenu({
   onAdd: (at: number) => void;
   onMove: (from: number, to: number) => void;
   onDelete: (i: number) => void;
+  // A product whose tables mark one column as the recommended one (livedocuments' comparison tables) adds its
+  // Highlight Column row; whether this column is the highlighted one, and the toggle.
+  highlight?: { on: boolean; onToggle: () => void };
 }) {
   const isCol = axis === 'col';
   const beforeDir = isCol ? 'left' : 'up';
@@ -166,6 +170,30 @@ export function TableHeaderMenu({
       >
         <TrashIcon />
       </MenuButton>
+      {highlight ? (
+        <>
+          <MenuSeparator />
+          <MenuButton
+            label={highlight.on ? 'Remove Highlight' : 'Highlight Column'}
+            onClick={highlight.onToggle}
+          >
+            <HighlightIcon on={highlight.on} />
+          </MenuButton>
+        </>
+      ) : null}
     </>
+  );
+}
+
+// A column with a star over it: the recommended column.
+function HighlightIcon({ on }: { on: boolean }) {
+  return (
+    <Glyph size={14} units={16}>
+      <rect x="4.5" y="5.5" width="7" height="9" rx="1" />
+      <path
+        d="M8 1.2l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2L5.1 3.3l2-.3z"
+        fill={on ? 'currentColor' : 'none'}
+      />
+    </Glyph>
   );
 }

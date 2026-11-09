@@ -415,6 +415,12 @@ export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
 export * from './web-components';
+// A stat's change line and count-up (docs/specs/009-elements/stat-row.md); the quote (docs/specs/009-elements/quote.md);
+// the table's marks and highlighted column (docs/specs/009-elements/comparison-tables.md).
+export * from './stat-count';
+export * from './quote';
+export * from './element-images';
+export * from './table-marks';
 export * from './colors';
 export * from './cell-colours';
 export * from './table-header-colours';

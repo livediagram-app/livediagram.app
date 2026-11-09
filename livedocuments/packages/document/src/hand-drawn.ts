@@ -6,10 +6,7 @@ import { finishDrawsBodyByHand, type Finish } from './finish';
 import type { BoxedElement } from './index';
 import { MARKER_INK_OPACITY } from './marker';
 import { markerArrow, markerElementPaint } from './marker-element';
-import {
-  handDrawnImagePaint,
-  handDrawnPolygonPaint,
-} from './drawn-outline-finish';
+import { handDrawnImagePaint, handDrawnPolygonPaint } from './drawn-outline-finish';
 import { sketchArrow, sketchElementPaint } from './sketch-element';
 
 /** An element's hand-drawn body: the drawing (`drawing.pen` says whose), and the width and dash its outline takes. */

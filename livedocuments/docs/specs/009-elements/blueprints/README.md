@@ -24,3 +24,6 @@ Follow the references below only as needed; never upfront.
 - ./tag-colours.md - when implementing or changing tag colours, the tab map or how cards render it
 - ./stack.md - when implementing or changing the stack, its layout or how it settles
 - ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations
+- ./stat-row.md - when implementing or changing the stat row's change line, its layout, the count-up or the Big Number preset
+- ./quote.md - when implementing or changing the quote, its layout, portrait, looks, menu or its photo's image paths
+- ./comparison-tables.md - when implementing or changing table mark cells or the highlighted column

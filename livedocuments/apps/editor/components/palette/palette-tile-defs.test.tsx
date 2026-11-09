@@ -99,7 +99,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   stickers: 0,
   technology: 0,
   media: 9,
-  components: 11,
+  components: 13,
   concepts: 8,
   data: 7,
 };

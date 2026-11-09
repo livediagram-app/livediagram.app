@@ -90,6 +90,9 @@ export function inkKindOf(el: Element): InkKind {
     case 'shape':
       // A stat row's cards are its fill, its figures its stroke and its captions its text, on them.
       if (BOX_KINDS.has(el.shape) || el.shape === 'stat-row') return 'box';
+      // A quote's card is a box; a Plain quote is its words, mark and source set straight on the page
+      // (docs/specs/009-elements/quote.md "Looks").
+      if (el.shape === 'quote') return el.quoteLook === 'plain' ? 'ink' : 'box';
       if (el.shape === 'icon') {
         // A Technology mark and an emoji draw their own colours; the stroke does not reach them.
         return isTechIconId(el.iconId) || isLegacyEmojiIconId(el.iconId) ? 'keep' : 'ink';

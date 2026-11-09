@@ -56,15 +56,7 @@ export type BoxedElementViewProps = {
     x: import('@livedocuments/document').TextAlignX,
     y: import('@livedocuments/document').TextAlignY,
   ) => void;
-  onCommitTable: (
-    id: string,
-    patch: Partial<
-      Pick<
-        import('@livedocuments/document').TableElement,
-        'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
-      >
-    >,
-  ) => void;
+  onCommitTable: (id: string, patch: import('@livedocuments/document').TablePatch) => void;
   // Theme-derived default slice colours for pie charts (docs/specs/009-elements/pie-chart.md).
   chartPalette?: readonly string[];
   onCancelEdit: () => void;

@@ -1,3 +1,4 @@
+import { QUOTE_PRESET_TILES, QuoteTileGlyph } from './palette-quote-presets';
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
 import { badgePresetFace } from '@livedocuments/document';
@@ -1128,6 +1129,45 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <path d="M3.5 10.5h3M10.5 10.5h3M17.5 10.5h3" />
       </Glyph>
     ),
+  },
+  {
+    // The Big Number (docs/specs/009-elements/stat-row.md "The Big Number"): a stat row of one, sized as a headline.
+    id: 'components:big-number',
+    tileGroup: 'web',
+    blurb: 'One headline number, its label and its change',
+    caption: 'Big Number',
+    section: 'components',
+    label: 'Add Big Number',
+    description:
+      'Big number. One large figure with its label and a change line ("▲ 12%" in green, "▼ 3%" in rose) that counts up when the slide is presented. Click the number, label or change to edit it.',
+    noTint: true,
+    action: { type: 'shape', kind: 'stat-row', variant: 'big-number' },
+    icon: (
+      <Glyph size={18} units={24}>
+        <rect x="3" y="3.5" width="18" height="17" rx="2.5" />
+        <path
+          d="M8 8.5 9.5 7.5v6M12.5 8a1.6 1.6 0 0 1 3 .8c0 1.4-3 2.6-3 4.7h3"
+          strokeWidth="1.7"
+        />
+        <path d="M8 17h8" />
+      </Glyph>
+    ),
+  },
+  {
+    // The quote (docs/specs/009-elements/quote.md): a testimonial; the Pull Quote is its preset.
+    id: 'components:quote',
+    tileGroup: 'web',
+    blurb: 'Words with their source: name, role and portrait',
+    caption: 'Quote',
+    section: 'components',
+    label: 'Add Quote',
+    description:
+      'Quote. A large quote with its source: a name, a role and a portrait (an initial or a photo). Click to drop or drag to size; double-click to edit the words.',
+    noTint: true,
+    action: { type: 'shape', kind: 'quote' },
+    variants: QUOTE_PRESET_TILES,
+    variantsHint: 'Start from a preset, then change its look or portrait from its menu.',
+    icon: <QuoteTileGlyph />,
   },
   {
     id: 'components:process',

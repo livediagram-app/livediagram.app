@@ -370,6 +370,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Header',
     'Callout',
     'StatRow',
+    'Quote',
     'ProcessSteps',
     'Card',
     'Badge',

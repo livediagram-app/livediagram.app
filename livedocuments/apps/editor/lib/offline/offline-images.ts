@@ -19,7 +19,13 @@
 // element's current reference rather than aborting the whole conversion (a
 // kept R2 id still renders while online; a kept data URI renders anywhere).
 
-import { pageImageIds, withPageImageIds, type Tab } from '@livedocuments/document';
+import {
+  elementsImageIds,
+  pageImageIds,
+  withMappedImageId,
+  withPageImageIds,
+  type Tab,
+} from '@livedocuments/document';
 import { apiFetchImageDataUrl } from '../api/images';
 import { uploadImageFile } from '../upload-image';
 
@@ -31,7 +37,8 @@ export function isDataImageId(imageId: string | null | undefined): boolean {
 // (docs/specs/007-editor/pages-mode.md "Image backgrounds").
 export function tabImageIds(tab: Tab): string[] {
   const ids = new Set<string>(pageImageIds(tab.pages));
-  for (const el of tab.elements) if (el.type === 'image' && el.imageId) ids.add(el.imageId);
+  // An image's picture and a quote's photo (docs/specs/009-elements/quote.md).
+  for (const id of elementsImageIds(tab.elements)) ids.add(id);
   return [...ids];
 }
 
@@ -50,11 +57,7 @@ export function rewriteImageIds(tabs: Tab[], mapping: Map<string, string>): Tab[
     const pages = withPageImageIds(tab.pages, mapping);
     return {
       ...tab,
-      elements: tab.elements.map((el) => {
-        if (el.type !== 'image' || !el.imageId) return el;
-        const next = mapping.get(el.imageId);
-        return next && next !== el.imageId ? { ...el, imageId: next } : el;
-      }),
+      elements: tab.elements.map((el) => withMappedImageId(el, mapping)),
       ...(pages !== tab.pages ? { pages: pages as Tab['pages'] } : {}),
     };
   });

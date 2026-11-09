@@ -29,3 +29,6 @@ Follow the references below only as needed; never upfront.
 - ./stack.md - when working on The stack: A container that arranges what is dropped into it in a row, column or grid with an even gap, reflows on every change and hugs its contents
 - ./concept-graphics.md - when working on Concept graphics: Layer stack, Pyramid (pyramid / inverted / funnel) and Cycle as single elements laying out `conceptRows`, an accent ramp, in-place row editing, and the Concept animation set (build / pulse / flow)
 - ./tab-window.md - when working on The tab window (retired 2026-11-04): what is gone, and how a stored `tab-window` still loads, draws as a still frame named for its tab and exports
+- ./stat-row.md - when working on the Stat row's change line, its count-up when presented, or the Big Number preset
+- ./quote.md - when working on The quote: a pull quote or testimonial as one `quote` web component (the quote as its label, a name, a role and a photo or initial portrait), laid out by a pure `quoteLayout`, in a Card or Plain look
+- ./comparison-tables.md - when working on Comparison and pricing tables: tick and cross mark cells and the table's highlighted (recommended) column
