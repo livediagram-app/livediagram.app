@@ -131,9 +131,10 @@ describe('telemetry worker', () => {
     expect(env.rows).toEqual([]);
   });
 
-  it('sweeps rows older than 60 days', async () => {
+  it('sweeps rows older than 60 days, and counts yesterday again', async () => {
     const env = testEnv();
-    env.rows.push(
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    env.seed([
       {
         app: 'livediagram.app',
         category: 'Document',
@@ -148,13 +149,39 @@ describe('telemetry worker', () => {
         type: null,
         ts: Date.now(),
       },
-    );
+      // Yesterday's, stored without its day count (as during a deploy): the recount adds it.
+      {
+        app: 'livediagram.app',
+        category: 'Document',
+        action: 'Created',
+        type: null,
+        ts: Date.now() - (Date.now() % 86_400_000) - 1,
+      },
+    ]);
     const waits: Promise<unknown>[] = [];
     await worker.scheduled({} as ScheduledController, env, {
       waitUntil: (p: Promise<unknown>) => waits.push(p),
     } as unknown as ExecutionContext);
     await Promise.all(waits);
-    expect(env.rows).toHaveLength(1);
+    expect(env.rows).toHaveLength(2);
+    expect(env.counts).toEqual([
+      expect.objectContaining({ app: 'livediagram.app', category: 'Document', count: 1 }),
+    ]);
+    expect(log).toHaveBeenCalledWith(JSON.stringify({ sweep: 'events', rows: 1, counts: 0 }));
+    expect(log).toHaveBeenCalledWith(JSON.stringify({ recount: 'yesterday', counts: 1 }));
+    log.mockRestore();
+  });
+
+  it('logs a failed sweep and a failed recount', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const waits: Promise<unknown>[] = [];
+    await worker.scheduled({} as ScheduledController, testEnv({ TELEMETRY_DB: unavailableD1() }), {
+      waitUntil: (p: Promise<unknown>) => waits.push(p),
+    } as unknown as ExecutionContext);
+    await Promise.all(waits);
+    expect(error).toHaveBeenCalledWith('events sweep failed', expect.any(Error));
+    expect(error).toHaveBeenCalledWith('day recount failed', expect.any(Error));
+    error.mockRestore();
   });
 });
 
