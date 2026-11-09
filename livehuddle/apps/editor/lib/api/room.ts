@@ -177,7 +177,7 @@ export function connectRoom(
   // Null until the first ticket is minted and the first socket made.
   let ws: WebSocket | null = null;
   const isOpen = () => ws?.readyState === WebSocket.OPEN;
-  // The latest selection and tab focus we told the room, said again on every new socket (see send).
+  // The latest selection, tab focus and call locator we told the room, said again on every new socket (see send).
   const lastSaid = new Map<string, RoomOutgoing>();
   let closed = false; // the caller called close() — never reconnect after that
   let opened = false; // we've had at least one successful session (→ reconnects sync)
@@ -490,8 +490,13 @@ export function connectRoom(
     // (docs/specs/012-collaboration/collab-race-hardening.md). One choke point for every send path.
     const msg: RoomOutgoing =
       raw.kind === 'op' ? { ...raw, op: opForTheWire(raw.op) as RoomOp } : raw;
-    // State, not events: only the latest of each counts, so it is kept to say again on the next socket.
-    if (msg.kind === 'op' && (msg.op.kind === 'select' || msg.op.kind === 'tab-focus')) {
+    // State, not events: only the latest of each counts, so it is kept to say again on the next socket. Where our
+    // call's media is too (proximity-audio.md "The wire"): a new socket is a new presence id that no peer has a
+    // locator for, and nothing else would say it until someone new walked onto the tab.
+    if (
+      msg.kind === 'op' &&
+      (msg.op.kind === 'select' || msg.op.kind === 'tab-focus' || msg.op.kind === 'call-track')
+    ) {
       lastSaid.set(msg.op.kind, msg);
     }
     if (msg.kind === 'op' && msg.op.kind === 'avatar') {

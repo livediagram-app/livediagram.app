@@ -279,7 +279,9 @@ describe('useProximityCall', () => {
       expect(onShareStopped).toHaveBeenCalledWith('ed');
     });
 
-    it('a resume or a close the browser refuses is let be', async () => {
+    // A failed call has ended (proximity-audio.md "Who is in a call"): it stops waiting for a press, so none is left
+    // on the window holding its closed context.
+    it('a close the browser refuses is let be, and a failed call stops waiting for a press', async () => {
       audio.state = 'suspended';
       audio.refuse = true;
       calls.fail = true;
@@ -289,8 +291,19 @@ describe('useProximityCall', () => {
       await act(async () => {
         window.dispatchEvent(new Event('pointerdown'));
       });
-      expect(audio.made[0]!.resume).toHaveBeenCalled();
+      expect(audio.made[0]!.resume).not.toHaveBeenCalled();
       expect(callSelf().phase).toBe('error');
+    });
+
+    it('a resume the browser refuses is let be', async () => {
+      audio.state = 'suspended';
+      audio.refuse = true;
+      mount();
+      await waitFor(() => expect(calls.made).toHaveLength(1));
+      await act(async () => {
+        window.dispatchEvent(new Event('pointerdown'));
+      });
+      expect(audio.made[0]!.resume).toHaveBeenCalled();
     });
 
     // A join without a press (walking in): the browser keeps the sound until the page is touched.

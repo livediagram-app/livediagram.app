@@ -56,8 +56,8 @@ Two presence ops ([API](../015-api/api.md) room ops), in `PRESENCE_OP_KINDS`:
 - The room's gate parses both from any level and drops a malformed one; it drops an `avatar-knock` from a sender who
   knocked in the last 10 seconds (`KNOCK_THROTTLE_MS`), kept in memory only, per connection. What it relays is the
   parsed copy, never the frame as sent, so a field the shape above lacks reaches nobody. Every presence op the gate
-  parses goes out the same way: the reception bell, a hand and a let-speak, a talking level, a track, a stop-share and
-  a game's moves (`room-op-gate.ts`).
+  parses goes out the same way: a speech bubble, the reception bell, a hand and a let-speak, a talking level, a track,
+  a stop-share and a game's moves (`room-op-gate.ts`).
 - Neither op is ordered, logged or replayed; neither touches the document.
 
 ## Share roles

@@ -924,3 +924,107 @@ describe('connectRoom keepalive', () => {
     room.close();
   });
 });
+
+// docs/specs/012-collaboration/proximity-audio.md "The wire": a presence id is per socket, so after our own reconnect
+// peers know us by a new id with no microphone on it. Two clients through one relaying room.
+describe('connectRoom: a reconnect says the call again', () => {
+  type Frame = { kind: string; op?: { kind: string } };
+  class RelaySocket {
+    static OPEN = 1;
+    static all: RelaySocket[] = [];
+    static nextId = 0;
+    readyState = 0;
+    id = '';
+    private listeners: Record<string, ((e: { data?: string }) => void)[]> = {};
+    constructor() {
+      RelaySocket.all.push(this);
+    }
+    addEventListener(type: string, fn: (e: { data?: string }) => void) {
+      (this.listeners[type] ??= []).push(fn);
+    }
+    // The room: a fresh presence id per socket, every op relayed to every other open socket from that id.
+    send(data: string) {
+      const msg = JSON.parse(data) as Frame;
+      if (msg.kind !== 'op') return;
+      for (const peer of RelaySocket.all)
+        if (peer !== this && peer.readyState === 1)
+          peer.fire('message', { kind: 'op', from: this.id, op: msg.op });
+    }
+    close() {
+      this.readyState = 3;
+    }
+    open() {
+      this.readyState = 1;
+      this.id = `p${++RelaySocket.nextId}`;
+      this.fire('open');
+    }
+    drop() {
+      this.readyState = 3;
+      this.fire('close', undefined, { code: 1006 });
+    }
+    fire(type: string, data?: unknown, event: object = {}) {
+      for (const fn of this.listeners[type] ?? [])
+        fn(data === undefined ? event : { data: JSON.stringify(data) });
+    }
+  }
+
+  beforeEach(() => {
+    RelaySocket.all = [];
+    RelaySocket.nextId = 0;
+    vi.stubGlobal('WebSocket', RelaySocket);
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  const pair = (heardByB: (from: string, op: { kind: string }) => void) => {
+    const a = connectRoom(
+      'd1',
+      { id: 'a', name: 'A', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ticket: 'a1', mintTicket: async () => 'a2' },
+    );
+    const b = connectRoom(
+      'd1',
+      { id: 'b', name: 'B', color: '#000' },
+      { onPresence() {}, onOp: heardByB },
+      { ticket: 'b1' },
+    );
+    RelaySocket.all[0]!.open();
+    RelaySocket.all[1]!.open();
+    // A drops and comes back on a new socket, so a new presence id.
+    const reconnectA = async () => {
+      RelaySocket.all[0]!.drop();
+      await vi.runOnlyPendingTimersAsync();
+      RelaySocket.all[2]!.open();
+    };
+    return { a, b, reconnectA };
+  };
+  const track = { sessionId: 's', trackName: 'mic', token: 'k' };
+
+  it('tells the room where our microphone is again, so a peer has it on our new id', async () => {
+    const heard: { from: string; kind: string }[] = [];
+    const { a, b, reconnectA } = pair((from, op) => heard.push({ from, kind: op.kind }));
+    a.send({ kind: 'op', op: { kind: 'call-track', tabId: 't', track } });
+    expect(heard).toEqual([{ from: 'p1', kind: 'call-track' }]);
+    heard.length = 0;
+    await reconnectA();
+    expect(heard).toEqual([{ from: 'p3', kind: 'call-track' }]);
+    a.close();
+    b.close();
+  });
+
+  it('says only the latest: a call that ended says it has nothing', async () => {
+    const heard: unknown[] = [];
+    const { a, b, reconnectA } = pair((_from, op) => heard.push(op));
+    a.send({ kind: 'op', op: { kind: 'call-track', tabId: 't', track } });
+    a.send({ kind: 'op', op: { kind: 'call-track', tabId: 't', track: null } });
+    heard.length = 0;
+    await reconnectA();
+    expect(heard).toEqual([{ kind: 'call-track', tabId: 't', track: null }]);
+    a.close();
+    b.close();
+  });
+});

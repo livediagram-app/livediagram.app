@@ -704,7 +704,7 @@ rather than a form of its own (owner, 2026-11-06: "it isn't consistent looking w
 ### The wire
 
 - An `avatar-say` presence op: `{ kind: 'avatar-say', tabId, id, text, x, y }`, where `id` is the bubble's random id, `text` the message and `x, y` the canvas point the bubble starts from (the speaker's head). It is **presence**: unordered, never logged, never replayed to a late joiner (a message is about the moment), never written to the document or D1.
-- The room relays it from an Editor or a Participant only, and drops one whose `text` is not a string of at most 300 characters. A receiver parses it field by field, re-applies the 50-word and 300-character limits, ignores one for another tab, ignores repeats of an id it has seen, and draws the text as **plain text**, never markup.
+- The room relays it from an Editor or a Participant only, and drops one whose `text` is not a string of at most 300 characters. It relays its own checked copy (trimmed and clamped, with only the fields above), never the op as sent, so a field the shape lacks reaches nobody. A receiver parses it field by field, re-applies the 50-word and 300-character limits, ignores one for another tab, ignores repeats of an id it has seen, and draws the text as **plain text**, never markup.
 - A screen reader hears a peer's message through a polite live region ("Sam says: hello!"); your own is not repeated back to you.
 
 ### Motion
