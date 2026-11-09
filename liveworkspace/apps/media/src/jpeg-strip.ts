@@ -1,9 +1,13 @@
 // JPEG metadata stripper. Walks the segment stream and drops every
-// APP0 / APP1 (Exif) / APP2 (ICC profile) / APPn / COM marker the
-// file carries, leaving only the image-data segments needed to
-// render. Pure byte-level rewrite: no JPEG decode, no re-encode,
-// the rendered pixels stay bit-identical. See liveworkspace/docs/specs/006-media/media.md "Uploads" and the
-// security audit thread that drove this.
+// APPn and COM marker the file carries (Exif with its GPS and camera
+// serial, XMP, Photoshop, maker notes), keeping only what changes how
+// the picture looks: the ICC colour profile (APP2 `ICC_PROFILE`), the
+// Adobe colour transform (APP14 `Adobe`) and, from the Exif, its
+// Orientation alone, written back as a minimal Exif segment of one tag
+// (a phone's portrait photo is stored sideways with Orientation 6).
+// Pure byte-level rewrite: no JPEG decode, no re-encode, the rendered
+// pixels stay bit-identical. See liveworkspace/docs/specs/006-media/media.md
+// "Uploads" and the security audit thread that drove this.
 //
 // JPEG layout (from JFIF / EXIF specs):
 //   SOI  FFD8                                  start of image
@@ -25,12 +29,104 @@ const SOI = 0xd8;
 const EOI = 0xd9;
 const SOS = 0xda; // Start of Scan — switches to raw entropy-coded stream.
 
-// Segments to drop (no payload survives to R2):
-//   APPn  0xE0..0xEF: JFIF (E0), Exif (E1), ICC (E2), Photoshop
-//                    (ED), Adobe (EE), GoPro / camera junk (E3..EF).
-//   COM   0xFE: comment field.
-function shouldStrip(marker: number): boolean {
+const APP1 = 0xe1;
+const APP2 = 0xe2;
+const APP14 = 0xee;
+
+const ascii = (text: string) => Array.from(text, (c) => c.charCodeAt(0));
+const EXIF_ID = ascii('Exif\0\0');
+const ICC_ID = ascii('ICC_PROFILE\0');
+const ADOBE_ID = ascii('Adobe');
+const ORIENTATION_TAG = 0x0112;
+const SHORT = 3;
+
+// Whether the segment's payload (after its length bytes) opens with `id`.
+function opensWith(src: Uint8Array, payloadStart: number, payloadEnd: number, id: number[]) {
+  if (payloadEnd - payloadStart < id.length) return false;
+  return id.every((byte, k) => src[payloadStart + k] === byte);
+}
+
+// Segments kept as they are: an ICC profile chunk (APP2, possibly several in a row) and the
+// Adobe segment (APP14, which says whether a CMYK picture's channels are transformed). Every
+// other APPn (JFIF, Exif, XMP, MPF, Photoshop, camera junk in E3..EF) and COM goes.
+function isKeptAppSegment(marker: number, src: Uint8Array, start: number, end: number): boolean {
+  if (marker === APP2) return opensWith(src, start, end, ICC_ID);
+  if (marker === APP14) return opensWith(src, start, end, ADOBE_ID);
+  return false;
+}
+
+function isMetadata(marker: number): boolean {
   return (marker >= 0xe0 && marker <= 0xef) || marker === 0xfe;
+}
+
+/**
+ * The Orientation (2..8) an Exif APP1 payload's first IFD holds, or null: none, the default 1,
+ * or an Exif too broken to read (never an error: the picture is fine without it).
+ */
+export function exifOrientation(src: Uint8Array, start: number, end: number): number | null {
+  if (!opensWith(src, start, end, EXIF_ID)) return null;
+  const tiff = start + EXIF_ID.length;
+  if (tiff + 8 > end) return null;
+  const little = src[tiff] === 0x49 && src[tiff + 1] === 0x49; // "II"
+  const big = src[tiff] === 0x4d && src[tiff + 1] === 0x4d; // "MM"
+  if (!little && !big) return null;
+  const u16 = (at: number) =>
+    little ? src[at]! | (src[at + 1]! << 8) : (src[at]! << 8) | src[at + 1]!;
+  const u32 = (at: number) =>
+    little
+      ? (src[at]! | (src[at + 1]! << 8) | (src[at + 2]! << 16) | (src[at + 3]! << 24)) >>> 0
+      : ((src[at]! << 24) | (src[at + 1]! << 16) | (src[at + 2]! << 8) | src[at + 3]!) >>> 0;
+  if (u16(tiff + 2) !== 42) return null;
+  const ifd = tiff + u32(tiff + 4);
+  if (ifd + 2 > end) return null;
+  const entries = u16(ifd);
+  for (let n = 0; n < entries; n++) {
+    const entry = ifd + 2 + n * 12;
+    if (entry + 12 > end) return null;
+    if (u16(entry) !== ORIENTATION_TAG) continue;
+    if (u16(entry + 2) !== SHORT || u32(entry + 4) !== 1) return null;
+    const value = u16(entry + 8);
+    return value >= 2 && value <= 8 ? value : null;
+  }
+  return null;
+}
+
+/** A minimal Exif APP1 segment (marker included) holding the Orientation tag alone. */
+export function orientationSegment(orientation: number): number[] {
+  const payload = [
+    ...EXIF_ID,
+    // TIFF header, big-endian: "MM", 42, the first IFD at offset 8.
+    0x4d,
+    0x4d,
+    0x00,
+    0x2a,
+    0x00,
+    0x00,
+    0x00,
+    0x08,
+    // IFD0: one entry, Orientation, SHORT, count 1, the value left-justified in its four bytes.
+    0x00,
+    0x01,
+    0x01,
+    0x12,
+    0x00,
+    SHORT,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x00,
+    orientation & 0xff,
+    0x00,
+    0x00,
+    // No next IFD.
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+  ];
+  const len = payload.length + 2;
+  return [0xff, APP1, (len >> 8) & 0xff, len & 0xff, ...payload];
 }
 
 // Strip metadata from a JPEG byte buffer. Returns the rewritten
@@ -48,15 +144,20 @@ export function stripJpegMetadata(input: ArrayBuffer): ArrayBuffer {
     return input; // Not a JPEG: hand back unchanged.
   }
 
-  // Output buffer sized to the input length; we only ever remove
-  // bytes so the source size is a safe upper bound. Trim before
-  // returning.
-  const out = new Uint8Array(src.length);
+  // Output buffer sized to the input length plus room for the one
+  // Orientation segment written back; everything else only removes
+  // bytes. Trim before returning.
+  const out = new Uint8Array(src.length + orientationSegment(1).length);
   let outOffset = 0;
+  let orientation: number | null = null;
+  let sawExif = false;
 
-  // Copy SOI verbatim.
+  // Copy SOI verbatim; the Orientation segment, when the Exif held
+  // one, goes straight after it (where readers look for Exif) once
+  // the walk has found it.
   out[outOffset++] = 0xff;
   out[outOffset++] = SOI;
+  const afterSoi = outOffset;
   let i = 2;
 
   while (i < src.length) {
@@ -88,7 +189,9 @@ export function stripJpegMetadata(input: ArrayBuffer): ArrayBuffer {
       // length prefix, so the only safe thing is "copy until end".
       out[outOffset++] = 0xff;
       out[outOffset++] = SOS;
-      while (i < src.length) out[outOffset++] = src[i++]!;
+      out.set(src.subarray(i), outOffset);
+      outOffset += src.length - i;
+      i = src.length;
       break;
     }
 
@@ -115,16 +218,29 @@ export function stripJpegMetadata(input: ArrayBuffer): ArrayBuffer {
       throw new Error('stripJpegMetadata: segment overruns input');
     }
 
-    if (!shouldStrip(marker)) {
+    // The first Exif segment is the one readers honour.
+    if (marker === APP1 && !sawExif && opensWith(src, segStart + 2, segEnd, EXIF_ID)) {
+      sawExif = true;
+      orientation = exifOrientation(src, segStart + 2, segEnd);
+    }
+
+    if (!isMetadata(marker) || isKeptAppSegment(marker, src, segStart + 2, segEnd)) {
       // Keep the segment: copy marker + payload.
       out[outOffset++] = 0xff;
       out[outOffset++] = marker;
-      for (let k = segStart; k < segEnd; k++) out[outOffset++] = src[k]!;
+      out.set(src.subarray(segStart, segEnd), outOffset);
+      outOffset += segEnd - segStart;
     }
     // Else: skip the segment entirely (marker + payload elided).
 
     i = segEnd;
   }
 
-  return out.slice(0, outOffset).buffer;
+  if (orientation === null) return out.slice(0, outOffset).buffer;
+  const segment = orientationSegment(orientation);
+  const result = new Uint8Array(outOffset + segment.length);
+  result.set(out.subarray(0, afterSoi), 0);
+  result.set(segment, afterSoi);
+  result.set(out.subarray(afterSoi, outOffset), afterSoi + segment.length);
+  return result.buffer;
 }

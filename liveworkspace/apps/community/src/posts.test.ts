@@ -72,14 +72,16 @@ async function publish(
   patch: Partial<CommunityPostInput> = {},
   now = 1000,
   app: CommunityApp = LD,
-) {
-  return createPost(
+): Promise<string> {
+  const id = await createPost(
     db.env,
     app,
     document,
     { ...publishing(patch), shareCode: `code-${document}` },
     now,
   );
+  if (id === null) throw new Error('post_limit');
+  return id;
 }
 
 const list = async (patch: Partial<CommunityListQuery> = {}, app: CommunityApp = LD) =>

@@ -10,7 +10,8 @@ import { addClient, addUser, testD1 } from './test-d1.ts';
 
 const BASE = 'https://liveworkspace.app';
 const CLIENT = `Basic ${btoa('livediagram:secret')}`;
-const T0 = Date.UTC(2026, 9, 1);
+// A minute ago: the route reads the invitations still inside their 28 days by the clock.
+const T0 = Date.now() - 60_000;
 
 const ADA: Actor = { id: 'user_ada', email: 'ada@example.com' };
 

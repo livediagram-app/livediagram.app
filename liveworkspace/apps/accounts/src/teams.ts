@@ -284,10 +284,11 @@ export interface Invitation {
   createdAt: number;
 }
 
-// Invitations waiting for this address.
+// Invitations waiting for this address, those past their 28 days left out (the hourly sweep marks them expired).
 export async function listMyInvitations(
   db: D1Database,
   email: string | null,
+  now = Date.now(),
 ): Promise<Invitation[]> {
   if (!email) return [];
   const { results } = await db
@@ -297,10 +298,10 @@ export async function listMyInvitations(
               (SELECT COUNT(*) FROM team_member c WHERE c.teamId = t.id AND c.status = 'joined') AS memberCount
        FROM team_member m JOIN team t ON t.id = m.teamId
        LEFT JOIN "user" u ON u.id = m.invitedBy
-       WHERE m.email = ? AND m.status = 'invited' AND t.deletedAt IS NULL
+       WHERE m.email = ? AND m.status = 'invited' AND t.deletedAt IS NULL AND ${UNEXPIRED}
        ORDER BY m.createdAt DESC`,
     )
-    .bind(email)
+    .bind(email, now - INVITATION_TTL_MS)
     .all<Invitation>();
   return results;
 }
@@ -327,14 +328,19 @@ export async function getMembership(
     .first<Membership>();
 }
 
+// The teams an account (the one `?`) is in, as SQL: the caps are read before a write for its answer, and again inside
+// the write, so requests racing past the first read can't together go over (MAX_TEAMS_PER_ACCOUNT,
+// MAX_MEMBERS_PER_TEAM).
+const JOINED_TEAMS = `(SELECT COUNT(*) FROM team_member jm JOIN team jt ON jt.id = jm.teamId
+  WHERE jm.userId = ? AND jm.status = 'joined' AND jt.deletedAt IS NULL)`;
+// A team's (the one `?`) open rows, invited or joined.
+const OPEN_MEMBERS = `(SELECT COUNT(*) FROM team_member om WHERE om.teamId = ? AND om.status IN ('invited', 'joined'))`;
+// An invitation `m` still in its 28 days (the one `?` is now - INVITATION_TTL_MS): the hourly sweep marks it expired
+// later, and until then it can't be accepted.
+const UNEXPIRED = `(m.clockStartedAt IS NULL OR m.clockStartedAt > ?)`;
+
 async function joinedTeamCount(db: D1Database, userId: string): Promise<number> {
-  const row = await db
-    .prepare(
-      `SELECT COUNT(*) AS n FROM team_member m JOIN team t ON t.id = m.teamId
-       WHERE m.userId = ? AND m.status = 'joined' AND t.deletedAt IS NULL`,
-    )
-    .bind(userId)
-    .first<{ n: number }>();
+  const row = await db.prepare(`SELECT ${JOINED_TEAMS} AS n`).bind(userId).first<{ n: number }>();
   return row?.n ?? 0;
 }
 
@@ -355,21 +361,25 @@ export async function createTeam(
   const memberId = crypto.randomUUID();
   // An account without a verified address still needs a value here; it never matches an invite.
   const memberEmail = actor.email ?? `${actor.id}@account.invalid`;
-  await db.batch([
+  // The cap again inside the insert, so creates racing past the count above can't together pass it; the admin row
+  // follows only a team that was made.
+  const [, made] = await db.batch([
     db.prepare(BUMP),
     db
       .prepare(
-        `INSERT INTO team (id, name, organisation, createdAt, updatedAt, rev) VALUES (?, ?, ?, ?, ?, ${REV})`,
+        `INSERT INTO team (id, name, organisation, createdAt, updatedAt, rev)
+         SELECT ?, ?, ?, ?, ?, ${REV} WHERE ${JOINED_TEAMS} < ?`,
       )
-      .bind(id, name, organisation, now, now),
+      .bind(id, name, organisation, now, now, actor.id, MAX_TEAMS_PER_ACCOUNT),
     db.prepare(BUMP),
     db
       .prepare(
         `INSERT INTO team_member (id, teamId, userId, email, role, status, invitedBy, createdAt, updatedAt, rev)
-         VALUES (?, ?, ?, ?, 'admin', 'joined', NULL, ?, ?, ${REV})`,
+         SELECT ?, ?, ?, ?, 'admin', 'joined', NULL, ?, ?, ${REV} WHERE EXISTS (SELECT 1 FROM team WHERE id = ?)`,
       )
-      .bind(memberId, id, actor.id, memberEmail, now, now),
+      .bind(memberId, id, actor.id, memberEmail, now, now, id),
   ]);
+  if (!made?.meta.changes) return fail(409, 'team_limit_reached');
   return ok({
     id,
     name,
@@ -545,41 +555,60 @@ export async function inviteMember(
     .prepare('SELECT id FROM "user" WHERE email = ? AND emailVerified = 1')
     .bind(email)
     .first<{ id: string }>();
+  let written: D1Result[] = [];
   try {
-    await db.batch([
+    written = await db.batch([
       // An address that turned an earlier invitation down is invited afresh: the old answer leaves
-      // the list as the new invitation takes its place.
+      // the list as the new invitation takes its place. Both under the member cap, again inside the write.
       db.prepare(BUMP),
       db
         .prepare(
           `UPDATE team_member SET status = 'removed', updatedAt = ?, rev = ${REV}
-           WHERE teamId = ? AND email = ? AND status = 'declined'`,
+           WHERE teamId = ? AND email = ? AND status = 'declined' AND ${OPEN_MEMBERS} < ?`,
         )
-        .bind(now, teamId, email),
+        .bind(now, teamId, email, teamId, MAX_MEMBERS_PER_TEAM),
       db.prepare(BUMP),
       db
         .prepare(
           `INSERT INTO team_member (id, teamId, userId, email, role, status, invitedBy, createdAt, updatedAt, rev,
                                     declineTokenHashes, clockStartedAt)
-           VALUES (?, ?, NULL, ?, ?, 'invited', ?, ?, ?, ${REV}, ?, ?)`,
+           SELECT ?, ?, NULL, ?, ?, 'invited', ?, ?, ?, ${REV}, ?, ? WHERE ${OPEN_MEMBERS} < ?`,
         )
-        .bind(id, teamId, email, role, actor.id, now, now, decline.hash, now),
-      teamEvent(db, {
-        id: `team_invite_sent:${id}`,
-        type: 'team_invite_sent',
-        teamId,
-        teamName: me.teamName,
-        actor,
-        at: now,
-        scopes: teamScopes(teamId, [invitee?.id]),
-        detail: { memberName: email, personId: invitee?.id ?? null, role },
-      }),
+        .bind(
+          id,
+          teamId,
+          email,
+          role,
+          actor.id,
+          now,
+          now,
+          decline.hash,
+          now,
+          teamId,
+          MAX_MEMBERS_PER_TEAM,
+        ),
+      teamEvent(
+        db,
+        {
+          id: `team_invite_sent:${id}`,
+          type: 'team_invite_sent',
+          teamId,
+          teamName: me.teamName,
+          actor,
+          at: now,
+          scopes: teamScopes(teamId, [invitee?.id]),
+          detail: { memberName: email, personId: invitee?.id ?? null, role },
+        },
+        { sql: 'EXISTS (SELECT 1 FROM team_member WHERE id = ?)', args: [id] },
+      ),
     ]);
   } catch (err) {
     // Two invitations to one address at once: the unique index lets one through.
     if (isUniqueClash(err)) return fail(409, 'already_invited');
     throw err;
   }
+  // Refused at the member cap, inside the write.
+  if (!written[3]?.meta.changes) return fail(409, 'member_limit_reached');
   return ok({
     member: {
       id,
@@ -790,9 +819,9 @@ export async function answerInvitation(
     .prepare(
       `SELECT m.id, m.teamId, t.name AS teamName, ${INVITER_APP} AS inviterApp
        FROM team_member m JOIN team t ON t.id = m.teamId
-       WHERE m.id = ? AND m.email = ? AND m.status = 'invited' AND t.deletedAt IS NULL`,
+       WHERE m.id = ? AND m.email = ? AND m.status = 'invited' AND t.deletedAt IS NULL AND ${UNEXPIRED}`,
     )
-    .bind(memberId, actor.email)
+    .bind(memberId, actor.email, now - INVITATION_TTL_MS)
     .first<{ id: string; teamId: string; teamName: string; inviterApp: string | null }>();
   if (!row) return fail(404, 'not_found');
   const inviterApp = appOrNull(row.inviterApp);
@@ -825,10 +854,19 @@ export async function answerInvitation(
     db.prepare(BUMP),
     db
       .prepare(
-        `UPDATE team_member SET status = ?, userId = ?, updatedAt = ?, rev = ${REV}
-         WHERE id = ? AND status = 'invited'`,
+        `UPDATE team_member AS m SET status = ?, userId = ?, updatedAt = ?, rev = ${REV}
+         WHERE id = ? AND status = 'invited' AND ${UNEXPIRED} AND (? = 0 OR ${JOINED_TEAMS} < ?)`,
       )
-      .bind(status, accept ? actor.id : null, now, memberId),
+      .bind(
+        status,
+        accept ? actor.id : null,
+        now,
+        memberId,
+        now - INVITATION_TTL_MS,
+        accept ? 1 : 0,
+        actor.id,
+        MAX_TEAMS_PER_ACCOUNT,
+      ),
     teamEvent(
       db,
       {
@@ -870,6 +908,9 @@ export async function leaveAllTeams(
   db: D1Database,
   userId: string,
   now = Date.now(),
+  // Statements for the same batch, given the teams that close (the account deletion's purge record), so what
+  // closed is written down with the closing itself: a retry after a later step failed finds those teams gone.
+  alongside: (closed: string[]) => D1PreparedStatement[] = () => [],
 ): Promise<string[]> {
   const { results } = await db
     .prepare(
@@ -929,7 +970,7 @@ export async function leaveAllTeams(
         DELETED_MEMBER_EMAIL,
       ),
   );
-  await db.batch(statements);
+  await db.batch([...statements, ...alongside(closed)]);
   return closed;
 }
 
@@ -1344,17 +1385,22 @@ export async function joinByInviteLink(
         .first<{ id: string }>()
     : null;
   if (pending) {
-    await db.batch([
+    const [, accepted] = await db.batch([
       db.prepare(BUMP),
       db
         .prepare(
           `UPDATE team_member SET status = 'joined', userId = ?, updatedAt = ?, rev = ${REV}
-           WHERE id = ? AND status = 'invited'`,
+           WHERE id = ? AND status = 'invited' AND ${JOINED_TEAMS} < ?`,
         )
-        .bind(actor.id, now, pending.id),
+        .bind(actor.id, now, pending.id, actor.id, MAX_TEAMS_PER_ACCOUNT),
       joinedEvent(pending.id, memberGuard(pending.id, 'joined', now)),
     ]);
-    return ok({ ...result, alreadyMember: false, acceptedInvite: true });
+    if (accepted?.meta.changes)
+      return ok({ ...result, alreadyMember: false, acceptedInvite: true });
+    // Not taken: the account reached its cap since the read above, or the invitation was answered or withdrawn
+    // meanwhile, and the link still lets them in.
+    const refused = await refusedJoin(db, team.id, actor.id, result);
+    if (refused) return refused;
   }
   const open = await db
     .prepare(
@@ -1364,16 +1410,32 @@ export async function joinByInviteLink(
     .first<{ n: number }>();
   if ((open?.n ?? 0) >= MAX_MEMBERS_PER_TEAM) return fail(409, 'member_limit_reached');
   const memberId = crypto.randomUUID();
+  let joined: D1Result[] = [];
   try {
-    await db.batch([
+    joined = await db.batch([
       db.prepare(BUMP),
       db
         .prepare(
           `INSERT INTO team_member (id, teamId, userId, email, role, status, invitedBy, createdAt, updatedAt, rev)
-           VALUES (?, ?, ?, ?, 'member', 'joined', NULL, ?, ?, ${REV})`,
+           SELECT ?, ?, ?, ?, 'member', 'joined', NULL, ?, ?, ${REV}
+           WHERE ${JOINED_TEAMS} < ? AND ${OPEN_MEMBERS} < ?`,
         )
-        .bind(memberId, team.id, actor.id, actor.email ?? `${actor.id}@account.invalid`, now, now),
-      joinedEvent(memberId),
+        .bind(
+          memberId,
+          team.id,
+          actor.id,
+          actor.email ?? `${actor.id}@account.invalid`,
+          now,
+          now,
+          actor.id,
+          MAX_TEAMS_PER_ACCOUNT,
+          team.id,
+          MAX_MEMBERS_PER_TEAM,
+        ),
+      joinedEvent(memberId, {
+        sql: 'EXISTS (SELECT 1 FROM team_member WHERE id = ?)',
+        args: [memberId],
+      }),
     ]);
   } catch (err) {
     // Two joins at once by one person: the unique index lets one through, and they are in. Anything else (D1 down,
@@ -1383,7 +1445,32 @@ export async function joinByInviteLink(
     }
     throw err;
   }
+  if (!joined[1]?.meta.changes) {
+    return (await refusedJoin(db, team.id, actor.id, result)) ?? fail(409, 'member_limit_reached');
+  }
   return ok({ ...result, alreadyMember: false, acceptedInvite: false });
+}
+
+// Why a join through the link wrote nothing: they are in already (another request let them in), or the account is
+// at its team cap; null for neither.
+async function refusedJoin(
+  db: D1Database,
+  teamId: string,
+  userId: string,
+  result: { teamId: string; teamName: string },
+): Promise<Result<{
+  teamId: string;
+  teamName: string;
+  alreadyMember: boolean;
+  acceptedInvite: boolean;
+}> | null> {
+  if (await getMembership(db, teamId, userId)) {
+    return ok({ ...result, alreadyMember: true, acceptedInvite: false });
+  }
+  if ((await joinedTeamCount(db, userId)) >= MAX_TEAMS_PER_ACCOUNT) {
+    return fail(409, 'team_limit_reached');
+  }
+  return null;
 }
 
 // --- Reminders and expiry ---

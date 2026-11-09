@@ -283,7 +283,7 @@ A publish carries the owner, the community link's code, the document's state, ho
 shown, and the post itself. The app has already checked what only it can: the caller owns the
 document, signed in, and the document may be published (not empty, not a team library's, no share
 password). The service checks the rest: the input, at most 50 posts per owner per app
-(`post_limit`), one post per document (`already_published`), a hidden post is final (`post_hidden`).
+(`post_limit`, held inside the insert so publishes at once can't pass it together), one post per document (`already_published`), a hidden post is final (`post_hidden`).
 A post made by a document's previous owner is not the new owner's, and publishing replaces it, unless it was hidden
 after reports: that stays final for whoever owns the document (`post_hidden`).
 

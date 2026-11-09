@@ -179,7 +179,10 @@ on its personal items and on the items of the teams closed with it are deleted, 
 - Every webhook route: one item read and the access rule's reads (as any item route), then one or two indexed reads
   or one batch.
 - A run: at most 50 sends, 6 at a time, each at most 10 s; one D1 read, one batch per webhook, one read for the next run.
-- A webhook holds at most 500 pending and 20 finished deliveries; a document at most 10 webhooks.
+- A webhook holds at most 500 pending and 20 finished deliveries; a document at most 10 webhooks. Both caps are checked
+  inside the insert: the pending one with each row's place in its JSON list added (`listening`'s `ahead`, `j.key`), as
+  the count is read once before a statement writes; the webhook one as `INSERT ... SELECT ... WHERE count < 10`, a
+  refused add answering `409 webhook_limit` and its team audit row written only when the webhook exists.
 
 ## Presentation and UX
 

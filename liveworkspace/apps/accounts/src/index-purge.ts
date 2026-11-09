@@ -30,19 +30,32 @@ const LOUD_AFTER = 3;
 
 export type PurgeResult = { ok: true } | { ok: false; error: string };
 
+// The request, written while the account still exists (with the teams that closed, in the batch closing them). A
+// request already there (an earlier try at closing the account that stopped part way) keeps its teams and gains
+// these: a retry finds the teams it ran alone already gone, and must still name them.
+export function pendingPurgeStatement(
+  db: D1Database,
+  userId: string,
+  teamIds: string[],
+  now = Date.now(),
+): D1PreparedStatement {
+  return db
+    .prepare(
+      `INSERT INTO pending_purges (userId, teamIds, createdAt) VALUES (?, ?, ?)
+       ON CONFLICT (userId) DO UPDATE SET teamIds = (
+         SELECT json_group_array(value) FROM (
+           SELECT value FROM json_each(pending_purges.teamIds) UNION SELECT value FROM json_each(excluded.teamIds)))`,
+    )
+    .bind(userId, JSON.stringify(teamIds), now);
+}
+
 export async function recordPendingPurge(
   db: D1Database,
   userId: string,
   teamIds: string[],
   now = Date.now(),
 ): Promise<void> {
-  await db
-    .prepare(
-      `INSERT INTO pending_purges (userId, teamIds, createdAt) VALUES (?, ?, ?)
-       ON CONFLICT (userId) DO UPDATE SET teamIds = excluded.teamIds`,
-    )
-    .bind(userId, JSON.stringify(teamIds), now)
-    .run();
+  await pendingPurgeStatement(db, userId, teamIds, now).run();
 }
 
 export async function sendPurge(
@@ -65,6 +78,8 @@ export async function sendPurge(
     return { ok: false, error: error instanceof Error ? error.name : 'fetch_failed' };
   }
 }
+
+const ACCOUNT_GONE = `NOT EXISTS (SELECT 1 FROM "user" u WHERE u.id = p.userId)`;
 
 type PendingRow = { userId: string; teamIds: string; attempts: number };
 
@@ -119,18 +134,25 @@ export async function purgeFromIndex(
   return row ? attempt(db, config, row, now) : true;
 }
 
-// The cron: every request still waiting, the never-tried and longest-waiting first.
+// The cron: every request still waiting, the never-tried and longest-waiting first. Only for an account that is gone:
+// one whose closing stopped before the user was deleted waits for it to be tried again, and is never sent while the
+// person can still sign in.
 export async function retryPendingPurges(
   db: D1Database,
   config: IndexPurgeConfig,
   now = Date.now(),
 ): Promise<{ sent: number; failed: number; waiting: number }> {
   const { results } = await db
-    .prepare('SELECT userId, teamIds, attempts FROM pending_purges ORDER BY lastAttemptAt LIMIT ?')
+    .prepare(
+      `SELECT userId, teamIds, attempts FROM pending_purges p WHERE ${ACCOUNT_GONE}
+       ORDER BY lastAttemptAt LIMIT ?`,
+    )
     .bind(PURGES_PER_RUN)
     .all<PendingRow>();
   let sent = 0;
   for (const row of results) if (await attempt(db, config, row, now)) sent++;
-  const waiting = await db.prepare('SELECT COUNT(*) AS n FROM pending_purges').first<number>('n');
+  const waiting = await db
+    .prepare(`SELECT COUNT(*) AS n FROM pending_purges p WHERE ${ACCOUNT_GONE}`)
+    .first<number>('n');
   return { sent, failed: results.length - sent, waiting: waiting ?? 0 };
 }
