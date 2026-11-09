@@ -27,6 +27,16 @@ describe('IdentityPrompt', () => {
     expect(screen.getByRole('heading', { name: 'Welcome to this design' })).toBeTruthy();
   });
 
+  // A Viewer was told its name would show on its comments, which it can never write.
+  it('promises comments only to a visitor who may comment', () => {
+    prompt();
+    expect(screen.getByText(/on your cursor and comments\./)).toBeTruthy();
+    cleanup();
+    prompt({ canComment: false });
+    expect(screen.getByText('Other participants will see this name on your cursor.')).toBeTruthy();
+    expect(screen.queryByText(/comments/)).toBeNull();
+  });
+
   it('joins with the name typed, or the one they had when left empty', () => {
     const { onJoin } = prompt();
     const field = screen.getByLabelText('Your name');
