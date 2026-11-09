@@ -14,7 +14,7 @@ import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../data/usePeople';
 import { useExtras } from '../explorer/extras';
 import { useExplorer, type ExplorerContextValue } from '../explorer/context';
-import { actorWords, renderTimelineEvent } from '../explorer/TimelinePane';
+import { actorWords, renderTimelineEvent } from '../explorer/timeline-event-render';
 import { AppMark } from '../explorer/badges';
 import { useOwnerLabel } from '../explorer/rows';
 import { Dialog, DialogCloseButton } from '../ui/Dialog';

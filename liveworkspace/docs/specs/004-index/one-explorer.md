@@ -564,6 +564,16 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   offers as it opens, so a press on one of its rows finds the code in and the dialog opens in that press's own
   commit, taking focus as it always has; a dialog opened before its code lands draws once it does. A dialog whose
   code cannot load draws nothing. `dialogs-lazy-load.test.ts` keeps them out of the first load.
+- **The sections most visits never open load when shown.** Inbox, Timeline, Invites, Gallery and Shape Libraries
+  are each fetched from their own chunk (`packages/explorer/src/explorer/lazy-panes.ts`), and the Explorer fetches
+  them all once it has drawn and the page is idle, so moving to one later draws it in the move's own commit.
+  Landing on one, its section draws as soon as its code is in. What a Timeline event says on its card
+  (`timeline-event-render.tsx`) is apart from the Timeline view, so a Team's activity and an item's history read it
+  without the view. On liveworkspace.app the Explorer also prefetches the Settings panel's All view without
+  loading the panel itself (`preloadSettingsPanel` sits in a module of its own in `@liveworkspace/settings-ui`): a
+  one-symbol import of the panel's module had put the whole panel in the first load. Together with Lucide's
+  glyphs a module each, `/explorer/*` on liveworkspace.app went from 408 to 380 KiB gzipped (measured
+  2026-11-09). `panes-lazy-load.test.ts` and `settings-panel-preload.test.ts` keep them out.
 - **A tile's picture** waits until the tile nears the screen: one IntersectionObserver per tile, attached once
   as the tile mounts and dropped once it fires (`library/blobs.ts`), never re-attached on a re-render.
 - **Durable Objects** cost what the RFC estimates (roughly $14 a month at a million items), with

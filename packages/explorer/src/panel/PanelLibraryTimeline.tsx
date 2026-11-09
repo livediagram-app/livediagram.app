@@ -7,7 +7,7 @@
 import { useMemo, useSyncExternalStore } from 'react';
 import { Button } from '@liveworkspace/ui';
 import { useExplorer } from '../explorer/context';
-import { renderTimelineEvent } from '../explorer/TimelinePane';
+import { renderTimelineEvent } from '../explorer/timeline-event-render';
 import { useLibraryHost } from '../library/context';
 import { GalleryPane } from '../library/GalleryPane';
 import { ShapeLibrariesPane } from '../library/ShapeLibrariesPane';

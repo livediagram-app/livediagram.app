@@ -8,16 +8,10 @@ import { SettingsScopeSwitch, type SettingsScope } from './scope';
 import type { SettingsAppId, SettingsRequest, SettingsStore } from './store';
 import { SettingsView, type SettingsFocus } from './SettingsView';
 import { useSettingsResetGeneration } from './reset-settings/reset-signal';
+import { loadCatalogueView } from './settings-panel-preload';
 
-// The All view and the catalogue-driven app view: their own chunk, fetched the first time either is shown (or the
-// host prefetches it as Settings is pointed at), never for an editor showing its own settings.
-const loadCatalogueView = () => import('./CatalogueSettingsView');
+// The All view and the catalogue-driven app view: their own chunk (settings-panel-preload.ts).
 const CatalogueSettingsView = lazy(loadCatalogueView);
-
-/** Fetches the All view's code ahead of time (a pointer heading for Settings, say). */
-export function preloadSettingsPanel(): void {
-  void loadCatalogueView();
-}
 
 // `live`: "live" in the app's wordmark in the header, on light and on dark (site.md "Settings" "The app's name").
 export type SettingsPanelApp = {

@@ -18,7 +18,7 @@ import { LIST_CARD, MUTED } from '../ui/classes';
 import { ChevronDownIcon, TimelineIcon } from '../ui/icons';
 import { HistoryIcon } from '../ui/library-icons';
 import { useExplorer } from './context';
-import { renderTimelineEvent } from './TimelinePane';
+import { renderTimelineEvent } from './timeline-event-render';
 
 export const TEAM_ACTIVITY_TITLE = 'Team Activity';
 
