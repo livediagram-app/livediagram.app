@@ -80,6 +80,19 @@ describe('Markdown pasted into an article', () => {
     ]);
   });
 
+  it('reads no emphasis from an underscore inside a word, as CommonMark', () => {
+    expect(parseInline('snake_case_name and my__private__helper or a___b___c')).toEqual([
+      { text: 'snake_case_name and my__private__helper or a___b___c' },
+    ]);
+    expect(parseInline('a_b _c_ (__d__) é_x_')).toEqual([
+      { text: 'a_b ' },
+      { text: 'c', i: true },
+      { text: ' (' },
+      { text: 'd', b: true },
+      { text: ') é_x_' },
+    ]);
+  });
+
   it('tells Markdown from plain text, which pastes a paragraph a line', () => {
     expect(looksLikeMarkdown('## Heading')).toBe(true);
     expect(looksLikeMarkdown('Dear team,\nthanks for today.')).toBe(false);

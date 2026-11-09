@@ -118,7 +118,8 @@ Writes an article's text from **Markdown**.
 - **`mode`**: `replace` (default) writes the article's text anew; `append` adds the blocks after its last block.
 - **The Markdown** (the editor's paste reading, `parseMarkdownBlocks`, shared): `#`, `##`, `###` headings (h1 to
   h3), paragraphs, `-` / `*` / `1.` lists by indent (five levels), `- [ ]` / `- [x]` to-dos, `>` quotes, fenced
-  code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto). A paragraph's, a
+  code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto), an underscore
+  marking nothing inside a word as CommonMark has it (`snake_case_name` stays as written). A paragraph's, a
   quote's or a list item's line ending in two or more spaces or in a backslash (CommonMark's hard breaks) breaks the
   line there, so an address block keeps its lines: a quote goes on into the `>` line after it (a `>` line with no
   break is a quote of its own), a list item into the line after it unless that line opens a block of its own (a

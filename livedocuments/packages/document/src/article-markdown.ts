@@ -136,9 +136,11 @@ const TOC_LINE = /^\[TOC(?: ([12]))?\]$/;
 
 // Bold and italic at once (`***x***`, `___x___`) first, so the two marks are read together rather than as bold inside
 // two literal stars. A link's text holds no bracket (as MARKDOWN_SIGNAL's), so each `[` scans only to the next one: a
-// long run of `[^` with one `]` far after it was quadratic.
+// long run of `[^` with one `]` far after it was quadratic. An underscore run marks nothing inside a word, as
+// CommonMark has it (`snake_case_name`, `my__private__helper` stay as written): it opens after no letter or digit
+// and closes before none.
 const INLINE =
-  /(\*\*\*([^*]+)\*\*\*|___([^_]+)___|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|(?<!`)(`+)(?!`)([\s\S]*?[^`])\7(?!`)|\[([^\][]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|_([^_\s][^_]*)_)/;
+  /(\*\*\*([^*]+)\*\*\*|(?<![\p{L}\p{N}_])___([^_]+)___(?![\p{L}\p{N}_])|\*\*([^*]+)\*\*|(?<![\p{L}\p{N}_])__([^_]+)__(?![\p{L}\p{N}_])|~~([^~]+)~~|(?<!`)(`+)(?!`)([\s\S]*?[^`])\7(?!`)|\[([^\][]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|(?<![\p{L}\p{N}_])_([^_\s][^_]*)_(?![\p{L}\p{N}_]))/u;
 
 // Markdown's backslash escapes (`\\*` is a literal `*`): held as private-use characters while the
 // marks are read, so an escaped character never opens or closes one, then put back as the character.
