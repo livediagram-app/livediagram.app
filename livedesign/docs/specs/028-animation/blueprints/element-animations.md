@@ -85,7 +85,7 @@ has no body set and no `hasOwnBodySet` (a chart's older Shape value, shown as th
 `bodyAnimationSetOf(el)`.
 
 `carriesWords(el)`: `text`, `sticky` and `table` are true; a `shape` is true when `takesTypedLabel(el)`, not
-`selfLabelled(el)`, not icon / chart / progress / rating, and not `sticker`; everything else is false.
+`selfLabelled(el)`, not icon / chart / progress / rating, and not `sticker`, `badge` or `step`; everything else is false.
 
 `animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, chart, sankey, progress,
 rating, concept, arrow) to `animationSetsOf` and orders all by

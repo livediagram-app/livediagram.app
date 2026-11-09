@@ -105,8 +105,9 @@ export function animationSectionOf(
   return body;
 }
 
-// Shapes that keep their words still: their caption is part of the art or drawn by the shape.
-const WORDLESS_SHAPES = new Set<string>(['icon', 'sticker']);
+// Shapes that keep their words still: their caption is part of the art or drawn by the shape, or (a badge, a step
+// number) its few characters are part of its body (element-animations.md).
+const WORDLESS_SHAPES = new Set<string>(['icon', 'sticker', 'badge', 'step']);
 
 /** Whether the element carries words the Text set can animate. */
 export function carriesWords(el: Element): boolean {
