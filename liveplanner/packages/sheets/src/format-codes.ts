@@ -167,9 +167,9 @@ function formatNumberSection(n: number, toks: Tok[]): string {
     const fracDigits = fracPh.length;
     // Engineering notation: integer placeholders led by a "#" (`##0.0E+0`) step the exponent by their count, so
     // 12345 reads 12.3E+3, as in Excel; otherwise one digit leads (`0.00E+00`).
-    const step = intPh.length > 1 && intPh.some((t) => t.k === 'ph' && t.v === '#') ? intPh.length : 1;
-    let exp =
-      value === 0 ? 0 : Math.floor(Math.floor(Math.log10(Math.abs(value))) / step) * step;
+    const step =
+      intPh.length > 1 && intPh.some((t) => t.k === 'ph' && t.v === '#') ? intPh.length : 1;
+    let exp = value === 0 ? 0 : Math.floor(Math.floor(Math.log10(Math.abs(value))) / step) * step;
     let mant = value / 10 ** exp;
     if (Number(Math.abs(mant).toFixed(fracDigits)) >= 10 ** step) {
       mant /= 10 ** step;

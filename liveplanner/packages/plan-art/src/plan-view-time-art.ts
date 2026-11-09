@@ -78,7 +78,9 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
   const entries = ganttLayout(lanes, new Set(), ROW_H, LANE_H).entries.filter((e) =>
     fits(e, e.kind === 'lane' ? LANE_H : ROW_H),
   );
-  const shown = entries.flatMap((e) => (e.kind === 'row' ? [{ row: e.row, top: top0 + e.top }] : []));
+  const shown = entries.flatMap((e) =>
+    e.kind === 'row' ? [{ row: e.row, top: top0 + e.top }] : [],
+  );
   for (const e of entries) {
     if (e.kind !== 'lane') continue;
     const y = top0 + e.top;

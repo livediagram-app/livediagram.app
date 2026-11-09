@@ -165,7 +165,8 @@ describe('moves land on shown cells', () => {
     hiddenRow: (r) => r === 0 || r === 3,
     hiddenCol: (c) => c === 0 || c === 5,
     filled: () => false,
-    mergeAt: (r, c) => (r >= 1 && r <= 2 && c >= 1 && c <= 2 ? { r1: 1, c1: 1, r2: 2, c2: 2 } : null),
+    mergeAt: (r, c) =>
+      r >= 1 && r <= 2 && c >= 1 && c <= 2 ? { r1: 1, c1: 1, r2: 2, c2: 2 } : null,
   };
   it('goes home and end past hidden columns and rows, onto a merge’s top-left', () => {
     const at = (which: 'home' | 'end', toSheet: boolean, from = { r: 5, c: 3 }) =>

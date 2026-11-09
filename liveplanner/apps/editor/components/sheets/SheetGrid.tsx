@@ -287,7 +287,8 @@ export function SheetGrid({ elementId, actions, input, pointRef, peers, zoom = 1
           ? c.setSelection(cycleInRange(sel, cmd.back ? 'prev-col' : 'next-col', c.grid))
           : actions.move(cmd.back ? 'left' : 'right');
       case 'enter':
-        if (multi) return c.setSelection(cycleInRange(sel, cmd.back ? 'prev-row' : 'next-row', c.grid));
+        if (multi)
+          return c.setSelection(cycleInRange(sel, cmd.back ? 'prev-row' : 'next-row', c.grid));
         return cmd.back ? actions.move('up') : actions.startEdit('cell');
       case 'edit':
         return actions.startEdit('cell');

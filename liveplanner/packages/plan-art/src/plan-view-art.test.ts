@@ -132,7 +132,9 @@ describe('a plan view’s picture', () => {
     const order = ['To Do', 'Alpha', 'Charlie', 'Doing', 'Bravo'].map(yOf);
     expect(order.every((y, i) => i === 0 || y > order[i - 1]!)).toBe(true);
     expect(planViewArt(view('gantt'), artData([a, b, c]), 'light')).not.toContain('To Do');
-    const diamonds = [...svg.matchAll(/<path d="M[^"]*l7 8l-7 8l-7 -8z" fill="([^"]*)" stroke="([^"]*)"/g)];
+    const diamonds = [
+      ...svg.matchAll(/<path d="M[^"]*l7 8l-7 8l-7 -8z" fill="([^"]*)" stroke="([^"]*)"/g),
+    ];
     expect(diamonds).toHaveLength(2);
     // The start's (Bravo) is hollow, the due date's (Charlie) filled in its edge's colour.
     const [due, start] = diamonds;
