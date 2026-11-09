@@ -86,8 +86,8 @@ Scope, by file:
      `ACCESS_RETRY_MS` (1 min), no try counted. No: paused `creator_left`.
   2. Unseal the URL (`<id>:url`) and, for `json`, the secret (`<id>:secret`); re-check the URL's shape. Either fails:
      each row given up, `error` `unreadable`.
-  3. Resolve the host, once a run per host: `private` gives each row up (`private_address`); `unresolved` retries
-     (`dns`).
+  3. Resolve the host again right before each row's send, never cached across rows (DNS rebinding): `private` gives
+     that row and the run's later rows up (`private_address`); `unresolved` retries (`dns`).
   4. Send: `POST`, `redirect: 'manual'`, `AbortSignal.timeout(DELIVERY_TIMEOUT_MS)` (10 s), the body from `bodyFor`,
      headers `Content-Type`, `User-Agent: liveworkspace-webhooks/1`, `X-Liveworkspace-Event`, `-Delivery`,
      `-Timestamp` (Unix seconds) and, for `json`, `-Signature` (`v1=` HMAC-SHA256 hex over `<timestamp>.<body>`). The
