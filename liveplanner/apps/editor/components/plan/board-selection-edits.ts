@@ -3,9 +3,11 @@
 // offer the field, or that already holds the value, is left out, so a change no card takes writes nothing.
 import {
   ARCHIVED_FIELD,
+  ITEM_LABELS_MAX,
   isArchived,
   isFlagged,
   itemLabels,
+  requiredFieldEmptied,
   typeIn,
   type CustomFieldDef,
   type Item,
@@ -35,7 +37,8 @@ const offers = (types: readonly ItemTypeDef[], item: Item, field: string) =>
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
-// Each card whose type offers `field` and whose value differs, set to `value` (or cleared, for null).
+// Each card whose type offers `field` and whose value differs, set to `value` (or cleared, for null). A field the
+// card's type requires is never cleared: the write would be refused whole, the other cards' changes with it.
 function setPatches(
   items: readonly Item[],
   types: readonly ItemTypeDef[],
@@ -47,7 +50,12 @@ function setPatches(
     if (!offers(types, it, field)) continue;
     const has = it.fields[field];
     if (value === null) {
-      if (has !== undefined) out.push({ id: it.id, patch: { clear: [field] } });
+      if (
+        has === undefined ||
+        requiredFieldEmptied(typeIn(types, it.type), it.fields, field, undefined)
+      )
+        continue;
+      out.push({ id: it.id, patch: { clear: [field] } });
     } else if (!same(has, value)) out.push({ id: it.id, patch: { set: { [field]: value } } });
   }
   return out;
@@ -69,7 +77,8 @@ export function priorityPatches(
   return setPatches(items, types, 'priority', priority);
 }
 
-// A label added to every card that lacks it, or taken off every card that has it.
+// A label added to every card that lacks it (and has room for another: a card past its most labels refuses the whole
+// write), or taken off every card that has it.
 export function labelPatches(
   items: readonly Item[],
   types: readonly ItemTypeDef[],
@@ -81,7 +90,8 @@ export function labelPatches(
     if (!offers(types, it, 'labels')) continue;
     const now = itemLabels(it);
     const has = now.includes(label);
-    if (op === 'add' && !has) out.push({ id: it.id, patch: { set: { labels: [...now, label] } } });
+    if (op === 'add' && !has && now.length < ITEM_LABELS_MAX)
+      out.push({ id: it.id, patch: { set: { labels: [...now, label] } } });
     if (op === 'remove' && has) {
       const rest = now.filter((l) => l !== label);
       out.push({
