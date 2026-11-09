@@ -59,8 +59,8 @@ export const numberedTitle = (heading: string, number: number) =>
   `${heading} #${number}`.slice(0, ITEM_TITLE_MAX);
 
 // A pick as the field spells it: fieldTakes matches a question's options to the field's case aside, so "yes" is kept
-// as the field's "Yes", the option its row and its filter read.
-function asOption(pick: string, field: CustomFieldDef): string {
+// as the field's "Yes", the option its row and its filter read. A pick the field lacks stays as it is.
+export function asOption(pick: string, field: Pick<CustomFieldDef, 'options'>): string {
   const lower = pick.toLowerCase();
   return (field.options ?? []).find((o) => o.toLowerCase() === lower) ?? pick;
 }
@@ -69,9 +69,9 @@ function asOption(pick: string, field: CustomFieldDef): string {
 function fieldValue(q: FormQuestion, value: AnswerValue, field: CustomFieldDef): ItemFieldValue {
   switch (field.kind) {
     case 'choice':
-      return typeof value === 'string' ? asOption(value, field) : value;
+      return asOption(value as string, field);
     case 'multichoice':
-      return Array.isArray(value) ? value.map((v) => asOption(v, field)) : value;
+      return (value as string[]).map((v) => asOption(v, field));
     case 'currency':
       return Math.round((value as number) * 100) / 100;
     case 'longtext':

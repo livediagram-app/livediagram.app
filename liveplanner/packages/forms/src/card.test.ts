@@ -3,6 +3,7 @@ import { ITEM_DESCRIPTION_MAX, normaliseRichRuns, type ItemTypeDef } from '@live
 import {
   FROM_FORM_FIELD,
   answerText,
+  asOption,
   fromFormValue,
   numberedTitle,
   readFromForm,
@@ -186,6 +187,12 @@ describe('responseCard', () => {
 });
 
 describe('helpers', () => {
+  it('spells a pick as the field does, keeping one it lacks', () => {
+    expect(asOption('high', { options: ['Low', 'High'] })).toBe('High');
+    expect(asOption('Other', { options: ['Low'] })).toBe('Other');
+    expect(asOption('Any', {})).toBe('Any');
+  });
+
   it('answerText', () => {
     expect(answerText(Q('a', 'multi'), ['A', 'B'])).toBe('A, B');
     expect(answerText(Q('a', 'checkbox'), false)).toBe('No');
