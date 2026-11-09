@@ -9,9 +9,10 @@
 // Durable Object expects per docs/specs/015-api/api.md; faster sends would just be
 // dropped on the wire.
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { AvatarPresence, RoomOutgoing } from '@livehuddle/api-schema';
 import { avatarSendIntervalMs } from '@liveworkspace/avatar/relay';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { CallSignal } from '@/lib/calls/proximity-call';
 
 export const BROADCAST_THROTTLE_MS = 33;
@@ -225,10 +226,18 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // by the call itself (a level at most four times a second, a locator at most once a second).
   const callsRoom =
     deps.hydrated && !!deps.documentId && (deps.documentShareable || !!deps.documentTeamId);
-  const broadcastCallSignal = (signal: CallSignal) => {
-    if (!callsRoom) return;
-    deps.roomRef.current?.send({ kind: 'op', op: { ...signal, tabId: deps.activeId } });
-  };
+  // One function for the life of the editor, reading the room and the tab when it sends: the knocker and the bell
+  // ringer are registered against it, and a new one each render re-registered them (and woke every Room Sign) on
+  // every render of the canvas host.
+  const callSignalRef = useLatest({ callsRoom, roomRef: deps.roomRef, activeId: deps.activeId });
+  const broadcastCallSignal = useCallback(
+    (signal: CallSignal) => {
+      const { callsRoom: open, roomRef, activeId } = callSignalRef.current;
+      if (!open) return;
+      roomRef.current?.send({ kind: 'op', op: { ...signal, tabId: activeId } });
+    },
+    [callSignalRef],
+  );
 
   return {
     broadcastCallSignal,

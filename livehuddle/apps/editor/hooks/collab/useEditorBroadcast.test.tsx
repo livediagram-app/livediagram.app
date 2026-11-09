@@ -36,6 +36,18 @@ describe('useEditorBroadcast call signals', () => {
     act(() => closed.hook.result.current.broadcastCallSignal({ kind: 'call-track', track: null }));
     expect(closed.sent).toEqual([]);
   });
+
+  it('keep one sender across renders, which sends to the tab and room of the latest render', () => {
+    const { hook, deps, sent } = setup();
+    const first = hook.result.current.broadcastCallSignal;
+    hook.rerender({ ...deps, activeId: 'tab2' });
+    expect(hook.result.current.broadcastCallSignal).toBe(first);
+    act(() => first({ kind: 'call-track', track: null }));
+    expect(sent).toEqual([{ kind: 'op', op: { kind: 'call-track', track: null, tabId: 'tab2' } }]);
+    hook.rerender({ ...deps, documentShareable: false });
+    act(() => first({ kind: 'call-track', track: null }));
+    expect(sent).toHaveLength(1);
+  });
 });
 
 // docs/specs/008-canvas/avatar-mode.md "Status": a change is told at once, never lost to the throttle.
