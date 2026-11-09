@@ -1099,6 +1099,60 @@ describe('changeBoard', () => {
     ).toMatchObject({ ok: false, code: 'board_invalid' });
   });
 
+  it('sorts by a field of a type the same call makes the board take', async () => {
+    // The board takes Tasks alone; Severity is a Bug field. It used to be refused, named against the old types.
+    const { api: a, seen } = api({
+      [`/projects/${D}/tabs/t1`]: {
+        tab: {
+          id: 't1',
+          name: 'Board',
+          elements: [
+            {
+              id: 'b1',
+              type: 'shape',
+              shape: 'plan-board',
+              x: 0,
+              y: 0,
+              width: 800,
+              height: 500,
+              planBoard: {
+                title: 'Sprint',
+                columns: [{ id: 'todo', status: 'todo~x', name: 'To Do' }],
+                swimlaneBy: 'none',
+                cardFields: ['key'],
+                addTypes: ['task'],
+              },
+            },
+          ],
+          rev: 7,
+        },
+      },
+    });
+    const r = await changeBoard(
+      a,
+      D,
+      { board: 'Sprint', types: ['Bug'], sortBy: [{ field: 'Severity' }] },
+      'mcp',
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r.sortBy).toEqual(['Severity (In Option Order)']);
+    const setup = (
+      seen.find((x) => x.path.endsWith('/changesets'))!.body as {
+        operations: { fields: { planBoard: Record<string, unknown> } }[];
+      }
+    ).operations[0]!.fields.planBoard;
+    expect(setup['sortBy']).toEqual([{ field: 'f-sev', dir: 'asc' }]);
+    // Every type again takes Bug's fields too.
+    expect(
+      await changeBoard(
+        a,
+        D,
+        { board: 'Sprint', types: 'every type', sortBy: [{ field: 'Severity' }] },
+        'mcp',
+      ),
+    ).toMatchObject({ ok: true, sortBy: ['Severity (In Option Order)'] });
+  });
+
   it('adds and removes header widgets by name, a field widget stored by its key', async () => {
     const { api: a, seen } = api();
     const r = await changeBoard(

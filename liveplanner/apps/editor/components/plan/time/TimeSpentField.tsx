@@ -38,8 +38,12 @@ export function entryWhen(at: number, now: number = Date.now()): string {
   const d = new Date(at);
   const time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   const day = (t: number) => new Date(t).toDateString();
+  // The local day before today, by the calendar: 24 hours back can land two days back (just after midnight following a
+  // clock change's 23-hour day).
+  const today = new Date(now);
+  const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1).getTime();
   if (day(at) === day(now)) return `Today, ${time}`;
-  if (day(at) === day(now - 86_400_000)) return `Yesterday, ${time}`;
+  if (day(at) === day(yesterday)) return `Yesterday, ${time}`;
   return `${d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}, ${time}`;
 }
 

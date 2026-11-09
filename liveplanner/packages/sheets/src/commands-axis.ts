@@ -12,9 +12,11 @@ import type { CellChange, LayoutChange, SheetWrite } from './store';
 import type { Workbook } from './engine/workbook';
 import { currentRegion, type Grid } from './selection';
 import {
+  MERGE_RANGE_SORT_REFUSAL,
   MERGE_SORT_REFUSAL,
   mergeMoveRefusal,
   moveSplitsMerge,
+  rangeSortHitsMerge,
   sortSplitsMerge,
   type MergeRefusal,
 } from './merge-guards';
@@ -186,9 +188,10 @@ export function sortRange(
   const r1 = range.r1 + (hasHeader ? 1 : 0);
   const count = range.r2 - r1 + 1;
   if (count < 2) return null;
-  // Only the range's cells move, but a merge across its rows would take the wrong row's value.
-  if (sortSplitsMerge(sheet.layout, r1, range.r2, range.c1, range.c2))
-    return { refused: MERGE_SORT_REFUSAL };
+  // Only the range's cells move, never a merge: one in the sorted rows (a Merge Across too) would stay on its row
+  // while another row's values land under it, hidden.
+  if (rangeSortHitsMerge(sheet.layout, r1, range.r2, range.c1, range.c2))
+    return { refused: MERGE_RANGE_SORT_REFUSAL };
   const order = sortedOrder(count, (i, c) => scalarOf(wb.value(sheetId, r1 + i, c)), keys);
   const ctx = wb.ctxFor(sheetId);
   const cells: CellChange[] = [];

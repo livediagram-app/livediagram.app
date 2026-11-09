@@ -75,3 +75,31 @@ describe('Publish Form and the pending save', () => {
     off();
   });
 });
+
+// forms.md "Hearing about responses": a count read in flight when the link changes answers the link as it was.
+describe('a read in flight when the link changes', () => {
+  afterEach(() => vi.clearAllMocks());
+
+  it('is dropped, so the switch never flips back', async () => {
+    let answer: (v: unknown) => void = () => {};
+    api.apiMarkFormSeen.mockReturnValue(new Promise((r) => (answer = r)));
+    api.apiSetFormOpen.mockResolvedValue({ link: { open: false }, responses: 0 });
+    const view = mount();
+    await act(() => view.result.current.setOpen(false));
+    expect(view.result.current.link).toEqual({ link: { open: false }, responses: 0 });
+    // The read that began on opening the tab lands now, with the link as it was.
+    await act(async () => answer(published));
+    expect(view.result.current.link).toEqual({ link: { open: false }, responses: 0 });
+    expect(view.result.current.status).toBe('ready');
+  });
+
+  it('still lands when the change failed', async () => {
+    let answer: (v: unknown) => void = () => {};
+    api.apiMarkFormSeen.mockReturnValue(new Promise((r) => (answer = r)));
+    api.apiSetFormOpen.mockRejectedValue(new Error('offline'));
+    const view = mount();
+    await act(() => view.result.current.setOpen(false));
+    await act(async () => answer(published));
+    expect(view.result.current.link).toEqual(published);
+  });
+});

@@ -3,6 +3,7 @@ import { ITEM_DESCRIPTION_MAX, normaliseRichRuns, type ItemTypeDef } from '@live
 import {
   FROM_FORM_FIELD,
   answerText,
+  asOption,
   fromFormValue,
   numberedTitle,
   readFromForm,
@@ -59,6 +60,26 @@ const form = (questions: FormQuestion[]): FormDefinition => ({
 const answers = (o: Record<string, AnswerValue>) => new Map(Object.entries(o));
 
 describe('responseCard', () => {
+  it("keeps a choice pick as the field spells the option, so it sits in that option's row", () => {
+    const t: ItemTypeDef = {
+      ...type,
+      fields: [...type.fields, 'f-rsvp'],
+      custom: [
+        ...type.custom!,
+        { id: 'f-rsvp', label: 'RSVP', kind: 'choice', options: ['Yes', 'No'] },
+      ],
+    };
+    const f = form([
+      Q('rsvp', 'single', { options: ['yes', 'no'], goesTo: { to: 'field', fieldId: 'f-rsvp' } }),
+      Q('diet', 'multi', {
+        options: ['vegan', 'HALAL'],
+        goesTo: { to: 'field', fieldId: 'f-diet' },
+      }),
+    ]);
+    const card = responseCard(f, 'tab-f', answers({ rsvp: 'yes', diet: ['vegan', 'HALAL'] }), t, 1);
+    expect(card.fields).toMatchObject({ 'f-rsvp': 'Yes', 'f-diet': ['Vegan', 'Halal'] });
+  });
+
   it('numbers the title when nothing goes to Title, and files it in the status', () => {
     const card = responseCard(form([Q('a', 'short')]), 'tab-f', answers({}), type, 14);
     expect(card).toEqual({
@@ -166,6 +187,12 @@ describe('responseCard', () => {
 });
 
 describe('helpers', () => {
+  it('spells a pick as the field does, keeping one it lacks', () => {
+    expect(asOption('high', { options: ['Low', 'High'] })).toBe('High');
+    expect(asOption('Other', { options: ['Low'] })).toBe('Other');
+    expect(asOption('Any', {})).toBe('Any');
+  });
+
   it('answerText', () => {
     expect(answerText(Q('a', 'multi'), ['A', 'B'])).toBe('A, B');
     expect(answerText(Q('a', 'checkbox'), false)).toBe('No');
