@@ -1142,6 +1142,15 @@ describe('changeBoard', () => {
       }
     ).operations[0]!.fields.planBoard;
     expect(setup['sortBy']).toEqual([{ field: 'f-sev', dir: 'asc' }]);
+    // Every type again takes Bug's fields too.
+    expect(
+      await changeBoard(
+        a,
+        D,
+        { board: 'Sprint', types: 'every type', sortBy: [{ field: 'Severity' }] },
+        'mcp',
+      ),
+    ).toMatchObject({ ok: true, sortBy: ['Severity (In Option Order)'] });
   });
 
   it('adds and removes header widgets by name, a field widget stored by its key', async () => {
