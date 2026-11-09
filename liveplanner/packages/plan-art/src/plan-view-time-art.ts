@@ -9,6 +9,8 @@ import {
   ganttArrows,
   ganttMarkEnds,
   ganttAt,
+  ganttLanes,
+  ganttLayout,
   ganttModel,
   ganttOrderRows,
   ganttShownTypes,
@@ -27,6 +29,8 @@ import type { ViewArtInput } from './plan-view-art';
 
 const ROW_H = 28;
 const AXIS_H = 22;
+// A swimlane's header row, as the live chart's (plan-views.md "Swimlanes") at the picture's scale.
+const LANE_H = 22;
 
 const titled = (name: string, own: string | undefined) => own?.trim() || name;
 
@@ -59,11 +63,48 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
       `<line x1="${r2(x)}" y1="${r2(body.y + AXIS_H)}" x2="${r2(x)}" y2="${r2(body.y + body.height)}" stroke="${xmlEscape(p.border)}" stroke-width="1" stroke-opacity="0.6"/>`,
     );
   }
-  const room = Math.max(0, Math.floor((body.height - AXIS_H) / ROW_H));
-  // In the chart's own row order (plan-views.md "Row order"), as the live chart draws it.
-  const shown = ganttOrderRows(model.rows, settings.rowOrder).slice(0, room);
+  // In the chart's own row order (plan-views.md "Row order") and its swimlanes, every lane open, as the live chart
+  // draws them: each lane's header row then its rows, as many as fit.
+  const lanes = ganttLanes(
+    ganttOrderRows(model.rows, settings.rowOrder),
+    settings.swimlaneBy,
+    settings.swimlaneField,
+    items,
+    data.types,
+    data.statusNames,
+  );
+  const top0 = body.y + AXIS_H;
+  const fits = (e: { top: number }, h: number) => top0 + e.top + h <= body.y + body.height;
+  const entries = ganttLayout(lanes, new Set(), ROW_H, LANE_H).entries.filter((e) =>
+    fits(e, e.kind === 'lane' ? LANE_H : ROW_H),
+  );
+  const shown = entries.flatMap((e) => (e.kind === 'row' ? [{ row: e.row, top: top0 + e.top }] : []));
+  for (const e of entries) {
+    if (e.kind !== 'lane') continue;
+    const y = top0 + e.top;
+    parts.push(box({ x: body.x, y, width: body.width, height: LANE_H }, { fill: p.column }));
+    let x = body.x + ART_PAD;
+    if (e.lane.colour) {
+      parts.push(dot(x + 4, y + LANE_H / 2, 4, accentOn(e.lane.colour, p)));
+      x += 14;
+    }
+    const label = line(x, y + 15, e.lane.label, {
+      size: 11,
+      weight: 600,
+      color: p.text,
+      width: namesW - (x - body.x) - ART_PAD - 24,
+    });
+    parts.push(label);
+    parts.push(
+      line(body.x + namesW - ART_PAD, y + 15, String(e.count), {
+        size: 11,
+        color: p.muted,
+        anchor: 'end',
+      }),
+    );
+  }
   const arrows = ganttArrows(
-    shown.map((row, i) => ({ row, top: body.y + AXIS_H + i * ROW_H })),
+    shown,
     blockingIndexOf(items.values(), data.types, donePhase(data.statusPhases)),
     data.statusPhases,
   );
@@ -79,8 +120,7 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
       `<g opacity="${a.done ? 0.4 : 1}" color="${xmlEscape(p.muted)}"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="${head}" fill="currentColor"/></g>`,
     );
   }
-  shown.forEach((row, i) => {
-    const y = body.y + AXIS_H + i * ROW_H;
+  shown.forEach(({ row, top: y }) => {
     const type = typeIn(data.types, row.item.type);
     const colour = accentOn(itemColourOf(row.item, type) ?? type.color, p);
     parts.push(
@@ -116,8 +156,11 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
         );
     } else {
       const cx = (at(row.from) + at(row.from + 1)) / 2;
+      // A diamond on the day: filled for a due date, hollow (the chart's surface inside its edge) for a start.
+      const edge = xmlEscape(row.overdue ? OVERDUE_RED : colour);
+      const fill = row.mark === 'due' ? edge : xmlEscape(p.surface);
       parts.push(
-        `<path d="M${r2(cx)} ${r2(y + 6)}l7 8l-7 8l-7 -8z" fill="${xmlEscape(row.overdue ? OVERDUE_RED : colour)}"/>`,
+        `<path d="M${r2(cx)} ${r2(y + 6)}l7 8l-7 8l-7 -8z" fill="${fill}" stroke="${edge}" stroke-width="2" stroke-linejoin="round"/>`,
       );
     }
   });
