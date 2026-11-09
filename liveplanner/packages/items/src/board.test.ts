@@ -257,6 +257,19 @@ describe('normaliseBoardSetup', () => {
     expect(s?.columns).toEqual([{ id: 'a', status: 'review', name: 'Review' }]);
   });
 
+  it('caps columns kept, not entries read: a valid column after dropped ones is kept', () => {
+    const cols = [
+      'junk',
+      { id: 'dup', status: 's0' },
+      ...Array.from({ length: 13 }, (_, i) => ({ id: `c${i}`, status: `s${i}`, name: `S${i}` })),
+    ];
+    const s = normaliseBoardSetup({ columns: cols });
+    expect(s?.columns.map((c) => c.id)).toEqual([
+      'dup',
+      ...Array.from({ length: 11 }, (_, i) => `c${i + 1}`),
+    ]);
+  });
+
   it('drops bad columns and fields, keeps the first of a duplicate status', () => {
     const s = normaliseBoardSetup({
       title: 7,

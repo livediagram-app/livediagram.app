@@ -51,6 +51,20 @@ describe('setUpBoard', () => {
     }));
     expect(setUpBoard(empty, many, null, ALL).columns).toHaveLength(PLAN_COLUMNS_MAX);
   });
+
+  it('counts the cap in columns made, so a pick that adds nothing never costs a later one', () => {
+    const picks: SetupColumn[] = [
+      { kind: 'existing', status: 'todo', name: 'To Do' },
+      { kind: 'existing', status: 'todo', name: 'To Do' },
+      ...Array.from({ length: PLAN_COLUMNS_MAX - 1 }, (_, i) => ({
+        kind: 'new' as const,
+        name: `Stage ${i}`,
+      })),
+    ];
+    const cols = setUpBoard(empty, picks, null, ALL).columns;
+    expect(cols).toHaveLength(PLAN_COLUMNS_MAX);
+    expect(cols.at(-1)!.name).toBe(`Stage ${PLAN_COLUMNS_MAX - 2}`);
+  });
 });
 
 // docs/specs/026-plan/plan-board.md "Suggested statuses".
