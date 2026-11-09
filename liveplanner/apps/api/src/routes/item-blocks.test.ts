@@ -149,6 +149,54 @@ describe('Blocked By through the api', () => {
     ).toBe(200);
   });
 
+  // A group of cards dragged into a Blocked By swimlane, or a selection's Move To, goes by /items/moves: it skipped
+  // both checks, so a Participant set blockers and a loop landed.
+  it('refuses a Participant’s blockers and a loop by moves', async () => {
+    const a = (await add('A')).body.item;
+    const b = (await add('B', [a.id])).body.item;
+    const c = (await add('C')).body.item;
+    const loop = await call<{ error: string }>({
+      path: '/items/moves',
+      body: {
+        items: [
+          { id: a.id, status: 'doing', set: { [BLOCKED_BY]: [b.id] } },
+          { id: c.id, status: 'doing', set: { [BLOCKED_BY]: [b.id] } },
+        ],
+      },
+    });
+    expect(loop.status).toBe(400);
+    expect(loop.body.error).toBe('blocks_cycle');
+    const part = await call({
+      ...PART,
+      path: '/items/moves',
+      body: {
+        items: [
+          { id: c.id, status: 'doing', set: { [BLOCKED_BY]: [a.id] } },
+          { id: b.id, status: 'doing' },
+        ],
+      },
+    });
+    expect(part.status).toBe(403);
+    // A move that leaves blockers alone still lands for a Participant, and an Editor's that closes nothing.
+    expect(
+      (
+        await call({
+          ...PART,
+          path: '/items/moves',
+          body: { items: [{ id: b.id, status: 'doing' }] },
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await call({
+          path: '/items/moves',
+          body: { items: [{ id: c.id, status: 'doing', set: { [BLOCKED_BY]: [a.id] } }] },
+        })
+      ).status,
+    ).toBe(200);
+  });
+
   it('refuses a create that closes a loop: a card put back with its id', async () => {
     const waiting = (await add('Waiting', ['back01'])).body.item;
     const res = await call({
