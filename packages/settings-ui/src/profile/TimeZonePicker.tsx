@@ -10,7 +10,13 @@ import {
   useState,
   type KeyboardEvent,
 } from 'react';
-import { CheckIcon, SearchIcon, TextInput, useClickOutside } from '@liveworkspace/ui';
+import {
+  CheckIcon,
+  isComposingKey,
+  SearchIcon,
+  TextInput,
+  useClickOutside,
+} from '@liveworkspace/ui';
 import { ChevronIcon } from '../glyphs';
 import { settingsApiErrorMessage } from '../store';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
@@ -224,6 +230,7 @@ export function TimeZoneRow({ initial, host }: { initial: Profile | null; host: 
             detected={detected}
             onPick={(next) => void pick(next)}
             onClose={() => close(true)}
+            onLeave={() => close(false)}
           />
         ) : null}
         {error ? (
@@ -252,12 +259,15 @@ function ZoneList({
   detected,
   onPick,
   onClose,
+  onLeave,
 }: {
   id: string;
   current: Zone;
   detected: string | null;
   onPick: (next: string | null) => void;
   onClose: () => void;
+  // Focus went on to another control (Tab): the list closes where it is, focus staying where it went.
+  onLeave: () => void;
 }) {
   const [query, setQuery] = useState('');
   // Built (or taken from the page's cache) as the list opens, never before.
@@ -293,6 +303,8 @@ function ZoneList({
   }, [activeIndex]);
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    // Enter, Escape and the arrows confirm, drop or move through an input method's word first (design-principles.md).
+    if (isComposingKey(event)) return;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
       if (entries.length === 0) return;
@@ -337,6 +349,16 @@ function ZoneList({
             setActive(0);
           }}
           onKeyDown={onKeyDown}
+          // A press on an entry keeps the field focused (claimed below), so only focus taken by another control
+          // lands here; focus leaving the window (no new target) keeps the list for the person's return.
+          onBlur={(event) => {
+            const next = event.relatedTarget;
+            if (
+              next instanceof Node &&
+              !event.currentTarget.closest('[data-time-zone-list]')?.contains(next)
+            )
+              onLeave();
+          }}
           className="pl-8"
           autoComplete="off"
           spellCheck={false}

@@ -72,6 +72,32 @@ describe('the Search panel', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  // design-principles.md: Enter and the arrows confirm or move through an input method's word first.
+  it('leaves Enter and the arrows to an input method composing a word', async () => {
+    vi.useFakeTimers();
+    const index = createFakeIndex({ items: [makeItem(1, { title: 'Roadmap 2026' })] });
+    const onOpen = vi.fn();
+    render(
+      <SearchPanel
+        client={index.client}
+        itemHref={(i) => `/open/${i.id}`}
+        teams={[]}
+        entries={entries}
+        onOpen={onOpen}
+        onClose={() => {}}
+      />,
+    );
+    await act(async () => {});
+    await typeAndWait('road');
+    const field = screen.getByRole('combobox', { name: 'Search' });
+    fireEvent.keyDown(field, { key: 'ArrowDown', isComposing: true });
+    fireEvent.keyDown(field, { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(field, { key: 'Enter', keyCode: 229 });
+    expect(onOpen).not.toHaveBeenCalled();
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(onOpen).toHaveBeenCalledWith('/open/item-1');
+  });
+
   it('asks the index once the typing pauses, and only for the app given', async () => {
     vi.useFakeTimers();
     const index = createFakeIndex({ items: [makeItem(1, { title: 'Plan' })] });

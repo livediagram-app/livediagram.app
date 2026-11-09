@@ -12,7 +12,7 @@ import {
   countWords,
 } from '@liveworkspace/api-schema/avatar-say';
 import { lucideSend } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, TextArea } from '@liveworkspace/ui';
+import { isComposingKey, lucideGlyph, TextArea } from '@liveworkspace/ui';
 import { nextDraft, SPEECH_COUNTER_FROM_WORDS } from '../speech';
 
 export const SendIcon = lucideGlyph(lucideSend, 14);
@@ -154,10 +154,13 @@ export function SpeechDraftField({
       onChange(nextDraft(value, e.target.value, !typed));
     },
     onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Enter and Escape confirm or drop an input method's word first (design-principles.md): Enter never sends a
+      // half-converted message (Safari's confirming Enter included), and Escape never closes the composer under it.
+      const composing = isComposingKey(e);
       if (e.key === 'Enter') {
         e.preventDefault();
-        if (!e.nativeEvent.isComposing) onSubmit();
-      } else if (e.key === 'Escape') {
+        if (!composing) onSubmit();
+      } else if (e.key === 'Escape' && !composing) {
         e.preventDefault();
         e.stopPropagation();
         onCancel();

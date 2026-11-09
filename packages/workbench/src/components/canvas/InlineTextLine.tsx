@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { isComposingKey } from '@liveworkspace/ui';
 import { useCommitOnLeave } from '../../hooks/ui/useCommitOnLeave';
 import { isDragTravel } from '../../lib/press-gestures';
 
@@ -156,6 +157,8 @@ export function InlineTextLine({
           // Every key is kept off the canvas: unstopped, typing "d" here would
           // also run the editor's add-a-diamond shortcut.
           e.stopPropagation();
+          // Enter and Escape confirm or drop an input method's word first (design-principles.md).
+          if (isComposingKey(e)) return;
           if (e.key === 'Enter' || e.key === 'Escape') {
             e.preventDefault();
             // Enter commits, Escape restores — a one-line field has nothing to

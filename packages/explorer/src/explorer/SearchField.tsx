@@ -37,6 +37,7 @@ import {
   type LensSuggestion,
 } from '../lens';
 import { APP_KINDS } from '@liveworkspace/index-client';
+import { isComposingKey } from '@liveworkspace/ui';
 import { CloseIcon, SearchIcon } from '../ui/icons';
 import { lensViewOf, viewLens, withLens, type ExplorerView } from '../views';
 import { useExplorer } from './context';
@@ -300,6 +301,8 @@ export function SearchField({
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // An input method's keys (Enter, Escape, the arrows, Backspace) work on its word first (design-principles.md).
+    if (isComposingKey(e)) return;
     const el = e.currentTarget;
     if (e.key !== 'Backspace') setSelectedPill(false);
     switch (e.key) {

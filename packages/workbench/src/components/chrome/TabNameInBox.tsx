@@ -4,6 +4,7 @@
 // a desktop in every editor, after a hairline beside the menu button. A click (a tap) renames the tab, for someone who
 // may. Each editor publishes the name and the rename through active-tab-name-store and hides this on a phone.
 import { useState } from 'react';
+import { isComposingKey } from '@liveworkspace/ui';
 import {
   activeTabRenameId,
   useActiveTabName,
@@ -75,6 +76,8 @@ function TabName({
           onBlur={save}
           onKeyDown={(e) => {
             e.stopPropagation();
+            // Enter and Escape confirm or drop an input method's word first (design-principles.md).
+            if (isComposingKey(e)) return;
             if (e.key === 'Enter') save();
             if (e.key === 'Escape') setDraft(null);
           }}

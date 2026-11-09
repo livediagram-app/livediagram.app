@@ -755,7 +755,8 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     leaves them out; one that is another name for a listed place, such as `Asia/Calcutta` beside `Asia/Kolkata`,
     takes that place's entry under its own name, the zone kept before the browser's, so no place shows twice),
     by offset and then city, each with its region and offset, the one in force checked.
-    Arrow keys move, Enter picks, Escape closes and gives focus back to the button. A pick is saved at once
+    Arrow keys move, Enter picks, Escape closes and gives focus back to the button; focus moving on to another
+    control (Tab) closes it, as a press outside does, so no list is left open behind the field that owned it. A pick is saved at once
     (`PATCH { timeZone }`, or `{ timeZone: null }` for Automatic) through the same `AccountHost.profile`, so on
     every host and door; a refused write puts back what the server last took and says why, as the colour does.
     The list is built the first time it is asked for and kept for the page (one `Intl.DateTimeFormat` per zone,

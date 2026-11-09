@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { TITLE_MAX } from '@liveworkspace/index-client';
+import { isComposingKey } from '@liveworkspace/ui';
 import { useLatest } from './useLatest';
 
 // liveplanner's InlineRenameInput: type a new name, Enter or a press outside commits, Escape cancels. It
@@ -51,6 +52,8 @@ export function InlineRenameInput({
       onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => {
         e.stopPropagation();
+        // Enter and Escape confirm or drop an input method's word first (design-principles.md).
+        if (isComposingKey(e)) return;
         if (e.key === 'Enter') {
           e.preventDefault();
           onCommit(draft);

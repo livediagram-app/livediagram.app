@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NAME_MAX_LENGTH } from '@liveworkspace/model-core/names';
+import { isComposingKey } from '@liveworkspace/ui';
 import { refocusAfterField } from './refocus-after-field';
 
 // Inline rename input shared by every editor's title (EditorHeader), tabs
@@ -43,6 +44,8 @@ export function NameEditor({
       onChange={(e) => setValue(e.target.value)}
       onBlur={() => onCommit(value)}
       onKeyDown={(e) => {
+        // Enter and Escape confirm or drop an input method's word first (design-principles.md).
+        if (isComposingKey(e)) return;
         if (e.key === 'Enter') {
           e.preventDefault();
           refocusAfterField(e.currentTarget);
