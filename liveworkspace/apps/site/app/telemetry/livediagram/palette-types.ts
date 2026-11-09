@@ -45,7 +45,6 @@ export const SELECTION_MODES: readonly string[] = [
   'Eraser',
   'FormatPainter',
   'Isometric',
-  'AvatarMode',
 ];
 
 // The Theme·Changed types that are not a theme pick, for its Themes chart and ranking

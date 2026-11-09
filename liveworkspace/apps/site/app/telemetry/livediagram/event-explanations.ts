@@ -153,23 +153,23 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Used|AddNextNote':
     'Someone clicked a next-note button beside a note on an event-storming board and got the note type that notation places there next.',
   'Canvas|Used|WaterCooler':
-    'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
+    'Someone walked their Avatar-mode character up to a water cooler and took a cup of water. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'Canvas|Used|CoffeeMachine':
-    'Someone walked their Avatar-mode character up to a coffee machine and took a coffee.',
+    'Someone walked their Avatar-mode character up to a coffee machine and took a coffee. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'Canvas|Used|AvatarMessage':
-    'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
+    'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'Canvas|Used|AvatarMessagePanel':
-    "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words.",
+    "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words. No longer recorded: Avatar mode moved to livehuddle in November 2026.",
   'Canvas|Used|AvatarAction':
-    "Someone's character performed a move from the Avatar panel's Behaviour (a wave, a spin, a cheer, a dance or jumping jacks). Which move is never recorded.",
+    "Someone's character performed a move from the Avatar panel's Behaviour (a wave, a spin, a cheer, a dance or jumping jacks). Which move is never recorded. No longer recorded: Avatar mode moved to livehuddle in November 2026.",
   'Canvas|Used|AvatarReaction':
-    "Someone played a burst round their character from the Avatar panel's Reactions (confetti, sparkles, hearts, applause or fireworks). Which burst is never recorded.",
+    "Someone played a burst round their character from the Avatar panel's Reactions (confetti, sparkles, hearts, applause or fireworks). Which burst is never recorded. No longer recorded: Avatar mode moved to livehuddle in November 2026.",
   'Canvas|Used|Sit':
-    'Someone\u2019s character sat down on a seat. Which seat, and where, is never recorded.',
+    'Someone\u2019s character sat down on a seat. Which seat, and where, is never recorded. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'Canvas|Used|AvatarPadArrival':
-    'Someone went into Avatar mode on a board with an Avatar Pad, so their character beamed in on the pad.',
+    'Someone went into Avatar mode on a board with an Avatar Pad, so their character beamed in on the pad. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'Canvas|Used|AvatarMode':
-    'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer.',
+    'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'Canvas|Used|ChangeNoteKind':
     'Someone changed what kind of note a sticky is on an event-storming board, say from a domain event to a hotspot.',
   'Canvas|Used|Dock':
@@ -338,11 +338,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|BorderStyle':
     "Someone changed a selected element's border pattern: solid, dashed, or dotted.",
   'Element|Changed|Chair':
-    'Someone changed which way a Chair element faces, on a meeting-room layout board.',
-  'Element|Changed|Room': "Someone moved a Room element's doorway to another wall, or closed it.",
+    'Someone changed which way a Chair element faces, on a meeting-room layout board. No longer recorded: the furniture moved to livehuddle in November 2026.',
+  'Element|Changed|Room':
+    "Someone moved a Room element's doorway to another wall, or closed it. No longer recorded: the furniture moved to livehuddle in November 2026.",
   'Element|Changed|Desk':
-    'Someone changed which way a Desk element faces, so whoever sits at it looks another way.',
-  'Element|Changed|Sofa': 'Someone changed which way a Sofa element faces.',
+    'Someone changed which way a Desk element faces, so whoever sits at it looks another way. No longer recorded: the furniture moved to livehuddle in November 2026.',
+  'Element|Changed|Sofa':
+    'Someone changed which way a Sofa element faces. No longer recorded: the furniture moved to livehuddle in November 2026.',
   'Element|Changed|ChartAnim':
     'Someone gave a selected chart a looping reveal animation, changed its speed, or turned it off.',
   'Element|Changed|ChartData': "Someone edited a chart element's underlying data.",
@@ -1211,15 +1213,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Added|Slide':
     'Someone added a slide to the Slide Deck: either a fresh slide built from the current selection, or a duplicate of an existing one.',
   'UI|Changed|AvatarClothing':
-    "Someone changed the Avatar-mode character's clothing, in the Avatar panel.",
+    "Someone changed the Avatar-mode character's clothing, in the Avatar panel. No longer recorded: Avatar mode moved to livehuddle in November 2026.",
   'UI|Changed|AvatarGender':
-    "Someone changed the Avatar-mode character's gender, in the Avatar panel.",
-  'UI|Changed|AvatarHair': "Someone changed the Avatar-mode character's hair, in the Avatar panel.",
+    "Someone changed the Avatar-mode character's gender, in the Avatar panel. No longer recorded: Avatar mode moved to livehuddle in November 2026.",
+  'UI|Changed|AvatarHair':
+    "Someone changed the Avatar-mode character's hair, in the Avatar panel. No longer recorded: Avatar mode moved to livehuddle in November 2026.",
   'UI|Changed|AvatarStatus':
-    'Someone set or cleared their status in Avatar mode (Available, Focusing, In a Meeting or Away). Never which.',
+    'Someone set or cleared their status in Avatar mode (Available, Focusing, In a Meeting or Away). Never which. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|Changed|AvatarRandomised':
-    'Someone clicked the dice button in the Avatar panel to roll a new random character, keeping their chosen size.',
-  'UI|Changed|AvatarSize': "Someone changed the Avatar-mode character's size, in the Avatar panel.",
+    'Someone clicked the dice button in the Avatar panel to roll a new random character, keeping their chosen size. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
+  'UI|Changed|AvatarSize':
+    "Someone changed the Avatar-mode character's size, in the Avatar panel. No longer recorded: Avatar mode moved to livehuddle in November 2026.",
   'UI|Changed|EraserMode': "Someone changed the eraser's mode, in the Eraser panel.",
   'UI|Changed|EraserSize': "Someone changed the eraser's size, in the Eraser panel.",
   'UI|Changed|EraserTarget':
@@ -1316,7 +1320,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|PagesTourOffer':
     'Someone turned the Pages tour down with No on its own card. Nothing sends this since 25 October 2026, when tours stopped offering themselves.',
   'UI|Closed|AvatarTourOffer':
-    'Someone turned the Avatar tour down with No on its own card. Nothing sends this since 25 October 2026, when tours stopped offering themselves.',
+    'Someone turned the Avatar tour down with No on its own card. Nothing sends this since 25 October 2026, when tours stopped offering themselves. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|Closed|DrawTourOffer':
     'Someone turned the Draw tour down with No on its own card. Nothing sends this since 25 October 2026, when tours stopped offering themselves.',
   'UI|Closed|WorkshopTourOffer':
@@ -1446,9 +1450,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DiagramKeyTourSkipped':
     'Someone left the Diagram Key tour before its end, or the diagram key it was on went away.',
   'UI|Ended|PortalTourCompleted':
-    'Someone reached the end of the Portal tour, offered beside a selected portal.',
+    'Someone reached the end of the Portal tour, offered beside a selected portal. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
   'UI|Ended|PortalTourSkipped':
-    'Someone left the Portal tour before its end, or the portal it was on went away.',
+    'Someone left the Portal tour before its end, or the portal it was on went away. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1465,8 +1469,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the Pages tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|PagesTourSkipped': 'Someone closed the Pages tour before its end.',
   'UI|Ended|AvatarTourCompleted':
-    "Someone reached the end of the Avatar tour, or a step's target never appeared and the tour finished early.",
-  'UI|Ended|AvatarTourSkipped': 'Someone closed the Avatar tour before its end.',
+    "Someone reached the end of the Avatar tour, or a step's target never appeared and the tour finished early. No longer recorded: Avatar mode moved to livehuddle in November 2026.",
+  'UI|Ended|AvatarTourSkipped':
+    'Someone closed the Avatar tour before its end. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|Ended|DrawTourCompleted':
     "Someone reached the end of the Draw tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|DrawTourSkipped': 'Someone closed the Draw tour before its end.',
@@ -1569,9 +1574,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|PagesTourOffer':
     'The Pages tour was offered: as its own card the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour". Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|AvatarTourOffer':
-    'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour". Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
+    'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour". Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|Opened|AvatarPanel':
-    'Someone opened the Avatar panel from its button beside Undo and Redo, in Avatar mode.',
+    'Someone opened the Avatar panel from its button beside Undo and Redo, in Avatar mode. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|Opened|LayerStackTourOffer':
     'The Layer Stack tour was offered, as a small Tour toolbar beside a selected layer stack (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|PyramidTourOffer':
@@ -1611,7 +1616,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|DiagramKeyTourOffer':
     'The Diagram Key tour was offered, as a small Tour toolbar beside a selected diagram key (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|PortalTourOffer':
-    'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
+    'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|DrawTourOffer':
@@ -1731,7 +1736,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|DiagramKeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected diagram key, starting its tour.',
   'UI|Started|PortalTour':
-    'Someone pressed Play on the Tour toolbar beside a selected portal, starting its tour.',
+    'Someone pressed Play on the Tour toolbar beside a selected portal, starting its tour. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -1741,7 +1746,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|PagesTour':
     "Someone pressed Yes on the Pages tour's first card, beginning its walkthrough of the pages.",
   'UI|Started|AvatarTour':
-    "Someone pressed Yes on the Avatar tour's first card, beginning its walkthrough of Avatar mode.",
+    "Someone pressed Yes on the Avatar tour's first card, beginning its walkthrough of Avatar mode. No longer recorded: Avatar mode moved to livehuddle in November 2026.",
   'UI|Started|DrawTour':
     "Someone pressed Yes on the Draw tour's first card, beginning its walkthrough of the dock.",
   'UI|Started|FormTour':
@@ -1924,9 +1929,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|LogoTourSeenOn':
     'Someone switched off Tours › "Logo Tour" in Settings, marking the Pages tour\'s logo track as answered.',
   'UI|Toggled|AvatarTourSeenOff':
-    'Someone switched on Tours › "Avatar Tour" in Settings, marking the Avatar tour as not yet seen.',
+    'Someone switched on Tours › "Avatar Tour" in Settings, marking the Avatar tour as not yet seen. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|Toggled|AvatarTourSeenOn':
-    'Someone switched off Tours › "Avatar Tour" in Settings, marking the Avatar tour as seen.',
+    'Someone switched off Tours › "Avatar Tour" in Settings, marking the Avatar tour as seen. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|Toggled|ElementToursSeenOff':
     'Someone switched on Tours › Element Tours in Settings, so every element tour is offered again.',
   'UI|Toggled|ElementToursSeenOn':
@@ -2008,9 +2013,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|DiagramKeyTourSeenOn':
     'Someone switched off Tours › Element Tours › "Diagram Key Tour" in Settings, so it is not offered.',
   'UI|Toggled|PortalTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Portal Tour" in Settings, so it is offered again.',
+    'Someone switched on Tours › Element Tours › "Portal Tour" in Settings, so it is offered again. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
   'UI|Toggled|PortalTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Portal Tour" in Settings, so it is not offered.',
+    'Someone switched off Tours › Element Tours › "Portal Tour" in Settings, so it is not offered. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -2119,16 +2124,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PagesTourStepLogoOutro':
     'The Pages tour\'s logo track reached its closing "That Is a Logo Page" card.',
   'UI|View|AvatarTourStepAvatarButton':
-    'The Avatar tour reached its "Your Avatar" step, on the Avatar button.',
+    'The Avatar tour reached its "Your Avatar" step, on the Avatar button. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|View|AvatarTourStepCharacter':
-    'The Avatar tour reached its "Make It Yours" step, on the character sheet.',
-  'UI|View|AvatarTourStepActions': 'The Avatar tour reached its "Behaviour and Reactions" step.',
+    'The Avatar tour reached its "Make It Yours" step, on the character sheet. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
+  'UI|View|AvatarTourStepActions':
+    'The Avatar tour reached its "Behaviour and Reactions" step. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|View|AvatarTourStepMessage':
-    'The Avatar tour reached its "Say Something" step, on Send a Message.',
+    'The Avatar tour reached its "Say Something" step, on Send a Message. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|View|AvatarTourStepPush':
-    'The Avatar tour reached its "Give Someone a Push" step, on the person\'s own character.',
+    'The Avatar tour reached its "Give Someone a Push" step, on the person\'s own character. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|View|AvatarTourStepOutro':
-    'The Avatar tour reached its closing "You\'re Ready to Roam" card.',
+    'The Avatar tour reached its closing "You\'re Ready to Roam" card. No longer recorded: Avatar mode moved to livehuddle in November 2026.',
   'UI|View|LayerStackTourStepLayers':
     'The Layer Stack tour reached its "One Element, Many Layers" step, on the whole stack.',
   'UI|View|LayerStackTourStepEdit':
@@ -2363,13 +2369,18 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Diagram Key tour reached its step on a key with nothing to list yet.',
   'UI|View|DiagramKeyTourStepTitle': 'The Diagram Key tour reached its step on its title.',
   'UI|View|DiagramKeyTourStepOutro': 'The Diagram Key tour reached its closing card.',
-  'UI|View|PortalTourStepPortal': 'The Portal tour reached its first step, a way through.',
-  'UI|View|PortalTourStepTravel': 'The Portal tour reached its step on stepping through it.',
-  'UI|View|PortalTourStepUnlinked': 'The Portal tour reached its step on an unlinked portal.',
-  'UI|View|PortalTourStepMenu': 'The Portal tour reached its step on linking it from its menu.',
+  'UI|View|PortalTourStepPortal':
+    'The Portal tour reached its first step, a way through. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+  'UI|View|PortalTourStepTravel':
+    'The Portal tour reached its step on stepping through it. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+  'UI|View|PortalTourStepUnlinked':
+    'The Portal tour reached its step on an unlinked portal. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+  'UI|View|PortalTourStepMenu':
+    'The Portal tour reached its step on linking it from its menu. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
   'UI|View|PortalTourStepWalk':
-    'The Portal tour reached its step on walking an Avatar-mode character in.',
-  'UI|View|PortalTourStepOutro': 'The Portal tour reached its closing card.',
+    'The Portal tour reached its step on walking an Avatar-mode character in. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+  'UI|View|PortalTourStepOutro':
+    'The Portal tour reached its closing card. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':
@@ -2778,7 +2789,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Token|Removed': 'Someone revoked an API token.',
   'UI|Added': 'Someone added something in the editor, such as a slide.',
   'UI|Changed':
-    "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Avatar, Eraser, Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
+    "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Eraser, Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
   'UI|Cleared':
     "Someone cleared livediagram's saved settings and caches in their browser (Repair This Browser); the value says where from.",
   'UI|Closed':

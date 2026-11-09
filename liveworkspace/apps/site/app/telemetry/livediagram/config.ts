@@ -30,7 +30,6 @@ import {
   API_TOKEN_ACTIVITY,
   ARTICLE_VIEWS,
   ASSIGNED_ACTIONS,
-  AVATAR_TOUR,
   CALLS_TO_ACTION,
   CANVAS_MODES,
   CLIENT_EXCEPTIONS,
@@ -301,7 +300,7 @@ export const LIVEDIAGRAM: TelemetryAppConfig = {
   },
   modes: {
     selection: SELECTION_MODES,
-    selectionSubtitle: 'Laser, spotlight, eraser, format painter, isometric, avatar',
+    selectionSubtitle: 'Laser, spotlight, eraser, format painter, isometric',
     option: /^(Eraser|Laser|Spotlight|Format)/,
     optionsSubtitle:
       'Settings inside a mode: eraser size and target, laser colour and trail, spotlight shape, format painter copies',
@@ -345,7 +344,7 @@ export const LIVEDIAGRAM: TelemetryAppConfig = {
   tours: [
     {
       title: 'Tours',
-      metrics: [WELCOME_TOUR, WORKSHOP_TOUR, DRAW_TOUR, AVATAR_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
+      metrics: [WELCOME_TOUR, WORKSHOP_TOUR, DRAW_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
     },
     { title: 'Prompts', metrics: [NEW_VERSION_PROMPT] },
   ],

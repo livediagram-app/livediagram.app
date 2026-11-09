@@ -226,23 +226,7 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('LaneTour', 'lane-tour-steps.ts'),
   ...conceptTourSteps('BoundaryTour', 'boundary-tour-steps.ts'),
   ...conceptTourSteps('DiagramKeyTour', 'diagram-key-tour-steps.ts'),
-  ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
-
-// The Avatar tour's steps, as avatarTourStepTelemetryType makes them (apps/editor avatar-tour-steps.ts,
-// docs/specs/008-canvas/avatar-tour.md). The welcome card sends no step view.
-const AVATAR_TOUR_STEP_SOURCE: string[] = [
-  ...read('editor/components/tour/avatar-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `AvatarTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
 
 const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
@@ -475,7 +459,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/tour/ElementTourHost.tsx UI·Opened': {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
-  'apps/editor/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/editor/components/tour/WatchItBuiltPlayer.tsx UI·View': { values: WATCH_STEP_SOURCE },
   'apps/editor/components/tour/WatchItBuiltHost.tsx UI·View': { values: WATCH_TOPIC_PICKS },
   'apps/editor/hooks/canvas/commit-freehand.ts Element·Added': {
@@ -498,11 +481,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/editor/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
-  // A piece of furniture turned by Rotate Left or Rotate Right (docs/specs/009-elements/furniture-facing.md).
-  'apps/editor/hooks/canvas/useDataShapeSetters.ts Element·Changed': {
-    values: ['Sofa', 'Chair', 'Desk', 'Bookshelf', 'Meeting-table', 'Water-cooler'],
-    open: 'shapeTelemetryToken of the turned piece: any furniture that turns',
-  },
   'apps/editor/hooks/canvas/useStylePreview.ts Element·Changed': {
     // The types the element menu's generic style ops pass through it (apps/editor/lib/element-style-ops.ts): the
     // accent edge, card slots and chip looks.

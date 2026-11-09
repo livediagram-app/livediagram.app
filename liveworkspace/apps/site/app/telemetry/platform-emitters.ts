@@ -103,7 +103,8 @@ export function sharedClientEmitters(): Emit[] {
 
 // Avatar mode (@liveworkspace/avatar) sends through the bound `track` of the editor that mounts it
 // (`avatarBindings.track(...)`): a character's customisations, its status, its speech bubbles and its arrival on
-// an Avatar Pad. Only livediagram and livehuddle mount it, so only their scans add these.
+// an Avatar Pad. Only livehuddle mounts it (livediagram retired Avatar mode on 2026-11-09), so only its scans add
+// these.
 export const AVATAR_ROOTS = ['packages/avatar/src'];
 
 let avatarCached: Emit[] | undefined;

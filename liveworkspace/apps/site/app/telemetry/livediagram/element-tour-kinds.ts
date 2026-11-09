@@ -20,7 +20,6 @@ export const ELEMENT_TOUR_KINDS = [
   { token: 'LaneTour', title: 'Lane' },
   { token: 'BoundaryTour', title: 'Boundary' },
   { token: 'DiagramKeyTour', title: 'Diagram Key' },
-  { token: 'PortalTour', title: 'Portal' },
 ] as const;
 
 export const elementTourTokens = (suffix = ''): string[] =>

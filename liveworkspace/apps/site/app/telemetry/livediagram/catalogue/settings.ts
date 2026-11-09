@@ -292,7 +292,7 @@ export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'M
 // Tutorials before). Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
 export const TOURS_SETTINGS = settingsStack(
   'Tours Settings',
-  'The Diagram, Workshop, Draw and Avatar tours switched back on or off.',
+  'The Diagram, Workshop and Draw tours switched back on or off.',
   [
     toggle(
       'UI',
@@ -315,20 +315,13 @@ export const TOURS_SETTINGS = settingsStack(
       'Draw Tour',
       'The Draw tour switched back on or off.',
     ),
-    toggle(
-      'UI',
-      'AvatarTourSeenOff',
-      'AvatarTourSeenOn',
-      'Avatar Tour',
-      'The Avatar tour switched back on or off.',
-    ),
     // Every other tour's switch: the Show Me tours' own (one over them all, one per toured kind) and any tour
     // of a single element, so a switch with no chart of its own above still counts.
     {
       category: 'UI',
       action: 'Toggled',
       typeIn: (type) =>
-        /^(?!(?:Workshop|Draw|Avatar)Tour)[A-Z][A-Za-z]*Tours?Seen(On|Off)$/.test(type ?? ''),
+        /^(?!(?:Workshop|Draw)Tour)[A-Z][A-Za-z]*Tours?Seen(On|Off)$/.test(type ?? ''),
       title: 'Show Me Tours',
       blurb: 'The Show Me tours switched back on or off, all at once or one element\u2019s.',
       rising: 'neutral',
