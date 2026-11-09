@@ -422,7 +422,9 @@ The journeys, one way each:
    the organisation, how many have joined and how many are invited; every member with their role; and, by role:
    - **Invite** (admins): an address and Member or Admin, at the foot of the card. The invitation is emailed.
    - **Invite by Link** (admins): turn the join link on, copy it, make a new one (the old one stops working),
-     or turn it off. It lasts 7 days.
+     or turn it off. It lasts 7 days. Turning it on or off here moves the keyboard to what took the pressed
+     button's place (Copy, or Turn On Link); a press that fails, New Link, or a change from elsewhere leaves it
+     where it is.
    - **Roles and removal** (admins): each row's role select, and its × to remove someone, withdraw an invitation
      or clear a declined or expired one, each confirmed in words that say which. The only admin's own row is
      pinned (no select, no ×), with why.
