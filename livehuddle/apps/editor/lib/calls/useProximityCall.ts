@@ -220,8 +220,10 @@ export function useProximityCall(deps: ProximityCallDeps): void {
           track('UI', 'Changed', 'AudioMute');
           return;
         }
-        // A call on its way: its microphone is not there to unmute yet.
+        // A call on its way, made or with its code still loading: its microphone is not there to unmute yet, and a
+        // preview opened now would keep capturing under the live call.
         if (callRef.current && !callRef.current.ended) return;
+        if (callSelf().phase === 'joining') return;
         if (localMic.on || callSelf().previewMic === 'starting') {
           localMic.stop();
           return;

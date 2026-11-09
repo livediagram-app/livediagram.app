@@ -112,7 +112,8 @@ test, do what we did with camera and allow me to do it anyway, just don't transm
   etc"). The dock no longer explains why there is no call (the greyed Join Audio's reason text is gone): the preview
   itself says what matters, that only you see it.
 - A microphone the browser ends while previewed (unplugged, its permission withdrawn) closes, as a press would.
-- A call that starts takes over, **muted**. The camera and Share Screen beside it preview locally too, titled
+- A call that starts takes over, **muted**. A press of the microphone while it connects (Connecting…) does nothing,
+  so no preview is left capturing under the call. The camera and Share Screen beside it preview locally too, titled
   **Camera: Only You** and **Share Screen: Only You**.
 
 Someone who may not speak (a Viewer) has no microphone to preview. The preview is `CallSelf.canPreviewMic` and
