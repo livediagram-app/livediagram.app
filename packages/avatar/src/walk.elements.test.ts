@@ -48,7 +48,7 @@ describe('the walk’s camera and reach', () => {
       followCorrection({ x: 0, y: 0 }, size, 1),
     );
     expect(followCorrection({ x: 500, y: 790 }, size, 1).y).toBeLessThan(0);
-    expect(viewportOffsetCentredOn({ x: 0, y: 0, width: 100, height: 100 }, size, 0)).toEqual({
+    expect(viewportOffsetCentredOn({ x: 0, y: 0, width: 100, height: 100 }, size)).toEqual({
       x: 450,
       y: 350,
     });

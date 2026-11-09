@@ -74,7 +74,6 @@ export function useWalkIn({
         viewportOffsetCentredOn(
           { ...feet, width: 0, height: 0 },
           { width: main.width, height: main.height },
-          zoom,
         ),
       );
     };

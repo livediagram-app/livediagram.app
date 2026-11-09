@@ -49,7 +49,6 @@ export type WayfindingInput = {
   /** Switches tab as travel, keeping Avatar mode (docs/specs/008-canvas/avatar-mode.md "Changing tab"). */
   onTravelToTab?: (tabId: string) => void;
   mainRef?: Ref<HTMLElement> | null;
-  readZoom: () => number;
   setViewportOffset: (offset: { x: number; y: number }) => void;
 };
 
@@ -93,7 +92,7 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
   // --- Moving ------------------------------------------------------------------------------------------------
   const latest = useLatest(input);
   const centreOn = (point: WayPoint) => {
-    const { mainRef, readZoom, setViewportOffset } = latest.current;
+    const { mainRef, setViewportOffset } = latest.current;
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     const rect = node?.getBoundingClientRect();
     if (!rect) return;
@@ -101,7 +100,6 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
       viewportOffsetCentredOn(
         { x: point.x, y: point.y, width: 0, height: 0 },
         { width: rect.width, height: rect.height },
-        readZoom(),
       ),
     );
   };

@@ -40,8 +40,6 @@ export type PortalTravelDeps = {
    * `current` to read — hence the `'current' in mainRef` guard below.
    */
   mainRef?: Ref<HTMLElement> | null;
-  /** The zoom now, read when a portal is entered (docs/specs/008-canvas/blueprints/viewport-store.md). */
-  readZoom: () => number;
   setViewportOffset: (offset: { x: number; y: number }) => void;
   /** Places the walking character, and names the portal to ignore on arrival. */
   teleportTo: (point: { x: number; y: number }, ignorePortalId: string) => void;
@@ -54,7 +52,6 @@ export function usePortalTravel({
   onFollowLink,
   onTravelToTab,
   mainRef,
-  readZoom,
   setViewportOffset,
   teleportTo,
 }: PortalTravelDeps) {
@@ -76,7 +73,7 @@ export function usePortalTravel({
     const rect = node?.getBoundingClientRect();
     if (rect) {
       setViewportOffset(
-        viewportOffsetCentredOn(to.portal, { width: rect.width, height: rect.height }, readZoom()),
+        viewportOffsetCentredOn(to.portal, { width: rect.width, height: rect.height }),
       );
     }
     // Step out of the far portal, and tell the walk hook to ignore that portal until

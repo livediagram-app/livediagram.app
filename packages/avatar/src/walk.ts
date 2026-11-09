@@ -396,17 +396,15 @@ export function sitsOnEntry(
   );
 }
 
-// The viewport offset that centres a box (a portal, an Avatar Pad) in a viewport of `size` at `zoom`.
-// The canvas transform is `scale(zoom) translate(offset)`, so the offset is in
-// canvas px and the centring maths divides the viewport by the zoom.
+// The viewport offset that centres a box (a portal, an Avatar Pad) in a viewport of `size`, at any zoom. The canvas
+// transform is `scale(zoom) translate(offset)` about the viewport's centre, so a point p sits mid-screen when
+// `offset = size / 2 - p` whatever the zoom (as `centredCamera` reads it).
 export function viewportOffsetCentredOn(
   box: { x: number; y: number; width: number; height: number },
   size: { width: number; height: number },
-  zoom: number,
 ): { x: number; y: number } {
-  const z = zoom > 0 ? zoom : 1;
   return {
-    x: size.width / (2 * z) - (box.x + box.width / 2),
-    y: size.height / (2 * z) - (box.y + box.height / 2),
+    x: size.width / 2 - (box.x + box.width / 2),
+    y: size.height / 2 - (box.y + box.height / 2),
   };
 }

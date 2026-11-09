@@ -143,7 +143,6 @@ function CanvasView(props: CanvasProps) {
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
   // The zoom when a handler runs, for what is handed down and must keep its identity across zooms.
   const viewportStore = useViewportStore();
-  const readZoom = useCallback(() => viewportStore.get().zoom, [viewportStore]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   // A whiteboard pen's own cursor, as chosen in the dock's More flyout.
@@ -318,7 +317,6 @@ function CanvasView(props: CanvasProps) {
     viewportOffset,
     viewportZoom,
     setViewportOffset,
-    readZoom,
   });
 
   // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost

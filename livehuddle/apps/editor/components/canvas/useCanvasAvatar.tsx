@@ -80,7 +80,6 @@ type CanvasAvatarInput = {
   readViewportOffset: () => { x: number; y: number };
   viewportZoom: number;
   setViewportOffset: CanvasProps['setViewportOffset'];
-  readZoom: () => number;
 };
 
 // The canvas's avatar (docs/specs/008-canvas/avatar-mode.md): the walking character and its look, status and
@@ -96,7 +95,6 @@ export function useCanvasAvatar({
   readViewportOffset,
   viewportZoom,
   setViewportOffset,
-  readZoom,
 }: CanvasAvatarInput) {
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking character's position / facing / step
   // frame, its click-to-walk entry point, and the camera follow. Owns its own
@@ -387,7 +385,6 @@ export function useCanvasAvatar({
     onFollowLink: props.onFollowLink,
     onTravelToTab: props.onTravelToTab,
     mainRef,
-    readZoom,
     setViewportOffset,
     teleportTo: avatar.teleportTo,
   });
@@ -415,7 +412,6 @@ export function useCanvasAvatar({
     onFollowLink: props.onFollowLink,
     onTravelToTab: props.onTravelToTab,
     mainRef,
-    readZoom,
     setViewportOffset,
   });
   const resolveFace = useCallback(

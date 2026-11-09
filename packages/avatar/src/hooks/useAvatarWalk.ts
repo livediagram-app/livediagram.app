@@ -466,7 +466,6 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
           viewportOffsetCentredOn(
             { ...entry.feet, width: 0, height: 0 },
             { width: r.main.width, height: r.main.height },
-            viewportZoom,
           ),
         );
       }
