@@ -45,6 +45,7 @@ import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 
 import { useCanvasAvatar } from './useCanvasAvatar';
 import { CanvasCharactersLayer } from './CanvasCharactersLayer';
+import { PeopleArrows } from './people-arrows/PeopleArrows';
 import { useCanvasPointer } from './useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
@@ -501,6 +502,10 @@ function CanvasView(props: CanvasProps) {
         </div>
 
         <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
+
+        {/* People arrows (docs/specs/008-canvas/people-arrows.md): the way to the people on the tab you cannot see,
+          over the canvas and under its controls. */}
+        <PeopleArrows peers={props.peers} />
 
         <CanvasChrome
           {...props}

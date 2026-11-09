@@ -13,6 +13,8 @@ const CANVAS_STYLESHEETS = [
   'app/social-motion.css',
   // The workday pieces' belt, dog and bell (docs/specs/009-elements/workday-pieces.md).
   'app/workday-motion.css',
+  // The people arrows' nudge and hover (docs/specs/008-canvas/people-arrows.md).
+  'app/people-arrows.css',
   // The pieces' one-shot moments: leaves, a pebble, sparks (docs/specs/009-elements/piece-moments.md).
   'app/piece-moments.css',
   // The office, amenity, venue and team pieces' moments: a page, steam, a sparrow.

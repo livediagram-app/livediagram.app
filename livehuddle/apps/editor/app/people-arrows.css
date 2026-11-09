@@ -1,0 +1,47 @@
+/* People arrows (docs/specs/008-canvas/people-arrows.md "Motion"): the slow nudge in the direction an arrow points,
+   a little stronger for the first seconds after someone arrives, and the hover lift and glow. The glide, the turn,
+   the arrival and the departure are written each frame by the arrows' loop. Transform, opacity and filter only; the
+   global reduced-motion collapse (globals.css) stills the nudge and the lift. */
+
+.lh-people-arrow-nudge {
+  animation: lh-people-arrow-nudge 2.4s ease-in-out infinite;
+}
+.lh-people-arrow[data-fresh='true'] .lh-people-arrow-nudge {
+  animation: lh-people-arrow-nudge-strong 1.2s ease-in-out infinite;
+}
+@keyframes lh-people-arrow-nudge {
+  0%,
+  60%,
+  100% {
+    transform: translateX(0);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+@keyframes lh-people-arrow-nudge-strong {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+/* Hover lifts it with a soft glow in their colour; a press sinks it. */
+.lh-people-arrow-lift {
+  transition:
+    transform 140ms ease-out,
+    filter 140ms ease-out;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.45)) drop-shadow(0 2px 5px rgb(0 0 0 / 0.25));
+}
+.lh-people-arrow:hover .lh-people-arrow-lift,
+.lh-people-arrow:focus-visible .lh-people-arrow-lift {
+  transform: translateY(-1px) scale(1.14);
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.45)) drop-shadow(0 0 7px var(--identity));
+}
+.lh-people-arrow:active .lh-people-arrow-lift {
+  transform: scale(0.94);
+  transition-duration: 60ms;
+}
