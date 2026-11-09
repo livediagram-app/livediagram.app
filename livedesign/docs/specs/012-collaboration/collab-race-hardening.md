@@ -128,6 +128,15 @@ an agent's changesets merge into a save by their own rule, not through this ledg
 authors; at first they were left out, because the api credits every comment
 new to the store to the saver and a merged comment would have been credited wrongly.
 
+**What a save reads, and how long the ledger keeps** (the shared store,
+[liveworkspace's architecture](../../../../liveworkspace/docs/specs/002-architecture/architecture.md#a-rooms-collaboration-ledger)).
+The room stamps each entry with the seq and time of the op that last changed it. A save is handed only the entries
+changed after its cursor, plus every entry changed in the last day: one the saver had seen a day or more ago can
+change nothing in its merge. Before, every autosave read and shipped every entry the tab ever had, months of comment
+text on a long-lived shared tab. Once a day the room's upkeep deletes each entry nobody has touched for 30
+days. Residual: a save whose cursor is older than the oldest entry cut (a socket back after more than 30 days
+away, saving before its catch-up) no longer has those entries re-applied; the room logs `[ledger] stale cursor`.
+
 Residual, stated plainly: the merge and the write are two steps, so two
 saves whose merge and write interleave can still land the older merge
 last. The window is the length of one write, not the 600 ms debounce,

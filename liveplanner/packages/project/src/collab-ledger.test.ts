@@ -3,6 +3,7 @@ import { presetSetup } from '@liveplanner/items';
 import type { ElementLedger, ShapeElement, Tab, TabLedger, VoteLedger } from './index';
 import {
   ledgerCommentAuthors,
+  ledgerEntryAccumulates,
   ledgerKey,
   mergeLedgerAnswersIntoTab,
   mergeLedgerIntoTab,
@@ -422,5 +423,15 @@ describe('reactions in the ledger (docs/specs/012-collaboration/comment-reaction
       delta: Record<string, unknown>;
     };
     expect(keyless.delta).toMatchObject({ name: 'Bea', by: 'someone-else' });
+  });
+});
+
+// The room's upkeep cuts an entry nobody has touched for 30 days, but never the dots while their tab lives
+// (liveworkspace architecture, "A room's collaboration ledger").
+describe('ledgerEntryAccumulates', () => {
+  it('names the dots and nothing else', () => {
+    expect(ledgerEntryAccumulates('ledger:t1:vote')).toBe(true);
+    expect(ledgerEntryAccumulates('ledger:t1:el:card')).toBe(false);
+    expect(ledgerEntryAccumulates('ledger:t1:dash')).toBe(false);
   });
 });

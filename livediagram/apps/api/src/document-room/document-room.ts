@@ -31,9 +31,18 @@ import {
   roomIsFull,
   type AccessLevel,
 } from '@livediagram/api-schema';
-import { opForTheWire, stampCommentAuthor } from '@livediagram/document';
 import { RoomParticipantWrites } from '../room-participant';
-import { RoomLedgerStore } from '../room-ledger-store';
+import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
+import {
+  opForTheWire,
+  stampCommentAuthor,
+  ledgerKey,
+  ledgerPrefix,
+  recordInLedger,
+  tabLedgerFrom,
+  ledgerEntryAccumulates,
+  type TabLedger,
+} from '@livediagram/document';
 import { RoomLivePoll } from '../room-live-poll';
 import { RoomSelectionStore, selectionFromOp, type LiveSession } from '../room-selections';
 import {
@@ -219,6 +228,17 @@ export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
 
+// The collaboration ledger: this product's pure module (collab-ledger.ts) on the shared store
+// (liveworkspace/docs/specs/002-architecture/architecture.md "A room's collaboration ledger").
+type LedgerEntry = NonNullable<Parameters<typeof recordInLedger>[0]>;
+const LEDGER_RULES = {
+  ledgerKey,
+  ledgerPrefix,
+  recordInLedger,
+  tabLedgerFrom,
+  ledgerEntryAccumulates,
+};
+
 export class DocumentRoom extends DurableObject<Env> {
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
   state: DurableObjectState;
@@ -268,7 +288,7 @@ export class DocumentRoom extends DurableObject<Env> {
   }
   // The collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3) and the running poll
   // (docs/specs/012-collaboration/collab-race-hardening.md), each in its own module; see room-ledger-store / room-live-poll.
-  ledger: RoomLedgerStore;
+  ledger: RoomLedgerStore<LedgerEntry, TabLedger>;
   poll: RoomLivePoll;
   // The poll answers in flight, in arrival order (relayPollAnswer). Awaited by tests.
   pollAnswers: Promise<void>;
@@ -337,7 +357,7 @@ export class DocumentRoom extends DurableObject<Env> {
           ROOM_PEOPLE: () => this.roomPeople(),
         }
       : undefined;
-    this.ledger = new RoomLedgerStore(state.storage);
+    this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.head = createItemHeadSync({
       read: async () => {
         if (this.documentId === null || !this.hasSchema()) return null;
@@ -388,7 +408,7 @@ export class DocumentRoom extends DurableObject<Env> {
       handleQaWrite: (req) => this.handleQaWrite(req),
       sequenceMutation: (from, op) => this.sequenceMutation(from, op),
       readSelections: (tabId, person) => this.selections.read(tabId, this.liveSessions(), person),
-      readLedger: (tabId) => this.ledger.read(tabId),
+      readLedger: (tabId, since) => this.ledger.read(tabId, since),
       epoch: () => this.epoch,
     };
     this.baton = new RoomFacilitator({
@@ -577,6 +597,7 @@ export class DocumentRoom extends DurableObject<Env> {
     const documentId = this.documentId;
     this.maintenanceAt = now + MAINTENANCE_EVERY_MS;
     await this.state.storage.put(MAINTENANCE_KEY, this.maintenanceAt);
+    await this.keepLedger(now);
     if (!env || !documentId || !this.schemaReady) return;
     try {
       const gone = await deleteOldChangesets(env, now - CHANGESET_RETENTION_MS);
@@ -584,6 +605,30 @@ export class DocumentRoom extends DurableObject<Env> {
     } catch (error) {
       console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
     }
+  }
+
+  // The ledger's share of the upkeep: an entry nobody has touched for 30 days goes (room-ledger-store.ts). It never
+  // stops the rest of the upkeep.
+  private async keepLedger(now: number): Promise<void> {
+    try {
+      const kept = await this.ledger.upkeep({ now, seq: this.seq, tabs: this.storedTabIds() });
+      if (kept.dropped > 0 || kept.stamped > 0) console.info('[ledger] upkeep', kept);
+    } catch (error) {
+      console.warn('[ledger] upkeep failed', { error: String(error) });
+    }
+  }
+
+  // The ids of the tabs this room stores, or null when it can't say (no schema yet, or no tabs).
+  private storedTabIds(): ReadonlySet<string> | null {
+    const sql = this.state.storage.sql;
+    if (!sql || !(this.schemaReady || hasDocumentSchema((q) => sql.exec(q)))) return null;
+    const ids = new Set(
+      sql
+        .exec<{ id: string }>('SELECT id FROM tabs')
+        .toArray()
+        .map((r) => r.id),
+    );
+    return ids.size > 0 ? ids : null;
   }
 
   // This env's DOCUMENT_ROOM, answering this document's own id with this object: the code shared with the worker (a

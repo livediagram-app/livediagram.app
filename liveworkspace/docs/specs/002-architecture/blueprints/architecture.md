@@ -54,6 +54,32 @@ A handler that catches broadly and would turn an outage into another answer reth
 (else an empty status, edge-cached), accounts' session read (else `401 signed_out`) and Drive's open and import (else
 `502 google_failed`).
 
+### A room's collaboration ledger (`packages/api-kit/src/room-ledger-store.ts`)
+
+- `new RoomLedgerStore(storage, rules, clock?)`: `rules` is the product's pure module (`ledgerKey`, `ledgerPrefix`,
+  `recordInLedger`, `tabLedgerFrom`, and `ledgerEntryAccumulates` where it has entries that need every op of a round:
+  livediagram and liveplanner, a tab's `:vote` key, and livediagram's an element entry holding idea cards). Each
+  room (livediagram, livedocuments, livehuddle `document-room.ts`, livedesign `design-room.ts`, liveplanner
+  `plan-room.ts`) builds one over its DO storage; the five `room-ledger-store.ts` copies it replaces differed only in
+  their imports.
+- `record(op, seq)`: chained on one queue, so entries apply in the room's order. Reads the key, takes the stamp off,
+  hands the product's `recordInLedger` the entry, and puts the result with `ledgerStamp: { seq, at }` added; an
+  entry past `LEDGER_VALUE_MAX_CHARS` (120,000, measured without the stamp) is not written. A throw is swallowed.
+- `read(tabId, since?)`: waits for the queue, lists the tab's prefix, and drops each entry whose stamp has
+  `seq <= since` and `at <= now - LEDGER_RECENT_MS`; an entry with no stamp always goes. No `since`: every entry.
+  The stamps are taken off before `tabLedgerFrom`. A `since` below the stored floor (`ledger-floor`, read once per
+  instance) logs `[ledger] stale cursor`.
+- The room's `GET /ledger?tab=&epoch=&since=` passes the save's cursor seq; the api's `fetchRoomLedger` sends it.
+  The Participant answers write (`room-participant.ts`) reads with no `since`.
+- `upkeep({ now, seq, tabs })`: on the queue, pages through every `ledger:` key (`LEDGER_UPKEEP_PAGE` 128, by
+  `startAfter`, skipping any key not past the last one so a store that ignores the cursor still ends). An entry with
+  no stamp is stamped `{ seq, at: now }`. An entry stamped at or before `now - LEDGER_RETENTION_MS` is deleted unless
+  `ledgerEntryAccumulates` says so and its key starts with a stored tab's prefix (`tabs`, the ids in the room's
+  `tabs` table; null when the room has no schema or no tabs, which keeps every accumulating entry). The highest seq
+  deleted raises `ledger-floor`. Answers `{ dropped, stamped }`. Each room runs it first in its daily `maintain`,
+  logged `[ledger] upkeep` when it changed anything, `[ledger] upkeep failed` on a throw, never stopping the rest.
+- `settled()`: the queue; `purge` awaits it before `deleteAll`.
+
 ## Behaviour and state
 
 ### How a request reaches a service
@@ -213,17 +239,18 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
 
 ## Testing
 
-| Test                                                                                         | Pins                                                                                                                                                   |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/sites/src/workspace-proxy.test.ts`                                                 | every router's forwards: routes, cookies, loop guard, visitor address and proof (a caller's copy removed), redirects, the status page                  |
-| `packages/sites/src/network.test.ts`                                                         | a named address trusted only beside the right secret, a spoofed one ignored, and trusted as named while no secret is set                               |
-| `packages/sites/src/previews-proxy.test.ts` (3)                                              | the previews forward and the share link's picture doors                                                                                                |
-| `packages/api-kit/src/request-failure.test.ts` (23)                                          | D1 and Durable Object outages named, bugs left to the 500, the answers and their logs, the guard (held at 100%)                                        |
-| `packages/api-kit/src/room-alarm.test.ts`                                                    | the floor, the earliest time, none due, a repeat skipped, a time passed or changed set again, an arm after a disarm set again (held at 100%)           |
-| each room's `*-grants.test.ts`                                                               | a time stuck in the past arms the alarm a second from now, and again a second on once it fires                                                         |
-| index `webhooks/dispatch.test.ts`, Drive `mirror/pass.test.ts`                               | the dispatcher's next alarm and the next pass, already past, set a second from now                                                                     |
-| `<app>/apps/api/src/request-failure.test.ts` (4 each)                                        | an outage and a bug before any route (the token lookup) and inside one, CORS and the release on the answer                                             |
-| each service's `request-failure.test.ts`, `index.test.ts`, `api.test.ts` or `routes.test.ts` | its D1 or mirror outage answered 503 with its own headers and route words, through `unavailableD1()` (`@liveworkspace/api-kit/testing/unavailable-d1`) |
+| Test                                                                                         | Pins                                                                                                                                                                                                      |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/sites/src/workspace-proxy.test.ts`                                                 | every router's forwards: routes, cookies, loop guard, visitor address and proof (a caller's copy removed), redirects, the status page                                                                     |
+| `packages/sites/src/network.test.ts`                                                         | a named address trusted only beside the right secret, a spoofed one ignored, and trusted as named while no secret is set                                                                                  |
+| `packages/sites/src/previews-proxy.test.ts` (3)                                              | the previews forward and the share link's picture doors                                                                                                                                                   |
+| `packages/api-kit/src/request-failure.test.ts` (23)                                          | D1 and Durable Object outages named, bugs left to the 500, the answers and their logs, the guard (held at 100%)                                                                                           |
+| `packages/api-kit/src/room-alarm.test.ts`                                                    | the floor, the earliest time, none due, a repeat skipped, a time passed or changed set again, an arm after a disarm set again (held at 100%)                                                              |
+| `packages/api-kit/src/room-ledger-store.test.ts`                                             | stamps, the save's read by cursor and by age, upkeep's cut, accumulating entries kept while their tab lives, legacy entries, paging, the stale-cursor log, storage counts before and after (held at 100%) |
+| each room's `*-grants.test.ts`                                                               | a time stuck in the past arms the alarm a second from now, and again a second on once it fires                                                                                                            |
+| index `webhooks/dispatch.test.ts`, Drive `mirror/pass.test.ts`                               | the dispatcher's next alarm and the next pass, already past, set a second from now                                                                                                                        |
+| `<app>/apps/api/src/request-failure.test.ts` (4 each)                                        | an outage and a bug before any route (the token lookup) and inside one, CORS and the release on the answer                                                                                                |
+| each service's `request-failure.test.ts`, `index.test.ts`, `api.test.ts` or `routes.test.ts` | its D1 or mirror outage answered 503 with its own headers and route words, through `unavailableD1()` (`@liveworkspace/api-kit/testing/unavailable-d1`)                                                    |
 
 Each service's own tests are in its blueprint.
 
@@ -240,6 +267,10 @@ Each service's own tests are in its blueprint.
 short D1 or Durable Object reset, short enough that a caller's retry lands soon after one; safe from 1 to 60.
 `ROOM_ALARM_FLOOR_MS` 1,000 (`packages/api-kit/src/room-alarm.ts`): the soonest any re-armed alarm goes; it caps a
 stuck time at one alarm a second, and every wait it can add to is seconds or more already; safe from 100 to 5,000.
+`LEDGER_RECENT_MS` 24 h (`packages/api-kit/src/room-ledger-store.ts`): an entry changed this recently goes with every
+save whatever its cursor; it covers a comment's author save and an idea's first save landing late; safe from 1 h to
+7 days. `LEDGER_RETENTION_MS` 30 days: an entry untouched this long is cut by upkeep; the Trash's and the changesets'
+retention; safe from 7 to 365 days. `LEDGER_UPKEEP_PAGE` 128: keys per upkeep page, bounding the memory one page holds.
 
 ## Defaults ledger
 

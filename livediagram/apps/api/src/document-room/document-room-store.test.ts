@@ -1008,3 +1008,121 @@ describe('speed', () => {
     expect(drainMs).toBeLessThan(cpuBudgetMs(200));
   });
 });
+
+// The collaboration ledger's upkeep, end to end (liveworkspace/docs/specs/002-architecture/architecture.md "A room's
+// collaboration ledger"): saves merged through the real worker and the document's own object, after the room's daily
+// upkeep has cut the history nobody touched for 30 days.
+describe('the collaboration ledger after its upkeep', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const card: Element = {
+    id: 'card',
+    type: 'shape',
+    shape: 'done-check',
+    x: 0,
+    y: 200,
+    width: 100,
+    height: 100,
+  };
+  type StoredCard = {
+    id: string;
+    responses?: { participantId: string }[];
+    commentThread?: { comments: { id: string }[] };
+  };
+  const stored = (w: World): StoredCard => {
+    const row = w.documents.get('A')!.db.prepare("SELECT data FROM tabs WHERE id = 't1'").get();
+    const tab = JSON.parse(String(row!.data)) as { elements: StoredCard[] };
+    return tab.elements.find((e) => e.id === 'card')!;
+  };
+  const sequence = (room: DocumentRoom, delta: unknown) =>
+    room.fetch(
+      new Request('https://room/mutation', {
+        method: 'POST',
+        body: JSON.stringify({ op: { kind: 'el-delta', tabId: 't1', elementId: 'card', delta } }),
+      }),
+    );
+  const answer = (participantId: string) => ({
+    kind: 'response',
+    participantId,
+    value: 'done',
+    at: 1,
+  });
+  const withAnswers = (...ids: string[]): Element => ({
+    ...card,
+    responses: ids.map((participantId) => ({ participantId, value: 'done', at: 1 })),
+  });
+  // A whole-tab save from a client that stood at `seq` in the room.
+  const save = (w: World, room: DocumentRoom, seq: number, saved: Element) =>
+    w.send(
+      'PUT',
+      '/api/documents/A/tabs/t1',
+      { id: 't1', name: 'Board', elements: [box('a'), saved] },
+      { 'X-Room-Cursor': `${room.epoch}:${seq}` },
+    );
+  const ledgerOf = async (room: DocumentRoom) => {
+    const res = await room.fetch(new Request(`https://room/ledger?tab=t1&epoch=${room.epoch}`));
+    return res.json<{ elements: object }>();
+  };
+
+  // Ann answers and her save holds it; then `days` pass and the room's alarm runs its upkeep.
+  async function afterUpkeep(days: number) {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = world();
+    await createDocument(w, 'A', [{ id: 't1', name: 'Board', elements: [box('a'), card] }]);
+    const room = w.documents.get('A')!.room;
+    expect((await sequence(room, answer('ann'))).status).toBe(204);
+    expect((await save(w, room, 1, withAnswers('ann'))).status).toBe(200);
+    vi.setSystemTime(Date.now() + days * DAY);
+    await room.alarm();
+    return { w, room };
+  }
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('cuts the entry nobody touched for 30 days, and what it held stays stored', async () => {
+    const { w, room } = await afterUpkeep(40);
+    expect(await ledgerOf(room)).toEqual({ elements: {} });
+    expect(stored(w).responses?.map((r) => r.participantId)).toEqual(['ann']);
+  });
+
+  it("keeps a peer's answer and comment that race a stale save after the cut", async () => {
+    const { w, room } = await afterUpkeep(40);
+    // Bo answers, then comments; Cy's snapshot (cursor 1) has neither.
+    await sequence(room, answer('bo'));
+    await sequence(room, {
+      kind: 'comment-add',
+      comment: {
+        id: 'c-bo',
+        text: 'Looks good',
+        createdAt: 2,
+        authorName: 'Bo',
+        authorColor: '#0a0',
+      },
+    });
+    expect((await save(w, room, 1, withAnswers('ann'))).status).toBe(200);
+    const after = stored(w);
+    expect(after.responses?.map((r) => r.participantId).sort()).toEqual(['ann', 'bo']);
+    expect(after.commentThread?.comments.map((c) => c.id)).toEqual(['c-bo']);
+    // Another stale save, from someone who had seen Bo's answer but not the comment: both still stand.
+    expect((await save(w, room, 2, withAnswers('ann', 'bo'))).status).toBe(200);
+    expect(stored(w).commentThread?.comments.map((c) => c.id)).toEqual(['c-bo']);
+  });
+
+  it('merges what the room still holds into a save from before the cut, and logs its cursor', async () => {
+    const { w, room } = await afterUpkeep(40);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await sequence(room, answer('bo'));
+    // A socket back after more than 30 days away, saving before its catch-up: Bo's answer is merged; Ann's, cut ten
+    // days ago, is the residual the spec states.
+    expect((await save(w, room, 0, withAnswers())).status).toBe(200);
+    expect(stored(w).responses?.map((r) => r.participantId)).toEqual(['bo']);
+    expect(warn).toHaveBeenCalledWith('[ledger] stale cursor', { tabId: 't1', since: 0, floor: 1 });
+  });
+
+  it('cuts nothing younger than 30 days', async () => {
+    const { room } = await afterUpkeep(20);
+    expect(Object.keys((await ledgerOf(room)).elements)).toEqual(['card']);
+  });
+});

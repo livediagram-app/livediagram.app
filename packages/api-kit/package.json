@@ -26,6 +26,7 @@
     "./room-alarm": "./src/room-alarm.ts",
     "./room-element-ops": "./src/room-element-ops.ts",
     "./room-follows": "./src/room-follows.ts",
+    "./room-ledger-store": "./src/room-ledger-store.ts",
     "./room-multiplayer": "./src/room-multiplayer.ts",
     "./room-presence-relay": "./src/room-presence-relay.ts",
     "./room-roster": "./src/room-roster.ts",
