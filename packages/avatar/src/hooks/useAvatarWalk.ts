@@ -537,7 +537,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   const shove = (dx: number, dy: number) => {
     const from = posRef.current;
     if (!from || seatedRef.current) return;
-    const len = Math.hypot(dx, dy) || 1;
+    // A direction that is not a number (a hand-made push) would walk the character to NaN for good: ignored.
+    const len = Math.hypot(dx, dy);
+    if (!Number.isFinite(len) || len === 0) return;
     heldRef.current = { ...NO_KEYS_HELD };
     arriveRef.current = null;
     // Direct, never routed: a push is a stumble, not a walk somewhere.

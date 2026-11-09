@@ -10,6 +10,7 @@ import {
   parseAvatarKnock,
   parseAvatarKnockAnswer,
   parseAvatarLetSpeak,
+  parseAvatarPush,
   parseAvatarSay,
   parseAvatarVoice,
   parseCallSession,
@@ -130,6 +131,9 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
     return DROP;
   // A knock and its answer (docs/specs/012-collaboration/knock.md): presence from any level, a Viewer walks too; a
   // malformed one reaches nobody. The room throttles knocks next.
+  // A shove (docs/specs/008-canvas/avatar-mode.md "You can push each other"): presence from any level, addressed to
+  // one peer, whose character a direction that is not a number would send to NaN; so a malformed one reaches nobody.
+  if (opKind === 'avatar-push' && !(parsed = parseAvatarPush(op))) return DROP;
   if (opKind === 'avatar-knock' && !(parsed = parseAvatarKnock(op))) return DROP;
   if (opKind === 'avatar-knock-answer' && !(parsed = parseAvatarKnockAnswer(op))) return DROP;
   // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "Share roles"): presence from any
