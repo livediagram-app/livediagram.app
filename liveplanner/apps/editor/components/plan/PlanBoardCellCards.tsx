@@ -8,6 +8,7 @@ import { memo } from 'react';
 import { cardIsFaceDown, type Item } from '@liveplanner/items';
 import { PlanBoardCard } from './PlanBoardCells';
 import { cardRuns } from './card-runs';
+import { PlanCardRun } from './PlanCardRun';
 
 type CardProps = Parameters<typeof PlanBoardCard>[0];
 
@@ -90,17 +91,17 @@ export const PlanBoardCellCards = memo(function PlanBoardCellCards({
 }) {
   const draw = (run: readonly Item[]) =>
     run.map((item) => cardElement(item, base, done, ships, gapBefore, gapHeight));
-  // A busy board draws its cards in runs, each skipped while out of view (card-runs.ts).
+  // A busy board draws its cards in runs, each built only while near the view (card-runs.ts, PlanCardRun).
   return busy
     ? cardRuns(cards).map((run) => (
-        <div
+        <PlanCardRun
           key={run[0]!.id}
-          data-plan-run=""
-          className={`plan-card-run flex flex-col ${simplified ? 'gap-1.5' : 'gap-2'}`}
-          style={{ ['--run-cards' as string]: run.length }}
+          ids={run.map((c) => c.id).join(' ')}
+          count={run.length}
+          simplified={simplified}
         >
           {draw(run)}
-        </div>
+        </PlanCardRun>
       ))
     : draw(cards);
 });

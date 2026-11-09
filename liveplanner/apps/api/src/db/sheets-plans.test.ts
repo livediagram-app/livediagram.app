@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
-import { cellsNamedBy, readCells, readRowTexts } from './sheets';
+import { USED_ROW_WINDOW, cellsNamedBy, lastUsedSheetRow, readCells, readRowTexts } from './sheets';
 
 describe('cells named by key', () => {
   it('are sought by (plan, sheet, row, column)', () => {
@@ -83,5 +83,118 @@ describe('readRowTexts', () => {
       .all('d', 's', '[]')
       .map((row) => String(row['detail']));
     expect(plan.join('\n')).not.toMatch(/SCAN sheet_cells/);
+  });
+});
+
+// docs/specs/030-forms/blueprints/forms.md: a response finds the last row holding a value by probing the layout's rows
+// from the end, the same answer the read of every cell gave, in a window's worth of seeks.
+describe('lastUsedSheetRow', () => {
+  function sheet(cells: [string, string, unknown, unknown?][]) {
+    const db = sqliteD1();
+    db.sql.exec(
+      `INSERT INTO test_plans (id, owner_id, name, created_at, saved_at) VALUES ('d', 'o', 'D', 1, 1)`,
+    );
+    db.sql.exec(
+      `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+       VALUES ('d', 's', 't', 'S', '{}', 1, 1, 1, 'o')`,
+    );
+    const put = db.sql.prepare(
+      `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input, format) VALUES ('d', 's', ?, ?, ?, ?)`,
+    );
+    for (const [r, c, input, format] of cells)
+      put.run(
+        r,
+        c,
+        input === undefined ? null : JSON.stringify(input),
+        format === undefined ? null : JSON.stringify(format),
+      );
+    // How many probes each answer took.
+    let probes = 0;
+    const prepare = db.env.PLAN_DB.prepare.bind(db.env.PLAN_DB);
+    db.env.PLAN_DB.prepare = (q: string) => {
+      const stmt = prepare(q);
+      const bind = stmt.bind.bind(stmt);
+      stmt.bind = (...args: unknown[]) => {
+        probes++;
+        return bind(...args);
+      };
+      return stmt;
+    };
+    return { ...db, probes: () => probes };
+  }
+  // The answer the old read gave: every row holding a value, then the last of them in the layout's order.
+  function naive(sql: ReturnType<typeof sqliteD1>['sql'], rows: readonly string[]) {
+    const used = new Set(
+      sql
+        .prepare(
+          `SELECT DISTINCT row_id FROM sheet_cells WHERE plan_id = 'd' AND sheet_id = 's' AND input IS NOT NULL`,
+        )
+        .all()
+        .map((r) => String(r['row_id'])),
+    );
+    const last = [...rows].reverse().find((r) => used.has(r));
+    return new Set(last ? [last] : []);
+  }
+  const ids = (n: number) => Array.from({ length: n }, (_, i) => `r${i}`);
+
+  it('answers the last row holding a value, as reading every cell did, gaps and formats included', async () => {
+    const rows = ids(10);
+    const db = sheet([
+      ['r0', 'c1', { s: 'Name' }],
+      ['r2', 'c1', { s: 'Ana' }],
+      ['r2', 'c2', { n: 4 }],
+      ['r5', 'c1', { s: 'Lee' }],
+      // Formats only (a banded look's empty rows), and a row the layout no longer holds.
+      ['r7', 'c1', undefined, { b: true }],
+      ['r9', 'c2', undefined, { b: true }],
+      ['gone', 'c1', { s: 'x' }],
+    ]);
+    expect(await lastUsedSheetRow(db.env, 'd', 's', rows)).toEqual(new Set(['r5']));
+    expect(await lastUsedSheetRow(db.env, 'd', 's', rows)).toEqual(naive(db.sql, rows));
+    // Another order of the same rows (a sort): the last in the layout's order.
+    const sorted = ['r5', 'r2', 'r0', 'r9', 'r7'];
+    expect(await lastUsedSheetRow(db.env, 'd', 's', sorted)).toEqual(new Set(['r0']));
+    expect(await lastUsedSheetRow(db.env, 'd', 's', sorted)).toEqual(naive(db.sql, sorted));
+  });
+
+  it('answers none for an empty sheet, a sheet of formats only, and no rows', async () => {
+    const empty = sheet([]);
+    expect(await lastUsedSheetRow(empty.env, 'd', 's', ids(300))).toEqual(new Set());
+    const styled = sheet([['r1', 'c1', undefined, { b: true }]]);
+    expect(await lastUsedSheetRow(styled.env, 'd', 's', ids(5))).toEqual(new Set());
+    expect(await lastUsedSheetRow(styled.env, 'd', 's', [])).toEqual(new Set());
+    expect(styled.probes()).toBe(1);
+  });
+
+  it('finds a value deep above an empty tail, widening its window each probe', async () => {
+    const rows = ids(1000);
+    const db = sheet([
+      ['r3', 'c1', { s: 'Head' }],
+      ['r40', 'c1', { s: 'Last' }],
+    ]);
+    expect(await lastUsedSheetRow(db.env, 'd', 's', rows)).toEqual(new Set(['r40']));
+    expect(await lastUsedSheetRow(db.env, 'd', 's', rows)).toEqual(naive(db.sql, rows));
+    // 64, 128, 256 and 512 rows from the end take it to r40 within four probes (each answer above took them).
+    expect(db.probes()).toBe(2 * 4);
+  });
+
+  it('answers a full sheet from one window of seeks, never every cell', async () => {
+    const rows = ids(3000);
+    const cells: [string, string, unknown][] = [];
+    for (const r of rows) for (const c of ['c1', 'c2', 'c3']) cells.push([r, c, { s: 'x' }]);
+    const db = sheet(cells);
+    expect(await lastUsedSheetRow(db.env, 'd', 's', rows)).toEqual(new Set(['r2999']));
+    expect(db.probes()).toBe(1);
+    expect(USED_ROW_WINDOW).toBe(64);
+    const plan = db.sql
+      .prepare(
+        `EXPLAIN QUERY PLAN SELECT value AS row_id FROM json_each(?) AS r
+          WHERE EXISTS (SELECT 1 FROM sheet_cells
+                         WHERE plan_id = ? AND sheet_id = ? AND row_id = r.value AND input IS NOT NULL)`,
+      )
+      .all('[]', 'd', 's')
+      .map((row) => String(row['detail']));
+    expect(plan.join('\n')).not.toMatch(/SCAN sheet_cells/);
+    expect(plan.join('\n')).toContain('(plan_id=? AND sheet_id=? AND row_id=?)');
   });
 });

@@ -71,7 +71,7 @@ The triggers find the sheet's project through `plan_tabs` for the row's tab, and
 - A purged plan's Durable Object drops its whole store (`PlanRoom.purge`, `storage.deleteAll()`), sheets and cells
   with it.
 - `apps/api/src/db/sheets.ts`: `listSheets` (sheets then their cells, two queries), `listSheetHeads`,
-  `readSheetHead` (the row without cells), `readCells`, `readFormulaCells`, `existingCells`, `usedSheetRows`,
+  `readSheetHead` (the row without cells), `readCells`, `readFormulaCells`, `existingCells`, `lastUsedSheetRow`,
   `insertSheetStatements`, `copySheetStatements`, `cellWriteStatements`, `axisDeleteStatement`,
   `headWriteStatement` (the rev raise with a new layout or title, under the rev guard), `recountStatement`, `cellCountDeltaStatement`,
   `projectSavedStatement`, `deleteSheetStatement` and `projectSheetTotals`; re-exported from `db/index.ts`. Row ↔

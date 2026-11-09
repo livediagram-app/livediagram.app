@@ -1320,6 +1320,8 @@ theme, with the page answering throughout.
   drawn card. Cards that arrive out of view (a filter widening, a column expanding, a swimlane change, the board
   opening) wait too, so the change costs the cards in view, not the whole board: on a 2,000-card board on an iPad,
   each letter typed in the Filter, and expanding a column, answers within a few tenths of a second, never seconds.
+  A card out of view is not even built until it comes near, so opening a busy board (switching to its tab, or
+  loading the plan on it) costs the cards in view, not all 2,000.
   Find a Card and the Filter reach every card, near or not; the browser's own find in page and a screen reader's
   reading cursor reach the cards near the view.
 - **A drag stays smooth.** Carrying a card on a 2,000-card board keeps up with the pointer or finger, on an iPad too:

@@ -751,24 +751,34 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   (the column hover snaps). `usePlanCardFlip` `cardsToMeasure` reads only the cards of runs within a view's length of
   the body's view (a place read in a skipped run lays it out again); a board without runs reads every card.
   `:root.lvd-style-transition [data-plan-busy] *` turns every transition off for the moment of a Tab Style change.
-- Far runs (spec "Cards out of view wait"; `hooks/plan/useCardRunReveal.ts`): Safari styles a `content-visibility`
-  subtree all the same (measured on a 2,000-card board: 400 cards inserted cost about 0.2 s of style in WebKit
-  whether their runs were `auto`, `hidden` or plain, 8 to 24 ms under `display: none`), so a run's cards are drawn
-  only while the run carries `data-plan-run-near` (`RUN_NEAR_ATTR`). `globals.css`:
-  `.plan-card-run:not([data-plan-run-near]) > *` is `display: none`, and such a run takes
+- Far runs (spec "Cards out of view wait"; `hooks/plan/useCardRunReveal.ts`, `components/plan/PlanCardRun.tsx`): a
+  run's cards are built only while the run is near. Opening a 2,000-card board built every card's DOM and hid the far
+  ones (measured in jsdom: 4.0 s of CPU and 2,000 faces to mount; 0.4 s and the near runs' faces now), and Safari
+  styles a `content-visibility` subtree all the same (400 cards inserted cost about 0.2 s of style in WebKit whether
+  their runs were `auto`, `hidden` or plain). Each run is a `PlanCardRun` (`div[data-plan-run]`, keyed by its first
+  card) with its own state (`RunState`: near, else far with the height it had as it went far): near, it carries
+  `data-plan-run-near` (`RUN_NEAR_ATTR`) and renders its cards; far, it renders none and keeps
+  `data-plan-run-ids` (`RUN_IDS_ATTR`, its card ids space separated) and `--run-cards`, and `--run-h` once it was
+  drawn. `globals.css`: `.plan-card-run:not([data-plan-run-near])` takes
   `height: var(--run-h, calc(var(--run-cards, 1) * 140px + 40px))` (`52px` a card under `minimal`; the 48 px of its
-  padding less the 8 px gap), so a far run keeps its place: `--run-h` is the run's `offsetHeight`, written as it goes
-  far; one never drawn takes the estimate. React writes neither the attribute nor `--run-h`, so a re-render keeps both.
-  `useCardRunReveal(bodyRef, busy)`, while busy, in a layout effect: marks the body's near runs (`runIsNear`: the run's
-  box within `RUN_NEAR_VIEWS` (1) of the body's box on every side), observes every run with one
-  `IntersectionObserver` (root the body, `rootMargin` 100% on every side: near while intersecting, else far with its
-  height kept first), and a `MutationObserver` on the body (child list, subtree) observes each run added and marks it
-  near at once when it is, in the microtask after React's commit and before the frame is drawn, so a run arriving in
-  view never shows empty. `cardsToMeasure` marks each run it reads (the flip runs inside the commit, before that
-  microtask). Without `IntersectionObserver` (jsdom, an old browser) every run is near. `revealCard(card)` marks the
-  card's run near; `PlanBoardView` and `SetupBoardHost` call it before they focus a card (a keyboard move, the focus after a move or a setup), as a
-  `display: none` card takes no focus. Elsewhere a far card reads as a box of 0: the card morph falls back to its
-  fade, the fan-in and the drop slot pass over it, the face finish pass skips it (`checkVisibility`).
+  padding less the 8 px gap), so a far run keeps its place. `useCardRunReveal(busy, onDrawn)` returns the board's
+  `RunReveal` (null when not busy or without `IntersectionObserver`: every run then starts near, as in jsdom),
+  handed to the runs by `RunRevealContext` around the board. A run starts far and, in its layout effect, `attach`es:
+  observed by one `IntersectionObserver` (made with the first run; root the body, found by `data-plan-body`
+  (`RUN_BODY_ATTR`) as React sets the body's ref after its runs' layout effects; `rootMargin` 100% on every side:
+  near while intersecting, else far with its `offsetHeight` read first, every far run's height read before any is
+  set), and set near at once when `runIsNear` (the run's box within `RUN_NEAR_VIEWS` (1) of the body's box on every
+  side): every run's box is read in the same layout effects pass, before any is drawn (one layout), and the near
+  ones render their cards before the frame is drawn, so a run arriving in view never shows empty. A run whose cards
+  were just built calls `drawn`, which `usePlanCardFlip`'s `remember` hears, so its cards' places are known for the
+  next glide. `markNear(run)` (`cardsToMeasure`) asks a run to draw. A far card has no element:
+  `focusPlanCard(root, id, opts)` focuses the card when built, else asks its far run (`[data-plan-run-ids~=id]`) to
+  draw and focus it once its cards are built (`PlanBoardView`'s keyboard moves and the focus after a move,
+  `SetupBoardHost`'s focus after a setup, which takes a run met before any card by its first id);
+  `cardOrRunSelector(id)` finds the card or its far run (the vote review's board for a card). Elsewhere a far card
+  is not there: the card morph falls back to its fade, the drop slot and the face finish pass see only the built
+  cards. The fan-in (`useCardFanIn`) reads only built cards, stops once `MAX_CARDS` in view are found, and on a
+  busy board whose cards are not built yet reads them in the next animation frame, before it is drawn.
 - <a id="body-end-anchor"></a>Body end anchor: `SplitViewFrame` calls `useBodyEndAnchor` (`hooks/ui/useBodyEndAnchor.ts`),
   which keeps an empty hidden `div[data-body-end]` after the editor's root at the end of `<body>`. A portal (the drag
   copy, a menu, a tooltip) is appended after it, so the editor's root never gains or loses `:last-child`; Safari
@@ -900,7 +910,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Column picker statuses, counts, boards                         | `packages/items/src/board-status-picks.test.ts`                                                                                                                |
 | Cursors per role: card hand, Viewer pointer, body arrow        | `apps/editor/components/plan/board-cursors.test.ts`                                                                                                            |
 | Fill Tab: which board, deletion, copy                          | `apps/editor/components/plan/fill-tab.test.ts`                                                                                                                 |
-| Far runs: near ones drawn, far ones held, focus, no observer   | `apps/editor/hooks/plan/useCardRunReveal.test.tsx`                                                                                                             |
+| Far runs: near ones built, far ones held, focus, no observer   | `apps/editor/hooks/plan/useCardRunReveal.test.tsx`                                                                                                             |
+| Opening a busy board builds only the near runs, within budget  | `apps/editor/components/plan/PlanBoardView.mount.perf.test.tsx`                                                                                                |
 | Setup Board Layout step, stepper, Fill Tab                     | `apps/editor/components/plan/PlanSetupBoard.test.tsx`                                                                                                          |
 | Setup Board as a dialog: opens, cannot be dismissed, toast     | `apps/editor/components/plan/SetupBoardHost.test.tsx`                                                                                                          |
 | Layout read from and written to the board                      | `apps/editor/components/plan/setup-board.test.ts`                                                                                                              |

@@ -1,4 +1,4 @@
-// A response as a Sheet row (docs/specs/030-forms/forms.md "Responses to a Sheet"): the sheet's top rows' text (where the header row is found) and the rows
+// A response as a Sheet row (docs/specs/030-forms/forms.md "Responses to a Sheet"): the sheet's top rows' text (where the header row is found) and the last row
 // holding a value read, the row planned by @liveplanner/forms (responseRowWrite, on the form's remembered columns),
 // and stored through the sheet store's own checks, caps and relay (storeSheetWrite) at the rev it was planned on,
 // unchecked against the sheet's validation rules so a response always lands. 'written' only when every cell did.
@@ -6,7 +6,7 @@ import type { AnswerValue, FormSheetDestination } from '@liveplanner/forms';
 import { HEADER_SCAN_ROWS, responseRowWrite, type FormDefinition } from '@liveplanner/forms';
 import type { SheetWriteResponse } from '@liveplanner/api-schema';
 import type { SheetPerson, SheetWrite } from '@liveplanner/sheets';
-import { planHasTab, readRowTexts, readSheetHead, usedSheetRows } from '../db';
+import { lastUsedSheetRow, planHasTab, readRowTexts, readSheetHead } from '../db';
 import type { PlanRouteContext } from '../routes/context';
 import { SHEET_WRITE_RETRIES } from '../routes/sheet-route-kit';
 import { storeSheetWrite } from '../routes/sheet-write-route';
@@ -58,7 +58,8 @@ export async function writeResponseRow(
       at: Date.now(),
       layout: head.layout,
       rowTexts,
-      usedRows: await usedSheetRows(env, projectId, sheet.sheetId),
+      // Only the last row holding a value places the response (responseRowWrite).
+      usedRows: await lastUsedSheetRow(env, projectId, sheet.sheetId, head.layout.rows),
       columns: sheet.columns,
     });
     const res = await storeSheetWrite(
