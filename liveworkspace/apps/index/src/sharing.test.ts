@@ -382,6 +382,13 @@ describe('share passwords', () => {
       body: { password: 'x'.repeat(257) },
     });
     expect(await body(res)).toEqual({ error: 'invalid_password' });
+    // Counted after trimming, as the minimum is: spaces around one that fits never refuse it.
+    const padded = await call(`/items/${item.id}/share-password`, {
+      method: 'PUT',
+      auth: ada.auth,
+      body: { password: ` ${'x'.repeat(256)} ` },
+    });
+    expect(await body(padded)).toEqual({ passwordSet: true });
   });
 });
 
