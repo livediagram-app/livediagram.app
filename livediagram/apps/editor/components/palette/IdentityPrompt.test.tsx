@@ -54,6 +54,16 @@ describe('IdentityPrompt', () => {
     expect(screen.getByLabelText('Your name')).toHaveProperty('value', 'Ada');
   });
 
+  it('promises a Viewer only a cursor, never collaborating or comments', () => {
+    prompt();
+    expect(screen.getByText(/cursor and comments/)).toBeTruthy();
+    cleanup();
+    prompt({ looksOnly: true });
+    expect(screen.queryByText(/comments/)).toBeNull();
+    expect(screen.queryByText(/collaborate/)).toBeNull();
+    expect(screen.getByText('Other people will see this name on your cursor.')).toBeTruthy();
+  });
+
   it("locks a signed-in visitor's account name", () => {
     prompt({ lockedName: 'Ada Lovelace' });
     const field = screen.getByLabelText('Your name') as HTMLInputElement;

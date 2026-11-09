@@ -468,6 +468,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           lockedName={identityLockedName}
           onJoin={onConfirmIdentity}
           onCancel={onCancelIdentity}
+          looksOnly={readOnly && !props.takePart}
         />
       ) : null}
 
