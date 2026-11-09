@@ -12,7 +12,7 @@ import {
   type ItemView,
   type MineCount,
 } from '@liveworkspace/index-client';
-import { personalScope, scopesOf, teamScope, type Person } from './auth';
+import { archivedScope, personalScope, scopesOf, teamScope, type Person } from './auth';
 import { containsPattern, encodeCursor, type Cursor } from './codec';
 import type { Env } from './env';
 import { decorate, ITEM_COLUMNS, LIVE_LINK, type ItemRow } from './rows';
@@ -57,6 +57,13 @@ export type ListSpec = ListFilters & {
 export type BuiltQuery = { sql: string; args: unknown[] };
 
 const IN_JSON = 'IN (SELECT value FROM json_each(?))';
+
+/** `scopes` with the person's Archived beside their own scope (blueprints/archive.md): Search and the Trash read it
+ *  wherever they read the person's own items; no other list ever does. */
+function withArchived(person: Person, scopes: readonly string[]): string[] {
+  const own = personalScope(person.id);
+  return scopes.includes(own) ? [...scopes, archivedScope(person.id)] : [...scopes];
+}
 const DAY_MS = 86_400_000;
 
 /**
@@ -156,7 +163,11 @@ export function filterClauses(
   }
   if (filters.space) {
     const { mine, shared, teams } = filters.space;
-    const scopes = [...(mine ? [personalScope(person.id)] : []), ...teams.map(teamScope)];
+    // Mine is everything the person owns alone, their Archived included (only Search ever meets those rows).
+    const scopes = [
+      ...(mine ? [personalScope(person.id), archivedScope(person.id)] : []),
+      ...teams.map(teamScope),
+    ];
     const parts: string[] = [];
     if (scopes.length > 0) {
       parts.push(`i.scope ${IN_JSON}`);
@@ -174,7 +185,10 @@ export function filterClauses(
 // The index a scope-driven list walks (no folder asked), named so the plan keeps it whatever the statistics say:
 // where a few scopes hold most of the items (a small workspace, after ANALYZE), the planner would otherwise scan
 // the table rather than walk each scope's newest few. Each index's condition is in every such list's WHERE.
-function scopeIndex(view: 'all' | 'unsorted' | 'trash' | 'search', app: App | undefined): string {
+function scopeIndex(
+  view: 'all' | 'unsorted' | 'trash' | 'search' | 'archived',
+  app: App | undefined,
+): string {
   if (view === 'trash') return 'items_trash';
   if (view === 'unsorted') return 'items_unsorted';
   return app ? 'items_live_app' : 'items_live';
@@ -183,6 +197,7 @@ function scopeIndex(view: 'all' | 'unsorted' | 'trash' | 'search', app: App | un
 export function buildListQuery(person: Person, spec: ListSpec, now = Date.now()): BuiltQuery {
   const allScopes = JSON.stringify(scopesOf(person));
   const scopes = spec.scopes ? JSON.stringify(spec.scopes) : allScopes;
+  const scopeList = spec.scopes ?? scopesOf(person);
   const where: string[] = [];
   const args: unknown[] = [];
   let from = 'items i';
@@ -213,10 +228,22 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
       } else {
         from = `items i INDEXED BY ${scopeIndex(spec.view, spec.app)}`;
         where.push(`i.scope ${IN_JSON}`);
-        args.push(scopes);
+        // The Trash holds the person's archived items too; My Work and the teams never do (their scopes).
+        args.push(spec.view === 'trash' ? JSON.stringify(withArchived(person, scopeList)) : scopes);
       }
       where.push(spec.view === 'trash' ? 'i.trashed_at IS NOT NULL' : 'i.trashed_at IS NULL');
       if (spec.view === 'unsorted') where.push('i.folder_id IS NULL');
+      break;
+    case 'archived':
+      // The person's Archived: one scope range of items_live (blueprints/archive.md "Lists"). A team's filter finds
+      // none there, since an archived item is in no team.
+      from = `items i INDEXED BY ${scopeIndex('archived', spec.app)}`;
+      where.push(`i.scope ${IN_JSON}`, 'i.trashed_at IS NULL');
+      args.push(
+        JSON.stringify(
+          scopeList.includes(personalScope(person.id)) ? [archivedScope(person.id)] : [],
+        ),
+      );
       break;
     case 'search':
       return buildSearchQuery(person, spec, now);
@@ -296,7 +323,8 @@ function tailClauses(
  */
 function buildSearchQuery(person: Person, spec: ListSpec, now: number): BuiltQuery {
   const allScopes = JSON.stringify(scopesOf(person));
-  const scopes = spec.scopes ? JSON.stringify(spec.scopes) : allScopes;
+  // Their own items include their Archived, which Search finds (one more scope range).
+  const scopes = JSON.stringify(withArchived(person, spec.scopes ?? scopesOf(person)));
   const folder = spec.folder
     ? { where: [spec.deep ? `i.folder_id ${SUBTREE}` : 'i.folder_id = ?'], args: [spec.folder] }
     : { where: [], args: [] };

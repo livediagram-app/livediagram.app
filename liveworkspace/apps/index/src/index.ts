@@ -138,6 +138,8 @@ const routeLabel = createApiRouteLabel(
     'inbox',
     'trash',
     'restore',
+    'archive',
+    'archived',
     'copy',
     'open',
     'seen',

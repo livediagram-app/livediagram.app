@@ -98,6 +98,7 @@ export async function handleMigrationHandoff(
     updated_at: now,
     trashed_at: null,
     trash_reason: null,
+    archived_at: null,
   };
   try {
     await insertItem(env, row, { source: 'import' }, 'created');

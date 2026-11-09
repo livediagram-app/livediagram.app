@@ -272,6 +272,8 @@ export async function pushCollab(
       .bind(...key),
   ]);
   const item = itemRead?.results[0] as HeldItem | undefined;
+  // An archived item keeps no Inbox (blueprints/archive.md): its push is taken and dropped.
+  if (item?.scope.startsWith('a:')) return noContent();
   const events = item
     ? collabEvents(
         { app, itemId, tabId, ...item },

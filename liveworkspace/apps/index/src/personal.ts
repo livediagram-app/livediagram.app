@@ -9,6 +9,7 @@ import type { Env } from './env';
 import { inTeamNow } from './fresh-teams';
 import { reachableFolder } from './folders';
 import { badRequest, json, noContent, notFound, readObject } from './http';
+import { archivedRefusal, isArchived } from './archive';
 import { directAccess, getItemRow, LIVE_LINK } from './rows';
 import { eventStatements } from './timeline';
 
@@ -18,12 +19,18 @@ const isForeignKeyError = (err: unknown) => String(err).includes('FOREIGN KEY');
 // accounts), or through a live link they opened. Starring or hiding one out of reach answers 404 exactly as a missing
 // one does, so neither tells a stranger an id is real; one primary-key read, and a shared-row read only for an item
 // they don't own or share a team with.
-async function reachesItem(env: Env, person: Person, itemId: string): Promise<boolean> {
+// An archived item its owner reaches answers `archived`: starred or hidden it would come back with a Recent or
+// Favourites row the archive deleted (blueprints/archive.md).
+async function reachesItem(
+  env: Env,
+  person: Person,
+  itemId: string,
+): Promise<boolean | 'archived'> {
   const row = await getItemRow(env, itemId);
   if (!row) return false;
   if (person.app && person.app !== row.app) return false;
   if (person.drive && (row.team_id !== null || row.owner_id !== person.id)) return false;
-  if (directAccess(row, person)) return true;
+  if (directAccess(row, person)) return isArchived(row) ? 'archived' : true;
   if (row.team_id && (await inTeamNow(env, person, row.team_id))) return true;
   if (row.trashed_at !== null) return false;
   const link = await env.INDEX_DB.prepare(
@@ -63,7 +70,9 @@ export async function handleFavourites(ctx: PersonContext): Promise<Response> {
   if (segments.length === 2 && isId(segments[1])) {
     const itemId = segments[1];
     if (request.method === 'PUT') {
-      if (!(await reachesItem(env, person, itemId))) return notFound();
+      const reach = await reachesItem(env, person, itemId);
+      if (reach === 'archived') return archivedRefusal();
+      if (!reach) return notFound();
       const now = Date.now();
       try {
         // A new favourite is on the person's own Timeline (theirs alone), when they reach the item.
@@ -113,7 +122,9 @@ export async function handleRecentHidden(ctx: PersonContext): Promise<Response> 
   if (segments.length !== 2 || !isId(segments[1])) return notFound();
   const itemId = segments[1];
   if (request.method === 'PUT') {
-    if (!(await reachesItem(env, person, itemId))) return notFound();
+    const reach = await reachesItem(env, person, itemId);
+    if (reach === 'archived') return archivedRefusal();
+    if (!reach) return notFound();
     try {
       await db
         .prepare(

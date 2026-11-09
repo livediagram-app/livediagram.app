@@ -29,11 +29,13 @@ export type ItemRow = {
   updated_at: number;
   trashed_at: number | null;
   trash_reason: TrashReason | null;
+  // In its owner's Archived since (blueprints/archive.md); its scope is then `a:<owner>`.
+  archived_at: number | null;
 };
 
 export const ITEM_COLUMNS =
   'i.id, i.app, i.kind, i.owner_id, i.team_id, i.scope, i.folder_id, i.title, i.source, i.intent, ' +
-  'i.summary, i.created_at, i.updated_at, i.trashed_at, i.trash_reason';
+  'i.summary, i.created_at, i.updated_at, i.trashed_at, i.trash_reason, i.archived_at';
 
 // How a caller reaches an item: as its owner, as a joined member of its team, or through a link.
 export type Access = {
@@ -99,6 +101,7 @@ export function toItem(row: ItemRow, access: Access, extras: Extras): Item {
     updatedAt: row.updated_at,
     trashedAt: row.trashed_at,
     trashReason: row.trash_reason,
+    archivedAt: row.archived_at ?? null,
     summary: parseSummary(row.summary),
     access: access.level,
     favourite: extras.favourite,

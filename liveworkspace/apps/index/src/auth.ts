@@ -213,6 +213,13 @@ export const teamScope = (teamId: string) => `t:${teamId}`;
 export const scopeOf = (ownerId: string, teamId: string | null) =>
   teamId ? teamScope(teamId) : personalScope(ownerId);
 
+// Where an owner's archived items live (blueprints/archive.md): in no person's or team's scopes, so no live list
+// reaches them; only the owner's Archived view, Search and Trash read it.
+export const archivedScope = (ownerId: string) => `a:${ownerId}`;
+
 export function scopesOf(person: Person): string[] {
   return [personalScope(person.id), ...person.teams.map(teamScope)];
 }
+
+// The person's own scopes, their Archived's included: what Search, the Trash and the data export read of their own.
+export const ownScopes = (personId: string) => [personalScope(personId), archivedScope(personId)];

@@ -42,10 +42,12 @@ export async function handleMerge(
     recordPersonMerges(db, guest, user, Date.now(), legacy),
     db
       .prepare(
-        `UPDATE items SET owner_id = ?, scope = CASE WHEN team_id IS NULL THEN ? ELSE scope END
+        `UPDATE items SET owner_id = ?, scope = CASE WHEN archived_at IS NOT NULL THEN ?
+           WHEN team_id IS NULL THEN ? ELSE scope END
          WHERE owner_id = ?`,
       )
-      .bind(user, personal, guest),
+      // The guest's archived items stay archived, in the account's Archived (blueprints/archive.md).
+      .bind(user, `a:${user}`, personal, guest),
     db
       .prepare(
         `UPDATE folders SET owner_id = ?, scope = CASE WHEN team_id IS NULL THEN ? ELSE scope END
@@ -82,6 +84,10 @@ export async function handleMerge(
       .prepare('UPDATE OR IGNORE timeline_event_scopes SET scope = ? WHERE scope = ?')
       .bind(personal, `p:${guest}`),
     db.prepare('DELETE FROM timeline_event_scopes WHERE scope = ?').bind(`p:${guest}`),
+    db
+      .prepare('UPDATE OR IGNORE timeline_event_scopes SET scope = ? WHERE scope = ?')
+      .bind(`a:${user}`, `a:${guest}`),
+    db.prepare('DELETE FROM timeline_event_scopes WHERE scope = ?').bind(`a:${guest}`),
     db.prepare('UPDATE timeline_events SET actor_id = ? WHERE actor_id = ?').bind(user, guest),
     db
       .prepare(

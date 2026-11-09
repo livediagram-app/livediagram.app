@@ -291,13 +291,15 @@ export const linkLevelOffered = (app: App, level: Level): boolean =>
 export const ITEM_SOURCES = ['person', 'ai', 'import', 'template'] as const;
 export type ItemSource = (typeof ITEM_SOURCES)[number];
 
-// `search`: every live item the person can open, their own, their teams' and those shared with them.
+// `search`: every live item the person can open, their own, their teams' and those shared with them, and their own
+// Archived. `archived`: the person's Archived alone (one-explorer-contracts.md "Archived").
 export const ITEM_VIEWS = [
   'all',
   'recent',
   'favourites',
   'shared',
   'trash',
+  'archived',
   'unsorted',
   'search',
 ] as const;
@@ -361,6 +363,11 @@ export const INDEX_ERRORS = [
   'connection_target_gone',
   'connection_link_removed',
   'wrong_app',
+  // Archived (one-explorer-contracts.md "Archived"): what the owner hears from a grant, an open, a copy, a favourite or
+  // a share while it is archived; a teammate who isn't its owner archiving it; an item in the Trash archived.
+  'archived',
+  'not_owner',
+  'trashed',
   'copy_failed',
   'grants_unavailable',
   // Too many a minute: the migration's handoff, and share-password guesses (429 with Retry-After). Then the

@@ -191,6 +191,47 @@ and someone might delete it thinking so. It never does:
 Deleting a folder never deletes what is in it (its folders and items move up a level), so this is about not
 misleading, not about loss.
 
+#### Archived
+
+A document its owner has finished with but wants to keep goes to **Archived**: out of the way everywhere, and
+closed until it is moved back (the index's side is
+[one-explorer-contracts.md "Archived"](one-explorer-contracts.md#items)). The same in every app's Explorer and on
+liveworkspace.app.
+
+- **The sidebar.** The Library's third row, after Recent and Favourites, with the archive-box tile (`ArchiveIcon`),
+  for anyone the index knows (an account or a guest). It has no menu, can't be renamed or deleted, has no
+  subfolders and takes no drops: a drag over it shows no target. Its address is `/explorer/archived`.
+- **The view.** The person's archived documents, every app's or the app's alone as the switch says, newest change
+  first, as cards or rows with their previews (an archived item keeps its preview: the index still answers the
+  preview service for its owner). It takes no lens: typing opens Search. Empty, it says **Nothing Archived** and
+  "Documents you move to Archived rest here, out of every other list. Move one back with Change Folder to open it
+  again."
+- **Moving one there.** **Move to Archived** (the archive-box icon) in an item's ⋯ and right-click menus, beside
+  Change Folder, for a document the person owns: their own, or a team document they made (the index's owner rule;
+  other teammates don't see it). Not for a folder, an item reached through a link, or one kept only in This
+  Browser. It moves at once, the card leaves where it was, and a toast says **Moved to Archived** with **Undo**
+  (which moves it back where it was). Change Folder offers the same as a space of its own.
+- **Gone from everywhere else.** Home (Jump Back In, Most Used, the hero's count), Recent, Favourites, Shared With
+  Me, the Inbox, the Timeline, every folder and team, and the panel's lists leave it out. Archiving deletes its
+  favourites, Recent, Most Used and Inbox rows for everyone, so moving it out starts fresh: not a favourite, not in
+  Recent until it is opened again. Its share links (and password) are deleted for good; a team document leaves the
+  team for its owner's Archived, and its teammates no longer see it.
+- **Search.** Search results and the Search panel find archived documents (the person's own), each with an
+  **Archived** badge (`ArchivedBadge`, slate, the archive-box icon) beside the title, so it reads as archived.
+- **Opening one.** It can't be opened: a click, Enter or Open on an archived card doesn't navigate. It opens a
+  dialog, "“<title>” is archived", saying archived documents can't be opened or edited until they are moved out of
+  Archived, with **Cancel** and **Change Folder** (which opens Change Folder on it). Its menu offers **Open** (the
+  same dialog), **Rename**, **Change Folder**, and **Delete <Kind>** (to the Trash, from where a restore puts it back
+  in Archived); never Duplicate, Share, Favourites, Hide from Recent, History, Webhooks, an app's own verbs or Move
+  to Archived. An editor address reached directly shows the editor's archived card (the contract's "Grants") with
+  Change Folder, which comes back here as `/explorer/archived?move=<id>` and opens Change Folder on it.
+- **Moving one out.** Change Folder, or a drag onto My Work, a folder or a team in the sidebar: it lands there,
+  open again. A drag onto the Trash deletes it as any document.
+- **Change Folder.** "Choose a Space" lists My Work and each team, then, under a divider, **Archived** ("Out of every
+  list, and closed") as a space of its own that holds no folders: choosing it and Move Here archives the document.
+  It is offered only where Move to Archived would be. For an archived document Archived is where it is now, so the
+  dialog opens on the spaces with Archived chosen, and any other place moves it out.
+
 #### The Explorer on each app's address
 
 Each app's router answers `/explorer/*` by fetching the same page from liveworkspace.app, so the address bar

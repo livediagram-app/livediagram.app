@@ -430,6 +430,8 @@ describe('query plans', () => {
     ['a folder', { view: 'all', folder: 'f1', limit: 50 }, 'items_folder'],
     ['unsorted', { view: 'unsorted', limit: 50 }, 'items_unsorted'],
     ['trash', { view: 'trash', limit: 50 }, 'items_trash'],
+    ['archived', { view: 'archived', limit: 50 }, 'items_live'],
+    ['archived, one app', { view: 'archived', app: 'livedesign', limit: 50 }, 'items_live_app'],
     ['recent', { view: 'recent', limit: 50 }, 'opens_recent'],
     ['favourites', { view: 'favourites', limit: 50 }, 'favourites_person_created'],
     ['shared', { view: 'shared', limit: 50 }, 'sqlite_autoindex_shared_with_1'],

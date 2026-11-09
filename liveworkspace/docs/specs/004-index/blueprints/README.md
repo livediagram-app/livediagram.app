@@ -12,6 +12,8 @@ Follow the references below only as needed; never upfront.
 - ./connected-tabs.md - when working on connected tabs: the build order, the connections table, the make, open and removal doors, each app's column and door
 - ./team-audit-log.md - when working on the team audit log: its table, the write path beside each Timeline event, the sweep, anonymising and the admins' read and CSV, and the Audit Log on a team's view
 - ./webhooks.md - when working on webhooks: the tables, the outbox statement, the dispatcher, the address check, the messages
+- ./archive.md - when working on Archived: the archive, the archive scope, the move out, the refusals and the
+  Explorer's Archived view
 - ./trash.md - when working on the Trash, purges, the daily sweep or closing an account
 - ./default-folders.md - when working on where a new item lands by default
 - ./guest-merge.md - when a guest becomes an account, or on the migration's handoff

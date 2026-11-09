@@ -28,7 +28,7 @@ Scope, by file:
 
 | Term    | Identifier                                                                           | Meaning                                                                 |
 | ------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| View    | `ITEM_VIEWS`: `all`, `recent`, `favourites`, `shared`, `trash`, `unsorted`, `search` | Which list                                                              |
+| View    | `ITEM_VIEWS`: `all`, `recent`, `favourites`, `shared`, `trash`, `archived`, `unsorted`, `search` | Which list                                                              |
 | Filters | `ListFilters { apps, words, source, since, owner, intent, modes, space }`            | The Explorer's lens; values of one combine with or                      |
 | Source  | `ITEM_SOURCES`: `person`, `ai`, `import`, `template`                                 | How it was made                                                         |
 | Intent  | `<mode>:<kind>[:<family>]`, ≤ 100 chars                                              | What it was made as; its last word is the `intent` filter               |
@@ -36,7 +36,7 @@ Scope, by file:
 | Open    | `opens (person, item, last_opened_at, hidden)`                                       | Recent; `hidden = 1` is Hide from Recent                                |
 
 `Item` on the wire: `{ id, app, kind, title, ownerId, teamId, folderId, source, intent, createdAt, updatedAt,
-trashedAt, trashReason, summary, access, favourite, lastOpenedAt, hiddenFromRecent, hasLinks, sharedVia }`.
+trashedAt, trashReason, archivedAt, summary, access, favourite, lastOpenedAt, hiddenFromRecent, hasLinks, sharedVia }`.
 `Folder`: `{ id, name, parentId, teamId, ownerId, createdAt, updatedAt }`.
 
 ## Behaviour and state
@@ -77,8 +77,9 @@ lists are its personal scope only.
 | ------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- | -------------------------- |
 | `all`        | `items i`                                                                                                    | the scopes (or `folder_id =` / the subtree with `deep`), live | `updated_at DESC, id DESC` |
 | `unsorted`   | `items i`                                                                                                    | the scopes, live, `folder_id IS NULL`                         | the same                   |
-| `trash`      | `items i`                                                                                                    | the scopes, trashed                                           | the same                   |
-| `search`     | the scopes' newest live items `UNION ALL` live links' items outside them, each taken in order up to the page | live                                                          | the same                   |
+| `trash`      | `items i`                                                                                                    | the scopes and `a:<me>`, trashed                                    | the same                   |
+| `archived`   | `items i`                                                                                                    | `a:<me>`, live ([archive.md](archive.md))                     | the same                   |
+| `search`     | the scopes' (and `a:<me>`'s) newest live items `UNION ALL` live links' items outside them, each taken in order up to the page | live                                                          | the same                   |
 | `recent`     | `opens o JOIN items i`                                                                                       | the person, `hidden = 0`, live, reachable                     | `last_opened_at DESC`      |
 | `favourites` | `favourites f JOIN items i`                                                                                  | the person, live, reachable                                   | `updated_at DESC`          |
 | `shared`     | `shared_with` and live `share_links`                                                                         | the person, live, not in their own scopes                     | `updated_at DESC`          |

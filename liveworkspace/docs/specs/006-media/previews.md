@@ -59,6 +59,10 @@ access or guest token, `X-Share-Code` and `X-Share-Password` for an item reached
 the index `GET /items/:id` with the same headers, so the preview is never more visible than the item: the same rule,
 the same answer, in one indexed read. `v` only keys the browser's cache.
 
+An archived item (an owner's Archived, [one-explorer-contracts.md](../004-index/one-explorer-contracts.md#items))
+keeps its preview: the index refuses its grant, so no editor opens it, but `GET /items/:id` still answers its owner, so
+its card draws in the Archived view and in Search. Nobody else reaches it, so nobody else sees the preview.
+
 `appearance` is the viewer's (`light` or `dark`): the item is drawn as a person in that appearance sees it on
 opening it, so a preview is right before anyone in that appearance has opened and saved the item. An app whose
 drawing does not depend on it draws the same either way. Any other value is a `400`, before the index is asked.

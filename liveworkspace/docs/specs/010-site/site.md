@@ -408,6 +408,10 @@ built once here. It is shown here and, through each switched-on app's router, at
   A guest's close is kept in this browser.
 - **Telemetry.** What people use here counts for the app the page shows, or `liveworkspace.app` on All Apps,
   batched and only with the person's consent ([telemetry.md](../008-telemetry/telemetry.md#the-explorer-on-liveworkspaceapp)).
+- **Archived.** The sidebar's Library ends with **Archived** (after Recent and Favourites), at `/explorer/archived`
+  (`app/explorer/archived/page.tsx`): a person's archived documents from every app, kept out of every other list
+  ([one-explorer.md](../004-index/one-explorer.md#archived)). `?move=<id>` there opens Change Folder on that
+  document, the editors' way back from their archived card, and is dropped from the address once read.
 - **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.
 - **Teams.** Made, run and answered here ([one-explorer.md](../004-index/one-explorer.md#teams-are-run-in-the-explorer)): the
   page hands the Explorer `createTeamsHost({ fetch: accountFetch })` over this origin's `/api/account/teams…`, and
