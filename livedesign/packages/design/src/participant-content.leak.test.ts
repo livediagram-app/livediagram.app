@@ -184,6 +184,18 @@ describe('the participant content rule never leaks', () => {
       expect(applyParticipantOp(withMine, { kind: 'update', element: changed }, ME), label).toEqual(
         { result: 'refused', correction: { kind: 'update', element: mine }, reason: 'component' },
       );
+      // On someone else's element too: dropped in the merge, it was answered applied with no correction, so the
+      // sender's screen kept an instance nobody else had.
+      const theirs = { ...mine, addedBy: THEM } as Element;
+      const withTheirs = { id: 't', name: 't', elements: [theirs] } as Tab;
+      expect(
+        applyParticipantOp(withTheirs, { kind: 'update', element: { ...theirs, ...extra } }, ME),
+        label,
+      ).toEqual({
+        result: 'refused',
+        correction: { kind: 'update', element: theirs },
+        reason: 'component',
+      });
     }
     // Someone's open edit session: its members are the main being edited, so not even their words change.
     const member = {

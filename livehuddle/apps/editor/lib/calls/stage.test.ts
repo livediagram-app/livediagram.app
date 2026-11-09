@@ -16,6 +16,7 @@ import {
   barringStage,
   callStages,
   letSpeakers,
+  letterMay,
   mayLetSpeak,
   mayLetSpeakSelf,
   mayTakeStage,
@@ -351,6 +352,36 @@ describe('raised hands let speak', () => {
     expect([...letSpeakers(hands, walkers, levels, stages, new Set(['c']), false)]).toEqual(['a']);
   });
 
+  it('follows whoever let a hand speak as a person: their reconnected session still vouches', () => {
+    // `ed` let a speak, then reconnected as `ed2` (same key); `ed` is gone from the roster.
+    const walkers = new Map<string, Point>([
+      ['a', hall],
+      ['ed2', onStage],
+      ['pt', back],
+    ]);
+    const levels = new Map<string, AccessLevel>([
+      ['ed2', 'edit'],
+      ['pt', 'participate'],
+    ]);
+    const hands = new Map([['a', { letSpeak: 'ed', letSpeakKey: 'K-ed' }]]);
+    const none = new Set<string>();
+    expect([
+      ...letSpeakers(hands, walkers, levels, stages, none, false, new Map([['ed2', 'K-ed']])),
+    ]).toEqual(['a']);
+    // Nobody with that key on the roster, or only someone who may not let speak: the audience again.
+    expect([
+      ...letSpeakers(hands, walkers, levels, stages, none, false, new Map([['ed2', 'K-x']])),
+    ]).toEqual([]);
+    expect([
+      ...letSpeakers(hands, walkers, levels, stages, none, false, new Map([['pt', 'K-ed']])),
+    ]).toEqual([]);
+    // No key on the hand (an older editor): by presence id alone.
+    expect(
+      letterMay({ id: 'ed', key: null }, walkers, levels, stages, new Map([['ed2', 'K-ed']])),
+    ).toBe(false);
+    expect(letterMay({ id: 'ed2', key: null }, walkers, levels, stages, new Map())).toBe(true);
+  });
+
   it('makes a hand let speak a speaker heard by the whole tab, unseen, adding no audience', () => {
     const walkers = new Map<string, Point>([
       ['asker', hall],
@@ -418,6 +449,38 @@ describe('raised hands let speak', () => {
     );
     expect(speakers).toBe(101);
     // Measured: about 30 µs a scene (1.8 ms for 60).
+    expect(best).toBeLessThan(cpuBudgetMs(30));
+  });
+
+  it('follows 100 letters who all left, through a full roster of keys, within the same budget', () => {
+    // The worst case for following the person: every hand's letter is gone, so each scans the roster's keys.
+    const walkers = new Map<string, Point>(
+      Array.from({ length: 100 }, (_, i) => [`p${i}`, { x: 20 + i * 11, y: 600 }] as const),
+    );
+    walkers.set('ed2', onStage);
+    const levels = new Map<string, AccessLevel>([['ed2', 'edit']]);
+    const hands = new Map(
+      Array.from(
+        { length: 100 },
+        (_, i) => [`p${i}`, { letSpeak: `gone${i}`, letSpeakKey: 'K-ed' }] as const,
+      ),
+    );
+    const keys = new Map<string, string>(
+      Array.from({ length: 99 }, (_, i) => [`p${i}`, `K-${i}`] as const),
+    );
+    keys.set('ed2', 'K-ed');
+    let allowed: ReadonlySet<string> = new Set();
+    const best = Math.min(
+      ...Array.from({ length: 5 }, () =>
+        cpuMsOf(() => {
+          for (let i = 0; i < 60; i++)
+            allowed = letSpeakers(hands, walkers, levels, stages, new Set(), false, keys);
+        }),
+      ),
+    );
+    expect(allowed.size).toBe(100);
+    // Measured (best of five, CPU time): 1.6 ms for 60 scenes, about 27 µs each; 4.8 ms before the keys were
+    // turned round once per roster.
     expect(best).toBeLessThan(cpuBudgetMs(30));
   });
 });

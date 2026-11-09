@@ -81,6 +81,9 @@ export class FakeIndex implements IndexApi {
   writes: string[] = [];
   // Requests the real index would have answered (each write, each list page).
   requests = 0;
+  // The rows those list pages and item reads carried, and how many pictures were read whole.
+  rowsRead = 0;
+  wholeReads = 0;
   private readonly clock: Clock;
   private seq = 0;
 
@@ -158,15 +161,34 @@ export class FakeIndex implements IndexApi {
     };
     const now = () => this.clock.now();
     void personId;
+    // A picture's three lists, each page charged as one request and each row as one read.
+    const read = (picture: Picture): Picture => {
+      const pages = (n: number) => Math.max(1, Math.ceil(n / 200));
+      const count =
+        pages(picture.items.length) + pages(picture.folders.length) + pages(picture.trash.length);
+      meter?.charge(count);
+      this.requests += count;
+      this.rowsRead += picture.items.length + picture.folders.length + picture.trash.length;
+      return picture;
+    };
     return {
       picture: async () => {
+        this.wholeReads += 1;
+        return read(this.picture());
+      },
+      // As the index's `since` filter: live items whose updatedAt is at or after it.
+      changedSince: async (since) => {
         const picture = this.picture();
-        const pages = (n: number) => Math.max(1, Math.ceil(n / 200));
-        const count =
-          pages(picture.items.length) + pages(picture.folders.length) + pages(picture.trash.length);
-        meter?.charge(count);
-        this.requests += count;
-        return picture;
+        return read({ ...picture, items: picture.items.filter((i) => i.updatedAt >= since) });
+      },
+      readItem: async (id) => {
+        meter?.charge();
+        this.requests += 1;
+        this.rowsRead += 1;
+        const item = this.items.get(id);
+        if (!item || item.trashedAt !== null) return null;
+        const { trashedAt: _t, ...live } = item;
+        return live;
       },
       renameItem: async (id, name) => {
         log(`rename-item ${id} ${name}`);

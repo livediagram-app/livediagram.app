@@ -521,7 +521,7 @@ Mutations are totally ordered by the single-threaded DO: a monotonic `seq` withi
 Besides the design's content (**Storage**), its key-value storage holds:
 
 - **`order-state`**: `{ epoch, seq }`, written on every mutation.
-- **The collaboration ledger** (`RoomLedgerStore`, `apps/api/src/room-ledger-store.ts`; entries defined by the pure `collab-ledger.ts` in `@livedesign/design`): for every `el-delta` it sequences, the latest state of each checklist tick and comment, one key per element, tagged with the `seq` that set it. An entry that would pass the storage value limit stops growing. The api reads it back to merge a tab save (see the tab `PUT` above).
+- **The collaboration ledger** (`RoomLedgerStore`, `@liveworkspace/api-kit/room-ledger-store`; entries defined by the pure `collab-ledger.ts` in `@livedesign/design`): for every `el-delta` it sequences, the latest state of each checklist tick and comment, one key per element, tagged with the `seq` that set it. An entry that would pass the storage value limit stops growing. The api reads it back to merge a tab save (see the tab `PUT` above). Each entry also carries the seq and time of its last change: a save is handed only what it could merge, and the daily upkeep cuts entries nobody has touched for 30 days ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md)).
 
 Per-session state (presence id, verified role, person tag, tab scope, admitting share code, workbench pairing, presence) lives in each socket's serialized attachment, so it survives hibernation; only the rate-cap windows and the catch-up log reset on a wake.
 
@@ -542,7 +542,7 @@ The api worker reaches the DO through its stub (`env.DESIGN_ROOM.get(...).fetch(
 - **`POST /close-sessions`** `{ match, ... }`: close the sessions an access change ended (above).
 - **`GET /selections?tab=<tabId>&person=<tag>`**: the elements each connected person has selected on a tab (every `select` is recorded in DO storage per session, pruned when the socket goes), each marked `mine` when the session's person tag is the one asked about. The changeset route reads it to find held elements.
 - **`PUT /presence`**, **`DELETE /presence`**: an agent's presence entry with its expiry ([Agent presence](../024-agents/agent-presence.md#presence)).
-- **`GET /ledger?tab=<tabId>&epoch=<epoch>`**: the tab's collaboration ledger, or an empty one when `epoch` isn't the room's current epoch (the saver's cursor can't be interpreted then).
+- **`GET /ledger?tab=<tabId>&epoch=<epoch>&since=<seq>`**: the tab's collaboration ledger (with `since`, only the entries changed after that seq or in the last day), or an empty one when `epoch` isn't the room's current epoch (the saver's cursor can't be interpreted then).
 - **Purging a room** (the `purge` RPC; `POST /purge` reaches the same code): the design was deleted for good, so the room closes every socket (`DESIGN_TRASHED_CLOSE`, reason `design-purged`), waits for the ledger's queued writes and deletes all of its storage, as **Purge** under **Storage** says. The index asks for it (`DELETE /api/internal/items/:id`) whenever a design leaves its Trash for good, by hand, by its daily sweep or by account deletion, and retries a design it could not reach.
 
 ### Conflict model

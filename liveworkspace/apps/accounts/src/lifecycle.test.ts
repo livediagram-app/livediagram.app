@@ -148,11 +148,25 @@ describe('the welcome', () => {
     failing = true;
     for (let i = 0; i < MAX_SEND_ATTEMPTS; i++) {
       expect((await run(T0 + i * DAY, ['welcome'])).welcome).toMatchObject({ failed: 1 });
-      expect(stamp('user_ada', 'welcome_sent_at')).toBeNull();
+      // Taken back for the next run, until the last, which parks the account (below).
+      if (i < MAX_SEND_ATTEMPTS - 1) expect(stamp('user_ada', 'welcome_sent_at')).toBeNull();
     }
     failing = false;
     expect((await run(T0 + 5 * DAY, ['welcome'])).welcome).toMatchObject({ sent: 0, failed: 0 });
     expect(stamp('user_ada', 'send_attempts')).toBe(MAX_SEND_ATTEMPTS);
+    // Parked: every stage it was owed is stamped, so it leaves each stage's partial index, and nothing more goes.
+    const gaveUp = T0 + (MAX_SEND_ATTEMPTS - 1) * DAY;
+    for (const column of [
+      'welcome_sent_at',
+      'activation_sent_at',
+      'week1_sent_at',
+      'week2_sent_at',
+      'winback_sent_at',
+    ]) {
+      expect(stamp('user_ada', column), column).toBe(gaveUp);
+    }
+    await run(T0 + 30 * DAY);
+    expect(sent).toEqual([]);
   });
 
   it('resets the failure count once a send gets through', async () => {

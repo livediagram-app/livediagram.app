@@ -16,6 +16,11 @@ The apps live on different sites (`livediagram.app`, `liveplanner.app`), so they
 cookie. Each app sends the browser to the accounts site and gets it back with a one-time code:
 
 1. The app redirects to `liveworkspace.app/api/auth/oauth2/authorize` (PKCE, `state`).
+   The PKCE verifier, the `state` and the path to come back to ride one HttpOnly cookie for ten minutes,
+   base64url over the JSON's UTF-8 bytes, so a path with any character in it (`/plan/☕東京`) can sign in. A
+   cookie from the older Latin-1 encoding still reads, so a sign-in in flight across a deploy finishes. The
+   path is kept percent-encoded, as a browser sends it, because it goes back in a `Location` header; a path
+   that isn't on the app's own site reads as no cookie and the sign-in starts again.
 2. Not signed in there yet? The person continues with Google, or types their email, gets a
    6-digit code, and enters it, on the app's own address (`livediagram.app/sign-in`, served by the
    app's router). One quick hop to liveworkspace.app then gives it its own first-party cookie

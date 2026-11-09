@@ -141,7 +141,7 @@ export async function runOnce(
   }));
 
   const open = ((openRows!.results ?? []) as IncidentRow[]).map(toIncident);
-  const step = stepIncidents(open, results, at);
+  const step = stepIncidents(open, results, at, new Set(services.map((s) => s.id)));
   const closed = ((closedRows!.results ?? []) as IncidentRow[]).map(toIncident);
 
   const latest = buildLatest(at, results);

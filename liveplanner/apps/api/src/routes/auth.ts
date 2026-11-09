@@ -46,7 +46,8 @@ import {
   silentCookiesForHint,
   startSilentSignIn,
 } from '@liveworkspace/auth-client/silent';
-import { safeReturnPath as sharedSafeReturnPath } from '@liveworkspace/auth-client/return-path';
+import { normalisedReturnPath } from '@liveworkspace/auth-client/return-path';
+import { decodePkceCookie, encodePkceCookie } from '@liveworkspace/auth-client/pkce-cookie';
 import { accountNameCookies, accountNameCookieFor } from '@liveworkspace/auth-client/account-name';
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
@@ -117,9 +118,10 @@ function appOrigin(env: Env, request: Request): string {
 
 const callbackUrl = (env: Env, request: Request) => `${appOrigin(env, request)}/api/auth/callback`;
 
-// Only a path on this site (`@liveworkspace/auth-client/return-path`), else the Explorer.
+// Only a path on this site (`@liveworkspace/auth-client/return-path`), else the Explorer, percent-encoded as a
+// browser sends it: it goes back in a Location header, which holds no character past Latin-1.
 export const safeReturnPath = (value: string | null): string =>
-  sharedSafeReturnPath(value, DEFAULT_RETURN);
+  normalisedReturnPath(value, DEFAULT_RETURN);
 
 export function readCookie(request: Request, name: string): string | null {
   const header = request.headers.get('Cookie');
@@ -159,27 +161,8 @@ export const signedOutCookies = () => [
   ...nameCookies(null),
 ];
 
-// The PKCE verifier, the state and the return path ride one short-lived cookie. It needs no
-// signature: only this browser can present it, and `state` must match what came back.
-type PkceCookie = { state: string; verifier: string; returnTo: string };
-
-function encodePkce(value: PkceCookie): string {
-  return btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function decodePkce(raw: string | null): PkceCookie | null {
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(atob(raw.replace(/-/g, '+').replace(/_/g, '/'))) as PkceCookie;
-    return typeof parsed.state === 'string' &&
-      typeof parsed.verifier === 'string' &&
-      typeof parsed.returnTo === 'string'
-      ? parsed
-      : null;
-  } catch {
-    return null;
-  }
-}
+// The PKCE verifier, the state and the return path ride one short-lived cookie
+// (`@liveworkspace/auth-client/pkce-cookie`): UTF-8 base64url, so a return path past Latin-1 can't fail the sign-in.
 
 // The ID token's profile claims. Not verified here: it came straight back from the accounts
 // Worker's token endpoint over TLS, and it only decides what the page shows, never who the caller
@@ -236,7 +219,12 @@ async function signIn(request: Request, env: Env, config: Configured): Promise<R
     prompt,
   });
   return redirect(to, [
-    cookie(PKCE_COOKIE, encodePkce({ state, verifier, returnTo }), PKCE_MAX_AGE_SECONDS, 'Lax'),
+    cookie(
+      PKCE_COOKIE,
+      encodePkceCookie({ state, verifier, returnTo }),
+      PKCE_MAX_AGE_SECONDS,
+      'Lax',
+    ),
   ]);
 }
 
@@ -270,7 +258,7 @@ async function callback(
       ...sessionCookies(silent.tokens.refreshToken, silentUser),
     ]);
   }
-  const pkce = decodePkce(readCookie(request, PKCE_COOKIE));
+  const pkce = decodePkceCookie(readCookie(request, PKCE_COOKIE));
   const code = url.searchParams.get('code');
   // A missing or mismatched state is a stale tab, a second sign-in started elsewhere, or a forged
   // callback. Starting again is the answer to all three, so it goes back to the sign-in page.

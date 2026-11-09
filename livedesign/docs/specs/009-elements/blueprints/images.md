@@ -198,7 +198,7 @@ Participant sends no beacon, so nothing else shares it.
   uploaded in another app serves it.
 - `GET /api/images/usage`: owner only; `imageUsage` reads the service's references for the
   owner's images in every app (`media.usage`) and names each item through `@liveworkspace/media`'s `galleryUsage`
-  from the index (at most `IMAGE_USAGE_DESIGNS_MAX`, 200, `IMAGE_USAGE_READS`, 8, at a time), keeping those whose
+  from the index (at most `IMAGE_USAGE_DESIGNS_MAX`, 200, in one request, `lookupItems`), keeping those whose
   `app` matches that the caller can open and that are not in the Trash; no tab body read, each item once per image,
   as `{ id, name, app }` ordered by name. With no references it answers `{ usage: {} }` without asking the index.
 
@@ -430,7 +430,7 @@ account)` (`mergeMediaOwner`; idempotent, and a failure keeps the notice to ask 
   no tab body is read.
 - Reference sync: one outbox key in the transaction that changes a design's images; the
   design's alarm sends its whole set, at most the media contract's per-item cap of ids, in one request.
-- Usage: one service request, then one index read per design named, 8 at a time, at most 200;
+- Usage: one service request, then one index lookup for up to 200 designs;
   deduped in flight on the client (`dedupeInFlight`).
 - Snapshot: at most `IMAGE_EMBED_BUDGET_BYTES` raw (about 4 MiB base64) per snapshot, read one
   at a time.

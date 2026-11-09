@@ -23,6 +23,13 @@ describe('resolveInstance', () => {
     expect(out[1]).toMatchObject({ x: 110, y: 60, label: 'Acme' });
   });
 
+  it("scales a pointer note's tip with its box, so its leader still reaches the point", () => {
+    const note = box('note', 0, 0, 50, 30, { shape: 'pointer-note', pointerTip: { x: 50, y: 60 } });
+    const main: DesignComponent = { ...navMain(), width: 100, height: 100, elements: [note] };
+    const [placed] = resolveInstance(instanceOf(main, { width: 200, height: 200 }), main);
+    expect(placed).toMatchObject({ width: 100, height: 60, pointerTip: { x: 100, y: 120 } });
+  });
+
   it('scales positions and sizes with the instance box', () => {
     const main = navMain();
     const out = resolveInstance(instanceOf(main, { width: 400, height: 80 }), main);

@@ -48,7 +48,7 @@ function newRoom() {
       REALTIME_APP_TOKEN: SECRET,
     } as never,
   );
-  const join = (id: string, role: 'edit' | 'participate' | 'view') => {
+  const join = (id: string, role: 'edit' | 'participate' | 'view', key?: string) => {
     const s: Socket = {
       sent: [],
       attachment: { presenceId: id, verifiedRole: role, presence: null, documentId: DOC },
@@ -56,7 +56,10 @@ function newRoom() {
     sockets.push(s);
     room.webSocketMessage(
       wsOf(s),
-      JSON.stringify({ kind: 'hello', participant: { name: id, color: '#abc', tabId: 't' } }),
+      JSON.stringify({
+        kind: 'hello',
+        participant: { name: id, color: '#abc', tabId: 't', ...(key ? { key } : {}) },
+      }),
     );
     s.sent.length = 0;
     return s;
@@ -74,7 +77,12 @@ function newRoom() {
     });
     await vi.waitFor(() => expect(s.attachment.callSession ?? 'none').toBeDefined());
   };
-  return { room, join, say, walk, prove };
+  // A socket dropping: gone from the room's sockets, then its close handled.
+  const drop = (s: Socket) => {
+    sockets.splice(sockets.indexOf(s), 1);
+    room.webSocketClose(wsOf(s));
+  };
+  return { room, join, say, walk, prove, drop };
 }
 
 const ops = (s: Socket): Frame[] => s.sent.map((raw) => JSON.parse(raw) as Frame);
@@ -136,6 +144,31 @@ describe('the room and the calls checks', () => {
     expect(console.warn).toHaveBeenCalledWith('[calls] let-speak refused');
     say(ed, op);
     expect(ops(hand)).toEqual([{ kind: 'op', from: 'ed', op }]);
+  });
+
+  it('keeps a hand let speak heard when whoever let it reconnects as the same person', async () => {
+    const { room, join, say, walk, prove, drop } = newRoom();
+    const ed = join('ed', 'edit', 'K-ed');
+    const hand = join('hand', 'participate', 'K-hand');
+    const vw = join('vw', 'view', 'K-vw');
+    await prove(hand, 'S-hand');
+    await prove(vw, 'S-vw');
+    await vi.waitFor(() => expect(vw.attachment.callSession).toBe('S-vw'));
+    walk(ed, 100, 100);
+    walk(hand, 3000, 3000);
+    walk(vw, 100, 100);
+    say(hand, { kind: 'avatar-hand', tabId: 't', raised: true });
+    say(ed, { kind: 'avatar-let-speak', tabId: 't', targetId: 'hand', on: true });
+    expect(await room.callsHearing(DOC, 'S-vw', [mic('S-hand')])).toEqual(['heard']);
+    // The Editor's connection drops and comes back: a new presence id, the same key.
+    drop(ed);
+    expect(await room.callsHearing(DOC, 'S-vw', [mic('S-hand')])).toEqual(['apart']);
+    const ed2 = join('ed2', 'edit', 'K-ed');
+    expect(await room.callsHearing(DOC, 'S-vw', [mic('S-hand')])).toEqual(['heard']);
+    // Another Editor is not that person: once the letter is gone, the hand is the audience again.
+    drop(ed2);
+    join('other', 'edit', 'K-other');
+    expect(await room.callsHearing(DOC, 'S-vw', [mic('S-hand')])).toEqual(['apart']);
   });
 
   it('lets an Editor stop someone’s share: addressed to them alone, and no new viewer after (#469)', async () => {

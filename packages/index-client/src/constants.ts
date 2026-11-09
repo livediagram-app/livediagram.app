@@ -43,6 +43,9 @@ export const FOLDER_PREVIEW_IDS_MAX = 60;
 export const FOLDER_PREVIEW_ITEMS = 4;
 export const FOLDER_PREVIEW_COUNT_CAP = 1000;
 
+// Many items looked up at once (`POST /items/lookup`): at most this many ids a request.
+export const ITEM_LOOKUP_IDS_MAX = 200;
+
 // Where the index lives. Each app's router forwards `/api/index/*` on its own origin here, so a browser
 // calls its own origin.
 export const INDEX_API_PATH = '/api/index';

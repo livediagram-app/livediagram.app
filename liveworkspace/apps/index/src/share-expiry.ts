@@ -3,8 +3,9 @@
 // among its live links that lapse within SHARE_EXPIRY_WARNING_MS, so it sits in the Upcoming band above Today
 // until then; seen by the owner alone, as who an item is shared with is theirs to manage.
 //
-// Written at once when a link is made, extended or deleted (the item's warning is worked out again: dropped, then
-// written if a link is still inside the week), and by the daily pass, which catches links the week has reached
+// Written at once when a link is made, extended or deleted, or the item is restored from the Trash (the item's
+// warning is worked out again: dropped, then written if a link is still inside the week; a trashed item gets none, as
+// its links reach nothing), dropped when the item goes to the Trash, and written by the daily pass, which catches links the week has reached
 // since. The daily pass only writes or moves warnings, so one the owner removed from their Timeline stays removed
 // until a link changes. A warning whose link lapsed stays where it was, as what happened.
 
@@ -51,8 +52,9 @@ function writeStatements(db: Db, itemIds: readonly string[], now: number): D1Pre
   ];
 }
 
-/** The statements that work an item's warning out again after one of its links changed: dropped, then written if a
- *  live link still lapses within the week. They go in the batch that makes the change. */
+/** The statements that work an item's warning out again after one of its links changed or it left or came back from
+ *  the Trash: dropped, then written if it is out of the Trash and a live link still lapses within the week. They go in
+ *  the batch that makes the change. */
 export function expiringStatements(db: Db, itemId: string, now: number): D1PreparedStatement[] {
   return [
     db.prepare('DELETE FROM timeline_events WHERE id = ?').bind(expiringEventId(itemId)),

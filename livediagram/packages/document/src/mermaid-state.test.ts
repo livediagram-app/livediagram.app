@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { parseMermaid } from './mermaid';
 import { layoutClusteredGraph } from './auto-layout-clusters';
 import { isValidTab } from './validate';
@@ -7,6 +8,53 @@ import { shapeGeometry } from './shape-geometry';
 
 // Tested through parseMermaid so the dispatch is covered too.
 describe('parseMermaid: state diagrams', () => {
+  it("reads Mermaid's own classed example: classes skipped, every transition kept", () => {
+    const r = parseMermaid(`stateDiagram
+   direction TB
+   accTitle: This is the accessible title
+   accDescr: This is an accessible description
+   classDef notMoving fill:white
+   classDef badBadEvent fill:#f00,color:white
+   [*]--> Still:::notMoving
+   Still --> Moving:::movement
+   Moving --> Crash:::movement
+   Crash:::badBadEvent --> [*]
+   class Still, Moving notMoving`);
+    if (!r.ok) throw new Error(r.error);
+    // The accessibility lines were states, and `Crash:::badBadEvent --> [*]` a state labelled "::badBadEvent --> [*]".
+    expect(r.graph.nodes.map((n) => [n.id, n.label])).toEqual([
+      ['__start__', ''],
+      ['Still', 'Still'],
+      ['Moving', 'Moving'],
+      ['Crash', 'Crash'],
+      ['__end__', ''],
+    ]);
+    expect(r.graph.edges).toEqual([
+      { from: '__start__', to: 'Still' },
+      { from: 'Still', to: 'Moving' },
+      { from: 'Moving', to: 'Crash' },
+      { from: 'Crash', to: '__end__' },
+    ]);
+  });
+
+  it('reads state ids in any script and a classed state on its own line', () => {
+    const r = parseMermaid(
+      'stateDiagram-v2\n 开始 --> 结束 : 完成\n Idle:::quiet\n accDescr {\n  long\n }',
+    );
+    if (!r.ok) throw new Error(r.error);
+    expect(r.graph.nodes.map((n) => n.id)).toEqual(['开始', '结束', 'Idle']);
+    expect(r.graph.edges).toEqual([{ from: '开始', to: '结束', label: '完成' }]);
+  });
+
+  it('fails a long hyphenated line that is no transition quickly', () => {
+    const hostile = 'stateDiagram-v2\n a' + ':::b-'.repeat(5000) + '- x';
+    const ms = cpuMsOf(() => {
+      parseMermaid(hostile);
+      parseMermaid('stateDiagram-v2\n ' + 'a-'.repeat(20000) + '>');
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(1000));
+  });
+
   it('parses transitions, labels, and [*] start/end pseudo-states', () => {
     const r = parseMermaid(`stateDiagram-v2
   [*] --> Idle

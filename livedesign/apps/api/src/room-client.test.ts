@@ -54,7 +54,7 @@ describe('the room ledger merge (docs/specs/012-collaboration/collab-race-harden
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
     const { tab: merged } = await mergeRoomLedger(env, 'd1', tab, 'ep:4');
     expect(commentThreadOf(merged.elements[0]!)?.comments?.map((c) => c.id)).toEqual(['c1']);
-    expect(stubFetch.mock.calls[0]![0]).toBe('https://room/ledger?tab=t1&epoch=ep');
+    expect(stubFetch.mock.calls[0]![0]).toBe('https://room/ledger?tab=t1&epoch=ep&since=4');
   });
 
   it('leaves a save with no cursor alone', async () => {

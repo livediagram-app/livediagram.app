@@ -22,6 +22,7 @@ import type { GraphCluster, GraphEdge, GraphNode } from './graph-authoring';
 import { readFlowchartHeader, readInlineLabel } from './mermaid-scan';
 import { parseErDiagram } from './mermaid-er';
 import {
+  accessibilityLine,
   cleanLine,
   mermaidStatements,
   decodeLabel,
@@ -255,6 +256,10 @@ function readEdgeOp(s: string): { op: EdgeOp; rest: string } | null {
 // --- Statement parsing ---------------------------------------------------
 
 const SKIP_RE = /^\s*(?:classDef|class|style|linkStyle|%%|direction)\b/i;
+// `:::name` after a node: words of letters, digits and `_`, joined by single `-`s.
+const CLASS_SUFFIX_RE = /^:::[\p{L}\p{M}\p{N}_]+(?:-[\p{L}\p{M}\p{N}_]+)*/u;
+// An edge's id before its operator (`A e1@--> B`), Mermaid's handle for styling or animating that edge.
+const EDGE_ID_RE = /^\s*([\p{L}\p{M}\p{N}_]+)@(?=[-=.~<ox])/u;
 const STATE_HEADER_RE = /^\s*stateDiagram(?:-v2)?\b/i;
 const ER_HEADER_RE = /^\s*erDiagram\b/i;
 // Every other diagram type Mermaid draws, by its header. The newer types' headers end in `-beta` (or stand alone on
@@ -326,6 +331,9 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
 
   // Nodes some subgraph has already claimed.
   const claimed = new Set<string>();
+  // Edge ids (`A e1@--> B`): their `e1@{ … }` styling lines are skipped, never boxes.
+  const edgeIds = new Set<string>();
+  const accessibility = { block: false };
   const touch = (id: string) => {
     if (!nodes.has(id)) {
       nodes.set(id, { id, label: id, shape: 'square' });
@@ -364,10 +372,11 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     return { id: head.id, rest: head.rest };
   };
   // A node's class, `a:::hot` or `a[Label]:::hot`, is styling, skipped like `classDef` (the tab theme owns colours):
-  // read past it, so the edge after it still lands.
+  // read past it, so the edge after it still lands. A `-` joins words of the name (`my-class`) but never ends it: in
+  // `a:::hot-->b` the dashes are the edge's.
   const readStyledNodeRef = (s: string): { id: string; rest: string } | null => {
     const ref = readNodeRef(s);
-    return ref ? { id: ref.id, rest: ref.rest.replace(/^:::[\p{L}\p{M}\p{N}_-]+/u, '') } : null;
+    return ref ? { id: ref.id, rest: ref.rest.replace(CLASS_SUFFIX_RE, '') } : null;
   };
 
   // A `&`-fanned group of node references: `A & B & C`.
@@ -390,6 +399,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   for (const rawLine of lines) {
     const line = cleanLine(rawLine);
     if (!line) continue;
+    if (accessibilityLine(line, accessibility)) continue;
 
     const header = readFlowchartHeader(line);
     if (header !== null) {
@@ -449,13 +459,17 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     }
 
     if (SKIP_RE.test(line)) continue;
+    const edgeStyle = /^([\p{L}\p{M}\p{N}_]+)@\{/u.exec(line);
+    if (edgeStyle && edgeIds.has(edgeStyle[1]!)) continue;
 
     // Parse a chain of fanned groups: group ( edgeOp group )*
     let group = readNodeGroup(line);
     if (!group) continue;
     let s = group.rest;
     for (;;) {
-      const e = readEdgeOp(s);
+      const edgeId = EDGE_ID_RE.exec(s);
+      if (edgeId) edgeIds.add(edgeId[1]!);
+      const e = readEdgeOp(edgeId ? s.slice(edgeId[0].length) : s);
       if (!e) break;
       const next = readNodeGroup(e.rest);
       if (!next) break;

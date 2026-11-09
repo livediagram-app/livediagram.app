@@ -3,6 +3,7 @@ import {
   hasControlOrSpace,
   isPostAuthPath,
   isSameSitePath,
+  normalisedReturnPath,
   safeReturnPath,
   sameOriginPath,
 } from './return-path';
@@ -65,6 +66,25 @@ describe('sameOriginPath', () => {
 
   it.each([null, undefined, '', ...OFF_SITE])('refuses %j', (path) => {
     expect(sameOriginPath(path)).toBeNull();
+  });
+});
+
+describe('normalisedReturnPath', () => {
+  it('percent-encodes past ASCII as UTF-8, as a browser sends it', () => {
+    expect(normalisedReturnPath('/plan/Équipe%20Café', '/home')).toBe(
+      '/plan/%C3%89quipe%20Caf%C3%A9',
+    );
+    expect(normalisedReturnPath('/plan/☕東京#☕', '/home')).toBe(
+      '/plan/%E2%98%95%E6%9D%B1%E4%BA%AC#%E2%98%95',
+    );
+  });
+
+  it('keeps a plain path as it is', () => {
+    expect(normalisedReturnPath('/explorer?x=1#y', '/home')).toBe('/explorer?x=1#y');
+  });
+
+  it.each([null, undefined, '', ...OFF_SITE])('falls back for %j', (path) => {
+    expect(normalisedReturnPath(path, '/home')).toBe('/home');
   });
 });
 

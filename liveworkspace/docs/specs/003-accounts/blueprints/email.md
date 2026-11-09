@@ -78,7 +78,9 @@ they are.
 - Each stage, per run, up to 100 accounts with a verified address and fewer than 3 failed sends, longest waiting
   first, by its partial index; one send at a time. A stage is claimed (stamped) before sending (`taken` if another
   run got it); `notifyTips` set to `0` in `all` keeps the stamp and sends nothing (`skipped`); a failed send clears
-  the stamp, `send_attempts + 1` (`[lifecycle] giving up …` at the third), else a success resets it.
+  the stamp, `send_attempts + 1` (`[lifecycle] giving up …` at the third, which also stamps every stage still owed
+  with the give-up time, so the account leaves each stage's partial index and no later run walks past it), else a
+  success resets it.
 - The frequent cron runs only `welcome`; the hourly runs the order `welcome`, `activation`, `week1`, `week2`,
   `winback`. Logged `[lifecycle] onboarding emails`.
 - Every stage but `welcome` adds the send window's filter on `u.timeZone` to its due query (below); when no zone is

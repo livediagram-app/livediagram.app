@@ -173,7 +173,7 @@ export async function renderTabToCanvas(
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
-  const bounds = contentBounds(els, labels);
+  const bounds = contentBounds(els, labels, tab.elements);
   const pad = EXPORT_PADDING;
   // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): project the flat content through the iso
   // affine and size the canvas to the tilted footprint so nothing clips. The
@@ -435,7 +435,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     layerOpacity < 1
       ? `<g opacity="${r2(layerOpacity)}">${inner.join('\n')}</g>`
       : inner.join('\n');
-  const bounds = contentBounds(els, labels);
+  const bounds = contentBounds(els, labels, tab.elements);
   const pad = EXPORT_PADDING;
   // Isometric export: the viewBox spans the projected (tilted) footprint and a
   // <g matrix> applies the iso projection to the content, while the background

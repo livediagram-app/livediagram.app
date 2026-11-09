@@ -377,7 +377,8 @@ quick bounce through the accounts site. The mechanism is shared, in `@liveworksp
 
 `return` is followed only when it is a path on the app: another origin, `//host`, `/\host`, or a path with a
 space, tab, newline or other control character (which the browser drops, so `/<tab>/host` would land on `//host`)
-goes to the app's fallback page instead (`safeReturnPath`).
+goes to the app's fallback page instead (`safeReturnPath`). A path that passes is sent back percent-encoded,
+as a browser sends it (`normalisedReturnPath`), so `/Équipe` comes back as `/%C3%89quipe`.
 
 It never bounces:
 

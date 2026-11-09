@@ -109,6 +109,23 @@ describe('inspectElement', () => {
     expect(spec.text?.font).toBe('System Sans');
   });
 
+  it('reads an opacity in whole percent as it was set, never rounded to a tenth', () => {
+    const at = (opacity: number) => inspectElement(shape({ opacity }), { origin });
+    const quarter = at(0.25);
+    expect(quarter.opacity).toBe(0.25);
+    expect(inspectValues(quarter)).toContainEqual({
+      group: 'layout',
+      name: 'Opacity',
+      value: '25%',
+    });
+    expect(inspectCss(quarter)).toContain('opacity: 0.25;');
+    // 99% is still faded: shown, and in the CSS.
+    const almost = at(0.99);
+    expect(inspectValues(almost).find((v) => v.name === 'Opacity')?.value).toBe('99%');
+    expect(inspectCss(almost)).toContain('opacity: 0.99;');
+    expect(at(0.333).opacity).toBe(0.33);
+  });
+
   it('reads the tab font, a sticky square, and a text box with its own weight and no box', () => {
     const sticky = inspectElement(
       {

@@ -33,6 +33,28 @@ describe('the edit session', () => {
     expect(startComponentEdit(els, 'nope', main, 'me')).toBe(els);
   });
 
+  it("never fades the main with the instance's opacity, however many sessions it goes through", () => {
+    let current = main;
+    for (let round = 0; round < 2; round++) {
+      const inst = instanceOf(current, { opacity: 0.5 });
+      const started = startComponentEdit([inst], 'inst', current, 'me');
+      // The members are the main: drawn unfaded.
+      expect(sessionMembers(started, 'inst').every((m) => m.opacity === undefined)).toBe(true);
+      current = deriveComponentFromSession(started, 'inst', current, 2)!;
+    }
+    expect(current.elements.every((e) => e.opacity === undefined)).toBe(true);
+  });
+
+  it("keeps a pointer note's tip through a session at another scale", () => {
+    const note = box('note', 0, 0, 50, 30, { shape: 'pointer-note', pointerTip: { x: 50, y: 60 } });
+    const small = { ...main, width: 100, height: 100, elements: [note] };
+    const inst = instanceOf(small, { width: 200, height: 200 });
+    const started = startComponentEdit([inst], 'inst', small, 'me');
+    expect(sessionMembers(started, 'inst')[0]).toMatchObject({ pointerTip: { x: 100, y: 120 } });
+    const derived = deriveComponentFromSession(started, 'inst', small, 2)!;
+    expect(derived.elements[0]).toMatchObject({ pointerTip: { x: 50, y: 60 } });
+  });
+
   it('stamps elements added during the one session open', () => {
     const started = startComponentEdit([instanceOf(main)], 'inst', main, 'me');
     const added = [

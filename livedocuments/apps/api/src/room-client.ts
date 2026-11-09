@@ -92,7 +92,7 @@ export async function fetchRoomLedger(
   const cursor = parseRoomCursor(cursorHeader);
   if (!cursor) return null;
   try {
-    const query = `tab=${encodeURIComponent(tabId)}&epoch=${encodeURIComponent(cursor.epoch)}`;
+    const query = `tab=${encodeURIComponent(tabId)}&epoch=${encodeURIComponent(cursor.epoch)}&since=${cursor.seq}`;
     const res = await roomStubFor(env, documentId).fetch(`https://room/ledger?${query}`);
     if (!res.ok) return null;
     const ledger = (await res.json()) as TabLedger;

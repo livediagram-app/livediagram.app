@@ -43,6 +43,14 @@ export function sameOriginPath(path: string | null | undefined): string | null {
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
+/** safeReturnPath for a path an api sends back in a `Location` header (a sign-in's return): the same check, then
+ *  normalised as the browser would resolve it, so anything past ASCII goes percent-encoded as UTF-8 (`/Équipe` is
+ *  `/%C3%89quipe`). A header holds no character past Latin-1, and one past ASCII would be misread, so the raw path
+ *  failed the sign-in. */
+export function normalisedReturnPath(value: string | null | undefined, fallback: string): string {
+  return sameOriginPath(value) ?? fallback;
+}
+
 /** Where an editor's sign-in or sign-up page may send the visitor on: a same-origin path, unchanged by the browser's
  *  normalising, that isn't one of the auth pages themselves. */
 export function isPostAuthPath(path: string | null | undefined): path is string {

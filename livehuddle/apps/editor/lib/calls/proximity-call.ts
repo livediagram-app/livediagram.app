@@ -26,6 +26,7 @@ import { CallReceiver } from './call-receiver';
 import { chooseSubscriptions } from './call-subscriptions';
 import { CallVideo } from './call-video';
 import {
+  callKeys,
   callLevels,
   callMaximised,
   callPeers,
@@ -36,6 +37,7 @@ import {
   onCallsMode,
   onCallTracks,
   onLetSpeak,
+  onRoomDropped,
   onStopShare,
   resetCallMedia,
   SELF_MEDIA_ID,
@@ -143,6 +145,10 @@ export class ProximityCall {
       // A hand going up, down or let speak changes who speaks and the count a speaker sees.
       onCallHands(() => this.update(this.scene)),
       onLetSpeak((from, on) => this.onLetSpeak(from, on)),
+      // Your own connection dropped: the room lowered your hand for everyone, so the dock lowers it too.
+      onRoomDropped(() => {
+        if (this.hand.up) this.lowerHand();
+      }),
       onStopShare((from) => this.onStopShare(from)),
       // A preview turned on while the call runs (or joins) is sent the moment the call may send it.
       ...(input.preview ? [input.preview.subscribe(() => this.adoptPreview())] : []),
@@ -351,7 +357,8 @@ export class ProximityCall {
   private onLetSpeak(from: string, on: boolean): void {
     if (this.stopped) return;
     const { walkers, stages = [] } = this.scene;
-    this.hand.letSpeak(from, on, mayLetSpeak(from, walkers, callLevels(), stages));
+    const may = mayLetSpeak(from, walkers, callLevels(), stages);
+    this.hand.letSpeak(from, on, may, callKeys().get(from) ?? null);
     this.update(this.scene);
   }
 

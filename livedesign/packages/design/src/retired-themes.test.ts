@@ -50,6 +50,62 @@ describe('retired themes (docs/specs/011-theme/light-and-dark.md "Retired: Autum
     expect(out.elements[0]).toMatchObject({ fillColor: '#123456', strokeColor: '#475569' });
   });
 
+  // Jewel's canvas and element fill are one colour, so a single map for every role sent the canvas to Rainbow's
+  // element fill, which a dark viewer then read as a colour someone picked.
+  it("maps the canvas to the new theme's canvas, never an element colour sharing the old value", () => {
+    const rainbow = THEMES.find((t) => t.id === 'rainbow')!;
+    const out = migrateRetiredTheme({
+      theme: 'jewel',
+      backgroundColor: '#FBFBFD',
+      patternColor: '#e2e8f0',
+      elements: [box({ fillColor: '#fbfbfd' })],
+    });
+    expect(out.backgroundColor).toBe(rainbow.backgroundColor);
+    expect(out.patternColor).toBe(rainbow.patternColor);
+    expect(out.elements[0]).toMatchObject({ fillColor: rainbow.elementFill });
+  });
+
+  // Autumn's outline is also its second branch's text.
+  it("maps each field by its own role, so a branch's text takes the new branch's text", () => {
+    const tropical = THEMES.find((t) => t.id === 'tropical')!;
+    const out = migrateRetiredTheme({
+      theme: 'autumn',
+      elements: [box({ fillColor: '#ffedd5', strokeColor: '#ea580c', textColor: '#7c2d12' })],
+    });
+    expect(out.elements[0]).toMatchObject({
+      fillColor: tropical.palette![1]!.fill,
+      strokeColor: tropical.palette![1]!.stroke,
+      textColor: tropical.palette![1]!.text,
+    });
+    const outline = migrateRetiredTheme({
+      theme: 'autumn',
+      elements: [
+        box({ strokeColor: '#7c2d12' }),
+        {
+          id: 'r',
+          type: 'arrow',
+          from: { kind: 'free', x: 0, y: 0 },
+          to: { kind: 'free', x: 1, y: 1 },
+          strokeColor: '#7c2d12',
+          arrowheadColor: '#7c2d12',
+        } as unknown as Element,
+      ],
+    });
+    expect(outline.elements[0]).toMatchObject({ strokeColor: tropical.elementStroke });
+    expect(outline.elements[1]).toMatchObject({
+      strokeColor: tropical.elementStroke,
+      arrowheadColor: tropical.elementStroke,
+    });
+  });
+
+  it('leaves the kinds a theme never paints, and a locked fill, as they are', () => {
+    const sticky = { ...box({ fillColor: '#fef3c7' }), type: 'sticky' } as unknown as Element;
+    const locked = box({ id: 'g', fillColor: '#fef3c7', themeLockFill: true });
+    const out = migrateRetiredTheme({ theme: 'autumn', elements: [sticky, locked, null as never] });
+    expect(out.elements[0]).toBe(sticky);
+    expect(out.elements[1]).toBe(locked);
+  });
+
   it('leaves any other tab as it is, and runs on every stored-tab read', () => {
     const tab = {
       theme: 'tropical',

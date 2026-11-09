@@ -1,14 +1,14 @@
 // liveworkspace telemetry (liveworkspace/docs/specs/008-telemetry/telemetry.md): one Worker for every app's anonymous
 // events. Its API, on liveworkspace.app/api/telemetry, takes batches in and serves the numbers the
 // dashboard shows; the dashboard itself is a page of the static site (liveworkspace/apps/site), at
-// liveworkspace.app/telemetry. A daily cron keeps 60 days.
+// liveworkspace.app/telemetry. A daily cron keeps 60 days and counts yesterday again.
 
 import { TELEMETRY_EVENTS_PATH, TELEMETRY_SUMMARY_PATH } from '@liveworkspace/telemetry';
-import { deleteEventsBefore } from './db';
+import { deleteEventsBefore, recountDay } from './db';
 import type { Env } from './env';
 import { handleIngest } from './ingest';
 import { handleSummary } from './summary';
-import { API_PATH, CORS, RETENTION_MS } from './config';
+import { API_PATH, CORS, DAY_MS, RETENTION_MS } from './config';
 import { json, under } from '@liveworkspace/index-app/worker-http';
 import { guardRequest } from '@liveworkspace/api-kit/request-failure';
 import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
@@ -23,10 +23,19 @@ const worker = {
   },
 
   async scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    const now = Date.now();
     ctx.waitUntil(
-      deleteEventsBefore(env, Date.now() - RETENTION_MS).then(
-        (rows) => console.log(JSON.stringify({ sweep: 'events', rows })),
+      deleteEventsBefore(env, now - RETENTION_MS).then(
+        ({ events, counts }) =>
+          console.log(JSON.stringify({ sweep: 'events', rows: events, counts })),
         (err: unknown) => console.error('events sweep failed', err),
+      ),
+    );
+    // Yesterday, a whole UTC day no batch can still land in.
+    ctx.waitUntil(
+      recountDay(env, now - (now % DAY_MS) - DAY_MS).then(
+        (counts) => console.log(JSON.stringify({ recount: 'yesterday', counts })),
+        (err: unknown) => console.error('day recount failed', err),
       ),
     );
   },

@@ -28,7 +28,7 @@ describe('your raised hand', () => {
     hand.raise(null);
     hand.letSpeak('ed', true, true);
     hand.letSpeak('ed', true, true);
-    expect(hand.letSpeakBy).toBe('ed');
+    expect(hand.letSpeakBy).toEqual({ id: 'ed', key: null });
     expect(hand.state(true)).toBe('speaking');
     // Whoever let you speak no longer may: raised again.
     expect(hand.state(false)).toBe('raised');
@@ -47,6 +47,18 @@ describe('your raised hand', () => {
     hand.letSpeak('floor', true, false);
     expect(hand.letSpeakBy).toBeNull();
     expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends who let it speak with their key, so peers follow the person, and resends it to a newcomer', () => {
+    const { hand, send } = make();
+    hand.raise(null);
+    hand.letSpeak('ed', true, true, 'K-ed');
+    expect(hand.letSpeakBy).toEqual({ id: 'ed', key: 'K-ed' });
+    hand.resend();
+    expect(send.mock.calls.slice(1)).toEqual([
+      [{ kind: 'avatar-hand', raised: true, letSpeak: 'ed', letSpeakKey: 'K-ed' }],
+      [{ kind: 'avatar-hand', raised: true, letSpeak: 'ed', letSpeakKey: 'K-ed' }],
+    ]);
   });
 
   it('goes down on walking into another room, and is resent to a newcomer while up', () => {

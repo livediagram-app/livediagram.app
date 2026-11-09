@@ -146,6 +146,8 @@ export function applyFillColorToEl(el: Element, color: string): Element {
     return { ...el, fillColor: color, colorPreset: undefined, fillSwatch: undefined };
   if (el.type === 'table') return { ...el, fillColor: color, tablePreset: undefined };
   if (el.type === 'sticky' || el.type === 'freehand') return { ...el, fillColor: color };
+  // A path (docs/specs/023-draw-mode/path-tool.md "Style") fills as a shape does, its swatch binding dropped too.
+  if (el.type === 'path') return { ...el, fillColor: color, fillSwatch: undefined };
   return el;
 }
 
@@ -169,7 +171,8 @@ export function applyStrokeColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape')
     return { ...el, ...lineColour(color), colorPreset: undefined, strokeSwatch: undefined };
   if (el.type === 'freehand') return { ...el, ...lineColour(color) };
-  if (el.type === 'arrow') return { ...el, ...lineColour(color), strokeSwatch: undefined };
+  if (el.type === 'arrow' || el.type === 'path')
+    return { ...el, ...lineColour(color), strokeSwatch: undefined };
   const hex = asHex(color);
   if (hex === null) return el;
   if (el.type === 'table') return { ...el, strokeColor: hex, tablePreset: undefined };

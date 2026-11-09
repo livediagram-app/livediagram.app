@@ -169,7 +169,7 @@ max-age=86400`.
 - `GET /api/images`: owner only; `media.list(mediaOwner(owner))`, newest first, from every app.
 - `GET /api/images/usage`: owner only; `usageOf` asks the service which documents, in every app, place each
   of the owner's images (`media.usage`), and `@liveworkspace/media`'s `galleryUsage` looks at most
-  `USAGE_DOCUMENTS_MAX` (200) up in the index (six at a time), keeping those whose `app` matches, the owner's and
+  `USAGE_DOCUMENTS_MAX` (200) up in the index in one request (`lookupItems`), keeping those whose `app` matches, the owner's and
   not in the Trash, named as the index has them. No tab body read, each item once per image, as
   `{ id, name, app }` ordered by name.
 
@@ -434,7 +434,7 @@ reads a 503 as `null`.
 - Saves: the index statements in the body's own transaction, in the document's SQLite; nothing is
   written, and nothing pushed, when the set is unchanged. A changed set costs one push from the
   document's alarm (the grants, one service request) within about a minute.
-- Usage: one service request, then at most 200 index lookups, six at a time; no tab body read;
+- Usage: one service request, then one index lookup for up to 200 items; no tab body read;
   deduped in flight on the client (`dedupeInFlight`).
 - Snapshot: at most `IMAGE_EMBED_BUDGET_BYTES` raw (about 4 MiB base64) per snapshot, read one
   at a time.

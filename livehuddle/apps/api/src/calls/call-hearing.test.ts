@@ -40,7 +40,8 @@ function world(
   placed: Record<string, [number, number, string?]>,
   over: {
     levels?: Record<string, CallLevel>;
-    letBy?: Record<string, string>;
+    letBy?: Record<string, string | { id: string; key: string }>;
+    keys?: Record<string, string>;
     tab?: TabCalls;
     grace?: boolean;
   } = {},
@@ -51,7 +52,13 @@ function world(
   return {
     placed: at,
     levels: new Map(Object.entries(over.levels ?? {})),
-    letBy: new Map(Object.entries(over.letBy ?? {})),
+    letBy: new Map(
+      Object.entries(over.letBy ?? {}).map(([hand, by]) => [
+        hand,
+        typeof by === 'string' ? { id: by, key: null } : by,
+      ]),
+    ),
+    keys: new Map(Object.entries(over.keys ?? {})),
     tab: (tabId) => (tabId === 't' ? (over.tab ?? TAB) : { zones: [], stages: [] }),
     grace: over.grace ?? false,
   };
@@ -152,6 +159,35 @@ describe('hearingVerdict', () => {
     expect(hearingVerdict(world(placed, { levels, letBy: { hand: 'pt' } }), 'far', 'hand')).toBe(
       'apart',
     );
+  });
+
+  it('follows whoever let a hand speak as a person: their reconnected session still may', () => {
+    // `ed` let the hand speak, then reconnected as `ed2` with the same key; `ed` is gone.
+    const placed = { hand: [3000, 3000], far: [10, 10], ed2: [5, 5], pt: [6, 6] } as Record<
+      string,
+      [number, number]
+    >;
+    const levels = { ed2: 'edit', pt: 'participate' } as const;
+    const letBy = { hand: { id: 'ed', key: 'K-ed' } };
+    expect(
+      hearingVerdict(world(placed, { levels, letBy, keys: { ed2: 'K-ed' } }), 'far', 'hand'),
+    ).toBe('heard');
+    // Without their key back on the roster, nobody vouches for the hand.
+    expect(
+      hearingVerdict(world(placed, { levels, letBy, keys: { pt: 'K-pt' } }), 'far', 'hand'),
+    ).toBe('apart');
+    // The same key on someone who may not let speak adds nothing.
+    expect(
+      hearingVerdict(world(placed, { levels, letBy, keys: { pt: 'K-ed' } }), 'far', 'hand'),
+    ).toBe('apart');
+    // And a letter with no key is followed by presence id alone.
+    expect(
+      hearingVerdict(
+        world(placed, { levels, letBy: { hand: 'ed' }, keys: { ed2: 'K-ed' } }),
+        'far',
+        'hand',
+      ),
+    ).toBe('apart');
   });
 });
 

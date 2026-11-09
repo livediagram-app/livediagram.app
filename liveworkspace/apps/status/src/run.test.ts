@@ -131,6 +131,24 @@ describe('runOnce', () => {
     ]);
   });
 
+  it('closes the open incident of a service taken off the list, and leaves it out of the answer', async () => {
+    const env = testEnv();
+    const started = T0 - 3 * HOUR;
+    env.raw.exec(`
+      INSERT INTO incidents (service, started_at, last_at, ended_at, worst, checks, error)
+        VALUES ('retired:mcp', ${started}, ${started}, NULL, 'down', 1, 'timeout');
+    `);
+    const report = await runOnce(env, T0, { results: results() });
+    expect(report.closed).toBe(1);
+    expect(rows(env, 'SELECT ended_at FROM incidents WHERE service = ?', 'retired:mcp')).toEqual([
+      { ended_at: T0 },
+    ]);
+    expect(snapshot<StatusHistory>(env, 'history').incidents).toEqual([]);
+    // Nor in a later run's, read back from the closed incidents.
+    await runOnce(env, T0 + HOUR, { results: results() });
+    expect(snapshot<StatusHistory>(env, 'history').incidents).toEqual([]);
+  });
+
   it('prunes checks, days and closed incidents past 90 days in the same run', async () => {
     const env = testEnv();
     const old = T0 - 91 * DAY_MS;

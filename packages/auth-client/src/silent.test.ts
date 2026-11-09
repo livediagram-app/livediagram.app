@@ -534,6 +534,17 @@ describe('the callback, coming back from a bounce', () => {
     expect(done?.returnTo).toBe('/project/abc#h');
   });
 
+  it('carries a return past Latin-1 there and back, percent-encoded', async () => {
+    const { state, pkce } = await bounced('/project/☕東京?t=Équipe%20Café');
+    const done = await finish(`error=login_required&state=${state}`, pkce, vi.fn<typeof fetch>());
+    expect(done?.returnTo).toBe('/project/%E2%98%95%E6%9D%B1%E4%BA%AC?t=%C3%89quipe%20Caf%C3%A9');
+  });
+
+  it('sends a return past Latin-1 straight back as a header can hold it', async () => {
+    const res = await start(`return=${encodeURIComponent('/project/☕東京')}`, 'lp_silent=1');
+    expect(res.headers.get('location')).toBe('/project/%E2%98%95%E6%9D%B1%E4%BA%AC');
+  });
+
   it("leaves a clicked sign-in's callback alone", async () => {
     const { pkce } = await bounced();
     expect(await finish('code=c1&state=someone-else', pkce)).toBeNull();

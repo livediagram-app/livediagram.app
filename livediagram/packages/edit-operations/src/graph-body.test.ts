@@ -86,6 +86,7 @@ describe('graphBodyIssue, a sequence', () => {
     items: [
       { kind: 'message', from: 'u', to: 's', label: 'GET', style: 'call', activate: true },
       { kind: 'message', from: 's', to: 'u', label: '200', style: 'reply', deactivate: true },
+      { kind: 'message', from: 'u', to: 's', label: 'sync', style: 'call', both: true },
       { kind: 'note', placement: 'over', who: ['u', 's'], text: 'cached' },
       { kind: 'activate', who: 's' },
       { kind: 'deactivate', who: 's' },
@@ -115,6 +116,10 @@ describe('graphBodyIssue, a sequence', () => {
       { ...sequence, items: [{ kind: 'message', from: 'u', to: 's', label: 'x', style: 'shout' }] },
       { ...sequence, items: [{ kind: 'note', placement: 'over', who: [], text: 'x' }] },
       { ...sequence, items: [{ kind: 'wobble' }] },
+      {
+        ...sequence,
+        items: [{ kind: 'message', from: 'u', to: 's', label: 'x', style: 'call', both: 1 }],
+      },
       { ...sequence, items: ['end'] },
       { ...sequence, participants: [{ id: 'u' }] },
       { ...sequence, autonumber: 'yes' },

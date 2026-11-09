@@ -4,11 +4,17 @@
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { CallStaging } from './stage';
 import type { HandState, StagePlace } from './calls-store';
+import type { Letter } from './stage';
 
 /** What a hand sends over the room: the editor adds the tab. */
-export type HandSignal = { kind: 'avatar-hand'; raised: boolean; letSpeak?: string | null };
+export type HandSignal = {
+  kind: 'avatar-hand';
+  raised: boolean;
+  letSpeak?: string | null;
+  letSpeakKey?: string;
+};
 
-type Hand = { zone: string | null; letSpeak: string | null };
+type Hand = { zone: string | null; letter: Letter | null };
 
 export class RaisedHand {
   private hand: Hand | null = null;
@@ -21,12 +27,12 @@ export class RaisedHand {
   /** Down, raised, or let speak (`letSpeakOk`: whoever let you speak still may). */
   state(letSpeakOk: boolean): HandState {
     if (!this.hand) return 'down';
-    return this.hand.letSpeak !== null && letSpeakOk ? 'speaking' : 'raised';
+    return this.hand.letter !== null && letSpeakOk ? 'speaking' : 'raised';
   }
 
-  /** Who let your hand speak, or null. */
-  get letSpeakBy(): string | null {
-    return this.hand?.letSpeak ?? null;
+  /** Who let your hand speak (their presence id then, and their roster key), or null. */
+  get letSpeakBy(): Letter | null {
+    return this.hand?.letter ?? null;
   }
 
   get up(): boolean {
@@ -36,7 +42,7 @@ export class RaisedHand {
   /** Raise it in `zone` (the room you stand in). False when it was already up. */
   raise(zone: string | null): boolean {
     if (this.hand) return false;
-    this.hand = { zone, letSpeak: null };
+    this.hand = { zone, letter: null };
     debugLog('[calls] hand', 'raised');
     this.send({ kind: 'avatar-hand', raised: true });
     return true;
@@ -52,9 +58,10 @@ export class RaisedHand {
 
   /**
    * Someone let your hand speak (`on`) or pressed Done. `may` says whether they may (an Editor, or speaking from a
-   * stage); otherwise, or with no hand up, it is ignored.
+   * stage); otherwise, or with no hand up, it is ignored. `key` is their roster key, sent with the hand so every
+   * browser can follow them as a person across a reconnect.
    */
-  letSpeak(from: string, on: boolean, may: boolean): void {
+  letSpeak(from: string, on: boolean, may: boolean, key: string | null = null): void {
     if (!this.hand || !may) {
       debugLog('[calls] let speak ignored', this.hand ? 'not allowed' : 'no hand');
       return;
@@ -63,9 +70,9 @@ export class RaisedHand {
       this.lower();
       return;
     }
-    if (this.hand.letSpeak === from) return;
-    this.hand = { ...this.hand, letSpeak: from };
-    this.send({ kind: 'avatar-hand', raised: true, letSpeak: from });
+    if (this.hand.letter?.id === from && this.hand.letter.key === key) return;
+    this.hand = { ...this.hand, letter: { id: from, key } };
+    this.resend();
   }
 
   /** You walked into another room (or out of one): the hand goes down. */
@@ -76,7 +83,13 @@ export class RaisedHand {
   /** A walker arrived: tell them the hand is up. */
   resend(): void {
     if (!this.hand) return;
-    this.send({ kind: 'avatar-hand', raised: true, letSpeak: this.hand.letSpeak });
+    const { letter } = this.hand;
+    this.send({
+      kind: 'avatar-hand',
+      raised: true,
+      letSpeak: letter?.id ?? null,
+      ...(letter?.key ? { letSpeakKey: letter.key } : {}),
+    });
   }
 }
 

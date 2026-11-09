@@ -63,7 +63,7 @@ to an Editor when one or more unlocked elements are selected and every one may g
 
 - Each element's position and size scale by `instance.width / main.width` and `instance.height / main.height`;
   text, stroke widths and icons keep their size (as when several boxes are resized together). Arrow points and bends
-  scale the same way. Elements the main holds outside its frame draw outside the box, unclipped.
+  scale the same way, and so does a pointer note's tip, so its leader still reaches the point it showed in the main. Elements the main holds outside its frame draw outside the box, unclipped.
 - Each is drawn as that element kind draws (the export renderer), in the instance's layer, under the instance's
   opacity, rotated with the instance about its centre.
 - Overrides are applied before drawing (below).
@@ -102,7 +102,8 @@ type ComponentOverride = {
 1. The instance stays on the tab, hidden (`componentEditBy` set to the session's person), so arrows pinned to it,
    its comments and its links stay.
 2. The main's elements are put on the tab as plain elements at the instance's place and scale, each marked
-   `componentMember: { instanceId, elementId }`. The instance's overrides do not apply to them: this is the main.
+   `componentMember: { instanceId, elementId }`. The instance's overrides and its opacity do not apply to them: this
+   is the main, so a faded instance never fades the main it is edited from.
 3. They are edited with every ordinary tool: move, restyle, retype, delete, draw new ones. An element added on that
    tab during the session joins it (it is marked as it lands). One edit, one undo step, as always.
 4. **Live**: after each change the main is derived from the members (positions back into the frame's space, at the
@@ -158,7 +159,10 @@ the instance keep their end as a free point where it was. One undo step. Detachi
   upserted and removed, name, archived), validated like tab elements. Edit role only, an API token too (agents patch
   mains). A tab-scoped Editor may write only a main no other tab uses (one it just made, or one only its own tab
   draws), so it never changes what another tab draws. A patch merges per element against the stored main, so two
-  people changing different elements of one main both keep their change.
+  people changing different elements of one main both keep their change. An arrow the patch keeps whose end is
+  attached to an element it removes has that end freed where it was drawn, as a canvas delete frees a kept arrow's
+  end ([Canvas](../008-canvas/canvas-and-palette.md) "Delete / Backspace"), so a main never holds an arrow naming an
+  element that is gone (and a peer's patch removing a box another person's arrow still pins cannot leave one).
 - **Realtime**: the worker, not the writer, announces each stored change as a `component` system op carrying the
   whole main and the tabs that use it; a tab-scoped session receives it only for mains its tab uses. Every editor
   applies it to its library, and every instance redraws. Instance elements merge per element, like any element.

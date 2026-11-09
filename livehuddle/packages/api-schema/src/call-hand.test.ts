@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseAvatarHand, parseAvatarLetSpeak, PRESENCE_ID_MAX } from './call-hand';
+import { parseAvatarHand, parseAvatarLetSpeak, PERSON_KEY_MAX, PRESENCE_ID_MAX } from './call-hand';
 import { isPresenceOpKind } from './room-messages';
 
 // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand"
@@ -20,6 +20,23 @@ describe('raise hand wire', () => {
     expect(
       parseAvatarHand({ kind: 'avatar-hand', tabId: 't', raised: false, letSpeak: 'p1' }),
     ).toEqual({ kind: 'avatar-hand', tabId: 't', raised: false });
+  });
+
+  it("keeps the letter's key with a let-speak only, and drops a malformed key but not the hand", () => {
+    const hand = { kind: 'avatar-hand', tabId: 't', raised: true, letSpeak: 'p1' };
+    expect(parseAvatarHand({ ...hand, letSpeakKey: 'k1' })).toEqual({ ...hand, letSpeakKey: 'k1' });
+    expect(parseAvatarHand({ ...hand, letSpeakKey: 'k'.repeat(PERSON_KEY_MAX + 1) })).toEqual(hand);
+    expect(parseAvatarHand({ ...hand, letSpeakKey: 7 })).toEqual(hand);
+    expect(parseAvatarHand({ ...hand, letSpeak: null, letSpeakKey: 'k1' })).toEqual({
+      kind: 'avatar-hand',
+      tabId: 't',
+      raised: true,
+    });
+    expect(parseAvatarHand({ ...hand, raised: false, letSpeakKey: 'k1' })).toEqual({
+      kind: 'avatar-hand',
+      tabId: 't',
+      raised: false,
+    });
   });
 
   it('refuses a malformed hand', () => {

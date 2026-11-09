@@ -6,6 +6,7 @@ import {
   type TimelineEvent,
   type TimelinePage,
 } from '@liveworkspace/index-client';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import { EXPIRY_SWEEP_MAX, sweepExpiringLinks } from './share-expiry';
@@ -103,6 +104,24 @@ describe('share link expiring', () => {
     expect(await warnings(auth)).toEqual([]);
   });
 
+  it('drops the warning when the item goes to the Trash, and works it out again on a restore', async () => {
+    at(START);
+    const ada = await person('user_sx9');
+    const item = await makeItem(ada.auth);
+    const link = await share(ada.auth, item.id, 'week');
+    expect(await warnings(ada.auth)).toHaveLength(1);
+    expect((await call(`/items/${item.id}`, { method: 'DELETE', auth: ada.auth })).status).toBe(
+      204,
+    );
+    expect(await warnings(ada.auth)).toEqual([]);
+    // The daily pass leaves a trashed item unwarned.
+    await worker.scheduled({ cron: '23 4 * * *' } as ScheduledController, h.db.env);
+    expect(await warnings(ada.auth)).toEqual([]);
+    const restored = await call(`/items/${item.id}/restore`, { method: 'POST', auth: ada.auth });
+    expect(restored.status).toBe(200);
+    expect((await warnings(ada.auth)).map((w) => w.occurredAt)).toEqual([link.expiresAt]);
+  });
+
   it("is the owner's alone: a teammate on a team item never sees it", async () => {
     at(START);
     const team = [{ id: 'team_sx' }];
@@ -148,9 +167,10 @@ describe('share link expiring', () => {
       insertLink.run(`CODE${String(i).padStart(10, '0')}`, id, now + 1000 + i, now);
     }
     db.exec('COMMIT');
-    const started = performance.now();
-    const warned = await sweepExpiringLinks(h.db.env, now);
-    const ms = performance.now() - started;
+    let warned = 0;
+    const ms = await cpuMsOfAsync(async () => {
+      warned = await sweepExpiringLinks(h.db.env, now);
+    });
     expect(warned).toBe(EXPIRY_SWEEP_MAX);
     const count = db
       .prepare(
@@ -159,6 +179,6 @@ describe('share link expiring', () => {
       .get() as { n: number; last: number };
     expect(count.n).toBe(EXPIRY_SWEEP_MAX);
     expect(count.last).toBe(now + 1000 + EXPIRY_SWEEP_MAX - 1);
-    expect(ms).toBeLessThan(2_000);
+    expect(ms).toBeLessThan(cpuBudgetMs(2_000));
   });
 });

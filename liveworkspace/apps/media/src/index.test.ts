@@ -353,6 +353,22 @@ describe('references and usage', () => {
     expect((await sync({ documents: [{ document: 'd', images: [1] }] })).status).toBe(400);
     const many = Array.from({ length: 501 }, (_, i) => ({ document: `d${i}`, images: [] }));
     expect((await sync({ documents: many })).status).toBe(400);
+    // A chunked body declares no length: it is read only as far as the cap (2 MiB), never held whole.
+    let pulled = 0;
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1;
+        if (pulled > 256) controller.close();
+        else controller.enqueue(new Uint8Array(64 * 1024).fill(0x20));
+      },
+    });
+    const chunked = await asApp('/app/refs', {
+      method: 'POST',
+      body: endless,
+      duplex: 'half',
+    } as RequestInit);
+    expect(chunked.status).toBe(400);
+    expect(pulled).toBeLessThan(40);
   });
 });
 

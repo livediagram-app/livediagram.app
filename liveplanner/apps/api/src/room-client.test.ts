@@ -56,7 +56,7 @@ describe('the room ledger merge (docs/specs/012-collaboration/collab-race-harden
     expect((merged.elements[0] as ShapeElement).responses?.map((r) => r.participantId)).toEqual([
       'b',
     ]);
-    expect(stubFetch.mock.calls[0]![0]).toBe('https://room/ledger?tab=t1&epoch=ep');
+    expect(stubFetch.mock.calls[0]![0]).toBe('https://room/ledger?tab=t1&epoch=ep&since=4');
   });
 
   it('leaves a save with no cursor alone', async () => {
