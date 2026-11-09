@@ -172,7 +172,8 @@ on a tab id the project lacks creates that tab.
   `normaliseElements` and `buildTab(…, 'preserve', themeId)`: kept at the x and y given. The api refuses a
   `replace.layout` before the engine sees it.
 - `template`: `buildTemplateTab(...).elements`; on a new tab the whole `buildTemplateTab` result.
-- `dashboard`: `readDashboardBody` then `buildDashboardTab`.
+- `dashboard`: `readDashboardBody` then `buildDashboardTab`, whose tab holds only the views its kept rows place (a
+  metric or chart in a row past the twelfth is left off with its row, never kept unseen on the tab).
 - `form`: a new Form tab's form, read as the editor reads it.
 
 ## Interfaces and contracts

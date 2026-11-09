@@ -467,6 +467,9 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
   `?item=` reads one card's.
 - A start, a reply, an edit: `newComment` (comment-routes.ts) stamps author, colour, id, token and `ai` (from
   `ctx.token`); a start or reply then runs `afterCommentPosted(ctx, caller, comment, itemId, threadId)`.
+- A start counts the card's threads (`threads_full` at `CARD_THREADS_MAX`) after `newComment` has read the author's
+  profile, with no other await between the count and the insert: the profile read is a call out of the room, and two
+  starts counted before it would both pass the cap.
 - **React**: `emoji` one of the six (`isReactionId`), `on` a boolean and `key` the caller's collab key (1 to
   `REACTION_BY_MAX` characters), else `400` (`unknown emoji`, `missing on`, `missing key`); the name is the caller's profile name
   (`getParticipant`, else "Someone"). Not activity: no timeline entry, email or Inbox change.

@@ -76,7 +76,9 @@ export function wildcardCriterion(key: string): Criterion | null {
   return steps ? (v) => typeof v === 'string' && wildcardMatch(steps, v) : null;
 }
 
-function unescape(text: string): string {
+// A wildcard pattern's text with its `~` escapes read: what a lookup key without a live wildcard looks for (`"~*"` is
+// a star).
+export function unescape(text: string): string {
   return text.replace(/~([*?~])/g, '$1');
 }
 

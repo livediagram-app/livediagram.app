@@ -196,7 +196,20 @@ function formatNumberSection(n: number, toks: Tok[]): string {
 }
 
 function formatDateSection(serial: number, toks: Tok[]): string {
-  const p = dateFromSerial(serial);
+  // The time is rounded once, to the finest unit the code shows (a second, or a ".000" fraction of one), and every
+  // part read from that: a fraction worked out apart from its rounded second showed 12:00:01.600 for 12:00:00.6, and
+  // [m] floored from serial × 1440 lost a minute to float error (13 minutes read 12).
+  const digits = Math.min(
+    3,
+    Math.max(0, ...toks.map((t) => (t.k === 'date' && t.v.startsWith('.') ? t.v.length - 1 : 0))),
+  );
+  const scale = 10 ** digits;
+  const whole = Math.floor(serial);
+  const units = Math.round((serial - whole) * 86_400 * scale);
+  const daySecs = Math.floor(units / scale);
+  const fraction = units % scale;
+  const totalSecs = whole * 86_400 + daySecs;
+  const p = dateFromSerial(whole + daySecs / 86_400);
   const hasAmPm = toks.some((t) => t.k === 'date' && /^(am\/pm|a\/p)$/i.test(t.v));
   let out = '';
   toks.forEach((t, i) => {
@@ -270,20 +283,20 @@ function formatDateSection(serial: number, toks: Tok[]): string {
         out += p.h < 12 ? 'A' : 'P';
         break;
       case /^\[h+\]$/.test(v):
-        out += String(Math.floor(serial * 24)).padStart(v.length - 2, '0');
+        out += String(Math.floor(totalSecs / 3600)).padStart(v.length - 2, '0');
         break;
       case /^\[m+\]$/.test(v):
-        out += String(Math.floor(serial * 1440)).padStart(v.length - 2, '0');
+        out += String(Math.floor(totalSecs / 60)).padStart(v.length - 2, '0');
         break;
       case /^\[s+\]$/.test(v):
-        out += String(Math.round(serial * 86_400)).padStart(v.length - 2, '0');
+        out += String(totalSecs).padStart(v.length - 2, '0');
         break;
       case v.startsWith('.'): {
-        const digits = v.length - 1;
-        const frac = (serial * 86_400) % 1;
-        out += `.${Math.floor(frac * 10 ** digits)
-          .toString()
-          .padStart(digits, '0')}`;
+        // This token's digits of the fraction rounded to the finest one shown (".0" beside ".000" reads its first).
+        const shown = v.length - 1;
+        const kept = Math.min(shown, digits);
+        const lead = String(fraction).padStart(digits, '0').slice(0, kept);
+        out += `.${lead.padEnd(shown, '0')}`;
         break;
       }
     }
@@ -322,6 +335,14 @@ export function formatCodeText(value: number | string, code: string): string {
   if (section.trim().toLowerCase() === 'general') return numberText(n);
   if (isDateSection(section)) return formatDateSection(n, tokenize(section, true));
   const toks = tokenize(section, false);
+  // A text section ("@", `@" kg"`) given a number shows the number as text in its place, as in Excel and Google
+  // Sheets: the number placeholders it lacks would otherwise drop it (TEXT(5, "@") read "").
+  if (section.includes('@') && toks.some((t) => t.k === 'at'))
+    return toks
+      .map((t) =>
+        t.k === 'at' ? numberText(section === sections[0] ? value : n) : t.k === 'lit' ? t.v : '',
+      )
+      .join('');
   const text = formatNumberSection(n, toks);
   // One section for every number: a negative keeps its minus.
   return value < 0 && section === sections[0] ? `-${text}` : text;

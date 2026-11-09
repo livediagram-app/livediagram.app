@@ -39,7 +39,15 @@ export async function getParticipants(
   return out;
 }
 
+// A profile read that waits a macrotask, as the accounts Worker's call out of the room does: what lets another
+// request run between a cap's count and its write. Off unless a test turns it on.
+let slowReads = false;
+export function setSlowProfileReads(on: boolean): void {
+  slowReads = on;
+}
+
 export async function getParticipant(_env: Env, id: string): Promise<ParticipantDTO | null> {
+  if (slowReads) await new Promise((resolve) => setTimeout(resolve, 0));
   const person = people.get(id);
   return person ? { ...person } : null;
 }

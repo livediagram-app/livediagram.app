@@ -66,4 +66,17 @@ describe('buildDashboardTab', () => {
     expect(tab.dashboard!.rows).toHaveLength(12);
     expect(dropped).toBe(Math.ceil(40 / 3) - 12);
   });
+
+  it('keeps no view whose row was left off', () => {
+    const metrics = Array.from({ length: 12 }, () => 'count' as const);
+    const charts = Array.from({ length: 30 }, () => ({ view: 'calendar' as const }));
+    const { tab, dropped } = buildDashboardTab('t9', 'Many', { metrics, charts });
+    expect(tab.dashboard!.rows).toHaveLength(12);
+    expect(dropped).toBe(3 + 15 - 12);
+    const placed = tab.dashboard!.rows.flatMap((r) =>
+      r.slots.flatMap((s) => (s.content?.type === 'element' ? [s.content.elementId] : [])),
+    );
+    expect(tab.elements.map((e) => e.id).sort()).toEqual([...placed].sort());
+    expect(tab.elements).toHaveLength(12 + 9 * 2);
+  });
 });

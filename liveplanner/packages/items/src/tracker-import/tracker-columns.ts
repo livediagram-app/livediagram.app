@@ -28,6 +28,8 @@ export interface Header {
   all: (key: string) => readonly number[];
   // The first index whose key contains `part` ("Custom field (Story Points)" for `storypoint`).
   containing: (part: string) => number | undefined;
+  // Every index whose key contains `part`, in order (Jira's "Story Points" and "Story point estimate" side by side).
+  allContaining: (part: string) => readonly number[];
 }
 
 export function readHeader(row: Row | undefined): Header {
@@ -45,6 +47,7 @@ export function readHeader(row: Row | undefined): Header {
       const i = keys.findIndex((k) => k.includes(part));
       return i < 0 ? undefined : i;
     },
+    allContaining: (part) => keys.flatMap((k, i) => (k.includes(part) ? [i] : [])),
   };
 }
 

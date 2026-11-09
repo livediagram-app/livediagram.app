@@ -105,7 +105,10 @@ export function trackerInstant(raw: unknown): number | null {
   if (typeof raw !== 'string') return null;
   const text = raw.trim();
   if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
-    const at = Date.parse(text);
+    // A time with no zone is UTC, as a bare day is: Date.parse reads "2026-10-31 23:30" in the device's own zone, so
+    // the comment's day moved with wherever the import ran.
+    const local = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(text);
+    const at = Date.parse(local ? `${text.replace(' ', 'T')}Z` : text);
     return Number.isFinite(at) ? at : null;
   }
   const jira = jiraParts(text);
@@ -137,7 +140,12 @@ export function trackerPriority(raw: unknown): Priority | undefined {
 // An estimate: a number from 0 to 999 (a story point count), else undefined.
 export function trackerEstimate(raw: unknown): number | undefined {
   const n =
-    typeof raw === 'number' ? raw : typeof raw === 'string' && raw.trim() ? Number(raw) : NaN;
+    typeof raw === 'number'
+      ? raw
+      : // Decimal digits only: Number() alone would also read "0x10" (16) or "1e2".
+        typeof raw === 'string' && /^\+?(\d+(\.\d*)?|\.\d+)$/.test(raw.trim())
+        ? Number(raw.trim())
+        : NaN;
   return Number.isFinite(n) && n >= 0 && n <= ITEM_NUMBER_MAX ? n : undefined;
 }
 

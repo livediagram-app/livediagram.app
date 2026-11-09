@@ -118,13 +118,14 @@ export function readJiraRows(rows: readonly Row[]): TrackerBoard {
     description: h.at('description'),
     due: h.at('duedate'),
     start: h.containing('startdate'),
-    points: h.containing('storypoint'),
   };
   const many = {
     labels: h.all('labels'),
     comments: h.all('comment'),
     sprints: h.all('sprint'),
     attachments: h.all('attachment'),
+    // Every Story Points column (a classic and a next-gen one side by side): the first a row fills is its estimate.
+    points: h.allContaining('storypoint'),
     components: [...h.all('components'), ...h.all('component')],
   };
   const names = namesById(rows.slice(1), h);
@@ -148,7 +149,9 @@ export function readJiraRows(rows: readonly Row[]): TrackerBoard {
     extras.text(own, 'components', values(row, many.components).join(', '));
     const assignee = trackerPersonOf(cellAt(row, at.assignee));
     const priority = trackerPriority(cellAt(row, at.priority));
-    const estimate = trackerEstimate(cellAt(row, at.points));
+    const estimate = many.points
+      .map((i) => trackerEstimate(cellAt(row, i)))
+      .find((e) => e !== undefined);
     const start = trackerDay(cellAt(row, at.start));
     const due = trackerDay(cellAt(row, at.due));
     cards.push({
