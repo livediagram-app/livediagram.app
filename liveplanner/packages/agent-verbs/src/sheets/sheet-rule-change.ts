@@ -5,6 +5,7 @@ import { withArticle } from '@liveplanner/items';
 import {
   CONDITION_OPS,
   compileFormula,
+  conditionValues,
   formatRange,
   formatRuleLine,
   isColour,
@@ -326,6 +327,16 @@ export function buildRuleChange(
             return refuse(
               'rule_invalid',
               `"${when.condition}" is not a condition: ${AGENT_CONDITIONS.join(', ')}.`,
+            );
+          // A value it takes and lacks would match every cell or none: refused, as the form's Done is.
+          const blank = (v: unknown) => v === undefined || v === null || String(v).trim() === '';
+          const n = conditionValues(op);
+          if ((n >= 1 && blank(when.value)) || (n === 2 && blank(when.value2)))
+            return refuse(
+              'rule_invalid',
+              n === 2
+                ? `"${when.condition}" takes value and value2.`
+                : `"${when.condition}" takes a value.`,
             );
           rule = {
             id: id!,

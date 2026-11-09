@@ -234,6 +234,32 @@ describe('format rules for agents', () => {
     expect(code({ op: 'conditional_format', range: 'A1', when: { condition: 'empty' } })).toBe(
       'format_invalid',
     );
+    // A condition missing a value it takes would paint every cell, or none.
+    const red = { background: '#ff0000' };
+    expect(
+      code({
+        op: 'conditional_format',
+        range: 'A1',
+        when: { condition: 'text_contains' },
+        style: red,
+      }),
+    ).toBe('rule_invalid');
+    expect(
+      code({
+        op: 'conditional_format',
+        range: 'A1',
+        when: { condition: 'between', value: 1 },
+        style: red,
+      }),
+    ).toBe('rule_invalid');
+    expect(
+      code({
+        op: 'conditional_format',
+        range: 'A1',
+        when: { condition: 'between', value: 1, value2: 5 },
+        style: red,
+      }),
+    ).toBeNull();
     expect(
       code({
         op: 'conditional_format',

@@ -97,7 +97,8 @@ the sheet's, seen by everyone, and worked out in every browser that shows it, as
 - `change_sheet` gains `conditional_format` (a range and either `when: { condition, value?, value2?, formula? }` with
   a `style` (the `format` op's bold, italic, underline, strikethrough, color and background), or `scale: { min, mid?,
 max }`, each point `{ color, type: "min" | "max" | "number" | "percent" | "percentile", value? }`), added last, and
-  `clear_conditional_formats` (every rule touching a range, or all with no range).
+  `clear_conditional_formats` (every rule touching a range, or all with no range). A condition missing a value it
+  takes (`value` for one, `value2` too for `between`) is refused (`rule_invalid`), as the form's Done is.
 - `read_sheet` lists the format rules in order (range, condition or scale, style).
 
 ## Limits
