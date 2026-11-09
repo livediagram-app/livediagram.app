@@ -67,7 +67,8 @@ A password not already found right in this isolate is a guess (`linkAccess` with
 3. A guess with no visitor (a Worker subrequest, `CF-Worker`) counts against the item before it is checked, its only
    bound: over it, 429 even for the right password.
 
-The visitor is `via:<address>` from `X-Liveworkspace-Client-IP` (IPv6 cut to its /64) when it is trusted
+The visitor is `via:<address>` from `X-Liveworkspace-Client-IP` (IPv6 cut to its /64, an IPv4-mapped one
+unwrapped to its IPv4 address: api-kit's `addressRateKey`) when it is trusted
 (`trustedClientAddress`, `@liveworkspace/sites/network`: the index's `WORKSPACE_PROXY_SECRET` matches the request's
 `X-Liveworkspace-Proxy-Secret`, or is unset), null for a Worker subrequest, else `clientRateKey`. No password sent, or
 one already checked, spends nothing. The same trusted address is what a copy names to its app (`clientIpOf`).

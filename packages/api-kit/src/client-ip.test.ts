@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clientIp, clientNetwork, clientRateKey } from './client-ip';
+import { addressRateKey, clientIp, clientNetwork, clientRateKey } from './client-ip';
 
 const req = (ip?: string) =>
   new Request('https://x.test/', { headers: ip ? { 'CF-Connecting-IP': ip } : {} });
@@ -17,6 +17,15 @@ describe('clientRateKey', () => {
     expect(a).toBe('2001:0db8:0001:0002::/64');
     expect(b).toBe(a);
     expect(clientRateKey(req('2001:db8:1:3::1'))).not.toBe(a);
+  });
+
+  // A dual-stack socket names an IPv4 caller as ::ffff:a.b.c.d: keyed as IPv6,
+  // every such caller fell into the one ::ffff:0:0/96 bucket.
+  it('keys an IPv4-mapped IPv6 address as its IPv4 address', () => {
+    expect(clientRateKey(req('::ffff:203.0.113.7'))).toBe('203.0.113.7');
+    expect(clientRateKey(req('::FFFF:cb00:7108'))).toBe('203.0.113.8');
+    expect(addressRateKey('::ffff:198.51.100.1')).toBe('198.51.100.1');
+    expect(addressRateKey('::1')).toBe('0000:0000:0000:0000::/64');
   });
 
   it('falls back to one shared bucket without the header', () => {
@@ -39,7 +48,8 @@ describe('clientNetwork', () => {
     expect(clientNetwork('2001:DB8:AAA:BB00:0:0:0:9')).toBe(net);
     expect(clientNetwork('2001:db8:aaa:bc00::1')).not.toBe(net);
     expect(clientNetwork('::1')).toBe('0000:0000:0000:0000::/56');
-    expect(clientNetwork('::ffff:203.0.113.7')).toBe('0000:0000:0000:0000::/56');
+    expect(clientNetwork('::ffff:203.0.113.7')).toBe('203.0.113.0/24');
+    expect(clientNetwork('::ffff:198.51.100.7')).toBe('198.51.100.0/24');
     expect(clientNetwork('fe80::1%eth0')).toBe('fe80:0000:0000:0000::/56');
   });
 

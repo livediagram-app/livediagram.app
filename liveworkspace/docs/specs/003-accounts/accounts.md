@@ -129,7 +129,7 @@ who opens it sees the team's name and joins as a member with one click.
   off, expired or unknown token is `404 invite_not_found`.
 
 The two doors that need no session, the join preview and the Decline link, are limited per network
-(`TEAM_LINK_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /48).
+(`TEAM_LINK_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /48; an IPv4-mapped IPv6 address counts as its IPv4 /24).
 
 Rows are never deleted. Leaving or being removed makes a row `removed`; deleting a team stamps
 `deletedAt`. Every write takes the next number from one counter (`team_seq`) in the same batch, and

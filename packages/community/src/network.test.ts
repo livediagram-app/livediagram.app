@@ -15,7 +15,9 @@ describe('communityNetwork', () => {
     expect(communityNetwork('2001:DB8:AAA:BB00:0:0:0:9')).toBe(net);
     expect(communityNetwork('2001:db8:aaa:bc00::1')).not.toBe(net);
     expect(communityNetwork('::1')).toBe('0000:0000:0000:0000::/56');
-    expect(communityNetwork('::ffff:203.0.113.7')).toBe('0000:0000:0000:0000::/56');
+    expect(communityNetwork('::ffff:203.0.113.7')).toBe('203.0.113.0/24');
+    expect(communityNetwork('::ffff:cb00:7107')).toBe('203.0.113.0/24');
+    expect(communityNetwork('::ffff:198.51.100.7')).toBe('198.51.100.0/24');
     expect(communityNetwork('fe80::1%eth0')).toBe('fe80:0000:0000:0000::/56');
   });
 

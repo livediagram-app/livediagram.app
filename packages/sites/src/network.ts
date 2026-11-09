@@ -57,10 +57,27 @@ export function visitorAddress(
 /** An address's range: its IPv4 /24 or IPv6 /48, so one machine can't dodge a limit by changing address. Anything
  *  unparseable is its own range. */
 export function addressRange(ip: string): string {
-  const v4 = IPV4.exec(ip.trim());
+  const address = unmappedAddress(ip);
+  const v4 = IPV4.exec(address);
   if (v4) return `${v4[1]}.${v4[2]}.${v4[3]}.0/24`;
-  const hextets = expandIpv6(ip.trim());
-  return hextets ? `${hextets.slice(0, 3).join(':')}::/48` : ip.trim();
+  const hextets = expandIpv6(address);
+  return hextets ? `${hextets.slice(0, 3).join(':')}::/48` : address;
+}
+
+/** The address trimmed, with an IPv4-mapped IPv6 address (`::ffff:a.b.c.d`, or the same in hex) turned back into
+ *  its IPv4 address. A dual-stack socket names an IPv4 caller that way, and keyed as IPv6 every IPv4 caller would
+ *  share the one range `::ffff:0:0/96` sits in. */
+export function unmappedAddress(ip: string): string {
+  const address = ip.trim();
+  const hextets = expandIpv6(address);
+  if (!hextets || hextets.slice(0, 5).some((h) => h !== '0000') || hextets[5] !== 'ffff') {
+    return address;
+  }
+  const bytes = [hextets[6]!, hextets[7]!].flatMap((h) => [
+    parseInt(h.slice(0, 2), 16),
+    parseInt(h.slice(2), 16),
+  ]);
+  return bytes.join('.');
 }
 
 // The eight four-digit hextets of an IPv6 address (an embedded IPv4 tail counts as two), or null when it

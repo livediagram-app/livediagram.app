@@ -260,7 +260,8 @@ community key as `X-Community-Key`, never an owner id.
 Reads are open to any page (`Access-Control-Allow-Origin: *`). Writes from a browser are answered
 with CORS only for an app's own origins (its site in `@liveworkspace/sites`, with and without `www.`,
 and its staging; and localhost in development), so another site's page can't like or report through a
-visitor's browser. Likes and reports are rate-limited per network (30 a minute; IPv4 /24, IPv6 /56).
+visitor's browser. Likes and reports are rate-limited per network (30 a minute; IPv4 /24, IPv6 /56, an
+IPv4-mapped IPv6 address as its IPv4 /24).
 
 ### App routes
 
