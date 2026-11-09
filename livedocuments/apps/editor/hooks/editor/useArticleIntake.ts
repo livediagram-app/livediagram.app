@@ -38,13 +38,13 @@ import {
   takeZoneReleased,
 } from '@/lib/article/article-editor-store';
 import { useElementGestureActive } from '@/lib/canvas-gesture';
-import { articleTextWidth } from '@/lib/article/article-flow-geometry';
+import { articleTextBox } from '@/lib/article/article-flow-geometry';
 import { lockedArticleFlows } from '@/lib/article/article-lock';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
-const textWidthOf = (pages: readonly LaidOutPage[], flow: string, doc: ArticleFlow): number =>
-  articleTextWidth(pages, flow, doc.style);
+const textBoxOf = (pages: readonly LaidOutPage[], flow: string, doc: ArticleFlow) =>
+  articleTextBox(pages, flow, doc.style);
 
 export function useArticleIntake({
   activeTab,
@@ -140,7 +140,8 @@ export function useArticleIntake({
       }
       if (!handle || !doc) continue;
       const els = activeTab.elements.filter((e) => ids.includes(e.id));
-      const plan = zonePlanFor(els, activeTab.elements, textWidthOf(pages, flow, doc));
+      const box = textBoxOf(pages, flow, doc);
+      const plan = zonePlanFor(els, activeTab.elements, box.width, box.height);
       const near = {
         x: plan.bounds.x + plan.bounds.width / 2,
         y: plan.bounds.y + plan.bounds.height / 2,
@@ -210,7 +211,10 @@ export function useArticleIntake({
         const laid = layOutPages(pagesOf(next));
         const heldNow = lockedArticleFlows(pagesOf(next));
         for (const [flow, doc] of Object.entries(articlesOf(next)))
-          if (!heldNow.has(flow)) next = withZonesFitted(next, flow, textWidthOf(laid, flow, doc));
+          if (!heldNow.has(flow)) {
+            const box = textBoxOf(laid, flow, doc);
+            next = withZonesFitted(next, flow, box.width, box.height);
+          }
         return next;
       });
       // Nothing to settle: the same tabs back, so the tick changes nothing.

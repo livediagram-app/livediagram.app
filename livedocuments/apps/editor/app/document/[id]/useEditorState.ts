@@ -161,6 +161,7 @@ import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { announcePageLocked, guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
 import { announceTextOnly, guardFlashcardsIn, setTextOnlyToast } from '@/lib/flashcard-guard';
+import { setArticleCapsToast } from '@/lib/article/article-caps';
 
 // The guards every local edit of the active tab passes (Pages mode): locked pages, then text-only
 // flashcards (docs/specs/007-editor/flashcards.md "Text only"), each saying why after the commit.
@@ -1505,10 +1506,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Said after the commit: the guard runs inside a state update, where no toast may be set.
     onBlocked: () => queueMicrotask(() => announcePageLocked(toast.info)),
   });
-  // Where a card's "text only" notice goes (lib/flashcard-guard).
+  // Where a card's "text only" notice and the writing's caps notice go (lib/flashcard-guard, lib/article/article-caps).
   useEffect(() => {
     setTextOnlyToast(toast.info);
-    return () => setTextOnlyToast(null);
+    setArticleCapsToast(toast.info);
+    return () => {
+      setTextOnlyToast(null);
+      setArticleCapsToast(null);
+    };
   }, [toast.info]);
 
   // A locked tab refuses every element mutation. Commit /

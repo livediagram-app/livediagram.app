@@ -43,7 +43,7 @@ import {
   markZoneReleased,
   type ZoneMoveTo,
 } from '@/lib/article/article-editor-store';
-import { articleTextWidth } from '@/lib/article/article-flow-geometry';
+import { articleTextBox } from '@/lib/article/article-flow-geometry';
 import { articleLocked } from '@/lib/article/article-lock';
 import {
   clearArticleGrow,
@@ -306,8 +306,9 @@ export function useArticles(deps: {
     tickTabs: deps.tickTabs,
   });
 
-  const textWidth = (t: Tab, flow: string) =>
-    articleTextWidth(layOutPages(pagesOf(t)), flow, articlesOf(t)[flow]?.style);
+  const textBox = (t: Tab, flow: string) =>
+    articleTextBox(layOutPages(pagesOf(t)), flow, articlesOf(t)[flow]?.style);
+  const textWidth = (t: Tab, flow: string) => textBox(t, flow).width;
 
   const insertObject = useCallback(
     (flow: string, what: ArticleInsert) => {
@@ -348,7 +349,10 @@ export function useArticles(deps: {
       const apply = (t: Tab): Tab => {
         if ('remove' in action) return withZoneRemoved(t, flow, zoneId);
         if ('float' in action) return withZoneReleased(t, flow, zoneId);
-        if ('size' in action) return withZoneSize(t, flow, zoneId, action.size, textWidth(t, flow));
+        if ('size' in action) {
+          const box = textBox(t, flow);
+          return withZoneSize(t, flow, zoneId, action.size, box.width, box.height);
+        }
         return withZoneWrap(t, flow, zoneId, action, textWidth(t, flow));
       };
       // A choice already in force (the pressed fit, the same size) is no edit: no undo step.
@@ -373,8 +377,8 @@ export function useArticles(deps: {
       if (!handle || articleEditRefused(d.canEdit, d.activeTab, flow) || ids.length === 0) return;
       const all = d.activeTab.elements;
       const els = all.filter((e) => ids.includes(e.id));
-      const width = textWidth(d.activeTab, flow);
-      const plan = zonePlanFor(els, all, width);
+      const { width, height } = textBox(d.activeTab, flow);
+      const plan = zonePlanFor(els, all, width, height);
       const res = handle.insertZone(
         { zone: plan.zone, width: plan.width, height: plan.height },
         { x: plan.bounds.x + plan.bounds.width / 2, y: plan.bounds.y + plan.bounds.height / 2 },

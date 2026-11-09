@@ -7,6 +7,12 @@ import { renderElementsToSvg } from './svg-render';
 // docs/specs/009-elements/pie-chart.md "Show Axis", "A second axis".
 
 describe('axisScale', () => {
+  it('reads a fine step to its own decimals, so no two ticks read the same, and no -0', () => {
+    const texts = axisScale(-0.03, 0.05).ticks.map((t) => t.text);
+    expect(texts).toEqual(['-0.04', '-0.02', '0', '0.02', '0.04', '0.06']);
+    expect(axisScale(0, 0.3).ticks.map((t) => t.text)).toEqual(['0', '0.1', '0.2', '0.3']);
+  });
+
   it('runs from zero to the next round tick past the data, a tick at each round step', () => {
     const s = axisScale(0, 160);
     expect(s.ticks.map((t) => t.value)).toEqual([0, 50, 100, 150, 200]);

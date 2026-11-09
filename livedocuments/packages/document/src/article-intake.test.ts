@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ARTICLE_ZONE_MAX } from './article-flow';
-import { withZonesFitted, zonePlanFor } from './article-intake';
+import { withZoneSize, withZonesFitted, zoneHeightMax, zonePlanFor } from './article-intake';
 import { layOutPages, type Page } from './page';
 import type { Element } from './index';
 
@@ -54,5 +54,65 @@ describe('an object zone fitted to a tall object', () => {
     expect(plan.height).toBe(ARTICLE_ZONE_MAX);
     expect(plan.width).toBe(100);
     expect(plan.scale).toBeCloseTo(ARTICLE_ZONE_MAX / 6000);
+  });
+});
+
+// A zone taller than a page's text area could never sit on a page: every zone is held to it.
+describe('a zone held to the text area', () => {
+  const textHeight = 900;
+  const zoneTab = (zone: 'object' | 'drawing', height: number, elements: Element[]) => ({
+    elements,
+    pages,
+    articles: {
+      f: {
+        blocks: [
+          {
+            id: 'z',
+            type: 'zone' as const,
+            zone,
+            width: 600,
+            height,
+            at: { page: 'd1', x: 100, y: 100 },
+          },
+        ],
+      },
+    },
+  });
+
+  it('caps at the text area, never past the tallest zone nor under the least', () => {
+    expect(zoneHeightMax(textHeight)).toBe(900);
+    expect(zoneHeightMax(5000)).toBe(ARTICLE_ZONE_MAX);
+    expect(zoneHeightMax()).toBe(ARTICLE_ZONE_MAX);
+    expect(zoneHeightMax(3)).toBe(24);
+  });
+
+  it('scales a picture between the text height and 2,000 px to fit a page', () => {
+    const plan = zonePlanFor([tall(600, 1500)], [], 640, textHeight);
+    expect(plan.height).toBe(900);
+    expect(plan.width).toBe(360);
+    const out = withZonesFitted(zoneTab('object', 1500, [tall(600, 1500)]), 'f', 640, textHeight);
+    const pic = out.elements[0] as Extract<Element, { width: number }>;
+    expect([pic.width, pic.height]).toEqual([360, 900]);
+  });
+
+  it('plans, grows and sizes a drawing zone no taller than a page holds', () => {
+    const plan = zonePlanFor([tall(100, 1400), tall(100, 50)], [], 640, textHeight);
+    expect(plan.zone).toBe('drawing');
+    expect(plan.height).toBe(900);
+    // A member reaching far down grows the zone to the cap, no further (a reload reads back the same).
+    const shape = { ...tall(100, 1200), id: 's', type: 'shape', shape: 'square' } as Element;
+    const grown = withZonesFitted(zoneTab('drawing', 800, [shape]), 'f', 640, textHeight);
+    const z = grown.articles.f.blocks[0]!;
+    expect(z.type === 'zone' && z.height).toBe(900);
+    const sized = withZoneSize(
+      zoneTab('drawing', 240, []),
+      'f',
+      'z',
+      { height: 1800 },
+      640,
+      textHeight,
+    );
+    const s2 = sized.articles.f.blocks[0]!;
+    expect(s2.type === 'zone' && s2.height).toBe(900);
   });
 });

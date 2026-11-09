@@ -32,10 +32,12 @@ export function axisScale(lo: number, hi: number): AxisScale {
   min = Math.floor(min / step + 1e-9) * step;
   max = Math.ceil(max / step - 1e-9) * step;
   const ticks: AxisScale['ticks'] = [];
+  // A step under one is read to its own decimal (0.02 needs two), so no two ticks read the same.
+  const decimals = Math.max(1, -Math.floor(Math.log10(step) + 1e-9));
   for (let v = min; v <= max + step / 2; v += step) {
     // Rounded to the step's own precision, so 0.1 + 0.2 reads 0.3.
     const value = Number(v.toPrecision(12));
-    ticks.push({ value, text: shortNumber(value) });
+    ticks.push({ value, text: shortNumber(value, decimals) });
   }
   return { min, max, ticks };
 }

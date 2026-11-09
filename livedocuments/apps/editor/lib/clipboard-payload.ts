@@ -185,11 +185,25 @@ export function parseElementsPayload(text: string | null | undefined): Element[]
 }
 
 /** Whether a paste into an article's writing is the canvas's to make: an image file, or elements
- *  copied from a canvas (the writing takes text, links and formatting itself). */
+ *  copied from a canvas (the writing takes text, links and formatting itself). A picture beside
+ *  formatted writing (Excel and Word put one of the copied cells or paragraphs on the clipboard too) is
+ *  the writing's: its text is what was copied (docs/specs/007-editor/article-pages.md "Writing", Paste). */
 export function articlePasteIsCanvas(data: DataTransfer | null): boolean {
   if (!data) return false;
+  if (carriesWriting(data)) return false;
   if (data.files && data.files.length > 0) return true;
   for (const item of Array.from(data.items ?? []))
     if (item.kind === 'file' && item.type.startsWith('image/')) return true;
   return parseElementsPayload(data.getData('text/plain')) !== null;
+}
+
+// Formatted writing beside whatever else: HTML with plain text that is not just an address (a browser's
+// "Copy Image" writes the picture's HTML and at most its address).
+function carriesWriting(data: DataTransfer): boolean {
+  const types = Array.from(data.types ?? []);
+  if (!types.includes('text/html')) return false;
+  const text = data.getData('text/plain').trim();
+  if (!text) return false;
+  if (/^\S+$/.test(text) && /^(https?:|data:|blob:|file:)/i.test(text)) return false;
+  return parseElementsPayload(text) === null;
 }

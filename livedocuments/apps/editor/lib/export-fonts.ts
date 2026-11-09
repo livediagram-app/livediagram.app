@@ -22,7 +22,8 @@ import { googleFontsHref } from '@livedocuments/document';
 const EMBEDDED_SUBSETS = ['latin', 'latin-ext'];
 
 // Keyed by the id list, because a second export of the same canvas should
-// not re-download a font we already hold.
+// not re-download a font we already hold. Only what came whole is held: a
+// failed fetch is forgotten, so the next export tries again.
 const cache = new Map<string, Promise<string>>();
 
 type FetchLike = typeof fetch;
@@ -37,18 +38,33 @@ export async function embeddedFontFaceCss(
   const key = [...fontIds].sort().join(',');
   const hit = cache.get(key);
   if (hit) return hit;
-  const pending = buildCss(fontIds, fetchImpl ?? fetch).catch(() => '');
+  const forget = () => {
+    if (cache.get(key) === pending) cache.delete(key);
+  };
+  const pending: Promise<string> = buildCss(fontIds, fetchImpl ?? fetch).then(
+    ({ css, whole }) => {
+      if (!whole) forget();
+      return css;
+    },
+    () => {
+      forget();
+      return '';
+    },
+  );
   cache.set(key, pending);
   return pending;
 }
 
-async function buildCss(fontIds: readonly string[], doFetch: FetchLike): Promise<string> {
+async function buildCss(
+  fontIds: readonly string[],
+  doFetch: FetchLike,
+): Promise<{ css: string; whole: boolean }> {
   const res = await doFetch(googleFontsHref(fontIds));
-  if (!res.ok) return '';
+  if (!res.ok) return { css: '', whole: false };
   const css = await res.text();
   const blocks = latinFaceBlocks(css);
   const inlined = await Promise.all(blocks.map((block) => inlineUrls(block, doFetch)));
-  return inlined.filter(Boolean).join('\n');
+  return { css: inlined.filter(Boolean).join('\n'), whole: inlined.every(Boolean) };
 }
 
 // Google's stylesheet labels each @font-face with a `/* subset */` comment.

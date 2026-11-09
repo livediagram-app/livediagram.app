@@ -102,15 +102,16 @@ Reduced motion (either source) cuts. The slide announcer, focus and the HUD's co
 
 ## Testing
 
-| Rule                                   | Test                                                                                     |
-| -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Types per transition and direction     | `slide-transition.test.ts`: `slideTransitionType`                                        |
-| A move runs in a typed transition      | `PresentationHost.test.tsx`: `addTransitionType` called with the move's type             |
-| Reduced motion and None start none     | `PresentationHost.test.tsx`                                                              |
-| Quick steps all land                   | `PresentationHost.test.tsx`: three steps before a commit land three slides on            |
-| The entrance waits, then reveals typed | `PresentationHost.test.tsx` with `whenScreenSettles` driven                              |
-| Refusals are logged                    | `PresentationOverlay.test.tsx`                                                           |
-| It moves, lands and stays fast         | `e2e/presentation-mode.spec.ts`; `e2e/perf/slide-transition.perf.ts` (Chromium, Firefox) |
+| Rule                                   | Test                                                                                                                                                                                 |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Types per transition and direction     | `slide-transition.test.ts`: `slideTransitionType`                                                                                                                                    |
+| A move runs in a typed transition      | `PresentationHost.test.tsx`: `addTransitionType` called with the move's type                                                                                                         |
+| Reduced motion and None start none     | `PresentationHost.test.tsx`                                                                                                                                                          |
+| Quick steps all land                   | `PresentationHost.test.tsx`: three steps before a commit land three slides on                                                                                                        |
+| Quick steps at the ends                | `PresentationHost.test.tsx`: the overlay names a step's direction (`onGo(next, ±1)`); the host wraps (Loop), stops or leaves from `asked`, and takes Home, End and the list as given |
+| The entrance waits, then reveals typed | `PresentationHost.test.tsx` with `whenScreenSettles` driven                                                                                                                          |
+| Refusals are logged                    | `PresentationOverlay.test.tsx`                                                                                                                                                       |
+| It moves, lands and stays fast         | `e2e/presentation-mode.spec.ts`; `e2e/perf/slide-transition.perf.ts` (Chromium, Firefox)                                                                                             |
 
 ## Constants and configuration
 

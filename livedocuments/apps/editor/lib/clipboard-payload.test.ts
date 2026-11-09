@@ -227,11 +227,12 @@ describe('stroke points (docs/specs/006-document/stroke-points.md)', () => {
 });
 
 describe('articlePasteIsCanvas', () => {
-  const data = (over: { files?: unknown[]; items?: unknown[]; text?: string }) =>
+  const data = (over: { files?: unknown[]; items?: unknown[]; text?: string; html?: string }) =>
     ({
       files: over.files ?? [],
       items: over.items ?? [],
-      getData: () => over.text ?? '',
+      types: [...(over.html !== undefined ? ['text/html'] : []), 'text/plain'],
+      getData: (type: string) => (type === 'text/html' ? (over.html ?? '') : (over.text ?? '')),
     }) as unknown as DataTransfer;
 
   it('hands images and copied elements to the canvas, text to the writing', () => {
@@ -239,5 +240,25 @@ describe('articlePasteIsCanvas', () => {
     expect(articlePasteIsCanvas(data({ text: 'plain words' }))).toBe(false);
     expect(articlePasteIsCanvas(data({ files: [{}] }))).toBe(true);
     expect(articlePasteIsCanvas(data({ items: [{ kind: 'file', type: 'image/png' }] }))).toBe(true);
+  });
+
+  it("leaves the picture Excel and Word add beside copied writing: the writing's", () => {
+    const png = { files: [{ type: 'image/png' }], items: [{ kind: 'file', type: 'image/png' }] };
+    // Cells copied from Excel: the table as HTML and tab-separated text, and a picture of them.
+    const excel = { ...png, html: '<table><tr><td>a</td><td>b</td></tr></table>', text: 'a\tb' };
+    expect(articlePasteIsCanvas(data(excel))).toBe(false);
+    expect(articlePasteIsCanvas(data({ ...png, html: '<p>Hello</p>', text: 'Hello' }))).toBe(false);
+    // A browser's Copy Image: the picture's HTML, no text or only its address.
+    expect(
+      articlePasteIsCanvas(data({ ...png, html: '<img src="https://a.example/x.png">' })),
+    ).toBe(true);
+    expect(
+      articlePasteIsCanvas(
+        data({ ...png, html: '<img src="x.png">', text: 'https://a.example/x.png' }),
+      ),
+    ).toBe(true);
+    // Elements copied from a canvas stay the canvas's, HTML or not.
+    const copied = serialiseElements([shape('a')]);
+    expect(articlePasteIsCanvas(data({ html: '<p>x</p>', text: copied }))).toBe(true);
   });
 });

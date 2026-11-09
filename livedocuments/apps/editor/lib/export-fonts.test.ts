@@ -76,6 +76,18 @@ describe('embeddedFontFaceCss', () => {
     expect(await embeddedFontFaceCss(['oswald'], throws)).toBe('');
   });
 
+  it('tries again after a failed fetch, rather than keeping the fallback for the session', async () => {
+    const dead = vi.fn(
+      async () => new Response('down', { status: 503 }),
+    ) as unknown as typeof fetch;
+    expect(await embeddedFontFaceCss(['merriweather'], dead)).toBe('');
+    const throws = vi.fn(async () => {
+      throw new Error('offline');
+    }) as unknown as typeof fetch;
+    expect(await embeddedFontFaceCss(['merriweather'], throws)).toBe('');
+    expect(await embeddedFontFaceCss(['merriweather'], stubFetch())).toContain('data:font/woff2');
+  });
+
   it('downloads a face once, however many exports ask for it', async () => {
     const fetchImpl = stubFetch();
     await embeddedFontFaceCss(['caveat'], fetchImpl);

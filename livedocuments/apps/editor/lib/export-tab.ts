@@ -406,7 +406,11 @@ export async function renderTabToCanvas(
       `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(aw * scale)}" height="${r2(ah * scale)}"` +
       ` viewBox="${r2(ax)} ${r2(ay)} ${r2(aw)} ${r2(ah)}">${fontDefs}${arrowRun.join('')}</svg>`;
     arrowRun = [];
-    ctx.drawImage(await svgToImage(svg), ax, ay, aw, ah);
+    try {
+      ctx.drawImage(await svgToImage(svg), ax, ay, aw, ah);
+    } catch {
+      // As every other raster here: an arrow run the browser will not draw never aborts the export.
+    }
   };
   for (const { el, alpha } of ordered) {
     if (el.type === 'arrow') {
