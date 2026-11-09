@@ -65,7 +65,27 @@ describe('newSessionAttachment', () => {
       [a.personTag, a.networkTag, a.workbenchPairing, a.adderKey, a.documentId].map(
         (s) => s?.length,
       ),
-    ).toEqual([64, 32, 36, 32, 64]);
+    ).toEqual([64, 32, 36, 32, 200]);
+  });
+});
+
+describe('a long document id', () => {
+  it('is kept whole up to the API bound, so its grant renews against the real id', () => {
+    const id = 'd'.repeat(200);
+    const a = newSessionAttachment(
+      {
+        isOwner: false,
+        tabScope: null,
+        shareCode: null,
+        personTag: null,
+        networkTag: null,
+        workbenchPairing: null,
+        adderKey: null,
+        documentId: id,
+      },
+      'presence-1',
+    );
+    expect(a.documentId).toBe(id);
   });
 });
 

@@ -56,8 +56,26 @@ describe('newSessionAttachment', () => {
     expect(a.presenceId).toBe('presence-1');
     expect(a.presence).toBeNull();
     expect([a.personTag, a.workbenchPairing, a.adderKey, a.designId].map((s) => s?.length)).toEqual(
-      [64, 36, 32, 64],
+      [64, 36, 32, 200],
     );
+  });
+});
+
+describe('a long design id', () => {
+  it('is kept whole up to the API bound, so its grant renews against the real id', () => {
+    const id = 'd'.repeat(200);
+    const a = newSessionAttachment(
+      {
+        tabScope: null,
+        shareCode: null,
+        personTag: null,
+        workbenchPairing: null,
+        adderKey: null,
+        designId: id,
+      },
+      'presence-1',
+    );
+    expect(a.designId).toBe(id);
   });
 });
 
