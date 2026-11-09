@@ -2,7 +2,14 @@
 // PNG, JPEG or WebP, its layers kept as a PSD, each visible layer as a PNG, and one layer alone (the
 // Layers row's Export Layer). Large photos are written band by band (encodePngStream), so the whole
 // picture is never one canvas.
-import { endpointPosition, photoOfPage, type LaidOutPage, type Tab } from '@livedesign/design';
+import {
+  endpointPosition,
+  exportFontIds,
+  photoOfPage,
+  type Element,
+  type LaidOutPage,
+  type Tab,
+} from '@livedesign/design';
 import {
   compositePhoto,
   encodePngStream,
@@ -13,6 +20,7 @@ import {
   type Raster,
 } from '@livedesign/photo-engine';
 import { renderTabToSvg } from '../export-tab';
+import { embeddedFontFaceCss } from '../export-fonts';
 import { loadTabImages, type ExportImageMap } from '../export-tab-images';
 import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
 import type { PixelsStore } from './pixels-store';
@@ -101,24 +109,40 @@ export async function loadedSession(
   return { session: s, done: () => s.dispose() };
 }
 
-/** The SVG of the page's elements alone, the page's own paint left out, or null when none is on it: the boxes
- *  whose centre is on the page and the arrows with an end on it. */
-export function elementsSvg(tab: Tab, page: LaidOutPage, images?: ExportImageMap): string | null {
+/** The page's elements: the boxes whose centre is on the page and the arrows with an end on it. */
+function elementsOnPage(tab: Tab, page: LaidOutPage): Element[] {
   const r = page.rect;
   const onPage = (x: number, y: number) =>
     x >= r.x && x < r.x + r.width && y >= r.y && y < r.y + r.height;
-  const on = tab.elements.filter((el) => {
+  return tab.elements.filter((el) => {
     if (el.type !== 'arrow') return onPage(el.x + el.width / 2, el.y + el.height / 2);
     const a = endpointPosition(el.from, tab.elements);
     const b = endpointPosition(el.to, tab.elements);
     return onPage(a.x, a.y) || onPage(b.x, b.y);
   });
+}
+
+/** The SVG of the page's elements alone, the page's own paint left out, or null when none is on it. `fontCss`
+ *  carries the typefaces inside the markup (an SVG drawn as an image loads nothing from outside). */
+export function elementsSvg(
+  tab: Tab,
+  page: LaidOutPage,
+  images?: ExportImageMap,
+  fontCss?: string,
+): string | null {
+  const on = elementsOnPage(tab, page);
   if (!on.length) return null;
   // Without `elementsOnly` the page's paint came too: the photo's preview (at most 2048 px, so a larger photo came
   // out soft) or, with no preview to hand, its checkerboard, laid over the full-size composite.
   return renderTabToSvg(
     { ...tab, elements: on },
-    { page, transparentPaper: true, elementsOnly: true, ...(images ? { images } : {}) },
+    {
+      page,
+      transparentPaper: true,
+      elementsOnly: true,
+      ...(images ? { images } : {}),
+      ...(fontCss !== undefined ? { fontCss } : {}),
+    },
   );
 }
 
@@ -128,7 +152,14 @@ export async function elementsImage(
   page: LaidOutPage,
   images?: ExportImageMap,
 ): Promise<HTMLImageElement | null> {
-  const svg = elementsSvg(tab, page, images);
+  const on = elementsOnPage(tab, page);
+  if (!on.length) return null;
+  // The faces travel inside the SVG, as the PNG export's fragments carry them: drawn as an image, the SVG's
+  // Google Fonts @import never loaded, and every webfont came out in the fallback face.
+  const fontCss = await embeddedFontFaceCss(exportFontIds(on, tab.font, tab.finish)).catch(
+    () => '',
+  );
+  const svg = elementsSvg(tab, page, images, fontCss);
   if (!svg) return null;
   return new Promise((resolve) => {
     const img = new Image();
