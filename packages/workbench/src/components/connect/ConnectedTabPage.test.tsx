@@ -2,6 +2,7 @@
 
 // A connected tab's page (connected-tabs.md "Opening", "How it looks"): ready until a person asks, a fresh press opens
 // it at once, an open's answer picks the card, marks the tab broken or mended, and renames it for an Editor only.
+import { StrictMode } from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { IndexError, type ConnectionOpen } from '@liveworkspace/index-client';
@@ -36,7 +37,7 @@ const OPEN: ConnectionOpen = {
   preview: '/api/previews/share/code/image.svg',
 };
 
-const setup = (over: Partial<ConnectedTabPageProps> = {}) => {
+const setup = (over: Partial<ConnectedTabPageProps> = {}, strict = false) => {
   const navigate = { assign: vi.fn(), openNew: vi.fn() };
   const client = { openConnection: vi.fn().mockResolvedValue(OPEN) };
   const props: ConnectedTabPageProps = {
@@ -54,7 +55,8 @@ const setup = (over: Partial<ConnectedTabPageProps> = {}) => {
     navigate,
     ...over,
   };
-  const view = render(<ConnectedTabPage {...props} />);
+  const page = <ConnectedTabPage {...props} />;
+  const view = render(strict ? <StrictMode>{page}</StrictMode> : page);
   const state = () =>
     view.container
       .querySelector('[data-connected-tab-page]')
@@ -94,6 +96,16 @@ describe('ConnectedTabPage', () => {
     const stale = setup();
     expect(stale.state()).toBe('ready');
     expect(stale.client.openConnection).not.toHaveBeenCalled();
+  });
+
+  it('still opens for a fresh press when it is mounted twice at once (React Strict Mode)', async () => {
+    pickConnectedTab('t1');
+    const { client, navigate, state } = setup({ hostApp: 'liveplanner' }, true);
+    // The first mount's open is cut short by the double mount; the second takes the press and goes.
+    await waitFor(() => expect(navigate.assign).toHaveBeenCalledWith(OPEN.href));
+    expect(navigate.assign).toHaveBeenCalledTimes(1);
+    expect(client.openConnection.mock.calls.length).toBeLessThanOrEqual(2);
+    expect(state()).toBe('opening');
   });
 
   it('opens again on each new press of its tab', async () => {
