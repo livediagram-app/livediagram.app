@@ -78,6 +78,8 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('DeleteDesign', 'Delete Design', 'Moving a design to the Trash, or deleting one tab.'),
   mcpTool('ListTrash', 'List Trash', 'Listing the designs in the Trash.'),
   mcpTool('RestoreDesign', 'Restore Design', 'Bringing a design back from the Trash.'),
+  mcpTool('ArchiveDesign', 'Archive Design', 'Putting a design away in Archived.'),
+  mcpTool('UnarchiveDesign', 'Unarchive Design', 'Moving a design out of Archived.'),
   mcpTool(
     'ChangePages',
     'Change Pages',

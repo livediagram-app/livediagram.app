@@ -444,6 +444,26 @@ and every team Trash they have joined.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
 
+### 4.9b `archive_project` and `unarchive_project`
+
+The owner's Archived ([One Explorer contracts "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)), with exactly the
+REST doors' authority (`POST /api/projects/<id>/archive` and `POST /api/projects/<id>/unarchive`, which pass to the
+index as the caller; `@liveworkspace/index-app` `archive-doors.ts`). Both are declared once for every product
+(`@liveworkspace/agent-verbs/mcp/archive-tools`) in this product's words.
+
+- **`archive_project`**: `{ projectId }`. Destructive. Moves a plan the user owns to their Archived: it leaves
+  every list, its share links end, and its favourites, Recent and Most Used rows and Inbox threads are deleted for
+  everyone, so moving it out starts fresh. Returns `{ archived, id, name }`. Only its owner archives it (a
+  teammate is refused 403 `not_owner`), a plan in the Trash is refused 409 `trashed` (pointing at
+  `restore_project`), and one already archived answers as it is. Each refusal is a model-correctable error.
+- **`unarchive_project`**: `{ projectId, folderId?, teamId? }`. Write. Moves it out: to the top of the personal
+  library by default, or into the folder named (a team's folder with that `teamId`), or the top of the team named.
+  Returns `{ unarchived, id, name, library, url }`, `library` as `find_projects` names it.
+- **`find_projects` with `archived: true`** lists only the user's archived plans (`GET /api/projects?team=all&archived=1`,
+  the index's `view=archived`), each marked `archived: true`. Without it, an archived plan is never listed.
+- While archived, every tool that opens or changes the plan (`read_project`, `update_project` and the rest) is
+  refused 409 `archived`, in words that name `unarchive_project` (`@liveworkspace/agent-verbs/api-refusal`).
+
 ### 4.9b The Plan tools
 
 The cards Plan boards show, the boards and the card types ([Plan for agents](../026-plan/plan-agents.md),
@@ -623,14 +643,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the twenty-eight tools, and each is a preset in
+Three behaviours cover the thirty tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                             |
-| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_sheets`, `read_sheet`, `read_form`                                           |
-| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `share_project`, `rename_project`, `restore_project`, `add_board`, `change_board`, `import_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
-| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `change_items`, `change_threads`, `change_card_types`, `change_sheet`, `change_form`                                                          |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                                                  |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_sheets`, `read_sheet`, `read_form`                                                                |
+| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `share_project`, `rename_project`, `restore_project`, `unarchive_project`, `add_board`, `change_board`, `import_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
+| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `archive_project`, `change_items`, `change_threads`, `change_card_types`, `change_sheet`, `change_form`                                                            |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -741,7 +761,7 @@ says why by its status (no such tab, view only, the last tab).
 
 | Tool                | Result object                                                                                                                                                                                                           |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `find_projects`     | `count`, `projects[]` of `{ id, name, updatedAt, library, url }`                                                                                                                                                        |
+| `find_projects`     | `count`, `projects[]` of `{ id, name, updatedAt, library, url, archived? }`                                                                                                                                             |
 | `read_project`      | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`                                                                                                                     |
 | `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                                                                               |
 | `create_project`    | `id` and `projectId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                                                                                        |
@@ -752,6 +772,8 @@ says why by its status (no such tab, view only, the last tab).
 | `delete_project`    | `deleted` (`project` or `tab`), `projectId`, then `trashed` + `restorableForDays` or `tabId`                                                                                                                            |
 | `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                                                                                       |
 | `restore_project`   | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                                                                                            |
+| `archive_project`   | `archived`, `id`, `name`                                                                                                                                                                                                |
+| `unarchive_project` | `unarchived`, `id`, `name`, `library`, `url`                                                                                                                                                                            |
 | `list_items`        | `boards[]` of `{ title, tab, tabId, kind, takes, columns[] { name, status, wipLimit?, cards[] } }`, `notOnBoard[]`, `count`, `items[]` of `{ ref, id, type, status, column, title, fields }`, `types[]`, `hint?`, `url` |
 | `change_items`      | `applied[]` (one line per change, naming the column), `url`                                                                                                                                                             |
 | `list_threads`      | `threads[]` of `{ id, title, state, resolvedBy?, cards[], field?, comments[] { id, author, at, text, ai?, edited?, reactions?[] { emoji, name, count, by[] } } }`, `count`, `url`                                       |

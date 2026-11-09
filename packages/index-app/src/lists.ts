@@ -42,22 +42,29 @@ export const listAllItems = (client: IndexClient, app: App, team: string): Promi
 // What an API client asks of a list (GET /api/<collection>): `team` as the index takes it (`personal` unless the client
 // asks for `all`: mine and every joined team, the index's unset `team`), the index's search words `q` (each in the
 // title or the folder's name), and `limit`, one page of at most that many, newest saved first. Without a `limit`,
-// every page up to LIST_PAGES; without `q` or `team=all`, the personal library as it always answered.
-export type ListAsked = { team: string | undefined; q?: string; limit?: number };
+// every page up to LIST_PAGES; without `q` or `team=all`, the personal library as it always answered. `archived=1` (or
+// `true`) lists the caller's Archived instead (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
+// "Archived"), the index's `view=archived`: the archived items alone, searched and capped as any list is.
+export type ListAsked = { team: string | undefined; q?: string; limit?: number; archived?: true };
 
 const LIMIT = /^[1-9]\d*$/;
+// `archived=0` (or `false`) is the live list, as no `archived` is.
+const ARCHIVED_FLAGS = new Set(['1', 'true', '0', 'false']);
 
 export function listAskedOf(params: URLSearchParams): ListAsked | { error: 'invalid_query' } {
   const team = params.get('team');
   const q = params.get('q')?.trim();
   const limit = params.get('limit');
+  const archived = params.get('archived');
   if (team !== null && team !== 'all') return { error: 'invalid_query' };
+  if (archived !== null && !ARCHIVED_FLAGS.has(archived)) return { error: 'invalid_query' };
   if (limit !== null && (!LIMIT.test(limit) || Number(limit) > LIST_LIMIT_MAX))
     return { error: 'invalid_query' };
   return {
     team: team === 'all' ? undefined : 'personal',
     ...(q ? { q } : {}),
     ...(limit !== null ? { limit: Number(limit) } : {}),
+    ...(archived === '1' || archived === 'true' ? { archived: true as const } : {}),
   };
 }
 
@@ -67,6 +74,7 @@ export function listItemsAsked(client: IndexClient, app: App, asked: ListAsked):
     app,
     ...(asked.team !== undefined ? { team: asked.team } : {}),
     ...(asked.q !== undefined ? { q: asked.q } : {}),
+    ...(asked.archived ? { view: 'archived' as const } : {}),
   };
   if (asked.limit !== undefined)
     return client.listItems({ ...query, limit: asked.limit }).then((p) => p.items);

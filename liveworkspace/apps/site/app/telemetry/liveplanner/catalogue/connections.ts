@@ -72,6 +72,8 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('DeleteProject', 'Delete Project', 'Moving a project to the Trash, or deleting one tab.'),
   mcpTool('ListTrash', 'List Trash', 'Listing the projects in the Trash.'),
   mcpTool('RestoreProject', 'Restore Project', 'Bringing a project back from the Trash.'),
+  mcpTool('ArchiveProject', 'Archive Project', 'Putting a project away in Archived.'),
+  mcpTool('UnarchiveProject', 'Unarchive Project', 'Moving a project out of Archived.'),
   mcpTool(
     'ListItems',
     'List Items',

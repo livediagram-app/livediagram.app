@@ -14,6 +14,16 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
     command: 'document restore',
     what: 'restoring a document from the Trash',
   },
+  {
+    type: 'DocumentArchive',
+    command: 'document archive',
+    what: 'putting a document away in Archived',
+  },
+  {
+    type: 'DocumentUnarchive',
+    command: 'document unarchive',
+    what: 'moving a document out of Archived',
+  },
   { type: 'TabLs', command: 'tab ls', what: 'listing a document’s tabs' },
   { type: 'TabView', command: 'tab view', what: 'reading a view of a tab' },
   { type: 'TabRender', command: 'tab render', what: 'drawing a tab as a picture' },

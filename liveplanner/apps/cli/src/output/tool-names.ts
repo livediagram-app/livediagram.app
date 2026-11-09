@@ -15,6 +15,8 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   delete_project: 'project rm',
   list_trash: 'api GET /trash',
   restore_project: 'project restore',
+  archive_project: 'project archive',
+  unarchive_project: 'project unarchive',
   list_items: 'item ls',
   change_items: 'item set',
   list_threads: 'thread ls',

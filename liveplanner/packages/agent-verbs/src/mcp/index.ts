@@ -7,4 +7,5 @@ export * from './thread-schema';
 export * from './sheet-schema';
 export * from './form-schema';
 export * from './tracker-schema';
+export * from './archive-tools';
 export * from '../verbs/mcp-tools';

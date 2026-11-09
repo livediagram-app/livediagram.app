@@ -82,6 +82,8 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   ),
   mcpTool('ListTrash', 'List Trash', 'Listing the documents in the Trash.'),
   mcpTool('RestoreDocument', 'Restore Document', 'Bringing a document back from the Trash.'),
+  mcpTool('ArchiveDocument', 'Archive Document', 'Putting a document away in Archived.'),
+  mcpTool('UnarchiveDocument', 'Unarchive Document', 'Moving a document out of Archived.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

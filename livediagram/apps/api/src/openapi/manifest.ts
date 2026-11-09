@@ -254,7 +254,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents',
     segment: 'documents',
     tag: 'Documents',
-    summary: "List the caller's documents (metadata only, no tab contents).",
+    summary:
+      "List the caller's documents (metadata only, no tab contents); archived=1 lists their Archived instead.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: {
@@ -458,6 +459,34 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: { type: 'object', properties: { name: nameField } },
     responseSchema: wrap('document', 'Document'),
     statuses: [201, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/archive',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Move a document the caller owns to their Archived: out of every list, its share links ended, its favourites, Recent and Inbox entries removed for everyone.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: wrap('document', 'DocumentSummary'),
+    statuses: [200, 401, 403, 404, 409],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/unarchive',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Move an archived document out of Archived: to the top of My Work, or the folder (folderId) or team (teamId) named.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: { folderId: { type: ['string', 'null'] }, teamId: { type: ['string', 'null'] } },
+    },
+    responseSchema: wrap('document', 'DocumentSummary'),
+    statuses: [200, 400, 401, 403, 404],
   },
   {
     method: 'GET',

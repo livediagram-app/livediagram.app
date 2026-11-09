@@ -6,6 +6,7 @@
 // connector-listing flag (docs/specs/015-api/mcp-server.md §4.15). isValidTab in the project package stays the runtime
 // guard.
 import { z } from 'zod';
+import { findArchived } from './archive-tools';
 import { METRIC_KINDS, PLAN_VISUALISATIONS } from '@liveplanner/items';
 import {
   FIND_QUERY_MAX_LENGTH,
@@ -101,7 +102,7 @@ list_templates lists the Plan scaffolds (kanban, project planner, bug triage,
 // resources (docs/specs/015-api/mcp-server.md §4.5). Phrased as facts about the server (what it does
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
-export const SERVER_INSTRUCTIONS = `Tools to find, read, create, add tabs to, change, share, rename, delete (to the Trash) and restore the user's liveplanner plans. A plan holds tabs: Board tabs of cards, Sheet tabs (spreadsheets), Dashboard tabs and Form tabs.
+export const SERVER_INSTRUCTIONS = `Tools to find, read, create, add tabs to, change, share, rename, archive and unarchive, delete (to the Trash) and restore the user's liveplanner plans. An archived plan is its owner's alone: it can't be read or changed until unarchive_project moves it out, and find_projects lists archived plans only with archived true. A plan holds tabs: Board tabs of cards, Sheet tabs (spreadsheets), Dashboard tabs and Form tabs.
 list_templates lists the Plan templates (kanban, project-planner, bug-triage, budget-planner, ...):
 pass a kind as "template" on create_project or add_tab to start a plan or a tab from it. A "dashboard" on
 create_project or add_tab makes a Dashboard tab over the plan's Board and Sheet tabs by name: metrics, Gantts,
@@ -250,6 +251,7 @@ export const findProjectsShape = {
       "Only plans whose name, or whose folder's name, contains each word of this text (any case).",
     ),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
+  archived: findArchived,
 };
 
 // What read_project fits every view to unless told otherwise (docs/specs/024-agents/project-views.md

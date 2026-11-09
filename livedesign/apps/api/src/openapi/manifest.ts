@@ -262,7 +262,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/designs',
     segment: 'designs',
     tag: 'Designs',
-    summary: "List the caller's designs (metadata only, no tab contents).",
+    summary:
+      "List the caller's designs (metadata only, no tab contents); archived=1 lists their Archived instead.",
     auth: 'guest-or-account',
     tokenUsable: true,
     responseSchema: {
@@ -447,6 +448,34 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: { type: 'object', properties: { name: nameField } },
     responseSchema: wrap('design', 'Design'),
     statuses: [201, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/designs/{id}/archive',
+    segment: 'designs',
+    tag: 'Designs',
+    summary:
+      'Move a design the caller owns to their Archived: out of every list, its share links ended, its favourites, Recent and Inbox entries removed for everyone.',
+    auth: 'guest-or-account',
+    tokenUsable: true,
+    responseSchema: wrap('design', 'DesignSummary'),
+    statuses: [200, 401, 403, 404, 409],
+  },
+  {
+    method: 'POST',
+    path: '/designs/{id}/unarchive',
+    segment: 'designs',
+    tag: 'Designs',
+    summary:
+      'Move an archived design out of Archived: to the top of My Work, or the folder (folderId) or team (teamId) named.',
+    auth: 'guest-or-account',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: { folderId: { type: ['string', 'null'] }, teamId: { type: ['string', 'null'] } },
+    },
+    responseSchema: wrap('design', 'DesignSummary'),
+    statuses: [200, 400, 401, 403, 404],
   },
   {
     method: 'GET',

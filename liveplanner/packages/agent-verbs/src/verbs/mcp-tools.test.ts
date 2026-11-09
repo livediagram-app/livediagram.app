@@ -35,6 +35,8 @@ describe('the MCP tool verbs', () => {
       'rename_project',
       'delete_project',
       'list_trash',
+      'archive_project',
+      'unarchive_project',
       'restore_project',
     ]);
     for (const v of MCP_TOOL_VERBS) {

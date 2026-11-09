@@ -5,6 +5,7 @@
 
 import { TRASH_RETENTION_DAYS } from '@livedesign/api-schema';
 import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
+import { mcpArchiveDesign, mcpUnarchiveDesign } from '../mcp/archive-tools';
 import { changePagesOutput, changePagesShape } from '../mcp/pages-schema';
 import { changeComponentsOutput, changeComponentsShape } from '../mcp/components-schema';
 import { listImagesOutput, listImagesShape } from '@liveworkspace/agent-verbs/mcp/image-schema';
@@ -247,5 +248,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpRenameDesign,
   mcpDeleteDesign,
   mcpListTrash,
+  mcpArchiveDesign,
+  mcpUnarchiveDesign,
   mcpRestoreDesign,
 ];

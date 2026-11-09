@@ -5,6 +5,7 @@
 
 import { TRASH_RETENTION_DAYS } from '@livedocuments/api-schema';
 import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
+import { mcpArchiveDocument, mcpUnarchiveDocument } from '../mcp/archive-tools';
 import {
   changePagesOutput,
   changePagesShape,
@@ -250,5 +251,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpRenameDocument,
   mcpDeleteDocument,
   mcpListTrash,
+  mcpArchiveDocument,
+  mcpUnarchiveDocument,
   mcpRestoreDocument,
 ];

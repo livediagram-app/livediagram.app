@@ -3,6 +3,7 @@
 export * from './service';
 export * from './request';
 export * from './lists';
+export * from './archive-doors';
 export * from './timing-safe';
 export * from './purge';
 export * from './internal';

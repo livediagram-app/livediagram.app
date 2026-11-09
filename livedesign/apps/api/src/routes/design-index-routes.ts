@@ -8,7 +8,7 @@ import {
 } from '@livedesign/api-schema';
 import type { ShareLinkExpiry } from '@liveworkspace/index-client';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
-import { listAskedOf } from '@liveworkspace/index-app';
+import { archiveDoorOf, listAskedOf, throughArchiveDoor } from '@liveworkspace/index-app';
 import { communityService } from '../community-service';
 import { designRoom } from '../design-client';
 import { capStoredName } from '../names';
@@ -21,7 +21,7 @@ export async function handleDesignList(ctx: RouteContext): Promise<Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
   // `?team=all&q=...&limit=...`: mine and every joined team, searched and capped at the index, in one page (the MCP's
-  // find); without them, the personal library, every page.
+  // find); without them, the personal library, every page. `&archived=1`: the caller's Archived instead.
   const asked = listAskedOf(ctx.url.searchParams);
   if ('error' in asked) return json(asked, { status: 400 });
   const client = clientFor(ctx);
@@ -34,7 +34,7 @@ export async function handleDesignList(ctx: RouteContext): Promise<Response> {
   }
 }
 
-// DELETE /api/designs/:id, POST /api/designs/:id/copy and /share. Null for anything else.
+// DELETE /api/designs/:id, POST /api/designs/:id/copy, /share, /archive and /unarchive. Null for anything else.
 export async function handleDesignIndexRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, segments, url } = ctx;
   const id = segments[2];
@@ -42,7 +42,9 @@ export async function handleDesignIndexRoutes(ctx: RouteContext): Promise<Respon
   const isDelete = segments.length === 3 && request.method === 'DELETE';
   const isCopy = segments.length === 4 && segments[3] === 'copy' && request.method === 'POST';
   const isShare = segments.length === 4 && segments[3] === 'share' && request.method === 'POST';
-  if (!isDelete && !isCopy && !isShare) return null;
+  // To the owner's Archived and back out (@liveworkspace/index-app archive-doors.ts).
+  const archiveDoor = archiveDoorOf(segments, request.method);
+  if (!isDelete && !isCopy && !isShare && !archiveDoor) return null;
   const client = clientFor(ctx);
   if (client instanceof Response) return client;
   try {
@@ -58,6 +60,11 @@ export async function handleDesignIndexRoutes(ctx: RouteContext): Promise<Respon
       return noContent();
     }
     const body = await readOptionalBody(request);
+    if (archiveDoor) {
+      const item = await throughArchiveDoor(client, archiveDoor, id, body);
+      if ('error' in item) return json(item, { status: 400 });
+      return json({ design: summaryOf(item) });
+    }
     if (isCopy) {
       // A copy through a Community post's link is named after the post (docs/specs/025-community/community.md
       // "Viewing a post's design"): the author's own design name was never published.

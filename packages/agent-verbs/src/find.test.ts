@@ -259,6 +259,22 @@ describe('searchFiles', () => {
     expect(refused.calls).toContain('/teams/t1/library');
   });
 
+  it('asks for the Archived alone at the index, whatever the query, and marks each archived', async () => {
+    const client = api({
+      '/sketches?team=all&limit=5&q=%C3%BCber&archived=1': {
+        sketches: [summary({ id: 'a', name: 'Über plan', savedAt: 7 })],
+      },
+      '/sketches?team=all&limit=5&archived=1': 400,
+      '/teams': TEAMS,
+    });
+    expect(await searchFiles(client, 'über', 5, { archived: true })).toEqual([
+      { id: 'a', name: 'Über plan', updatedAt: 7, library: 'personal', archived: true },
+    ]);
+    expect(client.calls).not.toContain('/sketches');
+    // No sweep to fall back on: the sweep is the live libraries.
+    await expect(searchFiles(client, '', 5, { archived: true })).rejects.toThrow('api 400');
+  });
+
   it('passes any other failure on', async () => {
     const client = api({ '/sketches?team=all&limit=5': 503, '/teams': TEAMS });
     await expect(searchFiles(client, '', 5)).rejects.toThrow('api 503');

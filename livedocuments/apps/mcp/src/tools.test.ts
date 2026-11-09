@@ -72,6 +72,7 @@ function okResponse(request: Request): Response {
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
+  if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share')) {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   }
@@ -171,10 +172,11 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the fifteen documented tools, each with a description', () => {
+  it('registers the seventeen documented tools, each with a description', () => {
     const { registered } = harness();
     expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
+      'archive_document',
       'change_pages',
       'create_document',
       'delete_document',
@@ -187,6 +189,7 @@ describe('registerTools', () => {
       'restore_document',
       'search_icons',
       'share_document',
+      'unarchive_document',
       'update_document',
       'write_article',
     ]);
@@ -289,6 +292,8 @@ describe('tool annotations', () => {
     rename_document: 'write',
     list_trash: 'read',
     restore_document: 'write',
+    archive_document: 'destructive',
+    unarchive_document: 'write',
     // docs/specs/015-api/mcp-server.md §4.5b: the gallery is read, never written.
     list_images: 'read',
     update_document: 'destructive',
@@ -358,6 +363,7 @@ describe('tool annotations', () => {
       .map((r) => r.name)
       .sort();
     expect(destructive).toEqual([
+      'archive_document',
       'change_pages',
       'delete_document',
       'update_document',

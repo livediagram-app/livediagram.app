@@ -41,6 +41,7 @@ import {
   tabRename,
   tabRm,
 } from './verbs/lifecycle';
+import { projectArchive, projectUnarchive } from './verbs/archive';
 import { tabLs, tabView } from './verbs/tab';
 import { itemVerbs } from './verbs/item';
 import { threadVerbs } from './verbs/thread';
@@ -60,6 +61,8 @@ export const VERBS: readonly Verb[] = [
   projectShare,
   projectRm,
   projectRestore,
+  projectArchive,
+  projectUnarchive,
   tabLs,
   tabView,
   tabRender,

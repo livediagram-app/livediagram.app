@@ -557,6 +557,26 @@ and every team Trash they have joined.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
 
+### 4.9b `archive_design` and `unarchive_design`
+
+The owner's Archived ([One Explorer contracts "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)), with exactly the
+REST doors' authority (`POST /api/designs/<id>/archive` and `POST /api/designs/<id>/unarchive`, which pass to the
+index as the caller; `@liveworkspace/index-app` `archive-doors.ts`). Both are declared once for every product
+(`@liveworkspace/agent-verbs/mcp/archive-tools`) in this product's words.
+
+- **`archive_design`**: `{ designId }`. Destructive. Moves a design the user owns to their Archived: it leaves
+  every list, its share links end, and its favourites, Recent and Most Used rows and Inbox threads are deleted for
+  everyone, so moving it out starts fresh. Returns `{ archived, id, name }`. Only its owner archives it (a
+  teammate is refused 403 `not_owner`), a design in the Trash is refused 409 `trashed` (pointing at
+  `restore_design`), and one already archived answers as it is. Each refusal is a model-correctable error.
+- **`unarchive_design`**: `{ designId, folderId?, teamId? }`. Write. Moves it out: to the top of the personal
+  library by default, or into the folder named (a team's folder with that `teamId`), or the top of the team named.
+  Returns `{ unarchived, id, name, library, url }`, `library` as `find_designs` names it.
+- **`find_designs` with `archived: true`** lists only the user's archived designs (`GET /api/designs?team=all&archived=1`,
+  the index's `view=archived`), each marked `archived: true`. Without it, an archived design is never listed.
+- While archived, every tool that opens or changes the design (`read_design`, `update_design` and the rest) is
+  refused 409 `archived`, in words that name `unarchive_design` (`@liveworkspace/agent-verbs/api-refusal`).
+
 ### 4.9d The Pages tools
 
 The pages of a tab in Pages mode ([Pages for agents](../024-agents/pages-for-agents.md)).
@@ -671,14 +691,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the fifteen tools, and each is a preset in
+Three behaviours cover the seventeen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                        |
-| --------------- | -------------- | ----------------- | -------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images` |
-| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `share_design`, `rename_design`, `restore_design`                |
-| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `change_pages`, `change_components`                        |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                             |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`      |
+| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `share_design`, `rename_design`, `restore_design`, `unarchive_design` |
+| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`           |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -789,7 +809,7 @@ says why by its status (no such tab, view only, the last tab).
 
 | Tool                | Result object                                                                                                                                             |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `find_designs`      | `count`, `designs[]` of `{ id, name, updatedAt, library, url }`                                                                                           |
+| `find_designs`      | `count`, `designs[]` of `{ id, name, updatedAt, library, url, archived? }`                                                                                |
 | `read_design`       | `id`, `name`, `tab { id, name, rev, ... }` (for `view: "components"`, `components` text instead), `tabs[]` of `{ id, name }` (every tab, in order), `url` |
 | `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                 |
 | `create_design`     | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                           |
@@ -800,6 +820,8 @@ says why by its status (no such tab, view only, the last tab).
 | `delete_design`     | `deleted` (`design` or `tab`), `designId`, then `trashed` + `restorableForDays` or `tabId`                                                                |
 | `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                         |
 | `restore_design`    | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                              |
+| `archive_design`    | `archived`, `id`, `name`                                                                                                                                  |
+| `unarchive_design`  | `unarchived`, `id`, `name`, `library`, `url`                                                                                                              |
 | `change_components` | `designId`, `component` (null for a `detach`), `lines[]`, `rev` (null for a `patch`), `url`                                                               |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue

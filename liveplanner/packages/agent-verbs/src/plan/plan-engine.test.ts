@@ -896,6 +896,17 @@ describe('apiRefusalOf', () => {
     expect(apiRefusalOf(new ApiError(503, ''))).toBeNull();
     expect(apiRefusalOf(new Error('x'))).toBeNull();
   });
+
+  it('says an archived plan opens again with unarchive_project, and only its owner archives', () => {
+    expect(apiRefusalOf(new ApiError(409, '{"error":"archived"}'))).toEqual({
+      code: 'archived',
+      message:
+        "The api refused it: this plan is archived, so it can't be opened or changed. Move it out of Archived with unarchive_project (or Change Folder in the Explorer) first.",
+    });
+    expect(apiRefusalOf(new ApiError(403, '{"error":"not_owner"}'))!.message).toBe(
+      "The api refused it: only the plan's owner can archive it.",
+    );
+  });
 });
 
 describe('change lines', () => {
