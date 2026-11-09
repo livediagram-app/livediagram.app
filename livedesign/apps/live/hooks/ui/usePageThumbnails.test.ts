@@ -155,15 +155,17 @@ describe('usePageThumbnails', () => {
       width: 200,
       height: 60,
       updatedAt: 1,
-      elements: [{ ...createShape('square', 0, 0), id: 'w', width: 200, height: 60, label: 'Sunny' }],
+      elements: [
+        { ...createShape('square', 0, 0), id: 'w', width: 200, height: 60, label: 'Sunny' },
+      ],
     };
     const instance: Element = {
-      ...createShape('instance' as never, laid[0]!.rect.x + 40, laid[0]!.rect.y + 40),
+      ...createShape('instance', laid[0]!.rect.x + 40, laid[0]!.rect.y + 40),
       id: 'i1',
       width: 200,
       height: 60,
       componentId: 'm1',
-    } as Element;
+    };
     const faces = (lookup: ComponentFaceContextValue['lookup']): ComponentFaceContextValue => ({
       lookup,
       loaded: true,

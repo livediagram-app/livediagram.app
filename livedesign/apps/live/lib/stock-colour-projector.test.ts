@@ -170,7 +170,16 @@ describe('createStockColourProjector on a page with its own fill', () => {
 // a logo's wordmark) are re-inked in the view; words on a page with a fill of its own are drawn for that page.
 describe('labels on the plain paper', () => {
   const words = (id: string, textColor: string): Element =>
-    ({ id, type: 'text', x: 0, y: 0, width: 200, height: 40, label: 'Welcome Back', textColor }) as unknown as Element;
+    ({
+      id,
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 40,
+      label: 'Welcome Back',
+      textColor,
+    }) as unknown as Element;
   const inkOf = (el: Element | undefined) => (el as { textColor?: string }).textColor ?? '';
 
   it('is white as stored and slate as the dark editor draws it', () => {
