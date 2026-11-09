@@ -36,7 +36,10 @@ function r2() {
     store,
     put: vi.fn(
       async (key: string, bytes: Uint8Array, opts?: { httpMetadata: { contentType: string } }) => {
-        store.set(key, { bytes: new Uint8Array(bytes), type: opts?.httpMetadata.contentType ?? '' });
+        store.set(key, {
+          bytes: new Uint8Array(bytes),
+          type: opts?.httpMetadata.contentType ?? '',
+        });
       },
     ),
     get: vi.fn(async (key: string) => {
@@ -199,6 +202,52 @@ describe('photo blob routes', () => {
     expect((await upload([{ bytes: PNG(4), type: 'image/png' }])).res.status).toBe(200);
   });
 
+  it('holds two batches checked at once to the cap: the second to write is refused', async () => {
+    env = { ...env, PHOTO_MAX_BYTES_PER_TAB: '15' };
+    // The bytes are slow to store, so both batches are checked before either writes its refs.
+    let release!: () => void;
+    const stored = new Promise<void>((r) => (release = r));
+    let puts = 0;
+    const put = bucket.put.getMockImplementation()!;
+    bucket.put.mockImplementation(async (...args) => {
+      if (args[0].startsWith('photo/') && ++puts === 2) release();
+      await stored;
+      return put(...args);
+    });
+    const [a, b] = await Promise.all([
+      upload([{ bytes: PNG(1), type: 'image/png' }]),
+      upload([{ bytes: PNG(2), type: 'image/png' }]),
+    ]);
+    expect([a.res.status, b.res.status].sort()).toEqual([200, 403]);
+    expect(await (a.res.status === 403 ? a : b).res.json()).toEqual({
+      error: 'photo_full',
+      limit: 15,
+      current: 11,
+    });
+    expect(sql.prepare('SELECT COUNT(*) AS n FROM photo_blob_refs').get()!.n).toBe(1);
+  });
+
+  it('answers a link confined to another tab 404 on a write, as every write door does', async () => {
+    access.gateEdit.mockResolvedValue(false);
+    const grant = {
+      item: 'd1',
+      level: 'edit' as const,
+      tab: 't2',
+      sub: 'link:CODE2345',
+      team: null,
+      exp: Math.floor(Date.now() / 1000) + 600,
+      shareCode: 'CODE2345',
+      token: 'g',
+    };
+    const held = (tab: string) =>
+      handlePhotoBlobRoutes(
+        ctx('POST', `/api/designs/d1/tabs/${tab}/photo-blobs-held`, { body: { ids: [] }, grant }),
+      );
+    expect((await held('t1'))!.status).toBe(404);
+    // Its own tab, refused for another reason (here the stubbed gate), stays a 403.
+    expect((await held('t2'))!.status).toBe(403);
+  });
+
   it('refuses writes from those who may not edit, and from tokens', async () => {
     access.gateEdit.mockResolvedValue(false);
     expect((await upload([{ bytes: PNG(6), type: 'image/png' }])).res.status).toBe(403);
@@ -272,8 +321,8 @@ describe('photo blob routes', () => {
     expect((await adopt())!.status).toBe(403);
     index.requestGrant.mockResolvedValue({ ok: true, grant: { level: 'view', tabId: null } });
     expect(await (await adopt())!.json()).toEqual({ adopted: ids });
-    expect(
-      sql.prepare("SELECT blob_id FROM photo_blob_refs WHERE tab_id = 't2'").all(),
-    ).toEqual([{ blob_id: ids[0] }]);
+    expect(sql.prepare("SELECT blob_id FROM photo_blob_refs WHERE tab_id = 't2'").all()).toEqual([
+      { blob_id: ids[0] },
+    ]);
   });
 });

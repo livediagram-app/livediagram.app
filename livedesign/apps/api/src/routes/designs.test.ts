@@ -141,7 +141,9 @@ describe('a design in the Trash', () => {
     ];
     for (const [method, path, body] of writes)
       expect((await call(db, method, path, { grant, body })).status).toBe(410);
-    expect(db.sql.prepare("SELECT name FROM design WHERE id = 'P'").get()).toEqual({ name: 'Roadmap' });
+    expect(db.sql.prepare("SELECT name FROM design WHERE id = 'P'").get()).toEqual({
+      name: 'Roadmap',
+    });
   });
 });
 
