@@ -52,10 +52,13 @@ dismiss it to reach the timer or the vote. It is drawn over the canvas, and is a
   in / embed / dismissed) and zen only hides the card at render, and
 - while a **panel opened from the chrome** is open (Tidy Up, Layers, Style and the rest of the bottom-right cluster, the
   Explorer panel): they reach up into the banner's band and it lay over their lower rows, so it steps aside until the
-  panel closes (a `[data-dock-button]` control with `aria-expanded="true"`).
+  panel closes (a `[data-dock-button]` control with `aria-expanded="true"`; the Style button reads as expanded while
+  the Tab Style dialog it opens is up), and
+- while [Watch It Built](../007-editor/watch-it-built.md) plays (`data-replay` on the page): its player sits low over
+  the canvas, in the banner's band, and the replay opens the Tab Style dialog and Tidy Up, so the banner steps aside
+  until the replay ends.
 
-A tour needs no such rule: tours start from the footer's Start Tour button and every card is drawn in the tour's
-popover ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), never in the banner's band.
+The stepped element tours need no such rule: every card is drawn in the tour's popover, never in the banner's band.
 
 The delay is per editor session (per page load); it isn't persisted
 across reloads. Opening document after document in quick succession

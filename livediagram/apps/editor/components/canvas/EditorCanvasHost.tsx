@@ -281,6 +281,7 @@ export function EditorCanvasHost() {
     keepPollResults,
     tabs,
     setCanvasTool,
+    canvasThemeTab,
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
@@ -869,6 +870,7 @@ export function EditorCanvasHost() {
                     track('UI', 'Opened', 'ThemePicker');
                   }
             }
+            canvasThemeOpen={canvasThemeTab !== null}
             // Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"): an
             // Editor's, so a Participant or Viewer (read-only for structure) and an embed get no button.
             tidyUp={
