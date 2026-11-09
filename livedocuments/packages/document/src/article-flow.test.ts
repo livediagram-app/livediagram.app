@@ -253,4 +253,18 @@ describe('list markers', () => {
     ]);
     expect([...m.values()]).toEqual(['1.', 'a.', 'b.', 'i.', '2.', '◦', 'a.', '1.', '']);
   });
+
+  it('counts level 2 in true roman numerals past 39', () => {
+    const items = Array.from({ length: 99 }, (_, i) => L(`r${i}`, 'numbered', 2));
+    const m = [...articleListMarkers(items).values()];
+    expect([m[3], m[8], m[39], m[48], m[49], m[89], m[98]]).toEqual([
+      'iv.',
+      'ix.',
+      'xl.',
+      'xlix.',
+      'l.',
+      'xc.',
+      'xcix.',
+    ]);
+  });
 });
