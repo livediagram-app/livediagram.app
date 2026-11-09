@@ -15,6 +15,7 @@ import {
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { Tooltip } from '@livehuddle/ui';
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { typedClockZone } from '@/lib/zone-time';
 
@@ -75,7 +76,7 @@ export function WorldClockMenuSection({
   };
   const setLabel = (i: number, label: string) =>
     onSetZones(
-      zones.map((z, k) => (k === i ? { ...z, label: label.slice(0, CLOCK_LABEL_MAX) } : z)),
+      zones.map((z, k) => (k === i ? { ...z, label: cutText(label, CLOCK_LABEL_MAX) } : z)),
     );
   const remove = (i: number) => {
     const next = zones.filter((_, k) => k !== i);

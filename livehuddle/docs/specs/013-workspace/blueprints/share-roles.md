@@ -126,7 +126,10 @@ delta must name a `participantId` equal to its session's presence `key` (`answer
 
 Answers persistence: after the room sequences a Participant's `response` or `idea`, it schedules one
 `writeParticipantAnswers` for that tab `ANSWERS_FLUSH_MS` later (coalesced per tab), which reads the stored tab,
-applies `mergeLedgerAnswersIntoTab(tab, ledger)` and compare-and-swaps it, through the same queue. An Editor's
+applies `mergeLedgerAnswersIntoTab(tab, ledger, since)` and compare-and-swaps it, through the same queue. `since` is
+the room position (`flushedThrough`, per tab and epoch, kept in memory) the last write that landed went through, so
+each answer is written once, against a board as full as it was then: a pin refused on a full board never lands later,
+once the board has room. A room that slept starts again from 0, every answer, as idempotent as before. An Editor's
 answers persist as today, through its own save.
 
 Adder key: `adderKeyFor(documentId, ownerId)` is the first `ADDER_KEY_LENGTH` hex characters of

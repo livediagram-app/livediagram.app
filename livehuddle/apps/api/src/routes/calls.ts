@@ -130,15 +130,18 @@ async function provenSession(
   return { sessionId: body.sessionId, role };
 }
 
-// Every locator well formed and signed for this Space, or null. A camera's carries the layer asked for (the small
-// one when absent); any other track's may not ask for one.
+// Every locator well formed, or null; and which of them are not signed for this Space. A camera's carries the layer
+// asked for (the small one when absent); any other track's may not ask for one. A locator whose token fails is
+// answered on its own (`track_refused`) rather than failing the batch: a peer's forged `call-track` would otherwise
+// silence everyone asked for beside it, and the browser would ask again on every step.
 async function provenLocators(
   env: RealtimeEnv,
   documentId: string,
   raw: unknown,
-): Promise<CallSubscribeLocator[] | null> {
+): Promise<{ locators: CallSubscribeLocator[]; forged: Set<number> } | null> {
   if (!Array.isArray(raw) || raw.length === 0 || raw.length > MAX_SUBSCRIBE_BATCH) return null;
   const locators: CallSubscribeLocator[] = [];
+  const forged = new Set<number>();
   for (const entry of raw) {
     const locator = parseCallTrackLocator(entry);
     if (!locator) return null;
@@ -153,11 +156,11 @@ async function provenLocators(
       !(await trackTokenHolds(env.REALTIME_APP_TOKEN, documentId, locator.sessionId, locator.token))
     ) {
       console.warn('[calls] token', 'track');
-      return null;
+      forged.add(locators.length);
     }
     locators.push(layer === undefined ? locator : { ...locator, layer });
   }
-  return locators;
+  return { locators, forged };
 }
 
 // What Realtime is asked for one subscription: a camera's with its simulcast layer.
@@ -252,22 +255,22 @@ async function tracks(
     );
   }
   if (body.subscribe !== undefined && publish === undefined) {
-    const locators = await provenLocators(env, documentId, body.subscribe);
-    if (!locators) return invalid();
+    const proven = await provenLocators(env, documentId, body.subscribe);
+    if (!proven) return invalid();
+    const { locators, forged } = proven;
     const paused = mediaRefused(
       mode,
       locators.map((l) => l.trackName),
     );
     if (paused) return paused;
     // The room says which of them this session may hear now (#483); the rest are answered `not_heard`.
-    const { allowed, refused } = await splitByHearing(locators, (asks) =>
-      hearing(session.sessionId, asks),
-    );
-    if (allowed.length === 0) return json(withRefusals(locators, refused, null));
+    const { refused } = await splitByHearing(locators, (asks) => hearing(session.sessionId, asks));
+    const allowed = locators.filter((_, i) => !refused.has(i) && !forged.has(i));
+    if (allowed.length === 0) return json(withRefusals(locators, refused, null, forged));
     const tracks = allowed.map(remoteTrack);
     return upstream(
       () => newTracks(env, session.sessionId, { tracks }),
-      (answer) => json(withRefusals(locators, refused, answer)),
+      (answer) => json(withRefusals(locators, refused, answer, forged)),
     );
   }
   return invalid();

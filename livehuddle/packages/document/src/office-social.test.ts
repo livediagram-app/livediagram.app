@@ -86,6 +86,13 @@ describe('notice board notes', () => {
     expect(isNoticeNote({ id: 'a', text: 'hi' })).toBe(false);
   });
 
+  it('refuses a pinned time a date cannot show, since the face prints its day', () => {
+    expect(isNoticeNote(note('a', 'k', 8.64e15))).toBe(true);
+    for (const at of [8.64e15 + 1, 1e300, -1, 1.5, Number.NaN]) {
+      expect(isNoticeNote(note('a', 'k', at))).toBe(false);
+    }
+  });
+
   it('refuses a list with a repeated id or past the most a board holds', () => {
     expect(isNoticeNotes([note('a', 'k'), note('b', 'k')])).toBe(true);
     expect(isNoticeNotes([note('a', 'k'), note('a', 'k')])).toBe(false);
@@ -107,6 +114,11 @@ describe('notice board notes', () => {
     expect(merged?.map((n) => n.id)).toEqual(['theirs', 'new']);
     // With no adder key nothing changes.
     expect(mergeNoticeNotes(stored, [], null)?.map((n) => n.id)).toEqual(['mine', 'theirs']);
+  });
+
+  it("stores only the fields a participant's new note has", () => {
+    const padded = { ...note('new', 'me'), junk: 'x'.repeat(1000) };
+    expect(mergeNoticeNotes([], [padded], 'me')).toEqual([note('new', 'me')]);
   });
 });
 
