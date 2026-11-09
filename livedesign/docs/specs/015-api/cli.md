@@ -63,7 +63,8 @@ Resource, then verb. `doc` and `el` are accepted for `design` and `element`.
 with the candidates. A share-link URL acts through that link: each request of the command carries its code. A
 pulled file's path reads its views offline. `--tab` takes a tab name or id prefix and defaults to the first tab.
 Elements are [refs and selectors](../024-agents/edit-operations.md#selectors); the comment verbs take the ref of the
-element whose thread they act on.
+element whose thread they act on. `component set` names a main by its id, its name (case-insensitive) or an id
+prefix; an exact id or name wins over a prefix, and `--archived` with `--restore` is refused as a usage error.
 
 **Files.** `-f <file>` holds edit operations or elements, told apart by their content; a file
 that is none of them is refused.

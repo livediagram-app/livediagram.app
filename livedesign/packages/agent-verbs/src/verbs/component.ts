@@ -140,12 +140,17 @@ export const componentMake = defineVerb({
   },
 });
 
-// The main a word names in the library: its id, a unique id prefix, or its name (case-insensitive).
+// The main a word names in the library: its id, the one main of that name (case-insensitive), or a unique id
+// prefix. An exact id or name wins over a prefix, so a main named "Nav" is found though "nav-2" starts with it.
 function mainNamed(library: readonly DesignComponent[], word: string): DesignComponent {
   const exact = library.find((c) => c.id === word);
   if (exact) return exact;
   const lower = word.toLowerCase();
-  const matches = library.filter((c) => c.id.startsWith(word) || c.name.toLowerCase() === lower);
+  const named = library.filter((c) => c.name.toLowerCase() === lower);
+  if (named.length === 1) return named[0]!;
+  const matches = named.length
+    ? named
+    : library.filter((c) => c.id.startsWith(word));
   if (matches.length === 1) return matches[0]!;
   throw new VerbRefusal({
     status: matches.length ? 400 : 404,
@@ -189,6 +194,13 @@ export const componentSet = defineVerb({
   }),
   output: summaryOutput,
   run: async (ctx, input) => {
+    if (input.archived && input.restore)
+      throw new VerbRefusal({
+        status: 400,
+        code: 'usage',
+        message: 'give --archived or --restore, not both',
+        hint: 'see the flags with: livedesign help component set',
+      });
     const design = await designOf(ctx, input.doc);
     const main = mainNamed(await readLibrary(ctx.api, design.id), input.component);
     const patch: ComponentPatch = {

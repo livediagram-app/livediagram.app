@@ -161,8 +161,11 @@ describe('component set', () => {
           nav,
           { ...nav, id: 'nav-2', name: 'Nav two' },
           { ...nav, id: 'card', name: 'Card' },
+          { ...nav, id: 'side', name: 'Nav-' },
         ],
       },
+      [`${LIBRARY}/side`]: async (request: Request) =>
+        Response.json({ component: { ...nav, id: 'side', ...JSON.parse(await request.text()) } }),
       [`${LIBRARY}/nav`]: async (request: Request) => {
         const patch = JSON.parse(await request.text()) as Record<string, unknown>;
         patches.push(patch);
@@ -204,6 +207,30 @@ describe('component set', () => {
     ]);
   });
 
+  it("takes a main's exact name over another's id prefix", async () => {
+    const { api } = routes();
+    const ctx = contextOf(api, [], []);
+    const set = await componentSet.run!(
+      ctx,
+      componentSet.input.parse({ doc: 'Auth flow', component: 'nav-', name: 'Side' }),
+    );
+    expect(set).toMatchObject({ id: 'side', name: 'Side' });
+  });
+
+  it('refuses --archived with --restore before reading anything', async () => {
+    const { api, patches } = routes();
+    const ctx = contextOf(api, [], []);
+    expect(
+      await refusal(
+        componentSet.run!(
+          ctx,
+          componentSet.input.parse({ doc: 'Auth flow', component: 'nav', archived: true, restore: true }),
+        ),
+      ),
+    ).toMatchObject({ status: 400, code: 'usage', message: 'give --archived or --restore, not both' });
+    expect(patches).toEqual([]);
+  });
+
   it('refuses a word that names no main or several, nothing to change, and a bad patch', async () => {
     const { api } = routes();
     const ctx = contextOf(api, [], [], { readInput: async (p) => files[p]! });
@@ -212,7 +239,7 @@ describe('component set', () => {
     expect(await set({ component: 'zz', name: 'x' })).toMatchObject({
       status: 404,
       code: 'target_not_found',
-      lines: ['nav "Nav bar"', 'nav-2 "Nav two"', 'card "Card"'],
+      lines: ['nav "Nav bar"', 'nav-2 "Nav two"', 'card "Card"', 'side "Nav-"'],
     });
     expect(await set({ component: 'na', name: 'x' })).toMatchObject({
       status: 400,
