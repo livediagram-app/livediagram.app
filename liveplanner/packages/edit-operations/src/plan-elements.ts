@@ -95,12 +95,12 @@ export function planBoardCapIssue(el: unknown): { field: string; rule: string } 
   const { title, columns } = setup as { title?: unknown; columns?: unknown };
   if (typeof title === 'string' && title.length > PLAN_TITLE_MAX)
     return { field: 'planBoard', rule: `a board title is at most ${PLAN_TITLE_MAX} characters` };
-  const long = Array.isArray(columns)
-    ? columns.find((c: unknown) => {
-        const name = typeof c === 'object' && c !== null ? (c as { name?: unknown }).name : null;
-        return typeof name === 'string' && name.length > PLAN_COLUMN_NAME_MAX;
-      })
-    : undefined;
+  const long =
+    Array.isArray(columns) &&
+    (columns as unknown[]).some((c) => {
+      const name = typeof c === 'object' && c !== null ? (c as { name?: unknown }).name : null;
+      return typeof name === 'string' && name.length > PLAN_COLUMN_NAME_MAX;
+    });
   return long
     ? {
         field: 'planBoard',
