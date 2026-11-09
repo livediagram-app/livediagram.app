@@ -248,9 +248,11 @@ export function useMeetingPieces(deps: MeetingPiecesDeps): void {
       const answer = (value: KnockAnswer) => {
         toast.dismissAction(key);
         track('Canvas', 'Used', value === 'in' ? 'KnockLetIn' : 'KnockNotNow');
-        // At a closed pod, Let In stands you up: with a seat free its door opens by its own rule.
-        if (value === 'in' && d.selfSeatedOn === roomId) live.current.standUp?.();
-        live.current.send?.({
+        // At a closed pod, Let In stands you up: with a seat free its door opens by its own rule. Read when pressed,
+        // not when the knock came: you may have sat down or stood up while the toast was up.
+        const latest = live.current;
+        if (value === 'in' && latest.selfSeatedOn === roomId) latest.standUp?.();
+        latest.send?.({
           kind: 'avatar-knock-answer',
           targetId: event.from,
           roomId,
