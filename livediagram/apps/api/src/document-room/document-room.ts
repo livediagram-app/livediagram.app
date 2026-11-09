@@ -1752,6 +1752,7 @@ export class DocumentRoom extends DurableObject<Env> {
       presenceId: sender.id,
       personTag: session.personTag ?? null,
       networkTag: session.networkTag ?? null,
+      collabKey: session.collabKey ?? null,
       answeredAs: () => this.readSession(ws)?.pollAnsweredAs ?? null,
       rememberAnswer: (answeredAs) => {
         const latest = this.readSession(ws);

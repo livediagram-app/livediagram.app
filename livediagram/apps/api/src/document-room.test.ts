@@ -1991,7 +1991,7 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
     function joinAs(
       room: DocumentRoom,
       id: string,
-      opts: { personTag?: string; networkTag?: string } = {},
+      opts: { personTag?: string; networkTag?: string; collabKey?: string } = {},
     ) {
       const ws = makeSocket();
       room.acceptSession(
@@ -2002,6 +2002,11 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
         null,
         opts.personTag ?? null,
         opts.networkTag ?? 'net-a',
+        null,
+        null,
+        null,
+        null,
+        opts.collabKey ?? null,
       );
       sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#000' } });
       return ws;
@@ -2086,27 +2091,28 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
       expect(answers['k0']).toBe('sushi');
     });
 
-    it('gives an account one answer per poll, from any of its sessions', async () => {
+    // Under the session's collab key, never the one the frame claims (docs/specs/013-workspace/share-roles.md
+    // "The collab key"), so the answer reads as the person's own on every device.
+    it('gives an account one answer per poll under its collab key, from any of its sessions', async () => {
+      const ACCT = 'c'.repeat(32);
       const { room } = newRoom();
       const host = join(room, 'h');
       sendFrame(room, host, pollOp('p1'));
       sendFrame(
         room,
-        joinAs(room, 'laptop', { personTag: 'acct' }),
+        joinAs(room, 'laptop', { personTag: 'acct', collabKey: ACCT }),
         answer('pizza', 'laptop-key', 'l'),
       );
       await room.pollAnswers;
       host.sent.length = 0;
       sendFrame(
         room,
-        joinAs(room, 'phone', { personTag: 'acct' }),
+        joinAs(room, 'phone', { personTag: 'acct', collabKey: ACCT }),
         answer('sushi', 'phone-key', 'p'),
       );
       await room.pollAnswers;
-      expect(room.poll.state?.answers).toEqual({ 'laptop-key': 'sushi' });
-      expect(ops(host)).toEqual([
-        { kind: 'poll-answer', pollId: 'p1', value: 'sushi', key: 'laptop-key' },
-      ]);
+      expect(room.poll.state?.answers).toEqual({ [ACCT]: 'sushi' });
+      expect(ops(host)).toEqual([{ kind: 'poll-answer', pollId: 'p1', value: 'sushi', key: ACCT }]);
     });
 
     it("does not let an account take a guest's key", async () => {
@@ -2114,11 +2120,23 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
       const host = join(room, 'h');
       sendFrame(room, host, pollOp('p1'));
       sendFrame(room, joinAs(room, 'guest'), answer('pizza', 'guest-key', 'g'));
-      const account = joinAs(room, 'acct', { personTag: 'acct' });
+      const ACCT = 'c'.repeat(32);
+      const account = joinAs(room, 'acct', { personTag: 'acct', collabKey: ACCT });
       sendFrame(room, account, answer('sushi', 'guest-key', 'x'));
       await room.pollAnswers;
       expect(room.poll.state?.answers['guest-key']).toBe('pizza');
-      expect(room.poll.state?.answers[presenceOf(account)]).toBe('sushi');
+      expect(room.poll.state?.answers[ACCT]).toBe('sushi');
+    });
+
+    // A session with no identity is told a new collab key on every socket, so the proof is what keeps its answer one.
+    it("keeps a browser's one answer under the key its proof first claimed, across a reconnect's new key", async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      sendFrame(room, host, pollOp('p1'));
+      sendFrame(room, joinAs(room, 'first-socket'), answer('pizza', 'minted-1', 'secret'));
+      sendFrame(room, joinAs(room, 'second-socket'), answer('sushi', 'minted-2', 'secret'));
+      await room.pollAnswers;
+      expect(room.poll.state?.answers).toEqual({ 'minted-1': 'sushi' });
     });
 
     it('keys an old client with no proof on its own presence id, which nobody else can claim', async () => {
