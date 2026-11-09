@@ -5,6 +5,7 @@ import {
   expectNoPageErrors,
   seedTab,
   serverNewUrl,
+  settledBox,
   test,
   type Seed,
 } from './fixtures';
@@ -164,6 +165,13 @@ test.describe('on a phone', () => {
   test('a tap with the bucket fills', async ({ page, pageErrors }) => {
     test.setTimeout(120_000);
     await openBoard(page);
+    // A phone opens on the board's main element, the square (pen strokes are never the main element,
+    // docs/specs/008-canvas/canvas-and-palette.md "On a phone the opening view focuses on the main element"),
+    // which leaves the loop past the screen's edge. Fit brings the whole board in, as a person would.
+    const loop = page.locator('[data-element-id="loop"]').first();
+    await page.getByRole('button', { name: 'Fit to screen', exact: true }).tap();
+    await expect(loop).toBeInViewport({ ratio: 1 });
+    await settledBox(loop);
     await fillButton(page).tap();
     await expect(fillButton(page)).toHaveAttribute('aria-pressed', 'true');
     const inLoop = await pressAt(page, 'loop');
