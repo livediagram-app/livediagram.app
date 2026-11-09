@@ -2837,10 +2837,23 @@ describe('DocumentRoom follow', () => {
 describe('the collab key (docs/specs/013-workspace/share-roles.md "The collab key")', () => {
   const MINE = '1'.repeat(32);
   const THEIRS = '2'.repeat(32);
+  const PERSON = '3'.repeat(24);
   // A session the upgrade gave `key` (null: none), whose hello claims THEIRS.
   function join(room: DocumentRoom, key: string | null, name: string): FakeSocket {
     const ws = makeSocket();
-    room.acceptSession(asWs(ws), 'edit', false, null, null, null, null, null, null, key);
+    room.acceptSession(
+      asWs(ws),
+      'edit',
+      false,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      key,
+      key ? PERSON : null,
+    );
     sendFrame(room, ws, {
       kind: 'hello',
       participant: { id: name, name, color: '#000', key: THEIRS },
@@ -2864,7 +2877,7 @@ describe('the collab key (docs/specs/013-workspace/share-roles.md "The collab ke
     expect(frame?.key).not.toBe(THEIRS);
   });
 
-  it("stamps an editor's reaction with its own key, never the one it names", () => {
+  it("stamps an editor's reaction with its own key and person, never the ones it names", () => {
     const { room } = newRoom();
     const peer = join(room, THEIRS, 'peer');
     const me = join(room, MINE, 'me');
@@ -2881,8 +2894,10 @@ describe('the collab key (docs/specs/013-workspace/share-roles.md "The collab ke
       kind: 'op',
       op: { kind: 'el-delta', tabId: 't', elementId: 'e', delta },
     });
-    const op = receivedOf(peer, 'op')[0]?.op as { delta: { by: string } } | undefined;
+    const op = receivedOf(peer, 'op')[0]?.op as
+      { delta: { by: string; person?: string } } | undefined;
     expect(op?.delta.by).toBe(MINE);
+    expect(op?.delta.person).toBe(PERSON);
   });
 
   // docs/specs/012-collaboration/realtime-conflict-resolution.md "A patch is the room's alone".

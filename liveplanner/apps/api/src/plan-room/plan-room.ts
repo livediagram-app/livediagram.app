@@ -1098,6 +1098,7 @@ export class PlanRoom extends DurableObject<Env> {
       v.account,
       tabShowsAll,
       v.collabKey ?? null,
+      v.reactionPerson ?? null,
     );
     this.armAlarm();
     return new Response(null, { status: 101, webSocket: client });
@@ -1213,6 +1214,9 @@ export class PlanRoom extends DurableObject<Env> {
     // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
     // none mints one for this socket.
     collabKey: string | null = null,
+    // The person stamped on its reactions (X-Verified-Reaction-Person,
+    // docs/specs/012-collaboration/comment-reactions.md).
+    reactionPerson: string | null = null,
   ): void {
     // A full room (ROOM_MAX_CONNECTIONS, docs/specs/015-api/api.md "A room holds 100 connections") turns the
     // newcomer away with a close the browser can read: accepted, closed at once, never a session.
@@ -1227,6 +1231,7 @@ export class PlanRoom extends DurableObject<Env> {
         {
           verifiedRole,
           collabKey,
+          reactionPerson,
           tabScope,
           shareCode,
           personTag,
@@ -1583,7 +1588,7 @@ export class PlanRoom extends DurableObject<Env> {
       // the author's owner id, a guest's credential. And a posted comment
       // carries the name of the session that sent it, the one on its
       // cursor, not whatever the frame claimed (docs/specs/012-collaboration/collab-race-hardening.md).
-      const op = stampCommentAuthor(opForTheWire(msg.op), sender);
+      const op = stampCommentAuthor(opForTheWire(msg.op), sender, session.reactionPerson ?? null);
       const seq = this.sequenceMutation(sender.id, op, ws);
       // The relay skips the sender, so tell it the seq its op took: its own
       // ops are already applied, and a reconnect must not replay them. The

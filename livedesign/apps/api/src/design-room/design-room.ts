@@ -964,6 +964,7 @@ export class DesignRoom extends DurableObject<Env> {
       v.designId,
       v.grantExp ?? null,
       v.collabKey ?? null,
+      v.reactionPerson ?? null,
     );
     if (v.designId) {
       this.bindDesign(v.designId);
@@ -1071,6 +1072,9 @@ export class DesignRoom extends DurableObject<Env> {
     // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
     // none mints one for this socket.
     collabKey: string | null = null,
+    // The person stamped on its reactions (X-Verified-Reaction-Person,
+    // docs/specs/012-collaboration/comment-reactions.md).
+    reactionPerson: string | null = null,
   ): void {
     // The room's size (docs/specs/015-api/api.md "Room size"): past ROOM_MAX_CONNECTIONS the socket is accepted
     // only to be closed with ROOM_FULL_CLOSE, which a browser can read where a refused upgrade says nothing. A
@@ -1087,6 +1091,7 @@ export class DesignRoom extends DurableObject<Env> {
         {
           verifiedRole,
           collabKey,
+          reactionPerson,
           tabScope,
           shareCode,
           personTag,
@@ -1469,6 +1474,7 @@ export class DesignRoom extends DurableObject<Env> {
         const op = stampCommentAuthor(
           opForTheWire(opFromScopedSender(msg.op, session.tabScope ?? null)),
           sender,
+          session.reactionPerson ?? null,
         );
         const seq = this.sequenceMutation(sender.id, op, ws);
         // A Participant's own comment reaction (docs/specs/012-collaboration/comment-reactions.md) is written by

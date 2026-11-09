@@ -7,7 +7,10 @@ import {
   collabKeyFor,
   mintCollabKey,
   namesAnotherPerson,
+  REACTION_PERSON_HEADER,
+  reactionPersonFor,
   sessionCollabKey,
+  sessionReactionPerson,
 } from './collab-key';
 
 const KEY = '0123456789abcdef0123456789abcdef';
@@ -92,5 +95,22 @@ describe('namesAnotherPerson', () => {
       for (let i = 0; i < 100_000; i++) namesAnotherPerson(ops[i % ops.length], KEY);
     });
     expect(cpu).toBeLessThan(cpuBudgetMs(50));
+  });
+});
+
+// docs/specs/012-collaboration/comment-reactions.md: the person the room stamps on a reaction.
+describe('reactionPersonFor', () => {
+  it("is liveplanner's itemPersonId: the first 24 hex of SHA-256 of its label and the id", async () => {
+    const full = await sha256Hex(new TextEncoder().encode('liveplanner-item-person:user_abc'));
+    expect(await reactionPersonFor('user_abc')).toBe(full.slice(0, 24));
+    expect(await reactionPersonFor('user_abc')).not.toBe(await reactionPersonFor('user_abd'));
+  });
+
+  it('is kept from the header only in its shape', async () => {
+    const person = await reactionPersonFor('guest_1');
+    expect(sessionReactionPerson(person)).toBe(person);
+    for (const header of [null, undefined, '', 'x'.repeat(24), person.toUpperCase(), KEY])
+      expect(sessionReactionPerson(header)).toBeNull();
+    expect(REACTION_PERSON_HEADER).toBe('X-Verified-Reaction-Person');
   });
 });

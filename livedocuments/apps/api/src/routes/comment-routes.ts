@@ -3,7 +3,7 @@
 // endpoints, gated by participation; every write goes through the tab's revision (I8), retried once on a lost
 // race, and reaches the room as an `el-delta` without author or token ids.
 
-import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
+import { collabKeyFor, reactionPersonFor } from '@liveworkspace/api-kit/collab-key';
 import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
 import {
   COMMENT_TEXT_MAX,
@@ -314,12 +314,15 @@ async function reactTo(
   if (!isReactionId(emoji)) return badRequest('unknown emoji');
   if (typeof on !== 'boolean') return badRequest('missing on');
   const writer = await getParticipant(ctx.env, caller.owner);
-  const delta: ElementDelta = {
+  // `person` is the reactor's hashed person id, so a closed account's reactions can be found and anonymised
+  // (comment-reactions.md); a reaction keeps it once CommentReaction carries the optional field (#1539).
+  const delta: ElementDelta & { person?: string } = {
     kind: 'comment-react',
     commentId,
     emoji,
     by: await collabKeyFor(caller.owner),
     name: writer?.name ?? 'Anonymous',
+    person: await reactionPersonFor(caller.owner),
     on,
   };
   const written = await writeTab(ctx, id, tabId, (tab) => {

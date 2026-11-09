@@ -13,6 +13,7 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Share-Code': '',
         'X-Verified-Person': 'p',
         'X-Verified-Collab-Key': '0123456789abcdef0123456789abcdef',
+        'X-Verified-Reaction-Person': '0123456789abcdef01234567',
         'X-Verified-Account': '1',
         'X-Verified-Workbench-Pairing': 'w',
         'X-Verified-Document': 'd',
@@ -26,6 +27,7 @@ describe('verifiedSessionOf', () => {
       shareCode: null,
       personTag: 'p',
       collabKey: '0123456789abcdef0123456789abcdef',
+      reactionPerson: '0123456789abcdef01234567',
       account: true,
       workbenchPairing: 'w',
       documentId: 'd',
@@ -40,9 +42,8 @@ describe('verifiedSessionOf', () => {
 });
 
 describe('the collab key (docs/specs/013-workspace/share-roles.md "The collab key")', () => {
-  const base = { tabScope: null, shareCode: null, personTag: null, isOwner: false } as Parameters<
-    typeof newSessionAttachment
-  >[0];
+  // A session as an upgrade with no identity headers reads.
+  const base = verifiedSessionOf(upgrade({}));
 
   it('keeps the key the upgrade forwarded', () => {
     expect(
@@ -57,6 +58,17 @@ describe('the collab key (docs/specs/013-workspace/share-roles.md "The collab ke
     expect(a).toMatch(/^[0-9a-f]{32}$/);
     expect(b).toMatch(/^[0-9a-f]{32}$/);
     expect(a).not.toBe(b);
+  });
+
+  // docs/specs/012-collaboration/comment-reactions.md: the person the room stamps on this session's reactions.
+  it('keeps the reaction person the upgrade forwarded, and none of the wrong shape', () => {
+    const read = verifiedSessionOf(
+      upgrade({ 'X-Verified-Reaction-Person': '0123456789abcdef01234567' }),
+    );
+    expect(newSessionAttachment(read, 'p1').reactionPerson).toBe('0123456789abcdef01234567');
+    expect('reactionPerson' in newSessionAttachment(base, 'p1')).toBe(false);
+    const odd = { ...base, reactionPerson: 'x'.repeat(500) };
+    expect('reactionPerson' in newSessionAttachment(odd, 'p1')).toBe(false);
   });
 });
 

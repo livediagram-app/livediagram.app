@@ -43,3 +43,31 @@ export function namesAnotherPerson(op: unknown, key: string | undefined): boolea
   const d = o.delta as { kind?: unknown; participantId?: unknown };
   return d.kind === 'response' && (key === undefined || d.participantId !== key);
 }
+
+/**
+ * The trust header the api's room upgrade sets on every path beside COLLAB_KEY_HEADER: the session's reaction
+ * person, empty when it has none. The room stamps it on every comment reaction the session leaves (each product's
+ * docs/specs/012-collaboration/comment-reactions.md), so a closed account's reactions can be found and anonymised.
+ */
+export const REACTION_PERSON_HEADER = 'X-Verified-Reaction-Person';
+
+const REACTION_PERSON_LENGTH = 24;
+const REACTION_PERSON = /^[0-9a-f]{24}$/;
+
+/** Whether a value is a reaction person's shape: 24 lowercase hex characters. */
+export const isReactionPerson = (value: unknown): value is string =>
+  typeof value === 'string' && REACTION_PERSON.test(value);
+
+/**
+ * A person's public id on a comment reaction: liveplanner's `itemPersonId` scheme (the first 12 bytes of SHA-256 of
+ * `liveplanner-item-person:` and their id, in hex), the one id a closed account's anonymising already looks for, so
+ * one pass finds a person's reactions in every product. One-way, like the collab key.
+ */
+export async function reactionPersonFor(person: string): Promise<string> {
+  const digest = await sha256Hex(new TextEncoder().encode(`liveplanner-item-person:${person}`));
+  return digest.slice(0, REACTION_PERSON_LENGTH);
+}
+
+/** The reaction person a new session keeps: the upgrade's header when it is the right shape, else none. */
+export const sessionReactionPerson = (header: string | null | undefined): string | null =>
+  isReactionPerson(header) ? header : null;

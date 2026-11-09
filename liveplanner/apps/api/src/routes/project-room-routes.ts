@@ -15,7 +15,12 @@ import { forbidden, json, notFound } from '../responses';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { type RouteContext } from './context';
 import { resolvePlanGrant } from './plan-grant';
-import { COLLAB_KEY_HEADER, collabKeyFor } from '@liveworkspace/api-kit/collab-key';
+import {
+  COLLAB_KEY_HEADER,
+  collabKeyFor,
+  REACTION_PERSON_HEADER,
+  reactionPersonFor,
+} from '@liveworkspace/api-kit/collab-key';
 import { personTagFor } from '../person-tag';
 import { isAccountId } from '@liveworkspace/auth-client';
 import { planRoom } from '../plan-client';
@@ -86,6 +91,8 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     // The session's collab key (docs/specs/013-workspace/share-roles.md "The collab key"): derived from the person,
     // never read from the request. Empty for a link visitor: the room mints one for that socket.
     forwarded.headers.set(COLLAB_KEY_HEADER, person ? await collabKeyFor(person) : '');
+    // And the person the room stamps on this session's reactions (docs/specs/012-collaboration/comment-reactions.md).
+    forwarded.headers.set(REACTION_PERSON_HEADER, person ? await reactionPersonFor(person) : '');
     // A signed-in account's session (not a guest's, not a link visitor's): only it may show its Google picture to
     // the room and see others' (docs/specs/014-identity/profile-and-email-notifications.md "Profile pictures").
     forwarded.headers.set('X-Verified-Account', person && isAccountId(person) ? '1' : '0');

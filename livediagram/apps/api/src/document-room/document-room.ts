@@ -1056,6 +1056,7 @@ export class DocumentRoom extends DurableObject<Env> {
       v.documentId,
       v.grantExp ?? null,
       v.collabKey ?? null,
+      v.reactionPerson ?? null,
     );
     if (v.documentId) {
       this.bindDocument(v.documentId);
@@ -1176,12 +1177,16 @@ export class DocumentRoom extends DurableObject<Env> {
     // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
     // none mints one for this socket.
     collabKey: string | null = null,
+    // The person stamped on its reactions (X-Verified-Reaction-Person,
+    // docs/specs/012-collaboration/comment-reactions.md).
+    reactionPerson: string | null = null,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
         {
           verifiedRole,
           collabKey,
+          reactionPerson,
           isOwner,
           tabScope,
           shareCode,
@@ -1666,7 +1671,7 @@ export class DocumentRoom extends DurableObject<Env> {
         const scoped = scopedTabOp(msg.op, session.tabScope ?? null, (tabId) =>
           this.storedTabName(tabId),
         );
-        const op = stampCommentAuthor(opForTheWire(scoped), sender);
+        const op = stampCommentAuthor(opForTheWire(scoped), sender, session.reactionPerson ?? null);
         const seq = this.sequenceMutation(sender.id, op, ws);
         // The relay skips the sender, so tell it the seq its op took: its own
         // ops are already applied, and a reconnect must not replay them. The
