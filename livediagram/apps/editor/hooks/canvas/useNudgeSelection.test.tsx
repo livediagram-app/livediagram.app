@@ -121,3 +121,19 @@ describe('nudging a locked element', () => {
     expect(alone.at('l').x).toBe(0);
   });
 });
+
+// docs/specs/009-elements/boundary.md: a container carries what it holds when it is nudged, as when it is dragged.
+describe('nudging a container', () => {
+  it('carries the elements it holds and leaves the rest', () => {
+    const frame = { ...shape('f', 0, 0), shape: 'frame', width: 400, height: 400 } as Element;
+    const h = harness({
+      elements: [frame, shape('in', 50, 50), shape('out', 600, 0)],
+      selected: 'f',
+      laneBoard: false,
+    });
+    h.press(10, 0);
+    expect(h.at('f').x).toBe(10);
+    expect(h.at('in').x).toBe(60);
+    expect(h.at('out').x).toBe(600);
+  });
+});

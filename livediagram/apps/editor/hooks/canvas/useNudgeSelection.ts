@@ -27,11 +27,13 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef, type RefObject } from 'react';
 import {
+  containerContents,
   isBoxed,
   isEventStormingNote,
   laneStepTop,
   rebindArrowAnchorsAfterMove,
   withAttached,
+  withMindSubtrees,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -88,11 +90,20 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
     const locked = new Set(
       deps.activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
     );
-    // A host carries its badges and step numbers (docs/specs/009-elements/badge.md).
-    const carried = withAttached(deps.activeTab.elements, picked);
+    // What a drag-move carries, a nudge carries too (useBoxedDragHandlers): a frame, lane or boundary
+    // what it holds (docs/specs/009-elements/boundary.md), a mind node its subtree, and a host its
+    // badges and step numbers (docs/specs/009-elements/badge.md).
+    const els = deps.activeTab.elements;
+    const carried = withAttached(els, withMindSubtrees(els, containerContents(els, picked)));
     const ids = locked.size > 0 ? new Set([...carried].filter((id) => !locked.has(id))) : carried;
     if (ids.size === 0) return;
-    const { dx, dy } = laneAwareStep({ ...deps, selectedId }, ids, pressDx, pressDy);
+    // The lane step reads the selection itself, not what it carries: a frame nudged on a board is no note.
+    const { dx, dy } = laneAwareStep(
+      { ...deps, selectedId },
+      new Set([...picked].filter((id) => ids.has(id))),
+      pressDx,
+      pressDy,
+    );
     // Open a coalescing burst on the first press: checkpoint so undo
     // returns to the pre-nudge state, then only tick until idle.
     if (!burstActiveRef.current) {
