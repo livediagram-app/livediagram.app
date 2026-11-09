@@ -28,7 +28,7 @@ import {
   sortSheet,
   toggleFilter,
 } from './commands-axis';
-import { applySheetWrite, type SheetWrite } from './store';
+import { applySheetWrite, inverseSheetWrite, type SheetWrite } from './store';
 import type { MergeRefusal } from './merge-guards';
 import { cellKey, type Sheet } from './sheet';
 import { renderFormula } from './formula/stored';
@@ -299,6 +299,69 @@ describe('rows and columns', () => {
     expect(b.v('A2')).toBe('c');
     expect(sortSheet(b.wb, 'nope', 0, true)).toBeNull();
     expect(sortSheet(book({ A1: 'x' }).wb, 'sheet0xx', 0, true)).toBeNull();
+  });
+  // sheet.md "Sort": a range over several sorted rows stays on them (it used to follow its corner rows, so a total's
+  // SUM(A2:A5) read whatever span its corners landed on); a cell, or a range within one row, moves with its row.
+  it('keeps ranges over sorted rows on their rows, and undoes it', () => {
+    const b = book(
+      {
+        A1: 'n',
+        B1: '=SUM(A2:A5)',
+        C1: '=SUM(A2:A)',
+        D1: '=A2',
+        A2: '3',
+        A3: '1',
+        A4: '4',
+        A5: '2',
+        B2: '=A2*10',
+        C2: '=SUM(A2:B2)',
+      },
+      { rows: 6, cols: 4 },
+    );
+    run(b, freeze(1));
+    const id = b.sheets[0]!.id;
+    const before = b.sheets[0]!;
+    const layout = before.layout;
+    run(b, {
+      kind: 'layout',
+      changes: [
+        {
+          k: 'name',
+          name: 'Nums',
+          range: {
+            r1: layout.rows[1]!,
+            c1: layout.cols[0]!,
+            r2: layout.rows[4]!,
+            c2: layout.cols[0]!,
+          },
+        },
+      ],
+    });
+    const named = b.sheets[0]!;
+    const w = sortSheet(b.wb, id, 0, true);
+    if (!w || 'refused' in w) throw new Error('no sort');
+    const r = applySheetWrite(named, w, ctx);
+    b.sheets[0] = r.sheet;
+    b.wb.updateSheet(r.sheet);
+    expect([b.v('A2'), b.v('A3'), b.v('A4'), b.v('A5')]).toEqual([1, 2, 3, 4]);
+    expect(input(b, 'B1')).toBe('=SUM(A2:A5)');
+    expect(b.v('B1')).toBe(10);
+    expect(input(b, 'C1')).toBe('=SUM(A2:A)');
+    // A single cell follows its cell; the row formulas moved with their row (3 is now in row 4).
+    expect(input(b, 'D1')).toBe('=A4');
+    expect(input(b, 'B4')).toBe('=A4*10');
+    expect(input(b, 'C4')).toBe('=SUM(A4:B4)');
+    expect(b.v('C4')).toBe(33);
+    const nums = r.sheet.layout.names![0]!;
+    expect([nums.r1, nums.r2]).toEqual([r.sheet.layout.rows[1], r.sheet.layout.rows[4]]);
+    // Undo puts the order and every formula back.
+    const undone = applySheetWrite(r.sheet, inverseSheetWrite(named, r), ctx).sheet;
+    b.sheets[0] = undone;
+    b.wb.updateSheet(undone);
+    expect(input(b, 'B1')).toBe('=SUM(A2:A5)');
+    expect(input(b, 'D1')).toBe('=A2');
+    expect(undone.layout.names).toEqual(named.layout.names);
+    expect(b.v('A2')).toBe(3);
   });
   // sheet.md "Filter": a filter column's Sort sorts the filter's rows by THAT column, its header kept on top.
   it("sorts a filter's rows by its column, the header and the rows outside kept", () => {

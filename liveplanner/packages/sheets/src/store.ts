@@ -4,7 +4,7 @@
 import { FORMAT_KEYS, mergeFormat, type FormatPatch } from './format';
 import { layoutIndex } from './layout';
 import { formulaReadsSheet, mapFormulaRefs } from './formula/stored';
-import { applyLayoutChange, shrinkRange, type LayoutChange } from './store-layout';
+import { applyLayoutChange, pinSpan, shrinkRange, type LayoutChange } from './store-layout';
 import { idRangeOf, inverseDelete } from './store-inverse-delete';
 import { sameName } from './range-names';
 import {
@@ -90,8 +90,9 @@ function shrinkFormulas(
 
 /**
  * The rewrites another sheet's formulas need when `changes` (a layout write) land on sheet `targetId`, laid out as
- * `before`: each range on that sheet with a corner in deleted rows or columns shrinks to what is left, as the
- * target's own formulas' ranges do (formulas.md "Other sheets"). One pass over the formulas per delete, each
+ * `before`: each range on that sheet with a corner in deleted rows or columns shrinks to what is left, and a sort
+ * keeps each range over several rows or columns on its slots, as the target's own formulas' ranges do (formulas.md
+ * "Other sheets", sheet.md "Sort"). One pass over the formulas per delete or sort, each
  * reference looked at once: linear in references. `cells` are the reading sheet's (its formula cells suffice).
  */
 export function shrinkReadersOf(
@@ -112,7 +113,20 @@ export function shrinkReadersOf(
   for (const ch of changes) {
     const was = layout;
     layout = applyLayoutChange(layout, ch);
-    if ((ch.k !== 'deleteRows' && ch.k !== 'deleteCols') || layout === was) continue;
+    if (layout === was) continue;
+    if (ch.k === 'orderRows' || ch.k === 'orderCols') {
+      const now = layout;
+      for (const [key, f] of formulas) {
+        const next = mapFormulaRefs(f, (ref) =>
+          ref.s === targetId ? pinRef(ref, was, now, ch.k === 'orderRows') : ref,
+        );
+        if (next === f) continue;
+        formulas.set(key, next);
+        changed.add(key);
+      }
+      continue;
+    }
+    if (ch.k !== 'deleteRows' && ch.k !== 'deleteCols') continue;
     const had = new Set(ch.k === 'deleteRows' ? was.rows : was.cols);
     const gone = new Set(ch.ids.filter((id) => had.has(id)));
     const none = new Set<string>();
@@ -130,6 +144,51 @@ export function shrinkReadersOf(
     const { r, c } = splitCellKey(key);
     return { r, c, i: { f: formulas.get(key)! } };
   });
+}
+
+// A sort's reorder of rows or columns (store-layout.ts `pinSpan`): a reference over more than one of them keeps its
+// slots, so `SUM(C5:C12)` still reads C5:C12; a cell, or a range within one row, moves with its row. A reference by
+// title keeps positions already.
+function pinRef(ref: StoredRef, before: SheetLayout, after: SheetLayout, rows: boolean): StoredRef {
+  if (ref.st !== undefined || (ref.r2 === undefined && ref.c2 === undefined && !ref.open))
+    return ref;
+  const [k1, k2, list] = rows
+    ? (['r1', 'r2', after.rows] as const)
+    : (['c1', 'c2', after.cols] as const);
+  const a = ref[k1];
+  if (a === undefined) return ref;
+  const index = layoutIndex(before);
+  const pos = rows ? index.rowPos : index.colPos;
+  const b = ref[k2];
+  if (b === undefined) {
+    // An open end runs along one axis (`A2:A` over many rows, `A2:2` within one): its start keeps its slot.
+    if (ref.open !== (rows ? 'r' : 'c')) return ref;
+    const na = list[pos.get(a) ?? -1] ?? a;
+    return na === a ? ref : { ...ref, [k1]: na };
+  }
+  const pinned = pinSpan(a, b, pos, list);
+  return pinned ? { ...ref, [k1]: pinned[0], [k2]: pinned[1] } : ref;
+}
+
+function sortRewrites(
+  cells: ReadonlyMap<string, Cell>,
+  before: SheetLayout,
+  after: SheetLayout,
+  rows: boolean,
+  own: (ref: StoredRef) => boolean,
+): CellChange[] {
+  const out: CellChange[] = [];
+  for (const [key, cell] of cells) {
+    const input = cell.input;
+    if (!input || !('f' in input)) continue;
+    const next = mapFormulaRefs(input.f, (ref) =>
+      own(ref) ? pinRef(ref, before, after, rows) : ref,
+    );
+    if (next === input.f) continue;
+    const { r, c } = splitCellKey(key);
+    out.push({ r, c, i: { f: next } });
+  }
+  return out;
 }
 
 function shrinkRef(
@@ -207,6 +266,16 @@ export function applySheetWrite(sheet: Sheet, write: SheetWrite, ctx: ApplyConte
         derived.push(rw);
       }
     }
+    if ((ch.k === 'orderRows' || ch.k === 'orderCols') && layout !== before)
+      derived.push(
+        ...sortRewrites(
+          cells,
+          before,
+          layout,
+          ch.k === 'orderRows',
+          (ref) => ref.s === undefined && ref.st === undefined,
+        ),
+      );
   }
   const landedCells = applyCells(cells, layout, [...derived, ...(write.cells ?? [])], touched);
   const next: Sheet = { ...sheet, layout, cells, rev: sheet.rev + 1, ...stamp };
