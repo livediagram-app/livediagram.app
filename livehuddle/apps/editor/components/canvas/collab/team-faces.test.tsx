@@ -218,8 +218,8 @@ describe('the Calendar Wall month', () => {
   it('stops at December 2100 and January 2000, and offers no day past them', () => {
     vi.setSystemTime(new Date(2100, 11, 15, 10, 0).getTime());
     const { unmount } = open(piece('calendar-wall'));
-    const next = screen.getByRole('button', { name: 'Next month' }) as HTMLButtonElement;
-    expect(next.disabled).toBe(true);
+    const next = screen.getByRole('button', { name: 'Next month' });
+    expect(next.hasAttribute('disabled')).toBe(true);
     fireEvent.click(next);
     expect(screen.getByRole('grid', { name: 'December 2100' })).toBeTruthy();
     // January 2101's spill-over days are empty cells, never buttons to pin to.
@@ -228,13 +228,11 @@ describe('the Calendar Wall month', () => {
     unmount();
     vi.setSystemTime(new Date(2000, 0, 15, 10, 0).getTime());
     open(piece('calendar-wall'));
-    expect(
-      (screen.getByRole('button', { name: 'Previous month' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
-    expect(screen.queryByRole('button', { name: '31 December' })).toBeNull();
-    expect((screen.getByRole('button', { name: 'Next month' }) as HTMLButtonElement).disabled).toBe(
-      false,
+    expect(screen.getByRole('button', { name: 'Previous month' }).hasAttribute('disabled')).toBe(
+      true,
     );
+    expect(screen.queryByRole('button', { name: '31 December' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Next month' }).hasAttribute('disabled')).toBe(false);
   });
 
   it('lets a Viewer read, never pin, and unpins only what a Participant signed', () => {
