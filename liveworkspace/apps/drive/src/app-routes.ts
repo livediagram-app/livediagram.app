@@ -18,8 +18,12 @@ const isPersonId = (value: unknown): value is string =>
 /** Google's notification: always 200 at once (Google backs off a slow or failing address), the signal after it. */
 export async function handlePush(request: Request, env: Env, deps: RouteDeps): Promise<Response> {
   if (request.method !== 'POST') return notFound();
-  if (!driveConfigured(env)) return fail('drive_not_configured');
   await request.body?.cancel();
+  // A channel opened before Drive was switched off still calls: a non-2xx would only make Google retry and back off.
+  if (!driveConfigured(env)) {
+    driveWarn('push-unconfigured', { channel: request.headers.get('X-Goog-Channel-ID') });
+    return new Response(null, { status: 200 });
+  }
   // `sync` opens every channel: nothing has changed yet.
   if (request.headers.get('X-Goog-Resource-State') === 'sync')
     return new Response(null, { status: 200 });

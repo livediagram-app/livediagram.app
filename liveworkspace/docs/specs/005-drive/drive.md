@@ -263,9 +263,10 @@ Named constants in `@liveworkspace/drive` (`constants.ts`):
     effort) and its files stay. **Keep Current Account** drops the pending switch and revokes its grant (best
     effort).
   - A pending switch lasts **30 minutes**. Confirming one that has expired (or was never made) answers
-    `409 drive_account_switch_expired` and changes nothing. A newer consent replaces a pending switch.
-  - A new account that sent no refresh token answers `502 drive_no_refresh_token`; one Drive cannot name answers
-    `502 drive_exchange_failed`. Neither stores anything.
+    `404 not_found` and changes nothing. A newer consent replaces a pending switch.
+  - A new account that sent no refresh token answers `200 { outcome: 'no_refresh_token' }`, which the return page
+    explains; a code Google won't exchange, or an account Drive cannot name, answers `502 google_failed`. Neither
+    stores anything.
   - **Share roles:** an account-level setting of the signed-in owner, reached only from their own Cloud Sync; no
     shared item reaches it.
 
@@ -397,8 +398,9 @@ last uploaded, the liveworkspace name it mirrors, the notice). Its alarm runs pa
   can't answer, so a page view never wakes an object.
 - `POST /api/drive/account-switch` with nothing pending, or one past its deadline, answers `404 not_found`.
   `DELETE /app/people/<id>` for someone who never connected answers `404`, which accounts takes as done.
-- `/api/drive/push` always answers `200`, even for a channel token it didn't make (logged), so Google never backs
-  off the address. A `sync` notification is ignored.
+- `/api/drive/push` always answers a `POST` `200`, even for a channel token it didn't make (logged) and on a
+  deployment without Drive configured (logged), so Google never backs off the address. A `sync` notification is
+  ignored. Any other method is no notification and answers `404`.
 - The push channel opens on connect, from the page token taken then. A failed flag write on connect is logged, and
   the fallback check covers it.
 - Check now sets the next pass to write every changed item regardless of the per-item interval.
