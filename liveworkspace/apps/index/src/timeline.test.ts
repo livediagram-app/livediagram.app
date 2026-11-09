@@ -1,6 +1,7 @@
 // The Timeline: the index records its own events in the change's batch, apps report edits, a person sees what
 // happened in their own space and their teams', one app's or every app's, a page at a time, in one statement
 // that reads one index range per scope.
+import { timelinePersonKey } from './event-key';
 import { APP_EVENTS_MAX, type TimelineEvent, type TimelinePage } from '@liveworkspace/index-client';
 import type { SQLInputValue } from 'node:sqlite';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -326,6 +327,15 @@ describe('what apps report', () => {
       ['user_tl7c', null, (TODAY + 1) * DAY],
       ['user_tl7c', 'Cy', TODAY * DAY + 4000],
     ]);
+    // Their ids carry Cy's one-way key, never Cy's id: the same key each day, so a day's edits share one event.
+    const key = await timelinePersonKey('user_tl7c');
+    const ids = (
+      h.db.sql
+        .prepare(`SELECT id FROM timeline_events WHERE type = 'edited' ORDER BY id`)
+        .all() as { id: string }[]
+    ).map((r) => r.id);
+    expect(ids).toEqual([`ed:${item.id}:${key}:${TODAY}`, `ed:${item.id}:${key}:${TODAY + 1}`]);
+    expect(ids.some((id) => id.includes('user_tl7c'))).toBe(false);
     // Each day counts as one open, however many edits it reports.
     const days = h.db.sql
       .prepare('SELECT day, opens FROM use_days WHERE person_id = ? AND item_id = ? ORDER BY day')
@@ -437,6 +447,10 @@ describe('collaboration, from the collab push', () => {
     expect(done.detail?.action).toBe('Ship it');
     // Bea sees the action assigned to her, though the item is Ada's alone.
     expect(kinds((await feed(bea.auth)).events)).toEqual(['action_assigned Roadmap']);
+    // Its id names her by her one-way key, not her id.
+    const assigned = page.events.find((e) => e.type === 'action_assigned')!;
+    expect(assigned.id.endsWith(`:${await timelinePersonKey('user_c2')}`)).toBe(true);
+    expect(assigned.id).not.toContain('user_c2');
   });
 
   it("takes a deleted comment's words off the Timeline, and a deleted thread's resolution", async () => {
