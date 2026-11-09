@@ -17,7 +17,7 @@ team library): it only sends the canvas to the Trash, so a question would guard 
 - From a list, the row leaves at once, and the shared Explorer's toast (**“Roadmap” deleted**, with **Undo**) puts
   it back. A delete that fails puts the row back and says so.
 - Deleting the canvas open in the editor (`trashOpenDocument`, `apps/editor/lib/document-delete-undo.ts`) marks it
-  deleted first (`lib/document-tombstones.ts`), so neither the autosave nor the unload flush writes it back, asks
+  deleted first (`../packages/workbench/src/lib/document-tombstones.ts`), so neither the autosave nor the unload flush writes it back, asks
   the index to delete it, and leaves for the Explorer at `/explorer?trashed=<id>&title=<name>`, which offers the same
   Undo on arrival and drops both from the address once read. The workbench frame's Explorer takes the same canvas from
   sessionStorage, kept for one page load.

@@ -151,7 +151,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
      ETag, 304 on a match), then through the router's rules, run from the router's own
-     `apps/router/src/cache-policy.ts` (pages `no-store`, build assets immutable, a missing asset a
+     `../packages/sites/src/cache-policy.ts` (pages `no-store`, build assets immutable, a missing asset a
      plain-text 404). `E2E_CACHE_POLICY=off` serves without the router's rules;
    - simulate a deploy for the stale build specs: `POST /__e2e/deploy` swaps in a copy of the
      build whose chunk files all carry new names (every reference rewritten), and

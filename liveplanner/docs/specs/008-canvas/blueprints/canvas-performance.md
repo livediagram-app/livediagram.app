@@ -7,7 +7,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 | File                                                                   | Role                                                                                                            |
 | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `apps/editor/lib/canvas-gesture.ts`                                    | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`                                 |
+| `../packages/workbench/src/lib/canvas-gesture.ts`                      | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`                                 |
 | `../packages/workbench/src/components/canvas/CanvasZoomContext.tsx`    | `CanvasZoomProvider`, `useCanvasZoom()`, `CounterScaled` (a div reading the zoom itself)                        |
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx`                | Stable per-element props; per-arrow frame and holes; the grid                                                   |
 | `apps/editor/components/canvas/CanvasElementList.tsx`                  | Every element in paint order, memoised so an editor render that changes none skips them; the element plane      |
@@ -372,7 +372,7 @@ OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it
 ## Interfaces and contracts
 
 ```ts
-// apps/editor/lib/canvas-gesture.ts
+// ../packages/workbench/src/lib/canvas-gesture.ts
 export type CanvasGesture =
   'pan' | 'zoom' | 'move' | 'resize' | 'reshape' | 'marquee' | 'stroke' | 'erase';
 export type CanvasGestureState = CanvasGesture | 'idle';

@@ -678,7 +678,7 @@ and the dialog stays as the one complete, browsable index of them.
   preference records "already seen", and its telemetry tokens still describe the PREFERENCE (switching on is
   `...SeenOff`), so each dashboard series keeps its meaning.
 
-  The Pages tour is a tour of several tracks (`apps/live/lib/tour-tracks.ts`), one per page kind
+  The Pages tour is a tour of several tracks (`../packages/workbench/src/lib/tour-tracks.ts`), one per page kind
   ([Pages tour](pages-tour.md)): **Pages Tours** is one switch over all of them (`tourTracksSwitch`, key
   `pagesTourSeen`: on while any track is untaken, off marks every track taken, on forgets every record), and each track
   has its own row nested beneath it, named for itself (`tourTrackSwitch`). A track's row is on while its track is
