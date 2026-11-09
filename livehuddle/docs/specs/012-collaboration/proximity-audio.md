@@ -186,7 +186,8 @@ and the editor:
 The room drops any of them from a Viewer, and drops one that fails its parser, as it drops a Viewer's `avatar-say`.
 
 - `call-session`: `{ kind, tabId, sessionId, sessionToken }`, sent once a call has its session (a listener's too),
-  and again after a subscribe was refused. It proves to the room which Realtime session is this connection's, so the
+  again after a subscribe was refused, and again on every new socket (the room keeps it on the connection, so a
+  reconnected speaker would otherwise be refused to everyone who asks to hear them). It proves to the room which Realtime session is this connection's, so the
   mint route can ask the room who may hear whom ([Meeting rooms and the stage](meeting-rooms-and-stage.md#trust)).
   The room checks the token as the mint route does, keeps the session on the connection, and never relays the op;
   one that fails its parser or its token is dropped. From any level: a Viewer subscribes too.
