@@ -36,7 +36,7 @@ in its header.
   For HTML it allows exactly `<script></script>`, the empty script React DOM parses to create a `<script>` element on
   a client render (a script inserted through `innerHTML` never runs); any other HTML string is refused.
 - **`liveworkspace-markup`** turns markup that livehuddle's own builders produced into `TrustedHTML`
-  (`trustedHtml(markup)`). Its callers are the builders that escape every piece of content they place: the icon,
+  (`trustedHtml(markup)`, reached only through "One path for markup" below). Its callers are the builders that escape every piece of content they place: the icon,
   sticker and template SVG builders (`@liveworkspace/icons`, `@livehuddle/templates`), the headless tab renderer's
   thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that
   the markup came from one of those builders, which is why nothing else may call it.
@@ -47,8 +47,8 @@ in its header.
 
 ### Server-rendered markup
 
-Because the prerender passes strings through, a **server component** that hands `trustedHtml(...)` to
-`dangerouslySetInnerHTML` puts a plain string into the RSC payload. The first load is fine (the markup is already in
+Because the prerender passes strings through, a **server component** that hands `htmlProps(...)` to an
+element puts a plain string into the RSC payload. The first load is fine (the markup is already in
 the HTML), but a client navigation to that page makes React write the string through `innerHTML`, the `default`
 policy refuses it, and the page crashes to a blank screen. The help centre's breadcrumb and category links all did
 this through the JSON-LD block. A `<Suspense>` boundary the static export leaves to the browser does the same on the
@@ -58,6 +58,33 @@ a root `app/layout.tsx` (never re-rendered on navigation), a `'use client'` modu
 in the browser), or an app module that only client modules import. A sink in a shared package must be a client
 module itself, since any server page may render it: `JsonLd` is one. `trusted-types-sinks.test.ts` holds every
 file to this.
+
+### One path for markup
+
+Every raw HTML sink in our code goes through one small module, `@liveworkspace/trusted-types`'s `html.ts`, and
+nothing else of ours writes one:
+
+- **A React element** takes markup as `{...htmlProps(markup)}`; no other file spells `dangerouslySetInnerHTML`.
+- **A DOM element** takes it through `setHtml(element, markup)`, and an iframe's document through
+  `setSrcdoc(frame, markup)`; no other file assigns `innerHTML`, `outerHTML` or `srcdoc`, or calls
+  `insertAdjacentHTML`, `createContextualFragment`, `setHTMLUnsafe` or `document.write`.
+- **The markup is a `SafeHtml`**, a branded string, so the type system shows where each one was vetted. A plain
+  string does not type-check. It is made one of three ways, and each is a line to review:
+  - `trustedConstant(source)`: markup or an inline script written in our own source and fixed at build time (the
+    boot scripts in each layout, the pre-hydration scripts, an authored SVG string), its only inputs our own
+    constants.
+  - `builtMarkup(markup)`: what one of our builders produced, a builder that escapes every piece of content it
+    places (the icon, sticker and template SVG builders, the headless tab renderer and its thumbnails and previews).
+    Content from a document reaches a sink only this way.
+  - `jsonScript(data)`: a JSON payload for an inline `<script>` (the JSON-LD block), with every `<` escaped so
+    nothing in it can close the script.
+- **Markup that needs no injection is JSX.** A fixed SVG picture is written as elements, not as a string.
+- **Nothing sanitises arbitrary HTML**, because nothing takes it: a file or paste a person brings is read through
+  `parseInert` and only its text and attributes are used. A feature that must show HTML from outside adds a
+  sanitising constructor to `html.ts` first, with its own tests.
+- **CI refuses a new raw sink.** The raw HTML guard (`raw-html-guard.mjs` in the CI scripts folder, run by the Checks
+  job and the pre-push hook; [docs/ci.md](../../../../docs/ci.md) "One path for markup") scans every tracked non-test
+  source file in the repository and fails on any of those sinks outside `html.ts`.
 
 ## Third parties
 

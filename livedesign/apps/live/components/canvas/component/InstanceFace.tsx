@@ -6,7 +6,7 @@
 // it selects, drags, turns and resizes like any shape, and nothing inside it is picked on its own.
 import { memo, useMemo } from 'react';
 import { prefixSvgIds, type CanvasSurface, type ShapeElement } from '@livedesign/design';
-import { trustedHtml } from '@livedesign/ui';
+import { builtMarkup, htmlProps } from '@livedesign/ui';
 import { instanceMarkup } from '@/lib/instance-svg';
 import { useComponentFaces } from './component-face-context';
 
@@ -62,7 +62,7 @@ export const InstanceFace = memo(function InstanceFace({
       aria-hidden="true"
       style={{ display: 'block' }}
       // Our own renderer's output (every label is xmlEscaped inside it).
-      dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+      {...htmlProps(builtMarkup(markup))}
     />
   );
 });

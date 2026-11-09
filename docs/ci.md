@@ -126,6 +126,8 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   - **Speed budgets:** a change may not add `performance.now()` to a test (see [Speed budgets](#speed-budgets)).
   - **Copies across products:** a change may not add a source file byte-identical in two or more products
     (see [Copies across products](#copies-across-products)).
+  - **One path for markup:** a change may not add a raw HTML sink outside the shared markup module
+    (see [One path for markup](#one-path-for-markup)).
   - **Tests:** every affected workspace's suite once. Those with `test:coverage` run that, so their
     per-file thresholds are enforced in CI; the rest run `test`. Coverage goes to Codecov, one flag
     per group, carried forward when a run doesn't reach that group (`codecov.yml`).
@@ -216,6 +218,18 @@ new package carries) and a product's thin binding, a file whose only statements 
 - It reads blob hashes from the index (`git ls-files -s`) and opens one copy per identical group, to spot
   a binding: about 0.1 seconds on the whole repository (1,300 files in 450 groups). Its tests run with
   `node --test .github/scripts/*.test.mjs`.
+
+## One path for markup
+
+Every raw HTML sink goes through `packages/trusted-types/src/html.ts` (livediagram/docs/specs/016-platform/trusted-types.md,
+"One path for markup"): `htmlProps` for a React element, `setHtml` and `setSrcdoc` for the DOM, each taking a
+`SafeHtml`. The Checks job's **One path for markup** step (`.github/scripts/raw-html-guard.mjs`, also in the
+pre-push hook) reads every tracked non-test source file in the repository and fails on a raw sink anywhere else:
+`dangerouslySetInnerHTML`, an assignment to `innerHTML`, `outerHTML` or `srcdoc`, `insertAdjacentHTML`,
+`createContextualFragment`, `setHTMLUnsafe`, `parseHTMLUnsafe` or `document.write`. It names each file and line.
+There is no baseline: none is left. Tests, e2e specs and CI's own scripts are left out, since they never ship.
+It reads about 14,400 files in about 1.5 seconds of CPU time (measured 2026-11-09), and its tests run with
+`node --test .github/scripts/*.test.mjs`.
 
 ## Drift report
 

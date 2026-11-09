@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livedesign/ui';
+import { builtMarkup, htmlProps } from '@livedesign/ui';
 
 // A layout previewed on its page while its tile is hovered (docs/specs/007-editor/
 // pages-mode.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
@@ -149,7 +149,7 @@ export function PageLayoutPreview({
         height={rect.height}
         viewBox={`${rect.x} ${rect.y} ${rect.width} ${rect.height}`}
         // Our own renderer's output (every label is xmlEscaped inside it).
-        dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+        {...htmlProps(builtMarkup(markup))}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livedesign/ui';
+import { builtMarkup, htmlProps } from '@livedesign/ui';
 
 // A tab window's drawing (docs/specs/009-elements/tab-window.md "The element"): the tab drawn as the editor shows it
 // (useTabSvg: the export renderer, in this person's appearance, with its photos), zoomed to fit and centred on the
@@ -61,7 +61,7 @@ export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: stri
         className="[&>svg>rect:first-of-type]:hidden"
         style={{ display: 'block' }}
         // Our own renderer's output (every label is xmlEscaped inside it).
-        dangerouslySetInnerHTML={{ __html: trustedHtml(inner) }}
+        {...htmlProps(builtMarkup(inner))}
       />
     </div>
   );

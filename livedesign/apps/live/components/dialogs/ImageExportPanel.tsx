@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { Button, trustedHtml, Switch, BackBar } from '@livedesign/ui';
+import { Button, builtMarkup, htmlProps, Switch, BackBar } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
 
 // A checkerboard under a preview, so see-through paper reads as see-through (a logo page's PNG and
@@ -79,7 +79,7 @@ export function ImageExportPanel({
             aria-label={pageExport ? 'The page as it will download' : 'The tab as it will download'}
             className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
             style={checkerboard ? { background: PREVIEW_CHECKER } : undefined}
-            dangerouslySetInnerHTML={{ __html: trustedHtml(previewSvg) }}
+            {...htmlProps(builtMarkup(previewSvg))}
           />
         ) : (
           <span className="text-xs text-slate-500 dark:text-slate-400">Preparing preview…</span>

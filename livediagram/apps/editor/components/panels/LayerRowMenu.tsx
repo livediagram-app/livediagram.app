@@ -27,7 +27,8 @@ import {
   useClickOutside,
   useControlMenu,
   Portal,
-  trustedHtml,
+  builtMarkup,
+  htmlProps,
 } from '@livediagram/ui';
 
 // The menu's width (w-64) and its gap from the panel and the viewport edges, in px.
@@ -175,7 +176,7 @@ export function LayerRowMenu({
                   preserveAspectRatio="xMidYMid meet"
                   className="h-full w-full"
                   aria-hidden
-                  dangerouslySetInnerHTML={{ __html: trustedHtml(thumbMarkup) }}
+                  {...htmlProps(builtMarkup(thumbMarkup))}
                 />
               ) : null}
             </span>

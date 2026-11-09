@@ -4,28 +4,30 @@ Derived from [Trusted Types](../trusted-types.md).
 
 ## Domain and naming
 
-| Term             | Identifier                                     | Meaning                                                                                      |
-| ---------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| The header value | `TRUSTED_TYPES_CSP`                            | `require-trusted-types-for 'script'; trusted-types liveworkspace-markup nextjs default`      |
-| Markup policy    | `MARKUP_POLICY` (`'liveworkspace-markup'`)     | Makes `TrustedHTML` from livedesign's own builders' markup                                   |
-| Default policy   | `'default'`                                    | The browser's fallback for a plain string at a sink                                          |
-| Boot script      | `trustedTypesBootScript(assetPrefix, origins)` | Inline, first in each layout's `<head>`: the default policy and the violation log            |
-| Asset prefix     | `''`, `/live`, `/help`                         | Where an app's own build is served from (`assetPrefix` or `basePath`)                        |
-| Markup helper    | `trustedHtml(markup)`                          | `TrustedHTML` in a browser with Trusted Types, else the string itself                        |
-| Allowed origin   | `origins` (default `[]`)                       | Third-party script origins the default policy lets through; none since sign-in left the page |
+| Term             | Identifier                                                                       | Meaning                                                                                                                                  |
+| ---------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| The header value | `TRUSTED_TYPES_CSP`                                                              | `require-trusted-types-for 'script'; trusted-types liveworkspace-markup nextjs default`                                                  |
+| Markup policy    | `MARKUP_POLICY` (`'liveworkspace-markup'`)                                       | Makes `TrustedHTML` from livedesign's own builders' markup                                                                               |
+| Default policy   | `'default'`                                                                      | The browser's fallback for a plain string at a sink                                                                                      |
+| Boot script      | `trustedTypesBootScript(assetPrefix, origins)`                                   | Inline, first in each layout's `<head>`: the default policy and the violation log                                                        |
+| Asset prefix     | `''`, `/live`, `/help`                                                           | Where an app's own build is served from (`assetPrefix` or `basePath`)                                                                    |
+| Markup sinks     | `htmlProps(markup)`, `setHtml(el, markup)`, `setSrcdoc(frame, markup)`           | The one path to a sink (`@liveworkspace/trusted-types` `html.ts`): `TrustedHTML` in a browser with Trusted Types, else the string itself |
+| Vetted markup    | `SafeHtml`: `trustedConstant(source)`, `builtMarkup(markup)`, `jsonScript(data)` | A branded string, the only thing a sink takes: our own constant, our escaping builders' output, or inline JSON                           |
+| Allowed origin   | `origins` (default `[]`)                                                         | Third-party script origins the default policy lets through; none since sign-in left the page                                             |
 
 ## Modules
 
-| File                                                         | Responsibility                                                                                                                   |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/ui/src/trusted-types-csp.ts`                       | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                      |
-| `packages/ui/src/trusted-types.ts`                           | `trustedHtml`, `isAllowedScriptUrl`, `trustedTypesBootScript`; exported from `@livedesign/ui` and `@livedesign/ui/trusted-types` |
-| `apps/*/app/layout.tsx` (all three)                          | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix), first in `<head>`; help and telemetry gain a `<head>` for it        |
-| `apps/live/src/worker.ts`                                    | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                          |
-| `apps/{marketing,help}/public/_headers`                      | The same header on `/*`                                                                                                          |
-| `scripts/e2e-stack.mjs`                                      | Sends the header on every HTML response, as production does                                                                      |
-| Every `dangerouslySetInnerHTML` site                         | `__html: trustedHtml(markup)`                                                                                                    |
-| Every `innerHTML`, `outerHTML` or `insertAdjacentHTML` write | `el.innerHTML = trustedHtml(markup) as string` (`useFaceFinishPass.ts`, the Marker and Sketch face ink)                          |
+| File                                                   | Responsibility                                                                                                                   |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/ui/src/trusted-types-csp.ts`                 | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                      |
+| `packages/ui/src/trusted-types.ts`                     | `trustedHtml`, `isAllowedScriptUrl`, `trustedTypesBootScript`; exported from `@livedesign/ui` and `@livedesign/ui/trusted-types` |
+| `apps/*/app/layout.tsx` (all three)                    | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix), first in `<head>`; help and telemetry gain a `<head>` for it        |
+| `apps/live/src/worker.ts`                              | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                          |
+| `apps/{marketing,help}/public/_headers`                | The same header on `/*`                                                                                                          |
+| `scripts/e2e-stack.mjs`                                | Sends the header on every HTML response, as production does                                                                      |
+| Every React element given markup                       | `{...htmlProps(markup)}`, the markup a `SafeHtml` (fixed SVG pictures are JSX instead)                                           |
+| Every DOM element given markup                         | `setHtml(el, markup)` (`useFaceFinishPass.ts`, the Marker and Sketch face ink); an iframe's document `setSrcdoc(frame, markup)`  |
+| `.github/scripts/raw-html-guard.mjs` (repository root) | Fails CI and the pre-push hook on a raw HTML sink anywhere outside `html.ts`                                                     |
 
 ## Behaviour and state
 

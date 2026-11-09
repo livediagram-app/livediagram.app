@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livedesign/ui';
+import { builtMarkup, htmlProps } from '@livedesign/ui';
 
 import {
   useCallback,
@@ -150,7 +150,7 @@ export function TabSvgViewport({
           style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.k})` }}
           // The export renderer's own markup: every piece of text in it is escaped there. Its own
           // background rect is hidden: the pane paints the paper (and pattern) edge to edge.
-          dangerouslySetInnerHTML={{ __html: trustedHtml(svg.markup) }}
+          {...htmlProps(builtMarkup(svg.markup))}
         />
       ) : null}
       {children}

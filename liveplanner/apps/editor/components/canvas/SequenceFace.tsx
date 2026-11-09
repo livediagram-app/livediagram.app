@@ -1,4 +1,4 @@
-import { trustedHtml } from '@liveplanner/ui';
+import { builtMarkup, htmlProps } from '@liveplanner/ui';
 import { memo, useMemo, type CSSProperties } from 'react';
 import {
   ANIMATION_SPEED_FACTOR,
@@ -77,7 +77,7 @@ export const SequenceFace = memo(function SequenceFace({
         play ? (element.sequenceAnimRepeat ? 'lvd-seq-play-loop' : 'lvd-seq-play') : ''
       }`}
       style={style}
-      dangerouslySetInnerHTML={{ __html: trustedHtml(html) }}
+      {...htmlProps(builtMarkup(html))}
     />
   );
 });

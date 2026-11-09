@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, trustedHtml, Switch, BackBar } from '@livehuddle/ui';
+import { Button, builtMarkup, htmlProps, Switch, BackBar } from '@livehuddle/ui';
 import { track } from '@/lib/telemetry';
 
 // The options-and-download second screen for an image export format
@@ -57,7 +57,7 @@ export function ImageExportPanel({
           <div
             data-testid="export-preview"
             className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
-            dangerouslySetInnerHTML={{ __html: trustedHtml(previewSvg) }}
+            {...htmlProps(builtMarkup(previewSvg))}
           />
         ) : (
           <span className="text-xs text-slate-500 dark:text-slate-400">Preparing preview…</span>

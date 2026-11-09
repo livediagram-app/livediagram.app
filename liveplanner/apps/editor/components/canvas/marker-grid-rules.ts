@@ -4,7 +4,7 @@ import {
   spendFaceBudget,
   type MarkerFaceBudget,
 } from '@liveplanner/project';
-import { trustedHtml } from '@liveplanner/ui';
+import { builtMarkup, setHtml } from '@liveplanner/ui';
 import { INK_ATTR, RULES_ATTR, SVG_NS } from './face-finish-marks';
 
 /** A part's ink and marks going in, after every read of the face (useFaceFinishPass); returns the element whose own
@@ -102,7 +102,7 @@ export function readGridRules(
     svg.setAttribute('width', String(face.width));
     svg.setAttribute('height', String(face.height));
     svg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;pointer-events:none';
-    svg.innerHTML = trustedHtml(ink.join('')) as string;
+    setHtml(svg, builtMarkup(ink.join('')));
     root.appendChild(svg);
     return null;
   });

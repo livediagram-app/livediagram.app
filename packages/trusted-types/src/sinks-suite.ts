@@ -1,6 +1,6 @@
 // The Trusted Types sink checks every app runs over its own sources (livediagram/docs/specs/016-platform/trusted-types.md):
-// every sink our code feeds goes through a policy, every page boots the default policy first, and every app sends the
-// header. Written once here; each app's `packages/ui/src/trusted-types-sinks.test.ts` calls it with its own layout.
+// every sink mints its TrustedHTML in the browser, every page boots the default policy first, and every app sends the
+// header. That every sink goes through html.ts at all is the repository's raw HTML guard (.github/scripts/raw-html-guard.mjs). Written once here; each app's `packages/ui/src/trusted-types-sinks.test.ts` calls it with its own layout.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
@@ -29,11 +29,8 @@ function sources(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-// Where the expression handed to `__html` starts, for every dangerouslySetInnerHTML in a file.
-const htmlExpressions = (source: string) =>
-  [...source.matchAll(/dangerouslySetInnerHTML=\{\{\s*__html:\s*/g)].map((m) =>
-    source.slice(m.index + m[0].length, m.index + m[0].length + 40),
-  );
+// The markup sinks a file feeds (html.ts's htmlProps, the one way a React element is given markup).
+const htmlExpressions = (source: string) => [...source.matchAll(/\{\.\.\.htmlProps\(/g)];
 
 export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): void {
   const { root, apps, editorApp, csp, domParserAllowed = [] } = options;
@@ -49,32 +46,7 @@ export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): voi
     .map((f) => f.slice(root.length));
 
   describe('Trusted Types sinks', () => {
-    it('hand dangerouslySetInnerHTML only what trustedHtml made', () => {
-      const raw = files.flatMap((f) =>
-        htmlExpressions(read(f))
-          .filter((expr) => !expr.startsWith('trustedHtml('))
-          .map((expr) => `${f}: ${expr.split('\n')[0]}`),
-      );
-      expect(raw).toEqual([]);
-    });
-
-    // A DOM sink written by hand meets the same default policy, which refuses it and throws: the canvas's Marker
-    // finish set `innerHTML` raw and every Marker tab failed to render in production.
-    it('write markup straight into the DOM only through trustedHtml', () => {
-      const raw = files.flatMap((f) =>
-        [...read(f).matchAll(/\.(?:innerHTML|outerHTML)\s*=(?!=)\s*|\binsertAdjacentHTML\(/g)]
-          .filter((m) => {
-            const rest = read(f).slice(m.index + m[0].length);
-            return m[0].startsWith('insertAdjacentHTML')
-              ? !/^[^,]*,\s*trustedHtml\(/.test(rest)
-              : !rest.startsWith('trustedHtml(');
-          })
-          .map((m) => `${f}: ${m[0]}`),
-      );
-      expect(raw).toEqual([]);
-    });
-
-    // A server component's `trustedHtml` runs in the prerender, where there is no Trusted Types, so the RSC payload
+    // A server component's `htmlProps` runs in the prerender, where there is no Trusted Types, so the RSC payload
     // carries a plain string; a client navigation then writes it through innerHTML and the default policy refuses
     // it, crashing the page to blank (the help centre's breadcrumbs did this to every page). So outside the editor
     // (a client app end to end) a sink lives in a root layout (never re-rendered on navigation), a 'use client'
@@ -136,7 +108,7 @@ export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): voi
       const head = layout.slice(layout.search(/^\s*<head>$/m));
       const first = head.indexOf('<script');
       expect(head.slice(first, head.indexOf('/>', first))).toContain(
-        'trustedHtml(TRUSTED_TYPES_BOOT)',
+        'htmlProps(TRUSTED_TYPES_BOOT)',
       );
       // Its own build's scripts, under the prefix next.config.ts serves them from (basePath or assetPrefix).
       const config = read(`apps/${app}/next.config.ts`);

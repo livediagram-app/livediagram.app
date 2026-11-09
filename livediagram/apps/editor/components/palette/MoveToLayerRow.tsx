@@ -1,4 +1,4 @@
-import { trustedHtml } from '@livediagram/ui';
+import { builtMarkup, htmlProps } from '@livediagram/ui';
 import type { Element, Layer } from '@livediagram/document';
 import { LayersGlyph } from '@/components/palette/context-menu-icons';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
@@ -57,7 +57,7 @@ export function MoveToLayerRow({
                       preserveAspectRatio="xMidYMid meet"
                       className="h-full w-full"
                       aria-hidden
-                      dangerouslySetInnerHTML={{ __html: trustedHtml(thumbMarkup.get(layer.id)!) }}
+                      {...htmlProps(builtMarkup(thumbMarkup.get(layer.id)!))}
                     />
                   ) : null}
                 </span>

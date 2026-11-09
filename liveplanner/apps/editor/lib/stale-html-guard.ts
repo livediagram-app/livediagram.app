@@ -16,6 +16,7 @@ import { BUILD_ID_HEADER } from '@liveplanner/api-schema';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { RELOAD_GUARD_WINDOW_MS, claimReloadIn } from '@liveworkspace/workbench/lib/reload-guard';
 import { APP_RECOVERY_FLAG, RELOAD_GUARD_KEY } from './workbench-keys';
+import { trustedConstant } from '@liveplanner/ui/trusted-types';
 /**
  * The guard's settings, as `data-*` attributes for its own <script> element (the layout spreads
  * them on). The script reads them back through `document.currentScript.dataset`: no value is ever
@@ -31,7 +32,7 @@ export const STALE_HTML_GUARD_ATTRIBUTES: Readonly<Record<string, string>> = {
 
 // Static source: one function's own code (the shared reload claim) and fixed
 // text; every setting comes from the element's data. Without its data it does nothing at all.
-export const STALE_HTML_GUARD_SCRIPT = `(function(){
+export const STALE_HTML_GUARD_SCRIPT = trustedConstant(`(function(){
 var c=document.currentScript&&document.currentScript.dataset;if(!c||!c.reloadKey)return;
 var KEY=c.reloadKey,WINDOW=Number(c.reloadWindow),API=c.api,HEADER=c.buildHeader,APP=c.appFlag;
 var claim=${claimReloadIn.toString()};
@@ -53,4 +54,4 @@ window.addEventListener('pageshow',function(e){if(!e||!e.persisted)return;
 var meta=document.querySelector('meta[name="liveplanner-build"]'),own=meta&&meta.content;if(!own)return;
 fetch(API+'/capabilities',{cache:'no-store'}).then(function(r){var live=r.headers.get(HEADER);
 if(live&&live!==own)reloadOnce('a newer build is live than this restored page',live);}).catch(function(){});});
-})();`;
+})();`);
