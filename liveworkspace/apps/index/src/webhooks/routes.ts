@@ -370,12 +370,14 @@ async function createWebhook(
   const secret = kind === 'json' ? newSigningSecret() : null;
   const db = env.INDEX_DB;
   const at = deps.now();
-  await db.batch([
+  // The cap again inside the insert: adds racing past the count above can't together pass it.
+  const [added] = await db.batch([
     db
       .prepare(
         `INSERT INTO webhooks
            (id, item_id, kind, name, url_sealed, host, secret_sealed, events, who, created_by, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11
+         WHERE (SELECT COUNT(*) FROM webhooks WHERE item_id = ?2) < ?12`,
       )
       .bind(
         id,
@@ -389,6 +391,7 @@ async function createWebhook(
         who,
         person.id,
         at,
+        WEBHOOKS_PER_DOCUMENT_MAX,
       ),
     ...linkHeld(ctx, loaded),
     // A team document's goes in the team's audit log, in the same batch (team-audit.ts).
@@ -407,6 +410,7 @@ async function createWebhook(
         ]
       : []),
   ]);
+  if (!added?.meta.changes) return conflict('webhook_limit');
   return json(
     { webhook: webhookOf((await readRow(env, id))!, person.id), secret },
     { status: 201 },

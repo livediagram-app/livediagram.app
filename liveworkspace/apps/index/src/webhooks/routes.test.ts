@@ -308,6 +308,17 @@ describe('what an add checks', () => {
     const other = await makeItem(ada.auth);
     expect((await post(ada.auth, other.id, {})).status).toBe(201);
   });
+
+  it('holds the cap when adds race past its count', async () => {
+    const ada = await person('user_wa4');
+    const item = await makeItem(ada.auth);
+    for (let i = 0; i < 9; i++) await addWebhook(ada.auth, item.id);
+    // Each reads nine before any of them writes; only one may make the tenth.
+    const statuses = await Promise.all([1, 2, 3].map(() => post(ada.auth, item.id, {})));
+    expect(statuses.map((res) => res.status).sort()).toEqual([201, 409, 409]);
+    const listed = await call(`/items/${item.id}/webhooks`, { auth: ada.auth });
+    expect(((await body(listed)) as { webhooks: unknown[] }).webhooks).toHaveLength(10);
+  });
 });
 
 describe('changing one', () => {
@@ -551,6 +562,19 @@ describe("a team's audit log", () => {
         )
         .all(),
     ).toEqual([row('webhook_added'), row('webhook_removed')]);
+  });
+
+  it('logs no add for a webhook refused at the cap', async () => {
+    const eve = await person('user_wa7', { teams: [{ id: 'team_wb', role: 'member' }] });
+    const item = await makeItem(eve.auth, { teamId: 'team_wb' });
+    for (let i = 0; i < 9; i++) await addWebhook(eve.auth, item.id);
+    const results = await Promise.all([1, 2].map(() => post(eve.auth, item.id, {})));
+    expect(results.map((res) => res.status).sort()).toEqual([201, 409]);
+    expect(
+      h.db.sql
+        .prepare(`SELECT COUNT(*) AS n FROM team_audit_events WHERE team_id = 'team_wb'`)
+        .get(),
+    ).toEqual({ n: 10 });
   });
 });
 
