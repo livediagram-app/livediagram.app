@@ -88,7 +88,10 @@ Derived from [Social pieces](../social-pieces.md).
   unpin only when the note's `by` matches. `mergeIncomingElement` keeps the receiver's `noticeNotes`,
   `elementChangeIsDeltaOnly` leaves them out of its comparison (so a notes-only change sends no `el` update), and
   `graftLiveTabState` carries them over an undo or redo. The room's ledger (`collab-ledger.ts`) records each pin and
-  unpin, so an Editor's save snapshotted before a pin merges it.
+  unpin, so an Editor's save snapshotted before a pin merges it; an unpin by the signer replaces its pin's entry,
+  and at `NOTE_EVENTS_MAX` the oldest events give way (`withRoomForOneNote`). Every stored note, on the board, in the
+  ledger or from a Participant's update (`mergeNoticeNotes`), keeps its own fields alone (`noteFields`), and
+  `isNoticeNote` holds `at` to a whole number a date can show.
 - **The room's rule**: `notice-pin` and `notice-unpin` are participation deltas (`PARTICIPATION_DELTA_KINDS`); the op
   gate (`room-op-gate.ts`) relays a Participant's only when `answersAsSelf` finds the note's (or the unpin's) `by`
   equal to the session's adder key, then schedules the room's answers write, which folds the ledger's notes into the

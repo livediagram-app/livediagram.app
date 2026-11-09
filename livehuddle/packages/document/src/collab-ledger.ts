@@ -37,7 +37,7 @@
 import type { ShapeElement, Tab } from './index';
 import type { Comment } from './comments';
 import { applyElementDelta, isComment, type ElementDelta } from './element-deltas';
-import { isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
+import { isNoticeNote, noteFields, NOTES_MAX, type NoticeNote } from './office-social';
 import { isPieceTimer, type PieceTimer } from './timer-pieces';
 import {
   ARCADE_SCORES_MAX,
@@ -81,7 +81,7 @@ export type TabLedger = { elements: Record<string, ElementLedger> };
 // and the merge falls back to what the save carried.
 const COMMENT_EVENTS_MAX = 500;
 const ID_MAX = 200;
-// A board holds NOTES_MAX notes; room for them to turn over a few times before new pins stop being recorded.
+// A board holds NOTES_MAX notes; room for them to turn over a few times before the oldest events give way.
 const NOTE_EVENTS_MAX = NOTES_MAX * 4;
 
 const isStr = (v: unknown, max: number): v is string => typeof v === 'string' && v.length <= max;
@@ -200,22 +200,52 @@ function recordNote(
   seq: number,
 ): ElementLedger | null {
   const notes = prev?.notes ?? { pins: {}, unpins: {} };
-  const events = Object.keys(notes.pins).length + Object.keys(notes.unpins).length;
   if (d.kind === 'notice-pin') {
     if (!isNoticeNote(d.note)) return null;
     const id = d.note.id;
-    if (id in notes.pins || id in notes.unpins || events >= NOTE_EVENTS_MAX) return null;
+    if (id in notes.pins || id in notes.unpins) return null;
+    const room = withRoomForOneNote(notes);
     return {
       ...(prev ?? {}),
-      notes: { ...notes, pins: { ...notes.pins, [id]: { note: d.note, seq } } },
+      notes: { ...room, pins: { ...room.pins, [id]: { note: noteFields(d.note), seq } } },
     };
   }
   if (!isStr(d.noteId, ID_MAX) || !isStr(d.by, ID_MAX)) return null;
-  if (events >= NOTE_EVENTS_MAX && !(d.noteId in notes.pins)) return null;
+  // An unpin of a pin the entry holds, by its signer, takes its place: a merge that replays the pin then the unpin
+  // lands the same as one that replays the unpin alone, and the unpin still stops a replayed pin of that id. One
+  // naming another signer removes nothing anywhere, so the pin stays.
+  const pinned = notes.pins[d.noteId];
+  const pins = { ...notes.pins };
+  if (pinned && pinned.note.by === d.by) delete pins[d.noteId];
+  const room = withRoomForOneNote({ pins, unpins: notes.unpins }, d.noteId);
   return {
     ...(prev ?? {}),
-    notes: { ...notes, unpins: { ...notes.unpins, [d.noteId]: { by: d.by, seq } } },
+    notes: { ...room, unpins: { ...room.unpins, [d.noteId]: { by: d.by, seq } } },
   };
+}
+
+// The notes entry with room for one more event: at NOTE_EVENTS_MAX the oldest events (lowest seq) go, never the
+// newest, so a busy board's latest pins keep reaching the store (the room writes a Participant's pins from here). A
+// saver that missed an event this old missed hundreds since, and its save is long overtaken. `replacing` names an
+// event the caller is about to overwrite, which needs no room.
+function withRoomForOneNote(
+  notes: NonNullable<ElementLedger['notes']>,
+  replacing?: string,
+): NonNullable<ElementLedger['notes']> {
+  const events = Object.keys(notes.pins).length + Object.keys(notes.unpins).length;
+  if (events < NOTE_EVENTS_MAX || (replacing !== undefined && replacing in notes.unpins))
+    return notes;
+  const bySeq = [
+    ...Object.entries(notes.pins).map(([id, e]) => ({ id, pin: true, seq: e.seq })),
+    ...Object.entries(notes.unpins).map(([id, e]) => ({ id, pin: false, seq: e.seq })),
+  ].sort((a, b) => a.seq - b.seq);
+  const pins = { ...notes.pins };
+  const unpins = { ...notes.unpins };
+  for (const e of bySeq.slice(0, events - NOTE_EVENTS_MAX + 1)) {
+    if (e.pin) delete pins[e.id];
+    else delete unpins[e.id];
+  }
+  return { pins, unpins };
 }
 
 // A posted score joins the entry and the entry is cut to the ten best; a clear drops them all and keeps its seq.
