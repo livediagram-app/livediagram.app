@@ -3,6 +3,7 @@
 // object zones once the image pipeline has stored them; everything left out is counted for the report. Pure over an
 // opened package.
 
+import type { ImageCrop } from '@livedocuments/document';
 import {
   ARTICLE_FOOTNOTE_REF,
   ARTICLE_LIST_MAX_LEVEL,
@@ -42,6 +43,8 @@ export type OfficePicture = {
   heightPx: number;
   alt?: string;
   cropped?: true;
+  /** The part of the picture shown, from a PowerPoint `a:srcRect` (docs/specs/009-elements/picture-crop-and-mask.md). */
+  crop?: ImageCrop;
 };
 
 export type DocxBlock = ArticleBlock | { id: string; type: 'picture'; picture: OfficePicture };

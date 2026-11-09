@@ -119,6 +119,9 @@ export function pageSheetStyle(
   // drawn at its body line pitch inside its margins, on the writing's baselines.
   ruling?: { pitch: number; inset: number; top: number },
   resolveImage?: (imageId: string) => string | undefined,
+  // What a picture paints from instead, when given: its blurred copy (pages-mode.md "Image backgrounds", Blur), or
+  // null while that copy is made (the tone shows, never the sharp picture).
+  imageSrc?: string | null,
 ): CSSProperties {
   const fill = background?.fill;
   const style: CSSProperties = {};
@@ -156,7 +159,7 @@ export function pageSheetStyle(
     style.backgroundColor = fill.color;
   } else if (fill?.kind === 'image') {
     if (fill.overlay) layer(pageImageOverlayCss(fill.overlay), '100% 100%', 'border-box');
-    const src = pageImageSrc(fill, resolveImage);
+    const src = imageSrc === undefined ? pageImageSrc(fill, resolveImage) : imageSrc;
     const url = src ? pageImageCssUrl(src) : null;
     if (url) layer(url, 'cover', 'border-box', pageImagePositionCss(fill.position), 'no-repeat');
     // The picture's own tone under it, while it loads (and where it cannot).

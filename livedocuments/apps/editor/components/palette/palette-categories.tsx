@@ -123,7 +123,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Media',
     group: 2,
     description:
-      'Pictures and figures: an uploaded image or a circular avatar, embeds and a Link Card.',
+      'Pictures and figures: an uploaded image, a circular avatar or a logo strip, embeds and a Link Card.',
     icon: <MediaTabIcon />,
   },
   {

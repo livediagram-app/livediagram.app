@@ -1,7 +1,7 @@
 'use client';
 
 // The Background section's Image category (docs/specs/007-editor/pages-mode.md "Image
-// backgrounds"): the page's picture with its credit, its Overlay, Strength and Position, then the
+// backgrounds"): the page's picture with its credit, its Overlay, Strength, Blur and Position, then the
 // image search (asking for the page's shape), Choose From My Images and Upload an Image to pick or replace it. A
 // hovered result, overlay or position previews on the page; a pick, an upload or a press commits
 // one edit.
@@ -10,6 +10,7 @@ import {
   defaultPageImageOverlay,
   pageDimensions,
   PAGE_IMAGE_OVERLAY_MAX,
+  parsePageImageBlur,
   type Page,
   type PageFill,
   type PageImageFill,
@@ -94,6 +95,7 @@ export function ImageBackgroundChoices({
   // What a new picture takes: the overlay and position in force, else a readable wash.
   const overlay = fill ? fill.overlay : defaultPageImageOverlay(dark);
   const [strengthDrag, setStrengthDrag] = useState<number | null>(null);
+  const [blurDrag, setBlurDrag] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [replacing, setReplacing] = useState(false);
@@ -177,6 +179,15 @@ export function ImageBackgroundChoices({
     return p === 'center' ? rest : { ...rest, position: p };
   };
   const strength = Math.round((strengthDrag ?? overlay?.strength ?? 0) * 100);
+  // Blur (pages-mode.md "Image backgrounds"): 0 to 100% of the softest, in steps of 5.
+  const withBlur = (b: number): PageImageFill | undefined => {
+    if (!fill) return undefined;
+    const { blur: _old, ...rest } = fill;
+    void _old;
+    const v = parsePageImageBlur(b);
+    return v ? { ...rest, blur: v } : rest;
+  };
+  const blur = Math.round((blurDrag ?? fill?.blur ?? 0) * 100);
 
   // The search and Upload an Image: the category's own while the page has no picture, else
   // behind Replace Image.
@@ -306,6 +317,27 @@ export function ImageBackgroundChoices({
               />
             </div>
           ) : null}
+          <div className="-mx-3 mt-1">
+            <MenuSliderRow
+              label="Blur"
+              min={0}
+              max={100}
+              step={STRENGTH_STEP}
+              value={blur}
+              display={blur ? `${blur}%` : 'Off'}
+              onChange={(v) => {
+                setBlurDrag(v / 100);
+                onPreview(withBlur(v / 100));
+              }}
+              onRelease={() => {
+                if (blurDrag !== null && blurDrag !== (fill.blur ?? 0)) {
+                  onPick(withBlur(blurDrag));
+                  track('Tab', 'Changed', 'PageBackgroundImageBlur');
+                }
+                setBlurDrag(null);
+              }}
+            />
+          </div>
           <Heading>Position</Heading>
           <div role="radiogroup" aria-label="Position" className="grid grid-cols-3 gap-1">
             {POSITION_TILES.map(({ id, label }) => {

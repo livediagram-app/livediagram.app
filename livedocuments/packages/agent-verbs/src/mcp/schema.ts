@@ -43,6 +43,7 @@ import {
   STICKY_PRESETS,
   THEMES,
   truncateName,
+  IMAGE_MASKS,
 } from '@livedocuments/document';
 
 export const SCHEMA_RESOURCE_URI = 'livedocuments://schema/elements';
@@ -68,6 +69,10 @@ const CONTENT_KINDS =
   'gallery is refused); without it the element is a placeholder the user fills in the editor. "objectFit" ' +
   'contain (default, the whole picture) or cover (fills the box, cropping); "alt" describes it. A box in the ' +
   "picture's own proportions (its width and height from list_images, scaled) shows it uncropped. " +
+  '"crop" {x, y, width, height} is the part of the picture shown, as fractions of it (0 to 1; each side at least ' +
+  '0.02); the box should share that part\'s proportions. "mask" clips it to a shape: ' +
+  `${IMAGE_MASKS.join(', ')}. "greyscale" true draws it in grey (a logo strip: a row stack holding greyscale ` +
+  'images, evenly spaced). ' +
   'type "table": "cells" is rows of strings (ragged rows are padded), "headerRow" / ' +
   '"headerColumn" style the first row / column, "zebra" tints alternate rows. ' +
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +

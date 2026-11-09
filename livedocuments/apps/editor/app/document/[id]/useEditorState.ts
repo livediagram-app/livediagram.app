@@ -2105,6 +2105,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addStatRow,
     addProcess,
     addAvatar,
+    addLogoStrip,
     dropPaletteItem,
     placeIntentAt,
     addText,
@@ -2752,6 +2753,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addStatRow,
     addProcess,
     addAvatar,
+    addLogoStrip,
     dropPaletteItem,
     // The empty Plan tab's board picker places its board in the middle of the view.
     getViewportCenter,

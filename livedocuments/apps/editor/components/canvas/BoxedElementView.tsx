@@ -1,3 +1,5 @@
+import { isImageMask } from '@livedocuments/document';
+import { useIsImageCropping } from '@/lib/image-crop-store';
 import { memo, useRef } from 'react';
 import { useZoneClip, zoneClipPolygon } from '@/lib/article/zone-clip-store';
 import {
@@ -185,6 +187,7 @@ function BoxedElementViewImpl({
   // context menu is an additional surface, not a replacement.
   // The element's wrapper node, so the context-menu handlers can read its
   // live screen rect to anchor the menu at the bottom-right corner.
+  const cropping = useIsImageCropping(element.id);
   const wrapperRef = useRef<HTMLDivElement>(null);
   // The face's own parts in its finish: Marker's frames and shapes, Professional's pills (finish.md "Faces").
   useFaceFinishPass(wrapperRef, faceFinish, element.id);
@@ -513,7 +516,8 @@ function BoxedElementViewImpl({
           iconCaptionBand={iconCaptionBand}
         />
       </SketchFace>
-      {element.type === 'image' ? sketchOverlay() : null}
+      {/* A masked picture has no rectangle for a hand-drawn edge to follow (picture-crop-and-mask.md). */}
+      {element.type === 'image' && !isImageMask(element.mask) ? sketchOverlay() : null}
 
       {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
       {layer && layerAnim ? (
@@ -559,7 +563,8 @@ function BoxedElementViewImpl({
         elementId={element.id}
         box={element}
         rotation={rotation}
-        showHandles={showHandles}
+        // The crop overlay's handles take the box's place while it is cropped (picture-crop-and-mask.md).
+        showHandles={showHandles && !cropping}
         showAnchors={showAnchors}
         onBeginDrag={onBeginDrag}
         onHandlePress={longPress.onPointerDown}

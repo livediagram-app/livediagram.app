@@ -26,7 +26,12 @@ import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
-import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
+import {
+  buildDressedDrawnArrow,
+  buildDrawnBoxed,
+  buildDrawnComponent,
+  buildDrawnLogoStrip,
+} from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
 
@@ -151,6 +156,15 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // element where the user expected an outline.
     if (intent.type === 'polygon') {
       setPendingDraw(null);
+      return;
+    }
+    if (intent.type === 'component' && intent.kind === 'logo-strip') {
+      // A stack and its logos (docs/specs/009-elements/logo-strip.md), placed together and settled by the commit.
+      const strip = buildDrawnLogoStrip(startX, startY, endX, endY);
+      commit((els) => [...els, ...strip]);
+      setSelectedId(strip[0]!.id);
+      setPendingDraw(null);
+      track('Element', 'Added', componentTelemetryType(intent.kind));
       return;
     }
     if (intent.type === 'component') {

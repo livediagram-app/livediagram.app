@@ -13,6 +13,7 @@ import type {
   BorderRadius,
 } from '@liveworkspace/model-core/border-style';
 import type { ElementShadow } from './shadow';
+import type { ImageCrop, ImageMask } from './image-frame';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
@@ -760,6 +761,11 @@ export type ImageElement = {
   // `textColor` (white by default). Present = shown; the palette's Hero is an
   // image created with one, and any image can gain or lose it from the menu.
   heroCaption?: HeroCaption;
+  // The part of the picture kept, the shape the box is cut to, and drawing it in grey
+  // (docs/specs/009-elements/picture-crop-and-mask.md). Absent = the whole picture, the box, in colour.
+  crop?: ImageCrop;
+  mask?: ImageMask;
+  greyscale?: true;
   // Creator + licence credit of a picture picked from Image search
   // (docs/specs/009-elements/image-search.md). Absent for uploads.
   credit?: ImageCredit;

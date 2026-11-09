@@ -1,4 +1,10 @@
-import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livedocuments/document';
+import type {
+  ArrowElement,
+  Element,
+  ShapeElement,
+  Tab,
+  ThemeDefinition,
+} from '@livedocuments/document';
 import { COMPONENT_SIZE } from '@livedocuments/document';
 import { describe, expect, it } from 'vitest';
 import {
@@ -6,6 +12,7 @@ import {
   buildDressedDrawnArrow,
   buildDrawnBoxed,
   buildDrawnComponent,
+  buildDrawnLogoStrip,
   NEW_ARROW_THEME_STROKE_FALLBACK,
 } from './draw-commit';
 
@@ -251,5 +258,22 @@ describe('buildDrawnBoxed', () => {
       width: 200,
       height: 100,
     });
+  });
+});
+
+// docs/specs/009-elements/logo-strip.md "Placing one": a tap centres the strip at its natural size; a drag sizes it.
+describe('buildDrawnLogoStrip', () => {
+  it('centres a tapped strip on the tap', () => {
+    const [stack, ...logos] = buildDrawnLogoStrip(500, 300, 500, 300) as ShapeElement[];
+    expect(stack!.x + stack!.width / 2).toBeCloseTo(500);
+    expect(stack!.y + stack!.height / 2).toBeCloseTo(300);
+    expect(logos).toHaveLength(5);
+  });
+
+  it('shares a dragged width among the five logos', () => {
+    const [stack, ...logos] = buildDrawnLogoStrip(0, 0, 1000, 120) as ShapeElement[];
+    expect(stack!.width).toBeCloseTo(1000, -1);
+    const widths = new Set(logos.map((l) => l.width));
+    expect(widths.size).toBe(1);
   });
 });

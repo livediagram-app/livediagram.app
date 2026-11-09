@@ -45,6 +45,8 @@ export {
   isImageCredit,
   type ImageCredit,
 } from './image-credit';
+export * from './image-frame';
+export * from './logo-strip';
 export {
   IMAGE_ALT_MAX,
   cleanImageAlt,

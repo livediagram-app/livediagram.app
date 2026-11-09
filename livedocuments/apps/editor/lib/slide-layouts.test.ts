@@ -21,8 +21,8 @@ import { isIconId } from '@liveworkspace/icons/search';
 // layout fitting a 16:9 and a 4:3 slide inside its margins, save a full-bleed picture or panel,
 // which runs to the slide's own edges and no further.
 describe('slide layouts', () => {
-  it('are the sixty-one of the spec, at least nine to a category, each unique', () => {
-    expect(SLIDE_LAYOUTS).toHaveLength(61);
+  it('are the sixty-two of the spec, at least nine to a category, each unique', () => {
+    expect(SLIDE_LAYOUTS).toHaveLength(62);
     expect(new Set(SLIDE_LAYOUTS.map((l) => l.id)).size).toBe(SLIDE_LAYOUTS.length);
     for (const c of SLIDE_LAYOUT_CATEGORIES) {
       expect(

@@ -85,6 +85,11 @@ export type BoxedElementViewProps = {
     documentId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
+    // Done on a crop (docs/specs/009-elements/picture-crop-and-mask.md); an Editor's only.
+    onCommitImageCrop?: (
+      elementId: string,
+      result: import('@/lib/image-crop-math').CropResult,
+    ) => void;
   };
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.

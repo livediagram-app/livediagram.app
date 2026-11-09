@@ -233,6 +233,11 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     beginDraw({ type: 'component', kind: 'avatar' });
   };
+  // The logo strip (docs/specs/009-elements/logo-strip.md): a stack and its logos, placed by the draw commit.
+  const addLogoStrip = () => {
+    if (editsBlocked) return;
+    beginDraw({ type: 'component', kind: 'logo-strip' });
+  };
 
   // A Write text style (docs/specs/008-canvas/canvas-and-palette.md "Text styles"); T arms a Paragraph.
   const addText = (preset?: TextPresetId) => {
@@ -401,6 +406,7 @@ export function useElementCreation(opts: {
     addStatRow,
     addProcess,
     addAvatar,
+    addLogoStrip,
     dropPaletteItem,
     addText,
     addSticky,

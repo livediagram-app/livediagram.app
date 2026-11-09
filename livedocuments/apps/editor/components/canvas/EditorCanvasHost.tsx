@@ -72,6 +72,7 @@ export function EditorCanvasHost() {
     setLaserPanelPosition,
     addArrow,
     addAvatar,
+    addLogoStrip,
     addBanner,
     addCallout,
     beginArrowBend,
@@ -483,6 +484,7 @@ export function EditorCanvasHost() {
             onAddStatRow={addStatRow}
             onAddProcess={addProcess}
             onAddAvatar={addAvatar}
+            onAddLogoStrip={addLogoStrip}
             onAddText={addText}
             onAddSticky={addSticky}
             onDropFile={isReadOnly ? undefined : dropBoardFile}

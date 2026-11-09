@@ -138,3 +138,38 @@ describe('the pictures a tab names', () => {
     expect((next![0]!.background.fill as PageImageFill).tone).toBe('#000000');
   });
 });
+
+describe('blur (pages-mode.md "Image backgrounds", Blur)', () => {
+  it('is kept in 5% steps, clamped, and dropped for none', async () => {
+    const { parsePageImageBlur, pageImageBlurSigma, parsePageImageFill, samePageImage } =
+      await import('./page-image');
+    expect(parsePageImageBlur(0.42)).toBe(0.4);
+    expect(parsePageImageBlur(3)).toBe(1);
+    expect(parsePageImageBlur(0)).toBeUndefined();
+    expect(parsePageImageBlur('0.5')).toBeUndefined();
+    expect(parsePageImageFill({ kind: 'image', imageId: ID, blur: 0.5 })?.blur).toBe(0.5);
+    expect(parsePageImageFill({ kind: 'image', imageId: ID, blur: -1 })).not.toHaveProperty('blur');
+    expect(pageImageBlurSigma({ blur: 1 }, { width: 1920, height: 1080 })).toBeCloseTo(43.2);
+    expect(pageImageBlurSigma({}, { width: 1920, height: 1080 })).toBe(0);
+    const a = { kind: 'image' as const, imageId: ID };
+    expect(samePageImage(a, { ...a, blur: 0.5 })).toBe(false);
+    expect(samePageImage(a, { ...a })).toBe(true);
+  });
+
+  it('draws the export picture under a Gaussian blur with solid edges', async () => {
+    const { pageImageSvg } = await import('./page-frame');
+    const fill = { kind: 'image' as const, imageId: ID, blur: 0.5 };
+    const svg = pageImageSvg(fill, { x: 0, y: 0, width: 1000, height: 500 }, 'data:x', 'p');
+    expect(svg).toContain('<feGaussianBlur stdDeviation="10"/>');
+    expect(svg).toContain('tableValues="1 1"');
+    expect(svg).toContain('<g filter="url(#p-blur)"><image');
+    expect(
+      pageImageSvg(
+        { ...fill, blur: undefined },
+        { x: 0, y: 0, width: 10, height: 10 },
+        'data:x',
+        'p',
+      ),
+    ).not.toContain('feGaussianBlur');
+  });
+});
