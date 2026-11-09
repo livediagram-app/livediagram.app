@@ -5,12 +5,23 @@ import { rmsOf } from './voice-detector';
 
 /** How long gain and pan take to settle on a new value (the time constant of setTargetAtTime). */
 export const GLIDE_S = 0.12;
+/** A volume or side that moved by less than this is left where it is (half a percent: never heard). */
+export const PLACE_EPSILON = 0.005;
+
+// Whether a value last set at `last` should be set to `next`: moved far enough, or landing on silence or full volume.
+const moved = (last: number, next: number) =>
+  Number.isNaN(last) ||
+  Math.abs(next - last) >= PLACE_EPSILON ||
+  (next !== last && (next === 0 || next === 1));
 
 type Voice = {
   element: HTMLAudioElement;
   source: MediaStreamAudioSourceNode;
   gain: GainNode;
   pan: StereoPannerNode;
+  // The values last set, NaN until the first place.
+  lastGain: number;
+  lastPan: number;
 };
 
 export class AudioGraph {
@@ -38,20 +49,26 @@ export class AudioGraph {
     gain.gain.value = 0;
     const pan = this.context.createStereoPanner();
     source.connect(gain).connect(pan).connect(this.context.destination);
-    this.voices.set(id, { element, source, gain, pan });
+    this.voices.set(id, { element, source, gain, pan, lastGain: Number.NaN, lastPan: Number.NaN });
   }
 
   has(id: string): boolean {
     return this.voices.has(id);
   }
 
-  /** Glide a speaker to a new volume and side. */
+  /** Glide a speaker to a new volume and side; a value that barely moved is left gliding where it was going. */
   place(id: string, gain: number, pan: number): void {
     const voice = this.voices.get(id);
     if (!voice) return;
     const at = this.context.currentTime;
-    voice.gain.gain.setTargetAtTime(gain, at, GLIDE_S);
-    voice.pan.pan.setTargetAtTime(pan, at, GLIDE_S);
+    if (moved(voice.lastGain, gain)) {
+      voice.gain.gain.setTargetAtTime(gain, at, GLIDE_S);
+      voice.lastGain = gain;
+    }
+    if (moved(voice.lastPan, pan)) {
+      voice.pan.pan.setTargetAtTime(pan, at, GLIDE_S);
+      voice.lastPan = pan;
+    }
   }
 
   detach(id: string): void {

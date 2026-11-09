@@ -98,7 +98,14 @@ large move rides as one layer").
   follows a character as a fact (the element under your feet and its ring, the stage you speak from,
   who sits or stands on each piece, which pod is shut) subscribes by value and renders only when the
   fact changes; what acts on a position (a click on a peer, Walk There, a climb, a seat on arrival)
-  reads it when it runs. A character is placed by a transform, not by `left` and `top`, so a step
+  reads it when it runs. What follows everyone's positions as a fact and draws nothing that walks
+  with them (the call's scene, the Screens and Room Signs, the game seats, who is where, the pad
+  arrivals) reads a coarse copy of the characters and of your feet: taken at most 10 times a second
+  while people walk, and at once when someone appears or leaves, sits or stands, changes tab, or
+  crosses into another room or onto a stage, so a room's call and its signs never lag a door. In a
+  20 to 50 person office somebody is almost always walking, and before the coarse copy each of those
+  ran on every frame of it (50 peers walking: the call fed 60 scenes a second, 6,000 costume parses
+  and 6,240 room tests a second). A peer's costume is read once per costume, not per frame. A character is placed by a transform, not by `left` and `top`, so a step
   moves a layer without laying the page out, and a peer's glide is a transition of that transform. The
   centred camera pans with every step, and that pan renders nothing more than a pan does: no canvas
   view and no element view.

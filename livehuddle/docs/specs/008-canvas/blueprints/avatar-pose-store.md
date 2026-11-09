@@ -56,6 +56,9 @@ peers)` compared with `sameSitters`).
 
 ## Performance and limits
 
+- What reads your feet as a fact for others' sake (who is where, the meeting pieces, the call's scene) reads
+  `useCoarseMotion`'s feet ([Peer-motion store](peer-motion-store.md) "The coarse copy"): your feet at most every
+  `COARSE_MOTION_MS`, and at once when you are placed or lifted, or cross into another room or onto a stage.
 - Per walking frame: one pose notification. Renders: `AvatarSelfWalker` and the characters layer. The
   canvas, `useCanvasAvatar` and the element layer render 0 times, the centred camera's pan included: it
   writes the canvas's transform outside React ([Viewport store](viewport-store.md) "Inside the canvas").

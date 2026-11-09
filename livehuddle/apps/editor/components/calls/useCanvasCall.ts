@@ -7,14 +7,15 @@
 // bars (meeting-rooms-and-stage.md "Raise hand", "Do Not Disturb").
 import { useMemo } from 'react';
 import { computeViewportCanvasRect } from '@liveworkspace/workbench/lib/viewport';
-import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
+import { avatarScale, peerAvatarConfig } from '@liveworkspace/avatar/config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { RemoteAvatarRow } from '@/lib/presence-rows';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { ViewRect } from '@/lib/calls/bubbles';
 import { walkTowards, type Point } from '@/lib/calls/hearing';
 import { useProximityCall } from '@/lib/calls/useProximityCall';
-import { callStages, mayLetSpeakSelf } from '@/lib/calls/stage';
+import { mayLetSpeakSelf } from '@/lib/calls/stage';
+import { callPlacesOf } from '@/lib/calls/call-places';
 import {
   callMaximised,
   noteLetSpeak,
@@ -22,7 +23,6 @@ import {
   shareStoppedNotice,
 } from '@/lib/calls/calls-store';
 import { useToast } from '@/hooks/ui/useToast';
-import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
 import { useTimerEarshot } from '@/lib/office/timer-earshot';
 import { useMeetingPieces } from '@/lib/office/useMeetingPieces';
@@ -49,6 +49,9 @@ export function useCanvasCall(deps: {
   viewport?: { offset: Point; zoom: number; width: number; height: number };
   // Your status is Do Not Disturb (meeting-rooms-and-stage.md "Do Not Disturb").
   doNotDisturb?: boolean;
+  // The coarse copy of the peers and your feet (hooks/collab/useCoarseMotion.ts), for what follows positions as a
+  // fact: the call's scene and the meeting pieces. Without it, the frame-rate ones.
+  coarse?: { remoteAvatars: RemoteAvatarRow[]; pos: Point | null };
 }) {
   const { props, remoteAvatars, canvasTool, avatar } = deps;
   const inMode = canvasTool === 'avatar';
@@ -64,7 +67,7 @@ export function useCanvasCall(deps: {
         color: p.color,
         // The seat too: only a seated character is in a Phone Booth's call (workday-pieces.md "Phone Booth").
         at: { x: p.avatar.x, y: p.avatar.y, seatedOn: p.avatar.seatedOn ?? null },
-        scale: avatarScale(parseAvatarConfig(p.avatar.config).size),
+        scale: avatarScale(peerAvatarConfig(p.avatar.config).size),
         glideMs: p.glideMs,
         walking: p.avatar.walking,
       })),
@@ -78,10 +81,7 @@ export function useCanvasCall(deps: {
   // Each Office room is a call of its own (meeting-rooms-and-stage.md "Rooms are calls"): the rooms the walk
   // collides with, worked out only when the board changes, never on a step.
   // And each stage, with the room it stands in (the same spec's "The stage").
-  const { zones, stages } = useMemo(() => {
-    const rooms = roomZones(props.elements);
-    return { zones: rooms, stages: callStages(props.elements, rooms) };
-  }, [props.elements]);
+  const { zones, stages } = callPlacesOf(props.elements);
 
   const self = inMode ? avatar.pos : null;
   const selfSeat = avatar.seatedOn ?? null;
@@ -89,14 +89,24 @@ export function useCanvasCall(deps: {
     () => (self ? { ...self, seatedOn: selfSeat } : null),
     [self, selfSeat],
   );
+  // What follows positions as a fact reads the coarse copy (canvas-performance.md "Walking renders the characters").
+  const coarseRows = deps.coarse?.remoteAvatars;
+  const factWalkers = coarseRows ?? remoteAvatars;
+  const factSelf = inMode ? (deps.coarse ? deps.coarse.pos : avatar.pos) : null;
+  const callSelfAt = useMemo(
+    () => (factSelf ? { ...factSelf, seatedOn: selfSeat } : null),
+    [factSelf, selfSeat],
+  );
+  const coarseWalkers = useMemo(() => (coarseRows ? walkersOf(coarseRows) : null), [coarseRows]);
+  const callWalkers = coarseWalkers ?? peers;
   // The Screens' and Room Signs' rooms, Knock (docs/specs/009-elements/screen-and-room-sign.md,
   // docs/specs/012-collaboration/knock.md).
   useMeetingPieces({
     elements: props.elements,
     zones,
-    walkers: remoteAvatars,
+    walkers: factWalkers,
     inMode,
-    self,
+    self: factSelf,
     selfSeatedOn: avatar.seatedOn ?? null,
     doNotDisturb: deps.doNotDisturb === true,
     send: props.onCallSignal,
@@ -129,8 +139,8 @@ export function useCanvasCall(deps: {
     view,
     send: props.onCallSignal,
     tabId: props.activeTabId ?? '',
-    self: seatedSelf,
-    walkers: peers,
+    self: callSelfAt,
+    walkers: callWalkers,
     zones,
     stages,
     doNotDisturb: deps.doNotDisturb,
@@ -196,6 +206,14 @@ export function useCanvasCall(deps: {
           : undefined,
     },
   };
+}
+
+// Where each peer stands, as the call's scene reads it (the seat too: a Phone Booth's call is the seated).
+function walkersOf(rows: readonly RemoteAvatarRow[]): { id: string; at: Point }[] {
+  return rows.map((p) => ({
+    id: p.id,
+    at: { x: p.avatar.x, y: p.avatar.y, seatedOn: p.avatar.seatedOn ?? null },
+  }));
 }
 
 // Bubbles are received only while their character is on screen; the area is snapped to a coarse grid so a pan or a

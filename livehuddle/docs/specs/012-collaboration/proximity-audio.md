@@ -65,6 +65,11 @@ inside, and walls block sound fully. Inside a room, as on the open floor, the ru
   radius, so letting go of a speaker makes no audible step.
 - **Pans by position**: a speaker to your left is heard on the left, up to 80% of the way at the hearing radius.
 - Volume and pan glide over 120 ms as people walk, so steps are never heard.
+- While people walk, who is heard and how loudly is decided again at most 10 times a second (the glide is longer
+  than the gap, so it still sounds continuous), and at once when someone joins or leaves the tab, sits or stands, or
+  crosses into another room or onto a stage ([Canvas performance](../008-canvas/canvas-performance.md) "Walking renders
+  the characters, not the canvas"). Muting and Do Not Disturb act at once, as before. A voice whose volume and side
+  each moved by less than half a percent is left where it is.
 - A speaker is heard only on your tab, and only while both of you walk. Someone sitting in a chair is where the chair
   is.
 
