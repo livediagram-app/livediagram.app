@@ -388,7 +388,8 @@ a Participant or a Viewer.
   Elements** as above. The .zip is named `<design name> - All Sizes.zip`. The pages are drawn one at a time,
   each page's pixels let go before the next. Make Sizes' toast offers **Export All Sizes**, which downloads the
   same .zip as PNGs with their elements. Elements on top are included in PNG, JPEG and WebP (**Include Elements**, on by default) and
-  never in PSD.
+  never in PSD: the boxes whose centre is on the page and the arrows with an end on it, drawn alone over the
+  full-size composite (never over the photo's preview, or its checkerboard while it has none).
 - **Opening a PSD**: a .psd file is accepted wherever a picture starts a photo (Open a Picture's Upload, a drop, a
   paste). Its layers come in as pixel layers with their names, opacity, blend modes, visibility, masks, clipping and
   groups; text and effects as their pixels. A PSD in 16 or 32 bits per channel, CMYK, or past the pixel cap is

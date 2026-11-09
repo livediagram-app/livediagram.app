@@ -14,7 +14,13 @@ describe('pageStep', () => {
     expect(pageStep(pages, 'c', 1)).toBeNull();
     expect(pageStep(pages, 'a', -1)).toBeNull();
     expect(pageStep(pages, null, 1)).toBe('b');
-    expect(pageStep(pages, 'gone', 1)).toBe('b');
+  });
+
+  it('lands on the first (forward) or last (back) page when the one someone was on is gone', () => {
+    expect(pageStep(pages, 'gone', 1)).toBe('a');
+    expect(pageStep(pages, 'gone', -1)).toBe('c');
+    expect(pageStep([], 'gone', 1)).toBeNull();
+    expect(pageStep([], 'gone', -1)).toBeNull();
   });
 
   it('reads Right and Down as forward, Left and Up as back', () => {

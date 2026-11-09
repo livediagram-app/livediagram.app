@@ -1,4 +1,6 @@
 import { mirroredLogoPages } from '@/hooks/editor/useLogoTools';
+import type { MarqueeState } from '@liveworkspace/workbench/components/canvas/MarqueeRect';
+import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
@@ -66,7 +68,8 @@ type ChromeExtras = {
   // True when every element has scrolled out of view: show the nudge above
   // the Fit button (useOffscreenContent in Canvas).
   offscreenContent: boolean;
-  marquee: { startX: number; startY: number; currentX: number; currentY: number } | null;
+  // The sweep's rect, read only by the marquee rectangle (docs/specs/008-canvas/canvas-performance.md).
+  marquee: ReadableStore<MarqueeState | null>;
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
   // Snapped pointer position while a draw is armed but not yet started
   // (pre-press start-snap preview); null when not armed / not snapped.

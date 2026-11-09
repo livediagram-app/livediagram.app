@@ -42,7 +42,8 @@ Stored on the element, shared by everyone, undone like any element edit:
   takes both back); a board someone titled differently keeps its title, and a tab that already had a name of its own
   renames no board.
 - **Columns**: each a **status** value and a display name, an optional **WIP limit** and an optional colour. A board
-  has 1 to 12 columns. A column's status is read trimmed, as a card's status is, so a card moved into it lands in it. The first column is where new items land when no column is chosen.
+  has 1 to 12 columns; a set-up read with more keeps its first 12 valid ones (a column dropped as broken or a
+  repeated status never costs a later one its place). A column's status is read trimmed, as a card's status is, so a card moved into it lands in it. The first column is where new items land when no column is chosen.
 - <a id="done-columns"></a>**Done columns**: any of a board's columns can **count as done** (Done, Won't Do and
   Cancelled all close a card). Their cards draw muted, count as finished in the header's progress, Completion,
   Points and the dashboards, and are never overdue or stale. A board may have none, one or several.

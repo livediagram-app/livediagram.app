@@ -169,4 +169,44 @@ describe('autoAlignElements', () => {
     const once = autoAlignElements(input);
     expect(autoAlignElements(once)).toEqual(once);
   });
+
+  // docs/specs/008-canvas/layout-cleanup.md "Settled": running it twice changes nothing, on any layout. About 1 in
+  // 1,700 random crowds of overlapping boxes used to move a box 5 px on the second run: a box whose snap was undone
+  // still pulled its group to a line it never reached (the next run flipped it back), a group's snapped median
+  // crept 10 px every run, and four passes were not always enough.
+  it('is idempotent on random crowds of overlapping boxes', () => {
+    let s = 7;
+    const rand = () => {
+      s = (s * 1103515245 + 12345) % 2147483648;
+      return s / 2147483648;
+    };
+    const flipped = [
+      square({ id: 'b0', x: 111, y: 260, width: 116, height: 32 }),
+      square({ id: 'b1', x: 148, y: 229, width: 95, height: 121 }),
+      square({ id: 'b2', x: 126, y: 56, width: 114, height: 40 }),
+      square({ id: 'b3', x: 127, y: 26, width: 89, height: 48 }),
+      square({ id: 'b4', x: 285, y: 2, width: 163, height: 54 }),
+      square({ id: 'b5', x: 287, y: 197, width: 65, height: 86 }),
+      square({ id: 'b6', x: 282, y: 89, width: 53, height: 104 }),
+    ];
+    const layouts = [flipped];
+    for (let k = 0; k < 1500; k++) {
+      const n = 3 + Math.floor(rand() * 10);
+      layouts.push(
+        Array.from({ length: n }, (_, i) =>
+          square({
+            id: `b${i}`,
+            x: Math.round(rand() * 300),
+            y: Math.round(rand() * 300),
+            width: 40 + Math.round(rand() * 160),
+            height: 30 + Math.round(rand() * 100),
+          }),
+        ),
+      );
+    }
+    for (const layout of layouts) {
+      const once = autoAlignElements(layout);
+      expect(autoAlignElements(once)).toEqual(once);
+    }
+  });
 });

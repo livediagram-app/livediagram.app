@@ -105,7 +105,8 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
     `FramedArrow` reads `useCanvasZoom()`, so a zoom renders no other arrow's slot;
   - `LayerSelectionChrome` (the union resize box) and
     `CanvasSelectionToolbars` take `selectionInput` (`CanvasSelectionInput`: the derivation's
-    inputs other than the selection, memoised in `Canvas`) and call `useCanvasSelectionView`;
+    inputs other than the selection, memoised in `Canvas`) and call `useCanvasSelectionView`, which shares one previewed board
+    (`previewedElements`) and one derived selection (`sharedCanvasSelection`) between them per frame;
   - `Canvas` reads the store with `get()` in handlers (`currentSelection`, `readSelection` for
     `useCanvasSelectHandlers`) and subscribes to one narrow slice, `soleSelectedPathId` (the one
     selected element when it is a path) for the path tool, which flips only for paths;

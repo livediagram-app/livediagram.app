@@ -2,7 +2,7 @@
 // PNG, JPEG or WebP, its layers kept as a PSD, each visible layer as a PNG, and one layer alone (the
 // Layers row's Export Layer). Large photos are written band by band (encodePngStream), so the whole
 // picture is never one canvas.
-import { photoOfPage, type LaidOutPage, type Tab } from '@livedesign/design';
+import { endpointPosition, photoOfPage, type LaidOutPage, type Tab } from '@livedesign/design';
 import {
   compositePhoto,
   encodePngStream,
@@ -96,28 +96,35 @@ export async function loadedSession(
   return { session: s, done: () => s.dispose() };
 }
 
+/** The SVG of the page's elements alone, the page's own paint left out, or null when none is on it: the boxes
+ *  whose centre is on the page and the arrows with an end on it. */
+export function elementsSvg(tab: Tab, page: LaidOutPage, images?: ExportImageMap): string | null {
+  const r = page.rect;
+  const onPage = (x: number, y: number) =>
+    x >= r.x && x < r.x + r.width && y >= r.y && y < r.y + r.height;
+  const on = tab.elements.filter((el) => {
+    if (el.type !== 'arrow') return onPage(el.x + el.width / 2, el.y + el.height / 2);
+    const a = endpointPosition(el.from, tab.elements);
+    const b = endpointPosition(el.to, tab.elements);
+    return onPage(a.x, a.y) || onPage(b.x, b.y);
+  });
+  if (!on.length) return null;
+  // Without `elementsOnly` the page's paint came too: the photo's preview (at most 2048 px, so a larger photo came
+  // out soft) or, with no preview to hand, its checkerboard, laid over the full-size composite.
+  return renderTabToSvg(
+    { ...tab, elements: on },
+    { page, transparentPaper: true, elementsOnly: true, ...(images ? { images } : {}) },
+  );
+}
+
 /** The page's elements drawn at the photo's size (over the composite in an export), or null. */
 export async function elementsImage(
   tab: Tab,
   page: LaidOutPage,
   images?: ExportImageMap,
 ): Promise<HTMLImageElement | null> {
-  const on = tab.elements.filter((el) => {
-    if (!('x' in el) || !('width' in el)) return false;
-    const cx = el.x + el.width / 2;
-    const cy = el.y + el.height / 2;
-    return (
-      cx >= page.rect.x &&
-      cx < page.rect.x + page.rect.width &&
-      cy >= page.rect.y &&
-      cy < page.rect.y + page.rect.height
-    );
-  });
-  if (!on.length) return null;
-  const svg = renderTabToSvg(
-    { ...tab, elements: on },
-    { page, transparentPaper: true, ...(images ? { images } : {}) },
-  );
+  const svg = elementsSvg(tab, page, images);
+  if (!svg) return null;
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => resolve(img);

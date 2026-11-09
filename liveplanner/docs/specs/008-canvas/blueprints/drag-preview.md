@@ -196,7 +196,16 @@ type DragPreviewOp =
 
 - Per drag frame: one identity pass over the elements (overlay), re-render of the changed elements
   and affected arrows, one linear pass over arrow bounds. No index, grid, label pass, Map or
-  selection derivation over the whole board, except the selection's `applyOverlay` (linear).
+  selection derivation over the whole board, except the selection's `applyOverlay` (linear), made
+  once a frame and shared by every chrome reader (`previewedElements`, `sharedCanvasSelection`).
+- Once a gesture, not once a frame: the board's index (`elementIndexFor(doc)`, `doc` being the
+  same array every frame, in `overlayBetween`) and the arrows the moved boxes crossed where they
+  were (`crossedWhereTheyWere` in `affectedArrows`, keyed on the arrow links, the board and the
+  changed ids). With no added or removed element, `spreadOverBase(index, elementIndex, changed
+ids)` has the preview board's endpoint spread placed from the base's, again only for the fans
+  that read a changed id, and in full when a changed arrow joins other pins or an element changes
+  kind; equal to placing every fan, by a seeded equivalence test
+  (`arrow-endpoint-spread-over.test.ts`).
 - Wire: at most 30 messages a second per dragger, each at most `DRAG_PREVIEW_MAX_ELEMENTS` patches.
 
 ## Presentation and UX

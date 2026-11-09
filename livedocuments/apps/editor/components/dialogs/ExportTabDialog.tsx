@@ -267,9 +267,9 @@ export function ExportTabDialog({
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
-  const baseName = sanitizeFilename(
-    `${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`,
-  );
+  // A name of nothing safe ("?") downloads as "document", never a bare ".png".
+  const baseName =
+    sanitizeFilename(`${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`) || 'document';
 
   // A new image load (format picked, tab or image context changed) is not ready until it lands;
   // adjusted during render so the panel never shows the previous load as ready.

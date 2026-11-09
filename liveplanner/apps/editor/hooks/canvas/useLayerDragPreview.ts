@@ -10,7 +10,7 @@ import {
   previewArrowGeometry,
   type ArrowLinks,
 } from '@/components/canvas/drag-affected-arrows';
-import type { Rect } from '@liveplanner/project';
+import { spreadOverBase, type Rect } from '@liveplanner/project';
 
 // The element layer's drag preview (docs/specs/008-canvas/drag-preview.md "The preview",
 // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved"): what each element looks
@@ -158,6 +158,10 @@ export function createLayerPreviewStore(): LayerPreviewStore {
     const index = new Map(elementIndex);
     for (const [id, el] of overlay.changed) index.set(id, el);
     for (const { el } of overlay.added) index.set(el.id, el);
+    // The board's fans are placed again only where they read what moved (docs/specs/008-canvas/canvas-performance.md
+    // "A frame's arrow work is linear in what moved").
+    if (overlay.added.length === 0 && overlay.removed.size === 0)
+      spreadOverBase(index, elementIndex, overlay.changed.keys());
     const grid = inputs.gridFor(drawnElements);
     const ids = affectedArrows(overlay, drawnElements, arrowLinks);
     for (const { el } of overlay.added) if (el.type === 'arrow') ids.add(el.id);

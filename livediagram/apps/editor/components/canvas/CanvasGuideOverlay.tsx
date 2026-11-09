@@ -1,3 +1,8 @@
+import {
+  MarqueeRect,
+  type MarqueeState,
+} from '@liveworkspace/workbench/components/canvas/MarqueeRect';
+import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import {
@@ -11,7 +16,7 @@ import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/use
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { selectionBoxColors } from '@/lib/selection-box';
 
-type Marquee = { startX: number; startY: number; currentX: number; currentY: number } | null;
+type Marquee = ReadableStore<MarqueeState | null>;
 
 type CanvasGuideOverlayProps = {
   alignGuides: AlignmentGuide[];
@@ -212,22 +217,7 @@ export function CanvasGuideOverlay({
           })()
         : null}
 
-      {marquee ? (
-        <div
-          aria-hidden
-          // Border + faint fill take the active tab theme's accent, softened on
-          // dark paper (selectionBoxColors, shared with the Map's view window).
-          className="pointer-events-none fixed z-[var(--z-chrome)] rounded-sm border"
-          style={{
-            left: Math.min(marquee.startX, marquee.currentX),
-            top: Math.min(marquee.startY, marquee.currentY),
-            width: Math.abs(marquee.currentX - marquee.startX),
-            height: Math.abs(marquee.currentY - marquee.startY),
-            borderColor: marqueeColors.stroke,
-            backgroundColor: marqueeColors.fill,
-          }}
-        />
-      ) : null}
+      <MarqueeRect store={marquee} stroke={marqueeColors.stroke} fill={marqueeColors.fill} />
     </>
   );
 }

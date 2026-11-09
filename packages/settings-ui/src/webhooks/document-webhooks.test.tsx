@@ -437,6 +437,18 @@ describe('A document’s webhooks', () => {
     expect(updates()).toHaveLength(0);
   });
 
+  it('treats the saved events as unchanged whatever order the server lists them in', async () => {
+    webhooks = [{ ...HOOK, events: ['commented', 'renamed'] }];
+    await render();
+    await press('Edit Events', row());
+    const editor = row().querySelector('[data-events-editor]')!;
+    expect(button('Save', editor).disabled).toBe(true);
+    act(() => choice('Share Link Made', editor).click());
+    expect(button('Save', editor).disabled).toBe(false);
+    act(() => choice('Share Link Made', editor).click());
+    expect(button('Save', editor).disabled).toBe(true);
+  });
+
   it('reads recent deliveries only when opened, naming each in the canvas’s words', async () => {
     await render();
     expect(calls.some((c) => c.method === 'webhookDeliveries')).toBe(false);

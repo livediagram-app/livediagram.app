@@ -12,7 +12,7 @@
 // or storage. The room stays the owner of everything stateful: minting the
 // seq, trimming the log, serialising the attachment, broadcasting.
 
-import { isSafeColourValue } from '@livedesign/design';
+import { cutText, isSafeColourValue } from '@livedesign/design';
 import { isProfilePictureUrl } from '@liveworkspace/sites/picture';
 import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 import {
@@ -51,7 +51,7 @@ export function helloPresence(
   const c = claimed ?? {};
   const presence: ParticipantPresence = {
     id: session.presenceId,
-    name: typeof c.name === 'string' ? c.name.slice(0, MAX_PARTICIPANT_NAME_LEN) : '',
+    name: typeof c.name === 'string' ? cutText(c.name, MAX_PARTICIPANT_NAME_LEN) : '',
     // A colour that could load something from outside is no colour (@livedesign/design unsafe-colours.ts).
     color:
       typeof c.color === 'string' && isSafeColourValue(c.color)

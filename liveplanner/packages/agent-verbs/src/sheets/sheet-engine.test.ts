@@ -297,7 +297,18 @@ describe('reading a sheet', () => {
     const r = await read(api, 'Big');
     expect(r.truncated).toBe(true);
     expect(r.range).toBe('A1:B2500');
-    expect(r.note).toContain('read on with a range from row 2501');
+    expect(r.note).toContain('read on with the range A2501:B3000.');
+  });
+
+  it('cut by the characters on a read the cells cap also cut, reads on to the end of the range asked for', async () => {
+    const rows = Array.from({ length: 3000 }, (_, i) =>
+      i < 40 ? ['x'.repeat(5_000), null] : i === 2999 ? [1, 2] : [null, null],
+    );
+    const { api } = setup([sheetJson({ id: 'sheet_both01', tabId: ONE, title: 'Both' }, rows)]);
+    const r = await read(api, 'Both');
+    const cutAt = /^Stopped at A(\d+)/.exec(r.note ?? '');
+    expect(cutAt).not.toBeNull();
+    expect(r.note).toContain(`read on with the range A${cutAt![1]}:B3000.`);
   });
 
   it('stops at the characters one read answers with', async () => {

@@ -6,7 +6,7 @@
 // local one wins on an element both touch.
 
 import { useSyncExternalStore } from 'react';
-import type { Element } from '@livehuddle/document';
+import { elementIndexFor, type Element } from '@livehuddle/document';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type DragOverlay = {
@@ -46,7 +46,8 @@ export function overlayBetween(
   next: readonly Element[],
   doc: readonly Element[],
 ): DragOverlay {
-  const before = new Map(doc.map((el) => [el.id, el] as const));
+  // The board the gesture is laid over, the same array on every tick: its cached index, built on the first only.
+  const before = elementIndexFor(doc);
   const changed = new Map<string, Element>();
   const added: { el: Element; after: string | null }[] = [];
   const present = new Set<string>();

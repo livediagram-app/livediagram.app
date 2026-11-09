@@ -15,7 +15,9 @@ the block's corner where people expect a status mark, and stays there.
 
 ## The element
 
-- **Text** is the label, one line, at most 24 characters. Double-click edits it.
+- **Text** is the label, one line, at most 24 characters (`BADGE_LABEL_MAX`). Double-click edits it, and the editor
+  stops taking text at the cap: typing past it does nothing and a paste is cut to fit (`fitInsertion`,
+  `@liveworkspace/workbench/lib/text-cap`, never splitting an emoji).
 - **Size follows the text.** Height comes from the text size (24px at the default size); width is the text's width
   plus the padding, never narrower than the height, so a single character makes a circle. It re-fits when the text
   or text size changes. Width is estimated from the character count (`badgeWidth`), the same estimate the export uses,

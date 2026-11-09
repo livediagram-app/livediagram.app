@@ -63,3 +63,25 @@ describe('resetElementColours', () => {
     expect(resetElementColours(sticky, theme)).toEqual({ id: 'n', type: 'sticky', ...box });
   });
 });
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": a stored element of a deleted shape kind is
+// kept exactly as stored, so a selection-wide Reset to Theme on a themed tab writes nothing into it.
+describe('resetElementColours on a retired element', () => {
+  it('keeps a deleted shape kind exactly as stored', () => {
+    const themed = {
+      ...theme,
+      elementFill: '#123456',
+      elementStroke: '#234567',
+      elementText: '#345678',
+    };
+    const qa = {
+      id: 'q',
+      type: 'shape',
+      shape: 'qa-board',
+      ...box,
+      fillColor: '#ff0000',
+      colorPreset: 'bold',
+    } as unknown as Element;
+    expect(resetElementColours(qa, themed)).toBe(qa);
+  });
+});

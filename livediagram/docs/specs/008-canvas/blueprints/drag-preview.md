@@ -133,13 +133,18 @@ arrowLinks, stackedIds)` (on a board without arrows, which has no `elementIndex`
   `ElementGrips`' portalled box and `ArrowGripsPortal`'s `<g>`. React never sets `translate`.
 - Ride planes (spec "A very large move rides as one layer"): with at least `RIDE_PLANE_MIN_NODES`
   rides, the writer also finds the `[data-ride-plane]` nodes under the root and their children: the
-  element plane (`data-ride-plane="contents"`, `display: contents`), the grips layer's arrows `<g>`
+  element plane (`data-ride-plane`, `absolute inset-0`, always: its parent's box), the grips layer's arrows `<g>`
   host and its box host (`absolute inset-0`, so a transform on it moves nothing else). A plane any
   child of which is not a ride node never carries. Each frame, per plane, it tallies the riding
   children's offsets; the commonest, when shared by at least `RIDE_PLANE_MIN_NODES` children and
-  more than half of them, is the plane's: `style.transform = translate(<dx>px, <dy>px)` (no `will-change`, D126), and a contents plane takes `display: block; position: absolute;
-inset: 0` (its parent's box, so nothing moves) and, under `[data-iso]`, `transform-style:
-preserve-3d`. Each node of the plane then gets `translate` = its own offset (none when it does
+  more than half of them, is the plane's: `style.transform = translate(<dx>px, <dy>px)` (no `will-change`, D126),
+  and nothing else is written to the plane, so carrying lays out nothing beneath it. The element plane's box is
+  in the markup and the editor's CSS (`app/globals.css`): `[data-element-plane] { pointer-events: none }` (a press
+  between elements reaches the canvas and shows its cursor), in `@layer base` `[data-element-plane] > *
+{ pointer-events: auto }` (an element's own pointer-events, a utility or inline style, still wins) and
+  `[data-elements-inert] [data-element-plane] > * { pointer-events: none }` (the canvas layer sets
+  `data-elements-inert` beside its `pointer-events-none` in Spotlight, isometric and Avatar mode), and
+  `[data-iso] [data-element-plane] { transform-style: preserve-3d }`. Each node of the plane then gets `translate` = its own offset (none when it does
   not ride) less the plane's: a rider sharing it gets `''`. The plane's children are found again
   when one is added, removed or disconnected. Fewer rides, no plane: every style it set goes back
   to `''`.
@@ -265,7 +270,23 @@ type DragPreviewOp =
   that do not ride and of the affected arrows that do not ride, a grid query per moved box for the
   arrows it crosses, a grid query per affected arrow for the moved boxes that cut it, and one
   `translate` write per node whose offset changed. No index, grid, label pass, Map or
-  selection derivation over the whole board, except the selection's `applyOverlay` (linear).
+  selection derivation over the whole board, except the selection's `applyOverlay` (linear), made
+  once a frame and shared by every chrome reader (`previewedElements`, `sharedCanvasSelection`,
+  WeakMaps keyed on the preview and the list).
+- Once a gesture, not once a frame: the board's index (`elementIndexFor(doc)`, `doc` being the
+  same array every frame, in `overlayBetween` and `affectedArrows`) and the arrows the moved boxes
+  crossed where they were (`crossedWhereTheyWere`, keyed on the arrow links, the board and the
+  changed ids).
+- The preview's board (`new Map(elementIndex)` with the changed elements over it) is built only
+  when an arrow re-routes; with no added or removed element, `spreadOverBase(index, elementIndex,
+changed ids)` (`@livediagram/document`) has its endpoint spread placed from the base's, again
+  only for the fans that read a changed id (the pin's box, each end's arrow, the box an end's other
+  end is pinned to; a fan with an end on an arrow is placed again on any change), and in full when
+  a changed arrow joins other pins or an element changes kind. Equal to placing every fan, by a
+  seeded equivalence test (`arrow-endpoint-spread-over.test.ts`).
+- 2,000 boxes and 1,999 arrows, 1,000 or 2,000 boxes moved: one frame (`setLocalPreview` and the
+  store's update) at most 6 ms of CPU (`useLayerDragPreview.perf.test.ts`), 3.3 to 3.9 ms measured,
+  7.0 to 7.6 ms before the crossings, the index and the fans were kept per gesture.
 - The large-selection board (1,770 elements), all of it moved: 0 element renders a frame (all
   ride), the arrow work at most 16 ms of CPU (`drag-affected-arrows.perf.test.ts`, 6.5 ms measured
   with every arrow re-routed; 94 ms before the grids), and at most 16 ms of script per pointer move,

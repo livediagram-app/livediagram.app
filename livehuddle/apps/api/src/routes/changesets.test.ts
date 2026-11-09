@@ -239,6 +239,39 @@ describe('submitting a changeset', () => {
     expect(records(db)).toEqual([]);
   });
 
+  // docs/specs/013-workspace/tab-scoped-share-links.md: a grant confined to another tab reads this one as missing,
+  // as every other write door answers it; a grant below Editor on its own tab still gets 403.
+  it('answers 404 to a submit from a grant scoped to another tab, 403 to a viewer on its own, and writes nothing', async () => {
+    quiet();
+    const { db } = await setUp();
+    const before = stored(db);
+    const as = (tab: string, level: 'edit' | 'view') =>
+      handleDocuments(
+        makeTestRouteContext('POST', '/api/documents/D/tabs/t1/changesets', {
+          env: db.env,
+          owner: 'user_v',
+          accountUserId: 'user_v',
+          verifiedUserId: 'user_v',
+          grant: {
+            item: 'D',
+            level,
+            tab,
+            sub: 'user_v',
+            team: null,
+            exp: 2_000_000_000,
+            shareCode: 'code1',
+            token: 'g',
+          },
+          body: { operations: [{ op: 'set', target: 'a', fields: { label: 'x' } }] },
+          waitUntil: (p) => void pending.push(p),
+        }),
+      );
+    expect((await as('t9', 'edit')).status).toBe(404);
+    expect((await as('t1', 'view')).status).toBe(403);
+    expect(stored(db)).toEqual(before);
+    expect(records(db)).toEqual([]);
+  });
+
   it('writes nothing on any refusal, and says why', async () => {
     quiet();
     const { db, room: r } = await setUp();

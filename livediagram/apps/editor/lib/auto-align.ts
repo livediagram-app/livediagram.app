@@ -108,12 +108,28 @@ export function autoAlignElements(
   // until one moves nothing: the result is settled, and Auto-align again finds it already tidy.
   for (let pass = 0; pass < MAX_ALIGN_PASSES; pass++) {
     const next = alignBoxes(out, autoAlignElement, lockedIds);
-    const settled = next.every((el, i) => el === out[i]);
+    if (sameBoxes(next, out)) return out;
     out = next;
-    if (settled) break;
   }
-  return out;
+  // Still moving after every pass (a crowd of overlapping boxes can trade places on the lines they share). Settling
+  // for the last pass broke the promise that a second run changes nothing: it nudged a box 5 px. So the boxes the
+  // next pass would still move go back where they were drawn, while that leaves a settled tab; failing that, the tab
+  // stays as it was, and a second run does the same nothing.
+  const restless = new Set<ElementId>();
+  for (let attempt = 0; attempt < MAX_SETTLE_ATTEMPTS; attempt++) {
+    const next = alignBoxes(out, autoAlignElement, lockedIds);
+    if (sameBoxes(next, out)) return out;
+    next.forEach((el, i) => {
+      if (el !== out[i]) restless.add(el.id);
+    });
+    out = out.map((el, i) => (restless.has(el.id) ? elements[i]! : el));
+  }
+  return elements;
 }
 
-// Passes before Auto-align settles for what it has; two is the usual, and each is linear-ish.
-const MAX_ALIGN_PASSES = 4;
+const sameBoxes = (a: Element[], b: Element[]) => a.every((el, i) => el === b[i]);
+
+// Passes before Auto-align gives up on settling; two is the usual, a crowd of overlapping boxes may take several, and
+// each is linear-ish. Then, rounds of putting back what still moves.
+const MAX_ALIGN_PASSES = 8;
+const MAX_SETTLE_ATTEMPTS = 4;

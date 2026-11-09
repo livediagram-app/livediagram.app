@@ -11,7 +11,7 @@ import {
   opt,
   type FnDef,
 } from '../fn';
-import { err, isError, type SheetError, type Value } from '../values';
+import { err, isError, toNumber, type SheetError, type Value } from '../values';
 import { criteriaMask, ifsNumbers, maskedNumbers, sameSizeAs } from './conditional';
 
 function mean(ns: number[]): number {
@@ -119,8 +119,9 @@ export const STATS_FUNCTIONS: Record<string, FnDef> = {
     let n = 0;
     for (const a of args) {
       for (const x of flatScalars([a], f)) if (typeof x === 'number') n++;
-      // A number typed as text in the arguments themselves counts, as in Sheets.
-      if (a !== null && typeof a === 'string' && !Number.isNaN(Number(a)) && a.trim() !== '') n++;
+      // A number typed as text in the arguments themselves counts, as in Sheets: text that reads as a number as
+      // arithmetic reads it ("8", "12%"), never as JavaScript's Number does ("0x10", "Infinity").
+      if (typeof a === 'string' && a.trim() !== '' && typeof toNumber(a) === 'number') n++;
       // So does TRUE or FALSE typed as an argument (COUNT(TRUE, 1) is 2); one in a range does not.
       if (typeof a === 'boolean') n++;
     }

@@ -269,6 +269,38 @@ describe('historyApplyRemoteOp', () => {
     expect(h.present.map((t) => t.id)).toEqual(['a', 'p']);
   });
 
+  // docs/specs/012-collaboration/realtime-conflict-resolution.md "Undo is local": undoing my add takes my box back
+  // and never the peer's arrow to it, whose end is freed where it was drawn rather than naming a box that is gone.
+  it("frees the end of a peer's arrow on a box my undo takes back, and redo leaves it free", () => {
+    let h: History = { past: [], present: [{ id: 'a', name: 'a', elements: [] }], future: [] };
+    const box = {
+      id: 'box',
+      type: 'shape',
+      shape: 'square',
+      x: 100,
+      y: 0,
+      width: 100,
+      height: 100,
+    };
+    h = historyCommit(h, (ts) => ts.map((t) => ({ ...t, elements: [box as Tab['elements'][0]] })));
+    const peerArrow = {
+      id: 'peer',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 300 },
+      to: { kind: 'pinned', elementId: 'box', anchor: 'e' },
+    } as Tab['elements'][0];
+    h = historyApplyRemoteOp(h, (ts) =>
+      ts.map((t) => ({ ...t, elements: [...t.elements, peerArrow] })),
+    );
+    h = historyUndo(h);
+    expect(h.present[0]!.elements).toEqual([{ ...peerArrow, to: { kind: 'free', x: 200, y: 50 } }]);
+    h = historyRedo(h);
+    expect(h.present[0]!.elements.map((e) => e.id)).toEqual(['box', 'peer']);
+    // An undo whose tabs hold no such end hands the restored tabs back as they are.
+    const plain = historyUndo(historyCommit(start(), (ts) => [...ts, tab('B', 'b')]));
+    expect(plain.present).toEqual([tab('A', 'a')]);
+  });
+
   it('keeps the history itself when the op changes nothing and no snapshot is held', () => {
     const h: History = { past: [], present: [tab('a')], future: [] };
     expect(historyApplyRemoteOp(h, (ts) => ts)).toBe(h);
