@@ -115,7 +115,9 @@ when it holds no instance. Linear: one pass, one map lookup per instance.
 
 ### Patch
 
-- `applyComponentPatch(main, patch, now)`: `remove` drops by id, `upsert` replaces by id or appends, `order` (ids)
+- `applyComponentPatch(main, patch, now)`: `remove` drops by id through `removeElements` (`arrow-rebind.ts`), so a
+  kept arrow's end attached to a removed element is freed where it was drawn, `upsert` replaces by id or appends (an
+  upserted arrow wins over the freed copy), `order` (ids)
   reorders those it names keeping the rest after, `name` clamps, `archived` sets; `updatedAt = now`.
 - `diffComponent(before, after)`: the patch turning one into the other (by element reference / JSON equality), or
   `null` when equal.
