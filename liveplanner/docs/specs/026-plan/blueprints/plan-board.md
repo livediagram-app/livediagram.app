@@ -779,7 +779,7 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   is not there: the card morph falls back to its fade, the drop slot and the face finish pass see only the built
   cards. The fan-in (`useCardFanIn`) reads only built cards, stops once `MAX_CARDS` in view are found, and on a
   busy board whose cards are not built yet reads them in the next animation frame, before it is drawn.
-- <a id="body-end-anchor"></a>Body end anchor: `SplitViewFrame` calls `useBodyEndAnchor` (`hooks/ui/useBodyEndAnchor.ts`),
+- <a id="body-end-anchor"></a>Body end anchor: `SplitViewFrame` calls `useBodyEndAnchor` (`@liveworkspace/workbench/hooks/ui/useBodyEndAnchor`),
   which keeps an empty hidden `div[data-body-end]` after the editor's root at the end of `<body>`. A portal (the drag
   copy, a menu, a tooltip) is appended after it, so the editor's root never gains or loses `:last-child`; Safari
   restyled the whole editor on each such change (measured 0.75-1.25 s on a 2,000-card board as the drag copy came and

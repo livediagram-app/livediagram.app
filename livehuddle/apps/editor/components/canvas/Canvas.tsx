@@ -11,6 +11,7 @@ import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
+import { useNoCanvasTextSelection } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
 import {
   useViewportTransform,
   viewportTransform,
@@ -121,6 +122,9 @@ function CanvasView(props: CanvasProps) {
   const offscreenContent = useOffscreenContent(elements, mainRef);
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
+  // No text selection starts on the canvas (docs/specs/008-canvas/canvas-performance.md "A press on the canvas
+  // selects no text").
+  useNoCanvasTextSelection(mainRef);
   // The backdrop for a view. In world space: the pattern pans and zooms with the elements, so they
   // stay on the same dots at any zoom (worldPatternOrigin).
   const backdropFor = (v: View) =>

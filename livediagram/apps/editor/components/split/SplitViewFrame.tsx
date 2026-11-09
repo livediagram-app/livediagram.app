@@ -12,6 +12,7 @@ import {
 import { tabHasDrawing } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
+import { useBodyEndAnchor } from '@liveworkspace/workbench/hooks/ui/useBodyEndAnchor';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useSplitView } from '@/hooks/ui/useSplitView';
 import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
@@ -60,6 +61,9 @@ export function SplitViewFrame({
     splitShowing: boolean,
   ) => ReactNode;
 }) {
+  // The editor's root never the body's last element, so an overlay coming and going restyles none of it in Safari
+  // (docs/specs/008-canvas/canvas-performance.md "Nothing shown over the page restyles the editor").
+  useBodyEndAnchor();
   const ctx = useEditorContext();
   const {
     tabs,
