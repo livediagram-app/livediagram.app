@@ -389,4 +389,3 @@ export function applyQuickIconAlign(el: Element, align: QuickIconAlign): Element
     return el;
   return { ...el, iconPosition: align };
 }
-

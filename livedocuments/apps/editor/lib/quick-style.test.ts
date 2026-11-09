@@ -351,7 +351,6 @@ describe('Text colour: text elements', () => {
     expect(applyQuickWidth(t, 'thick')).toBe(t);
     expect(applyQuickStrokeStyle(t, 'dashed')).toBe(t);
   });
-
 });
 
 // docs/specs/008-canvas/quick-style-panel.md "Multi-selection": a whiteboard stock colour stored by
@@ -391,7 +390,6 @@ describe('named stock colours', () => {
     } as TextElement;
     expect((applyQuickTextColour(text, theme, 2) as TextElement).penTextColour).toBeUndefined();
   });
-
 });
 
 // docs/specs/008-canvas/quick-style-panel.md "Background": Transparent.
