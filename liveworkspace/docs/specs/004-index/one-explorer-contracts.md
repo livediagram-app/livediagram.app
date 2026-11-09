@@ -263,8 +263,9 @@ holds for that person:
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
 - **Anonymised**: on other people's items, a comment thread they are in or are mentioned in, an action
-  assigned to or by them, and a Timeline event they did (in a team, or an edit of someone else's item),
-  keeps its row, naming `deleted` (no account or guest) in their place, with no name.
+  assigned to or by them, a Timeline event they did (in a team, or an edit of someone else's item), a team's
+  Timeline event about them (its detail's `personId`), and a webhook delivery of an event they did, keeps its row,
+  naming `deleted` (no account or guest) in their place, with no name.
 
 - **Told to each app**: their name is also in the content of items that outlive them (their comments,
   cards, assignments and edits), which only the item's app holds, and an app may keep something of theirs

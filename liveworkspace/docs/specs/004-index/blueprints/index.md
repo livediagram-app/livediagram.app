@@ -428,7 +428,7 @@ Migrations, in order:
 
 | Constant                        | Value                                                                                  | File                                  |
 | ------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------- |
-| `ANONYMISED_PERSON`             | `'deleted'`                                                                            | `account-purge.ts`                    |
+| `ANONYMISED_PERSON`             | `'deleted'`                                                                            | `constants.ts` (index-client)         |
 | `CHUNK`                         | `500`                                                                                  | `account-purge.ts`                    |
 | `LINGER_MS`                     | `2 * 60 * 60 * 1000`                                                                   | `account-purge.ts`                    |
 | `FREQUENT_CRON`                 | `'*/15 * * * *'`                                                                       | `account-purge.ts`                    |
@@ -539,7 +539,7 @@ Migrations, in order:
 | `ITEM_VIEWS`                    | `(object or list, see file)`                                                           | `constants.ts`                        |
 | `INDEX_ERRORS`                  | `(object or list, see file)`                                                           | `constants.ts`                        |
 | `OWNED_COUNT_MAX`               | `1000`                                                                                 | `notices.ts`                          |
-| `ANONYMISED_PERSON`             | `'deleted'`                                                                            | `anonymise.ts`                        |
+| `ANONYMISED_PERSON`             | `'deleted'`                                                                            | `constants.ts` (index-client)         |
 | `ANONYMISED_NAME`               | `'Deleted account'`                                                                    | `anonymise.ts`                        |
 | `FORM_PLACE_TTL_MS`             | `60_000`                                                                               | `forms.ts`                            |
 | `FORM_PLACE_CACHE_MAX`          | `1_000`                                                                                | `forms.ts`                            |
