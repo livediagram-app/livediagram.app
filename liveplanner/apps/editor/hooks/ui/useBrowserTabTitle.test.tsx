@@ -44,9 +44,7 @@ describe('the editor route’s tab title', () => {
   it('is held with useBrowserTabTitle, never set with document.title', () => {
     const dir = join(__dirname, '../../app/project/[id]/');
     const files = readdirSync(dir).filter((f) => /\.tsx?$/.test(f) && !/\.test\./.test(f));
-    const assigning = files.filter((f) =>
-      /document\.title\s*=/.test(readFileSync(dir + f, 'utf8')),
-    );
+    const assigning = files.filter((f) => /document.title\s*=/.test(readFileSync(dir + f, 'utf8')));
     expect(assigning).toEqual([]);
     expect(readFileSync(`${dir}editor-page.tsx`, 'utf8')).toMatch(/useBrowserTabTitle\(/);
   });
