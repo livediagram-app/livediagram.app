@@ -4,12 +4,13 @@
 // frame, nothing subscribed.
 //
 // A person is their collaboration key (stable per browser) or, with none, their presence id, so two tabs of one
-// browser are one person. Your own key is never a person. The first roster only learns who is there; a reconnect of
-// your own socket keeps what was learnt. A leave waits out JOIN_LEAVE_FLAP_MS, so a reload or a network blip plays
+// browser are one person. Your own key is never a person. The first roster learns who is there and greets your own
+// arrival with the arrival chime, once, if sound can be heard within OWN_ARRIVAL_GRACE_MS; a reconnect of your own
+// socket keeps what was learnt and greets nothing. A leave waits out JOIN_LEAVE_FLAP_MS, so a reload or a network blip plays
 // nothing, and a kind played inside JOIN_LEAVE_BURST_MS of the last plays nothing, so a team arriving together is one
 // chime. An arrival plays at once, from the room's message, which is what lets it sound in a hidden tab.
 
-import { playTones, type Note } from './audio';
+import { playTones, whenAudible, type Note } from './audio';
 import { quietForDoNotDisturb } from './quiet';
 import { readUserPreferences } from '@/lib/user-preferences';
 
@@ -17,6 +18,8 @@ import { readUserPreferences } from '@/lib/user-preferences';
 export const JOIN_LEAVE_FLAP_MS = 5_000;
 /** After a chime of one kind, more of that kind inside this window play nothing. */
 export const JOIN_LEAVE_BURST_MS = 1_000;
+/** Your own arrival chimes only if sound can be heard this soon after the first roster; later it is dropped. */
+export const OWN_ARRIVAL_GRACE_MS = 3_000;
 
 /** Arrival: G5 then C6, rising, at a low volume. */
 const ARRIVE_NOTES: readonly Note[] = [
@@ -60,10 +63,14 @@ export function createPresenceChimes(deps: {
   play?: (kind: PresenceChime) => void;
   wanted?: () => boolean;
   now?: () => number;
+  /** Runs a sound once it can be heard within a time, or never; answers the way to stop waiting. */
+  whenAudible?: (withinMs: number, play: () => void) => () => void;
 }): PresenceChimes {
   const play = deps.play ?? playPresenceChime;
   const wanted = deps.wanted ?? presenceChimesWanted;
   const now = deps.now ?? Date.now;
+  const audible = deps.whenAudible ?? whenAudible;
+  let stopOwnArrival: (() => void) | null = null;
   let present = new Set<string>();
   let seeded = false;
   const leaving = new Map<string, ReturnType<typeof setTimeout>>();
@@ -86,6 +93,8 @@ export function createPresenceChimes(deps: {
       if (!seeded) {
         seeded = true;
         present = next;
+        // Your own arrival: the same chime the others hear, so you know you are in.
+        stopOwnArrival = audible(OWN_ARRIVAL_GRACE_MS, () => chime('arrive'));
         return;
       }
       let arrived = false;
@@ -114,6 +123,7 @@ export function createPresenceChimes(deps: {
       if (arrived) chime('arrive');
     },
     dispose() {
+      stopOwnArrival?.();
       for (const timer of leaving.values()) clearTimeout(timer);
       leaving.clear();
     },
