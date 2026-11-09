@@ -21,9 +21,15 @@ sit at your desk with the Space on another browser tab and still hear when someb
   browser are one person: the second tab arriving, or one of the two closing, plays nothing.
 - **Never for yourself**: your own key is left out, so your second tab of the same Space is silent too. Agents
   ([Agent presence](../024-agents/agent-presence.md)) are never people here, so an agent arriving plays nothing.
-- **Not on your own arrival**: the first roster the room sends after you open the Space only learns who is already
-  there. Reconnecting your own socket does not learn again: the people already known stay known, so nobody is
-  greeted twice.
+- **On your own arrival too**: when you open the Space you hear the same arrival chime the others hear, so you know
+  you are in, whether or not anyone else is there. It plays from the first roster the room sends, which also learns
+  who is already there (none of them chime). It plays only if sound can be heard within 3 seconds
+  (`OWN_ARRIVAL_GRACE_MS`): a tab the browser lets play at once, or a press in time. Otherwise it is dropped, never
+  heard late on your first press. Reconnecting your own socket greets nothing and learns nothing again: the people
+  already known stay known, so nobody is greeted twice.
+
+  > "the joining sound should play for the person joining as well" (the owner, 2026-11-09)
+
 - **A reconnect is not a leave**: someone who drops off the roster plays the leave chime only if they are still gone
   5 seconds later (`JOIN_LEAVE_FLAP_MS`). Back inside that window (a network blip, a reload), nothing plays at all.
 - **A burst plays once**: after one chime of a kind, more of the same kind inside 1 second (`JOIN_LEAVE_BURST_MS`)
@@ -52,6 +58,7 @@ shown about it.
 | Act                        | Editor | Participant | Viewer |
 | -------------------------- | ------ | ----------- | ------ |
 | Hear someone arrive or go  | Yes    | Yes         | Yes    |
+| Hear your own arrival      | Yes    | Yes         | Yes    |
 | Be heard arriving or going | Yes    | Yes         | Yes    |
 | Turn Join and Leave Sounds | Yes    | Yes         | Yes    |
 

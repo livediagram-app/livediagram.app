@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 // The editor's one AudioContext (docs/specs/012-collaboration/join-and-leave-sounds.md "Unlocking sound").
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { audio, playTones, resetAudio, unlockAudioOnGesture } from './audio';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { audio, playTones, resetAudio, unlockAudioOnGesture, whenAudible } from './audio';
 
 class FakeAudio {
   static made = 0;
@@ -120,5 +120,70 @@ describe('unlockAudioOnGesture', () => {
     await Promise.resolve();
     expect(ctx.state).toBe('suspended');
     expect(FakeAudio.started).toBe(1);
+  });
+});
+
+describe('whenAudible', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it('plays at once when the context is running', () => {
+    void audio()!.resume();
+    const play = vi.fn();
+    whenAudible(3_000, play);
+    expect(play).toHaveBeenCalledOnce();
+  });
+
+  it('plays when the context resumes in time', async () => {
+    const play = vi.fn();
+    whenAudible(3_000, play);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(play).toHaveBeenCalledOnce();
+  });
+
+  it('never plays when the resume comes too late, is refused, or waiting stops', async () => {
+    vi.useFakeTimers();
+    const ctx = audio() as unknown as FakeAudio;
+    let resolveLate!: () => void;
+    ctx.resume = () =>
+      new Promise<void>((resolve) => {
+        resolveLate = () => {
+          ctx.state = 'running';
+          resolve();
+        };
+      });
+    const late = vi.fn();
+    whenAudible(3_000, late);
+    vi.advanceTimersByTime(3_001);
+    resolveLate();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(late).not.toHaveBeenCalled();
+
+    ctx.state = 'suspended';
+    ctx.resume = () => Promise.reject(new Error('not allowed'));
+    const refused = vi.fn();
+    whenAudible(3_000, refused);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(refused).not.toHaveBeenCalled();
+
+    ctx.resume = () => {
+      ctx.state = 'running';
+      return Promise.resolve();
+    };
+    const stopped = vi.fn();
+    whenAudible(3_000, stopped)();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(stopped).not.toHaveBeenCalled();
+  });
+
+  it('does nothing without Web Audio', () => {
+    resetAudio();
+    delete win.AudioContext;
+    const play = vi.fn();
+    whenAudible(3_000, play)();
+    expect(play).not.toHaveBeenCalled();
   });
 });
