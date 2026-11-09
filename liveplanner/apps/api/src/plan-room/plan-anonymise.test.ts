@@ -192,9 +192,15 @@ describe('anonymisePlan', () => {
       data: string;
       rev: number;
     };
-    const stored = JSON.parse(row.data).elements[0].commentThread.comments[0].reactions;
-    expect(stored.map((r: { name: string }) => r.name)).toEqual([ANONYMISED_NAME, 'Kept Person']);
-    expect(stored[0].person).not.toBe(gone);
+    type Stored = {
+      elements: {
+        commentThread: { comments: { reactions: { name: string; person?: string }[] }[] };
+      }[];
+    };
+    const stored = (JSON.parse(row.data) as Stored).elements[0]!.commentThread.comments[0]!
+      .reactions;
+    expect(stored.map((r) => r.name)).toEqual([ANONYMISED_NAME, 'Kept Person']);
+    expect(stored[0]!.person).not.toBe(gone);
     expect(row.rev).toBe(1);
     expect(await anonymisePlan(db.env, 'P', 'user_gone')).toBe(0);
   });
