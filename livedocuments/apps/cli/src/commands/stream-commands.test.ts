@@ -172,6 +172,13 @@ describe('wait endings', () => {
     expect(io.out()).toBe('nothing new in 30 s\n');
   });
 
+  it('refuses a timeout longer than a timer runs, rather than ending at once', async () => {
+    const io = fakeIo({ env: { LIVEDOCUMENTS_TOKEN: TOKEN }, routes: [capabilities, host()] });
+    expect(await run(['wait', DOC, '--for', 'comment', '--timeout', '2592000'], io)).toBe(2);
+    expect(io.sockets).toHaveLength(0);
+    expect(io.err()).toContain('timeout');
+  });
+
   it('exits 1 on Ctrl-C, and 3 when the document goes to the Trash', async () => {
     const first = await start(['wait', DOC, '--for', 'comment']);
     first.io.interrupt();
