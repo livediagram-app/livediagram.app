@@ -456,6 +456,7 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   typed.
 - A paste into a selection larger than what was copied, whose size is a whole multiple of it, repeats it to fill.
 - A paste past the grid's edge grows the grid, up to its limit; a paste past the limit is cut at it, and says so.
+  What landed is selected after any paste, never cells past the grid's last row or column.
 - **Paste Values Only** pastes values, no formulas and no formats; **Paste Formatting Only** (the cell menu)
   pastes only formats.
 
