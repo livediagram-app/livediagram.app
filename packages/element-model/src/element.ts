@@ -8,6 +8,7 @@
 // (`<E extends Element>(el: E) => E`), so a caller keeps its product's precise type.
 
 import type { ElementId, TextSize } from '@liveworkspace/model-core/basics';
+import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 
 export type { ElementId };
 
@@ -81,7 +82,19 @@ export type ArrowElement = {
   label?: string;
   locked?: boolean;
   layerId?: string;
-  arrowStyle?: 'straight' | 'curved' | 'angled';
+  arrowStyle?: ArrowStyle;
+  strokeColor?: string;
+  arrowheadColor?: string;
+  opacity?: number;
+  strokeWidth?: number;
+  arrowheadSize?: ArrowheadSize;
+  arrowheadShape?: ArrowheadShape;
+  arrowheadStartShape?: ArrowheadShape;
+  routeBehind?: boolean;
+  exactStart?: boolean;
+  exactEnd?: boolean;
+  labelMaxWidth?: number;
+  textSize?: TextSize;
   curveOffset?: { dx: number; dy: number };
   curvePoints?: { dx: number; dy: number }[];
   elbowOffset?: { dx: number; dy: number };

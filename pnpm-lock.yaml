@@ -7021,6 +7021,9 @@ importers:
 
   packages/element-model:
     dependencies:
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../model-core
