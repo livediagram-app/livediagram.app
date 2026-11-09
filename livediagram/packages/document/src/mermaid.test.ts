@@ -396,6 +396,32 @@ describe('parseMermaid', () => {
     if (r.ok) expect(r.graph.nodes.map((n) => n.id)).toEqual(['block', 'packet', 'kanban']);
   });
 
+  it('reads capitalised keywords as node ids, as Mermaid does', () => {
+    const r = parseMermaid(
+      [
+        'flowchart LR',
+        '  Journey --> Checkout',
+        '  Class --> Student',
+        '  Style --> Theme',
+        '  subgraph S',
+        '    Pie --> End',
+        '  end',
+        '  End --> Timeline',
+      ].join('\n'),
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.edges.map((e) => `${e.from}>${e.to}`)).toEqual([
+      'Journey>Checkout',
+      'Class>Student',
+      'Style>Theme',
+      'Pie>End',
+      'End>Timeline',
+    ]);
+    // `End` inside the subgraph is a member, not its close.
+    expect(r.graph.clusters?.[0]?.members).toEqual(['Pie', 'End']);
+  });
+
   it('errors on empty / non-graph input', () => {
     expect(parseMermaid('').ok).toBe(false);
     expect(parseMermaid('just some prose').ok).toBe(false);

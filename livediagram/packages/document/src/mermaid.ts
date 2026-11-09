@@ -255,7 +255,8 @@ function readEdgeOp(s: string): { op: EdgeOp; rest: string } | null {
 
 // --- Statement parsing ---------------------------------------------------
 
-const SKIP_RE = /^\s*(?:classDef|class|style|linkStyle|%%|direction)\b/i;
+// Case-sensitive, as Mermaid's keywords are: `Class --> Student` and `Style --> Theme` are edges between nodes.
+const SKIP_RE = /^\s*(?:classDef|class|style|linkStyle|%%|direction)\b/;
 // `:::name` after a node: words of letters, digits and `_`, joined by single `-`s.
 const CLASS_SUFFIX_RE = /^:::[\p{L}\p{M}\p{N}_]+(?:-[\p{L}\p{M}\p{N}_]+)*/u;
 // An edge's id before its operator (`A e1@--> B`), Mermaid's handle for styling or animating that edge.
@@ -264,9 +265,10 @@ const STATE_HEADER_RE = /^\s*stateDiagram(?:-v2)?\b/i;
 const ER_HEADER_RE = /^\s*erDiagram\b/i;
 // Every other diagram type Mermaid draws, by its header. The newer types' headers end in `-beta` (or stand alone on
 // their line, as `kanban` does): read as a headerless flowchart, `block-beta` imported boxes named "block" and
-// "columns", and `gitGraph` or `C4Context` were told to add a flowchart header.
+// "columns", and `gitGraph` or `C4Context` were told to add a flowchart header. Case-sensitive, as Mermaid's own
+// detectors are, so a node named `Journey`, `Pie` or `Timeline` is a node, not another diagram's header.
 const UNSUPPORTED_RE =
-  /^\s*(?:(?:sequenceDiagram|classDiagram|gantt|pie|journey|mindmap|timeline|quadrantChart|gitGraph|requirementDiagram|zenuml|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b|(?:xychart|sankey|block|packet|architecture|radar|treemap)-beta\b|(?:kanban|xychart|sankey|block|packet|architecture|radar|treemap)\s*$)/i;
+  /^\s*(?:(?:sequenceDiagram|classDiagram|gantt|pie|journey|mindmap|timeline|quadrantChart|gitGraph|requirementDiagram|zenuml|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b|(?:xychart|sankey|block|packet|architecture|radar|treemap)-beta\b|(?:kanban|xychart|sankey|block|packet|architecture|radar|treemap)\s*$)/;
 export const MERMAID_UNSUPPORTED_ERROR =
   'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram) and ER diagrams (erDiagram) are supported, not sequence, class, gantt or other diagram types.';
 
@@ -452,7 +454,8 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
       }
       continue;
     }
-    if (/^end$/i.test(line)) {
+    // Only lowercase `end` closes a subgraph; Mermaid's own advice for a node called end is to capitalise it.
+    if (/^end$/.test(line)) {
       subgraphDepth = Math.max(0, subgraphDepth - 1);
       if (subgraphDepth === 0) currentCluster = null;
       continue;

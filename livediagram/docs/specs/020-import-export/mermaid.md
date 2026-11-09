@@ -117,6 +117,9 @@ only the sweep direction differs).
   written against the edge or not (`a:::hot-->b`, `a:::my-class-.->b`): the edge after it still lands. So are the
   accessibility lines, `accTitle: …`, `accDescr: …` and the multi-line `accDescr { … }` block: they describe the
   diagram for a screen reader and are never boxes.
+- **Keywords are case-sensitive**, as in Mermaid: `class`, `style`, `end` and the other diagram types' headers
+  (`journey`, `pie`, `timeline`, ...) are keywords only in lowercase, so `Class --> Student`, `Journey --> Checkout`
+  and a node called `End` (Mermaid's own advice for naming a node end) import as nodes.
 - **Statements** end at a newline or a `;`, as in Mermaid: `graph TD; A-->B; B-->C;` is three statements. A `;`
   inside a label (quoted, in a node's brackets or an edge's `|…|`) is label text.
 - **Markdown strings** (``A["`**Bold** text`"]``) keep their words: the backticks and the `**` / `__` / `*` / `_`
