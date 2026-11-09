@@ -9,6 +9,7 @@ import {
   COMMUNITY_MAX_OFFSET,
   COMMUNITY_PAGE_SIZE,
   COMMUNITY_POPULAR_TAGS,
+  COMMUNITY_POSTS_PER_AUTHOR,
   COMMUNITY_RELATED_POSTS,
   COMMUNITY_SITEMAP_MAX,
   COMMUNITY_START_MIN_LIKES,
@@ -77,36 +78,38 @@ export async function countPostsByOwner(
 }
 
 // The tag rows for a post, replacing whatever it had: the display array and the filter table are
-// rewritten together.
+// rewritten together. Each goes in only while the post is there (a publish refused at the cap writes none).
 function tagStatements(env: Env, postId: string, tags: string[]): D1PreparedStatement[] {
   return [
     env.COMMUNITY_DB.prepare('DELETE FROM post_tags WHERE post_id = ?').bind(postId),
     ...tags.map((tag) =>
-      env.COMMUNITY_DB.prepare('INSERT INTO post_tags (post_id, tag) VALUES (?, ?)').bind(
-        postId,
-        tag,
-      ),
+      env.COMMUNITY_DB.prepare(
+        'INSERT INTO post_tags (post_id, tag) SELECT ?1, ?2 WHERE EXISTS (SELECT 1 FROM posts WHERE id = ?1)',
+      ).bind(postId, tag),
     ),
   ];
 }
 
 // Publish: the post and its tags in one batch. A collision on the id fails the batch whole and is
-// retried once with a fresh one; a second post for the same document is a real conflict, rethrown.
+// retried once with a fresh one; a second post for the same document is a real conflict, rethrown. The owner's cap
+// (COMMUNITY_POSTS_PER_AUTHOR) is checked again inside the insert, so publishes racing past the route's count can't
+// together go over: null when it refused.
 export async function createPost(
   env: Env,
   app: CommunityApp,
   document: string,
   publish: CommunityAppPublish,
   now: number = Date.now(),
-): Promise<string> {
+): Promise<string | null> {
   const { input, author } = publish;
-  const attempt = async (): Promise<string> => {
+  const attempt = async (): Promise<string | null> => {
     const postId = newPostId();
-    await env.COMMUNITY_DB.batch([
+    const [made] = await env.COMMUNITY_DB.batch([
       env.COMMUNITY_DB.prepare(
         `INSERT INTO posts (id, app, document, share_code, owner, author_name, author_color, author_picture,
            anonymous, title, description, category, tags, search_text, document_state, published_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+         WHERE (SELECT COUNT(*) FROM posts WHERE app = ? AND owner = ?) < ?`,
       ).bind(
         postId,
         app,
@@ -125,10 +128,13 @@ export async function createPost(
         publish.documentState,
         now,
         now,
+        app,
+        publish.owner,
+        COMMUNITY_POSTS_PER_AUTHOR,
       ),
       ...tagStatements(env, postId, input.tags),
     ]);
-    return postId;
+    return made?.meta.changes ? postId : null;
   };
   try {
     return await attempt();

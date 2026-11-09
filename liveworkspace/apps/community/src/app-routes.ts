@@ -205,7 +205,7 @@ async function publish(
     await deletePost(env, found.id);
     console.log('[community] replaced a previous owner post', { app, postId: found.id });
   }
-  let postId: string;
+  let postId: string | null;
   try {
     postId = await createPost(env, app, document, input);
   } catch (err) {
@@ -213,6 +213,8 @@ async function publish(
     if (String(err).includes('UNIQUE')) return conflict('already_published');
     throw err;
   }
+  // Refused at the cap inside the insert: another publish took the last place since the count above.
+  if (postId === null) return conflict('post_limit');
   console.log('[community] published', { app, postId, category: input.input.category });
   const row = await getPostForDocument(env, app, document);
   return json({ post: appPost(row!, input.owner) }, { status: 201 });

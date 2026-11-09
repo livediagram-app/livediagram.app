@@ -123,8 +123,10 @@ two apps share has one label and one type; `CommunityCategory` is the union of e
    state and `published_at` kept; tags rewritten) and `200 { post }`.
 5. `countPostsByOwner(app, owner) >= COMMUNITY_POSTS_PER_AUTHOR` (50): `409 post_limit`.
 6. Another owner's post on the document: deleted (logged `replaced a previous owner post`).
-7. `createPost`: one batch (the row, its `post_tags`). An id collision (`posts.id` in the error) retries once with a
-   new id; a `UNIQUE` failure on the document is `409 already_published`.
+7. `createPost`: one batch (the row, its `post_tags`). The row is `INSERT ... SELECT ... WHERE` the owner has fewer than
+   50 posts in the app, and each tag only `WHERE EXISTS` the row, so publishes racing past step 5 can't together go over:
+   a refused insert is `409 post_limit`. An id collision (`posts.id` in the error) retries once with a new id; a
+   `UNIQUE` failure on the document is `409 already_published`.
 8. `201 { post: CommunityAppPost }` (`own: true`, `state`).
 
 ### Sync (`syncDocuments`)
