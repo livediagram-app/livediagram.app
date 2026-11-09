@@ -439,13 +439,26 @@ export async function reorderTabs(
   entries: ReorderEntry[],
 ): Promise<void> {
   const now = Date.now();
-  // Order and folder live on the link, so moving a tab leaves its body untouched.
-  const batch = entries.map((entry, idx) => {
-    const { id: tabId, folder } = normalizeReorderEntry(entry);
-    return env.DOCUMENT_DB.prepare(
-      'UPDATE document_tabs SET order_index = ?, folder = ? WHERE document_id = ? AND tab_id = ?',
-    ).bind(idx, folder, documentId, tabId);
+  // Only the document's own tabs, each once at the last place the request names it (what writing every entry in
+  // turn left): ids it lacks would update nothing, and a body of a million of them was a statement each
+  // (docs/specs/006-document/per-tab-storage.md "Risk").
+  const { results } = await env.DOCUMENT_DB.prepare(
+    'SELECT tab_id FROM document_tabs WHERE document_id = ?',
+  )
+    .bind(documentId)
+    .all<{ tab_id: string }>();
+  const held = new Set(results.map((r) => r.tab_id));
+  const placed = new Map<string, { idx: number; folder: string | null }>();
+  entries.forEach((entry, idx) => {
+    const { id, folder } = normalizeReorderEntry(entry);
+    if (held.has(id)) placed.set(id, { idx, folder });
   });
+  // Order and folder live on the link, so moving a tab leaves its body untouched.
+  const batch = [...placed].map(([tabId, { idx, folder }]) =>
+    env.DOCUMENT_DB.prepare(
+      'UPDATE document_tabs SET order_index = ?, folder = ? WHERE document_id = ? AND tab_id = ?',
+    ).bind(idx, folder, documentId, tabId),
+  );
   batch.push(
     env.DOCUMENT_DB.prepare('UPDATE document SET saved_at = ? WHERE id = ?').bind(now, documentId),
   );
