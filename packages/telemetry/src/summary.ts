@@ -137,9 +137,10 @@ export function buildTelemetrySummary(
       });
   };
   const bump = (series: Record<string, number[]>, key: string, idx: number, n: number) => {
-    // Keys come from stored rows: a `__proto__` one would set the series' prototype rather than add a series.
+    // Keys come from stored rows: a `__proto__` one would set the series' prototype rather than add a series,
+    // and an inherited name (`constructor`, `toString`) would read Object.prototype's member as its series.
     if (key === '__proto__') return;
-    const s = series[key] ?? zeros();
+    const s = Object.hasOwn(series, key) ? series[key]! : zeros();
     s[idx] = (s[idx] ?? 0) + n;
     series[key] = s;
   };

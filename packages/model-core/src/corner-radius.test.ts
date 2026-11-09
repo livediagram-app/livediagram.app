@@ -42,4 +42,9 @@ describe('cornerRadiusPx', () => {
     expect(cornerRadiusPx('md', Number.NaN, 50, 8)).toBe(0);
     expect(cornerRadiusPx('md', -5, 50, 8)).toBe(0);
   });
+
+  it('reads an unknown stored preset as unset, never NaN', () => {
+    expect(cornerRadiusPx('xl' as never, 400, 400, 8)).toBe(8);
+    expect(cornerRadiusPx('constructor' as never, 400, 400, 8)).toBe(8);
+  });
 });

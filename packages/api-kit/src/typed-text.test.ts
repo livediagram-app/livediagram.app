@@ -73,4 +73,14 @@ describe('trimInvisible', () => {
     expect(trimInvisible('\u00AD a\u200Bb \u2060')).toBe('a\u200Bb');
     expect(trimInvisible('')).toBe('');
   });
+
+  it('drops format characters past U+FFFF, which are surrogate pairs', () => {
+    // A name of TAG characters alone looked blank and was kept as it was.
+    expect(trimInvisible('\u{E0041}\u{E0042}')).toBe('');
+    expect(trimInvisible('\u{E0001}Team\u{1D173}')).toBe('Team');
+    // An emoji at either end is a pair too, and stays.
+    expect(trimInvisible(' \u{1F600}a\u{1F600} ')).toBe('\u{1F600}a\u{1F600}');
+    // A lone surrogate is not a format character: it stops the scan.
+    expect(trimInvisible('\uDC00a\uD800')).toBe('\uDC00a\uD800');
+  });
 });

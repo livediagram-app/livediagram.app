@@ -43,6 +43,18 @@ describe('stored keys', () => {
     expect(Object.getPrototypeOf(s.daily!.byCategory)).toBe(Object.prototype);
     expect(Object.keys(s.daily!.byCategory)).toEqual(['Element']);
   });
+
+  it('counts a category named like an inherited member as its own series', () => {
+    const s = build([{ ...at(MIDNIGHT), category: 'constructor' }, at(MIDNIGHT)]);
+    const series: unknown = Object.getOwnPropertyDescriptor(
+      s.daily!.byCategory,
+      'constructor',
+    )?.value;
+    expect(Array.isArray(series)).toBe(true);
+    expect((series as number[]).reduce((n, v) => n + v, 0)).toBe(1);
+    // Nothing was written onto the global Object function.
+    expect(Object.keys(Object)).toEqual([]);
+  });
 });
 
 describe('telemetry window boundaries', () => {

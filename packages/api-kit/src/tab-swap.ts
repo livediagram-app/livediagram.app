@@ -83,13 +83,21 @@ export async function swapTabChanges<Tab extends NamedTab, T>(
   return failAll(changes.length, 409);
 }
 
-// Which change pushed the tab over its cap: each answered as it would be alone, in order.
+// Which change pushed the tab over its cap: each answered as it would be alone, in order. A store error on one
+// change is that change's answer alone: the changes before it are already written, so throwing would tell their
+// senders they failed (and they would send them again).
 async function eachAlone<Tab extends NamedTab, T>(
   store: TabSwapStore<Tab>,
   changes: readonly TabChange<Tab, T>[],
 ): Promise<TabChangeOutcome<T>[]> {
   const outcomes: TabChangeOutcome<T>[] = [];
-  for (const change of changes) outcomes.push(...(await swapTabChanges(store, [change])));
+  for (const change of changes) {
+    try {
+      outcomes.push(...(await swapTabChanges(store, [change])));
+    } catch (error) {
+      outcomes.push({ ok: 'threw', error });
+    }
+  }
   return outcomes;
 }
 
