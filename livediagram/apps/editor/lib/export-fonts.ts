@@ -4,7 +4,7 @@ import { googleFontsHref } from '@livediagram/document';
 // Webfonts, EMBEDDED, for an image export (docs/specs/004-interface-design/fonts.md).
 //
 // An exported file leaves the browser that made it, so a `font-family` alone
-// is a promise the reader can't keep: nobody has Permanent Marker installed,
+// is a promise the reader can't keep: nobody has Shantell Sans installed,
 // and the `@import` a headless export writes is dead the moment the SVG is
 // opened offline or used as an `<img>` src (which blocks external resources —
 // exactly how the PNG path rasterises its fragments). So the browser export

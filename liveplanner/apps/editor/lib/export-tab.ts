@@ -471,7 +471,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
 }
 
 // A downloaded SVG carries its own typefaces: the reader hasn't got
-// Permanent Marker installed, and an @import is dead in an offline viewer.
+// Shantell Sans installed, and an @import is dead in an offline viewer.
 export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
   const fontCss =

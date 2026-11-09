@@ -49,7 +49,7 @@ describe('renderElementsToSvg in a finish', () => {
   it('a Sketch tab sketches every box and letters in the handwriting font', () => {
     const svg = renderElementsToSvg(tab([square(), sticky], 'sketch'));
     expect(svg.match(/data-finish="sketch"/g)?.length).toBe(2);
-    expect(svg).toMatch(/Caveat/);
+    expect(svg).toMatch(/Kalam/);
   });
 
   it("an element's own finish beats its tab's", () => {

@@ -4,9 +4,10 @@
 // mission as a short instruction and a line on why, one segment per mission, Hint and End; once a mission is done its
 // lesson in place of the instruction, and after the last, the track's finish. Never a dialog: the work under it stays
 // fully usable and nothing is dimmed. A computer floats it centred above the footer; a phone docks it as a bottom
-// sheet (at the top while a dialog of its own covers the bottom, as a card's panel does on a phone).
+// sheet (at the top while a dialog of its own covers the bottom, as a card's panel does on a phone), and at the other
+// edge whenever the control it names sits where it would dock (useDockEdge), so it never covers that control.
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button, lucideGlyph, Portal, useMediaQuery } from '@liveplanner/ui';
 import {
   lucideArrowRight,
@@ -18,6 +19,7 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { useOpenModalCount } from '@liveworkspace/workbench/lib/modal-guard';
 import type { MissionRun } from './missions';
 import { HintRing } from './HintRing';
+import { useDockEdge } from './useDockEdge';
 
 const CheckIcon = lucideGlyph(lucideCheck, 14);
 const HintIcon = lucideGlyph(lucideLightbulb, 14);
@@ -41,8 +43,13 @@ function useFooterClearance(): number {
       setClear(top !== undefined && top > 0 ? Math.max(0, window.innerHeight - top) : 0);
     };
     measure();
+    const vv = window.visualViewport;
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    vv?.addEventListener('resize', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+      vv?.removeEventListener('resize', measure);
+    };
   }, []);
   return clear;
 }
@@ -188,7 +195,17 @@ export function StripFrame({
   const tight = useMediaQuery(TIGHT_QUERY) && !phone;
   const clearance = useFooterClearance();
   const modalOpen = useOpenModalCount() > 0 && placement === 'page';
-  const coveredBelow = modalOpen && phone;
+  // A phone's sheet: at the top over a window of its own (which covers the bottom), else above the footer; and at
+  // the other edge when the control it names sits there.
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const edge = useDockEdge({
+    on: phone && placement === 'page',
+    ring,
+    sheetRef,
+    prefer: modalOpen ? 'top' : 'bottom',
+    bottomInset: clearance,
+  });
+  const atTop = phone && edge === 'top';
   // A dialog open on a computer (the card type editor, a card's panel): the strip moves to the bottom-left corner,
   // narrower, beside the dialog rather than over its middle, and says everything it said before.
   const corner = modalOpen && !phone;
@@ -200,7 +217,7 @@ export function StripFrame({
         placement === 'dialog'
           ? 'rounded-xl'
           : phone
-            ? coveredBelow
+            ? atTop
               ? 'rounded-b-2xl border-t-0 shadow-[0_10px_28px_-12px_rgba(15,23,42,0.45)]'
               : 'rounded-t-2xl border-b-0 pb-[max(0.875rem,env(safe-area-inset-bottom))] shadow-[0_-10px_28px_-14px_rgba(15,23,42,0.45)]'
             : 'rounded-2xl shadow-[0_18px_40px_-18px_rgba(15,23,42,0.45),0_2px_6px_-2px_rgba(15,23,42,0.12)] dark:shadow-[0_18px_40px_-18px_rgba(0,0,0,0.7),0_2px_6px_-2px_rgba(0,0,0,0.4)]'
@@ -233,11 +250,12 @@ export function StripFrame({
       <div
         data-mission-strip-layer=""
         data-mission-corner={corner ? '' : undefined}
+        data-mission-edge={phone ? edge : undefined}
         className={`pointer-events-none fixed inset-x-0 z-[var(--z-toast)] flex ${
           corner ? 'justify-start' : 'justify-center'
         } ${phone ? '' : 'px-4'}`}
         style={
-          coveredBelow
+          atTop
             ? { top: 0 }
             : {
                 bottom: phone
@@ -247,6 +265,7 @@ export function StripFrame({
         }
       >
         <div
+          ref={sheetRef}
           key={corner ? 'corner' : 'centre'}
           className={`${phone ? 'w-full' : corner ? 'w-[19rem] max-w-full' : 'w-[26rem] max-w-full'} ${
             corner ? 'animate-view-forward' : ''

@@ -273,6 +273,16 @@ describe('the cards push', () => {
               text: 'hi',
               createdAt: T0 + 5,
             },
+            // An agent's question with user_d's token: user_d reaches it, but it is not theirs.
+            {
+              id: 'm2',
+              authorId: 'user_d',
+              authorName: 'Dee',
+              authorColor: '#0f0',
+              text: 'Which build?',
+              createdAt: T0 + 6,
+              ai: true,
+            },
           ],
         },
       }),
@@ -291,9 +301,18 @@ describe('the cards push', () => {
       title: 'Card 1',
       board: { tabId: 't1', elementId: 'b1', tabName: 'Sprint' },
     });
-    expect(cards.threads.map((t) => [t.elementId, t.participantIds])).toEqual([
-      ['c-c3', ['user_c']],
+    expect(cards.threads.map((t) => [t.elementId, t.participantIds, t.agentIds])).toEqual([
+      ['c-c3', ['user_c'], ['user_d']],
     ]);
+    // The card's status chip: the bug-triage board's column holding `new`, as it is now; c3 has no status, so no
+    // column holds it.
+    const triage = presetSetup('bug-triage').columns.find((c) => c.status === 'new')!;
+    expect(cards.actions[0]!.card!.column).toEqual({
+      name: triage.name,
+      ...(triage.color ? { color: triage.color } : {}),
+      done: false,
+    });
+    expect(cards.threads[0]!.card!.column).toBeNull();
     expect(rows(db, 'SELECT person_id FROM known_people')).toEqual([{ person_id: 'user_b' }]);
   });
 

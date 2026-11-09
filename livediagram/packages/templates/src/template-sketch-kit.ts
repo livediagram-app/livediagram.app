@@ -307,7 +307,7 @@ export const many = (paths: Pt[][], seed: number, pen: Pen = {}): FreehandElemen
 
 type TextOpts = Partial<TextElement> & { colour?: PenColourName };
 
-// Hand lettering in a fixed box, in Caveat, Ink unless given a stock colour by name.
+// Hand lettering in a fixed box, in Kalam, Ink unless given a stock colour by name.
 export function letter(
   x: number,
   y: number,

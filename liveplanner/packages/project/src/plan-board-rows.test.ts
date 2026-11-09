@@ -68,6 +68,7 @@ describe('planBoardRowsFromElements', () => {
         elementId: 'all',
         boardTitle: 'All',
         status: ALL_CARDS_STATUS,
+        name: '',
         done: false,
         boardOrder: 0,
         position: 0,
@@ -125,5 +126,34 @@ describe('cardPlacesOf', () => {
       false,
       false,
     ]);
+  });
+
+  // The Inbox's status chip: the column holding the card's status on the board it opens on, as it is now.
+  it('names the column holding a status, with its colour and whether it is done; none when no column does', () => {
+    const coloured = [
+      ...tabs,
+      {
+        id: 't3',
+        name: 'Bugs',
+        elements: [
+          board('bugs', {
+            title: 'Bugs',
+            columns: [
+              { id: 'n', status: 'new', name: 'New Bugs', color: '#f97316' },
+              { id: 'f', status: 'fixed', name: 'Fixed', done: true },
+            ],
+          }),
+        ],
+      },
+    ];
+    const places = cardPlacesOf(coloured);
+    expect(places.columnFor('new')).toEqual({ name: 'New Bugs', color: '#f97316', done: false });
+    expect(places.columnFor('fixed')).toEqual({ name: 'Fixed', done: true });
+    expect(places.columnFor('todo')).toEqual({ name: 'todo', done: false });
+    expect(places.columnFor('done')).toEqual({ name: 'done', done: true });
+    // On an All Cards board, a deleted column's status, no status, no board: no column.
+    expect(places.columnFor('gone')).toBeNull();
+    expect(places.columnFor(undefined)).toBeNull();
+    expect(cardPlacesOf([]).columnFor('todo')).toBeNull();
   });
 });

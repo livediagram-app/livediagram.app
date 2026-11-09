@@ -93,7 +93,7 @@ describe('fitMultilineFontPx — font family', () => {
       font: '',
       measureText(s: string) {
         const px = Number(/(\d+(?:\.\d+)?)px/.exec(ctx.font)?.[1] ?? 16);
-        const wide = /Marker/.test(ctx.font);
+        const wide = /Shantell/.test(ctx.font);
         return { width: s.length * px * (wide ? 0.8 : 0.55) };
       },
     };
@@ -113,7 +113,7 @@ describe('fitMultilineFontPx — font family', () => {
     const marker = fit({
       text: 'Payment received',
       ...note,
-      fontFamily: "'Permanent Marker', cursive",
+      fontFamily: "'Shantell Sans', cursive",
     });
     expect(marker).toBeLessThan(plain);
   });

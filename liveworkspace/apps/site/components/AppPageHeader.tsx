@@ -58,10 +58,12 @@ export function AppPageHeader({
             hrefFor={hrefFor}
             className={listed ? 'max-sm:hidden' : ''}
           >
+            {/* A flex box, as the app's logo link is: a block one sits the wordmark on a text baseline, its
+                descender gap lifting it 3px above the app's logo. */}
             <a
               href={host ? `${workspaceOrigin()}/` : '/'}
               aria-label="liveworkspace home"
-              className="relative touch-target-y"
+              className="relative touch-target-y inline-flex items-center"
             >
               <Wordmark className="max-sm:[&_[data-logotype]]:hidden" />
             </a>

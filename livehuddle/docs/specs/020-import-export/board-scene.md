@@ -123,7 +123,7 @@ colours can be snapped afterwards, in one press, if wanted.
 - **Font size** survives exactly: the nearest size preset (Small, Medium,
   Large) by ratio, times a text scale for the rest, within the text box's
   scale limits. Labels of shapes, stickies and arrows take the nearest preset.
-- **Families**: hand-drawn fonts land in Caveat, code fonts in Roboto Mono,
+- **Families**: hand-drawn fonts land in Kalam, code fonts in Roboto Mono,
   serif in Lora; sans-serif takes the board's own font.
 - Alignment, bold, italic, underline and strikethrough land as they are.
 

@@ -97,7 +97,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
     label: 'Whiteboard',
     description: 'Mono, Marker, plain white',
     theme: 'mono',
-    // A whiteboard is drawn in marker; its letters in Permanent Marker itself.
+    // A whiteboard is drawn in marker; its letters in Shantell Sans itself.
     finish: 'marker',
     font: undefined,
     pattern: 'blank',
@@ -141,7 +141,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'doodle',
     label: 'Doodle',
-    description: 'Rainbow, Sketch, Caveat, plain paper',
+    description: 'Rainbow, Sketch, Kalam, plain paper',
     theme: 'rainbow',
     finish: 'sketch',
     font: 'caveat',
@@ -168,7 +168,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'poster',
     label: 'Poster',
-    description: 'Tropical, Professional, Abril, decking',
+    description: 'Tropical, Professional, Bodoni, decking',
     theme: 'tropical',
     finish: 'professional',
     font: 'abril-fatface',
@@ -180,7 +180,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
     description: 'Sand, Marker, concrete',
     theme: 'sand',
     finish: 'marker',
-    // Marker letters in Permanent Marker itself.
+    // Marker letters in Shantell Sans itself.
     font: undefined,
     pattern: 'concrete',
   },
@@ -270,7 +270,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'coffeehouse',
     label: 'Coffeehouse',
-    description: 'Espresso, Sketch, Caveat, terrazzo',
+    description: 'Espresso, Sketch, Kalam, terrazzo',
     theme: 'espresso',
     finish: 'sketch',
     font: 'caveat',
@@ -292,7 +292,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
     description: 'Rainbow, Marker, carpet',
     theme: 'rainbow',
     finish: 'marker',
-    // Marker letters in Permanent Marker itself.
+    // Marker letters in Shantell Sans itself.
     font: undefined,
     pattern: 'carpet',
   },

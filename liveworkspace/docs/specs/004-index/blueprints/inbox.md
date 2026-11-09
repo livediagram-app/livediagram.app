@@ -22,7 +22,7 @@ Scope, by file:
 | Summary | `items.summary`, JSON ≤ 2,048 bytes                                 | What the item last said of its content (counts, mode, `hasContent`)        |
 | Thread  | `collab_threads (app, item, tab, element)`                          | A comment thread's facts; the comments stay in the item                    |
 | Action  | `collab_actions (app, item, tab, element, action)`                  | An element's action, or an open card assigned to someone                   |
-| Card    | `CollabCard { id?, key, type, typeLabel, title, board }`            | A Plan card's facts, pushed under the tab `~cards`; `id` on a thread's row |
+| Card    | `CollabCard { id?, key, type, typeLabel, title, board, column? }`   | A Plan card's facts, pushed under the tab `~cards`; `id` on a thread's row |
 | Form    | `collab_forms (item, tab)`; `collab_form_reads (person, item, tab)` | Responses taken and seen                                                   |
 
 ## Behaviour and state
@@ -41,8 +41,11 @@ Scope, by file:
 Parsing. Shown text is cut, not refused: labels, names and titles to 200, texts to 500, colours to 32. Ids and times
 must be well formed. A thread needs `elementId`, `elementLabel`, `resolved` (boolean), `commentCount`,
 `participantIds` and `mentionedIds` (≤ 100 ids), `latestText`, `latestAuthorName`, `firstAt`, `latestAt`, and may
-carry `latestAuthorColor`, `latestAuthorId`, `resolvedById`, `card` (whose optional `id`, 1 to 128 characters, names
-the card when the row's `elementId` is a card thread's own id). An action needs `elementId`, `actionId`,
+carry `latestAuthorColor`, `latestAuthorId`, `resolvedById`, `agentIds` (≤ 100 ids; they join `collab_thread_people`
+with the participants and the mentioned, so they reach the thread, but are not stored in `participant_ids`, so
+`youCommented` stays false for them), `card` (whose optional `id`, 1 to 128 characters, names the card when the row's
+`elementId` is a card thread's own id, and whose optional `column` is `{ name ≤ 200, color? #rrggbb, done boolean }`
+or null; a malformed `column` is dropped from the card, never the push refused). An action needs `elementId`, `actionId`,
 `elementLabel`, `name`, `status` (`open`, `done`, `wont-do`), `assignerId`, `createdAt`, `updatedAt`, and may carry
 `description`, `assigneeId`, `assigneeName`, `assignerName`, `teamId`, `doneById`, `card`. A repeated key keeps its
 last entry. A form's `code` is `^[A-Za-z0-9_-]{1,64}$`; `responses` at most 10,000,000.
@@ -76,6 +79,12 @@ The Explorer (`packages/explorer/src/explorer/inbox/sections.ts` `inboxEntries`)
 rows of one app whose `card.id` is set and whose `elementId` is the same (a thread shared between two plans) are one,
 the newer. Such a row's title is its `elementLabel` (the thread's title), its place `card.id` and `threadId`, and its
 verbs go to `…/threads/:elementId/comments` and `…/threads/:elementId/resolve` (`inbox-actions.ts`).
+
+A Plan card's row (an action or thread with `card`) draws `CardStatusChip` (`packages/explorer/src/explorer/badges.tsx`)
+from `card.column` beside its title: no read of its own, the column rides in the row's `card` JSON. `inboxCount`
+(`sections.ts`) is `forMe` plus the threads whose `threadReason` is `mention` or `yours`; `threadReason` reads a
+thread reached for no other reason (an agent with the reader's token wrote in it, nobody mentioned them, the item is
+not theirs) as `agent`, **Your agent wrote**.
 
 ## Data and persistence
 

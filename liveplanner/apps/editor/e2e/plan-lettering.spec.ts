@@ -4,13 +4,13 @@ import { adoptGuest, dismissQuickTour, expect, mintGuest, seedPlan, test } from 
 
 // The lettering rule (docs/specs/004-interface-design/fonts.md "On boards and cards" and "On Dashboards and views")
 // end to end: headings take the tab's face, everything read small the UI face. The unit tests can only see the
-// custom properties a root sets (jsdom resolves no var()), so whether a title really draws in Abril Fatface while a
+// custom properties a root sets (jsdom resolves no var()), so whether a title really draws in Bodoni Moda while a
 // pill beside it does not needs a browser's computed style.
 
 const CANVAS = '[data-canvas-a11y-root]';
 // The tab's face, and the family name its stack resolves to.
 const FONT_ID = 'abril-fatface';
-const FACE = /Abril Fatface/;
+const FACE = /Bodoni Moda/;
 
 const fontOf = (el: Locator) => el.evaluate((n) => getComputedStyle(n).fontFamily);
 

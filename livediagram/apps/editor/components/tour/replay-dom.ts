@@ -1,4 +1,5 @@
 import { clickTour, findTour } from '@liveworkspace/workbench/components/tour/tour-dom';
+import { revealInScrollers } from '@liveworkspace/workbench/components/tour/tour-reveal';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import type { CursorTarget, Point } from '@/lib/replay/topic';
 import { dockItemSelector } from '@/lib/replay/topics/draw-shared';
@@ -44,15 +45,32 @@ export function menuButton(name: string): HTMLElement | null {
   return findNode('[data-context-menu] button, [data-menu-flyout] button', name);
 }
 
+// The chrome Example has brought into view: each once, so a person scrolling it away again is left alone, and the
+// per-frame resolve does not restart the scroll.
+const revealed = new WeakSet<Element>();
+
+// A control's centre, after scrolling it into view when it sits off the window (a phone's Tab Style sheet holds Canvas
+// below its looks): Example never presses what nobody can see (docs/specs/007-editor/watch-it-built.md).
+export function centreInView(el: HTMLElement | null | undefined): Point | null {
+  if (el && !revealed.has(el)) {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && (r.top < 0 || r.bottom > window.innerHeight)) {
+      revealed.add(el);
+      revealInScrollers(el);
+    }
+  }
+  return centreOfNode(el);
+}
+
 /** Where a target is on screen now, or null while it is not there. `toScreen` maps a canvas point. */
 export function resolveTarget(to: CursorTarget, toScreen: (p: Point) => Point): Point | null {
   switch (to.kind) {
     case 'tour':
-      return centreOfNode(findTour(to.id));
+      return centreInView(findTour(to.id));
     case 'find':
-      return centreOfNode(findNode(to.selector, to.text));
+      return centreInView(findNode(to.selector, to.text));
     case 'menu':
-      return centreOfNode(menuButton(to.name));
+      return centreInView(menuButton(to.name));
     case 'canvas':
       return toScreen(to);
     case 'element': {

@@ -124,7 +124,7 @@ describe('RetiredElementFace', () => {
   it('wears the dark paper on a dark canvas, and the element’s label font', () => {
     const { container } = render(
       <CanvasSurfaceProvider surface="dark">
-        <RetiredElementFace element={board()} fontFamily="'Caveat', cursive" />
+        <RetiredElementFace element={board()} fontFamily="'Kalam', cursive" />
       </CanvasSurfaceProvider>,
     );
     const svg = container.querySelector('svg')!;
@@ -134,7 +134,7 @@ describe('RetiredElementFace', () => {
     expect(svg.querySelector('text')!.getAttribute('fill')).toBe(
       RETIRED_PLACEHOLDER_COLOURS.dark.ink,
     );
-    expect(svg.style.fontFamily).toContain('Caveat');
+    expect(svg.style.fontFamily).toContain('Kalam');
   });
 
   it('is inert: the wrapper around it selects and drags', () => {

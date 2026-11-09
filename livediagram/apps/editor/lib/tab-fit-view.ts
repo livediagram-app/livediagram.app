@@ -35,14 +35,7 @@ export function tabFitView(canvas: HTMLElement | null, elements: Element[]): Vie
   if (boxedIds.size === 0) return EMPTY_TAB_VIEW;
   const bbox = unionBoxedBounds(elements, boxedIds);
   if (!bbox) return null;
-  // Fit clear of the Palette strip laid over the canvas's top, so nothing lands under it.
-  const strip = document
-    .querySelector<HTMLElement>('[data-toolbar-palette]:not(.hidden) [data-tour-id="palette"]')
-    ?.getBoundingClientRect();
-  const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
-  // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
-  // strip was considered) and clears both the strip and the bottom chrome of the same depth.
-  const padding = Math.max(FIT_TO_SCREEN_PADDING, inset);
+  const padding = fitPadding(rect);
   const fitIn = (ins: FitInsets) =>
     besideSideInsets(
       computeFitToScreen(
@@ -64,6 +57,18 @@ export function tabFitView(canvas: HTMLElement | null, elements: Element[]): Vie
     padding,
     fitIn,
   );
+}
+
+/** The margin a fit keeps on every side of the canvas: the Fit to Screen padding, or the Palette strip's depth. */
+export function fitPadding(canvas: { top: number; bottom: number }): number {
+  // Fit clear of the Palette strip laid over the canvas's top, so nothing lands under it.
+  const strip = document
+    .querySelector<HTMLElement>('[data-toolbar-palette]:not(.hidden) [data-tour-id="palette"]')
+    ?.getBoundingClientRect();
+  const inset = topChromeInset(canvas, strip && strip.width > 0 ? strip : null);
+  // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
+  // strip was considered) and clears both the strip and the bottom chrome of the same depth.
+  return Math.max(FIT_TO_SCREEN_PADDING, inset);
 }
 
 // The Map panel's box relative to the canvas, or null while it is not showing.

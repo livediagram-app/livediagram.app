@@ -695,7 +695,7 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 - Lettering (`apps/editor/lib/plan-font.ts`, spec [Fonts](../../004-interface-design/fonts.md) "On boards and
   cards"): the board root (`PlanBoardView`) and the Plan card element root (`PlanCardView`) take
   `planBoardFontStyle(stack)`: `fontFamily: PLAN_UI_FONT` (`var(--font-sans, ui-sans-serif, system-ui, sans-serif)`)
-  plus `--plan-heading-font` (the stack) and, for Caveat, `--plan-heading-adjust` (`ex-height
+  plus `--plan-heading-font` (the stack) and, for Kalam, `--plan-heading-adjust` (`ex-height
 PLAN_HANDWRITING_EX`). A heading opts in with `PLAN_HEADING_STYLE` (`font-family: var(--plan-heading-font)`,
   `font-size-adjust: var(--plan-heading-adjust)`, `font-synthesis-weight: none`): `BoardTitle` (on the board, not in
   the menu box), `SlotBoardHeader`'s title, `PlanColumnHeader` / `SlotColumnHeader` / `CollapsedColumn` names, the

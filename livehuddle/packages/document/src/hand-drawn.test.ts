@@ -76,7 +76,7 @@ describe('a Marker tab in the export', () => {
     expect(svg).toContain('data-finish="marker"');
     expect(svg).toContain(`stroke-opacity="${MARKER_INK_OPACITY}"`);
     expect(svg).toContain(`stroke-opacity="${MARKER_STREAK_OPACITY}"`);
-    expect(svg).toContain('Permanent Marker');
+    expect(svg).toContain('Shantell Sans');
   });
 
   it('keeps a sticky as paper, coloured in with no outline', () => {

@@ -12,14 +12,14 @@ import {
 // A product's font table, as its document package's FONTS lists them (livediagram's, for these ids).
 const FONTS: readonly PreviewFont[] = [
   { id: 'inter', google: 'Inter:wght@400;500;700' },
-  { id: 'caveat', google: 'Caveat:wght@400;500;700' },
+  { id: 'caveat', google: 'Kalam:wght@400;700' },
   { id: 'oswald', google: 'Oswald:wght@400;500;700' },
   { id: 'poppins', google: 'Poppins:wght@400;500;700' },
   { id: 'nunito', google: 'Nunito:wght@400;500;700' },
   { id: 'lora', google: 'Lora:wght@400;500;700' },
-  { id: 'abril-fatface', google: 'Abril+Fatface' },
+  { id: 'abril-fatface', google: 'Bodoni+Moda:opsz,wght@6..96,800' },
   { id: 'roboto-slab', google: 'Roboto+Slab:wght@400;500;700' },
-  { id: 'permanent-marker', google: 'Permanent+Marker' },
+  { id: 'permanent-marker', google: 'Shantell+Sans:wght@700' },
   { id: 'space-grotesk', google: 'Space+Grotesk:wght@400;500;700' },
 ];
 
@@ -77,7 +77,7 @@ describe('preview fonts', () => {
     const faces = await previewFonts(['inter', 'caveat', 'caveat', 'nope'], FONTS, fn);
     expect(faces).toHaveLength(2);
     expect(calls.filter((c) => c.includes('css2'))).toEqual([
-      expect.stringContaining('family=Caveat'),
+      expect.stringContaining('family=Kalam'),
     ]);
     await previewFonts(['caveat'], FONTS, fn);
     expect(calls.filter((c) => c.includes('css2'))).toHaveLength(1);

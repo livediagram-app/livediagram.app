@@ -618,7 +618,7 @@ Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/w
   on a fill (a filled shape's label, a sticky note's own text colour) keeps its
   exact colour instead, since the fill does not adapt.
 - **Text hugs:** every landed text box hugs its text in our fonts, at the size
-  it had (the nearest size times a text scale); hand-drawn fonts land in Caveat.
+  it had (the nearest size times a text scale); hand-drawn fonts land in Kalam.
 - **A paste selects its result**, lands at the pointer (or the middle of the
   view), and is **one undo step**, images included. A paste that changed or
   dropped anything says so in a small notice; a lossless paste says nothing.

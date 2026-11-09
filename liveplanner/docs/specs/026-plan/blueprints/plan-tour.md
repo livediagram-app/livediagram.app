@@ -126,6 +126,11 @@ then `begin()` (mark taken, `Started` · `DashboardTour`) or `cancel()`; Show Me
 On a computer, while `useOpenModalCount() > 0`, the full strip moves to the bottom-left (`data-mission-corner` on its
 layer, `justify-start`, the card `w-[19rem]`); nothing about it shrinks. A mission with `onPage` adds the amber line
 `[data-close-first]` "Close this window first, then:" over its why while doing. A phone keeps docking at the top.
+On a phone `useDockEdge` picks the sheet's edge each 150 ms and on `resize` / `visualViewport` resize: the default
+is the bottom (the top over a window, or while any other `[role="dialog"]` reaches the window's bottom, a phone's
+sheet); when the strip's ring target (`ringTarget`, the same selector order as
+`HintRing`, but ignoring the strip itself when testing cover) would meet the sheet docked there, `pickDockEdge`
+(workbench `tour-position`) docks it at the other edge, or at the edge it overlaps least when both meet it.
 The ring is `hint.ring()` once a hint asks, otherwise the mission's `points` while doing; `HintRing` takes the first
 selector drawn on screen (non-zero box) and not covered (`elementFromPoint` at its centre is it, inside it or holds
 it), re-checked every 150 ms. A hint's ring passes `reveal` (`StripFrame`'s `hinted`): as it mounts, `HintRing` calls

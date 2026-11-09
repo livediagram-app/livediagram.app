@@ -17,8 +17,6 @@ import {
 } from '@/lib/receptionist/receptionist-store';
 import { withTopicHeard } from '@/lib/receptionist/receptionist-topics';
 
-// How long a returning person's "Welcome back, <name>!" stays up.
-const HELLO_MS = 4_000;
 const NO_TOPICS: readonly string[] = [];
 
 // The Receptionist's side that knows the person (docs/specs/008-canvas/receptionist.md): what they may do and have heard, the
@@ -60,15 +58,6 @@ export function ReceptionistHost() {
       writeRef.current({ avatarTourSeen: true });
     } else openReceptionist('back');
   }, [receptionist.greets, welcomedRef, writeRef]);
-  const backOpen =
-    receptionist.chat.open &&
-    receptionist.chat.reason === 'back' &&
-    receptionist.chat.topicId === null;
-  useEffect(() => {
-    if (!backOpen) return;
-    const t = setTimeout(closeReceptionist, HELLO_MS);
-    return () => clearTimeout(t);
-  }, [backOpen]);
 
   // A topic heard is kept, so his next list leads with the ones you have not.
   const topicId = receptionist.chat.open ? receptionist.chat.topicId : null;

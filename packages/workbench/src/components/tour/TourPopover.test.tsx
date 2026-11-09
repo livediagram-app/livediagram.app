@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { CSSProperties } from 'react';
 import { TourPopover } from './TourPopover';
 
@@ -152,5 +152,76 @@ describe('TourPopover busy', () => {
     fireEvent.click(back);
     expect(onNext).toHaveBeenCalledTimes(1);
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+// "Where the card sits" (docs/specs/007-editor/editor-tour.md): on a phone a card too tall for either side of its target
+// takes the side with more room, capped to it, so it never covers the control it is about; and it is placed again when
+// the visible viewport changes (a phone's keyboard).
+describe('TourPopover on a phone', () => {
+  const sized = (width: number, height: number) => {
+    const w = vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(width);
+    const h = vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(height);
+    return () => {
+      w.mockRestore();
+      h.mockRestore();
+    };
+  };
+  const view = (width: number, height: number) => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: height });
+  };
+  afterEach(() => {
+    cleanup();
+    view(1024, 768);
+  });
+  const card = () => screen.getByRole('dialog');
+  const box = () => {
+    const s = card().style;
+    return { top: parseFloat(s.top), maxHeight: s.maxHeight ? parseFloat(s.maxHeight) : null };
+  };
+
+  it('caps a tall card to the room below a target mid-screen, clear of it', () => {
+    view(390, 844);
+    const restore = sized(352, 520);
+    const target = { left: 16, top: 300, width: 340, height: 44 };
+    render(<TourPopover {...props} targetRect={target} />);
+    const { top, maxHeight } = box();
+    expect(top).toBeGreaterThanOrEqual(target.top + target.height);
+    expect(maxHeight).toBe(844 - 8 - top);
+    restore();
+  });
+
+  it('caps it to the room above a target low on the screen, ending above it', () => {
+    view(390, 844);
+    const restore = sized(352, 620);
+    const target = { left: 230, top: 600, width: 40, height: 44 };
+    render(<TourPopover {...props} targetRect={target} />);
+    const { top, maxHeight } = box();
+    expect(top).toBe(8);
+    expect(top + (maxHeight ?? 0)).toBeLessThanOrEqual(target.top);
+    restore();
+  });
+
+  it('places itself again when the visible viewport resizes', () => {
+    view(390, 844);
+    const restore = sized(352, 200);
+    const listeners: Record<string, () => void> = {};
+    const vv = {
+      addEventListener: (type: string, fn: () => void) => (listeners[type] = fn),
+      removeEventListener: vi.fn(),
+    };
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: vv });
+    const target = { left: 16, top: 300, width: 340, height: 44 };
+    const { unmount } = render(<TourPopover {...props} targetRect={target} />);
+    expect(box().top).toBe(356);
+    // The keyboard comes up: the window is now 500px tall, so the card fits only above.
+    view(390, 500);
+    act(() => listeners.resize?.());
+    expect(box().top).toBe(300 - 12 - 200);
+    unmount();
+    expect(vv.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: undefined });
+    restore();
   });
 });

@@ -2,11 +2,11 @@
 
 // The marks an item carries in rows, cards and its menu header (liveplanner's project-badges.tsx): the
 // visibility badge (Public, Shared, Team, Private), Made by AI, the favourite star, the folder chip, and, in the All filter,
-// which app it belongs to.
+// which app it belongs to; and a Plan card's status chip on its Inbox rows.
 
 import { memo, type MouseEvent } from 'react';
 import { BrandGlyph } from '@liveworkspace/brand';
-import type { App, Item } from '@liveworkspace/index-client';
+import type { App, CardColumn, Item } from '@liveworkspace/index-client';
 import { Chip } from '@liveworkspace/ui';
 import {
   FolderOutlineIcon,
@@ -80,6 +80,41 @@ export function VisibilityBadge({
     </Chip>
   );
 }
+
+/** A Plan card's status in the Inbox: the column it sits in now (`card.column`, pushed by the plan whenever the card
+ *  moves or its board changes), its name on the column's colour as a dot (a done column without a colour green, any
+ *  other grey). Nothing when no column holds the card (an All Cards board, a deleted column, an older push). */
+export const CardStatusChip = memo(function CardStatusChip({
+  column,
+}: {
+  column: CardColumn | null | undefined;
+}) {
+  if (!column?.name) return null;
+  const label = `Status: ${column.name}`;
+  return (
+    <Chip
+      height={18}
+      title={label}
+      aria-label={label}
+      data-card-status={column.name}
+      data-card-status-done={column.done ? '' : undefined}
+      className="max-w-[10rem] bg-slate-100 px-1.5 text-[11px] font-medium leading-4 text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-700/60 dark:text-slate-200 dark:ring-slate-600"
+      icon={
+        <span
+          aria-hidden
+          className={`size-1.5 shrink-0 rounded-full ${
+            column.color ? '' : column.done ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-slate-500'
+          }`}
+          style={column.color ? { backgroundColor: column.color } : undefined}
+        />
+      }
+    >
+      {/* The label's line box is trimmed to its cap band (text-optical-line), so truncating it would clip the
+          descenders; the padding gives the clip their room back, and the chip keeps its 18px. */}
+      <span className="-my-1 block truncate py-1">{column.name}</span>
+    </Chip>
+  );
+});
 
 /** An item an AI tool made through MCP (its source is `ai`): what the Made by AI filter reads, shown. */
 export function MadeByAiBadge({ item }: { item: Pick<Item, 'source'> }) {

@@ -44,7 +44,7 @@ describe('TextTab typefaces', () => {
   // A tab set before the face was left out keeps its name in the preview, with no card pressed.
   it('names a tab font no longer offered, pressing no card', () => {
     renderTab('permanent-marker');
-    expect(screen.getByRole('img', { name: /lettered in Permanent Marker/ })).toBeTruthy();
+    expect(screen.getByRole('img', { name: /lettered in Shantell Sans/ })).toBeTruthy();
     expect(
       screen
         .getAllByRole('group', { name: /^Typefaces page / })

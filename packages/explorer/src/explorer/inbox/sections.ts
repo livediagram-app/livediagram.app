@@ -1,8 +1,9 @@
 // The Inbox's model (one-explorer-contracts.md "Inbox"): what the index and the host's This Browser rows hold, split
 // by whose move it is (assigned to the person, assigned by them, form responses, open threads), then laid out as one
 // list, newest first, under date dividers, with a filter bar over it. The sidebar's count is the work waiting on the
-// person: what is assigned to them, This Browser's rows included. It shows 0 once read, so an empty Inbox reads as
-// done; forms, threads and work they handed out are not counted.
+// person: what is assigned to them, and the threads that ask something of them (a mention, a thread on their item
+// they have not written in themselves), This Browser's rows included. It shows 0 once read, so an empty Inbox reads
+// as done; forms, threads they replied in and work they handed out are listed but not counted.
 
 import type { InboxAction, InboxForm, InboxThread } from '@liveworkspace/index-client';
 import type { Located } from '../../types';
@@ -32,10 +33,19 @@ export function inboxSections(data: InboxData | null, viewerId: string | null): 
   };
 }
 
-/** The sidebar's Inbox count: the actions and cards assigned to the person; nothing while unread. */
+/** A thread asks something of the person: they are mentioned, or it is on their item and they have not written in
+ *  it themselves (an agent's question with their token included). The row's semibold and the badge agree on it. */
+export const threadNeedsYou = (reason: InboxReason | null): boolean =>
+  reason?.kind === 'mention' || reason?.kind === 'yours';
+
+/** The sidebar's Inbox count: the actions and cards assigned to the person, and the threads that ask something of
+ *  them; nothing while unread. */
 export function inboxCount(data: InboxData | null, viewerId: string | null): number | undefined {
   if (!data) return undefined;
-  return inboxSections(data, viewerId).forMe.length;
+  const s = inboxSections(data, viewerId);
+  let n = s.forMe.length;
+  for (const t of s.threads) if (threadNeedsYou(threadReason(t, viewerId))) n++;
+  return n;
 }
 
 /** Everything the Inbox lists: Home's pill, so "Inbox is clear" is never said over an open thread or new responses. */
@@ -55,22 +65,24 @@ export type InboxReason =
   | { kind: 'mention'; label: 'Mentioned you' }
   | { kind: 'yours'; label: string }
   | { kind: 'replied'; label: 'Replied to you' | 'You replied' }
+  | { kind: 'agent'; label: 'Your agent wrote' }
   | { kind: 'responses'; label: string };
 
 /** Why a thread is on the page: a mention is the most direct reason, so it wins; then the item being theirs, until
- *  they reply; then that they are in it: someone else wrote last (Replied to you), or they did (You replied). Null
- *  for a thread the index lists for none of these. */
+ *  they reply themselves; then that they are in it: someone else wrote last (Replied to you), or they did (You
+ *  replied). A thread the index lists for none of these reaches them only through their agent (its comments posted
+ *  with their token, `agentIds`): Your agent wrote. A This Browser row always has a reason. */
 export function threadReason(
   t: Pick<InboxThread, 'app' | 'mentionsYou' | 'onYourItem' | 'youCommented'> & {
     latestAuthorId?: string | null;
   },
   viewerId: string | null = null,
-): InboxReason | null {
+): InboxReason {
   if (t.mentionsYou) return { kind: 'mention', label: 'Mentioned you' };
   if (t.onYourItem && !t.youCommented) {
     return { kind: 'yours', label: `On your ${kindWords(t.app).lowerOne}` };
   }
-  if (!t.youCommented) return null;
+  if (!t.youCommented) return { kind: 'agent', label: 'Your agent wrote' };
   const someoneElse = Boolean(t.latestAuthorId && viewerId && t.latestAuthorId !== viewerId);
   return { kind: 'replied', label: someoneElse ? 'Replied to you' : 'You replied' };
 }

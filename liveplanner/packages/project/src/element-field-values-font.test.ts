@@ -9,18 +9,18 @@ describe('a font an agent writes', () => {
   });
 
   // docs/specs/004-interface-design/fonts.md "Not offered in liveplanner": the pickers' rule, for agents.
-  it('lists only the offered faces, never Permanent Marker', () => {
+  it('lists only the offered faces, never Shantell Sans', () => {
     expect(ELEMENT_FIELD_VALUES.font).toContain('lora');
     expect(ELEMENT_FIELD_VALUES.font).not.toContain('permanent-marker');
     expect(fieldValueIssue('font', 'serif')).not.toContain('permanent-marker');
   });
 
-  it('keeps Permanent Marker on a whole element, so a plan read back writes again', () => {
+  it('keeps Shantell Sans on a whole element, so a plan read back writes again', () => {
     expect(fieldValueIssue('font', 'permanent-marker')).toBeNull();
     expect(fieldValueIssue('font', 'permanent-marker', 'stored')).toBeNull();
   });
 
-  it('refuses Permanent Marker as a new value, naming the offered faces', () => {
+  it('refuses Shantell Sans as a new value, naming the offered faces', () => {
     expect(fieldValueIssue('font', 'permanent-marker', 'new')).toMatch(
       /^font "permanent-marker" is not one of .*lora/,
     );

@@ -5,7 +5,7 @@ import { PLANNER_FONTS } from '@liveplanner/project';
 import { TypographySections } from './TypographySections';
 
 // docs/specs/004-interface-design/fonts.md "Not offered in liveplanner": an element's Font menu offers liveplanner's
-// faces, never Permanent Marker.
+// faces, never Shantell Sans.
 afterEach(cleanup);
 
 describe('TypographySections Font', () => {
@@ -23,6 +23,6 @@ describe('TypographySections Font', () => {
       />,
     );
     for (const f of PLANNER_FONTS) expect(screen.getByText(f.label)).toBeTruthy();
-    expect(screen.queryByText('Permanent Marker')).toBeNull();
+    expect(screen.queryByText('Shantell Sans')).toBeNull();
   });
 });

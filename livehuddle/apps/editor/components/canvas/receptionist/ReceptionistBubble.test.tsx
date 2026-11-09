@@ -101,12 +101,13 @@ describe('ReceptionistBubble', () => {
     expect(getReceptionistState().chat.open).toBe(false);
   });
 
-  it('says hello back by first name with no replies, and answers a bell you rang', () => {
+  it('says hello back by first name with the topics straight away, and answers a bell you rang', () => {
     setReceptionistPerson({ speak: true, edit: true }, [], 'Sam');
     openReceptionist('back');
     const { unmount } = bubble();
-    expect(said()).toBe('Welcome back, Sam! Ask me anything from the button down there.');
-    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    expect(said()).toBe('Welcome back, Sam! What can I help with?');
+    expect(screen.getByRole('button', { name: 'Getting Around' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: "I'll Explore" })).toBeTruthy();
     unmount();
     openReceptionist('bell');
     bubble();

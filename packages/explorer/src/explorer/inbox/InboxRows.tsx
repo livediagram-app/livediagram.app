@@ -15,6 +15,7 @@
 // time alone, so a tick re-renders the times and not the rows.
 
 import { memo, type ReactNode } from 'react';
+import type { CardColumn } from '@liveworkspace/index-client';
 import { PictureDisc } from '@liveworkspace/ui';
 import { DAY_MONTH, MEDIUM_DATE_TIME } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../../data/usePeople';
@@ -28,15 +29,17 @@ import {
   FileTextIcon,
   FormIcon,
   ReplyIcon,
+  SparkleIcon,
   UserIcon,
 } from '../../ui/icons';
-import { AppMark } from '../badges';
+import { AppMark, CardStatusChip } from '../badges';
 import { ThisBrowserPill } from '../ThisBrowser';
 import { useExplorer } from '../context';
 import { useExtras } from '../extras';
 import {
   actionReason,
   formReason,
+  threadNeedsYou,
   threadReason,
   type InboxEntry,
   type InboxReason,
@@ -63,6 +66,8 @@ export type EntryFacts = {
   item: string;
   where: string[];
   cardType: { type: string; label: string } | null;
+  /** A Plan card's column now (its status chip); null off a card or when no column holds it. */
+  column: CardColumn | null;
   local: boolean;
 };
 
@@ -93,6 +98,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
             : []
           : [r.tabName, r.elementLabel].filter(Boolean),
         cardType: card ? { type: card.type, label: card.typeLabel || 'Card' } : null,
+        column: card?.column ?? null,
         local,
       };
     }
@@ -110,7 +116,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
           color: r.latestAuthorColor || undefined,
         },
         who: mine ? 'You' : (author ?? 'A teammate'),
-        needsYou: reason?.kind === 'mention' || reason?.kind === 'yours',
+        needsYou: threadNeedsYou(reason),
         // One of a card's threads (card.id set) is titled by the thread, and placed on its card; a row from before
         // threads was the card's one conversation, titled by the card.
         cardKey: card && !card.id ? card.key : null,
@@ -128,6 +134,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
             ].filter(Boolean)
           : [r.tabName].filter(Boolean),
         cardType: card ? { type: card.type, label: card.typeLabel || 'Card' } : null,
+        column: card?.column ?? null,
         local,
       };
     }
@@ -143,6 +150,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         item,
         where: [],
         cardType: null,
+        column: null,
         local: false,
       };
     }
@@ -161,6 +169,8 @@ export function reasonIcon(kind: InboxReason['kind'], size = 12): ReactNode {
       return <FileTextIcon size={size} />;
     case 'replied':
       return <ReplyIcon size={size} />;
+    case 'agent':
+      return <SparkleIcon size={size} />;
     case 'responses':
       return <FormIcon size={size} />;
   }
@@ -204,6 +214,7 @@ export const InboxRow = memo(function InboxRow({
   // One sentence for a screen reader: what, why, who, where.
   const label = [
     fullTitle,
+    f.column ? `Status: ${f.column.name}` : null,
     f.reason?.label,
     f.who,
     `In ${[f.item, ...f.where].join(', ')}${f.local ? ', This Browser' : ''}`,
@@ -238,17 +249,20 @@ export const InboxRow = memo(function InboxRow({
           </span>
           <InboxTime at={entry.at} />
         </span>
-        <span
-          data-inbox-title=""
-          title={fullTitle}
-          className="block truncate text-[13px] font-medium leading-5 text-slate-900 dark:text-slate-100"
-        >
-          {f.cardKey == null ? null : (
-            <span className="mr-1 tabular-nums text-slate-500 dark:text-slate-400">
-              #{f.cardKey}
-            </span>
-          )}
-          {f.title}
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span
+            data-inbox-title=""
+            title={fullTitle}
+            className="block min-w-0 truncate text-[13px] font-medium leading-5 text-slate-900 dark:text-slate-100"
+          >
+            {f.cardKey == null ? null : (
+              <span className="mr-1 tabular-nums text-slate-500 dark:text-slate-400">
+                #{f.cardKey}
+              </span>
+            )}
+            {f.title}
+          </span>
+          <CardStatusChip column={f.column} />
         </span>
         <span className="mt-1 flex min-w-0 items-center gap-1.5 text-xs leading-5 text-slate-600 dark:text-slate-300">
           {f.reason ? <Status reason={f.reason} /> : null}

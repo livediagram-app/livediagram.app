@@ -251,7 +251,7 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('fonts.googleapis.com');
       expect(svg).toContain('Lora');
       // Only what it used — an export shouldn't pull eleven families.
-      expect(svg).not.toContain('Permanent+Marker');
+      expect(svg).not.toContain('Shantell+Sans:wght@700');
     });
 
     it('says nothing about fonts when nothing asked for one', () => {
@@ -303,8 +303,8 @@ describe('renderElementsToSvg', () => {
     // export the same way the colour and the capitals do.
     it('exports an event-storming note in marker', () => {
       const svg = renderElementsToSvg(tab([sticky({ esKind: 'domain-event' })]));
-      expect(svg.replace(/&#39;/g, "'")).toContain("font-family=\"'Permanent Marker'");
-      expect(svg).toContain('Permanent+Marker');
+      expect(svg.replace(/&#39;/g, "'")).toContain("font-family=\"'Shantell Sans'");
+      expect(svg).toContain('Shantell+Sans:wght@700');
     });
   });
 

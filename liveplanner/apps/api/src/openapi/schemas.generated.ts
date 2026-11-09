@@ -181,6 +181,32 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
+      "column": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "done": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "done"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "id": {
         "type": "string"
       },
@@ -271,6 +297,32 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "tabName",
               "elementId",
               "title"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "column": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "done": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "done"
             ],
             "type": "object"
           },

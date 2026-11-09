@@ -45,7 +45,7 @@ describe('elementsIssue', () => {
 
   // docs/specs/004-interface-design/fonts.md "Not offered in liveplanner": a whole element keeps a face the pickers
   // leave out, so a plan read back writes again; an unknown face is refused naming only the offered ones.
-  it('keeps Permanent Marker on a whole element, and names only the offered faces', () => {
+  it('keeps Shantell Sans on a whole element, and names only the offered faces', () => {
     expect(elementsIssue([view({ font: 'permanent-marker' })])).toBeNull();
     const issue = elementsIssue([view({ font: 'marker' })]);
     expect(issue).toMatch(/^element "v1": font "marker" is not one of .*lora/);

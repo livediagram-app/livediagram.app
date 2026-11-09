@@ -428,17 +428,26 @@ minute, with retries ([When a push fails](#when-a-push-fails)):
   could never bring it down.
 - `PUT /app/items/:id/collab/:tabId`: the tab's comment threads and actions, replacing that tab's rows:
   `{tabName?, threads: [{elementId, elementLabel, resolved, commentCount, participantIds, mentionedIds,
-latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, card?, firstAt, latestAt}],
+latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, agentIds?, card?, firstAt,
+latestAt}],
 actions: [{elementId, actionId, elementLabel, name, description?, status, assigneeId, assigneeName?, assignerId,
 assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push makes the Timeline's
   collaboration events (below); the optional ids say who wrote, resolved or closed. The comment text itself stays in the content, beside what it is about; the index
   keeps what the Inbox needs: the latest comment's opening, the action's note, and the names on it. Shown text
-  is cut to length rather than refused.
+  is cut to length rather than refused. `participantIds` are the people who wrote in the thread themselves;
+  `agentIds` the people whose agent (an API token: the MCP, the CLI, a script) wrote in it while they never did. Both
+  reach the thread, but only a comment of one's own is "you commented": a question an agent asked with my token
+  still waits on me.
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
   action whose `elementId` is the card's id, and each of a card's comment threads a thread whose `elementId` is the
   thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, type,
-typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is where the row opens it; null
-  when no board shows it; `id` the card's id, given when the row's `elementId` is not the card's: a thread's). A
+typeLabel, title, board: {tabId, elementId, title, tabName} | null, column?: {name, color?, done} | null}` (`board`
+  is where the row opens it; null when no board shows it; `column` the column on that board holding the card's
+  status as of the push: its name, its colour (`#rrggbb`) when it has one, and whether it is a done column; null or
+  absent when no column holds it, as on an All Cards board, or when the column is gone; `id` the card's id, given
+  when the row's `elementId` is not the card's: a thread's). The item pushes again whenever a card moves, a
+  board's columns change or the card goes, so the column is the card's current one, never the one it had when the
+  comment was written. A
   thread on several of an item's cards is pushed once, on the first; a thread shared between items (a card thread on
   cards in two plans) is pushed by each, and the Inbox lists it once (below). An app whose cards name people by a hash matches it to a person id before pushing
   (`@liveworkspace/index-app` `cardsCollabPush`); a card whose assignee it cannot name is left out. A card may
@@ -657,9 +666,12 @@ component on the page and in every editor's panel:
   Each row is three lines: who is behind it (who assigned it, who it waits on, who wrote last; semibold when it asks
   something of me: mine to do, a mention, a thread on my item, new responses), with its age ("12m", "3h", "2d", then
   the date); what it is (the action, the card's number and title, a card thread's title, the element a thread is
-  on, the form's heading);
+  on, the form's heading), and for a Plan card's row (a card, or one of its threads) the card's status chip after
+  the title: its column's name on its colour's dot (a done column's without a colour is green, any other's grey),
+  the tooltip naming it ("Status: In Progress"), no chip when the card's column is unknown;
   and why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your plan**,
-  **Replied to you** or **You replied**, **6 new responses**), then the app's Living Prism (in the All filter) and
+  **Replied to you** or **You replied**, **Your agent wrote** for a thread only their agent wrote in,
+  **6 new responses**), then the app's Living Prism (in the All filter) and
   the item's name, and the teal **This Browser** pill for an item only this browser holds. The chosen row has a
   brand edge on its left. Rows are an ARIA listbox: focus stays on the list while j/k or the arrows move the choice.
 - **The filter dropdown**: **All**, **My Actions** (assigned to me, a self-assignment included),
@@ -706,7 +718,9 @@ component on the page and in every editor's panel:
   another. The
   filter stays the header's dropdown (36 px tall; a phone's native picker opens from it); rows and Back are at least 44 px tall; the page keeps its 16 px gutter.
 
-The sidebar's badge counts My Actions, 0 included once read. Coming back to the browser tab reads it again (at most
+The sidebar's badge counts what waits on me: My Actions, and the threads that ask something of me (a mention, or a
+thread on my item I have not written in myself, an agent's question with my token included), 0 included once read.
+Work I handed out, threads I replied in and form responses are listed but not counted. Coming back to the browser tab reads it again (at most
 every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees (an app's items in
 This Browser) through the Explorer's `inbox` prop; they carry the This Browser pill.
 

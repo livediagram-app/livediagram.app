@@ -10,24 +10,51 @@ hand-drawn, or bold. Defined once in `../packages/model-core/src/fonts.ts` (id +
 
 - CSS stack + Google family spec):
 
-| id                 | Label            | Style          |
-| ------------------ | ---------------- | -------------- |
-| `inter`            | Inter            | Sans-serif     |
-| `poppins`          | Poppins          | Geometric sans |
-| `nunito`           | Nunito           | Rounded sans   |
-| `oswald`           | Oswald           | Condensed sans |
-| `space-grotesk`    | Space Grotesk    | Techy sans     |
-| `lora`             | Lora             | Serif          |
-| `abril-fatface`    | Abril Fatface    | Display serif  |
-| `roboto-slab`      | Roboto Slab      | Slab serif     |
-| `roboto-mono`      | Roboto Mono      | Monospace      |
-| `caveat`           | Caveat           | Handwriting    |
-| `permanent-marker` | Permanent Marker | Marker         |
+| id                 | Label         | Style          |
+| ------------------ | ------------- | -------------- |
+| `inter`            | Inter         | Sans-serif     |
+| `poppins`          | Poppins       | Geometric sans |
+| `nunito`           | Nunito        | Rounded sans   |
+| `oswald`           | Oswald        | Condensed sans |
+| `space-grotesk`    | Space Grotesk | Techy sans     |
+| `lora`             | Lora          | Serif          |
+| `abril-fatface`    | Bodoni Moda   | Display serif  |
+| `roboto-slab`      | Roboto Slab   | Slab serif     |
+| `roboto-mono`      | Roboto Mono   | Monospace      |
+| `caveat`           | Kalam         | Handwriting    |
+| `permanent-marker` | Shantell Sans | Marker         |
 
 Each CSS stack ends in a system fallback, and the stylesheet loads with
 `display=swap`, so text stays visible (in the fallback face) while a font
 loads, or permanently, if Google Fonts is blocked (offline / a
 deployment that opts out). The editor never depends on the fonts loading.
+
+### Legible at every size
+
+Every face has to read at a label's smallest everyday size (12 to 14 px) and at 50% zoom, in light and dark
+themes alike. Three faces once in the catalogue did not, and were replaced by a face of the same character
+(2026-11, measured at 1x pixel density):
+
+| id                 | Was              | Why it did not read                                                                                    | Now           |
+| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------------ | ------------- |
+| `caveat`           | Caveat           | Lowercase 0.36 em tall (Inter's is 0.55), so 14 px drew like 9 px; strokes broke up at 12 px and 50%   | Kalam         |
+| `permanent-marker` | Permanent Marker | No lowercase, and its 1, 3 and 0 read as l, ʒ and O; letters clogged into blots below 16 px            | Shantell Sans |
+| `abril-fatface`    | Abril Fatface    | A display didone: its hairlines vanished and its counters filled in below 16 px, so Il1 and e/a merged | Bodoni Moda   |
+
+- **Ids are storage keys, not names.** A face is swapped behind its id, so every saved document, template and
+  look that letters text in `caveat`, `permanent-marker` or `abril-fatface` keeps working and simply draws in the
+  new face; nothing is rewritten on load and agents keep writing the same ids.
+- **Comparable optical size.** Each face's lowercase is between 0.46 and 0.59 em, so a px reads about the same
+  size in every face and no per-face size compensation is needed.
+- **One heavy weight for the two loud faces.** The marker (Shantell Sans at 700) and the display serif (Bodoni
+  Moda at 800) load a single weight, as the faces they replace shipped one: regular and bold letter the same,
+  never a synthesised bold. Bodoni Moda keeps its optical-size axis (`opsz` 6 to 96), so at small px it draws
+  with thicker hairlines and wider counters, and at headline px it is the full fat face.
+- **Fallbacks stay readable.** While a face loads, or if Google Fonts is blocked, handwriting falls back to a
+  system hand that reads (Chalkboard SE, Segoe Print, Comic Sans MS) before the generic `cursive`, never to the
+  UI sans first.
+- **Payload** (Latin woff2, fetched only once a face is applied): Kalam 14 KB a weight (Caveat was one 75 KB
+  variable file), Shantell Sans 47 KB (Permanent Marker 29 KB), Bodoni Moda 27 KB (Abril Fatface 13 KB).
 
 ## Two levels
 

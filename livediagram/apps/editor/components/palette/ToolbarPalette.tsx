@@ -227,8 +227,10 @@ export function ToolbarPalette(props: Props) {
   // Measured from the strip itself (useStripTileLimit); the estimate only
   // covers the first paint.
   const cardRef = useRef<HTMLDivElement>(null);
-  // The category bar names its categories while the strip has room for the names (useBarLabels).
-  const barLabels = useBarLabels(cardRef, {
+  // The category bar names its categories while the strip has room for the names (useBarLabels); on a phone,
+  // where the bar swipes sideways, always (owner, 2026-11-09: "on mobile, show the labels on the palette categories, its okay, we can scroll"; livehuddle
+  // has since 2026-11-07).
+  const fittedLabels = useBarLabels(cardRef, {
     enabled: categoryBar && !isMobile,
     categoriesKey: barCategories.map((c) => c.label).join('|'),
     scale,
@@ -465,7 +467,7 @@ export function ToolbarPalette(props: Props) {
                         <CategoryBarButtons
                           bar={bar}
                           categories={barCategories}
-                          labels={barLabels}
+                          labels={fittedLabels || swipe}
                           scrollable={swipe}
                         />
                       ) : (

@@ -219,7 +219,7 @@ describe('exportTabAsSvg', () => {
   it('embeds the webfont bytes a downloaded file needs', async () => {
     const svg = await text(
       exportTabAsSvg(tab({ elements: [shape('s', { label: 'Hi', font: 'caveat' })] }), {
-        fontCss: "@font-face{font-family:'Caveat';src:url(data:font/woff2;base64,AAAA)}",
+        fontCss: "@font-face{font-family:'Kalam';src:url(data:font/woff2;base64,AAAA)}",
       }),
     );
     expect(svg).toContain('<style type="text/css">@font-face');

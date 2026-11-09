@@ -200,6 +200,10 @@ describe('offlineActivityFromRecords', () => {
       elementId: 'b1',
       title: 'Sprint',
     });
+    // The Inbox's status chip: the column holding its status; none for a status no column holds.
+    expect(cards[0]?.column).toMatchObject({ done: false });
+    expect(cards[0]?.column?.name).toBeTruthy();
+    expect(cards[1]?.column).toBeNull();
   });
 
   it('prefers a board holding the status, then an All Cards board; a project with no board has none', async () => {

@@ -1,5 +1,5 @@
 // The typefaces a preview draws in (each product's docs/specs/015-api/mcp-server.md §5 "Fonts"): a Worker has no fonts but the
-// embedded Inter, so an element set in Lora or Caveat drew in Inter and an agent could not judge its type. The faces
+// embedded Inter, so an element set in Lora or Kalam drew in Inter and an agent could not judge its type. The faces
 // a tab uses beyond Inter are read from the Google Fonts stylesheet the editor itself loads (fonts.ts' `google`
 // specs), whose answer to a client that is not a browser names TrueType files, which resvg reads. Best effort: a face
 // that cannot be fetched in time draws in Inter, as before. Each face is fetched once per isolate and kept in the

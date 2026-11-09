@@ -123,8 +123,8 @@ describe('svgRetiredElement', () => {
   });
 
   it('writes its words in the given face', () => {
-    expect(svgRetiredElement(retired('estimate'), 'light', 'Caveat')).toContain(
-      '<g font-family="Caveat">',
+    expect(svgRetiredElement(retired('estimate'), 'light', 'Kalam')).toContain(
+      '<g font-family="Kalam">',
     );
   });
 });
