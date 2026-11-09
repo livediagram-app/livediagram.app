@@ -81,7 +81,10 @@ function colourMap(id: string, role: Role): ReadonlyMap<string, string> {
   const cached = MAPS.get(key);
   if (cached) return cached;
   const { from, to } = RETIRED_THEMES[id]!;
-  const target = slots(THEMES.find((t) => t.id === to)!, role);
+  const target = slots(
+    THEMES.find((t) => t.id === to)!,
+    role,
+  );
   const map = new Map<string, string>();
   for (const source of [from, themeHalf(from, 'light'), themeHalf(from, 'dark')]) {
     slots(source, role).forEach((colour, i) => {
@@ -102,7 +105,10 @@ const ROLE_OF: Record<ThemeColourField['theme'], Role> = {
 // The colour fields a theme paints on this element, each with its role: the kind's own (themeColourFields, so a
 // sticky, image, link card or video and a locked fill are left alone), and an arrow's head with its line.
 function paintedFields(el: Element): { field: string; role: Role }[] {
-  const out = themeColourFields(el).map((f) => ({ field: f.element, role: ROLE_OF[f.theme] }));
+  const out: { field: string; role: Role }[] = themeColourFields(el).map((f) => ({
+    field: f.element,
+    role: ROLE_OF[f.theme],
+  }));
   if (el.type === 'arrow') out.push({ field: 'arrowheadColor', role: 'stroke' });
   return out;
 }
