@@ -156,7 +156,7 @@ chooses it.
   Editor's included, so a reaction can only ever be the sender's own.
 - **What stays open.** An Editor's whole-tab save can still write any reaction into the stored tab, as it can change
   anything on the canvas; the room's ledger keeps each person's latest live reaction, so a save made before one
-  arrived cannot erase it.
+  arrived cannot erase it. Locking each entry the saver does not own to the stored tab is not done yet, because the stored tab alone cannot tell another person's live entry (in the room's ledger, not yet saved) from one the saver made up: locking to it would drop the first or keep a removed one. A correct lock reads the ledger's per-person on and off beside the stored tab, in every path that writes a whole tab (the tab save, agent changesets, the REST and MCP document updates, a version restore and an offline sync), so it is its own change.
 - **Reactions left before this** were filed under each browser's own key. They still show and count, but no longer
   as yours; reacting again records yours under the new key.
 - **An editor from before this**, still open when it ships, keeps its browser's key. The room stamps its reactions
