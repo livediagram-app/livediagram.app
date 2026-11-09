@@ -291,17 +291,25 @@
   box-decoration-break: clone;
 }
 
-/* Placeholders on empty blocks, for someone writing */
-.article-flow .article-empty::before {
+/* Placeholders on empty blocks, for someone writing. A list item's ::before is its marker (above), so
+   its placeholder is the ::after instead, set at the start of the text column: the bullet, number or
+   box stays, and the word is whole after it (docs/specs/007-editor/article-pages.md "Blocks"). */
+.article-flow .article-empty:not(.article-list)::before,
+.article-flow .article-list.article-empty:not(.article-done)::after {
   content: attr(data-placeholder);
   color: var(--article-muted);
   opacity: 0.6;
   pointer-events: none;
+}
+.article-flow .article-empty:not(.article-list)::before {
   float: left;
   height: 0;
 }
-.article-flow .article-list.article-empty::before {
-  float: none;
+.article-flow .article-list.article-empty:not(.article-done)::after {
+  position: absolute;
+  top: 0;
+  left: calc(28px * (var(--article-level) + 1));
+  white-space: nowrap;
 }
 
 /* Another person's caret (docs/specs/007-editor/article-pages.md "Collaboration", article-peers.ts):

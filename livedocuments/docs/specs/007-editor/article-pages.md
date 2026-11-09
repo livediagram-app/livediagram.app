@@ -104,7 +104,10 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
   when all already are).
 - **Empty blocks** show a faint placeholder to someone writing: the title "Title", a heading
   "Heading 1", a list "List", an empty article's first paragraph after the title "Start
-  writing, or press / for blocks".
+  writing, or press / for blocks". An empty list item keeps its bullet, number or to-do box from
+  the moment it exists: its placeholder ("List", or "To-do" for a to-do) sits after the marker,
+  where the text will go, whole and never in the marker's place. A ticked empty to-do shows its
+  tick and no placeholder.
 - **Empty headings and header cells are named for a screen reader.** The title is drawn as the page's
   h1 and Heading 1, 2 and 3 as h2, h3 and h4. An empty one carries its placeholder as its accessible
   name ("Title", "Heading 1") to someone writing, and is hidden from a screen reader for anyone who

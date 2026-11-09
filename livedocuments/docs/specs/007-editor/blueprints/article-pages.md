@@ -301,13 +301,16 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
   `___` (divider) as the paragraph's whole text; inline closing-mark rules, never in code.
 - `blockIdsPlugin` (`appendTransaction`, no history): a missing or repeated block id gets a fresh
   one. `decorationsPlugin`: list markers as `data-marker` node decorations; placeholders while
-  editable (title, subtitle, headings, quote, list "List", to-do "To-do"; the first body paragraph
-  of an article of at most three blocks `FIRST_BODY_PLACEHOLDER`; else an empty block holding the
-  caret "Type / for blocks"). It keeps its set in plugin state: a transaction that keeps the
+  editable (title, subtitle, headings, quote, list "List", to-do "To-do", none on a ticked to-do;
+  the first body paragraph of an article of at most three blocks `FIRST_BODY_PLACEHOLDER`; else an
+  empty block holding the caret "Type / for blocks"). It keeps its set in plugin state: a transaction that keeps the
   article's shape (the same top-level blocks, every changed one a textblock with the same markup
   that stays empty or stays filled) and leaves the caret's empty block as it was maps the set
   through the transaction (`set.map`) instead of working it out again; anything else, and a change
-  to whether the article is editable, works it out afresh. Held by `article-plugins.test.ts`
+  to whether the article is editable, works it out afresh. A block's placeholder is its `::before`
+  (`.article-empty`), except on a list item, whose `::before` is its marker: there it is the
+  `::after`, set at the start of the text column (`left` = the item's indent), so the marker stays
+  and the word is whole (`article-list-placeholder.test.ts`). Held by `article-plugins.test.ts`
   ("keeps the markers and placeholders a fresh build gives"). `todoTogglePlugin`: a mousedown in a to-do's left padding toggles
   `checked` (one transaction, so one commit).
 - `slashPlugin`: opens on a typed `/` at offset 1 or after whitespace (never by paste or remote);
