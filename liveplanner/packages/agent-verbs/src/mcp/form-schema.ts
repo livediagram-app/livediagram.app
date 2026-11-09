@@ -490,7 +490,9 @@ export const tryFormShape = {
     .record(z.string(), z.unknown())
     .describe(
       'Each answer by its question’s id or prompt, as a respondent gives it: text for short, paragraph, email, ' +
-        'link; a number for number and rating; "YYYY-MM-DD" for date; an option for single; a list of options ' +
+        'link; a phone number for phone; a number for number and rating; "YYYY-MM-DD" for date; a time with its ' +
+        'offset ("2026-10-31T17:00:00Z") for datetime; a list of two such (start, end) for daterange, dates ' +
+        'or, with withTime, times; an option for single; a list of options ' +
         'for multi; true for checkbox. On a choice with Other, any other text is the Other answer. A question ' +
         'left out is unanswered.',
     ),

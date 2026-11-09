@@ -9,6 +9,7 @@ import {
 } from '@liveplanner/agent-verbs';
 import { ITEM_TYPES } from '@liveplanner/items';
 import { tabKindOf, type Tab } from '@liveplanner/project';
+import { buildDashboardTab } from '@liveplanner/templates';
 import { apiJson, clientFor } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { PLAN_PREVIEW_TABS_MAX } from './plan-preview';
@@ -63,4 +64,23 @@ export async function projectDashboard(
       .catch(() => ITEM_TYPES),
   ]);
   return resolveDashboardInput(input, refs, types);
+}
+
+// The answer's note when a Dashboard's rows run past its 12 (docs/specs/026-plan/plan-agents.md "Making a
+// dashboard": "anything past them is left off and the answer says so"); `dropped` is buildDashboardTab's count.
+export function dashboardLeftOffNote(names: readonly { name: string; dropped: number }[]): {
+  note?: string;
+} {
+  const cut = names.filter((d) => d.dropped > 0);
+  if (cut.length === 0) return {};
+  const said = cut.map(
+    (d) =>
+      `Dashboard "${d.name}" holds 12 rows: ${d.dropped} more ${d.dropped === 1 ? 'row was' : 'rows were'} left off.`,
+  );
+  return { note: `${said.join(' ')} Ask for fewer metrics, charts or notes to fit them.` };
+}
+
+// How many of a resolved Dashboard's rows past its 12 are left off when it is built.
+export function dashboardRowsLeftOff(spec: Parameters<typeof buildDashboardTab>[2]): number {
+  return buildDashboardTab('count', 'count', spec).dropped;
 }

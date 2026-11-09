@@ -86,6 +86,10 @@ export const createProjectOutput = {
         'default folder it was filed in.',
     ),
   url,
+  note: z
+    .string()
+    .optional()
+    .describe('Said when a Dashboard asked for more than its 12 rows: how many were left off.'),
 };
 
 // What a changeset answered (docs/specs/024-agents/agent-changesets.md): its id (null when it
@@ -93,7 +97,7 @@ export const createProjectOutput = {
 const changesetAnswer = {
   changesetId: z.string().nullable().describe('The changeset written; null when nothing changed.'),
   rev: z.number().describe('The tab revision now, to pass as rev on the next update_project.'),
-  text: z.string().describe('What the changeset did, one line per element, and how to revert it.'),
+  text: z.string().describe('What the changeset did, one line per element.'),
 };
 
 export const addTabOutput = {
@@ -101,7 +105,12 @@ export const addTabOutput = {
   tabId: tabId.describe('The new tab id.'),
   name: z.string().describe('The stored tab name (shortened if it was over the cap).'),
   url,
-  note: z.string().optional().describe('Said when a template has more tabs than add_tab adds.'),
+  note: z
+    .string()
+    .optional()
+    .describe(
+      'Said when a template has more tabs than add_tab adds, or a Dashboard asked for more than its 12 rows.',
+    ),
   ...changesetAnswer,
 };
 
@@ -110,6 +119,10 @@ export const updateProjectOutput = {
   projectId: projectId.describe('The plan id again, under the name the other tools take it by.'),
   tabId: tabId.describe('The tab that was edited.'),
   url,
+  note: z
+    .string()
+    .optional()
+    .describe('Said when a rebuilt Dashboard asked for more than its 12 rows: how many were left off.'),
   ...changesetAnswer,
 };
 
