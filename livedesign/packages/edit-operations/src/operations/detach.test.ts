@@ -43,6 +43,46 @@ const box = (id: string, x: number): Element => ({
 const tabOf = (elements: Element[]): Tab => ({ id: 't', name: 'T', elements });
 
 describe('detach', () => {
+  it('refuses by name a main whose arrow names an element it no longer holds, and never reads past the main', () => {
+    const dangling: DesignComponent = {
+      ...nav,
+      id: 'dangling',
+      elements: [
+        ...nav.elements,
+        {
+          id: 'ok',
+          type: 'arrow',
+          from: { kind: 'free', x: 150, y: 20 },
+          to: { kind: 'pinned', elementId: 'bar', anchor: 'e' },
+        },
+        {
+          id: 'link',
+          type: 'arrow',
+          from: { kind: 'pinned', elementId: 'bar', anchor: 'e' },
+          to: { kind: 'on-arrow', arrowId: 'gone', t: 0.5 },
+        },
+      ],
+    };
+    const tab = tabOf([instance({ componentId: 'dangling' })]);
+    const outcome = run('detach top', tab, { components: [dangling] });
+    expect(refused(outcome)).toMatchObject({
+      code: 'invalid_value',
+      details: ["top: its main's arrow link is attached to gone, which the main no longer holds"],
+    });
+    // A host the main no longer holds (a badge's) mints a plain id rather than reading past the main.
+    const chip = { id: 'chip', type: 'shape', shape: 'badge', x: 0, y: 0, width: 20, height: 20 };
+    const orphan: DesignComponent = {
+      ...nav,
+      id: 'orphan',
+      elements: [...nav.elements, { ...chip, attachedTo: 'gone' } as Element],
+    };
+    const ids = applied(
+      run('detach top', tabOf([instance({ componentId: 'orphan' })]), { components: [orphan] }),
+    ).tab.elements.map((e) => e.id);
+    expect(ids).toHaveLength(3);
+    expect(new Set(ids).size).toBe(3);
+  });
+
   it('replaces the instance, in its place, with its main as it draws there, fresh slug ids', () => {
     const tab = tabOf([
       box('under', 0),

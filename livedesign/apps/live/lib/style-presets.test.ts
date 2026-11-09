@@ -169,6 +169,35 @@ describe('applyCodeThemeToEl', () => {
   });
 });
 
+describe('colour field setters style a path as a shape (path-tool.md "Style")', () => {
+  const path = () =>
+    ({
+      id: 'p',
+      type: 'path',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      nodes: [],
+      closed: true,
+      fillSwatch: 1,
+      strokeSwatch: 1,
+      penColour: 'red',
+    }) as unknown as Element;
+
+  it('More colours fills and strokes a path, dropping the swatch it no longer is', () => {
+    expect(applyFillColorToEl(path(), '#ff0000')).toMatchObject({
+      fillColor: '#ff0000',
+      fillSwatch: undefined,
+    });
+    expect(applyStrokeColorToEl(path(), '#00ff00')).toMatchObject({
+      strokeColor: '#00ff00',
+      penColour: undefined,
+      strokeSwatch: undefined,
+    });
+  });
+});
+
 describe("colour field setters clear a table's preset binding", () => {
   // Same rule as a shape's colorPreset: past a hand-picked colour, the look is
   // no longer the preset's, so a theme change must preserve what was chosen

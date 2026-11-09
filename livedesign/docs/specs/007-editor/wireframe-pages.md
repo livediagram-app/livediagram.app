@@ -296,7 +296,8 @@ to see its size, spacing, colours and type."; with several, "<n> elements select
 inspect it." With one, under the element's name (its kind, and its words when it has some):
 
 - **Layout**: **W**, **H**, **X**, **Y**, then **Rotation** when turned and **Opacity** when less
-  than 100%.
+  than 100%, in whole percent as it was set (25% reads 25%, and 99% is still shown); Copy CSS writes it as the
+  same fraction (`opacity: 0.25;`).
 - **Spacing**: **Top**, **Right**, **Bottom**, **Left**, the distances the canvas draws, each with
   what it is measured to (an element's kind, or **Screen**).
 - **Colours**: **Fill** and **Border**, each a swatch and its hex, the colour the element is drawn in

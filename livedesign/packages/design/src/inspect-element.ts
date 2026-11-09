@@ -80,6 +80,12 @@ export function inspectNumber(n: number): number {
   return Object.is(r, -0) ? 0 : r;
 }
 
+/** An opacity as set, to the whole percent: 0.25, 0.99, 1. */
+export function inspectOpacity(n: number): number {
+  const r = Math.round(n * 100) / 100;
+  return Object.is(r, -0) ? 0 : r;
+}
+
 function fontOf(el: BoxedElement, ctx: InspectContext): { label: string; stack: string } {
   const id = el.font ?? elementFontId({ finish: finishOf(el) }, ctx.tabFont, ctx.tabFinish);
   const font = id ? FONTS.find((f) => f.id === id) : undefined;
@@ -156,7 +162,8 @@ export function inspectElement(el: BoxedElement, ctx: InspectContext): InspectSp
     width: inspectNumber(el.width),
     height: inspectNumber(el.height),
     rotation: inspectNumber(rotationOf(el)),
-    opacity: inspectNumber(described.opacity),
+    // Opacity is set in whole percent, so it keeps hundredths: a tenth would read 25% as 30%, and 99% as none.
+    opacity: inspectOpacity(described.opacity),
     fill,
     border,
     radius: selfPainting
@@ -228,7 +235,7 @@ export function inspectValues(spec: InspectSpec): InspectValue[] {
     out.push({
       group: 'layout',
       name: 'Opacity',
-      value: `${inspectNumber(spec.opacity * 100)}%`,
+      value: `${Math.round(spec.opacity * 100)}%`,
     });
   out.push(
     { group: 'colours', name: 'Fill', value: spec.fill ?? 'None' },
