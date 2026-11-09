@@ -142,10 +142,33 @@ export function carryPageContent(
     free.set(el.shape, [...(free.get(el.shape) ?? []), el]);
   }
   for (const el of shapes) {
-    const slot = free.get(el.shape)?.shift();
-    if (slot) put({ ...slot, ...pick(el, SHAPE_CONTENT) });
+    // Words go only into a shape that holds words: a plain block of the same kind with none (Title Page's accent
+    // rule is a thin `square`) would show them spilling off an 8 px bar. A shape with only words waits for one that
+    // holds them; one with data too still takes the next of its kind, its words left behind.
+    const list = free.get(el.shape) ?? [];
+    const onlyWords = !SHAPE_CONTENT.some((k) => !WORDS.has(k) && hasValue(el[k]));
+    const i = list.findIndex((slot) => !onlyWords || holdsWords(slot));
+    if (i < 0) continue;
+    const [slot] = list.splice(i, 1) as [ShapeElement];
+    const content = pick(el, SHAPE_CONTENT);
+    if (!holdsWords(slot)) {
+      delete content.label;
+      delete content.richText;
+    }
+    put({ ...slot, ...content });
   }
   return out;
+}
+
+// A shape's words, which go only into a shape that holds words.
+const WORDS = new Set<keyof ShapeElement>(['label', 'richText']);
+
+function holdsWords(el: ShapeElement): boolean {
+  return labelOf(el) !== '' || el.richText !== undefined;
+}
+
+function hasValue(v: unknown): boolean {
+  return typeof v === 'string' ? v.trim() !== '' : v !== undefined;
 }
 
 function labelOf(el: { label?: string }): string {
@@ -246,10 +269,7 @@ function contentKey(el: ShapeElement): string {
 }
 
 function hasContent(el: ShapeElement): boolean {
-  return SHAPE_CONTENT.some((k) => {
-    const v = el[k];
-    return typeof v === 'string' ? v.trim() !== '' : v !== undefined;
-  });
+  return SHAPE_CONTENT.some((k) => hasValue(el[k]));
 }
 
 /** Gathers every layout's placeholders ahead of the first carry (an idle moment while the layouts

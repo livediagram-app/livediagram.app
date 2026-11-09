@@ -1181,7 +1181,9 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
   - **Pictures go to pictures**, the largest first into the largest place, filling it (cropped).
   - **The same element carries its data**: a stat row's stats, a chart's figures, a callout's
     title and words, a progress bar's value, a checklist's items, an icon's icon, each into the
-    next element of the same kind in reading order.
+    next element of the same kind in reading order. A shape's words go only into a shape that holds words (a
+    labelled box), never onto a plain one of the same kind such as Title Page's accent rule: a shape with only
+    words waits for the next one that holds words, and one with data too leaves its words behind.
   - **Words fit their new place**: carried words keep the place's type, shrinking (never growing)
     only when they would overflow it, and never below 40% of the place's own size.
   - Whatever finds no place goes with the rest of the page's content (Undo brings it back).

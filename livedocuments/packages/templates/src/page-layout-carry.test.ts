@@ -144,6 +144,26 @@ describe('carryPageContent', () => {
     expect(out[1]!.stats).toEqual([]);
   });
 
+  // A shape's words go only into a shape that holds words, never onto Title Page's accent rule (a thin square).
+  it('carries a shape words only into a shape that holds words', () => {
+    const page = build('comparison').map((el) =>
+      el.type === 'shape' && el.label === 'Before' ? { ...el, label: 'Old way' } : el,
+    );
+    const out = carryPageContent(page, build('title'));
+    expect(out.some((el) => el.type === 'shape' && el.label === 'Old way')).toBe(false);
+    // Into a later shape of its kind that holds words, past one that holds none.
+    const words: ShapeElement = { ...createShape('square', 0, 0), label: 'Mine' };
+    const rule: ShapeElement = { ...createShape('square', 0, 100), label: '', height: 8 };
+    const card: ShapeElement = { ...createShape('square', 0, 300), label: 'Card' };
+    expect(carryPageContent([words], [rule, card])).toMatchObject([
+      { label: '' },
+      { label: 'Mine', y: 300 },
+    ]);
+    // A shape with data as well takes the next of its kind, its words left behind.
+    const iconed: ShapeElement = { ...words, iconId: 'star' };
+    expect(carryPageContent([iconed], [rule])).toMatchObject([{ label: '', iconId: 'star' }]);
+  });
+
   it('carries rich text with the words, and drops the slot own runs', () => {
     const richText = [{ text: 'Strong words', bold: true }];
     const prev = [text(0, 'Strong words', { richText })];
