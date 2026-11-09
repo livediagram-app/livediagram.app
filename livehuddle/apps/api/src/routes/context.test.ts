@@ -5,6 +5,7 @@ import type { RouteContext } from './context';
 import {
   COMMUNITY_CONTENT,
   deniedOnTab,
+  deniedEdit,
   deniedParticipate,
   gateEdit,
   gateGrant,
@@ -145,6 +146,11 @@ describe('the refusals', () => {
     expect(
       (await deniedParticipate(makeCtx({ grant: grant({ level: 'view' }) }), doc)).status,
     ).toBe(403);
+    // An Editor door: another tab is missing; the caller's own tab, no grant or too low a level is forbidden.
+    expect(deniedEdit(makeCtx({ grant: grant({ tab: 't1' }) }), 'd1', 't2').status).toBe(404);
+    expect(deniedEdit(makeCtx({ grant: grant({ tab: 't1' }) }), 'd1', 't1').status).toBe(403);
+    expect(deniedEdit(makeCtx({ grant: grant({ level: 'view' }) }), 'd1', 't2').status).toBe(403);
+    expect(deniedEdit(makeCtx({ grant: null }), 'd1', 't2').status).toBe(403);
   });
 });
 

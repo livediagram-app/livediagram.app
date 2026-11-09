@@ -95,6 +95,21 @@ describe('deleteSelected lock protection', () => {
     // 'a' goes, its unlocked arrow cascades away, the locked arrow + 'b' stay.
     expect(ids(getResult())).toEqual(['b', 'locked']);
   });
+
+  // docs/specs/008-canvas/canvas-and-palette.md "Delete / Backspace": the locked arrow's end on the deleted box is
+  // freed where it was drawn. Left pinned to a box that was gone, it was drawn and saved at the canvas origin.
+  it("frees the locked arrow's end where it was drawn", () => {
+    const els = [
+      shape('a', { x: 500, y: 500 }),
+      shape('b', { x: 900, y: 500 }),
+      { ...pinnedArrow('locked', 'a', 'b'), locked: true } as ArrowElement,
+    ];
+    const { actions, getResult } = setup(els, { selection: ['a'] });
+    actions.deleteSelected();
+    const arrow = getResult()!.find((el) => el.id === 'locked') as ArrowElement;
+    expect(arrow.from).toEqual({ kind: 'free', x: 600, y: 540 });
+    expect(arrow.to).toEqual({ kind: 'pinned', elementId: 'b', anchor: 'w' });
+  });
 });
 
 describe('deleteMultiSelected lock protection', () => {

@@ -178,6 +178,46 @@ describe('the app routes', () => {
     expect(await over.res.json()).toEqual({ error: 'post_limit' });
   });
 
+  it('hold the post limit when publishes race past its count', async () => {
+    for (let i = 0; i < COMMUNITY_POSTS_PER_AUTHOR - 1; i++) {
+      expect((await publish(`d${i}`, { shareCode: `C${i}` })).res.status).toBe(201);
+    }
+    // Every publish reads the count before any writes: the first three batches wait for each other.
+    const waiting: (() => void)[] = [];
+    const d1 = db.env.COMMUNITY_DB;
+    const barrier = new Proxy(d1, {
+      get(target, key) {
+        if (key !== 'batch') {
+          const value = Reflect.get(target, key) as unknown;
+          return typeof value === 'function' ? value.bind(target) : value;
+        }
+        return async (statements: D1PreparedStatement[]) => {
+          if (waiting.length < 3) {
+            await new Promise<void>((go) => {
+              waiting.push(go);
+              if (waiting.length === 3) for (const release of waiting) release();
+            });
+          }
+          return target.batch(statements);
+        };
+      },
+    });
+    db = { ...db, env: { ...db.env, COMMUNITY_DB: barrier } };
+    const racing = await Promise.all(
+      ['x', 'y', 'z'].map((d) => publish(`race-${d}`, { shareCode: `R-${d}` })),
+    );
+    expect(racing.map((r) => r.res.status).sort()).toEqual([201, 409, 409]);
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM posts').get()).toEqual({
+      n: COMMUNITY_POSTS_PER_AUTHOR,
+    });
+    // The refused ones left no tags behind.
+    expect(
+      db.sql
+        .prepare('SELECT COUNT(*) AS n FROM post_tags WHERE post_id NOT IN (SELECT id FROM posts)')
+        .get(),
+    ).toEqual({ n: 0 });
+  });
+
   it("replace a previous owner's post when the document's new owner publishes", async () => {
     const first = await publish();
     const read = await asApp('/app/documents/d1?owner=user_heir');

@@ -46,7 +46,10 @@ import {
   silentCookiesForHint,
   startSilentSignIn,
 } from '@liveworkspace/auth-client/silent';
-import { safeReturnPath as sharedSafeReturnPath } from '@liveworkspace/auth-client/return-path';
+import {
+  safeReturnPath as sharedSafeReturnPath,
+  sameOriginPath,
+} from '@liveworkspace/auth-client/return-path';
 import { accountNameCookies, accountNameCookieFor } from '@liveworkspace/auth-client/account-name';
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
@@ -117,9 +120,11 @@ function appOrigin(env: Env, request: Request): string {
 
 const callbackUrl = (env: Env, request: Request) => `${appOrigin(env, request)}/api/auth/callback`;
 
-// Only a path on this site (`@liveworkspace/auth-client/return-path`), else the Explorer.
+// Only a path on this site (`@liveworkspace/auth-client/return-path`), else the Explorer. Normalised as a browser
+// would resolve it, so anything past ASCII is percent-encoded: the path rides a `Location` header back, and a header
+// holds no character past Latin-1.
 export const safeReturnPath = (value: string | null): string =>
-  sharedSafeReturnPath(value, DEFAULT_RETURN);
+  sameOriginPath(sharedSafeReturnPath(value, DEFAULT_RETURN)) ?? DEFAULT_RETURN;
 
 export function readCookie(request: Request, name: string): string | null {
   const header = request.headers.get('Cookie');
@@ -160,17 +165,25 @@ export const signedOutCookies = () => [
 ];
 
 // The PKCE verifier, the state and the return path ride one short-lived cookie. It needs no
-// signature: only this browser can present it, and `state` must match what came back.
+// signature: only this browser can present it, and `state` must match what came back. Base64url over
+// the UTF-8 bytes, as @liveworkspace/auth-client's silent sign-in: `btoa` on the JSON alone throws on a
+// return path holding any character past Latin-1 (`/document/Équipe Café ☕`).
 type PkceCookie = { state: string; verifier: string; returnTo: string };
 
 function encodePkce(value: PkceCookie): string {
-  return btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  let binary = '';
+  for (const byte of new TextEncoder().encode(JSON.stringify(value)))
+    binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function decodePkce(raw: string | null): PkceCookie | null {
   if (!raw) return null;
   try {
-    const parsed = JSON.parse(atob(raw.replace(/-/g, '+').replace(/_/g, '/'))) as PkceCookie;
+    const binary = atob(raw.replace(/-/g, '+').replace(/_/g, '/'));
+    const parsed = JSON.parse(
+      new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0))),
+    ) as PkceCookie;
     return typeof parsed.state === 'string' &&
       typeof parsed.verifier === 'string' &&
       typeof parsed.returnTo === 'string'

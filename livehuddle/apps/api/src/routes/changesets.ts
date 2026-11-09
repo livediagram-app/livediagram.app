@@ -28,6 +28,7 @@ import { submitChangeset, type SubmitResult } from '../changesets/submit';
 import type { Author } from '../changesets/write';
 import type { DocumentDTO } from '../types';
 import {
+  deniedEdit,
   gateEdit,
   gateGrant,
   gateRead,
@@ -153,7 +154,7 @@ async function handleRevert(
   owner: string,
 ): Promise<Response> {
   if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, record.tabId))) {
-    return forbidden();
+    return deniedEdit(ctx, document.id, record.tabId);
   }
   const author = await authorOf(ctx, owner);
   const result = await revertChangeset({

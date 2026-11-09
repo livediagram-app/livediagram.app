@@ -257,6 +257,26 @@ describe('ProximityCall', () => {
     expect(callSelf().mic).toBe('closed');
   });
 
+  // An unmute, then a mute while the browser still asks, alone on the tab: the open lands muted, and the quiet spell
+  // still releases it.
+  it('releases a microphone muted again while it opened, once the quiet spell is over', async () => {
+    const { stream, track } = micStream();
+    let open: (s: MediaStream) => void = () => {};
+    const { call } = makeCall({ getUserMedia: () => new Promise((r) => (open = r)) });
+    await call.start();
+    call.update(scene([]));
+    call.toggleMute();
+    call.toggleMute();
+    open(stream);
+    await settle();
+    expect(callSelf()).toMatchObject({ mic: 'open', muted: true });
+    expect(track.enabled).toBe(false);
+    vi.advanceTimersByTime(MIC_IDLE_CLOSE_MS);
+    expect(track.stop).toHaveBeenCalled();
+    expect(callSelf().mic).toBe('closed');
+    call.stop();
+  });
+
   it('a listener’s unmute opens nothing', async () => {
     const { call, getUserMedia } = makeCall({ canSpeak: false });
     await call.start();

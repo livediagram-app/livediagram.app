@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   badgeSize,
   chipColours,
+  chipLabelIssue,
+  chipLabelMax,
   chipLookOf,
   createShape,
   duplicateElements,
@@ -45,6 +47,27 @@ describe('chip looks (docs/specs/009-elements/badge.md)', () => {
     expect('chipLook' in withChipLook({ ...b, chipLook: 'quiet' }, null)).toBe(false);
     const sq = createShape('square', 0, 0);
     expect(withChipLook(sq, 'quiet')).toBe(sq);
+  });
+});
+
+// docs/specs/009-elements/badge.md "The cap holds for agents".
+describe('chip label caps', () => {
+  it('caps a badge at 24 and a step at 3, and nothing else', () => {
+    expect(chipLabelMax({ type: 'shape', shape: 'badge' })).toBe(24);
+    expect(chipLabelMax({ type: 'shape', shape: 'step' })).toBe(3);
+    expect(chipLabelMax({ type: 'shape', shape: 'rectangle' })).toBeNull();
+    expect(chipLabelMax({ type: 'text' })).toBeNull();
+  });
+
+  it('names a label over its cap, and passes one at it, no label and a non-element', () => {
+    expect(chipLabelIssue({ type: 'shape', shape: 'step', label: '1000' })).toEqual({
+      field: 'label',
+      rule: "a step's label is at most 3 characters",
+    });
+    expect(chipLabelIssue({ type: 'shape', shape: 'badge', label: 'x'.repeat(24) })).toBeNull();
+    expect(chipLabelIssue({ type: 'shape', shape: 'badge' })).toBeNull();
+    expect(chipLabelIssue(null)).toBeNull();
+    expect(chipLabelIssue('badge')).toBeNull();
   });
 });
 

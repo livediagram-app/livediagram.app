@@ -117,6 +117,17 @@ describe('GET /api/auth/callback', () => {
     });
   }
 
+  it('goes back to a return path past Latin-1, which the cookie carries as UTF-8', async () => {
+    fetchMock.mockResolvedValue(tokenResponse());
+    const { location, pkce } = await signInCookie('/explorer/home?q=日本Café#カード');
+    const res = await call(
+      `/api/auth/callback?code=the-code&state=${location.searchParams.get('state')!}`,
+      { headers: { Cookie: `ldes_pkce=${pkce}` } },
+    );
+    expect(res.status).toBe(302);
+    expect(decodeURI(res.headers.get('Location')!)).toBe('/explorer/home?q=日本Café#カード');
+  });
+
   it('swaps the code with the client secret, keeps the refresh token, and goes back', async () => {
     fetchMock.mockResolvedValue(tokenResponse());
     const res = await callback();

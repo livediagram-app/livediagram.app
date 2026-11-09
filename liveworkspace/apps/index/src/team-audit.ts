@@ -125,13 +125,16 @@ export type WebhookAudit = {
   at: number;
 };
 
-/** The statement logging a team webhook added or removed, for the batch that adds or deletes it. */
+/** The statement logging a team webhook added or removed, after the write in its batch that adds or deletes it. An
+ *  add is logged only when the webhook is there: its insert is refused at the document's cap (webhooks/routes.ts). */
 export function webhookAuditStatement(db: Db, audit: WebhookAudit): D1PreparedStatement {
-  const id = `${audit.type === 'webhook_added' ? 'wh+' : 'wh-'}:${audit.webhookId}`;
+  const added = audit.type === 'webhook_added';
+  const id = `${added ? 'wh+' : 'wh-'}:${audit.webhookId}`;
   return db
     .prepare(
       `INSERT OR IGNORE INTO team_audit_events (${COLUMNS})
-       VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, ?, ?, ?)`,
+       SELECT ?1, ?2, ?3, ?4, ?5, NULL, NULL, NULL, ?6, ?7, ?8
+       WHERE ?9 = 0 OR EXISTS (SELECT 1 FROM webhooks WHERE id = ?10)`,
     )
     .bind(
       audit.teamId,
@@ -142,6 +145,8 @@ export function webhookAuditStatement(db: Db, audit: WebhookAudit): D1PreparedSt
       audit.name,
       JSON.stringify({ webhookId: audit.webhookId, kind: audit.kind, host: audit.host }),
       audit.at,
+      added ? 1 : 0,
+      audit.webhookId,
     );
 }
 

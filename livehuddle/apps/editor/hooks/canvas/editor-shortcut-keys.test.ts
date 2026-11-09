@@ -13,3 +13,20 @@ describe('the key maps', () => {
     expect(calls).toEqual(['text']);
   });
 });
+
+// A covered board's keys: an empty key (synthetic events, some IMEs) is no bracket, though '' is in every string.
+describe('coveredKeyRole', () => {
+  const press = (key: string, code = '') => ({
+    key,
+    code,
+    metaKey: false,
+    ctrlKey: true,
+    shiftKey: true,
+    altKey: false,
+  });
+  it('swallows Ctrl+Shift+bracket and leaves an empty key to the browser', () => {
+    expect(keys.coveredKeyRole(press('{'))).toBe('swallow');
+    expect(keys.coveredKeyRole(press('?', 'BracketRight'))).toBe('swallow');
+    expect(keys.coveredKeyRole(press(''))).toBe('ignore');
+  });
+});

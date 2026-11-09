@@ -80,6 +80,9 @@ export class CallMic {
     this.host.graph.listenTo(stream);
     setCallSelf({ mic: 'open' });
     this.startSampling();
+    // Muted again while the browser asked, and alone: the quiet spell starts now, as it would have on that mute had
+    // the microphone been open, so it is never left open for good.
+    this.keepFor(this.company);
     if (this.published) {
       await sfu.replaceMic(track);
       return;

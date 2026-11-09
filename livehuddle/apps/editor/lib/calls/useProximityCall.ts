@@ -55,18 +55,26 @@ export type ProximityCallDeps = {
 
 const NO_ZONES: readonly CallZone[] = [];
 
+const NO_RESUME = () => {};
+
 /**
  * A call joined without a press (walking in) starts its audio suspended, as browsers keep sound from a page until it
  * is touched: the next press or key anywhere resumes it. Already running (the join came from a press): nothing to do.
+ * Answers the way to stop waiting, which removes all three listeners, as the first press does: a call that ends
+ * before any press (leaving, a tab change, a rejoin, closing the canvas) leaves none behind holding its context.
  */
-function resumeOnGesture(context: AudioContext): void {
-  if (context.state !== 'suspended') return;
+export function resumeOnGesture(context: AudioContext, target: Window = window): () => void {
+  if (context.state !== 'suspended') return NO_RESUME;
   const events = ['pointerdown', 'keydown', 'touchend'] as const;
+  const stop = () => {
+    for (const e of events) target.removeEventListener(e, resume, true);
+  };
   const resume = () => {
-    for (const e of events) window.removeEventListener(e, resume, true);
+    stop();
     if (context.state === 'suspended') void context.resume().catch(() => {});
   };
-  for (const e of events) window.addEventListener(e, resume, true);
+  for (const e of events) target.addEventListener(e, resume, true);
+  return stop;
 }
 const NO_STAGES: readonly CallStage[] = [];
 
@@ -104,6 +112,15 @@ export function useProximityCall(deps: ProximityCallDeps): void {
   // Bumped by every join and every end, so a call whose code arrives after you left (the mode, the tab, the canvas)
   // is never started: walking in joins at once, and leaving again before the code loads is common.
   const joinSeq = useRef(0);
+  // The current call's wait for a press to resume its audio (resumeOnGesture), ended with the call.
+  const stopResume = useRef(NO_RESUME);
+  const endCall = () => {
+    joinSeq.current++;
+    callRef.current?.stop();
+    callRef.current = null;
+    stopResume.current();
+    stopResume.current = NO_RESUME;
+  };
 
   const scene: CallScene = useMemo(
     () => ({
@@ -139,11 +156,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
 
   // The buttons' actions, stable for the life of the canvas: each reads the latest props through the ref.
   useEffect(() => {
-    const stop = () => {
-      joinSeq.current++;
-      callRef.current?.stop();
-      callRef.current = null;
-    };
+    const stop = endCall;
     // A live call that may send this kind drives it as before; anything else is the preview's.
     const liveCall = () => {
       const call = callRef.current;
@@ -162,7 +175,8 @@ export function useProximityCall(deps: ProximityCallDeps): void {
       localMic.stop();
       // Made inside a press where there is one (a retry), so the browser lets it play; walking in waits for the next.
       const context = new AudioContext();
-      resumeOnGesture(context);
+      stopResume.current();
+      stopResume.current = resumeOnGesture(context);
       setCallSelf({ phase: 'joining' });
       track('Canvas', 'Used', canSpeak ? 'AudioJoin' : 'AudioListen');
       const seq = ++joinSeq.current;
@@ -261,9 +275,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
   // Leaving the mode, the room or the tab ends the call (the spec's "Who is in a call").
   useEffect(() => {
     if (available) return;
-    joinSeq.current++;
-    callRef.current?.stop();
-    callRef.current = null;
+    endCall();
     // A join still loading when the call went away reads off, not Connecting.
     if (callSelf().phase === 'joining') setCallSelf({ phase: 'off' });
   }, [available]);
@@ -277,9 +289,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
   useEffect(() => {
     if (tabRef.current === deps.tabId) return;
     tabRef.current = deps.tabId;
-    joinSeq.current++;
-    callRef.current?.stop();
-    callRef.current = null;
+    endCall();
     if (callSelf().phase === 'joining') setCallSelf({ phase: 'off' });
     preview.stopAll();
     localMic.stop();

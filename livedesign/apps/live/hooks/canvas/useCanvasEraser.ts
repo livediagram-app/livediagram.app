@@ -27,7 +27,7 @@
 // working even if the pointer leaves the canvas surface mid-drag.
 
 import { useEffect, useRef } from 'react';
-import { withAttachedArrows, type Element, type Tab } from '@livedesign/design';
+import { removeElements, withAttachedArrows, type Element, type Tab } from '@livedesign/design';
 
 import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
 import {
@@ -88,9 +88,9 @@ export function useCanvasEraser(deps: EraserDeps) {
     depsRef.current.tick((els) => {
       const inert = depsRef.current.layerInertIds;
       const kept = (el: Element) => el.locked === true || inert.has(el.id);
-      // Drop arrows attached to an erased element, and those hung off them, matching deleteSelected.
-      const gone = withAttachedArrows(els, ids, kept);
-      return els.filter((el) => kept(el) || !gone.has(el.id));
+      // Drop arrows attached to an erased element, and those hung off them, matching deleteSelected. A kept
+      // (locked) arrow's end on an erased element is freed where it was drawn (removeElements).
+      return removeElements(els, withAttachedArrows(els, ids, kept), kept);
     });
   };
 

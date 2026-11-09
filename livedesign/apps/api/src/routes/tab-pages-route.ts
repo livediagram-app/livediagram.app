@@ -6,9 +6,15 @@ import { getDesign } from '../db';
 import { afterChangeset } from '../changesets/after';
 import { frontDoorOf } from '../changesets/front-door';
 import { submitPages } from '../changesets/pages';
-import { forbidden, json } from '../responses';
+import { json } from '../responses';
 import { authorOf, refreshAfterWrite } from './changesets';
-import { gateEdit, missingDesign, requireOwner, type DesignRouteContext } from './context';
+import {
+  deniedEdit,
+  gateEdit,
+  missingDesign,
+  requireOwner,
+  type DesignRouteContext,
+} from './context';
 
 export async function handleTabPages(
   ctx: DesignRouteContext,
@@ -19,7 +25,8 @@ export async function handleTabPages(
   if (owner instanceof Response) return owner;
   const design = await getDesign(ctx.env, id);
   if (!design) return missingDesign(ctx, id);
-  if (!(await gateEdit(ctx, id, design.ownerId, design.teamId, tabId))) return forbidden();
+  if (!(await gateEdit(ctx, id, design.ownerId, design.teamId, tabId)))
+    return deniedEdit(ctx, id, tabId);
   const parsed = parsePagesRequest(await ctx.request.json().catch(() => undefined));
   if ('refusal' in parsed) {
     const { code, ...rest } = parsed.refusal;

@@ -163,14 +163,21 @@ export const signedOutCookies = () => [
 // signature: only this browser can present it, and `state` must match what came back.
 type PkceCookie = { state: string; verifier: string; returnTo: string };
 
+// As UTF-8 bytes both ways: `btoa` alone throws on a character past Latin-1, so a return path holding one (a
+// non-Latin search or hash) failed the sign-in.
 function encodePkce(value: PkceCookie): string {
-  return btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function decodePkce(raw: string | null): PkceCookie | null {
   if (!raw) return null;
   try {
-    const parsed = JSON.parse(atob(raw.replace(/-/g, '+').replace(/_/g, '/'))) as PkceCookie;
+    const binary = atob(raw.replace(/-/g, '+').replace(/_/g, '/'));
+    const text = new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0)));
+    const parsed = JSON.parse(text) as PkceCookie;
     return typeof parsed.state === 'string' &&
       typeof parsed.verifier === 'string' &&
       typeof parsed.returnTo === 'string'
@@ -223,8 +230,11 @@ function jwtPayload(token: string | null): Record<string, unknown> | null {
   }
 }
 
+// A header holds bytes, not text: a return path's characters past ASCII go percent-encoded as UTF-8, as a browser
+// sends them, or building the header throws.
 function redirect(location: string, cookies: string[]): Response {
-  const headers = new Headers({ Location: location, 'Cache-Control': 'no-store' });
+  const ascii = location.replace(/[\u0080-\uffff]+/g, (run) => encodeURIComponent(run));
+  const headers = new Headers({ Location: ascii, 'Cache-Control': 'no-store' });
   for (const c of cookies) headers.append('Set-Cookie', c);
   return new Response(null, { status: 302, headers });
 }

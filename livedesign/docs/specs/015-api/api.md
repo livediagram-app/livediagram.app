@@ -573,11 +573,12 @@ liveworkspace's ([one-explorer-contracts.md](../../../../liveworkspace/docs/spec
 
 This is the one list of columns that hold an owner id (a guest id or an account userId), and what **account deletion** (`deleteAccount` in `apps/api/src/db/account.ts`) does with each. There is no owner migration here: a guest's designs move to the account in the index when they sign in ([Auth + guest access → Guest → account](../014-identity/auth-and-guest-access.md#guest--account-migration)). A column holding an owner id is named `owner_id` (`author_id` on `agent_changesets`); `apps/api/src/db/account-owner-columns.test.ts` finds every such column in the schema, fails until it is listed there, and proves each against a real SQLite database.
 
-| Column                       | Account deletion                                                                                                                          |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `design.owner_id`            | In each design's own store: the account's own designs are deleted for good through the index first, which purges each store               |
-| `image_owners.owner_id`      | In each design's own store: the person's images themselves are deleted from the media service, so a design that placed one serves nothing |
-| `agent_changesets.author_id` | In each design's own store: those on someone else's design stay until the 30-day changeset retention ages them out                        |
+| Column                       | Account deletion                                                                                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `design.owner_id`            | In each design's own store: the account's own designs are deleted for good through the index first, which purges each store                      |
+| `image_owners.owner_id`      | In each design's own store: the person's images themselves are deleted from the media service, so a design that placed one serves nothing        |
+| `agent_changesets.author_id` | In each design's own store: those on someone else's design stay until the 30-day changeset retention ages them out                               |
+| `notify_claims.sender`       | In each design's own store: dropped from each design the index names when the account closes (`anonymise`), and past the dedupe window otherwise |
 
 `deleteAccount` deletes the person's images from liveworkspace's media service, from every app (`forgetOwner`, first, so a failure leaves the account whole to delete again), . Their workbench pairings and sessions are liveworkspace's, which ends them when the account closes. Their name comes off other people's designs they worked in through the index's person purge (`anonymise`). Account deletion runs on `DELETE /api/account` and whenever the index says an account closed (`POST /api/internal/people/:id/purge`), wherever it was closed. `entitled` rows name people too, but only until their grant lapses, and go with the design.
 
