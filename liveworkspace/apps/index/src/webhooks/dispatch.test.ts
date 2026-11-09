@@ -406,6 +406,35 @@ describe('a run', () => {
     expect(kept).toEqual({ n: 20 });
   });
 
+  // Every webhook keeps 20 finished deliveries: a run that walked the table in id order to skip a sort read all of
+  // them (40,000 rows with 2,000 webhooks) to find the few due.
+  it('reads only the pending deliveries, through the due index', async () => {
+    const { bump } = await personWithHook('user_wb5');
+    await bump();
+    const prepared: string[] = [];
+    const db = h.db.env.INDEX_DB;
+    const prepare = db.prepare.bind(db);
+    const spy = vi.spyOn(db, 'prepare').mockImplementation((sql: string) => {
+      prepared.push(sql);
+      return prepare(sql);
+    });
+    await run();
+    spy.mockRestore();
+    const due = prepared.find((s) => s.includes('NOT EXISTS (SELECT 1 FROM webhook_deliveries p'));
+    const plan = h.db.sql
+      .prepare(`EXPLAIN QUERY PLAN ${due}`)
+      .all(clock, 50)
+      .map((r) => String((r as { detail: string }).detail));
+    expect(
+      plan.some((l) => l.includes('USING INDEX webhook_deliveries_due')),
+      plan.join('\n'),
+    ).toBe(true);
+    expect(
+      plan.filter((l) => /^SCAN d\b/.test(l)),
+      plan.join('\n'),
+    ).toEqual([]);
+  });
+
   it("never schedules a run for a paused webhook's pending row, and never sooner than a second away", async () => {
     const { bump, webhook } = await personWithHook('user_wb3');
     await bump();

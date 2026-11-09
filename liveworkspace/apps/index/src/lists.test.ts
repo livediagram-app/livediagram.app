@@ -535,14 +535,17 @@ describe('query plans', () => {
     }
   });
 
+  // The forms read once walked every form in the index (`SCAN f`) to find the person's: 5.7 ms for 20,000 forms.
   it('the Inbox walks indexes', () => {
-    const q = inboxQueries('user_a', ['p:user_a', 't:team1'], null, 100);
-    for (const query of [q.threads, q.actions, q.forms]) {
-      const lines = plan(query.sql, query.args);
-      expect(
-        lines.filter((l) => /\bSCAN (i|items|t|a|collab_\w+|p)\b(?! USING)/.test(l)),
-        lines.join('\n'),
-      ).toEqual([]);
+    for (const app of [null, 'liveplanner' as const]) {
+      const q = inboxQueries('user_a', ['p:user_a', 't:team1'], app, 100);
+      for (const query of [q.threads, q.actions, q.forms]) {
+        const lines = plan(query.sql, query.args);
+        expect(
+          lines.filter((l) => /\bSCAN (i|items|t|a|f|collab_\w+|p)\b(?! USING)/.test(l)),
+          lines.join('\n'),
+        ).toEqual([]);
+      }
     }
   });
 });

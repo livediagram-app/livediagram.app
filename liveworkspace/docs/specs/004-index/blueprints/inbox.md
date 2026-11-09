@@ -67,7 +67,9 @@ takes no push (the key is done).
    `youCommented`, `onYourItem`; newest `latest_at` first.
 2. **Actions**: open, assigned to or by the person, item live, reachable; newest `updated_at` first.
 3. **Forms**: on items the person owns or reaches by team (not a link), with more responses than they have seen;
-   `unseen = responses - seen`; newest first.
+   `unseen = responses - seen`; newest first. Read from the person's items, a union of their personal items
+   (`items_owner`) and their scopes' (`items_live`), joined to `collab_forms` by item: one `WHERE` with the `OR`
+   let SQLite walk every form in the index instead.
 4. **The Timeline's new count** (`timelineNewQuery`), returned as `timelineNew`.
 
 Reachable: owner of a personal item, one of their scopes, or a live link they opened whose tab is the row's tab (or
