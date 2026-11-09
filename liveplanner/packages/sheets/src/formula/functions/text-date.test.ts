@@ -257,6 +257,18 @@ describe('dates', () => {
     expect(calc('=EOMONTH("2026-01-15", 0)')).toBe(serialFromDate(2026, 1, 31));
     expect(calc('=YEAR("soon")')).toMatchObject({ e: '#VALUE!' });
   });
+  it('reads holidays given as date text, and truncates a fractional WEEKDAY or WEEKNUM type, as Excel does', () => {
+    // 8 October 2026 is a Thursday; 9 October a Friday.
+    expect(calc('=WORKDAY("2026-10-08", 1, "2026-10-09")')).toBe(serialFromDate(2026, 10, 12));
+    expect(calc('=WORKDAY("2026-10-08", 1, {"2026-10-09","soon"})')).toBe(
+      serialFromDate(2026, 10, 12),
+    );
+    expect(calc('=NETWORKDAYS("2026-10-05", "2026-10-09", "2026-10-07")')).toBe(4);
+    expect(calc('=WEEKDAY("2026-10-08", 1.5)')).toBe(5);
+    expect(calc('=WEEKDAY("2026-10-08", 2.9)')).toBe(4);
+    expect(calc('=WEEKDAY("2026-10-08", 11.2)')).toBe(4);
+    expect(calc('=WEEKNUM("2027-01-01", 21.7)')).toBe(53);
+  });
   it('wraps TIME past a day exactly', () => {
     expect(calc('=TIME(25, 0, 0)=TIME(1, 0, 0)')).toBe(true);
     expect(calc('=TIME(48, 0, 0)')).toBe(0);

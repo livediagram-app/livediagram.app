@@ -33,6 +33,11 @@ describe('card search', () => {
     );
   });
 
+  it('matches no card on a field that is gone, its empty value too (board-widgets.md "Saved filters")', () => {
+    expect(searchCards(cards, [{ by: 'field', field: 'c-gone', key: '' }])).toEqual([]);
+    expect(searchCards(cards, [{ by: 'field', field: 'c-gone', key: 'f:"High"' }])).toEqual([]);
+  });
+
   it('offers only the values some matching card has, with counts', () => {
     const values = searchValues(cards, { by: 'status' });
     expect(values.map((v) => [v.label, v.count])).toEqual(
@@ -112,6 +117,25 @@ describe('card search', () => {
       field: 'nope',
       value: 'Empty',
     });
+  });
+
+  it('names a value no card holds any more as its lane would be, never by its raw key', () => {
+    const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+    const sized = {
+      ...task,
+      fields: [...task.fields, 'c-size'],
+      custom: [{ id: 'c-size', label: 'Size', kind: 'choice' as const, options: ['S', 'M'] }],
+    };
+    const none = [item({ title: 'X' })];
+    const label = (f: Parameters<typeof searchFilterLabel>[0]) =>
+      searchFilterLabel(f, none, [sized, ...ITEM_TYPES]).value;
+    expect(label({ by: 'status', key: 's:done' })).toBe('Done');
+    expect(label({ by: 'priority', key: 'p:high' })).toBe('High');
+    expect(label({ by: 'type', key: 't:project' })).toBe('Project');
+    expect(label({ by: 'field', field: 'c-size', key: 'f:"M"' })).toBe('M');
+    expect(label({ by: 'field', field: 'c-size', key: '' })).toBe('No Size');
+    expect(label({ by: 'assignee', key: '' })).toBe('No assignee');
+    expect(label({ by: 'assignee', key: 'a:gone' })).toBe('a:gone');
   });
 
   it('refuses a stored filter with a malformed field or key', () => {

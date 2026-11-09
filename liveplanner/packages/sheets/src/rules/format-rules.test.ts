@@ -87,6 +87,38 @@ describe('single colour', () => {
     expect(style(1)).toEqual(GREEN);
     expect(style(2)).toBeNull();
   });
+  it('draws a rule edited in the form (same id) as it now stands, its formula and its scale', () => {
+    const { b, sheet } = ruled({ A1: 'a', A2: 'b', B1: '5', B2: '200' }, []);
+    const ctx = b.wb.ctxFor(sheet.id);
+    const draw = (rule: FormatRule, r: number) => {
+      const v = b.wb.value(sheet.id, r, 0);
+      return formatRuleStyle(b.wb, sheet.id, r, 0, v, shownOf(v), [rule]);
+    };
+    const over = (n: number) => {
+      const fx = compileFormula(`=$B1>${n}`, ctx);
+      if (!fx.ok) throw new Error('compile');
+      return fr({ op: 'formula', fx: fx.formula, style: GREEN });
+    };
+    expect(draw(over(1), 0)).toEqual(GREEN);
+    expect(draw(over(1), 1)).toEqual(GREEN);
+    expect(draw(over(100), 0)).toBeNull();
+    expect(draw(over(100), 1)).toEqual(GREEN);
+    const sc = (r2: number) =>
+      fr(
+        { is: 'scale', min: { c: '#ffffff', at: 'min' }, max: { c: '#57bb8a', at: 'max' } },
+        0,
+        1,
+        r2,
+        1,
+      );
+    const cell = (rule: FormatRule, r: number) => {
+      const v = b.wb.value(sheet.id, r, 1);
+      return formatRuleStyle(b.wb, sheet.id, r, 1, v, shownOf(v), [rule]);
+    };
+    expect(cell(sc(0), 0)).toEqual({ bg: '#ffffff' });
+    expect(cell(sc(1), 0)).toEqual({ bg: '#ffffff' });
+    expect(cell(sc(1), 1)).toEqual({ bg: '#57bb8a' });
+  });
   it('a custom formula follows its range when the top row or left column is deleted', () => {
     const b0 = book({}, { rows: 10, cols: 4 });
     const ctx = b0.wb.ctxFor(b0.sheets[0]!.id);

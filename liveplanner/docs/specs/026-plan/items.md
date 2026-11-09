@@ -350,6 +350,8 @@ recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anyt
 - **Where it runs**: from the plan's Durable Object alarm, never a sweep over every plan, so a plan without a
   repeating card does no repeat work at all. A plan in This Browser makes no copies (it has no alarm), and its
   menu offers no Repeat; a rule it holds from before reads "Repeats only in plans saved to your account".
+- **Duplicate**: a card's Duplicate (its menu or the item panel's) is a plain card without the rule, so a Participant
+  may duplicate a repeating card and the copy never makes copies of its own beside the source's.
 - **Copies of the plan**: a duplicated or imported plan holds its cards' rules, and its own copies start from the day
   it first sees them, never catching up on days before it existed.
 - **Agents**: list_items lists a card's rule (`repeat`: the rule in words, its next day and time zone);

@@ -1,7 +1,15 @@
 // A board's cards as CSV rows, out and in (docs/specs/026-plan/plan-board.md "CSV"). Rows of fields only: the CSV
 // text itself is read and written by the Sheet's CSV module in the editor, as this package imports no other.
 import { byRank } from './apply';
-import { boardAddTypes, linkedCard, projectBoard, statusLabel, type PlanBoardSetup } from './board';
+import {
+  boardAddTypes,
+  boardIsDone,
+  linkedCard,
+  projectBoard,
+  statusLabel,
+  type PlanBoardSetup,
+} from './board';
+import { boardSortComparator } from './board-sort';
 import { builtInFieldOf } from './card-source';
 import { builtInFieldLabel, builtInIdOfName } from './built-in-field-labels';
 import { customFieldText } from './card-text';
@@ -128,8 +136,14 @@ export function boardCsvRows(
   ];
   const byColumn = setup.archive === true || setup.allCards === true;
   const projection = projectBoard(setup, items, undefined, types, statusNames);
+  // Each column's cards in their order on it: by rank, then by the board's Sort Cards (stable, as the board sorts
+  // them), each card once although a field holding several values puts it in several swimlanes.
+  const sortCards = setup.sortBy?.length
+    ? boardSortComparator(setup.sortBy, types, items, boardIsDone(setup))
+    : null;
   for (const col of projection.columns) {
-    const cards = col.lanes.flatMap((l) => l.items).sort(byRank);
+    const cards = [...new Set(col.lanes.flatMap((l) => l.items))].sort(byRank);
+    if (sortCards) cards.sort(sortCards);
     for (const item of cards) {
       const type = typeIn(types, item.type);
       const status = itemStatus(item);

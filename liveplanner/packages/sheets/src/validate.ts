@@ -37,6 +37,7 @@ import { rangeNameProblem } from './range-names';
 import { isFilterCondition } from './filter';
 import {
   NOBODY,
+  cellKey,
   type Cell,
   type CellInput,
   type IdRange,
@@ -390,7 +391,7 @@ function rulesProblem(after: Sheet, write: SheetWrite, opts: WriteCheck): Valida
     if (r === undefined || c === undefined) continue;
     const rule = validationRuleAt(layout, r, c);
     if (!rule || rule.warn) continue;
-    if (!inputAllowed(rule, ch.i, ctx))
+    if (!inputAllowed(rule, ch.i, ctx, after.cells.get(cellKey(ch.r, ch.c))?.format))
       return {
         ok: false,
         error: 'value_invalid',
