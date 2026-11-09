@@ -6,6 +6,7 @@ import {
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
   resolveOwnerBadge,
+  shownRemoteSelections,
 } from './presence-rows';
 
 const p = (id: string, over: Partial<Participant> = {}): Participant => ({
@@ -334,5 +335,19 @@ describe('buildRemoteSelectionsByElement holds', () => {
     expect(out.get('b')?.[0]?.holds).toBe(true);
     expect(out.get('c')?.[0]?.holds).toBe(true);
     expect(out.get('d')?.[0]?.holds).toBe(true);
+  });
+});
+
+describe('shownRemoteSelections', () => {
+  const byElement = new Map([['e1', [{ id: 'b', name: 'B', color: '#f00', holds: true }]]]);
+
+  it('draws every remote selection while editing', () => {
+    expect(shownRemoteSelections(byElement, false)).toBe(byElement);
+  });
+
+  it('draws none on a presented slide, the same empty map each time', () => {
+    const shown = shownRemoteSelections(byElement, true);
+    expect(shown.size).toBe(0);
+    expect(shownRemoteSelections(byElement, true)).toBe(shown);
   });
 });

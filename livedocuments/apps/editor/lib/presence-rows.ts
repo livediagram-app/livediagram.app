@@ -270,6 +270,19 @@ export function resolveOwnerBadge(input: {
 // behaviour).
 export type RemoteSelection = { elementId: string | null; tabId?: string };
 
+// One empty map for every presented render, so the canvas's memoised element rows keep their props.
+const NO_REMOTE_SELECTIONS: Map<string, RemoteSelector[]> = new Map();
+
+// The remote selections a canvas draws: none on a presented slide (docs/specs/012-collaboration/presentation-mode.md
+// "Presenting broadcasts nothing"), where an outline, a badge and a recoloured border would show on a projector as
+// another person's cursor would; the selection lock there has nothing to guard, since nothing on a slide changes.
+export function shownRemoteSelections(
+  byElement: Map<string, RemoteSelector[]>,
+  presenting: boolean,
+): Map<string, RemoteSelector[]> {
+  return presenting ? NO_REMOTE_SELECTIONS : byElement;
+}
+
 // Per-element map of which remote participants have it selected (for the
 // on-element badges). Drops self + null (deselected) entries, and — like
 // cursors and lasers — entries scoped to a DIFFERENT tab: element ids

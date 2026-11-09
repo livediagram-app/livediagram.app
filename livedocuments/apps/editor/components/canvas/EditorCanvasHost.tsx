@@ -16,6 +16,7 @@ import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/
 import { registerTabStyleOpen } from '@/lib/tab-style-opener';
 import { setBandDocumentName } from '@/lib/article/article-band-layout';
 import { presentedPages } from '@/lib/presented-pages';
+import { shownRemoteSelections } from '@/lib/presence-rows';
 import {
   LockedElementMenu,
   type LockHolder,
@@ -277,6 +278,11 @@ export function EditorCanvasHost() {
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
   const shownElements = presentingElements ?? activeTab.elements;
+  // A presented slide shows nobody else's selection, as it shows nobody else's cursor.
+  const remoteSelectionsShown = shownRemoteSelections(
+    remoteSelectionsByElement,
+    presentingElements != null,
+  );
   // On a page with a fill of its own, an element is drawn for that page rather than the chrome
   // (stock-colour-projector.ts "PageView"); off Pages mode, or with no filled page, nothing to do.
   const pageView = usePageView(shownElements, pagesMode?.pages, activeTab.theme);
@@ -388,7 +394,7 @@ export function EditorCanvasHost() {
             layerInertIds={layerInertIds}
             shiftDupGhostIds={shiftDupGhostIds}
             snapGuideStore={snapGuideStore}
-            remoteSelectionsByElement={remoteSelectionsByElement}
+            remoteSelectionsByElement={remoteSelectionsShown}
             remoteCursors={remoteCursorRows}
             laserTrails={laserTrailRows}
             onCanvasPointerMove={(x, y, target) => {
