@@ -78,7 +78,7 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 **Status: Planned.** Not built yet; Participant links, a look-only Viewer, and the agent changesets, views, edit operations, presence and [CLI](../015-api/cli.md) are built.
 
 - **Agents as collaborators** ([Agents](../024-agents/README.md)): the CLI's update check.
-- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): token levels, ownership as separate powers, and server-derived collaboration keys.
+- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): token levels and ownership as separate powers.
 
 ## Later
 

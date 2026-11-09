@@ -136,6 +136,33 @@ any of them. Who owns an item and who may reach it is liveworkspace's index's
   someone else's sticky, resizing a shape), it shows one short notice for the burst rather than failing silently.
 - A guest who signs in becomes a different adder: stickies added as a guest can no longer be deleted by them.
 
+### The collab key
+
+A person's **collab key** is the public id their [comment reactions](../012-collaboration/comment-reactions.md) are recorded under. The server derives it; the browser never
+chooses it.
+
+- **From who you are.** `collabKeyFor(person)` (`@liveworkspace/api-kit/collab-key`) is the first 32 hex characters
+  of SHA-256(`liveworkspace:collab:v1:<person>`), the person being the account or guest id the grant names. It is
+  the same on every device and every design, so a signed-in person's own reactions read as theirs everywhere, and
+  their two devices count as one person. It gives nothing away: the hash cannot be turned back into the id.
+- **Pinned on the session.** The upgrade forwards it as `X-Verified-Collab-Key`, the session keeps it, and the
+  roster's `key` is that value whatever the `hello` claimed. The room then tells the session its own key in a
+  `collab-key` frame sent to that socket alone, and the editor records its reactions under it from then on. Before
+  that (a design only in This Browser, or the moment before the room answers) the editor uses this browser's own
+  key, as it always did.
+- **A session with no identity** (a link visitor whose guest handoff could not run) gets a random key the room mints
+  for that socket. Nobody else can be handed it, so nobody can act under it; it lasts as long as the socket.
+- **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, and
+  drops a dot or a response naming any key but the sender's own, an Editor's included.
+- **What stays open.** An Editor's whole-tab save can still write any reaction into the stored tab, as it can change
+  anything on the canvas; the room's ledger keeps each person's latest live reaction, so a save made before one
+  arrived cannot erase it.
+- **Reactions left before this** were filed under each browser's own key. They still show and count, but no longer
+  as yours; reacting again records yours under the new key.
+- **An editor from before this**, still open when it ships, keeps its browser's key. The room stamps its reactions
+  with the server's key, so peers see them as its person's; a reload, which the new-version prompt offers, brings it
+  in line.
+
 ## Telemetry
 
 `Document·Shared` and `Document·Joined` take the type `Participate` beside `Edit` and `View`
@@ -144,7 +171,6 @@ any of them. Who owns an item and who may reach it is liveworkspace's index's
 ## Outside the levels
 
 - **API tokens** carry a read-only flag, not a level ([Public API and API tokens](../015-api/public-api-and-tokens.md)).
-- **Collaboration keys** are the client's own per-session keys; the server does not derive them.
 
 ## Domain language
 

@@ -55,18 +55,19 @@ Outside an editor (an embed, an export) the chips are not drawn.
 ## How it is stored and travels
 
 - A comment gains `reactions?: { emoji, by, name }[]`, in the order they were left. `by` is the reactor's public
-  **collab key** (the per-browser key its hello publishes to the room, `ensureCollabKey`),
-  never an owner id, which for a guest is a credential. `name` is the name they reacted under, so the card reads
+  **collab key**, which the server derives from who they are ([The collab key](../013-workspace/share-roles.md#the-collab-key)), never an owner id, which for a guest is a credential. `name` is the name they reacted under, so the card reads
   without the roster. Absent when there are none, so comments written before this read as they always did, and
   nothing needs migrating. At most 300 per comment.
 - A change travels as one element delta, `comment-react` (`commentId`, `emoji`, `by`, `name`, `on`), applied by
   the sender and every receiver through `applyElementDelta`, like every comment change
   ([Collaboration race hardening](collab-race-hardening.md)). Two people reacting at once both land.
 - The room stamps the delta's `name` and `by` from the sender's presence, as it stamps a posted comment's author,
-  so nobody reacts in someone else's name. livedocuments' room relays element deltas from an Editor only, so a
+  so nobody reacts in someone else's name: the key is the one the server pinned on the session, whatever the
+  frame or its `hello` claimed. livedocuments' room relays element deltas from an Editor only, so a
   **Participant** reacts through the comment endpoints, as it comments:
-  `POST /api/documents/<id>/tabs/<tabId>/comments/<commentId>/react` with `{ emoji, on, key }`. The api checks
-  the caller may take part, takes the name from their profile, writes the change at the tab's revision and relays
+  `POST /api/documents/<id>/tabs/<tabId>/comments/<commentId>/react` with `{ emoji, on }`. The api checks
+  the caller may take part, takes the name from their profile and the `by` from their identity (`collabKeyFor`; a
+  `key` an older editor still sends is ignored), writes the change at the tab's revision and relays
   the same `comment-react` delta to the room. The editor applies it at once and takes it back if the endpoint
   refuses. A Viewer is refused (403) and offered nothing. A new reaction on a comment in a resolved thread is
   refused (409 `thread_resolved`); taking one's own back still works.

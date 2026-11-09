@@ -1,7 +1,7 @@
 # Share roles
 
-**Status: built** for the Viewer, Participant and Editor links. Token levels, ownership powers, server-derived
-collaboration keys and an answers route are planned ([Later](#later)).
+**Status: built** for the Viewer, Participant and Editor links, with server-derived collab keys
+([The collab key](#the-collab-key)). Token levels, ownership powers and an answers route are planned ([Later](#later)).
 
 Everyone who reaches a document without owning it, by a share link or an embed, does so at one of three **access
 levels**: **Viewer**, **Participant** or **Editor**. **Ownership** is not a level: it is a set of powers over the
@@ -142,12 +142,42 @@ and moves stay with the owner and joined team members. No level grants any of th
   A copy is nobody's addition: duplicating or pasting an element never carries its adder along.
 - **Peers take only what a Participant changed.** The room relays a Participant's update as the fields it changed,
   never the stored element whole, so an Editor's change that has not been saved yet is never undone by it.
-- **A Participant answers as itself.** Its dots and responses must name the key its own session published; one in
-  another's name is dropped. Until keys are server-derived ([Later](#later)), a session could still claim someone
-  else's key from the start.
+- **A Participant answers as itself.** Its dots, responses and reactions must name the collab key the server pinned
+  on its session ([below](#the-collab-key)); one in another's name is dropped.
 - **A held-back gesture says so.** When the editor holds back a change a Participant may not make (deleting
   someone else's sticky, resizing a shape), it shows one short notice for the burst rather than failing silently.
 - A guest who signs in becomes a different adder: stickies added as a guest can no longer be deleted by them.
+
+### The collab key
+
+A person's **collab key** is the public id their dots, responses (done checks, estimates, temperature checks, quiz
+answers, [Per-participant responses](../012-collaboration/participant-responses.md)) and
+[comment reactions](../012-collaboration/comment-reactions.md) are recorded under. The server derives it; the
+browser never chooses it.
+
+- **From who you are.** `collabKeyFor(person)` (`@liveworkspace/api-kit/collab-key`) is the first 32 hex characters
+  of SHA-256(`liveworkspace:collab:v1:<person>`), the person being the account or guest id the grant names. It is
+  the same on every device and every document, so a signed-in person's own reactions and answers read as theirs
+  everywhere, and their two devices count as one person. It gives nothing away: the hash cannot be turned back into
+  the id.
+- **Pinned on the session.** The upgrade forwards it as `X-Verified-Collab-Key`, the session keeps it, and the
+  roster's `key` is that value whatever the `hello` claimed. The room then tells the session its own key in a
+  `collab-key` frame sent to that socket alone, and the editor records its answers and reactions under it from then
+  on. Before that (a document only in This Browser, or the moment before the room answers) the editor uses this
+  browser's own key, as it always did.
+- **A session with no identity** (a link visitor whose guest handoff could not run) gets a random key the room mints
+  for that socket. Nobody else can be handed it, so nobody can act under it; it lasts as long as the socket, so after
+  a reconnect that visitor's earlier answers no longer read as theirs.
+- **Nobody answers or reacts as someone else, at any level.** The room drops a dot or a response naming any key but
+  the sender's own, an Editor's included, and stamps every reaction's `by` with the sender's key.
+- **What stays open.** An Editor's whole-tab save can still write any answer or reaction into the stored tab, as it
+  can change anything on the canvas; the room's ledger keeps each person's latest live answer and reaction, so a save
+  made before one arrived cannot erase it.
+- **Answers and reactions left before this** were filed under each browser's own key. They still show and count,
+  but no longer as yours; answering or reacting again records yours under the new key.
+- **An editor from before this**, still open when it ships, keeps its browser's key. The room stamps its reactions
+  with the server's key, so peers see them as its person's, but drops its dots and responses until it reloads, which
+  the new-version prompt offers.
 
 ## Moving to three levels
 
@@ -165,13 +195,11 @@ and moves stay with the owner and joined team members. No level grants any of th
 
 ## Later
 
-**Status: Planned.** Not built yet; today API tokens carry the read-only flag, ownership is checked door by door,
-and a session chooses its own collaboration key. Specified in the research:
+**Status: Planned.** Not built yet; today API tokens carry the read-only flag and ownership is checked door by door.
+Specified in the research:
 
 - **Token levels**: API tokens carry view, participate or edit instead of the read-only flag.
 - **Ownership powers** as a named set every door asks beside the level.
-- **Server-derived collaboration keys**, pinned per socket, so nobody can answer as someone else; until then a
-  Participant's dots and answers carry the same client-chosen key an Editor's do.
 - **An answers route** so a token can take part without a socket.
 
 ## Domain language

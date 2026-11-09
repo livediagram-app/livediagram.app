@@ -28,7 +28,9 @@ The implementation of [Realtime conflict resolution](../../012-collaboration/rea
 
 `judgeRoomElementOp(op, rules)`, pure, first refusal wins:
 
-1. `el` whose inner op is `add` or `update`: the element is judged (below). Any other inner kind: `null`.
+1. `el` whose inner op is `add` or `update`: the element is judged (below). Whose inner op is `patch`:
+   `room-made-op`, field `kind`, with the patch's `id` as the element when it is a string (only the room makes a
+   patch, from a Participant's change, so none may come from a socket). Any other inner kind: `null`.
 2. `tab` whose `tab.elements` is an array: more than `rules.maxElements` elements is `too-many-elements`. Else the tab
    is migrated (`rules.migrateTab`); the migrated elements (the sent ones when migration hands back no array) are
    judged in order, and an id seen before is `duplicate-element` with that id.
@@ -62,7 +64,7 @@ Hibernation resets it, which only re-opens a window.
   `migrateTab(tab: unknown): unknown`, `issue(element: unknown): { field: string; rule: string } | null`,
   `maxElements: number`.
 - `OpRefusedMessage`: `{ kind: 'op-refused'; op: string; reason: 'invalid-element' | 'duplicate-element' |
-'too-many-elements'; tabId?: string; elementId?: string; field?: string; ref?: number }`.
+'too-many-elements' | 'room-made-op'; tabId?: string; elementId?: string; field?: string; ref?: number }`.
 - `ROOM_ELEMENT_RULES` binds `ELEMENT_TYPES.has`, `migrateIncomingElements([el])[0]`, `migrateIncomingTab`,
   `elementValidationIssue` and `MAX_ELEMENTS_PER_TAB` from this product's model package.
 
@@ -73,7 +75,10 @@ Hibernation resets it, which only re-opens a window.
 - An element of an unknown type inside a tab still counts toward the bound and the duplicate check.
 - An older client's former element shape is migrated before judging, so it is never refused for a shape the
   migrations upgrade.
-- An unknown op kind, `tab-meta`, `el-delta`, `remove`, `reorder` and a room-made `patch` pass unjudged.
+- An unknown op kind, `tab-meta`, `el-delta`, `remove` and `reorder` pass unjudged. A `patch` from a socket is
+  refused whatever it holds; the room's own patches (participant content) never pass the gate.
+- The room holds no element state, so an `update` is judged alone, never against the element it replaces, and a
+  `remove` or `reorder` naming an id the tab lacks relays as a no-op (the spec's "What the room still cannot judge").
 
 ## Security and trust
 
@@ -102,7 +107,7 @@ Hibernation resets it, which only re-opens a window.
 
 ## Testing
 
-- `../packages/api-kit/src/room-element-ops.test.ts` (100% held): valid ops pass; each refusal reason; unknown kind
+- `../packages/api-kit/src/room-element-ops.test.ts` (100% held): valid ops pass; each refusal reason, a socket's `patch` refused `room-made-op`; unknown kind
   passes; unknown field passes; migration runs before judging; non-element ops pass; the gate's frame and `ref`;
   the log's limit, window and `suppressed` count.
 - `apps/api/src/room-element-rules.test.ts`: this product's real validator: a valid element and tab relay, an
@@ -121,4 +126,4 @@ Hibernation resets it, which only re-opens a window.
 
 ## Defaults ledger
 
-See `DEFAULTS.md` rows REO1 to REO4.
+See `DEFAULTS.md` rows REO1 to REO5.

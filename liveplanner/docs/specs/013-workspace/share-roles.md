@@ -130,9 +130,8 @@ once a plan is open.
   A copy is nobody's addition: duplicating or pasting an element never carries its adder along.
 - **Peers take only what a Participant changed.** The room relays a Participant's update as the fields it changed,
   never the stored element whole, so an Editor's change that has not been saved yet is never undone by it.
-- **A Participant answers as itself.** Its dots and responses must name the key its own session published; one in
-  another's name is dropped. Keys are client-chosen today (server-derived keys are planned, [Later](#later)), so a
-  session can still claim someone else's key from the start.
+- **A Participant answers as itself.** Its dots, responses and reactions must name the collab key the server pinned
+  on its session ([below](#the-collab-key)); one in another's name is dropped.
 - **A held-back gesture says so.** When the editor holds back a change a Participant may not make (deleting
   someone else's sticky, resizing a shape), it shows one short notice for the burst rather than failing silently.
 - A guest who signs in becomes a different adder: stickies added as a guest can no longer be deleted by them.
@@ -144,6 +143,34 @@ once a plan is open.
   chime in issues a Participant link.
 - **No old reader escalates.** Every reader of a level reads an unknown value as Viewer.
 
+### The collab key
+
+A person's **collab key** is the public id their dots, responses (done checks, estimates, [Per-participant responses](../012-collaboration/participant-responses.md)) and [comment reactions](../012-collaboration/comment-reactions.md) are recorded under. The server derives it; the browser never
+chooses it.
+
+- **From who you are.** `collabKeyFor(person)` (`@liveworkspace/api-kit/collab-key`) is the first 32 hex characters
+  of SHA-256(`liveworkspace:collab:v1:<person>`), the person being the account or guest id the grant names. It is
+  the same on every device and every plan, so a signed-in person's own reactions and answers read as theirs everywhere, and
+  their two devices count as one person. It gives nothing away: the hash cannot be turned back into the id.
+- **Pinned on the session.** The upgrade forwards it as `X-Verified-Collab-Key`, the session keeps it, and the
+  roster's `key` is that value whatever the `hello` claimed. The room then tells the session its own key in a
+  `collab-key` frame sent to that socket alone, and the editor records its answers and reactions under it from then on. Before
+  that (a plan only in This Browser, or the moment before the room answers) the editor uses this browser's own
+  key, as it always did.
+- **A session with no identity** (a link visitor whose guest handoff could not run) gets a random key the room mints
+  for that socket. Nobody else can be handed it, so nobody can act under it; it lasts as long as the socket.
+- **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, and
+  drops a dot or a response naming any key but the sender's own, an Editor's included. A reaction on a card's comment thread, sent over REST, is recorded under the caller's derived key; the key the
+  request names is ignored.
+- **What stays open.** An Editor's whole-tab save can still write any reaction into the stored tab, as it can change
+  anything on the canvas; the room's ledger keeps each person's latest live reaction, so a save made before one
+  arrived cannot erase it.
+- **Reactions left before this** were filed under each browser's own key. They still show and count, but no longer
+  as yours; reacting again records yours under the new key.
+- **An editor from before this**, still open when it ships, keeps its browser's key. The room stamps its reactions
+  with the server's key, so peers see them as its person's; a reload, which the new-version prompt offers, brings it
+  in line.
+
 ## Telemetry
 
 `Project·Joined` takes the type `Participate` beside `Edit` and `View`
@@ -152,11 +179,10 @@ once a plan is open.
 ## Later
 
 **Status: Planned.** Not built yet; today API tokens carry the read-only flag, ownership is the index's `edit`
-grant, and a Participant's dots and answers carry the same client-chosen key an Editor's do.
+grant.
 
 - **Token levels**: API tokens carry view, participate or edit instead of the read-only flag.
 - **Ownership powers** as a named set every door asks beside the level.
-- **Server-derived collaboration keys**, pinned per socket, so nobody can answer as someone else.
 - **An answers route** so a token can take part without a socket.
 
 ## Domain language
