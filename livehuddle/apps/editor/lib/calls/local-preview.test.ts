@@ -94,6 +94,16 @@ describe('LocalPreview', () => {
     expect(callMedia().size).toBe(0);
   });
 
+  it('turns a previewed camera the browser ended off, and its bubble goes', async () => {
+    const cam = fakeStream();
+    const preview = new LocalPreview({ getUserMedia: vi.fn(async () => cam.stream) });
+    await preview.start('camera');
+    cam.track.end();
+    expect(callSelf().previewCamera).toBe('off');
+    expect(callMedia().size).toBe(0);
+    expect(preview.stream('camera')).toBeNull();
+  });
+
   it('asks once while a capture is on its way, and a stop meanwhile releases what arrives', async () => {
     const cam = fakeStream();
     let resolve!: (s: MediaStream) => void;

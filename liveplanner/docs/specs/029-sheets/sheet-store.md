@@ -204,7 +204,7 @@ Sheets follow the project's access ([Auth and guest access](../014-identity/auth
   Blocks without a place stack from row 4 down column A, one blank row apart (a table's header first, then its rows,
   then its total), so an agent writes formulas knowing where every row lands; the answer names each block's ranges.
   A design lays out an empty sheet, and is refused on one with cells.
-- A read answers at most 5,000 cells of its range and 100,000 characters of cells, and says where to read on: stopped by the characters, the range to read next starts at the stopping row's first column, so no column before the stopping cell is left unread.
+- A read answers at most 5,000 cells of its range and 100,000 characters of cells, and says where to read on as an exact A1 range that runs to the end of the range asked for: stopped by the cells, the rows after the last one read; stopped by the characters, from the stopping row's first column, so no column before the stopping cell is left unread (and, when the cells cap also cut the read, on past it to the range's last row).
 - Inputs from agents are read as typed in the `en-GB` locale (day before month), unless a value is given as a
   JSON number or boolean; a formula an agent writes that cannot be read is refused (`formula_invalid`, naming the
   cell and why), never stored as `#ERROR!`.

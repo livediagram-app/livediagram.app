@@ -78,6 +78,7 @@ export function MissionStrip<Ctx>({
       onEnd={onEnd}
       placement={placement}
       ring={ring}
+      hinted={!!run.hint?.ring}
       beside={<Segments count={count} index={index} phase={phase} />}
     >
       {/* The mission, its lesson or the finish, spoken as each arrives. */}
@@ -170,6 +171,7 @@ export function StripFrame({
   endLabel = 'End',
   placement = 'page',
   ring = null,
+  hinted = false,
   children,
 }: {
   name: string;
@@ -178,6 +180,8 @@ export function StripFrame({
   endLabel?: string;
   placement?: 'page' | 'dialog';
   ring?: string | readonly string[] | null;
+  // The ring is a hint's, so it brings its target into view (HintRing `reveal`).
+  hinted?: boolean;
   children: ReactNode;
 }) {
   const phone = useIsMobileViewport();
@@ -225,7 +229,7 @@ export function StripFrame({
   if (placement === 'dialog') return body;
   return (
     <Portal>
-      {ring ? <HintRing selector={ring} /> : null}
+      {ring ? <HintRing selector={ring} reveal={hinted} /> : null}
       <div
         data-mission-strip-layer=""
         data-mission-corner={corner ? '' : undefined}

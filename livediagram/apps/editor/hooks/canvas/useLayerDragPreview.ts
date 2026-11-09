@@ -3,6 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
   elementIndexFor,
+  spreadOverBase,
   type Element,
   type ElementGrid,
   type ElementIndex,
@@ -212,15 +213,21 @@ export function createLayerPreviewStore(): LayerPreviewStore {
     for (const [id, element] of overlay.changed) if (!rides.has(id)) out.set(id, { element });
     for (const { el } of overlay.added) out.set(el.id, { element: el });
     if (!elementIndex || !arrowLinks) return { out, rides };
-    const index = new Map(elementIndex);
-    for (const [id, el] of overlay.changed) index.set(id, el);
-    for (const { el } of overlay.added) index.set(el.id, el);
-    const grid = inputs.gridFor(drawnElements);
     const ids = affectedArrows(overlay, drawnElements, arrowLinks);
     // An arrow riding the offset is drawn as the document has it: only the rest re-route.
     for (const id of rides.keys()) ids.delete(id);
-    const moved = movedBoxesGrid(overlay);
     for (const { el } of overlay.added) if (el.type === 'arrow') ids.add(el.id);
+    // Nothing to re-route (a move that rides whole): no board to build for it.
+    if (ids.size === 0) return { out, rides };
+    const index = new Map(elementIndex);
+    for (const [id, el] of overlay.changed) index.set(id, el);
+    for (const { el } of overlay.added) index.set(el.id, el);
+    // The board's fans are placed again only where they read what moved (docs/specs/008-canvas/blueprints/
+    // drag-preview.md "Performance and limits").
+    if (overlay.added.length === 0 && overlay.removed.size === 0)
+      spreadOverBase(index, elementIndex, overlay.changed.keys());
+    const grid = inputs.gridFor(drawnElements);
+    const moved = movedBoxesGrid(overlay);
     // The board as the preview shows it, which a moved label is laid out against; only built when
     // an affected arrow has a label.
     let virtual: Element[] | null = null;

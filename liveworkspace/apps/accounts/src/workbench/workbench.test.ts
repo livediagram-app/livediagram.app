@@ -549,6 +549,36 @@ describe('ending access', () => {
     expect(await ns.entryOf('user_ada').core.listPairings(null)).toEqual([]);
   });
 
+  it('checks 150 paired tokens in one statement under D1’s 100-parameter limit', async () => {
+    const t = await token();
+    await pair(t.secret);
+    const { core } = ns.entryOf('user_ada');
+    const [row] = await core.listPairings(null);
+    const insert = sql.prepare(
+      `INSERT INTO api_token (id, userId, tokenHash, name, readOnly, createdAt, lastUsedAt, expiresAt, revokedAt)
+       VALUES (?, 'user_ada', ?, 'Old', 0, 1, NULL, ?, NULL)`,
+    );
+    const rows = [row!];
+    for (let i = 1; i < 150; i += 1) {
+      insert.run(`tok_${i}`, `hash_${i}`, Date.now() + 60_000);
+      rows.push({ ...row!, id: `pair_${i}`, tokenId: `tok_${i}` });
+    }
+    vi.spyOn(core, 'listPairings').mockResolvedValue(rows);
+    const bound: number[] = [];
+    const prepare = env.AUTH_DB.prepare.bind(env.AUTH_DB);
+    vi.spyOn(env.AUTH_DB, 'prepare').mockImplementation((query: string) => {
+      const statement = prepare(query);
+      const bind = statement.bind.bind(statement);
+      return Object.assign(statement, {
+        bind: (...args: unknown[]) => (bound.push(args.length), bind(...args)),
+      });
+    });
+    const listed = await call('/workbench/pairings', { bearer: 'at-ada' });
+    expect(listed.status).toBe(200);
+    expect(((await listed.json()) as { pairings: unknown[] }).pairings).toHaveLength(150);
+    expect(Math.max(...bound)).toBeLessThanOrEqual(3);
+  });
+
   it('drops the whole store when the account closes', async () => {
     const t = await token();
     await pair(t.secret);

@@ -37,6 +37,9 @@ On top of earshot, a bubble is received only while it can be seen:
 - Your own bubble shows above your own head, mirrored, so you see what others see. Others see it unmirrored.
 - **Camera Blocked** (amber): the browser refused the camera. The hover card says how to allow it.
 - The camera stays on while you walk alone: it is your choice to make. Nothing is sent to anyone not in earshot.
+- A camera the browser ends by itself (unplugged, taken by another app, its permission withdrawn) turns off as a press
+  would: the button reads off, your bubble goes, and the room learns it, never a frozen picture under a button that
+  still reads on.
 - Leaving the call, the mode or the tab turns it off. A camera you only previewed and never sent stays a preview when
   a call ends (see [Local preview](#local-preview)).
 
@@ -106,8 +109,8 @@ your own screen and nothing is sent; once a call is joined, the same bubble is s
   ([Share roles](#share-roles)), so a Participant's screen stays local in a call too, tag and all. Under **audio
   only** in a live call the strip reads Video Paused, so a preview stops there as a sent camera does; outside a call
   the switch does not touch a preview, which sends nothing.
-- **When it stops.** Pressing the button again, the browser's own Stop on a screen, leaving the mode, changing tab and
-  closing the page all stop a preview and release the camera or screen. Leaving a call stops what that call was sending,
+- **When it stops.** Pressing the button again, the browser's own Stop on a screen, a camera the browser ends,
+  leaving the mode, changing tab and closing the page all stop a preview and release the camera or screen. Leaving a call stops what that call was sending,
   as before; a preview it never sent stays as it was.
 - Do Not Disturb and the hidden-tab rule are about what reaches you: neither changes your own preview.
 

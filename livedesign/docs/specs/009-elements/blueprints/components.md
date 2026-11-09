@@ -60,7 +60,8 @@ own mains are its **In This Design** band. Code never calls a main a "symbol", "
 e.width * sx, height: e.height * sy, layerId: instance.layerId, locked: true }` minus `componentMember`,
   `commentThread`, `link`, `addedBy`.
 - An arrow: `free` ends map like points; `pinned` ends re-target `instance.id + '/' + elementId`; `on-arrow` ends
-  re-target the same way; `curveOffset`, `elbowOffset`, `curvePoints` scale by `(sx, sy)`.
+  re-target the same way; `curveOffset`, `elbowOffset`, `curvePoints` scale by `(sx, sy)`. A pointer note's
+  `pointerTip` (an offset from its top-left) scales by `(sx, sy)` too, and the session's derive divides it back.
 - Opacity: `(e.opacity ?? 1) * (instance.opacity ?? 1)`, written only when below 1.
 - `opts.rotate` (exports): each boxed element's centre turns about the instance centre by `instance.rotation`, which
   is added to its own; free arrow points turn the same way. The canvas passes no rotation (its wrapper turns).
@@ -95,12 +96,17 @@ when it holds no instance. Linear: one pass, one map lookup per instance.
 
 `detachInstance(elements, instanceId, main, newId)`: the instance replaced (same index) by
 `resolveInstance(instance, main, { rotate: true })` with ids from `newId()` (mapping arrow ends), `locked` cleared,
-`layerId` kept. An arrow end pinned to the instance becomes `free` at its resolved point.
+`layerId` kept. An arrow end pinned to the instance becomes `free` at its resolved point. The `detach` edit
+operation (agents) refuses by name a main whose arrow is attached to an element the main no longer holds (a patch's
+`remove` can leave one): `<instance>: its main's arrow <id> is attached to <gone>, which the main no longer holds`. It
+mints one id a main element, and a plain one for any further call (a badge's host the main no longer holds), so it
+never reads past the main's elements.
 
 ### Edit session
 
 - `startComponentEdit(elements, instanceId, main, by)`: sets `componentEditBy: by` on the instance; inserts after it
-  `resolveInstance(instance, main, { overrides: false })` with ids `${instanceId}-${e.id}` (made unique against the
+  `resolveInstance(instance, main, { overrides: false })`, the instance's rotation and opacity left out (the members
+  are the main, and the derive copies their opacity back into it), with ids `${instanceId}-${e.id}` (made unique against the
   tab), `locked` cleared, each marked `componentMember: { instanceId, elementId: e.id }`.
 - `activeComponentSessions(elements)`: instances with `componentEditBy`.
 - `stampSessionMembers(prev, next, instanceId)`: every element in `next` absent from `prev`, allowed in a component
@@ -115,7 +121,9 @@ when it holds no instance. Linear: one pass, one map lookup per instance.
 
 ### Patch
 
-- `applyComponentPatch(main, patch, now)`: `remove` drops by id, `upsert` replaces by id or appends, `order` (ids)
+- `applyComponentPatch(main, patch, now)`: `remove` drops by id through `removeElements` (`arrow-rebind.ts`), so a
+  kept arrow's end attached to a removed element is freed where it was drawn, `upsert` replaces by id or appends (an
+  upserted arrow wins over the freed copy), `order` (ids)
   reorders those it names keeping the rest after, `name` clamps, `archived` sets; `updatedAt = now`.
 - `diffComponent(before, after)`: the patch turning one into the other (by element reference / JSON equality), or
   `null` when equal.

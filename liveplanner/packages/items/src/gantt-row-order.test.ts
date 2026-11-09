@@ -56,6 +56,23 @@ describe('a Gantt chart’s row order', () => {
     ]);
   });
 
+  it('names a card shown in several lanes once, so a big chart keeps its reorder', () => {
+    // Swimlanes by a Person field holding several: b sits in both lanes, so it is two rows.
+    const rows = ['item-a', 'item-b', 'item-b', 'item-c'];
+    expect(ganttReorder(rows, ['item-b', 'item-c'], 'item-c', 0)).toEqual([
+      'item-a',
+      'item-c',
+      'item-b',
+    ]);
+    // 2,000 cards, each in two lanes: 4,000 rows. A move past row 2,000 lands, and the order is a valid one.
+    const cards = Array.from({ length: GANTT_ROW_ORDER_MAX }, (_, i) => `item-${i}`);
+    const shown = [...cards, ...cards];
+    const lane = cards.slice(1000);
+    const next = ganttReorder(shown, lane, 'item-1999', 0)!;
+    expect(isGanttRowOrder(next)).toBe(true);
+    expect(next.indexOf('item-1999')).toBe(1000);
+  });
+
   it('is validated as card ids, none repeated, within its cap', () => {
     expect(isGanttRowOrder(['item-a', 'item-b'])).toBe(true);
     expect(isGanttRowOrder(['item-a', 'item-a'])).toBe(false);

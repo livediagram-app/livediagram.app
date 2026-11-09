@@ -34,6 +34,7 @@ import { PassAborted, type MirrorDeps, type Runtime } from './context';
 import { meteredDoors, meteredFetch, SubrequestMeter } from './meter';
 import { nextPassAt, runPass } from './pass';
 import { PassState } from './pass-state';
+import { pictureIndex } from './picture';
 import { NeedsReconnect, NotConnected, TokenSource } from './tokens';
 
 export type Refusal = { refused: DriveErrorCode };
@@ -68,7 +69,7 @@ export class Mirror {
       drive: createDriveClient({ ...google, fetch: meteredFetch(googleFetch, meter) }, (opts) =>
         tokens.get(opts),
       ),
-      index: index.forPerson(personId, meter),
+      index: pictureIndex(index.forPerson(personId, meter), this.deps.store, this.deps.now),
       doors: meteredDoors(doors, meter),
       guard: () => {
         if (this.epoch !== epoch) throw new PassAborted();

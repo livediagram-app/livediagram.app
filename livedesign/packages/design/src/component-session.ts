@@ -13,6 +13,7 @@ import {
   type InstanceElement,
 } from './components';
 import { instanceScale, resolveInstance } from './component-resolve';
+import { isPointerTip } from './pointer-note';
 
 /** The instances on a tab with an edit session open. */
 export function activeComponentSessions(elements: readonly Element[]): InstanceElement[] {
@@ -44,7 +45,9 @@ export function startComponentEdit(
     taken.add(id);
     ids.set(m.id, id);
   }
-  const members = resolveInstance({ ...instance, rotation: 0 }, main, {
+  // The members are the main: the instance's turn and fade stay off them, or the derive would bake its opacity
+  // into the main and fade every other instance.
+  const members = resolveInstance({ ...instance, rotation: 0, opacity: undefined }, main, {
     overrides: false,
     ids: (id) => ids.get(id) ?? id,
   }).map((el, i) => {
@@ -125,12 +128,14 @@ export function deriveComponentFromSession(
     }
     const b = m;
     const host = (b as { attachedTo?: unknown }).attachedTo;
+    const tip = (b as { pointerTip?: unknown }).pointerTip;
     return {
       ...bare,
       x: (b.x - ix) / sx,
       y: (b.y - iy) / sy,
       width: b.width / sx,
       height: b.height / sy,
+      ...(isPointerTip(tip) ? { pointerTip: { x: tip.x / sx, y: tip.y / sy } } : {}),
       ...(typeof host === 'string' && toMain.has(host) ? { attachedTo: toMain.get(host) } : {}),
     } as Element;
   });

@@ -50,6 +50,7 @@ import { firstVisitStatement, tellApp, wasFirstVisit } from './notices';
 import { drainTombstonesSoon, purgeRows } from './purge';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
 import { bulkEventStatements, eventStatements, moveScopeStatements } from './timeline';
+import { expiringStatements } from './share-expiry';
 import { recordVisitorCopy, recordVisitorOpen } from './visitors';
 import { trustedClientAddress } from '@liveworkspace/sites/network';
 
@@ -572,6 +573,8 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
         'UPDATE items SET trashed_at = ?, trash_reason = ? WHERE id = ? AND trashed_at IS NULL',
       )
       .bind(now, reason, id),
+    // A trashed item's links reach nothing, so its Share Link Expiring warning goes.
+    ...expiringStatements(db, id, now),
   ];
   // An empty item tidied away by its app is not news; one already in the Trash was recorded going there.
   if (reason === 'deleted' && row.trashed_at === null) {
@@ -596,6 +599,8 @@ async function restoreItem(ctx: RouteContext, id: string): Promise<Response> {
   const db = env.INDEX_DB;
   const statements = [
     db.prepare('UPDATE items SET trashed_at = NULL, trash_reason = NULL WHERE id = ?').bind(id),
+    // Back out of the Trash, its links work again: the warning is worked out again after the restore.
+    ...expiringStatements(db, id, Date.now()),
   ];
   if (loaded.row.trashed_at !== null) {
     statements.push(

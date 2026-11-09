@@ -8,6 +8,7 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // roster: a gap sends a guest someone's picture, or a socket its own entry. And sealing: a gap there
 // leaks a refresh token or a webhook's URL. And typed text: a gap lets a name turn the words around it backwards. And CSV: a gap
 // runs a typed name as a formula in an admin's spreadsheet. And the tab swap: a gap there loses a Participant's write or answers it wrongly.
+// And the ledger store: a gap there cuts an entry a save still needs, or hands a save less than it merges.
 export default defineProject({
   test: {
     coverage: {
@@ -32,6 +33,7 @@ export default defineProject({
           functions: 100,
           lines: 100,
         },
+        'src/room-ledger-store.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-roster.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/sealed.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/typed-text.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },

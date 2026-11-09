@@ -310,7 +310,8 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
 - A **Number** answer is read as the respondent's locale writes it: the box offers a decimal keypad, which has a comma
   on a German or French phone, so the browser reads `3,5` as 3.5 and `1.234,5` as 1234.5 before it checks the answer
   and sends it (`withLocaleNumbers`, `packages/forms/src/locale-number.ts`); the box keeps showing what was typed. A
-  group mark counts only between thousands, so an en-US `3,5` is not read as 35. The server checks plain numbers.
+  group mark counts only between thousands, so an en-US `3,5` is not read as 35. The server checks plain decimal numbers only (`0x1A` or `0b11` is "Enter a
+  number", never 26 or 3).
 - A **Date and Time** answer is read in the respondent's own time zone and sent as its UTC instant with that zone
   (`2026-10-31T17:00:00Z[Europe/London]`, as a [Date and Time field](../026-plan/item-types.md#date-and-time-fields)
   keeps it); a time that is not a real moment says "Enter a real date and time". In a card's Description or a sheet's
@@ -512,7 +513,8 @@ no editor code loaded (its own small bundle).
 - **Answers are kept while filling in**: in the browser's session storage per form, so a reload or a wrong Back keeps
   what was typed; cleared on submit. **Submit Another Response** starts afresh.
 - **Checking answers**: each field is checked when it loses focus (an empty one only on Next or Submit, so tabbing
-  through is no mistake) and again on Next or Submit. An error shows under
+  through is no mistake) and again on Next or Submit. A press of Back, Next or Submit keeps focus in the field, so its
+  check never moves the button out from under the press (Next and Submit check it with the rest). An error shows under
   the question in red with an icon ("This question is required", "Enter an email address like name@example.com",
   "Enter a whole number from 1 to 10", "Pick at most 3"), the question's border turns red, and on Next or Submit a
   summary at the top lists every error as a link to its question, with focus moved to the summary.

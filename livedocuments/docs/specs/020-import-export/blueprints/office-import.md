@@ -124,7 +124,10 @@ Follows the spec's table. Precisely:
   (`title`, `subtitle`, `heading N`, `quote`, `intense quote`, a code name: `code`, `html preformatted`,
   `source code`, `macro text`), else an `w:outlineLvl` (0 is Heading 1), else the style id read as a name (no
   styles part).
-- List: `w:numPr` on the paragraph, else on its style chain; `numId` `0` is none; the level's `w:numFmt`:
+- List: `w:numPr` on the paragraph, else on its style chain; `numId` `0` is none; the level's `w:numFmt` (a
+  `w:num`'s `w:lvlOverride` with its own `w:lvl` first; an abstract numbering with no levels and a
+  `w:numStyleLink`, as Word's built-in multilevel lists write, takes the levels of the numbering its numbering
+  style names, at most 4 links deep):
   `bullet` is bulleted, `none` is no list, anything else numbered (D63: a level the numbering part lacks is
   bulleted). Level capped at `ARTICLE_LIST_MAX_LEVEL`.
 - To-do: a paragraph (not a code block) whose text, trimmed at its start, begins with `☐`, `☒` or `☑` then a space
@@ -136,13 +139,20 @@ Follows the spec's table. Precisely:
 - Runs: `w:b`, `w:i`, `w:strike` / `w:dstrike`, `w:u` (not `none`), `w:vertAlign`; a toggle is off when its
   `w:val` is `0`, `false` or `off`. A run's character style adds its own `b` / `i` and the names `strong` and
   `emphasis`. A run in a monospace font (`w:rFonts` ascii or hAnsi, or its character style's) is `code` (D64:
-  the font list in `docx-styles.ts`). A paragraph is a code block when its style is a code style or every run
+  the font list in `docx-styles.ts`); a hidden run (`runHidden`: its own `w:vanish`, else its character style's, off
+  when its `w:val` says so) adds no text. A paragraph is a code block when its style is a code style or every run
   with text is monospace; consecutive code paragraphs join with `\n`.
 - Containers walked into: `w:hyperlink`, `w:ins`, `w:moveTo`, `w:smartTag`, `w:customXml`, `w:sdt` /
   `w:sdtContent`, `w:fldSimple`, `w:dir`, `w:bdo`, `mc:AlternateContent` (its first `mc:Choice` only). Skipped:
   `w:del`, `w:moveFrom`, `w:proofErr`, bookmarks, permissions.
 - Fields: a stack across the body; between `begin` and `separate` the run text is instructions, never shown;
   a `HYPERLINK "address"` field links its result. `w:fldSimple`'s `w:instr` the same.
+- Contents: a `TOC` field outside a table and without a `\c` or `\a` switch (those list captions, a table of
+  figures, whose result stays as written) becomes, at its `separate`, a `toc` block whose depth is its `\o "1-N"`
+  switch's N clamped to 1..3 (none: 3); until its `end`, everything in its result (entries, page numbers, links,
+  pictures) is left out, the block drawing its own entries with the article's page numbers. A paragraph in the
+  `TOC Heading` style (by name, else id) holding no field character is left out: the block draws its own
+  "Contents".
 - Breaks: `w:br` `type="page"` ends the paragraph and adds a page break (the rest continues as a new paragraph of
   the same style); `w:pageBreakBefore` adds one before the paragraph; other `w:br` and `w:cr` are `\n`; `w:tab`
   a space; `w:noBreakHyphen` `-`.
@@ -156,8 +166,13 @@ Follows the spec's table. Precisely:
 - Counted: a `w:footnoteReference` with no note, `w:endnoteReference` (`footnotes`), `w:commentReference` (`comments`),
   `m:oMath` / `m:oMathPara` (`equations`), `w:altChunk` (`embedded`), a header or footer reference in any
   `w:sectPr` (`headersFooters`, once), each `w:tbl` (`tables`).
-- A table: each `w:tr` a bulleted item (level 0) whose runs are its cells' runs, the cells joined by `" · "`;
-  pictures and breaks inside are dropped. Nested tables add their text to the cell.
+- A table: a table block (`tableFromGrid`), each `w:tr` a row and each `w:tc` a cell, its paragraphs joined by
+  `\n`; rows and cells inside `w:sdt` / `w:sdtContent` and `w:customXml` are walked into. A row's
+  `w:trPr/w:gridBefore` adds that many empty cells before its first, and a cell's `w:tcPr/w:gridSpan` that many
+  less one empty cells after it (each bounded by `MAX_ARTICLE_TABLE_COLS`), so cells keep their grid columns; a
+  `w:vMerge` continuation cell is empty in its own right. A first row with `w:tblHeader` (not `false` or `0`) is
+  the header row. Pictures and breaks inside are dropped. Nested tables add their text to the cell, their cells
+  joined by `" · "`.
 - A paragraph whose text is empty after trimming and that holds no picture is left out. Runs pass through
   `normaliseRuns`; text cut by its 20,000-character cap counts `longText`.
 - More than `MAX_ARTICLE_BLOCKS` blocks: `too-many-blocks` (with the count).
@@ -172,8 +187,12 @@ Follows the spec's table. Precisely:
   master. A placeholder matches on the layout by `idx`, else by type; on the master by type. Types normalise:
   `ctrTitle` is `title`; `subTitle`, `obj` and no type are `body`. A shape with no box anywhere is left out (D65).
 - A text body: each `a:p` a line; runs' `a:t`, `a:fld`'s text, `a:br` a line break. A paragraph's bullet: its own
-  `a:buNone` none, `a:buChar` "• ", `a:buAutoNum` its number counted along consecutive numbered paragraphs at that
-  level ("1. "); else the level's `a:buNone` / `a:buChar` in the shape's, layout's and master placeholder's
+  `a:buNone` none, `a:buChar` "• ", `a:buAutoNum` its number (`autoNumberMarker`) counted along consecutive
+  numbered paragraphs at that level with the same `type` and `startAt`, from `startAt` (default 1), written by its
+  `type`: `arabic`, `alphaLc` / `alphaUc` (a to z, then aa), `romanLc` / `romanUc`, each `Period` ("1. "),
+  `ParenR` ("1) "), `ParenBoth` ("(1) ") or `Plain` ("1 "), any other scheme as "1. "; a paragraph restarts the
+  count of every deeper level. Else the level's `a:buNone` / `a:buChar` / `a:buAutoNum` in the shape's, layout's
+  and master placeholder's
   `a:lstStyle` (nearest first), then the master's `bodyStyle` for a body placeholder (a subtitle's layout sets
   `buNone`, so a subtitle is not bulleted); else a body placeholder's paragraphs are bulleted and every other
   shape's are not; empty paragraphs never. Two spaces of indent a level (`lvl`). Leading and trailing empty lines are trimmed.
@@ -209,10 +228,13 @@ IMPORT_IMAGE_MAX_SOURCE_BYTES)`, an over-cap read is `too-large`, any other read
 
 1. A blank tab whose first page becomes an article (`withPageKindChosen`), as Markdown import builds it; an empty
    document is one empty paragraph.
-2. Text width: the article page's width less twice `articleMarginPx(undefined)`.
+2. Text area: the article page's width and height, each less twice `articleMarginPx(undefined)`.
 3. Each picture block becomes an in-line object zone (`zone: 'object'`) sized to the picture (its extent, else
-   the stored image's size, else 320 x 240) scaled to at most the text width, each side clamped to
-   `ARTICLE_ZONE_MIN..ARTICLE_ZONE_MAX`, and an image element of exactly that box (`imageId` the stored id or
+   the stored image's size, else 320 x 240) scaled as one (`pictureZoneSize`): down to fit the text width, the
+   text height and `ARTICLE_ZONE_MAX`, and up, as far as those allow, until its shorter side reaches
+   `ARTICLE_ZONE_MIN`; only a picture too thin for both has a side clamped to
+   `ARTICLE_ZONE_MIN..ARTICLE_ZONE_MAX`. A zone never splits, so one taller than a page would run off it. An
+   image element of exactly that box (`imageId` the stored id or
    `null`, `naturalWidth/Height` when stored, `alt`, `aspectLocked: true`).
 4. **Parking** (D66): each zone's `at` is set on the article's first page at a slot left of it,
    `x = -(ARTICLE_ZONE_MAX + 400)`, `y = i * (ARTICLE_ZONE_MAX + 200)`, and its image sits exactly there. Slots

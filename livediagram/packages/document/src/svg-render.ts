@@ -141,15 +141,18 @@ import { tagColoursOf, withTagAccent } from './tag-colours';
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
 // Arrows count by their drawn route (a bow can swing well outside the boxes
-// it joins) and, when a label pass is given, by their label plates.
+// it joins) and, when a label pass is given, by their label plates. An arrow's ends resolve over `resolveOn` (the
+// whole tab, when `elements` are only the shown ones): an arrow drawn to a box on a hidden layer is drawn to where
+// that box is, and resolved over the shown elements alone its end fell back to the canvas origin.
 export function contentBounds(
   elements: Element[],
   labels?: ArrowLabelPass,
+  resolveOn: Element[] = elements,
 ): { x: number; y: number; w: number; h: number } {
   const points: Point[] = [];
   for (const el of elements) {
     if (el.type === 'arrow') {
-      points.push(...arrowRoutePoints(el, elements));
+      points.push(...arrowRoutePoints(el, resolveOn));
       const l = labels?.layouts.get(el.id);
       if (l) {
         points.push(
@@ -592,7 +595,7 @@ export function renderElementsToSvg(
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
-  const bounds = contentBounds(visible, labels);
+  const bounds = contentBounds(visible, labels, tab.elements);
   const vbX = bounds.x - padding;
   const vbY = bounds.y - padding;
   const vbW = bounds.w + padding * 2;

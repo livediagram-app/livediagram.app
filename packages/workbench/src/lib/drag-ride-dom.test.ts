@@ -20,13 +20,13 @@ function page() {
   return { root, of };
 }
 
-// A board: a contents plane of `count` tagged children (ids e0..), and a grips host holding a grip for e0.
+// A board: an element plane of `count` tagged children (ids e0..), and a grips host holding a grip for e0.
 function board(count: number, { iso = false, untagged = false } = {}) {
   const root = document.createElement('div');
   if (iso) root.setAttribute('data-iso', '');
   document.body.replaceChildren(root);
   const plane = document.createElement('div');
-  plane.setAttribute('data-ride-plane', 'contents');
+  plane.setAttribute('data-ride-plane', '');
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
     el.setAttribute('data-ride-id', `e${i}`);
@@ -110,8 +110,8 @@ describe('a plane carrying a very large move', () => {
     writer.setRoot(root);
     writer.apply(allBut(N, 10, { dx: 5, dy: 3 }));
     expect(plane.style.transform).toBe('translate(5px, 3px)');
-    expect(plane.style.display).toBe('block');
-    expect(plane.style.position).toBe('absolute');
+    // Only the transform: the plane's box is its own, so carrying lays nothing out again.
+    expect(plane.getAttribute('style')).toBe('transform: translate(5px, 3px);');
     expect(writer.planesCarrying()).toBe(1);
     // Riders draw as they are; the rest are held where they were.
     expect(node(20).style.translate).toBe('');
@@ -131,8 +131,7 @@ describe('a plane carrying a very large move', () => {
 
     writer.apply(new Map());
     expect(plane.style.transform).toBe('');
-    expect(plane.style.display).toBe('');
-    expect(plane.style.position).toBe('');
+    expect(plane.getAttribute('style')).toBe('');
     expect(node(3).style.translate).toBe('');
     expect(node(15).style.translate).toBe('');
     expect(writer.active()).toBe(false);
@@ -162,7 +161,6 @@ describe('a plane carrying a very large move', () => {
     writer.setRoot(root);
     writer.apply(allBut(N, 0, { dx: 2, dy: 2 }));
     expect(grips.style.transform).toBe('translate(2px, 2px)');
-    expect(grips.style.display).toBe('');
     expect(writer.planesCarrying()).toBe(2);
     writer.apply(new Map());
     expect(grips.style.transform).toBe('');
@@ -203,7 +201,6 @@ describe('a plane carrying a very large move', () => {
     writer.apply(allBut(N, 0, { dx: 4, dy: 4 }));
     writer.setRoot(null);
     expect(plane.style.transform).toBe('');
-    expect(plane.style.display).toBe('');
 
     writer.setRoot(root);
     writer.apply(allBut(N, 0, { dx: 4, dy: 4 }));
@@ -241,12 +238,12 @@ describe('a plane carrying a very large move', () => {
     const writer = createRideWriter();
     writer.setRoot(root);
     writer.apply(allBut(N, 1, { dx: 2, dy: 1 }));
-    expect(plane.style.transformStyle).toBe('preserve-3d');
+    // The scene's 3D space is the editor's CSS's ([data-iso] [data-element-plane]): the writer adds only the move.
+    expect(plane.getAttribute('style')).toBe('transform: translate(2px, 1px);');
     expect(node(0).style.translate).toBe('-2px -1px var(--ride-z, 0px)');
     // Leaving isometric mid-gesture writes again without the depth.
     root.removeAttribute('data-iso');
     writer.apply(allBut(N, 1, { dx: 2, dy: 1 }));
-    expect(plane.style.transformStyle).toBe('');
     expect(node(0).style.translate).toBe('-2px -1px');
     expect(plane.style.transform).toBe('translate(2px, 1px)');
   });

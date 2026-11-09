@@ -42,17 +42,28 @@ async function pullPath(io: CliIo, dir: string, document: { id: string; name: st
 }
 
 // A pull never drops edits not yet pushed (CLI27a): the file there, changed since its pull, is refused as `sync`
-// refuses an ahead document, unless `--force` says to drop them.
+// refuses an ahead document, unless `--force` says to drop them. The hint names `push` only when push would send
+// something: a file whose only changes are ones push never sends (a tab's name, theme or background, a tab gone,
+// CLI28) named `push`, which answered "nothing to push" and left the pull refused until `--force`.
 async function refuseUnpushed(path: string, file: PullFile | null, input: PullInput) {
   if (!file || input.force) return;
   const hashes: Record<string, { hash: string; settingsHash: string }> = {};
   for (const tab of file.document.tabs) hashes[tab.id] = await tabHashes(tab);
   if (!isLocallyChanged(file, hashes)) return;
+  const recorded = file.livediagramSync.tabs;
+  const pushable = Object.entries(hashes).some(
+    ([id, h]) => recorded[id] === undefined || h.hash !== recorded[id].hash,
+  );
+  const drop = `livediagram pull ${JSON.stringify(input.doc)} --force`;
   throw new CliError({
     exit: EXIT.rejected,
     code: 'unpushed_changes',
-    message: `${path} changed here and is not pushed; not overwritten`,
-    hint: `send it: livediagram push ${path}, or drop it: livediagram pull ${JSON.stringify(input.doc)} --force`,
+    message: pushable
+      ? `${path} changed here and is not pushed; not overwritten`
+      : `${path} changed here (a tab's name, theme or background, or a tab removed), which push does not send; not overwritten`,
+    hint: pushable
+      ? `send it: livediagram push ${path}, or drop it: ${drop}`
+      : `drop those changes: ${drop}`,
   });
 }
 

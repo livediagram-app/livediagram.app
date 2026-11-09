@@ -13,20 +13,24 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({
 // editor seeded with that character. The seed is written onto the element, so Escape (cancel) has to take it back:
 // otherwise an Escape left a teammate's sticky reading one letter, for everyone in the room.
 
-function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
+function setup(
+  label: string,
+  richText?: { text: string; bold?: boolean }[],
+  stored: Record<string, unknown> = { type: 'sticky' },
+) {
   // A history of the element list, as useDocumentHistory keeps one: commit pushes, discardLastStep pops.
   const past: Element[][] = [];
   let elements: Element[] = [
     {
       id: 'note',
-      type: 'sticky',
       x: 0,
       y: 0,
       width: 200,
       height: 200,
       label,
       ...(richText ? { richText } : {}),
-    },
+      ...stored,
+    } as Element,
   ];
   const commit = (fn: (els: Element[]) => Element[]) => {
     past.push(elements);
@@ -35,6 +39,7 @@ function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
   const discardLastStep = vi.fn(() => {
     elements = past.pop() ?? elements;
   });
+  const setEditingId = vi.fn();
   const hook = renderHook(() => {
     const tab = { id: 't', name: 'Tab 1', elements } as Tab;
     return useSelectionEditing({
@@ -54,7 +59,7 @@ function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
       set: {
         setFormatSourceId: vi.fn(),
         setSelectedId: vi.fn(),
-        setEditingId: vi.fn(),
+        setEditingId,
         setEditCursorAtEnd: vi.fn(),
         setMultiSelectedIds: vi.fn(),
         setDocumentName: vi.fn(),
@@ -67,6 +72,7 @@ function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
     id,
     hook,
     discardLastStep,
+    setEditingId,
     label: () => (elements[0] as Element & { label?: string }).label,
     element: () => elements[0] as Element & { width?: number; richText?: unknown },
     // A later step on the same element, as a resize commits one.
@@ -149,5 +155,29 @@ describe('type-to-edit, then Escape', () => {
     s.hook.result.current.cancelEdit();
     expect(s.discardLastStep).not.toHaveBeenCalled();
     expect(s.label()).toBe('Keep me');
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": a retired element takes no typed label, so
+// neither a key on a selected one nor a double-click writes into it.
+describe('a retired element', () => {
+  const retired: Record<string, unknown>[] = [
+    { type: 'table', cells: [['a']] },
+    { type: 'freehand', points: [] },
+    { type: 'annotation' },
+    { type: 'video' },
+    { type: 'path', points: [] },
+    { type: 'shape', shape: 'qa-board' },
+    { type: 'arrow', from: { kind: 'free', x: 0, y: 0 }, to: { kind: 'free', x: 9, y: 9 } },
+  ];
+  it.each(retired)('%o takes no typed key', (stored) => {
+    const s = setup('Stored label', undefined, stored);
+    expect(s.hook.result.current.typeIntoSelected(s.id, 'X')).toBe(false);
+    expect(s.label()).toBe('Stored label');
+  });
+  it('opens no editor on a double-click', () => {
+    const s = setup('Stored label', undefined, { type: 'table', cells: [['a']] });
+    s.hook.result.current.beginEdit(s.id);
+    expect(s.setEditingId).not.toHaveBeenCalled();
   });
 });

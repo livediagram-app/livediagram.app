@@ -40,25 +40,31 @@ menu on a tab that takes it, otherwise naming the tabs that do.
 The tab's content is replaced by one article ([Article pages](../007-editor/article-pages.md)) holding the
 document's body, in the order it is written. The article flows onto as many pages as the writing needs.
 
-| In the document                                                             | In the article                                                                                                                      |
-| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Title, Subtitle styles                                                      | Title, Subtitle paragraphs                                                                                                          |
-| Heading 1, Heading 2, Heading 3 to 9 (by style name or outline level)       | Heading 1, Heading 2, Heading 3                                                                                                     |
-| Quote, Intense Quote styles                                                 | Quote paragraphs                                                                                                                    |
-| A list paragraph (bulleted or numbered by its numbering definition), level  | A bulleted or numbered list item at that level (deepest 5 levels)                                                                   |
-| A paragraph starting with ☐, or ☒ or ☑ ticked (the Word export's to-dos)    | A to-do item, ticked or not, the box left out                                                                                       |
-| A paragraph in a code style, or every run of it in a monospace font         | A code block; consecutive ones join into one                                                                                        |
-| Bold, italic, underline, strikethrough, superscript, subscript, a code font | The same marks                                                                                                                      |
-| A hyperlink to an http, https or mailto address (relationship or field)     | A link (anything else keeps its text, unlinked)                                                                                     |
-| A page break (a break run, or "page break before" on a paragraph)           | A page break                                                                                                                        |
-| A line break                                                                | A line break in the block; a tab is a space                                                                                         |
-| A footnote                                                                  | A footnote at its reference, its text plain (paragraphs joined by a space)                                                          |
-| A picture, inline or floating                                               | An in-line object zone holding an image, at most the text's width                                                                   |
-| Paragraph alignment (centre, right, justify)                                | The same alignment                                                                                                                  |
-| A table                                                                     | A table block: its rows and cells, a repeated header row as the header row, merged cells read as one; a table inside a cell as text |
-| Empty paragraphs (spacing)                                                  | Left out                                                                                                                            |
-| Tracked insertions; tracked deletions                                       | Kept as written; left out                                                                                                           |
-| Content controls, smart tags, fields                                        | Their content or result                                                                                                             |
+| In the document                                                                                           | In the article                                                                                                                      |
+| --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Title, Subtitle styles                                                                                    | Title, Subtitle paragraphs                                                                                                          |
+| Heading 1, Heading 2, Heading 3 to 9 (by style name or outline level)                                     | Heading 1, Heading 2, Heading 3                                                                                                     |
+| Quote, Intense Quote styles                                                                               | Quote paragraphs                                                                                                                    |
+| A list paragraph (bulleted or numbered by its numbering definition, or the list style it links to), level | A bulleted or numbered list item at that level (deepest 5 levels)                                                                   |
+| A paragraph starting with ☐, or ☒ or ☑ ticked (the Word export's to-dos)                                  | A to-do item, ticked or not, the box left out                                                                                       |
+| A paragraph in a code style, or every run of it in a monospace font                                       | A code block; consecutive ones join into one                                                                                        |
+| Bold, italic, underline, strikethrough, superscript, subscript, a code font                               | The same marks                                                                                                                      |
+| A hyperlink to an http, https or mailto address (relationship or field)                                   | A link (anything else keeps its text, unlinked)                                                                                     |
+| A page break (a break run, or "page break before" on a paragraph)                                         | A page break                                                                                                                        |
+| A line break                                                                                              | A line break in the block; a tab is a space                                                                                         |
+| A footnote                                                                                                | A footnote at its reference, its text plain (paragraphs joined by a space)                                                          |
+| A picture, inline or floating                                                                             | An in-line object zone holding an image, its shape kept, at most the text's width and the page's text height                        |
+| Paragraph alignment (centre, right, justify)                                                              | The same alignment                                                                                                                  |
+| A table                                                                                                   | A table block: its rows and cells, a repeated header row as the header row, merged cells read as one; a table inside a cell as text |
+| Empty paragraphs (spacing)                                                                                | Left out                                                                                                                            |
+| Tracked insertions; tracked deletions                                                                     | Kept as written; left out                                                                                                           |
+| Hidden text (Word's Hidden font effect, which it neither shows nor prints)                                | Left out                                                                                                                            |
+| A table of contents (a TOC field)                                                                         | A contents block listing Heading 1 to the deepest level it lists (at most 3); its title, entries and Word's page numbers left out   |
+| Content controls, smart tags, fields                                                                      | Their content or result                                                                                                             |
+
+A merged cell keeps its text in the first column it covers and leaves the other columns it covers empty (a cell
+merged down leaves the cells below it empty), so every cell after it stays in its own column; columns a row skips
+at its start are empty cells too. Rows and cells inside content controls are read as any others.
 
 What is **not** brought across, and named in the report when the document had it: endnotes,
 comments, headers and footers, text boxes and shapes, charts, diagrams (SmartArt), equations, embedded objects
@@ -73,8 +79,9 @@ sits on the slide, scaled from the deck's size to the page's.
 
 - **Text boxes and placeholders** (a title, a body, any shape holding text) become **text** elements with the
   box's place and size, a placeholder with no place of its own taking its layout's, then its master's. A
-  paragraph with a bullet starts with "• " (a numbered one with its number), indented two spaces a level; the
-  text size is the first run's (or the placeholder's default: a title 44 pt, a body 28 pt, else 18 pt), as px
+  paragraph with a bullet starts with "• " (a numbered one with its number as the deck writes it: "1.", "b)",
+  "(iii)", "IV.", counted from the list's start, a deeper level starting again after each shallower item), indented
+  two spaces a level; the text size is the first run's (or the placeholder's default: a title 44 pt, a body 28 pt, else 18 pt), as px
   on the page (past the editor's largest size, 48 px, that size scaled up, as a resized headline is); bold or
   italic when every run is; the first paragraph's alignment, else its list style's (the shape's, its layout's,
   its master's), else the master's text style's.

@@ -367,7 +367,7 @@ const labelsOf = (kind: TemplateKind): string[] =>
     .filter((l): l is string => Boolean(l));
 
 describe('slide deck and storyboard templates', () => {
-  it('slide-deck drops a six-slide pitch with speaker notes', () => {
+  it('slide-deck drops a six-slide pitch', () => {
     const tab = buildTemplatedTab('slide-deck', 'brand', 'tab-1', 'slides');
     // Built from standard primitives, no device shape.
     expect(tab.elements.some((el) => el.type === 'shape' && el.shape === 'monitor')).toBe(false);

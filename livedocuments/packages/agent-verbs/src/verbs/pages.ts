@@ -121,13 +121,21 @@ export const pageSet = defineVerb({
     size: sizeArg,
     orientation: z.enum(['portrait', 'landscape']).optional().describe('Turn the page'),
     layout: z.string().optional().describe('Lay the page out (a layout id from page ls)'),
-    move: z.coerce.number().int().min(1).optional().describe('Move the page to this place'),
+    move: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .optional()
+      .describe('Move the page to this place (with --add, add it there)'),
     duplicate: z.boolean().optional().describe('Copy the page'),
     backgroundToAll: z.boolean().optional().describe('Its background onto every page of its kind'),
     delete: z.boolean().optional().describe('Delete the page and what is on it'),
   }),
   output: doneOutput,
   run: async (ctx, input) => {
+    // --changes is the whole edit: a change flag beside it would be dropped without a word.
+    if (input.changes !== undefined && changeFlagsGiven(input).length)
+      throw combined(['--changes', ...changeFlagsGiven(input)]);
     const changes =
       input.changes !== undefined ? await changesFrom(ctx, input.changes) : [changeFrom(input)];
     const at = await where(ctx, input.doc, input.tab);
@@ -189,19 +197,54 @@ type ChangeFlags = {
   delete?: boolean;
 };
 
+// Each change flag by its name on the command line, when given.
+const FLAG_NAMES: [keyof ChangeFlags, string][] = [
+  ['add', '--add'],
+  ['page', '--page'],
+  ['delete', '--delete'],
+  ['duplicate', '--duplicate'],
+  ['backgroundToAll', '--background-to-all'],
+  ['move', '--move'],
+  ['layout', '--layout'],
+  ['name', '--name'],
+  ['size', '--size'],
+  ['orientation', '--orientation'],
+];
+const given = (flags: ChangeFlags, key: keyof ChangeFlags) =>
+  flags[key] !== undefined && flags[key] !== false && flags[key] !== '';
+const changeFlagsGiven = (flags: ChangeFlags) =>
+  FLAG_NAMES.filter(([key]) => given(flags, key)).map(([, name]) => name);
+
+// Flags that make more than one change, refused rather than half sent: one change a run, so none is ever dropped
+// while the command says it worked (docs/specs/024-agents/pages-for-agents.md).
+const combined = (names: readonly string[]) =>
+  new VerbRefusal({
+    status: 400,
+    code: 'invalid_value',
+    message: `${names.join(', ')} make more than one change; the flags make one, so give several with --changes <file>`,
+    hint: CHANGES_HINT,
+  });
+
 function changeFrom(flags: ChangeFlags): PageChange {
   const fields = {
     ...(flags.name !== undefined ? { name: flags.name } : {}),
     ...(flags.size ? { size: flags.size as PageSizeId } : {}),
     ...(flags.orientation ? { orientation: flags.orientation } : {}),
   };
-  if (flags.add)
+  if (flags.add) {
+    // An add is named, sized, turned, laid out and put at a place (--move) in one change; nothing else goes with it.
+    const other = (['page', 'delete', 'duplicate', 'backgroundToAll'] as const).filter((k) =>
+      given(flags, k),
+    );
+    if (other.length) throw combined(changeFlagsGiven(flags));
     return {
       op: 'add',
       kind: flags.add,
       ...fields,
       ...(flags.layout ? { layout: flags.layout } : {}),
+      ...(flags.move !== undefined ? { at: flags.move } : {}),
     };
+  }
   const none = () =>
     new VerbRefusal({
       status: 400,
@@ -211,13 +254,19 @@ function changeFrom(flags: ChangeFlags): PageChange {
     });
   if (!flags.page) throw none();
   const page = /^\d+$/.test(flags.page) ? Number(flags.page) : flags.page;
-  if (flags.delete) return { op: 'delete', page };
-  if (flags.duplicate) return { op: 'duplicate', page };
-  if (flags.backgroundToAll) return { op: 'apply_background_to_all', page };
-  if (flags.move !== undefined) return { op: 'move', page, to: flags.move };
-  if (flags.layout) return { op: 'layout', page, layout: flags.layout };
-  if (Object.keys(fields).length) return { op: 'set', page, ...fields };
-  throw none();
+  // The changes the flags ask of the page: one each for delete, duplicate, background to all, move and layout, and
+  // one set for any of name, size and orientation.
+  const asked: PageChange[] = [
+    ...(flags.delete ? [{ op: 'delete', page } as const] : []),
+    ...(flags.duplicate ? [{ op: 'duplicate', page } as const] : []),
+    ...(flags.backgroundToAll ? [{ op: 'apply_background_to_all', page } as const] : []),
+    ...(flags.move !== undefined ? [{ op: 'move', page, to: flags.move } as const] : []),
+    ...(flags.layout ? [{ op: 'layout', page, layout: flags.layout } as const] : []),
+    ...(Object.keys(fields).length ? [{ op: 'set', page, ...fields } as const] : []),
+  ];
+  if (asked.length > 1) throw combined(changeFlagsGiven(flags).filter((n) => n !== '--page'));
+  if (asked.length === 0) throw none();
+  return asked[0]!;
 }
 
 export const articleGet = defineVerb({

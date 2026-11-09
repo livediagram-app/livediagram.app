@@ -203,7 +203,11 @@ export function useProximityCall(deps: ProximityCallDeps): void {
         .catch((error: unknown) => {
           debugLog('[calls] load failed', error);
           void context.close().catch(() => {});
-          if (seq === joinSeq.current) setCallSelf({ phase: 'error' });
+          if (seq !== joinSeq.current) return;
+          // A call that failed has ended: it stops waiting for a press to resume its closed context.
+          stopResume.current();
+          stopResume.current = NO_RESUME;
+          setCallSelf({ phase: 'error' });
         });
     };
     joinRef.current = join;

@@ -2,6 +2,7 @@
 // storage"): the editor sends what changed, the api applies it to the stored main element by element, so two people
 // changing different elements of one main both keep their change. Pure.
 import type { Element } from './index';
+import { removeElements } from './arrow-rebind';
 import { clampComponentName, type DesignComponent } from './components';
 
 export type ComponentPatch = {
@@ -22,10 +23,9 @@ export function applyComponentPatch(
   now: number,
 ): DesignComponent {
   let elements = main.elements;
-  if (patch.remove?.length) {
-    const gone = new Set(patch.remove);
-    elements = elements.filter((e) => !gone.has(e.id));
-  }
+  // An arrow kept whose end named a removed element has that end freed where it was drawn, as a canvas delete frees
+  // it: filtered alone, the end pointed at nothing and drew at the frame's origin.
+  if (patch.remove?.length) elements = removeElements(elements, new Set(patch.remove));
   if (patch.upsert?.length) {
     const byId = new Map(patch.upsert.map((e) => [e.id, e] as const));
     const placed = new Set<string>();

@@ -189,6 +189,43 @@ describe('the card panel, for an Editor or a Participant', () => {
     expect(screen.getByRole('alert').textContent).toBe(ATTACHMENTS_FULL);
   });
 
+  it('announces only the pictures that land when the card filled up meanwhile', async () => {
+    const announce = vi.fn();
+    setPlan({ announce });
+    field(undefined);
+    // While the files upload, someone else fills the card: the plan's card is read again when they end.
+    const items = (plan.value as { items: Map<string, Item> }).items;
+    const fillTo = (n: number, prefix: string) =>
+      items.set(item.id, make(Array.from({ length: n }, (_, i) => pic(`${prefix}${i}`))));
+    const upload = api.upload.getMockImplementation() as (
+      scope: unknown,
+      f: File,
+    ) => Promise<unknown>;
+    api.upload.mockImplementationOnce(async (scope: unknown, f: File) => {
+      fillTo(ITEM_ATTACHMENTS_MAX - 1, 'p');
+      return upload(scope, f);
+    });
+    const input = document.querySelector('input[type=file]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [file('a.png'), file('b.png'), file('c.png')] } });
+    await flush();
+    expect(api.upload).toHaveBeenCalledTimes(3);
+    expect(patchItem).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledExactlyOnceWith('Image attached');
+    expect(screen.getByRole('alert').textContent).toBe(ATTACHMENTS_FULL);
+    // A card full by then takes nothing: no write, no announcement.
+    patchItem.mockClear();
+    announce.mockClear();
+    items.set(item.id, make());
+    api.upload.mockImplementationOnce(async (scope: unknown, f: File) => {
+      fillTo(ITEM_ATTACHMENTS_MAX, 'q');
+      return upload(scope, f);
+    });
+    fireEvent.change(input, { target: { files: [file('d.png')] } });
+    await flush();
+    expect(patchItem).not.toHaveBeenCalled();
+    expect(announce).not.toHaveBeenCalled();
+  });
+
   it('says why a file was refused, and still adds the rest', async () => {
     const { ImageUploadError } = await import('@/lib/api/images');
     api.upload.mockRejectedValueOnce(new ImageUploadError('file_too_large'));

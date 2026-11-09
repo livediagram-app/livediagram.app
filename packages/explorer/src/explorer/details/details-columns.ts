@@ -69,6 +69,17 @@ export function typeLabel(item: Pick<ShownItem, 'summary'>, kindOne: string): st
   return typeof mode === 'string' && mode ? mode.charAt(0).toUpperCase() + mode.slice(1) : kindOne;
 }
 
+/** A count the app reported in the item's summary, or undefined when it reported none it could mean: the summary is
+ *  the app's own JSON, so a value that is not a finite number (null, a string) reads as no value, a dash, sorted last,
+ *  never as a number it isn't (a string compared by subtraction made the sort's order depend on the input's). */
+export function summaryCount(
+  item: Pick<ShownItem, 'summary'>,
+  key: 'comments' | 'bytes',
+): number | undefined {
+  const value: unknown = item.summary[key];
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
 function itemKey(
   item: ShownItem,
   column: DetailsColumnId,
@@ -80,11 +91,11 @@ function itemKey(
     case 'type':
       return typeLabel(item, kindOne(item));
     case 'comments':
-      return item.summary.comments;
+      return summaryCount(item, 'comments');
     case 'access':
       return ACCESS_RANK[item.access];
     case 'size':
-      return item.summary.bytes;
+      return summaryCount(item, 'bytes');
     case 'created':
       return item.createdAt;
     case 'updated':

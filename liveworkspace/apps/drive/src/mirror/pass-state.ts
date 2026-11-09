@@ -32,9 +32,9 @@ export class PassState {
     return new PassState(rt, index, snapshotOf(rt, rootFolderId, picture));
   }
 
-  /** The person's work read again after inbound changed it. */
+  /** The person's work read again, whole, after inbound changed it. */
   async reread(): Promise<Picture> {
-    const picture = await this.index.picture();
+    const picture = await this.index.picture({ full: true });
     this.snapshot = snapshotOf(this.rt, this.snapshot.rootFolderId, picture);
     return picture;
   }

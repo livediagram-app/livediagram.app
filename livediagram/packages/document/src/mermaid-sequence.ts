@@ -3,6 +3,8 @@
 // Pure and linear: one pass over the lines, each matched by anchored, non-backtracking patterns, since the text is
 // untrusted (any API token's changeset reaches it).
 
+import { accessibilityLine, decodeEntities } from './mermaid-shared';
+
 export type SequenceParticipant = { id: string; label: string; actor?: boolean; icon?: string };
 export type SequenceMessageKind = 'call' | 'async' | 'reply';
 export type SequenceItem =
@@ -15,6 +17,8 @@ export type SequenceItem =
       // `+` activates the target, `-` deactivates the sender, as Mermaid's markers.
       activate?: boolean;
       deactivate?: boolean;
+      // `A<<->>B`: a head at each end.
+      both?: boolean;
     }
   | { kind: 'note'; placement: 'over' | 'left' | 'right'; who: string[]; text: string }
   | { kind: 'activate' | 'deactivate'; who: string }
@@ -47,7 +51,8 @@ const ARROWS: readonly [string, SequenceMessageKind][] = [
   ['->', 'call'],
 ];
 
-const clip = (t: string) => t.trim().slice(0, TEXT_MAX);
+// Text as written, Mermaid's entity codes decoded (`I #9829; you`, as its docs write a heart), cut to the cap.
+const clip = (t: string) => decodeEntities(t.trim()).slice(0, TEXT_MAX);
 
 // Each line is read by prefixes and indexOf, never a backtracking pattern, so a long run of spaces in an agent's text
 // costs a line's length (CodeQL "polynomial regular expression").
@@ -128,6 +133,10 @@ export function parseSequenceDiagram(
   let autonumber = false;
   let started = false;
   let inFrontMatter = false;
+  const accessibility = { block: false };
+  // The blocks open, innermost last: a fragment, whose `end` closes it, or a `rect` / `box` grouping the drawing skips,
+  // whose `end` must not close the fragment round it.
+  const blocks: ('fragment' | 'skipped')[] = [];
   for (const raw of text.split(/\r?\n/)) {
     const line = raw.trim();
     if (!line || line.startsWith('%%')) continue;
@@ -144,6 +153,7 @@ export function parseSequenceDiagram(
       if (/^sequenceDiagram\b/.test(line)) started = true;
       continue;
     }
+    if (accessibilityLine(line, accessibility)) continue;
     if (line === 'autonumber' || line.startsWith('autonumber ')) {
       autonumber = true;
       continue;
@@ -176,10 +186,11 @@ export function parseSequenceDiagram(
     }
     const word = line.split(/\s+/, 1)[0]!.toLowerCase();
     if (word === 'end') {
-      items.push({ kind: 'end' });
+      if (blocks.pop() !== 'skipped') items.push({ kind: 'end' });
       continue;
     }
     if (FRAGMENTS.has(word)) {
+      blocks.push('fragment');
       items.push({ kind: 'fragment', op: word, label: clip(line.slice(word.length)) });
       continue;
     }
@@ -187,16 +198,12 @@ export function parseSequenceDiagram(
       items.push({ kind: 'else', label: clip(line.slice(word.length)) });
       continue;
     }
-    // A grouping or styling the drawing does not take: read and skipped.
-    if (
-      word === 'rect' ||
-      word === 'box' ||
-      word === 'link' ||
-      word === 'links' ||
-      word === 'create' ||
-      word === 'destroy'
-    )
+    // A grouping or styling the drawing does not take: read and skipped, its `end` with it.
+    if (word === 'rect' || word === 'box') {
+      blocks.push('skipped');
       continue;
+    }
+    if (word === 'link' || word === 'links' || word === 'create' || word === 'destroy') continue;
     const message = readMessage(line);
     if (message) {
       items.push({
@@ -207,6 +214,7 @@ export function parseSequenceDiagram(
         style: message.style,
         ...(message.activate ? { activate: true } : {}),
         ...(message.deactivate ? { deactivate: true } : {}),
+        ...(message.both ? { both: true } : {}),
       });
       continue;
     }
@@ -242,6 +250,7 @@ function readMessage(line: string): {
   style: SequenceMessageKind;
   activate: boolean;
   deactivate: boolean;
+  both: boolean;
 } | null {
   const colon = line.indexOf(':');
   const head = colon === -1 ? line : line.slice(0, colon);
@@ -253,7 +262,10 @@ function readMessage(line: string): {
       best = { at, arrow, style };
   }
   if (!best) return null;
-  const from = head.slice(0, best.at).trim();
+  // `A<<->>B` / `A<<-->>B`, Mermaid's two-way message: the `<<` before the arrow is its second head.
+  let from = head.slice(0, best.at).trim();
+  const both = from.endsWith('<<') && best.arrow.endsWith('>>');
+  if (both) from = from.slice(0, -2).trim();
   let to = head.slice(best.at + best.arrow.length).trim();
   let activate = false;
   let deactivate = false;
@@ -265,5 +277,5 @@ function readMessage(line: string): {
     to = to.slice(1).trim();
   }
   if (!from || !to || /\s/.test(from) || /\s/.test(to)) return null;
-  return { from, to, label, style: best.style, activate, deactivate };
+  return { from, to, label, style: best.style, activate, deactivate, both };
 }

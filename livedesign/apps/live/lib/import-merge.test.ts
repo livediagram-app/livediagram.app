@@ -17,6 +17,19 @@ describe('mergeImportedTab', () => {
     expect(mergeImportedTab(tab({ opensIn: 'pages' }), tab()).opensIn).toBe('pages');
   });
 
+  // docs/specs/008-canvas/finish.md: imported tabs keep their finish.
+  it('carries the finish, tag colours and animation speed', () => {
+    const tagColours = [{ tag: 'urgent', color: '#ef4444' }];
+    const out = mergeImportedTab(
+      tab({ finish: 'flexible' }),
+      tab({ finish: 'sketch', tagColours, backgroundAnimationSpeed: 2 }),
+    );
+    expect(out.finish).toBe('sketch');
+    expect(out.tagColours).toEqual(tagColours);
+    expect(out.backgroundAnimationSpeed).toBe(2);
+    expect(mergeImportedTab(tab({ finish: 'sketch' }), tab()).finish).toBe('sketch');
+  });
+
   it('carries the imported LAYERS, so element layerIds still resolve', () => {
     const layers = [{ id: 'layer:cards', name: 'Cards' }];
     expect(mergeImportedTab(tab(), tab({ layers })).layers).toEqual(layers);

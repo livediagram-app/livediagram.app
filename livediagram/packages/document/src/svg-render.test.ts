@@ -999,6 +999,34 @@ describe('contentBounds', () => {
     const b = contentBounds(els, labels);
     expect(b.y).toBeLessThanOrEqual(l.center.y - l.height / 2);
   });
+
+  // An arrow on a shown layer pinned to a box on a hidden one is drawn to where that box is, so the page is sized
+  // to that end too. Resolved over the shown elements alone, the end fell back to the canvas origin: the page
+  // stretched to (0, 0) and the arrow's real end could fall off it.
+  it('sizes the page to an arrow end pinned to a box on a hidden layer', () => {
+    const svg = renderElementsToSvg(
+      tab(
+        [
+          shape('a', { x: 1000, y: 1000 }),
+          shape('b', { x: 1400, y: 1000, layerId: 'l1' }),
+          pinnedArrow('arr', 'a', 'b'),
+        ],
+        {
+          layers: [
+            { id: 'l0', name: 'Base' },
+            { id: 'l1', name: 'Hidden', visible: false },
+          ],
+        },
+      ),
+    );
+    const [x, y, w] = svg
+      .match(/viewBox="([^"]+)"/)![1]!
+      .split(' ')
+      .map(Number);
+    expect(x).toBeGreaterThan(900);
+    expect(y).toBeGreaterThan(900);
+    expect(x! + w!).toBeGreaterThanOrEqual(1400);
+  });
 });
 
 // An empty <tspan> carries no glyph, so SVG drops its `dy` with it: a blank

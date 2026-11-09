@@ -293,6 +293,114 @@ describe('readDocx, the edges', () => {
     expect(tally).toEqual({});
   });
 
+  it('keeps every cell in its column past merged cells, and reads rows and cells inside content controls', async () => {
+    const cell = (inner: string, tcPr = '') => `<w:tc>${tcPr}${p(inner)}</w:tc>`;
+    const span = (n: number) => `<w:tcPr><w:gridSpan w:val="${n}"/></w:tcPr>`;
+    const down = '<w:tcPr><w:vMerge/></w:tcPr>';
+    const { blocks, tally } = await read({
+      body: `<w:tbl><w:tr>${cell(r('A'))}${cell(r('B'))}${cell(r('C'))}</w:tr><w:tr>${cell(r('AB'), span(2))}${cell(r('C2'))}</w:tr><w:tr><w:trPr><w:gridBefore w:val="1"/></w:trPr>${cell(r('B3'))}${cell(r('C3'))}</w:tr><w:sdt><w:sdtContent><w:tr>${cell(r('A4'), '<w:tcPr><w:vMerge w:val="restart"/></w:tcPr>')}<w:sdt><w:sdtContent>${cell(r('B4'))}</w:sdtContent></w:sdt>${cell(r('C4'))}</w:tr></w:sdtContent></w:sdt><w:customXml><w:tr>${cell('', down)}${cell(r('B5'))}${cell(r('C5'))}</w:tr></w:customXml></w:tbl>`,
+    });
+    const table = blocks[0] as Extract<ArticleBlock, { type: 'table' }>;
+    expect(table.rows.map((row) => row.cells.map((c) => c.map((x) => x.text).join('')))).toEqual([
+      ['A', 'B', 'C'],
+      ['AB', '', 'C2'],
+      ['', 'B3', 'C3'],
+      ['A4', 'B4', 'C4'],
+      ['', 'B5', 'C5'],
+    ]);
+    expect(tally).toEqual({});
+  });
+
+  it('bounds a merged cell spanning past the column cap', async () => {
+    const { blocks, tally } = await read({
+      body: `<w:tbl><w:tr><w:trPr><w:gridBefore w:val="999999999"/></w:trPr><w:tc><w:tcPr><w:gridSpan w:val="999999999"/></w:tcPr>${p(r('X'))}</w:tc></w:tr></w:tbl>`,
+    });
+    expect((blocks[0] as Extract<ArticleBlock, { type: 'table' }>).cols).toHaveLength(20);
+    expect(tally).toEqual({ tables: 1 });
+  });
+
+  it('reads a table of contents field as a contents block, its title, entries and pages left to the block', async () => {
+    const fld = (type: string) => `<w:r><w:fldChar w:fldCharType="${type}"/></w:r>`;
+    const instr = (text: string) =>
+      `<w:r><w:instrText xml:space="preserve">${text}</w:instrText></w:r>`;
+    const entry = (text: string, page: number, pre = '', post = '') =>
+      p(
+        `${pre}<w:hyperlink w:anchor="_Toc1">${r(text)}<w:r><w:tab/></w:r>${fld('begin')}${instr(' PAGEREF _Toc1 \\h ')}${fld('separate')}${r(String(page))}${fld('end')}</w:hyperlink>${post}`,
+        styled('TOC1'),
+      );
+    const { blocks } = await read({
+      styles: null,
+      body: [
+        p(r('Before')),
+        `<w:sdt><w:sdtContent>${p(r('Contents'), styled('TOCHeading'))}`,
+        entry(
+          'Intro',
+          2,
+          `${fld('begin')}${instr(' TOC \\o "1-2" \\h \\z \\u ')}${fld('separate')}`,
+        ),
+        entry('Method', 5, '', fld('end')),
+        `</w:sdtContent></w:sdt>`,
+        p(r('Intro'), styled('Heading1')),
+        p(
+          `${fld('begin')}${instr(' TOC \\t "Caption,1" ')}${fld('separate')}${r('Figure 1')}${fld('end')}${r(' after')}`,
+        ),
+        // A table of figures lists captions, not headings: kept as written.
+        p(
+          `${fld('begin')}${instr(' TOC \\h \\c "Figure" ')}${fld('separate')}${r('Figure 2')}${fld('end')}`,
+        ),
+      ].join(''),
+    });
+    expect(blocks.map((b) => (b.type === 'toc' ? `toc${b.depth ?? 3}` : textOf(b)))).toEqual([
+      'Before',
+      'toc2',
+      'Intro',
+      'toc3',
+      'after',
+      'Figure 2',
+    ]);
+  });
+
+  it('reads a list linked to a numbering style, and a level a list overrides, by their own formats', async () => {
+    const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+    const lvl = (at: number, fmt: string) =>
+      `<w:lvl w:ilvl="${at}"><w:numFmt w:val="${fmt}"/></w:lvl>`;
+    const { blocks } = await read({
+      // Word's built-in multilevel list: the list's abstract numbering only links to a numbering style, whose own
+      // numbering holds the levels; a loop of links ends as a bullet.
+      styles: `<w:styles ${W}><w:style w:type="numbering" w:styleId="Outline"><w:name w:val="Outline List"/><w:pPr><w:numPr><w:numId w:val="10"/></w:numPr></w:pPr></w:style><w:style w:type="numbering" w:styleId="Loop"><w:name w:val="Loop"/><w:pPr><w:numPr><w:numId w:val="12"/></w:numPr></w:pPr></w:style></w:styles>`,
+      numbering: `<w:numbering ${W}><w:abstractNum w:abstractNumId="0"><w:styleLink w:val="Outline"/>${lvl(0, 'decimal')}${lvl(1, 'lowerLetter')}</w:abstractNum><w:abstractNum w:abstractNumId="1"><w:numStyleLink w:val="Outline"/></w:abstractNum><w:abstractNum w:abstractNumId="2">${lvl(0, 'bullet')}${lvl(1, 'bullet')}</w:abstractNum><w:abstractNum w:abstractNumId="3"><w:numStyleLink w:val="Loop"/></w:abstractNum><w:num w:numId="10"><w:abstractNumId w:val="0"/></w:num><w:num w:numId="11"><w:abstractNumId w:val="1"/></w:num><w:num w:numId="12"><w:abstractNumId w:val="3"/></w:num><w:num w:numId="13"><w:abstractNumId w:val="2"/><w:lvlOverride w:ilvl="1"><w:lvl w:ilvl="1"><w:numFmt w:val="decimal"/></w:lvl></w:lvlOverride></w:num></w:numbering>`,
+      body: [
+        p(r('Linked'), numbered(11)),
+        p(r('Linked deeper'), numbered(11, 1)),
+        p(r('Plain'), numbered(13)),
+        p(r('Overridden'), numbered(13, 1)),
+        p(r('Loop'), numbered(12)),
+      ].join(''),
+    });
+    expect(blocks.map(kindOf)).toEqual([
+      'numbered0',
+      'numbered1',
+      'bullet0',
+      'numbered1',
+      'bullet0',
+    ]);
+  });
+
+  it('leaves hidden text out, its own or its character style’s, and keeps text unhidden again', async () => {
+    const { blocks } = await read({
+      styles: `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:style w:type="character" w:styleId="Secret"><w:name w:val="Secret"/><w:rPr><w:vanish/></w:rPr></w:style></w:styles>`,
+      body: [
+        p(r('Shown') + r(' hidden', '<w:vanish/>') + r(' too', '<w:rStyle w:val="Secret"/>')),
+        p(
+          r(' back', '<w:rStyle w:val="Secret"/><w:vanish w:val="0"/>') +
+            r('!', '<w:vanish w:val="false"/>'),
+        ),
+        p(r('All hidden', '<w:vanish/>')),
+      ].join(''),
+    });
+    expect(blocks.map(textOf)).toEqual(['Shown', 'back!']);
+  });
+
   it('reads a header flag turned off as no header row', async () => {
     const { blocks } = await read({
       body: `<w:tbl><w:tr><w:trPr><w:tblHeader w:val="false"/></w:trPr><w:tc>${p(r('A'))}</w:tc></w:tr></w:tbl>`,

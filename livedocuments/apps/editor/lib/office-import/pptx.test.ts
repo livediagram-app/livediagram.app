@@ -220,4 +220,50 @@ describe('readPptx, the edges', () => {
       box: { x: 838200 },
     });
   });
+
+  it('numbers by the list’s scheme and start, restarts deeper levels, and takes numbering from a list style', async () => {
+    const at = (text: string, lvl: number, bu: string) =>
+      `<a:p><a:pPr lvl="${lvl}">${bu}</a:pPr><a:r><a:t>${text}</a:t></a:r></a:p>`;
+    const num = '<a:buAutoNum type="arabicPeriod"/>';
+    const sub = '<a:buAutoNum type="alphaLcParenR"/>';
+    const deck = await read({
+      slides: [
+        {
+          tree: [
+            sp({
+              id: 2,
+              box: xfrm(0, 0, 100, 100),
+              paras: [
+                at('One', 0, num),
+                at('Detail', 1, sub),
+                at('More', 1, sub),
+                at('Two', 0, num),
+                at('Again', 1, sub),
+                at('Third', 0, '<a:buAutoNum type="romanUcPeriod" startAt="3"/>'),
+                at('Fourth', 0, '<a:buAutoNum type="romanUcPeriod" startAt="3"/>'),
+                at('Paren', 0, '<a:buAutoNum type="arabicParenBoth" startAt="27"/>'),
+                at('Letter', 0, '<a:buAutoNum type="alphaUcPeriod" startAt="27"/>'),
+                at('Odd', 0, '<a:buAutoNum type="circleNumDbPlain"/>'),
+              ].join(''),
+            }),
+            sp({
+              id: 3,
+              box: xfrm(0, 200, 100, 100),
+              lstStyle: '<a:lvl1pPr><a:buAutoNum type="alphaLcPeriod"/></a:lvl1pPr>',
+              paras: [
+                ap('x'),
+                ap('y'),
+                ap('z', '<a:buChar char="-"/>'),
+                ap('w', '<a:buNone/>'),
+              ].join(''),
+            }),
+          ].join(''),
+        },
+      ],
+    });
+    expect(deck.slides[0]!.items.map((i) => (i as SlideTextItem).label)).toEqual([
+      '1. One\n  a) Detail\n  b) More\n2. Two\n  a) Again\nIII. Third\nIV. Fourth\n(27) Paren\nAA. Letter\n1. Odd',
+      'a. x\nb. y\n• z\nw',
+    ]);
+  });
 });

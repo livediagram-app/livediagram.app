@@ -73,6 +73,13 @@ elements' layer instead.
   does not share the offset, not every element. It is not promoted to a compositor layer of its
   own: that split everything overlapping it into layers that were laid out again on every frame,
   and drew the elements' text without sub-pixel smoothing, so the drag would not look the same.
+- **The layer always has a box of its own**, the canvas's, whether or not it carries a move: picking
+  the move up and putting it down changes only its transform, so it lays out none of the elements
+  again. A layer that took a box only while it carried laid out every element view twice a large
+  drag (once on the first frame, once on release). The box takes no press of its own: a press
+  between the elements reaches the canvas, and the canvas's cursor shows there, as before; the
+  elements take presses as they always did, and none while the canvas is inert (Spotlight, the
+  isometric view, Avatar mode).
 - **What does not share it is held where it should be**: an element that does not move, an arrow
   that re-routes, a stack's child, or one riding another offset (a collaborator's) is shifted back
   by the difference, so it is drawn exactly where it was drawn before.

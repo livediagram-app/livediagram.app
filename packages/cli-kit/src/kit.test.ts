@@ -6,6 +6,7 @@ import { debugLog } from './debug';
 import { didYouMean } from './did-you-mean';
 import { EXIT, exitCodeForStatus } from './exit-codes';
 import { inputReader } from './input';
+import { discover } from './oauth';
 import type { CliIo } from './io';
 import { cacheDir, configDir } from './paths';
 import { transport } from './transport';
@@ -115,6 +116,15 @@ describe('config.toml', () => {
     expect(() => parseConfig('what', 'config.toml')).toThrow(CliError);
   });
 
+  it('keeps a " #" inside a quoted value, escaped quotes and all, and still drops the comment after it', () => {
+    const text =
+      'default_profile = "my #1"  # the usual\n[profiles.a]\nhost = "https://x.test/ #top \\" #x" # note';
+    expect(parseConfig(text, 'config.toml')).toEqual({
+      defaultProfile: 'my #1',
+      profiles: { a: { host: 'https://x.test/ #top " #x' } },
+    });
+  });
+
   it('names the line of a string whose escape JSON does not read, rather than throwing a SyntaxError', () => {
     for (const text of ['[profiles.a]\nhost = "https://x.app/a\\q"', 'default_profile = "a\tb"']) {
       expect(() => parseConfig(text, 'config.toml'), text).toThrow(CliError);
@@ -177,6 +187,41 @@ describe('the product names', () => {
   });
 });
 
+describe('discover', () => {
+  const meta = (body: string) => io({ fetch: async () => new Response(body, { status: 200 }) }).io;
+  const log = () => {};
+
+  it('takes metadata whose endpoints are on the issuer', async () => {
+    const good = JSON.stringify({
+      authorization_endpoint: 'https://host.test/authorize',
+      token_endpoint: 'https://host.test/token',
+    });
+    expect(await discover(meta(good), 'https://host.test', log)).toMatchObject({
+      token_endpoint: 'https://host.test/token',
+    });
+  });
+
+  it('refuses unreadable metadata or endpoints that are not URLs as a sign-in error, not a crash', async () => {
+    for (const body of [
+      '<html>oops</html>',
+      'null',
+      JSON.stringify({
+        authorization_endpoint: 'not a url',
+        token_endpoint: 'https://host.test/t',
+      }),
+      JSON.stringify({ authorization_endpoint: 'https://host.test/a', token_endpoint: 7 }),
+      JSON.stringify({
+        authorization_endpoint: 'https://host.test/a',
+        token_endpoint: 'https://evil.test/t',
+      }),
+    ]) {
+      const err = await discover(meta(body), 'https://host.test', log).catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(CliError);
+      expect((err as CliError).failure.exit).toBe(EXIT.auth);
+    }
+  });
+});
+
 describe('versions', () => {
   it('compares x.y.z and says how to upgrade', () => {
     expect(isBelow('0.3.0', '0.10.0')).toBe(true);
@@ -184,6 +229,21 @@ describe('versions', () => {
     expect(upgradeHint('@example/cli')).toBe(
       'npm install -g @example/cli@latest, or npx @example/cli@latest',
     );
+  });
+
+  it('follows semver precedence for prereleases and ignores build metadata', () => {
+    expect(isBelow('1.3.0-rc.1', '1.3.0')).toBe(true);
+    expect(isBelow('1.3.0', '1.3.0-rc.1')).toBe(false);
+    expect(isBelow('1.3.0-rc.1', '1.3.0-rc.1')).toBe(false);
+    expect(isBelow('1.3.0-alpha', '1.3.0-alpha.1')).toBe(true);
+    expect(isBelow('1.3.0-alpha.1', '1.3.0-alpha')).toBe(false);
+    expect(isBelow('1.3.0-alpha.1', '1.3.0-alpha.beta')).toBe(true);
+    expect(isBelow('1.3.0-beta', '1.3.0-alpha.1')).toBe(false);
+    expect(isBelow('1.3.0-rc.2', '1.3.0-rc.10')).toBe(true);
+    expect(isBelow('1.3.0-rc.10', '1.3.0-rc.2')).toBe(false);
+    expect(isBelow('1.3.0-x-y', '1.3.0-x-z')).toBe(true);
+    expect(isBelow('1.3.0+build.5', '1.3.0')).toBe(false);
+    expect(isBelow('1.2.9', '1.3.0-rc.1')).toBe(true);
   });
 });
 

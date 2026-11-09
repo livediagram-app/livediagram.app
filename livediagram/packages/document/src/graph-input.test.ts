@@ -173,6 +173,13 @@ describe('Mermaid', () => {
     expect(r.error).toMatch(/flowcharts/);
   });
 
+  it('names sequence diagrams among the types an agent can draw, never as unsupported', () => {
+    // The editor's message ("not sequence, class, gantt") told agents the sequence diagrams they can draw were out.
+    const r = resolveGraphInput({ mermaid: 'classDiagram\n  A <|-- B' });
+    expect(r.error).toContain('sequence diagrams (sequenceDiagram)');
+    expect(r.error).not.toMatch(/not sequence/);
+  });
+
   it("heads the diagram with Mermaid front matter's title", () => {
     const r = resolveGraphInput({ mermaid: '---\ntitle: Checkout\n---\nflowchart TD\n  A --> B' });
     expect(r.graph?.title).toBe('Checkout');

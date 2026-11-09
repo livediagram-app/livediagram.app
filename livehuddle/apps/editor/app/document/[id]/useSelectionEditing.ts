@@ -4,6 +4,7 @@ import { isUntitledName } from '@livehuddle/api-schema';
 import {
   hasRichFormatting,
   isBoxed,
+  isRetiredElement,
   opensInlineLabelEditor,
   normalizeRuns,
   trimLabel,
@@ -120,6 +121,8 @@ export function useSelectionEditing(opts: {
     // type-to-edit) opens the inline editor for them.
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (el && el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return;
+    // A retired element takes no typed label (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
+    if (el && isRetiredElement(el)) return;
     seeded.current = null;
     setSelectedId(elementId);
     // Double-click / Space edit: select-all so a retype replaces the label.
@@ -271,10 +274,10 @@ export function useSelectionEditing(opts: {
     if (lockedByOther(elementId)) return false;
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (!el) return false;
-    // A path takes no typed label (docs/specs/023-draw-mode/blueprints/path-tool.md P1): its edit
-    // mode is its points, never a caret.
-    const labelable = (isBoxed(el) && el.type !== 'path') || el.type === 'arrow';
-    if (!labelable) return false;
+    // A retired element (a stored arrow, stroke, path, annotation, table, embed or deleted shape kind) is kept
+    // exactly as stored and takes no typed label (docs/specs/002-project-scope/not-in-livehuddle.md "Retired
+    // elements"): a key on a selected one never writes a seed character into it.
+    if (!isBoxed(el) || isRetiredElement(el)) return false;
     // Self-drawing data components have no editable label (see beginEdit).
     if (el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return false;
     // Type-to-edit REPLACES the whole label with the typed char, so any

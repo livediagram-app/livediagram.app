@@ -227,6 +227,10 @@ blocks)` → one `commitTabs` (`withArticleFlow`, the style kept); `onCommit` re
   next commit. Also flushed on blur, on
   Escape, before undo / redo, before every handle edit (`insertZone`, `moveZone`, `markNote`
   take the writing as written themselves), and on unmount.
+- **Commit on leave**: `commitWritingOnLeave(mount, commit)` (`lib/article/article-open-edit.ts`) registers the
+  writing as the open edit (`registerOpenEdit`) on each `focusin` into the mount (the notes included), so the unload
+  flush (`useUnloadFlush`, `commitOpenEdit` under `flushSync`) first commits the note being typed
+  (`notes.editing()`, cleaned, `setNodeAttribute`) and then `flush`es; cleared on unmount.
 - **Merge in**: when `props.doc !== committed` (checked when `props.doc` changes, and after every
   undo / redo from the writing, `undoSeq`: a flush and the undo of it land in one render, the
   flow back to the very object it was), local changes since the last commit are diffed

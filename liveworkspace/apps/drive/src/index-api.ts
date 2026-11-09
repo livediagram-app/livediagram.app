@@ -17,6 +17,7 @@ import {
   INDEX_PERSON_HEADER,
   IndexError,
   LIST_LIMIT_MAX,
+  type Item,
   type Page,
 } from '@liveworkspace/index-client';
 import { setting, type Env } from './env';
@@ -27,7 +28,12 @@ import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 export type Picture = { items: MirrorItem[]; folders: MirrorFolder[]; trash: MirrorTrashed[] };
 
 export interface PersonIndex {
-  picture(): Promise<Picture>;
+  // The whole picture. Through the mirror's runtime (mirror/picture.ts), `full: false` may read only what changed.
+  picture(options?: { full?: boolean }): Promise<Picture>;
+  // The live items changed at or after `since` (epoch ms), with every folder and the whole Trash.
+  changedSince(since: number): Promise<Picture>;
+  // One item as the picture holds it (live, personal, unshared, of a mirrored app), else null.
+  readItem(id: string): Promise<MirrorItem | null>;
   renameItem(id: string, name: string): Promise<void>;
   moveItem(id: string, folderId: string | null): Promise<void>;
   trashItem(id: string): Promise<void>;
@@ -71,6 +77,25 @@ export async function everyPage<T, K extends string>(
   throw new Error('drive: picture too large to read in one pass');
 }
 
+// The items the mirror writes files for: the person's own, live and unshared, of every registered app (held
+// livehuddle included).
+function mirrorItems(items: readonly Item[]): MirrorItem[] {
+  return items.flatMap((i) =>
+    i.teamId === null && i.trashedAt === null && i.sharedVia === null && isAppName(i.app)
+      ? [
+          {
+            id: i.id,
+            app: i.app,
+            name: i.title,
+            folderId: i.folderId,
+            updatedAt: i.updatedAt,
+            createdAt: i.createdAt,
+          },
+        ]
+      : [],
+  );
+}
+
 export function createIndexApi(env: Env): IndexApi {
   const key = setting(env.INDEX_KEY_DRIVE) ?? '';
   const binding = env.INDEX;
@@ -94,67 +119,68 @@ export function createIndexApi(env: Env): IndexApi {
         headers: { [INDEX_APP_HEADER]: DRIVE_DELEGATE, [INDEX_PERSON_HEADER]: personId },
         fetch: meter ? meteredFetch(doFetch, meter) : doFetch,
       });
+      // Every folder and the whole Trash, with every live item or those changed at or after `since`.
+      async function read(since?: number): Promise<Picture> {
+        const [items, folders, trash] = await Promise.all([
+          everyPage(
+            (cursor) =>
+              client.listItems({
+                team: 'personal',
+                limit: LIST_LIMIT_MAX,
+                ...(since !== undefined ? { since } : {}),
+                ...(cursor ? { cursor } : {}),
+              }),
+            'items',
+          ),
+          everyPage(
+            (cursor) =>
+              client.listFolders({
+                team: 'personal',
+                limit: LIST_LIMIT_MAX,
+                ...(cursor ? { cursor } : {}),
+              }),
+            'folders',
+          ),
+          everyPage(
+            (cursor) =>
+              client.listTrash({
+                team: 'personal',
+                limit: LIST_LIMIT_MAX,
+                ...(cursor ? { cursor } : {}),
+              }),
+            'items',
+          ),
+        ]);
+        return {
+          items: mirrorItems(items),
+          folders: folders
+            .filter((f) => f.teamId === null)
+            .map((f) => ({
+              id: f.id,
+              name: f.name,
+              parentId: f.parentId,
+              updatedAt: f.updatedAt,
+            })),
+          trash: trash.flatMap((i) =>
+            i.teamId === null && i.trashedAt !== null && isAppName(i.app)
+              ? [{ id: i.id, app: i.app, name: i.title, trashedAt: i.trashedAt ?? 0 }]
+              : [],
+          ),
+        };
+      }
       return {
-        async picture() {
-          const [items, folders, trash] = await Promise.all([
-            everyPage(
-              (cursor) =>
-                client.listItems({
-                  team: 'personal',
-                  limit: LIST_LIMIT_MAX,
-                  ...(cursor ? { cursor } : {}),
-                }),
-              'items',
-            ),
-            everyPage(
-              (cursor) =>
-                client.listFolders({
-                  team: 'personal',
-                  limit: LIST_LIMIT_MAX,
-                  ...(cursor ? { cursor } : {}),
-                }),
-              'folders',
-            ),
-            everyPage(
-              (cursor) =>
-                client.listTrash({
-                  team: 'personal',
-                  limit: LIST_LIMIT_MAX,
-                  ...(cursor ? { cursor } : {}),
-                }),
-              'items',
-            ),
-          ]);
-          return {
-            // Only the apps the mirror writes files for (every registered app, held livehuddle included).
-            items: items.flatMap((i) =>
-              i.teamId === null && i.trashedAt === null && i.sharedVia === null && isAppName(i.app)
-                ? [
-                    {
-                      id: i.id,
-                      app: i.app,
-                      name: i.title,
-                      folderId: i.folderId,
-                      updatedAt: i.updatedAt,
-                      createdAt: i.createdAt,
-                    },
-                  ]
-                : [],
-            ),
-            folders: folders
-              .filter((f) => f.teamId === null)
-              .map((f) => ({
-                id: f.id,
-                name: f.name,
-                parentId: f.parentId,
-                updatedAt: f.updatedAt,
-              })),
-            trash: trash.flatMap((i) =>
-              i.teamId === null && i.trashedAt !== null && isAppName(i.app)
-                ? [{ id: i.id, app: i.app, name: i.title, trashedAt: i.trashedAt ?? 0 }]
-                : [],
-            ),
-          };
+        picture: () => read(),
+        changedSince: (since) => read(since),
+        async readItem(id) {
+          try {
+            const { item } = await client.getItem(id);
+            return mirrorItems([item])[0] ?? null;
+          } catch (err) {
+            // Gone, or no longer theirs (moved into a team): not in the picture.
+            if (err instanceof IndexError && (err.status === 404 || err.status === 403))
+              return null;
+            throw err;
+          }
         },
         renameItem: async (id, name) => void (await client.updateItem(id, { title: name })),
         moveItem: async (id, folderId) => void (await client.updateItem(id, { folderId })),

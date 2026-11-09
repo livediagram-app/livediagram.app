@@ -18,6 +18,7 @@ import {
   type CommunityScope,
   type CommunityStartResponse,
 } from '@liveworkspace/community';
+import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import { FEATURED_MAX_AGE_S, LIST_MAX_AGE_S, MAX_BODY_BYTES, SITEMAP_MAX_AGE_S } from './config';
 import { likedPostIds, recordReport, setLike } from './engagement';
 import type { Env } from './env';
@@ -202,21 +203,23 @@ function appUrl(url: URL, app: CommunityScope): URL {
   return new URL(`${url.origin}${url.pathname}?${COMMUNITY_APP_PARAM}=${encodeURIComponent(app)}`);
 }
 
-async function readReport(
+export async function readReport(
   request: Request,
 ): Promise<
   | { reason: Parameters<typeof recordReport>[4]; note: string | null }
   | 'invalid_reason'
   | 'invalid_note'
 > {
-  const text = await request.text().catch(() => '');
+  // Anyone can post here, so the body is read through a byte counter (api-kit's readCappedBody): a chunked one declares
+  // no length, and read whole it could be any size before it was measured.
   let parsed: unknown = null;
-  if (text.length <= MAX_BODY_BYTES) {
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      parsed = null;
-    }
+  try {
+    const bytes =
+      request.body &&
+      (await readCappedBody(request.body as ReadableStream<Uint8Array>, MAX_BODY_BYTES));
+    if (bytes) parsed = JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    parsed = null;
   }
   // `?? {}`: a JSON `null` body parses fine and must answer 400, not 500.
   const body = (parsed ?? {}) as { reason?: unknown; note?: unknown };

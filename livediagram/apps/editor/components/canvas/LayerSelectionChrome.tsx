@@ -75,10 +75,11 @@ export function LayerSelectionChrome({
       {showUnionResize && unionResizeBounds ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute rounded-md border border-dashed border-brand-400/80 dark:border-brand-300/70"
+          // Placed by transform but not promoted (docs/specs/008-canvas/canvas-performance.md "A sweep moves one
+          // layer"): it spans the selection, so a layer of its own split every element over it into layers.
+          className="pointer-events-none absolute left-0 top-0 rounded-md border border-dashed border-brand-400/80 dark:border-brand-300/70"
           style={{
-            left: unionResizeBounds.x - 6,
-            top: unionResizeBounds.y - 6,
+            transform: `translate(${unionResizeBounds.x - 6}px, ${unionResizeBounds.y - 6}px)`,
             width: unionResizeBounds.width + 12,
             height: unionResizeBounds.height + 12,
           }}

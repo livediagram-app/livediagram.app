@@ -72,15 +72,13 @@ export class LocalPreview {
       stopAll(stream);
       return;
     }
-    if (kind === 'screen') {
-      const track = stream.getVideoTracks()[0];
-      if (track) {
-        track.contentHint = 'detail';
-        // The browser's own Stop Sharing control ends the track.
-        track.addEventListener('ended', () => {
-          if (this.streams.screen === stream) this.stop('screen');
-        });
-      }
+    const track = stream.getVideoTracks()[0];
+    if (track) {
+      if (kind === 'screen') track.contentHint = 'detail';
+      // The browser's own Stop Sharing control ends a screen; an unplugged or withdrawn camera ends a camera.
+      track.addEventListener('ended', () => {
+        if (this.streams[kind] === stream) this.stop(kind);
+      });
     }
     this.streams[kind] = stream;
     setCallMedia(SELF_MEDIA_ID, MEDIA_OF_KIND[kind], stream);

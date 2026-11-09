@@ -161,6 +161,7 @@ describe('statistics', () => {
   });
   it('counts TRUE and FALSE typed as arguments, never ones in a range', () => {
     expect(calc('=COUNT(TRUE, FALSE, 1)')).toBe(3);
+    expect(calc('=COUNT("12%", "0x10", "Infinity", " ")')).toBe(1);
     expect(calc('=COUNT(A5)', DATA)).toBe(0);
     expect(calc('=COUNT(A1:A5)', DATA)).toBe(3);
   });

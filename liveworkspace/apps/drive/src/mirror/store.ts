@@ -2,7 +2,8 @@
 // `drive_connection`, one row (the sealed refresh token, the root, the page token, status, the Google account, a
 // pending switch, the push channel, back-off, pass progress), and `drive_items`, one row per mirrored item and folder
 // (DriveRow, plus the item's updatedAt last seen, for the Explorer's marks). `drive_failures` holds the items whose
-// last write failed. Over a minimal SQL interface, so the tests run it on node:sqlite.
+// last write failed. `drive_picture` and `drive_picture_state` keep the last picture read from the index, so most
+// passes read only what changed (picture.ts). Over a minimal SQL interface, so the tests run it on node:sqlite.
 //
 // A store that never held anything gets no schema from a read: reads check for the schema first, so a signal or a
 // marks request for someone not connected writes nothing.
@@ -13,6 +14,8 @@ import {
   type DriveRow,
   type DriveRowKind,
   type DriveStatus,
+  type MirrorItem,
+  type MirrorTrashed,
 } from '@liveworkspace/drive';
 
 export interface SqlCursor {
@@ -104,7 +107,29 @@ CREATE TABLE IF NOT EXISTS drive_failures (
   id TEXT PRIMARY KEY,
   at INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS drive_picture (
+  id TEXT PRIMARY KEY,
+  app TEXT NOT NULL,
+  name TEXT NOT NULL,
+  folder_id TEXT,
+  updated_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  trashed_at INTEGER
+);
+CREATE TABLE IF NOT EXISTS drive_picture_state (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  read_at INTEGER NOT NULL,
+  full_at INTEGER NOT NULL
+);
 `;
+
+// How many picture rows one statement writes or drops: one bound JSON array, far inside a value's size limit.
+const PICTURE_ROWS_PER_STATEMENT = 500;
+
+/** The last picture read (mirror/picture.ts): its live items and its Trash, by id. */
+export type KeptPicture = { items: Map<string, MirrorItem>; trash: Map<string, MirrorTrashed> };
+/** When it was read, and when last read whole (0: stale, the next read is whole). */
+export type PictureState = { readAt: number; fullAt: number };
 
 // Connection fields and their columns; `backoff` and `progress` span two columns each.
 const COLUMNS = {
@@ -351,11 +376,135 @@ export class MirrorStore {
     }
   }
 
+  pictureState(): PictureState | null {
+    const row = this.readable()
+      ?.exec('SELECT * FROM drive_picture_state WHERE id = 1')
+      .toArray()[0];
+    return row ? { readAt: num(row.read_at) ?? 0, fullAt: num(row.full_at) ?? 0 } : null;
+  }
+
+  keptPicture(): KeptPicture {
+    const items = new Map<string, MirrorItem>();
+    const trash = new Map<string, MirrorTrashed>();
+    for (const r of this.readable()?.exec('SELECT * FROM drive_picture').toArray() ?? []) {
+      const app = str(r.app);
+      if (!isAppName(app)) continue;
+      const id = String(r.id);
+      const name = String(r.name);
+      const trashedAt = num(r.trashed_at);
+      if (trashedAt === null) {
+        items.set(id, {
+          id,
+          app,
+          name,
+          folderId: str(r.folder_id),
+          updatedAt: num(r.updated_at) ?? 0,
+          createdAt: num(r.created_at) ?? 0,
+        });
+      } else {
+        trash.set(id, { id, app, name, trashedAt });
+      }
+    }
+    return { items, trash };
+  }
+
+  /** Keep a picture just read: only the rows that differ from the kept one (`kept`, when already read) are written. */
+  keepPicture(
+    picture: { items: readonly MirrorItem[]; trash: readonly MirrorTrashed[] },
+    state: PictureState,
+    kept: KeptPicture = this.keptPicture(),
+  ): void {
+    const sql = this.writable();
+    const seen = new Set<string>();
+    // The rows that differ, written PICTURE_ROWS_PER_STATEMENT to a statement (one JSON array bound).
+    const puts: (string | number | null)[][] = [];
+    const drops: string[] = [];
+    const put = (row: {
+      id: string;
+      app: string;
+      name: string;
+      folderId: string | null;
+      updatedAt: number;
+      createdAt: number;
+      trashedAt: number | null;
+    }) =>
+      puts.push([
+        row.id,
+        row.app,
+        row.name,
+        row.folderId,
+        row.updatedAt,
+        row.createdAt,
+        row.trashedAt,
+      ]);
+    for (const item of picture.items) {
+      seen.add(item.id);
+      const was = kept.items.get(item.id);
+      if (
+        was &&
+        was.app === item.app &&
+        was.name === item.name &&
+        was.folderId === item.folderId &&
+        was.updatedAt === item.updatedAt &&
+        was.createdAt === item.createdAt
+      )
+        continue;
+      put({ ...item, trashedAt: null });
+    }
+    for (const t of picture.trash) {
+      if (seen.has(t.id)) continue;
+      seen.add(t.id);
+      const was = kept.trash.get(t.id);
+      if (was && was.app === t.app && was.name === t.name && was.trashedAt === t.trashedAt)
+        continue;
+      put({ ...t, folderId: null, updatedAt: 0, createdAt: 0 });
+    }
+    for (const id of [...kept.items.keys(), ...kept.trash.keys()]) {
+      if (!seen.has(id)) drops.push(id);
+    }
+    for (let i = 0; i < puts.length; i += PICTURE_ROWS_PER_STATEMENT) {
+      sql.exec(
+        `INSERT INTO drive_picture (id, app, name, folder_id, updated_at, created_at, trashed_at)
+         SELECT json_extract(value, '$[0]'), json_extract(value, '$[1]'), json_extract(value, '$[2]'),
+           json_extract(value, '$[3]'), json_extract(value, '$[4]'), json_extract(value, '$[5]'),
+           json_extract(value, '$[6]')
+         FROM json_each(?) WHERE true
+         ON CONFLICT (id) DO UPDATE SET app = excluded.app, name = excluded.name, folder_id = excluded.folder_id,
+           updated_at = excluded.updated_at, created_at = excluded.created_at, trashed_at = excluded.trashed_at`,
+        JSON.stringify(puts.slice(i, i + PICTURE_ROWS_PER_STATEMENT)),
+      );
+    }
+    for (let i = 0; i < drops.length; i += PICTURE_ROWS_PER_STATEMENT) {
+      sql.exec(
+        'DELETE FROM drive_picture WHERE id IN (SELECT value FROM json_each(?))',
+        JSON.stringify(drops.slice(i, i + PICTURE_ROWS_PER_STATEMENT)),
+      );
+    }
+    sql.exec(
+      `INSERT INTO drive_picture_state (id, read_at, full_at) VALUES (1, ?, ?)
+       ON CONFLICT (id) DO UPDATE SET read_at = excluded.read_at, full_at = excluded.full_at`,
+      state.readAt,
+      state.fullAt,
+    );
+  }
+
+  /** The mirror changed the index itself: the next picture is read whole. */
+  stalePicture(): void {
+    this.readable()?.exec('UPDATE drive_picture_state SET full_at = 0 WHERE id = 1');
+  }
+
+  private forgetPicture(sql: Sql): void {
+    sql.exec('DELETE FROM drive_picture');
+    sql.exec('DELETE FROM drive_picture_state');
+  }
+
   /** Forget every row (a switch to another Google account): the connection stays. */
   clearRows(): void {
     const sql = this.readable();
-    sql?.exec('DELETE FROM drive_items');
-    sql?.exec('DELETE FROM drive_failures');
+    if (!sql) return;
+    sql.exec('DELETE FROM drive_items');
+    sql.exec('DELETE FROM drive_failures');
+    this.forgetPicture(sql);
   }
 
   /** After the object's storage was deleted outright: the schema is made again on the next write. */
@@ -369,6 +518,7 @@ export class MirrorStore {
     if (!sql) return;
     sql.exec('DELETE FROM drive_items');
     sql.exec('DELETE FROM drive_failures');
+    this.forgetPicture(sql);
     sql.exec('DELETE FROM drive_connection');
   }
 }

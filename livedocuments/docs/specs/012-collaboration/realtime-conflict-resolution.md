@@ -257,7 +257,7 @@ If same-element field-level merge becomes a real need, it is built then, verifie
   `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration
   state in Durable Object storage: the per-element ledger
-  (`room-ledger-store.ts`). The full description is
+  (`@liveworkspace/api-kit/room-ledger-store`). The full description is
   [API app → Realtime model](../015-api/api.md#realtime-model).
 - `apps/api/src/room-client.ts`: the worker's calls into the room: the ledger
   merge on a tab PUT (`fetchRoomLedger` + `applyRoomLedger`, driven by `X-Room-Cursor`), the

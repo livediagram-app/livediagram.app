@@ -2,6 +2,7 @@ import type { Anchor, ArrowElement, BoxedElement, Element, ElementId, Endpoint }
 import { anchorClass, anchorLiesOn, offeredOnSide } from './anchors';
 import { anchorAimPoint, exitSideTowards, facingSideTowards } from './anchor-choice';
 import { arrowPolyline, pathPassesThrough, pinnedBoxedElement } from './arrow-path-hits';
+import { freeEndsAttachedTo } from './arrow-free-ends';
 import { swapCrossingEnds } from './arrow-rebind-swap';
 import {
   anchorPosition,
@@ -248,19 +249,5 @@ export function removeElements(
     return false;
   });
   if (removed.size === 0) return left;
-  let index: ElementIndex | null = null;
-  const free = (end: Endpoint): Endpoint => {
-    const target =
-      end.kind === 'pinned' ? end.elementId : end.kind === 'on-arrow' ? end.arrowId : null;
-    if (target === null || !removed.has(target)) return end;
-    index ??= buildElementIndex(elements as Element[]);
-    const { x, y } = endpointPosition(end, index);
-    return { kind: 'free', x, y };
-  };
-  return left.map((el) => {
-    if (el.type !== 'arrow') return el;
-    const from = free(el.from);
-    const to = free(el.to);
-    return from === el.from && to === el.to ? el : { ...el, from, to };
-  });
+  return freeEndsAttachedTo(left, (id) => removed.has(id), elements as Element[]);
 }

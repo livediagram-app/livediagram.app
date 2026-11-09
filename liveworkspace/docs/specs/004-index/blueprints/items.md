@@ -8,20 +8,21 @@ repository root.
 
 Scope, by file:
 
-| File                                                            | Role                                                                                                              |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/items.ts`                         | Filters and list specs; create, read, update, copy, open, grant; `insertItem`, use days, `sharedWithUpsert`       |
-| `liveworkspace/apps/index/src/lists.ts`                         | `buildListQuery`, `filterClauses`, `buildMostUsedQuery`, `buildMineCountQuery`, `buildAnyQuery`, `listItems`      |
-| `liveworkspace/apps/index/src/rows.ts`                          | `ItemRow`, `ITEM_COLUMNS`, `directAccess`, `toItem`, `LIVE_LINK`, `decorate`                                      |
-| `liveworkspace/apps/index/src/folders.ts`                       | Folder routes, `reachableFolder`, `teamFilter`, `readName`                                                        |
-| `liveworkspace/apps/index/src/folder-previews.ts`               | `GET /folders/previews`                                                                                           |
-| `liveworkspace/apps/index/src/personal.ts`                      | Favourites, Hide from Recent (placement defaults: [default-folders.md](default-folders.md))                       |
-| `liveworkspace/apps/index/src/visitors.ts`                      | Opened and Copied by a Visitor                                                                                    |
-| `liveworkspace/apps/index/src/notices.ts`                       | `tellApp`, the first-visit check, `GET /app/people/:id/count`                                                     |
-| `packages/index-client/src/client.ts`                           | `listItems`, `createItem`, `getItem`, `updateItem`, `copyItem`, `recordOpen`, `grant`, folder and favourite calls |
-| `liveworkspace/apps/index/migrations/0009_items_livehuddle.sql` | The items rebuild that let in livehuddle's Spaces ([Rebuilding items](#rebuilding-items))                         |
-| `liveworkspace/apps/index/scripts/items-rebuild-check.ts`       | `snapshot`, `compare`, `foreignKeyProblems`, `itemsDescendants`: what a rebuild must leave unchanged              |
-| `liveworkspace/apps/index/scripts/items-rebuild-counts.ts`      | The rehearsal CLI: `rehearse <export.sql>`, `snapshot`, `compare`                                                 |
+| File                                                            | Role                                                                                                                              |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/items.ts`                         | Filters and list specs; create, read, update, copy, open, grant; `insertItem`, use days, `sharedWithUpsert`                       |
+| `liveworkspace/apps/index/src/lists.ts`                         | `buildListQuery` (`buildSearchQuery`), `filterClauses`, `buildMostUsedQuery`, `buildMineCountQuery`, `buildAnyQuery`, `listItems` |
+| `liveworkspace/apps/index/src/rows.ts`                          | `ItemRow`, `ITEM_COLUMNS`, `directAccess`, `toItem`, `LIVE_LINK`, `decorate`                                                      |
+| `liveworkspace/apps/index/src/folders.ts`                       | Folder routes, `reachableFolder`, `teamFilter`, `readName`                                                                        |
+| `liveworkspace/apps/index/src/folder-previews.ts`               | `GET /folders/previews`                                                                                                           |
+| `liveworkspace/apps/index/src/lookup.ts`                        | `POST /items/lookup`                                                                                                              |
+| `liveworkspace/apps/index/src/personal.ts`                      | Favourites, Hide from Recent (placement defaults: [default-folders.md](default-folders.md))                                       |
+| `liveworkspace/apps/index/src/visitors.ts`                      | Opened and Copied by a Visitor                                                                                                    |
+| `liveworkspace/apps/index/src/notices.ts`                       | `tellApp`, the first-visit check, `GET /app/people/:id/count`                                                                     |
+| `packages/index-client/src/client.ts`                           | `listItems`, `createItem`, `getItem`, `updateItem`, `copyItem`, `recordOpen`, `grant`, folder and favourite calls                 |
+| `liveworkspace/apps/index/migrations/0009_items_livehuddle.sql` | The items rebuild that let in livehuddle's Spaces ([Rebuilding items](#rebuilding-items))                                         |
+| `liveworkspace/apps/index/scripts/items-rebuild-check.ts`       | `snapshot`, `compare`, `foreignKeyProblems`, `itemsDescendants`: what a rebuild must leave unchanged                              |
+| `liveworkspace/apps/index/scripts/items-rebuild-counts.ts`      | The rehearsal CLI: `rehearse <export.sql>`, `snapshot`, `compare`                                                                 |
 
 ## Domain and naming
 
@@ -72,15 +73,15 @@ trashedAt, trashReason, summary, access, favourite, lastOpenedAt, hiddenFromRece
 with a folder only, the filters, `used` 1 to 8 on `recent`, `mine` 1 to 200, `any=1` (never the mirror). The mirror's
 lists are its personal scope only.
 
-| View         | From                                             | Where                                                         | Sort                       |
-| ------------ | ------------------------------------------------ | ------------------------------------------------------------- | -------------------------- |
-| `all`        | `items i`                                        | the scopes (or `folder_id =` / the subtree with `deep`), live | `updated_at DESC, id DESC` |
-| `unsorted`   | `items i`                                        | the scopes, live, `folder_id IS NULL`                         | the same                   |
-| `trash`      | `items i`                                        | the scopes, trashed                                           | the same                   |
-| `search`     | the scopes' live items `UNION` live links' items | live                                                          | the same                   |
-| `recent`     | `opens o JOIN items i`                           | the person, `hidden = 0`, live, reachable                     | `last_opened_at DESC`      |
-| `favourites` | `favourites f JOIN items i`                      | the person, live, reachable                                   | `updated_at DESC`          |
-| `shared`     | `shared_with` and live `share_links`             | the person, live, not in their own scopes                     | `updated_at DESC`          |
+| View         | From                                                                                                         | Where                                                         | Sort                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- | -------------------------- |
+| `all`        | `items i`                                                                                                    | the scopes (or `folder_id =` / the subtree with `deep`), live | `updated_at DESC, id DESC` |
+| `unsorted`   | `items i`                                                                                                    | the scopes, live, `folder_id IS NULL`                         | the same                   |
+| `trash`      | `items i`                                                                                                    | the scopes, trashed                                           | the same                   |
+| `search`     | the scopes' newest live items `UNION ALL` live links' items outside them, each taken in order up to the page | live                                                          | the same                   |
+| `recent`     | `opens o JOIN items i`                                                                                       | the person, `hidden = 0`, live, reachable                     | `last_opened_at DESC`      |
+| `favourites` | `favourites f JOIN items i`                                                                                  | the person, live, reachable                                   | `updated_at DESC`          |
+| `shared`     | `shared_with` and live `share_links`                                                                         | the person, live, not in their own scopes                     | `updated_at DESC`          |
 
 Filters (`filterClauses`): each search word (≤ 16 words, ≤ 200 chars) in the title or the name of one of the
 person's folders (`LIKE` with `\` escapes); `apps`, `source`, `intent` (`intent = w OR intent LIKE '%:' || w`, each
@@ -91,6 +92,21 @@ row the page already holds, so no index); `since` (`updated_at >=`); `owner` `me
 page: `mostUsed` (items opened in the last 14 days with `useOpens` and `useDays`, by opens in the window, then last open,
 then id, hidden ones left out), `mine { count, more }` (the live items in every scope the person has: their own and
 each joined team's, each item in one scope so counted once) and `any`. One batch; the page and Most Used decorated together.
+`any` is two existence checks, each stopping at its first row: a live item in the person's scopes (in `app`), or one
+reached through a live link they opened.
+
+The scope lists (`all`, `unsorted` and `trash` without a folder, and `search`'s scopes and `any`'s) name their index
+(`INDEXED BY items_live`, `items_live_app` with `app`, `items_unsorted`, `items_trash`): where a few scopes hold most
+items (a small workspace once `ANALYZE` has run), the planner would otherwise scan the table and sort it.
+
+### Looking items up (`POST /items/lookup`)
+
+`{ ids }`, 1 to `ITEM_LOOKUP_IDS_MAX` (200) ids (`400 invalid_body` otherwise), a person only. One read of the rows,
+then each kept by `GET /items/:id`'s rule: an app acting for a person its own app's only, the Drive mirror its
+personal items only, the owner and joined members of its team (teams joined since the token asked of accounts), and
+anyone else through a live link they opened, while the item is out of the Trash and has no share password (a lookup
+carries none, so `GET /items/:id` would refuse it `401`). `200 { items }` decorated in one batch, in the order asked,
+each once; ids missing or out of reach are left out.
 
 ### Folders
 
@@ -176,23 +192,26 @@ on the real copy; one that runs far past 30 s is the sign to split the rebuild b
 
 ## Performance and limits
 
-A page is one statement on an index starting with the person, a scope or a folder; `search` gathers the reachable ids
-first. Decoration is one batch of four statements. Home's three reads (`used`, `mine`, `any`) ride on the first page.
-A folder preview is two statements for up to 60 folders.
+A page is one statement on an index starting with the person, a scope or a folder; `search` walks the scopes' index
+and the person's links each in order and stops at the page, so it never gathers everything they reach (at 80,000
+reachable items, a page went from 757 ms to under 2 ms, and `any` from 220 ms to under 0.01 ms, in the local bench).
+Decoration is one batch of four statements. Home's three reads (`used`, `mine`, `any`) ride on the first page.
+A folder preview is two statements for up to 60 folders; a lookup is one read and one decoration for up to 200 ids.
 
 ## Testing
 
-| Test                                                             | Pins                                                                                           |
-| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/items.test.ts` (35)                | who gets in; making and reading; renaming and moving; the Trash; copies; opens; grants; tokens |
-| `liveworkspace/apps/index/src/lists.test.ts` (17)                | views and filters (the `modes` lens included); search; query plans; at 2,000 items             |
-| `liveworkspace/apps/index/src/livehuddle-migration.test.ts` (11) | the items rebuild keeps every row, index, key and cascade; Spaces go in, unknown apps don't    |
-| `liveworkspace/apps/index/src/home-reads.test.ts` (5)            | Home's reads beside the first page, and their bound                                            |
-| `liveworkspace/apps/index/src/most-used.test.ts` (8)             | recording use days; Most Used beside Recent; the bound; Hide from Recent                       |
-| `liveworkspace/apps/index/src/personal.test.ts` (9)              | folders, tags, favourites, placement defaults                                                  |
-| `liveworkspace/apps/index/src/folder-previews.test.ts` (4)       | `GET /folders/previews`                                                                        |
-| `liveworkspace/apps/index/src/visitors.test.ts` (2)              | visitors on the Timeline                                                                       |
-| `liveworkspace/apps/index/src/notices.test.ts` (6)               | notices; a person's count of items made                                                        |
+| Test                                                             | Pins                                                                                                                                |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/items.test.ts` (35)                | who gets in; making and reading; renaming and moving; the Trash; copies; opens; grants; tokens                                      |
+| `liveworkspace/apps/index/src/lists.test.ts` (20)                | views and filters (the `modes` lens included); search, merged from scopes and links; query plans, after ANALYZE too; at 2,000 items |
+| `liveworkspace/apps/index/src/livehuddle-migration.test.ts` (11) | the items rebuild keeps every row, index, key and cascade; Spaces go in, unknown apps don't                                         |
+| `liveworkspace/apps/index/src/home-reads.test.ts` (5)            | Home's reads beside the first page, and their bound                                                                                 |
+| `liveworkspace/apps/index/src/most-used.test.ts` (8)             | recording use days; Most Used beside Recent; the bound; Hide from Recent                                                            |
+| `liveworkspace/apps/index/src/personal.test.ts` (9)              | folders, tags, favourites, placement defaults                                                                                       |
+| `liveworkspace/apps/index/src/folder-previews.test.ts` (4)       | `GET /folders/previews`                                                                                                             |
+| `liveworkspace/apps/index/src/lookup.test.ts` (6)                | `POST /items/lookup`: the access rule per item, its bound, one decoration                                                           |
+| `liveworkspace/apps/index/src/visitors.test.ts` (2)              | visitors on the Timeline                                                                                                            |
+| `liveworkspace/apps/index/src/notices.test.ts` (6)               | notices; a person's count of items made                                                                                             |
 
 ## Constants and configuration
 

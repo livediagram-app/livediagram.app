@@ -25,7 +25,9 @@ The interface's words are kept: an agent writes an **article**, never a "documen
 - **MCP**: two tools, `change_pages` and `write_article` ([MCP server](../015-api/mcp-server.md#49d-the-pages-tools)),
   and the `pages` view of `read_document`.
 - **CLI**: `page ls` (the `pages` view), `page set` (`change_pages`), `article get` (one article as Markdown) and
-  `article set` (`write_article`) ([CLI](../015-api/cli.md)).
+  `article set` (`write_article`) ([CLI](../015-api/cli.md)). `page set`'s flags make one change (an add takes its
+  name, size, orientation, layout and place with it); flags asking for two, or a flag beside `--changes`, are refused
+  (`invalid_value`) rather than one of them dropped.
 - Both go through one api route, `POST /api/documents/:id/tabs/:tabId/pages`, over one pure engine shared with
   the editor, so an agent's page edit is exactly the edit the page panel makes.
 - `create_document` and `add_tab` with a Pages template (`article`, `slide-deck`, the poster
@@ -95,7 +97,7 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   gives a whole deck one background: `set` the first slide's, then this, in the same call.
 - **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`); any other is refused (`layout_unknown`)
   naming the kind's layouts. Laid out in the page's content box, in the tab's theme.
-- **Locks**: a locked page refuses every change but `set { locked: false }` (`page_locked`); on an article any
+- **Locks**: a locked page refuses every change but `set { locked: false }`, `move` and `duplicate` (`page_locked`), as the page panel lets a locked page move and be copied ([Pages](../007-editor/pages-mode.md)); on an article any
   locked page refuses the changes that reach all its pages, as in the editor.
 - **Limit**: a tab holds at most 100 pages (`MAX_PAGES`); an `add` or `duplicate` past it is refused
   (`page_limit`).
@@ -108,7 +110,7 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
 
 Writes an article's text from **Markdown**.
 
-- **Which article**: `article` names one by flow id or title (case aside). Absent: the tab's only article; with none,
+- **Which article**: `article` names one by flow id or title (case and spacing aside), alike for `write_article` and `article get`. Absent: the tab's only article; with none,
   a new article; with two or more, refused (`article_ambiguous`) naming them. A named article that is not there is
   refused (`article_unknown`). `new: true` always starts a new article.
 - **A new article** is made as the editor's **+** makes one (A4 portrait, or the last page's paper size and
@@ -118,7 +120,10 @@ Writes an article's text from **Markdown**.
 - **`mode`**: `replace` (default) writes the article's text anew; `append` adds the blocks after its last block.
 - **The Markdown** (the editor's paste reading, `parseMarkdownBlocks`, shared): `#`, `##`, `###` headings (h1 to
   h3), paragraphs, `-` / `*` / `1.` lists by indent (five levels), `- [ ]` / `- [x]` to-dos, `>` quotes, fenced
-  code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto). A paragraph's, a
+  code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto), an underscore
+  marking nothing inside a word as CommonMark has it (`snake_case_name` stays as written). A heading's closing
+  `#`s are dropped (`# Title #` is "Title"), and a heading ending in a space and `#`s is written with the first
+  escaped (`## Learn C \#`), so it reads back whole. A paragraph's, a
   quote's or a list item's line ending in two or more spaces or in a backslash (CommonMark's hard breaks) breaks the
   line there, so an address block keeps its lines: a quote goes on into the `>` line after it (a `>` line with no
   break is a quote of its own), a list item into the line after it unless that line opens a block of its own (a
@@ -144,7 +149,8 @@ Writes an article's text from **Markdown**.
   when it lists fewer than three levels).
 - **Front matter** sets the title and subtitle: a first line `---`, then `title: ...` and `subtitle: ...` lines, then
   `---`. They become the article's `title` and `subtitle` blocks, first. Without front matter the text is written as
-  given (a replace keeps no old title).
+  given (a replace keeps no old title). An append's front matter sets the article's own title and subtitle where
+  they are (a missing one goes first, a subtitle after the title), never a title block after the last block.
 - **Zones** (objects and drawings in the text) are written as a line `[zone <id>]`, as the `pages` view prints them.
   A replace keeps a zone exactly where its line is (an append leaves a zone it names where it already is); a zone of the article whose line is missing is removed with the
   elements in it, and the answer says so ("Removed zone z-12 and 3 elements"). An unknown zone id is refused

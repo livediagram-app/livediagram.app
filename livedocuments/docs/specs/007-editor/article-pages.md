@@ -183,8 +183,9 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
 - **Commits**: typing is written to the tab when the writing pauses for **600** ms
   (`ARTICLE_IDLE_COMMIT_MS`), when the caret leaves the writing, before any edit that is not typing
   (a toolbar change, an insert, a zone move) and before an undo. Each commit is one undo step and
-  one sync, so a collaborator sees words as they settle and a closed tab loses at most the last
-  pause.
+  one sync, so a collaborator sees words as they settle. Reloading or closing the page commits what
+  is still held first, in the writing and in a footnote's note being typed, so a closed tab loses
+  nothing typed.
 - **Undo and redo** in the writing are the editor's own (the same history as every edit): ⌘Z
   undoes the last commit, with the caret put back where that edit was.
 

@@ -6,6 +6,7 @@
 // Why this is not a group again (the spec's "Why this is not a group again"): nothing on a tab lists the elements of
 // a component, so no select, drag, delete, lock, layer or clipboard path branches on one.
 import type { Element, ShapeElement } from './index';
+import { cutText } from './text-cut';
 
 /** The instance's shape kind. */
 export const INSTANCE_SHAPE = 'instance' as const;
@@ -86,7 +87,7 @@ export function mayGoInComponent(el: Element): boolean {
 
 /** A name as stored: whitespace collapsed, trimmed, at most COMPONENT_NAME_MAX characters. */
 export function clampComponentName(name: string): string {
-  return name.replace(/\s+/g, ' ').trim().slice(0, COMPONENT_NAME_MAX).trim();
+  return cutText(name.replace(/\s+/g, ' ').trim(), COMPONENT_NAME_MAX).trim();
 }
 
 /** The name Make Component gives: `Component <n>`, n one more than the library's size, unique in it. */

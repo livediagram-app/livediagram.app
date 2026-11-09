@@ -42,6 +42,13 @@ or selector, compiled by the api into element ops. A full rebuild uses `replace`
   kinds. `PLAN_ELEMENT_KINDS` and the field lists live in `plan-elements.ts`; `liveplanner schema` and
   `GET /api/schema` print them.
 
+- **A board's caps hold for agents.** A `planBoard` an `add`, a `set` or a replace gives whose `title` is over 80
+  characters (`PLAN_TITLE_MAX`), or with a column `name` over 40 (`PLAN_COLUMN_NAME_MAX`), is refused with
+  `invalid_result`, naming the element and the cap (`b1 planBoard: a board title is at most 80 characters`), as
+  `change_board` refuses them ([Plan agents](../026-plan/plan-agents.md)). Only a `planBoard` the write gives is
+  checked: a board stored with a longer title (cut to the cap when read) is still moved, resized and renamed by label,
+  and the editor's own saves are never refused for it (`planBoardCapIssue` in `plan-elements.ts`).
+
 - **Ids.** An added element's `id` names it, so later operations in the same changeset can refer to it; without one it
   takes a fresh id.
 - **Fields** are the stored fields the element's kind takes, by name (no aliases). A field it does not take is

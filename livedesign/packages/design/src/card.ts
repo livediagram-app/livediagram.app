@@ -8,6 +8,7 @@
 import { clamp } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, IconPosition, ShapeElement } from './index';
 import type { LayoutRect } from './web-components';
+import { cutText } from './text-cut';
 
 export type CardMedia = 'badge' | 'tile' | 'initial';
 export const CARD_MEDIA: readonly CardMedia[] = ['badge', 'tile', 'initial'];
@@ -21,7 +22,7 @@ export function isCardMedia(v: unknown): v is CardMedia {
 
 /** Trim + bound a tag the way every write path should. */
 export function clampCardTag(s: string): string {
-  return s.replace(/\s+/g, ' ').trim().slice(0, CARD_TAG_MAX);
+  return cutText(s.replace(/\s+/g, ' ').trim(), CARD_TAG_MAX);
 }
 
 // --- Layout ---------------------------------------------------------------------------------------

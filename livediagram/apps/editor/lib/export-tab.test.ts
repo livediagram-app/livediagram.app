@@ -385,6 +385,31 @@ describe('renderTabToSvg arrows match the canvas', () => {
     expect(renderTabToSvg(crossing(false))).not.toContain('<mask');
   });
 
+  // The arrow is drawn to the hidden box where it is, so the page reaches that end; it used to resolve over the
+  // shown boxes alone, fall back to the origin and stretch the page there.
+  it('sizes the page to an arrow end pinned to a box on a hidden layer', () => {
+    const svg = renderTabToSvg(
+      tab({
+        layers: [
+          { id: 'base', name: 'Base' },
+          { id: 'secret', name: 'Hidden', visible: false },
+        ],
+        elements: [
+          shape('a', { x: 1000, y: 1000, layerId: 'base' }),
+          shape('b', { x: 1400, y: 1000, layerId: 'secret' }),
+          pinnedArrow('arr', 'a', 'b', undefined, { layerId: 'base' }),
+        ],
+      }),
+    );
+    const [x, y, w] = svg
+      .match(/viewBox="([^"]+)"/)![1]!
+      .split(' ')
+      .map(Number);
+    expect(x).toBeGreaterThan(900);
+    expect(y).toBeGreaterThan(900);
+    expect(x! + w!).toBeGreaterThanOrEqual(1400);
+  });
+
   it('fills a hollow head with the tab background, not the default canvas colour', () => {
     const svg = renderTabToSvg(
       tab({

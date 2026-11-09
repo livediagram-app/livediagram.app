@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makeCriterion } from './criteria';
+import { makeCriterion, wildcardCriterion } from './criteria';
 
 describe('criteria', () => {
   it.each([
@@ -46,8 +46,25 @@ describe('criteria', () => {
     ['*~?', 'why', false],
     ['<>*x*', 'abc', true],
     ['İ*', 'İstanbul', true],
+    ['>50%', 0.6, true],
+    ['>50%', 0.4, false],
+    ['5%', 0.05, true],
+    ['>=2026-01-01', 46023, true],
+    ['>=2026-01-01', 46022, false],
+    ['2026-01-01', 46023, true],
+    ['<2026-02-30', 46023, false],
+    ['x%', 'x%', true],
   ])('%j matches %j: %s', (crit, v, ok) => {
     expect(makeCriterion(crit as never)(v as never)).toBe(ok);
+  });
+
+  it('reads a lookup key as its wildcard pattern only, never a comparison', () => {
+    expect(wildcardCriterion('<a*')!('<abc')).toBe(true);
+    expect(wildcardCriterion('<a*')!('0')).toBe(false);
+    expect(wildcardCriterion('=x?')!('=xy')).toBe(true);
+    expect(wildcardCriterion('~~*')!('~abc')).toBe(true);
+    expect(wildcardCriterion('a~*')).toBeNull();
+    expect(wildcardCriterion('*')!(5)).toBe(false);
   });
 
   it('matches a pattern of many wildcards in time proportional to the text', () => {

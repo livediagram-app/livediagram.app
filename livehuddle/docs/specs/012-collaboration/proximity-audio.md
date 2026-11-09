@@ -23,7 +23,7 @@ microphone, camera and Share Screen buttons still show there, as a [local previe
   near you etc, but your mic stays muted by default when joining"). Walking where there is a call (Avatar mode, a
   Space synced to the server, calls on) joins it by itself: you hear the people near you at once, and a Viewer
   listens likewise. A browser keeps sound from a page until it is touched, so if it held the audio back, it starts on
-  your next press or key (a call that ends first stops waiting for it). The call still ends on leaving the mode, the
+  your next press or key (a call that ends or fails first stops waiting for it). The call still ends on leaving the mode, the
   room or the tab; to stop hearing people, set
   [Do Not Disturb](meeting-rooms-and-stage.md#do-not-disturb-part-3-built).
 - **Muted by default.** Your microphone starts **muted and is not opened**, so walking in never shows the browser's
@@ -75,6 +75,9 @@ inside, and walls block sound fully. Inside a room, as on the open floor, the ru
   equaliser. The first unmute opens the microphone (the browser asks then).
 - **Unmuted, the microphone stays open**, alone or not, so you can see it work. Muted and alone on a tab for 15
   seconds, it is released (the browser's recording light goes out) and opens again on your next unmute.
+- **A microphone the browser ends** (unplugged, its permission withdrawn) is released, never left published and
+  silent. Unmuted, it opens again at once on whichever microphone the browser has now (Mic Blocked with none); muted,
+  on your next unmute.
 - **The mic indicator** on the button shows, at a glance:
   - **Live** (the button fills from its foot with your voice level, white on the solid brand: you are transmitting to someone): somebody is in earshot and hears you (in a room,
     anyone else in it).
@@ -102,6 +105,7 @@ test, do what we did with camera and allow me to do it anyway, just don't transm
   again mutes it (owner, 2026-11-07: "shorten the tooltips when local, its way to long for all 3 buttons mic, cam,
   etc"). The dock no longer explains why there is no call (the greyed Join Audio's reason text is gone): the preview
   itself says what matters, that only you see it.
+- A microphone the browser ends while previewed (unplugged, its permission withdrawn) closes, as a press would.
 - A call that starts takes over, **muted**. The camera and Share Screen beside it preview locally too, titled
   **Camera: Only You** and **Share Screen: Only You**.
 
@@ -166,7 +170,9 @@ and the editor:
 - `call-track`: `{ kind, tabId, track }`, `track` either `null` (stopped publishing) or
   `{ sessionId, trackName, token }`: where a listener asks the mint route for this speaker's microphone. Sent when
   the speaker starts publishing and again whenever a new walker appears on their tab (a late joiner never receives a
-  replay), at most once a second. Relayed to the whole room, unbatched.
+  replay), at most once a second. The speaker's own new connection says the latest one again at once: a presence id
+  is per connection, so after a dropped connection peers know the speaker by a new id with no locator on it.
+  Relayed to the whole room, unbatched.
 
 - `calls-check`: `{ kind, tabId }`, sent by a publishing call that has sent the room nothing for 5 seconds, so a
   silent room still reads the kill switch ([Calls kill switch](../016-platform/calls-kill-switch.md#the-room-tells-its-clients)).
@@ -218,6 +224,10 @@ live, with your own equaliser and bubble, while nothing reached anyone).
 - A session that is gone again straight after renewing is a broken call, not an idle one: after 3 renewals inside a
   minute the call fails into **Retry** (Audio Unavailable), as a failed connection does. No loop.
 - A publish that fails leaves nothing behind that claims it worked, so the next attempt publishes afresh.
+- A microphone, camera or screen the browser is still asking for when the session goes is published on the session
+  as it is when the browser answers: the renewed one, or, while that is still being minted, by the renewal once it
+  is up. Never on the closed one the press found, where it would look live to you and reach nobody. A press of
+  Camera or Share Screen while the session is renewed starts as an unmute does, and goes out the same way.
 
 ## Turning calls on
 

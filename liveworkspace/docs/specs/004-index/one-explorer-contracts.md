@@ -168,6 +168,9 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | starts empty the first time it is opened with a grant.                       |
 | `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the  |
 |                                |                     | public link's code when that is their only way in (previews.md)              |
+| `POST /items/lookup`           | person              | `{ids}` (up to 200) → `{items}`: each item `GET /items/:id` would answer     |
+|                                |                     | the person without a share password, in the order asked; the rest left out.  |
+|                                |                     | One request for a page of names (the apps' Image Gallery usage).             |
 | `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a           |
 |                                |                     | team needs joined membership.                                                |
 | `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                              |
@@ -589,7 +592,8 @@ by link are not on it.
 - `share_link_expiring` warns an item's owner (them alone) before its share links stop working: one per item,
   dated at the soonest expiry among its live links that lapse within `SHARE_EXPIRY_WARNING_MS` (a week), so it
   waits in Upcoming (`expiresAt`, `links`: how many lapse in the week). Making, extending or deleting a link works
-  it out again at once; a daily pass (at most 2,000 items, the soonest first) catches links the week has since
+  it out again at once, and so does a restore from the Trash; moving the item to the Trash drops it, as a link
+  reaches nothing there; a daily pass (at most 2,000 items, the soonest first) catches links the week has since
   reached, and leaves one the owner removed from their Timeline removed.
 - Apps report `edited` and `image_uploaded` (above).
 - Each event the index records about an item (`renamed`, `moved`, `trashed`, `shared`, `commented`,

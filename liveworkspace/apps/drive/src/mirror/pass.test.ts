@@ -10,6 +10,7 @@ import {
 import { ROOM_ALARM_FLOOR_MS } from '@liveworkspace/api-kit/room-alarm';
 import { GOOGLE_USER, harness, ORIGIN, PERSON, type Harness } from '../test-support';
 import { nextPassAt } from './pass';
+import { DRIVE_PICTURE_FULL_MS } from './picture';
 
 let h: Harness;
 
@@ -177,6 +178,8 @@ describe('outbound', () => {
     const a = h.index.addItem({ name: 'Flow' });
     await connected();
     h.index.items.delete(a.id);
+    // Deleted straight from the live list, it leaves no trace a read of what changed can see: the next whole read.
+    h.clock.advance(DRIVE_PICTURE_FULL_MS);
     await h.pass();
     const file = h.fileOf(a.id)!;
     expect(file.trashed).toBe(true);

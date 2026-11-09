@@ -52,12 +52,12 @@ export const SelectableBoxedView = memo(function SelectableBoxedView({
 });
 
 type ArrowProps = ComponentProps<typeof ArrowView>;
-type SelectableArrowProps = Omit<ArrowProps, 'isSelected'>;
+type SelectableArrowProps = Omit<ArrowProps, 'isSelected' | 'showGrips'>;
 
 export const SelectableArrowView = memo(
   function SelectableArrowView(props: SelectableArrowProps) {
-    const { selected } = useFlagsOf(props.arrow.id);
-    return <ArrowView {...(props as ArrowProps)} isSelected={selected} />;
+    const { selected, single } = useFlagsOf(props.arrow.id);
+    return <ArrowView {...(props as ArrowProps)} isSelected={selected} showGrips={single} />;
   },
   (a, b) => arrowViewPropsEqual(a as ArrowProps, b as ArrowProps),
 );

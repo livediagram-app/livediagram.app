@@ -8,6 +8,7 @@
     "./silent": "./src/silent.ts",
     "./account-name": "./src/account-name.ts",
     "./return-path": "./src/return-path.ts",
+    "./pkce-cookie": "./src/pkce-cookie.ts",
     "./sign-out": "./src/sign-out.ts"
   },
   "scripts": {

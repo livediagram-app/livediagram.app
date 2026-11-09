@@ -5,6 +5,7 @@ import {
   callMedia,
   callSelf,
   noteLetSpeak,
+  noteRoomDropped,
   receiveCallOp,
   receiveLetSpeak,
   receiveStopShare,
@@ -109,7 +110,13 @@ const session = {
 };
 
 function micStream() {
-  const track = { enabled: true, stop: vi.fn() };
+  const listeners = new Map<string, () => void>();
+  const track = {
+    enabled: true,
+    stop: vi.fn(),
+    addEventListener: (name: string, fn: () => void) => listeners.set(name, fn),
+    end: () => listeners.get('ended')?.(),
+  };
   return {
     track,
     stream: { getAudioTracks: () => [track], getTracks: () => [track] } as unknown as MediaStream,
@@ -373,6 +380,25 @@ describe('ProximityCall', () => {
     vi.advanceTimersByTime(MIC_IDLE_CLOSE_MS * 2);
     expect(mic.track.stop).not.toHaveBeenCalled();
     expect(callSelf().mic).toBe('open');
+    call.stop();
+  });
+
+  // An unplugged microphone, or its permission withdrawn: the browser ends the track.
+  it('releases a microphone the browser ended, and opens one again while unmuted', async () => {
+    const { call, mic, getUserMedia } = makeCall();
+    await speak(call);
+    mic.track.end();
+    expect(mic.track.stop).toHaveBeenCalledTimes(1);
+    await settle();
+    expect(getUserMedia).toHaveBeenCalledTimes(2);
+    expect(callSelf()).toMatchObject({ mic: 'open', muted: false });
+    expect(sfu.instances[0]!.replaceMic).toHaveBeenLastCalledWith(mic.track);
+    // Muted, it is released and stays closed until the next unmute.
+    call.toggleMute();
+    mic.track.end();
+    await settle();
+    expect(getUserMedia).toHaveBeenCalledTimes(2);
+    expect(callSelf()).toMatchObject({ mic: 'closed', muted: true });
     call.stop();
   });
 
@@ -715,6 +741,21 @@ describe('ProximityCall video and screens', () => {
     await opening;
     expect(camera.track.stop).toHaveBeenCalled();
     expect(callSelf().camera).toBe('off');
+  });
+
+  // An unplugged camera, one another app took, or its permission withdrawn: the browser ends the track.
+  it('turns a camera the browser ended off, as a press would, and tells the room', async () => {
+    const { call, sent, camera } = makeCall();
+    await speak(call);
+    await call.toggleCamera();
+    expect(callSelf().camera).toBe('on');
+    camera.track.end();
+    expect(callSelf().camera).toBe('off');
+    expect(camera.track.stop).toHaveBeenCalled();
+    expect(callMedia().get('self')?.video ?? null).toBeNull();
+    expect(sfu.instances[0]!.replaceTrack).toHaveBeenCalledWith('cam', null);
+    expect(sent.at(-1)).toEqual({ kind: 'call-track', track: me('mic'), video: null });
+    call.stop();
   });
 
   it('shares a screen for an Editor, capped and tuned for text, and stops from either control', async () => {
@@ -1192,6 +1233,50 @@ describe('ProximityCall with a stage', () => {
     call.stop();
   });
 
+  it('keeps speaking when whoever let it speak reconnects as the same person, and only then', async () => {
+    setCallLevels([{ id: 'speaker', role: 'edit', key: 'K-ed' }]);
+    const { call, sent } = makeCall();
+    await call.start();
+    const hall = { x: 320, y: 600 };
+    call.update(hallScene(hall, [['speaker', 600, 120]]));
+    call.raiseHand();
+    letSpeak('speaker', true);
+    expect(callSelf().hand).toBe('speaking');
+    // The hand names the person too, so every browser can follow them.
+    expect(hands(sent).at(-1)).toEqual({
+      kind: 'avatar-hand',
+      raised: true,
+      letSpeak: 'speaker',
+      letSpeakKey: 'K-ed',
+    });
+    // Their socket drops and comes back: a new presence id with the same key, still on the stage.
+    setCallLevels([{ id: 'speaker2', role: 'edit', key: 'K-ed' }]);
+    call.update(hallScene(hall, [['speaker2', 600, 120]]));
+    expect(callSelf()).toMatchObject({ hand: 'speaking', stage: 'speaker' });
+    // Someone else takes their place instead: the audience again, the hand still up.
+    setCallLevels([{ id: 'other', role: 'edit', key: 'K-other' }]);
+    call.update(hallScene(hall, [['other', 600, 120]]));
+    expect(callSelf().hand).toBe('raised');
+    call.stop();
+  });
+
+  it('lowers your own hand when your own room connection drops, as the room did for everyone', async () => {
+    setCallLevels([{ id: 'speaker', role: 'edit' }]);
+    const { call, sent } = makeCall();
+    await call.start();
+    call.update(hallScene({ x: 320, y: 600 }, [['speaker', 600, 120]]));
+    call.raiseHand();
+    expect(callSelf().hand).toBe('raised');
+    noteRoomDropped();
+    expect(callSelf().hand).toBe('down');
+    expect(hands(sent).at(-1)).toEqual({ kind: 'avatar-hand', raised: false });
+    // With no hand up, a drop sends nothing.
+    const before = sent.length;
+    noteRoomDropped();
+    expect(sent.length).toBe(before);
+    call.stop();
+  });
+
   it('lowers a hand on walking out of the room, on Lower Hand, and on leaving', async () => {
     setCallLevels([{ id: 'speaker', role: 'edit' }]);
     const { call, sent } = makeCall();
@@ -1395,6 +1480,86 @@ describe('ProximityCall renewing a session Realtime dropped', () => {
     await settle();
     expect(getUserMedia).toHaveBeenCalledTimes(1);
     expect(sfu.instances[1]!.publish).toHaveBeenCalledTimes(1);
+    call.stop();
+  });
+
+  // A camera, a screen or a microphone the browser was still asking for when the session went: published on the
+  // session as it is when the browser answers, never on the closed one the press found.
+  it('publishes a camera and a screen started during a renewal on the new session', async () => {
+    const { call, camera, display, sent } = makeCall({
+      canShare: true,
+      getUserMedia: () => new Promise((r) => (openCamera = r)),
+      getDisplayMedia: () => new Promise((r) => (openScreen = r)),
+    });
+    let openCamera: (s: MediaStream) => void = () => {};
+    let openScreen: (s: MediaStream) => void = () => {};
+    await call.start();
+    const cameraOn = call.toggleCamera();
+    const screenOn = call.toggleScreen();
+    api.apiCallSession.mockResolvedValueOnce(renewed);
+    sfu.instances[0]!.events.onSessionGone();
+    await settle();
+    openCamera(camera.stream);
+    openScreen(display.stream);
+    await Promise.all([cameraOn, screenOn]);
+    expect(sfu.instances[0]!.publish).not.toHaveBeenCalled();
+    const publish = sfu.instances[1]!.publish;
+    expect(publish).toHaveBeenCalledWith(camera.track, 'cam', CAMERA_ENCODINGS);
+    expect(publish).toHaveBeenCalledWith(display.track, 'screen', expect.anything());
+    expect(sent.at(-1)).toMatchObject({ kind: 'call-track', video: { trackName: 'cam' } });
+    call.stop();
+  });
+
+  it('a camera the browser answers while the new session is minted goes out once it is up', async () => {
+    const { call, camera } = makeCall({ getUserMedia: () => new Promise((r) => (openCamera = r)) });
+    let openCamera: (s: MediaStream) => void = () => {};
+    await call.start();
+    const cameraOn = call.toggleCamera();
+    let mint: (v: typeof session) => void = () => {};
+    api.apiCallSession.mockImplementationOnce(() => new Promise((r) => (mint = r)));
+    sfu.instances[0]!.events.onSessionGone();
+    openCamera(camera.stream);
+    await cameraOn;
+    expect(callSelf().camera).toBe('on');
+    expect(sfu.instances[0]!.publish).not.toHaveBeenCalled();
+    mint(renewed);
+    await settle();
+    expect(sfu.instances[1]!.publish).toHaveBeenCalledWith(camera.track, 'cam', CAMERA_ENCODINGS);
+    call.stop();
+  });
+
+  it('a camera pressed while the new session is minted starts, and goes out once it is up', async () => {
+    const { call, camera, getUserMedia } = makeCall();
+    await call.start();
+    let mint: (v: typeof session) => void = () => {};
+    api.apiCallSession.mockImplementationOnce(() => new Promise((r) => (mint = r)));
+    sfu.instances[0]!.events.onSessionGone();
+    await call.toggleCamera();
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+    expect(callSelf().camera).toBe('on');
+    mint(renewed);
+    await settle();
+    expect(sfu.instances[0]!.publish).not.toHaveBeenCalled();
+    expect(sfu.instances[1]!.publish).toHaveBeenCalledWith(camera.track, 'cam', CAMERA_ENCODINGS);
+    call.stop();
+  });
+
+  it('publishes a microphone the browser opened during a renewal on the new session', async () => {
+    const { stream, track } = micStream();
+    let open: (s: MediaStream) => void = () => {};
+    const { call } = makeCall({ getUserMedia: () => new Promise((r) => (open = r)) });
+    await call.start();
+    call.toggleMute();
+    let mint: (v: typeof session) => void = () => {};
+    api.apiCallSession.mockImplementationOnce(() => new Promise((r) => (mint = r)));
+    sfu.instances[0]!.events.onSessionGone();
+    open(stream);
+    await settle();
+    expect(sfu.instances[0]!.publish).not.toHaveBeenCalled();
+    mint(renewed);
+    await settle();
+    expect(sfu.instances[1]!.publish).toHaveBeenCalledWith(track);
+    expect(callSelf()).toMatchObject({ mic: 'open', muted: false });
     call.stop();
   });
 

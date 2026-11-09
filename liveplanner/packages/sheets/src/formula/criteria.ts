@@ -1,6 +1,7 @@
 // Criteria (docs/specs/029-sheets/formulas.md "Functions": COUNTIF, SUMIFS, ... and the card functions): a value
 // to equal, or text starting with a comparison (">=10", "<>Done"), with * and ? wildcards and ~ to escape them.
 // Text matches ignore case.
+import { parseDateText } from '../dates';
 import { parsePlainNumber } from '../input';
 import { compareScalars, isError, type Scalar } from './values';
 
@@ -54,6 +55,27 @@ function wildcardMatch(steps: readonly WildStep[], text: string): boolean {
   return si === steps.length;
 }
 
+// A criterion's operand as a number when it reads as one, as Google Sheets reads it: a plain number, a percentage
+// (">50%" is ">0.5") or an ISO date, YYYY-MM-DD with or without a time (">=2026-01-01" compares dates). Only the ISO
+// form of a date: "1/2/2026" reads differently by locale, and a criterion has none.
+function criterionNumber(text: string): number | null {
+  const plain = parsePlainNumber(text);
+  if (plain !== null) return plain;
+  const t = text.trim();
+  if (t.endsWith('%')) {
+    const pct = parsePlainNumber(t.slice(0, -1));
+    return pct === null ? null : pct / 100;
+  }
+  return /^\d{4}-\d{2}-\d{2}(?:[ T]|$)/.test(t) ? (parseDateText(t, false)?.serial ?? null) : null;
+}
+
+// A lookup key with wildcards as a match test: the wildcard pattern only, never a comparison (a VLOOKUP of "<a*"
+// looks for text starting "<a", not text before "a*"). Null when the key has no unescaped wildcard.
+export function wildcardCriterion(key: string): Criterion | null {
+  const steps = wildcardSteps(key);
+  return steps ? (v) => typeof v === 'string' && wildcardMatch(steps, v) : null;
+}
+
 function unescape(text: string): string {
   return text.replace(/~([*?~])/g, '$1');
 }
@@ -70,7 +92,7 @@ export function makeCriterion(criterion: Scalar): Criterion {
   const m = /^(<=|>=|<>|<|>|=)?([\s\S]*)$/.exec(criterion)!;
   const op = m[1] ?? '=';
   const rest = m[2]!;
-  const num = parsePlainNumber(rest);
+  const num = criterionNumber(rest);
   const bool = /^(true|false)$/i.test(rest) ? rest.toLowerCase() === 'true' : null;
   const operand: Scalar = num !== null ? num : bool !== null ? bool : rest;
   if (op === '=' || op === '<>') {

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 // The resvg WASM renderer cannot load in plain node (see tools.test.ts); the Pages tools never render.
 vi.mock('./image-result', () => ({ imageResult: () => ({ content: [] }) }));
 
+import { ARTICLE_MARKDOWN_MAX } from '@livedocuments/document';
 import { connectTestClient } from './mcp-test-client';
 
 // The Pages tools end to end through a real SDK client (docs/specs/024-agents/pages-for-agents.md): a
@@ -91,5 +92,19 @@ describe('the Pages tools', () => {
     );
     const out = await call(refused.handler, 'write_article', { markdown: 'x' });
     expect(out).toMatchObject({ isError: true, content: [{ text: 'Name one.' }] });
+  });
+
+  // The over-long write reaches the request reader, whose refusal says how to write the rest (pages-for-agents.md
+  // "write_article"): a schema cap in front of it answered with a bare length error.
+  it('pass an over-long write to the api, which says to append the rest', async () => {
+    const message = 'The Markdown is too long. Write the rest with mode "append".';
+    const { handler, sent } = api(() =>
+      Response.json({ error: 'article_too_large', message }, { status: 400 }),
+    );
+    const out = await call(handler, 'write_article', {
+      markdown: 'x'.repeat(ARTICLE_MARKDOWN_MAX + 1),
+    });
+    expect(sent).toHaveLength(1);
+    expect(out).toMatchObject({ isError: true, content: [{ text: message }] });
   });
 });

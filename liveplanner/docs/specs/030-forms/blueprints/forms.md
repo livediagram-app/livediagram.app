@@ -410,7 +410,9 @@ look (and the backdrop's `--bd-light` / `--bd-dark`), and, when the look has a `
 demand) under the form: `TabPatternLayer` fixed to the window, in the half `useAppearance` resolves. In the builder,
 `CanvasCover` draws an animated pattern from `CanvasPatternContext` (EditorView's `resolveViewBackdrop`, memoised);
 the canvas's own layer is hidden under a cover (`canvas-motion.css`). The Report panel stays unthemed. `FormFill` / `useFormFill`:
-sections, checks, the summary, Submit, the confirmation; drafts in session storage `liveplanner:form:<code>`.
+sections, checks, the summary, Submit, the confirmation; drafts in session storage `liveplanner:form:<code>`. Back,
+Next and Submit prevent `mousedown`'s default (`keepFocus`), so the field keeps focus and its blur check never shifts
+the button between press and release.
 `FormFooter`: the made-with line and Report This Form (browser id `liveplanner:form-browser`). The page imports no
 editor modules: `forms-public.ts`, the shared controls and `@liveplanner/ui`.
 

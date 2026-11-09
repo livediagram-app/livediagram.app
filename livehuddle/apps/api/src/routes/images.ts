@@ -18,9 +18,8 @@ import { badRequest, CORS_HEADERS, imagesUnavailable, json, notFound } from '../
 import { grantCallerOf, requireOwner, type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 
-// The Gallery's "Used in" badge looks up at most this many canvases at the index, this many at a time.
+// The Gallery's "Used in" badge looks up at most this many items at the index, in one request.
 export const USAGE_DOCUMENTS_MAX = 200;
-export const USAGE_LOOKUPS_IN_FLIGHT = 10;
 
 // Without the service (a deployment without MEDIA_KEY) every endpoint answers 503, so the editor hides
 // images rather than falling through to a generic 500.
@@ -194,8 +193,8 @@ export function originalNameOf(header: string | null): string | null {
 // The Gallery's usage map (@liveworkspace/media galleryUsage): the items, in every app, the media service says
 // place each of the owner's images, kept to those the index answers as theirs and not in the Trash, named as the
 // index has them. The gallery lists every app's images, so an image placed only in another app's items is used
-// there, not "Not used". At most USAGE_DOCUMENTS_MAX items are looked up (USAGE_LOOKUPS_IN_FLIGHT at a time); one
-// past that, or one the index cannot answer, is left out of the badge rather than failing the Gallery.
+// there, not "Not used". At most USAGE_DOCUMENTS_MAX items are looked up, in one index request; one past that, or
+// one the index cannot answer, is left out of the badge rather than failing the Gallery.
 async function usageOf(ctx: RouteContext, media: MediaClient, owner: string): Promise<ImageUsage> {
   const answered = await media.usage(await mediaOwner(owner));
   if (!answered.ok) {
@@ -204,15 +203,9 @@ async function usageOf(ctx: RouteContext, media: MediaClient, owner: string): Pr
   }
   const client = indexFor(ctx.env, grantCallerOf(ctx));
   if (!client) return {};
-  return galleryUsage(
-    answered.value.usage,
-    async (app, id) => {
-      const { item } = await client.getItem(id);
-      // Gone, another app's id, not theirs or in the Trash: not in the badge.
-      return item.app === app && item.ownerId === owner && item.trashedAt === null
-        ? item.title
-        : null;
-    },
-    { max: USAGE_DOCUMENTS_MAX, inFlight: USAGE_LOOKUPS_IN_FLIGHT },
-  );
+  return galleryUsage(answered.value.usage, async (ids) => (await client.lookupItems(ids)).items, {
+    max: USAGE_DOCUMENTS_MAX,
+    // Not theirs or in the Trash: not in the badge (gone, or another app's id, the index leaves out).
+    keep: (item) => item.ownerId === owner && item.trashedAt === null,
+  });
 }
