@@ -248,7 +248,45 @@ describe('a tab-scoped visitor', () => {
       body: { id: 't1', name: 'Pricing', elements: [] },
       headers: { ...visitor.headers, 'X-Allow-Empty': '1' },
     });
-    expect([403, 404]).toContain(other.status);
+    expect(other.status).toBe(404);
+  });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md "Enforcement": every door answers a request about another
+  // tab 404, as if it did not exist (no existence leak); one below the door's level on its own tab, 403.
+  it('is told 404 by every write door about another tab, and 403 below the level on its own', async () => {
+    const db = await seeded();
+    testShareLink(db, 'P', 'SCOPED23', 'edit', 't2');
+    testShareLink(db, 'P', 'VIEWER23', 'view', 't2');
+    const viewer = { owner: 'visitor-2', headers: { 'X-Share-Code': 'VIEWER23' } };
+    const doors = [
+      ['DELETE', '/api/documents/P/tabs/t1', undefined],
+      ['PUT', '/api/documents/P/tabs/t1/name', { name: 'Hijack' }],
+      ['POST', '/api/documents/P/tabs/t1/qa', { elementId: 'b', action: { type: 'clear' } }],
+      [
+        'POST',
+        '/api/documents/P/tabs/t1/qa',
+        { elementId: 'b', action: { type: 'add', id: 'n1', text: 'Q' } },
+      ],
+      ['POST', '/api/documents/P/tabs/t1/changesets', { operations: [] }],
+    ] as const;
+    for (const [method, path, body] of doors) {
+      expect((await call(db, method, path, { ...visitor, body })).status, `${method} ${path}`).toBe(
+        404,
+      );
+    }
+    const own = await call(db, 'PUT', '/api/documents/P/tabs/t2', {
+      ...viewer,
+      body: { id: 't2', name: 'Roadmap', elements: [] },
+    });
+    expect(own.status).toBe(403);
+    const clear = await call(db, 'POST', '/api/documents/P/tabs/t2/qa', {
+      ...viewer,
+      body: { elementId: 'b', action: { type: 'clear' } },
+    });
+    expect(clear.status).toBe(403);
+    expect(db.sql.prepare("SELECT name FROM tabs WHERE id = 't1'").get()).toEqual({
+      name: 'Pricing',
+    });
   });
 
   it('cannot delete the tab its link is scoped to', async () => {

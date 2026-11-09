@@ -25,9 +25,11 @@ import {
 import { getDocument } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';
 import type { QaWriteRequest } from '../qa-board-write';
-import { badRequest, conflict, forbidden, json, notFound, payloadTooLarge } from '../responses';
+import { badRequest, conflict, json, notFound, payloadTooLarge } from '../responses';
 import { refuseGuestVoteOverCap } from '../vote-integrity';
 import {
+  deniedEdit,
+  deniedParticipate,
   gateEdit,
   gateParticipate,
   missingDocument,
@@ -64,10 +66,13 @@ export async function handleQaBoardRoute(ctx: DocumentRouteContext): Promise<Res
   // running the board needs edit rights. The facilitator baton is a
   // client-side rule on top (docs/specs/012-collaboration/facilitator.md): this route can't see which socket
   // holds it.
-  const allowed = isParticipantQaAction(action)
-    ? await gateParticipate(ctx, id, existing.ownerId, existing.teamId, tabId)
-    : await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
-  if (!allowed) return forbidden();
+  // Another tab than a scoped link's own is a 404 (docs/specs/013-workspace/tab-scoped-share-links.md).
+  if (isParticipantQaAction(action)) {
+    if (!(await gateParticipate(ctx, id, existing.ownerId, existing.teamId, tabId)))
+      return deniedParticipate(ctx, existing, tabId);
+  } else if (!(await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId))) {
+    return deniedEdit(ctx, id, tabId);
+  }
   // A guest's upvote counts against its network's cap of guest voters (docs/specs/012-collaboration/vote-integrity.md);
   // withdrawing never does.
   if (action.type === 'vote' && action.on) {
