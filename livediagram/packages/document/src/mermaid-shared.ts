@@ -121,15 +121,20 @@ export function decodeLabel(s: string): string {
   if (t.startsWith('"') && t.endsWith('"') && t.length >= 2) t = t.slice(1, -1);
   // A blank quoted label (`n1[" "]`, how the export writes an unlabelled node) is no label.
   if (!t.trim()) return '';
-  return plainMarkdownString(t)
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/&quot;/g, '"')
-    .replace(/#(?:(\d+)|([a-z]+));/gi, (code, digits?: string, name?: string) =>
-      digits !== undefined
-        ? decodeEntityCode(code, digits)
-        : (NAMED_ENTITIES[name!.toLowerCase()] ?? code),
-    )
-    .replace(/&amp;/g, '&');
+  return decodeEntities(
+    plainMarkdownString(t)
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/&quot;/g, '"'),
+  ).replace(/&amp;/g, '&');
+}
+
+// Mermaid's entity codes in `s`, numeric (`#124;`) and named (`#quot;`), decoded.
+export function decodeEntities(s: string): string {
+  return s.replace(/#(?:(\d+)|([a-z]+));/gi, (code, digits?: string, name?: string) =>
+    digits !== undefined
+      ? decodeEntityCode(code, digits)
+      : (NAMED_ENTITIES[name!.toLowerCase()] ?? code),
+  );
 }
 
 // Read the id token at the front (letters, digits, _, made of the chars

@@ -196,14 +196,17 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
 - **Syntax**: `participant A` / `participant A as Label`, `actor A` (a UML stick figure with its name beneath);
   participants appear in the order declared, then first mentioned. Messages `A->>B: text` (a call: solid, filled
   head), `A-)B: text` (async: solid, open head), `A-->>B: text` and `A-->B: text` (a reply: dashed, open head),
-  `A->B` and `A-xB` (calls); `A->>A` is a self-call. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
+  `A->B` and `A-xB` (calls); `A->>A` is a self-call; `A<<->>B` (and the dashed `A<<-->>B`) is a two-way message,
+  a head at each end. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
   `activate B` / `deactivate B` start and end activations at the message the line follows; a message into B that
   `activate B` follows ends on the bar it starts, not on B's lifeline inside it. An activation the author opened (`+`,
   `activate`) stays open until its `-` or `deactivate`; a reply on the way does not close it. `Note over A,B: text`, `Note right of A: text`,
   `Note left of A: text`; a note over one participant whose bar is open sits beside the bar, as a right-of note
   does (left of it on the last participant, the side with room), since centred it hid the bar, and a beside note keeps clear of the bars. Fragments `loop`, `alt` (with `else`), `opt`, `par` (with `and`), `critical`, `break`,
   each closed by `end`. `autonumber` numbers the messages; `title Text` (or front matter `title:`) heads the
-  diagram. `rect` blocks, `box` groupings, links and styling are read and skipped, never an error.
+  diagram. `rect` blocks, `box` groupings, links, styling and the accessibility lines (`accTitle: …`, `accDescr: …`,
+  `accDescr { … }`) are read and skipped, never an error; the `end` closing a `rect` or `box` closes that block,
+  never the fragment round it. Mermaid's entity codes (`#9829;`, `#quot;`) decode in names, messages and notes.
 - **Activations without markers**: a call to another participant activates it from that message until it replies
   to its caller; one never closed ends after the participant's last message. A self-call nests an activation,
   stepped right. Nested activations step right by half a bar. A diagram that activates anything itself (`activate`, `deactivate`, `+`, `-`) draws

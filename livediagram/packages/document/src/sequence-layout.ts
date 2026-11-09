@@ -419,6 +419,7 @@ export function layoutSequence(
           }
         : {}),
       arrowheadShape: HEAD[style],
+      ...(m.item.both ? { arrowEnds: 'both' as const, arrowheadStartShape: HEAD[style] } : {}),
       ...(style === 'reply' ? { strokeStyle: 'dashed' as const } : {}),
     });
   }
