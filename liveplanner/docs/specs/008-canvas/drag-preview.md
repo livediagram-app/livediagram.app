@@ -49,7 +49,7 @@ in hand.
   ([Shift-drag duplicate](shift-drag-duplicate.md)): that is the copy, not the element dragged.
 - **A move that only shifts elements then differs from the drawn board in position alone**, so it rides its offset
   ("Moves ride an offset") in every theme, instead of redrawing each themed element on every frame.
-- **The document is unchanged by it**: what the release writes is the stored elements the gesture made, never the
+- **The project is unchanged by it**: what the release writes is the stored elements the gesture made, never the
   colours a viewer's half drew them in.
 - **Before:** a light theme on a dark screen (or a dark theme on a light one) drew every dragged element in its stored,
   other-half colours until it was dropped: an indigo entity on a dark canvas turned pale indigo, and back, on every
