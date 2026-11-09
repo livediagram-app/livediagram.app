@@ -118,7 +118,9 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
   (trimmed, quotes removed); split the body on lines matching `/^\[zone ([^\]\s]{1,64})\]$/` and
   `/^\\pagebreak$/`, parse each text stretch with `parseMarkdownBlocks`, put a `pageBreak` block or the current
   zone block (by id, else `unknownZone`) between them, never inside a code fence; prepend `title` and `subtitle`
-  paragraph blocks. A paragraph (lines with no blank between) past `MAX_ARTICLE_BLOCK_TEXT` answers `tooLong`.
+  paragraph blocks (`frontRuns`: `\[` and `\\` read as the character, an unescaped `[^label]` as its footnote). A
+  paragraph (lines with no blank between) past `MAX_ARTICLE_BLOCK_TEXT` answers `tooLong`, a `&#32;` counted as one
+  character (`textLength`).
   Fresh block ids from `nextArticleBlockId`, never one of `current`'s; a kept zone keeps its id.
 - `articleToMarkdown`: front matter from the first `title` / `subtitle` blocks, then each block: paragraph by style
   (`#`, `##`, `###`, `>`, body), list by level (two spaces a level, `-`, `1.`, `- [ ]` / `- [x]`), code fenced,
@@ -129,7 +131,11 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
   led by `> `, the item's by its indent and as many spaces as its marker and space), inside a heading or code as a
   space; the reader (`parseMarkdownBlocks`) carries a quote or item on past a hard break (`hardBreakOf`) into the next
   `>` line, or the next line that does not open a block (`opensBlock`); underline, colour, highlight, sup and sub print as plain text (lossy). A numbered
-  list counts as the editor does: a bullet or to-do at a level restarts that level.
+  list counts as the editor does: a bullet or to-do at a level restarts that level. A title's text in front matter
+  escapes `[^` and a backslash before `[`, `\` or its end (`escapeFrontText`). Each line of a paragraph, heading,
+  quote or list item writes its leading and trailing spaces as `&#32;` (`keepEdgeSpaces`); `escapeText` writes a
+  literal `&#32;` as `\&#32;`, and `parseInline` reads `&#32;` outside code as a space (`SPACE_REF`, `&` one of the
+  backslash escapes).
 - Round trip: `articleFromMarkdown(articleToMarkdown(f))` keeps every block's type, style, list, level, checked
   and text for an article without the lossy marks.
 

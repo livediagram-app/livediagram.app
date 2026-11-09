@@ -17,8 +17,10 @@ import {
   fenceOpening,
   isTableRow,
   parseMarkdownBlocks,
+  SPACE_REF,
   spaceWrapped,
   takeFootnoteDefinitions,
+  type FootnoteNotes,
   withFootnoteRefs,
 } from './article-markdown';
 import { articleRunsText } from './article-footnotes';
@@ -64,6 +66,24 @@ function frontMatterOf(text: string): { title?: string; subtitle?: string; body:
   return out;
 }
 
+// A title's text in front matter: `[^`, and a backslash before a `[`, a backslash or the end, escaped with a backslash,
+// so only a footnote's own reference reads back as one. Other backslashes stay as written (`C:\docs`).
+const escapeFrontText = (text: string) => text.replace(/\\(?=[\\[]|$)|\[(?=\^)/g, '\\$&');
+const FRONT_SLASH = '\ue012';
+const FRONT_BRACKET = '\ue013';
+
+/** A front matter title's runs: its footnote references read, its `\[` and `\\` escapes taken as the characters. */
+function frontRuns(value: string, notes: FootnoteNotes): ArticleRun[] {
+  const held = value.replace(/\\([\\[])/g, (_, c: string) =>
+    c === '[' ? FRONT_BRACKET : FRONT_SLASH,
+  );
+  return withFootnoteRefs({ text: held }, notes).map((r) =>
+    r.fn !== undefined
+      ? r
+      : { ...r, text: r.text.replaceAll(FRONT_BRACKET, '[').replaceAll(FRONT_SLASH, '\\') },
+  );
+}
+
 /** Reads lines in order, answering true for each line that is a fence or inside one (as parseMarkdownBlocks reads
  *  them), so a line of code is never read as a table, a zone or a page break. */
 function fenceTracker(): (line: string) => boolean {
@@ -105,7 +125,7 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
         id: fresh(),
         type: 'paragraph',
         style,
-        runs: withFootnoteRefs({ text: value }, notes),
+        runs: frontRuns(value, notes),
       });
   };
   heading('title', title);
@@ -122,7 +142,8 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
   const fence = fenceTracker();
   for (const line of lines) {
     // A table's rows are cells, not one paragraph: a long table is bounded by the table's own caps.
-    paragraph = line.trim() && !isTableRow(line) ? paragraph + line.length + 1 : 0;
+    // A written `&#32;` is one space of the block's text, so kept edge spaces never make a block read back too long.
+    paragraph = line.trim() && !isTableRow(line) ? paragraph + textLength(line) + 1 : 0;
     if (paragraph > MAX_ARTICLE_BLOCK_TEXT) return { tooLong: true };
     const fenced = fence(line);
     const bare = line.trim();
@@ -152,8 +173,9 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
   };
 }
 
-// Markdown's own characters in plain text, escaped so the text reads back as written.
-const escapeText = (text: string) => text.replace(/([\\`*_~[\]])/g, '\\$1');
+// Markdown's own characters in plain text, escaped so the text reads back as written (a literal `&#32;` too, which
+// reads as a space).
+const escapeText = (text: string) => text.replace(/([\\`*_~[\]]|&(?=#32;))/g, '\\$1');
 
 // A block's text that would open a line as a heading, quote, list item or divider is escaped there.
 const escapeLineStart = (line: string) =>
@@ -254,7 +276,26 @@ function brokenMarkdown(runs: readonly ArticleRun[], notes: string[], lead = '')
   const lines = held.split(LINE_BREAK);
   // A break at the block's end has no line after it to break to (it would read back as a literal backslash).
   while (lines.length > 1 && !lines[lines.length - 1]!.trim()) lines.pop();
-  return lines.map(escapeLineStart).join(`\\\n${lead}`);
+  return lines.map((line) => escapeLineStart(keepEdgeSpaces(line))).join(`\\\n${lead}`);
+}
+
+// A line's leading and trailing spaces written `&#32;`: reading a line trims its edges (and two trailing spaces are a
+// hard break), so an indented paragraph read back flush left.
+function keepEdgeSpaces(line: string): string {
+  let start = 0;
+  while (line[start] === ' ') start++;
+  if (start === line.length) return SPACE_REF.repeat(start);
+  let end = line.length;
+  while (line[end - 1] === ' ') end--;
+  return SPACE_REF.repeat(start) + line.slice(start, end) + SPACE_REF.repeat(line.length - end);
+}
+
+// A line's length with each `&#32;` counted as the one space it reads as.
+function textLength(line: string): number {
+  let refs = 0;
+  for (let i = line.indexOf(SPACE_REF); i >= 0; i = line.indexOf(SPACE_REF, i + SPACE_REF.length))
+    refs++;
+  return line.length - refs * (SPACE_REF.length - 1);
 }
 
 /** An article's writing as Markdown, in the form articleFromMarkdown reads. */
@@ -266,10 +307,13 @@ export function articleToMarkdown(flow: ArticleFlow): string {
   for (const style of ['title', 'subtitle'] as const) {
     const at = blocks.findIndex((b) => b.type === 'paragraph' && b.style === style);
     if (at < 0) continue;
-    // Front matter is plain text, but for a footnote on a title, written `[^1]` as in the body (it comes first).
+    // Front matter is plain text, but for a footnote on a title, written `[^1]` as in the body (it comes first). The
+    // text's own `[^` is written `\[^`, so a title naming `[^1]` never reads back as a footnote (frontRuns).
     const text = (blocks[at] as { runs: ArticleRun[] }).runs
       .map((r) =>
-        r.fn !== undefined ? Array.from(r.text, () => `[^${notes.push(r.fn!)}]`).join('') : r.text,
+        r.fn !== undefined
+          ? Array.from(r.text, () => `[^${notes.push(r.fn!)}]`).join('')
+          : escapeFrontText(r.text),
       )
       .join('');
     blocks.splice(at, 1);
@@ -296,7 +340,7 @@ export function articleToMarkdown(flow: ArticleFlow): string {
             ? brokenMarkdown(b.runs, notes)
             : b.style === 'quote'
               ? prefix + brokenMarkdown(b.runs, notes, prefix)
-              : prefix + escapeLineStart(runsMarkdown(b.runs, notes)),
+              : prefix + escapeLineStart(keepEdgeSpaces(runsMarkdown(b.runs, notes))),
           '',
         );
         break;

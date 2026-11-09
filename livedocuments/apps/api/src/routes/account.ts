@@ -17,23 +17,34 @@ const PURGE_PAGE = 200;
 
 // The person's own documents, gone for good through the index (which has each document's Durable Object drop its
 // content). Team documents stay with the team. Answers how many went and whether some are left.
+//
+// Each listing (live, then the Trash) is walked by its cursor, PURGE_PAGES pages in all: re-reading the first page
+// stopped at a page holding none of the person's own (as if nothing were left, though later pages held some), and
+// answered `more` after the last page even when it had emptied the listing.
 async function purgeOwnDocuments(ctx: RouteContext): Promise<{ documents: number; more: boolean }> {
   const client = indexFor(ctx.env, { kind: 'bearer', token: ctx.bearer ?? null });
   if (!client) return { documents: 0, more: false };
+  const query = { app: INDEX_APP, team: 'personal', limit: PURGE_PAGE } as const;
+  const listings = [
+    (cursor?: string) => client.listItems({ ...query, ...(cursor ? { cursor } : {}) }),
+    (cursor?: string) => client.listTrash({ ...query, ...(cursor ? { cursor } : {}) }),
+  ];
   let documents = 0;
-  for (let page = 0; page < PURGE_PAGES; page++) {
-    const [live, trashed] = await Promise.all([
-      client.listItems({ app: INDEX_APP, team: 'personal', limit: PURGE_PAGE }),
-      client.listTrash({ app: INDEX_APP, team: 'personal', limit: PURGE_PAGE }),
-    ]);
-    const own = [...live.items, ...trashed.items].filter((i) => i.ownerId === ctx.accountUserId);
-    if (own.length === 0) return { documents, more: false };
-    for (const item of own) {
-      await client.deleteItem(item.id, { permanent: true });
-      documents++;
-    }
+  let pages = 0;
+  for (const list of listings) {
+    let cursor: string | undefined;
+    do {
+      if (pages++ === PURGE_PAGES) return { documents, more: true };
+      const page = await list(cursor);
+      for (const item of page.items) {
+        if (item.ownerId !== ctx.accountUserId) continue;
+        await client.deleteItem(item.id, { permanent: true });
+        documents++;
+      }
+      cursor = page.nextCursor ?? undefined;
+    } while (cursor);
   }
-  return { documents, more: true };
+  return { documents, more: false };
 }
 
 // Deleting the person's account: their livedocuments data, then their liveworkspace account, which

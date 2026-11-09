@@ -122,21 +122,17 @@ export async function waitFor(
           `reconnected; what changed meanwhile: livedocuments tab diff ${quoted(input.doc)}`,
         ),
     });
-    stream.ended.then(
-      (end) => {
-        if (end === 'trashed') {
-          done = true;
-          cancelSettle?.();
-          cleanups.forEach((c) => c());
-          reject(trashedError());
-        }
-      },
-      (err: unknown) => {
-        done = true;
-        cleanups.forEach((c) => c());
-        reject(err);
-      },
-    );
+    // The stream ending on its own: a settling change is cancelled too, or its timer read the tab and printed after the
+    // command had already failed.
+    const fail = (err: unknown) => {
+      done = true;
+      cancelSettle?.();
+      cleanups.forEach((c) => c());
+      reject(err);
+    };
+    stream.ended.then((end) => {
+      if (end === 'trashed') fail(trashedError());
+    }, fail);
     cleanups.push(io.onInterrupt(() => finish({ lines: [], exit: EXIT.rejected })));
     if (input.timeout !== undefined) {
       const seconds = input.timeout;

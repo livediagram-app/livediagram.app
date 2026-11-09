@@ -43,11 +43,28 @@ const { index } = vi.hoisted(() => ({
     deleted: [] as string[],
   },
 }));
+// A listing paged by a keyset cursor (the last id's place in the list as first read), as the index's: deleting an
+// item never shifts the next page.
+const { pageOf, listOrder } = vi.hoisted(() => ({
+  listOrder: new Map<string, number>(),
+  pageOf: (
+    items: { id: string; ownerId: string }[],
+    q: { cursor?: string; limit?: number },
+    order: Map<string, number>,
+  ) => {
+    for (const i of items) if (!order.has(i.id)) order.set(i.id, order.size);
+    const after = q.cursor === undefined ? -1 : Number(q.cursor);
+    const rest = items.filter((i) => order.get(i.id)! > after);
+    const page = rest.slice(0, q.limit ?? 200);
+    const more = rest.length > page.length;
+    return { items: page, nextCursor: more ? String(order.get(page.at(-1)!.id)) : null };
+  },
+}));
 vi.mock('../index-service', async (original) => ({
   ...(await original<typeof import('../index-service')>()),
   indexFor: () => ({
-    listItems: async () => ({ items: index.items, nextCursor: null }),
-    listTrash: async () => ({ items: index.trash, nextCursor: null }),
+    listItems: async (q: { cursor?: string; limit?: number }) => pageOf(index.items, q, listOrder),
+    listTrash: async (q: { cursor?: string; limit?: number }) => pageOf(index.trash, q, listOrder),
     deleteItem: async (id: string) => {
       index.deleted.push(id);
       index.items = index.items.filter((i) => i.id !== id);
@@ -98,6 +115,7 @@ function askForCode(opts: { accountUserId?: string | null; path?: string } = {})
 
 beforeEach(() => {
   order.length = 0;
+  listOrder.clear();
   index.items = [
     { id: 'p1', ownerId: 'user_1' },
     { id: 'shared', ownerId: 'user_2' },
@@ -135,6 +153,35 @@ describe('DELETE /api/account', () => {
     expect(cookies.some((c) => c.startsWith('ldoc_refresh=;') && c.includes('Max-Age=0'))).toBe(
       true,
     );
+  });
+
+  it('reads past a page holding none of the person’s own documents', async () => {
+    index.items = [
+      ...Array.from({ length: 200 }, (_, i) => ({ id: `other-${i}`, ownerId: 'user_2' })),
+      { id: 'p1', ownerId: 'user_1' },
+    ];
+    index.trash = [];
+    const res = await remove();
+    expect(res.status).toBe(200);
+    expect(index.deleted).toEqual(['p1']);
+  });
+
+  it('finishes under the cap, and asks again past it', async () => {
+    const own = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({ id: `d${i}`, ownerId: 'user_1' }));
+    index.items = own(800);
+    index.trash = [];
+    const exact = await remove();
+    expect(exact.status).toBe(200);
+    expect(await exact.json()).toEqual({ deleted: { documents: 800 } });
+    index.items = own(1001);
+    index.deleted = [];
+    const over = await remove();
+    expect(over.status).toBe(409);
+    expect(await over.json()).toEqual({
+      error: 'documents_remaining',
+      deleted: { documents: 1000, more: true },
+    });
   });
 
   it('says so when the account could not be closed, with the data already gone', async () => {
