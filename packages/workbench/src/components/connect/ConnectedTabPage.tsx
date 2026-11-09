@@ -72,7 +72,18 @@ function Page({
     latest.current = { name, canEdit, onRename };
   });
   const inFlight = useRef<AbortController | null>(null);
-  useEffect(() => () => inFlight.current?.abort(), []);
+  // The press the open in flight is for, with what had been handled before it.
+  const pressOpening = useRef<{ before: number | null } | null>(null);
+  useEffect(
+    () => () => {
+      inFlight.current?.abort();
+      // A press whose open the unmount cut short went nowhere, so it is not handled: a page mounted again at once
+      // (React's development double mount) takes it, rather than sitting on "Opening" for good.
+      if (pressOpening.current) handled.current = pressOpening.current.before;
+      pressOpening.current = null;
+    },
+    [],
+  );
 
   const open = useCallback(async () => {
     inFlight.current?.abort();
@@ -109,8 +120,12 @@ function Page({
   // A press on the tab the page has not acted on yet: open.
   useEffect(() => {
     if (!pick || pick.nonce === handled.current) return;
+    const press = { before: handled.current };
+    pressOpening.current = press;
     handled.current = pick.nonce;
-    void open();
+    void open().finally(() => {
+      if (pressOpening.current === press) pressOpening.current = null;
+    });
   }, [pick, open]);
 
   return (
