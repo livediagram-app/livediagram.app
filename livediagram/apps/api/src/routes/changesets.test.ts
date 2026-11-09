@@ -502,6 +502,37 @@ describe('reverting', () => {
     });
   });
 
+  // docs/specs/013-workspace/tab-scoped-share-links.md "Enforcement": a changeset on another tab reads as missing
+  // to a scoped link (no existence leak), as reading it does; a grant below Editor on it is a 403.
+  it('tells a link scoped to another tab 404, and a viewer 403, leaving the tab alone', async () => {
+    quiet();
+    const { db } = await setUp();
+    const cs = (await (await submit(db, { operations: [{ op: 'rm', target: 'b' }] })).json()) as {
+      changeset: { id: string };
+    };
+    const as = (level: 'edit' | 'view', tab: string | null) =>
+      handleDocuments(
+        makeTestRouteContext('POST', `/api/documents/D/changesets/${cs.changeset.id}/revert`, {
+          env: db.env,
+          owner: 'guest_v',
+          grant: {
+            item: 'D',
+            level,
+            tab,
+            sub: 'link:abc',
+            team: null,
+            exp: 2_000_000_000,
+            shareCode: 'abc',
+            token: 'g',
+          },
+          waitUntil: (p) => void pending.push(p),
+        }),
+      );
+    expect((await as('edit', 't2')).status).toBe(404);
+    expect((await as('view', null)).status).toBe(403);
+    expect(stored(db).map((e) => e.id)).toEqual(['a']);
+  });
+
   it('keeps an element a person changed since', async () => {
     quiet();
     const { db } = await setUp();

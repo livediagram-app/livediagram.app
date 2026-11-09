@@ -36,6 +36,17 @@ describe('cleanInline', () => {
     expect(cleanInline('<b>html</b> tags')).toBe('html tags');
     expect(cleanInline('  collapse   spaces  ')).toBe('collapse spaces');
   });
+
+  // CommonMark: an underscore inside a word, or a run with a space inside its marks, is no emphasis.
+  it('keeps underscores inside words and spaced asterisks as written', () => {
+    expect(cleanInline('rename user_id_field')).toBe('rename user_id_field');
+    expect(cleanInline('call my__private__helper')).toBe('call my__private__helper');
+    expect(cleanInline('2 * 3 * 4')).toBe('2 * 3 * 4');
+    expect(cleanInline('snake_case and _real_ emphasis')).toBe('snake_case and real emphasis');
+    expect(cleanInline('__strong__ and **bold *nested* text**')).toBe(
+      'strong and bold nested text',
+    );
+  });
 });
 
 describe('parseMarkdown — headings', () => {
@@ -266,12 +277,13 @@ describe('buildTabFromMarkdown', () => {
   });
 });
 
-// Untrusted text stays linear: a long run of `[`, `![` or `<` once rescanned the line from each.
+// Untrusted text stays linear: a long run of `[`, `![` or `<` once rescanned the line from each, and an emphasis
+// mark refused as no emphasis moves the scan on, never back.
 describe('cleanInline on hostile input', () => {
   it('costs about four times as much for four times the text, never sixteen', () => {
     const fastest = (text: string) =>
       Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void cleanInline(text))));
-    for (const run of ['[', '![', '<', '[a](']) {
+    for (const run of ['[', '![', '<', '[a](', '_a ', 'a_b ', '* a ', 'a__b ']) {
       const small = fastest(run.repeat(5_000));
       const large = fastest(run.repeat(20_000));
       expect(large, run).toBeLessThan(small * 8 + 5);

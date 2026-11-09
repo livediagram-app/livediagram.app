@@ -222,7 +222,10 @@ and the next save from anybody repairs it.
   `rewriteCommentAuthors` credits such a comment
   with the name the room saw it posted under, leaves its author id empty, and
   lets the author's own save (the only copy carrying their id) claim it. A
-  comment that already has an author id is never re-claimed.
+  claim takes the author id only: the words and the time stay as the room
+  credited them, since the id on a saved copy is the saver's to write and a
+  claim proves nothing more. A comment that already has an author id is never
+  re-claimed.
 - **Ops sent while the socket is down are held, not dropped.** The room
   client keeps an outbox of document ops and poll answers (bounded at 500)
   and flushes it, in order, right after the reconnect's hello and sync.

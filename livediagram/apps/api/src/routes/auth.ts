@@ -46,7 +46,7 @@ import {
   silentCookiesForHint,
   startSilentSignIn,
 } from '@liveworkspace/auth-client/silent';
-import { safeReturnPath as sharedSafeReturnPath } from '@liveworkspace/auth-client/return-path';
+import { sameOriginPath } from '@liveworkspace/auth-client/return-path';
 import { accountNameCookies, accountNameCookieFor } from '@liveworkspace/auth-client/account-name';
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
@@ -117,9 +117,11 @@ function appOrigin(env: Env, request: Request): string {
 
 const callbackUrl = (env: Env, request: Request) => `${appOrigin(env, request)}/api/auth/callback`;
 
-// Only a path on this site (`@liveworkspace/auth-client/return-path`), else the Explorer.
+// Only a path on this site (`@liveworkspace/auth-client/return-path`), else the Explorer, normalised as a browser
+// resolves it, so it is percent-encoded ASCII: a raw `é` or emoji in it threw in the PKCE cookie's btoa, and in the
+// Location header it is sent back on, and the sign-in answered 500.
 export const safeReturnPath = (value: string | null): string =>
-  sharedSafeReturnPath(value, DEFAULT_RETURN);
+  sameOriginPath(value) ?? DEFAULT_RETURN;
 
 export function readCookie(request: Request, name: string): string | null {
   const header = request.headers.get('Cookie');

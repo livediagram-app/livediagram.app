@@ -16,7 +16,7 @@ import { redactCommentAuthorIds } from '../comments';
 import { getChangeset, getChangesetPart, getDocument, listChangesets } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';
 import type { ChangesetRecord } from '../db';
-import { forbidden, json, notFound } from '../responses';
+import { json, notFound } from '../responses';
 import { personTagFor } from '../person-tag';
 import { refreshAgentPresence } from '../room-client';
 import { agentPresenceStamps } from '@liveworkspace/api-kit/agent-presence-stamps';
@@ -28,6 +28,7 @@ import { submitChangeset, type SubmitResult } from '../changesets/submit';
 import type { Author } from '../changesets/write';
 import type { DocumentDTO } from '../types';
 import {
+  deniedEdit,
   gateEdit,
   gateGrant,
   gateRead,
@@ -78,7 +79,7 @@ async function handleSubmit(
   owner: string,
 ): Promise<Response> {
   if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, tabId)))
-    return forbidden();
+    return deniedEdit(ctx, document.id, tabId);
   const raw = await ctx.request.json().catch(() => undefined);
   const parsed = parseChangesetRequest(raw, engineLog({ documentId: document.id, tabId }));
   if (!parsed.ok) return json(parsed.refusal.body, { status: parsed.refusal.status });
@@ -148,8 +149,9 @@ async function handleRevert(
   record: ChangesetRecord,
   owner: string,
 ): Promise<Response> {
+  // A changeset on a tab a scoped link can't reach reads as missing, as handleOne answers it (no existence leak).
   if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, record.tabId))) {
-    return forbidden();
+    return deniedEdit(ctx, document.id, record.tabId);
   }
   const author = await authorOf(ctx, owner);
   const result = await revertChangeset({
