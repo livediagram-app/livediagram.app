@@ -10,25 +10,12 @@ import {
 } from '@livehuddle/api-schema';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
-import { documentRoom } from '../document-client';
 import { indexService, linkCodeOf } from '../index-service';
 import { personTagFor } from '../person-tag';
 import { documentTrashed, forbidden, json, notFound } from '../responses';
+import { isCommunityCode } from './community-link';
 import { type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
-import type { Env } from '../types';
-
-// A Community visitor never joins the author's room (docs/specs/025-community/community.md): no presence, no
-// cursors on the author's board, no live stream. A link visitor's code is checked against the canvas's post.
-async function isCommunityCode(
-  env: Env,
-  documentId: string,
-  code: string | null,
-): Promise<boolean> {
-  if (!code) return false;
-  const post = await documentRoom(env, documentId).community();
-  return post !== null && post.code === code;
-}
 
 // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"): what the room stamps on the
 // stickies and text they add. Only a Participant with an identity has one; with none, they may edit, never add.

@@ -41,7 +41,8 @@ import {
 import type { HearingAnswer, HearingAsk } from '../calls/room-calls';
 import { splitByHearing, withRefusals } from '../calls/subscribe-hearing';
 import { documentRoom } from '../document-client';
-import { documentTrashed, json, notFound } from '../responses';
+import { documentTrashed, forbidden, json, notFound } from '../responses';
+import { isCommunityCode } from './community-link';
 import type { RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 
@@ -339,6 +340,9 @@ export async function handleCallRoutes(ctx: RouteContext): Promise<Response | nu
   if (grant instanceof Response) return grant;
   if (!grant) return notFound();
   if (grant.trashed) return documentTrashed();
+  // A Community post's link is a content-only pass (docs/specs/025-community/community.md): its visitors never join
+  // the room, so they never call in it, and learn nothing of whether calls are on.
+  if (await isCommunityCode(env, documentId, grant.shareCode)) return forbidden('community_link');
   const gate = await callsGate(env);
   // Closing never costs, so a browser may still close its tracks while the kill switch alone pauses calls.
   const closingWhilePaused = !gate.open && gate.reason === 'paused' && segments[4] === 'close';

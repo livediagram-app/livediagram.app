@@ -219,7 +219,8 @@ Community link behaviour (keyed off the canvas's `community_post.share_code`):
 - `apps/api/src/routes/share.ts`: the resolve answers `role: 'view'`, `tabId: null` and the post's `community`
   listing; while the post is not open it answers 404 to everyone.
 - `apps/api/src/routes/document-room-routes.ts`: ticket mint and WebSocket upgrade refuse with 403 `community_link`
-  (`isCommunityCode`).
+  (`isCommunityCode`, `apps/api/src/routes/community-link.ts`); so does every calls route
+  (`apps/api/src/routes/calls.ts`), before it says whether calls are on.
 - `DocumentGrant` carries `community: boolean`. A community grant is refused by every door that has not opted in with
   `COMMUNITY_CONTENT` (`gateGrant`, `apps/api/src/routes/context.ts`), the comment listing included. The document GET
   and the tab GET opt in; the document is redacted with `redactDocumentForCommunity` and the tab with
