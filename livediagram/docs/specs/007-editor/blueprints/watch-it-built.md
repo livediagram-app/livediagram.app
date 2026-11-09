@@ -40,6 +40,10 @@ Draw's dock draws inside the scope, but its model is built by `useEditorState` o
 only by pressing its own button, and a marker's flyout only while the button reads as in hand (`aria-pressed`),
 where a press opens the flyout and never picks the pen up.
 
+The two providers are there whether or not a replay runs, holding the editor's own context and selection store
+outside one, so the canvas never remounts as a replay starts or ends (it once did, and the Quick Style panel, placed
+against the canvas it had measured, landed off the screen afterwards).
+
 Everything else (autosave, the unload save, the offline copy, room ops, undo, export) reads the real `tabs`, which
 the replay never touches.
 
