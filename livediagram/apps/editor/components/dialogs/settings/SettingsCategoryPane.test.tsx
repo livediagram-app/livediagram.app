@@ -123,6 +123,12 @@ describe('SettingsCategoryPane tours', () => {
         onChange={onChange}
       />,
     );
+    // Each mode's rows sit in a closed section whose body is inert until its header opens it.
+    for (const mode of ['Diagram', 'Draw', 'Workshop']) {
+      fireEvent.click(
+        screen.getByRole('button', { name: new RegExp(`^Watch It Built in ${mode}`) }),
+      );
+    }
     const workshop = screen.getByRole('switch', { name: 'Watch It Built in Workshop' });
     expect(
       screen.getByRole('switch', { name: 'Watch It Built' }).getAttribute('aria-checked'),

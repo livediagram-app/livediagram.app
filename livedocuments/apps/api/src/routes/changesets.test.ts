@@ -196,6 +196,37 @@ describe('submitting a changeset', () => {
     expect(relay.op.tab).toMatchObject({ name: 'Detail' });
   });
 
+  // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped editor never makes a tab, so a replace on
+  // its tab after the owner deleted it reads as missing rather than bringing the tab back.
+  it("answers 404 to a tab-scoped editor's replace on its deleted tab, and writes nothing", async () => {
+    quiet();
+    const { db } = await setUp();
+    db.sql.prepare("DELETE FROM tabs WHERE id = 't1'").run();
+    const res = await handleDocuments(
+      makeTestRouteContext('POST', '/api/documents/D/tabs/t1/changesets', {
+        env: db.env,
+        owner: 'user_v',
+        accountUserId: 'user_v',
+        verifiedUserId: 'user_v',
+        grant: {
+          item: 'D',
+          level: 'edit',
+          tab: 't1',
+          sub: 'user_v',
+          team: null,
+          exp: 2_000_000_000,
+          shareCode: 'code1',
+          token: 'g',
+        },
+        body: { replace: { elements: [box('a')], name: 'Back again' } },
+        waitUntil: (p) => void pending.push(p),
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.sql.prepare("SELECT id FROM tabs WHERE id = 't1'").get()).toBeUndefined();
+    expect(records(db)).toEqual([]);
+  });
+
   it('writes nothing on any refusal, and says why', async () => {
     quiet();
     const { db, room: r } = await setUp();

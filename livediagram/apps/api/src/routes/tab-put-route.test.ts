@@ -317,4 +317,29 @@ describe('a tab-scoped whole-tab save', () => {
     });
     expect(stored(db).map((e) => e.id)).toEqual(['a']);
   });
+
+  // Its tab deleted while the editor was open reads as missing rather than coming back.
+  it("never recreates a tab-scoped editor's deleted tab", async () => {
+    const db = await documentWith([box('a')]);
+    db.sql.prepare("DELETE FROM tabs WHERE id = 't1'").run();
+    const res = await handleDocuments(
+      makeTestRouteContext('PUT', '/api/documents/D/tabs/t1', {
+        env: db.env,
+        owner: 'guest_v',
+        body: { id: 't1', name: 'Back again', elements: [box('a')] },
+        grant: {
+          item: 'D',
+          level: 'edit',
+          tab: 't1',
+          sub: 'link:abc',
+          team: null,
+          exp: 2_000_000_000,
+          shareCode: 'abc',
+          token: 'g',
+        },
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.sql.prepare("SELECT id FROM tabs WHERE id = 't1'").get()).toBeUndefined();
+  });
 });

@@ -26,7 +26,7 @@ import { notifyMentions, notifyNewComment } from '../email/notifications';
 import { pushItemOf, pushNewComments } from '../person/push';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
-import { badRequest, conflict, json, payloadTooLarge } from '../responses';
+import { badRequest, conflict, json, notFound, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
 import type { TabSaveProject } from '../db/tab-save-project';
 import { grantOn, readBody, type PlanRouteContext } from './context';
@@ -95,6 +95,9 @@ export async function handleTabPut(
       mergeUnseenChangesets(ctx, incoming, seen),
       fetchRoomLedger(env, id, tabId, request.headers.get('X-Room-Cursor')),
     ]);
+    // A tab-scoped link writes its own tab and never makes one (docs/specs/013-workspace/tab-scoped-share-links.md
+    // "Structure"): its tab gone is a 404, so an open editor's autosave racing the owner's delete cannot bring it back.
+    if (scope && !existingTab) return notFound();
     const ledger = applyRoomLedger(merge.tab, fetchedLedger);
     const commentAuthors = ledger.commentAuthors;
     // A copy: each attempt starts again from the save as sent.

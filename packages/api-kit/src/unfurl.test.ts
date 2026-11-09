@@ -28,6 +28,12 @@ describe('isBlockedHost (SSRF guard)', () => {
       '::ffff:a9fe:a9fe', // 169.254.169.254 (metadata)
       '::ffff:c0a8:1', // 192.168.0.1
       '[::ffff:7f00:1]', // bracketed (as a URL hostname arrives)
+      // A fully qualified name's trailing dot reaches the same host.
+      'localhost.',
+      'printer.local.',
+      // IPv4-compatible IPv6 (::127.0.0.1 as WHATWG URL normalises it).
+      '::7f00:1',
+      '[::a9fe:a9fe]',
     ]) {
       expect(isBlockedHost(h), h).toBe(true);
     }
@@ -41,6 +47,8 @@ describe('isBlockedHost (SSRF guard)', () => {
       '172.32.0.1',
       '93.184.216.34',
       '::ffff:808:808', // 8.8.8.8 mapped — public, allowed
+      '::808:808', // 8.8.8.8, IPv4-compatible
+      'example.com.',
       // Domains that start with an IPv6 private prefix's letters.
       'fdic.gov',
       'fcbarcelona.com',
@@ -54,6 +62,11 @@ describe('isBlockedHost (SSRF guard)', () => {
 });
 
 describe('parsePublicHttpUrl', () => {
+  it('refuses a trailing-dot or IPv4-compatible private host as a URL spells it', () => {
+    expect(parsePublicHttpUrl('http://localhost./')).toBeNull();
+    expect(parsePublicHttpUrl('http://[::127.0.0.1]/')).toBeNull();
+  });
+
   it('accepts public http(s) urls', () => {
     expect(parsePublicHttpUrl('https://example.com/page')?.hostname).toBe('example.com');
     expect(parsePublicHttpUrl('http://example.com')?.protocol).toBe('http:');

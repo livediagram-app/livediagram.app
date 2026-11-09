@@ -232,6 +232,24 @@ describe('a written article read back', () => {
     expect(roundTrip(blocks)).toEqual(shape(blocks));
   });
 
+  it('keeps a link whose address holds a space, the space percent-encoded', () => {
+    const blocks: ArticleBlock[] = [
+      {
+        id: 'p',
+        type: 'paragraph',
+        runs: [{ text: 'Notes', href: 'https://example.com/my notes\tdraft' }],
+      },
+    ];
+    const markdown = articleToMarkdown({ blocks });
+    expect(markdown).toBe('[Notes](https://example.com/my%20notes%09draft)\n');
+    expect(roundTrip(blocks)).toEqual([
+      {
+        type: 'paragraph',
+        runs: [{ text: 'Notes', href: 'https://example.com/my%20notes%09draft' }],
+      },
+    ]);
+  });
+
   it("keeps inline code's link, bold and edge spaces", () => {
     const blocks: ArticleBlock[] = [
       {

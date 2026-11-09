@@ -194,6 +194,35 @@ describe('the tab PUT', () => {
     });
   });
 
+  // A tab-scoped editor's save never makes a tab: its tab deleted while its editor was open reads as
+  // missing (docs/specs/013-workspace/tab-scoped-share-links.md) rather than coming back.
+  it("answers 404 to a tab-scoped editor's save on its deleted tab", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const db = await documentWith([box('a')]);
+    db.sql.prepare("DELETE FROM tabs WHERE id = 't1'").run();
+    const res = await handleDocuments(
+      makeTestRouteContext('PUT', '/api/documents/D/tabs/t1', {
+        env: db.env,
+        owner: 'user_v',
+        accountUserId: 'user_v',
+        verifiedUserId: 'user_v',
+        grant: {
+          item: 'D',
+          level: 'edit',
+          tab: 't1',
+          sub: 'user_v',
+          team: null,
+          exp: 2_000_000_000,
+          shareCode: 'code1',
+          token: 'g',
+        },
+        body: { id: 't1', name: 'Back again', elements: [box('a')] },
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.sql.prepare("SELECT id FROM tabs WHERE id = 't1'").get()).toBeUndefined();
+  });
+
   it('answers the new revision and strips record fields from the body', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await documentWith([box('a')]);

@@ -92,6 +92,7 @@ async function handleSubmit(
     author,
     tokenId: ctx.token?.id ?? null,
     frontDoor: frontDoorOf(ctx.request),
+    mayCreateTab: (grantOn(ctx, document.id)?.tabScope ?? null) === null,
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
   refreshAfterWrite(ctx, document.id, tabId, author, result);

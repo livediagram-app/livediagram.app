@@ -48,10 +48,21 @@ const OWNER_COLUMNS: OwnerColumn[] = [
     column: 'author_id',
     deleteKeeps: { when: '1 = 1', why: "a document's own store, aged out after 30 days" },
   },
+  // The document's once-only email claims (@liveworkspace/index-app notify-claims.ts), in its own store, name their
+  // sender: dropped when the index says the account closed (document-room/document-anonymise.ts), and past the
+  // dedupe window as new ones are claimed.
+  {
+    table: 'notify_claims',
+    column: 'sender',
+    deleteKeeps: {
+      when: '1 = 1',
+      why: "a document's own store, dropped by the closed account's purge",
+    },
+  },
 ];
 
 // Column names that mark an owner-keyed column wherever they appear.
-const OWNER_COLUMN_NAMES = ['owner_id', 'user_id', 'sender_id', 'author_id'];
+const OWNER_COLUMN_NAMES = ['owner_id', 'user_id', 'sender_id', 'sender', 'author_id'];
 
 const ACCOUNT = 'user_account';
 const OTHER = 'user_other';
@@ -112,6 +123,7 @@ function seed(sql: DatabaseSync, id: string) {
     removed: 0,
     created_at: T0,
   });
+  insert(sql, 'notify_claims', { key: `claim-${id}`, sender: id, at: T0 });
 }
 
 function schemaOwnerColumns(sql: DatabaseSync): string[] {

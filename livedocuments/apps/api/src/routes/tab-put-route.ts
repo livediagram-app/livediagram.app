@@ -26,7 +26,7 @@ import { notifyMentions, notifyNewComment } from '../email/notifications';
 import { pushItemOf, pushNewComments } from '../person/push';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
-import { badRequest, conflict, json, payloadTooLarge } from '../responses';
+import { badRequest, conflict, json, notFound, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
 import type { TabSaveDocument } from '../db/tab-save-document';
 import { grantOn, readBody, type DocumentRouteContext } from './context';
@@ -101,8 +101,12 @@ export async function handleTabPut(
     // an autosave echoing the stored name unchanged keeps it.
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');
     // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): a tab-scoped
-    // editor's save stores its content under the name the tab already has.
-    if (scoped && existingTab) body.name = existingTab.name;
+    // editor's save stores its content under the name the tab already has, and never makes a tab: its
+    // tab gone (deleted while its editor was open) reads as missing rather than coming back.
+    if (scoped) {
+      if (!existingTab) return notFound();
+      body.name = existingTab.name;
+    }
     // Data-loss backstop (docs/specs/006-document/per-tab-storage.md): refuse to blank a tab that
     // holds content unless the editor marks the empty write intentional (`X-Allow-Empty: 1`, set
     // only when it had the tab's content authoritatively loaded).

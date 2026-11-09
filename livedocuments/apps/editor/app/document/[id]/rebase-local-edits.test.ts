@@ -44,6 +44,16 @@ describe('rebaseLocalEdits', () => {
     expect(out.theme).toBe('forest');
   });
 
+  it('keeps a tab field cleared here cleared, rather than taking the server’s back', () => {
+    // A look reset deletes the tab's font; the server still has it, unsaved.
+    const baseline = tab([el('a')], { font: 'serif' });
+    const screen = tab([el('a')]);
+    const fetched = tab([el('a', 4)], { font: 'serif' });
+    const out = rebaseLocalEdits(fetched, screen, baseline);
+    expect('font' in out).toBe(false);
+    expect((out.elements[0] as { x: number }).x).toBe(4);
+  });
+
   it('is the fetched copy when nothing here is unsaved', () => {
     const baseline = tab([el('a')]);
     const fetched = tab([el('a', 3)]);

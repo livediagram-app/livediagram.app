@@ -159,6 +159,14 @@ heavier stroke says so on the primitive (`StyledPrim`), and the export converts
 the canvas's on-screen stroke weight into the glyph's units. The one small
 known gap is the Callout body's indent, a few pixels off the canvas's.
 
+## File names
+
+A downloaded tab export is named `<document> - <tab>` (` - selection` added for a selection export), run through
+`sanitizeFilename` (`apps/editor/components/dialogs/ExportTabDialog.tsx`) so it is safe on Windows, macOS and Linux:
+brackets `() [] {}` are dropped, any other character that is not a letter, digit, dot, dash, underscore or space (a
+colon, a slash, a question mark) becomes a dash, repeated dashes collapse to one, and dashes and spaces left at either
+end are trimmed, so `Plan (v2)?` reads `Plan v2` rather than `Plan -v2-`.
+
 ## Checking it
 
 `packages/document/src/export-consistency.test.ts` holds the wiring rather than

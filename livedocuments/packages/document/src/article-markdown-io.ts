@@ -194,8 +194,12 @@ function codeSpan(text: string): string {
 }
 
 // A link's address as the reader takes it back: its parentheses and backslashes escaped, so an address such as
-// `https://en.wikipedia.org/wiki/Mercury_(planet)` is not cut at its first `)`.
-const escapeHref = (href: string) => href.replace(/[\\()]/g, '\\$&');
+// `https://en.wikipedia.org/wiki/Mercury_(planet)` is not cut at its first `)`, and its white space percent-encoded
+// (`%20`), since Markdown ends an address at white space: written raw, the link read back as its literal text.
+// A space is the white space an address holds in practice, so it is replaced as a plain string; any other is rare.
+const encodeWhiteSpace = (href: string) =>
+  /\s/.test(href) ? href.replaceAll(' ', '%20').replace(/\s/g, (c) => encodeURIComponent(c)) : href;
+const escapeHref = (href: string) => encodeWhiteSpace(href.replace(/[\\()]/g, '\\$&'));
 
 function runMarkdown(run: ArticleRun): string {
   // Inline code keeps its other marks around it (a linked or bold `npm i`): they were dropped with the code's text
