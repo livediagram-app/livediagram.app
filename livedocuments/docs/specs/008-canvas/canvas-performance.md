@@ -179,6 +179,12 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   nothing for it. A new
   history object for an unchanged tab re-rendered the whole editor, every page's title bar among it,
   on every key typed into a long article.
+- **A key typed in an article does not redraw its list markers and placeholders.** They are
+  worked out from the whole article (a list's numbers run on through it), so they are kept from one
+  change to the next and only moved with the text, unless the change could alter one: a block added,
+  removed or restyled, a block emptied or filled, a table edited, or the caret moving into or out of
+  an empty block. Working them out on every key and every caret move cost about 2 ms a key on a
+  50-page article on a laptop.
 - **Chrome on every page draws no backdrop filter.** What every page wears (its title bar) is a
   plain card: Safari runs a backdrop filter again whenever anything behind it repaints, so a
   hundred title bars' blur ran on every keystroke of a 100-page article, about 60 ms a key in WebKit

@@ -303,7 +303,12 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
   one. `decorationsPlugin`: list markers as `data-marker` node decorations; placeholders while
   editable (title, subtitle, headings, quote, list "List", to-do "To-do"; the first body paragraph
   of an article of at most three blocks `FIRST_BODY_PLACEHOLDER`; else an empty block holding the
-  caret "Type / for blocks"). `todoTogglePlugin`: a mousedown in a to-do's left padding toggles
+  caret "Type / for blocks"). It keeps its set in plugin state: a transaction that keeps the
+  article's shape (the same top-level blocks, every changed one a textblock with the same markup
+  that stays empty or stays filled) and leaves the caret's empty block as it was maps the set
+  through the transaction (`set.map`) instead of working it out again; anything else, and a change
+  to whether the article is editable, works it out afresh. Held by `article-plugins.test.ts`
+  ("keeps the markers and placeholders a fresh build gives"). `todoTogglePlugin`: a mousedown in a to-do's left padding toggles
   `checked` (one transaction, so one commit).
 - `slashPlugin`: opens on a typed `/` at offset 1 or after whitespace (never by paste or remote);
   closes on a selection, the caret leaving the `/`, a leading space, a newline, past

@@ -143,11 +143,62 @@ function decorations(state: EditorState, editable: boolean): DecorationSet {
   return DecorationSet.create(state.doc, decos);
 }
 
-/** List markers and placeholders. `isEditable` is read live: a viewer sees no placeholders. */
-export function decorationsPlugin(isEditable: () => boolean): Plugin {
-  return new Plugin({
-    key: new PluginKey('article-decorations'),
-    props: { decorations: (state) => decorations(state, isEditable()) },
+// The top-level block holding a collapsed caret, when that block is empty (the one placeholder the caret decides),
+// else -1.
+function caretEmptyBlock(state: EditorState): number {
+  const sel = state.selection;
+  if (!sel.empty || sel.$from.depth === 0) return -1;
+  return sel.$from.node(1).content.size === 0 ? sel.$from.before(1) : -1;
+}
+
+// Whether a change keeps everything the markers and placeholders are worked out from: the same top-level blocks, each
+// changed one a textblock with the same markup that stays empty or stays filled. Typing into a block is such a
+// change; a block added, removed or restyled, a table edited, or a block emptied or filled is not.
+function sameShape(a: PMNode, b: PMNode): boolean {
+  if (a.childCount !== b.childCount) return false;
+  for (let i = 0; i < a.childCount; i++) {
+    const was = a.child(i);
+    const now = b.child(i);
+    if (was === now) continue;
+    if (!was.isTextblock || !was.sameMarkup(now)) return false;
+    if ((was.content.size === 0) !== (now.content.size === 0)) return false;
+  }
+  return true;
+}
+
+type DecorationsState = { set: DecorationSet; editable: boolean; caretEmpty: number };
+
+const decorationsKey = new PluginKey<DecorationsState>('article-decorations');
+
+/** List markers and placeholders. `isEditable` is read live: a viewer sees no placeholders. They are worked out from
+ *  the whole article, so they are kept in plugin state and only moved with the text by a change that keeps the
+ *  article's shape (docs/specs/008-canvas/canvas-performance.md): working them out on every key and caret move cost
+ *  about 2 ms a key on a 50-page article. */
+export function decorationsPlugin(isEditable: () => boolean): Plugin<DecorationsState> {
+  const fresh = (state: EditorState): DecorationsState => {
+    const editable = isEditable();
+    return { set: decorations(state, editable), editable, caretEmpty: caretEmptyBlock(state) };
+  };
+  return new Plugin<DecorationsState>({
+    key: decorationsKey,
+    state: {
+      init: (_config, state) => fresh(state),
+      apply(tr, prev, _old, state) {
+        const caretEmpty = caretEmptyBlock(state);
+        if (prev.editable !== isEditable()) return fresh(state);
+        if (!tr.docChanged) return caretEmpty === prev.caretEmpty ? prev : fresh(state);
+        const caretWas = prev.caretEmpty < 0 ? -1 : tr.mapping.map(prev.caretEmpty);
+        if (caretEmpty !== caretWas || !sameShape(tr.before, tr.doc)) return fresh(state);
+        return { set: prev.set.map(tr.mapping, tr.doc), editable: prev.editable, caretEmpty };
+      },
+    },
+    props: {
+      decorations(state) {
+        const kept = decorationsKey.getState(state);
+        // Editable changed with no transaction since: worked out for this draw, kept by the next transaction.
+        return kept && kept.editable === isEditable() ? kept.set : decorations(state, isEditable());
+      },
+    },
   });
 }
 
