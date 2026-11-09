@@ -1,9 +1,11 @@
 import type { Element, ElementId, Tab } from './index';
 import { bringManyToFront, sendManyToBack } from './layer-order';
 import { withAttachedArrows } from './arrow-rebind';
+import { freeEndsAttachedTo } from './arrow-free-ends';
 import {
   DEFAULT_LAYER_ID,
   DEFAULT_LAYER_NAME,
+  isLayerLocked,
   isLayerVisible,
   layerElementCounts,
   resolveLayerId,
@@ -162,15 +164,21 @@ export function clearLayerElements(tab: Tab, layerId: string): Tab {
 }
 
 // The tab's elements minus everything on `layerId`, with the same arrow
-// cascade as delete-selected.
+// cascade as delete-selected: an arrow on another layer that is locked, or sits on a locked layer, survives its
+// end's element going (docs/specs/008-canvas/canvas-and-palette.md "Locking arrows"), that end freed where it was
+// drawn. The cascade used to take it, deleting a locked arrow the user never touched.
 function withoutLayerElements(tab: Tab, layerId: string): Element[] {
   const ls = tab.layers!;
   const doomed = new Set(
     tab.elements.filter((el) => resolveLayerId(el.layerId, ls) === layerId).map((el) => el.id),
   );
   if (doomed.size === 0) return tab.elements;
-  const gone = withAttachedArrows(tab.elements, doomed);
-  return tab.elements.filter((el) => !gone.has(el.id));
+  const lockedLayers = new Set(ls.filter(isLayerLocked).map((l) => l.id));
+  const isProtected = (el: Element) =>
+    el.locked === true || lockedLayers.has(resolveLayerId(el.layerId, ls));
+  const gone = withAttachedArrows(tab.elements, doomed, isProtected);
+  const left = tab.elements.filter((el) => !gone.has(el.id));
+  return freeEndsAttachedTo(left, (id) => gone.has(id), tab.elements);
 }
 
 // Merge a layer into its neighbour (docs/specs/006-document/layers.md): every element on `layerId`

@@ -93,9 +93,12 @@ describe('partialEraseStep', () => {
       expect(was).not.toEqual({ x: 0, y: 0 });
     });
 
-    it('drops an arrow pinned to a stroke erased whole, but keeps a locked one', () => {
+    it('drops an arrow pinned to a stroke erased whole, and one hung off it, but keeps a locked one', () => {
       // The brush sweeps the whole line, so the stroke goes with no pieces.
-      const els: Element[] = [line('a', 100), pinned('arr'), pinned('kept', { locked: true })];
+      const stroke = line('a', 100);
+      const was = endpointPosition({ kind: 'pinned', elementId: 'a', anchor: 'e' }, [stroke]);
+      const hung = pinned('hung', { to: { kind: 'on-arrow', arrowId: 'arr', t: 0.5 } });
+      const els: Element[] = [stroke, pinned('arr'), hung, pinned('kept', { locked: true })];
       const out = partialEraseStep(
         els,
         { x: -50, y: 100 },
@@ -105,6 +108,8 @@ describe('partialEraseStep', () => {
         mint,
       )!;
       expect(out.map((e) => e.id)).toEqual(['kept']);
+      // The kept arrow's end no longer names the erased stroke: it stays where it was drawn.
+      expect((out[0] as ArrowElement).to).toEqual({ kind: 'free', x: was.x, y: was.y });
     });
 
     it('leaves arrows pinned to other elements as they were', () => {
