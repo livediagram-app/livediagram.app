@@ -76,7 +76,8 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   orientation; turning one is refused (`no_orientation`).
 - **Backgrounds**: `{ color }` (a hex) is a solid fill, `{ gradient: [from, to], angle? }` a two-stop gradient
   (angle in degrees, default 160, the panel's), `pattern` one of `dots`, `grid`, `lines` or `none`, `{ paper: true }` back to the
-  plain paper. A logo page takes no pattern (`pattern_not_offered`). A new fill re-inks what is on the page as the panel does
+  plain paper. A logo page takes no pattern (`pattern_not_offered`). A photo page takes no background at all, its photo being
+  its background: a `background` for one, or `apply_background_to_all` from one, is refused (`background_not_offered`). A new fill re-inks what is on the page as the panel does
   (`pageInkFor`, [Re-inking](../007-editor/pages-mode.md#re-inking)), from the colours as they are (the
   editor's session memory is the editor's).
 - **Apply to all**: `apply_background_to_all` gives every other page of the page's kind (every wireframe page, say) its

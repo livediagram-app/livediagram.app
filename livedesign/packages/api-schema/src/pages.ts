@@ -123,6 +123,7 @@ const PAGES_REFUSAL_CODES = [
   'size_not_offered',
   'no_orientation',
   'pattern_not_offered',
+  'background_not_offered',
   'not_a_wireframe',
   'no_other_pages',
   'layout_unknown',

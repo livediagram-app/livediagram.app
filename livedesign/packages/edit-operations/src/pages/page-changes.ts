@@ -53,6 +53,7 @@ const CODE: Record<PageEditRefusal, PagesRefusal['code']> = {
   no_orientation: 'no_orientation',
   size_not_offered: 'size_not_offered',
   pattern_not_offered: 'pattern_not_offered',
+  background_not_offered: 'background_not_offered',
   page_limit: 'page_limit',
   photo_limit: 'photo_limit',
   last_page: 'last_page',
@@ -110,6 +111,7 @@ function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'>): s
     no_orientation: `${aKind} page has no orientation: it is always the shape its size is.`,
     size_not_offered: `${aKind} page takes the sizes ${pageSizesFor(kind).join(', ')}.`,
     pattern_not_offered: 'A logo page takes no pattern; give it a color or gradient.',
+    background_not_offered: 'A photo page has no background: its photo is its background.',
     page_limit: 'A tab holds at most 100 pages: delete one first.',
     photo_limit: 'A tab holds at most 10 photo pages: delete one first.',
     last_page: "That is the tab's only page: add another before deleting it.",
@@ -315,6 +317,8 @@ export function applyPageChanges(
         case 'apply_background_to_all': {
           const page = pageOf(change);
           const out = pageBackgroundSpread(current, page.id);
+          if ('refused' in out && out.refused === 'background_not_offered')
+            stop('background_not_offered', messageFor('background_not_offered', current, page));
           // The page was found above, so the one refusal left is a page with no other of its kind.
           if ('refused' in out)
             stop(

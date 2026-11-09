@@ -39,7 +39,7 @@ Banned synonyms: "slide deck" for a tab of pages (it is a tab of pages),
    draws.
 3. The tab transforms inside `apps/live/hooks/editor/page-edits.ts` became pure functions in
    `packages/design/src/pages-edits.ts`. Each takes the tab and answers `{ tab } | { refused: PageEditRefusal }`
-   (`PageEditRefusal = 'locked' | 'no_orientation' | 'size_not_offered' | 'pattern_not_offered' | 'page_limit' |
+   (`PageEditRefusal = 'locked' | 'no_orientation' | 'size_not_offered' | 'pattern_not_offered' | 'background_not_offered' | 'page_limit' |
 'last_page' | 'unknown_page' | 'kind_not_offered'`; `pageAdded` answers `kind_not_offered` when the kind is not
    `tabPageKind(pages)`, a blank first page's `null` included); the hook keeps telemetry, toasts, `onGoTo` and debug
    logs, and calls them inside `commitTab`. The lock rule (`refusedLocked` with `shared`) and `sharing` move with
@@ -115,7 +115,7 @@ Refusals: `400 { error, message, change? }` for every engine code and `invalid_b
 tab, `409 tab_busy`, `413 tab_too_large`.
 
 `PagesRefusalCode`: `invalid_body`, `invalid_value`, `tab_locked`, `tab_kind`, `page_unknown`,
-`size_not_offered`, `no_orientation`, `pattern_not_offered`, `no_other_pages`, `layout_unknown`, `page_locked`,
+`size_not_offered`, `no_orientation`, `pattern_not_offered`, `background_not_offered`, `no_other_pages`, `layout_unknown`, `page_locked`,
 `page_limit`, `last_page`, `kind_not_offered`.
 
 ### MCP
@@ -151,25 +151,26 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 
 ## Errors and edge cases
 
-| Case                                                          | Handling                                                             |
-| ------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Fresh tab whose only page is unchosen and empty               | first `add` takes that page                                          |
-| Only page already of the kind added, unnamed and empty        | first `add` of that kind takes that page (its fields and layout set) |
-| `add` of a kind other than the tab's (a blank tab's included) | `kind_not_offered` naming the tab's kind, pointing to `add_tab`      |
-| Size not offered / `fit`                                      | `size_not_offered` with the kind's sizes                             |
-| Turn a logo page                                              | `no_orientation`                                                     |
-| Pattern on a logo page                                        | `pattern_not_offered`                                                |
-| `apply_background_to_all` with no other page of the kind      | `no_other_pages`                                                     |
-| Layout of another kind                                        | `layout_unknown` with the kind's layouts                             |
-| Delete, in the same call, the page an `add` took as its blank | nothing deleted, line says the empty page became the added one       |
-| Delete the only unit                                          | `last_page`                                                          |
-| 101st page                                                    | `page_limit`                                                         |
-| Locked page                                                   | `page_locked`                                                        |
-| Page place out of range, name not found                       | `page_unknown` with the pages                                        |
-| Tab bytes over `MAX_TAB_BYTES` after the edit                 | `413 tab_too_large`                                                  |
-| Revision moved twice                                          | `409 tab_busy`                                                       |
-| Relay fails                                                   | logged `[pages-agent] relay-missed`, the write stands                |
-| An `iconId` that names no icon (any edit operation)           | `invalid_value` "is not an icon", hint: icons like it (`iconsLike`)  |
+| Case                                                           | Handling                                                             |
+| -------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Fresh tab whose only page is unchosen and empty                | first `add` takes that page                                          |
+| Only page already of the kind added, unnamed and empty         | first `add` of that kind takes that page (its fields and layout set) |
+| `add` of a kind other than the tab's (a blank tab's included)  | `kind_not_offered` naming the tab's kind, pointing to `add_tab`      |
+| Size not offered / `fit`                                       | `size_not_offered` with the kind's sizes                             |
+| Turn a logo page                                               | `no_orientation`                                                     |
+| Pattern on a logo page                                         | `pattern_not_offered`                                                |
+| Background on, or `apply_background_to_all` from, a photo page | `background_not_offered`                                             |
+| `apply_background_to_all` with no other page of the kind       | `no_other_pages`                                                     |
+| Layout of another kind                                         | `layout_unknown` with the kind's layouts                             |
+| Delete, in the same call, the page an `add` took as its blank  | nothing deleted, line says the empty page became the added one       |
+| Delete the only unit                                           | `last_page`                                                          |
+| 101st page                                                     | `page_limit`                                                         |
+| Locked page                                                    | `page_locked`                                                        |
+| Page place out of range, name not found                        | `page_unknown` with the pages                                        |
+| Tab bytes over `MAX_TAB_BYTES` after the edit                  | `413 tab_too_large`                                                  |
+| Revision moved twice                                           | `409 tab_busy`                                                       |
+| Relay fails                                                    | logged `[pages-agent] relay-missed`, the write stands                |
+| An `iconId` that names no icon (any edit operation)            | `invalid_value` "is not an icon", hint: icons like it (`iconsLike`)  |
 
 ## Security and trust
 

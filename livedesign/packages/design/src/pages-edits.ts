@@ -47,6 +47,7 @@ export type PageEditRefusal =
   | 'no_orientation'
   | 'size_not_offered'
   | 'pattern_not_offered'
+  | 'background_not_offered'
   | 'page_limit'
   | 'photo_limit'
   | 'last_page'
@@ -178,6 +179,9 @@ export function pageBackgroundStored<T extends PagesTab>(
   if (!target) return refused('unknown_page');
   if (pageLockRefuses(pages, pageId)) return refused('locked');
   if (target.kind === 'logo' && 'pattern' in patch) return refused('pattern_not_offered');
+  // A photo page is never painted (docs/specs/031-photo/photo-pages.md "Background"): its photo is its background, and
+  // a stored one is dropped on reading, so writing one would say it was set and re-ink the elements for nothing.
+  if (target.kind === 'photo') return refused('background_not_offered');
   const was = target.background;
   const background = withBackgroundPatch(target, patch);
   if (sameFill(was?.fill, background?.fill) && was?.pattern === background?.pattern) {

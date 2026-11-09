@@ -550,6 +550,23 @@ describe('giving every page of a kind one background', () => {
       change: 0,
     });
   });
+
+  // docs/specs/031-photo/photo-pages.md "Background": a photo page is never painted.
+  it('is refused on a photo page, which has no background to set or give', () => {
+    const photos = tabOf({
+      pages: [
+        page('p1', { kind: 'photo', size: 'photo', fit: { width: 400, height: 300 } }),
+        page('p2', { kind: 'photo', size: 'photo', fit: { width: 400, height: 300 } }),
+      ],
+    });
+    expect(
+      refusal(photos, [{ op: 'set', page: 1, background: { color: '#0f172a' } }]),
+    ).toMatchObject({ code: 'background_not_offered', change: 0 });
+    expect(refusal(photos, [{ op: 'apply_background_to_all', page: 1 }])).toMatchObject({
+      code: 'background_not_offered',
+      change: 0,
+    });
+  });
 });
 
 // docs/specs/007-editor/wireframe-pages.md: an agent adds a wireframe page in its device and sets its
