@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CliError, formatError } from './cli-error';
 import { parseConfig, withTelemetry } from './config-file';
+import { storedCredential } from './credentials';
 import { debugLog } from './debug';
 import { didYouMean } from './did-you-mean';
 import { EXIT, exitCodeForStatus } from './exit-codes';
@@ -121,6 +122,30 @@ describe('config.toml', () => {
     expect(() => parseConfig('[profiles.a]\nhost = "x\\q"', 'config.toml')).toThrow(
       'config.toml line 2 does not read',
     );
+  });
+});
+
+describe('profile names that shadow Object members', () => {
+  it('reads [profiles.__proto__] and [profiles.constructor] as ordinary profiles, never onto Object.prototype', () => {
+    const text =
+      '[profiles.__proto__]\nhost = "https://evil.test"\n[profiles.constructor]\nhost = "https://c.test"\n';
+    const config = parseConfig(text, 'config.toml');
+    expect(({} as { host?: unknown }).host).toBeUndefined();
+    expect(Object.prototype).not.toHaveProperty('host');
+    expect(Object.keys(config.profiles)).toEqual(['__proto__', 'constructor']);
+    expect(config.profiles['constructor']).toEqual({ host: 'https://c.test' });
+    expect(parseConfig('', 'c').profiles['toString']).toBeUndefined();
+  });
+
+  it('finds no stored credential for a profile named after an inherited member', async () => {
+    const path = '/home/agent/.config/example/credentials.json';
+    const files = { [path]: JSON.stringify({ version: 1, profiles: {} }) };
+    const reader = io({ files }).io;
+    (reader.files as unknown as { mode: () => Promise<null> }).mode = async () => null;
+    expect(await storedCredential(reader, PRODUCT, 'constructor')).toBeNull();
+    expect(await storedCredential(reader, PRODUCT, 'toString')).toBeNull();
+    const empty = io().io;
+    expect(await storedCredential(empty, PRODUCT, 'hasOwnProperty')).toBeNull();
   });
 });
 

@@ -36,7 +36,8 @@ const credentialsPath = (io: CliIo, product: Product) =>
 async function readFile(io: CliIo, product: Product): Promise<CredentialsFile> {
   const path = credentialsPath(io, product);
   const text = await io.files.read(path);
-  if (text === null) return { version: 1, profiles: {} };
+  if (text === null)
+    return { version: 1, profiles: Object.create(null) as CredentialsFile['profiles'] };
   const mode = await io.files.mode(path);
   if (mode !== null && (mode & 0o077) !== 0) {
     io.stderr(`warning: ${path} was readable by others; it is now readable only by you\n`);
@@ -44,8 +45,16 @@ async function readFile(io: CliIo, product: Product): Promise<CredentialsFile> {
   }
   try {
     const parsed = JSON.parse(text) as CredentialsFile;
+    // Copied into a null-prototype map: a profile named `constructor` or `__proto__` is then an ordinary key, never an
+    // inherited member read back as a stored credential.
     if (parsed.version === 1 && typeof parsed.profiles === 'object' && parsed.profiles !== null)
-      return parsed;
+      return {
+        ...parsed,
+        profiles: Object.assign(
+          Object.create(null) as CredentialsFile['profiles'],
+          parsed.profiles,
+        ),
+      };
   } catch {
     // Reported below.
   }
