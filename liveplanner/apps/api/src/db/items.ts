@@ -2,6 +2,7 @@
 // "Data and persistence"). Every write raises the project's `items_rev` in the same batch, so the
 // room op carries one store revision per write; an update is guarded by the item's own `rev`.
 
+import { ANONYMISED_NAME, ANONYMISED_PERSON } from '@liveworkspace/index-app';
 import { isSafeColourValue } from '@liveplanner/project';
 import type { Item, ItemPerson } from '@liveplanner/items';
 import type { PlanEnv } from '../types';
@@ -24,7 +25,16 @@ const COLUMNS =
 
 const UNKNOWN_PERSON: ItemPerson = { id: '', name: 'Someone', color: '#94a3b8' };
 
+// A closed account as a card names them (items.md "Created and Last Edited"), written by anonymisePlan.
+export const ANONYMISED_ITEM_PERSON: ItemPerson = {
+  id: ANONYMISED_PERSON,
+  name: ANONYMISED_NAME,
+  color: '#94a3b8',
+};
+
 function parsePerson(text: string): ItemPerson {
+  // An older anonymising wrote the bare word, not a person: it still reads Deleted account.
+  if (text === ANONYMISED_PERSON) return ANONYMISED_ITEM_PERSON;
   try {
     const p = JSON.parse(text) as Partial<ItemPerson>;
     // A colour stored before participant colours were checked is read as none (unsafe-colours.ts).

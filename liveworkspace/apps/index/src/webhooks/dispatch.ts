@@ -1,7 +1,8 @@
 // Sending what is due (liveworkspace/docs/specs/004-index/webhooks.md "Delivery"), run by the dispatcher's alarm
 // (durable-object.ts), never in a request: at most DISPATCH_BATCH deliveries a run, DISPATCH_CONCURRENCY webhooks at
 // once, each webhook's in order. Before a webhook sends, its creator must still be able to edit all of its document
-// (creatorCanEdit); before any sends, its host must still resolve only to public addresses. A delivery that fails is tried again after the
+// (creatorCanEdit); right before each send, its host must still resolve only to public addresses (resolved again
+// for every delivery, never cached, so a host that changes its answer between two sends is caught at the second). A delivery that fails is tried again after the
 // next of RETRY_DELAYS_MS, the webhook's later deliveries waiting behind it; one that runs out of tries, or meets an
 // answer that won't change (a redirect, a 4xx), is given up, and FAILING_PAUSE_AFTER of those in a row pause it.
 
@@ -238,7 +239,6 @@ async function runWebhook(
   key: CryptoKey,
   rows: DueRow[],
   teamsOf: (personId: string) => Promise<ReadonlySet<string> | null>,
-  hosts: Map<string, Promise<'public' | 'private' | 'unresolved'>>,
   counts: Counts,
 ): Promise<void> {
   const db = env.INDEX_DB;
@@ -274,20 +274,20 @@ async function runWebhook(
       : null;
   const parsed = url ? parseWebhookUrl(url, head.kind) : null;
   const target = parsed?.ok ? parsed.url.href : null;
-  let refused: Outcome | null = null;
-  if (!parsed?.ok || (head.kind === 'json' && !secret)) {
-    // Sealed under another key, or not a URL this kind takes any more: nothing to send to.
-    refused = { kind: 'final', status: null, error: 'unreadable' };
-  } else {
-    let check = hosts.get(parsed.host);
-    if (!check) {
-      check = resolvesPublic(parsed.host, deps.resolve);
-      hosts.set(parsed.host, check);
-    }
-    const answer = await check;
-    if (answer === 'private') refused = { kind: 'final', status: null, error: 'private_address' };
-    if (answer === 'unresolved') refused = { kind: 'retry', status: null, error: 'dns' };
-  }
+  const host = parsed?.ok ? parsed.host : null;
+  // Sealed under another key, or not a URL this kind takes any more: nothing to send to.
+  let refused: Outcome | null =
+    !parsed?.ok || (head.kind === 'json' && !secret)
+      ? { kind: 'final', status: null, error: 'unreadable' }
+      : null;
+  // The host's answers checked again right before a send (webhooks.md "Security": DNS rebinding). Once refused,
+  // the rest of the run's rows meet the same answer.
+  const checkHost = async (): Promise<Outcome | null> => {
+    const answer = await resolvesPublic(host!, deps.resolve);
+    if (answer === 'private') return { kind: 'final', status: null, error: 'private_address' };
+    if (answer === 'unresolved') return { kind: 'retry', status: null, error: 'dns' };
+    return null;
+  };
 
   const statements: D1PreparedStatement[] = [];
   let failures = 0;
@@ -295,6 +295,7 @@ async function runWebhook(
   let pause: WebhookPauseReason | null = null;
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]!;
+    refused ??= await checkHost();
     const outcome =
       refused ?? (await send(deps, target!, row, bodyFor(row.kind, eventOf(env, row)), secret));
     const at = deps.now();
@@ -375,7 +376,7 @@ export async function dispatch(env: Env, deps: DispatchDeps): Promise<DispatchRe
     list.push(row);
     byWebhook.set(row.webhook_id, list);
   }
-  // Asked once a run per person, and each host resolved once a run.
+  // Asked once a run per person; hosts are resolved before every send (runWebhook).
   const teamsCache = new Map<string, Promise<ReadonlySet<string> | null>>();
   const teamsOf = (personId: string) => {
     let found = teamsCache.get(personId);
@@ -385,13 +386,12 @@ export async function dispatch(env: Env, deps: DispatchDeps): Promise<DispatchRe
     }
     return found;
   };
-  const hosts = new Map<string, Promise<'public' | 'private' | 'unresolved'>>();
   const groups = [...byWebhook.values()];
   for (let i = 0; i < groups.length; i += DISPATCH_CONCURRENCY) {
     await Promise.all(
       groups
         .slice(i, i + DISPATCH_CONCURRENCY)
-        .map((rows) => runWebhook(env, deps, key, rows, teamsOf, hosts, counts)),
+        .map((rows) => runWebhook(env, deps, key, rows, teamsOf, counts)),
     );
   }
   if (due.length >= DISPATCH_BATCH) return { ...counts, nextAt: deps.now() };

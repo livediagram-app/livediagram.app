@@ -379,6 +379,27 @@ describe('what is checked before sending', () => {
     },
   );
 
+  // DNS rebinding (webhooks.md "Security"): a host that answers public for one send and private for the next is
+  // caught at the next, because every send resolves it again rather than trusting the run's first answer.
+  it('resolves the host again right before every send, and stops when it turns private', async () => {
+    const { bump } = await personWithHook('user_wx7');
+    await bump();
+    await bump();
+    await bump();
+    const answers = [['93.184.216.34'], ['93.184.216.34'], ['10.0.0.5']];
+    const asked: string[] = [];
+    await run({
+      resolve: async (host) => {
+        asked.push(host);
+        return answers.shift() ?? ['93.184.216.34'];
+      },
+    });
+    expect(asked).toEqual(['hooks.example.com', 'hooks.example.com', 'hooks.example.com']);
+    expect(sent).toHaveLength(2);
+    expect(states()).toEqual(['renamed:delivered:1', 'renamed:delivered:1', 'renamed:failed:1']);
+    expect(deliveries()[2]).toMatchObject({ error: 'private_address' });
+  });
+
   it('sends nothing without WEBHOOK_KEY', async () => {
     const { bump } = await personWithHook('user_wx5');
     await bump();

@@ -1686,6 +1686,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "person": {
+        "type": "string"
       }
     },
     "required": [
