@@ -5,6 +5,7 @@ import {
   COMMUNITY_COUNTED_PER_NETWORK,
   COMMUNITY_MAX_OFFSET,
   COMMUNITY_PAGE_SIZE,
+  COMMUNITY_POSTS_PER_AUTHOR,
   COMMUNITY_START_MIN_LIKES,
   EMPTY_COMMUNITY_QUERY,
   isCommunityCategoryOf,
@@ -95,6 +96,23 @@ beforeEach(() => {
 });
 
 describe('publishing', () => {
+  it("replaces a previous owner's post in the same batch, and keeps it when the cap refuses", async () => {
+    const old = await publish('d1');
+    const heir = { ...publishing(), owner: 'user_heir', shareCode: 'heir' };
+    for (let i = 0; i < COMMUNITY_POSTS_PER_AUTHOR; i++) {
+      await createPost(db.env, LD, `full-${i}`, { ...heir, shareCode: `heir-${i}` }, 1000);
+    }
+    // At the cap: nothing written, the old post still there.
+    expect(await createPost(db.env, LD, 'd1', heir, 2000, old)).toBeNull();
+    expect((await getPostForDocument(db.env, LD, 'd1'))?.id).toBe(old);
+    db.sql.prepare("DELETE FROM posts WHERE document = 'full-0'").run();
+    const made = await createPost(db.env, LD, 'd1', heir, 2000, old);
+    expect(await getPostForDocument(db.env, LD, 'd1')).toMatchObject({
+      id: made,
+      owner: 'user_heir',
+    });
+  });
+
   it('creates a post for an app document', async () => {
     const postId = await publish('d1');
     expect(await getPostForDocument(db.env, LD, 'd1')).toMatchObject({
