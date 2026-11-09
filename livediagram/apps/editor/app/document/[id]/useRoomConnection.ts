@@ -35,7 +35,7 @@ import {
   type LaserTrail,
   type PresenceCoalescer,
 } from './presence-coalescer';
-import type { RemoteSelection } from '@/lib/presence-rows';
+import { remoteSelectionOf, type RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs, remoteRoomOp, type PendingIdeaIds } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
@@ -447,7 +447,8 @@ export function useRoomConnection(opts: {
           const next = new Map(prev);
           // tabId scopes the badge + docs/specs/007-editor/editor-app.md lock to the sender's tab;
           // absent (older peer) = tab-unknown, shown everywhere.
-          next.set(from, { elementId: op.elementId, tabId: op.tabId });
+          // elementIds = the whole selection, so a peer's marquee holds every element in it.
+          next.set(from, remoteSelectionOf(op));
           return next;
         });
       } else if (op.kind === 'cursor') {

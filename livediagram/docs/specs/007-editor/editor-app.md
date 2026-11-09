@@ -105,6 +105,9 @@ To cut down on two people fighting over the same element, an element another par
 - **Shown as an outline, never a recolour.** A held element wears the holder's colour as its border (and their disc); a
   face that paints its content from the element's accent (a Card's header band and media, a banner's bar, a
   boundary's tab) keeps its own colours.
+- **The whole selection holds.** A participant holding several elements (a marquee, shift-clicks, Select All) holds
+  every one of them: each wears their border and disc and is locked for everyone else, read from the `select` op's
+  `elementIds` (at most `MAX_SELECTION_IDS`). A frame from an older client without it holds its single `elementId`.
 - **Self is never locked out.** Only OTHER participants' selections lock an element; your own selection never blocks you.
 - **Auto-releases.** The lock is purely a function of live presence, so it clears the moment the holder deselects, switches tabs, or leaves the room; there's no sticky server state to clean up.
 - **Where it's enforced.** All local selection choke points respect it: single-click select, shift multi-select, and marquee (which filters locked ids out of its hit set), plus the element's own pointer-down / double-click-to-edit. A locked element shows a `not-allowed` cursor and the existing remote-selector badge's hover card reads "Locked to <name>" (each disc takes the pointer so the card opens; presses still reach the element).
