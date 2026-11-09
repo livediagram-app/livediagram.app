@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ShowMeButton, ShowMeStage } from './ShowMe';
+import { SHOW_ME_HINT, ShowMeButton, ShowMeStage } from './ShowMe';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 import { useTourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
 
@@ -40,6 +40,14 @@ function Surface({
 const settle = () => act(async () => new Promise((r) => setTimeout(r, 20)));
 
 describe('Show Me', () => {
+  // Its hover card names it, so the glyph alone on a narrow window still says what it does (show-me.md "The button").
+  it('is described by its hover card, which names it', () => {
+    render(<Surface onStart={() => {}} onFinish={() => {}} />);
+    const button = screen.getByRole('button', { name: 'Show Me' });
+    const ids = (button.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean);
+    expect(ids.map((id) => document.getElementById(id)?.textContent)).toContain(SHOW_ME_HINT);
+  });
+
   it('starts on its first step when pressed, and a second press does nothing', async () => {
     const onStart = vi.fn();
     render(<Surface onStart={onStart} onFinish={() => {}} />);

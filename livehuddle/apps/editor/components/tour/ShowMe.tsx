@@ -4,7 +4,7 @@
 // tour drawn over that surface. Never offered: only the button runs it. Each surface keeps its own steps and its own
 // literal telemetry (so the dashboard's emitter scan reads them); these are the parts every Show Me shares.
 import { useEffect, useRef } from 'react';
-import { lucideGlyph } from '@livehuddle/ui';
+import { HoverCard, lucideGlyph } from '@livehuddle/ui';
 import { lucideFootprints } from '@liveworkspace/icons/lucide';
 import { helpArticleHref, type HelpArticleKey } from '@/lib/help-articles';
 import { setActiveTour } from '@/lib/tour-active';
@@ -13,6 +13,9 @@ import type { TourEngine } from '@liveworkspace/workbench/components/tour/useTou
 
 // A walkthrough's footprints, at the Help link's size.
 const FootprintsIcon = lucideGlyph(lucideFootprints, 14);
+
+/** What Show Me's hover card says under its name. */
+export const SHOW_ME_HINT = 'A short tour of this, step by step.';
 
 // The header's Show Me, left of Help and drawn as it is (HelpArticleLink's labelled variant). `onStart` sends the
 // surface's own Started event, and may return a promise (steps loaded at the press) that the tour waits for; a press
@@ -26,27 +29,30 @@ export function ShowMeButton<Api>({
   onStart: () => void | Promise<void>;
 }) {
   const loading = useRef(false);
+  // Named on hover and focus like the Help link beside it, so the glyph alone (a narrow window) still says what it does.
   return (
-    <button
-      type="button"
-      aria-pressed={tour.active}
-      className="relative touch-target inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-      onClick={() => {
-        if (tour.active || loading.current) return;
-        const ready = onStart();
-        if (!ready) return tour.start();
-        loading.current = true;
-        void ready
-          .then(tour.start, () => {})
-          .finally(() => {
-            loading.current = false;
-          });
-      }}
-    >
-      <FootprintsIcon />
-      {/* The glyph alone on a phone, where a dialog's header has no room for the words beside its close button. */}
-      <span className="max-sm:sr-only">Show Me</span>
-    </button>
+    <HoverCard title="Show Me" description={SHOW_ME_HINT} disabled={tour.active}>
+      <button
+        type="button"
+        aria-pressed={tour.active}
+        className="relative touch-target inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+        onClick={() => {
+          if (tour.active || loading.current) return;
+          const ready = onStart();
+          if (!ready) return tour.start();
+          loading.current = true;
+          void ready
+            .then(tour.start, () => {})
+            .finally(() => {
+              loading.current = false;
+            });
+        }}
+      >
+        <FootprintsIcon />
+        {/* The glyph alone on a phone, where a dialog's header has no room for the words beside its close button. */}
+        <span className="max-sm:sr-only">Show Me</span>
+      </button>
+    </HoverCard>
   );
 }
 
