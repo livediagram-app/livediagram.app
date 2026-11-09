@@ -85,6 +85,13 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
     expect(scopedSenderMayRelay({ kind: 'follow', target: 'p-a' }, SCOPE)).toBe(true);
   });
 
+  // docs/specs/012-collaboration/nudge.md "Share roles": a nudge names a person, and anyone may be nudged.
+  it('lets a scoped visitor nudge, and be nudged', () => {
+    const nudge = { kind: 'nudge', targetId: 'p-a' };
+    expect(scopedSenderMayRelay(nudge, SCOPE)).toBe(true);
+    expect(opForScope(nudge, SCOPE)).toBe(nudge);
+  });
+
   it('refuses any other tab', () => {
     expect(scopedSenderMayRelay({ kind: 'el', tabId: 't1' }, SCOPE)).toBe(false);
     expect(scopedSenderMayRelay({ kind: 'tab-focus', tabId: 't1' }, SCOPE)).toBe(false);

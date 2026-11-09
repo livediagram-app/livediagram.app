@@ -32,7 +32,8 @@ microphone, camera and Share Screen buttons still show there, as a [local previe
   Camera and Share buttons should be moved from the palette and put as buttons in the bottom, but for livehuddle,
   center them") shows a greyed **Connecting…** (hover title Connecting Audio). If it fails, a warn **Retry** (Audio
   Unavailable) appears and a press tries again; under the kill switch it reads **Calls Paused** and a press tries
-  again. Neither retries by itself: no loop after a failure or a pause.
+  again. Neither retries by itself: no loop after a failure or a pause. A failed call hears nobody, as a call you left
+  does: nobody's talking bars stay lit as heard.
 
 ## Share roles
 
@@ -111,7 +112,8 @@ test, do what we did with camera and allow me to do it anyway, just don't transm
   etc"). The dock no longer explains why there is no call (the greyed Join Audio's reason text is gone): the preview
   itself says what matters, that only you see it.
 - A microphone the browser ends while previewed (unplugged, its permission withdrawn) closes, as a press would.
-- A call that starts takes over, **muted**. The camera and Share Screen beside it preview locally too, titled
+- A call that starts takes over, **muted**. A press of the microphone while it connects (Connecting…) does nothing,
+  so no preview is left capturing under the call. The camera and Share Screen beside it preview locally too, titled
   **Camera: Only You** and **Share Screen: Only You**.
 
 Someone who may not speak (a Viewer) has no microphone to preview. The preview is `CallSelf.canPreviewMic` and
@@ -232,7 +234,9 @@ live, with your own equaliser and bubble, while nothing reached anyone).
 - The call **renews** itself on that answer, with no press: it mints a new session, proves it to the room
   (`call-session`), publishes again what was live (an open microphone, the camera, a shared screen), tells the room
   its new locators (`call-track`), and subscribes again to whoever it should hear. The dock stays as it was; the first
-  unmute after a quiet spell takes a moment longer.
+  unmute after a quiet spell takes a moment longer. With nothing live to publish again (a microphone released after a
+  quiet spell, no camera, no screen), it tells the room so (`call-track` with `track: null`), and nobody keeps asking
+  for the dead session's microphone.
 - A session that is gone again straight after renewing is a broken call, not an idle one: after 3 renewals inside a
   minute the call fails into **Retry** (Audio Unavailable), as a failed connection does. No loop.
 - A publish that fails leaves nothing behind that claims it worked, so the next attempt publishes afresh.

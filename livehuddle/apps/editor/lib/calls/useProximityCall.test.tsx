@@ -394,6 +394,22 @@ describe('useProximityCall', () => {
       expect(calls.made[0]!.toggleMute).not.toHaveBeenCalled();
       expect(getUserMedia).not.toHaveBeenCalled();
     });
+    // Between the press and the call's code arriving there is no call yet: the preview must not open then, or it
+    // would stay capturing under the live call with no button to close it.
+    it('a mute press while the call’s code loads opens no preview microphone', async () => {
+      calls.fail = true;
+      const getUserMedia = vi.fn(async () => micStream());
+      mount({ capture: { getUserMedia } });
+      await waitFor(() => expect(callSelf().phase).toBe('error'));
+      calls.fail = false;
+      act(() => {
+        callActions()!.join();
+        callActions()!.toggleMute();
+      });
+      await waitFor(() => expect(calls.made).toHaveLength(1));
+      expect(getUserMedia).not.toHaveBeenCalled();
+      expect(callSelf().previewMic).toBe('off');
+    });
   });
 
   // docs/specs/012-collaboration/proximity-audio.md "Local preview": the microphone with no call to send it on.

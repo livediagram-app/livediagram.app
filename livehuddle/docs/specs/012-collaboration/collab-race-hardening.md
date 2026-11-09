@@ -79,6 +79,10 @@ applied by the sender and every receiver through the same pure
   one change to a thread, by comment id, so a replay is a no-op. A remove and a rekey
   find their comment in whichever thread holds it. (An add naming a Sheet cell, `cell`, was Plan's and is
   refused now; a stored ledger entry that still carries one is read and ignored.)
+  The ledger holds up to 500 of a thread's adds and removes, and, apart, up to 500 of its reactions (one per comment,
+  emoji and person), so a long thread never stops a Participant's reaction, which only the ledger writes into the
+  stored tab, from being kept. Before, one shared bound of 500 counted all three, and a busy thread's reactions
+  showed live and then vanished.
 - `notice-pin` / `notice-unpin`: one note pinned on a Notice Board, or one taken down by id and its signer's `by`
   ([Social pieces](../009-elements/social-pieces.md) "Notice Board"). A pin whose id the board holds is a replay and a
   no-op; a pin past `NOTES_MAX` changes nothing; an unpin removes the note only while `by` is

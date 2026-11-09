@@ -57,10 +57,10 @@ The room confines a scoped session to its tab (`apps/api/src/room-scope.ts`), bo
 
 - **Outbound**: no op carrying another `tabId` reaches it (element, tab, cursor, selection, avatar, reaction,
   viewport, focus, Q&A), nor a `select` without a `tabId`; `document-meta` is redacted as the REST canvas is.
-  Catch-up replay applies the same filter. Tab-less session tools (polls) and the share and Trash notices still
-  reach it.
+  Catch-up replay applies the same filter. Tab-less session tools (polls), the share and Trash notices, and a nudge
+  addressed to it (it names a person, never a tab) still reach it.
 - **Inbound**: the room drops any op from it that carries another `tabId`, a `select` with no `tabId`, and
-  `document-meta`. Anything unknown fails closed.
+  `document-meta`. A follow and a nudge, which name a person, go through. Anything unknown fails closed.
 - **No rename from a scoped session.** The room drops its `tab-meta` patch that sets or clears `name`, and stamps its
   whole-`tab` op with the stored name (`scopedTabOp` in `apps/api/src/room-scope.ts`), so no receiver takes a new name
   from it. The owner's renames still reach it.

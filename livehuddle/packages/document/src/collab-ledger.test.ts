@@ -205,6 +205,17 @@ describe('reactions in the ledger (docs/specs/012-collaboration/comment-reaction
     expect(Object.values(changed.elements.card!.comments!.reacts!)[0]!.on).toBe(false);
   });
 
+  it("counts a thread's comments and its reactions apart, so a long thread keeps both", () => {
+    const comments = Array.from({ length: 500 }, (_, i) =>
+      delta({ kind: 'comment-add', comment: { ...comment, id: `k${i}` } }),
+    );
+    const busy = ledgerOf([...comments, react('late')]);
+    expect(Object.keys(busy.elements.card!.comments!.reacts!)).toHaveLength(1);
+    const many = Array.from({ length: 500 }, (_, i) => react(`p${i}`));
+    const reacted = ledgerOf([...many, delta({ kind: 'comment-add', comment })]);
+    expect(Object.keys(reacted.elements.card!.comments!.adds)).toEqual(['c1']);
+  });
+
   it("writes a Participant's reactions into the stored tab, and nothing else of the thread", () => {
     const ledger = ledgerOf([react('a'), delta({ kind: 'comment-resolve', resolved: true })]);
     const merged = mergeLedgerAnswersIntoTab(tab([thread()]), ledger);

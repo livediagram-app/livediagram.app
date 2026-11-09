@@ -67,7 +67,8 @@ are not drawn.
   only when `by` is the key its own hello published, and writes it to the stored tab itself, as it writes a
   Participant's answers. A Viewer's is dropped.
 - The room's ledger keeps each person's latest on or off per comment and emoji, so an Editor's save made before a
-  reaction arrived cannot erase it.
+  reaction arrived cannot erase it. It holds up to 500 reactions per thread, counted apart from the thread's comments,
+  so a long thread still keeps them ([Collaboration race hardening](collab-race-hardening.md)).
 - A tab save keeps whatever reactions it carries, cleaned (malformed ones dropped); an Editor may already change
   anything on the canvas.
 - Agents read reactions: the thread listing (`GET .../comments`) carries, per comment, one
