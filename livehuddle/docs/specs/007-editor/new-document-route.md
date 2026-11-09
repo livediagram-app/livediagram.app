@@ -214,14 +214,17 @@ search and the Sync Space to Server switch ([Save Locations → On the start scr
 
 The visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) is the only card the editor shows over
 the canvas. On `sm:` and up it is a centred floating card (max 26rem); below `sm` it fills the viewport, its body
-scrolling between a pinned header and footer. It stacks on the `canvas-modal` rung, beneath the header.
+scrolling between a pinned header and footer. It stacks on the `canvas-modal` rung, beneath the header. Its name field takes at
+most `MAX_PARTICIPANT_NAME_LEN` (120) characters, the participant route's own cap, so a typed name is always one the
+route saves.
 
 ### The empty-canvas hint
 
 The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), shown while the
 active tab has no elements to someone who cannot edit it: an Editor gets the start instead ([Template
 starts](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
-updates live."; a **Participant** is pointed at a sticky, text or an image. It offers no action
+updates live."; a **Participant** reads the same, since it adds nothing ([Share
+roles](../013-workspace/share-roles.md#a-participant-walks)). It offers no action
 of its own: an Editor's empty tab shows its start instead, and **Help** on a desktop. It goes once the
 canvas has content, and a **Close** (×) in its top right corner closes it for good on that tab for this person in
 this browser (a per-browser list of the last 200 closed keys, `livehuddle:v2:empty-card-dismissed` in localStorage,

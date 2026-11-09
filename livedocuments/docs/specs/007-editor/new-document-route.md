@@ -150,7 +150,8 @@ knowing about when adding another.
 - If the pathname's id segment is the build-time placeholder and no `?s=` code is set, the editor route goes to
   `/new` (via `window.location.assign`) and shows the opening screen until the navigation completes.
 - The visitor identity confirmation modal (`IdentityPrompt`, open while `identityPromptOpen`; its chrome flag
-  `identityOnlyScreenOpen`).
+  `identityOnlyScreenOpen`). Its name field takes at most `MAX_PARTICIPANT_NAME_LEN` (120) characters, the participant route's own cap, so a typed
+  name is always one the route saves.
 - Everything else: autosave, room, tab management, document metadata, the Share dialog.
 
 ## `/new` state

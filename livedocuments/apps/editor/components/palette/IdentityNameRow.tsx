@@ -1,3 +1,4 @@
+import { MAX_PARTICIPANT_NAME_LEN } from '@liveworkspace/api-schema/participants';
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
 import { RefreshIcon, HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livedocuments/ui';
 
@@ -41,6 +42,8 @@ export function IdentityNameRow({
         <input
           id="welcome-name"
           value={name}
+          // The participant route's cap: a longer name was refused (400) and never saved.
+          maxLength={MAX_PARTICIPANT_NAME_LEN}
           onChange={(e) => onChangeName(e.target.value)}
           placeholder={participant.name}
           readOnly={nameLocked}
