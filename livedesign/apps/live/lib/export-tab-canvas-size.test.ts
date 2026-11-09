@@ -4,7 +4,7 @@
 // element's last part-pixel row and column, its border and corners there, were cut off.
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livedesign/design';
-import { MAX_EXPORT_CANVAS_SIDE, renderTabToCanvas } from './export-tab';
+import { MAX_EXPORT_CANVAS_AREA, MAX_EXPORT_CANVAS_SIDE, renderTabToCanvas } from './export-tab';
 
 const tab = (width: number, height: number): Tab => ({
   id: 'tab-1',
@@ -25,5 +25,14 @@ describe('renderTabToCanvas size', () => {
     expect([whole.width, whole.height]).toEqual([200, 160]);
     const huge = await renderTabToCanvas(tab(40000.3, 10), { scale: 2, padding: 0 });
     expect(huge.width).toBeLessThanOrEqual(MAX_EXPORT_CANVAS_SIDE);
+  });
+
+  // iOS Safari draws nothing on a canvas past 16.7 MP, however short its sides: an 8000 x 6000 tab at 2x was a
+  // 16000-odd x 12000-odd canvas (over 190 MP) under the side cap, and its PNG came out blank there.
+  it('keeps a big tab under the canvas area limit, with its shape', async () => {
+    const big = await renderTabToCanvas(tab(8000, 6000), { scale: 2 });
+    expect(big.width * big.height).toBeLessThanOrEqual(MAX_EXPORT_CANVAS_AREA);
+    expect(big.width * big.height).toBeGreaterThan(MAX_EXPORT_CANVAS_AREA * 0.99);
+    expect(big.width / big.height).toBeCloseTo(8000 / 6000, 2);
   });
 });

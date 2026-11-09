@@ -61,7 +61,8 @@ Owner / edit-role.
   (id, name, order; no `data`).
 - `GET    /api/documents/:id/tabs/:tabId`: full tab payload (data + everything).
 - `PUT    /api/documents/:id/tabs/:tabId`: upsert a single tab (active edit path).
-- `DELETE /api/documents/:id/tabs/:tabId`: remove a tab.
+- `DELETE /api/documents/:id/tabs/:tabId`: remove a tab. A token (an agent or the CLI) may not remove the document's last tab (`409 last_tab`); the count is
+  checked in the delete itself, so two token deletes at once can't take the last two tabs between them.
 - `PUT    /api/documents/:id`: document-level fields only (rename,
   tab order, shareable). Body
   carries `tabIds: string[]` in
@@ -312,6 +313,9 @@ route, never a save.
 
 - Tab reorder is an `UPDATE document_tabs SET order_index = ?` per
   tab, in one transaction in the document's object. Acceptable for the small tab counts (< 20) we see in practice.
+  Only the tabs the document holds are written, each once (the last place a request names it): a request naming
+  ids the document lacks, or one id many times, writes no more than the document's own tabs, so a body of a million
+  ids can't hold the room up for a statement each.
 
 ## What this does NOT change
 

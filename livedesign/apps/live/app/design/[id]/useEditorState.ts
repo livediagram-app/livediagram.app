@@ -880,6 +880,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Declared with the viewport, further down.
     revealInView: (tabId, ids) => revealChangesetRef.current?.(tabId, ids),
     toast,
+    canUndo: canEdit,
   });
   // Realtime room: WebSocket per shared design (presence + ops). See
   // useRoomConnection.

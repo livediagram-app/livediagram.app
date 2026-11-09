@@ -41,6 +41,8 @@ export function useChangesetFeed(opts: {
   // Brings the named elements of a tab into view (switching to the tab first when needed).
   revealInView: (tabId: string, ids: readonly string[]) => void;
   toast: ReturnType<typeof useToast>;
+  // Whether this session may revert (the api's edit gate): a Viewer or Participant gets Show alone.
+  canUndo: boolean;
 }) {
   const {
     projectId,
@@ -56,16 +58,17 @@ export function useChangesetFeed(opts: {
     refetchTabs,
     revealInView,
     toast,
+    canUndo,
   } = opts;
   const [reveals] = useState<RevealStore>(createRevealStore);
   const toastsRef = useRef(new Map<string, ChangesetToast>());
   // Changesets this editor is undoing: the reverts they relay back raise no toast of their own.
   const undoingRef = useRef(new Set<string>());
   // The latest props, for the toast's buttons, which outlive the render that made them.
-  const latest = useRef({ projectId, selfId, toast, revealInView });
+  const latest = useRef({ projectId, selfId, toast, revealInView, canUndo });
   useEffect(() => {
-    latest.current = { projectId, selfId, toast, revealInView };
-  }, [projectId, selfId, toast, revealInView]);
+    latest.current = { projectId, selfId, toast, revealInView, canUndo };
+  }, [projectId, selfId, toast, revealInView, canUndo]);
 
   // Another project starts clean.
   useEffect(() => {
@@ -165,6 +168,7 @@ type ToastRefs = {
     selfId: string;
     toast: ReturnType<typeof useToast>;
     revealInView: (tabId: string, ids: readonly string[]) => void;
+    canUndo: boolean;
   }>;
   toastsRef: MutableRefObject<Map<string, ChangesetToast>>;
   undoingRef: MutableRefObject<Set<string>>;
@@ -189,12 +193,17 @@ function changesetToastActions(refs: ToastRefs) {
             refs.latest.current.revealInView(entry.tabId, entry.touched);
           },
         },
-        {
-          label: 'Undo',
-          ariaLabel: `Undo ${entry.name}'s changes`,
-          disabled: busy,
-          onSelect: () => void undo(entry),
-        },
+        // The api refuses a revert to a session that can't edit: no button that can only fail.
+        ...(refs.latest.current.canUndo
+          ? [
+              {
+                label: 'Undo',
+                ariaLabel: `Undo ${entry.name}'s changes`,
+                disabled: busy,
+                onSelect: () => void undo(entry),
+              },
+            ]
+          : []),
       ],
     });
   };
