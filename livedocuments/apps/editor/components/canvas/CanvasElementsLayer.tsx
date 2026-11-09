@@ -286,6 +286,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     gridFor: (els) => gridTracker.gridFor(els),
     arrowLabels,
     stackedIds,
+    project: props.projectElement,
   });
   const shownOrder = useMemo(
     () => (previewStructure ? shownWithOverlay(ordered, previewStructure) : ordered),

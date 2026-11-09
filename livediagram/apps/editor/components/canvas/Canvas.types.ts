@@ -75,6 +75,10 @@ export type CanvasProps = {
   tabFont?: string;
   // The tab's finish (docs/specs/008-canvas/finish.md); undefined is Flexible.
   tabFinish?: Finish;
+  // One element as the canvas draws `elements` (the host's stock-colour projector): an element a drag adds is drawn
+  // through it, so a copy in hand looks as it will once dropped (docs/specs/008-canvas/drag-preview.md "A dragged
+  // element keeps its look"). Absent, an added element is drawn as stored.
+  projectElement?: (el: Element) => Element;
   mainRef: Ref<HTMLElement>;
   setViewportOffset: (offset: { x: number; y: number }) => void;
   // The view itself is not a prop: it lives in the viewport store, read where it shows

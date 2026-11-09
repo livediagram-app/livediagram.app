@@ -362,6 +362,7 @@ export function EditorCanvasHost() {
             }}
             setViewportOffset={setViewportOffset}
             elements={canvasElements}
+            projectElement={projectStockColours.one}
             tabLayers={activeTab.layers}
             layerInertIds={layerInertIds}
             shiftDupGhostIds={shiftDupGhostIds}

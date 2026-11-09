@@ -115,3 +115,16 @@ describe('labels against the drawn canvas', () => {
     expect(project(board, 'light', undefined, { stored: '#ffffff', drawn: '#ffffff' })).toBe(board);
   });
 });
+
+// docs/specs/008-canvas/drag-preview.md "A dragged element keeps its look": what a drag adds is drawn through `one`.
+describe('one', () => {
+  it('draws one element as the last board was drawn, cached, and as stored before any board', () => {
+    const project = createStockColourProjector();
+    const a = stroke({ penColour: 'blue' });
+    expect(project.one(a)).toBe(a);
+    project([], 'dark');
+    const once = project.one(a);
+    expect(strokeColorOf(once)).toBe(penColourHex('blue', 'dark'));
+    expect(project.one(a)).toBe(once);
+  });
+});

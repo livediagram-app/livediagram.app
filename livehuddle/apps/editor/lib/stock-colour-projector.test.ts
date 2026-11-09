@@ -112,3 +112,16 @@ describe('labels against the drawn canvas', () => {
 
 // docs/specs/011-theme/light-and-dark.md "A page's own paper": a layout placed on a light slide in Steel keeps its
 // dark words in dark chrome, rather than the dark half's light ink sinking into the slide.
+
+// docs/specs/008-canvas/drag-preview.md "A dragged element keeps its look": what a drag adds is drawn through `one`.
+describe('one', () => {
+  it('draws one element as the last board was drawn, cached, and as stored before any board', () => {
+    const project = createStockColourProjector();
+    const a = stroke({ penColour: 'blue' });
+    expect(project.one(a)).toBe(a);
+    project([], 'dark');
+    const once = project.one(a);
+    expect(strokeColorOf(once)).toBe(penColourHex('blue', 'dark'));
+    expect(project.one(a)).toBe(once);
+  });
+});
