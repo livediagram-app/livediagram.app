@@ -30,8 +30,8 @@ One function, `(url) => { provider, embedUrl, posterUrl?, label } | null`.
 Figma takes the **original URL as a query parameter** rather than a rewritten
 path, so anything Figma accepts keeps working without this having to know
 Figma's file-URL grammar. Google's `/preview` is its documented read-only embed
-form, and the path check keeps a Google **Form**, which is not a project,
-from being treated as one.
+form, and the path check keeps a Google **Form**, which is not a Doc, Sheet or
+Slides deck, from being treated as one.
 
 Host matching is exact after stripping `www.`, so `evil-vimeo.com` and
 `loom.com.evil.test` are not providers. Non-http schemes are rejected before
