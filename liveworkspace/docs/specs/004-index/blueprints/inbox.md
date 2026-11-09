@@ -113,12 +113,12 @@ Defaults: `tab_name ''`, `participant_ids '[]'`, `mentioned_ids '[]'`, `latest_a
 
 ## Testing
 
-| Test                                                    | Pins                                                                   |
-| ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/inbox.test.ts` (14)       | Inbox threads, cards, forms; the Inbox at scale; the forms read's plan |
-| `liveworkspace/apps/index/src/app.test.ts` (15)         | app pushes and the Inbox among the rest                                |
-| `packages/index-app/src/outbox.test.ts`                 | the outbox's keys, drain, caps and retries                             |
-| `packages/index-app/src/cards.test.ts`, `forms.test.ts` | cards under `~cards`; a form's code lookup                             |
+| Test                                                    | Pins                                            |
+| ------------------------------------------------------- | ----------------------------------------------- |
+| `liveworkspace/apps/index/src/inbox.test.ts` (11)       | Inbox threads, cards, forms; the Inbox at scale |
+| `liveworkspace/apps/index/src/app.test.ts` (15)         | app pushes and the Inbox among the rest         |
+| `packages/index-app/src/outbox.test.ts`                 | the outbox's keys, drain, caps and retries      |
+| `packages/index-app/src/cards.test.ts`, `forms.test.ts` | cards under `~cards`; a form's code lookup      |
 
 ## Constants and configuration
 

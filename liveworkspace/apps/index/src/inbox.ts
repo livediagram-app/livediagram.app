@@ -138,13 +138,13 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
   // by owner and by scope (the items indexes), so the read never walks other people's forms: the two item reads are
   // their own union, because with the OR in one WHERE SQLite walked every form in the index and looked up its item.
   const forms = {
-    sql: `SELECT f.app, f.item_id, i.title AS item_title, i.team_id AS item_team_id, f.tab_id, f.heading, f.board_tab_id,
+    sql: `SELECT f.app, f.item_id, mine.title AS item_title, mine.team_id AS item_team_id, f.tab_id, f.heading, f.board_tab_id,
         f.responses - COALESCE(r.seen, 0) AS unseen, f.latest_at
       FROM (SELECT id, title, team_id FROM items WHERE owner_id = ? AND team_id IS NULL AND trashed_at IS NULL
             UNION
             SELECT id, title, team_id FROM items
-            WHERE scope IN (SELECT value FROM json_each(?)) AND trashed_at IS NULL) i
-      JOIN collab_forms f ON f.item_id = i.id
+            WHERE scope IN (SELECT value FROM json_each(?)) AND trashed_at IS NULL) mine
+      JOIN collab_forms f ON f.item_id = mine.id
       LEFT JOIN collab_form_reads r ON r.person_id = ? AND r.item_id = f.item_id AND r.tab_id = f.tab_id
       WHERE f.responses > COALESCE(r.seen, 0) ${app ? 'AND f.app = ?' : ''}
       ORDER BY f.latest_at DESC LIMIT ?`,

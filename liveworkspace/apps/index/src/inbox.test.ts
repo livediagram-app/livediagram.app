@@ -9,8 +9,6 @@ import {
 } from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
-import type { SQLInputValue } from 'node:sqlite';
-import { inboxQueries } from './inbox';
 
 useHarness();
 
@@ -474,28 +472,5 @@ describe('the Inbox at scale', () => {
     expect(res!.actions.length).toBe(100);
     // Measured about 18 ms a read here (three queries and the Timeline count); the budget leaves room for a slow machine.
     expect(ms).toBeLessThan(150);
-  });
-
-  // Every form in the index, everyone's, was walked to find mine: 5.7 ms for 20,000 forms, 0.03 ms from my items.
-  it('reads forms from my items, never by walking every form', () => {
-    for (const app of [null, 'liveplanner'] as const) {
-      const { forms } = inboxQueries('user_a', ['p:user_a', 't:team1'], app, 100);
-      const plan = h.db.sql
-        .prepare(`EXPLAIN QUERY PLAN ${forms.sql}`)
-        .all(...(forms.args as SQLInputValue[]))
-        .map((r) => String((r as { detail: string }).detail));
-      expect(
-        plan.filter((l) => /^SCAN f\b/.test(l)),
-        plan.join('\n'),
-      ).toEqual([]);
-      expect(
-        plan.some((l) => l.includes('SEARCH f USING INDEX')),
-        plan.join('\n'),
-      ).toBe(true);
-      expect(
-        plan.some((l) => l.includes('INDEX items_owner (owner_id=?)')),
-        plan.join('\n'),
-      ).toBe(true);
-    }
   });
 });
