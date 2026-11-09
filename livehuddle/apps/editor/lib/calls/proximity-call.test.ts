@@ -5,6 +5,7 @@ import {
   callMedia,
   callSelf,
   noteLetSpeak,
+  noteRoomDropped,
   receiveCallOp,
   receiveLetSpeak,
   receiveStopShare,
@@ -1229,6 +1230,50 @@ describe('ProximityCall with a stage', () => {
     letSpeak('speaker', false);
     expect(callSelf().hand).toBe('down');
     expect(hands(sent).at(-1)).toEqual({ kind: 'avatar-hand', raised: false });
+    call.stop();
+  });
+
+  it('keeps speaking when whoever let it speak reconnects as the same person, and only then', async () => {
+    setCallLevels([{ id: 'speaker', role: 'edit', key: 'K-ed' }]);
+    const { call, sent } = makeCall();
+    await call.start();
+    const hall = { x: 320, y: 600 };
+    call.update(hallScene(hall, [['speaker', 600, 120]]));
+    call.raiseHand();
+    letSpeak('speaker', true);
+    expect(callSelf().hand).toBe('speaking');
+    // The hand names the person too, so every browser can follow them.
+    expect(hands(sent).at(-1)).toEqual({
+      kind: 'avatar-hand',
+      raised: true,
+      letSpeak: 'speaker',
+      letSpeakKey: 'K-ed',
+    });
+    // Their socket drops and comes back: a new presence id with the same key, still on the stage.
+    setCallLevels([{ id: 'speaker2', role: 'edit', key: 'K-ed' }]);
+    call.update(hallScene(hall, [['speaker2', 600, 120]]));
+    expect(callSelf()).toMatchObject({ hand: 'speaking', stage: 'speaker' });
+    // Someone else takes their place instead: the audience again, the hand still up.
+    setCallLevels([{ id: 'other', role: 'edit', key: 'K-other' }]);
+    call.update(hallScene(hall, [['other', 600, 120]]));
+    expect(callSelf().hand).toBe('raised');
+    call.stop();
+  });
+
+  it('lowers your own hand when your own room connection drops, as the room did for everyone', async () => {
+    setCallLevels([{ id: 'speaker', role: 'edit' }]);
+    const { call, sent } = makeCall();
+    await call.start();
+    call.update(hallScene({ x: 320, y: 600 }, [['speaker', 600, 120]]));
+    call.raiseHand();
+    expect(callSelf().hand).toBe('raised');
+    noteRoomDropped();
+    expect(callSelf().hand).toBe('down');
+    expect(hands(sent).at(-1)).toEqual({ kind: 'avatar-hand', raised: false });
+    // With no hand up, a drop sends nothing.
+    const before = sent.length;
+    noteRoomDropped();
+    expect(sent.length).toBe(before);
     call.stop();
   });
 

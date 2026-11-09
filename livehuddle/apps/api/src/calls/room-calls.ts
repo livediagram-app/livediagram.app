@@ -16,6 +16,7 @@ import {
   hearingVerdict,
   mayLetSpeakNow,
   type HearingVerdict,
+  type Letter,
   type HearingWorld,
   type Placed,
   type TabCalls,
@@ -27,11 +28,15 @@ const SEAT_ID_MAX = 64;
 /** A room that has just started may not know where everyone stands: for this long, an unknown position is allowed. */
 export const ROOM_WAKE_GRACE_MS = 60_000;
 
-/** A connected session as the calls read it: its presence, its stamped role, and its call's session once proven. */
+/**
+ * A connected session as the calls read it: its presence, its stamped role, its call's session once proven, and the
+ * roster key its hello claimed (the same person across a reconnect).
+ */
 export type CallSessionHolder = {
   readonly presenceId: string;
   readonly role: unknown;
   readonly callSession?: string | null;
+  readonly key?: string | null;
 };
 
 export type RoomCallsHost = {
@@ -72,7 +77,7 @@ export class RoomCalls {
   private readonly startedAt: number;
   private readonly placed = new Map<string, Placed>();
   private readonly raised = new Set<string>();
-  private readonly letBy = new Map<string, string>();
+  private readonly letBy = new Map<string, Letter>();
   // A sharer → the screen they last said they share (its token), and → the one an Editor stopped.
   private readonly screens = new Map<string, string>();
   private readonly stopped = new Map<string, string>();
@@ -123,13 +128,17 @@ export class RoomCalls {
 
   /**
    * Whether `from` may send this let-speak (or Done): an Editor anywhere, or someone the room places on a stage that
-   * lets them speak (#495). An allowed one is remembered for the hearing check while the hand stays up.
+   * lets them speak (#495). An allowed one is remembered for the hearing check while the hand stays up, with the
+   * sender's roster key, so their reconnect keeps the hand speaking.
    */
   letSpeak(from: string, op: unknown): boolean {
     const parsed = parseAvatarLetSpeak(op);
-    if (!parsed || !mayLetSpeakNow(this.world(), from)) return false;
+    const world = this.world();
+    if (!parsed || !mayLetSpeakNow(world, from)) return false;
     if (!parsed.on) this.letBy.delete(parsed.targetId);
-    else if (this.raised.has(parsed.targetId)) this.letBy.set(parsed.targetId, from);
+    else if (this.raised.has(parsed.targetId)) {
+      this.letBy.set(parsed.targetId, { id: from, key: world.keys.get(from) ?? null });
+    }
     return true;
   }
 
@@ -167,13 +176,18 @@ export class RoomCalls {
 
   private world(): HearingWorld {
     const levels = new Map<string, CallLevel>();
-    for (const s of this.host.sessions()) levels.set(s.presenceId, parseStoredLevel(s.role));
+    const keys = new Map<string, string>();
+    for (const s of this.host.sessions()) {
+      levels.set(s.presenceId, parseStoredLevel(s.role));
+      if (s.key) keys.set(s.presenceId, s.key);
+    }
     // One read of a tab per answer, however many tracks ask about it.
     const read = new Map<string, TabCalls>();
     return {
       placed: this.placed,
       levels,
       letBy: this.letBy,
+      keys,
       tab: (tabId) => {
         let calls = read.get(tabId);
         if (!calls) {

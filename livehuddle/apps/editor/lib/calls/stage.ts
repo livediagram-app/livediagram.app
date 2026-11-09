@@ -36,6 +36,30 @@ export function mayLetSpeak(
   return !!s && mayTakeStage(level, s.speakers);
 }
 
+/** Who let a hand speak: their presence id when they did, and their roster key (the person), when known. */
+export type Letter = { readonly id: string; readonly key: string | null };
+
+/**
+ * Whether whoever let a hand speak still may, following the person rather than the connection: their presence id
+ * passes `mayLetSpeak`, or (once it does not, as after their reconnect) another presence on the roster with their key
+ * does. The roster is scanned only when the id itself fails, so a letter who stays connected costs nothing more.
+ */
+export function letterMay(
+  letter: Letter,
+  walkers: ReadonlyMap<string, Point>,
+  levels: ReadonlyMap<string, AccessLevel>,
+  stages: readonly CallStage[],
+  keys: ReadonlyMap<string, string>,
+): boolean {
+  if (mayLetSpeak(letter.id, walkers, levels, stages)) return true;
+  if (letter.key === null) return false;
+  for (const [id, key] of keys) {
+    if (key === letter.key && id !== letter.id && mayLetSpeak(id, walkers, levels, stages))
+      return true;
+  }
+  return false;
+}
+
 /** Whether you yourself may let a raised hand speak: an Editor, or standing on a stage that lets you speak. */
 export function mayLetSpeakSelf(
   self: Point | null,
@@ -47,12 +71,13 @@ export function mayLetSpeakSelf(
   return !!s && mayTakeStage(selfLevel, s.speakers);
 }
 
-/** A raised hand as the call reads it: who let it speak, or null. */
-type HandSource = { readonly letSpeak: string | null };
+/** A raised hand as the call reads it: who let it speak (or null), and their roster key (or null). */
+type HandSource = { readonly letSpeak: string | null; readonly letSpeakKey?: string | null };
 
 /**
- * The walkers let speak now: each whose hand names someone who still may let speak, or whom this browser let speak
- * (`mine`, since a browser cannot recognise its own presence id) while it still may (`selfMay`).
+ * The walkers let speak now: each whose hand names someone who still may let speak (`letterMay`: the person, by
+ * `keys`, across their reconnect), or whom this browser let speak (`mine`, since a browser cannot recognise its own
+ * presence id) while it still may (`selfMay`).
  */
 export function letSpeakers(
   hands: ReadonlyMap<string, HandSource>,
@@ -61,12 +86,16 @@ export function letSpeakers(
   stages: readonly CallStage[],
   mine: ReadonlySet<string>,
   selfMay: boolean,
+  keys: ReadonlyMap<string, string> = new Map(),
 ): ReadonlySet<string> {
   const out = new Set<string>();
   for (const [id, hand] of hands) {
     if (!walkers.has(id)) continue;
     if (selfMay && mine.has(id)) out.add(id);
-    else if (hand.letSpeak !== null && mayLetSpeak(hand.letSpeak, walkers, levels, stages))
+    else if (
+      hand.letSpeak !== null &&
+      letterMay({ id: hand.letSpeak, key: hand.letSpeakKey ?? null }, walkers, levels, stages, keys)
+    )
       out.add(id);
   }
   return out;

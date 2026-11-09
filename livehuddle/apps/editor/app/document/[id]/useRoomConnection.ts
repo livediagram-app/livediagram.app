@@ -54,6 +54,7 @@ import { joinRefusedBecauseTrashed } from './room-refusal';
 import { receivePeerSay, resetSpeechBubbles } from '@liveworkspace/avatar/speech-store';
 import {
   forgetCallPeer,
+  noteRoomDropped,
   pruneCallPeers,
   receiveLetSpeak,
   receiveStopShare,
@@ -623,6 +624,9 @@ export function useRoomConnection(opts: {
       onRoomFull: () => roomFull(),
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
+      // Our own socket dropped (it reconnects as a new presence): the room lowered our raised hand for everyone, so
+      // the Call dock lowers it too (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand").
+      onClose: () => noteRoomDropped(),
     };
     // Every session joins through a one-time room ticket (docs/specs/015-api/api.md "Realtime model"),
     // minted over REST, where the access gates already read the index's grant (and through it the share code,

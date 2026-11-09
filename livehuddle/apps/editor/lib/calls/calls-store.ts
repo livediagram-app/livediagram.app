@@ -22,13 +22,16 @@ import { pruneHands, resetHands, setCallLevels, setHand } from './calls-hands-st
 
 export {
   callHands,
+  callKeys,
   callLetByMe,
   callLevels,
   HANDS_MAX,
   noteLetSpeak,
+  noteRoomDropped,
   onCallHands,
   onCallLevels,
   onLetSpeak,
+  onRoomDropped,
   receiveLetSpeak,
   setCallLevels,
   useCallHands,
@@ -197,7 +200,16 @@ function peerOf(id: string): CallPeer {
 export function receiveCallOp(from: string, op: unknown): void {
   const hand = parseAvatarHand(op);
   if (hand) {
-    setHand(from, hand.raised ? { tabId: hand.tabId, letSpeak: hand.letSpeak ?? null } : null);
+    setHand(
+      from,
+      hand.raised
+        ? {
+            tabId: hand.tabId,
+            letSpeak: hand.letSpeak ?? null,
+            letSpeakKey: hand.letSpeakKey ?? null,
+          }
+        : null,
+    );
     return;
   }
   const voice = parseAvatarVoice(op);

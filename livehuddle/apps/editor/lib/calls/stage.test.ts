@@ -16,6 +16,7 @@ import {
   barringStage,
   callStages,
   letSpeakers,
+  letterMay,
   mayLetSpeak,
   mayLetSpeakSelf,
   mayTakeStage,
@@ -349,6 +350,36 @@ describe('raised hands let speak', () => {
       'c',
     ]);
     expect([...letSpeakers(hands, walkers, levels, stages, new Set(['c']), false)]).toEqual(['a']);
+  });
+
+  it('follows whoever let a hand speak as a person: their reconnected session still vouches', () => {
+    // `ed` let a speak, then reconnected as `ed2` (same key); `ed` is gone from the roster.
+    const walkers = new Map<string, Point>([
+      ['a', hall],
+      ['ed2', onStage],
+      ['pt', back],
+    ]);
+    const levels = new Map<string, AccessLevel>([
+      ['ed2', 'edit'],
+      ['pt', 'participate'],
+    ]);
+    const hands = new Map([['a', { letSpeak: 'ed', letSpeakKey: 'K-ed' }]]);
+    const none = new Set<string>();
+    expect([
+      ...letSpeakers(hands, walkers, levels, stages, none, false, new Map([['ed2', 'K-ed']])),
+    ]).toEqual(['a']);
+    // Nobody with that key on the roster, or only someone who may not let speak: the audience again.
+    expect([
+      ...letSpeakers(hands, walkers, levels, stages, none, false, new Map([['ed2', 'K-x']])),
+    ]).toEqual([]);
+    expect([
+      ...letSpeakers(hands, walkers, levels, stages, none, false, new Map([['pt', 'K-ed']])),
+    ]).toEqual([]);
+    // No key on the hand (an older editor): by presence id alone.
+    expect(
+      letterMay({ id: 'ed', key: null }, walkers, levels, stages, new Map([['ed2', 'K-ed']])),
+    ).toBe(false);
+    expect(letterMay({ id: 'ed2', key: null }, walkers, levels, stages, new Map())).toBe(true);
   });
 
   it('makes a hand let speak a speaker heard by the whole tab, unseen, adding no audience', () => {
