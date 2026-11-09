@@ -13,7 +13,8 @@ renumber by hand.
 
 ## The element
 
-- **The number is the label**, at most 3 characters, so "1", "12" and "3a" all fit. Double-click edits it.
+- **The number is the label**, at most 3 characters (`STEP_LABEL_MAX`), so "1", "12" and "3a" all fit. Double-click
+  edits it, and the editor stops taking text at the cap, as a badge's does ([The badge](badge.md)).
 - **A new step takes the next number**: one more than the highest whole number among the tab's steps, or 1 when there
   are none. It does not renumber itself afterwards: moving a step keeps its number, and deleting one leaves the
   others as they are, because a number that changes under you mid-edit is worse than a gap.

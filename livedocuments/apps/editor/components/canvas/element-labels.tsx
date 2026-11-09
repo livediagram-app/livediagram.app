@@ -14,13 +14,16 @@
 // BoxedElementView is split here in the same change.
 
 import {
+  BADGE_LABEL_MAX,
   hasRichFormatting,
+  isChip,
   labelFontPx,
   labelTextScale,
   type BoxedElement,
   type TextAlignX,
   type TextAlignY,
   type TextRun,
+  STEP_LABEL_MAX,
   type TextSize,
 } from '@livedocuments/document';
 import { RichTextEditor } from '@/components/canvas/RichTextEditor';
@@ -147,6 +150,9 @@ export function renderLabel(
         onCancel={onCancelEdit}
         onSetAlign={onSetAlign}
         inline={inlineIcon}
+        maxLength={
+          isChip(element) ? (element.shape === 'badge' ? BADGE_LABEL_MAX : STEP_LABEL_MAX) : undefined
+        }
       />
     );
   }
