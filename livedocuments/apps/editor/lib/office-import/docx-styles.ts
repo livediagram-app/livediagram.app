@@ -23,6 +23,8 @@ export type DocxStyles = {
   numPrOf(styleId: string | undefined): XmlElement | undefined;
   /** The run properties of a character style (its own, then what it is based on). */
   runStyle(styleId: string | undefined): XmlElement[];
+  /** Whether a paragraph style is a table of contents' title ("TOC Heading"). */
+  isTocHeading(styleId: string | undefined): boolean;
 };
 
 // Fonts that make a run code (D64): any named "mono", or one of these.
@@ -125,6 +127,10 @@ export function readStyles(root: XmlElement | undefined): DocxStyles {
     numPrOf(styleId) {
       for (const s of chain(styleId)) if (s.numPr) return s.numPr;
       return undefined;
+    },
+    isTocHeading(styleId) {
+      const name = styleId === undefined ? undefined : (byId.get(styleId)?.name ?? styleId);
+      return name !== undefined && /^toc\s?heading$/i.test(name.trim());
     },
     runStyle(styleId) {
       return chain(styleId)

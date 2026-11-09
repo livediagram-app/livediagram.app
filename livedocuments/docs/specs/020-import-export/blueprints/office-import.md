@@ -143,6 +143,12 @@ Follows the spec's table. Precisely:
   `w:del`, `w:moveFrom`, `w:proofErr`, bookmarks, permissions.
 - Fields: a stack across the body; between `begin` and `separate` the run text is instructions, never shown;
   a `HYPERLINK "address"` field links its result. `w:fldSimple`'s `w:instr` the same.
+- Contents: a `TOC` field outside a table and without a `\c` or `\a` switch (those list captions, a table of
+  figures, whose result stays as written) becomes, at its `separate`, a `toc` block whose depth is its `\o "1-N"`
+  switch's N clamped to 1..3 (none: 3); until its `end`, everything in its result (entries, page numbers, links,
+  pictures) is left out, the block drawing its own entries with the article's page numbers. A paragraph in the
+  `TOC Heading` style (by name, else id) holding no field character is left out: the block draws its own
+  "Contents".
 - Breaks: `w:br` `type="page"` ends the paragraph and adds a page break (the rest continues as a new paragraph of
   the same style); `w:pageBreakBefore` adds one before the paragraph; other `w:br` and `w:cr` are `\n`; `w:tab`
   a space; `w:noBreakHyphen` `-`.

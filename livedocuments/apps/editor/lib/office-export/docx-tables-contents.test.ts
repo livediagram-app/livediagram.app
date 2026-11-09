@@ -138,6 +138,26 @@ describe('Word export: contents', () => {
     expect(parts.get('word/styles.xml')).toContain('w:styleId="TOC3"');
   });
 
+  it('comes back through Word import as a contents block, not Word’s entries and pages', async () => {
+    const { bytes } = await exported(
+      blocks,
+      undefined,
+      new Map([
+        ['h-a', 1],
+        ['h-b', 3],
+      ]),
+    );
+    const read = await readDocx(await openOfficePackage(bytes, 'word'));
+    expect(
+      read.blocks.map((b) => (b.type === 'paragraph' ? `${b.style}:${b.runs[0]?.text}` : b)),
+    ).toEqual([
+      expect.objectContaining({ type: 'toc', depth: 2 }),
+      'h1:Overview',
+      'h2:Detail',
+      'h3:Too deep',
+    ]);
+  });
+
   it('leaves the page numbers to Word when no editor laid the article out', async () => {
     const { xml } = await exported(blocks);
     expect(xml).not.toContain('<w:tab/>');
