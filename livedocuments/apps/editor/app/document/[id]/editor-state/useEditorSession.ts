@@ -10,7 +10,7 @@ import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import type { Participant } from '@/lib/identity';
 import { useDocumentList } from '@/hooks/persistence/useDocumentList';
-import { useDocumentShareState } from '@/hooks/persistence/useDocumentShareState';
+import { useDocumentShareState } from '@liveworkspace/workbench/hooks/persistence/useDocumentShareState';
 import { useDocumentTrashed } from '../useDocumentTrashed';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePresenceState } from '../usePresenceState';

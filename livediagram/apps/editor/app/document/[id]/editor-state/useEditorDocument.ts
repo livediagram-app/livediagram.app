@@ -1,7 +1,7 @@
 'use client';
 
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
-import { surfaceFlags, type EditorSurface } from '../editor-surface';
+import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { useCallback, useRef, useState } from 'react';
 import { type Tab } from '@livediagram/document';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';

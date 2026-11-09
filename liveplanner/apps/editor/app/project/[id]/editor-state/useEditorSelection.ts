@@ -1,5 +1,5 @@
 import { useEditorUiState } from '../editor-ui-state';
-import { useTabScope } from '../useTabScope';
+import { useTabScope } from '@liveworkspace/workbench/hooks/editor/useTabScope';
 import type { EditorEnvSlice } from './useEditorEnv';
 
 // A slice of the editor's state, composed by useEditorState in a fixed order (docs/development/architecture.md

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEditorUiState } from '../editor-ui-state';
-import { useTabScope } from '../useTabScope';
+import { useTabScope } from '@liveworkspace/workbench/hooks/editor/useTabScope';
 import type { EditorDocumentSlice } from './useEditorDocument';
 
 // The active tab and the selection (single, multi, editing, format source), guarded by a tab-scoped share

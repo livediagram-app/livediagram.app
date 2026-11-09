@@ -1,6 +1,6 @@
 'use client';
 
-import type { EditorSurface } from './editor-surface';
+import type { EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { useEditorDocument } from './editor-state/useEditorDocument';
 import { useEditorUndoState } from './editor-state/useEditorUndoState';
 import { useEditorSelection } from './editor-state/useEditorSelection';

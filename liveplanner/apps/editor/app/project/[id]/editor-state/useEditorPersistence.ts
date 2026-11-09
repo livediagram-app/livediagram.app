@@ -1,5 +1,5 @@
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
-import { useTabRevisions } from '../useTabRevisions';
+import { useTabRevisions } from '@liveworkspace/workbench/hooks/editor/useTabRevisions';
 import { useRef, useLayoutEffect, useEffect } from 'react';
 import { apiSaveSelf } from '@/lib/api-client';
 import { autosaveReadOnly } from '../editor-page-helpers';

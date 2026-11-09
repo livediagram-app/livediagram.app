@@ -1,6 +1,6 @@
 'use client';
 
-import type { EditorSurface } from './editor-surface';
+import type { EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import type { EditorLate } from './editor-state/editor-late';
 import { buildEditorView } from './editor-state/editor-view';
 import { useEditorEnv } from './editor-state/useEditorEnv';

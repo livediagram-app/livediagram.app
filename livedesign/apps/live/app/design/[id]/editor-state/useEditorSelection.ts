@@ -1,5 +1,5 @@
 import { useEditorUiState } from '../editor-ui-state';
-import { useTabScope } from '../useTabScope';
+import { useTabScope } from '@liveworkspace/workbench/hooks/editor/useTabScope';
 import type { EditorDocument } from './useEditorDocument';
 
 // The selection and the active tab: the tab-scoped share session's one tab, and the ephemeral selection / edit

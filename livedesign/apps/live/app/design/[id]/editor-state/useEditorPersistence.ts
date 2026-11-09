@@ -1,6 +1,6 @@
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { setOwnPictureShown } from '@/lib/own-picture';
-import { useTabRevisions } from '../useTabRevisions';
+import { useTabRevisions } from '@liveworkspace/workbench/hooks/editor/useTabRevisions';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Tab } from '@livedesign/design';
 import { apiSaveSelf } from '@/lib/api-client';

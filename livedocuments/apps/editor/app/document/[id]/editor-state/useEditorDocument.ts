@@ -1,5 +1,5 @@
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
-import { surfaceFlags, type EditorSurface } from '../editor-surface';
+import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { stampNewElementLayers, type Tab } from '@livedocuments/document';
 import { settleChipsInTabs } from '@/lib/settle-tabs';

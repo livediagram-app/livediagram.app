@@ -1,5 +1,5 @@
 import { useWorkbenchProjectSession } from '@/components/providers/workbench-session-context';
-import { surfaceFlags, type EditorSurface } from '../editor-surface';
+import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import type { Tab } from '@liveplanner/project';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { createTab } from '../editor-page-helpers';

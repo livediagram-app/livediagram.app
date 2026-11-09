@@ -1,6 +1,6 @@
 'use client';
 
-import type { EditorSurface } from './editor-surface';
+import type { EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { editorView } from './editor-state/editor-view';
 import { useEditorArticles } from './editor-state/useEditorArticles';
 import { useEditorCollaboration } from './editor-state/useEditorCollaboration';

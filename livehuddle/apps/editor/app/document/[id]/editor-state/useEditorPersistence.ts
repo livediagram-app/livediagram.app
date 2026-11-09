@@ -6,7 +6,7 @@ import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { writeUserPreferences } from '@/lib/user-preferences';
 import { apiSaveSelf } from '@/lib/api-client';
 import { useDocumentList } from '@/hooks/persistence/useDocumentList';
-import { useDocumentShareState } from '@/hooks/persistence/useDocumentShareState';
+import { useDocumentShareState } from '@liveworkspace/workbench/hooks/persistence/useDocumentShareState';
 import { autosaveReadOnly } from '../editor-page-helpers';
 import { useSyncInPlace } from '../useSyncInPlace';
 import { useTakeOfflineInPlace } from '../useTakeOfflineInPlace';
