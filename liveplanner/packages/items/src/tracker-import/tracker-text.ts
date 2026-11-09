@@ -122,6 +122,8 @@ const PRIORITY_WORDS: Readonly<Record<string, Priority>> = {
   critical: 'urgent',
   blocker: 'urgent',
   high: 'high',
+  // Jira Server's and Data Center's default scheme: Blocker, Critical, Major, Minor, Trivial.
+  major: 'high',
   medium: 'medium',
   normal: 'medium',
   low: 'low',

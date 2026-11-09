@@ -107,7 +107,8 @@ Each card keeps, where the source has them:
 | Comments    | its comment actions                     |                                       | every Comment column                                                                       |                                                      |
 | New fields  | Members (Person, holds several)         | Projects (Text)                       | Issue Key (Text), Issue Type (Choice), Reporter (Person), Sprint (Text), Components (Text) | ID (Text), Project (Text), Cycle (Text), Team (Text) |
 
-- **Priority**: Jira's Highest is Urgent and Lowest is Low; Linear's "No priority" and anything else leave it empty;
+- **Priority**: Jira's Highest is Urgent and Lowest is Low (on Jira Server and Data Center, Blocker and Critical are
+  Urgent, Major is High, Minor and Trivial are Low); Linear's "No priority" and anything else leave it empty;
   a Trello label named Urgent, High, Medium or Low (case aside) is the priority rather than a label.
 - **Dates** are kept as days (YYYY-MM-DD) from ISO 8601, Jira's `31/Oct/26` (`dd/MMM/yy`, with or without a time)
   and the day-first dates Import CSV reads; a date that is no real day is left empty.
@@ -147,7 +148,8 @@ Each card keeps, where the source has them:
 
 liveplanner takes no uploads from an import (agents and CSV can't set Attachments). Each attachment's name and link
 are added to the end of the card's description under an **Attachments** line ("- design.png: https://…"), so the file
-is a click away; one without an `http` or `https` link is left out and counted.
+is a click away; one without an `http` or `https` link is left out and counted. A Jira attachment's name may hold a
+`;` of its own (`notes;v2.txt`): its link is the cell's last part that is one, and the name all between.
 
 ## The preview
 

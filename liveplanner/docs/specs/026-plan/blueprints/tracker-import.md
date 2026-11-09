@@ -39,7 +39,7 @@ Asana, Jira or Linear export, planning what it makes, and writing it from the ed
 - `httpLink(raw)`: the trimmed string when `new URL()` reads it with protocol `http:` or `https:`, else undefined.
 - `trackerDay(raw)`: `cardDateOf` (board-csv.ts), else Jira's `d/MMM/yy` or `d/MMM/yyyy` (an optional time after a
   space; English month abbreviations), else the date part of an ISO 8601 instant; undefined when none or no real day.
-- `trackerPriority(raw)`: `statusKey`: `urgent`, `highest`, `critical`, `blocker` → `urgent`; `high` → `high`;
+- `trackerPriority(raw)`: `statusKey`: `urgent`, `highest`, `critical`, `blocker` → `urgent`; `high`, `major` → `high`;
   `medium`, `normal` → `medium`; `low`, `lowest`, `minor`, `trivial` → `low`; anything else undefined.
 - `trackerEstimate(raw)`: a finite number 0 to `ITEM_NUMBER_MAX`, else undefined.
 - `commentHeader(author, at)`: `"{author} · {d MMM yyyy}"` (UTC, `"Unknown"` for no author, the date left off when
@@ -68,7 +68,8 @@ throws: a value of the wrong type reads as empty.
 - **Jira** `readJiraRows(rows)`: `summary`, `issuekey`, `issuetype`, `status`, `priority`, `assignee`, `reporter`,
   `description`, `duedate`, any header whose key contains `startdate`, any containing `storypoint`, every `labels`,
   `comment`, `sprint`, `attachment`, `components`/`component`. A comment cell is `"{date};{author};{text}"` (Jira's
-  export; a cell without two `;` is all text, author unknown). An attachment cell `"{date};{author};{name};{url}"`.
+  export; a cell without two `;` is all text, author unknown). An attachment cell `"{date};{author};{name};{url}"`: the url starts at the last `;http://` or `;https://`, so a `;`
+  in the name stays the name's; a cell that is only a url is named by it.
   Extras `issuekey` (Text), `issuetype` (Choice when ≤ `TRACKER_CHOICE_MAX` distinct values, else Text), `reporter`
   (Person), `sprint` (Text, the last sprint), `components` (Text, joined ", ").
 - **Linear** `readLinearRows(rows)`: `id`, `title`, `description`, `status`, `priority`, `estimate`, `assignee`,

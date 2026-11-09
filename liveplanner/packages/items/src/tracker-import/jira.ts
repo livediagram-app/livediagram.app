@@ -94,15 +94,20 @@ function commentOf(cell: string, names: Map<string, string>): TrackerComment | u
   return { author: authorOf(cell.slice(first + 1, second).trim(), names), at, text };
 }
 
+// `{date};{author};{name};{url}`: the url is the cell's last part starting http(s)://, so a `;` in the file's name
+// (`notes;v2.txt`) stays the name's. A cell that is only a url is named by it.
 function linkOf(cell: string, skips: TrackerSkips): TrackerLink | undefined {
+  const urlAt = Math.max(cell.lastIndexOf(';http://'), cell.lastIndexOf(';https://'));
   const parts = cell.split(';');
-  const url = httpLink(parts.slice(3).join(';'));
+  const url = httpLink(urlAt >= 0 ? cell.slice(urlAt + 1) : parts.length === 1 ? cell : '');
   if (!url) {
     addSkip(skips, 'attachmentsNoLink');
     return undefined;
   }
   addSkip(skips, 'attachmentLinks');
-  return { name: cleanText(parts[2], 120) || url, url };
+  const nameAt = parts.length > 2 ? parts[0]!.length + parts[1]!.length + 2 : -1;
+  const name = nameAt >= 0 && nameAt <= urlAt ? cell.slice(nameAt, urlAt) : '';
+  return { name: cleanText(name, 120) || url, url };
 }
 
 export function readJiraRows(rows: readonly Row[]): TrackerBoard {
