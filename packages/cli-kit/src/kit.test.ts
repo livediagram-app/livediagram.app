@@ -160,6 +160,21 @@ describe('versions', () => {
       'npm install -g @example/cli@latest, or npx @example/cli@latest',
     );
   });
+
+  it('follows semver precedence for prereleases and ignores build metadata', () => {
+    expect(isBelow('1.3.0-rc.1', '1.3.0')).toBe(true);
+    expect(isBelow('1.3.0', '1.3.0-rc.1')).toBe(false);
+    expect(isBelow('1.3.0-rc.1', '1.3.0-rc.1')).toBe(false);
+    expect(isBelow('1.3.0-alpha', '1.3.0-alpha.1')).toBe(true);
+    expect(isBelow('1.3.0-alpha.1', '1.3.0-alpha')).toBe(false);
+    expect(isBelow('1.3.0-alpha.1', '1.3.0-alpha.beta')).toBe(true);
+    expect(isBelow('1.3.0-beta', '1.3.0-alpha.1')).toBe(false);
+    expect(isBelow('1.3.0-rc.2', '1.3.0-rc.10')).toBe(true);
+    expect(isBelow('1.3.0-rc.10', '1.3.0-rc.2')).toBe(false);
+    expect(isBelow('1.3.0-x-y', '1.3.0-x-z')).toBe(true);
+    expect(isBelow('1.3.0+build.5', '1.3.0')).toBe(false);
+    expect(isBelow('1.2.9', '1.3.0-rc.1')).toBe(true);
+  });
 });
 
 describe('inputReader', () => {

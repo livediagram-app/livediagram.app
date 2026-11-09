@@ -143,7 +143,8 @@ anything the CLI does.
    `authEnabled` or `authEnabled: false` makes every api verb exit 4 with the "no sign-in" line: the CLI does not act
    as a guest.
 6. **Floor.** `isBelow(CLI_VERSION, caps.minVersion)` in `runOnline`: a verb whose behaviour is `write` or `destructive` and that reaches the
-   api, below `cli.minVersion`, exits 1 (CLI13). Reads are never refused. A host `documentFormat` above the
+   api, below `cli.minVersion` by semver precedence (a prerelease such as `1.3.0-rc.1` is below `1.3.0`), exits 1
+   (CLI13). Reads are never refused. A host `documentFormat` above the
    bundled `DOCUMENT_FORMAT` refuses the verbs marked `files` (`pull`, `push`, `export`, `tab diff`, reads of a pull
    file) with exit 1 and the version to install; online commands carry on.
 7. **Address.** `<doc>` and `--tab` resolve through `resolveDocument` and `resolveTab` (below); elements are left to
