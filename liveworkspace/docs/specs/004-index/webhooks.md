@@ -160,8 +160,8 @@ request):
 - `PATCH /webhooks/:id {name?, events?, who?, paused?}`: `{webhook}`.
 - `DELETE /webhooks/:id`: 204.
 - `POST /webhooks/:id/test`: 202: queues a `ping` and wakes the dispatcher.
-- `GET /webhooks/:id/deliveries`: `{deliveries}`, newest first, at most 40: the 20 finished it keeps and the newest
-  still pending.
+- `GET /webhooks/:id/deliveries`: `{deliveries}`, newest first, at most 40: the 20 finished it keeps and the 20
+  newest still pending, so a backlog of retries never hides the finished ones.
 
 A webhook whose document the caller can't reach answers 404 `webhook_not_found`, so its id tells them nothing; one
 whose document they can read but not edit answers 403 `webhooks_need_editor`. A document's webhooks go with it when
