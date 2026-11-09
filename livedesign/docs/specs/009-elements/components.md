@@ -89,7 +89,8 @@ type ComponentOverride = {
 - An override **wins over the main**: a main change to an overridden field does not reach that instance; a main
   change to any other field does. So overrides survive a main change.
 - An override for an element the main no longer has is ignored (and kept, harmlessly, until Reset Overrides).
-- A cleared override (the reset arrow beside it) falls back to the main.
+- A cleared override (the reset arrow beside it) falls back to the main. A row's reset arrow clears every override of
+  that element in one undo step.
 - **The Overrides section** of an instance's menu lists the main's elements that take one, in the main's order: a text
   field for each with text (its placeholder is the main's text), a colour well for its fill, stroke or text colour
   (the shared colour picker), and an icon swap (the icon picker) for one with an icon. **Reset Overrides** clears

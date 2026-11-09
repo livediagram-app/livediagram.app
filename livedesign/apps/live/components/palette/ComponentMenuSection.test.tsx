@@ -136,8 +136,9 @@ describe('ComponentMenuSection on an instance', () => {
     expect(screen.getByDisplayValue('Globex')).toBeTruthy();
     fireEvent.click(screen.getByLabelText('Acme fill colour'));
     expect(a.setOverride).toHaveBeenLastCalledWith('i', 'title', 'fillColor', '#ff0000');
+    // A row's reset is one edit (one undo step), not one per field it clears.
     fireEvent.click(screen.getByLabelText('Reset Acme'));
-    expect(a.setOverride).toHaveBeenLastCalledWith('i', 'title', 'label', undefined);
+    expect(a.resetOverrides).toHaveBeenLastCalledWith('i', 'title');
 
     // Icon swap: a search, then a pick.
     fireEvent.change(screen.getByLabelText('Swap Icon icon'), { target: { value: 'heart' } });
