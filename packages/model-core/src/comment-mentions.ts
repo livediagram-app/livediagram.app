@@ -116,7 +116,8 @@ export function mentionSegments(
   if (!mentions?.length) return [{ text }];
   const byHandle = new Map(mentions.map((m) => [m.handle.toLowerCase(), m]));
   const out: MentionSegment[] = [];
-  const re = /(^|[^\w@])@([a-z0-9]+(?:-[a-z0-9]+)*)/gi;
+  // The same whole-token rule as textMentions: `@sam_x` and `@sam-` are not `@sam`.
+  const re = /(^|[^\w@])@([a-z0-9]+(?:-[a-z0-9]+)*)(?![\w-])/gi;
   let last = 0;
   for (let hit = re.exec(text); hit; hit = re.exec(text)) {
     const mention = byHandle.get(hit[2]!.toLowerCase());

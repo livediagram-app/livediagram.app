@@ -125,4 +125,22 @@ describe('mentionSegments', () => {
     ]);
     expect(mentionSegments('plain', undefined)).toEqual([{ text: 'plain' }]);
   });
+
+  it('chips only whole tokens, as textMentions reads them', () => {
+    const text = 'hi @thomas-mcclean and @thomas-mcclean_x and @thomas-mcclean-';
+    expect(textMentions('@thomas-mcclean_x', tom.handle)).toBe(false);
+    expect(mentionSegments(text, [tom])).toEqual([
+      { text: 'hi ' },
+      { text: '@thomas-mcclean', mention: tom },
+      { text: ' and @thomas-mcclean_x and @thomas-mcclean-' },
+    ]);
+  });
+
+  it('stays linear on a long run of hyphenated words', () => {
+    const text = `@${'a-'.repeat(50_000)}_`;
+    const started = process.cpuUsage();
+    expect(mentionSegments(text, [tom])).toEqual([{ text }]);
+    const { user, system } = process.cpuUsage(started);
+    expect((user + system) / 1000).toBeLessThan(500);
+  });
 });
