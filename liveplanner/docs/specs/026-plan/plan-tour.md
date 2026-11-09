@@ -113,6 +113,13 @@ Every track shows its missions in one small panel, the **mission strip**, the sa
   lesson stay in full view. When the mission is one done on the page (adding or moving a card, a slot's size), an
   amber line over it says **Close this window first, then:**, so nobody is left wondering why nothing happens. When
   the window closes the strip goes back to its place. On a phone it docks at the top over a window, as before.
+- **Never over what it names.** On a phone the sheet never covers the control the mission or its hint points at:
+  when that control sits where the sheet would dock (**Types** in the bottom-right cluster above the footer, a
+  window's name field at its top), the sheet docks at the other edge instead, and moves back as the mission moves
+  on. Its usual place is above the footer, or the top while a window or a sheet up from the bottom is open (a
+  column's settings, a card's panel), so it never sits over the window being worked in. It is measured again as the
+  page changes (a panel opening, the window or the visible viewport resizing). (Owner, 2026-11-09: "Review the new
+  tours on mobile, they break the UI, for example on planner it says to hit the Card Types, but it covers it".)
 - **Names the control.** Each mission rings the control it names (**Types**, **Add card**, a column's cog) while it
   is being done, the most specific one drawn on screen first, and names it in bold in its line. A control another
   window covers (the Add a Field picker over Add Field) is never ringed: the ring would float over that window.

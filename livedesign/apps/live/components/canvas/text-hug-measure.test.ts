@@ -90,7 +90,7 @@ describe('measureDrawnText', () => {
     stubRect(0, 0);
     measureDrawnText('caveat')(hello())(10, true);
     const tabFace = measurer().style.fontFamily;
-    expect(tabFace).toContain('Caveat');
+    expect(tabFace).toContain('Kalam');
     measureDrawnText('caveat')(hello({ font: 'inter' }))(10, true);
     expect(measurer().style.fontFamily).not.toBe(tabFace);
   });

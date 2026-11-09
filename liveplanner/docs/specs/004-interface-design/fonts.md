@@ -10,24 +10,51 @@ hand-drawn, or bold. Defined once in `../packages/model-core/src/fonts.ts` (id +
 
 - CSS stack + Google family spec):
 
-| id                 | Label            | Style          |
-| ------------------ | ---------------- | -------------- |
-| `inter`            | Inter            | Sans-serif     |
-| `poppins`          | Poppins          | Geometric sans |
-| `nunito`           | Nunito           | Rounded sans   |
-| `oswald`           | Oswald           | Condensed sans |
-| `space-grotesk`    | Space Grotesk    | Techy sans     |
-| `lora`             | Lora             | Serif          |
-| `abril-fatface`    | Abril Fatface    | Display serif  |
-| `roboto-slab`      | Roboto Slab      | Slab serif     |
-| `roboto-mono`      | Roboto Mono      | Monospace      |
-| `caveat`           | Caveat           | Handwriting    |
-| `permanent-marker` | Permanent Marker | Marker         |
+| id                 | Label         | Style          |
+| ------------------ | ------------- | -------------- |
+| `inter`            | Inter         | Sans-serif     |
+| `poppins`          | Poppins       | Geometric sans |
+| `nunito`           | Nunito        | Rounded sans   |
+| `oswald`           | Oswald        | Condensed sans |
+| `space-grotesk`    | Space Grotesk | Techy sans     |
+| `lora`             | Lora          | Serif          |
+| `abril-fatface`    | Bodoni Moda   | Display serif  |
+| `roboto-slab`      | Roboto Slab   | Slab serif     |
+| `roboto-mono`      | Roboto Mono   | Monospace      |
+| `caveat`           | Kalam         | Handwriting    |
+| `permanent-marker` | Shantell Sans | Marker         |
 
 Each CSS stack ends in a system fallback, and the stylesheet loads with
 `display=swap`, so text stays visible (in the fallback face) while a font
 loads, or permanently if Google Fonts is blocked (offline / a
 network that blocks it). The editor never depends on the fonts loading.
+
+### Legible at every size
+
+Every face has to read at a label's smallest everyday size (12 to 14 px) and at 50% zoom, in light and dark
+themes alike. Three faces once in the catalogue did not, and were replaced by a face of the same character
+(2026-11, measured at 1x pixel density):
+
+| id                 | Was              | Why it did not read                                                                                    | Now           |
+| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------------ | ------------- |
+| `caveat`           | Caveat           | Lowercase 0.36 em tall (Inter's is 0.55), so 14 px drew like 9 px; strokes broke up at 12 px and 50%   | Kalam         |
+| `permanent-marker` | Permanent Marker | No lowercase, and its 1, 3 and 0 read as l, ʒ and O; letters clogged into blots below 16 px            | Shantell Sans |
+| `abril-fatface`    | Abril Fatface    | A display didone: its hairlines vanished and its counters filled in below 16 px, so Il1 and e/a merged | Bodoni Moda   |
+
+- **Ids are storage keys, not names.** A face is swapped behind its id, so every saved document, template and
+  look that letters text in `caveat`, `permanent-marker` or `abril-fatface` keeps working and simply draws in the
+  new face; nothing is rewritten on load and agents keep writing the same ids.
+- **Comparable optical size.** Each face's lowercase is between 0.46 and 0.59 em, so a px reads about the same
+  size in every face and no per-face size compensation is needed.
+- **One heavy weight for the two loud faces.** The marker (Shantell Sans at 700) and the display serif (Bodoni
+  Moda at 800) load a single weight, as the faces they replace shipped one: regular and bold letter the same,
+  never a synthesised bold. Bodoni Moda keeps its optical-size axis (`opsz` 6 to 96), so at small px it draws
+  with thicker hairlines and wider counters, and at headline px it is the full fat face.
+- **Fallbacks stay readable.** While a face loads, or if Google Fonts is blocked, handwriting falls back to a
+  system hand that reads (Chalkboard SE, Segoe Print, Comic Sans MS) before the generic `cursive`, never to the
+  UI sans first.
+- **Payload** (Latin woff2, fetched only once a face is applied): Kalam 14 KB a weight (Caveat was one 75 KB
+  variable file), Shantell Sans 47 KB (Permanent Marker 29 KB), Bodoni Moda 27 KB (Abril Fatface 13 KB).
 
 ## Two levels
 
@@ -126,10 +153,11 @@ a Plan board, a Plan card element and a board in a Dashboard slot follow **one r
 So a board keeps the voice its tab picked, and its small text reads the same whatever that voice is. Three details
 keep the headings themselves readable:
 
-- A heading is drawn at its face's own weights: a face that ships one weight (Abril Fatface) is never thickened
-  into a fake bold, which clogged its counters at card size.
-- Caveat, whose lowercase is small, keeps its x-height lift (`PLAN_HANDWRITING_EX`) on headings; the small text is
-  in the UI face and needs none.
+- A heading is drawn at its face's own weights: a face that loads one weight (the display serif, `abril-fatface`)
+  is never thickened into a fake bold, which clogged its counters at card size.
+- The handwriting face (`caveat`, lettered in Kalam) keeps an x-height floor (`PLAN_HANDWRITING_EX`, 0.52 em) on
+  headings. Kalam's lowercase is 0.51 em, so the floor barely moves it; it was a real lift for Caveat (0.36 em),
+  the face the id named before 2026-11. The small text is in the UI face and needs none.
 - A Dashboard tab passes its font to the boards in its slots the same way.
 
 ### On Dashboards and views
@@ -145,7 +173,7 @@ Priority Matrix or Card Search) wherever it is drawn, follow the board's rule:
   a view's bars, days, dates, counts and legends, a chart's labels and axes, a Sheet's cells (a cell's own Font
   still wins), a Title's description, a Note's text, a Status card's light and words, and every button and field.
 
-The same three details hold: a heading is drawn at its face's own weights, Caveat keeps its lift on headings only,
+The same three details hold: a heading is drawn at its face's own weights, the handwriting face keeps its x-height floor on headings only,
 and a face liveplanner does not offer letters no heading. A view on a canvas tab takes its font from its element and
 tab (`element.font → tab.font`) as any element does; in a Dashboard slot it takes the Dashboard tab's.
 
@@ -199,9 +227,9 @@ dialog's Typeface cards, an element's Font menu, a Sheet cell's Font menu). The 
 (`PLANNER_EXCLUDED_FONT_IDS`, `@liveplanner/project` `planner-fonts.ts`), never in the shared catalogue: livediagram,
 livedocuments and livedesign keep every face.
 
-| id                 | Why it is left out                                                                                 |
-| ------------------ | -------------------------------------------------------------------------------------------------- |
-| `permanent-marker` | No lowercase: every title is set in capitals, and its 1, 3 and 0 read as ), ʒ and O at card sizes. |
+| id                 | Why it is left out                                                                                                                                                                                                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `permanent-marker` | Left out when it lettered Permanent Marker: no lowercase, and its 1, 3 and 0 read as ), ʒ and O at card sizes. It letters Shantell Sans since 2026-11, which reads at card sizes; it stays out until liveplanner chooses to offer a marker face on cards. |
 
 A plan that already letters a board in an excluded face (its tab font, an element's own font, or the Marker finish,
 whose face it is) keeps the setting as stored, but its boards and cards draw their headings in the UI face instead.

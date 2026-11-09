@@ -478,7 +478,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
 
 // The <style> block declaring the webfonts an export actually used
 // (docs/specs/004-interface-design/fonts.md), so the file carries its own typography instead of relying on
-// the reader having Permanent Marker installed. Empty when nothing on the
+// the reader having Shantell Sans installed. Empty when nothing on the
 // tab picked a face, keeping a plain export byte-identical to before.
 //
 // An `@import` of the Google stylesheet, not embedded font bytes: it keeps

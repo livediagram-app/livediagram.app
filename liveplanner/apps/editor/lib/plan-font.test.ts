@@ -69,7 +69,7 @@ describe('planBoardFontStyle', () => {
 });
 
 describe('PLAN_HEADING_STYLE', () => {
-  // A one-weight face (Abril Fatface) drawn at a heading's semibold would otherwise be thickened into a fake bold.
+  // A one-weight face (Bodoni Moda) drawn at a heading's semibold would otherwise be thickened into a fake bold.
   it('reads the face its root hands down, never synthesising a bold', () => {
     expect(PLAN_HEADING_STYLE).toEqual({
       fontFamily: 'var(--plan-heading-font)',

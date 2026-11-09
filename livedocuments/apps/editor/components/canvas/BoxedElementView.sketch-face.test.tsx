@@ -99,9 +99,9 @@ describe('in WebKit', () => {
 
 describe("an element's words", () => {
   it("are all in the element's face, so a face that writes its own wears it", () => {
-    const { container } = draw(shape('stat-row'), "'Caveat', cursive");
+    const { container } = draw(shape('stat-row'), "'Kalam', cursive");
     const wrapper = container.querySelector<HTMLElement>('[data-element-id="stat-row"]');
-    expect(wrapper?.style.fontFamily).toContain('Caveat');
+    expect(wrapper?.style.fontFamily).toContain('Kalam');
   });
 
   it('keep the editor default when nothing picks a face', () => {

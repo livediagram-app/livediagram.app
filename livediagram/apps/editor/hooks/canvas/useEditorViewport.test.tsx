@@ -119,3 +119,45 @@ describe('useEditorViewport revealing above the on-screen keyboard', () => {
     expect(r.after).toBeCloseTo(r.before - (620 - (450 - 24)) / r.z, 0);
   });
 });
+
+// docs/specs/008-canvas/canvas-and-palette.md "On a phone the opening view focuses on the main element": the landing
+// view focuses on a phone, while an explicit Fit stays fit-all.
+describe('useEditorViewport landing on a tab', () => {
+  const matchMedia = window.matchMedia;
+  afterEach(() => {
+    window.matchMedia = matchMedia;
+  });
+  const wideTab = () => {
+    const els: Element[] = [];
+    for (let i = 0; i < 6; i += 1) els.push(createShape('square', i * 600, 0));
+    return els;
+  };
+  const mount = (phone: boolean) => {
+    window.matchMedia = ((q: string) => ({ matches: phone, media: q })) as typeof window.matchMedia;
+    const selection = createSelectionStore();
+    const view = renderHook(() =>
+      useEditorViewport({ activeTab: tabOf(wideTab()), readSelection: selection.get }),
+    );
+    const main = document.createElement('main');
+    main.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, right: 400, bottom: 800, width: 400, height: 800 }) as DOMRect;
+    (view.result.current.canvasMainRef as { current: HTMLElement | null }).current = main;
+    return view.result;
+  };
+
+  it('focuses at a readable zoom on a phone, and Fit still fits everything', () => {
+    const result = mount(true);
+    act(() => result.current.landOnTab());
+    expect(result.current.viewport.get().zoom).toBeGreaterThanOrEqual(0.6);
+    act(() => result.current.fitToScreen());
+    expect(result.current.viewport.get().zoom).toBeLessThan(0.6);
+  });
+
+  it('lands on Fit to Screen off a phone', () => {
+    const result = mount(false);
+    act(() => result.current.landOnTab());
+    const landed = result.current.viewport.get();
+    act(() => result.current.fitToScreen());
+    expect(result.current.viewport.get()).toEqual(landed);
+  });
+});

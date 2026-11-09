@@ -89,6 +89,32 @@ describe('Inbox threads', () => {
     expect(owned).toMatchObject({ onYourItem: true, youCommented: false, mentionsYou: false });
   });
 
+  // An agent's comment with my token reaches me, but is not mine: a question it asked waits on me (agentIds).
+  it('reach the people an agent wrote for, without reading as their comment', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
+    const bob = await person('user_b', { teams: [{ id: 'team1' }] });
+    const item = await makeItem(ada.auth, { title: 'Plan', teamId: 'team1' });
+    await asApp(`/app/items/${item.id}/collab/t1`, {
+      threads: [
+        thread({ elementId: 'asked', participantIds: [], agentIds: ['user_a'] }),
+        thread({ elementId: 'bobs-agent', participantIds: ['user_c'], agentIds: ['user_b'] }),
+      ],
+      actions: [],
+    });
+    const forAda = Object.fromEntries((await inbox(ada.auth)).threads.map((t) => [t.elementId, t]));
+    expect(forAda.asked).toMatchObject({ onYourItem: true, youCommented: false });
+    expect(forAda.asked).not.toHaveProperty('agentIds');
+    const forBob = await inbox(bob.auth);
+    expect(forBob.threads.map((t) => [t.elementId, t.youCommented, t.mentionsYou])).toEqual([
+      ['bobs-agent', false, false],
+    ]);
+    const bad = await asApp(`/app/items/${item.id}/collab/t2`, {
+      threads: [thread({ agentIds: ['not an id!'] })],
+      actions: [],
+    });
+    expect(await body(bad)).toEqual({ error: 'invalid_collab' });
+  });
+
   it('leave a team item’s maker once they are out of the team', async () => {
     const ada = await person('user_a', { teams: [{ id: 'team1' }] });
     const item = await makeItem(ada.auth, { title: 'Plan', teamId: 'team1' });
@@ -231,6 +257,45 @@ describe('Inbox cards', () => {
     const after = await inbox(bob.auth);
     expect(after.actions).toEqual([]);
     expect(after.threads.map((t) => t.elementId)).toEqual(['el-9']);
+  });
+
+  // The card's status chip: the column rides in the row's card, as of the plan's latest push (no read of its own).
+  it('carry a card’s current column, replaced by the next push', async () => {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth, { title: 'Plan' });
+    const cards = `/app/items/${item.id}/collab/${COLLAB_CARDS_TAB}`;
+    const push = (column: CollabCard['column']) =>
+      asApp(cards, {
+        threads: [thread({ elementId: 'th-1', card: { ...card, id: 'card-1', column } })],
+        actions: [
+          action({
+            elementId: 'card-1',
+            actionId: 'card-1',
+            assigneeId: 'user_a',
+            card: { ...card, column },
+          }),
+        ],
+      });
+    expect((await push({ name: 'In Progress', color: '#f97316', done: false })).status).toBe(204);
+    let read = await inbox(ada.auth);
+    expect(read.threads[0]!.card?.column).toEqual({
+      name: 'In Progress',
+      color: '#f97316',
+      done: false,
+    });
+    expect(read.actions[0]!.card?.column).toEqual({
+      name: 'In Progress',
+      color: '#f97316',
+      done: false,
+    });
+    // Moved to Done: the next push says so.
+    await push({ name: 'Done', done: true });
+    read = await inbox(ada.auth);
+    expect(read.threads[0]!.card?.column).toEqual({ name: 'Done', done: true });
+    // Its column deleted: no column, so no chip.
+    await push(null);
+    read = await inbox(ada.auth);
+    expect(read.threads[0]!.card).not.toHaveProperty('column');
   });
 
   it('refuse a malformed card', async () => {

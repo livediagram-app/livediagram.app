@@ -71,6 +71,7 @@ const inboxThreadOf = (t: CardThread): InboxCardThread => ({
     mentionIds: (c.mentions ?? []).flatMap((m) =>
       [m.userId, m.memberId].filter((id): id is string => !!id),
     ),
+    ...(c.ai ? { ai: true } : {}),
   })),
 });
 
@@ -165,6 +166,7 @@ export async function cardsPushOf(env: PlanEnv, planId: string): Promise<CardsPu
         typeLabel: type?.label ?? item.type,
         title: itemTitle(item) || 'Untitled',
         board: places.boardFor(status),
+        column: places.columnFor(status),
       },
       teamId: plan.team_id,
       createdAt: item.createdAt,

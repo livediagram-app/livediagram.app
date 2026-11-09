@@ -415,7 +415,7 @@ export function MultiSelectionBar() {
 
 /** A selected shape with its menu's Text flyout open on the Font tiles, one face chosen. */
 export function ElementFontMenu() {
-  const fonts = ['Inter', 'Poppins', 'Nunito', 'Oswald', 'Lora', 'Caveat'];
+  const fonts = ['Inter', 'Poppins', 'Nunito', 'Oswald', 'Lora', 'Kalam'];
   return (
     <Scene w={420} h={230}>
       <Shape x={22} y={92} w={104} h={52} label="Step one" />
@@ -473,7 +473,7 @@ export function LookAndFeelFont() {
     ['Oswald', 'Condensed'],
     ['Space Grotesk', 'Techy sans'],
     ['Lora', 'Serif'],
-    ['Abril Fatface', 'Display serif'],
+    ['Bodoni Moda', 'Display serif'],
     ['Roboto Slab', 'Slab serif'],
   ];
   const sizes: [string, number | null][] = [

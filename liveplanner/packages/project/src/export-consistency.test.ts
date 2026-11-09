@@ -143,6 +143,6 @@ describe('a face paints in the element typeface', () => {
     // The group carries the face, so every text mark inside inherits it: a
     // card exported in a different typeface to the canvas is the same bug this
     // file is about, in smaller type.
-    expect(svgBoxed(el)).toMatch(/<g font-family="[^"]*[Cc]aveat/);
+    expect(svgBoxed(el)).toMatch(/<g font-family="[^"]*Kalam/);
   });
 });

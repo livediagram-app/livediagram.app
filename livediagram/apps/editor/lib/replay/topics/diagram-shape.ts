@@ -39,7 +39,7 @@ export const SHADOW = { open: 1200, pick: 2800 } as const;
 export const FONT = { text: 1100, font: 2300, pick: 3800, close: 5600 } as const;
 
 export const SHAPE_ID = 'wib-shape';
-const FONT_PICK = { id: 'caveat', label: 'Caveat' } as const;
+const FONT_PICK = { id: 'caveat', label: 'Kalam' } as const;
 const SHADOW_PICK = SHADOW_PRESETS.find((p) => p.id === 'lifted') ?? SHADOW_PRESETS[0]!;
 
 export type ShapeLayout = {

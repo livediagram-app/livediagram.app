@@ -168,6 +168,7 @@ function collector(reader: OfflineReader) {
       const card = () => ({
         ...place,
         board: places.boardFor(status),
+        column: places.columnFor(status),
         id: item.id,
         key: item.key,
         type: item.type,

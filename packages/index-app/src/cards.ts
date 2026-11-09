@@ -28,6 +28,9 @@ export type InboxCardComment = {
   createdAt: number;
   // Person ids @-mentioned in it.
   mentionIds?: readonly string[];
+  // Written by an agent (an API token) as its author: the author reaches the thread but has not answered it
+  // themselves (one-explorer-contracts.md "What an item pushes", `agentIds`).
+  ai?: boolean;
 };
 
 export type InboxCardSource = {
@@ -86,14 +89,18 @@ export async function cardsCollabPush(
       let first = comments[0]!;
       let latest = comments[0]!;
       const participants: string[] = [];
+      const agents: string[] = [];
       const mentioned: string[] = [];
       for (const m of comments) {
         if (m.createdAt < first.createdAt) first = m;
         if (m.createdAt >= latest.createdAt) latest = m;
-        if (m.authorId && !participants.includes(m.authorId)) participants.push(m.authorId);
+        const by = m.ai ? agents : participants;
+        if (m.authorId && !by.includes(m.authorId)) by.push(m.authorId);
         for (const id of m.mentionIds ?? []) if (!mentioned.includes(id)) mentioned.push(id);
       }
-      for (const id of [...participants, ...mentioned]) people.add(id);
+      // Someone who also wrote themselves is a participant alone.
+      const agentOnly = agents.filter((id) => !participants.includes(id));
+      for (const id of [...participants, ...agentOnly, ...mentioned]) people.add(id);
       threads.push({
         elementId: thread.id,
         elementLabel: thread.title,
@@ -101,6 +108,7 @@ export async function cardsCollabPush(
         commentCount: comments.length,
         participantIds: participants,
         mentionedIds: mentioned,
+        ...(agentOnly.length > 0 ? { agentIds: agentOnly } : {}),
         latestText: latest.text,
         latestAuthorName: latest.authorName,
         latestAuthorColor: latest.authorColor,

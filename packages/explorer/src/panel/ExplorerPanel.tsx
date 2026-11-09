@@ -1018,9 +1018,10 @@ function Pane({
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       {/* The section's name always shows in full: it takes the room, and wraps rather than truncates (a long team
-          name); the actions are glyphs that never shrink. */}
+          name); the actions are glyphs that never shrink. It keeps 5rem, so a short name (Inbox, beside its filter
+          on a phone) never breaks inside the word. */}
       <div className="flex items-center gap-1 px-5 pb-3 pt-4 max-sm:px-4 max-sm:pb-1.5 max-sm:pt-2.5">
-        <h3 className="mr-1 min-w-0 flex-1 text-[15px] font-semibold leading-5 text-balance break-words text-slate-900 dark:text-slate-50">
+        <h3 className="mr-1 min-w-[5rem] flex-1 text-[15px] font-semibold leading-5 text-balance break-words text-slate-900 dark:text-slate-50">
           {title}
         </h3>
         {newFolder ? (
@@ -1037,7 +1038,11 @@ function Pane({
           </HeaderIconButton>
         ) : null}
         {section.kind === 'inbox' ? (
-          <span ref={setInboxSlot} className="flex max-w-[8.5rem] shrink-0 max-sm:max-w-[13rem]" />
+          <span
+            ref={setInboxSlot}
+            // The filter gives way before the name does: a native select narrows cleanly.
+            className="flex min-w-0 max-w-[8.5rem] max-sm:max-w-[13rem]"
+          />
         ) : null}
         {/* This Browser holds only this app's items, and the Library is the app's own. */}
         {section.kind === 'library' || section.kind === 'offline' ? null : (

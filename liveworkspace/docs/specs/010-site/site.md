@@ -341,7 +341,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   Recent included, in liveworkspace's own colours. The last app used here (kept in this browser) only picks what
   **New** makes and whose welcome and hero Home shows; it no longer filters the lists.
 - **The header.** The liveworkspace logo (with the site switcher), a slanted hairline with equal space either
-  side, then the app's logo, which leads back to the app. On a phone, where there is less room, only the app's
+  side, then the app's logo, which leads back to the app. The two logos share one centre line, the header's middle (owner, 2026-11-09: the second "lower than the first one visually"). On a phone, where there is less room, only the app's
   logo shows (the liveworkspace logo shows when no app is). The search field sits in the middle (on Home the hero holds it), the account control on
   the right. Someone who came straight here sees no app logo.
   On the Explorer, the switcher keeps you on the Explorer: another app's row opens that app's Explorer at the same

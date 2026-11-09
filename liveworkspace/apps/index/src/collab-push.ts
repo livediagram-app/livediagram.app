@@ -20,6 +20,7 @@ import {
   COLLAB_MAX_ACTIONS,
   COLLAB_MAX_THREADS,
   type App,
+  type CardColumn,
   type CollabActionInput,
   type CollabCard,
   type CollabFormInput,
@@ -78,6 +79,7 @@ export function parseCard(value: unknown): CollabCard | null | undefined {
     }
     board = { tabId: b.tabId, elementId: b.elementId, title: boardTitle, tabName };
   }
+  const column = parseColumn(c.column);
   return {
     ...(c.id !== undefined ? { id: c.id as string } : {}),
     key,
@@ -85,6 +87,23 @@ export function parseCard(value: unknown): CollabCard | null | undefined {
     typeLabel,
     title,
     board,
+    ...(column ? { column } : {}),
+  };
+}
+
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+/** The card's column as the Inbox shows it, or null: a malformed one is dropped, never the push refused, so an
+ *  older or newer app's push still lands. */
+export function parseColumn(value: unknown): CardColumn | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const c = value as Record<string, unknown>;
+  const name = typeof c.name === 'string' ? c.name.trim().slice(0, LABEL_MAX) : '';
+  if (!name || typeof c.done !== 'boolean') return null;
+  return {
+    name,
+    ...(typeof c.color === 'string' && HEX_COLOR.test(c.color) ? { color: c.color } : {}),
+    done: c.done,
   };
 }
 
@@ -93,6 +112,7 @@ export function parseThread(value: unknown): CollabThreadInput | null {
   if (!t || typeof t !== 'object') return null;
   const participantIds = idList(t.participantIds);
   const mentionedIds = idList(t.mentionedIds ?? []);
+  const agentIds = idList(t.agentIds ?? []);
   const elementLabel = clip(t.elementLabel, LABEL_MAX);
   const latestText = clip(t.latestText, TEXT_MAX);
   const latestAuthorName = clip(t.latestAuthorName, LABEL_MAX);
@@ -106,6 +126,7 @@ export function parseThread(value: unknown): CollabThreadInput | null {
     !isCount(t.commentCount) ||
     !participantIds ||
     !mentionedIds ||
+    !agentIds ||
     latestText === null ||
     latestAuthorName === null ||
     latestAuthorColor === null ||
@@ -122,6 +143,7 @@ export function parseThread(value: unknown): CollabThreadInput | null {
     commentCount: t.commentCount,
     participantIds,
     mentionedIds,
+    ...(agentIds.length > 0 ? { agentIds } : {}),
     latestText,
     latestAuthorName,
     latestAuthorColor,
@@ -226,7 +248,7 @@ export async function pushCollab(
   const people: [string, string][] = [];
   for (const t of threads.values()) {
     if (t.resolved) continue;
-    for (const id of new Set([...t.participantIds, ...t.mentionedIds]))
+    for (const id of new Set([...t.participantIds, ...t.mentionedIds, ...(t.agentIds ?? [])]))
       people.push([t.elementId, id]);
   }
 

@@ -120,6 +120,7 @@ describe('collabIndexRowsFromElements', () => {
         resolved: false,
         commentCount: 4,
         participantIds: ['guest-1', 'user_b'],
+        agentIds: [],
         mentionedIds: [],
         latestText: 'newest',
         latestAuthorName: 'Author 2',
@@ -129,6 +130,24 @@ describe('collabIndexRowsFromElements', () => {
         latestAt: 30,
       },
     ]);
+  });
+
+  // An agent's comment (posted with an API token, `ai`) is not its author's own (one-explorer-contracts.md "What an
+  // item pushes"): they reach the thread as agentIds, unless they also wrote by hand.
+  it('keeps the authors who wrote only through an agent apart from the participants', () => {
+    const ai = (id: string, at: number, author: string) => ({
+      ...comment(id, at, author),
+      ai: true as const,
+    });
+    const { threads } = collabIndexRowsFromElements([
+      shape('s1', 'Checkout', {
+        commentThread: {
+          resolved: false,
+          comments: [ai('1', 10, 'user_a'), ai('2', 20, 'user_b'), comment('3', 30, 'user_b')],
+        },
+      }),
+    ]);
+    expect(threads[0]).toMatchObject({ participantIds: ['user_b'], agentIds: ['user_a'] });
   });
 
   it('collects every mentioned user id and member id, once each', () => {

@@ -174,8 +174,8 @@ run at the same time: hold the later one until the earlier one's agent has finis
 - **Large cards:** one agent per pass, on Opus, builds **one part**. The first agent also writes the
   build plan: two to five parts in order, each a PR against `main` that leaves main working on its own (the
   spec and data model first, the visible entry points last, so nothing half-built is reachable). The coordinator
-  posts the plan as one thread on the card ("Build plan: part 1 of N ..."), with each part's PR added as a reply
-  when it opens. A later pass builds the next part only once the one before has merged
+  posts the plan as one thread on the card ("Build plan: part 1 of N ..."), resolved as it is posted (it asks
+  nothing), with each part's PR added as a reply when it opens, leaving it resolved. A later pass builds the next part only once the one before has merged
   (`gh pr view <n> --json state`); while it's still open, leave the card alone. Each part's brief carries the
   plan and the merged parts' PR links.
 
@@ -439,7 +439,8 @@ one is missing, send the agent back to build it (SendMessage) before you touch t
 - **Close the thread loop** (on DONE): in one `change_threads` call, reply in each question thread whose answer
   this PR built, in one line: "Built in <PR url>: <how, short>". Then resolve every question thread the loop
   started on the card that is now settled (for a Large card, only those its finished parts built, and the plan
-  thread after the last part). The owner hears through the Inbox that the card was built and where.
+  thread after the last part). The owner hears through the Inbox that the card was built and where; a thread they
+  must read but not answer never stays open (see "Open threads mean a reply is needed").
 - **Send simple follow-ups back first** (on DONE): any item on the Follow-ups list that the builder brief's
   "Simple follow-ups go in this PR" covers goes back to the same agent with SendMessage, to build on the open
   PR, before anything is filed.
@@ -464,6 +465,15 @@ agent only once it is empty. Then remove the worktree (`git worktree remove`), a
 If the MCP refuses a change, report it and carry on with the other cards.
 
 ## 5. Rules
+
+- **Open threads mean a reply is needed** (owner, 2026-11-09: threads left open for cancelled, merged and PR
+  links "clutter my inbox"). An open thread is the owner's to-do, so the loop leaves one open only while it asks
+  them something: an unanswered question, a FAILED card's unblock options, an answer it can't act on. Everything
+  else it posts is a notice and is resolved in the same `change_threads` call that posts it: build plans and
+  their part PR links, "Built in", "Decided", merged, cancelled, moved, blocked-by and status notes. A reply in a
+  resolved thread leaves it resolved. Each pass, before step 4, resolves any of the loop's own open threads on
+  the board that ask nothing, or whose question a person has answered and the loop has built (one
+  `change_threads` batch). Never resolve a thread a person started.
 
 - On the board, only ever do these: move Work Items from Selected for Development to Under Review or In
   Progress, from In Progress to Implemented or Development Failure, set their Pull Request link, start question threads on those cards, reply in the loop's own threads and resolve

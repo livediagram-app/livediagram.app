@@ -67,6 +67,9 @@ export type ActivityCard = {
   via: 'own' | 'team' | 'shared';
   shareCode: string | null;
   board: { tabId: string; tabName: string; elementId: string; title: string } | null;
+  // The column on that board holding the card's status (the Inbox's status chip): its name, colour (#rrggbb) and
+  // whether it is done; null when no column holds it (an All Cards board, a deleted column).
+  column?: { name: string; color?: string; done: boolean } | null;
   id: string;
   key: number;
   type: string;

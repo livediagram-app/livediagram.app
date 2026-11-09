@@ -144,9 +144,10 @@ export function ToolbarPalette(props: Props) {
   // UI scale (docs/specs/007-editor/ui-scale.md): the strip zooms at its root.
   const scale = useUiScale('toolbar');
   const cardRef = useRef<HTMLDivElement>(null);
-  // The category bar names its categories while the strip has room for the names (useBarLabels); glyphs alone
-  // otherwise, and always on a phone.
-  const barLabels = useBarLabels(cardRef, {
+  // The category bar names its categories while the strip has room for the names (useBarLabels); on a phone,
+  // where the bar swipes sideways, always (owner, 2026-11-09: "on mobile, show the labels on the palette categories, its okay, we can scroll"; livehuddle
+  // has since 2026-11-07).
+  const fittedLabels = useBarLabels(cardRef, {
     enabled: !isMobile,
     categoriesKey: barCategories.map((c) => c.label).join('|'),
     scale,
@@ -155,7 +156,7 @@ export function ToolbarPalette(props: Props) {
   // categories and folds the rest behind More (useBarFold, docs/specs/007-editor/toolbar-layout.md "The strip's
   // room").
   const barShown = useBarFold(cardRef, {
-    enabled: !isMobile && !barLabels,
+    enabled: !isMobile && !fittedLabels,
     categoriesKey: barCategories.map((c) => c.id).join('|'),
     scale,
   });
@@ -281,7 +282,7 @@ export function ToolbarPalette(props: Props) {
                     <CategoryBarButtons
                       bar={bar}
                       categories={barCategories}
-                      labels={barLabels}
+                      labels={fittedLabels || swipe}
                       shown={barShown}
                       scrollable={swipe}
                     />

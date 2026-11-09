@@ -27,6 +27,7 @@ import { KEYBOARD_MARGIN_PX } from '@liveworkspace/workbench/hooks/canvas/useKey
 import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 import { onMapShown } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';
+import { tabOpeningView } from '@/lib/tab-opening-view';
 
 // Breakpoint at which we initialise the viewport at 60% zoom rather
 // than 100%, so a mobile visitor lands on a usable overview instead
@@ -88,6 +89,10 @@ type EditorViewportApi = {
   // viewport. Idempotent (the lastFittedTabRef gate in
   // editor-page.tsx still controls WHEN this runs).
   fitToScreen: () => void;
+  // The view a tab lands on by itself (a tab entry, a template, an import): Fit to Screen, except on a phone, where
+  // it focuses on the main element (docs/specs/008-canvas/canvas-and-palette.md "On a phone the opening view focuses
+  // on the main element"). Explicit fits stay `fitToScreen`.
+  landOnTab: () => void;
   // Frame an ARBITRARY rectangle. Presenting a slide (docs/specs/012-collaboration/presentation-mode.md) needs this:
   // the deck decides what is on screen, so the box to fit is the slide's
   // rather than the whole tab's.
@@ -294,15 +299,29 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
 
   // The view the last fit landed on, and what it fitted: the Map showing up later fits again only while the view is
   // still this one and the tab still holds what it did (a Map that shows as the fourth element lands moves nothing).
-  const lastFitRef = useRef<{ view: ViewPose; tabId: string; count: number } | null>(null);
-  const fitToScreen = useCallback(() => {
-    const { activeTab } = depsRef.current;
-    const view = tabFitView(canvasMainRef.current, activeTab.elements);
-    if (!view) return;
-    lastFitRef.current = { view, tabId: activeTab.id, count: activeTab.elements.length };
-    setViewportZoom(view.zoom);
-    setViewportOffset(view.offset);
-  }, [depsRef, setViewportOffset, setViewportZoom]);
+  // `landing` says which view it was, so the refit lands on the same kind.
+  const lastFitRef = useRef<{
+    view: ViewPose;
+    tabId: string;
+    count: number;
+    landing: boolean;
+  } | null>(null);
+  const applyFit = useCallback(
+    (landing: boolean) => {
+      const { activeTab } = depsRef.current;
+      const view = (landing ? tabOpeningView : tabFitView)(
+        canvasMainRef.current,
+        activeTab.elements,
+      );
+      if (!view) return;
+      lastFitRef.current = { view, tabId: activeTab.id, count: activeTab.elements.length, landing };
+      setViewportZoom(view.zoom);
+      setViewportOffset(view.offset);
+    },
+    [depsRef, setViewportOffset, setViewportZoom],
+  );
+  const fitToScreen = useCallback(() => applyFit(false), [applyFit]);
+  const landOnTab = useCallback(() => applyFit(true), [applyFit]);
   // docs/specs/008-canvas/minimap.md "Fit leaves the Map clear": a template's fit runs before the Map has a box.
   useEffect(
     () =>
@@ -318,10 +337,10 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
             last.count === activeTab.elements.length &&
             sameView(last.view, now)
           )
-            fitToScreen();
+            applyFit(last.landing);
         });
       }),
-    [depsRef, fitToScreen, zoomRef, viewportOffsetRef],
+    [depsRef, applyFit, zoomRef, viewportOffsetRef],
   );
 
   // Centre a canvas point at the zoom we already have (docs/specs/012-collaboration/bring-focus.md). Only
@@ -406,6 +425,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     getViewportCenter,
     getViewportCanvasRect,
     fitToScreen,
+    landOnTab,
     fitToBounds,
     centreOn,
     isCentredOn,

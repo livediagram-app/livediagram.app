@@ -40,7 +40,7 @@ const pick = <T>(items: readonly T[], random: Random): T =>
 
 const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-// The card's line, worded like a look's: "Ocean, Sketch, Caveat, waves".
+// The card's line, worded like a look's: "Ocean, Sketch, Kalam, waves".
 function describe(look: Omit<TabLook, 'id' | 'label' | 'description'>): string {
   const theme = THEMES.find((t) => t.id === look.theme)?.label ?? look.theme;
   const font = FONTS.find((f) => f.id === look.font)?.label;

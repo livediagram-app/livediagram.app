@@ -84,7 +84,7 @@ describe('Professional fallbacks', () => {
 describe('Sketch lettering', () => {
   it('writes in the handwriting font unless the element or the tab picks one', () => {
     expect(finishFontId(undefined, undefined, 'sketch')).toBe(SKETCH_FONT_ID);
-    // A typeface picked on a Sketch tab shows (Workshop's Permanent Marker, a pick in the Text panel).
+    // A typeface picked on a Sketch tab shows (Workshop's Shantell Sans, a pick in the Text panel).
     expect(finishFontId(undefined, 'inter', 'sketch')).toBe('inter');
     expect(finishFontId('lora', 'inter', 'sketch')).toBe('lora');
     expect(finishFontId(undefined, 'lora', 'professional')).toBe('lora');
@@ -215,7 +215,7 @@ describe('Marker (docs/specs/008-canvas/finish.md "Marker")', () => {
     expect(finishDrawsBodyByHand('flexible', 'shape')).toBe(false);
   });
 
-  it('letters in Permanent Marker, a font picked on the element or the tab winning', () => {
+  it('letters in Shantell Sans, a font picked on the element or the tab winning', () => {
     expect(finishFontId(undefined, undefined, 'marker')).toBe(MARKER_FONT_ID);
     expect(finishFontId('lora', undefined, 'marker')).toBe('lora');
     expect(finishFontId(undefined, 'inter', 'marker')).toBe('inter');

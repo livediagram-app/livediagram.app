@@ -1304,6 +1304,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     getViewportCenter,
     getViewportCanvasRect,
     fitToScreen,
+    landOnTab,
     fitToBounds,
     centreOn,
     isCentredOn,
@@ -1589,7 +1590,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     elementCount: activeTab.elements.length,
     tabLoaded: loadedTabIds.has(activeId),
     fitToScreen: () => {
-      fitToScreen();
+      landOnTab();
       focusLanding.afterTabFit(activeId);
     },
     skipFitForTabRef: skipTabFitRef,

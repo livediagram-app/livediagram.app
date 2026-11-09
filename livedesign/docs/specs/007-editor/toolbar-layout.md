@@ -57,7 +57,7 @@ under the pointer as a category is switched.
   (`useBarLabels`). Measured, not estimated: the menu card is wider with a long tab name, and an
   estimate let the bar run under it. **Too wide even bare**, as on a tablet (768px) where the glyphs can need more
   than the centring leaves, the strip sits at the right instead, 12px from the edge, clear of
-  the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
+  the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the names (owner, 2026-11-09: "on mobile, show the labels on the palette categories, its okay, we can scroll"), and the bar swipes
   sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
   the tile rail) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
@@ -289,9 +289,9 @@ panels in their corners, the bottom-row popovers over their buttons. What change
   left-aligned rather than centred, so the two read as separate toolbars on
   one row. There is no room for a corner card above a strip that needs the
   whole top row.
-- **The bar shows its glyphs alone**, 44 px apart, and fills the row to the right gutter; only the bar scrolls
+- **The bar shows each glyph with its name**, and fills the row to the right gutter; only the bar scrolls
   sideways, under a finger, while the selection mode and Search stay put. The scrollbar is hidden
-  ([Scrollbars](../004-interface-design/scrollbars.md)): a glyph cut at the edge shows there is more.
+  ([Scrollbars](../004-interface-design/scrollbars.md)): a name cut at the edge shows there is more.
 - **A flyout spans the screen** between the gutters instead of hanging from its button.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Live app](live-app.md)). Fit
   stays.
