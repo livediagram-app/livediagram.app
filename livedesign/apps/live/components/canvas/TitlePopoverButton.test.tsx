@@ -62,6 +62,7 @@ describe('TitlePopoverButton', () => {
       render(
         <TitlePopoverButton
           name="Device"
+          labelled={false}
           className={titleButtonClass}
           icon={<svg />}
           width={240}
