@@ -48,7 +48,7 @@ export function TokensPanel() {
           tabIndex={-1}
           className="text-base font-semibold text-slate-900 outline-none dark:text-white"
         >
-          Your tokens
+          Your Tokens
         </h2>
         {load.state === 'loading' && (
           <div
@@ -113,7 +113,7 @@ function CreateToken({
   return (
     <Panel>
       <form onSubmit={(event) => void submit(event)}>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-white">Make a token</h2>
+        <h2 className="text-base font-semibold text-slate-900 dark:text-white">Make a Token</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           For your own scripts and tools. It acts as you in every app, for six months.
         </p>
@@ -130,7 +130,7 @@ function CreateToken({
           {/* Keeps the keyboard while it makes the token (busy-buttons.md): disabled, the focused button dropped it
               to the top of Settings. */}
           <Button type="submit" variant="none" className={`${BUTTON.primary} shrink-0`} busy={busy}>
-            Make token
+            Make Token
           </Button>
         </div>
         <label className="mt-3 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
