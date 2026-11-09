@@ -9,6 +9,8 @@ export type PhotoHistoryEntry = { label: string; pageId: string; depth: number }
 
 export class PhotoHistory {
   private list: PhotoHistoryEntry[] = [];
+  // The entry recorded since the timeline last branched: the edit that branch is.
+  private latest: PhotoHistoryEntry | null = null;
   private readonly listeners = new Set<() => void>();
 
   get entries(): readonly PhotoHistoryEntry[] {
@@ -28,7 +30,21 @@ export class PhotoHistory {
    *  then replaced by this edit). */
   record(label: string, pageId: string, depth: number): void {
     const kept = this.list.filter((e) => e.depth < depth);
-    this.list = [...kept, { label, pageId, depth }].slice(-PHOTO_HISTORY_STEPS);
+    this.latest = { label, pageId, depth };
+    this.list = [...kept, this.latest].slice(-PHOTO_HISTORY_STEPS);
+    this.emit();
+  }
+
+  /** The design's timeline branched (a new step, any edit's, or a reset), leaving it at `depth`: its redo
+   *  steps are gone, so every entry at or past `depth` goes, but the photo edit that made the branch. A
+   *  canvas edit after an undo left a photo entry at its depth, shown as Now, and the undone ones dimmed
+   *  but unreachable. */
+  branched(depth: number): void {
+    const keep = this.latest?.depth === depth ? this.latest : null;
+    this.latest = null;
+    const next = this.list.filter((e) => e.depth < depth || e === keep);
+    if (next.length === this.list.length) return;
+    this.list = next;
     this.emit();
   }
 
@@ -52,6 +68,7 @@ export class PhotoHistory {
 
   clear(): void {
     this.list = [];
+    this.latest = null;
     this.emit();
   }
 }

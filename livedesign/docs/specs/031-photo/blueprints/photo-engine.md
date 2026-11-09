@@ -196,7 +196,9 @@ type Photo = {
   each layer whose tile map changed reloads only the changed tiles from `PixelsStore` (which holds every blob of
   every photo step still in the history, pinned: `PixelsStore.pin(stepPhotoIds)`).
 - `photo-history.ts` keeps this person's photo commits by page (label, the tab history index), at most 50; the History
-  tab jumps by calling undo or redo the needed number of times.
+  tab jumps by calling undo or redo the needed number of times. When the design history's `branch` moves (any new
+  step, a photo's or not, or a reset), `branched(depth)` drops every entry at or past the new depth except the photo
+  edit just recorded there: their redo steps are gone, so none of them is Now or reachable.
 
 ### Live sync
 
