@@ -34,7 +34,11 @@ function deps(over: Partial<MeetingPiecesDeps>): MeetingPiecesDeps {
   };
 }
 
-const letIn = () => actions.at(-1)!.actions.find((a) => a.label === 'Let In')!.onSelect();
+const letIn = () =>
+  actions
+    .at(-1)!
+    .actions.find((a) => a.label === 'Let In')!
+    .onSelect();
 
 describe('Let In', () => {
   it('stands you up when you sat down after the knock came', () => {
