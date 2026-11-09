@@ -13,6 +13,8 @@ const relay = (presence: boolean, participantAnswers = false) => ({
   presence,
   participantAnswers,
 });
+// A presence op the gate parses relays as the parsed copy (`op`): here each one sent is already that shape.
+const relayed = (op: unknown) => ({ ...relay(true), op });
 const DROP = { kind: 'drop' };
 const say = { kind: 'avatar-say', tabId: 't', id: 'a', text: 'hi', x: 0, y: 0 };
 
@@ -53,10 +55,12 @@ describe('gateClientOp', () => {
     };
     for (const op of [voice, track]) {
       expect(gateClientOp(op, as('view'))).toEqual(DROP);
-      expect(gateClientOp(op, as('participate'))).toEqual(relay(true));
-      expect(gateClientOp(op, as('edit'))).toEqual(relay(true));
+      expect(gateClientOp(op, as('participate'))).toEqual(relayed(op));
+      expect(gateClientOp(op, as('edit'))).toEqual(relayed(op));
     }
-    expect(gateClientOp({ ...track, track: null }, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp({ ...track, track: null }, as('participate'))).toEqual(
+      relayed({ ...track, track: null }),
+    );
     expect(gateClientOp({ ...voice, level: 7 }, as('edit'))).toEqual(DROP);
     expect(gateClientOp({ ...track, track: { sessionId: 's' } }, as('edit'))).toEqual(DROP);
   });
@@ -68,11 +72,20 @@ describe('gateClientOp', () => {
     const letSpeak = { kind: 'avatar-let-speak', tabId: 't', targetId: 'p2', on: true };
     for (const op of [hand, letSpeak]) {
       expect(gateClientOp(op, as('view'))).toEqual(DROP);
-      expect(gateClientOp(op, as('participate'))).toEqual(relay(true));
-      expect(gateClientOp(op, as('edit'))).toEqual(relay(true));
+      expect(gateClientOp(op, as('participate'))).toEqual(relayed(op));
+      expect(gateClientOp(op, as('edit'))).toEqual(relayed(op));
     }
     expect(gateClientOp({ ...hand, raised: 'yes' }, as('edit'))).toEqual(DROP);
     expect(gateClientOp({ ...letSpeak, targetId: '' }, as('edit'))).toEqual(DROP);
+  });
+
+  // A field the wire does not define never reaches a peer: the room relays the gate's parsed copy.
+  it('answers the parsed copy of a call, knock or bell op, without fields the wire lacks', () => {
+    const extra = { name: 'The Owner', html: '<b>x</b>' };
+    const knock = { kind: 'avatar-knock', tabId: 't', roomId: 'room-1' };
+    const letSpeak = { kind: 'avatar-let-speak', tabId: 't', targetId: 'p2', on: true };
+    expect(gateClientOp({ ...knock, ...extra }, as('view'))).toEqual(relayed(knock));
+    expect(gateClientOp({ ...letSpeak, ...extra }, as('edit'))).toEqual(relayed(letSpeak));
   });
 
   // docs/specs/016-platform/calls-kill-switch.md "The room tells its clients": a silent publisher's nudge.
@@ -89,12 +102,14 @@ describe('gateClientOp', () => {
     const at = (trackName: string) => ({ sessionId: 's', trackName, token: 'k' });
     const camera = { kind: 'call-track', tabId: 't', track: null, video: at('cam') };
     const screen = { kind: 'call-track', tabId: 't', track: null, screen: at('screen') };
-    expect(gateClientOp(camera, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp(camera, as('participate'))).toEqual(relayed(camera));
     expect(gateClientOp(camera, as('view'))).toEqual(DROP);
-    expect(gateClientOp(screen, as('edit'))).toEqual(relay(true));
+    expect(gateClientOp(screen, as('edit'))).toEqual(relayed(screen));
     expect(gateClientOp(screen, as('participate'))).toEqual(DROP);
     // Stopping a share is not sharing one.
-    expect(gateClientOp({ ...screen, screen: null }, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp({ ...screen, screen: null }, as('participate'))).toEqual(
+      relayed({ ...screen, screen: null }),
+    );
     expect(gateClientOp({ ...camera, video: at('screen') }, as('edit'))).toEqual(DROP);
   });
 
@@ -253,7 +268,7 @@ describe('gateClientOp', () => {
   // docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles" (#469): an Editor's alone.
   it('relays a stop-share from an Editor only, and only well formed', () => {
     const op = { kind: 'call-stop-share', tabId: 't', targetId: 'p2' };
-    expect(gateClientOp(op, as('edit'))).toEqual(relay(true));
+    expect(gateClientOp(op, as('edit'))).toEqual(relayed(op));
     expect(gateClientOp(op, as('participate'))).toEqual(DROP);
     expect(gateClientOp(op, as('view'))).toEqual(DROP);
     expect(gateClientOp({ ...op, targetId: '' }, as('edit'))).toEqual(DROP);
@@ -270,8 +285,8 @@ describe('gateClientOp', () => {
       answer: 'in',
     };
     for (const role of ['edit', 'participate', 'view']) {
-      expect(gateClientOp(knock, as(role))).toEqual(relay(true));
-      expect(gateClientOp(answer, as(role))).toEqual(relay(true));
+      expect(gateClientOp(knock, as(role))).toEqual(relayed(knock));
+      expect(gateClientOp(answer, as(role))).toEqual(relayed(answer));
     }
     expect(gateClientOp({ ...knock, roomId: '' }, as('edit'))).toEqual(DROP);
     expect(gateClientOp({ ...answer, answer: 'maybe' }, as('view'))).toEqual(DROP);
@@ -281,7 +296,7 @@ describe('gateClientOp', () => {
   it('relays a ring of the reception bell from every level, Viewer included, and only well formed', () => {
     const ring = { kind: 'avatar-bell', tabId: 't', deskId: 'desk-1' };
     for (const role of ['edit', 'participate', 'view'])
-      expect(gateClientOp(ring, as(role))).toEqual(relay(true));
+      expect(gateClientOp(ring, as(role))).toEqual(relayed(ring));
     expect(gateClientOp({ ...ring, deskId: '' }, as('view'))).toEqual(DROP);
     expect(gateClientOp({ kind: 'avatar-bell', tabId: 't' }, as('edit'))).toEqual(DROP);
   });
@@ -301,8 +316,8 @@ describe('gateClientOp', () => {
       score: [1, 0],
     };
     for (const role of ['edit', 'participate']) {
-      expect(gateClientOp(input, as(role))).toEqual(relay(true));
-      expect(gateClientOp(event, as(role))).toEqual(relay(true));
+      expect(gateClientOp(input, as(role))).toEqual(relayed(input));
+      expect(gateClientOp(event, as(role))).toEqual(relayed(event));
     }
     expect(gateClientOp(input, as('view'))).toEqual(DROP);
     expect(gateClientOp(event, as('view'))).toEqual(DROP);
