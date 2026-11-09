@@ -153,7 +153,10 @@ function formatNumberSection(n: number, toks: Tok[]): string {
   value /= 1000 ** trailingCommas;
 
   // Literals between the integer placeholders ("000-000", "(000) 000-0000") sit among the digits, as in Excel.
-  const lastIntPh = toks.slice(0, intEnd).map((t) => t.k).lastIndexOf('ph');
+  const lastIntPh = toks
+    .slice(0, intEnd)
+    .map((t) => t.k)
+    .lastIndexOf('ph');
   const spliced =
     !expTok && toks.slice(firstPh, lastIntPh + 1).some((t) => t.k === 'lit' && t.v !== '');
   let body: string;
@@ -184,7 +187,8 @@ function formatNumberSection(n: number, toks: Tok[]): string {
     if (intPart === '0' && minInt === 0) intPart = '';
     intPart = intPart!.padStart(minInt, '0');
     if (grouping) intPart = group(intPart);
-    if (spliced) intPart = spliceDigits(intPart.replace(/,/g, ''), toks.slice(firstPh, lastIntPh + 1));
+    if (spliced)
+      intPart = spliceDigits(intPart.replace(/,/g, ''), toks.slice(firstPh, lastIntPh + 1));
     body = dotAt >= 0 && (frac.length > 0 || fracPh.length > 0) ? `${intPart}.${frac}` : intPart;
     if (dotAt >= 0 && frac.length === 0 && fracMin === 0) body = `${intPart}.`;
   }
@@ -383,9 +387,7 @@ export function formatCodeText(value: number | string, code: string): string {
   // Sheets: the number placeholders it lacks would otherwise drop it (TEXT(5, "@") read "").
   if (section.includes('@') && toks.some((t) => t.k === 'at'))
     return toks
-      .map((t) =>
-        t.k === 'at' ? numberText(first ? value : n) : t.k === 'lit' ? t.v : '',
-      )
+      .map((t) => (t.k === 'at' ? numberText(first ? value : n) : t.k === 'lit' ? t.v : ''))
       .join('');
   const text = formatNumberSection(n, toks);
   // One section for every number: a negative keeps its minus.

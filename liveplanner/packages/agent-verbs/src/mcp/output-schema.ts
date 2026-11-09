@@ -122,7 +122,9 @@ export const updateProjectOutput = {
   note: z
     .string()
     .optional()
-    .describe('Said when a rebuilt Dashboard asked for more than its 12 rows: how many were left off.'),
+    .describe(
+      'Said when a rebuilt Dashboard asked for more than its 12 rows: how many were left off.',
+    ),
   ...changesetAnswer,
 };
 
