@@ -4,6 +4,13 @@
 // least 1x1 at all times.
 
 import type { TableCellStyle, TableElement } from './index';
+import { MAX_TABLE_CELLS, MAX_TABLE_COLS, MAX_TABLE_ROWS } from './validate';
+
+// The clipboard's grid (quoted cells read whole), shared by every product's table paste.
+export {
+  isTabularClipboard,
+  parseClipboardTableText,
+} from '@liveworkspace/model-core/table-clipboard';
 
 export function tableRowCount(t: TableElement): number {
   return t.cells.length;
@@ -35,9 +42,21 @@ export function setTableCell(t: TableElement, r: number, c: number, text: string
   return { ...t, cells };
 }
 
+// Whether one more row / column still fits the caps every save checks (validate.ts): a table past them is
+// refused by the room and by every save of its tab, so an add at a cap leaves the table as it is.
+export function canAddTableRow(t: TableElement): boolean {
+  const cols = Math.max(1, tableColCount(t));
+  return t.cells.length < MAX_TABLE_ROWS && (t.cells.length + 1) * cols <= MAX_TABLE_CELLS;
+}
+export function canAddTableColumn(t: TableElement): boolean {
+  const cols = tableColCount(t);
+  return cols < MAX_TABLE_COLS && t.cells.length * (cols + 1) <= MAX_TABLE_CELLS;
+}
+
 // Insert a blank row. `at` is the index to insert before; omitted means
-// append at the bottom.
+// append at the bottom. At the caps the table comes back unchanged.
 export function addTableRow(t: TableElement, at?: number): TableElement {
+  if (!canAddTableRow(t)) return t;
   const cols = Math.max(1, tableColCount(t));
   const blank = Array.from({ length: cols }, () => '');
   const idx = at ?? t.cells.length;
@@ -63,6 +82,7 @@ export function removeTableRow(t: TableElement, at?: number): TableElement {
 }
 
 export function addTableColumn(t: TableElement, at?: number): TableElement {
+  if (!canAddTableColumn(t)) return t;
   const idx = at ?? tableColCount(t);
   const cells = t.cells.map((row) => [...row.slice(0, idx), '', ...row.slice(idx)]);
   const colWidths = t.colWidths
@@ -88,7 +108,8 @@ export function removeTableColumn(t: TableElement, at?: number): TableElement {
 // Overlay a parsed grid (rows of cells, e.g. from a pasted TSV) onto
 // the table starting at (r0, c0), growing the table with blank cells
 // as needed so the whole paste fits. Existing cells outside the
-// pasted block are preserved.
+// pasted block are preserved. The grid grows no further than the caps every save checks (validate.ts):
+// what lies past them is left out, so a big spreadsheet paste can't leave a tab no save accepts.
 export function pasteIntoTable(
   t: TableElement,
   r0: number,
@@ -97,8 +118,18 @@ export function pasteIntoTable(
 ): TableElement {
   if (grid.length === 0) return t;
   const pastedCols = Math.max(1, ...grid.map((row) => row.length));
-  const rows = Math.max(t.cells.length, r0 + grid.length);
-  const cols = Math.max(tableColCount(t), c0 + pastedCols);
+  const haveRows = t.cells.length;
+  const haveCols = tableColCount(t);
+  // Columns first (a paste is read across), then as many rows as the cell cap leaves; never below what the
+  // table already holds, which a saved table keeps within the caps.
+  const cols = Math.max(
+    haveCols,
+    Math.min(c0 + pastedCols, MAX_TABLE_COLS, Math.floor(MAX_TABLE_CELLS / Math.max(1, haveRows))),
+  );
+  const rows = Math.max(
+    haveRows,
+    Math.min(r0 + grid.length, MAX_TABLE_ROWS, Math.floor(MAX_TABLE_CELLS / Math.max(1, cols))),
+  );
   const cells = Array.from({ length: rows }, (_, r) =>
     Array.from({ length: cols }, (_, c) => {
       const gi = r - r0;
@@ -203,32 +234,4 @@ export function moveTableRow(t: TableElement, from: number, to: number): TableEl
     ? moveInArray(t.cellStyles, from, to, rows, () => [])
     : t.cellStyles;
   return { ...t, cells, rowHeights, cellStyles };
-}
-
-// Parse plain clipboard text into the cell grid pasteIntoTable takes:
-// newline-separated rows, tab-separated cells (the TSV convention every
-// spreadsheet uses for plain-text copies). Trailing blank lines (the final
-// newline most spreadsheet copies carry) are dropped so pasting a 2x2
-// range doesn't grow the table by an empty row. Shared by the in-cell
-// editor's paste handler and the selected-cell paste (paste without
-// entering the editor), so the two can't drift.
-export function parseClipboardTableText(text: string): string[][] {
-  const grid = text
-    .replace(/\r/g, '')
-    .split('\n')
-    .map((line) => line.split('\t'));
-  while (
-    grid.length > 1 &&
-    grid[grid.length - 1]!.length === 1 &&
-    grid[grid.length - 1]![0] === ''
-  ) {
-    grid.pop();
-  }
-  return grid;
-}
-
-// True when the parsed clipboard grid spans more than one cell — the
-// paste should then fill + grow the table rather than land in one cell.
-export function isTabularClipboard(grid: string[][]): boolean {
-  return grid.length > 1 || (grid[0]?.length ?? 0) > 1;
 }
