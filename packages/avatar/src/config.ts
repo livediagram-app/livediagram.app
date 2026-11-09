@@ -189,6 +189,34 @@ export function parseAvatarConfig(raw: unknown): AvatarConfig {
   };
 }
 
+// A peer's costume as the canvas draws it, read once per costume rather than on every frame of their walk
+// (docs/specs/008-canvas/canvas-performance.md "Walking renders the characters, not the canvas"). The presence
+// coalescer keeps each peer's costume object across their lean packets, so the object is the key; a full packet brings
+// an equal costume in a new object, and the value key hands back the same config for it. Read-only: never mutate it.
+const parsedByObject = new WeakMap<object, AvatarConfig>();
+// Bounded by construction: a parsed costume holds only known options, whatever a peer sent.
+const parsedByValue = new Map<string, AvatarConfig>();
+let parsedDefault: AvatarConfig | null = null;
+
+export function peerAvatarConfig(raw: unknown): AvatarConfig {
+  if (raw && typeof raw === 'object') {
+    const hit = parsedByObject.get(raw);
+    if (hit) return hit;
+  } else if (raw === undefined || raw === null) {
+    parsedDefault ??= parseAvatarConfig(raw);
+    return parsedDefault;
+  }
+  const parsed = parseAvatarConfig(raw);
+  const key = `${parsed.gender}|${parsed.clothing}|${parsed.hair}|${parsed.size}|${parsed.hairColour}`;
+  let config = parsedByValue.get(key);
+  if (!config) {
+    config = parsed;
+    parsedByValue.set(key, config);
+  }
+  if (raw && typeof raw === 'object') parsedByObject.set(raw, config);
+  return config;
+}
+
 // True when this browser already has a character stored — i.e. this is not the
 // first use of the mode. The hook uses it to decide whether to PIN a freshly
 // rolled character (see useAvatarConfig): random once, then yours.

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AudioGraph, GLIDE_S } from './audio-graph';
+import { AudioGraph, GLIDE_S, PLACE_EPSILON } from './audio-graph';
 
 type FakeNode = {
   connect: (next: unknown) => unknown;
@@ -67,6 +67,44 @@ describe('AudioGraph', () => {
     graph.detach('p1');
     graph.detach('p1');
     expect(graph.has('p1')).toBe(false);
+  });
+
+  // blueprint "Audio graph": a value that barely moved is left; silence and full volume are always reached.
+  it('sets a voice again only when its volume or side moved by PLACE_EPSILON or more', () => {
+    const ctx = fakeContext();
+    const graph = new AudioGraph(ctx as unknown as AudioContext);
+    graph.attach('p1', {} as MediaStream);
+    const gain = first(ctx.createGain).gain.setTargetAtTime as ReturnType<typeof vi.fn>;
+    const pan = first(ctx.createStereoPanner).pan.setTargetAtTime as ReturnType<typeof vi.fn>;
+    graph.place('p1', 0.5, 0.2);
+    expect(gain).toHaveBeenCalledTimes(1);
+    expect(pan).toHaveBeenCalledTimes(1);
+    // Under the step on both: nothing set.
+    graph.place('p1', 0.5 + PLACE_EPSILON / 2, 0.2 - PLACE_EPSILON / 2);
+    expect(gain).toHaveBeenCalledTimes(1);
+    expect(pan).toHaveBeenCalledTimes(1);
+    // The volume moved a step, the side did not: only the volume.
+    graph.place('p1', 0.5 + PLACE_EPSILON, 0.2);
+    expect(gain).toHaveBeenCalledTimes(2);
+    expect(pan).toHaveBeenCalledTimes(1);
+    // Drift adds up from the value last set, not the last asked for.
+    graph.place('p1', 0.5 + PLACE_EPSILON, 0.2 + PLACE_EPSILON * 0.6);
+    graph.place('p1', 0.5 + PLACE_EPSILON, 0.2 + PLACE_EPSILON * 1.2);
+    expect(pan).toHaveBeenCalledTimes(2);
+    // Silence and full volume land, however close the last value was; the centre too.
+    graph.place('p1', 1 - PLACE_EPSILON / 2, 0);
+    graph.place('p1', 1, PLACE_EPSILON / 4);
+    expect(gain).toHaveBeenLastCalledWith(1, 3, GLIDE_S);
+    graph.place('p1', PLACE_EPSILON / 2, 0);
+    graph.place('p1', 0, 0);
+    expect(gain).toHaveBeenLastCalledWith(0, 3, GLIDE_S);
+    expect(pan).toHaveBeenLastCalledWith(0, 3, GLIDE_S);
+    // A stream attached again starts afresh: its first place sets both.
+    graph.attach('p1', {} as MediaStream);
+    graph.place('p1', 0, 0);
+    expect(
+      (ctx.createGain.mock.results[1]!.value as FakeNode).gain.setTargetAtTime,
+    ).toHaveBeenCalledTimes(1);
   });
 
   it('measures the microphone, and reads silence while not listening', () => {

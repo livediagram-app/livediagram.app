@@ -9,6 +9,7 @@ import {
   resetCallPeers,
   setCallMaximised,
 } from '@/lib/calls/calls-store';
+import type { ProximityCallDeps } from '@/lib/calls/useProximityCall';
 import { useCanvasCall } from './useCanvasCall';
 
 const hook = vi.hoisted(() => ({ useProximityCall: vi.fn() }));
@@ -65,6 +66,38 @@ describe('useCanvasCall', () => {
     result.current.bars.onWalkTo!('p1', { x: 500, y: 0 });
     expect(walkTo).toHaveBeenCalledWith({ x: 440, y: 0 });
     expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'WalkToTalker');
+  });
+
+  // docs/specs/008-canvas/canvas-performance.md "Walking renders the characters, not the canvas": the call's scene
+  // follows the coarse copy; the bars, hands and bubbles follow every frame.
+  it('feeds the call the coarse copy of everyone and the bars the frames', () => {
+    const coarseRows = [
+      { ...remoteAvatars[0]!, avatar: { ...remoteAvatars[0]!.avatar, x: 400, seatedOn: 'booth' } },
+    ] as RemoteAvatarRow[];
+    const coarse = { remoteAvatars: coarseRows, pos: { x: 10, y: 0 } };
+    const { result, rerender } = renderHook(
+      ({ pos }) =>
+        useCanvasCall({
+          remoteAvatars,
+          props,
+          canvasTool: 'avatar',
+          avatar: { pos, walkTo: vi.fn(), seatedOn: 'chair' },
+          avatarScale: 1,
+          coarse,
+        }),
+      { initialProps: { pos: { x: 0, y: 0 } } },
+    );
+    const fed = hook.useProximityCall.mock.lastCall![0] as ProximityCallDeps;
+    expect(fed.self).toEqual({ x: 10, y: 0, seatedOn: 'chair' });
+    expect(fed.walkers).toEqual([{ id: 'p1', at: { x: 400, y: 0, seatedOn: 'booth' } }]);
+    expect(result.current.bars.peers[0]!.at).toEqual({ x: 500, y: 0, seatedOn: null });
+    expect(result.current.bars.self).toMatchObject({ at: { x: 0, y: 0 } });
+    // A frame of your walk moves the bars, and hands the call the very scene it had.
+    rerender({ pos: { x: 2, y: 0 } });
+    const next = hook.useProximityCall.mock.lastCall![0] as ProximityCallDeps;
+    expect(next.self).toBe(fed.self);
+    expect(next.walkers).toBe(fed.walkers);
+    expect(result.current.bars.self).toMatchObject({ at: { x: 2, y: 0 } });
   });
 
   it('out of the mode, you are nowhere and the bars only show', () => {

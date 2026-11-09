@@ -12,7 +12,7 @@ import { poseFeet } from '@liveworkspace/avatar/pose';
 import { parseAvatarStatus } from '@liveworkspace/avatar/status';
 import { isDrinkKind } from '@liveworkspace/avatar/office-geometry';
 import { headPoint } from '@liveworkspace/avatar/speech';
-import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
+import { avatarScale, peerAvatarConfig } from '@liveworkspace/avatar/config';
 import { reactionPose } from '@liveworkspace/avatar/reactions';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ReceptionistLayer } from './receptionist/ReceptionistLayer';
@@ -26,6 +26,8 @@ import { useSocialPieces } from '@/components/canvas/collab/useSocialPieces';
 import { useWorkdayPieces } from '@/lib/office/useWorkdayPieces';
 import { useTableGameScene } from '@/lib/table-games/useTableGameScene';
 import { usePeerAvatarRows } from '@/hooks/collab/usePeerRows';
+import { useCoarseMotion } from '@/hooks/collab/useCoarseMotion';
+import { callPlacesOf } from '@/lib/calls/call-places';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useWayfindingPeople } from './wayfinding/useWayfindingPeople';
@@ -47,7 +49,8 @@ type CanvasAvatar = ReturnType<typeof useCanvasAvatar>;
 // characters, not the canvas"; blueprint: avatar-pose-store.md): the only part of the canvas that follows a step,
 // yours or a peer's. It subscribes to your feet and the peers' characters, runs what reacts to where everyone stands
 // (proximity audio, the pieces you walk up to, the pad beams, the game seats, who is where), and draws the
-// characters, the hearing ring, the talking bars, raised hands, call bubbles and speech bubbles. Inside the canvas's
+// characters, the hearing ring, the talking bars, raised hands, call bubbles and speech bubbles; what follows where
+// everyone stands as a fact reads the coarse copy, not every frame. Inside the canvas's
 // transformed wrapper, after the element layer, so the characters pan and zoom with the canvas and stand in front of
 // what they walk over. Peers' characters draw whether or not you walk.
 export function CanvasCharactersLayer({
@@ -79,6 +82,15 @@ export function CanvasCharactersLayer({
   // Your feet: null outside the mode. A hop, a wave or a reaction in place renders your character alone.
   const feet = useAvatarPose(avatar.poseStore, poseFeet);
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
+  // The coarse copy (blueprint: peer-motion-store.md "The coarse copy"): everyone's characters and your feet at most
+  // 10 times a second while people walk, at once when someone appears, leaves, sits, stands or crosses a wall or a
+  // stage's edge. What follows positions as a fact reads it; what draws a character reads the frames.
+  const places = callPlacesOf(props.elements);
+  const { remoteAvatars: coarseAvatars, feet: coarseFeet } = useCoarseMotion(
+    props.peers,
+    avatar.poseStore,
+    places,
+  );
 
   // The social pieces (docs/specs/009-elements/social-pieces.md): the jukebox whose area you stand in plays for you,
   // and the arcade machine you stand at asks for a coin.
@@ -93,7 +105,7 @@ export function CanvasCharactersLayer({
     selfPlaced: avatar.placed,
     readSelf: avatar.readPos,
     selfColor: props.selfParticipant.color,
-    peers: remoteAvatars,
+    peers: coarseAvatars,
     elements: walkElements,
   });
   // The game pieces (docs/specs/009-elements/social-pieces.md "A game"): who sits at each and may play, and the room.
@@ -104,7 +116,7 @@ export function CanvasCharactersLayer({
     seatedOn: avatar.seatedOn,
     seatClaim: avatar.seatClaim,
     takePart: !!props.takePart,
-    peers: remoteAvatars,
+    peers: coarseAvatars,
     seatsOf,
     send: props.onCallSignal,
   });
@@ -115,8 +127,8 @@ export function CanvasCharactersLayer({
     elements: props.elements,
     self: props.selfParticipant,
     selfConfig: avatarLook.config,
-    selfFeet: inMode ? feet : null,
-    remoteAvatars,
+    selfFeet: inMode ? coarseFeet : null,
+    remoteAvatars: coarseAvatars,
     tabPresence: props.tabPresence,
   });
   const selfScale = avatarScale(avatarLook.config.size);
@@ -139,6 +151,7 @@ export function CanvasCharactersLayer({
       height: mainSize.height,
     },
     doNotDisturb: avatarStatus === 'dnd',
+    coarse: { remoteAvatars: coarseAvatars, pos: coarseFeet },
   });
   // Where the camera and screen bubbles were laid out, so speech bubbles rise clear of them.
   const callBubbleRects = useCallBubbleRects();
@@ -155,7 +168,7 @@ export function CanvasCharactersLayer({
           facing={peer.avatar.facing}
           // Parsed, not trusted: an older peer omits the costume entirely and
           // a future one may send an option this build doesn't know.
-          config={parseAvatarConfig(peer.avatar.config)}
+          config={peerAvatarConfig(peer.avatar.config)}
           walking={peer.avatar.walking}
           stepFrame={peer.avatar.stepFrame}
           lift={peer.avatar.lift}
