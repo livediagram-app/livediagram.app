@@ -79,7 +79,10 @@ export type TabLedger = { elements: Record<string, ElementLedger> };
 // Bounds on what one ledger entry may hold, so a flood of hand-crafted ops
 // can't grow a room's storage without end. Past a bound, new keys are dropped
 // and the merge falls back to what the save carried.
+// A thread's adds and removes, and apart from them its reactions: a long thread must not starve a Participant's
+// reaction, which only the ledger writes into the stored tab.
 const COMMENT_EVENTS_MAX = 500;
+const REACT_EVENTS_MAX = 500;
 const ID_MAX = 200;
 // A board holds NOTES_MAX notes; room for them to turn over a few times before the oldest events give way.
 const NOTE_EVENTS_MAX = NOTES_MAX * 4;
@@ -132,10 +135,7 @@ function recordElement(
     case 'comment-resolve':
     case 'comment-react': {
       const comments = prev?.comments ?? { adds: {}, removes: {} };
-      const events =
-        Object.keys(comments.adds).length +
-        Object.keys(comments.removes).length +
-        Object.keys(comments.reacts ?? {}).length;
+      const events = Object.keys(comments.adds).length + Object.keys(comments.removes).length;
       // A Sheet cell's thread went with Plan: a delta naming one is refused.
       if (d.cell !== undefined) return null;
       if (d.kind === 'comment-add') {
@@ -163,7 +163,7 @@ function recordElement(
         if (!isStr(commentId, ID_MAX) || !isReactionChange(d)) return null;
         const key = reactKey(commentId, d.emoji, d.by);
         const reacts = comments.reacts ?? {};
-        if (!(key in reacts) && events >= COMMENT_EVENTS_MAX) return null;
+        if (!(key in reacts) && Object.keys(reacts).length >= REACT_EVENTS_MAX) return null;
         return {
           ...(prev ?? {}),
           comments: {
