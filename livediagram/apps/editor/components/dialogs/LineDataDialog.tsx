@@ -3,6 +3,7 @@ import { Button, CloseIcon, DialogHeader } from '@livediagram/ui';
 import type { LineSeries } from '@livediagram/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { NumberDraftInput } from '@/components/primitives/NumberDraftInput';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerChartDataDialog } from '@liveworkspace/workbench/lib/chart-data-dialog-handle';
 import { parseCsvLineData } from '@/lib/csv';
@@ -179,26 +180,19 @@ export function LineDataDialog({
                 </td>
                 {rows.map((s, si) => (
                   <td key={si}>
-                    <input
+                    <NumberDraftInput
                       className={`${cell} w-full text-right tabular-nums`}
-                      type="number"
                       value={s.values[i] ?? 0}
                       aria-label={`${s.name} ${c}`}
-                      onChange={(e) => {
-                        const n = Number(e.target.value);
+                      onValue={(n) =>
                         setRows((r) =>
                           r.map((x, j) =>
                             j === si
-                              ? {
-                                  ...x,
-                                  values: x.values.map((v, k) =>
-                                    k === i ? (Number.isFinite(n) ? n : 0) : v,
-                                  ),
-                                }
+                              ? { ...x, values: x.values.map((v, k) => (k === i ? n : v)) }
                               : x,
                           ),
-                        );
-                      }}
+                        )
+                      }
                       onBlur={() => store(cats, rows)}
                     />
                   </td>
