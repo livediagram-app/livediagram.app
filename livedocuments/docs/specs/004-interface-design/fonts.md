@@ -204,7 +204,9 @@ SVG / PDF paint the same typeface the canvas did, never the UI sans.
   `<img>`, which blocks external resources outright, so a referenced font
   would silently come back as the fallback. Non-Latin text keeps the fallback
   face, since embedding every script would multiply an export's weight for coverage
-  a canvas almost never uses.
+  a canvas almost never uses. Faces fetched whole are kept for the session, so a second
+  export downloads nothing; a fetch that failed (offline, a blocked font host) is not kept,
+  so the next export tries again rather than staying in the fallback face until a reload.
 - **A headless render declares instead.** `renderElementsToSvg` (the api / mcp
   workers, which have no font-fetch budget) emits `svgFontDefs`: an `@import`
   of the Google stylesheet for the used families only. A browser opening that
