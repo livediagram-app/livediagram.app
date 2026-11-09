@@ -28,6 +28,7 @@ import { CORS_HEADERS, forbidden, json, notFound } from '../responses';
 import { parsePositiveCap } from '../limits';
 import {
   COMMUNITY_CONTENT,
+  deniedEdit,
   gateEdit,
   gateRead,
   grantCallerOf,
@@ -93,7 +94,9 @@ export async function handlePhotoBlobRoutes(ctx: DesignRouteContext): Promise<Re
   // design or one not yet saved (a new tab's first save waits for its pixels). Tab ids are the design's own: a
   // design's object holds no other design's tabs.
   if (ctx.token) return refuse('photos_unavailable', 403, where);
-  if (!(await gateEdit(ctx, designId, undefined, undefined, tabId))) return forbidden();
+  // A grant confined to another tab is answered 404, as every write door answers it (tab-scoped-share-links.md).
+  if (!(await gateEdit(ctx, designId, undefined, undefined, tabId)))
+    return deniedEdit(ctx, designId, tabId);
 
   if (has) {
     const body = await readBody(ctx);
@@ -145,7 +148,13 @@ export async function handlePhotoBlobRoutes(ctx: DesignRouteContext): Promise<Re
       env.PHOTO_BLOBS!.put(photoBlobKey(e.id), e.bytes, { httpMetadata: { contentType: e.type } }),
     ),
   );
-  await recordBlobs(env, designId, tabId, blobs);
+  // The cap again, in the one statement that writes the refs: two batches checked at once both passed above, and the
+  // second to write is refused here rather than taking the tab past its cap.
+  if (!(await recordBlobs(env, designId, tabId, blobs, Date.now(), cap)))
+    return refuse('photo_full', 403, where, {
+      limit: cap,
+      current: await tabPhotoBytes(env, tabId),
+    });
   console.info('[photo-blobs] stored', { ...where, blobs: entries.length, bytes: raw.length });
   return json({ stored: ids });
 }

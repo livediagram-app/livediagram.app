@@ -191,6 +191,36 @@ describe('page ls and page set', () => {
     }
   });
 
+  it('refuses flags naming more than one change, flags with --changes, and --add with --page', async () => {
+    const run = async (flags: Record<string, unknown>) => {
+      const { ctx, sent } = setUp(undefined, undefined, '[{"op":"add","kind":"logo"}]');
+      const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, ...flags })).catch(
+        (e: unknown) => e,
+      );
+      expect(sent).toEqual([]);
+      return out;
+    };
+    expect(await run({ add: 'logo', page: '3', delete: true })).toMatchObject({
+      status: 400,
+      code: 'usage',
+      message: 'one change at a time: --add and --delete; give several with --changes <file>',
+    });
+    expect(await run({ page: '2', delete: true, name: 'Cover' })).toMatchObject({
+      message:
+        'one change at a time: --delete and --name, --size or --orientation; give several with --changes <file>',
+    });
+    expect(await run({ page: '2', layout: 'quote', size: 'a3' })).toMatchObject({ code: 'usage' });
+    expect(await run({ page: '2', move: 1, duplicate: true })).toMatchObject({ code: 'usage' });
+    expect(await run({ add: 'logo', page: '2' })).toMatchObject({
+      code: 'usage',
+      message: expect.stringMatching(/^--add takes no --page/),
+    });
+    expect(await run({ changes: 'c.json', page: '2', delete: true })).toMatchObject({
+      code: 'usage',
+      message: 'give --changes or the flags for one change, not both (--page, --delete)',
+    });
+  });
+
   it('adds a page with no layout, and lists an unnamed page without a name', async () => {
     const unnamed = { ...ANSWER, pages: [{ ...ANSWER.pages[0]!, name: null }] };
     const { ctx, sent } = setUp(undefined, () => Response.json(unnamed));

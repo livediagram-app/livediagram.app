@@ -54,7 +54,8 @@ Under a design's tab, on the api worker ([API app](../015-api/api.md)):
   token are refused: 403); the frame is well formed (400 `bad_batch`); each `type` is `image/png`, `image/jpeg` or
   `image/webp` and its bytes start with that type's magic number (415 `unsupported-type`); each blob's SHA-256
   matches its id (400 `blob_mismatch`); the tab's stored bytes plus the new ones stay within the tab's cap (403
-  `photo_full`, with `limit` and `current`). A blob already stored is not written again, but its bytes are always
+  `photo_full`, with `limit` and `current`), checked again as the refs are written, so two batches sent at once
+  never take the tab past its cap together. Another tab's id, to a link confined to one tab, is a 404. A blob already stored is not written again, but its bytes are always
   sent and checked: holding a ref means having had the bytes, never just knowing an id.
 - **No binding**: without the `PHOTO_BLOBS` binding every route answers 503 `photos_unavailable`; the editor then offers
   photo pages only in Offline Mode designs ("Photo editing needs image storage on this server."), and hides the

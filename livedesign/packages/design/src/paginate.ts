@@ -46,8 +46,13 @@ const near = (a: Box, b: Box, gap: number) =>
   a.x - gap <= b.r && b.x - gap <= a.r && a.y - gap <= b.b && b.y - gap <= a.b;
 
 /** The content's clusters, each a set of element ids, in reading order (rows top to bottom, each
- *  row left to right). */
-export function contentClusters(elements: Element[], gap = PAGINATE_CLUSTER_GAP): string[][] {
+ *  row left to right). An arrow's ends are found among `all` (the whole tab), so one pinned to an
+ *  element on another page is measured where it goes, not from the canvas origin. */
+export function contentClusters(
+  elements: Element[],
+  gap = PAGINATE_CLUSTER_GAP,
+  all: Element[] = elements,
+): string[][] {
   const n = elements.length;
   const parent = elements.map((_, i) => i);
   const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i]!)));
@@ -57,7 +62,7 @@ export function contentClusters(elements: Element[], gap = PAGINATE_CLUSTER_GAP)
     if (ra !== rb) parent[ra] = rb;
   };
   const index = new Map(elements.map((el, i) => [el.id, i]));
-  const boxes = elements.map((el) => boundsOf(el, elements));
+  const boxes = elements.map((el) => boundsOf(el, all));
   elements.forEach((el, i) => {
     if (el.type !== 'arrow') return;
     for (const end of [el.from, el.to]) {
@@ -210,7 +215,7 @@ export function withPageSplit<T extends Pick<Tab, 'elements'>>(
   if (!target || target.size !== 'fit' || target.locked) return null;
   const ids = elementIdsOnPage(tab.elements, layOutPages(pages), pageId);
   const content = tab.elements.filter((el) => ids.has(el.id));
-  const clusters = contentClusters(content);
+  const clusters = contentClusters(content, PAGINATE_CLUSTER_GAP, tab.elements);
   if (clusters.length < 2) return null;
   const room = Math.min(MAX_PAGES - (pages.length - 1), PAGINATE_MAX_PAGES);
   if (room < 2) return null;

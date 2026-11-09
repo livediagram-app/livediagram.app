@@ -8,6 +8,20 @@ import { decodeStrokePoints } from '@liveworkspace/model-core/stroke-points-cach
 import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 import { logoPageAt } from './logo-page';
 import type { LaidOutPage } from './page';
+import type { AttachPoint } from './attachment';
+import { isPointerNote, pointerTipOf } from './pointer-note';
+
+// A badge or step held on a host's point holds the reflected point on the reflected host.
+const MIRRORED_POINT: Record<AttachPoint, AttachPoint> = {
+  'top-left': 'top-right',
+  top: 'top',
+  'top-right': 'top-left',
+  right: 'left',
+  'bottom-right': 'bottom-left',
+  bottom: 'bottom',
+  'bottom-left': 'bottom-right',
+  left: 'right',
+};
 
 // An element whose centre is this close to the axis (a share of the artboard's width) already
 // sits on it: mirroring it would only stack a copy on itself.
@@ -30,6 +44,15 @@ export function mirrorElement<T extends BoxedElement>(el: T, axisX: number): T {
     x: 2 * axisX - el.x - el.width,
     ...(rotation ? { rotation: -rotation } : {}),
   };
+  // A chip's point on its host, and a pointer note's tip, reflect with it: left unflipped, attachment would settle
+  // the twin back onto its host's unreflected corner.
+  const attachAt = (el as { attachAt?: AttachPoint }).attachAt;
+  if (attachAt && attachAt in MIRRORED_POINT)
+    (moved as { attachAt?: AttachPoint }).attachAt = MIRRORED_POINT[attachAt];
+  if (isPointerNote(moved)) {
+    const tip = pointerTipOf(moved);
+    return { ...moved, pointerTip: { x: moved.width - tip.x, y: tip.y } };
+  }
   if (moved.type === 'path') {
     return {
       ...moved,

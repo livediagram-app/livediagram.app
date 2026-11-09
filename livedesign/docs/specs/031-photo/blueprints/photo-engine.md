@@ -287,7 +287,9 @@ params) }`; `FILTERS[id] = { id, name, category, params: ParamSpec[], margin(par
 - `photo_blob_refs (tab_id TEXT NOT NULL, blob_id TEXT NOT NULL, created_at INTEGER NOT NULL, content_type TEXT
 NOT NULL, byte_size INTEGER NOT NULL, PRIMARY KEY (tab_id, blob_id)) WITHOUT ROWID`, index `photo_blob_refs_blob
 (blob_id)`, in the design's own SQLite (`design-schema.ts`): which blobs each tab may read, and what each is (type
-  and size, for the read and the tab's cap, `tabPhotoBytes`).
+  and size, for the read and the tab's cap, `tabPhotoBytes`). `recordBlobs` takes the cap too and writes the refs only
+  when the tab's bytes plus the blobs it does not hold yet stay within it, in the INSERT's own WHERE (false when
+  refused), so batches checked at once cannot pass it together.
 - R2 (`PHOTO_BLOBS`): the bytes at `photo/<blob id>`, metadata `{ contentType }`, shared between designs by content;
   and an empty marker `photo-refs/<blob id>/<design id>` for each design that holds a ref to it. A design writes its
   marker before its first ref (`markBlobsHeld`, `recordBlobs`), and removes it once its last ref goes;
