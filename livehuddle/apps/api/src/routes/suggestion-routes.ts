@@ -6,13 +6,7 @@
 import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
 import type { SuggestionsResponse } from '@livehuddle/api-schema';
 import { SUGGESTION_TEXT_MAX, SUGGESTIONS_MAX } from '@livehuddle/document';
-import {
-  deleteSuggestion,
-  getDocument,
-  getTab,
-  insertSuggestion,
-  listSuggestions,
-} from '../db';
+import { deleteSuggestion, getDocument, getTab, insertSuggestion, listSuggestions } from '../db';
 import { badRequest, conflict, json, methodNotAllowed, noContent, notFound } from '../responses';
 import {
   deniedEdit,
