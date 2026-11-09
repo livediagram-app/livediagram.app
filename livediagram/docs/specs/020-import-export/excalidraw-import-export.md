@@ -199,7 +199,8 @@ Properties, applied wherever present:
 - `strokeStyle` `solid` / `dashed` / `dotted` map to `dash` 1:1.
 - **Rotation**: `angle` (radians, clockwise) becomes `rotationDeg` on boxed
   items; linear items (`freedraw`, `line`, `arrow`) have it baked into their
-  points, rotated about the element's centre.
+  points, rotated about the centre of their points' bounds (as Excalidraw turns them: a line drawn leftwards or
+  upwards has points below 0, so `x + width / 2` is not its centre).
 - **Text**: `fontSize` px is `fontPx` exactly (sizes are continuous, 13 to 63 px
   in the real boards). `fontFamily` 1 (Virgil) and 5 (Excalifont) are `hand`;
   3 (Cascadia) and 8 (Comic Shanns) are `mono`; every other family is `sans`.
