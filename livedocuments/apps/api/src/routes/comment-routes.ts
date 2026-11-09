@@ -315,8 +315,8 @@ async function reactTo(
   if (typeof on !== 'boolean') return badRequest('missing on');
   const writer = await getParticipant(ctx.env, caller.owner);
   // `person` is the reactor's hashed person id, so a closed account's reactions can be found and anonymised
-  // (comment-reactions.md); a reaction keeps it once CommentReaction carries the optional field (#1539).
-  const delta: ElementDelta & { person?: string } = {
+  // (comment-reactions.md).
+  const delta: ElementDelta = {
     kind: 'comment-react',
     commentId,
     emoji,

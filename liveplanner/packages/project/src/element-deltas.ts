@@ -89,6 +89,8 @@ export type ElementDelta =
       emoji: CommentReactionId;
       by: string;
       name: string;
+      // The reactor's hashed person id, which only the room or the server stamps (comment-reactions.md).
+      person?: string;
       on: boolean;
     }
   // A Plan board's set-up change, as only what changed (docs/specs/012-collaboration/collab-race-hardening.md,

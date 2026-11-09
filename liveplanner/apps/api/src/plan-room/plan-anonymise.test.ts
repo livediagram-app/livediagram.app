@@ -6,7 +6,8 @@ import { appendItemHistory } from '../db/item-history';
 import { listItems } from '../db/items';
 import { readSheetHead } from '../db/sheets';
 import { listHomeThreads } from '../db/card-threads';
-import { anonymisePlan, anonymiseReactions } from './plan-anonymise';
+import { anonymisePlan, anonymiseReactions, anonymiseTabReactions } from './plan-anonymise';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // A closed account's name off a plan that outlives them (plan-anonymise.ts): here, the card history they wrote
 // (docs/specs/026-plan/items.md "History"), which names its authors by their hashed id as the cards do.
@@ -156,6 +157,72 @@ describe('anonymisePlan', () => {
     expect(threads.kept).toMatchObject({ resolvedBy: 'Kept Person', resolvedById: kept });
     // Running it again changes nothing.
     expect(await anonymisePlan(db.env, 'P', 'user_gone')).toBe(0);
+  });
+
+  // The room stamps a canvas reaction's `person` (docs/specs/012-collaboration/comment-reactions.md), so a tab's own
+  // comment threads are found by hashed id too.
+  it('names a closed account Deleted account where it reacted on a canvas comment', async () => {
+    const db = sqliteD1();
+    db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
+                 VALUES ('P', 'user_kept', 'Plan', 0, 1, 1)`);
+    const gone = await itemPersonId('user_gone');
+    const kept = await itemPersonId('user_kept');
+    const reactions = [
+      { emoji: 'heart', by: 'k-gone', name: 'Gone Person', person: gone },
+      { emoji: 'heart', by: 'k-kept', name: 'Kept Person', person: kept },
+    ];
+    const comment = { id: 'c1', authorName: 'Kept Person', text: 'hi', at: 1, reactions };
+    const data = JSON.stringify({
+      id: 't1',
+      name: 'T',
+      elements: [
+        { id: 'e1', type: 'shape', commentThread: { resolved: false, comments: [comment] } },
+      ],
+    });
+    db.sql
+      .prepare(`INSERT INTO tabs (id, name, data, updated_at, rev) VALUES ('t1', 'T', ?, 1, 0)`)
+      .run(data);
+    db.sql.exec(
+      `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('P', 't1', 0, 1)`,
+    );
+
+    await anonymisePlan(db.env, 'P', 'user_gone');
+
+    const row = db.sql.prepare(`SELECT data, rev FROM tabs WHERE id = 't1'`).get() as {
+      data: string;
+      rev: number;
+    };
+    const stored = JSON.parse(row.data).elements[0].commentThread.comments[0].reactions;
+    expect(stored.map((r: { name: string }) => r.name)).toEqual([ANONYMISED_NAME, 'Kept Person']);
+    expect(stored[0].person).not.toBe(gone);
+    expect(row.rev).toBe(1);
+    expect(await anonymisePlan(db.env, 'P', 'user_gone')).toBe(0);
+  });
+
+  it('walks a big tab once, and skips one that never names the person', () => {
+    const elements = Array.from({ length: 2000 }, (_, i) => ({
+      id: `e${i}`,
+      commentThread: {
+        comments: [
+          {
+            id: `c${i}`,
+            reactions: [{ emoji: 'heart', by: 'k', name: 'N', person: i === 7 ? 'gone' : 'x' }],
+          },
+        ],
+      },
+    }));
+    const text = JSON.stringify({ elements });
+    let out = anonymiseTabReactions(text, 'gone');
+    const cpu = cpuMsOf(() => {
+      out = anonymiseTabReactions(text, 'gone');
+    });
+    expect(out.changed).toBe(true);
+    expect(cpu).toBeLessThan(cpuBudgetMs(100));
+    expect(anonymiseTabReactions(text, 'nobody')).toEqual({ value: text, changed: false });
+    expect(anonymiseTabReactions('{not json gone', 'gone')).toEqual({
+      value: '{not json gone',
+      changed: false,
+    });
   });
 
   it('leaves comments text it cannot read as reactions as it is', () => {

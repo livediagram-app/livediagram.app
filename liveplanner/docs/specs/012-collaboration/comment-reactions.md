@@ -66,8 +66,8 @@ are not drawn.
   `@liveworkspace/api-kit/collab-key`, the same id liveplanner's `itemPersonId` gives, so one anonymising pass finds
   a person's reactions in every product), forwarded at the upgrade as `X-Verified-Reaction-Person` and pinned on the
   session. It is never the frame's: a claimed `person` is taken out, and a session with no identity stamps none. It
-  is what lets a closed account's reactions read **Deleted account**. A reaction keeps it once `CommentReaction`
-  carries the optional `person` field (#1539); until then it travels on the delta and is not stored.
+  is what lets a closed account's reactions read **Deleted account**, and the reaction stores it as
+  `CommentReaction.person`. A closed account's anonymising (`anonymisePlan`) finds it on the canvas comments of every tab of the plan as well as on its cards' threads.
 - The room stamps the delta's `name` and `by` from the sender's presence, as it stamps a posted comment's author,
   so nobody reacts in someone else's name: the key is the one the server pinned on the session, whatever the
   frame or its `hello` claimed. A Participant's reaction is a participation delta: the room relays it
