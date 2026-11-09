@@ -5,6 +5,7 @@ import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { LocalPreview } from '@liveworkspace/explorer/local-preview';
 import {
   loadThumbnail,
+  markThumbnailBroken,
   peekThumbnail,
   thumbnailKey,
   type ThumbnailEntry,
@@ -184,6 +185,11 @@ export function DocumentThumbnail({
           src={state.src}
           alt=""
           onLoad={() => setDecodedKey(fetchKey)}
+          // Bytes the browser cannot draw (a malformed SVG): the undrawn sketch, never a broken-image glyph.
+          onError={() => {
+            markThumbnailBroken(fetchKey);
+            setLoaded({ key: fetchKey, status: 'broken' });
+          }}
           className={`absolute inset-0 h-full w-full object-contain ${
             instant ? '' : 'transition duration-long ease-out'
           } ${shown ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}

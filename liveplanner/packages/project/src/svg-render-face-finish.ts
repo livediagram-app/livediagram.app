@@ -14,7 +14,11 @@ import {
   type FacePartPaint,
   type FacePartShape,
 } from './marker-face';
-import { mapTags, markedGroup, replaceBlocks } from '@liveworkspace/model-core/svg-markup-blocks';
+import {
+  holdFaceBlocks,
+  mapTags,
+  restoreFaceBlocks,
+} from '@liveworkspace/model-core/svg-markup-blocks';
 
 const SHAPE_TAGS = new Set(['rect', 'circle', 'ellipse', 'path', 'line', 'polyline', 'polygon']);
 const RECT_TAG = new Set(['rect']);
@@ -39,29 +43,7 @@ export function svgProfessionalFace(markup: string): string {
   });
 }
 
-// Blocks that are never drawn as they stand (clips, masks, patterns, markers, definitions), a foreignObject's HTML,
-// and the hand-drawn body (svgMarkerDrawing, already drawn in marker): kept whole, never redrawn.
-const HELD_BLOCKS = [
-  'clipPath',
-  'mask',
-  'defs',
-  'pattern',
-  'marker',
-  'symbol',
-  'foreignObject',
-] as const;
-const MARKER_BODY = 'data-finish="marker"';
 // A part is a self-closing shape tag, as our renderers write them; one with children keeps its plain look.
-
-// Every held block (HELD_BLOCKS, then the marker body) swapped for a placeholder comment, its markup kept in `held`.
-function holdBlocks(markup: string, held: string[]): string {
-  const hold = (block: string) => `<!--lvd-held-${held.push(block) - 1}-->`;
-  const out = replaceBlocks(markup, HELD_BLOCKS, hold);
-  const body = markedGroup(out, MARKER_BODY);
-  return body
-    ? out.slice(0, body[0]) + hold(out.slice(body[0], body[1])) + out.slice(body[1])
-    : out;
-}
 
 function partShape(tag: string, a: Record<string, string>): FacePartShape | null {
   const n = (k: string) => Number(a[k] ?? 0);
@@ -114,7 +96,8 @@ export function svgMarkerFace(
   const held: string[] = [];
   const budget = markerFaceBudget();
   let drawn = 0;
-  return mapTags(holdBlocks(dropStickerShadow(markup), held), SHAPE_TAGS, (t, tag) => {
+  const heldFace = holdFaceBlocks(dropStickerShadow(markup), held);
+  const drawnFace = mapTags(heldFace, SHAPE_TAGS, (t, tag) => {
     const { name, attrs } = t;
     if (!t.selfClosing || faceBudgetSpent(budget)) return tag;
     const a = faceAttrs(attrs);
@@ -142,5 +125,6 @@ export function svgMarkerFace(
     const plain = `<${name}${attrs.replace(/\sstroke(-[a-z]+)?="[^"]*"/g, '')}/>`;
     const transform = a.transform ? `<g transform="${a.transform}">${part.svg}</g>` : part.svg;
     return (part.role === 'line' ? '' : plain) + transform;
-  }).replace(/<!--lvd-held-(\d+)-->/g, (_, i: string) => held[Number(i)]!);
+  });
+  return restoreFaceBlocks(drawnFace, held);
 }

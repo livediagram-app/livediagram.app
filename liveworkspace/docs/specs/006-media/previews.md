@@ -73,7 +73,8 @@ and its own browser cache entry, so switching appearance shows the other half wi
   through a public link (a Community post's), `private, max-age=30`, so the picture can't outlive the post.
 - `404` with the same cache header: nothing to draw (an empty item, a tab with nothing on it). Version-keyed too.
   The Explorer's box then draws the item icon its rows and cards fall back to, as for an empty item, never a blank
-  box (the same for a `503` or any other failure).
+  box (the same for a `503` or any other failure, and for a `200` the browser cannot draw as a picture: its `<img>`
+  fails to decode, and the box shows the fallback, never a broken-image glyph).
 - `404` with `Cache-Control: no-store`: no such item, or no access. Says nothing more.
 - A reader whose link is confined to one tab gets that tab's picture, never the first tab's. A reader through a
   public link (a Community post's) gets what the app shows a public link (livediagram: the redacted drawing).

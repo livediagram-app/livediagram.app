@@ -104,7 +104,9 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   drawn on a Sketch tab. A face's own animations (a picker's spin) play in the copy in
   step with the live face: each new copy picks up each animation where the live one is, never from the start, so a
   face that keeps changing (a timer's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
-  and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers.
+  and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers. The
+  hand-drawn body under a face is drawn once, as the body is: the face's pencil shading never shades it again, and
+  every export stays well-formed SVG whatever the face holds.
   A Plan board, view or sheet that fills its tab or is maximised is drawn over the canvas, outside its element's
   box, and keeps its finish there too: its face is split and wobbled as it is on the canvas.
 

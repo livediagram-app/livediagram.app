@@ -164,4 +164,20 @@ describe('DocumentThumbnail', () => {
     await act(async () => pending[0]!({ url: 'blob:one', backgroundColor: null }));
     expect(document.querySelectorAll('img')).toHaveLength(2);
   });
+
+  // A snapshot the browser cannot draw (a malformed SVG) shows the still placeholder, never a broken-image glyph, and a
+  // remount (Home's tiles, a view switch) shows it at once from the cache without asking again.
+  it('shows the still placeholder when the snapshot fails to decode, and remembers it', async () => {
+    const first = render(thumb(1));
+    await act(async () => pending[0]!({ url: 'blob:bad', backgroundColor: null }));
+    fireEvent.error(img()!);
+    expect(img()).toBeNull();
+    expect(loader()).toBeNull();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:bad');
+    first.unmount();
+    render(thumb(1));
+    expect(img()).toBeNull();
+    expect(loader()).toBeNull();
+    expect(pending).toHaveLength(1);
+  });
 });

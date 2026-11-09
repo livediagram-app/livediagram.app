@@ -105,7 +105,8 @@ media service; `?v=` only keys the browser's cache.
   locally (250 tabs of 2 MB in 1.0 s), far past a request's limits on a large store.
 
 - Degrades gracefully otherwise: no access, nothing drawn or the service down → 404 or 503 → the row shows the
-  still, dashed sketch, captioned "Nothing drawn yet" where there is room.
+  still, dashed sketch, captioned "Nothing drawn yet" where there is room. So does an answer the browser cannot draw
+  as a picture (its `<img>` fails to decode), never a broken-image glyph; it is remembered as broken for that version.
 
 ## The live image and the share card
 

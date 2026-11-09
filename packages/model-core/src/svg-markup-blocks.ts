@@ -3,14 +3,71 @@
 // flags as polynomial (js/polynomial-redos); these walk the markup once with indexOf instead.
 
 /** The first `<g ...>...</g>` whose opening tag carries `attr` (e.g. `data-finish="marker"`), as [start, end), or null.
- *  The hand-drawn bodies it finds hold no nested group, so the group ends at the first `</g>` after it. */
+ *  Groups nested inside it are counted, so it ends at its own `</g>`: cutting at the first `</g>` left the rest of a
+ *  body that held a group (a face's pencil shading) behind as an unmatched `</g>`, and the whole SVG failed to parse.
+ *  Null when it never closes. */
 export function markedGroup(markup: string, attr: string): [number, number] | null {
   const at = markup.indexOf(attr);
   if (at < 0) return null;
   const start = markup.lastIndexOf('<g', at);
-  const close = markup.indexOf('</g>', at);
-  if (start < 0 || close < 0 || markup.indexOf('>', start) < at) return null;
-  return [start, close + '</g>'.length];
+  if (start < 0 || markup.indexOf('>', start) < at) return null;
+  const end = groupEnd(markup, markup.indexOf('>', at) + 1);
+  return end < 0 ? null : [start, end];
+}
+
+// Where the group opened just before `from` ends (past its `</g>`), counting the groups nested in it; -1 if it never
+// closes. One pass: each `<g` and `</g>` is found once (the next `</g>` is searched again only once it is passed).
+function groupEnd(markup: string, from: number): number {
+  let depth = 1;
+  let pos = from;
+  let open = openingAt(markup, 'g', pos);
+  let close = -1;
+  for (;;) {
+    if (close < pos) close = markup.indexOf('</g>', pos);
+    if (close < 0) return -1;
+    if (open >= 0 && open < close) {
+      const gt = markup.indexOf('>', open);
+      if (gt < 0) return -1;
+      if (markup[gt - 1] !== '/') depth += 1;
+      pos = gt + 1;
+      open = openingAt(markup, 'g', pos);
+      continue;
+    }
+    depth -= 1;
+    pos = close + '</g>'.length;
+    if (depth === 0) return pos;
+  }
+}
+
+// Blocks a face pass never redraws as they stand (clips, masks, patterns, markers, definitions, symbols), a
+// foreignObject's HTML.
+const FACE_HELD_BLOCKS = [
+  'clipPath',
+  'mask',
+  'defs',
+  'pattern',
+  'marker',
+  'symbol',
+  'foreignObject',
+] as const;
+// The hand-drawn bodies (each product's svgSketchDrawing and svgMarkerDrawing): already drawn and shaded by hand.
+const HAND_DRAWN_BODIES = ['data-finish="marker"', 'data-finish="sketch"'] as const;
+
+/** A face's markup with every block a face pass leaves whole (FACE_HELD_BLOCKS, then each hand-drawn body) swapped
+ *  for a `<!--lvd-held-N-->` comment, its markup pushed onto `held`. A face holds at most one body. */
+export function holdFaceBlocks(markup: string, held: string[]): string {
+  const hold = (block: string) => `<!--lvd-held-${held.push(block) - 1}-->`;
+  let out = replaceBlocks(markup, FACE_HELD_BLOCKS, hold);
+  for (const attr of HAND_DRAWN_BODIES) {
+    const body = markedGroup(out, attr);
+    if (body) out = out.slice(0, body[0]) + hold(out.slice(body[0], body[1])) + out.slice(body[1]);
+  }
+  return out;
+}
+
+/** Every `<!--lvd-held-N-->` put back as the block `holdFaceBlocks` held. */
+export function restoreFaceBlocks(markup: string, held: readonly string[]): string {
+  return markup.replace(/<!--lvd-held-(\d+)-->/g, (_, i: string) => held[Number(i)]!);
 }
 
 /** Every `<tag ...>...</tag>` block of the given tags replaced by `hold(block)`, in one pass. An opening tag with no
