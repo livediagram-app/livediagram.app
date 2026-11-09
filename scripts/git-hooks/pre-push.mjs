@@ -84,6 +84,8 @@ export function prePushSteps({ groups, editors }) {
       });
     }
   }
+  // Without coverage: instrumentation would slow every push several times over, so the editors' coverage
+  // floors are CI's alone (docs/ci.md "Editor coverage floors").
   for (const editor of new Set(editors.map((e) => e.editor))) {
     steps.push({
       label: `${editor}: unit tests`,

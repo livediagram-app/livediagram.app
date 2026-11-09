@@ -143,8 +143,8 @@ excluded. `index.ts` is intentionally **not** excluded: in this repo a
 package's `index.ts` is its implementation (e.g. `@livediagram/document`), not
 a barrel of re-exports.
 
-There is no repo-wide percentage gate: the bar for most code is "logic has
-tests," not a number.
+There is no per-file percentage gate: the bar for most code is "logic has
+tests," not a number. The editor (`apps/editor`) as a whole has a floor that only rises ([Editor coverage floor](#editor-coverage-floor)).
 
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
@@ -192,6 +192,16 @@ be split (Checks, about 4 minutes) buys no time, while each extra job takes one 
 concurrent runner slots that every other run waits on. The editor's suite is split into the fewest
 shards that finish inside Checks: three, at about 3 minutes each, of which about 30 seconds is
 setup. The E2E suite sizes its shards the same way ([End-to-end tests](e2e-smoke.md#when-it-runs)).
+
+### Editor coverage floor
+
+The editor's merged coverage, all three shards together, may never fall. After the shards, CI's **Editor
+coverage floors** job merges their lcov reports and fails when the editor's line or branch coverage is below its
+floor in `.github/scripts/coverage-floors.json` (the liveworkspace root's `docs/ci.md` "Editor coverage floors").
+A per-shard threshold in `vitest.config.ts` would be wrong: each shard runs a third of the files and covers a
+slice. When the editor beats its floor by half a point or more, the job says so; raise the floor in the same pull
+request with `node .github/scripts/coverage-floors.mjs --update`, which never lowers one. The pre-push hook runs
+the editor without coverage and never checks the floor.
 
 ### Coverage report
 

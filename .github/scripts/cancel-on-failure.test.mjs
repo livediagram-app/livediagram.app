@@ -88,8 +88,8 @@ test('every CI and E2E job with steps ends with the fail-fast step, guarded to p
       checked++;
     }
   }
-  // plan, checks, tests, editor tests and build; E2E's plan; the four per-product jobs.
-  assert.equal(checked, 10);
+  // plan, checks, tests, editor tests, editor coverage floors and build; E2E's plan; the four per-product jobs.
+  assert.equal(checked, 11);
 });
 
 test('the exempt jobs are what the list says they are', () => {
