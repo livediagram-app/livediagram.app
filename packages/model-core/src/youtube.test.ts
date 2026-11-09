@@ -176,6 +176,26 @@ describe('embedTargetFor', () => {
     );
   });
 
+  it('previews a link to the file itself or to presenting it, which Google refuses to frame', () => {
+    const embed = (url: string) => embedTargetFor(url)?.embedUrl;
+    expect(embed('https://docs.google.com/document/d/abc123')).toBe(
+      'https://docs.google.com/document/d/abc123/preview',
+    );
+    expect(embed('https://docs.google.com/spreadsheets/d/xyz/?usp=sharing')).toBe(
+      'https://docs.google.com/spreadsheets/d/xyz/preview',
+    );
+    expect(embed('https://docs.google.com/presentation/d/s1/present?slide=id.p')).toBe(
+      'https://docs.google.com/presentation/d/s1/preview',
+    );
+    expect(embed('https://docs.google.com/document/u/1/d/abc123')).toBe(
+      'https://docs.google.com/document/u/1/d/abc123/preview',
+    );
+    // Published pages frame as they are.
+    expect(embed('https://docs.google.com/document/d/e/2PACX-1/pub')).toBe(
+      'https://docs.google.com/document/d/e/2PACX-1/pub',
+    );
+  });
+
   it('returns null for a Google host that is not an embeddable doc', () => {
     expect(embedTargetFor('https://docs.google.com/forms/d/abc/viewform')).toBeNull();
   });

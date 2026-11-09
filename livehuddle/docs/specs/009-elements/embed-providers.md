@@ -21,13 +21,13 @@ does not eat the canvas, is shared with the YouTube element.
 
 One function, `(url) => { provider, embedUrl, posterUrl?, label } | null`.
 
-| Provider | Recognised                                                                                  | Embed as                                                            |
-| -------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| YouTube  | the five shapes [YouTube video element](youtube-video.md) lists                             | `youtube-nocookie.com`, with a poster                               |
-| Vimeo    | `vimeo.com/<digits>`, an unlisted `vimeo.com/<digits>/<hash>`, a channel's or group's video | `player.vimeo.com/video/<id>`, with `?h=<hash>` for an unlisted one |
-| Loom     | `loom.com/share/<id>` or `loom.com/embed/<id>`                                              | `loom.com/embed/<id>`                                               |
-| Figma    | any `figma.com` URL                                                                         | `figma.com/embed?url=<original>`                                    |
-| Google   | `docs.google.com/{document,spreadsheets,presentation}/…`                                    | the same URL with `/edit` → `/preview`                              |
+| Provider | Recognised                                                                                  | Embed as                                                                                           |
+| -------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| YouTube  | the five shapes [YouTube video element](youtube-video.md) lists                             | `youtube-nocookie.com`, with a poster                                                              |
+| Vimeo    | `vimeo.com/<digits>`, an unlisted `vimeo.com/<digits>/<hash>`, a channel's or group's video | `player.vimeo.com/video/<id>`, with `?h=<hash>` for an unlisted one                                |
+| Loom     | `loom.com/share/<id>` or `loom.com/embed/<id>`                                              | `loom.com/embed/<id>`                                                                              |
+| Figma    | any `figma.com` URL                                                                         | `figma.com/embed?url=<original>`                                                                   |
+| Google   | `docs.google.com/{document,spreadsheets,presentation}/…`                                    | the same URL with `/edit` → `/preview`; a bare `/d/<id>` or `/present` link gets `/d/<id>/preview` |
 
 Figma takes the **original URL as a query parameter** rather than a rewritten
 path, so anything Figma accepts keeps working without this having to know

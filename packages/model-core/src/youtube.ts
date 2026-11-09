@@ -220,11 +220,16 @@ function embedTargetOf(url: string | undefined | null, figmaEmbed: string): Embe
   }
   if (host === 'docs.google.com') {
     // /edit -> /preview is the documented read-only embed form for Docs,
-    // Sheets and Slides alike.
+    // Sheets and Slides alike. A link to the file itself (`/d/<id>`, with or
+    // without a trailing slash) or to presenting it gets the same: as it is,
+    // Google refuses to be framed and the card comes up blank.
     if (!/^\/(document|spreadsheets|presentation)\//.test(path)) return null;
+    const file = /^(.*\/d\/[A-Za-z0-9_-]+)\/?(?:present\/?)?$/.exec(path);
     return {
       provider: 'gdocs',
-      embedUrl: parsed.toString().replace(/\/(edit|view)(\?|#|$).*$/, '/preview'),
+      embedUrl: file
+        ? `${parsed.origin}${file[1]}/preview`
+        : parsed.toString().replace(/\/(edit|view)(\?|#|$).*$/, '/preview'),
       label: 'Google Docs',
     };
   }
