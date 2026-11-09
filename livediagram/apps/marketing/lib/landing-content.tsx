@@ -6,7 +6,6 @@ import {
   ApiArt,
   ArrowsArt,
   AssignedActionsArt,
-  AvatarModeArt,
   BoardImportArt,
   BorderStyleArt,
   BringFocusArt,
@@ -54,6 +53,7 @@ import {
   PresentLocallyArt,
   PresenterNotesArt,
   PressureArt,
+  ReactionPadArt,
   RealtimeArt,
   RevokeArt,
   RichTextArt,
@@ -272,20 +272,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Press Follow beside a teammate and your canvas goes where theirs goes: their tab, their pan, their exact zoom. A pill says who you are following, and the moment you move the canvas yourself, you have your own view back. Anyone can follow anyone, even on a view-only link.',
       },
       {
-        art: <AvatarModeArt />,
-        href: '/help/selection-modes/avatar-mode/',
-        group: 'Present & workshop',
-        title: 'Walk a character across your canvas',
-        description:
-          'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like (gender, clothing, hair and size, remembered in your browser), and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared canvas everyone sees everyone else walking about in their own colour.',
-      },
-      {
-        art: <AvatarModeArt />,
-        href: '/help/palette/behaviour/',
+        art: <ReactionPadArt />,
+        href: '/help/palette/behaviour/reaction-pads/',
         group: 'Present & workshop',
         title: 'Celebrate on the canvas',
         description:
-          'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the canvas for everyone in the room. Press one, or walk an Avatar-mode character onto it. Nothing is saved: a reaction is a moment, not a mark on the canvas. For a mark that stays, drop one of around 190 emoji stickers or 32 word badges like APPROVED and BLOCKED.',
+          'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the canvas for everyone in the room. Press one and the whole room sees it. Nothing is saved: a reaction is a moment, not a mark on the canvas. For a mark that stays, drop one of around 190 emoji stickers or 32 word badges like APPROVED and BLOCKED.',
       },
       {
         art: <SlideDeckArt />,
@@ -550,7 +542,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Eighty-eight starter templates',
+        title: 'Eighty-four starter templates',
         description:
           'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and roadmaps, org charts and timelines, meeting agendas and risk matrices, pub quizzes and icebreakers, architecture and UML. Browse them by the job to be done in the picker, edit one, or start blank.',
       },
