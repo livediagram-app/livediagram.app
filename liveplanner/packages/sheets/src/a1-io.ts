@@ -18,7 +18,8 @@ export const AGENT_LOCALE = 'en-GB';
 type AgentCell = { input: string; value: Scalar; display: string };
 
 type RangeRead =
-  | { ok: true; range: string; rows: AgentCell[][]; truncated: boolean }
+  // `rest`, when the read was cut at the cells cap: the rows of the asked range it did not read, A1.
+  | { ok: true; range: string; rows: AgentCell[][]; truncated: boolean; rest?: string }
   | { ok: false; error: 'range_invalid' | 'sheet_not_found' };
 
 function plainValue(v: Scalar): Scalar {
@@ -45,6 +46,7 @@ export function readRange(wb: Workbook, sheetId: string, rangeText?: string): Ra
   const width = range.c2 - range.c1 + 1;
   const maxRows = Math.max(1, Math.floor(AGENT_READ_CELLS_MAX / width));
   const truncated = range.r2 - range.r1 + 1 > maxRows;
+  const rest = truncated ? formatRange({ ...range, r1: range.r1 + maxRows }) : undefined;
   if (truncated) range = { ...range, r2: range.r1 + maxRows - 1 };
   const ctx = wb.ctxFor(sheetId);
   const rows: AgentCell[][] = [];
@@ -61,7 +63,7 @@ export function readRange(wb: Workbook, sheetId: string, rangeText?: string): Ra
     }
     rows.push(row);
   }
-  return { ok: true, range: formatRange(range), rows, truncated };
+  return { ok: true, range: formatRange(range), rows, truncated, ...(rest ? { rest } : {}) };
 }
 
 export type AgentValue = string | number | boolean | null;

@@ -180,14 +180,20 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
 `COLUMNS`, `OFFSET`, `INDIRECT` (an A1 text on this sheet or another on the tab).
 
 **Text**: `CONCAT`, `CONCATENATE`, `TEXTJOIN`, `LEFT`, `RIGHT`, `MID`, `LEN`, `UPPER`, `LOWER`, `PROPER`, `TRIM`,
-`CLEAN`, `SUBSTITUTE`, `REPLACE`, `FIND`, `SEARCH`, `REPT`, `EXACT`, `TEXT`, `VALUE`, `CHAR`, `CODE`, `SPLIT`,
-`JOIN`, `REGEXMATCH`, `REGEXEXTRACT`, `REGEXREPLACE`, `HYPERLINK`.
+`CLEAN`, `SUBSTITUTE`, `REPLACE`, `FIND`, `SEARCH`, `REPT`, `EXACT`, `TEXT`, `VALUE`, `CHAR`, `CODE`, `UNICHAR`,
+`UNICODE`, `SPLIT`, `JOIN`, `REGEXMATCH`, `REGEXEXTRACT`, `REGEXREPLACE`, `HYPERLINK`.
 
 - Text positions and lengths count UTF-16 code units, as Google Sheets does: an emoji or another character outside
   the Basic Multilingual Plane is 2 (`LEN("😀a")` is 3). `LEN`, `LEFT`, `RIGHT`, `MID`, `REPLACE`, `FIND` and
   `SEARCH` all count the same way, so `MID(t, FIND(x, t), n)` starts at `x` whatever comes before it. A fractional
   position, count or `SUBSTITUTE` instance number is truncated (`SUBSTITUTE(t, "-", "+", 2.7)` replaces the 2nd),
   and `SUBSTITUTE`'s instances never overlap (the 2nd `"aa"` in `"aaaa"` starts at the 3rd character).
+- Character codes are whole Unicode code points, as in Google Sheets: `CODE` and `UNICODE` give the first
+  character's (`CODE("😀")` is 128512, not half of it), and `CHAR` and `UNICHAR` make the character of one, so
+  `CHAR(CODE(t))` is `t`'s first character. A code that is no character (below 1, past 1114111, or one half of a
+  surrogate pair, 55296 to 57343) is `#VALUE!`.
+- `VALUE` reads empty text, or an empty cell, as 0, as Google Sheets does; other text that is no number, date or time
+  is `#VALUE!`.
 - `SPLIT` reads each part as Google Sheets does: one that reads as a number (or a percentage) is that number, and one
   written as an ISO date, `YYYY-MM-DD` (a time after it allowed, `2026-10-26 12:00`), is that date. Other
   date-looking text (`26/10/2026`, `Oct 26 2026`, `2026-1-5`) stays text, as its day and month read differently by
@@ -205,7 +211,11 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
 
 - **Criteria** (`COUNTIF`, `SUMIFS`, ... and the card functions) take a value to equal, or a text starting with a
   comparison (`">=10"`, `"<>Done"`), with `*` and `?` as wildcards and `~` to escape them; text matches ignore
-  case.
+  case. The text after a comparison reads as a number when it is one, a percentage (`">50%"` is above 0.5) or an
+  ISO date (`">=2026-01-01"` compares dates), as in Google Sheets; other date forms stay text, as a criterion has no
+  locale to read them by.
+- A lookup key with wildcards (`VLOOKUP`, `MATCH`, `XLOOKUP`, `XMATCH`) is a wildcard pattern only, never a
+  comparison: `VLOOKUP("<a*", …)` finds text starting `<a`.
 - `TEXT(value, format)` takes the spreadsheet format codes people use (`"0.00"`, `"#,##0"`, `"0%"`, `"dd/mm/yyyy"`,
   `"mmm yyyy"`, `"hh:mm"`, `"[h]:mm"`, `"£#,##0.00"`, `"@"`).
 - `HYPERLINK(url, [label])` shows the label as a link; Ctrl/⌘ and a click opens it in a new tab (http, https and
