@@ -124,7 +124,8 @@ Follows the spec's table. Precisely:
   (`title`, `subtitle`, `heading N`, `quote`, `intense quote`, a code name: `code`, `html preformatted`,
   `source code`, `macro text`), else an `w:outlineLvl` (0 is Heading 1), else the style id read as a name (no
   styles part).
-- List: `w:numPr` on the paragraph, else on its style chain; `numId` `0` is none; the level's `w:numFmt` (a
+- List: `w:numPr`'s `w:numId` and `w:ilvl`, each the paragraph's own, else its style chain's (a paragraph in a
+  list style may state only its level); `numId` `0` is none; the level's `w:numFmt` (a
   `w:num`'s `w:lvlOverride` with its own `w:lvl` first; an abstract numbering with no levels and a
   `w:numStyleLink`, as Word's built-in multilevel lists write, takes the levels of the numbering its numbering
   style names, at most 4 links deep):
@@ -155,7 +156,7 @@ Follows the spec's table. Precisely:
   "Contents".
 - Breaks: `w:br` `type="page"` ends the paragraph and adds a page break (the rest continues as a new paragraph of
   the same style); `w:pageBreakBefore` adds one before the paragraph; other `w:br` and `w:cr` are `\n`; `w:tab`
-  a space; `w:noBreakHyphen` `-`.
+  and `w:ptab` a space; `w:noBreakHyphen` `-`.
 - Pictures: `w:drawing` → `wp:inline` or `wp:anchor`, `wp:extent` (EMU) is its size, `wp:docPr` `descr` (else
   `title`) its alt text; `pic:pic` with `a:blip r:embed` is a picture (the paragraph splits round it), `r:link`
   is `linkedImages`; a chart `charts`, a diagram `diagrams`, a `wps`/`wpg` shape `textBoxes`. `w:pict`'s

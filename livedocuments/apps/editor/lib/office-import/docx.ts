@@ -181,14 +181,15 @@ class DocxWalker {
     const styleId = child(pPr, 'w:pStyle')?.attrs['w:val'];
     const role = this.styles.roleOf(styleId, intAttr(child(pPr, 'w:outlineLvl'), 'w:val'));
     const align = ALIGN[child(pPr, 'w:jc')?.attrs['w:val'] ?? ''];
-    const numPr = child(pPr, 'w:numPr') ?? this.styles.numPrOf(styleId);
+    // The numbering and its level are each the paragraph's own, else its style's: a paragraph in a list style may
+    // state only its level.
+    const ownNumPr = child(pPr, 'w:numPr');
+    const styleNumPr = this.styles.numPrOf(styleId);
     let list: Para['list'];
-    const numId = child(numPr, 'w:numId')?.attrs['w:val'];
+    const numId = (child(ownNumPr, 'w:numId') ?? child(styleNumPr, 'w:numId'))?.attrs['w:val'];
     if (numId !== undefined && !role.style) {
-      const level = Math.min(
-        ARTICLE_LIST_MAX_LEVEL,
-        Math.max(0, intAttr(child(numPr, 'w:ilvl'), 'w:val') ?? 0),
-      );
+      const ilvl = child(ownNumPr, 'w:ilvl') ?? child(styleNumPr, 'w:ilvl');
+      const level = Math.min(ARTICLE_LIST_MAX_LEVEL, Math.max(0, intAttr(ilvl, 'w:val') ?? 0));
       const kind = this.numbering.kindOf(numId, level);
       if (kind) list = { kind, level };
     }
@@ -378,6 +379,7 @@ class DocxWalker {
           this.fieldChar(c.attrs['w:fldCharType']);
           break;
         case 'w:tab':
+        case 'w:ptab':
           this.text(' ', rPr, href);
           break;
         case 'w:noBreakHyphen':
@@ -676,7 +678,7 @@ function footnoteText(el: XmlElement, styles: DocxStyles): string {
       if (runHidden(child(c, 'w:rPr'), styles)) continue;
       for (const t of kids(c)) {
         if (t.name === 'w:t') text += textOf(t);
-        else if (t.name === 'w:tab' || t.name === 'w:br' || t.name === 'w:cr') text += ' ';
+        else if (FOOTNOTE_SPACES.has(t.name)) text += ' ';
         else if (t.name === 'w:noBreakHyphen') text += '-';
       }
     } else if (!FOOTNOTE_SKIPPED.has(c.name)) text += footnoteText(c, styles);
@@ -684,6 +686,7 @@ function footnoteText(el: XmlElement, styles: DocxStyles): string {
   return text;
 }
 const FOOTNOTE_SKIPPED = new Set(['w:p', 'w:tbl', 'w:del', 'w:moveFrom', 'w:pPr', 'mc:Fallback']);
+const FOOTNOTE_SPACES = new Set(['w:tab', 'w:ptab', 'w:br', 'w:cr']);
 
 export async function readDocx(pkg: OfficePackage): Promise<DocxRead> {
   const root = await pkg.readXml(pkg.mainPath);

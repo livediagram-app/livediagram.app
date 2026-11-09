@@ -526,6 +526,21 @@ describe('readDocx, moved text, VML sizes and cell content controls', () => {
     expect(blocks.map(textOf)).toEqual(['Kept here']);
   });
 
+  it('takes a list paragraph’s numbering and level each from its own, else its style’s, and a positional tab as a space', async () => {
+    const { blocks } = await read({
+      body: [
+        // The style gives the numbering, the paragraph only its level.
+        p(r('Top'), styled('ListBullet')),
+        p(r('Nested'), `${styled('ListBullet')}<w:numPr><w:ilvl w:val="1"/></w:numPr>`),
+        // Its own numbering with no level of its own takes level 0.
+        p(r('Numbered'), `${styled('ListBullet')}<w:numPr><w:numId w:val="2"/></w:numPr>`),
+        p(`${r('Name')}<w:r><w:ptab w:relativeTo="margin" w:alignment="right"/></w:r>${r('Page')}`),
+      ].join(''),
+    });
+    expect(blocks.map(kindOf)).toEqual(['bullet0', 'bullet1', 'numbered0', 'body']);
+    expect(blocks.map(textOf)).toEqual(['Top', 'Nested', 'Numbered', 'Name Page']);
+  });
+
   it.each([
     ['width:2in;height:72pt', 192, 96],
     ['width:2.54cm;height:25.4mm', 96, 96],
