@@ -222,7 +222,15 @@ export class SfuSession {
       // The small layer is the route's default: only a maximised camera names one.
       return layerOf(l) === 'f' ? { ...locator, layer: 'f' } : locator;
     });
-    const answer = await apiCallTracks(this.caller, { ...this.proof, subscribe });
+    let answer: Awaited<ReturnType<typeof apiCallTracks>>;
+    try {
+      answer = await apiCallTracks(this.caller, { ...this.proof, subscribe });
+    } catch (error) {
+      // A request refused whole (a bad batch, the service down): held back and asked again after a wait, never on
+      // the next step anyone walks.
+      for (const l of locators) this.holdBack(keyOf(l));
+      throw error;
+    }
     // Answered in order; a locator without a usable answer counts as refused, so it is never asked for in a loop.
     let notHeard = false;
     locators.forEach((l, i) => {

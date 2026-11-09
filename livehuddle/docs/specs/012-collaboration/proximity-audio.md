@@ -203,9 +203,13 @@ TURN key, and makes every call on the browser's behalf, after checking the calle
 - `POST /api/documents/:id/calls/tracks`: publish this browser's microphone (an offer and its `mid`; Editor or
   Participant only), or subscribe to speakers' microphones (their `call-track` locators). A locator's `token` is the
   api's signature over the Space and the publishing session, so a listener can only subscribe to a microphone
-  published in the same Space. Each subscription is then checked with the room (#483,
-  [Meeting rooms and the stage](meeting-rooms-and-stage.md#trust)): a track the subscriber may not hear now is
-  answered with `errorCode: 'not_heard'` in its place, and the rest are subscribed as asked.
+  published in the same Space. A locator whose token does not hold (another Space's, or a peer's forged
+  `call-track`) is answered with `errorCode: 'track_refused'` in its place and never asked for again, rather than
+  failing the batch, so one bad locator never silences the speakers asked for beside it. Each subscription is then
+  checked with the room (#483, [Meeting rooms and the stage](meeting-rooms-and-stage.md#trust)): a track the
+  subscriber may not hear now is answered with `errorCode: 'not_heard'` in its place, and the rest are subscribed as
+  asked. A subscribe refused whole (a malformed batch, the service down) holds its tracks back as `not_heard` does,
+  so the browser asks again after a wait and never on every step.
 - `PUT /api/documents/:id/calls/renegotiate`: the browser's answer to an offer the SFU made.
 - `PUT /api/documents/:id/calls/close`: stop subscriptions or the microphone, by `mid`.
 

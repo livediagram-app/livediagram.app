@@ -202,18 +202,18 @@ describe('SfuSession', () => {
     await settle();
     sfu.want([loc('c')]);
     await settle();
-    // The refused one is not asked for again; the failed one is, with the next change.
+    // The refused one is not asked for again; the failed one is held back for a wait, not asked on the next step.
     sfu.want([loc('a'), loc('b')]);
     await settle();
     expect(
       api.apiCallTracks.mock.calls.map(([, body]) => body.subscribe?.map((l) => l.sessionId)),
-    ).toEqual([['a'], ['b'], ['c'], ['b']]);
+    ).toEqual([['a'], ['b'], ['c']]);
     api.apiCallTracks.mockResolvedValueOnce({ requiresImmediateRenegotiation: false, tracks: [] });
     sfu.want([loc('d')]);
     await settle();
     sfu.want([loc('d'), loc('a')]);
     await settle();
-    expect(api.apiCallTracks).toHaveBeenCalledTimes(5);
+    expect(api.apiCallTracks).toHaveBeenCalledTimes(4);
     pc.iceConnectionState = 'checking';
     pc.listeners.get('iceconnectionstatechange')!({});
     pc.iceConnectionState = 'failed';
@@ -255,6 +255,27 @@ describe('SfuSession', () => {
       sfu.close();
       await tick(NOT_HEARD_RETRY_MAX_MS);
       expect(api.apiCallTracks).toHaveBeenCalledTimes(4);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('waits before asking again after a request refused whole, never on every step', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout'] });
+    try {
+      const { sfu } = open();
+      const tick = (ms: number) => vi.advanceTimersByTimeAsync(ms);
+      api.apiCallTracks.mockRejectedValueOnce(new Error('400'));
+      sfu.want([loc('a')]);
+      await tick(0);
+      for (let step = 0; step < 10; step++) {
+        sfu.want([loc('a')]);
+        await tick(0);
+      }
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(1);
+      await tick(NOT_HEARD_RETRY_MS);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(2);
+      sfu.close();
     } finally {
       vi.useRealTimers();
     }
