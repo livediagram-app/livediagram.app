@@ -303,7 +303,8 @@ The panel's look: soft tinted rows rather than a ruled list, a friendly empty st
 - **Action rows** lead with a **round check**. Pressing it completes the action (or, in Resolved, reopens it) in place, through the same `completeAction` / `reopenAction` the popover uses, with a brief pop; the row then moves to the other side. Read-only visitors see the check as a static status disc. The body is the action name (up to two lines, struck through once done) over a quiet meta line: the element label and the relative time. The assignee sits on the right: a **You** chip in brand for your own, otherwise an initials avatar with the name on its hover card.
 - **Comment rows** lead with a bubble disc tinted in the latest author's colour, carrying the thread's comment count. The body is the element label over the latest comment, prefixed with its author's first name ("Priya: Agreed, let's queue it"), clamped to two lines, and the relative time sits top-right.
 - **Rows** are rounded, tinted on hover, fully keyboard reachable (the row is a button; the check is its own button with a label naming the action), and slide in on a short stagger (`stagger-enter`).
-- **Row click goes to the conversation.** It selects the element and opens its matching popover (comment thread /
+- **Row click goes to the conversation.** It selects the element, brings it to the middle of the view (as a deep
+  link does, so a card on a page out of sight is shown), and opens its matching popover (comment thread /
   action). As a popover the panel closes once a row is clicked, so it
   never covers where the click took you.
 - **Density.** Rows breathe: 12px horizontal and 10px vertical padding, a
