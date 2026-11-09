@@ -190,7 +190,7 @@ picked after creation"). The move is `useTemplatePickMove` (`apps/editor/compone
 
 ## The tours wait
 
-A tour never lands over a start: while one is on screen the Diagram, Workshop, Draw and Avatar tours are not on
+A tour never lands over a start: while one is on screen the Diagram, Workshop and Draw tours are not on
 offer, so the footer's Start Tour button does not show them, and they come onto it once a template is picked or the
 start closed (`start-panel-open.ts`, `useStartPanelOpen`).
 

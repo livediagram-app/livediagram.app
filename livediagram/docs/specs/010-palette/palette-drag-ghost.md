@@ -20,16 +20,6 @@ drag image (a snapshot of the tile) and no on-canvas feedback.
 - Over a panel or the strip (a "changed my mind" drag back to the palette) the
   ghost hides, mirroring the existing `usePaletteDrop` no-drop guard.
 - On `drop` / `dragend` / `Escape`, the ghost clears.
-- **Space turns a piece that turns** while its tile is dragged (or armed), and the ghost takes the turned piece's
-  footprint under the pointer; **Shift+Space** turns it back ([Turning furniture](../009-elements/furniture-facing.md)
-  "Turning while placing"). The snap and guides measure the turned piece, and it lands turned.
-- **A tile of a piece that turns is carried, not dragged.** A browser's own drag hears no keys, so for a mouse or a
-  pen the tile is carried by the pointer (`apps/editor/lib/palette-carry.ts`, over the shared
-  `createPaletteCarry`): past four pixels of movement it publishes the same drag preview (marked `carried`), the copy
-  cursor shows everywhere, the ghost and the snap follow pointer moves rather than dragovers, and a release over the
-  canvas lands it through the same drop as a dropped tile (`usePaletteDrop`). A release over a panel, the palette or
-  off the canvas places nothing, and **Escape** puts it down. The click the release makes is the carry's. A touch
-  keeps the browser's drag.
 - Decorative only: it respects reduce-motion (the global rule collapses its
   fade-in) and dark mode, and is `pointer-events-none` so it never
   intercepts the drop.

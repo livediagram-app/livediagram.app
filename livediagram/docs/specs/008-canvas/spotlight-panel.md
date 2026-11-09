@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-While the **Spotlight** tool ([Canvas and palette](canvas-and-palette.md)) is active, a **Spotlight** panel is present: the light's size, how dark the shroud is, how soft its edge is, and its shape. The third of the mode panels, after [Avatar](avatar-mode.md) and [Laser](laser-panel.md).
+While the **Spotlight** tool ([Canvas and palette](canvas-and-palette.md)) is active, a **Spotlight** panel is present: the light's size, how dark the shroud is, how soft its edge is, and its shape. The second of the mode panels, after [Laser](laser-panel.md).
 
 ## Why
 

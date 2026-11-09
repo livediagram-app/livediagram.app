@@ -79,7 +79,7 @@ elements' layer instead.
   drag (once on the first frame, once on release). The box takes no press of its own: a press
   between the elements reaches the canvas, and the canvas's cursor shows there, as before; the
   elements take presses as they always did, and none while the canvas is inert (Spotlight, the
-  isometric view, Avatar mode).
+  isometric view).
 - **What does not share it is held where it should be**: an element that does not move, an arrow
   that re-routes, a stack's child, or one riding another offset (a collaborator's) is shifted back
   by the difference, so it is drawn exactly where it was drawn before.

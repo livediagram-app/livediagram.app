@@ -144,7 +144,7 @@ arrowLinks, stackedIds)` (on a board without arrows, which has no `elementIndex`
   between elements reaches the canvas and shows its cursor), in `@layer base` `[data-element-plane] > *
 { pointer-events: auto }` (an element's own pointer-events, a utility or inline style, still wins) and
   `[data-elements-inert] [data-element-plane] > * { pointer-events: none }` (the canvas layer sets
-  `data-elements-inert` beside its `pointer-events-none` in Spotlight, isometric and Avatar mode), and
+  `data-elements-inert` beside its `pointer-events-none` in Spotlight and isometric), and
   `[data-iso] [data-element-plane] { transform-style: preserve-3d }`. Each node of the plane then gets `translate` = its own offset (none when it does
   not ride) less the plane's: a rider sharing it gets `''`. The plane's children are found again
   when one is added, removed or disconnected. Fewer rides, no plane: every style it set goes back

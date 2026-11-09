@@ -279,8 +279,8 @@ type UserPreferences = {
   // The Draw tour's taken record (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
-  // The Avatar tour's taken record (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
+  // The Avatar tour's taken record: retired with Avatar mode (docs/specs/002-project-scope/not-in-livediagram.md).
+  // A stored value is kept in the blob and ignored; nothing in livediagram reads or writes it.
   avatarTourSeen?: boolean;
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started.
   // Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
@@ -736,7 +736,7 @@ and the dialog stays as the one complete, browsable index of them.
   Pan): a phone has no hover and no middle button.
 
   **Getting Started** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Workshop Tour**, **Draw Tour** and **Avatar Tour**, each with a line saying where it is on offer and a **Learn more**
+  Tour**, **Workshop Tour** and **Draw Tour**, each with a line saying where it is on offer and a **Learn more**
   to its article, under one **Offer Again** section note: switch one back on
   and close Settings to take it again, straight away if it is on offer where you
   are, otherwise from the footer's Start Tour button when you get there. (Until
@@ -757,9 +757,9 @@ and the dialog stays as the one complete, browsable index of them.
   against the stored `tourSeen`. Turning it on from off and closing the dialog relaunches the tour in place
   on a Diagram tab where it is on offer (`livediagram:tour-relaunch`); on a tab in another mode it does
   nothing, and the button offers it on a Diagram tab. **Workshop Tour** is inverted against
-  `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
-  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)) and **Avatar Tour** against `avatarTourSeen`
-  ([Avatar tour](../008-canvas/avatar-tour.md)); closing the dialog with one turned on from off reruns it when it is on offer where you are.
+  `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)) and **Draw Tour** against
+  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)); the Avatar Tour row went with Avatar mode
+  ([Not in livediagram](../002-project-scope/not-in-livediagram.md)); closing the dialog with one turned on from off reruns it when it is on offer where you are.
 
   Below the mode tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built

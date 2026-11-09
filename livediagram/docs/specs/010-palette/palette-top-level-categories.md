@@ -171,8 +171,8 @@ is filed with the estimate card, not apart from it).
 | **Tools**          | Reveal, Done, Picker, Timer                                                                                                       |
 | **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                 |
 | **Reactions**      | the five pads                                                                                                                     |
-| **Selection Mode** | one button per mode (8)                                                                                                           |
-| **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Avatar Pad, Link card, Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
+| **Selection Mode** | one button per mode (7)                                                                                                           |
+| **Navigate**       | Portal, Bring Focus (the furniture, Fence and Avatar Pad moved to livehuddle, [Not in livediagram](../002-project-scope/not-in-livediagram.md)) |
 
 **There is no Session group**: a group named after the machinery rather than the job. A poll and a dot vote ARE
 asking the room, so they sit with the estimate card and the temperature check, where somebody wanting to put a
