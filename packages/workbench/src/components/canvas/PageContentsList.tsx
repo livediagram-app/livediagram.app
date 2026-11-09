@@ -3,10 +3,10 @@
 // The pieces of Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"), laid
 // out by its two homes: the popover (PageContentsPanel) and the docked sidebar
 // (PageContentsSidebar). The state behind them is hooks/ui/usePageContents.
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { Fragment, useId, type CSSProperties, type ReactNode } from 'react';
 import { lucideGripVertical, lucideLock } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveworkspace/ui';
-import { trustedHtml } from '@liveworkspace/trusted-types';
 import { DropCaret } from '../primitives/DropCaret';
 import { ContentsVeil, veiledPictureClass } from './ContentsVeil';
 import { PageRowMenu, PageRowMenuButton, PageRowStack, usePageRowMenu } from './PageRowMenu';
@@ -260,7 +260,7 @@ function Picture({
           viewBox={thumb.viewBox}
           preserveAspectRatio="xMidYMid slice"
           // The editor's own renderer's output (every label is xmlEscaped inside it).
-          dangerouslySetInnerHTML={{ __html: trustedHtml(thumb.markup) }}
+          dangerouslySetInnerHTML={{ __html: sanitizedHtml(thumb.markup, 'svg-content') }}
         />
       ) : null}
       <ContentsVeil on={aside} width={w} {...(large ? { large } : {})} />

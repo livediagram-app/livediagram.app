@@ -1,7 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@liveplanner/ui';
-
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import {
   useCallback,
   useEffect,
@@ -22,7 +21,16 @@ import {
   type CanvasAnchor,
   type PaneView,
 } from '@liveworkspace/workbench/lib/split-pane-view';
-import type { TabSvg } from './useTabSvg';
+
+// A tab drawn as SVG (each editor's useTabSvg): the export renderer's markup, its size and origin in canvas units,
+// and the paper behind it. The markup carries the document's content, so it is sanitised before it is shown.
+type TabSvg = {
+  markup: string;
+  width: number;
+  height: number;
+  origin: { x: number; y: number };
+  background: string;
+};
 
 // What the split frame reads off a pane when the editor moves into it: where its canvas sits, so
 // the editor can take over the exact view.
@@ -150,7 +158,7 @@ export function TabSvgViewport({
           style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.k})` }}
           // The export renderer's own markup: every piece of text in it is escaped there. Its own
           // background rect is hidden: the pane paints the paper (and pattern) edge to edge.
-          dangerouslySetInnerHTML={{ __html: trustedHtml(svg.markup) }}
+          dangerouslySetInnerHTML={{ __html: sanitizedHtml(svg.markup) }}
         />
       ) : null}
       {children}
