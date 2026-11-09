@@ -11,13 +11,23 @@ import {
 } from '@livehuddle/api-schema';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
-/** A peer's raised hand: the tab it went up on, who let it speak (a presence id, or null), and when it went up. */
-export type CallHand = { tabId: string; letSpeak: string | null; at: number };
+/**
+ * A peer's raised hand: the tab it went up on, who let it speak (a presence id, or null) and their roster key (the
+ * person, which survives their reconnect; null when unknown), and when it went up.
+ */
+export type CallHand = {
+  tabId: string;
+  letSpeak: string | null;
+  letSpeakKey: string | null;
+  at: number;
+};
 /** One hand a connection: the room holds at most this many, so the store never holds more. */
 export const HANDS_MAX = ROOM_MAX_CONNECTIONS;
 
 let levels: ReadonlyMap<string, AccessLevel> = new Map();
+let keys: ReadonlyMap<string, string> = new Map();
 const levelListeners = createListeners();
+const droppedListeners = createListeners();
 let hands: ReadonlyMap<string, CallHand> = new Map();
 const handListeners = createListeners();
 let letByMe: ReadonlySet<string> = new Set();
@@ -50,7 +60,13 @@ export function setHand(id: string, next: Omit<CallHand, 'at'> | null): void {
     publishHands();
     return;
   }
-  if (prev && prev.tabId === next.tabId && prev.letSpeak === next.letSpeak) return;
+  if (
+    prev &&
+    prev.tabId === next.tabId &&
+    prev.letSpeak === next.letSpeak &&
+    prev.letSpeakKey === next.letSpeakKey
+  )
+    return;
   if (!prev && hands.size >= HANDS_MAX) return;
   const copy = new Map(hands);
   copy.set(id, { ...next, at: prev?.at ?? performance.now() });
@@ -129,15 +145,41 @@ export function callLetByMe(): ReadonlySet<string> {
 
 /**
  * Every peer's level from the room's presence list: the `role` the room stamps from each grant, never one a browser
- * claims. A missing or unknown one is a Viewer's. Listeners hear only when a level changed.
+ * claims. A missing or unknown one is a Viewer's. Each peer's `key` (their document-write key, the same person across
+ * a reconnect) is kept beside it, so a let-speak can follow the person. Listeners hear only when a level changed: a
+ * key changes only with the roster, whose ids change with it.
  */
-export function setCallLevels(participants: readonly { id: string; role?: unknown }[]): void {
+export function setCallLevels(
+  participants: readonly { id: string; role?: unknown; key?: unknown }[],
+): void {
+  const nextKeys = new Map<string, string>();
+  for (const p of participants) if (typeof p.key === 'string' && p.key) nextKeys.set(p.id, p.key);
+  keys = nextKeys;
   const next = new Map<string, AccessLevel>();
   for (const p of participants) next.set(p.id, parseStoredLevel(p.role));
   if (next.size === levels.size && [...next].every(([id, level]) => levels.get(id) === level))
     return;
   levels = next;
   levelListeners.notify();
+}
+
+/** Each peer's roster key by presence id (who let a hand speak, as a person). */
+export function callKeys(): ReadonlyMap<string, string> {
+  return keys;
+}
+
+/**
+ * This browser's own room connection dropped (its `onClose`, before any reconnect): the room has already lowered
+ * your hand for everyone, so the running call lowers it here too (meeting-rooms-and-stage.md "Presence, never
+ * stored").
+ */
+export function noteRoomDropped(): void {
+  droppedListeners.notify();
+}
+
+/** Subscribe to this browser's own room connection dropping (the running call). */
+export function onRoomDropped(listener: () => void): () => void {
+  return droppedListeners.subscribe(listener);
 }
 
 /** Each peer's level by presence id (the call reads this when it works out the stage). */

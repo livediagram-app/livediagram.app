@@ -34,13 +34,18 @@ export type HearingWorld = {
   readonly placed: ReadonlyMap<string, Placed>;
   // Presence id → the level the room stamped from its grant.
   readonly levels: ReadonlyMap<string, CallLevel>;
-  // A hand's owner → who let it speak (delivered by the room, still raised).
-  readonly letBy: ReadonlyMap<string, string>;
+  // A hand's owner → who let it speak (delivered by the room, still raised): their presence id then, and their key.
+  readonly letBy: ReadonlyMap<string, Letter>;
+  // Presence id → the roster key its session claimed (the same person across a reconnect).
+  readonly keys: ReadonlyMap<string, string>;
   // A tab's rooms and stages.
   readonly tab: (tabId: string) => TabCalls;
   // The room has just started and may not know everyone's position yet: an unknown one is allowed.
   readonly grace: boolean;
 };
+
+/** Who let a hand speak: their presence id when they did, and their roster key (the person), when they had one. */
+export type Letter = { readonly id: string; readonly key: string | null };
 
 /** `heard`: subscribe. `unplaced`: the room does not know where one of them is. `apart`: out of earshot or tab. */
 export type HearingVerdict = 'heard' | 'unplaced' | 'apart';
@@ -92,6 +97,20 @@ export function mayLetSpeakNow(world: HearingWorld, id: string): boolean {
   return world.levels.get(id) === 'edit' || speaksFromStage(world, id);
 }
 
+/**
+ * Whether whoever let a hand speak still may, following the person: their presence id passes `mayLetSpeakNow`, or
+ * (once it does not, as after their reconnect) another session with their key does. A key is claimed, but this adds
+ * no reach: the session it finds must itself be one the room would take a let-speak from.
+ */
+export function letterMayNow(world: HearingWorld, letter: Letter): boolean {
+  if (mayLetSpeakNow(world, letter.id)) return true;
+  if (letter.key === null) return false;
+  for (const [id, key] of world.keys) {
+    if (key === letter.key && id !== letter.id && mayLetSpeakNow(world, id)) return true;
+  }
+  return false;
+}
+
 /** Whether `subscriber` may receive `publisher`'s media now. */
 export function hearingVerdict(
   world: HearingWorld,
@@ -105,7 +124,7 @@ export function hearingVerdict(
   // A stage reaches the whole tab, and so does a hand let speak by someone who still may.
   if (speaksFromStage(world, publisher)) return 'heard';
   const letter = world.letBy.get(publisher);
-  if (letter !== undefined && mayLetSpeakNow(world, letter)) return 'heard';
+  if (letter !== undefined && letterMayNow(world, letter)) return 'heard';
   const { zones } = world.tab(s.tabId);
   const theirs = possibleZones(p.at, zones);
   for (const zone of possibleZones(s.at, zones)) {

@@ -16,9 +16,9 @@ Disturb and the stage line) and part 4 (the palette tile, settings, template and
 | stage's top (part 2)    | `stageTop(el)` (`@livehuddle/document`)                                                            | Where feet stand on it: x to x+w, y to y+h−`STAGE_FRONT`                       |
 | call stage (part 2)     | `CallStage` `{ id, x0, y0, x1, y1, area, zone, speakers, cameras }`                                | A visible stage's top as the call reads it, and the room it stands in          |
 | staging (part 2)        | `CallStaging` `{ self, speakers, audience, unseen }` on `CallZoning.stage`                         | Who speaks from a stage, which rooms are audiences, whose bubbles stay unseen  |
-| hand (part 3)           | presence op `avatar-hand` `{ kind, tabId, raised, letSpeak? }`                                     | Your raised hand, and the presence id of who let it speak (absent: nobody)     |
+| hand (part 3)           | presence op `avatar-hand` `{ kind, tabId, raised, letSpeak?, letSpeakKey? }`                       | Your raised hand, who let it speak (presence id; absent: nobody) and their key |
 | let speak (part 3)      | presence op `avatar-let-speak` `{ kind, tabId, targetId, on }`                                     | Let a raised hand speak (`on`), or Done; addressed to the hand's owner         |
-| hands (part 3)          | `CallHand` `{ tabId, letSpeak, at }` by presence id in the calls store                             | Every peer's raised hand, in the order they went up                            |
+| hands (part 3)          | `CallHand` `{ tabId, letSpeak, letSpeakKey, at }` by presence id in the calls store                | Every peer's raised hand, in the order they went up                            |
 | stage place (part 3)    | `CallSelf.stage`: `'none' \| 'audience' \| 'speaker' \| 'barred'`, `CallSelf.barredBy`             | Where you stand towards a live stage, for the Call dock                        |
 | your hand (part 3)      | `CallSelf.hand`: `'down' \| 'raised' \| 'speaking'`, `CallSelf.handsUp`                            | Your own hand, and how many hands are up on the tab (for a speaker)            |
 | Do Not Disturb (part 3) | `AvatarStatus` `'dnd'`; `AVATAR_CALL_STATUSES`                                                     | The fifth status, and the list livehuddle offers                               |
@@ -126,7 +126,8 @@ article gains a Stage section linking to it.
 
 **The wire** (`packages/api-schema/src/call-hand.ts`): `parseAvatarHand(op)` takes a `tabId` (1 to 64 chars), a
 boolean `raised`, and an optional `letSpeak` that is null or a presence id (1 to 64 chars), dropped when `raised` is
-false; `parseAvatarLetSpeak(op)` takes a `tabId`, a `targetId` (a presence id) and a boolean `on`. Both are
+false, with an optional `letSpeakKey` beside it (the letter's document-write `key` from the roster, 1 to 64 chars,
+kept only with a `letSpeak`): the person, which survives their reconnect where the presence id does not; `parseAvatarLetSpeak(op)` takes a `tabId`, a `targetId` (a presence id) and a boolean `on`. Both are
 `PRESENCE_OP_KINDS`. The room (`room-op-gate.ts`) drops either from a Viewer or malformed, relays `avatar-hand` to
 every socket unbatched (not a sample kind), and delivers `avatar-let-speak` to the named session alone, as it does
 `avatar-push` (`sendToPresence`), dropping one aimed at nobody. The room cannot place people, so whether the presser
@@ -138,21 +139,28 @@ false deletes it; a first raise stamps `at`, a later op keeps it, so the order i
 `resetCallPeers`, so leaving the mode, a dropped socket or the room closing lowers them. `receiveLetSpeak(from, op)`
 hands an addressed `avatar-let-speak` to the running call (`onLetSpeak`). `noteLetSpeak(targetId, on)` keeps the
 hands this browser let speak (`callLetByMe()`), since a browser never learns its own presence id and so cannot
-recognise itself in another's `letSpeak`. `useCallHands()` is the canvas's read.
+recognise itself in another's `letSpeak`. `useCallHands()` is the canvas's read. `setCallLevels(participants)` also
+keeps each peer's `key` (`callKeys()`). `noteRoomDropped()` (the room connection's `onClose`) tells the running call
+(`onRoomDropped`) that this browser's own connection dropped.
 
 **Who may let speak** (`stage.ts`): `mayLetSpeak(id, walkers, levels, stages)` is true for an Editor (by the level
 the room stamped) or a walker on the tab standing on a stage that lets them speak (`stageAt`, `mayTakeStage`).
-`letSpeakers(hands, walkers, levels, stages, mine)` returns the walkers whose hand carries a `letSpeak` that passes
-`mayLetSpeak`, or that this browser let speak (`mine`) while it may itself. `staging(...)` takes them (`let`) and your
+`letterMay(letter, walkers, levels, stages, keys)` follows the person: true when `mayLetSpeak` passes for the
+letter's presence id, or for any presence on the roster with the letter's `key` (their reconnected session). The
+roster is scanned only when the presence id itself fails, so a granter who stays connected costs nothing more.
+`letSpeakers(hands, walkers, levels, stages, mine, selfMay, keys)` returns the walkers whose hand carries a
+`letSpeak` that passes `letterMay`, or that this browser let speak (`mine`) while it may itself. `staging(...)` takes them (`let`) and your
 own (`selfLet`): each is a speaker as if on a stage, **unseen** (their bubbles are not received by the audience),
 adding no audience room; a tab with no stages at all still returns null.
 
 **The call** (`proximity-call.ts`): `raiseHand()` (only a speaking level, only as a live stage's audience) keeps your
 hand with the zone you raised it in, sends `avatar-hand` `{ raised: true }`, and tracks `RaiseHand`; `lowerHand()`
 sends `{ raised: false }`. On an addressed let-speak (`onLetSpeak`) from someone `mayLetSpeak` passes for, with your
-hand up: `on` sets your hand's `letSpeak` to them and sends it; Done lowers the hand. Each `update` lowers the hand
+hand up: `on` sets your hand's `letSpeak` to them (with their `key` from `callKeys()`) and sends it; Done lowers the
+hand. Your own connection dropping (`onRoomDropped`) lowers the hand as the room already did, so the dock reads Raise
+Hand again. Each `update` lowers the hand
 when your zone is no longer the one it went up in, re-sends a raised hand when a walker arrives (with the locator),
-and works out `selfLet` (your hand's `letSpeak` still passes). `CallSelf` gains `stage`, `barredBy` (the stage's Who
+and works out `selfLet` (your hand's letter still passes `letterMay`). `CallSelf` gains `stage`, `barredBy` (the stage's Who
 Can Speak while you stand on one that bars you, else null), `hand` and `handsUp` (raised, not let speak, among the
 tab's walkers), set on every update and on every hands change (`onCallHands`). Leaving the call lowers the hand.
 
@@ -239,7 +247,10 @@ subscriberSession, asks)`. `RoomCalls` (`apps/api/src/calls/room-calls.ts`) answ
   `call-session` again (at most every `REPROVE_MS`), which heals a room that restarted or a socket that reconnected.
 - **Let-speak** (#495). The room delivers an `avatar-let-speak` only when `RoomCalls.letSpeak` passes: an Editor, or
   someone it places (with the edge margin) on a stage that lets their level speak. Otherwise `[calls] let-speak
-refused` and nothing is delivered. The browser's own check stays.
+refused` and nothing is delivered. The browser's own check stays. The room keeps who let a hand speak as the
+  sender's presence id and roster `key` (`CallSessionHolder.key`), and its hearing check follows the person the same
+  way the browsers do: a reconnected granter's new session passes for them. A `key` is claimed, but following it adds
+  no reach: the session it finds must itself be one the room would accept a let-speak from.
 
 ## Performance and limits
 
@@ -255,6 +266,10 @@ refused` and nothing is delivered. The browser's own check stays.
   count of the hands up; a hand changing re-runs the scene once. Measured (best of five, CPU time): 100 hands all let
   speak, with the staging, is about 30 µs a scene. The canvas's `RaisedHands` draws nothing and costs one empty
   check while no hand is up; the hands store notifies only on a raise, a lower, a let-speak or a prune.
+- Following a letter as a person (`letterMay`) reads the roster only when the letter's own presence id fails, through
+  the roster's keys turned round once per roster (a `WeakMap` on the store's map). Measured (best of five, CPU time):
+  100 hands whose letters all left, with 100 keys on the roster, is about 27 µs a scene (80 µs scanning the roster
+  per hand). The room's `letterMayNow` scans its sessions' keys only for a hand whose letter left, once per answer.
 - A stage is one speaker to everyone: `listeners` streams per speaker (the spec's Cost), subscribed in batches of 16.
 - A room hears by distance (owner, 2026-11-06): `togetherWith` answers `'open'` for anyone on your side of the walls,
   room or floor, so `nextHeard` measures them as on the open floor; `'room'` is left for fellow speakers on a stage.

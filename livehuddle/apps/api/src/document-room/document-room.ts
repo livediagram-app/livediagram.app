@@ -1858,7 +1858,12 @@ export class DocumentRoom extends DurableObject<Env> {
       const session = this.readSession(ws);
       const presence = session?.presence;
       if (presence) {
-        yield { presenceId: presence.id, role: presence.role, callSession: session.callSession };
+        yield {
+          presenceId: presence.id,
+          role: presence.role,
+          callSession: session.callSession,
+          key: presence.key ?? null,
+        };
       }
     }
   }

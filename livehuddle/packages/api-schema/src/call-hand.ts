@@ -6,15 +6,20 @@
 export const PRESENCE_ID_MAX = 64;
 const TAB_ID_MAX = 64;
 
+/** The longest document-write key (a roster `key`) a hand names: the room's own clamp on it. */
+export const PERSON_KEY_MAX = 64;
+
 /**
  * Your hand, sent by its owner to the whole room: `raised`, and once someone let you speak, `letSpeak`, the presence id
- * of who did (each listener checks they still may). A lowered hand carries no `letSpeak`.
+ * of who did (each listener checks they still may), with `letSpeakKey`, their roster `key`: the person, which survives
+ * their reconnect where the presence id does not. A lowered hand carries neither.
  */
 export type AvatarHandOp = {
   kind: 'avatar-hand';
   tabId: string;
   raised: boolean;
   letSpeak?: string | null;
+  letSpeakKey?: string;
 };
 
 /**
@@ -33,7 +38,13 @@ const isId = (v: unknown, max: number): v is string =>
 
 /** An `avatar-hand` op as sent, or null. */
 export function parseAvatarHand(op: unknown): AvatarHandOp | null {
-  const o = op as { kind?: unknown; tabId?: unknown; raised?: unknown; letSpeak?: unknown } | null;
+  const o = op as {
+    kind?: unknown;
+    tabId?: unknown;
+    raised?: unknown;
+    letSpeak?: unknown;
+    letSpeakKey?: unknown;
+  } | null;
   if (!o || o.kind !== 'avatar-hand' || !isId(o.tabId, TAB_ID_MAX)) return null;
   if (typeof o.raised !== 'boolean') return null;
   if (!o.raised) return { kind: 'avatar-hand', tabId: o.tabId, raised: false };
@@ -41,7 +52,15 @@ export function parseAvatarHand(op: unknown): AvatarHandOp | null {
     return { kind: 'avatar-hand', tabId: o.tabId, raised: true };
   }
   if (!isId(o.letSpeak, PRESENCE_ID_MAX)) return null;
-  return { kind: 'avatar-hand', tabId: o.tabId, raised: true, letSpeak: o.letSpeak };
+  const hand: AvatarHandOp = {
+    kind: 'avatar-hand',
+    tabId: o.tabId,
+    raised: true,
+    letSpeak: o.letSpeak,
+  };
+  // An older editor sends no key; a malformed one is dropped, never the hand.
+  if (isId(o.letSpeakKey, PERSON_KEY_MAX)) hand.letSpeakKey = o.letSpeakKey;
+  return hand;
 }
 
 /** An `avatar-let-speak` op as sent, or null. */

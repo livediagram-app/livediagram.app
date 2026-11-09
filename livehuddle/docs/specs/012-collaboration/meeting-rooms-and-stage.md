@@ -129,11 +129,15 @@ A stage's audience asks to speak by raising a hand, and the stage lets them.
   hand.
 - **Whoever let you speak must still be able to.** Each browser checks the person who pressed Let Speak is an Editor
   or speaks from a stage now; once neither is true (a Participant who let you speak steps off the stage), you are
-  the audience again, with your hand still raised.
+  the audience again, with your hand still raised. The check follows the person, not their connection: when whoever
+  let you speak reconnects (a dropped network, a sleeping laptop), they come back as the same person and you keep
+  speaking, in every browser and in the room's own check.
 - **Heard, not seen.** Someone let speak reaches the whole tab's ears, never its screens: their camera and screen
   bubbles stay with the people who would see them anyway (the other speakers, as one room).
 - **Presence, never stored**: a hand lives on the room's connection, so a reload, a dropped connection or leaving
-  the mode lowers it, and nobody arriving later sees an old one. A late arrival does see the hands already up: a
+  the mode lowers it, and nobody arriving later sees an old one. Your own Call dock agrees: when your connection drops,
+  your hand goes down there too (it reads **Raise Hand** again), so you never see **Lower Hand** for a hand nobody
+  else sees. A late arrival does see the hands already up: a
   raised hand is sent again whenever someone new walks onto the tab.
 - With a screen reader: the badge is a button named "Sam raised a hand, Let Speak" (or "Sam is speaking, Done")
   for someone who may press it, and an image named "Sam raised a hand" for everyone else; the Call dock's count is
