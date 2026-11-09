@@ -221,8 +221,13 @@ export function collectWorks(bundle: AppBundle, ctx: CollectContext): Collected 
     }
     for (const hit of hits) usedEmbedded.add(hit.id);
   }
+  // A trigger ending in `/` is a folder: any bundled file under it ships the work.
+  const ships = (trigger: string) =>
+    trigger.endsWith('/')
+      ? [...firstParty].some((source) => source.startsWith(trigger))
+      : firstParty.has(trigger);
   for (const work of ctx.embedded) {
-    if ('sources' in work.trigger && work.trigger.sources.some((s) => firstParty.has(s))) {
+    if ('sources' in work.trigger && work.trigger.sources.some(ships)) {
       usedEmbedded.add(work.id);
     }
   }

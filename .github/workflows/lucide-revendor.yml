@@ -6,7 +6,8 @@ name: Lucide re-vendor
 # (action_required), and only pull_request runs count as the PR's required checks, so it approves them.
 #
 # Two jobs, so the dependency tree never runs beside a write token. The first installs (with no install
-# scripts) and regenerates under a read-only token, and hands over only a patch of the two generated files.
+# scripts) and regenerates under a read-only token, and hands over only a patch of the generated files (the
+# manifest, lucide.generated.ts and the glyph modules in src/lucide/).
 # The second installs nothing: it applies that patch, and only its last step holds the token that pushes and
 # approves.
 on:
@@ -64,7 +65,9 @@ jobs:
         run: |
           set -euo pipefail
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          git diff --binary -- packages/icons/lucide-manifest.json packages/icons/src/lucide.generated.ts > revendor.patch
+          # Staged first, so a glyph module the bump adds is in the patch as well as one it changes or drops.
+          git add -A -- packages/icons/lucide-manifest.json packages/icons/src/lucide.generated.ts packages/icons/src/lucide
+          git diff --cached --binary -- packages/icons/lucide-manifest.json packages/icons/src/lucide.generated.ts packages/icons/src/lucide > revendor.patch
           if [ -s revendor.patch ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
@@ -107,11 +110,11 @@ jobs:
           PATCH: ${{ runner.temp }}/lucide-revendor/revendor.patch
         run: |
           set -euo pipefail
-          # Only the two generated files, nothing else, whatever the first job produced.
+          # Only the generated files, nothing else, whatever the first job produced.
           touched="$(git apply --numstat "${PATCH}" | cut -f3 | sort)"
-          allowed="$(printf '%s\n' packages/icons/lucide-manifest.json packages/icons/src/lucide.generated.ts | sort)"
+          generated='packages/icons/lucide-manifest\.json|packages/icons/src/lucide\.generated\.ts|packages/icons/src/lucide/[a-z0-9-]+\.ts'
           for file in ${touched}; do
-            if ! printf '%s\n' "${allowed}" | grep -qxF "${file}"; then
+            if ! printf '%s\n' "${file}" | grep -qxE "${generated}"; then
               echo "::error::lucide-revendor: the patch touches ${file}, which is not a generated Lucide file"
               exit 1
             fi
@@ -119,7 +122,7 @@ jobs:
           git apply "${PATCH}"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add packages/icons/lucide-manifest.json packages/icons/src/lucide.generated.ts
+          git add -A -- packages/icons/lucide-manifest.json packages/icons/src/lucide.generated.ts packages/icons/src/lucide
           git commit -m 'Re-vendor Lucide for the bumped lucide-static'
 
       - name: Push and approve the checks

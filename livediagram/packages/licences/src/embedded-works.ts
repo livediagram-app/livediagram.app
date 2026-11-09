@@ -184,7 +184,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     licence: 'ISC AND MIT',
     carrier: 'liveworkspace source (icons)',
     homepage: 'https://lucide.dev',
-    trigger: { sources: ['../packages/icons/src/lucide.generated.ts'] },
+    trigger: { sources: ['../packages/icons/src/lucide/'] },
     texts: text('lucide-1.52.0-LICENSE.txt'),
   },
   {

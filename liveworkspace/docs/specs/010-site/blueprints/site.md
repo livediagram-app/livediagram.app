@@ -88,6 +88,10 @@ the cost is the glyphs' path data plus the extra chunk's framing. The split is T
 it is: the extra chunk is fetched in parallel, and a glyph added to the table will move the cut again. Watch the
 table's size when adding glyphs to a lazy panel.
 
+**Lucide a module per glyph (2026-11-09).** Since then each glyph is a module of its own (`packages/icons/src/lucide/`,
+re-exported by `lucide.generated.ts`), so a first load carries only the glyphs its own code imports and a lazy panel's
+glyphs stay in its chunk. `/` went from 223.1 to 220.3 KiB gzipped and every editor page lost 6 to 12 KiB.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from

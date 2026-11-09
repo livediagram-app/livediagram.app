@@ -17,7 +17,8 @@ export type Override = { package: string; version: string; licence?: string; tex
 // source (docs/specs/002-project-scope/third-party-licences.md "What counts as
 // shipped"). Every emitted binary asset must match at least one entry. A source
 // trigger is a path from the product's folder, so the monorepo's shared packages
-// read `../packages/…`.
+// read `../packages/…`; one ending in `/` is a folder, and any bundled file under it
+// triggers (Lucide's glyphs, one module each).
 export type EmbeddedWork = {
   id: string;
   name: string;
