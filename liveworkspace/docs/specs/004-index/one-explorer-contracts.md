@@ -589,7 +589,8 @@ by link are not on it.
 - `share_link_expiring` warns an item's owner (them alone) before its share links stop working: one per item,
   dated at the soonest expiry among its live links that lapse within `SHARE_EXPIRY_WARNING_MS` (a week), so it
   waits in Upcoming (`expiresAt`, `links`: how many lapse in the week). Making, extending or deleting a link works
-  it out again at once; a daily pass (at most 2,000 items, the soonest first) catches links the week has since
+  it out again at once, and so does a restore from the Trash; moving the item to the Trash drops it, as a link
+  reaches nothing there; a daily pass (at most 2,000 items, the soonest first) catches links the week has since
   reached, and leaves one the owner removed from their Timeline removed.
 - Apps report `edited` and `image_uploaded` (above).
 - Each event the index records about an item (`renamed`, `moved`, `trashed`, `shared`, `commented`,
