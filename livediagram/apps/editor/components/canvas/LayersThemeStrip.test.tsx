@@ -24,6 +24,15 @@ describe('LayersThemeStrip', () => {
     expect(onOpenTheme).toHaveBeenCalled();
   });
 
+  it('reads as expanded while the Tab Style dialog is open, so the sign-in banner steps aside', () => {
+    const { rerender } = render(<LayersThemeStrip onOpenTheme={() => {}} />);
+    const theme = screen.getByRole('button', { name: 'Theme and canvas' });
+    expect(theme.getAttribute('aria-expanded')).toBe('false');
+    rerender(<LayersThemeStrip onOpenTheme={() => {}} themeOpen />);
+    expect(theme.getAttribute('aria-expanded')).toBe('true');
+    expect(theme.closest('[data-dock-button]')).not.toBeNull();
+  });
+
   it('keeps whichever of the two a mode has, and nothing when it has neither', () => {
     render(<LayersThemeStrip onOpenTheme={() => {}} />);
     expect(screen.queryByRole('button', { name: 'Open Layers' })).toBeNull();

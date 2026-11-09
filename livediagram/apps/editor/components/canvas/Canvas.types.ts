@@ -498,6 +498,8 @@ export type CanvasProps = {
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
+  // The CanvasThemeDialog is open: the button reads as expanded, so the guest sign-in banner steps aside for it.
+  canvasThemeOpen?: boolean;
   // Diagram mode's Tidy Up button and popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
   // button"). Absent in a session that may not tidy (a Participant, a Viewer, an embed): no button.
   tidyUp?: TidyUpActions;
