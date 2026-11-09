@@ -234,7 +234,9 @@ live, with your own equaliser and bubble, while nothing reached anyone).
 - The call **renews** itself on that answer, with no press: it mints a new session, proves it to the room
   (`call-session`), publishes again what was live (an open microphone, the camera, a shared screen), tells the room
   its new locators (`call-track`), and subscribes again to whoever it should hear. The dock stays as it was; the first
-  unmute after a quiet spell takes a moment longer.
+  unmute after a quiet spell takes a moment longer. With nothing live to publish again (a microphone released after a
+  quiet spell, no camera, no screen), it tells the room so (`call-track` with `track: null`), and nobody keeps asking
+  for the dead session's microphone.
 - A session that is gone again straight after renewing is a broken call, not an idle one: after 3 renewals inside a
   minute the call fails into **Retry** (Audio Unavailable), as a failed connection does. No loop.
 - A publish that fails leaves nothing behind that claims it worked, so the next attempt publishes afresh.

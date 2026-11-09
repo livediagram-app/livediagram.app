@@ -251,10 +251,20 @@ export class ProximityCall {
     old?.close();
     try {
       if (!(await this.openSession())) return;
+      const announced =
+        this.mic.published || this.video.cameraAnnounced || this.video.screenAnnounced;
       await this.mic.republish();
       await this.video.republish();
-      // A microphone released before the renewal is no longer published: the room learns that too.
-      this.beacon.sendLocator(true);
+      // A microphone released before the renewal is no longer published: the room learns that too. With nothing left
+      // to locate, the beacon has nothing to send, so the old session's locator is taken back here.
+      if (
+        announced &&
+        !this.mic.published &&
+        !this.video.cameraAnnounced &&
+        !this.video.screenAnnounced
+      )
+        this.beacon.send({ kind: 'call-track', track: null });
+      else this.beacon.sendLocator(true);
       this.hear();
     } catch (error) {
       this.refused(error, 'renew');

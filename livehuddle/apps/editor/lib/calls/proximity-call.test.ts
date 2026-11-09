@@ -1465,7 +1465,7 @@ describe('ProximityCall renewing a session Realtime dropped', () => {
   });
 
   it('leaves a released microphone unpublished, so the next unmute publishes it on the new session', async () => {
-    const { call } = makeCall();
+    const { call, sent } = makeCall();
     await speak(call);
     call.toggleMute();
     call.update(scene([]));
@@ -1473,6 +1473,11 @@ describe('ProximityCall renewing a session Realtime dropped', () => {
     sfu.instances[0]!.events.onSessionGone();
     await settle();
     expect(sfu.instances[1]!.publish).not.toHaveBeenCalled();
+    // The room and its peers take back the dead session's locator, rather than keep asking for it.
+    expect(sent.filter((s) => s.kind === 'call-track').at(-1)).toEqual({
+      kind: 'call-track',
+      track: null,
+    });
     call.toggleMute();
     await settle();
     expect(sfu.instances[1]!.publish).toHaveBeenCalledTimes(1);
