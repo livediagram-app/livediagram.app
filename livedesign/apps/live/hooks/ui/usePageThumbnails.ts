@@ -7,11 +7,21 @@
 // redraw once the tab has rested that long, never on every frame of a drag or every key typed.
 // Each page draws from its own elements only (lib/page-element-buckets.ts), and a page whose own
 // elements and page are unchanged keeps its picture: an edit redraws the page it touched, not the tab.
+// Instances are expanded against the design's library first (docs/specs/009-elements/components.md "Exports,
+// thumbnails and agents"), so a page pictures the component's elements, not a dashed Component frame.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { pagesOf, layOutPages, type Element, type LaidOutPage, type Tab } from '@livedesign/design';
+import {
+  expandInstances,
+  pagesOf,
+  layOutPages,
+  type Element,
+  type LaidOutPage,
+  type Tab,
+} from '@livedesign/design';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { pageElementBuckets } from '@/lib/page-element-buckets';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useComponentFaces } from '@/components/canvas/component/component-face-context';
 import { useImageSources } from '@/components/canvas/page-image-access';
 import { thumbImageHref, thumbImageIds } from '@/lib/thumb-images';
 import { pageThumbFor, tabArrowLabels, type PageThumb } from '@/lib/page-thumb';
@@ -51,26 +61,27 @@ export function usePageThumbnails(
     [tab.elements, tab.pages, tab.layers, tab.font, tab.finish, key],
   );
   const drawn = useSettled(live, settleMs);
+  // The design's library, where the editor provides it: a library change redraws only the pages with instances.
+  const lookup = useComponentFaces()?.lookup;
   const cache = useRef<{ shared: Shared; pages: Map<string, Drawn> }>({
     shared: [],
     pages: new Map(),
   });
   // The drawn rows' pages and their own elements, and the pictures on them for the image store.
   const laidOut = useMemo(() => {
-    const full = drawn.tab as Tab;
+    const full = lookup ? expandInstances(drawn.tab as Tab, lookup) : (drawn.tab as Tab);
     const laid = layOutPages(pagesOf(full));
     const buckets = pageElementBuckets(full.elements, laid);
     const byId = new Map(laid.map((p) => [p.id, p]));
     const imageIds = drawn.pageIds.flatMap((pageId) =>
       thumbImageIds(buckets.get(pageId) ?? [], byId.get(pageId)),
     );
-    return { byId, buckets, imageIds };
-  }, [drawn]);
+    return { full, byId, buckets, imageIds };
+  }, [drawn, lookup]);
   // Each picture fetched once while a drawn row shows it, shared with the canvas's copy.
   const imageSource = useImageSources(laidOut.imageIds);
   return useMemo(() => {
-    const full = drawn.tab as Tab;
-    const { byId, buckets } = laidOut;
+    const { full, byId, buckets } = laidOut;
     const resolveImageHref = thumbImageHref(imageSource);
     const shared: Shared = [full.id, full.layers, full.font, full.finish, iconsLoaded, surface];
     const kept = sameList(shared, cache.current.shared)
