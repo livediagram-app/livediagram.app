@@ -38,6 +38,10 @@ describe('checkAnswer', () => {
     expect(checkAnswer(Q('number'), '4.5')).toEqual({ value: 4.5 });
     expect(checkAnswer(Q('number'), 3)).toEqual({ value: 3 });
     expect(checkAnswer(Q('number'), 'abc')).toEqual({ error: 'not_a_number' });
+    for (const odd of ['0x1A', '0b11', '0o7', 'Infinity', '1e999'])
+      expect(checkAnswer(Q('number'), odd)).toEqual({ error: 'not_a_number' });
+    expect(checkAnswer(Q('number'), ' -1.5e2 ')).toEqual({ value: -150 });
+    expect(checkAnswer(Q('number'), '.5')).toEqual({ value: 0.5 });
     expect(checkAnswer(Q('number'), true)).toEqual({ error: 'not_a_number' });
     expect(checkAnswer(Q('number', { whole: true }), '4.5')).toEqual({ error: 'not_whole' });
     expect(checkAnswer(Q('number', { min: 1 }), 0)).toEqual({ error: 'below_min' });
