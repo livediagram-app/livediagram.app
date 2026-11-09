@@ -43,8 +43,13 @@ canvas with another grid colour, or on another scheme, was a choice and is left 
 Autumn and Jewel left the catalogue ([Light and dark halves](light-and-dark.md#retired-autumn-and-jewel)). On load a tab
 on Autumn becomes Tropical and a tab on Jewel becomes Rainbow: `theme` is rewritten, and every element colour field
 still holding the retired theme's value for that role (its fill, outline, text, or a palette branch's) takes the new
-theme's value for the same role. A colour the user picked is kept. The backdrop follows the same rule: a canvas or
-pattern colour still equal to the retired theme's becomes the new theme's.
+theme's value for the same role. Roles pair up by field: a fill only ever maps to a fill, an outline (or an arrowhead)
+to an outline, text to text, so a value two roles of the retired theme shared (Autumn's outline is also its second
+branch's text) takes the new colour of the role that field holds. Only the fields a theme paints on that kind change
+(`themeColourFields`), so a sticky note, image, link card or video, and a fill locked against the theme, keep their
+colours, as under Charcoal. A colour the user picked is kept. The backdrop follows the same rule: a canvas colour still
+equal to the retired theme's canvas becomes the new theme's canvas, and a pattern colour its pattern colour (never an
+element's colour, though Jewel's canvas and element fill were one colour).
 
 ## Custom themes
 

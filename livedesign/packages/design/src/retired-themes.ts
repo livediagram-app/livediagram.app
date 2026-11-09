@@ -5,8 +5,8 @@
 // These definitions are data about the past, frozen as they shipped; they never change.
 import { themeHalf } from './theme-halves';
 import { THEMES } from './themes-data';
-import type { ThemeDefinition } from './themes';
-import type { Tab } from './index';
+import { themeColourFields, type ThemeColourField, type ThemeDefinition } from './themes';
+import type { Element, Tab } from './index';
 
 // Retired ids are not ThemeIds any more, hence the cast.
 const AUTUMN = {
@@ -55,44 +55,57 @@ const RETIRED_THEMES: Readonly<Record<string, { from: ThemeDefinition; to: strin
   jewel: { from: JEWEL, to: 'rainbow' },
 };
 
-// A theme's colours by role, in a fixed order, so two themes pair up slot by slot.
-function slots(t: ThemeDefinition): (string | null | undefined)[] {
-  const out: (string | null | undefined)[] = [t.elementFill, t.elementStroke, t.elementText];
-  for (let i = 0; i < 6; i++) {
-    const p = t.palette?.[i];
-    out.push(p?.fill, p?.stroke, p?.text);
-  }
-  out.push(
-    t.rootColor?.fill,
-    t.rootColor?.stroke,
-    t.rootColor?.text,
-    t.backgroundColor,
-    t.patternColor,
-  );
+// The roles a colour plays, each mapped on its own: a fill only to a fill, an outline to an outline, text to text, the
+// canvas to the canvas and the pattern to the pattern. One map for every role let the first role claiming a colour
+// win: Jewel's canvas is also its element fill, so its canvas became Rainbow's element fill, and Autumn's outline is
+// also its second branch's text, so that text became Tropical's outline.
+type Role = 'fill' | 'stroke' | 'text' | 'canvas' | 'pattern';
+
+// A theme's colours in one role, in a fixed order, so two themes pair up slot by slot.
+function slots(t: ThemeDefinition, role: Role): (string | null | undefined)[] {
+  if (role === 'canvas') return [t.backgroundColor];
+  if (role === 'pattern') return [t.patternColor];
+  const own = { fill: t.elementFill, stroke: t.elementStroke, text: t.elementText }[role];
+  const out: (string | null | undefined)[] = [own];
+  for (let i = 0; i < 6; i++) out.push(t.palette?.[i]?.[role]);
+  out.push(t.rootColor?.[role]);
   return out;
 }
 
 const MAPS = new Map<string, ReadonlyMap<string, string>>();
 
-// Every colour the retired theme painted (as written, and in either derived half) mapped to the replacement's colour
-// in the same slot, keys lower case. Element roles come first, so a colour shared with the canvas maps as an element's.
-function colourMap(id: string): ReadonlyMap<string, string> {
-  const cached = MAPS.get(id);
+// Every colour the retired theme painted in `role` (as written, and in either derived half) mapped to the
+// replacement's colour in the same slot, keys lower case.
+function colourMap(id: string, role: Role): ReadonlyMap<string, string> {
+  const key = `${id}|${role}`;
+  const cached = MAPS.get(key);
   if (cached) return cached;
   const { from, to } = RETIRED_THEMES[id]!;
-  const target = slots(THEMES.find((t) => t.id === to)!);
+  const target = slots(THEMES.find((t) => t.id === to)!, role);
   const map = new Map<string, string>();
   for (const source of [from, themeHalf(from, 'light'), themeHalf(from, 'dark')]) {
-    slots(source).forEach((colour, i) => {
+    slots(source, role).forEach((colour, i) => {
       const next = target[i];
       if (colour && next && !map.has(colour.toLowerCase())) map.set(colour.toLowerCase(), next);
     });
   }
-  MAPS.set(id, map);
+  MAPS.set(key, map);
   return map;
 }
 
-const FIELDS = ['fillColor', 'strokeColor', 'textColor', 'arrowheadColor'] as const;
+const ROLE_OF: Record<ThemeColourField['theme'], Role> = {
+  elementFill: 'fill',
+  elementStroke: 'stroke',
+  elementText: 'text',
+};
+
+// The colour fields a theme paints on this element, each with its role: the kind's own (themeColourFields, so a
+// sticky, image, link card or video and a locked fill are left alone), and an arrow's head with its line.
+function paintedFields(el: Element): { field: string; role: Role }[] {
+  const out = themeColourFields(el).map((f) => ({ field: f.element, role: ROLE_OF[f.theme] }));
+  if (el.type === 'arrow') out.push({ field: 'arrowheadColor', role: 'stroke' });
+  return out;
+}
 
 type ThemedTab = Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>;
 
@@ -100,17 +113,19 @@ type ThemedTab = Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'eleme
 export function migrateRetiredTheme<T extends ThemedTab>(tab: T): T {
   const retired = tab.theme ? RETIRED_THEMES[tab.theme] : undefined;
   if (!retired) return tab;
-  const map = colourMap(tab.theme!);
-  const swap = (c: string | undefined) => (c ? (map.get(c.toLowerCase()) ?? c) : c);
+  const id = tab.theme!;
+  const swap = (c: string | undefined, role: Role) =>
+    c ? (colourMap(id, role).get(c.toLowerCase()) ?? c) : c;
   let recoloured = 0;
   const elements = Array.isArray(tab.elements)
     ? tab.elements.map((el) => {
+        if (!el || typeof el !== 'object') return el;
         const record = el as unknown as Record<string, unknown>;
         let patch: Record<string, string> | null = null;
-        for (const field of FIELDS) {
+        for (const { field, role } of paintedFields(el)) {
           const value = record[field];
           if (typeof value !== 'string') continue;
-          const next = map.get(value.toLowerCase());
+          const next = colourMap(id, role).get(value.toLowerCase());
           if (next && next !== value) (patch ??= {})[field] = next;
         }
         if (!patch) return el;
@@ -122,8 +137,8 @@ export function migrateRetiredTheme<T extends ThemedTab>(tab: T): T {
   return {
     ...tab,
     theme: retired.to,
-    backgroundColor: swap(tab.backgroundColor),
-    patternColor: swap(tab.patternColor),
+    backgroundColor: swap(tab.backgroundColor, 'canvas'),
+    patternColor: swap(tab.patternColor, 'pattern'),
     elements,
   };
 }
