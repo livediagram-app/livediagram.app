@@ -3,12 +3,7 @@ import type { Tab } from '@liveplanner/project';
 import type { ItemCreate } from '@liveplanner/items';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme } from '@/lib/themes';
-import {
-  formTemplateStarter,
-  isFormTemplateKind,
-  isPlanTemplateKind,
-  type TemplateKind,
-} from '@liveplanner/templates';
+import { isFormTemplateKind, isPlanTemplateKind, type TemplateKind } from '@liveplanner/templates';
 import type { StarterId } from '@liveplanner/forms';
 import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
@@ -95,8 +90,13 @@ export function useTemplateFlow(opts: {
     // actually picks a template. The ~1700 lines of build* code stays
     // out of the editor's initial chunk; returning users opening an
     // existing project never download it.
-    const { templateTabs, templateCanvasOverrides, isDefaultProjectName, untitledNameForTemplate } =
-      await import('@/lib/template-builders');
+    const {
+      templateTabs,
+      templateCanvasOverrides,
+      isDefaultProjectName,
+      untitledNameForTemplate,
+      formTemplateStarter,
+    } = await import('@/lib/template-builders');
     // The first tab's template names a project still on a default name ("Untitled Flowchart",
     // docs/specs/007-editor/templates-by-mode.md "The project's name"); a name someone gave it stays.
     if (tabs[0]?.id === activeId && isDefaultProjectName(projectName)) {

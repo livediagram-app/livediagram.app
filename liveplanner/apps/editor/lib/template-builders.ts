@@ -19,6 +19,7 @@ import { getTheme, recolourElementsForTheme } from './themes';
 
 export {
   buildTemplate,
+  formTemplateStarter,
   isDefaultProjectName,
   templateCanvasOverrides,
   templateTabs,

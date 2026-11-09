@@ -14,40 +14,9 @@ import {
 } from '@liveplanner/items';
 import type { StarterId } from '@liveplanner/forms';
 import type { TemplateStartId } from '@liveplanner/sheets';
+import { PLAN_TEMPLATE_KINDS, type PlanTemplateKind } from './plan-template-kinds';
 
-export const PLAN_TEMPLATE_KINDS = [
-  'blank-plan',
-  'blank-spreadsheet',
-  'project-planner',
-  'kanban',
-  'bug-triage',
-  'team-retro',
-  'weekly-planner',
-  'content-calendar',
-  'hiring-pipeline',
-  'okrs',
-  'product-launch',
-  'feedback-board',
-  'budget-planner',
-  'timesheet',
-  'contact-list',
-  'task-tracker',
-  'invoice',
-  'expense-report',
-  'loan-calculator',
-  'sales-pipeline',
-  'inventory',
-  'guest-list',
-  'grade-book',
-  'habit-tracker',
-  'event-planner',
-  'sales-crm',
-  'help-desk',
-  'meeting-agenda',
-  'personal-goals',
-  'study-planner',
-] as const;
-export type PlanTemplateKind = (typeof PLAN_TEMPLATE_KINDS)[number];
+export { PLAN_TEMPLATE_KINDS, type PlanTemplateKind };
 
 // A board's set-up is its preset's, with `setup` laid over it and `title` set.
 export type BoardSpec = {

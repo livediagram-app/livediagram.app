@@ -298,7 +298,7 @@ function CanvasView(props: CanvasProps) {
   const smallElementTap = useSmallElementDoubleTap(doubleTap.onElement);
   const stickyPeel = useStickyPeelVars();
   // A walking click on a reading piece opens it large (docs/specs/008-canvas/avatar-mode.md "The reader").
-  const elementReader = useElementReader(elements);
+  const elementReader = useElementReader(elements, canvasTool === 'avatar');
   const surface = useCanvasSurfaceGestures({
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,

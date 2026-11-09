@@ -67,6 +67,13 @@ this way. Where switching to one must stay instant, its code is fetched once the
   then kept, so their state survives), search, the quick style panel, the tool panels, presenting and
   session settings. Fetched once the opened document has rendered and the page is idle.
 - **At the press**: a template's canvas overrides load with its builders when one is applied.
+- **A piece's panel**: the Calendar Wall's and the Suggestion Box's popovers and readers, the Room Sign's
+  reader and the panel the Stairs, Elevator and Directory open (`WayfindingPopover`) load the first time
+  one is opened (about 13 KiB gzipped once in every document's first load). A face fetches its panel's
+  code as a pointer comes over its button or the button takes focus, and while someone walks, so the
+  first press finds it in; a walk-on that opens a panel before then draws it once its code lands. What a
+  face draws itself stays in small modules of its own: the calendar's note tabs (`calendar-notes.ts`) and
+  the wayfinding panels' header, chips and rows (`wayfinding-panel-parts.tsx`).
 - **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
   the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys
   listen from its first frame. The top corners give way to a top Draw dock from the commit the dock is

@@ -68,7 +68,11 @@ this way. Where switching to one must stay instant, its code is fetched once the
   state survives), search and session settings. Fetched once the opened project has rendered and the page is
   idle. Only what Plan can open is prefetched: no Layers panel, quick style panel or Format tool panel is on the
   list.
-- **At the press**: a template's canvas overrides load with its builders when one is applied.
+- **At the press**: a template's canvas overrides, and a form template's starter, load with its builders
+  when one is applied. Asking whether a kind is a Plan template reads the import-free list of Plan
+  template kinds (`packages/templates/src/plan-template-kinds.ts`), never the catalogue of their tabs, so
+  the editor's first load carries no Plan template's boards, dashboards or forms (about 15 KiB gzipped
+  when it did). `plan-lazy-load.test.ts` keeps that list a leaf.
 - **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
   the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys
   listen from its first frame.

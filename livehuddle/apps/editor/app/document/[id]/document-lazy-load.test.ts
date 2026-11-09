@@ -32,6 +32,20 @@ describe('the document page’s first load', () => {
     expect(src).not.toMatch(/^import\s+\{[^}]*\btemplateCanvasOverrides\b/m);
   });
 
+  // web-performance.md "A piece's panel": every board's faces are in the first load, their panels are not (about
+  // 13 KiB gzipped when they were).
+  it.each([
+    ['components/canvas/collab/TeamFaces.tsx', './CalendarWallPopover'],
+    ['components/canvas/collab/TeamFaces.tsx', './SuggestionBoxPopover'],
+    ['components/canvas/collab/ElementReader.tsx', './RoomSignReader'],
+    ['components/canvas/wayfinding/StairsFace.tsx', './WayfindingPopover'],
+    ['components/canvas/wayfinding/ElevatorFace.tsx', './WayfindingPopover'],
+    ['components/canvas/wayfinding/DirectoryFace.tsx', './WayfindingPopover'],
+    ['components/canvas/wayfinding/wayfinding-panel-parts.tsx', './WayfindingPopover'],
+  ])('%s loads %s when a piece first opens it', (file, module) => {
+    expect(importsOf(file)).not.toContain(module);
+  });
+
   // The Explorer opens only from the canvas's menu button (docs/specs/007-editor/toolbar-layout.md): the status
   // screens (deleted, couldn't load, not found) render neither it nor its code.
   it('shows no Explorer panel on the status screens', () => {

@@ -553,6 +553,15 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   library scrolled to its end held 1,800 cards (35,000 nodes), and on an iPad in WebKit starting a
   rename blocked for 190 to 1,150 ms and each reveal for 250 to 330 ms; windowed, it holds 30 cards and
   neither blocks a frame for 50 ms (measured 2026-11-08).
+- **The Explorer's dialogs load when first opened.** Share, Change Folder (an item's or a folder's), Use as Default,
+  Default Folders, History, Webhooks and Share's Community tab are each fetched the first time one opens, never with
+  the Explorer (`packages/explorer/src/explorer/Dialogs.tsx`; Share, Change Folder and the two defaults dialogs
+  were about 28 KiB gzipped of `/explorer`'s first load). An item's or folder's ⋯ menu fetches the dialogs it
+  offers as it opens, so a press on one of its rows finds the code in and the dialog opens in that press's own
+  commit, taking focus as it always has; a dialog opened before its code lands draws once it does. A dialog whose
+  code cannot load draws nothing. `dialogs-lazy-load.test.ts` keeps them out of the first load.
+- **A tile's picture** waits until the tile nears the screen: one IntersectionObserver per tile, attached once
+  as the tile mounts and dropped once it fires (`library/blobs.ts`), never re-attached on a re-render.
 - **Durable Objects** cost what the RFC estimates (roughly $14 a month at a million items), with
   hibernating WebSockets.
 - **Content-derived summaries** (element counts for cards, whether it is empty) are pushed by the object on
