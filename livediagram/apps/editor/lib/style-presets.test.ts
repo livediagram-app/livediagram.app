@@ -236,6 +236,28 @@ describe('colour field setters clear the colour-preset binding on shapes', () =>
     expect(applyTextColorToEl(el('text'), '#c')).toMatchObject({ textColor: '#c' });
     expect(applyTextColorToEl(el('arrow'), '#c')).toMatchObject({ textColor: '#c' });
   });
+
+  // docs/specs/023-draw-mode/path-tool.md "Style": a path is styled as a shape is. The Quick Style panel's More
+  // colours on a path's Stroke or Background went through these setters, which left a path as it was while the
+  // panel still committed and counted a change.
+  it('styles a path: its line, and its fill once closed, dropping the swatch binding', () => {
+    const path = (closed: boolean) =>
+      el('path', { closed, strokeSwatch: 'accent', fillSwatch: 'accent' });
+    expect(applyStrokeColorToEl(path(false), '#c')).toMatchObject({
+      strokeColor: '#c',
+      strokeSwatch: undefined,
+    });
+    expect(applyStrokeColorToEl(path(false), 'red')).toMatchObject({
+      strokeColor: undefined,
+      penColour: 'red',
+    });
+    expect(applyFillColorToEl(path(true), '#c')).toMatchObject({
+      fillColor: '#c',
+      fillSwatch: undefined,
+    });
+    const open = path(false);
+    expect(applyFillColorToEl(open, '#c')).toBe(open);
+  });
 });
 
 describe('border field setters', () => {
