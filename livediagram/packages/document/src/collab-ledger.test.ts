@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ElementLedger, ShapeElement, Tab, TabLedger, VoteLedger } from './index';
 import {
   ledgerCommentAuthors,
+  ledgerEntryAccumulates,
   ledgerKey,
   mergeLedgerAnswersIntoTab,
   mergeLedgerIntoTab,
@@ -373,5 +374,50 @@ describe('reactions in the ledger (docs/specs/012-collaboration/comment-reaction
       delta: Record<string, unknown>;
     };
     expect(keyless.delta).toMatchObject({ name: 'Bea', by: 'someone-else' });
+  });
+});
+
+// The room's upkeep cuts an entry nobody has touched for 30 days, but never one whose merge needs every op of its
+// round while its tab lives (liveworkspace architecture, "A room's collaboration ledger").
+describe('ledgerEntryAccumulates', () => {
+  const dot = (voter: string) => ({
+    kind: 'vote',
+    tabId: 't1',
+    elementId: 'e1',
+    voter,
+    delta: 1,
+    round: 'r1',
+  });
+
+  it('names the dots and an element holding idea cards, and nothing else', () => {
+    const vote = recordInLedger(undefined, dot('a'), 1)!;
+    expect(ledgerEntryAccumulates('ledger:t1:vote', vote)).toBe(true);
+    expect(ledgerEntryAccumulates('ledger:t1:el:box', { round: 'r', ideas: ['one'] })).toBe(true);
+    expect(ledgerEntryAccumulates('ledger:t1:el:box', { round: 'r', ideas: [] })).toBe(false);
+    expect(
+      ledgerEntryAccumulates('ledger:t1:el:card', {
+        responses: { a: { value: 'yes', at: 1, seq: 1 } },
+      }),
+    ).toBe(false);
+  });
+
+  // Why: the dots recorded afresh after a cut would replace every dot of the round the save carries.
+  it('would lose the round if the dots were recorded afresh mid-round', () => {
+    const save = tab([], {
+      vote: {
+        active: true,
+        revealed: false,
+        votesPerPerson: 3,
+        round: 'r1',
+        votes: { e1: ['a', 'b'] },
+      },
+    });
+    expect(
+      mergeLedgerIntoTab(save, ledgerOf([dot('a'), dot('b'), dot('c')]), 2).vote?.votes,
+    ).toEqual({
+      e1: ['a', 'b', 'c'],
+    });
+    const afresh = ledgerOf([dot('c')], 3);
+    expect(mergeLedgerIntoTab(save, afresh, 2).vote?.votes).toEqual({ e1: ['c'] });
   });
 });

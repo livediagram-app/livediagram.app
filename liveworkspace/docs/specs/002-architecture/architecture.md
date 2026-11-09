@@ -86,6 +86,33 @@ webhook dispatcher, the Drive mirror) sets it through one shared rule, `@livewor
   alarm for now: it runs once per request, never in a loop. A data export's next chunk is set at once too: each chunk
   works up to 20 s, so a second's floor would only slow every export.
 
+## A room's collaboration ledger
+
+Every app's room keeps a collaboration ledger (each product's `docs/specs/012-collaboration/collab-race-hardening.md`):
+the latest answer, tick, comment event or dot it sequenced, one storage key per element, which a whole-tab save is
+merged with so a stale snapshot can't erase a change the room has seen. What an entry holds and how a save merges it
+is each product's own pure module; how the entries are stored, read and kept is one shared store,
+`@liveworkspace/api-kit/room-ledger-store`, so the five rooms can't drift:
+
+- **Each entry knows when it last changed.** The store stamps every entry it writes with the room seq and the time of
+  the op that last changed it. The stamp never leaves the room: a read hands the product's module the entry as it
+  recorded it.
+- **A save reads only what can change it.** A save's merge applies only what its saver hadn't seen (a seq past the
+  cursor it sent), so the room hands it only the entries changed after that cursor, plus every entry changed in the
+  last day (`LEDGER_RECENT_MS`): those may still hold something a save uses whatever its cursor, an idea card a
+  stale snapshot lacks or the name a comment was posted under before its author's own save lands. An entry the saver
+  had seen a day or more ago can change nothing in its save. Before, every save read and shipped every entry the
+  tab ever had, so a long-lived workshop tab dragged months of comment text through each autosave. A read with no
+  cursor (a Participant's answers, which take every answer the room holds) still reads the whole tab.
+- **An entry nobody has touched for 30 days goes** (`LEDGER_RETENTION_MS`, the Trash's and the changesets' 30 days),
+  once a day in the room's upkeep: whatever it protected reached the store long ago, through the saves of everyone
+  who saw it. Two kinds stay while their tab lives, because their merge needs every op of the round: an entry the
+  product names as accumulating (a vote's dots, an idea box's cards). A tab the room no longer stores loses those
+  too, once they are 30 days old. An entry from before stamps is stamped at its first upkeep and ages from there.
+- **Residual, stated plainly:** a save whose cursor is older than the oldest entry the upkeep cut (a socket that
+  reopened after more than 30 days away and saved before its catch-up arrived) no longer has the cut entries
+  re-applied, the same as a save past the changesets' retention. The room logs it (`[ledger] stale cursor`).
+
 ## Environments and the account
 
 Two environments, production and staging, each a `wrangler.toml` environment with its own Worker name (`-staging`),

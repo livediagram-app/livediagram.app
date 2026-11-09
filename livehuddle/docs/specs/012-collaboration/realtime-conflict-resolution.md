@@ -267,7 +267,7 @@ dormant.
   `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration
   state in Durable Object storage: the per-element ledger
-  (`room-ledger-store.ts`) and the facilitator baton (`facilitator.ts`). It
+  (`@liveworkspace/api-kit/room-ledger-store`) and the facilitator baton (`facilitator.ts`). It
   writes the stored tab for a Participant (`participant-write.ts`); the live poll
   and the Q&A board's writes left with part 4 of Work Tracker #423. The full description is
   [API app → Realtime model](../015-api/api.md#realtime-model).

@@ -276,6 +276,15 @@ function reactKey(commentId: string, emoji: string, by: string): string {
   return `${commentId}\u0000${emoji}\u0000${by}`;
 }
 
+// An entry whose merge needs every op of its round, kept by the room's upkeep while its tab lives (liveworkspace
+// architecture, "A room's collaboration ledger"): the tab's dots (a merge replaces the round's map with the entry's)
+// and an element's idea cards (a merge counts them by text). Recorded afresh after a cut, either would stand for the
+// whole round. A key that only looks like the vote's is kept too: keeping is the safe side.
+export function ledgerEntryAccumulates(key: string, entry: ElementLedger | VoteLedger): boolean {
+  if (key.endsWith(':vote')) return true;
+  return ((entry as ElementLedger).ideas?.length ?? 0) > 0;
+}
+
 // Assemble a tab's ledger from its stored entries (keys under ledgerPrefix).
 export function tabLedgerFrom(tabId: string, entries: Iterable<[string, unknown]>): TabLedger {
   const prefix = ledgerPrefix(tabId);

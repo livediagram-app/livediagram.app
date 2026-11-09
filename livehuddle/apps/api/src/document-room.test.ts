@@ -1903,6 +1903,85 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
     expect(await ledger(room, 'some-other-epoch')).toEqual({ elements: {} });
   });
 
+  // liveworkspace/docs/specs/002-architecture/architecture.md "A room's collaboration ledger".
+  const DAY = 24 * 60 * 60 * 1000;
+  const since = async (room: DocumentRoom, seq: number) =>
+    (
+      await room.fetch(new Request(`https://room/ledger?tab=t1&epoch=${room.epoch}&since=${seq}`))
+    ).json();
+  const elementIds = (body: unknown) => Object.keys((body as { elements: object }).elements);
+  // A woken room whose daily upkeep is due, `days` on.
+  async function upkeepAfter(state: FakeState, days: number) {
+    vi.setSystemTime(Date.now() + days * DAY);
+    state.store.set('maintenance-at', Date.now() - 1);
+    const woken = new DocumentRoom(state as unknown as DurableObjectState);
+    await state.gate;
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    await woken.alarm();
+    return woken;
+  }
+
+  it('hands a save only the entries it could merge', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      const { room } = newRoom();
+      sendFrame(room, editor(room), answer('a'));
+      expect(elementIds(await since(room, 0))).toEqual(['card']);
+      // Seen, but changed today: still handed over.
+      expect(elementIds(await since(room, 1))).toEqual(['card']);
+      vi.setSystemTime(Date.now() + 2 * DAY);
+      expect(await since(room, 1)).toEqual({ elements: {} });
+      expect(elementIds(await since(room, 0))).toEqual(['card']);
+      // No cursor, or a malformed one: the whole tab.
+      expect(elementIds(await ledger(room))).toEqual(['card']);
+      const odd = await room.fetch(
+        new Request(`https://room/ledger?tab=t1&epoch=${room.epoch}&since=-1`),
+      );
+      expect(elementIds(await odd.json())).toEqual(['card']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('cuts in its daily upkeep what nobody has touched for 30 days, after a wake too', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      const { room, state } = newRoom();
+      const ws = editor(room);
+      sendFrame(room, ws, answer('a'));
+      await room.ledger.settled();
+      const woken = await upkeepAfter(state, 40);
+      expect(await ledger(woken)).toEqual({ elements: {} });
+      expect(state.store.get('ledger-floor')).toBe(1);
+      // A save whose cursor is older than the cut is logged.
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      await since(woken, 0);
+      expect(warn).toHaveBeenCalledWith('[ledger] stale cursor', {
+        tabId: 't1',
+        since: 0,
+        floor: 1,
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('logs a failed upkeep and still finishes it', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      const { state } = newRoom();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const list = state.storage.list;
+      state.storage.list = (opts) =>
+        opts.prefix === 'ledger:' ? Promise.reject(new Error('storage down')) : list(opts);
+      await upkeepAfter(state, 1);
+      expect(warn).toHaveBeenCalledWith('[ledger] upkeep failed', { error: 'Error: storage down' });
+      expect(state.store.get('maintenance-at')).toBeGreaterThan(Date.now());
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('does not record a view-role sender (the op is refused before it)', async () => {
     const { room } = newRoom();
     const viewer = makeSocket();
