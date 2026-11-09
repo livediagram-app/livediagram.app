@@ -121,6 +121,30 @@ describe('embedTargetFor', () => {
     );
   });
 
+  // An unlisted video plays only with its privacy hash, and a channel or group page puts the id further in.
+  it('keeps an unlisted Vimeo video’s hash, and reads channel and group links', () => {
+    const embed = (url: string) => embedTargetFor(url)?.embedUrl;
+    expect(embed('https://vimeo.com/76979871/a1b2c3d4e5')).toBe(
+      'https://player.vimeo.com/video/76979871?h=a1b2c3d4e5',
+    );
+    expect(embed('https://player.vimeo.com/video/76979871?h=a1b2c3d4e5&badge=0')).toBe(
+      'https://player.vimeo.com/video/76979871?h=a1b2c3d4e5',
+    );
+    expect(embed('https://vimeo.com/channels/staffpicks/76979871')).toBe(
+      'https://player.vimeo.com/video/76979871',
+    );
+    expect(embed('https://vimeo.com/groups/motion/videos/76979871')).toBe(
+      'https://player.vimeo.com/video/76979871',
+    );
+    // A hash that isn't one is never passed on.
+    expect(embed('https://player.vimeo.com/video/76979871?h=<script>')).toBe(
+      'https://player.vimeo.com/video/76979871',
+    );
+    expect(embed('https://vimeo.com/76979871/zzzzzzzz')).toBe(
+      'https://player.vimeo.com/video/76979871',
+    );
+  });
+
   it('recognises Loom', () => {
     const t = embedTargetFor('https://www.loom.com/share/abcdefghij0123456789');
     expect(t?.embedUrl).toBe('https://www.loom.com/embed/abcdefghij0123456789');

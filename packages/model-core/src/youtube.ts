@@ -143,7 +143,12 @@ export type EmbedTarget = {
   label: string;
 };
 
-const VIMEO_ID = /^\/(?:video\/)?(\d{6,})/;
+// A Vimeo video's id, wherever its page puts it: `/<id>`, the player's `/video/<id>`, a channel's
+// `/channels/<name>/<id>` or a group's `/groups/<name>/videos/<id>`. An unlisted video's link carries its
+// privacy hash after the id (`/<id>/<hash>`, or the player's `?h=`), and its player refuses to play without it.
+const VIMEO_ID =
+  /^\/(?:video\/|channels\/[^/]+\/|groups\/[^/]+\/videos\/)?(\d{6,})(?:\/([0-9a-f]{6,})(?=\/|$))?/i;
+const VIMEO_HASH = /^[0-9a-f]{6,}$/i;
 const LOOM_ID = /^\/(?:share|embed)\/([A-Za-z0-9]{16,})/;
 
 /**
@@ -188,13 +193,14 @@ function embedTargetOf(url: string | undefined | null, figmaEmbed: string): Embe
 
   if (host === 'vimeo.com' || host === 'player.vimeo.com') {
     const m = VIMEO_ID.exec(path);
-    if (m)
-      return {
-        provider: 'vimeo',
-        embedUrl: `https://player.vimeo.com/video/${m[1]}`,
-        label: 'Vimeo',
-      };
-    return null;
+    if (!m) return null;
+    const query = parsed.searchParams.get('h');
+    const hash = m[2] ?? (query && VIMEO_HASH.test(query) ? query : null);
+    return {
+      provider: 'vimeo',
+      embedUrl: `https://player.vimeo.com/video/${m[1]}${hash ? `?h=${hash}` : ''}`,
+      label: 'Vimeo',
+    };
   }
   if (host === 'loom.com') {
     const m = LOOM_ID.exec(path);
