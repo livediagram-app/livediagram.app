@@ -15,8 +15,18 @@
 // Lives in @liveworkspace/icons because it is a leaf package with no
 // dependencies of its own, and every product's document package already depends on it. The
 // reverse home would invert that edge.
+//
+// It also drops every character XML 1.0 forbids outright (the C0 controls bar
+// tab, LF and CR; U+FFFE and U+FFFF; and an unpaired surrogate). No escape can
+// carry those: `&#11;` is just as ill-formed as the raw byte, so one stray
+// vertical tab pasted into a label would otherwise make the whole downloaded
+// SVG fail to parse.
+// oxlint-disable-next-line no-control-regex -- matching control characters is the point.
+const NOT_XML_CHAR = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]|[\uD800-\uDFFF]/gu;
+
 export function xmlEscape(s: string): string {
   return s
+    .replace(NOT_XML_CHAR, '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
