@@ -51,7 +51,8 @@ Scope, by file:
   `timeline_events`, `items` and the item's own live webhooks (`webhooks_item_live`), kept when
   `instr(w.events, ',<type>,')`, `w.who = 'anyone' OR w.created_by = e.actor_id`, the event is no older than
   `WEBHOOK_FRESH_MS` (1 h) and the webhook has fewer than `WEBHOOK_PENDING_MAX` (500) pending (a count stopped at
-  500). The event's app, item, title, actor, name, detail and time are copied in; `next_at` is now.
+  500). The event's app, item, title, actor, name, detail and time are copied in; `next_at` is now, or the
+  webhook's newest pending row's `next_at` when that is later (a retry waiting), so it never goes ahead of it.
 - `cardMovesStatement`: the same over a plan's moves, `type` `card_moved`, `actor_id` the move's `actorId` (Only Me
   matches on it; a move without one never reaches an Only Me webhook), the item's own title, the detail
   `{cardId, cardKey, card, from, to}`.
@@ -74,13 +75,13 @@ Scope, by file:
 - `kick()`: `setAlarm(now)` unless an alarm is set within `KICK_SLACK_MS` (500 ms).
 - `alarm()`: `dispatch`, then `setAlarm(roomAlarmAt(nextAt, now))` when `nextAt` is not null: never sooner than a
   second from now (`@liveworkspace/api-kit/room-alarm`), so a row stuck due can't fire the alarm back to back.
-- `dispatch`: without a `WEBHOOK_KEY` that imports, nothing. Reads the due rows (`next_at <= now`, webhook live)
-  oldest first, `LIMIT DISPATCH_BATCH` (50); groups them by webhook; runs `DISPATCH_CONCURRENCY` (6) webhooks at once,
+- `dispatch`: without a `WEBHOOK_KEY` that imports, nothing. Reads the due rows (`next_at <= now`, webhook live, no
+  earlier pending row of the webhook not yet due) oldest first by `id`, `LIMIT DISPATCH_BATCH` (50); groups them by webhook; runs `DISPATCH_CONCURRENCY` (6) webhooks at once,
   each webhook's rows in order:
   1. `creatorCanEdit`: `created_by` still edits the whole item. The owner of a personal item: yes. Else a
      `shared_with` row for them on the item whose `share_links` row is live, `level = 'edit'` and `tab_id IS NULL`:
      yes. Else a team item: `personTeams(created_by)` (accounts' `/api/account/index/teams`), once a run per person,
-     holding the item's team. Null (accounts down, no key): every row's `next_at` moves to now +
+     holding the item's team. Null (accounts down, no key): every pending row of the webhook from the run's first has its `next_at` moved to now +
      `ACCESS_RETRY_MS` (1 min), no try counted. No: paused `creator_left`.
   2. Unseal the URL (`<id>:url`) and, for `json`, the secret (`<id>:secret`); re-check the URL's shape. Either fails:
      each row given up, `error` `unreadable`.
@@ -92,7 +93,7 @@ Scope, by file:
      answer's body is cancelled, never read.
   5. 2xx: `delivered`. 3xx: given up (`redirect`). 410: given up and paused `gone`, stopping. 408, 429, 5xx, a
      timeout (`timeout`) or a network error (`network`): `attempts + 1` and `next_at = now + RETRY_DELAYS_MS[attempts]`,
-     the webhook's later rows moved to at least that time, stopping; with no delay left, given up. Any other 4xx:
+     every later pending row of the webhook (in the run or not) moved to at least that time, stopping; with no delay left, given up. Any other 4xx:
      given up.
   6. One batch: each row's update, `failures` (reset to the run's given-ups after a success, else added to,
      `RETURNING failures`), and the trim (finished rows past the newest `WEBHOOK_DELIVERIES_KEPT`, 20). At

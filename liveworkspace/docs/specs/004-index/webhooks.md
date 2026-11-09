@@ -100,7 +100,7 @@ many new responses and the total, never what anyone answered. A push that doesn'
   429 or 5xx is tried again after 1 minute, 5 minutes, 30 minutes, 2 hours, 6 hours and 12 hours (seven tries in
   about 21 hours), then given up. A redirect is never followed and counts as a failure, as does any other 4xx,
   which is not retried; 410 Gone also pauses the webhook. One webhook's deliveries go in order: while one waits for
-  a retry, the later ones wait behind it.
+  a retry, the later ones wait behind it, those queued during the wait (a test's ping among them) too.
 - **Paused** (nothing is sent, and what was waiting is given up): by anyone who can edit the document; when its creator can no
   longer edit it ("Paused: whoever added it can no longer edit this document", see Security); after 20 deliveries in a row
   were given up ("Paused: 20 deliveries in a row failed"); or on 410 ("Paused: the address said it’s gone").
