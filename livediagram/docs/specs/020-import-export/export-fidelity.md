@@ -81,6 +81,10 @@ breaks only behind a box that is in the picture (never one on a hidden layer
 or off the page), and the export's paper (`EXPORT_PAPER` on a page frame, else
 the tab's background) as the fill of a hollow head, as the canvas fills it.
 
+**The picture is sized to what is drawn.** The export area (`contentBounds`) takes a turned
+element by its drawn corners (`drawnBounds`), as the marquee does, so a rotated box is never cut
+off at the page edge, and an arrow by its drawn route and label plate.
+
 **A self-painting element gets no box and no label.** `SELF_PAINTING_SHAPES`
 already said which kinds draw their own body; the export now honours it, so a
 chart is not framed in a rectangle that is not on the canvas, and a rail does not

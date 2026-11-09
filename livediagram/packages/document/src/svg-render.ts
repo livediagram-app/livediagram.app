@@ -135,7 +135,7 @@ import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
 import { isPointerNote, pointerTipOf } from './pointer-note';
 import { isPersonNode } from './person-node';
-import { rotationOf } from './rotation';
+import { drawnBounds, rotationOf, supportsRotation } from './rotation';
 import { tagColoursOf, withTagAccent } from './tag-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
@@ -161,7 +161,12 @@ export function contentBounds(
         );
       }
     } else {
-      points.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
+      // A turned element by its drawn corners (export-fidelity.md "The picture is sized to what is
+      // drawn"): its unturned box left a rotated one cut off at the page edge.
+      const box = supportsRotation(el)
+        ? drawnBounds(el)
+        : { x: el.x, y: el.y, width: el.width, height: el.height };
+      points.push({ x: box.x, y: box.y }, { x: box.x + box.width, y: box.y + box.height });
       // A pointer note's tip can sit well outside its box (docs/specs/009-elements/pointer-note.md).
       if (isPointerNote(el)) {
         const t = pointerTipOf(el);
