@@ -167,6 +167,7 @@ page; "template" stays the whole-tab starting point.
 | `LANDSCAPE_RATIO`                                                 | 1.1                                                                                | `paginate.ts`; spec "Into pages"                                                                                                         |
 | `EXPORT_PAPER`                                                    | `#ffffff`                                                                          | `export-page.ts`; spec "Export"                                                                                                          |
 | `PAGE_IMAGE_OVERLAY_MAX`                                          | 0.9                                                                                | `page-image.ts`; spec "Image backgrounds" (Strength 0% to 90%)                                                                           |
+| `PAGE_IMAGE_BLUR_MAX`                                             | 0.04                                                                               | `page-image.ts`; spec "Image backgrounds" (Blur: 4% of the page's shorter side at 100%)                                                  |
 | `PAGE_IMAGE_DEFAULT_STRENGTH`                                     | 0.6                                                                                | `page-image.ts`; spec "A picture is readable by default"                                                                                 |
 | `PAGE_IMAGE_LIGHT`, `PAGE_IMAGE_DARK`                             | `#ffffff`, `#0f172a`                                                               | `page-image.ts`; the Light and Dark washes                                                                                               |
 | `PAGE_IMAGE_UNKNOWN_TONE`                                         | `#808080`                                                                          | `page-image.ts`; a picture whose tone was not sampled                                                                                    |
@@ -553,6 +554,23 @@ resolve))`, `cover`, `pageImagePositionCss`, `no-repeat`), over `backgroundColor
 - `usePageImageSources`: the sorted gallery ids of the pages' picture fills as a key; each new id
   fetched once with `apiFetchImageBlobUrl` (owner, document, share code), dropped ids revoked; an
   access change revokes all and starts over; unmount revokes all.
+- Blur (`PageImageFill.blur`, `parsePageImageFill` keeps a finite number clamped to 0..1 rounded to
+  0.05 steps, 0 dropped; `samePageImage` compares it): `pageImageBlurSigma(fill, rect) = blur *
+  PAGE_IMAGE_BLUR_MAX (0.04) * min(width, height)` page px. The panel's **Blur** is a
+  `MenuSliderRow` 0..100 step 5 under Strength (shown for every overlay, None included), preview on
+  change, one commit on release when changed, `track('Tab', 'Changed', 'PageBackgroundImageBlur')`.
+  Sheet paint: `usePageImageSources` hands `CanvasPages` the sharp blob URL; for a fill with blur the
+  sheet asks `useBlurredPageImage(src, sigma, rect)` (`apps/editor/hooks/canvas/useBlurredPageImage.ts`)
+  and paints its URL, else nothing (the tone shows) until it is ready. `blurredImageUrl`
+  (`apps/editor/lib/page-image-blur.ts`): decode, draw at a long side of
+  `clamp(round(pageLong * 3 / sigma), 96, 1024)` px (`BLUR_COPY_MIN` / `BLUR_COPY_MAX`), blur by
+  `sigma` scaled to the copy with `boxBlurRgba` (three passes per axis, box radii from
+  `boxRadiiForSigma`, edges clamped), JPEG 0.86 to a blob URL; an LRU of 8 (`BLUR_CACHE_SIZE`) keyed
+  by source and rounded copy sigma; one decode at a time, the latest request winning. Export:
+  `pageImageSvg` wraps the `<image>` in `<g filter="url(#{id}-blur)">` with
+  `<filter x=0 y=0 width=1 height=1 color-interpolation-filters="sRGB"><feGaussianBlur
+  stdDeviation=sigma/><feComponentTransfer><feFuncA type="table" tableValues="1 1"/></feComponentTransfer></filter>`,
+  the alpha table holding the edges solid.
 - `fillCss` of a picture is `pageImageTone(fill)` (swatches, the check's ink).
 - Offline Mode: `tabImageIds(tab)` (`lib/offline/offline-images.ts`) lists the pages' pictures with
   the elements'; `rewriteImageIds` re-homes both (`withPageImageIds`); Take Offline refuses while

@@ -613,7 +613,7 @@ An infographic, slide or article page can be painted with a picture:
   document embeds the picture as the picker's Gallery does) and **Upload an Image** (a file, as
   the picker's Upload takes one: the same types and size limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
   one edit), its **Credit** line when it came from a search (the image element's Credit row: the
-  text, **Source** and **Licence**), then **Overlay**, **Strength** and **Position**, then the
+  text, **Source** and **Licence**), then **Overlay**, **Strength**, **Blur** and **Position**, then the
   search, Choose From My Images and Upload again under **Replace Image**.
 - **The search suits a page.** It asks Openverse only for pictures of the page's shape
   (`aspect_ratio`: `tall` for a portrait page, `wide` for a landscape one and every slide,
@@ -636,6 +636,19 @@ An infographic, slide or article page can be painted with a picture:
   clear at the top and at its strength at the bottom). **Strength** is a slider, 0% to 90% in
   steps of 5, previewed while dragged and one edit on release; it is hidden for None. An overlay
   tile previews on hover and commits on a press.
+- **Blur**: a slider, 0% (the default, sharp) to 100% in steps of 5, previewed while dragged and one edit on
+  release, that softens the picture into a wash of its colours, so a photo becomes a backdrop words sit on. Stored
+  on the fill as `blur` (0 to 1, absent for none; a value outside is clamped, a non-number dropped). Its strength is
+  the page's: a Gaussian blur whose standard deviation is `blur` times 4% of the page's shorter side
+  (`PAGE_IMAGE_BLUR_MAX`), so a 1920 x 1080 slide at 100% blurs by 43 px. The edges stay solid (no fade to the
+  paper at the sheet's sides). The overlay, the pattern and the ink are worked out as for a sharp picture (the tone
+  is the same). Replacing the picture keeps the blur, as it keeps the overlay.
+  - **On the canvas** the sheet paints a blurred copy of the picture, made once in the browser per picture and
+    blur (the picture drawn small, a three-pass box blur with its edges held, saved as a JPEG), never a CSS blur
+    filter, so a pan or zoom never re-blurs. The last eight copies are kept; the sheet shows the picture's tone
+    until its copy is ready, never the sharp picture first.
+  - **In an export** (PNG, PDF and SVG, and the previews) the picture is drawn under an SVG `feGaussianBlur` at
+    the same strength, its edges held solid.
 - **A picture is readable by default.** A new picture takes **Light 60%** on a light canvas and
   **Dark 60%** on a dark one; replacing a picture keeps the overlay in force.
 - **Tone and ink.** `tone` is the picture's average colour, sampled once when it is picked (drawn
@@ -660,17 +673,18 @@ An infographic, slide or article page can be painted with a picture:
   replaces or drops it. Exports do not print it, as for image elements.
 - **Share roles**: an Editor sets, changes and removes it, as every background; a Participant or a
   Viewer sees the picture and no controls.
-- **Agents** read it on `change_pages` as `image` with its overlay ("image, light 60%") and can
+- **Agents** read it on `change_pages` as `image` with its overlay and blur ("image, light 60%, blur 40%") and can
   replace it with a colour, a gradient or the paper; they cannot set one (they have no way to put a
   picture in the gallery).
-- **Telemetry**: `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
+- **Telemetry**: `Tab · Changed · PageBackgroundImageBlur` when a blur is let go at a new value;
+  `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
   (beside the background's own `PageBackground`); a search counts as the picker's
   `Element · Searched · Image`, and a failed search or pick as its `ImageSearch.*` warnings.
 
 ### Copying a background
 
 A page's **format** is its background: its fill (a colour, a gradient, an animated background with
-its speed, or a picture with its overlay and position) and its pattern. Its size, orientation,
+its speed, or a picture with its overlay, blur and position) and its pattern. Its size, orientation,
 content, name and lock stay its own. A deck or a set of pages often wears one background, so it is
 given in one go rather than page by page.
 

@@ -3,6 +3,8 @@
 Follow the references below only as needed; never upfront.
 
 - ./images.md - when working on Image element + per-owner gallery: Image element + per-owner gallery in liveworkspace's media service, with dedupe, the `image_refs` reference index and unused-image retention
+- ./picture-crop-and-mask.md - when working on Picture crop, mask and greyscale: keep part of an image, cut it to a shape, draw it in grey; the crop overlay on the canvas
+- ./logo-strip.md - when working on The logo strip: a row stack of greyscale logo pictures for a Trusted by slide, its palette tile and slide layout
 - ./blueprints/README.md - when implementing or changing an element from its blueprint
 - ./image-search.md - when working on Image search: the image picker's Search tab, openly licensed pictures from Openverse that land in the gallery like an upload
 - ./link-cards.md - when working on Link cards: Bookmark element: URL via the element link, server-side unfurl for title/favicon/OG image
