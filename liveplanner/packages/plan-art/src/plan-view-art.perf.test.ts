@@ -37,4 +37,36 @@ describe('plan view pictures at the limits', () => {
     // Measured at 67 ms on an M-series laptop; a loaded CI runner gets four times that.
     expect(ms).toBeLessThan(1500);
   });
+
+  // A Gantt in swimlanes groups every row into its lane before drawing those that fit (plan-views.md "Swimlanes").
+  it('draws 48 Gantts in swimlanes over 2,000 projects within budget', () => {
+    const statuses = ['todo', 'doing', 'done'];
+    const cards = Array.from({ length: 2000 }, (_, i) =>
+      card(
+        {
+          title: `Project ${i}`,
+          status: statuses[i % 3]!,
+          priority: (['urgent', 'high', 'medium', 'low'] as const)[i % 4]!,
+          due: `2026-10-${String((i % 28) + 1).padStart(2, '0')}`,
+          start: `2026-09-${String((i % 28) + 1).padStart(2, '0')}`,
+        },
+        'project',
+      ),
+    );
+    const data = artData(cards);
+    const views = Array.from({ length: 48 }, (_, i) =>
+      shape(`v${i}`, 'plan-view', {
+        width: 340,
+        height: 320,
+        planView: { view: 'gantt', swimlaneBy: i % 2 ? 'status' : 'priority' },
+      }),
+    ) as ShapeElement[];
+    const t = performance.now();
+    let size = 0;
+    for (const v of views) size += planViewArt(v, data, 'light').length;
+    const ms = performance.now() - t;
+    expect(size).toBeGreaterThan(0);
+    // Measured at 110 ms on a loaded M-series laptop (105 to 137 ms drawn without lanes); CI gets four times that.
+    expect(ms).toBeLessThan(1500);
+  });
 });
