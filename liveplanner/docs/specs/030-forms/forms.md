@@ -683,7 +683,7 @@ board settings, for switching back.
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
 card: only an Editor's Preview makes one), with a
 line over it: "This is a form. Its responses become cards on **Bugs**." ("rows in" for a sheet). A tab-scoped share link to a Form tab shows the
-same. The form link's code is never sent to a Participant or a Viewer; they see the status and the count. An Editor on a link to one Form tab builds its form but points its responses only at a board or sheet on that tab; a destination set elsewhere by someone with wider access stays as it is ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md#structure)). A locked
+same. The form link's code is never sent to a Participant or a Viewer; they see the status and the count. An Editor on a link to one Form tab builds its form but points its responses only at a board or sheet on that tab; a destination set elsewhere by someone with wider access stays as it is ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md#structure)). A link to another tab reaches no Form tab's link, count or Preview: the api answers it 404, as for any tab it cannot see. A locked
 Form tab reads as a Viewer's does. Each is gated on the session's `can.level === 'edit'`, never on `isReadOnly` alone: a Participant's
 session can add content elsewhere, never to a form.
 
