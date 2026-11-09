@@ -1436,7 +1436,9 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         from the type's cards, in the same one undo step, which puts the built-in, its values and its filters back.
         Only this type changes: another type keeps its built-in. The tiles it can't become are dimmed as above
         (Comments, Votes, Checklist and Image both ways, so Checklist, Comments, Votes and Attachments are renamed
-        only).
+        only). Each dimmed tile's reason names the field being edited when it is the one that keeps its type:
+        Attachments says "Attachments hold uploaded files, so they keep their type." (not Image's line), and Title,
+        which has no pencil, "Title names the card, so it keeps its type."
       - **What stops reading it**: before Save, under the values line, a list (at most 6 rows, then "and 3 more")
         says what in the plan reads the built-in for this type and won't any more, from one bounded scan of the
         plan's tabs and card types: boards sorted, laned or grouped by it ("Sprint board sorts by Priority"), board

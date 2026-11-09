@@ -39,12 +39,19 @@ export const BUILT_IN_KIND_SHAPES: Readonly<Partial<Record<ItemFieldId, KindShap
 };
 
 export const STATUS_KEEPS_TYPE = 'Status places the card in a column, so it keeps its type.';
+export const TITLE_KEEPS_TYPE = 'Title names the card, so it keeps its type.';
+export const ATTACHMENTS_KEEP_TYPE = 'Attachments hold uploaded files, so they keep their type.';
 
-/** Why the built-in `id` can't become a field of shape `to`, or null when it can (its own shape always can). */
+/**
+ * Why the built-in `id` can't become a field of shape `to`, or null when it can (its own shape always can). The
+ * reason names the rule that holds: Attachments opens on Image's tile but is no Image, so it says its own line.
+ */
 export function builtInRetypeRefusal(id: ItemFieldId, to: KindShape): string | null {
   if (id === 'status') return STATUS_KEEPS_TYPE;
   const shape = BUILT_IN_KIND_SHAPES[id];
-  return shape ? kindChangeRefusal(shape, to) : STATUS_KEEPS_TYPE;
+  if (!shape) return TITLE_KEEPS_TYPE;
+  const refusal = kindChangeRefusal(shape, to);
+  return refusal && id === 'attachments' ? ATTACHMENTS_KEEP_TYPE : refusal;
 }
 
 /** A built-in's stored value as its shape holds it: a Priority by its name ("High"), the rest as stored. */

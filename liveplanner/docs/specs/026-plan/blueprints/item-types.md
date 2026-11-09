@@ -792,7 +792,8 @@ types)` (the built-in a lower-cased name names on any type, for the CSV import).
     `longtext`, estimate `number`, start and due `date`, priority `choice` with options `PRIORITY_LABELS` in order,
     labels `labels`, assignee `person`, color `colour`, checklist `checklist`, comments `comments`, votes `votes`,
     attachments `image`, status `choice`), `STATUS_KEEPS_TYPE` (the spec's line), `builtInRetypeRefusal(id, to)`
-    (Status always; else `kindChangeRefusal(shape, to)`), `builtInValueOf(id, raw)` (a Priority's label, the rest
+    (Status always, Title always, Attachments for every other tile, each with its own line; else
+    `kindChangeRefusal(shape, to)`), `builtInValueOf(id, raw)` (a Priority's label, the rest
     as stored), `builtInCardsOf(typeId, id, types)` (the type and heirs taking the field from it),
     `retypeBuiltInIn(type, id, def)` (the def's id in the built-in's place in `fields`, `ownFields`, every tab and
     every card size's display; `fieldLabels[id]` dropped; `assigneeNotifies` dropped for Assignee; Colour's
