@@ -6,7 +6,7 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { removeThisBrowserItem } from '@liveworkspace/workbench/lib/this-browser-remove';
 import { offlineDeleteDocument } from '@/lib/offline/offline-store';
-import { markDocumentDeleted } from '@/lib/document-tombstones';
+import { markDocumentDeleted } from '@liveworkspace/workbench/lib/document-tombstones';
 import { useOfflineConversions } from './useOfflineConversion';
 
 // This Browser in the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md "This Browser"): the documents kept only in this browser, from the

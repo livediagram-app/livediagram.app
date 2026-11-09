@@ -1,5 +1,6 @@
 // The distance between two segments, for every product's hit tests, the whiteboard eraser and the Avatar-mode
-// walk's collision (@livehuddle/avatar/collision). Pure; canvas coords.
+// walk's collision (@livehuddle/avatar/collision), and the even-odd point-in-polygon test hit-testing and
+// indicator placement share. Pure; canvas coords.
 import type { Point } from './geometry-primitives';
 
 // Distance from `p` to the segment a-b; a segment of no length measures to `a`. (Exact zero, unlike
@@ -33,4 +34,17 @@ export function segmentDistance(p1: Point, p2: Point, q1: Point, q2: Point): num
     distToSegment(q1, p1, p2),
     distToSegment(q2, p1, p2),
   );
+}
+
+/** Even-odd: whether `p` lies inside the closed polyline. */
+export function insidePolygon(p: Point, pts: readonly Point[]): boolean {
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const a = pts[i]!;
+    const b = pts[j]!;
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) {
+      inside = !inside;
+    }
+  }
+  return inside;
 }

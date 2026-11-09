@@ -140,6 +140,11 @@ jobs:
           PRODUCT: ${{ matrix.format }}
         run: node .github/scripts/cpu-budget-guard.mjs
 
+      # No new source file copied across products (docs/ci.md "Copies across products"). Repo-wide and
+      # under a second, so every group runs it.
+      - name: No new copies across products
+        run: node .github/scripts/duplicate-guard.mjs
+
       - name: Save turbo cache
         uses: ./.github/actions/turbo-cache-save
 

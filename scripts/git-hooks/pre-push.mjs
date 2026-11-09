@@ -35,6 +35,13 @@ const split = (/** @type {string} */ filters) => filters.split(' ').filter(Boole
 export function prePushSteps({ groups, editors }) {
   /** @type {Step[]} */
   const steps = [];
+  // Repo-wide, so once rather than per group, as every Checks job runs it.
+  if (groups.length > 0)
+    steps.push({
+      label: 'no new copies across products',
+      cmd: 'node',
+      args: ['.github/scripts/duplicate-guard.mjs'],
+    });
   const turbo = (/** @type {string[]} */ ...args) => [
     'exec',
     'turbo',

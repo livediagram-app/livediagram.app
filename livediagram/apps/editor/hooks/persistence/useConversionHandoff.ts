@@ -5,7 +5,7 @@ import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { offlineDeleteDocument, offlineListDocuments } from '@/lib/offline/offline-store';
-import { markDocumentDeleted } from '@/lib/document-tombstones';
+import { markDocumentDeleted } from '@liveworkspace/workbench/lib/document-tombstones';
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { removeThisBrowserItem } from '@liveworkspace/workbench/lib/this-browser-remove';
 import { useOfflineConversions } from './useOfflineConversion';

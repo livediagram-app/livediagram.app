@@ -34,7 +34,7 @@ import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { canvasGestureNow } from '@/lib/canvas-gesture';
+import { canvasGestureNow } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
 import {
   useSelectionOf,

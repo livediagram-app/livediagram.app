@@ -23,7 +23,10 @@ import {
   withPresentationConfig,
   type PresentationConfig,
 } from '@/lib/presentation-config';
-import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
+import type {
+  SettingsCategoryId,
+  SettingsIconId,
+} from '@liveworkspace/workbench/components/dialogs/settings/settings-icons';
 import type { TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,

@@ -763,7 +763,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   Below the mode tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
-  as a tour of several tracks (`tourTracksSwitch`, `apps/editor/lib/tour-tracks.ts`: on while any track is not yet taken, off
+  as a tour of several tracks (`tourTracksSwitch`, `../packages/workbench/src/lib/tour-tracks.ts`: on while any track is not yet taken, off
   marks every track taken, on forgets every run) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
   kind nested under it, named for the element (**Sankey Diagram**). Element tours
   need no relaunch: the Start Tour button offers one whenever such an element is selected. A category may mark any section

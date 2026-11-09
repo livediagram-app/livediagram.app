@@ -41,7 +41,8 @@
     "./trash": "./src/trash.ts",
     "./untitled-names": "./src/untitled-names.ts",
     "./url-slashes": "./src/url-slashes.ts",
-    "./within-reach": "./src/within-reach.ts"
+    "./within-reach": "./src/within-reach.ts",
+    "./server-emitted-events": "./src/server-emitted-events.ts"
   },
   "scripts": {
     "lint": "oxlint",

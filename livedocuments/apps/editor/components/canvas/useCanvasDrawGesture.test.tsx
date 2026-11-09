@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 
 import { act, renderHook } from '@testing-library/react';
-import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
+import {
+  canvasGestureNow,
+  resetCanvasGesturesForTests,
+} from '@liveworkspace/workbench/lib/canvas-gesture';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@livedocuments/document';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -156,5 +159,4 @@ describe('useCanvasDrawGesture gesture', () => {
     pointer('pointerup');
     expect(canvasGestureNow()).toBe('idle');
   });
-
 });

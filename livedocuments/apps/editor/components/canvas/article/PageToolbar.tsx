@@ -35,7 +35,7 @@ import {
   TOOLBAR_CONTROL_REST,
   TOOLBAR_DIVIDER,
 } from '@/components/chrome/toolbar-surface';
-import { useCanvasGesture } from '@/lib/canvas-gesture';
+import { useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
   articleHandleOf,

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { track } from '@/lib/telemetry';
-import { useActiveTour } from '@/lib/tour-active';
+import { useActiveTour } from '@liveworkspace/workbench/lib/tour-active';
 
 // Whether the header and the tab bar show on a phone held sideways (docs/specs/007-editor/editor-app.md
 // "A phone held sideways"). Only a flag: the fold itself is CSS (the `landscape-phone:` variant on

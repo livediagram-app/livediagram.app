@@ -26,7 +26,7 @@ import type {
   SettingsRowSpec,
   SettingsShortcutsRowSpec,
 } from './settings-catalogue';
-import { settingsCategoryIcon } from './settings-icons';
+import { settingsCategoryIcon } from '@liveworkspace/workbench/components/dialogs/settings/settings-icons';
 import {
   SettingsDeleteAccountRow,
   SettingsIdentityRow,

@@ -6,7 +6,10 @@
 // sessionStorage, kept for one page load and only for a moment, so a later visit offers nothing.
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
-import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
+import {
+  markDocumentDeleted,
+  unmarkDocumentDeleted,
+} from '@liveworkspace/workbench/lib/document-tombstones';
 import { track } from '@/lib/telemetry';
 
 const HANDOFF_KEY = 'livedocuments:deleted-document';

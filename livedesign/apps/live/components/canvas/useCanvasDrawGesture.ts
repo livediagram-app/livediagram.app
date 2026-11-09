@@ -4,7 +4,7 @@ import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { useWhiteboardPenGesture } from '@/components/canvas/useWhiteboardPenGesture';
-import { beginCanvasGesture } from '@/lib/canvas-gesture';
+import { beginCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 
 const EMPTY_ID_SET: Set<string> = new Set();
 

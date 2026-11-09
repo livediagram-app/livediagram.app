@@ -33,7 +33,7 @@ import {
   tabsChangedByPeersSince,
   type RemoteOpJournal,
 } from './save-baseline';
-import { createTabSaveQueue, type TabSaveQueue } from './tab-save-queue';
+import { createTabSaveQueue, type TabSaveQueue } from '@liveworkspace/workbench/lib/tab-save-queue';
 import { useUnloadFlush } from './useUnloadFlush';
 import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
 import { noteSaveFailing, noteTabTooLarge } from '@liveworkspace/workbench/lib/save-health';

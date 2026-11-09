@@ -158,6 +158,6 @@ The router is **routing infrastructure**, not application logic, holding no data
 Two response rules sit with the routing because every site passes through it, and they are HTTP
 policy rather than business rules: on staging every response is marked `X-Robots-Tag: noindex,
 nofollow` ([Staging environment](./staging-environment.md)), and every site's response follows the
-caching rules (`src/cache-policy.ts`: pages `no-store`, build assets immutable, a missing asset a
+caching rules (`../packages/sites/src/cache-policy.ts`: pages `no-store`, build assets immutable, a missing asset a
 plain-text 404; [Stale builds](./stale-builds.md) "Caching rules"). The api's responses are left as
 the api sets them.

@@ -10,7 +10,7 @@ import { useEffect, useRef, type MutableRefObject, type RefObject } from 'react'
 import { flushSync } from 'react-dom';
 import type { Tab } from '@livedocuments/document';
 import { flushDocumentSavesBeacon, type connectRoom } from '@/lib/api-client';
-import { isDocumentDeleted } from '@/lib/document-tombstones';
+import { isDocumentDeleted } from '@liveworkspace/workbench/lib/document-tombstones';
 import { commitOpenEdit } from '@liveworkspace/workbench/lib/open-edit';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { computeTabSaveDiff } from './editor-page-helpers';
