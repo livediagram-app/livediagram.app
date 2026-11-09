@@ -1,6 +1,6 @@
-# Quick style panel: blueprint
+# Quick Style bar: blueprint
 
-Derived from [Quick style panel](../quick-style-panel.md). The spec decides; this file only adds
+Derived from [Quick Style bar](../quick-style-panel.md). The spec decides; this file only adds
 engineering precision. Defaults applied where the spec is silent are ledgered in
 [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
@@ -19,17 +19,19 @@ Scope, by file:
 | `apps/editor/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
 | `apps/editor/lib/quick-style.ts`                                              | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
 | `apps/editor/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
-| `../packages/workbench/src/lib/quick-style-placement.ts`                      | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
 | `apps/editor/hooks/canvas/useStyleMemory.ts`                                  | Per-document memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                            |
 | `apps/editor/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
-| `../packages/workbench/src/hooks/ui/useQuickStylePlacement.ts`                | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
-| `apps/editor/components/canvas/QuickStylePanel.tsx`                           | The panel: compact, a fixed width from `panelFrame()`                                                            |
+| `apps/editor/lib/quick-style-bar.ts`                                          | Pure: `quickStyleBarPage`, the page the bar sits on                                                              |
+| `apps/editor/lib/quick-style-bar-slots.ts`                                    | Store: each page's slot (element, named) and the bar's room beside it                                            |
+| `apps/editor/components/canvas/QuickStyleBarSlot.tsx`                         | A page's slot, first in its title-bar row (`CanvasPageSheet`)                                                    |
+| `apps/editor/components/canvas/QuickStyleBar.tsx`                             | The bar: a toolbar card portalled into the slot, a `TitlePopoverButton` per section                              |
+| `apps/editor/components/canvas/quick-style-sections.tsx`                      | `QUICK_BAR_SECTIONS` (names, titles), `QuickSectionRow`, `QuickSectionIcon`, popover widths                      |
 | `apps/editor/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
 | `apps/editor/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
 | `apps/editor/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
 | `apps/editor/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                                                       |
-| `apps/editor/app/document/[id]/useEditorState.ts`                             | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
-| `apps/editor/app/document/[id]/EditorView.tsx`                                | Mounts the panel                                                                                                 |
+| `apps/editor/app/document/[id]/useEditorState.ts`                             | Wires memory into the style hooks and the creation hooks; exposes the bar's view-model and `pages`               |
+| `apps/editor/app/document/[id]/EditorView.tsx`                                | Mounts `QuickStyleHost` (picks the page, renders the bar)                                                        |
 
 ## Domain and naming
 
@@ -44,7 +46,7 @@ Scope, by file:
 | Kind key         | `StyleKindKey`, `styleKindOf(el)`                                                           | `shape:<ShapeKind>` for shapes, `arrow` for arrows, `text` for text elements (D53) |
 | Style memory     | `StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>`                              | Per kind, the last value chosen for each memorable field                           |
 | Memorable fields | `SHAPE_MEMORY_FIELDS`, `ARROW_MEMORY_FIELDS`                                                | The fields memory records and applies (below)                                      |
-| Placement        | `placeQuickStylePanel(input) => { left, top }`                                              | Where the panel sits, in viewport px                                               |
+| Bar page         | `quickStyleBarPage(targetIds, elements, pages) => pageId \| null`                           | The page the bar sits on                                                           |
 | Swatch override  | `SwatchOverrides = { stroke?, fill?, text? }`, each `Partial<Record<QuickSwatchSlot, Hex>>` | A custom colour replacing a slot's theme colour in the row                         |
 
 Banned synonyms: "format panel" (that is the painter's panel), "editor panel" (the removed one),
@@ -146,7 +148,7 @@ ownerId })` → `{ overrides, setOverride(role, slot, hex), clearOverride(role, 
   **Clear override** while the slot is overridden, else the theme note. **Use** (or Enter in the
   editor's hex field with a valid colour) calls `onSave(hex)` lower-cased and closes; an invalid hex
   does nothing. Portalled to `body`,
-  `fixed`, `z-[var(--z-toolbar)]`; placed right of the panel (8 px from it), else left of it when the viewport has no room there, top at the
+  `fixed`, `z-[calc(var(--z-popover)+2)]`; placed right of the row's popover (`[data-anchored-popover]`, 8 px from it), else left of it when the viewport has no room there, top at the
   swatch's top, clamped into the viewport. Opens with focus on the editor's square; Escape, Use or a
   pointer-down outside closes it and returns focus to the swatch.
 - Opening: `contextmenu` on a slot 1-6 swatch (mouse, the context-menu key and Shift+F10 all
@@ -161,7 +163,7 @@ ownerId })` → `{ overrides, setOverride(role, slot, hex), clearOverride(role, 
 
 `quickStyleView(elements, theme) => QuickStyleView | null`, over the selected elements:
 
-1. `targets = elements.filter(isQuickStyleTarget)`. Empty → `null` (no panel).
+1. `targets = elements.filter(isQuickStyleTarget)`. Empty → `null` (no bar).
 2. Per section, its supporting targets:
 
 | Section      | Supports                                                                               |
@@ -206,8 +208,8 @@ One pure transform per section, a no-op on a non-supporting element:
   `flowSpeed` removed. Text: `textColor` to `theme.elementText ?? undefined`; `textSwatch` removed.
 
 `useQuickStyle` runs each as one `commit` over the targets (one undo step),
-records the memory from the same before / after, and tracks the section's token. Clear Styles also
-calls `forget` with the kind keys of every target it changed.
+records the memory from the same before / after, and tracks the section's token. There is no Clear Styles
+(spec "No Clear Styles"): a field set back to the theme default leaves the memory, as `recordStyleEdit` already does.
 
 ## Mixed selections and named colours
 
@@ -261,81 +263,78 @@ Apply points (user-drawn only), each passing the built element through `styleNew
 `useBoxedDragHandlers` (quick-connect arrow, both the drag and `placeOutPx`), `useEditorDrag`'s
 `chainNextArrow`. Nothing else calls it.
 
-## Placement
+## Where the bar sits
 
-`placeQuickStylePanel({ area, panel, obstacles, gap })`, all rects in viewport px,
-`gap = QUICK_STYLE_GAP_PX = 12`. `inner` = `area` inset by `gap`.
+`quickStyleBarPage(targetIds, elements, pages)`: count `pageIdOf(el, elements, pages)` over the
+targets; the page with the most wins, a tie to the page first in `pages`. None on a page: the page
+whose rect is nearest the first target's `elementBounds` centre (squared distance to the rect, 0
+inside). `null` with no pages or no live targets. `QuickStyleHost` memoises it on the view's
+`targetIds`, the tab's elements and `QuickStyleDeps.pages` (`pagesMode.pages`).
 
-1. `leftX = area.left + gap`; `centreY = area.top + (area.height - panel.height) / 2`.
-2. `edge` = obstacles intersecting the band `[area.left, area.left + panel.width + 2 * gap]`.
-3. Candidates in order: (a) `(leftX, centreY)`; (b) `(leftX, o.bottom + gap)` for each distinct
-   edge bottom, ascending; (c) `(leftX, o.top - gap - panel.height)` for each distinct edge top,
-   descending; (d) `(max(edge.right) + gap, centreY)`; (e) `(area.right - gap - panel.width, centreY)`.
-   (b) to (d) only when `edge` is non-empty.
-4. A candidate is valid when it lies inside `inner` and intersects no obstacle inflated by `gap`.
-   The first valid wins; none → (a) with `fallback: true` (logged).
+Slots: `CanvasPageSheet` wraps the title bar in a row `pointer-events-none absolute right-0 flex
+items-center gap-1.5`, counter-scaled (`steady(zoom, 'bottom right')`), whose first child is
+`QuickStyleBarSlot` (desktop only): a `display: contents` div registered in
+`quick-style-bar-slots.ts` as `{ el, named }` (`named` = the title bar's `titleBarNamed`), set in a
+layout effect and cleared only by its own element. The bar reads its page's slot with
+`useQuickStyleBarSlot(pageId)` (`useSyncExternalStore`) and portals into `slot.el`; no slot (the
+page's row not drawn) means no bar.
 
-`useQuickStylePlacement(panelRef, active) => { left, top } | null`
-measures `main[data-canvas-a11y-root]` (area), the panel and obstacles
-`[data-tour-id="palette"], [data-floating-panel], [data-zoom-cluster]` with a
-non-empty rect (the cluster by its child strips, `obstacleBoxes`, since its row can stretch over empty canvas),
-in a layout effect before paint, then again on: `ResizeObserver` (area, panel,
-obstacles, so a resizing panel is followed), `resize`, `pointerup` / `keyup`
-(capture), `transitionend` on the panel or an obstacle (one elsewhere on the canvas is ignored), and
-`livedocuments:panel-layout-changed`; coalesced to one run per
-animation frame. Each run observes only the elements it has not seen before and unobserves the ones
-that left (`observe()` always delivers an initial notification, so re-observing every run would
-re-run it every frame). Still
-chrome means no runs. The panel never scrolls, so its measured box is its size, and the spot is
-rounded to whole pixels so its glyphs stay sharp. Until the first measure the panel
-renders `visibility: hidden` so it never paints in the wrong spot.
+Room: the bar publishes `offsetWidth + QUICK_STYLE_BAR_GAP` (6) for its page through
+`setQuickStyleBarRoom` in a layout effect, re-published by a `ResizeObserver` on the bar and set to
+0 on leaving. `CanvasPageSheet` subtracts `useQuickStyleBarRoom(id)` from the label room, so the
+label truncates, then hides under `LABEL_MIN`. Only the bar's page re-renders on a change.
 
 ## Behaviour and state
 
-| State  | Condition                                                                                                                   |
-| ------ | --------------------------------------------------------------------------------------------------------------------------- |
-| Hidden | Phone viewport, zen, embed, presenting, edits blocked, an element or multi context menu open, or `quickStyleView` is `null` |
-| Shown  | Otherwise; sections from `quickStyleView`                                                                                   |
+| State  | Condition                                                                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Hidden | Phone viewport, split view, zen, embed, presenting, edits blocked, turned off, an element or multi context menu open, `quickStyleView` `null`, no page, or no slot |
+| Shown  | Otherwise; sections from `quickStyleView`                                                                                                                          |
 
-Transitions are driven by selection and those flags only; the panel owns no state but roving focus.
+Transitions are driven by selection and those flags only; the bar owns no state but its open
+popover (each `TitlePopoverButton`'s) and the swatch being edited.
 
 ## Presentation and UX
 
-- The surface: `rounded-lg border bg-white shadow-lg` (`dark:border-slate-800 dark:bg-slate-900`),
-  `data-panel-translucent`, no header; the body `[data-quick-style-body]`.
-- The width never follows the content, and a swatch row never wraps or clips: `panelFrame()`
-  derives it in px from the named measures in `quick-style-metrics.ts`
-  (`QUICK_TARGET_PX` 24, `QUICK_BORDER_PX` 1, `QUICK_COMPACT_PADDING_PX` 8, `QUICK_ROW_TARGETS` 10:
-  the widest of a theme row's 9 (seven, Ink, More colours) and the stock colours,
-  `1 + PEN_COLOUR_NAMES.length + 1`): `targets · 24 + 2 · 8 + 2 · 1` (258 px) with the padding set from
-  the same constant.
-- `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`; stop `pointerdown` /
-  `contextmenu` from reaching the canvas.
-- Row order (D52): Stroke, Background, Text colour, Stroke width, Stroke style, Text alignment, Icon
-  alignment, then Actions.
-- Section: title `text-[10px] font-semibold uppercase tracking-wider text-slate-500
-dark:text-slate-400` (always shown; a caller may pass `showTitles={false}`), then the row; `gap-2.5` between sections;
-  a divider above Actions.
+- The card: `TITLE_BAR_CARD_CLASS` (`PageTitleBar.tsx`), `flex items-center gap-0.5`,
+  `motion-safe:animate-fade-in`, `data-quick-style-bar`, `data-article-keep-active`; stops
+  `pointerdown`, `dblclick` and `contextmenu` from reaching the canvas.
+- Buttons, in `QUICK_BAR_SECTIONS` order, only sections in the view (D52): Stroke, Fill (the
+  Background section), Text (Text colour), Width, Line (Stroke style), Align (Text alignment), Icon
+  (Icon alignment). Each a `TitlePopoverButton` (`titleButtonClass`, named beside its icon while
+  `slot.named`), its popover `sectionPopoverWidth(id)` wide: a colour row's
+  `QUICK_ROW_TARGETS · 24 + 2 · 12 + 2`, a glyph row's `3 · 44 + 2 · 4 + 2 · 12 + 2`.
+- `QuickSectionIcon`: colour sections a 14 px chip of `paint` (Stroke an outline ring, Fill a filled
+  square, Text an "A" over a 3 px bar; transparent the no-colour diagonal; `null` two greys split on
+  the diagonal), `data-chip`, `data-paint`; glyph sections the option glyph in force at 16 px, the
+  first option's at 45% opacity when mixed (`data-mixed`).
+- `paint` per colour section (`quickStyleView`): `shared(paintOf(el))`, `paintOf` = the element's
+  own colour lower-cased, `ink` for Ink by name, `null` for another stock name, else the row's slot 0.
+- The popover: `QuickSectionRow` with its title shown (`text-[10px] font-semibold uppercase`), rows
+  as before (below). A pick applies and the popover stays.
 - Colour row: 24 × 24 px target buttons, each drawing the colour picker's `SwatchChip` (20 px, a
   selected swatch a 2 px ring in `brand-500`, an overridden one its `marked` corner dot), touching,
   then `QuickMoreColours`: a `ColourSwatchButton` named "More colours, <row title>" drawing four
   standard dots, opening the full picker (row's colours as Theme, `standardGroup` strong by name on
-  Stroke and Text colour, soft hex on Background,
-  `useDocumentColours`). Its pick calls `setColour(role, id)`.
-- Three-option rows: three equal buttons, 28 px tall, glyph-only (line weights, dash patterns, align
-  glyphs, icon-before / above / after glyphs); selected = `bg-brand-50 text-brand-700 ring-brand-300`,
-  dark `bg-brand-500/15 text-brand-200`.
-- Clear Styles: a full-width text button "Clear Styles" with an eraser glyph.
-- Entrance: `motion-safe:animate-fade-in` (`micro`); none under `.reduce-motion`.
+  Stroke and Text colour, soft hex on Fill, `useDocumentColours`). Its pick calls
+  `setColour(role, id)`.
+- Three-option rows: three equal buttons, 28 px tall, glyph-only; selected = `bg-brand-50
+text-brand-700 ring-brand-300`, dark `bg-brand-500/15 text-brand-200`.
+- `SwatchOverridePopover` sits beside `[data-anchored-popover]` (the row's popover), above popovers
+  (`z-[calc(var(--z-popover)+2)]`), and joins the popover stack (`usePopoverLayer`), so Escape closes
+  it alone and a press in it is not outside the row's popover.
 
-Copy: titles "Stroke", "Background", "Text colour", "Stroke width", "Stroke style", "Text alignment", "Icon
-alignment", "Actions". Option names: swatch names; "Thin", "Medium", "Thick"; "Solid", "Dashed",
-"Dotted", "Flowing"; "Align left", "Align centre", "Align right"; "Icon before label", "Icon above
-label", "Icon after label"; "Clear Styles". The panel's region label: "Quick style".
+Copy: buttons "Stroke", "Fill", "Text", "Width", "Line", "Align", "Icon"; popover titles "Stroke",
+"Fill", "Text colour", "Stroke width", "Stroke style", "Text alignment", "Icon alignment". Option
+names: swatch names; "Thin", "Medium", "Thick"; "Solid", "Dashed", "Dotted", "Flowing"; "Align
+left", "Align centre", "Align right"; "Icon before label", "Icon above label", "Icon after label".
+The toolbar's label: "Quick Style".
 
 ## Accessibility
 
-- Container `role="region"` `aria-label="Quick style"`.
+- Container `role="toolbar"` `aria-label="Quick Style"`; each button `aria-haspopup="dialog"`,
+  `aria-expanded`, `aria-label` = its name, in a `Tooltip`; its popover `role="dialog"` named the same,
+  focus moving to the row's tab stop on open and back to the button on Escape.
 - A glyph row `role="radiogroup"` with `aria-label` = its title (independent of the visible title);
   a colour row `role="group"` with the same label.
 - Glyph option `role="radio"`, `aria-checked`; swatch a button with `aria-pressed` and
@@ -350,14 +349,14 @@ label", "Icon after label"; "Clear Styles". The panel's region label: "Quick sty
   marker is decoration.
   last: each moves focus and chooses. Space / Enter chooses the focused option.
 - `focus-visible:ring-2 ring-brand-500 ring-offset-1` on every option.
-- Swatch contrast against the panel: each swatch carries a `border-black/15 dark:border-white/20`
+- Swatch contrast against the popover: each swatch carries a `border-black/15 dark:border-white/20`
   hairline so a white or near-panel colour still has an edge (1.4.11).
 
 ## Web Experience
 
-- CLS: the panel is `fixed`, outside flow; hidden-until-measured prevents a first-frame jump.
+- CLS: the bar sits in the title-bar row, outside the canvas flow; only the page's label truncates.
 - INP: one commit per choice; `quickStyleView` is `O(selection)`, memoised on selection and elements.
-- LCP: nothing on the initial render path; the panel mounts on selection.
+- LCP: nothing on the initial render path; the bar's code loads when idle and it mounts on selection.
 
 ## Errors and edge cases
 
@@ -370,7 +369,8 @@ label", "Icon after label"; "Clear Styles". The panel's region label: "Quick sty
 | Preferences PUT over 4 KB                 | Prevented by the 800-byte cap (D45); the cache keeps the change regardless |
 | Invalid slot on an element                | Ignored by re-derive; rejected by validation on load                       |
 | Theme with a short palette                | Padded from the toned set                                                  |
-| No clear placement                        | Candidate (a); `console.debug('[quick-style] placement fallback')`         |
+| Selection off every page                  | The nearest page                                                           |
+| The page's row not drawn (no slot)        | No bar until it is                                                         |
 | Selection changes while a tooltip is open | Tooltip unmounts with its option                                           |
 | Element deleted by a peer mid-choice      | The commit maps the live elements; a missing id is simply not there        |
 | Locked element in the selection           | Not a target; never written                                                |
@@ -388,7 +388,7 @@ new network surface.
 ## Performance and limits
 
 - `quickSwatches` is a handful of HSL conversions and at most ~40 contrast steps; called per render
-  of the panel and per bound element in a theme walk. Worst case a 2 000-element theme switch with
+  of the bar and per bound element in a theme walk. Worst case a 2 000-element theme switch with
   every element bound: 4 000 calls, well under a frame each.
 - Memory size: kind keys are bounded by `ShapeKind` count + 1, each with at most 10 fields: well
   under 10 KB per document.
@@ -398,11 +398,9 @@ new network surface.
 
 - `[style-memory] recorded` (debug): kind keys and field names, on a changed record.
 - `[style-memory] applied` (debug): kind key, on a new element that took memory.
-- `[style-memory] forgot` (debug): kind keys, on Clear Styles.
 - `[style-memory] unreadable` / `write failed` (warn).
-- `[quick-style] placement fallback` (debug) with the candidate list.
 - Telemetry: `Element·Changed·QuickStroke | QuickBackground | QuickTextColour | QuickStrokeWidth | QuickStrokeStyle |
-QuickTextAlign | QuickIconAlign | QuickClearStyles`.
+QuickTextAlign | QuickIconAlign`.
 
 ## Testing
 
@@ -419,24 +417,22 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Validation rejects a bad slot                                                     | `validate.test.ts`                                     |
 | Sections, mixed selection, shared value, style set                                | `quick-style.test.ts`                                  |
 | Flowing in one choice                                                             | `quick-style.test.ts`                                  |
-| Clear Styles resets fields and forgets kinds                                      | `quick-style.test.ts`, `style-memory.test.ts`, e2e     |
 | Memory per kind, arrows separate, field by field                                  | `style-memory.test.ts`                                 |
 | Theme defaults are not memories                                                   | `style-memory.test.ts`                                 |
 | Carries to the next drawn element of the kind only                                | `style-memory.test.ts`, e2e                            |
 | Parse drops junk                                                                  | `style-memory.test.ts`                                 |
-| Placement order and fallback                                                      | `quick-style-placement.test.ts`                        |
-| Placement re-runs on chrome change only, never while still                        | `useQuickStylePlacement.test.tsx`                      |
-| Left edge centred, walks below / above / beside left chrome, then the right edge  | `quick-style-placement.test.ts`                        |
-| The panel sits on the left edge                                                   | `quick-style-placement.test.ts`                        |
 | One click on Flowing sets dashed + flow                                           | none                                                   |
 | Overrides replace a slot, keyed by theme, capped, pruned; parse drops junk        | `swatch-overrides.test.ts`                             |
 | Synced per user; theme switch shows that theme's slots; Clear override restores   | `useSwatchOverrides.test.tsx`                          |
 | Overridden slot applies the custom colour unbound; highlight by colour            | `quick-style.test.ts`                                  |
-| Right-click / Shift+F10 opens the popover; picking saves; Clear override restores | `QuickStylePanel.test.tsx`                             |
-| Toolbar panel is 186 px, targets 24 × 24; swatch rows one line, never clipped     | none                                                   |
-| Radio groups, names, keyboard                                                     | `QuickStylePanel.test.tsx`                             |
+| Right-click / Shift+F10 opens the popover; picking saves; Clear override restores | `quick-style-rows.test.tsx`, `QuickStyleBar.test.tsx`  |
+| The bar's page: most targets, a tie to the first, else the nearest                | `quick-style-bar.test.ts`                              |
+| Slots per page, never dropped by an old row; the room the bar takes               | `quick-style-bar-slots.test.tsx`                       |
+| A button per applicable row, named, values on them, popovers, no Clear Styles     | `QuickStyleBar.test.tsx`, e2e                          |
+| `paint`: the colour every element paints                                          | `quick-style.test.ts`                                  |
+| Radio groups, names, keyboard                                                     | `quick-style-rows.test.tsx`                            |
 | Any mix: rows apply where they fit, others passed over                            | `quick-style.test.ts`                                  |
-| Named stock colours mark no swatch; a choice or Clear Styles removes the name     | `quick-style.test.ts`                                  |
+| Named stock colours mark no swatch; a choice removes the name                     | `quick-style.test.ts`                                  |
 
 ## Constants and configuration
 
@@ -447,7 +443,7 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Saturation clamp                 | 0.45 to 0.85               | D38                                             | 0.3 to 1    |
 | Lightness clamp, light / dark    | 0.36 to 0.52 / 0.6 to 0.74 | D38                                             | 0.25 to 0.8 |
 | `FILL_WASH` light / dark         | 0.2 / 0.3                  | D38                                             | 0.1 to 0.4  |
-| `QUICK_STYLE_GAP_PX`             | 12                         | Existing corner insets (`right-3`)              | 8 to 24     |
+| `QUICK_STYLE_BAR_GAP`            | 6                          | The title bar's own gap to its label (6 px)     | 4 to 12     |
 | `SWATCH_OVERRIDE_MAX_THEMES`     | 8                          | D45                                             | 1 to 20     |
 | `SWATCH_OVERRIDE_MAX_BYTES`      | 800                        | D45: 4 KB blob, recent exclusions up to ~2.4 KB | 300 to 1200 |
 | `SWATCH_OVERRIDE_MAX_THEME_ID`   | 64                         | A built-in id with room to spare                | 43 to 128   |

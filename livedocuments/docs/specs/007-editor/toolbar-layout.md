@@ -337,7 +337,7 @@ panels in their corners, the bottom-row popovers over their buttons. What change
 - **A flyout glides between buttons.** Pointing at another category while one is open slides the flyout to the new
   button over 200 ms (the `short` token of [Motion](../004-interface-design/motion.md)) rather than jumping
   ("Opening a flyout").
-- **A change of kind cascades in.** When the palette's kind changes (someone moves onto a page of another kind), the
+- **A change of kind cascades in.** When the palette's kind changes (someone goes to a tab of another kind), the
   new bar's buttons, or an article's docked formatting, rise and fade in a moment apart, settling within 250 ms
   (`usePaletteKindMotion`). Nothing moves on the first render or under reduced motion.
 

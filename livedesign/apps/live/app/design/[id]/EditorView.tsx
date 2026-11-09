@@ -507,15 +507,15 @@ export function EditorView() {
                             />
                           ) : null}
                           {footerInColumn}
-                          {/* Quick style panel (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
-              a selection. Stands down in zen / embeds and while an
+                          {/* Quick Style bar (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
+              the selection's page title bar. Stands down in zen / embeds and while an
               element menu is open, which is the complete home of every setting. */}
                           <AreaErrorBoundary area="QuickStyle">
                             <QuickStyleHost
                               deps={quickStyleDeps}
                               hidden={
                                 // Not beside another tab (docs/specs/007-editor/split-view.md): half a window has
-                                // no room for it next to the selection.
+                                // no room for it beside a page's title bar.
                                 splitShowing ||
                                 zenMode ||
                                 embedMode ||

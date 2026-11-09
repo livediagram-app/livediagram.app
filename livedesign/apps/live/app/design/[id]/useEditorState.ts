@@ -2004,7 +2004,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   // The three markers' colours and widths (docs/specs/023-draw-mode/drawing-tools.md "Markers"),
-  // device-local, for a logo page's Draw and the quick style panel's pen rows.
+  // device-local, for a logo page's Draw and the Quick Style bar's marker rows.
   const markerPens = useMarkerPens();
 
   // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
@@ -2125,8 +2125,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     checkpointBurst,
   });
 
-  // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
-  // action per choice. The panel itself decides where and whether it shows.
+  // The Quick Style bar (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
+  // action per choice. The bar itself decides where and whether it shows.
   const swatchOverrides = useSwatchOverrides({
     themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
     userPreferences,
@@ -2151,6 +2151,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     highlighter,
     toolIntent: pendingDraw,
+    pages: pagesMode.pages,
   };
 
   // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on

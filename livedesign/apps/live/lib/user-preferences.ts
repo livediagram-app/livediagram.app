@@ -206,7 +206,7 @@ export type UserPreferences = {
   // picked with + in the design, kept with its tabs, not a per-user list. Nothing reads or writes this any
   // more; it stays in the type because it is already stored for existing users.
   customSwatches?: string[];
-  // The quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom
+  // The Quick Style bar's custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom
   // swatches"): per theme, which of a row's six slots you replaced with a
   // colour of your own. Read and written through lib/swatch-overrides, which
   // validates it and keeps it inside its share of the 4 KB cap.

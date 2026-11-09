@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, type CSSProperties, type PointerEvent } from 'react';
+import { memo, type CSSProperties } from 'react';
 import { FirstPageChoice } from './FirstPageChoice';
 import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { PageCog, PageTitleBar } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
@@ -17,6 +17,8 @@ import { PageMotionLayer } from './PageMotionLayer';
 import { PageNotesButton } from './PageNotesButton';
 import { PageTidyUpButton } from './PageTidyUpButton';
 import { PageArticleButtons } from './PageArticleButtons';
+import { QuickStyleBarSlot } from './QuickStyleBarSlot';
+import { useQuickStyleBarRoom } from '@/lib/quick-style-bar-slots';
 import {
   appearanceNamed,
   LABEL_MIN,
@@ -62,11 +64,6 @@ const steady = (zoom: number, origin: string): CSSProperties => ({
  *  useStableCallbacks): each runs the newest version when called, never during render. */
 export type PageSheetActions = {
   goToPage: (page: LaidOutPage) => void;
-  dragDown: (pageId: string, e: PointerEvent<HTMLElement>) => void;
-  dragMove: (pageId: string, e: PointerEvent<HTMLElement>) => void;
-  dragUp: (pageId: string, e: PointerEvent<HTMLElement>) => void;
-  dragCancel: () => void;
-  endsDrag: () => boolean;
   toggle: (pageId: string) => void;
   ask: (pageId: string, row: string) => void;
   cogRef: (pageId: string, el: HTMLButtonElement | null) => void;
@@ -125,8 +122,6 @@ export type PageSheetProps = {
   textRequest: number;
   layoutsRequest: number;
   backgroundRequest: number;
-  dragging: boolean;
-  reorderable: boolean;
   empty: boolean;
   previewing: boolean;
   layoutsOpen: boolean;
@@ -167,8 +162,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
   textRequest,
   layoutsRequest,
   backgroundRequest,
-  dragging,
-  reorderable,
   empty,
   previewing,
   layoutsOpen,
@@ -247,7 +240,10 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
   // A phone's Appearance is named while the page on screen holds it (appearanceNamed).
   const appearanceLabelled = mobile && appearanceNamed(room, buttons);
   const fixedRoom = titleBarFixedRoom(buttons, mobile ? appearanceLabelled : labelled, mobile);
-  const labelRoom = room - fixedRoom;
+  // The Quick Style bar, while it sits left of this page's title bar (docs/specs/008-canvas/quick-style-panel.md
+  // "Where it sits"), takes its room from the label too.
+  const quickStyleRoom = useQuickStyleBarRoom(id);
+  const labelRoom = room - fixedRoom - quickStyleRoom;
   // An article's Style or Text sections (ArticleStyleSection), for the buttons beside an article page's cog.
   const articleSection = (part: 'style' | 'text') =>
     page.flow && hasArticle ? (
@@ -268,8 +264,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
       data-page-kind={pageKindOf(page)}
       data-page-locked={locked ? '' : undefined}
       className={`pointer-events-none absolute transition-[left,top,width,height,opacity] duration-200 ease-out motion-reduce:transition-none ${
-        dragging ? 'opacity-60' : ''
-      } ${
         background?.fill ? '' : 'bg-white text-slate-900/10 dark:bg-slate-900 dark:text-white/10'
       }`}
       style={{
@@ -308,117 +302,116 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           label={label}
           name={labelParts.name}
           rest={labelParts.rest}
-          grab={editable && reorderable}
-          onPointerDown={(e) => act.dragDown(id, e)}
-          onPointerMove={(e) => act.dragMove(id, e)}
-          onPointerUp={(e) => act.dragUp(id, e)}
-          onPointerCancel={act.dragCancel}
-          onClick={() => {
-            if (!act.endsDrag()) act.goToPage(page);
-          }}
+          onClick={() => act.goToPage(page)}
         />
       </div>
       {editable ? (
         // The page's own controls, one toolbar card in three groups (PageTitleBar): how the
         // page looks, then tools, then the page itself at its corner. A press on them keeps an
-        // article's toolbar.
-        <PageTitleBar
-          keepArticleActive
-          className="absolute right-0"
+        // article's toolbar. The Quick Style bar's slot sits first in the row, left of it, empty until the
+        // selection is on this page; the row itself takes no presses, only the cards in it.
+        <div
+          className="pointer-events-none absolute right-0 flex items-center gap-1.5"
           style={{ bottom: '100%', marginBottom: 6 / zoom, ...steady(zoom, 'bottom right') }}
-          groups={[
-            [
-              // On a phone the looks gather under Appearance, their own controls mounted headless.
-              mobile ? (
-                <PageAppearanceButton
-                  key="appearance"
-                  rows={appearanceRows(buttons)}
-                  article={articleButtons}
-                  labelled={appearanceLabelled}
-                  onPick={(choice, from) =>
-                    choice === 'style' && !articleButtons
-                      ? openTabStyleFrom(from)
-                      : act.ask(id, choice)
-                  }
-                />
-              ) : null,
-              // Tab Style (PageTabStyleButton): the whole tab's look.
-              styleButton && !mobile ? (
-                <PageTabStyleButton key="style" labelled={labelled} />
-              ) : null,
-              // An article page's Style (leading with Tab Style) and Text (PageArticleButtons).
-              articleButtons && page.flow ? (
-                <PageArticleButtons
-                  key="article"
-                  tabStyle={tabStyle}
-                  labelled={labelled}
-                  headless={mobile}
-                  styleRequest={styleRequest}
-                  textRequest={textRequest}
-                  section={articleSection}
-                />
-              ) : null,
-              // An infographic or slide page's Layouts (PageLayoutsButton).
-              pageButtons ? (
-                <PageLayoutsButton
-                  key="layouts"
-                  page={page}
-                  labelled={labelled}
-                  headless={mobile}
-                  openRequest={layoutsRequest}
-                  onOpenChange={(isOpen) => act.layoutsOpenChange(id, isOpen)}
-                  onApply={(layout) => act.applyLayout(id, layout)}
-                  onPreview={(layout) => act.previewLayout(id, layout ?? null)}
-                />
-              ) : null,
-              // An infographic, slide or article page's Background (PageBackgroundButton).
-              pageButtons || articleButtons ? (
-                <PageBackgroundButton
-                  key="background"
-                  page={page}
-                  labelled={labelled}
-                  themePresets={themePresets}
-                  headless={mobile}
-                  openRequest={backgroundRequest}
-                  onBackground={(patch) => act.setBackground(id, patch)}
-                  onPreview={(patch) => act.previewBackground(id, patch ?? null)}
-                  applyToAll={{
-                    reach: applyReach,
-                    onApply: () => act.applyBackgroundToAll(id),
-                  }}
-                />
-              ) : null,
-            ],
-            [
-              // This slide's notes once it is in the deck (PageNotesButton).
-              notesButton && deck ? (
-                <PageNotesButton key="notes" pageId={id} deck={deck} labelled={labelled} />
-              ) : null,
-              // An infographic or slide page's Tidy, while it would change something; never on a phone.
-              tidyButton && tidyEdit && !mobile ? (
-                <PageTidyUpButton key="tidy" pageId={id} edit={tidyEdit} labelled={labelled} />
-              ) : null,
-            ],
-            [
-              // No lock on a phone: the cog sheet holds it (PagePanel's actions).
-              mobile ? null : (
-                <PageLockButton
-                  key="lock"
-                  locked={locked}
-                  labelled={labelled}
-                  onToggle={() => act.setLocked(id, !locked)}
-                />
-              ),
-              <PageCog
-                key="cog"
-                name={`${shownName ?? (many ? `Page ${page.index + 1}` : 'Page')} settings`}
-                open={open}
-                onToggle={() => act.toggle(id)}
-                cogRef={(el) => act.cogRef(id, el)}
-              />,
-            ],
-          ]}
-        />
+        >
+          <QuickStyleBarSlot pageId={id} named={labelled} />
+          <PageTitleBar
+            keepArticleActive
+            groups={[
+              [
+                // On a phone the looks gather under Appearance, their own controls mounted headless.
+                mobile ? (
+                  <PageAppearanceButton
+                    key="appearance"
+                    pageId={id}
+                    rows={appearanceRows(buttons)}
+                    article={articleButtons}
+                    labelled={appearanceLabelled}
+                    onPick={(choice, from) =>
+                      choice === 'style' && !articleButtons
+                        ? openTabStyleFrom(from)
+                        : act.ask(id, choice)
+                    }
+                  />
+                ) : null,
+                // Tab Style (PageTabStyleButton): the whole tab's look.
+                styleButton && !mobile ? (
+                  <PageTabStyleButton key="style" labelled={labelled} />
+                ) : null,
+                // An article page's Style (leading with Tab Style) and Text (PageArticleButtons).
+                articleButtons && page.flow ? (
+                  <PageArticleButtons
+                    key="article"
+                    tabStyle={tabStyle}
+                    labelled={labelled}
+                    headless={mobile}
+                    styleRequest={styleRequest}
+                    textRequest={textRequest}
+                    section={articleSection}
+                  />
+                ) : null,
+                // An infographic or slide page's Layouts (PageLayoutsButton).
+                pageButtons ? (
+                  <PageLayoutsButton
+                    key="layouts"
+                    page={page}
+                    labelled={labelled}
+                    headless={mobile}
+                    openRequest={layoutsRequest}
+                    onOpenChange={(isOpen) => act.layoutsOpenChange(id, isOpen)}
+                    onApply={(layout) => act.applyLayout(id, layout)}
+                    onPreview={(layout) => act.previewLayout(id, layout ?? null)}
+                  />
+                ) : null,
+                // An infographic, slide or article page's Background (PageBackgroundButton).
+                pageButtons || articleButtons ? (
+                  <PageBackgroundButton
+                    key="background"
+                    page={page}
+                    labelled={labelled}
+                    themePresets={themePresets}
+                    headless={mobile}
+                    openRequest={backgroundRequest}
+                    onBackground={(patch) => act.setBackground(id, patch)}
+                    onPreview={(patch) => act.previewBackground(id, patch ?? null)}
+                    applyToAll={{
+                      reach: applyReach,
+                      onApply: () => act.applyBackgroundToAll(id),
+                    }}
+                  />
+                ) : null,
+              ],
+              [
+                // This slide's notes once it is in the deck (PageNotesButton).
+                notesButton && deck ? (
+                  <PageNotesButton key="notes" pageId={id} deck={deck} labelled={labelled} />
+                ) : null,
+                // An infographic or slide page's Tidy, while it would change something; never on a phone.
+                tidyButton && tidyEdit && !mobile ? (
+                  <PageTidyUpButton key="tidy" pageId={id} edit={tidyEdit} labelled={labelled} />
+                ) : null,
+              ],
+              [
+                // No lock on a phone: the cog sheet holds it (PagePanel's actions).
+                mobile ? null : (
+                  <PageLockButton
+                    key="lock"
+                    locked={locked}
+                    labelled={labelled}
+                    onToggle={() => act.setLocked(id, !locked)}
+                  />
+                ),
+                <PageCog
+                  key="cog"
+                  name={`${shownName ?? (many ? `Page ${page.index + 1}` : 'Page')} settings`}
+                  open={open}
+                  onToggle={() => act.toggle(id)}
+                  cogRef={(el) => act.cogRef(id, el)}
+                />,
+              ],
+            ]}
+          />
+        </div>
       ) : null}
       {pageButtons &&
       layoutInviteShows(page, {

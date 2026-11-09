@@ -1,4 +1,4 @@
-// The quick style panel's Highlighter rows (docs/specs/008-canvas/highlighter.md "Settings"): the
+// The Quick Style bar's Highlighter rows (docs/specs/008-canvas/highlighter.md "Settings"): the
 // colour and width of the selected highlight strokes or, with nothing selected and the Highlighter
 // tile armed, of the next stroke. The marker's own five colours and three widths, not the theme's.
 import type { Element, FreehandElement } from '@livedesign/design';

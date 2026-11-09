@@ -126,8 +126,8 @@ What makes room for a scaled surface:
 - `useStripCrowdsCorners` takes a `scaleKey` (`"<toolbar>/<panels>"`) and
   `useBarLabels` the toolbar's `scale`, as effect dependencies: they
   measure in screen px already, but a zoom change resizes no observed box.
-- `useQuickStylePlacement` needs nothing: releasing the slider is a captured
-  `pointerup`, which re-measures it.
+- The Quick Style bar needs nothing: it sits in the title-bar row, which the
+  slider's release re-measures through its `ResizeObserver`.
 
 ## Interfaces and contracts
 

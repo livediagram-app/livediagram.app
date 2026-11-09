@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  THEMES,
-  createFreehand,
-  createPath,
-  createShape,
-  type Element,
-} from '@livedesign/design';
-import { quickStyleApplicability, quickStyleCaption } from './quick-style-applicability';
+import { THEMES, createFreehand, createPath, createShape, type Element } from '@livedesign/design';
+import { quickStyleStyledIds } from './quick-style-bar';
 import { applyQuickFill, applyQuickStroke, applyQuickWidth, quickStyleView } from './quick-style';
 import { applyPenStyle, strokesPenStyle } from './quick-style-pen';
 
@@ -53,11 +47,21 @@ const mixed: Element[] = [
   { ...createShape('square', 0, 0), id: 'locked', locked: true },
 ];
 
-describe('quickStyleApplicability', () => {
-  it('splits a mixed selection into what the rows style and what they pass over', () => {
-    const a = quickStyleApplicability(mixed);
-    expect(a.strokes.map((e) => e.id)).toEqual(['stroke-1', 'stroke-2']);
-    expect(a.targets.map((e) => e.id)).toEqual(['shape', 'text', 'arrow', 'path', 'frame']);
+describe('what a mixed selection styles', () => {
+  it("styles the theme rows' targets and the marker strokes, and passes over the rest", () => {
+    const view = {
+      ...quickStyleView(mixed, theme)!,
+      pen: strokesPenStyle(mixed, { board: 'light', ink: '#000' }),
+    };
+    expect(quickStyleStyledIds(view)).toEqual([
+      'shape',
+      'text',
+      'arrow',
+      'path',
+      'frame',
+      'stroke-1',
+      'stroke-2',
+    ]);
   });
 });
 
@@ -103,17 +107,5 @@ describe('a mixed selection', () => {
           : el,
     );
     expect(quickStyleView(els, theme)!.sections.stroke!.value).toBeNull();
-  });
-});
-
-describe('quickStyleCaption', () => {
-  it('names strokes alone, counts a mix, and stays out of a selection without strokes', () => {
-    const only = quickStyleApplicability([pen('a'), pen('b'), pen('c')]);
-    expect(quickStyleCaption(only)).toBe('3 marker strokes');
-    expect(quickStyleCaption(quickStyleApplicability([pen('a')]))).toBe('Marker stroke');
-    // Passed-over kinds (sticky, image, a locked shape) are not counted.
-    expect(quickStyleCaption(quickStyleApplicability(mixed))).toBe('7 elements');
-    expect(quickStyleCaption(quickStyleApplicability([mixed[2]!, mixed[3]!]))).toBeUndefined();
-    expect(quickStyleCaption(quickStyleApplicability([mixed[6]!]))).toBeUndefined();
   });
 });

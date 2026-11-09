@@ -16,20 +16,11 @@ export type PageLabelCardProps = {
   name: string;
   // The rest (its size and kind), muted after the name.
   rest: string;
-  // A press drags it to reorder the pages: the grab cursor.
-  grab?: boolean;
   // A press fits the page to the screen.
   onClick: () => void;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type' | 'className' | 'children' | 'onClick'>;
 
-export function PageLabelCard({
-  label,
-  name,
-  rest,
-  grab = false,
-  onClick,
-  ...button
-}: PageLabelCardProps) {
+export function PageLabelCard({ label, name, rest, onClick, ...button }: PageLabelCardProps) {
   return (
     // The card takes no presses of its own (its rim is the canvas's, as the space round the bare label was); the
     // button inside does.
@@ -49,9 +40,7 @@ export function PageLabelCard({
           {...button}
           onClick={onClick}
           onDoubleClick={(e) => e.stopPropagation()}
-          className={`group/label pointer-events-auto block h-7 max-w-full truncate whitespace-nowrap rounded-md px-2 text-xs leading-7 text-slate-500 transition-colors hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 ${
-            grab ? 'cursor-grab active:cursor-grabbing' : ''
-          }`}
+          className={`group/label pointer-events-auto block h-7 max-w-full truncate whitespace-nowrap rounded-md px-2 text-xs leading-7 text-slate-500 transition-colors hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800`}
         >
           {/* Its name leads, the size and kind after it quieter, so a row of pages scans by name. */}
           {name ? (

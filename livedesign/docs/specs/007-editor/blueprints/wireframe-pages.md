@@ -118,7 +118,7 @@ Going to a wireframe page fits the whole device, with the fit's zoom capped at `
   carries `inspect` and the active tab is loaded, and back to Select when the tab is not a wireframe tab.
 - While it is on, the canvas gets a Viewer's gestures whatever the role: `inspectToolActive` makes a press select
   only (no drag, anchor or arrow drag, no in-place edit), `canMove`/`canWriteText`/`canResize` are `NEVER`, the
-  selection wears read-only chrome with no selection toolbars, the Quick Style panel stands down (`editsBlocked`), and the keyboard runs as read-only. The overlay draws beneath the panels. Escape returns to Select.
+  selection wears read-only chrome with no selection toolbars, the Quick Style bar stands down (`editsBlocked`), and the keyboard runs as read-only. The overlay draws beneath the panels. Escape returns to Select.
 - `inspectTarget` picks the one selected element (a multi-selection shows a count); `inspectTargetSpec` reads it
   with `inspectElement` against its page's screen origin and surface (`pageSurface`, light when the page has none).
 - Neighbours are the boxed elements on the same page (`rowPageAt` of each centre), so the lines are linear in the

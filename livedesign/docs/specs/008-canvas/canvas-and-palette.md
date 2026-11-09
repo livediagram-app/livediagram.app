@@ -145,7 +145,7 @@ Each boxed element can have its **aspect ratio locked**. Stored as `aspectLocked
 
 ### Current Tab section
 
-> There is no editor side panel: every tab and element control lives in **right-click context menus** (the [Quick style panel](quick-style-panel.md) repeats only the most-used few, beside a selection): the element/multi-selection menu and the **tab menu** (the ellipsis / tab right-click menu, also opened by right-clicking the empty canvas). The tab menu is now a **single unified menu** at every entry point, so the tab and canvas menus are identical rather than separate; the tab's theme, canvas background and font live in the **Tab Style** dialog ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)), not in the menu. (Adding elements is done from the palette + quick-connect, so the menu has no Add section.) on the empty canvas** opens the same menu on touch devices.) Every context menu shares one width (`w-56`). Plus the **Tab Style** dialog (Looks, then the Colours, Finish, Text and Canvas panels, see [Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)). The descriptions below design the controls themselves; this section is pending a fuller rewrite.
+> There is no editor side panel: every tab and element control lives in **right-click context menus** (the [Quick Style bar](quick-style-panel.md) repeats only the most-used few, beside a selection): the element/multi-selection menu and the **tab menu** (the ellipsis / tab right-click menu, also opened by right-clicking the empty canvas). The tab menu is now a **single unified menu** at every entry point, so the tab and canvas menus are identical rather than separate; the tab's theme, canvas background and font live in the **Tab Style** dialog ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)), not in the menu. (Adding elements is done from the palette + quick-connect, so the menu has no Add section.) on the empty canvas** opens the same menu on touch devices.) Every context menu shares one width (`w-56`). Plus the **Tab Style** dialog (Looks, then the Colours, Finish, Text and Canvas panels, see [Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)). The descriptions below design the controls themselves; this section is pending a fuller rewrite.
 
 > **Element menu anchor:** an element's context menu opens from the element's **top-right corner** rather than the cursor / finger / toolbar, so the menu sits beside the element (down + right) instead of covering the thing being edited. This is shared (one helper, `../packages/workbench/src/lib/context-menu-anchor.ts`) by all three entry points: **right-click** (desktop), **long-press** (touch), and the selection toolbar's **⋯ "More"** button. If the fixed-width (`w-56`) menu wouldn't fit to the right of the element, it flips to the element's **top-left** corner and opens leftward; either way it's held a few px off the edge so a thick border / selection ring isn't tucked under it, and it still clamps back on-screen vertically near a viewport edge. The empty-canvas / tab menu still opens at the cursor. **Arrows anchor the same way**, using the top-right corner of the arrow's on-screen bounding box (the wide hit band's rect, so zoom / pan are baked in): right-click, long-press, and a right-click on the arrow's label all open beside the arrow rather than under the pointer, falling back to the pointer position only if the arrow's DOM node can't be measured.
 
@@ -942,7 +942,7 @@ A free-floating text element. The text **is** the element; there is no border or
 - A faint dashed outline appears when selected so the bounds are visible.
 - **Colour.** The text takes the theme's label colour, and can be recoloured like any other element:
   the context menu's **Colours** category (a single **Text** row and Reset to Theme; no Background or
-  Border, since a text element has neither) and the [Quick style panel](quick-style-panel.md)'s
+  Border, since a text element has neither) and the [Quick Style bar](quick-style-panel.md)'s
   **Text colour** row. A multi-selection's Colours category recolours the text elements in it too.
   `supportsColours` in `packages/design/src/colors.ts` is the one gate for both menus.
 - All other behaviour (selection, popover, lock, format painter, layer order, plus button) matches shapes.
@@ -1097,7 +1097,7 @@ type TextRun = {
 **Extra-small runs.** A run's `size` has one step below the element presets: `xs`, drawn at 10 px on every
 label scale (`RUN_XS_PX` in `../packages/model-core/src/label-font.ts`), where `sm` is 14 px on a
 single-line label, 12 px on a multi-line one and 11 px in a note. It exists for text that
-reads smaller than any preset (a subtitle at 8 px); no control sets it today, and the element-level text size (Quick Style Panel, the Text category) stays
+reads smaller than any preset (a subtitle at 8 px); no control sets it today, and the element-level text size (Quick Style bar, the Text category) stays
 `sm` / `md` / `lg` / `scale`. An `xs` run keeps the label's own text colour, so it meets the same
 contrast as the rest of the label (4.5:1 against its fill, the normal-text bar, which applies at every
 size below large text). The canvas, the SVG export and the PNG and PDF exports drawn from it render it

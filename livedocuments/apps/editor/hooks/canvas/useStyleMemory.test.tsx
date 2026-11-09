@@ -61,14 +61,6 @@ describe('useStyleMemory', () => {
     expect(localStorage.getItem(styleMemoryKey('d1'))).not.toBeNull();
   });
 
-  it('forgets kinds', () => {
-    const { result } = renderHook(() => useStyleMemory({ documentId: 'd1', theme }));
-    act(() => result.current.recordEdit([circle('a')], [circle('a', { strokeWidth: 'thin' })]));
-    act(() => result.current.forget(['shape:circle']));
-    const plain = circle('b');
-    expect(result.current.styleNewElement(plain)).toBe(plain);
-  });
-
   it('is inert until the document id is known', () => {
     const { result } = renderHook(() => useStyleMemory({ documentId: null, theme }));
     act(() => result.current.recordEdit([circle('a')], [circle('a', { strokeWidth: 'thin' })]));

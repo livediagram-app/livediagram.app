@@ -1,7 +1,7 @@
 'use client';
 
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
-import type { Element } from '@livedesign/design';
+import type { Element, Page } from '@livedesign/design';
 import {
   useEffect,
   useEffectEvent,
@@ -95,6 +95,8 @@ type Props = Pick<
     besideWidth?: number;
     // The active tab's elements: Search lists their element types before anything is typed.
     tabElements?: readonly Element[];
+    // The tab's pages in Pages mode, whose kind is the palette's (lib/palette-kind.ts).
+    tabPages?: readonly Pick<Page, 'kind'>[] | null;
     // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, its selection
     // modes, and no Search (it would offer every element type).
     participant?: boolean;
@@ -172,9 +174,12 @@ export function ToolbarPalette(props: Props) {
     return () => setPalettePopoverOpen(false);
   }, [popoverOpen]);
   const setMoreOpen = more.setOpen;
+  // The palette's kind: the tab's (lib/palette-kind.ts), right on the first paint.
+  const paletteKind = usePaletteKind(props.tabPages);
   const { tabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
     usePaletteCatalogue({
       ...props,
+      paletteKind,
       // A tile used from the More or Search popover closes it, so the canvas is clear to draw on.
       onTileUsed: () => {
         more.setOpen(false);
@@ -187,7 +192,6 @@ export function ToolbarPalette(props: Props) {
   // (docs/specs/007-editor/toolbar-layout.md "The category bar"). Not for a Participant, whose palette is one
   // category.
   const categoryBar = CATEGORY_BAR_MODES.has(editorMode) && !participant;
-  const paletteKind = usePaletteKind();
   // A change of kind cascades its categories in (usePaletteKindMotion).
   usePaletteKindMotion(editorMode === 'pages' ? paletteKind : editorMode, rootRef);
   const defaultId = participant ? 'participate' : paletteLandingCategory(editorMode);

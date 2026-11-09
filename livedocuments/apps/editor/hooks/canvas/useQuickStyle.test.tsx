@@ -10,7 +10,7 @@ function setup(tab: Tab, selection: string[]) {
   const commit = vi.fn((map: (els: Element[]) => Element[]) => {
     elements = map(elements);
   });
-  const memory = { recordEdit: vi.fn(), forget: vi.fn(), styleNewElement: <T,>(el: T) => el };
+  const memory = { recordEdit: vi.fn(), styleNewElement: <T,>(el: T) => el };
   const { result } = renderHook(() =>
     useQuickStyle({
       activeTab: tab,

@@ -20,7 +20,7 @@ describe('the design page’s first load', () => {
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
     ['components/canvas/Canvas.tsx', '@/components/canvas/CanvasPages'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/TableView'],
-    ['components/canvas/QuickStyleHost.tsx', '@/components/canvas/QuickStylePanel'],
+    ['components/canvas/QuickStyleHost.tsx', '@/components/canvas/QuickStyleBar'],
     // Inspect's Export: its tab exporters and page motion load at the press.
     ['lib/inspect-export.ts', './export-tab'],
   ])('%s loads %s on demand', (file, module) => {

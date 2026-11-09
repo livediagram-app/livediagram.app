@@ -19,12 +19,19 @@ export type AppearanceRowItem<Id extends string> = {
 export function AppearanceRowList<Id extends string>({
   rows,
   onPick,
+  heading,
 }: {
   rows: readonly AppearanceRowItem<Id>[];
   onPick: (id: Id) => void;
+  // A later group of rows (the selected element's, after the page's): a hairline above, its heading, and the list
+  // named by it.
+  heading?: string;
 }) {
-  return (
-    <ul className="flex flex-col gap-1.5 px-3 pb-3 pt-1">
+  const list = (
+    <ul
+      aria-label={heading}
+      className={`flex flex-col gap-1.5 px-3 pb-3 ${heading ? 'pt-0' : 'pt-1'}`}
+    >
       {rows.map(({ id, name, line, icon }) => (
         <li key={id}>
           <button
@@ -55,5 +62,20 @@ export function AppearanceRowList<Id extends string>({
         </li>
       ))}
     </ul>
+  );
+  if (!heading) return list;
+  return (
+    <section
+      data-appearance-group=""
+      className="border-t border-slate-200 pt-2.5 dark:border-slate-700"
+    >
+      <p
+        aria-hidden
+        className="select-none px-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+      >
+        {heading}
+      </p>
+      {list}
+    </section>
   );
 }

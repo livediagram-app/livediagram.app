@@ -14,7 +14,7 @@ import { DEFAULT_WHITEBOARD_PREFS, type WhiteboardPen } from '@/lib/whiteboard-p
 import type { PendingDraw } from '@/lib/draw-mode';
 import { useQuickStyle } from './useQuickStyle';
 
-// docs/specs/023-draw-mode/drawing-tools.md "The quick style panel": the marker rows style the
+// docs/specs/023-draw-mode/drawing-tools.md "The Quick Style bar": the marker rows style the
 // selected strokes as one commit, or the marker in hand when nothing is selected.
 const stroke = {
   ...createFreehand(
@@ -109,12 +109,11 @@ describe('useQuickStyle on a mixed selection', () => {
     styleNewElement: <T,>(el: T) => el,
   };
 
-  it('shows the marker rows and the shape rows, captioned by the styled count', () => {
+  it('shows the marker rows and the shape rows', () => {
     const { result } = setup(['s1', 'q1', 'n1'], null, null, memory, [stroke, square, sticky]);
     const view = result.current.view!;
     expect(view.pen?.subject).toMatchObject({ kind: 'strokes', ids: ['s1'] });
     expect(view.sections.stroke).toBeTruthy();
-    expect(view.caption).toBe('2 elements');
   });
 
   // docs/specs/004-interface-design/colour-picker.md "Skins": a row's More colours.
@@ -130,7 +129,7 @@ describe('useQuickStyle on a mixed selection', () => {
 
   it('gives the selection priority over the marker in hand', () => {
     const { result } = setup(['s1']);
-    expect(result.current.view?.caption).toBe('Marker stroke');
+    expect(result.current.view?.pen?.subject.kind).toBe('strokes');
   });
 });
 
@@ -234,9 +233,10 @@ describe('useQuickStyle Highlighter rows', () => {
     expect(diagram([]).result.current.view).toBeNull();
   });
 
-  it('restyles the selected highlights in one commit, and counts a mixed selection', () => {
+  it('restyles the selected highlights in one commit, beside the rest of a mixed selection', () => {
     const { result, commit, elements } = diagram(['h1', 'b1']);
-    expect(result.current.view?.caption).toBe('2 elements');
+    expect(result.current.view?.highlighter?.subject.kind).toBe('strokes');
+    expect(result.current.view?.targetIds).toEqual(['b1']);
     act(() => result.current.setHighlighterWidth('bold'));
     expect(commit).toHaveBeenCalledTimes(1);
     expect(elements()[0]).toMatchObject({ penWidth: 22 });

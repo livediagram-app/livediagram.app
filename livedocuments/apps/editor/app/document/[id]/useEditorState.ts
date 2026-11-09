@@ -2295,6 +2295,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
     memory: styleMemory,
     swatchOverrides,
+    pages: pagesMode.pages,
   };
 
   // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on

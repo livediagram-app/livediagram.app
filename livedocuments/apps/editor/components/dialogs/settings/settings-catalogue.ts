@@ -805,11 +805,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
       panelSwitch('quickStylePanelEnabled', {
         section: 'Quick Style',
-        label: 'Enable Quick Style Panel',
+        label: 'Enable Quick Style Bar',
         keywords:
-          'quick style colour color stroke fill width panel selection enable hide show turn off',
+          'quick style bar colour color stroke fill width panel toolbar selection enable hide show turn off',
         description:
-          "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
+          "The most-used colours, widths and alignments beside the page of a selected shape or arrow. Off, they are all in the element's menu.",
         event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
       }),
       {

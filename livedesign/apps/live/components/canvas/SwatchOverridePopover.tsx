@@ -7,6 +7,7 @@
 
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { usePopoverLayer } from '@liveworkspace/workbench/components/primitives/popover-stack';
 import { CustomColourEditor } from '@/components/colour/CustomColourEditor';
 
 const GAP = 8;
@@ -50,7 +51,8 @@ export function SwatchOverridePopover({
     if (!node) return;
     const box = node.getBoundingClientRect();
     const a = anchor.getBoundingClientRect();
-    const panel = anchor.closest('[data-quick-style-panel]');
+    // Beside the Quick Style bar's popover the swatch sits in.
+    const panel = anchor.closest('[data-anchored-popover]');
     const side = panel?.getBoundingClientRect() ?? a;
     const right = side.right + GAP;
     node.style.left = `${
@@ -71,6 +73,15 @@ export function SwatchOverridePopover({
   useEffect(() => {
     ref.current?.querySelector<HTMLElement>('[role="slider"]')?.focus();
   }, []);
+
+  // Escape closes it alone, before the bar's popover it opened from (popover-stack.ts), which a press in it never
+  // closes either.
+  usePopoverLayer(ref, (e) => {
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    e.stopPropagation();
+    close();
+  });
 
   // A press anywhere else closes it.
   useEffect(() => {
@@ -93,15 +104,8 @@ export function SwatchOverridePopover({
         e.preventDefault();
         e.stopPropagation();
       }}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          e.stopPropagation();
-          close();
-        }
-      }}
       style={{ left: 0, top: 0, visibility: 'hidden' }}
-      className="pointer-events-auto fixed z-[var(--z-toolbar)] flex w-64 flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 text-slate-700 shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+      className="pointer-events-auto fixed z-[calc(var(--z-popover)+2)] flex w-64 flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 text-slate-700 shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
     >
       <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Custom colour

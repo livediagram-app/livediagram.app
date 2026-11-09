@@ -42,7 +42,7 @@ edge shows an **Edge Colour** row under it, the shared colour picker ([Colour pi
 showing the border's colour until one is picked; once the edge has its own colour, **Match Border** clears it. In a
 multi-selection it applies to every selected shape that supports it, one history step.
 
-The Quick Style Panel does not offer it; it is a deliberate detail, not a most-used choice.
+The Quick Style bar does not offer it; it is a deliberate detail, not a most-used choice.
 
 ## Style presets and the format painter
 

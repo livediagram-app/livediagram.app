@@ -9,19 +9,12 @@ import { elementsByPage } from '@/lib/elements-by-page';
 import { isArticleLocked } from '@/lib/article/article-lock';
 import {
   offersPageKindChoice,
-  PAGE_GAP,
   pageKindOf,
-  pageUnits,
   type Element,
   type LaidOutPage,
 } from '@livedocuments/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { LayoutPreviewHost } from './InfographicLayoutPreview';
-import {
-  laidOutUnits,
-  usePageReorderDrag,
-  type PageReorder,
-} from '@/hooks/canvas/usePageReorderDrag';
 import { useCurrentPageFollow } from '@/hooks/canvas/useCurrentPageFollow';
 import { usePageImageSources } from './page-image-access';
 import { PagePanel, type PagePanelTab } from './PagePanel';
@@ -137,10 +130,6 @@ export function CanvasPages({
     edit?.previewInk(next);
   };
   const last = pages[pages.length - 1]!;
-  // A label dragged sideways reorders the pages (usePageReorderDrag).
-  const drag = usePageReorderDrag({ pages, zoom, onMove: edit?.movePageTo });
-  // A label drags only when there is something to swap with: two units (a page, or a whole article).
-  const reorderable = pageUnits(pages).length > 1;
   const openId = opened?.id ?? null;
   const open = edit && opened ? pages.find((p) => p.id === opened.id) : undefined;
   // The panel goes with its page, and with the right to edit (zen, a lock, a view role): it never
@@ -175,11 +164,6 @@ export function CanvasPages({
   // changed"). Each runs the newest version when called.
   const act = useStableCallbacks<PageSheetActions>({
     goToPage,
-    dragDown: (id, e) => drag.handlers(id).onPointerDown(e),
-    dragMove: (id, e) => drag.handlers(id).onPointerMove(e),
-    dragUp: (id, e) => drag.handlers(id).onPointerUp(e),
-    dragCancel: () => drag.handlers('').onPointerCancel(),
-    endsDrag: () => drag.endsDrag(),
     toggle,
     ask,
     cogRef: (id, el) => {
@@ -266,8 +250,6 @@ export function CanvasPages({
               askOf(page.id, 'layout')
             }
             backgroundRequest={askOf(page.id, 'background')}
-            dragging={drag.reorder?.pageIds.includes(page.id) === true}
-            reorderable={reorderable}
             empty={emptyPages?.has(page.id) === true}
             previewing={view.layoutPreview?.pageId === page.id}
             layoutsOpen={layoutsOpenFor === page.id}
@@ -282,7 +264,6 @@ export function CanvasPages({
       {stack && pages[0] && !pages[0].flow && !bare ? (
         <PageStackNav page={pages[0]} stack={stack} row={row} zoom={zoom} onGo={view.focusPage} />
       ) : null}
-      {drag.reorder ? <ReorderMarker pages={pages} reorder={drag.reorder} zoom={zoom} /> : null}
       {edit?.addPage && edit.addPageLike ? (
         <AddPageButton last={last} zoom={zoom} onAddLike={edit.addPageLike} />
       ) : null}
@@ -325,37 +306,5 @@ export function CanvasPages({
       ) : null}
       <PageTourStage tour={pageTour.tour} kind={pageTour.kind} />
     </>
-  );
-}
-
-// The cog that opens the page's panel (PagePanel).
-// Where a dragged page will land: a bar in the gap at its slot, the pages' height, held at one
-// screen width.
-function ReorderMarker({
-  pages,
-  reorder,
-  zoom,
-}: {
-  pages: readonly LaidOutPage[];
-  reorder: PageReorder;
-  zoom: number;
-}) {
-  const others = laidOutUnits(pages).filter((u) => !u.pageIds.includes(reorder.pageId));
-  const before = others[reorder.slot - 1];
-  const after = others[reorder.slot];
-  const x = before
-    ? before.rect.x + before.rect.width + PAGE_GAP / 2
-    : after
-      ? after.rect.x - PAGE_GAP / 2
-      : 0;
-  const top = Math.min(...pages.map((p) => p.rect.y));
-  const bottom = Math.max(...pages.map((p) => p.rect.y + p.rect.height));
-  return (
-    <div
-      aria-hidden
-      data-page-reorder-marker
-      className="pointer-events-none absolute rounded-full bg-brand-500"
-      style={{ left: x - 2 / zoom, top, width: 4 / zoom, height: bottom - top }}
-    />
   );
 }

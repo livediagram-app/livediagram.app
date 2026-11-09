@@ -241,7 +241,7 @@ the input unchanged in the common case.
   icon, else "i" [QA4].
 - Disc glyphs (the callout badge, the header monogram, the process step numbers) sit on their cap
   band: `GlyphDisc` on the canvas, `capBandBaselineY` in the export.
-- Quick Style Panel: the same predicates as the menu (`supportsBorderControls`,
+- Quick Style bar: the same predicates as the menu (`supportsBorderControls`,
   `acceptsInlineIcon`), and text alignment on every web component.
 - Placeholders while empty: "Subtitle", "Heading", "0", "Caption", "Step", "Link", "Title",
   "Supporting line".
@@ -290,7 +290,7 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 | Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/live/lib/canvas-selection.test.ts`                         |
 | Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/live/lib/draw-commit.test.ts`                              |
 | Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `packages/design/src/svg-cap-band-render.test.ts`                |
-| Text alignment in the Quick Style Panel      | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/live/lib/quick-style.test.ts`                              |
+| Text alignment in the Quick Style bar        | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/live/lib/quick-style.test.ts`                              |
 | Ring add hidden when full                    | none [GA14]                                                                           |                                                                  |
 | Export draws the inline icon                 | none [GA2]                                                                            |                                                                  |
 

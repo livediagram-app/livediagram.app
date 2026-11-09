@@ -64,7 +64,7 @@ this way. Where switching to one must stay instant, its code is fetched once the
 - **Content a board may draw on open**: the pages and their writing, and tables. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the design
   request, so a design that has one finds its code already in, while the first load does not carry it.
 - **Surfaces someone opens**: the Explorer popover (mounted from its first opening on,
-  then kept, so its state survives), search, the quick style panel and the tool panels. Fetched once the opened design has rendered and the page is idle.
+  then kept, so its state survives), search, the Quick Style bar and the tool panels. Fetched once the opened design has rendered and the page is idle.
 - **At the press**: a template's canvas overrides load with its builders when one is applied. Inspect's Export
   loads the tab exporters (and the page motion they draw) when it is pressed (`lib/inspect-export.ts`): the
   Inspect host names that module as the canvas mounts, and a static import there put the exporters in every

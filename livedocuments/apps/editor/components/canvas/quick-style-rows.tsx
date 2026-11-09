@@ -1,6 +1,6 @@
 'use client';
 
-// The quick style panel's rows (docs/specs/008-canvas/quick-style-panel.md "Accessibility"), each
+// The Quick Style bar's rows (docs/specs/008-canvas/quick-style-panel.md "Accessibility"), each
 // with its own accessible name and one Tab stop. A row of glyph buttons is a radio group whose
 // arrows move and choose. A colour row is the colour picker's (docs/specs/004-interface-design/
 // colour-picker.md): the one swatch, toggle buttons, arrows that move focus without picking, Enter

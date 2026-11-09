@@ -12,12 +12,10 @@ import {
 } from '@liveworkspace/workbench/lib/local-storage-safe';
 import {
   applyStyleMemory,
-  forgetStyleKinds,
   parseStyleMemory,
   recordStyleEdit,
   styleKindOf,
   styleMemoryKey,
-  type StyleKindKey,
   type StyleMemory,
 } from '@/lib/style-memory';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -29,7 +27,6 @@ export type StyleMemoryApi = {
   recordEdit: (before: readonly Element[], after: readonly Element[]) => void;
   // Dress a user-drawn element from memory; identity when nothing applies.
   styleNewElement: <T extends Element>(el: T) => T;
-  forget: (kinds: readonly StyleKindKey[]) => void;
 };
 
 export function useStyleMemory({
@@ -100,10 +97,6 @@ export function useStyleMemory({
       const dressed = applyStyleMemory(el, memoryRef.current, theme);
       if (dressed !== el) debugLog('[style-memory] applied', styleKindOf(el));
       return dressed;
-    },
-    forget: (kinds) => {
-      if (!ensureLoaded()) return;
-      commit(forgetStyleKinds(memoryRef.current, kinds), 'forgot', kinds);
     },
   };
 }

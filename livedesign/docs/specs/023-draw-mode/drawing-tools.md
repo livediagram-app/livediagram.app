@@ -4,7 +4,7 @@ Status: specified
 
 The hand-drawing tools a logo page offers beside the Pen ([Path tool](path-tool.md)): the three
 **markers**, shape recognition while a marker draws, how a marker stroke is picked, the quick
-style panel's marker rows, and the **Fill tool**, a paint bucket. Where they sit in the palette is [Logo pages](../007-editor/logo-pages.md)
+Style bar's marker buttons, and the **Fill tool**, a paint bucket. Where they sit in the palette is [Logo pages](../007-editor/logo-pages.md)
 "The Logo palette"; the Freehand Pencil, the Shape Pen and the Polygon are
 [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) and
 [Multi-point line / polygon tool](../008-canvas/polygon-tool.md); the eraser is the canvas's
@@ -24,7 +24,7 @@ style panel's marker rows, and the **Fill tool**, a paint bucket. Where they sit
   **Medium** (1.5 px, the default), **Bold** (2.5 px), **Thick** (4 px), **Heavy** (6 px) and
   **Broad** (9 px). A marker stores its width as the preset's name, not its px, so retuning the px
   never reinterprets a stored choice. Each width is pictured the same wherever it is chosen (the
-  flyout and the quick style panel, `PenWidthIcon`): a line in six even steps, not to scale.
+  flyout and the Quick Style bar, `PenWidthIcon`): a line in six even steps, not to scale.
 - **Picking one:** a press on a marker tile picks it up for one stroke (from the palette) or until
   another tool or Escape puts it down (from Search). A press on the marker already in hand opens
   its **flyout** below the tile: its colour (Markers 2 and 3) and width. A change is the marker's
@@ -102,19 +102,22 @@ A marker stroke stays as drawn unless someone asks for a shape while drawing it.
 - **Telemetry:** `Draw` · `Toggled` · `RecogniseOnceKey`, `RecogniseOnceChip`, `BreakShapeKey` or
   `BreakShapeChip`.
 
-## The quick style panel
+## The Quick Style bar
 
-The quick style panel ([Quick style panel](../008-canvas/quick-style-panel.md)) styles marker
-strokes in its own rows:
+The Quick Style bar ([Quick Style bar](../008-canvas/quick-style-panel.md)) styles marker strokes
+with two buttons of their own, first on the bar:
 
-- Selected marker strokes get **Marker colour** (Ink and the eight hued stock colours, adaptive like
-  the flyout's, then **More colours**, the full colour picker) and **Marker width** (the six widths,
-  in one row). Custom colours live only in that picker: the panel never shows a second row of them.
-- With nothing selected and a marker in hand, the panel styles **that marker**: the same settings
-  its flyout holds. Every marker shows the same rows, so Marker width stays at the same height
-  whichever is in hand; Marker 1's colour row holds its one colour, the Ink.
-- A caption above the rows names whose style it is ("Marker 2", "Marker stroke", "3 marker
-  strokes"); a mixed selection counts every element styled.
+- **Marker** opens **Marker colour** (Ink and the eight hued stock colours, adaptive like the
+  flyout's, then **More colours**, the full colour picker); its button draws the colour in force as
+  a dot. **Size** opens **Marker width** (the six widths, in one row, a colour row's width); its
+  button draws the width in force (`PenWidthIcon`). Custom colours live only in that picker: the
+  bar never shows a second row of them.
+- With nothing selected and a marker in hand, the bar styles **that marker**: the same settings its
+  flyout holds, on the page you are on (the current page, else the first). Every marker shows both
+  buttons, so the bar never changes shape between markers; Marker 1's colour row holds its one
+  colour, the Ink.
+- While they style the marker in hand, each popover names it under its heading ("In hand: Marker
+  2"), so its next stroke is never mistaken for the selection.
 
 ## The Fill tool
 

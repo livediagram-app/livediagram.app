@@ -27,4 +27,18 @@ describe('AppearanceRowList', () => {
     fireEvent.click(rows[1]!);
     expect(onPick).toHaveBeenCalledWith('background');
   });
+
+  // Quick Style on a phone (quick-style-panel.md "On a phone, in Appearance"): the selection's rows after the page's.
+  it('heads a later group with a hairline and names its list by the heading', () => {
+    const { container } = render(
+      <AppearanceRowList
+        heading="Selected Element"
+        rows={[{ id: 'fill', name: 'Fill', line: 'The inside colour', icon: <svg /> }]}
+        onPick={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('list', { name: 'Selected Element' })).toBeTruthy();
+    expect(screen.getByText('Selected Element').getAttribute('aria-hidden')).toBe('true');
+    expect(container.querySelector('[data-appearance-group]')!.className).toMatch(/border-t/);
+  });
 });

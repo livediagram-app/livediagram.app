@@ -354,6 +354,10 @@ panels in their corners, the bottom-row popovers over their buttons. What change
   pop in a 10ms beat apart (a cascade, settling within 250ms), and the outgoing ones shrink away on a layer over
   the top. Only a real switch animates; the first set is simply there.
   Reduced motion collapses it to instant (`ToolbarStripRail`).
+- **A change of kind cascades in.** When the palette's kind changes (someone goes to a tab of another kind, or a
+  blank first page takes its kind: [Pages](pages-mode.md) "The palette's kind"), the new bar's buttons rise and
+  fade in a moment apart, settling within 250 ms (`usePaletteKindMotion`). Nothing moves on the first render or
+  under reduced motion.
 - **The rail is always as wide as its tiles.** Its width follows the tiles as laid out, whenever they change
   (a category switch, a tile added or gone), never a tile caught mid-slide: no empty gap
   after the last tile once they settle.
