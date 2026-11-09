@@ -175,6 +175,8 @@ function graphicFrame(frame: XmlElement, ctx: SlideContext): void {
 
 function shapes(tree: XmlElement | undefined, map: GroupMap, ctx: SlideContext): void {
   for (const el of kids(tree)) {
+    // A shape hidden in PowerPoint's Selection Pane is neither shown nor printed: left out, as hidden text is.
+    if (isHiddenShape(el)) continue;
     switch (el.name) {
       case 'p:sp':
         textShape(el, map, ctx);
@@ -197,6 +199,13 @@ function shapes(tree: XmlElement | undefined, map: GroupMap, ctx: SlideContext):
         break;
     }
   }
+}
+
+/** Whether a shape's `p:cNvPr` (in its `p:nv…Pr`) has `hidden` set. */
+function isHiddenShape(el: XmlElement): boolean {
+  const nv = kids(el).find((c) => c.name.startsWith('p:nv'));
+  const hidden = child(nv, 'p:cNvPr')?.attrs.hidden;
+  return hidden === '1' || hidden === 'true';
 }
 
 /** A notes slide's body text, its lines joined, cut at OFFICE_NOTES_MAX. */

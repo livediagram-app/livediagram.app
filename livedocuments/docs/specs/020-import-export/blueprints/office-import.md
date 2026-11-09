@@ -218,6 +218,8 @@ Follows the spec's table. Precisely:
 - `p:grpSp`: its children mapped through `a:off`, `a:ext`, `a:chOff`, `a:chExt`.
 - `p:graphicFrame`: by `a:graphicData uri`: a table `tables`, a chart `charts`, a diagram `diagrams`, an OLE
   object `embedded`. `p:cxnSp`, `p:contentPart` and text-less `p:sp` (not a placeholder) are `shapes`.
+- Any shape, picture, group, frame or connector whose `p:cNvPr` has `hidden` `1` or `true` (hidden in the
+  Selection Pane) is left out with everything in it, and not counted.
 - Past `OFFICE_MAX_SLIDE_ITEMS` items on a slide the rest count `crowded`.
 - Notes: the `notesSlide` relationship's body placeholder's text, lines joined with `\n`, cut at
   `OFFICE_NOTES_MAX`.

@@ -92,6 +92,8 @@ sits on the slide, scaled from the deck's size to the page's.
   (its paragraphs as lines), the same cards the page's **Notes** button and the presenter view show
   ([Speaker note cards](../012-collaboration/speaker-note-cards.md)); the speaker can split it into cards afterwards.
 - A **hidden slide** is a page whose slide is hidden in the Slide Deck.
+- A **hidden shape** (hidden in PowerPoint's Selection Pane, so neither shown nor printed) is left out, as Word's
+  hidden text is.
 
 What is **not** brought across, and named in the report when the deck had it: tables, charts and diagrams
 (SmartArt), videos and audio, embedded objects, linked pictures, and shapes and lines with no text. Colours,
