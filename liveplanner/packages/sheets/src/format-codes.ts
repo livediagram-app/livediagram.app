@@ -337,7 +337,7 @@ export function formatCodeText(value: number | string, code: string): string {
   const toks = tokenize(section, false);
   // A text section ("@", `@" kg"`) given a number shows the number as text in its place, as in Excel and Google
   // Sheets: the number placeholders it lacks would otherwise drop it (TEXT(5, "@") read "").
-  if (toks.some((t) => t.k === 'at'))
+  if (section.includes('@') && toks.some((t) => t.k === 'at'))
     return toks
       .map((t) =>
         t.k === 'at' ? numberText(section === sections[0] ? value : n) : t.k === 'lit' ? t.v : '',
