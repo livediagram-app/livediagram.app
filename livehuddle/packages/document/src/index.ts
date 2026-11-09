@@ -441,6 +441,9 @@ export * from './label-body';
 export * from './indicator-placement';
 export * from './geometry';
 export * from './element-grid';
+// The grid over this product's own elements (the shared grid is generic over any element union).
+export type ElementGrid = SharedElementGrid<Element>;
+import type { ElementGrid as SharedElementGrid } from '@liveworkspace/element-model/element-grid';
 // Tab + document name length cap (docs/specs/006-document/name-length.md).
 export * from '@liveworkspace/model-core/names';
 export * from './geometry-snapping';

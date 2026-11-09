@@ -17,7 +17,7 @@ Scope, by file:
 | `apps/live/components/canvas/ArrowView.tsx`              | Line press begins a bend; records presses; move frame for free arrows                           |
 | `apps/live/components/canvas/SelectedArrowHandles.tsx`   | Endpoint, curve, bend-point and elbow handles; every press passes `guardPress`                  |
 | `apps/live/components/canvas/FreeArrowSelection.tsx`     | The free arrow's selection: ring (move bands) + the shared `ResizeHandles` / `EdgeResizeHandle` |
-| `packages/design/src/arrow-scale.ts`                     | `scaleFreeArrow`: ends and bends scaled from the opposite side                                  |
+| `../packages/element-model/src/arrow-scale.ts`           | `scaleFreeArrow`: ends and bends scaled from the opposite side                                  |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`    | Mounts `FreeArrowSelection` beside a selected free arrow's `<svg>`                              |
 | `apps/live/components/canvas/element-parts.tsx`          | Resize handles refuse a paired press (`handlePressStarts`)                                      |
 | `apps/live/components/canvas/useBoxedElementGestures.ts` | Body presses are recorded; a paired press starts no drag                                        |

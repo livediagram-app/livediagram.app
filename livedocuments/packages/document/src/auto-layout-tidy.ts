@@ -257,7 +257,7 @@ export function tidyLayoutElements(
     rerouted = new Map(routable.map((a) => [a.id, reanchorArrow(a, finalCenters)]));
   } else {
     const laneShift = dir === 'TB' ? dx : dy;
-    const requests: RouteRequest[] = routable.map((a) => {
+    const requests: RouteRequest<ArrowElement>[] = routable.map((a) => {
       const fromEl = (a.from as { elementId: ElementId }).elementId;
       const toEl = (a.to as { elementId: ElementId }).elementId;
       const from = nodeOfEnd(a.from)!;

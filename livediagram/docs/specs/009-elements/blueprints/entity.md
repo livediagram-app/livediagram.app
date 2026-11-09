@@ -14,7 +14,7 @@ Scope, by file:
 | `packages/document/src/shape-factory.ts`                                 | `createShape('entity', …)` defaults                                     |
 | `packages/document/src/validate-shape.ts`                                | The `entityFields` bounds and `key` check                               |
 | `packages/document/src/validate.ts`                                      | A pinned end's `field` check                                            |
-| `packages/document/src/entity-geometry.ts`                               | Band, rows, gutter metrics; `entityFieldPoint`, `entityPartAt`, snap    |
+| `../packages/model-core/src/entity-geometry.ts`                          | Band, rows, gutter metrics; `entityFieldPoint`, `entityPartAt`, snap    |
 | `packages/document/src/entity-fields.ts`                                 | Keys, legacy reading, clean / fit / remap, relationship heads, presets  |
 | `packages/document/src/entity-related.ts`                                | `buildRelatedEntity`: Add Related Entity's entity and relationship      |
 | `packages/document/src/entity-look.ts`                                   | Tints, type face, key glyph paths and inks                              |
@@ -156,7 +156,7 @@ relationshipHeads(arrow, elements) | null;  withRelationshipHeads(elements, arro
 joinsEntities(arrow, elements): boolean;  CARDINALITY_PRESETS;  cardinalityLabel(arrow) | null;
 cardinalityPatch(preset);  foreignKeyName(title): string;  relatedEntityFields(source): EntityField[];
 
-// packages/document/src/entity-geometry.ts
+// ../packages/model-core/src/entity-geometry.ts
 entityRowTop(el, i); entityRowShows(el, i); entityFieldPoint(el, side, i, count) | null;
 entityPartAt(el, count, point): EntityPart | null; snapToEntityField(cursor, elements, toward, skipId) | null;
 
@@ -252,8 +252,8 @@ None in code today [GA1]; telemetry: `Element·Changed·Entity`, `Added·EntityF
 
 | Rule                                               | Test                                              | File                                                                |
 | -------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
-| Band follows text size, 30 floor                   | entityHeaderHeight (two cases)                    | `packages/document/src/entity-geometry.test.ts`                     |
-| Authored height shows every row                    | entityHeight (two cases)                          | `packages/document/src/entity-geometry.test.ts`                     |
+| Band follows text size, 30 floor                   | entityHeaderHeight (two cases)                    | `../packages/model-core/src/entity-geometry.test.ts`                |
+| Authored height shows every row                    | entityHeight (two cases)                          | `../packages/model-core/src/entity-geometry.test.ts`                |
 | Key cycle, markers, legacy reading (B3, B4)        | keys                                              | `packages/document/src/entity-fields.test.ts`                       |
 | Bounds 40 / 80, blank type and key absent (I1, I2) | cleanEntityFields                                 | `packages/document/src/entity-fields.test.ts`                       |
 | Fit, slack, remap (B5, I5, E10)                    | withEntityFields                                  | `packages/document/src/entity-fields.test.ts`                       |
