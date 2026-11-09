@@ -14,16 +14,9 @@ import {
   insertSuggestion,
   listSuggestions,
 } from '../db';
+import { badRequest, conflict, json, methodNotAllowed, noContent, notFound } from '../responses';
 import {
-  badRequest,
-  conflict,
-  forbidden,
-  json,
-  methodNotAllowed,
-  noContent,
-  notFound,
-} from '../responses';
-import {
+  deniedEdit,
   deniedParticipate,
   gateEdit,
   gateParticipate,
@@ -50,7 +43,7 @@ async function admitted(
     if (!(await gateParticipate(ctx, id, doc.ownerId, doc.teamId, tabId)))
       return deniedParticipate(ctx, doc, tabId);
   } else if (!(await gateEdit(ctx, id, doc.ownerId, doc.teamId, tabId))) {
-    return forbidden();
+    return deniedEdit(ctx, id, tabId);
   }
   return doc;
 }

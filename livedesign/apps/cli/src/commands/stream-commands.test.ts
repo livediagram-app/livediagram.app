@@ -192,9 +192,7 @@ describe('wait endings', () => {
     io.sockets[1]!.open();
     op(io, commented());
     expect(await exit).toBe(0);
-    expect(io.err()).toContain(
-      `reconnected; what changed meanwhile: livedesign tab diff "${DOC}"`,
-    );
+    expect(io.err()).toContain(`reconnected; what changed meanwhile: livedesign tab diff "${DOC}"`);
   });
 
   it('exits as the api refused the ticket', async () => {
@@ -209,6 +207,24 @@ describe('wait endings', () => {
       ],
     });
     expect(await run(['wait', DOC, '--for', 'comment'], io)).toBe(4);
+  });
+
+  it('cancels a settling change when the reconnect is refused', async () => {
+    let tickets = 0;
+    const { io, exit } = await start(['wait', DOC, '--for', 'change'], (request, url) =>
+      url.pathname.endsWith('/room-ticket') && ++tickets > 1
+        ? Response.json({ error: 'forbidden' }, { status: 403 })
+        : host()(request, url),
+    );
+    op(io, changed());
+    io.sockets[0]!.drop(1006);
+    await io.advance(1_000);
+    expect(await exit).toBe(4);
+    // The settle timer of the change seen before the drop never fires: no tab read, no line.
+    await io.advance(WAIT_SETTLE_MS);
+    for (let i = 0; i < 5; i++) await tick();
+    expect(io.requests.filter((r) => new URL(r.url).pathname.includes('/tabs/'))).toEqual([]);
+    expect(io.out()).toBe('');
   });
 });
 
@@ -287,8 +303,6 @@ describe('watch', () => {
     io.sockets[1]!.open();
     io.interrupt();
     expect(await exit).toBe(0);
-    expect(io.err()).toContain(
-      `reconnected; what changed meanwhile: livedesign tab diff "${DOC}"`,
-    );
+    expect(io.err()).toContain(`reconnected; what changed meanwhile: livedesign tab diff "${DOC}"`);
   });
 });

@@ -20,15 +20,18 @@ pricing tab beside it. A scoped link shares the living tab instead of forking it
 
 The api checks a grant's `tab` on every request about the canvas (`gateGrant` and the gates in
 `apps/api/src/routes/context.ts`, over `routes/document-grant.ts`). A canvas-level request with a scoped grant fails
-closed.
+closed. Every door on a tab, a read or a write (a save, a delete, a rename, a changeset or its revert, the Q&A board,
+comments), answers a request about another tab 404, as if it did not exist (no existence leak, `deniedOnTab`,
+`deniedEdit` and `deniedParticipate`); a caller with no grant, or one below the door's level on a tab it may reach, is
+answered 403.
 
 | Door                                             | Scoped visitor gets                                                                                 |
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
 | `GET /api/share/:code`, `GET /api/documents/:id` | `{ document, role, tabId }`, the canvas redacted (below)                                            |
 | `PUT /api/documents/:id` (rename, reorder, deck) | 403: the canvas's structure is not theirs to change                                                 |
 | `GET/PUT/DELETE /api/documents/:id/tabs/:tabId`  | Their tab only, with the level's usual rules; another tab is a 404; deleting their own tab is a 403 |
-| `PUT /api/documents/:id/tabs/:tabId/name`        | 403: a tab's name is structure, so they can't rename even their own tab                             |
-| Comments, Q&A board                              | Their tab only; otherwise 404                                                                       |
+| `PUT /api/documents/:id/tabs/:tabId/name`        | 403: a tab's name is structure, so they can't rename even their own tab; another tab is a 404       |
+| Comments, Q&A board, changesets and reverts      | Their tab only; otherwise 404                                                                       |
 | `POST /api/documents/:id/copy`                   | A copy holding only their tab                                                                       |
 | `GET /api/previews/items/:id` (liveworkspace's)  | Their tab's picture                                                                                 |
 | `GET /api/images/:id?d=`                         | Only images their tab references                                                                    |
@@ -44,7 +47,10 @@ theirs to change. The rename door answers 403 (`apps/api/src/routes/tab-name-rou
 keeps the stored name whatever name it carries (`apps/api/src/routes/tab-put-route.ts`), so an editor holding a name
 from before an owner's rename never writes it back.
 
-**The tab must still belong to the canvas.** A grant whose tab is no longer in the canvas reaches nothing.
+**The tab must still belong to the canvas.** A grant whose tab is no longer in the canvas reaches nothing, and a
+scoped grant never makes a tab: its tab deleted while its editor was open, the whole-tab save
+(`apps/api/src/routes/tab-put-route.ts`) and a changeset's `replace` (`apps/api/src/routes/changesets.ts`) answer 404
+rather than bring it back.
 
 ## Realtime
 

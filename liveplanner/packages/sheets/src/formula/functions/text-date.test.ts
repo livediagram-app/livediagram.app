@@ -38,6 +38,24 @@ describe('text', () => {
     ['=SEARCH("w*d", A1)', 7],
     ['=SEARCH("~*", "a*b")', 2],
     ['=SEARCH("o", A1, 6)', 8],
+    // Positions and lengths count UTF-16 code units, as Google Sheets does: an emoji is 2, and every text function
+    // agrees, so MID(t, FIND(x, t)) starts at x after one.
+    ['=LEN("\u{1F600}ab")', 4],
+    ['=FIND("a", "\u{1F600}ab")', 3],
+    ['=SEARCH("B", "\u{1F600}ab")', 4],
+    ['=MID("\u{1F600}ab", FIND("a", "\u{1F600}ab"), 2)', 'ab'],
+    ['=LEFT("\u{1F600}ab", 2)', '\u{1F600}'],
+    ['=RIGHT("ab\u{1F600}", 2)', '\u{1F600}'],
+    ['=REPLACE("\u{1F600}ab", 3, 1, "x")', '\u{1F600}xb'],
+    // Fractional positions and counts are truncated.
+    ['=MID(A1, 1.9, 2.9)', 'He'],
+    ['=REPLACE(A3, 1.5, 1.5, "x")', 'x-b-c'],
+    ['=SEARCH("o", A1, 1.5)', 5],
+    ['=FIND("o", A1, 5.9)', 5],
+    // An instance number is truncated, and instances never overlap.
+    ['=SUBSTITUTE(A3, "-", "+", 1.9)', 'a+b-c'],
+    ['=SUBSTITUTE("aaaa", "aa", "X", 2)', 'aaX'],
+    ['=SUBSTITUTE("aaaa", "aa", "X", 3)', 'aaaa'],
     ['=REPT("ab", 3)', 'ababab'],
     ['=EXACT("a", "A")', false],
     ['=TEXT(1234.5, "#,##0.00")', '1,234.50'],
@@ -90,6 +108,8 @@ describe('text', () => {
     ['=REPLACE(A1, 0, 1, "x")', '#VALUE!'],
     ['=REPLACE(F1, 1, 1, "x")', '#DIV/0!'],
     ['=FIND("z", A1)', '#VALUE!'],
+    ['=FIND("", A1, 13)', '#VALUE!'],
+    ['=SUBSTITUTE(A3, "-", "+", 0.9)', '#VALUE!'],
     ['=SEARCH("z", A1)', '#VALUE!'],
     ['=SEARCH("a", A1, 0)', '#VALUE!'],
     ['=REPT("a", -1)', '#VALUE!'],

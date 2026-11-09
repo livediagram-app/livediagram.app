@@ -67,8 +67,8 @@ export function cleanInline(input: string): string {
   s = s.replace(/!\[([^\][]*)\]\([^()]*\)/g, '$1'); // image → alt
   s = s.replace(/\[([^\][]+)\]\([^()]*\)/g, '$1'); // link → text
   s = s.replace(/`([^`]+)`/g, '$1'); // inline code
-  s = s.replace(/(\*\*|__)(.*?)\1/g, '$2'); // bold
-  s = s.replace(/(\*|_)(.*?)\1/g, '$2'); // italic
+  s = stripEmphasis(s, /(\*\*|__)(.*?)\1/g); // bold
+  s = stripEmphasis(s, /(\*|_)(.*?)\1/g); // italic
   s = s.replace(/~~(.*?)~~/g, '$1'); // strikethrough
 
   // Raw HTML tags. Repeated until the string stops changing, because one pass
@@ -88,6 +88,32 @@ export function cleanInline(input: string): string {
     s = next;
   }
   return s.replace(/\s+/g, ' ').trim();
+}
+
+// Emphasis runs (`re`: the mark, then the text) flattened to their text, as CommonMark reads them
+// (docs/specs/020-import-export/markdown-import.md "Inline formatting"): an underscore run inside a word
+// (`snake_case_name`, `my__private__helper`) or one whose text starts or ends with a space (`2 * 3 * 4`)
+// is no emphasis, kept as written, and its closing mark may still open the next run (`a_b _c_`). Each
+// refused run moves the scan on one character, and a lazy run stops at its first closing mark, so the
+// pass stays linear.
+function stripEmphasis(line: string, re: RegExp): string {
+  let out = '';
+  let from = 0;
+  re.lastIndex = 0;
+  for (let m = re.exec(line); m; m = re.exec(line)) {
+    const [run, mark, text] = m as unknown as [string, string, string];
+    const spaced = text !== '' && (/^\s/.test(text) || /\s$/.test(text));
+    const inWord =
+      mark[0] === '_' &&
+      (/\w/.test(line[m.index - 1] ?? '') || /\w/.test(line[m.index + run.length] ?? ''));
+    if (spaced || inWord) {
+      re.lastIndex = m.index + 1;
+      continue;
+    }
+    out += line.slice(from, m.index) + text;
+    from = m.index + run.length;
+  }
+  return out + line.slice(from);
 }
 
 // A GFM table delimiter row: cells of dashes with optional leading /

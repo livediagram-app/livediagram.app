@@ -266,7 +266,8 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
 
 - `wait --for comment` finishes at the first `el-delta` whose delta kind is a comment add.
 - `wait --for change` finishes after the first mutation-class or `changeset` op that is not a comment delta, once
-  `WAIT_SETTLE_MS` passes without another, so a burst of edits is one change.
+  `WAIT_SETTLE_MS` passes without another, so a burst of edits is one change. Every ending (a print, a timeout,
+  SIGINT, the Trash, a refused reconnect) cancels a settle still pending, so nothing reads or prints after it.
 - Ops on other tabs count unless `--tab` is given.
 - `--timeout` passing prints `nothing new in <n> s` on stdout and exits 0; SIGINT ends `wait` with exit 1 and
   `watch` with exit 0, both after closing the socket.

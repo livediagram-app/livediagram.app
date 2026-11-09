@@ -105,6 +105,8 @@ export async function readSettings(
 // One statement per row: a key the patch names is taken out and set again (so a value is replaced
 // whole, never merged into), a null leaves it out, and every other key stays as stored. The merge
 // happens in SQLite against the row as it is then, so concurrent writes of different keys both land.
+// Taking the keys out is a merge patch of each named key set to null, so the statement binds five values however
+// many keys the patch names (D1 refuses more than 100).
 // An account id with no account behind it writes nothing (as writeProfile), so a closed account's still-live access
 // token can't write its settings back.
 function patchStatement(
@@ -114,25 +116,17 @@ function patchStatement(
   patch: Prefs,
   now: number,
 ): D1PreparedStatement {
-  const keys = Object.keys(patch);
-  const paths = keys.map((_, i) => `?${i + 5}`).join(', ');
+  const cleared = Object.fromEntries(Object.keys(patch).map((key) => [key, null]));
   return db
     .prepare(
       `INSERT INTO settings (owner_id, scope, prefs, updated_at)
        SELECT ?1, ?2, json_patch('{}', ?3), ?4
        WHERE substr(?1, 1, 6) = 'guest_' OR EXISTS (SELECT 1 FROM "user" WHERE id = ?1)
        ON CONFLICT (owner_id, scope) DO UPDATE SET
-         prefs = json_patch(json_remove(settings.prefs, ${paths}), ?${keys.length + 5}),
+         prefs = json_patch(json_patch(settings.prefs, ?5), ?3),
          updated_at = excluded.updated_at`,
     )
-    .bind(
-      owner,
-      scope,
-      JSON.stringify(patch),
-      now,
-      ...keys.map((key) => `$."${key}"`),
-      JSON.stringify(patch),
-    );
+    .bind(owner, scope, JSON.stringify(patch), now, JSON.stringify(cleared));
 }
 
 const tooLarge = (error: unknown) =>

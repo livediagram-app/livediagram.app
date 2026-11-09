@@ -6,7 +6,6 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
   duplicateElements,
-  freshCopyFields,
   isBoxed,
   isEventStormingNote,
   isEventStormingTab,
@@ -97,16 +96,20 @@ export function useElementDuplication(deps: {
     }
     if (isBoxed(source)) {
       const { dx, dy, lanes } = duplicateOffset(activeTab, new Set([source.id]));
+      // Through duplicateElements, as a multi-selection is, so a copied flowchart step is a new chart and leaves its
+      // lane (docs/specs/009-elements/blueprints/flowchart.md D172): kept, the copy joined the original chart and its
+      // next layout raked it beside the original. Only the box is kept: a self-loop does not ride along.
+      const { newElements, idMap } = duplicateElements(
+        activeTab.elements,
+        new Set([source.id]),
+        dx,
+        dy,
+      );
+      const made = newElements.find((el) => el.id === idMap.get(source.id));
+      if (!made || !isBoxed(made)) return;
       // A copy of a badge, step number or pointer note on its own is let go of the host (detachChip), as a copy made
       // with others is: still attached, settling would centre it straight back over the original.
-      const copy: BoxedElement = detachChip({
-        ...source,
-        id: crypto.randomUUID(),
-        x: source.x + dx,
-        y: source.y + dy,
-        // Whatever a copy regenerates rather than inherits (docs/specs/021-event-storming/event-storming.md tilt).
-        ...freshCopyFields(source),
-      });
+      const copy: BoxedElement = detachChip(made);
       commit((els) => landCopies(els, [copy], lanes));
       trackDuplicated([copy]);
       setSelectedId(copy.id);

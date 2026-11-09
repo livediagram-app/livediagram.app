@@ -1,7 +1,13 @@
-import type { CommentListStatus, DesignCommentThread } from '@livedesign/api-schema';
+import {
+  MAX_COLOR_LEN,
+  MAX_PARTICIPANT_NAME_LEN,
+  type CommentListStatus,
+  type DesignCommentThread,
+} from '@livedesign/api-schema';
 import {
   cleanReactions,
   commentWithReactions,
+  isSafeColourValue,
   reactionSummary,
   sanitizeMentions,
   type Comment,
@@ -111,7 +117,9 @@ export function rewriteCommentAuthors(
           const claimed = prior.authorId === undefined && c.authorId === writer.id;
           // The words and the time lock the same way for anyone but the comment's author: an
           // edit-role writer may delete someone else's comment, never put words in their mouth.
-          const own = claimed || (prior.authorId !== undefined && prior.authorId === writer.id);
+          // A claim takes the id only: the id on a saved copy is the saver's to write, so any Editor could claim a
+          // comment credited from the room, and its words stay as the room credited them.
+          const own = prior.authorId !== undefined && prior.authorId === writer.id;
           // The token id locks the same way (agent-presence I7): only the server stamps it.
           const { mentions: _sent, tokenId: _token, ...body } = c;
           return {
@@ -142,11 +150,15 @@ export function rewriteCommentAuthors(
           };
         }
         // New comment: server-authoritative author (name, colour, and the
-        // stable id that later authorises delete-own).
+        // stable id that later authorises delete-own). A writer whose profile
+        // could not be read (the accounts Worker out of reach, a guest with
+        // none) arrives with an empty name and colour: their own new comment
+        // keeps the ones it was posted under, clamped and checked, rather than
+        // being stored nameless and colourless. The id is still the server's.
         return {
           ...fresh,
-          authorName: writer.name,
-          authorColor: writer.color,
+          authorName: writer.name || claimedName(fresh.authorName),
+          authorColor: writer.color || claimedColor(fresh.authorColor),
           authorId: writer.id,
           ...withMentions,
         };
@@ -296,4 +308,21 @@ export function threadsOfTab(
       },
     ];
   });
+}
+
+// The comment author fallbacks, as the comment routes use them.
+export const UNKNOWN_AUTHOR_NAME = 'Anonymous';
+export const UNKNOWN_AUTHOR_COLOR = '#94a3b8';
+
+// The name a new comment was posted under, clamped, for a writer with no profile to read.
+function claimedName(name: unknown): string {
+  const trimmed = typeof name === 'string' ? name.trim().slice(0, MAX_PARTICIPANT_NAME_LEN) : '';
+  return trimmed || UNKNOWN_AUTHOR_NAME;
+}
+
+// Its colour, only when it is a safe one: it is painted into every peer's page.
+function claimedColor(color: unknown): string {
+  return typeof color === 'string' && color.length <= MAX_COLOR_LEN && isSafeColourValue(color)
+    ? color
+    : UNKNOWN_AUTHOR_COLOR;
 }

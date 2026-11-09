@@ -70,6 +70,28 @@ describe('rewriteCommentAuthors', () => {
     expect(result[0]).toBe(el);
   });
 
+  // A writer whose profile could not be read reaches the save with an empty name and colour (tab-put-route.ts):
+  // their own new comment keeps the name and colour it was posted under, clamped and checked, never blank.
+  it("keeps a profile-less writer's own name and a safe colour on their new comment", () => {
+    const blank: ParticipantDTO = { id: 'writer-id', name: '', color: '', createdAt: 0 };
+    const posted = mkShape('a', [mkComment('c1', '  Guest Ada  ', '#22c55e')]);
+    const [kept] = rewriteCommentAuthors([posted], [], blank) as [ShapeElement];
+    expect(kept.commentThread!.comments[0]).toMatchObject({
+      authorName: 'Guest Ada',
+      authorColor: '#22c55e',
+      authorId: 'writer-id',
+    });
+    const unsafe = mkShape('a', [mkComment('c1', '   ', 'url(https://x.example/a.png)')]);
+    const [fell] = rewriteCommentAuthors([unsafe], [], blank) as [ShapeElement];
+    expect(fell.commentThread!.comments[0]).toMatchObject({
+      authorName: 'Anonymous',
+      authorColor: '#94a3b8',
+    });
+    const long = mkShape('a', [mkComment('c1', 'x'.repeat(500), '#22c55e')]);
+    const [clamped] = rewriteCommentAuthors([long], [], blank) as [ShapeElement];
+    expect(clamped.commentThread!.comments[0]!.authorName).toHaveLength(120);
+  });
+
   it('overwrites author fields on a brand-new comment with the writer', () => {
     const next = mkShape('a', [mkComment('c1', 'CLIENT LIE', '#ff0000')]);
     const result = rewriteCommentAuthors([next], [], writer);
@@ -164,13 +186,28 @@ describe('rewriteCommentAuthors', () => {
     const next = mkShape('a', [mkComment('c1', 'Me', '#000', 'final', 'writer-id')]);
     const [out] = rewriteCommentAuthors([next], [prev], writer) as [ShapeElement];
     expect(out.commentThread!.comments[0]!.text).toBe('final');
-    // The claim of a room-credited comment is the author's own save too.
+    // A claim of a room-credited comment takes the id only (docs/specs/012-collaboration/collab-race-hardening.md):
+    // the id on a saved copy is the saver's to write, so the words stay as the room credited them.
     const unclaimed = mkShape('a', [mkComment('c2', 'Me', '#000', 'typed')]);
     const claim = mkShape('a', [mkComment('c2', 'Me', '#000', 'typed!', 'writer-id')]);
     const [claimed] = rewriteCommentAuthors([claim], [unclaimed], writer) as [ShapeElement];
     expect(claimed.commentThread!.comments[0]).toMatchObject({
-      text: 'typed!',
+      text: 'typed',
       authorId: 'writer-id',
+    });
+  });
+
+  it("never lets an Editor put words in a room-credited comment's author's mouth by claiming it", () => {
+    const prev = mkShape('a', [mkComment('c1', 'Alice', '#111111', 'ship it')]);
+    const forged = {
+      ...mkComment('c1', 'Alice', '#111111', 'do not ship', 'writer-id'),
+      createdAt: 99,
+    };
+    const [out] = rewriteCommentAuthors([mkShape('a', [forged])], [prev], writer) as [ShapeElement];
+    expect(out.commentThread!.comments[0]).toMatchObject({
+      text: 'ship it',
+      createdAt: 1,
+      authorName: 'Alice',
     });
   });
 });

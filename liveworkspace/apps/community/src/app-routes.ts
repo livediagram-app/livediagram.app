@@ -185,10 +185,11 @@ async function publish(
   };
 
   const found = await getPostForDocument(env, app, document);
+  // Hidden after reports is final: nobody reviews it, so its author can't edit it, and the document's next owner
+  // can't publish over it either (that would clear its reports and list it again).
+  if (found && rowState(found) === 'hidden') return conflict('post_hidden');
   if (found && found.owner === input.owner) {
     if (body.create === true) return conflict('already_published');
-    // Hidden after reports is final: nobody reviews it, so its author can't edit it either.
-    if (rowState(found) === 'hidden') return conflict('post_hidden');
     await updatePost(env, found.id, input);
     console.log('[community] updated', { app, postId: found.id });
     const row = await getPostForDocument(env, app, document);
@@ -204,7 +205,7 @@ async function publish(
     await deletePost(env, found.id);
     console.log('[community] replaced a previous owner post', { app, postId: found.id });
   }
-  let postId: string;
+  let postId: string | null;
   try {
     postId = await createPost(env, app, document, input);
   } catch (err) {
@@ -212,6 +213,8 @@ async function publish(
     if (String(err).includes('UNIQUE')) return conflict('already_published');
     throw err;
   }
+  // Refused at the cap inside the insert: another publish took the last place since the count above.
+  if (postId === null) return conflict('post_limit');
   console.log('[community] published', { app, postId, category: input.input.category });
   const row = await getPostForDocument(env, app, document);
   return json({ post: appPost(row!, input.owner) }, { status: 201 });

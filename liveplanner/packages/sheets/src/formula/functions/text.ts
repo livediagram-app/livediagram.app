@@ -133,18 +133,20 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
     const ts = texts(flatScalars(args.slice(1), f));
     return Array.isArray(ts) ? bounded(ts.join(delim)) : ts;
   }),
-  LEFT: textFn(1, 2, 1, ([t], [n = 1]) => (n < 0 ? err('#VALUE!') : [...t!].slice(0, n).join(''))),
+  // Positions and lengths count UTF-16 code units, as Google Sheets does (an emoji is 2), so LEN, LEFT, MID,
+  // RIGHT, REPLACE, FIND and SEARCH agree: MID(t, FIND(x, t), n) starts at x whatever comes before it.
+  LEFT: textFn(1, 2, 1, ([t], [n = 1]) => (n < 0 ? err('#VALUE!') : t!.slice(0, Math.trunc(n)))),
   RIGHT: textFn(1, 2, 1, ([t], [n = 1]) => {
     if (n < 0) return err('#VALUE!');
-    const chars = [...t!];
     const k = Math.trunc(n);
-    return k === 0 ? '' : chars.slice(-k).join('');
+    return k === 0 ? '' : t!.slice(-k);
   }),
   MID: textFn(3, 3, 1, ([t], [start, n]) => {
     if (start! < 1 || n! < 0) return err('#VALUE!');
-    return [...t!].slice(start! - 1, start! - 1 + n!).join('');
+    const from = Math.trunc(start!) - 1;
+    return t!.slice(from, from + Math.trunc(n!));
   }),
-  LEN: textFn(1, 1, 1, ([t]) => [...t!].length),
+  LEN: textFn(1, 1, 1, ([t]) => t!.length),
   UPPER: textFn(1, 1, 1, ([t]) => t!.toUpperCase()),
   LOWER: textFn(1, 1, 1, ([t]) => t!.toLowerCase()),
   PROPER: textFn(1, 1, 1, ([t]) =>
@@ -157,10 +159,13 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
   SUBSTITUTE: textFn(3, 4, 3, ([t, from, to], [nth]) => {
     if (from === '') return t!;
     if (nth === undefined) return t!.split(from!).join(to);
-    if (nth < 1) return err('#VALUE!');
-    let at = -1;
-    for (let k = 0; k < nth; k++) {
-      at = t!.indexOf(from!, at + 1);
+    // The instance is truncated (2.7 is the 2nd), and instances never overlap, as they don't when every one is
+    // replaced: in "aaaa" the 2nd "aa" starts at the 3rd character.
+    const instance = Math.trunc(nth);
+    if (instance < 1) return err('#VALUE!');
+    let at = -from!.length;
+    for (let k = 0; k < instance; k++) {
+      at = t!.indexOf(from!, at + from!.length);
       if (at < 0) return t!;
     }
     return t!.slice(0, at) + to! + t!.slice(at + from!.length);
@@ -172,15 +177,18 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
     const rep = toText(by!);
     for (const x of [text, s, len, rep]) if (isError(x)) return x;
     if ((s as number) < 1 || (len as number) < 0) return err('#VALUE!');
-    const chars = [...(text as string)];
-    chars.splice((s as number) - 1, len as number, rep as string);
-    return bounded(chars.join(''));
+    const at = Math.trunc(s as number) - 1;
+    const str = text as string;
+    return bounded(str.slice(0, at) + (rep as string) + str.slice(at + Math.trunc(len as number)));
   }),
-  FIND: textFn(2, 3, 2, ([needle, hay], [start = 1]) => {
+  FIND: textFn(2, 3, 2, ([needle, hay], [from = 1]) => {
+    const start = Math.trunc(from);
+    if (start < 1 || start > hay!.length + 1) return err('#VALUE!');
     const i = hay!.indexOf(needle!, start - 1);
-    return start < 1 || i < 0 ? err('#VALUE!', `"${needle}" was not found`) : i + 1;
+    return i < 0 ? err('#VALUE!', `"${needle}" was not found`) : i + 1;
   }),
-  SEARCH: textFn(2, 3, 2, ([needle, hay], [start = 1]) => {
+  SEARCH: textFn(2, 3, 2, ([needle, hay], [from = 1]) => {
+    const start = Math.trunc(from);
     if (start < 1 || start > hay!.length + 1) return err('#VALUE!');
     const re = regex(wildcardSource(needle!), hay!, 'iu');
     if (!(re instanceof RegExp)) return re;

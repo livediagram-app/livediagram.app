@@ -14,29 +14,39 @@ export const OWN_PURGE_PAGE = 200;
  * The person's own items in `app` (live and in the Trash), deleted for good, ROOM_PURGE_CONCURRENCY at a time.
  * Answers how many went and whether some are left; a delete the index refuses fails the purge once its batch
  * has settled, so nothing is left in flight.
+ *
+ * Each listing (live, then the Trash) is walked by its cursor, OWN_PURGE_PAGES pages in all: re-reading the first
+ * page stopped at a page holding none of the person's own (as if nothing were left, though later pages held some).
  */
 export async function purgeOwnItems(
   client: IndexClient,
   app: App,
   ownerId: string | null | undefined,
 ): Promise<{ count: number; more: boolean }> {
+  const query = { app, team: 'personal', limit: OWN_PURGE_PAGE } as const;
+  const listings = [
+    (cursor?: string) => client.listItems({ ...query, ...(cursor ? { cursor } : {}) }),
+    (cursor?: string) => client.listTrash({ ...query, ...(cursor ? { cursor } : {}) }),
+  ];
   let count = 0;
-  for (let page = 0; page < OWN_PURGE_PAGES; page++) {
-    const [live, trashed] = await Promise.all([
-      client.listItems({ app, team: 'personal', limit: OWN_PURGE_PAGE }),
-      client.listTrash({ app, team: 'personal', limit: OWN_PURGE_PAGE }),
-    ]);
-    const own = [...live.items, ...trashed.items].filter((i) => i.ownerId === ownerId);
-    if (own.length === 0) return { count, more: false };
-    for (let i = 0; i < own.length; i += ROOM_PURGE_CONCURRENCY) {
-      const batch = own.slice(i, i + ROOM_PURGE_CONCURRENCY);
-      const settled = await Promise.allSettled(
-        batch.map((item) => client.deleteItem(item.id, { permanent: true })),
-      );
-      const failed = settled.find((r): r is PromiseRejectedResult => r.status === 'rejected');
-      if (failed) throw failed.reason;
-      count += batch.length;
-    }
+  let pages = 0;
+  for (const list of listings) {
+    let cursor: string | undefined;
+    do {
+      if (pages++ === OWN_PURGE_PAGES) return { count, more: true };
+      const page = await list(cursor);
+      const own = page.items.filter((i) => i.ownerId === ownerId);
+      for (let i = 0; i < own.length; i += ROOM_PURGE_CONCURRENCY) {
+        const batch = own.slice(i, i + ROOM_PURGE_CONCURRENCY);
+        const settled = await Promise.allSettled(
+          batch.map((item) => client.deleteItem(item.id, { permanent: true })),
+        );
+        const failed = settled.find((r): r is PromiseRejectedResult => r.status === 'rejected');
+        if (failed) throw failed.reason;
+        count += batch.length;
+      }
+      cursor = page.nextCursor ?? undefined;
+    } while (cursor);
   }
-  return { count, more: true };
+  return { count, more: false };
 }

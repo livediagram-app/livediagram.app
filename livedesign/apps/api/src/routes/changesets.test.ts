@@ -198,6 +198,37 @@ describe('submitting a changeset', () => {
     expect(relay.op.tab).toMatchObject({ name: 'Detail' });
   });
 
+  // A tab-scoped grant never makes a tab (docs/specs/013-workspace/tab-scoped-share-links.md): its tab deleted
+  // reads as missing, so a `replace` cannot bring it back.
+  it("never recreates a tab-scoped grant's deleted tab", async () => {
+    quiet();
+    const { db } = await setUp();
+    db.sql.prepare("DELETE FROM tabs WHERE id = 't1'").run();
+    const res = await handleDesigns(
+      makeTestRouteContext('POST', '/api/designs/D/tabs/t1/changesets', {
+        env: db.env,
+        owner: 'user_v',
+        accountUserId: 'user_v',
+        verifiedUserId: 'user_v',
+        grant: {
+          item: 'D',
+          level: 'edit',
+          tab: 't1',
+          sub: 'user_v',
+          team: null,
+          exp: 2_000_000_000,
+          shareCode: 'code1',
+          token: 'g',
+        },
+        body: { replace: { elements: [box('a')], name: 'Back again' } },
+        waitUntil: (p) => void pending.push(p),
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.sql.prepare("SELECT id FROM tabs WHERE id = 't1'").get()).toBeUndefined();
+    expect(records(db)).toEqual([]);
+  });
+
   it('writes nothing on any refusal, and says why', async () => {
     quiet();
     const { db, room: r } = await setUp();
@@ -509,7 +540,7 @@ describe('reverting', () => {
     expect(stored(db, 't2')).toEqual([]);
   });
 
-  it('refuses a viewer, and answers 404 for a changeset swept or of another design', async () => {
+  it('refuses a viewer, answers a link scoped to another tab 404, and 404 for a changeset swept or of another design', async () => {
     quiet();
     const { db } = await setUp();
     const cs = (await (await submit(db, { operations: [{ op: 'rm', target: 'b' }] })).json()) as {
@@ -524,6 +555,16 @@ describe('reverting', () => {
       { owner: 'g', headers: { 'X-Share-Code': 'VIEWCODE' } },
     );
     expect(viewer.status).toBe(403);
+    // An Editor link confined to another tab: 404, as a read of that tab (no existence leak).
+    testShareLink(db, 'D', 'SCOPED23', 'edit', 'never', 't2');
+    const scoped = await call(
+      db,
+      'POST',
+      `/api/designs/D/changesets/${cs.changeset.id}/revert`,
+      undefined,
+      { owner: 'g', headers: { 'X-Share-Code': 'SCOPED23' } },
+    );
+    expect(scoped.status).toBe(404);
     db.sql.exec('DELETE FROM agent_changesets');
     expect(
       (await call(db, 'POST', `/api/designs/D/changesets/${cs.changeset.id}/revert`)).status,

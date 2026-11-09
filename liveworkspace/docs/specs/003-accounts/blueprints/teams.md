@@ -66,7 +66,7 @@ demoting or removing each other at once can't leave none (`409 last_admin` when 
 | `POST /api/account/teams/:id/members { email, role }`   | admin                     | `400 email_invalid`; `409 already_invited` (an open row for the address, also by the unique index); `409 member_limit_reached` at 200 open; the invitation email sent; `201 Member` |
 | `PATCH /api/account/teams/:id/members/:member { role }` | admin                     | `400 role_invalid`; `409 last_admin`                                                                                                                                                |
 | `DELETE /api/account/teams/:id/members/:member`         | admin, or self            | `409 last_admin` for a sole admin leaving while others remain                                                                                                                       |
-| `POST /api/account/invitations/:member/accept\|decline` | the invited address       | `403 email_unverified`; `404`; `409 team_limit_reached`; admins emailed                                                                                                             |
+| `POST /api/account/invitations/:member/accept\|decline` | the invited address       | `403 email_unverified`; `404` (also when withdrawn or expired as it is answered); `409 team_limit_reached`; admins emailed once, not the one who answered                           |
 | `GET /api/account/join/:token`                          | open, `TEAM_LINK_LIMITER` | `{ …JoinPreview, signedIn }` or `404 invite_not_found`                                                                                                                              |
 | `POST /api/account/join/:token`                         | session only              | limited; joins as member, or `{ alreadyMember: true }`                                                                                                                              |
 | `GET`/`POST /api/account/invitations/decline/:token`    | open, limited             | read what became of it, or decline (`409 already_joined`; twice changes nothing; expired stays expired)                                                                             |
@@ -100,6 +100,17 @@ The change feed: two keyset reads in one batch, `rev > ? OR (rev = ? AND id > ?)
    Each gets a fresh decline token; sent, the stage is stamped, earlier skipped stages stamped `0`, attempts reset,
    the new hash kept (last 4); failed, `reminderAttempts + 1`.
 3. Logged `[teams] invitation sweep { expired, reminded, failed }`.
+
+Between runs, an invitation past its 28 days is already closed: `listMyInvitations` and `answerInvitation` add
+`clockStartedAt IS NULL OR clockStartedAt > now - 28 days` (`UNEXPIRED`), in the read and in the update, so it is not
+listed and answers `404`.
+
+The caps are read for the answer, then checked again inside the write (`JOINED_TEAMS`, `OPEN_MEMBERS`): `createTeam`
+inserts the team `SELECT ... WHERE` the account is in fewer than 50 and its admin row only `WHERE EXISTS` that team;
+`inviteMember` and the link join insert `WHERE` the team has fewer than 200 open rows (the join, and an acceptance,
+also `WHERE` the account is in fewer than 50); a create, an invitation or a link join that changed no row answers its
+`409`, and an acceptance that changed none was not taken. The events ride the
+same guard (the row exists).
 
 ### On the Timeline
 

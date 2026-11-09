@@ -28,8 +28,12 @@ type OpGate =
   | { kind: 'drop' }
   /** A Participant's `el` op: through the participant content rule, never relayed as sent. */
   | { kind: 'participant-content' }
-  /** Relayed: unordered when `presence`; a Participant's answers also schedule their write. */
-  | { kind: 'relay'; presence: boolean; participantAnswers: boolean };
+  /**
+   * Relayed: unordered when `presence`; a Participant's answers also schedule their write. `op` is the parsed copy
+   * for a kind the gate parses (a knock, a ring, a hand, a let-speak, a voice level, a track, a game move): what the
+   * room acts on and relays, so a field the wire does not define never reaches a peer.
+   */
+  | { kind: 'relay'; presence: boolean; participantAnswers: boolean; op?: unknown };
 
 const DROP: OpGate = { kind: 'drop' };
 
@@ -100,37 +104,43 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (opKind === 'avatar-say' && (level === 'view' || !parseAvatarSay(op))) return DROP;
   // So is talking (docs/specs/012-collaboration/proximity-audio.md "Share roles"): a Viewer listens, so it shows no
   // equaliser and publishes no microphone, and a malformed level or locator reaches nobody.
-  if (opKind === 'avatar-voice' && (level === 'view' || !parseAvatarVoice(op))) return DROP;
+  let parsed: unknown = undefined;
+  if (opKind === 'avatar-voice' && (level === 'view' || !(parsed = parseAvatarVoice(op))))
+    return DROP;
   // A silent call's nudge to read the kill switch (docs/specs/016-platform/calls-kill-switch.md "The room tells its
   // clients"): a publisher's, so never a Viewer's; the room consumes it.
   if (opKind === 'calls-check' && (level === 'view' || !parseCallsCheck(op))) return DROP;
   // Raising a hand and letting one speak are taking part (docs/specs/012-collaboration/meeting-rooms-and-stage.md
   // "Share roles"): a Viewer listens. Whether a let-speak's sender is an Editor or stands on a stage the room checks
   // next, from where it last placed them (room-calls.ts, #495).
-  if (opKind === 'avatar-hand' && (level === 'view' || !parseAvatarHand(op))) return DROP;
-  if (opKind === 'avatar-let-speak' && (level === 'view' || !parseAvatarLetSpeak(op))) return DROP;
+  if (opKind === 'avatar-hand' && (level === 'view' || !(parsed = parseAvatarHand(op))))
+    return DROP;
+  if (opKind === 'avatar-let-speak' && (level === 'view' || !(parsed = parseAvatarLetSpeak(op))))
+    return DROP;
   // A call proving its session to the room (proximity-audio.md "The wire"): any level, a Viewer subscribes too; the
   // room checks the token and consumes it. Stopping someone else's share is an Editor's
   // (video-and-screen-bubbles.md "Share roles", #469).
   if (opKind === 'call-session' && !parseCallSession(op)) return DROP;
-  if (opKind === 'call-stop-share' && (level !== 'edit' || !parseCallStopShare(op))) return DROP;
+  if (opKind === 'call-stop-share' && (level !== 'edit' || !(parsed = parseCallStopShare(op))))
+    return DROP;
   // A knock and its answer (docs/specs/012-collaboration/knock.md): presence from any level, a Viewer walks too; a
   // malformed one reaches nobody. The room throttles knocks next.
-  if (opKind === 'avatar-knock' && !parseAvatarKnock(op)) return DROP;
-  if (opKind === 'avatar-knock-answer' && !parseAvatarKnockAnswer(op)) return DROP;
+  if (opKind === 'avatar-knock' && !(parsed = parseAvatarKnock(op))) return DROP;
+  if (opKind === 'avatar-knock-answer' && !(parsed = parseAvatarKnockAnswer(op))) return DROP;
   // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "Share roles"): presence from any
   // level, as a knock is, a Viewer at the front desk above all; a malformed one reaches nobody. The room throttles it next.
-  if (opKind === 'avatar-bell' && !parseAvatarBell(op)) return DROP;
+  if (opKind === 'avatar-bell' && !(parsed = parseAvatarBell(op))) return DROP;
   // Playing a game at a piece is taking part (docs/specs/009-elements/social-pieces.md "Share roles"): a Viewer
   // watches, so its paddle and its moments reach nobody, and a malformed one from anyone reaches nobody. Each screen
   // then checks the sender sits on the seat it names.
-  if (opKind === 'game-input' && (level === 'view' || !parseGameInput(op))) return DROP;
-  if (opKind === 'game-event' && (level === 'view' || !parseGameEvent(op))) return DROP;
+  if (opKind === 'game-input' && (level === 'view' || !(parsed = parseGameInput(op)))) return DROP;
+  if (opKind === 'game-event' && (level === 'view' || !(parsed = parseGameEvent(op)))) return DROP;
   if (opKind === 'call-track') {
     const track = level === 'view' ? null : parseCallTrack(op);
     if (!track) return DROP;
     // Sharing a screen is an Editor's (docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles").
     if (track.screen && level !== 'edit') return DROP;
+    parsed = track;
   }
   // Bring Focus moves everyone's view (docs/specs/012-collaboration/bring-focus.md): running the session, so an
   // Editor's alone.
@@ -146,5 +156,7 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only
   // an editor's may reach anyone, so a viewer can never make others' elements appear to move.
   if (opKind === 'drag-preview' && level !== 'edit') return DROP;
-  return { kind: 'relay', presence, participantAnswers };
+  return parsed
+    ? { kind: 'relay', presence, participantAnswers, op: parsed }
+    : { kind: 'relay', presence, participantAnswers };
 }

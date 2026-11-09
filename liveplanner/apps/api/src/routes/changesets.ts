@@ -16,7 +16,7 @@ import { redactCommentAuthorIds } from '../comments';
 import { getChangeset, getChangesetPart, getProject, listChangesets } from '../db';
 import { getParticipant } from '../person/profiles';
 import type { ChangesetRecord } from '../db';
-import { forbidden, json, notFound } from '../responses';
+import { json, notFound } from '../responses';
 import { personTagFor } from '../person-tag';
 import { refreshAgentPresence } from '../room-client';
 import { agentPresenceStamps } from '@liveworkspace/api-kit/agent-presence-stamps';
@@ -28,6 +28,7 @@ import { submitChangeset, type SubmitResult } from '../changesets/submit';
 import type { Author } from '../changesets/write';
 import type { ProjectDTO } from '../types';
 import {
+  deniedEdit,
   gateEdit,
   gateGrant,
   gateRead,
@@ -78,7 +79,7 @@ async function handleSubmit(
   owner: string,
 ): Promise<Response> {
   if (!(await gateEdit(ctx, project.id, project.ownerId, project.teamId, tabId)))
-    return forbidden();
+    return deniedEdit(ctx, project.id, tabId);
   const raw = await ctx.request.json().catch(() => undefined);
   const parsed = parseChangesetRequest(raw, engineLog({ projectId: project.id, tabId }));
   if (!parsed.ok) return json(parsed.refusal.body, { status: parsed.refusal.status });
@@ -149,7 +150,7 @@ async function handleRevert(
   owner: string,
 ): Promise<Response> {
   if (!(await gateEdit(ctx, project.id, project.ownerId, project.teamId, record.tabId))) {
-    return forbidden();
+    return deniedEdit(ctx, project.id, record.tabId);
   }
   const author = await authorOf(ctx, owner);
   const result = await revertChangeset({

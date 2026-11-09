@@ -17,6 +17,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Button } from '@liveworkspace/ui';
+import { MoreFailed } from '../explorer/MoreFailed';
 import { CARD_GRID, CARD_PREVIEW, CARD_SHELL, SOLID_BRAND_DARK_CONTROL } from '../ui/classes';
 import { Chevron, eventIcon } from './icons';
 import {
@@ -67,6 +68,8 @@ export type TimelineProps = {
   onRetry?: () => void;
   hasMore?: boolean;
   loadingMore?: boolean;
+  /** The last Show More failed: it says so, with Try Again. */
+  moreFailed?: boolean;
   onLoadMore?: () => void;
   onStackExpand?: () => void;
   /** Events after this are New; null (never looked) marks none. */
@@ -91,6 +94,7 @@ export function Timeline({
   onRetry,
   hasMore,
   loadingMore,
+  moreFailed,
   onLoadMore,
   onStackExpand,
   lastSeenAt = null,
@@ -190,7 +194,9 @@ export function Timeline({
             Clear filters
           </button>
         </div>
-        {hasMore ? <ShowMore loading={loadingMore} onClick={onLoadMore} /> : null}
+        {hasMore ? (
+          <ShowMore loading={loadingMore} failed={moreFailed} onClick={onLoadMore} />
+        ) : null}
       </div>
     );
   }
@@ -276,7 +282,7 @@ export function Timeline({
           })}
         </TimelineGroup>
       ))}
-      {hasMore ? <ShowMore loading={loadingMore} onClick={onLoadMore} /> : null}
+      {hasMore ? <ShowMore loading={loadingMore} failed={moreFailed} onClick={onLoadMore} /> : null}
     </div>
   );
 }
@@ -284,7 +290,16 @@ export function Timeline({
 const QUIET_BUTTON =
   'rounded-lg border border-slate-200 px-4 py-2 text-xs text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800';
 
-function ShowMore({ loading, onClick }: { loading?: boolean; onClick?: () => void }) {
+function ShowMore({
+  loading,
+  failed,
+  onClick,
+}: {
+  loading?: boolean;
+  failed?: boolean;
+  onClick?: () => void;
+}) {
+  if (failed && onClick) return <MoreFailed onRetry={onClick} loading={loading ?? false} />;
   return (
     <div className="pt-2 text-center">
       <Button variant="none" busy={loading} onClick={onClick} className={QUIET_BUTTON}>

@@ -756,6 +756,10 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     });
     design.db.prepare('UPDATE tabs SET data = ?, rev = rev + 1').run(data);
     design.db.prepare(`UPDATE design SET owner_id = 'user_ada'`).run();
+    // An email claim each, Ada's going with her account.
+    const claim = design.db.prepare('INSERT INTO notify_claims (key, sender, at) VALUES (?, ?, ?)');
+    claim.run('k-ada', 'user_ada', Date.now());
+    claim.run('k-bea', 'user_bea', Date.now());
     const res = await w.send(
       'POST',
       '/api/internal/people/user_ada/purge',
@@ -771,6 +775,9 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
       ['user_bea', 'Bea'],
     ]);
     expect(design.db.prepare('SELECT owner_id FROM design').get()).toEqual({ owner_id: 'deleted' });
+    expect(design.db.prepare('SELECT sender FROM notify_claims').all()).toEqual([
+      { sender: 'user_bea' },
+    ]);
     // Z was never started: its storage stays empty.
     const z = w.designs.get('Z');
     expect(

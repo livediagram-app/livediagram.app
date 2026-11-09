@@ -65,36 +65,48 @@ async function collectMeta(res: Response, maxBytes: number): Promise<CollectedMe
 
 // The unfurl of a public http(s) URL (already parsePublicHttpUrl'd): the page's card fields, or `disallowed` when
 // a redirect ended on a host it must not read. A network failure or timeout answers the bare URL, so the card
-// still renders.
+// still renders. The deadline covers the body as well as the headers: a page that sends its headers and then
+// trickles its <head> a byte at a time is cut off at UNFURL_FETCH_TIMEOUT_MS like one that never answers.
 export async function unfurl(
   target: URL,
   userAgent: string,
 ): Promise<{ result: UnfurlResult } | { disallowed: true }> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), UNFURL_FETCH_TIMEOUT_MS);
-  let res: Response;
   try {
-    res = await fetch(target.toString(), {
-      method: 'GET',
-      redirect: 'follow',
-      signal: controller.signal,
-      headers: { 'User-Agent': userAgent, Accept: 'text/html,application/xhtml+xml' },
-    });
-  } catch {
+    let res: Response;
+    try {
+      res = await fetch(target.toString(), {
+        method: 'GET',
+        redirect: 'follow',
+        signal: controller.signal,
+        headers: { 'User-Agent': userAgent, Accept: 'text/html,application/xhtml+xml' },
+      });
+    } catch {
+      return { result: { url: target.toString() } };
+    }
+
+    // Re-validate the FINAL url after any redirects, so a redirect to a private
+    // host can't leak data back through the card.
+    const finalParsed = parsePublicHttpUrl(res.url || target.toString());
+    if (!finalParsed) {
+      await res.body?.cancel().catch(() => {});
+      return { disallowed: true };
+    }
+    const finalUrl = finalParsed.toString();
+
+    if (!(res.headers.get('content-type') ?? '').includes('html')) {
+      // Not an HTML page (PDF, image, …): no metadata, but still offer a favicon. Its body is never read.
+      await res.body?.cancel().catch(() => {});
+      return { result: buildUnfurlResult({}, finalUrl) };
+    }
+    try {
+      return { result: buildUnfurlResult(await collectMeta(res, UNFURL_MAX_HTML_BYTES), finalUrl) };
+    } catch {
+      // The body failed or ran out of time part way: the card still renders, from the final URL alone.
+      return { result: buildUnfurlResult({}, finalUrl) };
+    }
+  } finally {
     clearTimeout(timer);
-    return { result: { url: target.toString() } };
   }
-  clearTimeout(timer);
-
-  // Re-validate the FINAL url after any redirects, so a redirect to a private
-  // host can't leak data back through the card.
-  const finalParsed = parsePublicHttpUrl(res.url || target.toString());
-  if (!finalParsed) return { disallowed: true };
-  const finalUrl = finalParsed.toString();
-
-  if (!(res.headers.get('content-type') ?? '').includes('html')) {
-    // Not an HTML page (PDF, image, …): no metadata, but still offer a favicon.
-    return { result: buildUnfurlResult({}, finalUrl) };
-  }
-  return { result: buildUnfurlResult(await collectMeta(res, UNFURL_MAX_HTML_BYTES), finalUrl) };
 }

@@ -192,6 +192,35 @@ describe('submitting a changeset', () => {
     expect(relay.op.tab).toMatchObject({ name: 'Detail' });
   });
 
+  // A tab-scoped grant never makes a tab (docs/specs/013-workspace/tab-scoped-share-links.md): its tab deleted
+  // reads as missing, so a `replace` cannot bring it back.
+  it("never recreates a tab-scoped grant's deleted tab", async () => {
+    quiet();
+    const { db } = await setUp();
+    db.sql.prepare("DELETE FROM tabs WHERE id = 't1'").run();
+    const res = await handleDocuments(
+      makeTestRouteContext('POST', '/api/documents/D/tabs/t1/changesets', {
+        env: db.env,
+        owner: 'guest_v',
+        grant: {
+          item: 'D',
+          level: 'edit',
+          tab: 't1',
+          sub: 'link:abc',
+          team: null,
+          exp: 2_000_000_000,
+          shareCode: 'abc',
+          token: 'g',
+        },
+        body: { replace: { graph: { nodes: [{ id: 'x', label: 'X' }], edges: [] }, name: 'Back' } },
+        waitUntil: (p) => void pending.push(p),
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.sql.prepare("SELECT id FROM tabs WHERE id = 't1'").get()).toBeUndefined();
+    expect(records(db)).toEqual([]);
+  });
+
   it('writes nothing on any refusal, and says why', async () => {
     quiet();
     const { db, room: r } = await setUp();
@@ -471,6 +500,37 @@ describe('reverting', () => {
       reverted: 0,
       kept: [{ id: 'b', reason: 'present' }],
     });
+  });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md "Enforcement": a changeset on another tab reads as missing
+  // to a scoped link (no existence leak), as reading it does; a grant below Editor on it is a 403.
+  it('tells a link scoped to another tab 404, and a viewer 403, leaving the tab alone', async () => {
+    quiet();
+    const { db } = await setUp();
+    const cs = (await (await submit(db, { operations: [{ op: 'rm', target: 'b' }] })).json()) as {
+      changeset: { id: string };
+    };
+    const as = (level: 'edit' | 'view', tab: string | null) =>
+      handleDocuments(
+        makeTestRouteContext('POST', `/api/documents/D/changesets/${cs.changeset.id}/revert`, {
+          env: db.env,
+          owner: 'guest_v',
+          grant: {
+            item: 'D',
+            level,
+            tab,
+            sub: 'link:abc',
+            team: null,
+            exp: 2_000_000_000,
+            shareCode: 'abc',
+            token: 'g',
+          },
+          waitUntil: (p) => void pending.push(p),
+        }),
+      );
+    expect((await as('edit', 't2')).status).toBe(404);
+    expect((await as('view', null)).status).toBe(403);
+    expect(stored(db).map((e) => e.id)).toEqual(['a']);
   });
 
   it('keeps an element a person changed since', async () => {

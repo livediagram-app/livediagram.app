@@ -240,6 +240,13 @@ export async function deniedOnTab(
   return grantOn(ctx, liveDoc.id) ? notFound() : forbidden();
 }
 
+// The refusal for an Editor door on a tab: a grant confined to another tab, 404, as deniedOnTab (no existence leak);
+// no grant, or one below Editor, 403.
+export function deniedEdit(ctx: RouteContext, projectId: string, tabId: string): Response {
+  const grant = grantOn(ctx, projectId);
+  return grant && grant.tabScope !== null && grant.tabScope !== tabId ? notFound() : forbidden();
+}
+
 // The refusal for a Participant door (docs/specs/013-workspace/share-roles.md): no grant, 403; a grant confined
 // to another tab, 404, as deniedOnTab; a grant whose level is below Participant (a Viewer), 403.
 export async function deniedParticipate(

@@ -52,6 +52,7 @@ export function BorderControls({
         {BORDER_STROKES.map((v) => (
           <SizeButton
             key={v}
+            label={tileLabel(v)}
             active={strokeWidth === v}
             onClick={() => onCommitBorderStroke(v)}
             onPointerEnter={onMouseHover(() => onPreviewBorderStroke(v))}
@@ -65,6 +66,7 @@ export function BorderControls({
         {BORDER_STYLES.map((v) => (
           <SizeButton
             key={v}
+            label={tileLabel(v)}
             active={strokeStyle === v}
             onClick={() => onCommitBorderStyle(v)}
             onPointerEnter={onMouseHover(() => onPreviewBorderStyle(v))}
@@ -79,6 +81,7 @@ export function BorderControls({
           {BORDER_RADII.map((v) => (
             <SizeButton
               key={v}
+              label={RADIUS_LABELS[v]}
               active={radius === v}
               onClick={() => onCommitBorderRadius(v)}
               onPointerEnter={onMouseHover(() => onPreviewBorderRadius(v))}
@@ -92,3 +95,19 @@ export function BorderControls({
     </div>
   );
 }
+
+// A tile's name for its tooltip and screen readers ('dash-dot' -> 'Dash Dot'): the tiles draw only an icon.
+const tileLabel = (v: string) =>
+  v
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+
+// The Radius tiles' names: their values are abbreviations ('sm'), and Strength already has a Medium.
+const RADIUS_LABELS: Record<BorderRadius, string> = {
+  none: 'Square Corners',
+  sm: 'Small Radius',
+  md: 'Medium Radius',
+  lg: 'Large Radius',
+  full: 'Fully Round',
+};

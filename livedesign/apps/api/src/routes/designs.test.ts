@@ -181,7 +181,29 @@ describe('a tab-scoped visitor', () => {
       body: { id: 't1', name: 'Pricing', elements: [] },
       headers: { ...visitor.headers, 'X-Allow-Empty': '1' },
     });
-    expect([403, 404]).toContain(other.status);
+    expect(other.status).toBe(404);
+  });
+
+  it('is told 404 by every Editor door on another tab, as on a read (no existence leak)', async () => {
+    const db = await design();
+    testShareLink(db, 'P', 'SCOPED23', 'edit', 'never', 't2');
+    const doors: [string, string, unknown][] = [
+      ['PUT', '/api/designs/P/tabs/t1/name', { name: 'Mine' }],
+      ['POST', '/api/designs/P/tabs/t1/changesets', { ops: [] }],
+      ['POST', '/api/designs/P/tabs/t1/pages', { changes: [] }],
+      ['DELETE', '/api/designs/P/tabs/t1', undefined],
+    ];
+    for (const [method, path, body] of doors) {
+      const res = await call(db, method, path, { ...visitor, ...(body ? { body } : {}) });
+      expect(res.status, `${method} ${path}`).toBe(404);
+    }
+    // A View link on every tab is still refused the write: 403.
+    testShareLink(db, 'P', 'VIEW2345', 'view');
+    const viewer = { owner: 'guest_v', headers: { 'X-Share-Code': 'VIEW2345' } };
+    for (const [method, path, body] of doors) {
+      const res = await call(db, method, path, { ...viewer, ...(body ? { body } : {}) });
+      expect(res.status, `${method} ${path}`).toBe(403);
+    }
   });
 
   it('cannot delete the tab its link is scoped to', async () => {

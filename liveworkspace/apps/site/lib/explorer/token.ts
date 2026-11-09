@@ -42,13 +42,22 @@ async function appIdentity(app: AppName): Promise<WorkspaceIdentity | null> {
     : null;
 }
 
+/** A JWT's claims, read without checking them (the index checks the token on every request). The payload is UTF-8
+ *  JSON: `atob` alone hands back one character per byte, which garbles a team named `Équipe` into `Ã‰quipe`. */
+export function claimsOf(token: string | null | undefined): Record<string, unknown> {
+  const part = token?.split('.')[1];
+  if (!part) return {};
+  const binary = atob(part.replace(/-/g, '+').replace(/_/g, '/'));
+  const claims: unknown = JSON.parse(
+    new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0))),
+  );
+  return claims && typeof claims === 'object' ? (claims as Record<string, unknown>) : {};
+}
+
 /** A token's `sub`, read without checking it (the index checks it on every request). */
 function subOf(token: string): string {
   try {
-    const part = token.split('.')[1] ?? '';
-    const claims = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/'))) as {
-      sub?: unknown;
-    };
+    const claims = claimsOf(token);
     return typeof claims.sub === 'string' ? claims.sub : '';
   } catch {
     return '';
@@ -117,12 +126,8 @@ export function resetWorkspaceIdentity() {
 
 /** The teams an account's token names (its `teams` claim); none for a guest. */
 export function teamsOfToken(token: string | null): { id: string; name: string }[] {
-  const part = token?.split('.')[1];
-  if (!part) return [];
   try {
-    const claims = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/'))) as {
-      teams?: unknown;
-    };
+    const claims = claimsOf(token);
     if (!Array.isArray(claims.teams)) return [];
     return claims.teams.flatMap((team: unknown) => {
       const t = team as { id?: unknown; name?: unknown };

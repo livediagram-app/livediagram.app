@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { stripJpegMetadata } from './jpeg-strip';
+import { exifOrientation, orientationSegment, stripJpegMetadata } from './jpeg-strip';
 
 // Build a JPEG byte sequence by spelling out the segments we want.
 // Returns an ArrayBuffer (the strip helper's input contract). Each
@@ -55,7 +56,7 @@ describe('stripJpegMetadata', () => {
     expect(new Uint8Array(out)).toEqual(new Uint8Array(expected));
   });
 
-  it('strips JFIF (APP0), ICC (APP2), and COM segments alongside EXIF', () => {
+  it('strips JFIF (APP0), a non-profile APP2, and COM segments alongside EXIF', () => {
     const jfif = mkSegment(0xe0, [0x4a, 0x46, 0x49, 0x46, 0x00]); // "JFIF\0"
     const exif = mkSegment(0xe1, [0x45, 0x78, 0x69, 0x66, 0x00, 0x00, 0xff]);
     const icc = mkSegment(0xe2, [0x49, 0x43, 0x43, 0x5f]); // "ICC_"
@@ -117,4 +118,125 @@ describe('stripJpegMetadata', () => {
     const expected = bytes([SOI, DQT, [0xff, 0xd0], SOS, SCAN_DATA, EOI]);
     expect(new Uint8Array(stripJpegMetadata(input))).toEqual(new Uint8Array(expected));
   });
+
+  it('keeps ICC profile chunks (APP2) and the Adobe segment (APP14) in place', () => {
+    const icc1 = mkSegment(0xe2, [...ascii('ICC_PROFILE\0'), 1, 2, 0xaa]);
+    const icc2 = mkSegment(0xe2, [...ascii('ICC_PROFILE\0'), 2, 2, 0xbb]);
+    const mpf = mkSegment(0xe2, [...ascii('MPF\0'), 0x01]);
+    const adobe = mkSegment(0xee, [...ascii('Adobe'), 0x00, 0x64, 0, 0, 0, 0, 2]);
+    const input = bytes([SOI, icc1, icc2, mpf, adobe, DQT, SOS, SCAN_DATA, EOI]);
+    const expected = bytes([SOI, icc1, icc2, adobe, DQT, SOS, SCAN_DATA, EOI]);
+    expect(new Uint8Array(stripJpegMetadata(input))).toEqual(new Uint8Array(expected));
+  });
+
+  it('writes the Exif Orientation back alone, straight after SOI', () => {
+    for (const little of [true, false]) {
+      const exif = mkSegment(
+        0xe1,
+        exifPayload(little, [
+          [0x010f, 2, 4, 'Cam\0'],
+          [0x0112, 3, 1, 6],
+        ]),
+      );
+      const jfif = mkSegment(0xe0, [0x4a, 0x46]);
+      const input = bytes([SOI, jfif, exif, DQT, SOS, SCAN_DATA, EOI]);
+      const expected = bytes([SOI, orientationSegment(6), DQT, SOS, SCAN_DATA, EOI]);
+      expect(new Uint8Array(stripJpegMetadata(input))).toEqual(new Uint8Array(expected));
+    }
+  });
+
+  it('writes nothing back for the default orientation, a broken Exif or one without the tag', () => {
+    const header = (order: number, magic: number, offset: number) => [
+      ...ascii('Exif\0\0'),
+      order,
+      order,
+      magic,
+      0x00,
+      offset,
+      0x00,
+      0x00,
+      0x00,
+    ];
+    const cases = [
+      exifPayload(true, [[0x0112, 3, 1, 1]]),
+      exifPayload(true, [[0x0112, 3, 1, 9]]),
+      exifPayload(true, [[0x0112, 4, 1, 6]]),
+      exifPayload(true, [[0x010f, 2, 4, 'Cam\0']]),
+      header(0x49, 0x2a, 0xff),
+      header(0x58, 0x2a, 0x08),
+      header(0x49, 0x2b, 0x08),
+      [...ascii('Exif\0\0'), 0x49, 0x49],
+      [...header(0x49, 0x2a, 0x08), 0x05, 0x00],
+    ];
+    for (const payload of cases) {
+      const input = bytes([SOI, mkSegment(0xe1, payload), DQT, SOS, SCAN_DATA, EOI]);
+      const expected = bytes([SOI, DQT, SOS, SCAN_DATA, EOI]);
+      expect(new Uint8Array(stripJpegMetadata(input))).toEqual(new Uint8Array(expected));
+    }
+  });
+
+  it('reads the orientation from the first Exif segment only', () => {
+    const first = mkSegment(0xe1, exifPayload(false, [[0x0112, 3, 1, 3]]));
+    const second = mkSegment(0xe1, exifPayload(false, [[0x0112, 3, 1, 8]]));
+    const input = bytes([SOI, first, second, DQT, SOS, SCAN_DATA, EOI]);
+    const expected = bytes([SOI, orientationSegment(3), DQT, SOS, SCAN_DATA, EOI]);
+    expect(new Uint8Array(stripJpegMetadata(input))).toEqual(new Uint8Array(expected));
+    expect(exifOrientation(new Uint8Array(ascii('XMP')), 0, 3)).toBeNull();
+  });
+
+  it("keeps a real phone photo's orientation and colour profile, and drops its camera and GPS data", () => {
+    // A 64x32 JPEG written by macOS sips with a Display P3 profile, given a phone's little-endian
+    // Exif (Make, Model, Orientation 6 and a GPS IFD), an XMP packet, an Adobe segment and a comment.
+    const file = readFileSync(new URL('./fixtures/portrait-exif.jpg', import.meta.url).pathname);
+    const input = new Uint8Array(file).buffer;
+    const out = new Uint8Array(stripJpegMetadata(input));
+    const text = new TextDecoder('latin1').decode(out);
+    const secrets = ['Serial-XYZ', 'PhoneCo', 'GPS-SECRET', 'XMP-SECRET', 'COMMENT-SECRET', 'JFIF'];
+    for (const secret of secrets) expect(text).not.toContain(secret);
+    // The profile and the Adobe segment come through whole, byte for byte.
+    const original = new TextDecoder('latin1').decode(file);
+    const segmentOf = (marker: string) => {
+      const at = original.indexOf(`\xff${marker}`);
+      return original.slice(at, at + 2 + file.readUInt16BE(at + 2));
+    };
+    expect(segmentOf('\xe2')).toContain('ICC_PROFILE\0');
+    expect(segmentOf('\xe2').length).toBeGreaterThan(500);
+    expect(text).toContain(segmentOf('\xe2'));
+    expect(text).toContain(segmentOf('\xee'));
+    const written = orientationSegment(6);
+    expect(Array.from(out.subarray(2, 2 + written.length))).toEqual(written);
+    // The scan (the pixels) is untouched.
+    const scan = (b: Uint8Array) =>
+      b.subarray(new TextDecoder('latin1').decode(b).indexOf('\xff\xda'));
+    expect(scan(out).length).toBeGreaterThan(100);
+    expect(scan(out)).toEqual(scan(new Uint8Array(input)));
+  });
 });
+
+function ascii(text: string): number[] {
+  return Array.from(text, (c) => c.charCodeAt(0));
+}
+
+// An Exif APP1 payload with one IFD of `entries` ([tag, type, count, value]): a string value goes
+// after the IFD by offset, a number sits in the entry.
+function exifPayload(little: boolean, entries: [number, number, number, number | string][]) {
+  const u16 = (v: number) => (little ? [v & 0xff, v >> 8] : [v >> 8, v & 0xff]);
+  const u32 = (v: number) =>
+    little
+      ? [v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, v >>> 24]
+      : [v >>> 24, (v >> 16) & 0xff, (v >> 8) & 0xff, v & 0xff];
+  const tiff = [...(little ? [0x49, 0x49] : [0x4d, 0x4d]), ...u16(42), ...u32(8)];
+  const extra: number[] = [];
+  const dataStart = 8 + 2 + entries.length * 12 + 4;
+  const ifd = [...u16(entries.length)];
+  for (const [tag, type, count, value] of entries) {
+    ifd.push(...u16(tag), ...u16(type), ...u32(count));
+    if (typeof value === 'string') {
+      ifd.push(...u32(dataStart + extra.length));
+      extra.push(...ascii(value));
+    } else {
+      ifd.push(...u16(value), 0, 0);
+    }
+  }
+  return [...ascii('Exif\0\0'), ...tiff, ...ifd, ...u32(0), ...extra];
+}

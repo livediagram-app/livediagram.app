@@ -218,6 +218,12 @@ describe('lookup', () => {
   });
   it('approximate matches skip values of another kind', () => {
     expect(calc('=MATCH(3, {1,"a",2,"b",4})')).toBe(3);
+    // A blank or a heading in the middle never hides the values sorted after it.
+    expect(calc('=MATCH(5, {1,2,"a",4,6})')).toBe(4);
+    expect(calc('=MATCH(5, {9,8,"a",4,1}, -1)')).toBe(2);
+    expect(calc('=VLOOKUP(5, A1:B5, 2)', { A1: '1', A2: '2', A4: '4', A5: '6', B4: 'four' })).toBe(
+      'four',
+    );
     expect(calc('=VLOOKUP(5, {"a",1;"b",2}, 2)')).toMatchObject({ e: '#N/A' });
   });
 });

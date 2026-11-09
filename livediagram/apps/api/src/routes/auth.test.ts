@@ -82,6 +82,21 @@ describe('GET /api/auth/sign-in', () => {
     expect(location.searchParams.get('state')).toBeTruthy();
   });
 
+  // docs/specs/014-identity/auth-and-guest-access.md: a raw non-ASCII return path comes back percent-encoded. It threw
+  // in the PKCE cookie's btoa, and the sign-in answered 500.
+  it('takes a return path with non-ASCII characters and returns to it encoded', async () => {
+    fetchMock.mockResolvedValue(tokenResponse());
+    const { res, location, pkce } = await signInCookie('/explorer?q=Équipe-Café-😀#t=日本');
+    expect(res.status).toBe(302);
+    const back = await call(
+      `/api/auth/callback?code=the-code&state=${location.searchParams.get('state')!}`,
+      { headers: { Cookie: `ld_pkce=${pkce}` } },
+    );
+    expect(back.headers.get('Location')).toBe(
+      '/explorer?q=%C3%89quipe-Caf%C3%A9-%F0%9F%98%80#t=%E6%97%A5%E6%9C%AC',
+    );
+  });
+
   it('asks for the registration page for Create account', async () => {
     const res = await call('/api/auth/sign-in?return_to=%2Fnew&screen=sign-up');
     const location = new URL(res.headers.get('Location')!);

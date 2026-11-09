@@ -111,7 +111,11 @@ export function PanelTimeline() {
           busy={feed.loadingMore}
           className={`${PANE_LINK} self-center py-1`}
         >
-          {feed.loadingMore ? 'Loading…' : 'Show more'}
+          {feed.loadingMore
+            ? 'Loading…'
+            : feed.moreFailed
+              ? 'Couldn’t load more. Try again'
+              : 'Show more'}
         </Button>
       ) : null}
     </div>

@@ -8,11 +8,20 @@ function fakeIndex(live: Item[], trashed: Item[] = [], fail?: string) {
   const deleted: string[] = [];
   let inFlight = 0;
   let most = 0;
-  const page = (items: Item[]) =>
-    items.filter((i) => !deleted.includes(i.id)).slice(0, OWN_PURGE_PAGE);
+  // Paged by a keyset cursor (the last id's place in the list as first read), as the index's: deleting an item
+  // never shifts the next page.
+  const order = new Map<string, number>();
+  const page = (items: Item[], q: { cursor?: string; limit?: number }) => {
+    for (const i of items) if (!order.has(i.id)) order.set(i.id, order.size);
+    const after = q.cursor === undefined ? -1 : Number(q.cursor);
+    const rest = items.filter((i) => !deleted.includes(i.id) && order.get(i.id)! > after);
+    const slice = rest.slice(0, q.limit ?? OWN_PURGE_PAGE);
+    const more = rest.length > slice.length;
+    return { items: slice, nextCursor: more ? String(order.get(slice.at(-1)!.id)) : null };
+  };
   const client = {
-    listItems: async () => ({ items: page(live), nextCursor: null }),
-    listTrash: async () => ({ items: page(trashed), nextCursor: null }),
+    listItems: async (q: { cursor?: string; limit?: number }) => page(live, q),
+    listTrash: async (q: { cursor?: string; limit?: number }) => page(trashed, q),
     deleteItem: async (id: string, options: { permanent: boolean }) => {
       expect(options).toEqual({ permanent: true });
       inFlight++;
@@ -48,6 +57,26 @@ describe('purgeOwnItems', () => {
     expect(await purgeOwnItems(index.client, 'liveplanner', 'me')).toEqual({
       count: OWN_PURGE_PAGE * OWN_PURGE_PAGES,
       more: true,
+    });
+  });
+
+  it('reads past a page holding none of the person’s own items', async () => {
+    const others = Array.from({ length: OWN_PURGE_PAGE }, (_, i) => item(`o${i}`, 'other'));
+    const index = fakeIndex([...others, item('mine')], [...others.slice(0, 1), item('t1')]);
+    expect(await purgeOwnItems(index.client, 'liveplanner', 'me')).toEqual({
+      count: 2,
+      more: false,
+    });
+    expect(index.deleted.sort()).toEqual(['mine', 't1']);
+  });
+
+  it('finishes when its pages empty the listings under the cap', async () => {
+    const live = Array.from({ length: OWN_PURGE_PAGE * (OWN_PURGE_PAGES - 1) }, (_, i) =>
+      item(`l${i}`),
+    );
+    expect(await purgeOwnItems(fakeIndex(live).client, 'liveplanner', 'me')).toEqual({
+      count: live.length,
+      more: false,
     });
   });
 

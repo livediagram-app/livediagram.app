@@ -454,6 +454,42 @@ describe('A document’s webhooks', () => {
     expect(row().textContent).toContain('No Deliveries Yet');
   });
 
+  it('says why recent deliveries could not be read, and reads them again on Try Again', async () => {
+    await render();
+    refuse = (method) => (method === 'webhookDeliveries' ? 'webhooks_unavailable' : null);
+    await press('Recent Deliveries', row());
+    expect(row().querySelector('[aria-busy]')).toBeNull();
+    expect(row().textContent).toContain('Webhooks aren’t available just now.');
+    // The read never marks the row's own buttons busy.
+    expect(button('Send Test', row()).getAttribute('aria-busy')).toBeNull();
+    refuse = () => null;
+    await press('Try Again', row());
+    expect(row().querySelector('[data-delivery="failed"]')).toBeTruthy();
+    expect(row().textContent).not.toContain('Webhooks aren’t available just now.');
+  });
+
+  it('reads recent deliveries even while a pause is on its way', async () => {
+    await render();
+    let resolve: () => void = () => {};
+    const client = fakeClient();
+    const slow = client.updateWebhook;
+    client.updateWebhook = (...args) =>
+      new Promise((r) => {
+        resolve = () => r(slow(...args));
+      });
+    act(() =>
+      root.render(
+        <DocumentWebhooks client={client} itemId={ITEM_ID} app="livediagram" share={SHARE} />,
+      ),
+    );
+    await settle();
+    await press('Pause Webhook', row());
+    await press('Recent Deliveries', row());
+    expect(row().querySelector('[data-delivery="failed"]')).toBeTruthy();
+    await act(async () => resolve());
+    await settle();
+  });
+
   describe('Send Test', () => {
     const ping = (over: Partial<WebhookDelivery>): WebhookDelivery => ({
       ...DELIVERY,

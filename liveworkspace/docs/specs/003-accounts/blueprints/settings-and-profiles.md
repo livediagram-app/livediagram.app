@@ -34,7 +34,8 @@ Scope, by file:
   One statement per row in one batch: `INSERT … SELECT … json_patch` gated on the owner being a guest or an existing
   account (`404 unknown_owner` when nothing landed, so a closed account's live token can't write back), `ON CONFLICT
 DO UPDATE` that removes each named key and sets it again in SQLite against the row as it stands, so two apps writing
-  different keys both land. The `settings_size` CHECK holds the limit under concurrent writes (`413
+  different keys both land. The keys go by a merge patch naming each as `null`, so the statement binds five values
+  however many keys the patch names (D1 takes at most 100). The `settings_size` CHECK holds the limit under concurrent writes (`413
 settings_too_large`). Answers both rows as they now are.
 - `readSettings(owner, app)`: one query on the primary key for `all` and the app's row: `{ all, app, updatedAt }`
   (`updatedAt` the later write, null when neither).

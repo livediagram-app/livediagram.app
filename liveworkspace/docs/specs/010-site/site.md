@@ -382,7 +382,9 @@ built once here. It is shown here and, through each switched-on app's router, at
   cached by the browser for a day per version. An item the index says is empty shows its kind's icon, with no
   request.
 - **Names.** Owners and who did what are named through `/api/account/people`, gathered into one request per
-  beat (at most 100 ids) and kept in one bounded cache. A guest is named too: the route answers this
+  beat (at most 100 ids) and kept in one bounded cache. A request that fails is asked again on its own, twice,
+  after 2 and then 8 seconds, so a row that stays on screen still gets its name; after that the name waits for
+  the next row that asks for it. A guest is named too: the route answers this
   browser's guest cookie, rate limited ([accounts.md](../003-accounts/accounts.md)).
 - **Sharing.** The Share dialog makes and revokes passes through the index, and its extras come from the item's
   app's registry entry (`share` in `APP_ITEMS`): the tab picker (the item's tabs, read once per open from the

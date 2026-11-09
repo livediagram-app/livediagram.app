@@ -12,7 +12,8 @@ export function communitySharedAgo(timestamp: number, now: number): string {
   const days = Math.floor((now - timestamp) / DAY_MS);
   if (days < MONTH_DAYS) return relativeSince(timestamp, now);
   if (days < YEAR_DAYS) {
-    const months = Math.floor(days / MONTH_DAYS);
+    // Days 360 to 364 are twelve 30-day months but not yet a year: they stay at 11 months, never "12 months ago".
+    const months = Math.min(11, Math.floor(days / MONTH_DAYS));
     return months === 1 ? '1 month ago' : `${months} months ago`;
   }
   const years = Math.floor(days / YEAR_DAYS);

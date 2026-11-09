@@ -30,7 +30,9 @@ function isBlockedIpv4(a: number, b: number): boolean {
 }
 
 export function isBlockedHost(hostname: string): boolean {
-  const h = hostname.toLowerCase().replace(/^\[/, '').replace(/\]$/, ''); // strip ipv6 brackets
+  // IPv6 brackets off, and a fully qualified name's trailing dot: `localhost.` and `printer.local.` reach the same
+  // hosts as without it, and WHATWG URL keeps the dot in `hostname`.
+  const h = hostname.toLowerCase().replace(/^\[/, '').replace(/\]$/, '').replace(/\.$/, '');
   if (!h) return true;
   if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local')) return true;
   if (h === '::1' || h === '::' || h === '0.0.0.0') return true; // loopback / unspecified
@@ -39,8 +41,13 @@ export function isBlockedHost(hostname: string): boolean {
   // IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1, which WHATWG URL normalises to the
   // hex form ::ffff:7f00:1): unwrap the embedded IPv4 and re-run the checks,
   // else a mapped loopback / metadata address slips past the IPv6 prefixes.
-  if (h.startsWith('::ffff:')) {
-    const mapped = h.slice('::ffff:'.length);
+  // The deprecated IPv4-compatible form (::127.0.0.1, normalised to ::7f00:1) embeds one the same way.
+  const mapped = h.startsWith('::ffff:')
+    ? h.slice('::ffff:'.length)
+    : /^::[0-9a-f]{1,4}:[0-9a-f]{1,4}$/.test(h)
+      ? h.slice(2)
+      : null;
+  if (mapped !== null) {
     const dotted = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(mapped);
     if (dotted && isBlockedIpv4(Number(dotted[1]), Number(dotted[2]))) return true;
     const hex = /^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(mapped);

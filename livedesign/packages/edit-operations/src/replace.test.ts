@@ -186,6 +186,14 @@ describe('applyReplace for a new tab', () => {
 describe('applyReplace refusals', () => {
   const refusal = (body: unknown) => refused(applyReplace(null, body as ReplaceBody, options));
 
+  // docs/specs/009-elements/badge.md "The cap holds for agents".
+  it('refuses a badge label over its cap, naming the element and the cap', () => {
+    const badge = { id: 'b', type: 'shape', shape: 'badge', x: 0, y: 0, width: 40, height: 24 };
+    expect(refusal({ elements: [{ ...badge, label: 'y'.repeat(25) }] }).details).toEqual([
+      "b label: a badge's label is at most 24 characters",
+    ]);
+  });
+
   it('needs exactly one source', () => {
     expect(refusal({}).details).toEqual(['replace takes exactly one of template, elements']);
     expect(refusal({ template: 'x', elements: [] }).code).toBe('invalid_value');

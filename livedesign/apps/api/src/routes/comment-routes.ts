@@ -17,7 +17,14 @@ import {
   type Element,
   type ElementDelta,
 } from '@livedesign/design';
-import { commentThreadOf, findCommentHost, removeComment, threadsOfTab } from '../comments';
+import {
+  commentThreadOf,
+  findCommentHost,
+  removeComment,
+  threadsOfTab,
+  UNKNOWN_AUTHOR_COLOR,
+  UNKNOWN_AUTHOR_NAME,
+} from '../comments';
 import { getDesign, getTab, isTabRevStale, tabIdsWithComments, upsertTabAtRev } from '../db';
 import { getParticipant } from '../accounts/profiles';
 import { emailEnabled } from '../email/client';
@@ -117,8 +124,8 @@ async function newComment(
     id: crypto.randomUUID(),
     text,
     createdAt: Date.now(),
-    authorName: writer?.name ?? 'Anonymous',
-    authorColor: writer?.color ?? '#94a3b8',
+    authorName: writer?.name || UNKNOWN_AUTHOR_NAME,
+    authorColor: writer?.color || UNKNOWN_AUTHOR_COLOR,
     authorId: owner,
     ...(ctx.token ? { tokenId: ctx.token.id } : {}),
     ...(mentions ? { mentions } : {}),

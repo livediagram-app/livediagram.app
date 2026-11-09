@@ -100,7 +100,7 @@ many new responses and the total, never what anyone answered. A push that doesn'
   429 or 5xx is tried again after 1 minute, 5 minutes, 30 minutes, 2 hours, 6 hours and 12 hours (seven tries in
   about 21 hours), then given up. A redirect is never followed and counts as a failure, as does any other 4xx,
   which is not retried; 410 Gone also pauses the webhook. One webhook's deliveries go in order: while one waits for
-  a retry, the later ones wait behind it.
+  a retry, the later ones wait behind it, those queued during the wait (a test's ping among them) too.
 - **Paused** (nothing is sent, and what was waiting is given up): by anyone who can edit the document; when its creator can no
   longer edit it ("Paused: whoever added it can no longer edit this document", see Security); after 20 deliveries in a row
   were given up ("Paused: 20 deliveries in a row failed"); or on 410 ("Paused: the address said it’s gone").
@@ -110,7 +110,8 @@ many new responses and the total, never what anyone answered. A push that doesn'
   from deliveries of webhooks that are not paused, never sooner than a second away.
 - **Recent deliveries**: each webhook keeps its last 20 finished deliveries (app, event, time, tries, the last
   response code or the reason none came), listed in Settings.
-- A webhook holds at most 500 pending deliveries; an event past that is not queued for it.
+- A webhook holds at most 500 pending deliveries; an event past that is not queued for it, and a batch (a plan's card
+  moves, a request's events) stops at the cap, never past it.
 
 ## Security
 
@@ -160,8 +161,8 @@ request):
 - `PATCH /webhooks/:id {name?, events?, who?, paused?}`: `{webhook}`.
 - `DELETE /webhooks/:id`: 204.
 - `POST /webhooks/:id/test`: 202: queues a `ping` and wakes the dispatcher.
-- `GET /webhooks/:id/deliveries`: `{deliveries}`, newest first, at most 40: the 20 finished it keeps and the newest
-  still pending.
+- `GET /webhooks/:id/deliveries`: `{deliveries}`, newest first, at most 40: the 20 finished it keeps and the 20
+  newest still pending, so a backlog of retries never hides the finished ones.
 
 A webhook whose document the caller can't reach answers 404 `webhook_not_found`, so its id tells them nothing; one
 whose document they can read but not edit answers 403 `webhooks_need_editor`. A document's webhooks go with it when

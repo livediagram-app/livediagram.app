@@ -23,7 +23,9 @@ function withoutComment(raw: string): string {
 }
 
 export function parseConfig(text: string, path: string): ConfigFile {
-  const config: ConfigFile = { profiles: {} };
+  // Profiles keyed by a name the file chose: a null-prototype map, so `[profiles.__proto__]` (or `constructor`) is an
+  // ordinary profile rather than a write onto Object.prototype, and a lookup by name never finds an inherited member.
+  const config: ConfigFile = { profiles: Object.create(null) as ConfigFile['profiles'] };
   let table: string | null = null;
   text.split(/\r?\n/).forEach((raw, index) => {
     const line = withoutComment(raw).trim();

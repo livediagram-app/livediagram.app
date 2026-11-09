@@ -16,6 +16,9 @@ describe('communitySharedAgo', () => {
   it('then whole months, then whole years', () => {
     expect(communitySharedAgo(NOW - 30 * DAY, NOW)).toBe('1 month ago');
     expect(communitySharedAgo(NOW - 214 * DAY, NOW)).toBe('7 months ago');
+    // Twelve 30-day months, not yet a year: still 11 months, never "12 months ago".
+    expect(communitySharedAgo(NOW - 360 * DAY, NOW)).toBe('11 months ago');
+    expect(communitySharedAgo(NOW - 364 * DAY, NOW)).toBe('11 months ago');
     expect(communitySharedAgo(NOW - 365 * DAY, NOW)).toBe('1 year ago');
     expect(communitySharedAgo(NOW - 800 * DAY, NOW)).toBe('2 years ago');
   });

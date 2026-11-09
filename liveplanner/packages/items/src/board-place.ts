@@ -94,7 +94,9 @@ function namedColumns(
     const slug = slugOf(name, 24) || `column-${columns.length + 1}`;
     // The status is made from the unique id: two names that shorten to one slug ("Waiting for customer feedback
     // A" and "… B", or two in a script the slug drops) would otherwise share a status, and one column be lost.
-    const id = columns.some((c) => c.id === slug) ? `${slug}-${columns.length + 1}` : slug;
+    // The suffixed id may itself be taken ("Phase 3", "Phase", "Phase!"): the next free number then.
+    let id = slug;
+    for (let n = columns.length + 1; columns.some((c) => c.id === id); n++) id = `${slug}-${n}`;
     const status =
       named && !columns.some((c) => c.status === named.status) ? named.status : `${id}~${suffix}`;
     columns.push({ id, status, name });

@@ -22,15 +22,26 @@ export const queuedCount = () => queued;
 // The item's own live webhooks listening for `type`, under their pending cap. A webhook holds its events comma-wrapped
 // (`,shared,`). One set to Only Me (`who = 'me'`) hears only what its creator did: `actor` is the event's person, and
 // an event without one (a form response) never reaches it. `w`, `i` and the event's columns come from the statement
-// around it; `?4` is WEBHOOK_PENDING_MAX.
+// around it; `?4` is WEBHOOK_PENDING_MAX. The pending count is read once, before any row of the statement is written
+// (SQLite fills an insert that reads its own table from a finished select), so a statement queuing several rows from a
+// JSON list passes `ahead`, the row's place in it, and a batch stops at the cap rather than going past it. A place
+// counts every earlier entry, listened for or not, so a list near the cap may stop a few short of it, never over.
 const listening = (
   type: string,
   actor: string,
+  ahead = '0',
 ) => `JOIN webhooks w ON w.item_id = i.id AND w.paused_at IS NULL
   WHERE instr(w.events, ',' || ${type} || ',') > 0
     AND (w.who = 'anyone' OR w.created_by = ${actor})
     AND (SELECT COUNT(*) FROM (SELECT 1 FROM webhook_deliveries p
-         WHERE p.webhook_id = w.id AND p.state = 'pending' LIMIT ?4)) < ?4`;
+         WHERE p.webhook_id = w.id AND p.state = 'pending' LIMIT ?4)) + ${ahead} < ?4`;
+
+// When a new delivery is first due: now, or, while the webhook's newest pending one waits for a retry, not before it,
+// so one webhook's deliveries go in order (webhooks.md "Delivery"). A retry holds every later one to its own time
+// (dispatch.ts), so the newest pending row's time is the latest: one seek on (webhook_id, state, id).
+const dueAt = (now: string, webhook: string) =>
+  `MAX(${now}, COALESCE((SELECT p.next_at FROM webhook_deliveries p WHERE p.webhook_id = ${webhook}
+     AND p.state = 'pending' ORDER BY p.id DESC LIMIT 1), ${now}))`;
 
 /** The statement queuing these Timeline events for their item's own webhooks; it goes after the events' own. */
 export function webhookOutboxStatement(
@@ -43,11 +54,12 @@ export function webhookOutboxStatement(
     .prepare(
       `INSERT OR IGNORE INTO webhook_deliveries
          (webhook_id, event_id, type, app, item_id, title, actor_id, actor_name, detail, occurred_at, next_at)
-       SELECT w.id, e.id, e.type, e.app, e.item_id, e.title, e.actor_id, e.actor_name, e.detail, e.occurred_at, ?1
+       SELECT w.id, e.id, e.type, e.app, e.item_id, e.title, e.actor_id, e.actor_name, e.detail, e.occurred_at,
+              ${dueAt('?1', 'w.id')}
        FROM json_each(?2) j
        JOIN timeline_events e ON e.id = j.value
        JOIN items i ON i.id = e.item_id
-       ${listening('e.type', 'e.actor_id')}
+       ${listening('e.type', 'e.actor_id', 'j.key')}
          AND e.occurred_at >= ?1 - ?3`,
     )
     .bind(now, JSON.stringify(eventIds), WEBHOOK_FRESH_MS, WEBHOOK_PENDING_MAX);
@@ -83,9 +95,9 @@ export function cardMovesStatement(
       `INSERT OR IGNORE INTO webhook_deliveries
          (webhook_id, event_id, type, app, item_id, title, actor_id, actor_name, detail, occurred_at, next_at)
        SELECT w.id, j.value ->> '$.id', 'card_moved', i.app, i.id, i.title, j.value ->> '$.by', j.value ->> '$.name',
-              j.value ->> '$.detail', j.value ->> '$.at', ?1
+              j.value ->> '$.detail', j.value ->> '$.at', ${dueAt('?1', 'w.id')}
        FROM items i JOIN json_each(?2) j
-       ${listening("'card_moved'", "(j.value ->> '$.by')")}
+       ${listening("'card_moved'", "(j.value ->> '$.by')", 'j.key')}
          AND i.id = ?5 AND (j.value ->> '$.at') >= ?1 - ?3`,
     )
     .bind(now, JSON.stringify(rows), WEBHOOK_FRESH_MS, WEBHOOK_PENDING_MAX, itemId);
@@ -116,7 +128,7 @@ export function formResponseStatement(
               NULL, NULL,
               json_object('form', ?7, 'responses', CAST(CAST(?6 - f.responses AS INTEGER) AS TEXT),
                           'total', CAST(CAST(?6 AS INTEGER) AS TEXT)),
-              ?8, ?1
+              ?8, ${dueAt('?1', 'w.id')}
        FROM collab_forms f JOIN items i ON i.id = f.item_id
        ${listening("'form_response'", 'NULL')}
          AND f.item_id = ?2 AND f.tab_id = ?5 AND ?6 > f.responses AND ?8 >= ?1 - ?3`,
@@ -133,14 +145,14 @@ export function formResponseStatement(
     );
 }
 
-/** Send Test's `ping`, due now, written only while the webhook is not paused (no row written: it was paused). The
+/** Send Test's `ping`, due now (behind a retry the webhook is waiting on, as any delivery), written only while the webhook is not paused (no row written: it was paused). The
  *  check is in the statement, so a pause landing after the route read the webhook can't leave a row behind. */
 export function pingStatement(db: D1Database, webhookId: string, name: string, now = Date.now()) {
   queued++;
   return db
     .prepare(
       `INSERT INTO webhook_deliveries (webhook_id, event_id, type, app, item_id, title, occurred_at, next_at)
-       SELECT ?1, ?2, 'ping', 'liveworkspace', NULL, ?3, ?4, ?4
+       SELECT ?1, ?2, 'ping', 'liveworkspace', NULL, ?3, ?4, ${dueAt('?4', '?1')}
        WHERE EXISTS (SELECT 1 FROM webhooks WHERE id = ?1 AND paused_at IS NULL)`,
     )
     .bind(webhookId, `ping:${crypto.randomUUID()}`, name, now);

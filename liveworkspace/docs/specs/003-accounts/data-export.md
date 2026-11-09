@@ -57,7 +57,8 @@ images/<id> <name>                  a personal export: every image the person up
   (`@liveworkspace/render-png`), at twice its size and at most `EXPORT_PICTURE_MAX_SIDE` on its long side. A tab with
   nothing to draw has none. There is no PDF: a PDF needs a server-side renderer the platform does not have.
 - **The CSV** is the editor's own Download CSV, made on the server: a board's cards with their fields, a Sheet's cells
-  as shown, no field written so a spreadsheet would run it as a formula.
+  as shown, no field written so a spreadsheet would run it as a formula. Tabs of one name are numbered (`Sprint`,
+  `Sprint 2`), never onto a name another tab has, so no two files in a folder share a name.
 - **Comments** are one list across every item: app, item, tab, thread, whether it is resolved, author, when and the
   text. The CSV carries the same rows, made safe for a spreadsheet.
 - **Names** are the item's name made safe for every file system (no `/ \ : * ? " < > |`, no control characters, at
@@ -144,7 +145,7 @@ through its `EXPORT` service binding, with `EXPORT_KEY_ACCOUNTS`; it calls accou
 | `DELETE /internal/exports/<key>`   | stop it and delete its file (an account closing)                               |
 
 `key` is `personal:<account id>` or `team:<team id>`; each names one SQLite Durable Object (`DataExport`) holding that
-scope's latest export. The zip is the R2 object `exports/<key>/<export id>.zip` in the `liveworkspace-exports` bucket
+scope's latest export. A path whose key is anything else, or doesn't decode, answers `404`. The zip is the R2 object `exports/<key>/<export id>.zip` in the `liveworkspace-exports` bucket
 (`-staging`).
 
 Accounts' doors, for the signed-in person by their session, or (the first two) by an account's app bearer:

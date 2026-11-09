@@ -16,6 +16,7 @@ import { importSealKey, seal } from '@liveworkspace/api-kit/sealed';
 import {
   isWebhookKind,
   isWebhookWho,
+  WEBHOOK_DELIVERIES_KEPT,
   WEBHOOK_EVENT_APPS,
   WEBHOOK_EVENTS,
   WEBHOOK_NAME_MAX,
@@ -56,8 +57,12 @@ export type WebhookRouteDeps = { resolve: Resolve; now: () => number };
 
 const defaultDeps = (): WebhookRouteDeps => ({ resolve: dohResolve, now: () => Date.now() });
 
-// The newest deliveries a webhook's list shows: its kept finished ones and what is still waiting.
+// The newest deliveries a webhook's list shows: its kept finished ones and, beside them, the newest still waiting.
+// Each part has its own limit, so a backlog of retries never pushes the finished ones (their statuses) off the list.
 const DELIVERIES_LISTED = 40;
+const PENDING_LISTED = DELIVERIES_LISTED - WEBHOOK_DELIVERIES_KEPT;
+const DELIVERY_COLUMNS =
+  'id, type, app, title, state, attempts, status, error, occurred_at, last_at, next_at';
 
 type WebhookRow = {
   id: string;
@@ -120,7 +125,8 @@ function readEvents(value: unknown, app: App): WebhookEvent[] | null {
   if (!Array.isArray(value) || value.length === 0) return null;
   const held = new Set<unknown>(value);
   for (const event of held) {
-    if (typeof event !== 'string' || !(event in WEBHOOK_EVENT_APPS)) return null;
+    // Own keys only: `in` also finds Object.prototype's (`constructor`, `toString`), which have no app list.
+    if (typeof event !== 'string' || !Object.hasOwn(WEBHOOK_EVENT_APPS, event)) return null;
     if (!WEBHOOK_EVENT_APPS[event as WebhookEvent].includes(app)) return null;
   }
   return WEBHOOK_EVENTS.filter((event) => held.has(event));
@@ -302,10 +308,14 @@ export async function handleWebhooks(
     const rows =
       (
         await env.INDEX_DB.prepare(
-          `SELECT id, type, app, title, state, attempts, status, error, occurred_at, last_at, next_at
-           FROM webhook_deliveries WHERE webhook_id = ? ORDER BY id DESC LIMIT ?`,
+          `SELECT * FROM (SELECT ${DELIVERY_COLUMNS} FROM webhook_deliveries
+                          WHERE webhook_id = ?1 AND state <> 'pending' ORDER BY id DESC LIMIT ?2)
+           UNION ALL
+           SELECT * FROM (SELECT ${DELIVERY_COLUMNS} FROM webhook_deliveries
+                          WHERE webhook_id = ?1 AND state = 'pending' ORDER BY id DESC LIMIT ?3)
+           ORDER BY id DESC`,
         )
-          .bind(id, DELIVERIES_LISTED)
+          .bind(id, WEBHOOK_DELIVERIES_KEPT, PENDING_LISTED)
           .all<{
             id: number;
             type: WebhookDelivery['type'];
@@ -370,12 +380,14 @@ async function createWebhook(
   const secret = kind === 'json' ? newSigningSecret() : null;
   const db = env.INDEX_DB;
   const at = deps.now();
-  await db.batch([
+  // The cap again inside the insert: adds racing past the count above can't together pass it.
+  const [added] = await db.batch([
     db
       .prepare(
         `INSERT INTO webhooks
            (id, item_id, kind, name, url_sealed, host, secret_sealed, events, who, created_by, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11
+         WHERE (SELECT COUNT(*) FROM webhooks WHERE item_id = ?2) < ?12`,
       )
       .bind(
         id,
@@ -389,6 +401,7 @@ async function createWebhook(
         who,
         person.id,
         at,
+        WEBHOOKS_PER_DOCUMENT_MAX,
       ),
     ...linkHeld(ctx, loaded),
     // A team document's goes in the team's audit log, in the same batch (team-audit.ts).
@@ -407,6 +420,7 @@ async function createWebhook(
         ]
       : []),
   ]);
+  if (!added?.meta.changes) return conflict('webhook_limit');
   return json(
     { webhook: webhookOf((await readRow(env, id))!, person.id), secret },
     { status: 201 },

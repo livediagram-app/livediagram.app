@@ -142,10 +142,10 @@ const INLINE =
 
 // Markdown's backslash escapes (`\\*` is a literal `*`): held as private-use characters while the
 // marks are read, so an escaped character never opens or closes one, then put back as the character.
-const ESCAPABLE = '\\`*_~[]#>+-.!()';
+const ESCAPABLE = '\\`*_~[]#>+-.!()&';
 const HELD = 0xe000;
 const holdEscapes = (text: string) =>
-  text.replace(/\\([\\`*_~[\]#>+\-.!()])/g, (_, c: string) =>
+  text.replace(/\\([\\`*_~[\]#>+\-.!()&])/g, (_, c: string) =>
     String.fromCharCode(HELD + ESCAPABLE.indexOf(c)),
   );
 const releaseEscapes = (text: string) =>
@@ -166,7 +166,12 @@ function codeText(held: string): string {
   return spaceWrapped(text) ? text.slice(1, -1) : text;
 }
 
-/** One line's inline Markdown as runs; with `notes`, a `[^label]` it defines is a footnote's reference. */
+// A space as CommonMark's character reference: the writer keeps a line's edge spaces with it, which reading the line
+// would otherwise trim (article-markdown-io).
+export const SPACE_REF = '&#32;';
+
+/** One line's inline Markdown as runs; with `notes`, a `[^label]` it defines is a footnote's reference. A `&#32;`
+ *  outside code is a space (`\&#32;` is the literal text). */
 export function parseInline(
   text: string,
   base: Omit<ArticleRun, 'text'> = {},
@@ -175,7 +180,14 @@ export function parseInline(
   let runs = readInline(holdEscapes(text), base);
   if (notes?.size) runs = runs.flatMap((r) => (r.code ? [r] : withFootnoteRefs(r, notes)));
   return normaliseRuns(
-    runs.map((r) => (r.fn === undefined ? { ...r, text: releaseEscapes(r.text) } : r)),
+    runs.map((r) =>
+      r.fn !== undefined
+        ? r
+        : {
+            ...r,
+            text: releaseEscapes(r.code ? r.text : r.text.replaceAll(SPACE_REF, ' ')),
+          },
+    ),
   );
 }
 

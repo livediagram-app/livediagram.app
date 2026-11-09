@@ -121,6 +121,7 @@ function TeamFeed({ teamId }: { teamId: string }) {
         onRetry={feed.retry}
         hasMore={feed.hasMore}
         loadingMore={feed.loadingMore}
+        moreFailed={feed.moreFailed}
         onLoadMore={feed.loadMore}
         onStackExpand={() => onTimeline?.('Opened', 'Stack')}
       />

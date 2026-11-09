@@ -243,6 +243,10 @@ describe('what an add checks', () => {
     // The per-app topics of before are not events.
     [{ events: ['livediagram:shared'] }, 'invalid_webhook'],
     [{ events: ['shared', 7] }, 'invalid_webhook'],
+    // Object.prototype's names are no events (once a 500: they have no app list).
+    [{ events: ['constructor'] }, 'invalid_webhook'],
+    [{ events: ['toString', 'shared'] }, 'invalid_webhook'],
+    [{ events: ['__proto__'] }, 'invalid_webhook'],
     [{ who: 'everyone' }, 'invalid_webhook'],
     [{ kind: 'discord' }, 'invalid_webhook'],
     [{ url: 'http://hooks.example.com' }, 'webhook_url_invalid'],
@@ -307,6 +311,17 @@ describe('what an add checks', () => {
     expect(await body(res)).toEqual({ error: 'webhook_limit' });
     const other = await makeItem(ada.auth);
     expect((await post(ada.auth, other.id, {})).status).toBe(201);
+  });
+
+  it('holds the cap when adds race past its count', async () => {
+    const ada = await person('user_wa4');
+    const item = await makeItem(ada.auth);
+    for (let i = 0; i < 9; i++) await addWebhook(ada.auth, item.id);
+    // Each reads nine before any of them writes; only one may make the tenth.
+    const statuses = await Promise.all([1, 2, 3].map(() => post(ada.auth, item.id, {})));
+    expect(statuses.map((res) => res.status).sort()).toEqual([201, 409, 409]);
+    const listed = await call(`/items/${item.id}/webhooks`, { auth: ada.auth });
+    expect(((await body(listed)) as { webhooks: unknown[] }).webhooks).toHaveLength(10);
   });
 });
 
@@ -499,6 +514,29 @@ describe('testing one and its deliveries', () => {
     });
   });
 
+  it('keeps the finished ones listed beside a backlog of retries', async () => {
+    const ada = await person('user_wt3');
+    const item = await makeItem(ada.auth);
+    const { webhook } = await addWebhook(ada.auth, item.id, { name: 'Ops' });
+    const insert = h.db.sql.prepare(
+      `INSERT INTO webhook_deliveries (id, webhook_id, event_id, type, app, title, occurred_at, state, next_at)
+       VALUES (?, ?, ?, 'ping', 'liveworkspace', 'Ops', 1, ?, 1)`,
+    );
+    // Three finished first, then 45 still waiting behind a failing endpoint.
+    for (let i = 1; i <= 48; i++) {
+      insert.run(i, webhook.id, `e${i}`, i <= 3 ? (i === 2 ? 'failed' : 'delivered') : 'pending');
+    }
+    const listed = await body<{ deliveries: WebhookDelivery[] }>(
+      await call(`/webhooks/${webhook.id}/deliveries`, { auth: ada.auth }),
+    );
+    expect(listed.deliveries.map((d) => d.id)).toEqual([
+      ...Array.from({ length: 20 }, (_, i) => 48 - i),
+      3,
+      2,
+      1,
+    ]);
+  });
+
   it('writes no ping when a pause lands between reading the webhook and queuing it', async () => {
     const ada = await person('user_wt2');
     const item = await makeItem(ada.auth);
@@ -551,6 +589,19 @@ describe("a team's audit log", () => {
         )
         .all(),
     ).toEqual([row('webhook_added'), row('webhook_removed')]);
+  });
+
+  it('logs no add for a webhook refused at the cap', async () => {
+    const eve = await person('user_wa7', { teams: [{ id: 'team_wb', role: 'member' }] });
+    const item = await makeItem(eve.auth, { teamId: 'team_wb' });
+    for (let i = 0; i < 9; i++) await addWebhook(eve.auth, item.id);
+    const results = await Promise.all([1, 2].map(() => post(eve.auth, item.id, {})));
+    expect(results.map((res) => res.status).sort()).toEqual([201, 409]);
+    expect(
+      h.db.sql
+        .prepare(`SELECT COUNT(*) AS n FROM team_audit_events WHERE team_id = 'team_wb'`)
+        .get(),
+    ).toEqual({ n: 10 });
   });
 });
 

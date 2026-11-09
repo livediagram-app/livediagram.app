@@ -150,6 +150,7 @@ beforeEach(() => {
     INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
     INSERT INTO test_share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
     INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('BOARDEDIT', 'd1', 'edit', 'board', 1);
   `);
   writeForm(form());
 });
@@ -207,6 +208,16 @@ describe('publishing (docs/specs/030-forms/forms.md "Publishing and the form lin
       expect((await owner('DELETE', 'form-link', { owner: 'visitor', code })).status).toBe(403);
     }
     expect((await owner('GET', 'form-link', { owner: 'stranger' })).status).toBe(403);
+  });
+
+  it('answers a link confined to another tab 404, as every tab door does (no existence leak)', async () => {
+    await publish();
+    const scoped = { owner: 'visitor', code: 'BOARDEDIT' };
+    expect((await owner('GET', 'form-link', scoped)).status).toBe(404);
+    expect((await owner('POST', 'form-seen', scoped)).status).toBe(404);
+    expect((await owner('POST', 'form-preview', scoped)).status).toBe(404);
+    expect((await owner('DELETE', 'form-link', scoped)).status).toBe(404);
+    expect((await owner('GET', 'form-link')).body.link).not.toBeNull();
   });
 
   it('closes, reopens and deletes the link', async () => {

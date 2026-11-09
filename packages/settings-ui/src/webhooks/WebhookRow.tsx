@@ -142,6 +142,8 @@ export function WebhookRow({
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [deliveries, setDeliveries] = useState<WebhookDelivery[] | null>(null);
+  // Why Recent Deliveries couldn't be read, shown in its section with Try Again.
+  const [deliveriesError, setDeliveriesError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<HTMLElement | null>(null);
   const deleteRef = useRef<HTMLButtonElement>(null);
   const pauseRef = useRef<HTMLButtonElement>(null);
@@ -169,14 +171,20 @@ export function WebhookRow({
       },
     );
 
+  // A read of its own, apart from the row's busy: under `run` it was skipped while a pause or delete was on its way
+  // (the section then showed its placeholder for good), a failed read left the placeholder up too, and the read
+  // marked Send Test, Pause and Delete busy.
+  const readDeliveries = async () => {
+    setDeliveriesError(null);
+    const result = await attempt(() => api.deliveries(webhook.id));
+    if (result.ok) setDeliveries(result.data.deliveries);
+    else setDeliveriesError(result.error);
+  };
+
   const toggleDeliveries = () => {
     const next = !open;
     setOpen(next);
-    if (next)
-      void run(
-        () => api.deliveries(webhook.id),
-        (data) => setDeliveries(data.deliveries),
-      );
+    if (next) void readDeliveries();
   };
 
   const pauseLabel = paused ? 'Resume Webhook' : 'Pause Webhook';
@@ -292,7 +300,20 @@ export function WebhookRow({
 
         <div className="-mb-2 border-t border-slate-100 pt-1 dark:border-slate-700/70">
           <AccordionSection title="Recent Deliveries" open={open} onToggle={toggleDeliveries}>
-            <Deliveries deliveries={deliveries} />
+            {deliveriesError && deliveries === null ? (
+              <div className="flex flex-col items-start gap-2 py-1">
+                <ErrorNote>{webhookError(deliveriesError, webhook.kind)}</ErrorNote>
+                <button
+                  type="button"
+                  className={BUTTON.secondary}
+                  onClick={() => void readDeliveries()}
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : (
+              <Deliveries deliveries={deliveries} />
+            )}
           </AccordionSection>
         </div>
       </div>

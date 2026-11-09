@@ -49,6 +49,10 @@ accounts): each account's display name as it is now, up to 100 a call, so a memb
 
 A team always keeps a joined admin: demoting or removing the last one answers `409 last_admin`. The check is part of
 the write itself, so two admins demoting or removing each other at once can't both pass it.
+The caps work the same way: an account is in at most 50 teams (making one, accepting an invitation or joining by link
+answers `409 team_limit_reached` past it) and a team holds at most 200 open rows, invited or joined (`409
+member_limit_reached`), each checked again inside the insert or update, so requests racing each other can't together
+go over.
 
 ### Invitations
 
@@ -56,7 +60,7 @@ An invitation is a member row with the invited address, `invited` until answered
 takes a signed-in account whose **verified** address is the one invited (signing in by code, or
 with Google, verifies it). The invitation email links to the Explorer's Invites (`/explorer/invites`),
 where it waits with the team's name, organisation and member count, beside **Accept** and **Decline**. Accepting or declining tells the team's admins by
-email, unless an admin has turned that off (the `notifyInviteResponse` setting, `false`, in the
+email, once per answer and never the person who answered (invited as an admin, they are one by then), unless an admin has turned that off (the `notifyInviteResponse` setting, `false`, in the
 `all` scope; [Settings](#settings)). That email links to the account's settings on liveworkspace.app,
 where it is turned off, and sends it as `List-Unsubscribe`.
 
@@ -89,6 +93,8 @@ Worker's hourly cron (`17 * * * *`, `sweepInvitations` in `src/teams.ts`):
 1. **Expires** every invitation still `invited` 28 days after its clock started (`clockStartedAt`,
    when it was sent): it becomes `declined` with `expiredAt` stamped, shown to the admins as
    expired. Nobody is emailed. At most 500 a run, oldest first, whether or not email is set up.
+   An invitation past its 28 days is closed before the sweep marks it: the invited person's list leaves it out, and
+   accepting or declining it answers `404`.
 2. **Reminds** the rest at 1, 7 and 21 days. The windows don't overlap, so an invitation hears at
    most one email a run: the latest it is due, with any it skipped stamped `0`. Each reminder
    carries a fresh decline token. A reminder waits for the [send window](#the-send-window) of the
@@ -124,7 +130,8 @@ who opens it sees the team's name and joins as a member with one click.
   no session, so someone signed out sees what they'd join, then signs in and comes back to the
   same link. Joining, or someone already in the team, opens the team in the Explorer.
 - **Joining**, `POST /join/:token`, signed in: adds them as a joined member. Already in: nothing
-  changes. An invitation waiting for their address is accepted in place rather than doubled. An
+  changes. An invitation waiting for their address is accepted in place rather than doubled. Only two joins
+  at once by the same person answer `alreadyMember`; a join that failed (D1 out of reach) is never answered as one. An
   off, expired or unknown token is `404 invite_not_found`.
 
 The two doors that need no session, the join preview and the Decline link, are limited per network
@@ -865,7 +872,7 @@ guest's id has no account row and writes as before.
 
 - A setting's name is 1 to 64 letters, digits, `_`, `.` or `-`.
 - A patch must be a plain JSON object; anything else is refused (`settings_not_object`,
-  `invalid_setting_key`).
+  `invalid_setting_key`). It may name any number of keys that fit the 16 KB.
 - A scope holds at most 16 KB of JSON. A patch over that is refused at once with a 400; one that
   would take the stored row over it fails the whole write with a 413 (`settings_too_large`), enforced
   by a check on the table, so concurrent writes can't slip past it.
@@ -1257,8 +1264,9 @@ nothing happens: the code is sent and checked first, by the same app's server
    waiting is the inviter's, to an address, and keeps it.
 2. Its settings rows and its profile are deleted, and its workbench store is emptied: every pairing ends and the
    rooms its sessions had open are closed ([workbench.md](../011-workbench/workbench.md)).
-3. A purge request for the index is written to `pending_purges` (`migrations/0004_pending_purges.sql`),
-   naming the teams deleted in step 1.
+3. A purge request for the index is in `pending_purges` (`migrations/0004_pending_purges.sql`), naming the teams
+   deleted in step 1: it is written in step 1's own batch, and a request already there (an earlier try that stopped
+   part way, whose teams are gone by now) keeps the teams it names and gains these.
 4. The user is deleted, and with it its sessions, linked sign-ins, OAuth tokens and consents, API
    tokens, its onboarding series and what each app recorded of it (sign-ups and milestones).
 5. The request is sent to the index (`POST ${INDEX_URL}/internal/purge-person` `{ personId, teamIds }`,
@@ -1277,8 +1285,9 @@ nothing happens: the code is sent and checked first, by the same app's server
 The account is closed whatever the index answers. A request it doesn't take (an error, a timeout, or
 `INDEX_URL` or `INDEX_MERGE_KEY` unset) stays in `pending_purges` with its attempts and last error, and
 the Worker's cron sends it again every 15 minutes (`*/15 * * * *`, 25 a run, the longest-waiting first)
-until it lands. Each failure is logged, as an error from the third on. The index's purge is idempotent,
-so a request sent twice does no harm.
+until it lands. The cron sends only a request whose user is gone: one whose closing stopped before step 4 waits for
+the person to try again, and is never sent while they can still sign in. Each failure is logged, as an error from the
+third on. The index's purge is idempotent, so a request sent twice does no harm.
 
 ## Which app a client is
 

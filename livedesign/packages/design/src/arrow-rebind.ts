@@ -223,3 +223,37 @@ export function withAttachedArrows(
   }
   return out;
 }
+
+// The elements left after a delete: `elements` without `gone`, except what `keep` holds (a locked element, one on a
+// locked layer), and each kept arrow's end attached to something that went freed where it was drawn
+// (docs/specs/008-canvas/canvas-and-palette.md "Delete / Backspace"), as `rm keep-arrows` frees it. Left pinned, a
+// locked arrow's end named an element that was gone and was drawn, and saved, at the canvas origin. Linear in the
+// elements.
+export function removeElements(
+  elements: readonly Element[],
+  gone: ReadonlySet<ElementId>,
+  keep: (el: Element) => boolean = () => false,
+): Element[] {
+  const removed = new Set<ElementId>();
+  const left = elements.filter((el) => {
+    if (keep(el) || !gone.has(el.id)) return true;
+    removed.add(el.id);
+    return false;
+  });
+  if (removed.size === 0) return left;
+  let index: ElementIndex | null = null;
+  const free = (end: Endpoint): Endpoint => {
+    const target =
+      end.kind === 'pinned' ? end.elementId : end.kind === 'on-arrow' ? end.arrowId : null;
+    if (target === null || !removed.has(target)) return end;
+    index ??= buildElementIndex(elements as Element[]);
+    const { x, y } = endpointPosition(end, index);
+    return { kind: 'free', x, y };
+  };
+  return left.map((el) => {
+    if (el.type !== 'arrow') return el;
+    const from = free(el.from);
+    const to = free(el.to);
+    return from === el.from && to === el.to ? el : { ...el, from, to };
+  });
+}

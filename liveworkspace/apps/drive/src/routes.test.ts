@@ -144,6 +144,9 @@ describe('config', () => {
       const marks = await call('/api/drive/marks', { env, bearer: await token(PERSON) });
       expect(marks.status).toBe(503);
       expect(await marks.json()).toEqual({ error: 'drive_not_configured' });
+      // Google's notifications still get 200, so it never retries or backs off the address.
+      const push = await call('/api/drive/push', { env, method: 'POST' });
+      expect(push.status).toBe(200);
     }
   });
 

@@ -1503,6 +1503,8 @@ export class DocumentRoom extends DurableObject<Env> {
         adderKey: session.adderKey ?? null,
       });
       if (gate.kind === 'drop') return;
+      // The parsed copy of an op the gate parses is what the room acts on and relays: never the frame as sent.
+      if (gate.kind === 'relay' && gate.op !== undefined) msg = { ...msg, op: gate.op };
       if (gate.kind === 'participant-content') {
         void this.participantWrites.applyContentOp(
           {

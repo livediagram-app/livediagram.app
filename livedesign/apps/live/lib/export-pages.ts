@@ -16,14 +16,18 @@ export const DEFAULT_PAGE_SCOPE: Record<PageExportFormat, PageScope> = {
   svg: 'one',
 };
 
-// Filesystem-safe filename: anything that isn't alphanumeric, a dot, a dash, an underscore or a
-// space becomes a dash; runs of dashes collapse and the ends are trimmed, so the name is safe on
-// Windows, macOS and Linux.
+// Filesystem-safe filename (docs/specs/020-import-export/export-fidelity.md "File names"): brackets are
+// dropped, any other character that isn't alphanumeric, a dot, a dash, an underscore or a space becomes a
+// dash, runs of dashes collapse and dashes at the ends are trimmed, so "(9:16)" reads "9-16" and the name
+// is safe on Windows, macOS and Linux.
 export function sanitizeFilename(name: string): string {
   return name
+    .replace(/[()[\]{}]+/g, '')
     .replace(/[^A-Za-z0-9._\- ]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^-|-$/g, '')
     .trim();
 }
 

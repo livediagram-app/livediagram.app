@@ -232,6 +232,24 @@ describe('a written article read back', () => {
     expect(roundTrip(blocks)).toEqual(shape(blocks));
   });
 
+  it('keeps a link whose address holds a space, the space percent-encoded', () => {
+    const blocks: ArticleBlock[] = [
+      {
+        id: 'p',
+        type: 'paragraph',
+        runs: [{ text: 'Notes', href: 'https://example.com/my notes\tdraft' }],
+      },
+    ];
+    const markdown = articleToMarkdown({ blocks });
+    expect(markdown).toBe('[Notes](https://example.com/my%20notes%09draft)\n');
+    expect(roundTrip(blocks)).toEqual([
+      {
+        type: 'paragraph',
+        runs: [{ text: 'Notes', href: 'https://example.com/my%20notes%09draft' }],
+      },
+    ]);
+  });
+
   it("keeps inline code's link, bold and edge spaces", () => {
     const blocks: ArticleBlock[] = [
       {
@@ -264,6 +282,50 @@ describe('a written article read back', () => {
       { id: 'q', type: 'paragraph', runs: [{ text: 'World' }] },
     ];
     expect(roundTrip(blocks)).toEqual(shape(blocks));
+  });
+
+  it("keeps a title's literal footnote marker and backslashes, beside a real footnote", () => {
+    for (const text of ['See [^1]', 'a\\', 'C:\\docs\\[x]', '\\\\']) {
+      const blocks: ArticleBlock[] = [
+        {
+          id: 't',
+          type: 'paragraph',
+          style: 'title',
+          runs: [{ text }, { text: '*', fn: 'A note' }],
+        },
+        { id: 'p', type: 'paragraph', runs: [{ text: 'Body' }] },
+      ];
+      expect(roundTrip(blocks), text).toEqual(shape(blocks));
+    }
+    // A hand-written title's reference still reads as one.
+    expect(shape(blocksOf('---\ntitle: Report[^n]\n---\n\nBody\n\n[^n]: Note\n'))[0]).toEqual({
+      type: 'paragraph',
+      style: 'title',
+      runs: [{ text: 'Report' }, { text: '*', fn: 'Note' }],
+    });
+  });
+
+  it('keeps the edge spaces of a paragraph, a heading, a quote and a list item', () => {
+    const blocks: ArticleBlock[] = [
+      { id: 'p', type: 'paragraph', runs: [{ text: '    indented\n  and broken  ' }] },
+      { id: 'h', type: 'paragraph', style: 'h2', runs: [{ text: '  Heading' }] },
+      { id: 'q', type: 'paragraph', style: 'quote', runs: [{ text: '  quoted ' }] },
+      { id: 'l', type: 'list', list: 'bullet', runs: [{ text: '  item' }] },
+      { id: 's', type: 'paragraph', runs: [{ text: '  ' }] },
+      { id: 'r', type: 'paragraph', runs: [{ text: 'a literal &#32; stays' }] },
+    ];
+    expect(roundTrip(blocks)).toEqual(shape(blocks));
+    // Written spaces count once toward a block's length, so a block that fits still fits read back.
+    const wide: ArticleBlock[] = [
+      {
+        id: 'w',
+        type: 'paragraph',
+        runs: [{ text: `${' '.repeat(MAX_ARTICLE_BLOCK_TEXT - 2)}x` }],
+      },
+    ];
+    expect(roundTrip(wide)).toEqual(shape(wide));
+    // Inline code keeps a reference as written, as CommonMark does.
+    expect(parseInline('`&#32;` &#32;x')).toEqual([{ text: '&#32;', code: true }, { text: '  x' }]);
   });
 });
 
@@ -511,7 +573,7 @@ describe('worst case', () => {
       });
       out = articleFromMarkdown(`| a | b |\n|${spaces}x\n| 1 | 2 |`);
     });
-    expect(md).toBe(`${spaces}**x${spaces}y**\n`);
+    expect(md).toBe(`${'&#32;'.repeat(spaces.length)}**x${spaces}y**\n`);
     // Not a table rule, so the line stays a paragraph, then refused as longer than a block takes.
     expect('blocks' in out).toBe(false);
     // Measured under 5 ms; the quadratic regexes this guards took about 3 s each.

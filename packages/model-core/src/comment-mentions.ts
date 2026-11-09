@@ -24,9 +24,16 @@ export function mentionHandle(name: string): string {
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, MENTION_FIELD_MAX);
+    .slice(0, MENTION_FIELD_MAX)
+    .replace(/^-|-$/g, '');
 }
+
+// `base-n`, cut so it still fits MENTION_FIELD_MAX (a longer handle is dropped on save) and never ends the cut base
+// on a dash (`a--2` would not read back as one handle).
+const suffixed = (base: string, n: number) => {
+  const suffix = `-${n}`;
+  return `${base.slice(0, MENTION_FIELD_MAX - suffix.length).replace(/-+$/, '')}${suffix}`;
+};
 
 // Handles for a list of people, unique in list order: the second
 // `thomas-mcclean` becomes `thomas-mcclean-2`. A person whose name yields
@@ -46,9 +53,9 @@ export function assignHandles<T extends { name: string; email?: string | null }>
     let handle = base;
     if (taken.has(handle)) {
       let n = (next.get(base) ?? 1) + 1;
-      while (taken.has(`${base}-${n}`)) n += 1;
+      while (taken.has(suffixed(base, n))) n += 1;
       next.set(base, n);
-      handle = `${base}-${n}`;
+      handle = suffixed(base, n);
     }
     taken.add(handle);
     return { ...p, handle };

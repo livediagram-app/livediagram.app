@@ -881,6 +881,60 @@ describe('DocumentRoom op-role enforcement', () => {
     expect(opsReceived(speaker.ws)).toHaveLength(0);
   });
 
+  // A knock, a ring, a let-speak and a hand reach peers as the wire defines them: the copy the gate parsed, never the
+  // frame as sent, so a field a client adds (a forged name, a payload) reaches nobody.
+  it('relays a knock, its answer, a ring and a let-speak as parsed, without fields the wire lacks', () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const guest = connect(room, 'guest', 'participate');
+    for (const c of [editor, guest]) c.ws.sent.length = 0;
+    const guestId = storedPresence(guest.ws)?.id;
+    const extra = { name: 'The Owner', html: '<b>x</b>' };
+    sendFrame(room, guest.ws, {
+      kind: 'op',
+      op: { kind: 'avatar-knock', tabId: 't', roomId: 'room-1', ...extra },
+    });
+    sendFrame(room, guest.ws, {
+      kind: 'op',
+      op: { kind: 'avatar-bell', tabId: 't', deskId: 'desk-1', ...extra },
+    });
+    sendFrame(room, guest.ws, {
+      kind: 'op',
+      op: { kind: 'avatar-hand', tabId: 't', raised: true, ...extra },
+    });
+    sendFrame(room, editor.ws, {
+      kind: 'op',
+      op: {
+        kind: 'avatar-knock-answer',
+        tabId: 't',
+        targetId: guestId,
+        roomId: 'room-1',
+        answer: 'in',
+        ...extra,
+      },
+    });
+    sendFrame(room, editor.ws, {
+      kind: 'op',
+      op: { kind: 'avatar-let-speak', tabId: 't', targetId: guestId, on: true, ...extra },
+    });
+    const opsOf = (ws: FakeSocket) => opsReceived(ws).map((f) => (f as { op: unknown }).op);
+    expect(opsOf(editor.ws)).toEqual([
+      { kind: 'avatar-knock', tabId: 't', roomId: 'room-1' },
+      { kind: 'avatar-bell', tabId: 't', deskId: 'desk-1' },
+      { kind: 'avatar-hand', tabId: 't', raised: true },
+    ]);
+    expect(opsOf(guest.ws)).toEqual([
+      {
+        kind: 'avatar-knock-answer',
+        tabId: 't',
+        targetId: guestId,
+        roomId: 'room-1',
+        answer: 'in',
+      },
+      { kind: 'avatar-let-speak', tabId: 't', targetId: guestId, on: true },
+    ]);
+  });
+
   it('drops an avatar-push aimed at nobody rather than broadcasting it', () => {
     const { room } = newRoom();
     const pusher = connect(room, 'pusher', 'edit');

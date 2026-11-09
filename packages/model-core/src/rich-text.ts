@@ -416,7 +416,9 @@ export function expandRangeToLines(
   const len = text.length;
   const s = Math.max(0, Math.min(Math.min(range.start, range.end), len));
   const e = Math.max(0, Math.min(Math.max(range.start, range.end), len));
-  const lineStart = text.lastIndexOf('\n', s - 1) + 1;
+  // At 0 the line starts at 0: lastIndexOf clamps a -1 position to 0, and so would find a break AT 0, the end of
+  // this (empty) line rather than one before it.
+  const lineStart = s === 0 ? 0 : text.lastIndexOf('\n', s - 1) + 1;
   const nextBreak = text.indexOf('\n', e);
   return { start: lineStart, end: nextBreak === -1 ? len : nextBreak };
 }

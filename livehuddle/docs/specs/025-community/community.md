@@ -188,7 +188,7 @@ Browsing needs no sign-in: the page asks for livehuddle's session only for My Sh
 - A responsive grid of **cards**, which cascade in (each rises and fades in one beat after the last, within the motion
   budget; not under reduced motion) whenever a new set of results arrives: the post's live image, title, category, up to three tags, the author (picture or
   initial in their colour, and name) with when it was shared beneath ("2 days ago", whole months after the first
-  month, whole years after the first year), likes and copies. The card opens the post page; the heart likes it in place.
+  month, at most 11, whole years after the first year), likes and copies. The card opens the post page; the heart likes it in place.
   The first row's four images load at once and first (`fetchpriority="high"`), since one of them is usually the
   largest thing on screen; every later card's image loads lazily.
 - **Load More** pages through results (24 per page).

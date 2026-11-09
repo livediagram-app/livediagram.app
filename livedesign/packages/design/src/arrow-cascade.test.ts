@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { withAttachedArrows, type ArrowElement, type Element } from './index';
+import { removeElements, withAttachedArrows, type ArrowElement, type Element } from './index';
 
 // docs/specs/008-canvas/arrow-to-arrow.md: deleting a target arrow cascade-deletes the arrows attached to it, and so
 // does the arrow a deleted box takes with it.
@@ -49,5 +49,40 @@ describe('withAttachedArrows', () => {
     const out = withAttachedArrows(els, new Set(['a']));
     expect(out.size).toBe(n + 1);
     expect(performance.now() - started).toBeLessThan(100);
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Delete / Backspace": a kept arrow's end on a removed element is freed
+// where it was drawn, the other end and every other element untouched.
+describe('removeElements', () => {
+  const at = (id: string, x: number): Element => ({
+    id,
+    type: 'shape',
+    shape: 'square',
+    x,
+    y: 0,
+    width: 100,
+    height: 60,
+  });
+  const arrow = (id: string, extra: Partial<ArrowElement> = {}): ArrowElement => ({
+    id,
+    type: 'arrow',
+    from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+    to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
+    ...extra,
+  });
+
+  it('frees a kept arrow end on a removed element, and keeps what `keep` holds', () => {
+    const els = [at('a', 0), at('b', 300), arrow('x', { locked: true }), arrow('y')];
+    const out = removeElements(els, new Set(['a', 'x', 'y']), (el) => el.locked === true);
+    expect(out.map((e) => e.id)).toEqual(['b', 'x']);
+    expect((out[1] as ArrowElement).from).toEqual({ kind: 'free', x: 100, y: 30 });
+    expect((out[1] as ArrowElement).to).toEqual({ kind: 'pinned', elementId: 'b', anchor: 'w' });
+  });
+
+  it('hands back the same elements when nothing goes', () => {
+    const els = [at('a', 0), arrow('x')];
+    const out = removeElements(els, new Set(['nope']));
+    expect(out[1]).toBe(els[1]);
   });
 });

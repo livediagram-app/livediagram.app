@@ -188,6 +188,10 @@ test.describe('arrow labels and bending', () => {
     const toolbar = page.getByTestId('selection-popover');
     const zoomIn = page.getByRole('button', { name: 'Zoom in', exact: true });
     for (let step = 0; step < 8; step += 1) {
+      // Each step's click lands within a few pixels of the last one, so on a
+      // fast run the two would pair as a double-press and open the label
+      // editor, which hides the toolbar (docs/specs/008-canvas/arrow-bending.md).
+      await page.waitForTimeout(DOUBLE_PRESS_MS + 50);
       const p = await onLine(page, 'ar', 0.2);
       await page.mouse.click(p.x, p.y);
       await expect(toolbar).toBeVisible();

@@ -93,7 +93,7 @@ describe('SettingsTokenPairings', () => {
     expect(
       screen.getByRole('alertdialog', {
         name: 'Unpair Acme Editor?',
-        description: 'Its open diagrams stop editing until you allow it again.',
+        description: 'Its open designs stop editing until you allow it again.',
       }),
     ).toBeTruthy();
 
@@ -108,7 +108,7 @@ describe('SettingsTokenPairings', () => {
     expect(
       screen.getByRole('alertdialog', {
         name: 'Unpair Unnamed workbench?',
-        description: 'Its open diagrams stop editing until you allow it again.',
+        description: 'Its open designs stop editing until you allow it again.',
       }),
     ).toBeTruthy();
   });
