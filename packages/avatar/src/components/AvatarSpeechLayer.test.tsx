@@ -116,6 +116,21 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
     expect(onCancel).toHaveBeenCalled();
   });
 
+  // design-principles.md: Enter and Escape confirm or drop an input method's word first, Safari's confirming Enter
+  // (keyCode 229, after the composition ended) included.
+  it('the composer leaves Enter and Escape to an input method composing a word', () => {
+    const onSend = vi.fn(() => true);
+    const onCancel = vi.fn();
+    layer([], { head: { x: 0, y: 0 }, coolingDown: false, onSend, onCancel });
+    const box = screen.getByRole('textbox', { name: 'Message' });
+    fireEvent.change(box, { target: { value: 'にほん' } });
+    fireEvent.keyDown(box, { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(box, { key: 'Enter', keyCode: 229 });
+    fireEvent.keyDown(box, { key: 'Escape', isComposing: true });
+    expect(onSend).not.toHaveBeenCalled();
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
   it('keeps the composer inside the view, its tail still on the head', () => {
     const composer = {
       head: { x: 0, y: 0 },

@@ -6,7 +6,7 @@
 // shapes are ordinary elements, so nothing here touches an item.
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { ConfirmDialog, EmptyState } from '@liveworkspace/ui';
+import { ConfirmDialog, EmptyState, isComposingKey } from '@liveworkspace/ui';
 import { ShapesIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
 import { PlainShapeTile } from './ShapePreview';
@@ -329,6 +329,8 @@ function RenameInput({
           setError(null);
         }}
         onKeyDown={(e) => {
+          // Enter and Escape confirm or drop an input method's word first (design-principles.md).
+          if (isComposingKey(e)) return;
           if (e.key === 'Enter') void save();
           if (e.key === 'Escape') onDone();
         }}

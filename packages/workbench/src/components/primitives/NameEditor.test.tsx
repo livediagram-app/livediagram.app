@@ -59,6 +59,19 @@ describe('NameEditor', () => {
     expect(onRename).toHaveBeenCalledTimes(key === 'Enter' ? 1 : 0);
   });
 
+  // design-principles.md: Enter picks an input method's conversion, Escape drops it; the name stays open.
+  it.each([
+    ['Enter', { isComposing: true }],
+    ['Escape', { isComposing: true }],
+    ['Enter', { keyCode: 229 }],
+  ])('leaves %s to an input method composing a word', (key, init) => {
+    const onRename = vi.fn();
+    render(<Host onRename={onRename} />);
+    fireEvent.keyDown(screen.getByDisplayValue('Plan'), { key, ...init });
+    expect(onRename).not.toHaveBeenCalled();
+    expect(screen.getByRole('textbox', { name: 'Tab name' })).toBeTruthy();
+  });
+
   it('leaves focus where a click put it', async () => {
     const other = document.createElement('button');
     document.body.appendChild(other);

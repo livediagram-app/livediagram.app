@@ -80,6 +80,7 @@ export { useCopiedFlash } from './useCopiedFlash';
 export { useClickOutside } from './useClickOutside';
 export { useNearViewport } from './useNearViewport';
 export { useEscape } from './useEscape';
+export { isComposingKey } from './composing-key';
 export { useFocusTrap, type FocusTrapInitial } from './useFocusTrap';
 export {
   useSheetDrag,

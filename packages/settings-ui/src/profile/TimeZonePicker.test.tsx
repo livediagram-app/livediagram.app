@@ -161,6 +161,23 @@ describe('the Time Zone row', () => {
     expect(heard).not.toHaveBeenCalled();
   });
 
+  // design-principles.md: Enter, Escape and the arrows confirm, drop or move through an input method's word first.
+  it('leaves Enter, Escape and the arrows to an input method composing a word', () => {
+    const host = fakeHost();
+    render(<TimeZoneRow initial={profile(detected, true)} host={host} />);
+    open();
+    const field = screen.getByRole('combobox', { name: 'Search time zones' });
+    search('new york');
+    const active = field.getAttribute('aria-activedescendant');
+    fireEvent.keyDown(field, { key: 'ArrowDown', isComposing: true });
+    fireEvent.keyDown(field, { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(field, { key: 'Enter', keyCode: 229 });
+    fireEvent.keyDown(field, { key: 'Escape', isComposing: true });
+    expect(field.getAttribute('aria-activedescendant')).toBe(active);
+    expect(host.save).not.toHaveBeenCalled();
+    expect(screen.getByRole('listbox')).toBeTruthy();
+  });
+
   it('closes when the pointer goes down outside it', () => {
     render(
       <>

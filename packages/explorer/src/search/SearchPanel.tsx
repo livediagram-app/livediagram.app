@@ -16,6 +16,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { App, Folder, IndexClient } from '@liveworkspace/index-client';
+import { isComposingKey } from '@liveworkspace/ui';
 import { Dialog } from '../ui/Dialog';
 import {
   CloseIcon,
@@ -189,6 +190,8 @@ export function SearchPanel({
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // Enter and the arrows confirm or move through an input method's word first (design-principles.md).
+    if (isComposingKey(e)) return;
     if (e.key === 'ArrowDown') setActive(Math.max(0, Math.min(flat.length - 1, shown + 1)));
     else if (e.key === 'ArrowUp') setActive(Math.max(0, shown - 1));
     else if (e.key === 'Enter' && flat[shown]) pick(flat[shown]);

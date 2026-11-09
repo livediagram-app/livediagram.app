@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { Glyph } from '@liveworkspace/ui';
+import { Glyph, isComposingKey } from '@liveworkspace/ui';
 
 // The pieces a placement level is built from (the product's offline-mode.md and save-locations.md, docs/specs/013-workspace/folders.md):
 // the selectable destination card, the inline New Folder card, their
@@ -111,6 +111,8 @@ function InlineCreateTile({
         disabled={busy}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => {
+          // Enter and Escape confirm or drop an input method's word first (design-principles.md).
+          if (isComposingKey(e)) return;
           if (e.key === 'Enter') void commit();
           if (e.key === 'Escape') {
             setNaming(false);

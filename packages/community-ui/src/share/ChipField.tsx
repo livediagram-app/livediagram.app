@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, type ReactNode } from 'react';
-import { CloseIcon, FIELD_INVALID } from '@liveworkspace/ui';
+import { CloseIcon, FIELD_INVALID, isComposingKey } from '@liveworkspace/ui';
 
 // The shared chip field: chips typed into one bordered field, as the Community publish dialog's tags are.
 // Enter adds the draft (the caller decides what adding means, and handles a
@@ -128,6 +128,8 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
           disabled={disabled || inputDisabled}
           onChange={(e) => onDraftChange(e.target.value)}
           onKeyDown={(e) => {
+            // Enter and Backspace confirm or edit an input method's word first (design-principles.md).
+            if (isComposingKey(e)) return;
             if (e.key === 'Enter') {
               // Never submits a surrounding form: Enter here means "add this chip".
               e.preventDefault();

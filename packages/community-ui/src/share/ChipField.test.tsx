@@ -44,6 +44,16 @@ describe('ChipField', () => {
     expect(field().value).toBe('');
   });
 
+  // design-principles.md: Enter confirms an input method's word before it adds a chip.
+  it('leaves Enter to an input method composing a word', () => {
+    render(<Harness initial={['a']} />);
+    fireEvent.change(field(), { target: { value: 'にほん' } });
+    fireEvent.keyDown(field(), { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(field(), { key: 'Enter', keyCode: 229 });
+    expect(chips()).toBe('a');
+    expect(field().value).toBe('にほん');
+  });
+
   it('takes the last chip back on Backspace in an empty field', () => {
     render(<Harness initial={['a', 'b']} />);
     fireEvent.keyDown(field(), { key: 'Backspace' });

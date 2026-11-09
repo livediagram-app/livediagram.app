@@ -59,6 +59,22 @@ describe('renaming the tab from the menu box', () => {
     expect(screen.queryByLabelText('Tab name')).toBeNull();
   });
 
+  it('leaves Enter and Escape to an input method composing a word', () => {
+    act(() => setActiveTabName('Flowchart'));
+    const onRename = vi.fn();
+    render(<Publish can onRename={onRename} />);
+    fireEvent.click(screen.getByText('Flowchart'));
+    const field = screen.getByLabelText('Tab name');
+    fireEvent.change(field, { target: { value: 'にほん' } });
+    fireEvent.keyDown(field, { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(field, { key: 'Escape', keyCode: 229 });
+    expect(onRename).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Tab name')).toBe(field);
+    fireEvent.change(field, { target: { value: '日本' } });
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(onRename).toHaveBeenCalledWith('tab1', '日本');
+  });
+
   it('drops a draft when another tab opens, renaming neither', () => {
     function Host({ id, onRename }: { id: string; onRename: (id: string, n: string) => void }) {
       usePublishTabRename(id, onRename, true);

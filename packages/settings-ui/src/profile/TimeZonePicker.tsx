@@ -10,7 +10,13 @@ import {
   useState,
   type KeyboardEvent,
 } from 'react';
-import { CheckIcon, SearchIcon, TextInput, useClickOutside } from '@liveworkspace/ui';
+import {
+  CheckIcon,
+  isComposingKey,
+  SearchIcon,
+  TextInput,
+  useClickOutside,
+} from '@liveworkspace/ui';
 import { ChevronIcon } from '../glyphs';
 import { settingsApiErrorMessage } from '../store';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
@@ -293,6 +299,8 @@ function ZoneList({
   }, [activeIndex]);
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    // Enter, Escape and the arrows confirm, drop or move through an input method's word first (design-principles.md).
+    if (isComposingKey(event)) return;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
       if (entries.length === 0) return;

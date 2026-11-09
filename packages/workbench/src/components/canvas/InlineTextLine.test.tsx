@@ -89,6 +89,31 @@ describe('InlineTextLine', () => {
 
   // docs/specs/008-canvas/finish.md "Performance": a zoom restyled every line on the board, so every Sketch and
   // Marker face took its finish again; the focus ring's width follows the zoom only while the line is edited.
+  it('leaves Enter and Escape to an input method composing a word', () => {
+    const onCommit = vi.fn();
+    render(
+      <InlineTextLine
+        value="Payments"
+        placeholder="Title"
+        editable
+        onCommit={onCommit}
+        zoom={1}
+        maxLength={80}
+        ariaLabel="Card title"
+      />,
+    );
+    const field = screen.getByRole('textbox', { name: 'Card title' });
+    field.focus();
+    field.textContent = 'Payments にほん';
+    fireEvent.keyDown(field, { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(field, { key: 'Escape', keyCode: 229 });
+    expect(document.activeElement).toBe(field);
+    expect(field.textContent).toBe('Payments にほん');
+    expect(onCommit).not.toHaveBeenCalled();
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(onCommit).toHaveBeenCalledWith('Payments にほん');
+  });
+
   it('follows the zoom only while it is being edited', () => {
     const at = (zoom: number) => (
       <InlineTextLine
