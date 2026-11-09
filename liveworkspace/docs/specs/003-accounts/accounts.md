@@ -49,6 +49,10 @@ accounts): each account's display name as it is now, up to 100 a call, so a memb
 
 A team always keeps a joined admin: demoting or removing the last one answers `409 last_admin`. The check is part of
 the write itself, so two admins demoting or removing each other at once can't both pass it.
+The caps work the same way: an account is in at most 50 teams (making one, accepting an invitation or joining by link
+answers `409 team_limit_reached` past it) and a team holds at most 200 open rows, invited or joined (`409
+member_limit_reached`), each checked again inside the insert or update, so requests racing each other can't together
+go over.
 
 ### Invitations
 
@@ -89,6 +93,8 @@ Worker's hourly cron (`17 * * * *`, `sweepInvitations` in `src/teams.ts`):
 1. **Expires** every invitation still `invited` 28 days after its clock started (`clockStartedAt`,
    when it was sent): it becomes `declined` with `expiredAt` stamped, shown to the admins as
    expired. Nobody is emailed. At most 500 a run, oldest first, whether or not email is set up.
+   An invitation past its 28 days is closed before the sweep marks it: the invited person's list leaves it out, and
+   accepting or declining it answers `404`.
 2. **Reminds** the rest at 1, 7 and 21 days. The windows don't overlap, so an invitation hears at
    most one email a run: the latest it is due, with any it skipped stamped `0`. Each reminder
    carries a fresh decline token. A reminder waits for the [send window](#the-send-window) of the
