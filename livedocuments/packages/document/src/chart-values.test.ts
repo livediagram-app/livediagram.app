@@ -21,6 +21,12 @@ const months = [
 ];
 
 describe('shortNumber', () => {
+  it('reads a small value that rounds to nothing as 0, never -0', () => {
+    expect(shortNumber(-0.04)).toBe('0');
+    expect(shortNumber(-0.06)).toBe('-0.1');
+    expect(shortNumber(0.025, 2)).toBe('0.03');
+  });
+
   it('reads a value that rounds up to the next unit in that unit', () => {
     expect(shortNumber(999_960)).toBe('1M');
     expect(shortNumber(999_960_000)).toBe('1B');
