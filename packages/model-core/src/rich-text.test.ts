@@ -215,6 +215,11 @@ describe('expandRangeToLines', () => {
     expect(expandRangeToLines(text, { start: 9, end: 9 })).toEqual({ start: 8, end: 13 });
   });
 
+  it('keeps a caret on an empty first line on that line, never the one below', () => {
+    expect(expandRangeToLines('\nItem', { start: 0, end: 0 })).toEqual({ start: 0, end: 0 });
+    expect(expandRangeToLines('\n\nItem', { start: 1, end: 1 })).toEqual({ start: 1, end: 1 });
+  });
+
   it('spans every line a multi-line range touches, and clamps', () => {
     expect(expandRangeToLines(text, { start: 2, end: 9 })).toEqual({ start: 0, end: 13 });
     expect(expandRangeToLines(text, { start: 99, end: 99 })).toEqual({ start: 8, end: 13 });
