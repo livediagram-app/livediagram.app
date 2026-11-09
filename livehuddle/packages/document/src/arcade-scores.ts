@@ -58,6 +58,9 @@ export function arcadeScoreCeiling(ms: number): number {
   return (startLetters + Math.floor(ms / letterEveryMs)) * letterPoints * streakMax;
 }
 
+/** The latest time a JavaScript date holds (8.64e15 ms, about the year 275760). */
+const DATE_MS_MAX = 8.64e15;
+
 const isIntIn = (v: unknown, min: number, max: number): v is number =>
   typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
 
@@ -74,9 +77,14 @@ export function isArcadeScore(v: unknown): v is ArcadeScore {
     isIntIn(s.ms, 1, ARCADE_RUN_MS_MAX) &&
     isIntIn(s.score, 1, arcadeScoreCeiling(s.ms)) &&
     isStrIn(s.by, BY_MAX) &&
-    typeof s.at === 'number' &&
-    Number.isFinite(s.at)
+    // A time a date can show: the table formats it as a day, which throws past Date's range.
+    isIntIn(s.at, 0, DATE_MS_MAX)
   );
+}
+
+/** The score's own fields alone, so a field the wire does not define is never stored on the machine. */
+function ownFields(s: ArcadeScore): ArcadeScore {
+  return { id: s.id, name: s.name, score: s.score, ms: s.ms, by: s.by, at: s.at };
 }
 
 export function isArcadeScores(v: unknown): v is ArcadeScore[] {
@@ -115,5 +123,5 @@ export function arcadeTableWith(
   const rows = table ?? [];
   if (rows.some((s) => s.id === score.id)) return null;
   if (arcadePlaceOf(rows, score) === null) return null;
-  return [...rows, score].sort(compareArcadeScores).slice(0, ARCADE_SCORES_MAX);
+  return [...rows, ownFields(score)].sort(compareArcadeScores).slice(0, ARCADE_SCORES_MAX);
 }
