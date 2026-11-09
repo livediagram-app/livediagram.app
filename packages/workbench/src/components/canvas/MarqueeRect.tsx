@@ -4,7 +4,9 @@
 // a selection sweeps out on a bare canvas, in client coordinates. Its rect lives in a store written outside React
 // on each frame of the sweep, and only this reads it, so a frame renders this one node and never the canvas, the
 // element layer or the chrome around it. It sits on a compositing layer of its own (`will-change: transform`) and
-// moves by `transform`, so a frame repaints the rectangle and not the board it floats over.
+// moves by `transform`, so a frame repaints the rectangle and not the board it floats over. Between sweeps it stays in
+// the page, hidden: a sweep's start and end add and remove no element, since an element added or removed beside the
+// board makes Safari restyle the board (each editor's canvas-performance.md "A sweep moves one layer").
 
 import { useStoreSlice } from '../../hooks/ui/useStoreSlice';
 import type { ReadableStore } from '../../lib/state-store';
@@ -23,7 +25,7 @@ export function MarqueeRect<M extends MarqueeState>({
   fill: string;
 }) {
   const marquee = useStoreSlice(store, whole);
-  if (!marquee) return null;
+  if (!marquee) return <div aria-hidden data-marquee="" hidden />;
   const left = Math.min(marquee.startX, marquee.currentX);
   const top = Math.min(marquee.startY, marquee.currentY);
   return (
