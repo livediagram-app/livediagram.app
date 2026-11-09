@@ -131,8 +131,11 @@ Writes an article's text from **Markdown**.
   closes it; code is written with one backtick more than its own longest fence-like line, so code holding a
   ` ``` ` line stays one block. A link's parentheses and backslashes are escaped in its address, so an address
   such as `…/Mercury_(planet)` reads back whole. A title or subtitle wrapped in quotes is written inside the other
-  quote, so its quotes read back, and without front matter an opening divider is written `***`, never read as front
-  matter. A line holding only
+  quote, so its quotes read back, and its own `[^` is written `\[^` (a backslash before a `[`, a backslash or its
+  end doubled), so only a footnote's reference reads back as one; without front matter an opening divider is written
+  `***`, never read as front matter. A paragraph's, a heading's, a quote's or a list item's line keeps its leading and
+  trailing spaces, written `&#32;` (CommonMark's reference for a space, read as one outside code; a literal `&#32;` is
+  written `\&#32;`), where reading a line would trim them. A line holding only
   `\pagebreak` is a page break. A pipe table (a header line, a `|---|` line, then rows) is a table block, its header
   line the header row unless every header cell is empty (then no header row and no such row); cells keep their
   inline marks and links, `\|` is a literal bar, and a `<br>` in a cell is a line break. A table is written back the
