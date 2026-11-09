@@ -116,6 +116,15 @@ describe('config.toml', () => {
     expect(() => parseConfig('what', 'config.toml')).toThrow(CliError);
   });
 
+  it('keeps a " #" inside a quoted value, escaped quotes and all, and still drops the comment after it', () => {
+    const text =
+      'default_profile = "my #1"  # the usual\n[profiles.a]\nhost = "https://x.test/ #top \\" #x" # note';
+    expect(parseConfig(text, 'config.toml')).toEqual({
+      defaultProfile: 'my #1',
+      profiles: { a: { host: 'https://x.test/ #top " #x' } },
+    });
+  });
+
   it('names the line of a string whose escape JSON does not read, rather than throwing a SyntaxError', () => {
     for (const text of ['[profiles.a]\nhost = "https://x.app/a\\q"', 'default_profile = "a\tb"']) {
       expect(() => parseConfig(text, 'config.toml'), text).toThrow(CliError);
