@@ -61,6 +61,12 @@ are not drawn.
 - A change travels as one element delta, `comment-react` (`commentId`, `emoji`, `by`, `name`, `on`), applied by
   the sender and every receiver through `applyElementDelta`, like every comment change
   ([Collaboration race hardening](collab-race-hardening.md)). Two people reacting at once both land.
+- The room also stamps the delta's `person`: the reactor's hashed person id (`reactionPersonFor` in
+  `@liveworkspace/api-kit/collab-key`, the same id liveplanner's `itemPersonId` gives, so one anonymising pass finds
+  a person's reactions in every product), forwarded at the upgrade as `X-Verified-Reaction-Person` and pinned on the
+  session. It is never the frame's: a claimed `person` is taken out, and a session with no identity stamps none. It
+  is what lets a closed account's reactions read **Deleted account**. A reaction keeps it once `CommentReaction`
+  carries the optional `person` field (#1539); until then it travels on the delta and is not stored.
 - The room stamps the delta's `name` and `by` from the sender's presence, as it stamps a posted comment's author,
   so nobody reacts in someone else's name: the key is the one the server pinned on the session, whatever the
   frame or its `hello` claimed. A Participant's reaction is a participation delta: the room relays it
