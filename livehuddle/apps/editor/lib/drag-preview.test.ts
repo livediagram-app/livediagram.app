@@ -6,6 +6,7 @@ import {
   applyOverlay,
   clearLocalPreview,
   clearPeerPreview,
+  dragPreviewFor,
   localPreview,
   resetDragPreviewForTests,
   setLocalPreview,
@@ -132,5 +133,53 @@ describe('several readers', () => {
     second.rerender();
     expect(first.result.current).toBe(one);
     expect(second.result.current).toBe(two);
+  });
+});
+
+// docs/specs/008-canvas/drag-preview.md "A dragged element keeps its look": the gesture works on the stored board,
+// every reader draws the board as seen (here, a light theme's colours in the dark half).
+describe('a dragged element keeps its look', () => {
+  const LIGHT = { fillColor: '#e0e7ff', strokeColor: '#4338ca' };
+  const DARK = { fillColor: '#2e3240', strokeColor: '#9eaafd' };
+  const stored = { ...createShape('square', 0, 0), ...LIGHT } as Element;
+  const drawn = { ...stored, ...DARK } as Element;
+  const seen = (el: Element): Element =>
+    (el as { fillColor?: string }).fillColor === LIGHT.fillColor ? { ...el, ...DARK } : el;
+
+  it('hands every reader the moved element in its drawn colours, and keeps the stored ones to write', () => {
+    const moved = { ...stored, x: 50 } as Element;
+    setLocalPreview('t', [moved], [stored]);
+    const board = [drawn];
+    const o = dragPreviewFor('t', board)!;
+    expect(o.changed.get(stored.id)).toEqual({ ...drawn, x: 50 });
+    expect(localPreview()!.changed.get(stored.id)).toBe(moved);
+    // The same object for the same board until the preview changes.
+    expect(dragPreviewFor('t', board)).toBe(o);
+  });
+
+  it('keeps a colour the gesture set itself', () => {
+    setLocalPreview('t', [{ ...stored, x: 5, fillColor: '#ff0000' } as Element], [stored]);
+    expect(dragPreviewFor('t', [drawn])!.changed.get(stored.id)).toEqual({
+      ...drawn,
+      x: 5,
+      fillColor: '#ff0000',
+    });
+  });
+
+  it('draws an added element through the projection the reader gives', () => {
+    const copy = { ...stored, id: 'copy' };
+    setLocalPreview('t', [stored, copy], [stored]);
+    expect(dragPreviewFor('t', [drawn], seen)!.added[0]!.el).toEqual({ ...copy, ...DARK });
+    expect(dragPreviewFor('t', [drawn])!.added[0]!.el).toBe(copy);
+  });
+
+  it("lays ours, drawn, over a collaborator's", () => {
+    const other = { ...createShape('square', 300, 0), ...LIGHT } as Element;
+    const otherDrawn = { ...other, ...DARK } as Element;
+    setPeerPreview('peer', 't', [{ id: other.id, x: 320 }]);
+    setLocalPreview('t', [{ ...stored, x: 9 } as Element, other], [stored, other]);
+    const o = dragPreviewFor('t', [drawn, otherDrawn])!;
+    expect(o.changed.get(stored.id)).toEqual({ ...drawn, x: 9 });
+    expect(o.changed.get(other.id)).toEqual({ ...otherDrawn, x: 320 });
   });
 });

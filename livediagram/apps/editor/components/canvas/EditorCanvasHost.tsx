@@ -574,6 +574,7 @@ export function EditorCanvasHost() {
             // carry live element state, and there is then exactly one thing that
             // knows how an element looks.
             elements={canvasElements}
+            projectElement={projectStockColours.one}
             tabLayers={activeTab.layers}
             tabKind={activeTab.kind}
             editorMode={editorMode.mode}

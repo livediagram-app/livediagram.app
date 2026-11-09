@@ -497,6 +497,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     arrowLabels,
     tabFinish,
     stackedIds,
+    project: props.projectElement,
   });
   const shownOrder = useMemo(
     () => (previewStructure ? shownWithOverlay(ordered, previewStructure) : ordered),

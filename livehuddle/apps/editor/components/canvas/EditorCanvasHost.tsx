@@ -302,6 +302,7 @@ export function EditorCanvasHost() {
         }}
         setViewportOffset={setViewportOffset}
         elements={canvasElements}
+        projectElement={projectStockColours.one}
         shiftDupGhostIds={shiftDupGhostIds}
         snapGuideStore={snapGuideStore}
         remoteSelectionsByElement={remoteSelectionsByElement}

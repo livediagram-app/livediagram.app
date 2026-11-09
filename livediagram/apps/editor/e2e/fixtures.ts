@@ -310,13 +310,18 @@ export async function serverNewUrl(page: Page, url = '/new'): Promise<string> {
 
 export type Seed = Record<string, unknown>[];
 
-// Write the seed into the new document's first tab through the api, reload.
-export async function seedTab(page: Page, elements: Seed): Promise<void> {
+// Write the seed into the new document's first tab through the api, reload. `tabFields` lands on the tab beside
+// them (a theme and its canvas colours, say).
+export async function seedTab(
+  page: Page,
+  elements: Seed,
+  tabFields: Record<string, unknown> = {},
+): Promise<void> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
   const documentId = new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
   const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' }, documentId);
   await page.evaluate(
-    async ({ base, elements, headers }) => {
+    async ({ base, elements, headers, tabFields }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
       let tab: Record<string, unknown> | null = null;
       let tabId = '';
@@ -337,11 +342,11 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
       const res = await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ ...tab, elements }),
+        body: JSON.stringify({ ...tab, ...tabFields, elements }),
       });
       if (!res.ok) throw new Error(`seeding failed: ${res.status}`);
     },
-    { base: apiBase, elements, headers },
+    { base: apiBase, elements, headers, tabFields },
   );
   await page.reload();
   await page.locator('[data-canvas-a11y-root]').waitFor();

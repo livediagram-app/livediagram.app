@@ -181,6 +181,7 @@ function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
     drawnElements,
     elementIndex,
     arrowLinks,
+    project: props.projectElement,
   });
   const shownOrder = useMemo(
     () => (previewStructure ? shownWithOverlay(ordered, previewStructure) : ordered),

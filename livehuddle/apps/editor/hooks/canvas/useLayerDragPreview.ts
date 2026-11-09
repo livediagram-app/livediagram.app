@@ -45,6 +45,8 @@ export type LayerPreviewInputs = {
   drawnElements: readonly Element[];
   elementIndex: ElementIndex;
   arrowLinks: RetiredArrowLinks | null;
+  // An element the preview adds, as the canvas draws it (CanvasProps.projectElement).
+  project?: (el: Element) => Element;
 };
 
 export type LayerPreviewStore = {
@@ -102,7 +104,8 @@ function sameInputs(a: LayerPreviewInputs | null, b: LayerPreviewInputs): boolea
     a.ordered === b.ordered &&
     a.drawnElements === b.drawnElements &&
     a.elementIndex === b.elementIndex &&
-    a.arrowLinks === b.arrowLinks
+    a.arrowLinks === b.arrowLinks &&
+    a.project === b.project
   );
 }
 
@@ -225,7 +228,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       rideWriter.setRoot(plane?.parentElement ?? null);
     },
     update(inputs) {
-      const overlay = dragPreviewFor(inputs.tabId, inputs.drawnElements);
+      const overlay = dragPreviewFor(inputs.tabId, inputs.drawnElements, inputs.project);
       // The preview ended and the layer now draws another board (the release landed): the offsets go, in this
       // commit, before it paints.
       if (!overlay && rodeOver && inputs.drawnElements !== rodeOver) dropRides();

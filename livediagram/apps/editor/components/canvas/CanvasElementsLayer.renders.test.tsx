@@ -82,7 +82,12 @@ vi.mock(
     };
   },
 );
-import { clearLocalPreview, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
+import {
+  clearLocalPreview,
+  localPreview,
+  resetDragPreviewForTests,
+  setLocalPreview,
+} from '@/lib/drag-preview';
 import { buildLargeSelectionBoard } from '@/e2e/perf/large-selection-board';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
@@ -424,6 +429,87 @@ describe('a move riding an offset', () => {
     expect(plane.style.transform).toBe('translate(20px, 10px)');
     expect(translateOf(container, large[0]!.id)).toEqual(['']);
     expect(translateOf(container, large.at(-1)!.id)).toEqual(['']);
+  });
+});
+
+// docs/specs/008-canvas/drag-preview.md "A dragged element keeps its look": the layer draws the board as seen (a light
+// theme's colours in the dark half, here), while a gesture works on the stored board. Whatever the gesture does, an
+// element is drawn in the colours it had at rest.
+describe('a dragged element keeps its look', () => {
+  afterEach(() => resetDragPreviewForTests());
+
+  const LIGHT = { fillColor: '#e0e7ff', strokeColor: '#4338ca', textColor: '#312e81' };
+  const DARK = { fillColor: '#2e3240', strokeColor: '#9eaafd', textColor: '#e7eafc' };
+  const seen = (el: Element): Element =>
+    'fillColor' in el && el.fillColor === LIGHT.fillColor ? { ...el, ...DARK } : el;
+  const sa = { ...createShape('entity', 0, 0), ...LIGHT } as Element;
+  const sb = { ...createShape('square', 400, 0), ...LIGHT } as Element;
+  const stored: Element[] = [sa, sb];
+  const drawn = stored.map(seen);
+  const look = (el: Element | undefined) => {
+    const { fillColor, strokeColor, textColor } = (el ?? {}) as Record<string, unknown>;
+    return { fillColor, strokeColor, textColor };
+  };
+  const props = () => ({ ...layerProps({ elements: drawn }), projectElement: seen });
+
+  it('moves a themed element on its offset, drawn as it was, without rendering it', () => {
+    const { container } = mount(props());
+    act(() =>
+      setLocalPreview(
+        't',
+        stored.map((el) => (el.id === sa.id ? { ...sa, x: 30, y: 20 } : el)),
+        stored,
+      ),
+    );
+    expect(counts().boxed).toBe(0);
+    expect(container.querySelector<HTMLElement>(`[data-ride-id="${sa.id}"]`)!.style.translate).toBe(
+      '30px 20px',
+    );
+  });
+
+  it('draws a resized element in its colours at rest, with the size the gesture gave it', () => {
+    mount(props());
+    act(() =>
+      setLocalPreview(
+        't',
+        stored.map((el) => (el.id === sb.id ? { ...sb, width: 300 } : el)),
+        stored,
+      ),
+    );
+    expect([...renders.boxed.keys()]).toEqual([sb.id]);
+    expect(look(drawnAs.get(sb.id))).toEqual(look(drawn[1]));
+    expect((drawnAs.get(sb.id) as { width: number }).width).toBe(300);
+  });
+
+  it('keeps a colour the gesture itself changed', () => {
+    mount(props());
+    act(() =>
+      setLocalPreview(
+        't',
+        stored.map((el) => (el.id === sb.id ? { ...sb, width: 300, fillColor: '#ff0000' } : el)),
+        stored,
+      ),
+    );
+    expect(look(drawnAs.get(sb.id))).toEqual({ ...look(drawn[1]), fillColor: '#ff0000' });
+  });
+
+  it('draws a copy in hand as the canvas will draw it once dropped', () => {
+    mount(props());
+    const copy = { ...sa, id: 'copy-of-a', x: 80 } as Element;
+    act(() => setLocalPreview('t', [sa, copy, sb], stored));
+    expect(look(drawnAs.get(copy.id))).toEqual(look(drawn[0]));
+  });
+
+  it('writes the stored colours, not the drawn ones, on release', () => {
+    mount(props());
+    act(() =>
+      setLocalPreview(
+        't',
+        stored.map((el) => (el.id === sb.id ? { ...sb, width: 300 } : el)),
+        stored,
+      ),
+    );
+    expect(look(localPreview()!.changed.get(sb.id))).toEqual(look(sb));
   });
 });
 

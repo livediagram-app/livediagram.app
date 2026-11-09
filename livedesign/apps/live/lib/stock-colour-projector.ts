@@ -72,13 +72,20 @@ export function elementAsSeen(
     : resolveStockColours(viewElementInTheme(el, themeMap), surface);
 }
 
-export function createStockColourProjector(): (
+export type StockColourProjector = ((
   elements: Element[],
   surface: CanvasSurface,
   themeMap?: ReadonlyMap<string, string>,
   canvases?: { stored: string; drawn: string },
   pageView?: PageView,
-) => Element[] {
+) => Element[]) & {
+  // One element as the last board was drawn (its surface and theme map): what a drag preview adds (a Shift or Alt
+  // copy, a quick-connect arrow) is drawn through it (docs/specs/008-canvas/drag-preview.md "A dragged element keeps
+  // its look"). Cached per element, as the board is; the element itself before any board was drawn.
+  one: (el: Element) => Element;
+};
+
+export function createStockColourProjector(): StockColourProjector {
   let cacheSurface: CanvasSurface | null = null;
   let cacheMap: ReadonlyMap<string, string> | null = null;
   let cacheCanvases = '';
@@ -93,7 +100,15 @@ export function createStockColourProjector(): (
   let lastIn: Element[] | null = null;
   let lastOut: Element[] = [];
   let lastSurfaces: PageView['surfaces'] | null = null;
-  return (elements, surface, themeMap = NO_THEME_MAP, canvases, pageView) => {
+  let lastPageView: PageView | undefined;
+  const project: StockColourProjector = (
+    elements,
+    surface,
+    themeMap = NO_THEME_MAP,
+    canvases,
+    pageView,
+  ) => {
+    lastPageView = pageView;
     const canvasKey = canvases ? `${canvases.stored}|${canvases.drawn}` : '';
     const maps = pageView?.maps ?? null;
     if (
@@ -148,4 +163,14 @@ export function createStockColourProjector(): (
     }
     return lastOut;
   };
+  project.one = (el) => {
+    if (cacheSurface === null || !cacheMap) return el;
+    const on = `${lastPageView?.surfaces.get(el.id) ?? ''}${lastPageView?.tones?.get(el.id) ?? ''}`;
+    const hit = cache.get(el);
+    if (hit?.on === on) return hit.out;
+    const out = elementAsSeen(el, cacheSurface, cacheMap, lastPageView);
+    cache.set(el, { on, out });
+    return out;
+  };
+  return project;
 }

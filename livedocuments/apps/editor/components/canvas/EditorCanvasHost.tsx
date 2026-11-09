@@ -388,6 +388,7 @@ export function EditorCanvasHost() {
             // carry live element state, and there is then exactly one thing that
             // knows how an element looks.
             elements={canvasElements}
+            projectElement={projectStockColours.one}
             tabLayers={activeTab.layers}
             editorMode={editorMode.mode}
             // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
