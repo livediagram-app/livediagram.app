@@ -47,8 +47,12 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   behind it (the same backdrop as above) and reading worse than before, the label's ink is walked in lightness, its
   hue and chroma kept, until it reaches 3:1 (`withReadableLabelInks`, `packages/design/src/label-backdrop.ts`, on
   `reachContrast`). A pick stores the walked ink, as it stores the rest of the theme; a view only draws it. A label no
-  theme touched keeps its ink however low it reads, since that is someone's choice. livedesign never runs the walk:
-  every tab is pages, and their words sit on pages with their own paper, not on the canvas. `apps/live/lib/template-overlay-contrast.test.ts` holds every
+  theme touched keeps its ink however low it reads, since that is someone's choice. In livedesign every tab is pages,
+  so the walk reads a label against the **plain paper** a page with no fill of its own shows (and what lies on it):
+  white as stored and printed, slate in the dark editor. A template's dark words made for white paper (a wireframe's
+  heading, a logo's wordmark) are drawn walked in the dark editor rather than vanishing; nothing stored changes, and an
+  export prints them as made. Words on a page with a fill of its own are drawn for that page, below, never walked
+  against the paper. `apps/live/lib/template-overlay-contrast.test.ts` holds every
   template's labels at 3:1 under every theme, picked in either half and seen in either
   ([#819](https://github.com/livedesign-app/livedesign.app/issues/819)).
 - **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
