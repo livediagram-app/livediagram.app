@@ -64,6 +64,8 @@ export function useEditorUiState(
   // Which Sankey's Flows dialog is open (docs/specs/009-elements/sankey.md "The Flows dialog"), or null.
   // Opened by double-click on the diagram and by the menu's Edit Flows.
   const [sankeyFlowsOpenForId, setSankeyFlowsOpenForId] = useState<string | null>(null);
+  // Which map's Map dialog is open (docs/specs/009-elements/map.md "The Map dialog"), or null.
+  const [mapDialogOpenForId, setMapDialogOpenForId] = useState<string | null>(null);
 
   return {
     selectionStore,
@@ -86,5 +88,7 @@ export function useEditorUiState(
     setCodeEditOpenForId,
     sankeyFlowsOpenForId,
     setSankeyFlowsOpenForId,
+    mapDialogOpenForId,
+    setMapDialogOpenForId,
   };
 }

@@ -30,6 +30,10 @@ const DATA = {
   heading: 'data-rt-heading',
   // A caption's quieter run (docs/specs/009-elements/block-type-picker.md "Title and Caption").
   muted: 'data-rt-muted',
+  // Text effects (docs/specs/008-canvas/text-effects.md): typed characters inside a highlight or a
+  // gradient keep it.
+  highlight: 'data-rt-highlight',
+  gradient: 'data-rt-gradient',
 } as const;
 
 // Marks the render-only trailing <br>. A '\n' at the very end of the content
@@ -79,6 +83,8 @@ export function dataAttrsForRun(run: TextRun): Record<string, string> {
   if (run.link !== undefined) out[DATA.link] = run.link;
   if (run.heading !== undefined) out[DATA.heading] = String(run.heading);
   if (run.muted !== undefined) out[DATA.muted] = String(run.muted);
+  if (run.highlight !== undefined) out[DATA.highlight] = run.highlight;
+  if (run.gradient !== undefined) out[DATA.gradient] = run.gradient;
   return out;
 }
 
@@ -110,6 +116,10 @@ function attrsFromElement(el: HTMLElement): Omit<TextRun, 'text'> {
     out.heading = Number(heading) as 1 | 2 | 3;
   const muted = bool(DATA.muted);
   if (muted !== undefined) out.muted = muted;
+  const highlight = el.getAttribute(DATA.highlight);
+  if (highlight) out.highlight = highlight;
+  const gradient = el.getAttribute(DATA.gradient);
+  if (gradient) out.gradient = gradient;
   return out;
 }
 

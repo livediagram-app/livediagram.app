@@ -10,6 +10,7 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } from '@/lib/themes';
 import { canEditSankey } from '@/lib/sankey-edit';
+import { canEditMap } from '@/lib/map-edit';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
@@ -116,6 +117,8 @@ export function EditorContextMenuHost() {
     setLegendItemsSelected,
     sankey,
     setSankeyFlowsOpenForId,
+    mapEdits,
+    setMapDialogOpenForId,
     can,
     setChecklistItemsSelected,
     toggleChecklistItem,
@@ -210,6 +213,11 @@ export function EditorContextMenuHost() {
           onSetOption: sankey.setSankeyOptionSelected,
         }
       : undefined;
+  // A map's menu section (docs/specs/009-elements/map.md "The menu"), for someone who may edit it.
+  const mapMenu =
+    ctxSelectedEl && canEditMap(can, ctxSelectedEl)
+      ? { onEditMap: setMapDialogOpenForId, onSetView: mapEdits.setMapViewSelected }
+      : undefined;
 
   return (
     <EditorContextMenu
@@ -296,6 +304,7 @@ export function EditorContextMenuHost() {
       onSetCodeWrap={setCodeWrapSelected}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
+      map={mapMenu}
       chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}

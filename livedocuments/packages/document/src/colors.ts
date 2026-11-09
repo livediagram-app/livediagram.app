@@ -460,6 +460,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'legend',
   // Sankey (docs/specs/009-elements/sankey.md): nodes and bands, coloured per node; no box to stroke.
   'sankey',
+  // Map (docs/specs/009-elements/map.md): its land, countries and pins; no box to stroke.
+  'map',
   // A tab window (docs/specs/009-elements/tab-window.md) draws its own rounded frame round the tab it shows.
   'tab-window',
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar

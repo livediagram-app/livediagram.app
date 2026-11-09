@@ -10,6 +10,7 @@
 // the tab. An article's writing is read for every page in one pass (writingBarsByPage), and a page
 // whose lines of writing did not move keeps its picture (docs/specs/008-canvas/canvas-performance.md
 // "Pictures of every page").
+import { useMapGeometryFor } from '@/lib/map-geometry-loader';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   pagesOf,
@@ -57,6 +58,8 @@ export function usePageThumbnails(
   settleMs = 0,
 ): Map<string, SlideThumb> {
   const iconsLoaded = useIconCatalogs();
+  // A map's land, once loaded (docs/specs/009-elements/map.md): fetched only when the tab has a map.
+  const mapGeometry = useMapGeometryFor(tab.elements);
   // The canvas's surface: a page with no fill is pictured on the paper as the canvas shows it.
   const surface = useCanvasSurface();
   const key = pageIds.join(',');
@@ -90,7 +93,15 @@ export function usePageThumbnails(
     const { byId, buckets } = laidOut;
     const resolveImageHref = thumbImageHref(imageSource);
     // The articles are not shared: each page compares its own writing and style below.
-    const shared: Shared = [full.id, full.layers, full.font, full.finish, iconsLoaded, surface];
+    const shared: Shared = [
+      full.id,
+      full.layers,
+      full.font,
+      full.finish,
+      iconsLoaded,
+      surface,
+      mapGeometry,
+    ];
     const kept = sameList(shared, cache.current.shared)
       ? cache.current.pages
       : new Map<string, Drawn>();
@@ -137,7 +148,7 @@ export function usePageThumbnails(
     }
     cache.current = { shared, pages: next };
     return out;
-  }, [drawn, laidOut, imageSource, iconsLoaded, surface]);
+  }, [drawn, laidOut, imageSource, iconsLoaded, surface, mapGeometry]);
 }
 
 function sameList(a: readonly unknown[], b: readonly unknown[]): boolean {

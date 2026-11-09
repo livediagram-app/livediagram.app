@@ -362,6 +362,8 @@ export * from './er-heads';
 export * from '@liveworkspace/model-core/border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
+// Text effects (docs/specs/008-canvas/text-effects.md): gradient presets and the highlight band.
+export * from './text-effects';
 export * from './finish';
 export * from './sketch';
 export * from './sketch-element';
@@ -400,6 +402,11 @@ export * from '@liveworkspace/model-core/plural';
 export * from './element-action';
 export * from './data-shapes';
 export * from './sankey-model';
+// Map (docs/specs/009-elements/map.md): its model and layout; the geometry is the
+// `@livedocuments/document/map-geometry` subpath, never this barrel.
+export * from './map-model';
+export * from './map-layout';
+export * from './map-geometry-ensure';
 export * from './sankey-layout';
 export * from './sankey-frame';
 export * from './sankey-text';

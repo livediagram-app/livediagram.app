@@ -101,7 +101,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   media: 10,
   components: 11,
   concepts: 8,
-  data: 7,
+  data: 8,
 };
 
 describe('PALETTE_CATEGORIES', () => {

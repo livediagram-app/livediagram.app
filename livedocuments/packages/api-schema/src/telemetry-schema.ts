@@ -365,6 +365,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Legend',
     // Sankey diagram (docs/specs/009-elements/sankey.md): a Build element; its kind has no hyphen to keep.
     'Sankey',
+    // Map (docs/specs/009-elements/map.md).
+    'Map',
   ],
   components: [
     'Banner',

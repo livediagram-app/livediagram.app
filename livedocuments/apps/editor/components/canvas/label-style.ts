@@ -21,6 +21,7 @@ import type {
   RunHeading,
 } from '@livedocuments/document';
 import type { RunDefaults } from '@/components/rich-text/rich-text-format';
+import { runEffectCss } from '@/components/canvas/run-effect-style';
 
 // The base a label run's unset deltas inherit: the element's whole-element
 // text fields. Notes have no such base and use PLAIN_RUN_DEFAULTS instead.
@@ -192,7 +193,8 @@ export function effectiveRunStyle(
     css.fontWeight = h.weight;
     css.lineHeight = '1.25';
   }
-  return css;
+  // Highlight and gradient (docs/specs/008-canvas/text-effects.md).
+  return Object.assign(css, runEffectCss(run, el.type === 'text' ? el.shadow : undefined));
 }
 
 // The typography a label wears, display and editor alike. They MUST agree:

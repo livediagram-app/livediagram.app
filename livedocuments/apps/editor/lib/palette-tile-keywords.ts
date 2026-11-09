@@ -53,6 +53,8 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'progress-ring': 'donut ring percent gauge dial',
   'timeline-rail': 'timeline roadmap milestones track history plan dates schedule',
   rating: 'stars score review out of five',
+  // Map (docs/specs/009-elements/map.md): what people search for when they want one.
+  map: 'world globe country countries region geography atlas pins locations offices markets',
   legend: 'key colour code swatch label caption guide colour key',
   'pie-chart': 'donut doughnut ring share split proportion chart',
   'bar-chart': 'column bar horizontal histogram chart graph',

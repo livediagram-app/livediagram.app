@@ -52,6 +52,10 @@ const SankeyView = dynamic(
   () => import('@/components/canvas/SankeyView').then((m) => m.SankeyView),
   { ssr: false },
 );
+// So does a map (docs/specs/009-elements/map.md), and its geometry after it.
+const MapView = dynamic(() => import('@/components/canvas/MapView').then((m) => m.MapView), {
+  ssr: false,
+});
 
 type ShapeContentRouterProps = Pick<
   BoxedElementViewProps,
@@ -90,6 +94,7 @@ export function drawsShapeSvgOverlay(kind: ShapeKind): boolean {
     !isCodeBlockShape(kind) &&
     !isLegendShape(kind) &&
     !isSankeyShape(kind) &&
+    kind !== 'map' &&
     !isChecklistShape(kind) &&
     !isLineShape(kind)
   );
@@ -246,6 +251,9 @@ export function ShapeContentRouter({
       editable={!readOnly && !isLocked}
       onToggle={onToggleChecklistItem}
     />
+  ) : element.type === 'shape' && element.shape === 'map' ? (
+    // Map (docs/specs/009-elements/map.md): countries, highlights and pins.
+    <MapView element={element} accent={accent} textColor={textColor} fontFamily={fontFamily} />
   ) : element.type === 'shape' && isSankeyShape(element.shape) ? (
     // Sankey diagram (docs/specs/009-elements/sankey.md): flows between nodes, laid out in columns.
     <SankeyView

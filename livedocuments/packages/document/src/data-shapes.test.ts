@@ -15,6 +15,7 @@ import {
   isSelfDrawingShape,
 } from './data-shapes';
 import { isSankeyShape } from './sankey-model';
+import { isMapShape } from './map-model';
 
 // The self-drawing shape family decides real behaviour: BoxedElementView picks
 // a renderer off it, elementSupportsText uses isSelfDrawingShape to decide
@@ -44,6 +45,8 @@ const FAMILIES: { name: string; guard: (k: ShapeKind) => boolean }[] = [
   { name: 'checklist', guard: isChecklistShape },
   { name: 'legend', guard: isLegendShape },
   { name: 'sankey', guard: isSankeyShape },
+  // docs/specs/009-elements/map.md: a map draws its countries and pins.
+  { name: 'map', guard: isMapShape },
 ];
 
 const kindsMatching = (guard: (k: ShapeKind) => boolean) => ALL.filter(guard).sort();

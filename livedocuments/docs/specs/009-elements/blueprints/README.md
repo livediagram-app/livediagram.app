@@ -12,6 +12,7 @@ Follow the references below only as needed; never upfront.
 - ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard
 - ./progress.md - when implementing or changing the progress bar / ring, its fill animation or its menu
 - ./rating.md - when implementing or changing the star rating, its animations or its picker
+- ./map.md - when implementing or changing the map, its geometry, layout, dialog, menu or export
 - ./rich-text-notes.md - (retired 2026-11-04 in livedocuments) when implementing or changing rich-text notes, the note popover or the block-type picker
 - ./sankey.md - when implementing or changing the Sankey diagram, its layout, labels, Flows dialog, menu or export
 - ./shape-markers.md - when implementing or changing shape status markers, their menu or render

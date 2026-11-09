@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="canvas"
 >
 
-A drop shadow lifts an element off the canvas: cards read as cards, hero shapes get depth, and a key element separates from a busy background. The **Shadow** controls live in the element's right-click menu (a long press on a touch screen): open **Style**, and **Shadow** sits right after Border. They work on anything that draws a visible body: shapes (icons and data shapes included), sticky notes and videos. Images and stickers have no Style section, so no Shadow either. Text, arrows, freehand strokes and tables don't carry shadows (a rectangular shadow under a line or a run of text reads as a glitch, not a style).
+A drop shadow lifts an element off the canvas: cards read as cards, hero shapes get depth, and a key element separates from a busy background. The **Shadow** controls live in the element's right-click menu (a long press on a touch screen): open **Style**, and **Shadow** sits right after Border. They work on anything that draws a visible body: shapes (icons and data shapes included), sticky notes, pictures and videos. On a **text** element the shadow sits behind the letters themselves, a soft lift for a headline over a photo, rather than behind a box. Stickers, arrows, freehand strokes and tables don't carry shadows (a rectangular shadow under a line reads as a glitch, not a style).
 
 <Figure caption="The Shadow category: five presets over four sliders, with Drop lifting the card beside it.">
   <ShadowCategory />
@@ -45,7 +45,7 @@ With no shadow set, the sliders show the Drop preset's values, and dragging any 
 ## Good to know
 
 - **The colour is fixed** to a dark ink, so shadows always read as shade and keep working when you switch [themes](/help/canvas/themes/). Themes never add or change shadows.
-- **Exports match the canvas**: PNG, SVG, and PDF exports, plus [snapshots and embeds](/help/collaboration/sharing/live-image/), render the same shadow you see.
+- **Exports match the canvas**: PNG, SVG, and PDF exports, plus [snapshots and embeds](/help/collaboration/sharing/live-image/), render the same shadow you see. In a PowerPoint export a shadowed text element stays editable text, its shadow written as PowerPoint's own text shadow.
 - **The [format painter](/help/selection-modes/format-painter/) copies shadows** along with the rest of an element's styling. Resetting a shape's style with **Reset to Default** under Presets clears the shadow; **Reset to Theme** leaves it alone, since it only touches colours.
 - To remove a shadow, pick **None**, or press **Cmd+Z** (**Ctrl+Z** on Windows and Linux) straight after adding it.
 

@@ -48,6 +48,15 @@ import {
   SANKEY_VALUE_LABELS,
   SANKEY_VALUE_MAX,
 } from './sankey-model';
+import {
+  isMapCode,
+  isMapPin,
+  MAP_HIGHLIGHTS_MAX,
+  MAP_LAT_MAX,
+  MAP_PIN_LABEL_MAX,
+  MAP_PINS_MAX,
+  MAP_REGIONS,
+} from './map-model';
 
 // railLabels / lineCategories / pieSlices / lineSeries.
 const MAX_DATA_ARRAY = 5_000;
@@ -285,6 +294,22 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: stringRule(SANKEY_NAME_MAX),
   },
   flag('sankeyAnimRepeat'),
+  // Map (docs/specs/009-elements/map.md "Model").
+  oneOf('mapRegion', MAP_REGIONS),
+  { field: 'mapCountry', valid: isMapCode, rule: 'a country code of 2 or 3 capital letters' },
+  {
+    field: 'mapHighlights',
+    valid: rowsOf(MAP_HIGHLIGHTS_MAX, isMapCode),
+    rule: arrayRule(MAP_HIGHLIGHTS_MAX, 'country codes of 2 or 3 capital letters'),
+  },
+  {
+    field: 'mapPins',
+    valid: rowsOf(MAP_PINS_MAX, isMapPin),
+    rule: arrayRule(
+      MAP_PINS_MAX,
+      `{ id, lat (-${MAP_LAT_MAX} to ${MAP_LAT_MAX}), lon (-180 to 180), label? (${MAP_PIN_LABEL_MAX} characters) } rows`,
+    ),
+  },
 ];
 
 // A shape's own issue, its box already checked: the kind is required, the rest optional.

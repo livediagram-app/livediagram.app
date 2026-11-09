@@ -285,6 +285,7 @@ export function RichTextEditor({
           onApplyTitleCaption={applyTitleCaptionPreset}
           listStyle={listStyleOfText(liveText)}
           onColor={(color) => onPatch({ color })}
+          onEffect={(patch) => onPatch(patch, 'highlight' in patch ? 'Highlight' : 'Gradient')}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}
         />
       </div>

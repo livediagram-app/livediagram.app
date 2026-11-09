@@ -37,6 +37,11 @@ import {
   SANKEY_NAME_MAX,
   SANKEY_UNIT_MAX,
   SANKEY_VALUE_LABELS,
+  MAP_HIGHLIGHTS_MAX,
+  MAP_LAT_MAX,
+  MAP_PIN_LABEL_MAX,
+  MAP_PINS_MAX,
+  MAP_REGIONS,
   RETIRED_SHAPE_KINDS,
   SHAPE_KINDS,
   STEP_LABEL_MAX,
@@ -103,6 +108,13 @@ const CONTENT_KINDS =
   'the difference to a "Leftover" end node; hide: it does not), "sankeyLeftoverName" (that ' +
   "node's name; do not write leftover flows yourself). Make it " +
   'wide (about 2:1); it draws no title. ' +
+  // Map (docs/specs/009-elements/map.md).
+  `shape "map": a world map drawn in one flat colour, no tiles. "mapRegion" (${MAP_REGIONS.join(', ')}; ` +
+  'default world) picks the view, or "mapCountry" (an ISO 3166 alpha-2 code such as "FR", "JP") frames one ' +
+  'country with its neighbours faint. "mapHighlights" lists country codes filled in the accent ' +
+  `(the shape's "strokeColor"; up to ${MAP_HIGHLIGHTS_MAX}), "mapPins" [{ "id", "lat", "lon", "label"? }] ` +
+  `drops a dot in the text colour with a haloed label (up to ${MAP_PINS_MAX} pins, latitude within ${MAP_LAT_MAX}, labels up to ` +
+  `${MAP_PIN_LABEL_MAX} chars); "fillColor" is the land. Make it wide (about 2:1); it draws no title. ` +
   // The diagram-building kinds (docs/specs/015-api/mcp-server.md §4.7a).
   'shape "card": a node with a title, meta line and body; "pageTitle" is the title, "pageSubtitle" ' +
   'the meta (a product or runtime), "label" the body, "cardMedia" + "iconId" the glyph (a badge disc, a ' +

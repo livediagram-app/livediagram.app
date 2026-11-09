@@ -55,6 +55,7 @@ export {
   xmlEscape,
 } from './svg-render-primitives';
 import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
+import { hasTextEffects, textEffectIdPrefix } from './svg-render-text-effects';
 import { svgWordmarkLabel } from './svg-render-wordmark';
 import { hasWordmarkType } from './wordmark';
 
@@ -436,6 +437,8 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
               label.maxWidth,
               label.valign,
               label.fontFamily,
+              undefined,
+              textEffectIdPrefix(el.id),
             )
           : svgWrappedLabel(
               // Wrapped in the face it paints in, or a wide face breaks at the
@@ -510,6 +513,9 @@ export function boxedNeedsSvgRaster(
   // An accent edge (docs/specs/008-canvas/accent-edge.md) is a clipped bar only the SVG draws.
   if (resolvedAccentEdge(el)) return true;
   if (el.type === 'table' || el.type === 'freehand') return true;
+  // A highlighted or gradient word (docs/specs/008-canvas/text-effects.md) is a band rect or a gradient fill only
+  // the SVG draws.
+  if (hasTextEffects(el)) return true;
   // Wordmark type (tracking, weight, case, an arc) is drawn by the SVG alone.
   if (el.type === 'text' && hasWordmarkType(el)) return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;

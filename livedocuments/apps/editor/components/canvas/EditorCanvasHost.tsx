@@ -34,6 +34,7 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { useTemplateStartOpen } from '@/components/start/useTemplateStartShown';
 import { canEditSankey } from '@/lib/sankey-edit';
+import { canEditMap } from '@/lib/map-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
 import {
   brushPageId,
@@ -194,6 +195,7 @@ export function EditorCanvasHost() {
     setExportScope,
     setCodeEditOpenForId,
     setSankeyFlowsOpenForId,
+    setMapDialogOpenForId,
     setFormatSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
@@ -267,6 +269,7 @@ export function EditorCanvasHost() {
     if (!el || el.type !== 'shape') return;
     if (el.shape === 'code-block') setCodeEditOpenForId(id);
     else if (el.shape === 'sankey' && canEditSankey(can, el)) setSankeyFlowsOpenForId(id);
+    else if (canEditMap(can, el)) setMapDialogOpenForId(id);
   };
   // A Collaborate panel row goes to its card, brought into view (goToElement).
   const goToRowElement = (id: string) =>

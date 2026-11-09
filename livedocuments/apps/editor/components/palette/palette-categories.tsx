@@ -131,7 +131,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Data',
     group: 3,
     description:
-      'Charts and meters: pie, bar and line charts, progress bars and rings, and ratings.',
+      'Charts and meters: pie, bar and line charts, progress bars and rings, ratings, and maps.',
     icon: <DataTabIcon />,
   },
 ];

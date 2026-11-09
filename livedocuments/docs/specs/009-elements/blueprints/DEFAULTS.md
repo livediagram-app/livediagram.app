@@ -125,3 +125,8 @@ One row per default applied where a spec is silent or qualitative.
 | D253 | picture-crop-and-mask  | The crop overlay's look                                                     | Veil slate-900 at 55%, dimmed picture at 45%, white frame with thirds lines at 35%, 12 px corner handles and 20 x 6 px edge bars                                                 |
 | D254 | logo-strip             | A logo strip's parts                                                        | Row stack, gap 40, padding 16, no border or fill; five 160 x 64 contain, greyscale placeholders, alt Logo; a drag shares its width, each at least 48 x 24                        |
 | D255 | images                 | Page picture blur copy                                                      | Long side clamp(round(pageLong x 3 / sigma), 96, 1024) px, three box passes, JPEG 0.86, last 8 kept                                                                              |
+| D194 | map | Pin and label sizes | Pin radius `clamp(min(w, h) * 0.022, 3.5, 9)` with a paper ring; labels `clamp(min(w, h) * 0.055, 10, 22)` px, weight 600, a paper halo |
+| D195 | map | Land and border colours | Land is the fill colour, else `#dbe3ec` on light paper and `#334155` on dark; borders the paper colour, `0.5..1.2` px |
+| D196 | map | How faint the context countries are | 45% opacity |
+| D197 | map | The region windows | The longitude and latitude windows in the blueprint table, each framing the region with a little sea round it |
+| D198 | map | What draws before the geometry loads | A rounded rect in the land colour at 60% opacity |
