@@ -39,7 +39,12 @@ describe('useEscape', () => {
     const onEscape = vi.fn();
     render(<Surface onEscape={onEscape} />);
     for (const init of [{ isComposing: true }, { keyCode: 229 }]) {
-      const e = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true, ...init });
+      const e = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
       document.dispatchEvent(e);
       expect(e.defaultPrevented).toBe(false);
     }

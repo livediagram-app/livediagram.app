@@ -16,7 +16,10 @@ describe('webhook pickers side by side', () => {
       </>,
     );
     const names = new Set(
-      Array.from(container.querySelectorAll<HTMLInputElement>('input[type="radio"]'), (r) => r.name),
+      Array.from(
+        container.querySelectorAll<HTMLInputElement>('input[type="radio"]'),
+        (r) => r.name,
+      ),
     );
     expect(names.size).toBe(2);
   });

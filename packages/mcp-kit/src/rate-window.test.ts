@@ -25,7 +25,8 @@ describe('overWindowLimit', () => {
   it('stops the 21st call in an hour, and lets only that address be stopped', async () => {
     const clock = { now: Date.UTC(2026, 10, 9, 10) };
     const kv = ttlKv(clock);
-    for (let i = 0; i < 20; i++) expect(await overWindowLimit(kv, 'reg', '1.2.3.4', limit, clock.now)).toBe(false);
+    for (let i = 0; i < 20; i++)
+      expect(await overWindowLimit(kv, 'reg', '1.2.3.4', limit, clock.now)).toBe(false);
     expect(await overWindowLimit(kv, 'reg', '1.2.3.4', limit, clock.now)).toBe(true);
     expect(await overWindowLimit(kv, 'reg', '5.6.7.8', limit, clock.now)).toBe(false);
   });
