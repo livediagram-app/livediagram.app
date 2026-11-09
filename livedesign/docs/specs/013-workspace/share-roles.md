@@ -96,7 +96,7 @@ any of them. Who owns an item and who may reach it is liveworkspace's index's
 - Links are liveworkspace's index's: one link carries a level, `view`, `participate` or `edit`, and optionally one
   tab ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Sharing and access").
   The shared Share dialog (`LEVEL_PASS` in `packages/explorer/src/dialogs/share/parts.tsx`) offers the three in this
-  order: **Editor** ("Works with you in real time."), **Participant** ("Comments, votes and works items. Can't
+  order: **Editor** ("Works with you in real time."), **Participant** ("Comments, votes and works on items. Can't
   reshape it.") and **Viewer** ("Watches along. Can't comment or change a thing."), a new pass starting as an
   Editor's ([Live app](../007-editor/live-app.md#share-dialog)).
 - The api reads the level off the index's grant on every request and room socket (`X-Index-Grant`).

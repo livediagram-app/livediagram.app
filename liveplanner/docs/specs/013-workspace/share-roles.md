@@ -101,7 +101,7 @@ Share links are the index's, made and managed in the shared Share dialog (`Share
 once a plan is open.
 
 - The Share dialog offers three levels, in this order: **Viewer** ("Watches along. Can’t comment or change a
-  thing."), **Participant** ("Comments, votes and works items. Can’t reshape it.") and **Editor** ("Works with you
+  thing."), **Participant** ("Comments, votes and works on items. Can’t reshape it.") and **Editor** ("Works with you
   in real time."). Each link shows its level on a chip and can be changed in place.
 - A link visitor's level comes from the grant the index issues for the link (`level`, and `tab` when the link opens
   one tab). The api and the room check it on every request and socket ([API](../015-api/api.md) "Access").

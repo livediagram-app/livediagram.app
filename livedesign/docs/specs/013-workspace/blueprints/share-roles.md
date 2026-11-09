@@ -311,7 +311,7 @@ Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
 | Level       | Title / blurb                                                          | Stub          | Glyph            | Solid (stub)                                     |
 | ----------- | ---------------------------------------------------------------------- | ------------- | ---------------- | ------------------------------------------------ |
 | edit        | **Editor** / "Works with you in real time."                            | `EDITOR`      | `PencilLineIcon` | `bg-brand-700 text-white dark:bg-brand-600`      |
-| participate | **Participant** / "Comments, votes and works items. Can't reshape it." | `PARTICIPANT` | `VoteIcon`       | `bg-teal-700 text-white dark:bg-teal-600/60`     |
+| participate | **Participant** / "Comments, votes and works on items. Can't reshape it." | `PARTICIPANT` | `VoteIcon`       | `bg-teal-700 text-white dark:bg-teal-600/60`     |
 | view        | **Viewer** / "Watches along. Can't comment or change a thing."         | `VIEWER`      | `EyeIcon`        | `bg-violet-500 text-white dark:bg-violet-500/60` |
 
 The cards' copy is the shared dialog's (`LEVEL_PASS` in `packages/explorer/src/dialogs/share/parts.tsx`), the same in
