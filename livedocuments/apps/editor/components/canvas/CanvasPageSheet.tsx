@@ -4,6 +4,7 @@ import { memo, type CSSProperties, type PointerEvent } from 'react';
 import { FirstPageChoice } from './FirstPageChoice';
 import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { PageCog, PageTitleBar } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
+import { PageLabelCard } from '@liveworkspace/workbench/components/canvas/PageLabelCard';
 import { PageBackgroundButton } from './PageBackgroundButton';
 import { PageTabStyleButton } from './PageTabStyleButton';
 import { appearanceRows, PageAppearanceButton } from './PageAppearanceButton';
@@ -39,7 +40,6 @@ import {
   type ThemeBackgroundPreset,
 } from '@livedocuments/document';
 import type { PageLayoutId } from '@livedocuments/templates';
-import { HoverCard } from '@livedocuments/ui';
 import type { PageDeckControls, PageEdits } from '@/hooks/editor/usePagesMode';
 import { pageSheetStyle } from '@/lib/page-paint';
 import { FlashcardFooter } from './FlashcardStack';
@@ -304,39 +304,19 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           ...steady(zoom, 'bottom left'),
         }}
       >
-        <HoverCard
-          title={label}
-          description="Press to fit this page to the screen."
-          className="min-w-0 max-w-full"
-        >
-          <button
-            type="button"
-            // The Pages tour's anchor (docs/specs/007-editor/pages-tour.md); the first page's leads.
-            data-tour-id="page-name"
-            onPointerDown={(e) => act.dragDown(id, e)}
-            onPointerMove={(e) => act.dragMove(id, e)}
-            onPointerUp={(e) => act.dragUp(id, e)}
-            onPointerCancel={act.dragCancel}
-            onClick={() => {
-              if (!act.endsDrag()) act.goToPage(page);
-            }}
-            onDoubleClick={(e) => e.stopPropagation()}
-            className={`group/label pointer-events-auto block max-w-full truncate whitespace-nowrap rounded-md px-1.5 py-1 text-xs text-slate-500 transition hover:bg-white/80 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800/80 ${
-              editable && reorderable ? 'cursor-grab active:cursor-grabbing' : ''
-            }`}
-          >
-            {/* Its name leads, the size and kind after it quieter, so a row of pages scans by name. */}
-            {labelParts.name ? (
-              <span className="font-semibold text-slate-700 group-hover/label:text-slate-900 dark:text-slate-200 dark:group-hover/label:text-white">
-                {labelParts.name}
-              </span>
-            ) : null}
-            {labelParts.name && labelParts.rest ? ' · ' : null}
-            <span className="font-medium group-hover/label:text-slate-600 dark:group-hover/label:text-slate-300">
-              {labelParts.rest}
-            </span>
-          </button>
-        </HoverCard>
+        <PageLabelCard
+          label={label}
+          name={labelParts.name}
+          rest={labelParts.rest}
+          grab={editable && reorderable}
+          onPointerDown={(e) => act.dragDown(id, e)}
+          onPointerMove={(e) => act.dragMove(id, e)}
+          onPointerUp={(e) => act.dragUp(id, e)}
+          onPointerCancel={act.dragCancel}
+          onClick={() => {
+            if (!act.endsDrag()) act.goToPage(page);
+          }}
+        />
       </div>
       {editable ? (
         // The page's own controls, one toolbar card in three groups (PageTitleBar): how the

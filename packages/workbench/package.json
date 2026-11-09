@@ -31,6 +31,7 @@
     "./components/canvas/ContentsOptions": "./src/components/canvas/ContentsOptions.tsx",
     "./components/canvas/PageLockButton": "./src/components/canvas/PageLockButton.tsx",
     "./components/canvas/AppearanceRowList": "./src/components/canvas/AppearanceRowList.tsx",
+    "./components/canvas/PageLabelCard": "./src/components/canvas/PageLabelCard.tsx",
     "./components/canvas/PageTitleBar": "./src/components/canvas/PageTitleBar.tsx",
     "./components/canvas/PageRowMenu": "./src/components/canvas/PageRowMenu.tsx",
     "./components/canvas/PanelSnapSlot": "./src/components/canvas/PanelSnapSlot.tsx",

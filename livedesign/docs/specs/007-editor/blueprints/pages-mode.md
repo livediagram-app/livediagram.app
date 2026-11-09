@@ -582,6 +582,7 @@ pageHasOrientation(page)`, then a logo page's **Background** and
   (`hiddenPageId`); `PageLayoutPreview` draws `svgBoxed` / `svgArrow` markup of
   `buildPageLayoutOver` (the page's content carried in) over the sheet. Cleared on apply and on
   unmount (through a latest-callback ref).
+- Label: `PageLabelCard` (`../packages/workbench/src/components/canvas/PageLabelCard.tsx`, `label`, `name`, `rest`, `grab`, `onClick`, the drag handlers passed on to its button) on `TITLE_BAR_CARD_CLASS` (`PageTitleBar.tsx`, the bar's own card classes, `bg-white/95`, no backdrop filter); the card `pointer-events-none`, its `h-7` button `pointer-events-auto` and `truncate`, inside `HoverCard` (title the whole `pageLabel`); placed by the editor in its `h-[34px]` row, `maxWidth` its label room, counter-scaled (`steady`) as the bar is.
 - Reorder: `usePageReorderDrag` on the label (`cursor-grab` only while `pageUnits(pages).length > 1`): pointer capture; with two or more units, past
   `DRAG_THRESHOLD` sideways it is a drag (`reorder = { pageId, pageIds, slot }`, `pageIds` the
   unit's pages, all dimmed); release calls `movePageTo(id, slot)`; the following click is

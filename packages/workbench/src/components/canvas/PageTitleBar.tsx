@@ -43,6 +43,12 @@ export function titleBarButtonClass(on: boolean | undefined, labelled: boolean):
   }`;
 }
 
+/** The card's look (a near-solid white card, a hairline border, a soft shadow; the page's label wears it too,
+ *  PageLabelCard), so whatever is behind it (a page, a stack's fanned pages) never shows through its text. No backdrop
+ *  blur: see PageTitleBar. */
+export const TITLE_BAR_CARD_CLASS =
+  'rounded-[10px] border border-slate-200/90 bg-white/95 p-0.5 shadow-[0_1px_2px_rgb(15_23_42/0.06),0_4px_12px_-4px_rgb(15_23_42/0.12)] dark:border-slate-700/80 dark:bg-slate-900/95';
+
 /** The card: its groups in order, empty ones left out, a hairline between those that show. Held at
  *  one screen size and placed by the caller. */
 export function PageTitleBar({
@@ -76,7 +82,7 @@ export function PageTitleBar({
       // article cost about 60 ms and every element repainted on each frame of a drag
       // (canvas-performance.md "Chrome on every page" in livedocuments, "Nothing in canvas space blurs
       // what is behind it" in livedesign). At 95% white the blur never showed.
-      className={`pointer-events-auto flex items-center gap-0.5 rounded-[10px] border border-slate-200/90 bg-white/95 p-0.5 shadow-[0_1px_2px_rgb(15_23_42/0.06),0_4px_12px_-4px_rgb(15_23_42/0.12)] dark:border-slate-700/80 dark:bg-slate-900/95 ${className}`}
+      className={`pointer-events-auto flex items-center gap-0.5 ${TITLE_BAR_CARD_CLASS} ${className}`}
     >
       {shown.map((group, i) => (
         <Fragment key={i}>
