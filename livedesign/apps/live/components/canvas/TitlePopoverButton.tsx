@@ -88,7 +88,7 @@ export function TitlePopoverButton({
         </Tooltip>
       )}
       {open && mobile ? (
-        <TitleSheet name={name} onClose={close}>
+        <TitleSheet name={name} padded={padded} onClose={close}>
           {body}
         </TitleSheet>
       ) : open && anchor ? (
@@ -117,10 +117,14 @@ export function TitlePopoverButton({
 // Escape (a colour popover it opens is its own).
 function TitleSheet({
   name,
+  padded,
   onClose,
   children,
 }: {
   name: string;
+  // As the popover's: a body without padding of its own (Device, Layouts, the logo's Guides) sits in from the sheet's
+  // sides, under its name, never flush with the sheet's edge.
+  padded: boolean;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -145,7 +149,9 @@ function TitleSheet({
       <p className="px-4 pb-1 pt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
         {name}
       </p>
-      <div className="pb-2">{children}</div>
+      <div data-title-sheet-body="" className={padded ? 'px-4 pb-2 pt-1' : 'pb-2'}>
+        {children}
+      </div>
     </BottomSheet>
   );
 }
