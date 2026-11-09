@@ -57,7 +57,18 @@ describe('newSessionAttachment', () => {
     );
     expect(a.presenceId).toBe('presence-1');
     expect(a.presence).toBeNull();
-    expect([a.personTag, a.adderKey, a.documentId].map((s) => s?.length)).toEqual([64, 32, 64]);
+    expect([a.personTag, a.adderKey, a.documentId].map((s) => s?.length)).toEqual([64, 32, 200]);
+  });
+});
+
+describe('a long document id', () => {
+  it('is kept whole, so its grant renews and its calls prove themselves', () => {
+    const id = 'd'.repeat(128);
+    const a = newSessionAttachment(
+      { isOwner: false, tabScope: null, shareCode: null, personTag: null, adderKey: null, documentId: id },
+      'presence-1',
+    );
+    expect(a.documentId).toBe(id);
   });
 });
 
