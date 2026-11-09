@@ -11,7 +11,7 @@
     "staging:check": "wrangler deploy --dry-run --env staging",
     "lint": "oxlint",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage && vitest-budgets",
     "gen:openapi": "node scripts/gen-openapi-schemas.mjs",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
