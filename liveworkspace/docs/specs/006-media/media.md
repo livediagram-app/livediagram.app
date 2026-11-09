@@ -147,7 +147,9 @@ an image uploaded in livediagram and placed only in a livedocuments document rea
 app's Gallery, never "Not used". `GET /usage` answers every app's references; each app's
 `GET /api/images/usage` names them through the index (one index holds every app's items) with
 `@liveworkspace/media`'s `galleryUsage`, as `{ id, name, app }`, keeping its own rule on whose and which
-items show (at most 200 named per answer). An item saved only in This Browser has no references: its
+items show (at most 200 named per answer). The names come from one index request for all of them
+(`POST /api/index/items/lookup`), never a read per document; an item the index leaves out, or an answer that
+fails, is left out of the badge rather than failing the Gallery. An item saved only in This Browser has no references: its
 pictures are embedded in it, not placed from the gallery, so it never makes a gallery image used.
 
 A document reports its set from its outbox on idle, at most once a minute, so an image placed a moment

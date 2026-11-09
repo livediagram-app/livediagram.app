@@ -69,7 +69,7 @@ document's outbox, in the writer's transaction. The drain (`drainOutbox`) reads 
 ### Readers
 
 **Usage** `usageOf` (`routes/images.ts`): the media service's references for the owner (`media.usage`), kept to
-this app's documents, at most `USAGE_DOCUMENTS_MAX`, each named by the index (`USAGE_LOOKUPS_IN_FLIGHT` at a time) and
+this app's documents, at most `USAGE_DOCUMENTS_MAX`, named by the index in one lookup and
 dropped when the index does not answer it as the caller's, folded into `Record<imageId, { id, name }[]>`.
 
 **Share read**: the byte route (`routes/images.ts`) resolves the caller's grant from the index, then asks the document

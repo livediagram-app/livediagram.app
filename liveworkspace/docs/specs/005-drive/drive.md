@@ -193,6 +193,22 @@ Named constants in `@liveworkspace/drive` (`constants.ts`):
 - **Fallback.** A pass runs at least every `DRIVE_FALLBACK_CHECK_MS` (30 min) for a person whose channel is down or
   unconfirmed, and every 6 hours otherwise, so a missed signal is caught. Opening Cloud Sync runs a pass unless one
   finished in the last 30 s.
+- **The picture.** Each pass needs the person's work as the index has it: their live items, their folders and their
+  Trash. The object keeps the last picture it read, and most passes read only what changed since: the live items whose
+  `updatedAt` is at or after the last read less `DRIVE_PICTURE_SLACK_MS` (5 min, for a summary push that arrives a
+  little late), every folder, and the whole Trash. An item now in the Trash leaves the live list; one that left the
+  Trash is read on its own (restored, it is live again; else it is gone), up to `DRIVE_PICTURE_RECHECKS_MAX` (10) of
+  them. The whole picture is read instead when there is none kept, on Check now, for a fresh root, after the mirror
+  itself changed anything in the index, when more than ten items left the Trash, when a folder an item was in is gone
+  (deleting a folder moves its items up without touching them), and whenever the last whole read is
+  `DRIVE_PICTURE_FULL_MS` (10 min) old. So while someone edits (a pass every 30 s or so), a pass reads a page or two of
+  the index rather than every page of their library. How soon each change in liveworkspace reaches Drive:
+  - An item made, saved or renamed, put in the Trash or restored, and any folder change: the next pass (the debounce
+    after the signal).
+  - An item moved between folders or into a team, an item deleted for good straight from the live list (not via the
+    Trash), and a save whose push arrives more than 5 minutes late: the next whole read, at most 10 minutes after the
+    last (a move leaves an item's `updatedAt` alone, so a read of what changed cannot see it). When the last whole read
+    is that old already, the change's own pass is a whole read.
 - **The gate.** Each pass first asks for `changes.getStartPageToken` and reads `changes.list` only when it moved.
 - **Batches.** A pass writes at most `DRIVE_PASS_MAX_WRITES` (40) files and continues in the next alarm straight
   away, so a first mirror of thousands of items stays inside a Worker invocation's limits.
@@ -437,7 +453,7 @@ The service reaches the index through its `INDEX` service binding.
   `POST /app/changes` `{ personId, at }` with `Authorization: Bearer <DRIVE_KEY_INDEX>`. One call per person per
   write request, whatever it changed: an item made, renamed, moved (between folders, or into or out of a team),
   trashed, restored, copied or purged; a folder made, renamed, moved or deleted; a summary push that raised an
-  item's `updatedAt`. The signal names no item; a pass reads the whole picture. A failed call is logged
+  item's `updatedAt`. The signal names no item; a pass reads what changed (Cadence, "The picture"). A failed call is logged
   (`index: drive-signal failed`) and dropped: the fallback check catches up. Without the binding nothing is sent.
 
 ### The apps
@@ -480,8 +496,10 @@ app name them from one place. The service makes these calls, and where an item o
   past the budget, such as a binned folder with many items, ends the pass as a batch to continue in the next alarm,
   not as a failure. Within that, a pass is also bounded by `DRIVE_PASS_MAX_WRITES` and `DRIVE_PASS_MAX_INBOUND`. A file
   over 5 MB uses a resumable upload.
-- **A very large library** (tens of thousands of items) spends much of the budget reading the index's picture, up to
-  3 lists × `DRIVE_LIST_PAGES_MAX` pages. At the extreme, the picture alone could take the whole budget and a pass
+- **A very large library** (tens of thousands of items) spends much of the budget on a whole read of the index's
+  picture, up to 3 lists × `DRIVE_LIST_PAGES_MAX` pages; a read of what changed costs a page of items plus the folders
+  and the Trash. At 2,000 items, a whole read is 12 index requests and about 2,000 rows, a read of what changed 3 and
+  the rows that changed. At the extreme, the picture alone could take the whole budget and a pass
   would make no progress; such passes slow to one per write interval (Cadence, "No progress, no hurry") rather than
   one a second.
 - **Thumbnails** load the 3 MB renderer on first use in an isolate, as the share card does.

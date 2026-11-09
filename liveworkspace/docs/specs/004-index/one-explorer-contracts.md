@@ -166,6 +166,9 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | starts empty the first time it is opened with a grant.                       |
 | `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the  |
 |                                |                     | public link's code when that is their only way in (previews.md)              |
+| `POST /items/lookup`           | person              | `{ids}` (up to 200) → `{items}`: each item `GET /items/:id` would answer     |
+|                                |                     | the person without a share password, in the order asked; the rest left out.  |
+|                                |                     | One request for a page of names (the apps' Image Gallery usage).             |
 | `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a           |
 |                                |                     | team needs joined membership.                                                |
 | `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                              |
