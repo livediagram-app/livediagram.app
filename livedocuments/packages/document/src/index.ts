@@ -268,6 +268,7 @@ export * from './page-content';
 export * from './page-frame';
 export * from './page-ink';
 export * from './page-ink-contrast';
+export * from './label-backdrop';
 export * from './page-ink-ground';
 export * from './page-ink-rules';
 export * from './paginate';

@@ -40,12 +40,20 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/document/src/theme-halves.test.ts` covers the rule, and
   `apps/editor/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
   viewer.
-- **A label's ink is not walked against what is behind it.** Picking a theme or a look, or drawing a tab in the other
-  half, repaints each colour on its own: a label keeps the ink its theme gives it, whatever its backdrop (a panel the
-  theme paints, the canvas) turns to. Every tab is a Pages tab, whose words sit on pages with their own paper
-  (the next point). `apps/editor/lib/template-overlay-contrast.test.ts` holds the
-  labels of every template that is not a Pages template at 3:1 against what is drawn behind them, under every theme,
-  picked in either half and seen in either; today those are the two blank templates, which hold no labels.
+- **A theme never sinks a label into what is behind it.** Picking a theme or a look, or drawing a tab in the other
+  half, repaints each colour on its own, and the dark editor draws the plain paper (a page with no fill of its own)
+  slate where it is stored and printed white. Where a label with no fill of its own would then sit below 3:1 against
+  what is drawn behind it (the topmost larger filled element under its centre, else the plain paper) and read worse
+  than it did on white, it is drawn in its ink walked in lightness, hue and chroma kept, until it reaches 3:1
+  (`withReadableLabelInks`, shared by every product in `packages/model-core/src/label-backdrop.ts`, bound here in
+  `packages/document/src/label-backdrop.ts`). A template's dark words made for white paper (a resume's job titles, a
+  heading) are drawn walked in the dark editor rather than vanishing; dark words on a light panel keep their ink, since
+  the panel is what they are read against. Nothing stored changes, and an export prints them as made. Words on a page
+  with a fill of its own are drawn for that page (the next point), never walked against the paper. A label no redraw
+  touched keeps its ink however low it reads, since that is someone's choice.
+  `apps/editor/lib/template-overlay-contrast.test.ts` holds the labels of every template that is not a Pages template
+  at 3:1 against what is drawn behind them, under every theme, picked in either half and seen in either; today those
+  are the two blank templates, which hold no labels.
 - **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
   image) is drawn for that page, not for the viewer's chrome: its theme colours in the half whose surface matches
   the page's (a light slide takes the light half, a dark one the dark half), its stock colours for that surface. A
@@ -54,7 +62,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   page as a box's are against its fill: where the half's ink would put them on the page below 4.5:1, and read worse
   than the stored ink does there, they keep the stored ink (a template's pale slate words on its dark cover once took
   the half's dark stroke, since a theme slot shared their colour, and vanished into the page). Elements on plain
-  paper (no fill) follow the chrome as before, since the paper does. The canvas
+  paper (no fill) follow the chrome as before, since the paper does, and are read against it (above). The canvas
   (`usePageView`, `apps/editor/lib/stock-colour-projector.ts`) and every export (`tabAsSeen`) draw it the same way.
 - **A Border-tier preset is a line drawing on the paper.** Hairline, Outline, Dotted, Dash-Dot and Frame sit on white
   in a light half and, in a dark half, on that half's element fill (the dark ink's for a theme that paints none, as
