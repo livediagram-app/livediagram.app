@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { atxHeadingText } from './markdown-heading';
 
@@ -19,9 +20,10 @@ describe('atxHeadingText', () => {
   });
 
   it('stays linear on a long run of spaces', () => {
-    const start = performance.now();
-    expect(atxHeadingText(`a${' '.repeat(200_000)}b`)).toBe(`a${' '.repeat(200_000)}b`);
-    expect(atxHeadingText(`a${' #'.repeat(100_000)}`)).toBe(`a${' #'.repeat(99_999)}`);
-    expect(performance.now() - start).toBeLessThan(500);
+    const ms = cpuMsOf(() => {
+      expect(atxHeadingText(`a${' '.repeat(200_000)}b`)).toBe(`a${' '.repeat(200_000)}b`);
+      expect(atxHeadingText(`a${' #'.repeat(100_000)}`)).toBe(`a${' #'.repeat(99_999)}`);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(500));
   });
 });

@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { sanitizeFilename } from './file-name';
 
@@ -33,9 +34,10 @@ describe('sanitizeFilename', () => {
   it('stays linear on a long hostile name', () => {
     const ends = `${'(-? '.repeat(25_000)}x${' -?'.repeat(25_000)}`;
     const middle = `x${' -?'.repeat(25_000)}x`;
-    const start = performance.now();
-    expect(sanitizeFilename(ends, 'document')).toBe('x');
-    expect(sanitizeFilename(middle, 'document')).toBe(`x${' -'.repeat(25_000)}x`);
-    expect(performance.now() - start).toBeLessThan(500);
+    const ms = cpuMsOf(() => {
+      expect(sanitizeFilename(ends, 'document')).toBe('x');
+      expect(sanitizeFilename(middle, 'document')).toBe(`x${' -'.repeat(25_000)}x`);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(500));
   });
 });
