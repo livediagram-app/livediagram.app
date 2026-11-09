@@ -21,6 +21,7 @@ import {
   type RoomOp,
   type RoomOutgoing,
 } from '@livedesign/api-schema';
+import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import { opForTheWire } from '@livedesign/design';
 import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerDesignFormat } from '../server-release';
@@ -39,6 +40,9 @@ export type RoomHandlers = {
   // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id. Sent to
   // this socket alone, on every change; emptied when a new socket opens, since nobody follows its new id yet.
   onFollowers?: (ids: string[]) => void;
+  // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"),
+  // sent to this socket alone after each hello: our answers and reactions are recorded under it.
+  onCollabKey?: (key: string) => void;
   onClose?: () => void;
   // The design went to the Trash (docs/specs/013-workspace/trash.md): the room
   // closed this socket with DESIGN_TRASHED_CLOSE and will refuse every
@@ -329,6 +333,9 @@ export function connectRoom(
             if (msg.seq > lastSeq) lastSeq = msg.seq;
           }
           if (msg.ref !== undefined) awaitingRef.get(msg.ref)?.(true);
+        } else if (msg.kind === 'collab-key') {
+          // A key of the wrong shape is no key of ours: the one we hold stays.
+          if (isCollabKey(msg.key)) handlers.onCollabKey?.(msg.key);
         } else if (msg.kind === 'op-refused') {
           // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An
           // invalid element"): it reached nobody, so a save waiting on it stops waiting.

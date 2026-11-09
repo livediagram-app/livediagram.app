@@ -367,8 +367,8 @@ export async function apiSetThreadResolved(
 }
 
 // Add or take back the caller's reaction on a comment (docs/specs/012-collaboration/comment-reactions.md): the
-// path a Participant's reaction takes, since the room relays element deltas from an Editor only. `key` is this
-// browser's collab key, the public id its reactions are recorded under.
+// path a Participant's reaction takes, since the room relays element deltas from an Editor only. The server records
+// it under the caller's collab key, derived from who they are; the `key` sent beside it is no longer read.
 export async function apiReactToComment(
   ownerId: string,
   documentId: string,
