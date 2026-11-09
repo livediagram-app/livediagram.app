@@ -44,9 +44,7 @@ const asApp = (path: string, payload: unknown) =>
 async function visited(itemId: string, code: string, auth: string) {
   const headers = { 'X-Share-Code': code };
   expect((await call(`/share/${code}`, { auth, headers })).status).toBe(200);
-  expect(
-    (await call(`/items/${itemId}/open`, { method: 'POST', auth, headers })).status,
-  ).toBe(204);
+  expect((await call(`/items/${itemId}/open`, { method: 'POST', auth, headers })).status).toBe(204);
   expect((await call(`/favourites/${itemId}`, { method: 'PUT', auth })).status).toBe(204);
 }
 
@@ -139,8 +137,12 @@ describe('archiving', () => {
     expect(revoke?.body).toEqual({ codes: [link.code] });
     // The link opens nothing, and Bob's Inbox no longer lists it.
     expect(
-      (await call(`/share/${link.code}`, { auth: bob.auth, headers: { 'X-Share-Code': link.code } }))
-        .status,
+      (
+        await call(`/share/${link.code}`, {
+          auth: bob.auth,
+          headers: { 'X-Share-Code': link.code },
+        })
+      ).status,
     ).toBe(404);
     const inbox = await body<{ threads: unknown[]; actions: unknown[] }>(
       await call('/inbox', { auth: bob.auth }),
@@ -209,8 +211,7 @@ describe('archiving', () => {
       const headers = { 'X-Share-Code': link.code };
       expect((await call(`/items/${item.id}`, { auth: bob.auth, headers })).status).toBe(404);
       expect(
-        (await call(`/items/${item.id}/grant`, { method: 'POST', auth: bob.auth, headers }))
-          .status,
+        (await call(`/items/${item.id}/grant`, { method: 'POST', auth: bob.auth, headers })).status,
       ).toBe(404);
     }
   });
@@ -270,9 +271,9 @@ describe('while archived', () => {
     expect(res.status).toBe(200);
     expect((await body<{ item: Item }>(res)).item).toMatchObject({ title: 'Old plan' });
     expect(ids(await list(ada.auth, 'view=archived'))).toEqual([item.id]);
-    expect(
-      (await call(`/items/${item.id}/grant`, { method: 'POST', auth: ada.auth })).status,
-    ).toBe(409);
+    expect((await call(`/items/${item.id}/grant`, { method: 'POST', auth: ada.auth })).status).toBe(
+      409,
+    );
   });
 
   it('takes an app’s collab push and keeps nothing of it', async () => {
@@ -430,9 +431,9 @@ describe('moving out', () => {
       scope: string;
     };
     expect(row.scope).toBe('p:user_a');
-    expect(
-      (await call(`/items/${item.id}/grant`, { method: 'POST', auth: ada.auth })).status,
-    ).toBe(200);
+    expect((await call(`/items/${item.id}/grant`, { method: 'POST', auth: ada.auth })).status).toBe(
+      200,
+    );
     expect(ids(await list(ada.auth, 'view=recent'))).toEqual([]);
     expect(ids(await list(ada.auth, 'view=archived'))).toEqual([]);
     expect(ids(await list(ada.auth, `view=all&folder=${folder.folder.id}`))).toEqual([item.id]);
@@ -469,9 +470,7 @@ describe('the Trash', () => {
     expect((await call(`/items/${item.id}`, { method: 'DELETE', auth: ada.auth })).status).toBe(
       204,
     );
-    expect(ids(await body<Listed>(await call('/trash', { auth: ada.auth })))).toEqual([
-      item.id,
-    ]);
+    expect(ids(await body<Listed>(await call('/trash', { auth: ada.auth })))).toEqual([item.id]);
     expect(ids(await list(ada.auth, 'view=archived'))).toEqual([]);
     const restored = await call(`/items/${item.id}/restore`, { method: 'POST', auth: ada.auth });
     expect((await body<{ item: Item }>(restored)).item.archivedAt).toEqual(expect.any(Number));

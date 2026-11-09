@@ -23,11 +23,8 @@ import { MentionContext } from '@/components/canvas/collab/comment/MentionContex
 import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import { documentIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
 import { documentGrantRefusal } from '@/lib/api/document-grants';
-import {
-  archivedByIndex,
-  archivedChangeFolderHref,
-  archivedInThisBrowser,
-} from '@liveworkspace/workbench/lib/archived';
+import { archivedByIndex, archivedChangeFolderHref } from '@liveworkspace/workbench/lib/archived';
+import { useArchivedAddress } from '@liveworkspace/workbench/lib/useArchivedAddress';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,
@@ -76,10 +73,10 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   const [accessEnded] = useState(() => takeAccessEnded());
   // The space the address names, and whether this browser holds it archived (@liveworkspace/workbench/lib/archived):
   // read once, on mount, so an archived one never opens.
-  const [archivedId] = useState(() =>
-    typeof window === 'undefined' ? null : documentIdFromPath(window.location.pathname).id,
+  const { id: archivedId, here: archivedHere } = useArchivedAddress(
+    'livehuddle',
+    (path) => documentIdFromPath(path).id,
   );
-  const [archivedHere] = useState(() => archivedInThisBrowser('livehuddle', archivedId));
   // Tab title reflects the document: "<name> | livehuddle" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
   useEffect(() => {

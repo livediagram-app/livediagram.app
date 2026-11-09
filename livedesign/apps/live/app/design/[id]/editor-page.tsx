@@ -28,11 +28,8 @@ import { MentionContext } from '@/components/canvas/collab/comment/MentionContex
 import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import { designIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
 import { designGrantRefusal } from '@/lib/api/design-grants';
-import {
-  archivedByIndex,
-  archivedChangeFolderHref,
-  archivedInThisBrowser,
-} from '@liveworkspace/workbench/lib/archived';
+import { archivedByIndex, archivedChangeFolderHref } from '@liveworkspace/workbench/lib/archived';
+import { useArchivedAddress } from '@liveworkspace/workbench/lib/useArchivedAddress';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,
@@ -88,10 +85,10 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   const [accessEnded] = useState(() => takeAccessEnded());
   // The design the address names, and whether this browser holds it archived (@liveworkspace/workbench/lib/archived):
   // read once, on mount, so an archived one never opens.
-  const [archivedId] = useState(() =>
-    typeof window === 'undefined' ? null : designIdFromPath(window.location.pathname).id,
+  const { id: archivedId, here: archivedHere } = useArchivedAddress(
+    'livedesign',
+    (path) => designIdFromPath(path).id,
   );
-  const [archivedHere] = useState(() => archivedInThisBrowser('livedesign', archivedId));
   // Tab title reflects the design: "<name> | livedesign" (falls back to
   // Untitled when the design has no name yet). Updates as the user renames.
   useEffect(() => {

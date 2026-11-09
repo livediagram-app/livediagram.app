@@ -28,11 +28,8 @@ import { MentionContext } from '@/components/canvas/collab/comment/MentionContex
 import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import { projectIdFromPath, isEditorPath } from '@/lib/editor-path';
 import { planGrantRefusal } from '@/lib/api/plan-grants';
-import {
-  archivedByIndex,
-  archivedChangeFolderHref,
-  archivedInThisBrowser,
-} from '@liveworkspace/workbench/lib/archived';
+import { archivedByIndex, archivedChangeFolderHref } from '@liveworkspace/workbench/lib/archived';
+import { useArchivedAddress } from '@liveworkspace/workbench/lib/useArchivedAddress';
 import { useBrowserTabTitle } from '@/hooks/ui/useBrowserTabTitle';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
@@ -89,10 +86,10 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   const [accessEnded] = useState(() => takeAccessEnded());
   // The plan the address names, and whether this browser holds it archived (@liveworkspace/workbench/lib/archived):
   // read once, on mount, so an archived one never opens.
-  const [archivedId] = useState(() =>
-    typeof window === 'undefined' ? null : projectIdFromPath(window.location.pathname),
+  const { id: archivedId, here: archivedHere } = useArchivedAddress(
+    'liveplanner',
+    projectIdFromPath,
   );
-  const [archivedHere] = useState(() => archivedInThisBrowser('liveplanner', archivedId));
   // Tab title reflects the project: "<name> | liveplanner" (falls back to
   // Untitled when the project has no name yet). Updates as the user renames. Held there (useBrowserTabTitle): Next.js
   // commits the route's static "liveplanner" title after hydration and wrote it over the plan's name.

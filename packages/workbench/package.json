@@ -435,7 +435,8 @@
     "./lib/viewport-glide": "./src/lib/viewport-glide.ts",
     "./lib/viewport-store": "./src/lib/viewport-store.ts",
     "./lib/zip-writer": "./src/lib/zip-writer.ts",
-    "./lib/zoom-range": "./src/lib/zoom-range.ts"
+    "./lib/zoom-range": "./src/lib/zoom-range.ts",
+    "./lib/useArchivedAddress": "./src/lib/useArchivedAddress.ts"
   },
   "scripts": {
     "lint": "oxlint",

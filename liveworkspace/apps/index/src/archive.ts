@@ -110,13 +110,18 @@ export async function archiveItem(ctx: RouteContext, id: string): Promise<Respon
     ctx.waitUntil(
       callApp(env, row.app, 'POST', `/items/${encodeURIComponent(id)}/revoke`, { codes }).then(
         (res) => {
-          if (!res.ok) console.warn('[index] revoke not delivered', { app: row.app, error: res.error });
+          if (!res.ok)
+            console.warn('[index] revoke not delivered', { app: row.app, error: res.error });
         },
       ),
     );
   }
   // Its owner's mirror (a team item's leaves no personal mirror behind).
   touchItem(ctx.drive, { owner_id: row.owner_id, team_id: null });
-  console.log('[index] archived', { app: row.app, team: row.team_id !== null, links: codes.length });
+  console.log('[index] archived', {
+    app: row.app,
+    team: row.team_id !== null,
+    links: codes.length,
+  });
   return answer((await getItemRow(env, id))!);
 }
