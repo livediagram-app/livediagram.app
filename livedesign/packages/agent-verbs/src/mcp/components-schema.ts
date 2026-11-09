@@ -44,7 +44,11 @@ export const changeComponentsShape = {
         .describe(
           'Elements of the main, whole, by id: one with a new id is added, one with an id it holds replaced.',
         ),
-      remove: ids.optional().describe('Ids of the main’s elements to remove.'),
+      remove: ids
+        .optional()
+        .describe(
+          'Ids of the main’s elements to remove; an arrow left pinned to one keeps that end where it was drawn.',
+        ),
       order: ids.optional().describe('The main’s element ids, back to front.'),
     })
     .optional()
