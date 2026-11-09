@@ -1,6 +1,7 @@
 // The column picker's rules (docs/specs/026-plan/plan-board.md "The column picker"): which of the project's
 // statuses a board can still take as columns, whether a typed name is one of them, and the columns they make. A
 // column made for an existing status keeps that status, so the cards already in it show on this board too.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   PLAN_COLUMNS_MAX,
   missingStatuses,
@@ -46,7 +47,7 @@ export function addStatusColumn(
   const ids = new Set(setup.columns.map((c) => c.id));
   let id = pick.status;
   for (let n = 2; ids.has(id); n++) id = `${pick.status}-${n}`;
-  const column: PlanColumn = { id, status: pick.status, name: pick.name.slice(0, COLUMN_NAME_MAX) };
+  const column: PlanColumn = { id, status: pick.status, name: cutText(pick.name, COLUMN_NAME_MAX) };
   const at = afterId ? setup.columns.findIndex((c) => c.id === afterId) + 1 : setup.columns.length;
   const columns = [...setup.columns];
   columns.splice(at <= 0 ? columns.length : at, 0, column);

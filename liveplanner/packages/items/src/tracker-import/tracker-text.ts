@@ -1,6 +1,7 @@
 // Every value of an import is untrusted text (docs/specs/026-plan/tracker-import.md "Reading the file"): read as the
 // characters it is, never as markup, cleaned of control characters and cut to its field's limit. Dates, priorities and
 // estimates are read from the forms the four tools write.
+import { cutText as cutShared } from '@liveworkspace/model-core/text-cut';
 import { cardDateOf } from '../board-csv';
 import type { Priority } from '../fields';
 import { isEmailAddress } from '../item-types';
@@ -30,7 +31,8 @@ function withoutControls(s: string): string {
 // `text` cut to `max` characters, the last an ellipsis when it was cut.
 export function cutText(text: string, max: number): string {
   if (text.length <= max) return text;
-  return `${text.slice(0, Math.max(0, max - 1)).trimEnd()}${ELLIPSIS}`;
+  // Never between an emoji's halves (the shared cut).
+  return `${cutShared(text, Math.max(0, max - 1)).trimEnd()}${ELLIPSIS}`;
 }
 
 // A value as clean text: a string (a number as its text, anything else empty), line breaks as \n, control

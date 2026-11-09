@@ -1,6 +1,7 @@
 // Plan boards and Sheets named after their tab (docs/specs/026-plan/plan-board.md "The board set-up",
 // docs/specs/029-sheets/sheet.md "Placing a sheet"): a new one takes the tab's name, and one still carrying the tab's
 // default name follows the tab when it is renamed away from it. Pure: the tab rename applies it in the same commit.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   isDefaultTabName,
   truncateName,
@@ -14,7 +15,7 @@ import { fillTabElementOf } from '@/components/plan/fill-tab';
 // The title a board placed on a tab takes: the tab's name, else (no name, or still a default one such as "Tab 2", which
 // names nothing) the preset's own; a Board tab then takes the board's (docs/specs/026-plan/plan-tabs.md "Names").
 export function boardTitleForTab(tabName: string | undefined, presetTitle: string): string {
-  const name = (tabName ?? '').trim().slice(0, PLAN_TITLE_MAX).trim();
+  const name = cutText((tabName ?? '').trim(), PLAN_TITLE_MAX).trim();
   return name && !isDefaultTabName(name) ? name : presetTitle;
 }
 

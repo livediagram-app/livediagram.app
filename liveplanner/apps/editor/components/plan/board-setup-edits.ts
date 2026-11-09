@@ -1,6 +1,7 @@
 // A board set-up's edits (docs/specs/026-plan/plan-board.md "The board set-up"), as pure functions of the
 // set-up: what a column's cog and the board's element menu change. Each returns the new set-up (the
 // caller writes it as one element edit, undone like any other) and leaves the input untouched.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   PLAN_COLUMNS_MAX,
   setColumnDone,
@@ -51,7 +52,7 @@ const withColumn = (
 });
 
 // A column's name as saved: Title Case (docs/specs/026-plan/plan-board.md "Column names"), within the limit.
-export const columnName = (name: string) => statusTitleCase(name).slice(0, COLUMN_NAME_MAX);
+export const columnName = (name: string) => cutText(statusTitleCase(name), COLUMN_NAME_MAX);
 
 export function renameColumn(setup: PlanBoardSetup, id: string, name: string): PlanBoardSetup {
   const trimmed = columnName(name);

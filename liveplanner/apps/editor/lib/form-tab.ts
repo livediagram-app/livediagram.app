@@ -1,5 +1,6 @@
 // A Form tab and its form (docs/specs/030-forms/forms.md "The Form tab"): the tab and the form share one name, so a
 // rename or a duplicate's name is the form's heading too.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { readForm, FORM_HEADING_MAX, type FormDefinition } from '@liveplanner/forms';
 import type { Tab } from '@liveplanner/project';
 
@@ -12,7 +13,7 @@ function formOfTab(tab: Pick<Tab, 'kind' | 'form'> | undefined): FormDefinition 
 // `tab` with its form's heading set to `name` (unchanged for any other tab, or when already so).
 export function withFormHeading<T extends Pick<Tab, 'kind' | 'form'>>(tab: T, name: string): T {
   const form = formOfTab(tab);
-  const heading = name.trim().slice(0, FORM_HEADING_MAX);
+  const heading = cutText(name.trim(), FORM_HEADING_MAX);
   if (!form || !heading || form.heading === heading) return tab;
   return { ...tab, form: { ...form, heading } };
 }

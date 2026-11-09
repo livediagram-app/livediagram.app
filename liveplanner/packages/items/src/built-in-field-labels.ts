@@ -3,6 +3,7 @@
 // names a built-in for everyone: `typeFieldLabel` for a card of one type, `builtInFieldLabel` where several types
 // meet (a board's menus, a search, a view, a CSV header), which gives the type's name only when every type there
 // holding the field agrees. Pure.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import type { ItemFieldId, ItemTypeDef } from './item-types';
 
 // Each built-in field's own name, as the type editor shows it (Title Case).
@@ -66,7 +67,7 @@ export function fieldLabelsWith(
   name: string,
 ): FieldLabels | undefined {
   const { [id]: _was, ...rest } = labels ?? {};
-  const trimmed = name.trim().slice(0, FIELD_LABEL_MAX);
+  const trimmed = cutText(name.trim(), FIELD_LABEL_MAX).trim();
   const next: FieldLabels = trimmed && !isOwnName(id, trimmed) ? { ...rest, [id]: trimmed } : rest;
   return Object.keys(next).length ? next : undefined;
 }

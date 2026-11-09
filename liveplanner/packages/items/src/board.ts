@@ -2,6 +2,7 @@
 // The board stores only its set-up; what it shows is computed here from the
 // item store, so every board (and the api's tab scoping) reads items the same way.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { builtInFieldLabel } from './built-in-field-labels';
 import { itemColourOf } from './item-colour';
 import { ITEM_TYPE_PATTERN } from './limits';
@@ -1079,7 +1080,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     const col: PlanColumn = {
       id,
       status,
-      name: typeof name === 'string' && name.trim() ? name.slice(0, PLAN_COLUMN_NAME_MAX) : status,
+      name: typeof name === 'string' && name.trim() ? cutText(name, PLAN_COLUMN_NAME_MAX) : status,
     };
     if (
       typeof wipLimit === 'number' &&
@@ -1132,7 +1133,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
       ? input['doneColumnId']
       : undefined;
   return {
-    title: typeof input['title'] === 'string' ? input['title'].slice(0, PLAN_TITLE_MAX) : 'Board',
+    title: typeof input['title'] === 'string' ? cutText(input['title'], PLAN_TITLE_MAX) : 'Board',
     columns,
     ...(doneColumnId ? { doneColumnId } : {}),
     swimlaneBy,

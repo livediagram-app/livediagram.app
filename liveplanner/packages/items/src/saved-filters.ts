@@ -2,6 +2,7 @@
 // saved filters"): a board's named quick filters, kept on its set-up for everyone, applied by each person as their own
 // quick filter. Only Mine and the Due Soon windows are kept as what they mean, never as the saver's id or the day it
 // was saved, so they resolve for whoever applies one, on the day.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import type { QuickDueWindow, QuickFilter } from './board';
 import { isCardSearchFilters, type CardSearchFilter } from './card-search';
 import { isPriority, type Priority } from './fields';
@@ -31,6 +32,9 @@ export interface SavedBoardFilter {
   priority?: Priority;
   due?: SavedDueWindow;
 }
+
+// Text kept to its cap, trimmed, never ending in half an emoji (@liveworkspace/model-core/text-cut).
+const cutTrimmed = (text: string, max: number) => cutText(text.trim(), max).trim();
 
 const isName = (v: unknown): v is string =>
   typeof v === 'string' && v.trim().length > 0 && v.length <= SAVED_FILTER_NAME_MAX;
@@ -99,10 +103,10 @@ export function quickNarrows(quick: QuickFilter): boolean {
 
 // The quick filter kept as a saved filter named `name`: Only Mine as a flag, a Due Soon window as what it means.
 export function savedFilterFrom(quick: QuickFilter, name: string, id: string): SavedBoardFilter {
-  const text = quick.text?.trim().slice(0, SAVED_FILTER_TEXT_MAX);
+  const text = quick.text && cutTrimmed(quick.text, SAVED_FILTER_TEXT_MAX);
   return {
     id,
-    name: name.trim().slice(0, SAVED_FILTER_NAME_MAX),
+    name: cutTrimmed(name, SAVED_FILTER_NAME_MAX),
     ...(text ? { text } : {}),
     ...(quick.mine !== undefined ? { mine: true as const } : {}),
     ...(quick.filters?.length ? { filters: quick.filters.map((f) => ({ ...f })) } : {}),
@@ -162,7 +166,7 @@ export function renameSavedFilter(
   name: string,
 ): SavedBoardFilter[] {
   return list.map((f) =>
-    f.id === id ? { ...f, name: name.trim().slice(0, SAVED_FILTER_NAME_MAX) } : f,
+    f.id === id ? { ...f, name: cutTrimmed(name, SAVED_FILTER_NAME_MAX) } : f,
   );
 }
 

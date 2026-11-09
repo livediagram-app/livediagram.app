@@ -1,5 +1,6 @@
 // A board's cards as CSV rows, out and in (docs/specs/026-plan/plan-board.md "CSV"). Rows of fields only: the CSV
 // text itself is read and written by the Sheet's CSV module in the editor, as this package imports no other.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { byRank } from './apply';
 import { boardAddTypes, linkedCard, projectBoard, statusLabel, type PlanBoardSetup } from './board';
 import { builtInFieldOf } from './card-source';
@@ -310,7 +311,7 @@ function customValue(
     case 'daterange':
       return parseDateRange(text, isTimedRange(f), { local: true, readDay: cardDateOf });
     default:
-      return text.slice(0, ITEM_UNKNOWN_STRING_MAX);
+      return cutText(text, ITEM_UNKNOWN_STRING_MAX);
   }
 }
 
@@ -334,13 +335,13 @@ function builtInValue(
     case 'labels': {
       const out: string[] = [];
       for (const part of text.split(/[,;]/)) {
-        const l = part.trim().slice(0, ITEM_LABEL_MAX).trim();
+        const l = cutText(part.trim(), ITEM_LABEL_MAX).trim();
         if (l && !out.includes(l) && out.length < ITEM_LABELS_MAX) out.push(l);
       }
       return out.length ? out : undefined;
     }
     case 'description':
-      return text.slice(0, ITEM_DESCRIPTION_MAX);
+      return cutText(text, ITEM_DESCRIPTION_MAX);
     default:
       return undefined;
   }
@@ -405,7 +406,7 @@ export function boardCsvImport(
       const at = builtIns.get(id);
       return at === undefined ? '' : (row[at] ?? '').trim();
     };
-    const title = cell('title').slice(0, ITEM_TITLE_MAX).trim();
+    const title = cutText(cell('title'), ITEM_TITLE_MAX).trim();
     if (!title || creates.length >= ctx.room) {
       skipped++;
       continue;
