@@ -6,9 +6,10 @@ import { formLeavesTab, structureRefusal } from '../tab-structure';
 import { afterChangeset } from '../changesets/after';
 import { frontDoorOf } from '../changesets/front-door';
 import { writeAgentForm } from '../forms/agent-form-write';
-import { forbidden, json } from '../responses';
+import { json } from '../responses';
 import { authorOf, refreshAfterWrite } from './changesets';
 import {
+  deniedEdit,
   gateEdit,
   grantOn,
   missingProject,
@@ -26,7 +27,8 @@ export async function handleTabForm(
   if (owner instanceof Response) return owner;
   const project = await getProject(ctx.env, id);
   if (!project) return missingProject(ctx, id);
-  if (!(await gateEdit(ctx, id, project.ownerId, project.teamId, tabId))) return forbidden();
+  if (!(await gateEdit(ctx, id, project.ownerId, project.teamId, tabId)))
+    return deniedEdit(ctx, id, tabId);
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
   // A link to one Form tab points its form only at a board or sheet on that tab (docs/specs/030-forms/forms.md).
