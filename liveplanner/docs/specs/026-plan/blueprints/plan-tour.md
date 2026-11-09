@@ -128,7 +128,9 @@ layer, `justify-start`, the card `w-[19rem]`); nothing about it shrinks. A missi
 `[data-close-first]` "Close this window first, then:" over its why while doing. A phone keeps docking at the top.
 The ring is `hint.ring()` once a hint asks, otherwise the mission's `points` while doing; `HintRing` takes the first
 selector drawn on screen (non-zero box) and not covered (`elementFromPoint` at its centre is it, inside it or holds
-it), re-checked every 150 ms. `Emphasis` draws `**x**` as `<strong>`.
+it), re-checked every 150 ms. A hint's ring passes `reveal` (`StripFrame`'s `hinted`): as it mounts, `HintRing` calls
+`revealInScrollers` (workbench `tour-reveal`) once on the first selector's element that is drawn and either off the
+window or not covered, so a target scrolled out of its column comes into view. `Emphasis` draws `**x**` as `<strong>`.
 
 ### Practice cards (`usePlanItems`)
 

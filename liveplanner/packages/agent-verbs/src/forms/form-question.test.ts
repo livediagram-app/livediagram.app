@@ -50,6 +50,7 @@ describe('questionFrom', () => {
     const made = questionFrom({ type: 'email', prompt: 'Email', options: ['a'] }, 'q');
     expect(made).toMatchObject({ ok: false, code: 'setting_not_for_type' });
     expect(!made.ok && made.message).toContain('placeholder');
+    expect(!made.ok && made.message).toMatch(/^An Email question has no options\./);
   });
 
   it('keeps the builder’s limits', () => {

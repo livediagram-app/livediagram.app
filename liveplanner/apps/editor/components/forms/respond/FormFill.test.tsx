@@ -97,6 +97,18 @@ describe('a form of two sections', () => {
     expect(screen.queryByText('Enter an email address like name@example.com')).toBeNull();
   });
 
+  // A press on Next, Back or Submit must not first blur the field: its error line pushed the button out from under the
+  // pointer, so the click never landed and the first Submit did nothing.
+  it('keeps focus in the field on a press of Next, Back or Submit, so the press is a click', () => {
+    fill();
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Ada' } });
+    // fireEvent returns false when the default (moving focus off the field) was prevented.
+    expect(fireEvent.mouseDown(screen.getByRole('button', { name: 'Next' }))).toBe(false);
+    next();
+    expect(fireEvent.mouseDown(screen.getByRole('button', { name: 'Back' }))).toBe(false);
+    expect(fireEvent.mouseDown(screen.getByRole('button', { name: 'Submit' }))).toBe(false);
+  });
+
   it('sends the answers and the hidden field, then confirms with Submit Another Response', async () => {
     const submit = fill();
     fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Ada' } });

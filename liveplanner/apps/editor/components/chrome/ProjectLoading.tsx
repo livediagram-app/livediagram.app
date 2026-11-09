@@ -1,7 +1,14 @@
 'use client';
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import { BoardBuildAnimation, Button, LoadingSweep, RefreshIcon } from '@liveplanner/ui';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  BoardBuildAnimation,
+  Button,
+  firstPaintAt,
+  LoadingSweep,
+  RefreshIcon,
+  useLoopPhase,
+} from '@liveplanner/ui';
 import { getLoadProgress, subscribeLoadProgress } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
 import { useOnline } from '@liveworkspace/workbench/hooks/ui/useOnline';
@@ -29,20 +36,22 @@ const COPY: Record<ProjectLoadingStage, { title: string; detail: string }> = {
 const SLOW_AFTER_MS = 10_000;
 
 // One wait can show more than one copy of this screen (the route's fallback, then the editor's own while the plan
-// loads), so a remount must not read as a restart: the glows carry on from the page's start (their loops run from
-// the moment the prerendered copy painted, near the navigation's start), and a label enters only when it changes.
+// loads), so a remount must not read as a restart: the glows carry on from the page's start (useLoopPhase: their loops
+// run from the moment the prerendered copy painted, near the navigation's start), and a label enters only when it
+// changes. Render reads neither the clock nor the paint timeline, so the prerendered HTML and the hydrating browser
+// agree (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser only"); the
+// timing-dependent parts are set from layout effects, before the browser paints.
 let lastStage: ProjectLoadingStage | null = null;
-// The page's first paint: the prerendered copy (which runs no script) started its loops and its entrance then.
-const firstPaint = () => performance.getEntriesByType?.('paint')?.[0]?.startTime ?? null;
-const glowDelay = (cycleMs: number) =>
-  `${-((performance.now() - (firstPaint() ?? 0)) % cycleMs)}ms`;
+// One full there-and-back of each glow's alternating drift (see CSS).
+const GLOW_A_MS = 28_000;
+const GLOW_B_MS = 36_000;
 
 // Glow drift and the label's entrance (the progress sweep is LoadingSweep's). Motion only when
 // the user allows it; reduced motion keeps the screen still.
 const CSS = `
 @media (prefers-reduced-motion: no-preference) {
-  .ldl-glow-a { animation: ldl-drift-a 14s ease-in-out infinite alternate; }
-  .ldl-glow-b { animation: ldl-drift-b 18s ease-in-out infinite alternate; }
+  .ldl-glow-a { animation: ldl-drift-a 14s ease-in-out var(--ldl-glow-a-delay, 0ms) infinite alternate; }
+  .ldl-glow-b { animation: ldl-drift-b 18s ease-in-out var(--ldl-glow-b-delay, 0ms) infinite alternate; }
   .ldl-enter { animation: ldl-enter 250ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 }
 @keyframes ldl-drift-a {
@@ -77,13 +86,24 @@ export function ProjectLoading({ stage = 'opening' }: { stage?: ProjectLoadingSt
   );
   const copy = COPY[stage];
   // The entrance plays for a new label only, never for the same one remounting.
-  // The first copy to mount replaces the prerendered one when a paint came first, which showed this label already.
-  const [shownBefore] = useState(() => lastStage ?? (firstPaint() !== null ? stage : null));
+  const [shownBefore] = useState(() => lastStage);
   const enter = shownBefore !== stage;
+  const label = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    // The first copy to mount on the client either IS the prerendered one (hydrated: its entrance already ran, so it
+    // keeps it) or replaces it after a paint that already showed this label, so its entrance must not start over.
+    const el = label.current;
+    if (lastStage !== null || !el || firstPaintAt() === null) return;
+    const running = el.getAnimations?.()[0]?.currentTime;
+    if (!(typeof running === 'number' && running > 0)) el.classList.remove('ldl-enter');
+  }, []);
   useEffect(() => {
     lastStage = stage;
   }, [stage]);
-  const [glows] = useState(() => ({ a: glowDelay(28_000), b: glowDelay(36_000) }));
+  const glowA = useRef<HTMLDivElement>(null);
+  const glowB = useRef<HTMLDivElement>(null);
+  useLoopPhase(glowA, 'loading-glow-a', GLOW_A_MS, '--ldl-glow-a-delay');
+  useLoopPhase(glowB, 'loading-glow-b', GLOW_B_MS, '--ldl-glow-b-delay');
 
   return (
     <div className="relative flex h-dvh flex-col items-center justify-center overflow-hidden bg-slate-50 px-6 dark:bg-slate-950">
@@ -91,11 +111,11 @@ export function ProjectLoading({ stage = 'opening' }: { stage?: ProjectLoadingSt
           editor's dot grid, fading out towards the edges. Decorative. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div
-          style={{ animationDelay: glows.a }}
+          ref={glowA}
           className="ldl-glow-a absolute top-1/2 left-1/2 -mt-72 -ml-80 size-[36rem] rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-500/15"
         />
         <div
-          style={{ animationDelay: glows.b }}
+          ref={glowB}
           className="ldl-glow-b absolute top-1/2 left-1/2 -mt-40 -ml-24 size-[30rem] rounded-full bg-violet-300/25 blur-3xl dark:bg-violet-500/12"
         />
         <div
@@ -118,6 +138,7 @@ export function ProjectLoading({ stage = 'opening' }: { stage?: ProjectLoadingSt
               gives way to "Opening". */}
           <div
             key={stage}
+            ref={label}
             className={`${enter ? 'ldl-enter ' : ''}flex flex-col items-center gap-1 text-center`}
           >
             <p className="text-base font-semibold tracking-tight text-slate-800 dark:text-slate-100">

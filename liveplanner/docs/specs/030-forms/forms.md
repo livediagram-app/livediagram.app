@@ -511,7 +511,8 @@ no editor code loaded (its own small bundle).
 - **Answers are kept while filling in**: in the browser's session storage per form, so a reload or a wrong Back keeps
   what was typed; cleared on submit. **Submit Another Response** starts afresh.
 - **Checking answers**: each field is checked when it loses focus (an empty one only on Next or Submit, so tabbing
-  through is no mistake) and again on Next or Submit. An error shows under
+  through is no mistake) and again on Next or Submit. A press of Back, Next or Submit keeps focus in the field, so its
+  check never moves the button out from under the press (Next and Submit check it with the rest). An error shows under
   the question in red with an icon ("This question is required", "Enter an email address like name@example.com",
   "Enter a whole number from 1 to 10", "Pick at most 3"), the question's border turns red, and on Next or Submit a
   summary at the top lists every error as a link to its question, with focus moved to the summary.

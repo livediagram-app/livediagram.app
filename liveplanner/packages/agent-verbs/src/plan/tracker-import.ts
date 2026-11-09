@@ -30,7 +30,7 @@ import {
   type TrackerPreview,
   type TrackerSource,
 } from '@liveplanner/items';
-import { withImportedThreads, type ImportedCreate } from '@liveplanner/project';
+import { withArticle, withImportedThreads, type ImportedCreate } from '@liveplanner/project';
 import { parseCsv } from '@liveplanner/sheets';
 import { apiRefusalOf } from './api-refusal';
 import {
@@ -88,7 +88,7 @@ export function readTrackerInput(
   if (input.source && input.source !== board.source)
     return refuse(
       'source_mismatch',
-      `That file is a ${TRACKER_SOURCE_NAMES[board.source]} export, not ${TRACKER_SOURCE_NAMES[input.source]}. Leave source out to read it as it is.`,
+      `That file is ${withArticle(TRACKER_SOURCE_NAMES[board.source])} export, not ${TRACKER_SOURCE_NAMES[input.source]}. Leave source out to read it as it is.`,
     );
   const name = cleanText(input.name, PLAN_TITLE_MAX);
   return name ? { ...board, title: name } : board;

@@ -27,6 +27,7 @@ import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import { isEditorPath } from '@/lib/editor-path';
+import { useBrowserTabTitle } from '@/hooks/ui/useBrowserTabTitle';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,
@@ -81,11 +82,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // first page after the eject always takes it, whatever it shows (the editor, a password prompt, a refusal).
   const [accessEnded] = useState(() => takeAccessEnded());
   // Tab title reflects the project: "<name> | liveplanner" (falls back to
-  // Untitled when the project has no name yet). Updates as the user renames.
-  useEffect(() => {
-    const name = state.projectName?.trim();
-    document.title = `${name || 'Untitled plan'} | liveplanner`;
-  }, [state.projectName]);
+  // Untitled when the project has no name yet). Updates as the user renames. Held there (useBrowserTabTitle): Next.js
+  // commits the route's static "liveplanner" title after hydration and wrote it over the plan's name.
+  useBrowserTabTitle(`${state.projectName?.trim() || 'Untitled plan'} | liveplanner`);
   const {
     projectNotFound,
     loadError,

@@ -54,7 +54,7 @@ under the pointer as a category is switched.
   (`useBarLabels`). Measured, not estimated: the menu card is wider with a long tab name, and an
   estimate let the bar run under it. **Too wide even bare**, as on a tablet (768px) where the glyphs can need more
   than the centring leaves, the strip sits at the right instead, 12px from the edge, clear of
-  the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
+  the card (`useStripCrowded`, measured the same way); it centres again once there is room. An article's docked formatting crowded so ([Article pages](article-pages.md) "The page toolbar"), wider than the room beside the card (a narrow window, or a side by side pane), starts clear of the card instead, its gap after it, and its controls scroll in the strip's rail as on a phone, the selection mode and Search keeping their size: it never runs under the card and the tab's name. A phone always shows the glyphs, 44 px apart, and the bar swipes
   sideways while the selection mode and Search stay put ("On a phone"). A swiping rail (the bar, an article's dock)
   fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
@@ -308,7 +308,9 @@ panels in their corners, the bottom-row popovers over their buttons. What change
     round, all four corners rounded and the strip's shadow, dark in dark mode), 6 px below the strip's bottom edge:
     close enough to read as the strip's, apart so the two don't look stuck together.
   - Centred under the strip's card and never wider than it, on a phone too (where the card sits beside the
-    menu button). It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
+    menu button). Off a phone, a strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`; an article's strip
+    while its page is locked holds only the selection mode and Search) gives the tray 360 px centred under it, kept
+    8 px inside the window, so a message is never cut to its first letter. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
     after a resize (the category bar dropping its names left the tray off-centre until it watched that box).
   - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
     its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries. On a

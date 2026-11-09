@@ -127,7 +127,10 @@ Every track shows its missions in one small panel, the **mission strip**, the sa
   last), so a lesson is never gone before it is read. The next mission then slides in; with reduced motion it
   changes without sliding.
 - **Hints climb.** Each press of **Hint** shows the next of the mission's hints: first a nudge in words, then where
-  to look, with a pulsing ring round the control or the place it means. A hint never does the mission for them.
+  to look, with a pulsing ring round the control or the place it means. A ring a hint asks for first brings its
+  control into view, once, when it sits scrolled out of its column or the window (Add card under a long column), so
+  "where to look" is always somewhere on screen; the ring round the control a mission names while it is being done
+  never scrolls anything. A hint never does the mission for them.
 - **The end.** After the last mission the strip shows the track's finish: a line of thanks, the track's own choices
   (keep the practice work or let it go), and **Learn More**, the track's help article in a new tab. **End** at any
   time ends the tour as skipped and takes away everything practice.

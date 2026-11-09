@@ -17,6 +17,7 @@ import {
   type FormQuestion,
   type QuestionType,
 } from '@liveplanner/forms';
+import { indefiniteArticle } from '@liveplanner/project';
 import { refuse, type Named } from './form-names';
 
 export interface QuestionInput {
@@ -116,7 +117,7 @@ export function applyQuestionSet(
     if (set[key] === undefined || allowed.includes(key)) continue;
     return refuse(
       'setting_not_for_type',
-      `A ${QUESTION_TYPE_NAMES[q.type]} question has no ${key}. Its settings: ${
+      `${indefiniteArticle(QUESTION_TYPE_NAMES[q.type]) === 'an' ? 'An' : 'A'} ${QUESTION_TYPE_NAMES[q.type]} question has no ${key}. Its settings: ${
         allowed.length ? allowed.join(', ') : 'none beyond prompt, help and required'
       }.`,
     );
