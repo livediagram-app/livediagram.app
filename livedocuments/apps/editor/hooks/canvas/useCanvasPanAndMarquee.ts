@@ -1,6 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+  type SetStateAction,
+} from 'react';
 import {
   buildElementIndex,
   drawnBounds,
@@ -11,6 +18,7 @@ import {
 import { pointerToCanvas } from '@/lib/canvas';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { createStateStore, type ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import { isPressableControl } from '@livedocuments/ui';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
@@ -77,8 +85,11 @@ type Deps = {
 type Api = {
   pan: PanState | null;
   setPan: (next: PanState | null) => void;
-  marquee: MarqueeState | null;
-  setMarquee: React.Dispatch<React.SetStateAction<MarqueeState | null>>;
+  // Whether a sweep is on. Its rect, which changes on every frame of it, is in `marqueeStore`, read only by the
+  // marquee rectangle (docs/specs/008-canvas/canvas-performance.md "A sweep moves one layer").
+  marquee: boolean;
+  marqueeStore: ReadableStore<MarqueeState | null>;
+  setMarquee: (next: SetStateAction<MarqueeState | null>) => void;
   // `spaceHeldRef.current === true` while the user holds Space and
   // the document focus isn't in an input. Canvas's pointerdown
   // reads this to decide pan vs marquee.
@@ -89,7 +100,18 @@ type Api = {
 
 export function useCanvasPanAndMarquee(deps: Deps): Api {
   const [pan, setPan] = useState<PanState | null>(null);
-  const [marquee, setMarquee] = useState<MarqueeState | null>(null);
+  // The sweep's rect lives outside React (docs/specs/008-canvas/canvas-performance.md "A sweep moves one layer"): a
+  // frame of the sweep writes it and renders only the marquee rectangle, never the canvas. React holds only whether
+  // a sweep is on, which changes twice a sweep.
+  const [marqueeStore] = useState(() => createStateStore<MarqueeState | null>(null));
+  const [marqueeing, setMarqueeing] = useState(false);
+  const setMarquee = useCallback(
+    (next: SetStateAction<MarqueeState | null>) => {
+      marqueeStore.set(next);
+      setMarqueeing(marqueeStore.get() !== null);
+    },
+    [marqueeStore],
+  );
   // The caller passes a fresh `deps` object literal every render. Keep it
   // in a ref (refreshed each render) so the pan / marquee effects can
   // depend ONLY on the gesture state (`pan` / `marquee`) and still read
@@ -102,7 +124,6 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
   // The canvas gestures (docs/specs/008-canvas/canvas-performance.md): open while a pan or a
   // marquee is held, keyed on presence so a marquee's per-frame updates open nothing new.
   const panning = pan !== null;
-  const marqueeing = marquee !== null;
   useEffect(() => (panning ? beginCanvasGesture('pan') : undefined), [panning]);
   useEffect(() => (marqueeing ? beginCanvasGesture('marquee') : undefined), [marqueeing]);
 
@@ -208,7 +229,7 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
   // test each element's bounding box for intersection. Sub-4-pixel
   // marquees are treated as plain clicks (just deselect).
   useEffect(() => {
-    if (!marquee) return;
+    if (!marqueeing) return;
     // Coalesce marquee updates to one commit per animation frame, same
     // as the pan handler above: a synchronous setMarquee per pointermove
     // re-rendered the whole canvas layer per event, which pointer
@@ -218,14 +239,14 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
     const flush = () => {
       rafId = null;
       const pos = pending;
-      if (pos) setMarquee((m) => (m ? { ...m, currentX: pos.x, currentY: pos.y } : null));
+      if (pos) marqueeStore.set((m) => (m ? { ...m, currentX: pos.x, currentY: pos.y } : null));
     };
     const onMove = (e: PointerEvent) => {
       pending = { x: e.clientX, y: e.clientY };
       if (rafId === null) rafId = requestAnimationFrame(flush);
     };
     const onUp = () => {
-      const base = marquee;
+      const base = marqueeStore.get();
       if (!base) return;
       // Land on the final pointer position even if it's still pending
       // in an uncommitted rAF (which the cleanup cancels).
@@ -302,7 +323,15 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-  }, [depsRef, marquee]);
+  }, [depsRef, marqueeing, marqueeStore, setMarquee]);
 
-  return { pan, setPan, marquee, setMarquee, spaceHeldRef, spaceHeld };
+  return {
+    pan,
+    setPan,
+    marquee: marqueeing,
+    marqueeStore,
+    setMarquee,
+    spaceHeldRef,
+    spaceHeld,
+  };
 }

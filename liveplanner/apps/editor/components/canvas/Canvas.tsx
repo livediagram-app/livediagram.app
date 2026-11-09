@@ -124,15 +124,16 @@ function CanvasView(props: CanvasProps) {
   // own pointerdown handlers can drive it, and exposes the
   // spaceHeldRef the pointerdown reads to decide pan vs marquee (and
   // spaceHeld, its state twin, for the cursor).
-  const { pan, setPan, marquee, setMarquee, spaceHeldRef, spaceHeld } = useCanvasPanAndMarquee({
-    viewportZoom,
-    setViewportOffset,
-    elements,
-    wrapperRef,
-    onDeselect,
-    onSelectMarquee,
-    isPinchingRef,
-  });
+  const { pan, setPan, marquee, marqueeStore, setMarquee, spaceHeldRef, spaceHeld } =
+    useCanvasPanAndMarquee({
+      viewportZoom,
+      setViewportOffset,
+      elements,
+      wrapperRef,
+      onDeselect,
+      onSelectMarquee,
+      isPinchingRef,
+    });
 
   // A file dropped on the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
@@ -371,7 +372,7 @@ function CanvasView(props: CanvasProps) {
             {...props}
             mainSize={mainSize}
             offscreenContent={offscreenContent}
-            marquee={marquee}
+            marquee={marqueeStore}
             wrapperRef={wrapperRef}
             activeDockPanel={activeDockPanel}
             setActiveDockPanel={setActiveDockPanel}

@@ -138,13 +138,34 @@ large move rides as one layer").
 - **Per-frame arrow work is linear in what moved.** Which arrows a moved box crosses, and which
   moved boxes cut an arrow, are asked of spatial grids (the arrows' bounds, bucketed once per
   document change; the moved boxes, once per frame), never by scanning every moved element for
-  every arrow.
+  every arrow. What the moved boxes crossed where they started is the same on every frame of a
+  gesture, so it is asked once a gesture; the board the gesture is laid over is indexed once, not
+  once a frame. The endpoint spread over a preview's board places again only the fans that read
+  something the gesture moved, and gives exactly what placing every fan would. A move that rides
+  whole re-routes no arrow, so it builds no preview board at all.
 - **A move re-renders what moved.** A move, resize or reshape draws from a preview and writes the
   document once, on release ([Drag preview](drag-preview.md)): the moved elements and the arrows
   that depend on them re-render each frame, and nothing derived from the rest of the board is
   recomputed. A preview frame renders neither the canvas nor the element layer: each element view
   reads its own part of the preview, so a frame's work follows what moved, not the board, and only
   what follows the moved selection (its chrome) reads the whole preview.
+- **Selection chrome derives a frame once.** Every piece of chrome that follows the selection (the
+  layer's resize box and pluses, the toolbars and popover) reads the same preview frame: the board
+  with the preview laid over it, and the selection derived from it, are built once a frame and
+  shared, never once per reader.
+- **Grips go on the one selection.** An element wears its edit grips (a box's resize handles and
+  edge anchors, an arrow's end, curve and elbow handles) only when it is the one selected element,
+  as a box always did. An arrow in a multi-selection shows its selection halo and no grips: a
+  select-all of a large board mounted a full set of grips for every arrow in it, each listening to
+  the pointer type, and threw them away on the next click. Every caller of one media query shares
+  one query list and one listener.
+- **A sweep moves one layer.** The marquee's rectangle changes on every frame of a sweep; it is held
+  outside the editor's render state and only the rectangle reads it, so a frame of the sweep renders
+  that one node and never the canvas, the element layer or the chrome. The rectangle sits on a
+  compositor layer of its own and is placed by transform, so a sweep frame moves it without
+  repainting the board beneath it. The selection's resize outline is placed by transform too but is
+  not promoted: it spans the whole selection, so a layer of its own made WebKit split every element
+  over it into layers too (a 4,000-element drag's frame went from 57 ms to 200 ms).
 - **The canvas's cursor stays off the elements.** The cursor the canvas shows (the tool's, a pan's
   grab, a draw tool's intent) changes on a tool switch, at the start and end of a pan and when a
   stroke lands, and a cursor is inherited: set on what holds the elements, each change restyled

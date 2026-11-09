@@ -55,6 +55,20 @@ describe('the element plane rule', () => {
   it('stops the canvas cursor at the plane', () => {
     expect(read('./globals.css')).toMatch(/\[data-element-plane\]\s*\{[^}]*cursor:\s*auto/);
   });
+
+  // docs/specs/008-canvas/drag-preview.md "A very large move rides as one layer": the plane has a box of its own,
+  // its parent's, so it must take no press itself, give its children theirs back (and none while the canvas layer is
+  // inert), and keep them in the isometric scene.
+  it('lets presses through the plane to its elements and the canvas', () => {
+    const css = read('./globals.css');
+    expect(css).toMatch(/\[data-element-plane\]\s*\{[^}]*pointer-events:\s*none/);
+    expect(css).toMatch(
+      /@layer base\s*\{\s*\[data-element-plane\] > \*\s*\{\s*pointer-events:\s*auto;\s*\}\s*\[data-elements-inert\] \[data-element-plane\] > \*\s*\{\s*pointer-events:\s*none;/,
+    );
+    expect(css).toMatch(
+      /\[data-iso\] \[data-element-plane\]\s*\{\s*transform-style:\s*preserve-3d/,
+    );
+  });
 });
 
 // A Tab Style change on a busy Space eases the canvas, not its parts (docs/specs/008-canvas/canvas-performance.md):

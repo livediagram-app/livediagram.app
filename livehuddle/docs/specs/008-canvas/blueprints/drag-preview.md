@@ -133,12 +133,17 @@ arrowLinks, stackedIds)` (on a board without arrows, which has no `elementIndex`
   `BoxGripsPortal`'s portalled box and `ArrowGripsPortal`'s `<g>`. React never sets `translate`.
 - Ride planes (spec "A very large move rides as one layer"): with at least `RIDE_PLANE_MIN_NODES`
   rides, the writer also finds the `[data-ride-plane]` nodes under the root and their children: the
-  element plane (`data-ride-plane="contents"`, `display: contents`), the grips layer's arrows `<g>`
+  element plane (`data-ride-plane`, `absolute inset-0`, always: its parent's box), the grips layer's arrows `<g>`
   host and its box host (`absolute inset-0`, so a transform on it moves nothing else). A plane any
   child of which is not a ride node never carries. Each frame, per plane, it tallies the riding
   children's offsets; the commonest, when shared by at least `RIDE_PLANE_MIN_NODES` children and
-  more than half of them, is the plane's: `style.transform = translate(<dx>px, <dy>px)` (no `will-change`, D126), and a contents plane takes `display: block; position: absolute;
-inset: 0` (its parent's box, so nothing moves). Each node of the plane then gets `translate` = its own offset (none when it does
+  more than half of them, is the plane's: `style.transform = translate(<dx>px, <dy>px)` (no `will-change`, D126),
+  and nothing else is written to the plane, so carrying lays out nothing beneath it. The element plane's box is
+  in the markup and the editor's CSS (`app/globals.css`): `[data-element-plane] { pointer-events: none }` (a press
+  between elements reaches the canvas and shows its cursor), in `@layer base` `[data-element-plane] > *
+{ pointer-events: auto }` (an element's own pointer-events still wins) and `[data-elements-inert]
+[data-element-plane] > * { pointer-events: none }` (the canvas layer sets `data-elements-inert` beside its
+  `pointer-events-none` in Avatar mode). Each node of the plane then gets `translate` = its own offset (none when it does
   not ride) less the plane's: a rider sharing it gets `''`. The plane's children are found again
   when one is added, removed or disconnected. Fewer rides, no plane: every style it set goes back
   to `''`.

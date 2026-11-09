@@ -6,7 +6,7 @@
 // local one wins on an element both touch.
 
 import { useSyncExternalStore } from 'react';
-import type { Element } from '@livediagram/document';
+import { elementIndexFor, type Element } from '@livediagram/document';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type DragOverlay = {
@@ -40,13 +40,14 @@ function changedNow(): void {
   listeners.notify();
 }
 
-// The overlay that turns `doc` into `next`, by identity: one linear pass per tick.
+// The overlay that turns `doc` into `next`, by identity: one linear pass per tick. `doc` is the board the gesture
+// is laid over, the same array on every tick, so its index is the cached one (built on the first tick only).
 export function overlayBetween(
   tabId: string,
   next: readonly Element[],
   doc: readonly Element[],
 ): DragOverlay {
-  const before = new Map(doc.map((el) => [el.id, el] as const));
+  const before = elementIndexFor(doc);
   const changed = new Map<string, Element>();
   const added: { el: Element; after: string | null }[] = [];
   const present = new Set<string>();

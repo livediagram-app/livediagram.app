@@ -15,6 +15,10 @@
 //   No `will-change`: promoting the plane split everything that overlaps it into layers of their own (a layer a
 //   row of the board), and laying those out again on every frame cost more than the restyle it saved, and a
 //   promoted layer draws its text without sub-pixel smoothing, so a drag would not look the same.
+//   A plane always has a box of its own, its parent's (the element plane is `absolute inset-0`, and under isometric
+//   view keeps its children in the scene with `transform-style: preserve-3d` from the editor's CSS): carrying an
+//   offset writes only its `transform`, so picking a move up and putting it down re-lays nothing beneath it. A
+//   plane that took a box only while it carried rebuilt every element view's layout twice a large drag.
 //
 // Under isometric view (`data-iso` on the root or above it), a written `translate` keeps the node's depth through
 // `--ride-z`, which the isometric rules set beside their own `translate`.
@@ -30,11 +34,11 @@ export function rideOffset(dx: number, dy: number): RideOffset {
 }
 
 export const RIDE_ATTRIBUTE = 'data-ride-id';
-// `data-ride-plane="contents"`: the plane has no box of its own (`display: contents`) and takes one while it
-// carries an offset, the same size and place as its parent's, so its children's positions do not change.
+// A node whose children all ride: it has a box of its own, the same size and place as its parent's, so a transform
+// on it moves its children and nothing else.
 export const RIDE_PLANE_ATTRIBUTE = 'data-ride-plane';
 // livediagram/docs/specs/008-canvas/blueprints/DEFAULTS.md D126: the fewest children sharing one offset for their
-// plane to carry it. Below it a move writes few nodes anyway, and a plane changing its box re-lays its children.
+// plane to carry it. Below it a move writes few nodes anyway.
 export const RIDE_PLANE_MIN_NODES = 200;
 
 export type RideWriter = {
@@ -55,20 +59,13 @@ type Styled = {
 };
 
 type PlaneNode = Styled & {
-  style: Styled['style'] & {
-    transform: string;
-    display: string;
-    position: string;
-    inset: string;
-    transformStyle: string;
-  };
+  style: Styled['style'] & { transform: string };
   children: ArrayLike<Styled>;
   childElementCount: number;
 };
 
 type Plane = {
   node: PlaneNode;
-  contents: boolean;
   // Its children and their ids; null when one is untagged, as such a plane never carries an offset.
   children: { node: Styled; id: string }[] | null;
   // The offset it carries now, or null.
@@ -106,7 +103,6 @@ export function createRideWriter(): RideWriter {
     for (const node of found) {
       const plane: Plane = {
         node,
-        contents: node.getAttribute(RIDE_PLANE_ATTRIBUTE) === 'contents',
         children: [],
         carries: before.get(node)?.carries ?? null,
       };
@@ -174,29 +170,13 @@ export function createRideWriter(): RideWriter {
       : null;
   }
 
+  // Only the plane's transform: its box is always there, so nothing beneath it is laid out again.
   function carry(plane: Plane, offset: RideOffset | null): void {
     const s = plane.node.style;
     if (offset) {
-      if (!plane.carries && plane.contents) {
-        // A box of its own, where its parent's is; under isometric view it keeps its children in the scene's
-        // 3D space.
-        s.display = 'block';
-        s.position = 'absolute';
-        s.inset = '0';
-      }
-      const style3d = iso && plane.contents ? 'preserve-3d' : '';
-      if (s.transformStyle !== style3d) s.transformStyle = style3d;
       if (!plane.carries || keyOf(plane.carries) !== keyOf(offset))
         s.transform = `translate(${offset.dx}px, ${offset.dy}px)`;
-    } else if (plane.carries) {
-      s.transform = '';
-      s.transformStyle = '';
-      if (plane.contents) {
-        s.display = '';
-        s.position = '';
-        s.inset = '';
-      }
-    }
+    } else if (plane.carries) s.transform = '';
     plane.carries = offset;
   }
 

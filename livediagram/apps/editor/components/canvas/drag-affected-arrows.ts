@@ -5,6 +5,7 @@
 import {
   buildElementGrid,
   buildElementIndex,
+  elementIndexFor,
   endpointPosition,
   isBoxed,
   queryElementGrid,
@@ -50,6 +51,41 @@ export function buildArrowLinks(elements: readonly Element[]): ArrowLinks {
   return { dependants, rects: buildRectGrid(rects) };
 }
 
+// The arrows the moved boxes crossed where they were. Every frame of a gesture is laid over the same board and moves
+// the same elements, so this holds for the whole gesture: found on its first frame, not again on every one.
+let crossedBefore: {
+  links: ArrowLinks;
+  doc: readonly Element[];
+  ids: readonly string[];
+  crossed: readonly string[];
+} | null = null;
+
+function crossedWhereTheyWere(
+  overlay: DragOverlay,
+  doc: readonly Element[],
+  links: ArrowLinks,
+): readonly string[] {
+  const c = crossedBefore;
+  if (
+    c &&
+    c.links === links &&
+    c.doc === doc &&
+    c.ids.length === overlay.changed.size &&
+    c.ids.every((id) => overlay.changed.has(id))
+  )
+    return c.crossed;
+  // The board's cached index: `doc` is the same array on every frame of the gesture.
+  const before = elementIndexFor(doc);
+  const crossed: string[] = [];
+  const seen = new Set<string>();
+  for (const id of overlay.changed.keys()) {
+    const was = before.get(id);
+    if (was && isBoxed(was)) eachRectMeeting(links.rects, was, seen, (hit) => crossed.push(hit));
+  }
+  crossedBefore = { links, doc, ids: [...overlay.changed.keys()], crossed };
+  return crossed;
+}
+
 export function affectedArrows(
   overlay: DragOverlay,
   doc: readonly Element[],
@@ -62,18 +98,20 @@ export function affectedArrows(
     out.add(id);
     queue.push(id);
   };
-  const before = new Map(doc.map((el) => [el.id, el] as const));
-  const moved: Rect[] = [];
   for (const [id, el] of overlay.changed) {
     if (el.type === 'arrow') add(id);
     for (const dep of links.dependants.get(id) ?? []) add(dep);
-    const was = before.get(id);
-    for (const box of [was, el]) if (box && isBoxed(box)) moved.push(box);
   }
   for (const id of overlay.removed) for (const dep of links.dependants.get(id) ?? []) add(dep);
-  // Each moved box asks the arrow grid which arrows it meets: linear in what moved, not arrows × moved.
+  // Each moved box asks the arrow grid which arrows it meets, where it was (once a gesture) and where it is now:
+  // linear in what moved, not arrows x moved.
   const crossed = new Set<string>();
-  for (const m of moved) eachRectMeeting(links.rects, m, crossed, add);
+  for (const id of crossedWhereTheyWere(overlay, doc, links)) {
+    crossed.add(id);
+    add(id);
+  }
+  for (const el of overlay.changed.values())
+    if (isBoxed(el)) eachRectMeeting(links.rects, el, crossed, add);
   // Arrows riding on an affected arrow follow it, transitively.
   while (queue.length) for (const dep of links.dependants.get(queue.shift()!) ?? []) add(dep);
   return out;

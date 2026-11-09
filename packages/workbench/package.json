@@ -11,6 +11,7 @@
     "./components/canvas/CanvasArrivalContext": "./src/components/canvas/CanvasArrivalContext.tsx",
     "./components/canvas/CanvasLiveRegion": "./src/components/canvas/CanvasLiveRegion.tsx",
     "./components/canvas/CanvasZoomContext": "./src/components/canvas/CanvasZoomContext.tsx",
+    "./components/canvas/MarqueeRect": "./src/components/canvas/MarqueeRect.tsx",
     "./components/canvas/MinimapMap": "./src/components/canvas/MinimapMap.tsx",
     "./components/canvas/ClusterPopoverButton": "./src/components/canvas/ClusterPopoverButton.tsx",
     "./components/canvas/TurnButtons": "./src/components/canvas/TurnButtons.tsx",
