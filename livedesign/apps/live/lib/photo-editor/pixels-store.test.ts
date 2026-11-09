@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { encodePngStream, PHOTO_TILE } from '@livedesign/photo-engine';
 import { PixelsStore, SOURCE_CACHE_LIMIT } from './pixels-store';
+import { PhotoSession } from './session';
 
 const TILE_BYTES = PHOTO_TILE * PHOTO_TILE * 4;
 const tile = (v: number) => new Uint8ClampedArray(TILE_BYTES).fill(v);
@@ -61,5 +62,45 @@ describe('PixelsStore', () => {
     );
     store.clear();
     expect(store.bytesUsed).toBe(0);
+  });
+
+  it('answers null for a source whose fetch throws, and a session over it stops loading', async () => {
+    const store = new PixelsStore(
+      async () => {
+        throw new Error('500');
+      },
+      TILE_BYTES,
+      noWait,
+    );
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(await store.source('t', { blob: 'broken', width: 1, height: 1 })).toBeNull();
+    const s = new PhotoSession(
+      {
+        width: 1,
+        height: 1,
+        layers: [
+          {
+            id: 'a',
+            name: 'a',
+            layerKind: 'pixel',
+            pixels: { tiles: {}, source: { blob: 'broken', width: 1, height: 1 } },
+          },
+        ],
+      },
+      {
+        tabId: 't',
+        pageId: 'p',
+        store,
+        enqueue: () => {},
+        commit: () => {},
+        checkpoint: () => {},
+        cancelCheckpoint: () => {},
+        endCheckpoint: () => {},
+      },
+    );
+    await s.whenLoaded();
+    expect(s.loading).toBe(false);
+    s.dispose();
+    warn.mockRestore();
   });
 });

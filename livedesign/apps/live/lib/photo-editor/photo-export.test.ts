@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { layOutPages, newPhotoPage, type Tab } from '@livedesign/design';
 import { PixelsStore } from './pixels-store';
-import { allSizesZip, elementsSvg, sizeFileNames } from './photo-export';
+import { allSizesZip, elementsSvg, loadedSession, sizeFileNames } from './photo-export';
+import { PhotoSession } from './session';
 
 // docs/specs/031-photo/photo-pages.md "Exports and other views" All Sizes.
 describe('All Sizes', () => {
@@ -106,5 +107,47 @@ describe('elementsSvg', () => {
     };
     expect(elementsSvg(tab([arrow]), page)).toContain('<path');
     expect(elementsSvg(tab([box('far', r.x + r.width + 500, r.y)]), page)).toBeNull();
+  });
+});
+
+describe('loadedSession', () => {
+  it('waits for the page in focus to load its tiles before answering it', async () => {
+    let arrive: (b: Blob | null) => void = () => {};
+    const gate = new Promise<Blob | null>((resolve) => (arrive = resolve));
+    const store = new PixelsStore(
+      () => gate,
+      1 << 20,
+      async () => {},
+    );
+    const photo = {
+      width: 1,
+      height: 1,
+      layers: [
+        { id: 'a', name: 'a', layerKind: 'pixel' as const, pixels: { tiles: { '0.0': 'tile-1' } } },
+      ],
+    };
+    const inFocus = new PhotoSession(photo, {
+      tabId: 't',
+      pageId: 'a',
+      store,
+      enqueue: () => {},
+      commit: () => {},
+      checkpoint: () => {},
+      cancelCheckpoint: () => {},
+      endCheckpoint: () => {},
+    });
+    expect(inFocus.loading).toBe(true);
+    let answered = false;
+    const pending = loadedSession({ id: 't' } as Tab, 'a', store, inFocus).then((got) => {
+      answered = true;
+      return got;
+    });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(answered).toBe(false);
+    arrive(null);
+    const got = await pending;
+    expect(got.session).toBe(inFocus);
+    expect(inFocus.loading).toBe(false);
+    inFocus.dispose();
   });
 });
