@@ -955,6 +955,9 @@ export function cardsMatchingFilters(
   for (const f of filters) {
     if (out.length === 0) break;
     const groups = laneGroups(f.by, f.field, out, all, types, statusNames, undefined, true);
+    // A filter on a field that is gone matches no card, its empty value too (board-widgets.md "Saved filters"): grouping
+    // falls back to no rows, whose one key is the empty value's.
+    if (f.by === 'field' && groups.by !== 'field') return [];
     // A card holding several values matches a filter on any of them (item-types.md "Holds Several").
     out = out.filter((c) => inLane(groups, c.id, f.key));
   }

@@ -33,6 +33,11 @@ describe('card search', () => {
     );
   });
 
+  it('matches no card on a field that is gone, its empty value too (board-widgets.md "Saved filters")', () => {
+    expect(searchCards(cards, [{ by: 'field', field: 'c-gone', key: '' }])).toEqual([]);
+    expect(searchCards(cards, [{ by: 'field', field: 'c-gone', key: 'f:"High"' }])).toEqual([]);
+  });
+
   it('offers only the values some matching card has, with counts', () => {
     const values = searchValues(cards, { by: 'status' });
     expect(values.map((v) => [v.label, v.count])).toEqual(
