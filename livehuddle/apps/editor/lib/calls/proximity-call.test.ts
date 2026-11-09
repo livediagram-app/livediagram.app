@@ -1463,6 +1463,22 @@ describe('ProximityCall renewing a session Realtime dropped', () => {
     call.stop();
   });
 
+  it('a camera pressed while the new session is minted starts, and goes out once it is up', async () => {
+    const { call, camera, getUserMedia } = makeCall();
+    await call.start();
+    let mint: (v: typeof session) => void = () => {};
+    api.apiCallSession.mockImplementationOnce(() => new Promise((r) => (mint = r)));
+    sfu.instances[0]!.events.onSessionGone();
+    await call.toggleCamera();
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+    expect(callSelf().camera).toBe('on');
+    mint(renewed);
+    await settle();
+    expect(sfu.instances[0]!.publish).not.toHaveBeenCalled();
+    expect(sfu.instances[1]!.publish).toHaveBeenCalledWith(camera.track, 'cam', CAMERA_ENCODINGS);
+    call.stop();
+  });
+
   it('publishes a microphone the browser opened during a renewal on the new session', async () => {
     const { stream, track } = micStream();
     let open: (s: MediaStream) => void = () => {};

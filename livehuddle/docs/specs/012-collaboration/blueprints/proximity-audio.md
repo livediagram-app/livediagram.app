@@ -124,7 +124,8 @@ held frames for one step. The editor's store is memory only and empties on leavi
   `RENEW_MAX` (3) renewals inside `RENEW_WINDOW_MS` (60 s) fail the call (`fail('session')`).
 - A capture still being asked for when the session goes (`CallMic.open`, `CallVideo.toggleCamera` /
   `toggleScreen`) reads the call's session again once the browser answers and publishes there; with none (the
-  renewal still minting) it keeps the stream and the renewal's `republish` sends it.
+  renewal still minting) it keeps the stream and the renewal's `republish` sends it. A camera or screen press while
+  `ProximityCall.renewing` (no session) starts the capture too (`CallVideoHost.renewing`).
 - A publish that fails forgets its sender and stops its transceiver, so a later publish of that name negotiates
   afresh instead of swapping a track into a sender Realtime never accepted.
 - A locator for a session that ended: the subscribe's per-track error is ignored; the peer is retried only when it

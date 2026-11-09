@@ -24,6 +24,8 @@ export type CallVideoHost = {
   sfu: () => SfuSession | null;
   trackToken: () => string | null;
   stopped: () => boolean;
+  // The session is being renewed (no session for now): a press still starts, and the renewal publishes it.
+  renewing: () => boolean;
   // A track went on or off: the room learns where it is now.
   announce: () => void;
 };
@@ -58,15 +60,19 @@ export class CallVideo {
     this.host = host;
   }
 
+  // A press may start a capture: the call runs on a session, or on one being renewed.
+  private ready(): boolean {
+    const { host } = this;
+    return (!!host.sfu() || host.renewing()) && !!host.trackToken() && !host.stopped();
+  }
+
   /** Turn the camera on or off. A Viewer has none; audio only pauses it. */
   async toggleCamera(): Promise<void> {
     if (this.camera) {
       this.stopCamera();
       return;
     }
-    const { input } = this.host;
-    if (!this.host.sfu() || !this.host.trackToken() || !input.canSpeak || this.host.stopped())
-      return;
+    if (!this.ready() || !this.host.input.canSpeak) return;
     if (!callsModeAllows(callSelf().mode, 'video') || callSelf().camera === 'starting') return;
     setCallSelf({ camera: 'starting' });
     let stream: MediaStream;
@@ -130,8 +136,7 @@ export class CallVideo {
       return;
     }
     const { input } = this.host;
-    if (!this.host.sfu() || !this.host.trackToken() || !input.canShare || this.host.stopped())
-      return;
+    if (!this.ready() || !input.canShare) return;
     if (!callsModeAllows(callSelf().mode, 'screen') || callSelf().screen === 'starting') return;
     setCallSelf({ screen: 'starting' });
     const getDisplayMedia =

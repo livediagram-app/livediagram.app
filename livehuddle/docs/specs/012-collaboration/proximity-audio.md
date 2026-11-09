@@ -222,7 +222,8 @@ live, with your own equaliser and bubble, while nothing reached anyone).
 - A publish that fails leaves nothing behind that claims it worked, so the next attempt publishes afresh.
 - A microphone, camera or screen the browser is still asking for when the session goes is published on the session
   as it is when the browser answers: the renewed one, or, while that is still being minted, by the renewal once it
-  is up. Never on the closed one the press found, where it would look live to you and reach nobody.
+  is up. Never on the closed one the press found, where it would look live to you and reach nobody. A press of
+  Camera or Share Screen while the session is renewed starts as an unmute does, and goes out the same way.
 
 ## Turning calls on
 
