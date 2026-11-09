@@ -5,24 +5,24 @@ Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) as `Dn` (D254).
 
 Scope, by file:
 
-| File                                                     | Role                                                                          |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/document/src/logo-strip.ts`                    | `LOGO_STRIP_*` constants, `createLogoStrip(box)`, `stackPicturesGreyscale`, `withStackPicturesGreyscale` |
-| `packages/document/src/component-factories.ts`           | `ComponentKind` `'logo-strip'`, its `COMPONENT_SIZE`; `createComponent` gives the strip's stack alone (the draw path places the whole strip) |
-| `packages/templates/src/slide-layouts-logos.ts`          | `logoStripSlide`                                                              |
-| `packages/templates/src/slide-layouts.ts`                | `'slide-logos'` in the Content category                                       |
-| `apps/editor/lib/draw-commit.ts`                         | `buildDrawnLogoStrip`                                                         |
-| `apps/editor/hooks/canvas/useShapeDrawing.ts`            | The component branch commits the strip's elements together                   |
-| `apps/editor/components/palette/palette-tile-defs.tsx`   | Tile `media:logo-strip`                                                       |
-| `apps/editor/components/palette/StackMenuSection.tsx`    | The Greyscale Pictures row                                                    |
+| File                                                   | Role                                                                                                                                         |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/logo-strip.ts`                  | `LOGO_STRIP_*` constants, `createLogoStrip(box)`, `stackPicturesGreyscale`, `withStackPicturesGreyscale`                                     |
+| `packages/document/src/component-factories.ts`         | `ComponentKind` `'logo-strip'`, its `COMPONENT_SIZE`; `createComponent` gives the strip's stack alone (the draw path places the whole strip) |
+| `packages/templates/src/slide-layouts-logos.ts`        | `logoStripSlide`                                                                                                                             |
+| `packages/templates/src/slide-layouts.ts`              | `'slide-logos'` in the Content category                                                                                                      |
+| `apps/editor/lib/draw-commit.ts`                       | `buildDrawnLogoStrip`                                                                                                                        |
+| `apps/editor/hooks/canvas/useShapeDrawing.ts`          | The component branch commits the strip's elements together                                                                                   |
+| `apps/editor/components/palette/palette-tile-defs.tsx` | Tile `media:logo-strip`                                                                                                                      |
+| `apps/editor/components/palette/StackMenuSection.tsx`  | The Greyscale Pictures row                                                                                                                   |
 
 ## Domain and naming
 
-| Term        | Identifier                        | Meaning                                                 |
-| ----------- | --------------------------------- | ------------------------------------------------------- |
-| Logo strip  | `createLogoStrip`, `'logo-strip'` | The stack and its logos, as placed                      |
-| Logo        | an `ImageElement` child           | One picture slot                                        |
-| Greyscale Pictures | `stackPicturesGreyscale`   | Whether every picture the stack directly holds is grey  |
+| Term               | Identifier                        | Meaning                                                |
+| ------------------ | --------------------------------- | ------------------------------------------------------ |
+| Logo strip         | `createLogoStrip`, `'logo-strip'` | The stack and its logos, as placed                     |
+| Logo               | an `ImageElement` child           | One picture slot                                       |
+| Greyscale Pictures | `stackPicturesGreyscale`          | Whether every picture the stack directly holds is grey |
 
 Banned synonyms: "logo wall" (the layout is a strip), "brand bar".
 
@@ -55,11 +55,11 @@ Nothing new is stored beyond the images' `greyscale` ([Picture crop, mask and gr
 
 ## Errors and edge cases
 
-| Case                                   | Handling                                                  |
-| -------------------------------------- | --------------------------------------------------------- |
-| A drag too small for five logos        | Logos clamp to their minimum; the strip grows past the box |
-| A stack with no pictures               | No Greyscale Pictures row                                 |
-| Mixed greyscale in a stack             | Unchecked; a press turns every picture grey               |
+| Case                            | Handling                                                   |
+| ------------------------------- | ---------------------------------------------------------- |
+| A drag too small for five logos | Logos clamp to their minimum; the strip grows past the box |
+| A stack with no pictures        | No Greyscale Pictures row                                  |
+| Mixed greyscale in a stack      | Unchecked; a press turns every picture grey                |
 
 ## Security and trust
 
@@ -84,22 +84,22 @@ The Greyscale Pictures row is the menu's `MenuToggleRow` (a switch with its desc
 
 ## Testing
 
-| Rule                                   | Test                                                         |
-| -------------------------------------- | ------------------------------------------------------------ |
-| Factory: parts, sizes, settled         | `packages/document/src/logo-strip.test.ts`                   |
-| Greyscale over a stack                 | `packages/document/src/logo-strip.test.ts`                   |
-| Draw commit                            | `apps/editor/lib/draw-commit.test.ts`                        |
-| Stack row                              | `apps/editor/components/palette/StackMenuSection.test.tsx`   |
-| Layout fits 16:9 and 4:3               | `packages/templates` slide layout tests                      |
+| Rule                           | Test                                                       |
+| ------------------------------ | ---------------------------------------------------------- |
+| Factory: parts, sizes, settled | `packages/document/src/logo-strip.test.ts`                 |
+| Greyscale over a stack         | `packages/document/src/logo-strip.test.ts`                 |
+| Draw commit                    | `apps/editor/lib/draw-commit.test.ts`                      |
+| Stack row                      | `apps/editor/components/palette/StackMenuSection.test.tsx` |
+| Layout fits 16:9 and 4:3       | `packages/templates` slide layout tests                    |
 
 ## Constants and configuration
 
-| Name                | Value | Provenance              |
-| ------------------- | ----- | ----------------------- |
-| `LOGO_STRIP_COUNT`  | 5     | Spec "The logos"        |
-| `LOGO_W` / `LOGO_H` | 160 / 64 | Spec "The logos"     |
-| `LOGO_STRIP_GAP`    | 40    | Spec "The strip"        |
-| `LOGO_MIN_W` / `LOGO_MIN_H` | 48 / 24 | Spec "Making one" |
+| Name                        | Value    | Provenance        |
+| --------------------------- | -------- | ----------------- |
+| `LOGO_STRIP_COUNT`          | 5        | Spec "The logos"  |
+| `LOGO_W` / `LOGO_H`         | 160 / 64 | Spec "The logos"  |
+| `LOGO_STRIP_GAP`            | 40       | Spec "The strip"  |
+| `LOGO_MIN_W` / `LOGO_MIN_H` | 48 / 24  | Spec "Making one" |
 
 ## Defaults ledger
 

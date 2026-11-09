@@ -190,6 +190,16 @@ export function useTableCellSelection({
     onCommitTable(element.id, { cells: work.cells, cellStyles: work.cellStyles ?? [] });
   };
 
+  // Write one text into every selected cell, one commit: the cell menu's Tick, Cross and Clear marks
+  // (docs/specs/009-elements/comparison-tables.md "Ticks and crosses"). Styles stay as they are.
+  const setSelectionText = (text: string) => {
+    let work = element;
+    for (const cell of selectionCells())
+      work = { ...work, ...setTableCell(work, cell.r, cell.c, text) };
+    track('Element', 'Changed', 'TableMark');
+    onCommitTable(element.id, { cells: work.cells });
+  };
+
   return {
     selectedCell,
     setSelectedCell,
@@ -203,5 +213,6 @@ export function useTableCellSelection({
     cellLongPress,
     applyStyleToSelection,
     clearSelectionCells,
+    setSelectionText,
   };
 }

@@ -27,3 +27,6 @@ Follow the references below only as needed; never upfront.
 - ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations
 - ./picture-crop-and-mask.md - when implementing or changing an image's crop, mask or greyscale, the crop overlay or their export
 - ./logo-strip.md - when implementing or changing the logo strip, its palette tile, its slide layout or the stack's Greyscale Pictures
+- ./stat-row.md - when implementing or changing the stat row's change line, its layout, the count-up or the Big Number preset
+- ./quote.md - when implementing or changing the quote, its layout, portrait, looks, menu or its photo's image paths
+- ./comparison-tables.md - when implementing or changing table mark cells or the highlighted column

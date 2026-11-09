@@ -129,6 +129,7 @@ export const FACTORY_CORNERS: Readonly<Record<string, string>> = {
   stack: 'md',
   'stat-row': 'md',
   'site-header': 'md',
+  quote: 'lg',
 };
 
 /** An element's own corner as its finish reads it: a corner picked on it wins, but under Professional the corner

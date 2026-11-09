@@ -54,6 +54,8 @@ const PAGES_COMPONENTS = [
   'components:step',
   'components:callout',
   'components:stat',
+  'components:big-number',
+  'components:quote',
   'components:process',
   DIVIDE,
   'tools:code-block',

@@ -313,15 +313,7 @@ export type CanvasProps = {
   // Single combined table commit (cells + the parallel colWidths /
   // rowHeights / cellStyles arrays) applied in ONE commit, so structural
   // ops can't drop a side array or clobber each other off a stale base.
-  onCommitTable: (
-    id: string,
-    patch: Partial<
-      Pick<
-        import('@livedocuments/document').TableElement,
-        'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
-      >
-    >,
-  ) => void;
+  onCommitTable: (id: string, patch: import('@livedocuments/document').TablePatch) => void;
   onCancelEdit: () => void;
   // Table quick-connect ring (docs/specs/008-canvas/canvas-and-palette.md): append a row / column to the
   // selected table from the bottom / right plus.

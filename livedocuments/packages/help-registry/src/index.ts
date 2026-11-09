@@ -927,9 +927,10 @@ export const articles: Article[] = [
   {
     slug: 'components',
     title: 'Components',
-    description: 'Cards, badges, step numbers and web components: banners, callouts and more.',
+    description:
+      'Cards, badges, step numbers and web components: banners, callouts, big numbers, quotes and more.',
     keywords:
-      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages',
+      'banner callout stat row stat rows kpi big number count up change quote quotes testimonial pull quote badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1818,7 +1819,7 @@ export const articles: Article[] = [
     title: 'Tables',
     description: 'An editable grid of cells for tabular content on the canvas.',
     keywords:
-      'grid cells rows columns spreadsheet matrix data preset presets look looks style banded zebra striped header band recolour recolor',
+      'grid cells rows columns spreadsheet matrix data preset presets look looks style banded zebra striped header band recolour recolor comparison pricing table tick ticks cross crosses yes no highlight recommended column plans',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

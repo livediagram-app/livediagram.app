@@ -2,6 +2,7 @@ import type { WebComponentShape } from '@livedocuments/document';
 import { BannerFace } from '@/components/canvas/web/BannerFace';
 import { CardFace } from '@/components/canvas/web/CardFace';
 import { ProcessFace } from '@/components/canvas/web/ProcessFace';
+import { QuoteFace } from '@/components/canvas/web/QuoteFace';
 import { SiteHeaderFace } from '@/components/canvas/web/SiteHeaderFace';
 import { StatRowFace } from '@/components/canvas/web/StatRowFace';
 import type { WebFaceProps } from '@/components/canvas/web/web-face-props';
@@ -21,5 +22,7 @@ export function WebComponentFace({ kind, ...props }: WebFaceProps & { kind: WebC
       return <ProcessFace {...props} />;
     case 'site-header':
       return <SiteHeaderFace {...props} />;
+    case 'quote':
+      return <QuoteFace {...props} />;
   }
 }

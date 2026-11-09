@@ -313,3 +313,45 @@ describe('participantTabChange', () => {
     expect(participantTabChange(before, { ...before, name: 'Renamed' })).toBeNull();
   });
 });
+
+// docs/specs/009-elements/quote.md, stat-row.md and comparison-tables.md "Roles": a Participant writes a quote's words,
+// name and role and a table's cells (a tick or a cross included), never a look, a photo, a highlight or a switch.
+describe('applyParticipantOp: quotes, stat rows and comparison tables', () => {
+  it("writes a quote's name and role, never its look or photo", () => {
+    const stored = shape('q', { shape: 'quote', pageTitle: 'Sam', pageSubtitle: 'Lead' });
+    const incoming = shape('q', {
+      shape: 'quote',
+      pageTitle: 'Jo',
+      pageSubtitle: 'Founder',
+      quoteLook: 'plain',
+      imageId: 'img-1',
+    });
+    const r = applied(applyParticipantOp(tabOf([stored]), { kind: 'update', element: incoming }));
+    expect(r.tab.elements[0]).toEqual({ ...stored, pageTitle: 'Jo', pageSubtitle: 'Founder' });
+  });
+
+  it("never switches a stat row's count-up", () => {
+    const stored = shape('s', { shape: 'stat-row', stats: [{ value: '1', caption: 'a' }] });
+    const r = applyParticipantOp(tabOf([stored]), {
+      kind: 'update',
+      element: { ...stored, statCountUp: false } as Element,
+    });
+    expect(r.result === 'applied' ? r.tab.elements[0] : stored).not.toHaveProperty('statCountUp');
+  });
+
+  it('types a tick into a cell, never moving the highlight', () => {
+    const stored = { ...table('t'), highlightColumn: 0 } as Element;
+    const incoming = {
+      ...table('t'),
+      cells: [
+        ['✓', 'b'],
+        ['c', 'd'],
+      ],
+      highlightColumn: 1,
+    } as Element;
+    const r = applied(applyParticipantOp(tabOf([stored]), { kind: 'update', element: incoming }));
+    const t = r.tab.elements[0] as Extract<Element, { type: 'table' }>;
+    expect(t.cells[0]![0]).toBe('✓');
+    expect(t.highlightColumn).toBe(0);
+  });
+});

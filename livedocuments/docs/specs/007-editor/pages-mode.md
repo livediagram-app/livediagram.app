@@ -1456,8 +1456,10 @@ be read across a room:
   Only** (a title, a lead line and a rule, the rest of the slide left for the author's own content),
   **Sidebar Title** (a panel in the theme's fill down the left edge, full bleed, holding an eyebrow
   and the title, five bullet points beside it), **Compare Two** (two cards side by side, each a
-  name, a line and three points, a "vs" disc between them) and **Logo Strip** (an eyebrow, a title and
-  a line over six greyscale logos evenly spaced, [Logo strip](../009-elements/logo-strip.md)).
+  name, a line and three points, a "vs" disc between them), **Logo Strip** (an eyebrow, a title and
+  a line over six greyscale logos evenly spaced, [Logo strip](../009-elements/logo-strip.md)) and
+  **Testimonials** (two quote cards side by side, each a customer's words, their initial in a disc, their name and
+  role; see [quote.md](../009-elements/quote.md)).
 - **Pictures**: slides led by a picture, as a slide app lays them out. **Text and Picture** (an
   eyebrow, a two-line title, a rule, a lead and three points on the left half, a picture filling
   the right half to the slide's edges), **Picture and Text** (the same words on the right, a
@@ -1465,8 +1467,8 @@ be read across a room:
   scrim, an eyebrow, a large title and a line centred over it in white), **Picture Band** (a
   picture across the top half, edge to edge, an eyebrow and title beside a paragraph under it),
   **Picture and Card** (a picture filling the slide, a full-height card on its right holding an
-  eyebrow, a title, a rule and three points), **Quote and Picture** (a quotation mark, the quote, a
-  rule, the name and role on the left, a picture filling the right to the edges), **Two
+  eyebrow, a title, a rule and three points), **Quote and Picture** (an eyebrow over a Plain quote on the left, its
+  mark, its words, the speaker's initial, name and role, a picture filling the right to the edges), **Two
   Pictures** and **Three Pictures** (a title over pictures side by side, a name and a caption under
   each) and **Picture Mosaic** (an eyebrow, a title, a rule and a line beside one large picture and
   two small ones stacked).
@@ -1476,8 +1478,11 @@ be read across a room:
   across, fitted as the longest so all stand the same size, a rule, a caption and a note under
   each), **Big Chart** (a full-height bar chart and its headline figure on a card beside it),
   **Chart and Insights** (an area chart beside three numbered insights) and **Goals Progress**
-  (three progress rings, never wider than their column, each a goal and its target). Each of the
-  slide's own cites its source at the foot.
+  (three progress rings, never wider than their column, each a goal and its target) and **Pricing
+  Table** (a title and a lead over one table: features down the side, three plans across in ticks,
+  crosses and prices, the middle plan's column highlighted; see
+  [comparison-tables.md](../009-elements/comparison-tables.md)). Each of the slide's own figures
+  cites its source at the foot.
 - **Steps and Time**: **Process**, **Timeline**, **Roadmap**, **Funnel**, **Cycle** and **Project
   Plan** (the infographic ones), **Process Flow** (four steps as pills joined by arrows, a note under
   each), **Milestones** (five years along a rail, a dot on it for each, what happened under it) and
@@ -1491,7 +1496,7 @@ be read across a room:
   beside a full-height picture) and **Resources** (four links, each an icon in a disc, a title and
   where to find it).
 
-Sixty-two in all, in six categories (Openers, Content, Pictures, Data, Steps and Time, Closers), at
+Sixty-four in all, in six categories (Openers, Content, Pictures, Data, Steps and Time, Closers), at
 least nine to a category; a slide layout reused from the infographics is the same layout (same id,
 same build), filed under the slide category. Every one fits a 16:9 and a 4:3 slide inside its
 margins, every icon is one the catalogue draws, and no two of its text boxes overlap on either

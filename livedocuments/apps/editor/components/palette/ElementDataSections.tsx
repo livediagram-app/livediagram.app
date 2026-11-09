@@ -15,6 +15,7 @@
 
 import dynamic from 'next/dynamic';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
+import { QuoteMenuSection } from '@/components/palette/QuoteMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
@@ -134,6 +135,7 @@ export function ElementDataSections({
   const isChip = shapeTarget ? isChipShape(shapeTarget.shape) : false;
   const showTools =
     hasWebRowsSection(target) ||
+    shapeTarget?.shape === 'quote' ||
     isChip ||
     shapeTarget?.shape === 'pointer-note' ||
     shapeTarget?.shape === 'stack' ||
@@ -285,11 +287,22 @@ export function ElementDataSections({
               }
             />
           ) : null}
+          {/* The quote's look, lines and portrait (docs/specs/009-elements/quote.md). */}
+          {shapeTarget?.shape === 'quote' ? (
+            <QuoteMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+              onOpenPicker={props.onOpenImagePicker}
+              onRemovePhoto={props.onRemoveImage}
+            />
+          ) : null}
           {shapeTarget && hasWebRowsSection(shapeTarget) ? (
             <WebRowsMenuSection
               target={shapeTarget}
               sectionProps={sectionProps}
               onSetRows={props.onSetWebRows}
+              ops={props.elementStyle}
             />
           ) : null}
           {/* Checklist (docs/specs/009-elements/checklist.md) — the rows: done toggles, text, add / remove. */}

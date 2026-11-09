@@ -128,6 +128,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'stat-row': { width: 482, height: 96 },
   process: { width: 420, height: 110 },
   'site-header': { width: 640, height: 84 },
+  // The quote (docs/specs/009-elements/quote.md).
+  quote: { width: 460, height: 220 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -339,6 +341,22 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   }
   if (kind === 'process') {
     return { ...base, processSteps: [...PROCESS_DEFAULT_STEPS] };
+  }
+  // Quote (docs/specs/009-elements/quote.md): the words set large and bold, signed by a name and a role beside their
+  // initial.
+  if (kind === 'quote') {
+    return {
+      ...base,
+      label: 'It changed how the whole team plans its week.',
+      pageTitle: 'Sam Rivera',
+      pageSubtitle: 'Operations Lead, Example Co',
+      cardMedia: 'initial',
+      textSize: 26,
+      textBold: true,
+      textAlignX: 'left',
+      textAlignY: 'top',
+      borderRadius: 'lg',
+    };
   }
   if (kind === 'site-header') {
     return {

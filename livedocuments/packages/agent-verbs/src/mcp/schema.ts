@@ -79,7 +79,9 @@ const CONTENT_KINDS =
   `${IMAGE_MASKS.join(', ')}. "greyscale" true draws it in grey (a logo strip: a row stack holding greyscale ` +
   'images, evenly spaced). ' +
   'type "table": "cells" is rows of strings (ragged rows are padded), "headerRow" / ' +
-  '"headerColumn" style the first row / column, "zebra" tints alternate rows. ' +
+  '"headerColumn" style the first row / column, "zebra" tints alternate rows; a cell holding only a tick (\u2713) ' +
+  'or a cross (\u2717) draws as a green yes or a rose no, for a comparison or pricing table, and ' +
+  '"highlightColumn" (a column index from 0) marks the recommended column. ' +
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
   `${CODE_LANGUAGES.join(', ')}), "codeTheme" (${CODE_THEMES.map((t) => t.id).join(', ')}; ` +
   'default midnight, dark), "codeWrap"; the block draws itself and shows no label. ' +
@@ -157,7 +159,11 @@ const STYLE_FIELDS =
   'other). A field a type ' +
   'does not have, or a value off its list, is refused naming what it takes. ' +
   'Kinds and what they hold: "checklist" its "checklistItems" ' +
-  '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout its "pageTitle" over its "label" ' +
+  '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption", "change"}], change optional: "\u25b2 12%" ' +
+  'goes up in green, "-3%" down in rose; one stat is a big-number tile; its values count up when presented unless ' +
+  '"statCountUp" is false); a "quote" its words as its "label", the speaker\u2019s "pageTitle" (name) and ' +
+  '"pageSubtitle" (role), a portrait ("cardMedia": "initial", or "imageId" from list_images for a photo) and ' +
+  '"quoteLook" (card, the default, or plain); a callout its "pageTitle" over its "label" ' +
   '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). ';
 
 // Self-contained element schema, attached to each tool's element argument so the

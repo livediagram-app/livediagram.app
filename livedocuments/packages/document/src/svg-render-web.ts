@@ -13,7 +13,10 @@ import type { BoxedElement, ImageElement } from './index';
 import { svgWrappedLabel } from './svg-render-labels';
 import { svgCard } from './svg-render-card';
 import type { TagColour } from './tag-colours';
-import type { ResolveIconArt } from './svg-render-describe';
+import type { ResolveIconArt, ResolveImageHref } from './svg-render-describe';
+import type { CanvasSurface } from './colors';
+import { svgQuote } from './svg-render-quote';
+import { statTrend, statTrendColours } from './stat-count';
 import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
 import {
   ACCENT_BAR_TEXT,
@@ -22,6 +25,7 @@ import {
   heroCaptionLayout,
   processLayout,
   statRowLayout,
+  statsHaveChange,
   type LayoutRect,
 } from './web-components';
 
@@ -114,8 +118,12 @@ export type WebFaceOptions = {
   label: string;
   fontFamily?: string;
   resolveIconArt?: ResolveIconArt;
+  // A quote's photo's bytes (docs/specs/009-elements/quote.md).
+  resolveImageHref?: ResolveImageHref;
   // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
   tagColours?: readonly TagColour[];
+  // The paper under the element, for a stat's change colour.
+  surface?: CanvasSurface;
 };
 
 /** The body of a web component shape, or '' for any other kind. */
@@ -140,14 +148,19 @@ export function svgWebComponent(el: Shape, o: WebFaceOptions): string {
     case 'card':
       return svgCard(el, o);
     case 'stat-row': {
+      // Each card's value, caption and change pill (docs/specs/009-elements/stat-row.md), from the rects the canvas
+      // face places them with.
       const stats = el.stats ?? [];
-      const l = statRowLayout(el.width, el.height, stats.length);
+      const l = statRowLayout(el.width, el.height, stats.length, statsHaveChange(stats));
+      const at = (c: LayoutRect, r: LayoutRect): LayoutRect => ({
+        ...r,
+        x: c.x + r.x,
+        y: c.y + r.y,
+      });
       return stats
         .map((st, i) => {
           const c = l.cards[i]!;
           const rx = radiusOf(el, BORDER_RADIUS_PX.md, c);
-          const valueBand = { ...c, y: c.height * 0.12, height: c.height * 0.5 };
-          const captionBand = { ...c, y: c.height * 0.58, height: c.height * 0.3 };
           return (
             rect(
               el,
@@ -155,12 +168,22 @@ export function svgWebComponent(el: Shape, o: WebFaceOptions): string {
               rx,
               `fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1"`,
             ) +
-            line(el, st.value, valueBand, l.valuePx, stroke, { bold: true, fontFamily }) +
-            line(el, st.caption, captionBand, l.captionPx, ink, { opacity: 0.7, fontFamily })
+            line(el, st.value, at(c, l.value), l.valuePx, stroke, { bold: true, fontFamily }) +
+            line(el, st.caption, at(c, l.caption), l.captionPx, ink, { opacity: 0.7, fontFamily }) +
+            (l.change && st.change
+              ? statChangePill(el, st.change, at(c, l.change), l.changePx, {
+                  ground: fill,
+                  ink,
+                  surface: o.surface ?? 'light',
+                  fontFamily,
+                })
+              : '')
           );
         })
         .join('');
     }
+    case 'quote':
+      return svgQuote(el, o);
     case 'process': {
       const steps = el.processSteps ?? [];
       const l = processLayout(el.width, el.height, steps.length);
@@ -221,6 +244,27 @@ export function svgWebComponent(el: Shape, o: WebFaceOptions): string {
     default:
       return '';
   }
+}
+
+/** A stat's change line as a pill (docs/specs/009-elements/stat-row.md "How it looks"): the trend's colour over a
+ *  soft wash of it, sized to its text and centred in `r`. */
+function statChangePill(
+  el: Shape,
+  change: string,
+  r: LayoutRect,
+  px: number,
+  o: { ground: string; ink: string; surface: CanvasSurface; fontFamily?: string },
+): string {
+  const colours = statTrendColours(statTrend(change), o.surface, o.ground, o.ink);
+  const maxChars = lineChars(r.width, px);
+  const shown =
+    change.length > maxChars ? `${change.slice(0, Math.max(1, maxChars - 1))}…` : change;
+  const w = Math.min(r.width, shown.length * px * 0.56 + px * 1.4);
+  const pill = { x: r.x + (r.width - w) / 2, y: r.y, width: w, height: r.height };
+  return (
+    rect(el, pill, r.height / 2, `fill="${xmlEscape(colours.wash)}"`) +
+    line(el, shown, pill, px, colours.ink, { bold: true, fontFamily: o.fontFamily })
+  );
 }
 
 /** An image's hero caption card (docs/specs/009-elements/web-components-and-no-groups.md), drawn over the image. */

@@ -210,6 +210,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
   const applyImageToElement = (elementId: string, image: ImageDescriptor) => {
     commitPicture((els) =>
       els.map((el) => {
+        // A quote's portrait photo (docs/specs/009-elements/quote.md): the picture alone, kept as an image's is.
+        if (el.id === elementId && el.type === 'shape' && el.shape === 'quote')
+          return { ...el, imageId: image.id };
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
         const { credit: _old, ...rest } = el;
         void _old;
@@ -235,6 +238,11 @@ export function useEditorImages(deps: EditorImagesDeps) {
   const removeImageFromElement = (elementId: string) => {
     commitPicture((els) =>
       els.map((el) => {
+        if (el.id === elementId && el.type === 'shape' && el.shape === 'quote') {
+          const { imageId: _photo, ...rest } = el;
+          void _photo;
+          return rest;
+        }
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
         const { naturalWidth: _w, naturalHeight: _h, credit: _c, ...rest } = el;
         void _w;

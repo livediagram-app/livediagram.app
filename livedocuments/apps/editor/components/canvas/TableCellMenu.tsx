@@ -1,6 +1,12 @@
 import { useState } from 'react';
+import { Glyph } from '@livedocuments/ui';
 import { createPortal } from 'react-dom';
-import type { TableCellStyle, TableElement } from '@livedocuments/document';
+import {
+  TABLE_MARK_TEXT,
+  tableCellMark,
+  type TableCellStyle,
+  type TableElement,
+} from '@livedocuments/document';
 import {
   ContextMenu,
   ContextMenuDivider,
@@ -41,6 +47,7 @@ export function TableCellMenu({
   applyStyle,
   onPreviewStyle,
   onClear,
+  onSetText,
   onLinkCell,
   textColor,
 }: {
@@ -59,6 +66,8 @@ export function TableCellMenu({
   onPreviewStyle?: (patch: Partial<TableCellStyle> | null) => void;
   // Clear text + formatting of every selected cell (one commit).
   onClear: () => void;
+  // Write one text into every selected cell (one commit): the Marks row's Tick, Cross and Clear.
+  onSetText?: (text: string) => void;
   // Open the link picker for the anchor cell; absent in read-only sessions.
   onLinkCell?: (tableId: string, r: number, c: number) => void;
   textColor: string;
@@ -179,6 +188,15 @@ export function TableCellMenu({
           ))}
         </div>
       </MenuAccordionSection>
+      {onSetText ? (
+        <TableMarksRow
+          current={tableCellMark(element.cells[anchor.r]?.[anchor.c] ?? '')}
+          onSet={(text) => {
+            onSetText(text);
+            onClose();
+          }}
+        />
+      ) : null}
       <ContextMenuDivider />
       <MenuTileGrid cols={2}>
         {onLinkCell && single ? (
@@ -202,5 +220,50 @@ export function TableCellMenu({
       </MenuTileGrid>
     </ContextMenu>,
     document.body,
+  );
+}
+
+const MARK_BUTTONS = [
+  { id: 'tick', label: 'Tick (Yes)', path: 'M5 10.4l3 3 7-7.4' },
+  { id: 'cross', label: 'Cross (No)', path: 'M6 6l8 8M14 6l-8 8' },
+  { id: 'clear', label: 'Clear Mark', path: 'M5 10h10' },
+] as const;
+
+// Ticks and crosses (docs/specs/009-elements/comparison-tables.md): one press writes the mark into every selected cell.
+function TableMarksRow({
+  current,
+  onSet,
+}: {
+  current: 'tick' | 'cross' | null;
+  onSet: (text: string) => void;
+}) {
+  return (
+    <div className="px-2 pb-1 pt-1.5">
+      <p className="px-1 pb-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">Marks</p>
+      <div className="grid grid-cols-3 gap-1">
+        {MARK_BUTTONS.map((b) => (
+          <SizeButton
+            key={b.id}
+            active={b.id !== 'clear' && current === b.id}
+            label={b.label}
+            onClick={() => onSet(b.id === 'clear' ? '' : TABLE_MARK_TEXT[b.id])}
+          >
+            <Glyph
+              size={16}
+              units={20}
+              className={
+                b.id === 'tick'
+                  ? 'text-emerald-700 dark:text-emerald-400'
+                  : b.id === 'cross'
+                    ? 'text-rose-700 dark:text-rose-400'
+                    : undefined
+              }
+            >
+              <path d={b.path} />
+            </Glyph>
+          </SizeButton>
+        ))}
+      </div>
+    </div>
   );
 }

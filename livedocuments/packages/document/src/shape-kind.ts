@@ -50,6 +50,9 @@ export type ShapeKind =
   | 'process'
   // Header: a website header bar, logo + brand (the label) + `navLinks`.
   | 'site-header'
+  // Quote (docs/specs/009-elements/quote.md): a pull quote or testimonial, the words its label, a name, a role and a
+  // portrait.
+  | 'quote'
   // Tab window (docs/specs/009-elements/tab-window.md, retired): stored ones load as a frame named for the tab in
   // `windowTabId`; nothing makes one.
   | 'tab-window'

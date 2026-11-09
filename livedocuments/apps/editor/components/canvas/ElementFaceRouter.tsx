@@ -233,6 +233,7 @@ export function ElementFaceRouter({
           editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
           onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
           onSetHeading={(field, value) => onSetPageHeading(element.id, field, value)}
+          imageContext={imageContext}
         />
       ) : element.type === 'shape' && (inlineIcon || marker) ? (
         <InsetContent inset={contentInset}>

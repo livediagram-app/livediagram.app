@@ -33,7 +33,7 @@ import { svgPointerNote } from './svg-render-pointer-note';
 import { isConceptShape } from './concept';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
-import type { ResolveIconArt } from './svg-render-describe';
+import type { ResolveIconArt, ResolveImageHref } from './svg-render-describe';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
  *  label. See the module comment: the PNG path reads this. */
@@ -74,6 +74,8 @@ export function svgElementBody(
     surface?: CanvasSurface;
     /** Resolves an icon id to its art, for a card's media glyph. */
     resolveIconArt?: ResolveIconArt;
+    /** Resolves a gallery picture to its bytes, for a quote's photo (docs/specs/009-elements/quote.md). */
+    resolveImageHref?: ResolveImageHref;
     // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
     tagColours?: readonly TagColour[];
   },
@@ -124,7 +126,9 @@ export function svgElementBody(
       label,
       fontFamily,
       resolveIconArt: o.resolveIconArt,
+      resolveImageHref: o.resolveImageHref,
       tagColours: o.tagColours,
+      surface: o.surface,
     });
   return '';
 }

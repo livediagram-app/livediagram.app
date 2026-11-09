@@ -91,7 +91,12 @@ export function addTableColumn(t: TableElement, at?: number): TableElement {
   const cellStyles = t.cellStyles
     ? t.cellStyles.map((row) => [...row.slice(0, idx), null, ...row.slice(idx)])
     : t.cellStyles;
-  return { ...t, cells, colWidths, cellStyles };
+  // The highlighted column (docs/specs/009-elements/comparison-tables.md) moves right with a column put before it.
+  const hc = t.highlightColumn;
+  return withHighlight(
+    { ...t, cells, colWidths, cellStyles },
+    hc !== undefined && idx <= hc ? hc + 1 : hc,
+  );
 }
 
 export function removeTableColumn(t: TableElement, at?: number): TableElement {
@@ -102,7 +107,10 @@ export function removeTableColumn(t: TableElement, at?: number): TableElement {
   const cellStyles = t.cellStyles
     ? t.cellStyles.map((row) => row.filter((_, i) => i !== idx))
     : t.cellStyles;
-  return { ...t, cells, colWidths, cellStyles };
+  // Deleting the highlighted column removes the highlight; deleting one before it moves it left.
+  const hc = t.highlightColumn;
+  const nextHc = hc === undefined || hc === idx ? undefined : idx < hc ? hc - 1 : hc;
+  return withHighlight({ ...t, cells, colWidths, cellStyles }, nextHc);
 }
 
 // Overlay a parsed grid (rows of cells, e.g. from a pasted TSV) onto
@@ -220,7 +228,33 @@ export function moveTableColumn(t: TableElement, from: number, to: number): Tabl
   const cellStyles = t.cellStyles
     ? t.cellStyles.map((row) => moveInArray(row, from, to, cols, () => null))
     : t.cellStyles;
-  return { ...t, cells, colWidths, cellStyles };
+  return withHighlight(
+    { ...t, cells, colWidths, cellStyles },
+    movedIndex(t.highlightColumn, from, to),
+  );
+}
+
+// Where index `i` lands when the track at `from` moves to `to`: the moved track goes with it, the ones between shift.
+function movedIndex(i: number | undefined, from: number, to: number): number | undefined {
+  if (i === undefined) return undefined;
+  if (i === from) return to;
+  if (from < to && i > from && i <= to) return i - 1;
+  if (from > to && i >= to && i < from) return i + 1;
+  return i;
+}
+
+// `t` with its highlighted column at `c`, or none (the key removed, not left undefined, so it round-trips).
+function withHighlight(t: TableElement, c: number | undefined): TableElement {
+  if (c === t.highlightColumn) return t;
+  const { highlightColumn: _old, ...rest } = t;
+  return c === undefined ? rest : { ...rest, highlightColumn: c };
+}
+
+/** Highlight column `c` as the recommended one, or remove the highlight with null
+ *  (docs/specs/009-elements/comparison-tables.md). An index outside the table removes it. */
+export function withHighlightColumn(t: TableElement, c: number | null): TableElement {
+  const cols = tableColCount(t);
+  return withHighlight(t, c !== null && c >= 0 && c < cols ? c : undefined);
 }
 
 export function moveTableRow(t: TableElement, from: number, to: number): TableElement {
@@ -234,4 +268,19 @@ export function moveTableRow(t: TableElement, from: number, to: number): TableEl
     ? moveInArray(t.cellStyles, from, to, rows, () => [])
     : t.cellStyles;
   return { ...t, cells, rowHeights, cellStyles };
+}
+
+/** What one table commit writes (docs/specs/008-canvas/canvas-and-palette.md Table): the cells and their parallel
+ *  tracks and styles, and the highlighted column. */
+export type TablePatch = Partial<
+  Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles' | 'highlightColumn'>
+>;
+
+/** `t` with `patch` written over it. A `highlightColumn` key holding undefined removes the highlight, so the table
+ *  carries no empty key. */
+export function withTablePatch<T extends TableElement>(t: T, patch: TablePatch): T {
+  const next = { ...t, ...patch };
+  if ('highlightColumn' in patch && patch.highlightColumn === undefined)
+    delete next.highlightColumn;
+  return next;
 }

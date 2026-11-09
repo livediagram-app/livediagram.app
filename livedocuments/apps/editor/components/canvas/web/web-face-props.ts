@@ -19,6 +19,9 @@ export type WebFaceProps = {
   editable: boolean;
   onSetRows: (rows: WebRows) => void;
   onSetHeading: (field: 'pageTitle' | 'pageSubtitle', value: string) => void;
+  // Who reads the document's pictures, for a quote's photo (docs/specs/009-elements/quote.md); absent where pictures
+  // are not shown (a preview with no document).
+  imageContext?: { ownerId: string; documentId: string; shareCode: string | null };
 };
 
 // A layout rect as absolute CSS, element-relative.

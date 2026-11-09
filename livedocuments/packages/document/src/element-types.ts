@@ -18,6 +18,7 @@ import type { ImageCrop, ImageMask } from './image-frame';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
+import type { QuoteLook } from './quote';
 import type { ChipLook } from './chip';
 import type { AttachPoint } from './attachment';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
@@ -338,8 +339,14 @@ export type ShapeElement = {
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.
   stats?: StatItem[];
+  // A stat row's count-up while its slide is presented (docs/specs/009-elements/stat-row.md); absent = on.
+  statCountUp?: boolean;
   processSteps?: string[];
   navLinks?: string[];
+  // The quote (docs/specs/009-elements/quote.md): its look (absent = card) and its portrait's photo, a gallery id (or a
+  // data: URI in a This Browser document) placed like an image element's (elementImageId).
+  quoteLook?: QuoteLook;
+  imageId?: string;
   // Checklist (docs/specs/009-elements/checklist.md): the checkable rows. Only meaningful on the
   // 'checklist' kind; bounded in validate.ts.
   checklistItems?: ChecklistItem[];
@@ -554,6 +561,9 @@ export type TableElement = {
   headerColumn?: boolean;
   // Alternating body-row background tint (a 'zebra' table).
   zebra?: boolean;
+  // The recommended column of a comparison or pricing table (docs/specs/009-elements/comparison-tables.md): its index,
+  // absent for none. Kept in step by the column helpers in table.ts.
+  highlightColumn?: number;
   // The table look this was painted with (docs/specs/010-palette/style-presets.md), if any: the id of a
   // `tableColorPresets` entry. Stored for the same reason a shape stores
   // `colorPreset` — the colours below are resolved values, so without the id a
