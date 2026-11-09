@@ -672,7 +672,7 @@ type ApiClientOptions = {
   baseUrl: string; // 'https://livediagram-api/api' for the MCP binding, caps.apiBase for the CLI
   fetch: (request: Request) => Promise<Response>;
   headers: () => Record<string, string>; // Authorization; X-Livediagram-Client: mcp | cli; X-Share-Code when addressed by a link
-  onFailure?: (kind: string) => void; // 'Http503' | 'Internal', 5xx and network only
+  onFailure?: (kind: string) => void; // 'Http503' | 'Internal', 5xx and network only (a timeout counts, the caller's own abort not)
   timeoutMs?: number;
 };
 type ApiClient = {
