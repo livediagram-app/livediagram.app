@@ -1,5 +1,5 @@
 import { useState, type Ref } from 'react';
-import { computeDockAnchor, type DockAnchor } from '@/lib/canvas-chrome';
+import { computeDockAnchor, dockPopoverWidth, type DockAnchor } from '@/lib/canvas-chrome';
 import { track } from '@/lib/telemetry';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 
@@ -31,6 +31,9 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
   explorer: 960,
 };
+
+// The popovers sized `w-[calc(100vw-2rem)] sm:w-…`: the whole width less 2rem on a narrow window.
+const FULL_BELOW_SM: ReadonlySet<string> = new Set(['plan-cards', 'card-types']);
 
 // 'card-types': the Card Types panel over its cluster button in Plan mode (docs/specs/026-plan/item-types.md).
 export type DockPanel =
@@ -85,7 +88,11 @@ export function useDockPopovers(mainRef: Ref<HTMLElement>) {
         computeDockAnchor(
           button.getBoundingClientRect(),
           canvas.getBoundingClientRect(),
-          (POPOVER_WIDTHS[id] ?? POPOVER_WIDTH) * scale,
+          dockPopoverWidth(
+            (POPOVER_WIDTHS[id] ?? POPOVER_WIDTH) * scale,
+            window.innerWidth,
+            FULL_BELOW_SM.has(id),
+          ),
           above ? 'above' : 'button',
         ),
       );

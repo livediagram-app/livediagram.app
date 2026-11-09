@@ -6,7 +6,7 @@
 // Escape or Skip ends it; the steps are fixed when it starts, so a tab added meanwhile can't shift them.
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { Button } from '@liveworkspace/ui';
+import { Button, HoverCard } from '@liveworkspace/ui';
 import { FootprintsGlyph } from './glyphs';
 import type { ShareTelemetry } from './types';
 
@@ -105,21 +105,28 @@ export function useShareTour(
   };
 }
 
+/** What Show Me's hover card says under its name (every product's show-me.md "The button"). */
+export const SHOW_ME_HINT = 'A short tour of this, step by step.';
+
 export function ShowMeButton({ tour }: { tour: ShareTour }) {
+  // Named on hover and focus like the Help link beside it, so the glyph alone (a narrow window) still says what it
+  // does; shut while the tour runs.
   return (
-    <button
-      type="button"
-      onClick={() => {
-        if (!tour.active) tour.start();
-      }}
-      aria-pressed={tour.active}
-      // livediagram's ghost Show Me from before the Explorer split: the footprints, then the words.
-      className="relative touch-target inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-slate-500 transition duration-micro hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-    >
-      <FootprintsGlyph />
-      {/* The glyph alone on a phone, where the header has no room for the words beside its close button. */}
-      <span className="max-sm:sr-only">Show Me</span>
-    </button>
+    <HoverCard title="Show Me" description={SHOW_ME_HINT} disabled={tour.active}>
+      <button
+        type="button"
+        onClick={() => {
+          if (!tour.active) tour.start();
+        }}
+        aria-pressed={tour.active}
+        // livediagram's ghost Show Me from before the Explorer split: the footprints, then the words.
+        className="relative touch-target inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-slate-500 transition duration-micro hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+      >
+        <FootprintsGlyph />
+        {/* The glyph alone on a phone, where the header has no room for the words beside its close button. */}
+        <span className="max-sm:sr-only">Show Me</span>
+      </button>
+    </HoverCard>
   );
 }
 

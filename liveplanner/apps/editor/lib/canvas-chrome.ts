@@ -35,6 +35,17 @@ export function computeDockAnchor(
   return { left, top: bottomY, arrowOffset };
 }
 
+// The width a dock popover is drawn at, for its anchor's clamp: every popover is capped at the viewport less 2rem
+// (`max-w-[calc(100vw-2rem)]`), and one sized `w-[calc(100vw-2rem)] sm:w-…` (`fullBelowSm`) is that wide on a
+// viewport under Tailwind's `sm` (640px), wider than its `sm:` size there. Clamped with the `sm:` size, the Card
+// Types popover ran 22px off a 606px-wide window.
+export const SM_PX = 640;
+
+export function dockPopoverWidth(nominal: number, viewport: number, fullBelowSm = false): number {
+  const cap = Math.max(0, viewport - 32);
+  return fullBelowSm && viewport < SM_PX ? cap : Math.min(nominal, cap);
+}
+
 // The Tailwind cursor class for the canvas surface, resolved from the
 // current gesture + tool state. Order matters: an in-progress gesture
 // (pan / marquee) wins over the resting tool cursor, and holding

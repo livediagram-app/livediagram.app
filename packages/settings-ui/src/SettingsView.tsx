@@ -179,6 +179,17 @@ export function SettingsView({
                   clearDescription="Clear the settings search and show every category."
                 />
               </div>
+              {/* A phone's "no matches" sits under the search box, where the eye is: below the root list (every
+                  category, dimmed) it was a screen down, and the search read as having done nothing. */}
+              {isMobile && result.searching && result.totalMatches === 0 ? (
+                <NoMatches
+                  size="regular"
+                  className="mb-4"
+                  things="settings"
+                  query={query}
+                  onClear={() => setQuery('')}
+                />
+              ) : null}
               <SettingsCategoryList
                 categories={result.categories}
                 selected={isMobile ? null : (selected?.id ?? null)}
@@ -187,15 +198,6 @@ export function SettingsView({
                 searching={result.searching}
                 groups={groups}
               />
-              {isMobile && result.searching && result.totalMatches === 0 ? (
-                <NoMatches
-                  size="regular"
-                  className="mt-4"
-                  things="settings"
-                  query={query}
-                  onClear={() => setQuery('')}
-                />
-              ) : null}
             </div>
           ) : null}
 

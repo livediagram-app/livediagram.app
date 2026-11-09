@@ -161,7 +161,9 @@ Two welcome-modal rules follow from that:
 
 Guests see the legacy behaviour in both cases: first-load identity prompt, fully editable name, shuffle button present.
 
-The join prompt is **independent of share role**: both **edit-role and view-role** visitors get it. A viewer's display name is broadcast to everyone else (cursor label, the tab presence stack, comments), so they need a chance to set it before joining rather than appearing under a random default. The identity card only writes the visitor's **own** profile (`PUT /api/participants/:id`, authorised on `owner === id`, not on document-edit rights), so confirming a name never hits a `403` even for a read-only viewer. The card's edit-only affordances (template grid, theme grid) don't render in identity mode, so there's nothing a viewer could trigger that they lack permission for.
+The join prompt is **independent of share role**: both **edit-role and view-role** visitors get it. A viewer's display name is broadcast to everyone else (cursor label, the tab presence stack, comments), so they need a chance to set it before joining rather than appearing under a random default. The identity card only writes the visitor's **own** profile (`PUT /api/participants/:id`, authorised on `owner === id`, not on document-edit rights), so confirming a name never hits a `403` even for a read-only viewer. The card's edit-only affordances (template grid, theme grid) don't render in identity mode, so there's nothing a viewer could trigger that they lack permission for. Its words follow the role: a Viewer, who only looks, is asked to pick the name people see "while you look around
+this canvas" and told only that others see it on their cursor; a Participant or Editor collaborates, and is told the
+name shows on their cursor and comments.
 
 ## Guest → account merge
 

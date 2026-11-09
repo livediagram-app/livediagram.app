@@ -7,6 +7,7 @@ import { ShareDialog, type ShareDialogProps } from './ShareDialog';
 import { embedSnippet, liveImageHtml, liveImageMarkdown } from './share/handover';
 import { passwordToSave } from './share/PasswordSection';
 import { shareStatusText } from './share/ShareStatus';
+import { SHOW_ME_HINT } from './share/ShareTour';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -361,6 +362,14 @@ describe('ShareDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(onSave).toHaveBeenCalledWith('Bold Heron');
     expect(props.onClose).toHaveBeenCalled();
+  });
+
+  // Its hover card names it, so the glyph alone on a narrow window still says what it does.
+  it('describes Show Me by its hover card', async () => {
+    renderDialog();
+    const button = await screen.findByRole('button', { name: 'Show Me' });
+    const ids = (button.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean);
+    expect(ids.map((id) => document.getElementById(id)?.textContent)).toContain(SHOW_ME_HINT);
   });
 
   it('runs Show Me over the dialog, step by step, and Escape ends it without closing', async () => {

@@ -43,6 +43,26 @@ export function followSelection(sel: Selection, from: SheetLayout, to: SheetLayo
   };
 }
 
+// The selection held within a grid of `rows` by `cols` (the same object when it already is): this person's own
+// change that takes lines off the end (the undo of a paste that grew the sheet) leaves positions past the grid,
+// which have no geometry to draw.
+export function clampSelection(sel: Selection, rows: number, cols: number): Selection {
+  const r = (at: number) => Math.max(0, Math.min(at, rows - 1));
+  const c = (at: number) => Math.max(0, Math.min(at, cols - 1));
+  const out = (row: number, col: number) => row >= rows || col >= cols;
+  if (
+    !sel.ranges.some((g) => out(g.r2, g.c2)) &&
+    !out(sel.active.r, sel.active.c) &&
+    !out(sel.anchor.r, sel.anchor.c)
+  )
+    return sel;
+  return {
+    ranges: sel.ranges.map((g) => ({ r1: r(g.r1), r2: r(g.r2), c1: c(g.c1), c2: c(g.c2) })),
+    active: { r: r(sel.active.r), c: c(sel.active.c) },
+    anchor: { r: r(sel.anchor.r), c: c(sel.anchor.c) },
+  };
+}
+
 export function useFollowLayout({
   layout,
   editing,
@@ -66,7 +86,12 @@ export function useFollowLayout({
     const from = seen.current;
     seen.current = layout;
     if (from === layout || (from.rows === layout.rows && from.cols === layout.cols)) return;
-    if (takeOwnLayout()) return;
+    if (takeOwnLayout()) {
+      const now = selectionNow();
+      const held = clampSelection(now, layout.rows.length, layout.cols.length);
+      if (held !== now) setSelection(held);
+      return;
+    }
     setSelection(followSelection(selectionNow(), from, layout));
     if (!editing) return;
     const r = follow(from.rows, layout.rows, editing.r);

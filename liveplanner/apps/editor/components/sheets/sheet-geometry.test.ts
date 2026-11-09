@@ -140,6 +140,17 @@ describe('cellBox', () => {
       h: 48,
     });
   });
+
+  // A paste that grows the sheet sets a selection over rows the layout adds a render later: no NaN edges.
+  it('holds a box past the grid to its last row and column', () => {
+    const g = geometryOf(grid(10, 5));
+    const scroll = { top: 0, left: 0 };
+    const last = cellBox(g, 9, 4, scroll);
+    expect(cellBox(g, 3000, 11, scroll)).toEqual(last);
+    const span = cellBox(g, 2, 1, scroll, { r1: 2, c1: 1, r2: 3000, c2: 11 });
+    expect(Number.isFinite(span.h) && Number.isFinite(span.w)).toBe(true);
+    expect(span.y + span.h).toBe(last.y + last.h);
+  });
 });
 
 describe('hitTest', () => {

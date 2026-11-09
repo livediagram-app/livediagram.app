@@ -45,8 +45,8 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
         <div className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
           <p role="alert">
             {phase.failed.length === 1
-              ? 'This one could not be moved and is still This Browser:'
-              : `These ${phase.failed.length} could not be moved and are still This Browser:`}
+              ? 'This one could not be moved and is still in This Browser:'
+              : `These ${phase.failed.length} could not be moved and are still in This Browser:`}
           </p>
           <ul className="mt-2 list-disc pl-5 text-slate-600 dark:text-slate-300">
             {phase.failed.map((name, i) => (
@@ -67,7 +67,9 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   }
 
   return (
-    <Dialog open onClose={prompt.notNow} ariaLabel={title} size="md">
+    // Focus rests on the dialog itself: its first control is the header's Help link, whose hover card would open
+    // over the subtitle the moment the prompt appears (it comes up on load, with no click before it).
+    <Dialog open onClose={prompt.notNow} ariaLabel={title} size="md" initialFocus="container">
       <DialogHeader
         title={title}
         subtitle="You made these before signing in. They live only in this browser until you move them."

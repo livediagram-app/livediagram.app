@@ -52,6 +52,8 @@ export function useConnectStart(): ((palette: StartPalette) => ReactNode) | unde
       }
       onConnected={connectedTabs.showConnected}
       onGoTo={connectedTabs.goTo}
+      // Nothing recent: the Explorer, where every file is.
+      onOpenExplorer={() => window.location.assign(`${window.location.origin}/explorer`)}
     />
   );
 }

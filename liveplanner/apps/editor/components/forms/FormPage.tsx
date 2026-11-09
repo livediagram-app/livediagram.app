@@ -323,6 +323,7 @@ export function FormPage({
                                       problem,
                                       addItems: plan?.addItems,
                                       state,
+                                      offline: !online,
                                       // A published form counts it as a response; a Sheet's row is
                                       // always written by the api.
                                       sendToLink:

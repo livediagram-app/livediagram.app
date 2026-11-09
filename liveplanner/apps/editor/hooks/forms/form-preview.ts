@@ -12,6 +12,9 @@ import { track } from '@/lib/telemetry';
 export const PREVIEW_NO_DESTINATION =
   'Preview can’t add its card until Responses Go To names a board and column.';
 export const PREVIEW_FAILED = 'Preview couldn’t be sent. Try again.';
+// A plan kept only in this browser: the api writes a Sheet form's rows, and it has no copy of the plan to write to.
+export const PREVIEW_SHEET_OFFLINE =
+  'Preview can’t add its row while this plan is only in this browser. Sync it to liveplanner to try it.';
 export const PREVIEW_NO_SHEET =
   'Preview can’t add its row: its sheet was removed. Choose where responses go.';
 
@@ -23,6 +26,7 @@ export async function sendPreview({
   addItems,
   state,
   sendToLink,
+  offline = false,
 }: {
   form: FormDefinition;
   tabId: string;
@@ -33,6 +37,8 @@ export async function sendPreview({
   state: FillState;
   // The form's live link takes it as a response (absent offline, or for a form never published).
   sendToLink?: ((state: FillState) => Promise<PreviewSend>) | undefined;
+  // The plan is kept only in this browser (offline mode): nothing reaches the api.
+  offline?: boolean;
 }): Promise<SubmitOutcome> {
   const checked = checkResponse(form, state);
   if (!checked.ok) return { kind: 'invalid', errors: checked.errors };
@@ -41,7 +47,8 @@ export async function sendPreview({
     debugLog('[forms] form.preview.no_sheet', { problem });
     return { kind: 'failed', message: PREVIEW_NO_SHEET };
   }
-  if (sendToLink) {
+  if (form.sheet && offline) return { kind: 'failed', message: PREVIEW_SHEET_OFFLINE };
+  if (sendToLink && !offline) {
     const sent = await sendToLink(state);
     // The api counts it (Form·Sent·Preview, server-side).
     if (sent.kind === 'sent') return { kind: 'sent' };

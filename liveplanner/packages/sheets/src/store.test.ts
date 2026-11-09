@@ -352,6 +352,78 @@ describe('applySheetWrite', () => {
     const cols = roundTrip(s, { kind: 'layout', changes: [{ k: 'deleteCols', ids: [C(0)] }] });
     expect(cols.applied.kind).toBe('layout');
   });
+  // sheet.md "Sort": another sheet's range over sorted rows stays on them; a single cell follows its cell.
+  it('keeps another sheet’s ranges into a sorted one on their rows', () => {
+    const [target, reader] = makeSheets(
+      {
+        Costs: { A1: '1', A2: '2', A3: '3' },
+        Sum: { A1: '=SUM(Costs!A1:A3)', A2: '=Costs!A1', A3: '=SUM(Costs!A2:B2)' },
+      },
+      { rows: 5, cols: 3 },
+    ) as [Sheet, Sheet];
+    const changes = [{ k: 'orderRows' as const, ids: ['s0r2', 's0r1', 's0r0'] }];
+    const rewrites = shrinkReadersOf(target.id, target.layout, changes, reader.cells);
+    expect(rewrites.map((rw) => rw.r)).toEqual(['s1r0']);
+    const after = applySheetWrite(target, { kind: 'layout', changes }, ctx).sheet;
+    const read = applySheetWrite(reader, { kind: 'cells', cells: rewrites }, ctx).sheet;
+    const wb = new Workbook({ sheets: [after, read], locale: 'en' });
+    const f = (r: string) =>
+      renderFormula(
+        (read.cells.get(cellKey(r, 's1c0'))!.input as { f: never }).f,
+        wb.ctxFor(read.id),
+      );
+    expect([f('s1r0'), f('s1r1'), f('s1r2')]).toEqual([
+      '=SUM(Costs!A1:A3)',
+      '=Costs!A3',
+      '=SUM(Costs!A2:B2)',
+    ]);
+  });
+
+  // A sort keeps named ranges, validation rules (and their source) and format rules on their rows; a format rule's
+  // custom formula keeps its relative rows' offsets from the pinned corner; a one-row rule moves with its row.
+  it('keeps layout ranges on sorted rows', () => {
+    const [sheet] = makeSheets({ S: { A1: '1' } }, { rows: 5, cols: 3 }) as [Sheet];
+    const span = { r1: 's0r1', c1: 's0c0', r2: 's0r3', c2: 's0c1' };
+    const one = { r1: 's0r1', c1: 's0c0', r2: 's0r1', c2: 's0c0' };
+    const fx = { t: '=@0>1', r: [{ r1: 's0r1', c1: 's0c0' }] };
+    const withRanges: Sheet = {
+      ...sheet,
+      layout: {
+        ...sheet.layout,
+        names: [
+          { name: 'Span', ...span },
+          { name: 'One', ...one },
+        ],
+        rules: [{ id: 'v', is: 'range', ...span, src: span }],
+        formatRules: [{ id: 'f', is: 'when', op: 'formula', fx, ...span }],
+      },
+    };
+    const changes = [{ k: 'orderRows' as const, ids: ['s0r3', 's0r2', 's0r1', 's0r0'] }];
+    const r = applySheetWrite(withRanges, { kind: 'layout', changes }, ctx).sheet.layout;
+    expect(r.rows.slice(0, 4)).toEqual(['s0r3', 's0r2', 's0r1', 's0r0']);
+    const pinned = { r1: 's0r2', c1: 's0c0', r2: 's0r0', c2: 's0c1' };
+    expect(r.names).toEqual([
+      { name: 'Span', ...pinned },
+      { name: 'One', ...one },
+    ]);
+    expect(r.rules).toEqual([{ id: 'v', is: 'range', ...pinned, src: pinned }]);
+    expect(r.formatRules![0]).toMatchObject(pinned);
+    expect(r.formatRules![0]!.fx!.r[0]).toEqual({ r1: 's0r2', c1: 's0c0' });
+    // Columns too, and a reorder that moves nothing pins nothing.
+    const cols = applySheetWrite(
+      withRanges,
+      { kind: 'layout', changes: [{ k: 'orderCols', ids: ['s0c1', 's0c0'] }] },
+      ctx,
+    ).sheet.layout;
+    expect(cols.names![0]).toEqual({ name: 'Span', ...span, c1: 's0c1', c2: 's0c0' });
+    const same = applySheetWrite(
+      withRanges,
+      { kind: 'layout', changes: [{ k: 'orderRows', ids: ['s0r0', 's0r1'] }] },
+      ctx,
+    ).sheet.layout;
+    expect(same.names).toEqual(withRanges.layout.names);
+  });
+
   it('shrinks another sheet’s ranges into this one when their corners go, linearly', () => {
     const [target, reader] = makeSheets(
       {

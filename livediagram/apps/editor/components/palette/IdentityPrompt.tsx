@@ -11,15 +11,19 @@ import { SparkleIcon } from '@liveworkspace/workbench/components/palette/templat
 
 // The visitor name prompt (docs/specs/007-editor/new-document-route.md): someone joining another person's document
 // confirms the name others will see on their cursor and comments before they join. Join keeps the name typed, Cancel,
-// the X and Escape the one they had. A signed-in visitor's name is their account's, shown locked.
+// the X and Escape the one they had. A signed-in visitor's name is their account's, shown locked. A Viewer, who
+// neither comments nor edits (docs/specs/013-workspace/share-roles.md), is told only about the cursor.
 export function IdentityPrompt({
   participant,
   documentName,
   lockedName,
   onJoin,
   onCancel,
+  looksOnly = false,
 }: {
   participant: Participant;
+  // A Viewer's session: it looks along, so the words promise no collaborating or comments.
+  looksOnly?: boolean;
   // Greets the visitor by the document ("Welcome to 'API sketch'").
   documentName?: string;
   // The account's name: the input reads it, locked.
@@ -52,7 +56,9 @@ export function IdentityPrompt({
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
             {nameLocked
               ? 'This is the name from your account; others will see it on this canvas.'
-              : 'Pick the name people will see while you collaborate on this canvas.'}
+              : looksOnly
+                ? 'Pick the name people will see while you look around this canvas.'
+                : 'Pick the name people will see while you collaborate on this canvas.'}
           </p>
         </div>
         <button
@@ -78,7 +84,9 @@ export function IdentityPrompt({
       </div>
       <DialogFooter>
         <p className="mr-auto text-[11px] text-slate-500 dark:text-slate-400">
-          Other participants will see this name on your cursor and comments.
+          {looksOnly
+            ? 'Other people will see this name on your cursor.'
+            : 'Other participants will see this name on your cursor and comments.'}
         </p>
         <Button variant="secondary" size="xs" onClick={onCancel}>
           Cancel

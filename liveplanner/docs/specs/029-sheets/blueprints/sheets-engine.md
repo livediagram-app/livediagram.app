@@ -387,6 +387,13 @@ type SheetWrite =
   header row or every column went is gone, and a deleted Controls column is dropped (`store-layout.ts`). Its
   inverse (`inverseDelete`, `store-inverse-delete.ts`) puts back what the deletion took into the layout the undo
   lands on (below). Pure, used by the api, the offline store and the editor's optimistic apply, so all converge.
+- A sort (`orderRows` / `orderCols`) keeps every range over more than one sorted line on its slots: the sheet's
+  own formulas (`sortRewrites`, `pinRef`, derived cell changes that ride in `applied.cells`), other sheets' formulas
+  on the tab (`shrinkReadersOf`, run by the api route and the editor's store for a sort as for a delete), and the
+  layout's named ranges, validation rules (and a range dropdown's source) and format rules (`pinLayoutRanges`, a
+  format rule's custom formula reanchored to its pinned corner). A corner id becomes the id now at that corner's
+  old position (`pinSpan`); a single cell or a range within one line moves with it. One pass over the formulas,
+  linear in references. Undo's `orderRows` back pins them back.
 - `inverseSheetWrite(before, applied, now?)`: cells → their old inputs and formats (exact keys touched); insert →
   delete of the same ids; delete → insert of the same ids after their old neighbours, plus their cells and sizes;
   move → move back after the old neighbour; orderRows → the old order; size/hide/freeze/merge/filter/options → old

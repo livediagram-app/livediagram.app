@@ -186,7 +186,7 @@ export function EditorHeader({
           the bar (the -mr-4 cancels the header's right padding). */}
       <div className="-mr-4 flex shrink-0 items-stretch self-stretch">
         {onMakeCopy ? (
-          <HoverCard title="Make a copy" description="Duplicate this plan into your own files.">
+          <HoverCard title="Make a Copy" description="Duplicate this plan into your own files.">
             <button
               type="button"
               onClick={onMakeCopy}
