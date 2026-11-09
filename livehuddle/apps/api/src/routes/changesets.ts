@@ -79,6 +79,11 @@ async function handleSubmit(
 ): Promise<Response> {
   if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, tabId)))
     return forbidden();
+  // A tab-scoped grant writes its own tab and never makes one (docs/specs/013-workspace/tab-scoped-share-links.md):
+  // its tab gone reads as missing, so a `replace` cannot bring it back under a name of the caller's choosing.
+  if (grantOn(ctx, document.id)?.tabScope != null && !document.tabs.some((t) => t.id === tabId)) {
+    return notFound();
+  }
   const raw = await ctx.request.json().catch(() => undefined);
   const parsed = parseChangesetRequest(raw, engineLog({ documentId: document.id, tabId }));
   if (!parsed.ok) return json(parsed.refusal.body, { status: parsed.refusal.status });

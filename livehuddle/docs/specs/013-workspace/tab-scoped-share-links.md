@@ -44,7 +44,9 @@ theirs to change. The rename door answers 403 (`apps/api/src/routes/tab-name-rou
 keeps the stored name whatever name it carries (`apps/api/src/routes/tab-put-route.ts`), so an editor holding a name
 from before an owner's rename never writes it back.
 
-**The tab must still belong to the canvas.** A grant whose tab is no longer in the canvas reaches nothing.
+**The tab must still belong to the canvas.** A grant whose tab is no longer in the canvas reaches nothing, and a
+scoped editor never makes a tab: once the owner deletes its tab, its whole-tab save
+(`PUT /api/documents/:id/tabs/:tabId`) and its changeset submit answer 404 rather than bringing the tab back.
 
 ## Realtime
 

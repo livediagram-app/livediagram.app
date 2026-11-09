@@ -298,4 +298,31 @@ describe('a tab-scoped whole-tab save', () => {
     });
     expect(stored(db).map((e) => e.id)).toEqual(['a']);
   });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md "The tab must still belong to the canvas": an editor left
+  // open on a tab the owner deleted never brings it back with its next autosave.
+  it('answers 404 when its tab was deleted, and never recreates it', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const db = await documentWith([box('a')]);
+    db.sql.prepare("DELETE FROM tabs WHERE id = 't1'").run();
+    const res = await handleDocuments(
+      makeTestRouteContext('PUT', '/api/documents/D/tabs/t1', {
+        env: db.env,
+        owner: 'guest_v',
+        body: { id: 't1', name: 'Back again', elements: [box('a')] },
+        grant: {
+          item: 'D',
+          level: 'edit',
+          tab: 't1',
+          sub: 'link:abc',
+          team: null,
+          exp: 2_000_000_000,
+          shareCode: 'abc',
+          token: 'g',
+        },
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.sql.prepare("SELECT id FROM tabs WHERE id = 't1'").get()).toBeUndefined();
+  });
 });
