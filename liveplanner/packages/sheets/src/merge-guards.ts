@@ -8,6 +8,7 @@ import type { SheetLayout } from './sheet';
 export type MergeRefusal = { refused: string };
 
 export const MERGE_SORT_REFUSAL = 'Unmerge the cells that span rows before sorting.';
+export const MERGE_RANGE_SORT_REFUSAL = 'Unmerge the cells in the range before sorting.';
 export const mergeMoveRefusal = (axis: 'r' | 'c') =>
   `Unmerge the cells first: moving these ${axis === 'r' ? 'rows' : 'columns'} would split merged cells.`;
 
@@ -34,6 +35,19 @@ export function sortSplitsMerge(
   return boxes(layout).some(
     (b) => b.r2 > b.r1 && b.r1 <= r2 && r1 <= b.r2 && b.c1 <= c2 && c1 <= b.c2,
   );
+}
+
+/** Whether a Custom Sort of rows r1..r2 within columns c1..c2 meets a merge. It moves only the range's cells, never
+ *  the merge, so any merge there (a Merge Across too) would be left behind on its row, another row's values landing
+ *  under it, hidden. */
+export function rangeSortHitsMerge(
+  layout: SheetLayout,
+  r1: number,
+  r2: number,
+  c1: number,
+  c2: number,
+): boolean {
+  return boxes(layout).some((b) => b.r1 <= r2 && r1 <= b.r2 && b.c1 <= c2 && c1 <= b.c2);
 }
 
 /** Whether moving lines from..to to before position `before` would split a merge spanning lines on that axis: the

@@ -71,7 +71,7 @@ src/write-caps.ts          writesCapsProblem(sheet, writes, projectCells) -> she
 src/commands.ts            typeInto, typeIntoRanges, clearRanges, formatRanges, borderRange, merge/unmerge,
                            fillRange, fillFromEdge, splitWrite, stepDecimals, boundedRange
 src/commands-axis.ts       insert, append, delete, hide, resize, move, freeze, sort, filter (layout writes)
-src/merge-guards.ts        sortSplitsMerge, moveSplitsMerge: a sort or move that would split a merge is refused
+src/merge-guards.ts        sortSplitsMerge, rangeSortHitsMerge, moveSplitsMerge: a sort or move that would split a merge is refused
 src/commands-paste.ts      pasteClip, pasteCut, pasteExternal
 src/commands-shift.ts      shiftCells: Insert Cells and Delete Cells (built on the cut-paste move)
 src/selection.ts           Selection ops: move, extend, jump (Ctrl+arrows), select all, rows, columns, cycle

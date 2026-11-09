@@ -609,8 +609,10 @@ coloured in one theme reads in the other (`@liveplanner/project` `cellColours`):
 - A sort is one change, undone in one step.
 - A sort over rows a merge spans (a merge of more than one row: Merge Cells down, not Merge Across) is refused, as in
   Google Sheets and Excel, with "Unmerge the cells that span rows before sorting.": moving its rows apart would
-  stretch the merge over whatever lands between them. Custom Sort refuses only for a merge inside its range; an
-  agent's sort is refused the same way (`merge_split`).
+  stretch the merge over whatever lands between them. Custom Sort moves only its range's cells, so a merge stays on
+  its row while they move: it refuses for any merge in its sorted rows, a Merge Across too, with "Unmerge the cells in
+  the range before sorting." (a merge in a kept header row is fine), else another row's values would land under the
+  merge, hidden. An agent's sort is refused the same way (`merge_split`).
 
 ### Filter
 

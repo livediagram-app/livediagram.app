@@ -5,7 +5,7 @@ import { moveAxis, sortFilter, sortRange, sortSheet } from './commands-axis';
 import { mergeRange } from './commands';
 import { applySheetWrite, type SheetWrite } from './store';
 import { validateWrite } from './validate';
-import { MERGE_SORT_REFUSAL, mergeMoveRefusal } from './merge-guards';
+import { MERGE_RANGE_SORT_REFUSAL, MERGE_SORT_REFUSAL, mergeMoveRefusal } from './merge-guards';
 import type { Sheet } from './sheet';
 
 // docs/specs/029-sheets/sheet.md "Sort", "Rows and columns": a sort or move that would pull a merge's rows apart is
@@ -69,7 +69,24 @@ describe('sorting past a merge', () => {
         [{ col: 0, ascending: true }],
         false,
       ),
-    ).toEqual({ refused: MERGE_SORT_REFUSAL });
+    ).toEqual({ refused: MERGE_RANGE_SORT_REFUSAL });
+  });
+
+  it('refuses a range sort over a Merge Across, which stays on its row while the cells move', () => {
+    // B2:C2 merged across; sorting A1:C3 by A used to move "y5" from C1 into C2, hidden under the merge.
+    const across = merged(sheet(), 1, 1, 1, 2);
+    const range = { r1: 0, c1: 0, r2: 2, c2: 2 };
+    expect(sortRange(wbOf(across), across.id, range, [{ col: 0, ascending: true }], false)).toEqual(
+      { refused: MERGE_RANGE_SORT_REFUSAL },
+    );
+    // A merge in the kept header row is fine, and so is one beside the range.
+    const header = merged(sheet(), 0, 1, 0, 2);
+    expect(
+      sortRange(wbOf(header), header.id, { ...range, r2: 3 }, [{ col: 0, ascending: true }], true),
+    ).toMatchObject({ kind: 'cells' });
+    expect(
+      sortRange(wbOf(across), across.id, { ...range, c2: 0 }, [{ col: 0, ascending: true }], false),
+    ).toMatchObject({ kind: 'cells' });
   });
 });
 
