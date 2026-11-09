@@ -24,12 +24,12 @@ export const PlanLatestContext = createContext<RefObject<PlanContextValue | unde
 // always inside a provider or never, so the hooks it calls never change between its renders.
 export function usePlanCard(): PlanCardData | undefined {
   const card = use(PlanCardContext);
-  // oxlint-disable-next-line react-hooks/rules-of-hooks
+  // oxlint-disable-next-line react-hooks/rules-of-hooks -- a card is always inside a provider or never, so the call never changes between renders
   return card ?? usePlan() ?? undefined;
 }
 
 export function usePlanLatest(): RefObject<PlanContextValue | undefined> {
   const latest = use(PlanLatestContext);
-  // oxlint-disable-next-line react-hooks/rules-of-hooks
+  // oxlint-disable-next-line react-hooks/rules-of-hooks -- a card is always inside a provider or never, so the call never changes between renders
   return latest ?? { current: usePlan() ?? undefined };
 }

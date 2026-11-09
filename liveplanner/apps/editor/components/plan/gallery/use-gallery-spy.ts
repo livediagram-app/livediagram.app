@@ -60,7 +60,7 @@ export function useGallerySpy(
   useEffect(() => {
     setCurrent(first);
     list.current?.scrollTo?.({ top: 0 });
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- on a new search only, never as the sections change under it
   }, [resetOn]);
 
   return { current, spy, goTo };

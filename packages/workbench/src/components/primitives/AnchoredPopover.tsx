@@ -178,8 +178,7 @@ export function AnchoredPopover({
     if (initialFocus === 'none') return;
     if (initialFocus === 'panel') panel.current?.focus();
     else panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
-    // Opening only.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- opening only
   }, []);
 
   // Escape closes this panel only, before the dialog's own Escape, and only while it is the top popover

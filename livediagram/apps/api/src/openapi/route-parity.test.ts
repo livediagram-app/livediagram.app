@@ -43,7 +43,7 @@ beforeAll(async () => {
   // Trapped requests end in index.ts's catch-all, which logs each one.
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-  vi.spyOn(console, 'log').mockImplementation(() => undefined);
+  vi.spyOn(console, 'info').mockImplementation(() => undefined);
   const candidates: string[][] = [];
   for (const [segment, byPosition] of vocabulary) {
     // One level deeper than the deepest literal or documented template, so a

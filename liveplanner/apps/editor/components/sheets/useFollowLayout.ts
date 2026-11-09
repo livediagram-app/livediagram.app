@@ -100,5 +100,5 @@ export function useFollowLayout({
       setEditing(null);
       toast(r === null ? EDIT_LOST : EDIT_LOST_COLUMN);
     } else if (r !== editing.r || c !== editing.c) setEditing({ ...editing, r, c });
-  }, [layout]); // oxlint-disable-line react/exhaustive-deps
+  }, [layout]); // oxlint-disable-line react/exhaustive-deps -- follows a layout change only; the selection and edit are read as they stand
 }

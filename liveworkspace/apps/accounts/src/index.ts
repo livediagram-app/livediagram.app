@@ -309,7 +309,7 @@ export default {
     await step('index purges', async () => {
       const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
       if (purges.sent + purges.failed + purges.dropped > 0)
-        console.log('[accounts] index purges', JSON.stringify(purges));
+        console.info('[accounts] index purges', JSON.stringify(purges));
     });
     // Every run: Timeline events the index hasn't taken yet go again (index-timeline.ts), the oldest beyond
     // TIMELINE_OUTBOX_MAX dropped first, so the outbox stays bounded with no index or one that is down.
@@ -323,7 +323,7 @@ export default {
         TIMELINE_CALLS_PER_RUN,
       );
       if (timeline.sent > 0 || timeline.waiting)
-        console.log('[accounts] timeline events', JSON.stringify(timeline));
+        console.info('[accounts] timeline events', JSON.stringify(timeline));
     });
     // Every run: a welcome that failed is tried again within 15 minutes. Every hour: the whole series, the stages
     // after the welcome to those inside their send window. Without a way to send (no EMAIL binding outside
@@ -340,7 +340,7 @@ export default {
         now,
       );
       if (hourly || (lifecycle.welcome?.sent ?? 0) + (lifecycle.welcome?.failed ?? 0) > 0) {
-        console.log('[lifecycle] onboarding emails', JSON.stringify(lifecycle));
+        console.info('[lifecycle] onboarding emails', JSON.stringify(lifecycle));
       }
     });
     if (!hourly) return;
@@ -358,7 +358,7 @@ export default {
         : null;
       const result = await sweepInvitations(env.AUTH_DB, send, now, sendWindowOf(env));
       if (result.expired + result.reminded + result.failed > 0) {
-        console.log('[teams] invitation sweep', JSON.stringify(result));
+        console.info('[teams] invitation sweep', JSON.stringify(result));
       }
     });
     try {
@@ -370,7 +370,7 @@ export default {
           now,
         );
         if (tokens.sent + tokens.failed > 0) {
-          console.log('[tokens] expiry warnings', JSON.stringify(tokens));
+          console.info('[tokens] expiry warnings', JSON.stringify(tokens));
         }
       }
     } catch (error) {
@@ -392,13 +392,13 @@ export default {
     // Address days whose 24 hours are over (code-day.ts).
     await step('code days', async () => {
       const swept = await sweepCodeDays(env.AUTH_DB, now);
-      if (swept > 0) console.log('[accounts] code days swept', swept);
+      if (swept > 0) console.info('[accounts] code days swept', swept);
     });
     if (!daily) return;
     // Guests who can never come back: what is kept against their ids goes (src/guest-sweep.ts).
     await step('idle guests', async () => {
       const guests = await sweepIdleGuests(env.AUTH_DB);
-      if (guests > 0) console.log('[guests] idle guests swept', guests);
+      if (guests > 0) console.info('[guests] idle guests swept', guests);
     });
   },
 } satisfies ExportedHandler<Env>;

@@ -64,7 +64,6 @@ export function useOtherApps({
       });
     return () => controller.abort();
     // `list` is read through `key`.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, app]);
 
   return answer && answer.key === key ? answer.value : null;

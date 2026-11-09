@@ -272,12 +272,12 @@ export function PhotoLayerRow({
   // Remade after each change (the version names it).
   const thumb = useMemo(
     () => (layer.layerKind === 'pixel' ? layerThumbnail(session, layer.id, 'layer') : null),
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the version says when the layer's pixels changed in place
     [session, layer, version],
   );
   const maskThumb = useMemo(
     () => (layer.mask ? layerThumbnail(session, layer.id, 'mask') : null),
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the version says when the layer's pixels changed in place
     [session, layer, version],
   );
   const KindIcon = layer.layerKind === 'pixel' ? null : KIND_ICON[layer.layerKind];

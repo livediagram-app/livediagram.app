@@ -4,7 +4,7 @@
 type Fields = Record<string, string | number | boolean | null | undefined>;
 
 export function driveLog(step: string, fields: Fields = {}): void {
-  console.log(`drive: ${step}`, fields);
+  console.info(`drive: ${step}`, fields);
 }
 
 export function driveWarn(step: string, fields: Fields = {}): void {

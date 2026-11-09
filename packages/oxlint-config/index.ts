@@ -10,6 +10,9 @@ const JS_FILES = ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.jsx'];
 const TS_FILES = ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'];
 // Tests: unit and e2e specs, and the Playwright suites with their helpers.
 const TEST_FILES = ['**/*.test.*', '**/*.spec.*', '**/e2e/**'];
+// Command line tools run from a workspace (build steps, generators, benchmarks, the MCP eval harness): what they
+// print to stdout is their output, so console.log is theirs to use (docs/ci.md "Lint disables and console.log").
+const SCRIPT_FILES = ['**/scripts/**', '**/eval/**'];
 
 // A `jsPlugins` specifier resolves from the config file that names it, so plugins are passed as
 // absolute paths: every workspace's config, and the tests' scratch configs, load the same files.
@@ -113,6 +116,11 @@ export default defineConfig({
     'eslint/use-isnan': 'error',
     'eslint/valid-typeof': 'error',
 
+    // Logging (docs/ci.md "Lint disables and console.log"). Shipped code writes a line with intent: an app's trace
+    // through its debugLog, a Worker's event as console.info, and console.warn or console.error when something went
+    // wrong. console.log is a command line tool's stdout, so it is refused here and allowed in tests and scripts.
+    'eslint/no-console': ['error', { allow: ['info', 'warn', 'error', 'debug'] }],
+
     // TypeScript rules (typescript-eslint's recommended set).
     'eslint/no-array-constructor': 'error',
     'eslint/no-unused-expressions': 'error',
@@ -159,6 +167,7 @@ export default defineConfig({
     'react/unsupported-syntax': 'error',
 
     // The repo's own rules (./plugin.ts).
+    'liveworkspace/disable-reason': 'error',
     'liveworkspace/no-native-title': 'error',
     'liveworkspace/no-raw-icon-svg': 'error',
   },
@@ -237,6 +246,11 @@ export default defineConfig({
         'typescript/no-unsafe-assignment': 'off',
         'typescript/unbound-method': 'off',
       },
+    },
+    {
+      // Tests report timings and probes, and scripts print their output, to the terminal.
+      files: [...TEST_FILES, ...SCRIPT_FILES],
+      rules: { 'eslint/no-console': 'off' },
     },
     {
       // Art keeps its own paint; only the title rule applies there.

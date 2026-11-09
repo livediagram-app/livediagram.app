@@ -79,7 +79,7 @@ function asObject(): MirrorApi {
 }
 
 beforeEach(() => {
-  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
     const url = String(input instanceof Request ? input.url : input);

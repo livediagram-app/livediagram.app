@@ -364,7 +364,7 @@ export async function handlePersonPurge(
       console.warn('[index] person notices', String(err)),
     ),
   );
-  console.log('[index] purged a closed account', { items: outcome.items, done: outcome.done });
+  console.info('[index] purged a closed account', { items: outcome.items, done: outcome.done });
   return json({ done: outcome.done, items: outcome.items });
 }
 

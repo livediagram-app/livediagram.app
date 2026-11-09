@@ -66,6 +66,6 @@ export class WorkbenchStore extends DurableObject<Env> implements WorkbenchStore
 
   override async alarm(): Promise<void> {
     const { swept } = await this.core.alarm();
-    if (swept > 0) console.log('[workbench] swept', { swept });
+    if (swept > 0) console.info('[workbench] swept', { swept });
   }
 }

@@ -159,7 +159,7 @@ export async function claimLegacyGuest(
       .first<string>('claimedBy');
     if (winner !== into) return { status: 200, body: { merged: false, reason: 'claimed' } };
   }
-  console.log('[accounts] legacy guest claimed', {
+  console.info('[accounts] legacy guest claimed', {
     into: into.startsWith('guest_') ? 'guest' : 'account',
   });
   return { status: 200, body: { merged: true } };
