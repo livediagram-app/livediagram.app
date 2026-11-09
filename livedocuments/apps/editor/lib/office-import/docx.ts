@@ -656,7 +656,7 @@ export async function readDocx(pkg: OfficePackage): Promise<DocxRead> {
     return rel ? pkg.readXml(rel.target) : undefined;
   };
   const styles = readStyles(await partOf('styles'));
-  const numbering = readNumbering(await partOf('numbering'));
+  const numbering = readNumbering(await partOf('numbering'), styles);
   const walker = new DocxWalker(styles, numbering, rels, readFootnotes(await partOf('footnotes')));
   walker.body(child(root, 'w:body'));
   if (walker.overflow) throw new OfficeImportError('too-many-blocks', walker.blocks.length);

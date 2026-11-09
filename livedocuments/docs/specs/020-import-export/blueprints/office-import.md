@@ -124,7 +124,10 @@ Follows the spec's table. Precisely:
   (`title`, `subtitle`, `heading N`, `quote`, `intense quote`, a code name: `code`, `html preformatted`,
   `source code`, `macro text`), else an `w:outlineLvl` (0 is Heading 1), else the style id read as a name (no
   styles part).
-- List: `w:numPr` on the paragraph, else on its style chain; `numId` `0` is none; the level's `w:numFmt`:
+- List: `w:numPr` on the paragraph, else on its style chain; `numId` `0` is none; the level's `w:numFmt` (a
+  `w:num`'s `w:lvlOverride` with its own `w:lvl` first; an abstract numbering with no levels and a
+  `w:numStyleLink`, as Word's built-in multilevel lists write, takes the levels of the numbering its numbering
+  style names, at most 4 links deep):
   `bullet` is bulleted, `none` is no list, anything else numbered (D63: a level the numbering part lacks is
   bulleted). Level capped at `ARTICLE_LIST_MAX_LEVEL`.
 - To-do: a paragraph (not a code block) whose text, trimmed at its start, begins with `☐`, `☒` or `☑` then a space

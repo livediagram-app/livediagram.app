@@ -145,28 +145,64 @@ export type DocxNumbering = {
   kindOf(numId: string, level: number): ArticleListKind | null;
 };
 
-export function readNumbering(root: XmlElement | undefined): DocxNumbering {
-  const abstract = new Map<string, Map<number, string>>();
-  const nums = new Map<string, string>();
+/** Each level's `w:numFmt` among a `w:abstractNum`'s or a `w:lvlOverride`'s `w:lvl`s. */
+function levelFormats(el: XmlElement | undefined, into: Map<number, string>): Map<number, string> {
+  for (const lvl of kids(el)) {
+    if (lvl.name !== 'w:lvl') continue;
+    const at = intAttr(lvl, 'w:ilvl') ?? 0;
+    into.set(at, child(lvl, 'w:numFmt')?.attrs['w:val'] ?? 'bullet');
+  }
+  return into;
+}
+
+/** A numbering part read for list kinds. A list whose abstract numbering only links to a numbering style
+ *  (`w:numStyleLink`, as Word's built-in multilevel lists do) takes that style's numbering's levels; a `w:num`'s
+ *  `w:lvlOverride` with a `w:lvl` of its own replaces that level. */
+export function readNumbering(
+  root: XmlElement | undefined,
+  styles?: Pick<DocxStyles, 'numPrOf'>,
+): DocxNumbering {
+  const abstract = new Map<string, { levels: Map<number, string>; styleLink?: string }>();
+  const nums = new Map<string, { ref: string; overrides: Map<number, string> }>();
   for (const el of kids(root)) {
     if (el.name === 'w:abstractNum') {
-      const levels = new Map<number, string>();
-      for (const lvl of kids(el)) {
-        if (lvl.name !== 'w:lvl') continue;
-        const at = intAttr(lvl, 'w:ilvl') ?? 0;
-        levels.set(at, child(lvl, 'w:numFmt')?.attrs['w:val'] ?? 'bullet');
-      }
-      abstract.set(el.attrs['w:abstractNumId'] ?? '', levels);
+      const link = child(el, 'w:numStyleLink')?.attrs['w:val'];
+      abstract.set(el.attrs['w:abstractNumId'] ?? '', {
+        levels: levelFormats(el, new Map()),
+        ...(link ? { styleLink: link } : {}),
+      });
     } else if (el.name === 'w:num') {
       const ref = child(el, 'w:abstractNumId')?.attrs['w:val'];
-      if (el.attrs['w:numId'] && ref !== undefined) nums.set(el.attrs['w:numId'], ref);
+      if (!el.attrs['w:numId'] || ref === undefined) continue;
+      const overrides = new Map<number, string>();
+      for (const o of kids(el)) {
+        if (o.name !== 'w:lvlOverride') continue;
+        const at = intAttr(o, 'w:ilvl') ?? 0;
+        const fmt = levelFormats(o, new Map()).get(at);
+        if (fmt !== undefined) overrides.set(at, fmt);
+      }
+      nums.set(el.attrs['w:numId'], { ref, overrides });
     }
   }
+  // The levels a numbering gives: its overrides, then its abstract's, through numbering-style links (bounded, so a
+  // loop of links ends).
+  const formatOf = (numId: string, level: number, hops: number): string | undefined => {
+    const num = nums.get(numId);
+    if (!num) return undefined;
+    const own = num.overrides.get(level);
+    if (own !== undefined) return own;
+    const def = abstract.get(num.ref);
+    if (!def) return undefined;
+    if (def.levels.size === 0 && def.styleLink && hops < 4) {
+      const linked = child(styles?.numPrOf(def.styleLink), 'w:numId')?.attrs['w:val'];
+      if (linked !== undefined && linked !== numId) return formatOf(linked, level, hops + 1);
+    }
+    return def.levels.get(level);
+  };
   return {
     kindOf(numId, level) {
       if (numId === '0') return null;
-      const ref = nums.get(numId);
-      const fmt = ref === undefined ? undefined : abstract.get(ref)?.get(level);
+      const fmt = formatOf(numId, level, 0);
       if (fmt === 'none') return null;
       // A level the numbering part does not define is bulleted (D63).
       if (fmt === undefined || fmt === 'bullet') return 'bullet';

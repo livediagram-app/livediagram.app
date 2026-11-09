@@ -360,6 +360,32 @@ describe('readDocx, the edges', () => {
     ]);
   });
 
+  it('reads a list linked to a numbering style, and a level a list overrides, by their own formats', async () => {
+    const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+    const lvl = (at: number, fmt: string) =>
+      `<w:lvl w:ilvl="${at}"><w:numFmt w:val="${fmt}"/></w:lvl>`;
+    const { blocks } = await read({
+      // Word's built-in multilevel list: the list's abstract numbering only links to a numbering style, whose own
+      // numbering holds the levels; a loop of links ends as a bullet.
+      styles: `<w:styles ${W}><w:style w:type="numbering" w:styleId="Outline"><w:name w:val="Outline List"/><w:pPr><w:numPr><w:numId w:val="10"/></w:numPr></w:pPr></w:style><w:style w:type="numbering" w:styleId="Loop"><w:name w:val="Loop"/><w:pPr><w:numPr><w:numId w:val="12"/></w:numPr></w:pPr></w:style></w:styles>`,
+      numbering: `<w:numbering ${W}><w:abstractNum w:abstractNumId="0"><w:styleLink w:val="Outline"/>${lvl(0, 'decimal')}${lvl(1, 'lowerLetter')}</w:abstractNum><w:abstractNum w:abstractNumId="1"><w:numStyleLink w:val="Outline"/></w:abstractNum><w:abstractNum w:abstractNumId="2">${lvl(0, 'bullet')}${lvl(1, 'bullet')}</w:abstractNum><w:abstractNum w:abstractNumId="3"><w:numStyleLink w:val="Loop"/></w:abstractNum><w:num w:numId="10"><w:abstractNumId w:val="0"/></w:num><w:num w:numId="11"><w:abstractNumId w:val="1"/></w:num><w:num w:numId="12"><w:abstractNumId w:val="3"/></w:num><w:num w:numId="13"><w:abstractNumId w:val="2"/><w:lvlOverride w:ilvl="1"><w:lvl w:ilvl="1"><w:numFmt w:val="decimal"/></w:lvl></w:lvlOverride></w:num></w:numbering>`,
+      body: [
+        p(r('Linked'), numbered(11)),
+        p(r('Linked deeper'), numbered(11, 1)),
+        p(r('Plain'), numbered(13)),
+        p(r('Overridden'), numbered(13, 1)),
+        p(r('Loop'), numbered(12)),
+      ].join(''),
+    });
+    expect(blocks.map(kindOf)).toEqual([
+      'numbered0',
+      'numbered1',
+      'bullet0',
+      'numbered1',
+      'bullet0',
+    ]);
+  });
+
   it('leaves hidden text out, its own or its character style’s, and keeps text unhidden again', async () => {
     const { blocks } = await read({
       styles: `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:style w:type="character" w:styleId="Secret"><w:name w:val="Secret"/><w:rPr><w:vanish/></w:rPr></w:style></w:styles>`,
