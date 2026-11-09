@@ -253,6 +253,35 @@ describe('renderTabToSvg after the isometric view', () => {
   });
 });
 
+describe('renderTabToSvg stacks like the canvas', () => {
+  // docs/specs/006-design/layers.md "Exports stack like the canvas": arrows interleaved with boxes.
+  it('keeps an arrow sent behind a box behind it', () => {
+    const svg = renderTabToSvg(
+      tab({
+        elements: [
+          pinnedArrow('arr', 'a', 'b', undefined, { strokeColor: '#123456' }),
+          shape('a'),
+          shape('b', { x: 400, fillColor: '#abcdef' }),
+        ],
+      }),
+    );
+    expect(svg.indexOf('#123456')).toBeGreaterThan(-1);
+    expect(svg.indexOf('#123456')).toBeLessThan(svg.indexOf('#abcdef'));
+  });
+
+  // docs/specs/009-elements/tag-colours.md: the canvas, exports and thumbnails agree.
+  it('draws a card’s tag colour', () => {
+    const card = {
+      ...shape('c', { shape: 'card', width: 240, height: 140 }),
+      tags: ['payments'],
+    } as ShapeElement;
+    const svg = renderTabToSvg(
+      tab({ elements: [card], tagColours: [{ tag: 'payments', color: '#d97706' }] }),
+    );
+    expect(svg.toLowerCase()).toContain('#d97706');
+  });
+});
+
 describe('renderTabToSvg arrows match the canvas', () => {
   const crossing = (visible: boolean) =>
     tab({
