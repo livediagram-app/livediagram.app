@@ -26,6 +26,7 @@ import { previewToSheet, respond } from '../forms/respond';
 import { writer } from './item-route-kit';
 import { conflict, forbidden, json, methodNotAllowed, notFound } from '../responses';
 import {
+  deniedOnTab,
   gateEdit,
   gateRead,
   missingProject,
@@ -100,7 +101,9 @@ export async function handleFormLinkRoutes(ctx: PlanRouteContext): Promise<Respo
   if (owner instanceof Response) return owner;
   const doc = await getProject(env, projectId);
   if (!doc) return missingProject(ctx, projectId);
-  if (!(await gateRead(ctx, projectId, doc.ownerId, doc.teamId, tabId))) return forbidden();
+  // A grant confined to another tab is told 404, as on every tab door (no existence leak); no grant, 403.
+  if (!(await gateRead(ctx, projectId, doc.ownerId, doc.teamId, tabId)))
+    return deniedOnTab(ctx, doc);
   const editor = await gateEdit(ctx, projectId, doc.ownerId, doc.teamId, tabId);
   // The Inbox's Form Responses (forms/form-inbox.ts), told after the answer.
   const later = (work: Promise<void>) => (ctx.waitUntil ? ctx.waitUntil(work) : void work);

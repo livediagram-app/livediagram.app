@@ -336,6 +336,9 @@ number, `last_response_at` and the hourly window together, and `responses < limi
 | POST   | `/api/forms/:code/responses`              | public | 201 `{ number }`; 400 `invalid_answers`; 409 `form_closed`; 413 `form_full`; 429 `form_busy`                                                                                                                                                   |
 | POST   | `/api/forms/:code/reports`                | public | 201; 400 `invalid_report`; suspends at three networks and emails the owner                                                                                                                                                                     |
 
+The three project doors (`form-link`, `form-seen`, `form-preview`) refuse a caller who may not read the tab with
+`deniedOnTab` (`routes/context.ts`): 404 for a grant confined to another tab (no existence leak), 403 for no grant.
+
 `/api/forms` requests skip the owner-keyed write limiter and take `FORM_RATE_LIMITER` (`index.ts`). The tab delete
 (`project-subresource-routes.ts`) deletes the tab's links and pauses each form whose board or sheet the tab was
 (`pauseFormsFeeding`, `forms/form-tab.ts`: the project's live links (`liveFormLinksOf`), each Form tab read, the

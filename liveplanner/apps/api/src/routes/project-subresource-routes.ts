@@ -25,6 +25,7 @@ import { handleItemTypeRoutes } from './item-type-routes';
 import { handlePlanRoute } from './plan-route';
 import {
   COMMUNITY_CONTENT,
+  deniedEdit,
   deniedOnTab,
   gateEdit,
   gateGrant,
@@ -92,7 +93,7 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       if (!saving) return missingProject(ctx, id);
       // Owner or edit-role share visitor only, and a tab-scoped visitor on their own tab only.
       const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
-      if (!allowed) return forbidden();
+      if (!allowed) return deniedEdit(ctx, id, tabId);
       return handleTabPut(ctx, saving, tabId, owner);
     }
     const existing = await getProject(env, id);
@@ -135,7 +136,7 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
     // Writes below: owner or edit-role share visitor only, and a tab-scoped
     // visitor on their own tab only.
     const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
-    if (!allowed) return forbidden();
+    if (!allowed) return deniedEdit(ctx, id, tabId);
     if (request.method === 'DELETE') {
       // A tab-scoped link can't delete the tab it is scoped to: that would
       // end its own link, and the project's structure isn't the visitor's.

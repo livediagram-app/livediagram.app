@@ -89,6 +89,9 @@ export async function readSheet(
   const cells: ReadCell[] = [];
   let chars = 0;
   let cut: string | null = null;
+  // Where to read on after a cut: the cut cell's row from the range's first column, so a cut mid-row on a wide
+  // range never leaves the columns before it unread on the rows after.
+  let resume: string | null = null;
   rows: for (const [i, row] of read.rows.entries()) {
     for (const [j, cell] of row.entries()) {
       if (cell.input === '' && (cell.value === null || cell.value === '')) continue;
@@ -111,6 +114,7 @@ export async function readSheet(
       chars += JSON.stringify(out).length;
       if (chars > SHEET_READ_CHARS_MAX) {
         cut = at;
+        resume = formatRange({ r1: start.r1 + i, c1: start.c1, r2: start.r2, c2: start.c2 });
         break rows;
       }
       cells.push(out);
@@ -119,7 +123,7 @@ export async function readSheet(
   const extent = wb.extent(id);
   const lastRow = start.r1 + read.rows.length;
   const note = cut
-    ? `Stopped at ${cut}, the most one read answers with: read on with a range from ${cut}.`
+    ? `Stopped at ${cut}, the most one read answers with: read on with the range ${resume}.`
     : read.truncated
       ? `Stopped after row ${lastRow}, the most cells one read answers with: read on with a range from row ${lastRow + 1}.`
       : undefined;
