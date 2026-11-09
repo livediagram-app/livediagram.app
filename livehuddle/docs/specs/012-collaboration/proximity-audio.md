@@ -170,7 +170,9 @@ and the editor:
 - `call-track`: `{ kind, tabId, track }`, `track` either `null` (stopped publishing) or
   `{ sessionId, trackName, token }`: where a listener asks the mint route for this speaker's microphone. Sent when
   the speaker starts publishing and again whenever a new walker appears on their tab (a late joiner never receives a
-  replay), at most once a second. Relayed to the whole room, unbatched.
+  replay), at most once a second. The speaker's own new connection says the latest one again at once: a presence id
+  is per connection, so after a dropped connection peers know the speaker by a new id with no locator on it.
+  Relayed to the whole room, unbatched.
 
 - `calls-check`: `{ kind, tabId }`, sent by a publishing call that has sent the room nothing for 5 seconds, so a
   silent room still reads the kill switch ([Calls kill switch](../016-platform/calls-kill-switch.md#the-room-tells-its-clients)).
