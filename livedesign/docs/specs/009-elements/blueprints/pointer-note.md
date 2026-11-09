@@ -37,6 +37,9 @@ For each pointer note `n` (before: `p`, the same id in `prev`):
 3. Attached to an unknown or unhostable id, or with an invalid point: detached where it is, its tip unchanged.
 4. Unattached: unchanged. (A note is never attached by landing near a point; only its tip handle attaches it.)
 
+Pointer notes settle before badges and step numbers, and a chip on a note is placed on the note as it settled: a
+note carried by its host takes the badge on it along in the same write.
+
 `withAttached` adds attached pointer notes to a carried set, as it does chips; duplicate and paste remap `attachedTo`
 through the same path.
 

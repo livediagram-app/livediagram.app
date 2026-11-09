@@ -180,7 +180,11 @@ export function tidyLayoutElements(
   const nodeRects = [...rects.values()];
   const obstacles = elements
     .filter(isBoxed)
-    .filter((e) => !moverOf.has(e.id) && !nodeRects.some((r) => rectsIntersect(e, r)));
+    // A box moves only when its mover is laid out: a panel whose arrows all stay inside it is no node,
+    // so it and what it holds stay put, and are in the way like anything else.
+    .filter(
+      (e) => !rects.has(moverOf.get(e.id) ?? '') && !nodeRects.some((r) => rectsIntersect(e, r)),
+    );
   // Lanes and panels are read as one stack: nothing may land in the gaps between them.
   const placedRects = ids.map((id) => rectAt(id, 0, 0));
   const [dx, dy] = clearPlacement(
