@@ -5,10 +5,10 @@
 // be on a card of it the caller reaches. The write itself is the home plan's (plan-room/card-thread-store.ts),
 // directly when that is this plan, else over its `threadWrite`.
 
+import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import {
   CARD_THREADS_MAX,
   isThreadFieldId,
-  REACTION_BY_MAX,
   isReactionId,
   isThreadId,
   newThreadId,
@@ -344,9 +344,10 @@ async function removeComment(
   return answer(r.caller, out.thread);
 }
 
-// POST .../threads/:threadId/comments/:commentId/reactions { emoji, on, key }: the caller's own reaction on one
-// comment (docs/specs/012-collaboration/comment-reactions.md), taking part like a reply. `key` is the caller's
-// public collab key, the id the editor marks its own reactions by; the name is the server's, from their profile.
+// POST .../threads/:threadId/comments/:commentId/reactions { emoji, on }: the caller's own reaction on one
+// comment (docs/specs/012-collaboration/comment-reactions.md), taking part like a reply. It is recorded under the
+// caller's collab key, derived from who they are (docs/specs/013-workspace/share-roles.md "The collab key"), never a
+// `key` the body names (an older editor still sends one, unread); the name is the server's, from their profile.
 async function react(
   ctx: PlanRouteContext,
   r: Reached,
@@ -355,20 +356,19 @@ async function react(
 ): Promise<Response> {
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const { emoji, on, key } = body;
+  const { emoji, on } = body;
   if (!isReactionId(emoji)) return badRequest('unknown emoji');
   if (typeof on !== 'boolean') return badRequest('missing on');
-  if (typeof key !== 'string' || !key || key.length > REACTION_BY_MAX)
-    return badRequest('missing key');
   const actor = await actorOf(ctx, r.caller, false);
   const name = (await getParticipant(ctx.env, r.caller.owner))?.name ?? 'Someone';
+  const by = await collabKeyFor(r.caller.owner);
   const out = await throughHome(ctx, r, threadId, {
     kind: 'change',
     change: {
       kind: 'react',
       commentId,
       emoji,
-      by: key,
+      by,
       name,
       person: await itemPersonId(r.caller.owner),
       on,

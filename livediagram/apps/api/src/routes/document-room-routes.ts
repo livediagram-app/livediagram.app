@@ -14,6 +14,7 @@ import { adderKeyFor } from '../adder-key';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { documentRoom } from '../document-client';
 import { indexService, linkCodeOf } from '../index-service';
+import { COLLAB_KEY_HEADER, collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import { personTagFor } from '../person-tag';
 import { documentTrashed, forbidden, json, notFound } from '../responses';
 import { networkTagFor } from '../vote-integrity';
@@ -105,6 +106,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // The person tag (docs/specs/024-agents/agent-changesets.md, CS39): how the room tells one person's sessions
     // from everyone else's without holding their id. Empty = none.
     forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
+    // The session's collab key (docs/specs/013-workspace/share-roles.md "The collab key"): derived from the person,
+    // never read from the request. Empty for a link visitor: the room mints one for that socket.
+    forwarded.headers.set(COLLAB_KEY_HEADER, person ? await collabKeyFor(person) : '');
     // Whether a verified account holds this session (not a guest, a link visitor or an API token's CLI, which
     // reaches the room as its account but draws no avatars): only such a session may publish a Google picture
     // and be sent others' (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"). Set on every path, like the rest.

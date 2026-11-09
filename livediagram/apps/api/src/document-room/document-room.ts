@@ -1055,6 +1055,7 @@ export class DocumentRoom extends DurableObject<Env> {
       v.adderKey,
       v.documentId,
       v.grantExp ?? null,
+      v.collabKey ?? null,
     );
     if (v.documentId) {
       this.bindDocument(v.documentId);
@@ -1172,11 +1173,15 @@ export class DocumentRoom extends DurableObject<Env> {
     adderKey: string | null = null,
     documentId: string | null = null,
     grantExp: number | null = null,
+    // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
+    // none mints one for this socket.
+    collabKey: string | null = null,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
         {
           verifiedRole,
+          collabKey,
           isOwner,
           tabScope,
           shareCode,
@@ -1523,6 +1528,9 @@ export class DocumentRoom extends DurableObject<Env> {
       const hello = { ...session, presence, batches } satisfies SessionAttachment;
       ws.serializeAttachment(hello);
       this.presenceRelay.noteSession(ws, relaySessionOf(hello));
+      // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab
+      // key"): its editor records its answers and reactions under it from now on.
+      if (presence.key) this.sendTo(ws, { kind: 'collab-key', key: presence.key });
       // Where the ordered stream stands as this session joins, so a later
       // reconnect asks for what came after it, not for the whole log.
       this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });

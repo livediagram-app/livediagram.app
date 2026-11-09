@@ -10,6 +10,7 @@ import { forbidden, json, notFound } from '../responses';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
+import { COLLAB_KEY_HEADER, collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import { personTagFor } from '../person-tag';
 import { isAccountOwner } from '../person/owner';
 import { documentRoom } from '../document-client';
@@ -74,6 +75,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     forwarded.headers.set('X-Verified-Tab-Scope', claims.tab ?? '');
     forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
     forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
+    // The session's collab key (docs/specs/013-workspace/share-roles.md "The collab key"): derived from the person,
+    // never read from the request. Empty for a link visitor: the room mints one for that socket.
+    forwarded.headers.set(COLLAB_KEY_HEADER, person ? await collabKeyFor(person) : '');
     // Whether a signed-in account holds the session (not a guest, not a link visitor): only such a session may show
     // a Google picture in the room and see others' (docs/specs/014-identity/profile-picture.md §2).
     forwarded.headers.set('X-Verified-Account', person && isAccountOwner(person) ? '1' : '0');

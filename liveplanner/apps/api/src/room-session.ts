@@ -2,6 +2,7 @@
 // socket's serialized attachment at the upgrade, read from the headers only the api worker can set.
 import { isAccessLevel, type AccessLevel } from '@liveplanner/api-schema';
 import { ADDER_KEY_LENGTH } from '@liveplanner/project';
+import { COLLAB_KEY_HEADER, sessionCollabKey } from '@liveworkspace/api-kit/collab-key';
 import type { ParticipantPresence } from './types';
 
 // Everything the room knows about one session, persisted in the socket's
@@ -31,6 +32,10 @@ export type SessionAttachment = {
   presenceId: string;
   verifiedRole?: AccessLevel;
   presence: ParticipantPresence | null;
+  //   - `collabKey`: the session's collab key (docs/specs/013-workspace/share-roles.md "The collab key"), from
+  //     X-Verified-Collab-Key, or minted here for a session with no identity: what the roster's `key` is, and the
+  //     only key its answers and reactions may name. Absent on an attachment from before it existed.
+  collabKey?: string;
   //   - `multiplayer`: this session belongs to a multiplayer session the
   //     room has already counted (Project·Used·Multiplayer, docs/specs/017-telemetry/telemetry.md). See
   //     room-multiplayer.ts for why the mark lives here.
@@ -84,6 +89,7 @@ type VerifiedSession = {
   tabShowsAll?: boolean;
   shareCode: string | null;
   personTag: string | null;
+  collabKey?: string | null;
   account: boolean;
   workbenchPairing: string | null;
   adderKey: string | null;
@@ -114,6 +120,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
     personTag: header('X-Verified-Person'),
+    collabKey: header(COLLAB_KEY_HEADER),
     account: request.headers.get('X-Verified-Account') === '1',
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
@@ -137,6 +144,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     presenceId,
     verifiedRole: v.verifiedRole,
     presence: null,
+    collabKey: sessionCollabKey(v.collabKey),
     tabScope: v.tabScope,
     tabShowsAll: v.tabShowsAll ?? false,
     shareCode: v.shareCode,

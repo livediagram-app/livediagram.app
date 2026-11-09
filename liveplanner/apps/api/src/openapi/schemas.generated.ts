@@ -1664,8 +1664,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "emoji",
-      "on",
-      "key"
+      "on"
     ],
     "type": "object"
   },

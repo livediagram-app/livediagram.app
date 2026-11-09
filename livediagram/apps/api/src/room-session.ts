@@ -2,6 +2,7 @@
 // socket's serialized attachment at the upgrade, read from the headers only the api worker can set.
 import { isAccessLevel, type AccessLevel } from '@livediagram/api-schema';
 import { ADDER_KEY_LENGTH } from '@livediagram/document';
+import { COLLAB_KEY_HEADER, sessionCollabKey } from '@liveworkspace/api-kit/collab-key';
 import type { ParticipantPresence } from './types';
 
 // Everything the room knows about one session, persisted in the socket's
@@ -31,6 +32,10 @@ export type SessionAttachment = {
   presenceId: string;
   verifiedRole?: AccessLevel;
   presence: ParticipantPresence | null;
+  //   - `collabKey`: the session's collab key (docs/specs/013-workspace/share-roles.md "The collab key"), from
+  //     X-Verified-Collab-Key, or minted here for a session with no identity: what the roster's `key` is, and the
+  //     only key its answers and reactions may name. Absent on an attachment from before it existed.
+  collabKey?: string;
   //   - `isOwner`: whether the api resolved this upgrade as the document's
   //     OWNER (docs/specs/012-collaboration/facilitator.md). A boolean, never an id: it is the one thing the
   //     facilitator baton needs that role alone cannot answer ("the owner can
@@ -101,6 +106,7 @@ type VerifiedSession = {
   tabScope: string | null;
   shareCode: string | null;
   personTag: string | null;
+  collabKey?: string | null;
   account?: boolean;
   networkTag: string | null;
   workbenchPairing: string | null;
@@ -133,6 +139,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
     personTag: header('X-Verified-Person'),
+    collabKey: header(COLLAB_KEY_HEADER),
     account: request.headers.get('X-Verified-Account') === '1',
     networkTag: header('X-Verified-Network'),
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
@@ -157,6 +164,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     presenceId,
     verifiedRole: v.verifiedRole,
     presence: null,
+    collabKey: sessionCollabKey(v.collabKey),
     isOwner: v.isOwner,
     tabScope: v.tabScope,
     shareCode: v.shareCode,

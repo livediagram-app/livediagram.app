@@ -1097,6 +1097,7 @@ export class PlanRoom extends DurableObject<Env> {
       v.grantExp ?? null,
       v.account,
       tabShowsAll,
+      v.collabKey ?? null,
     );
     this.armAlarm();
     return new Response(null, { status: 101, webSocket: client });
@@ -1209,6 +1210,9 @@ export class PlanRoom extends DurableObject<Env> {
     grantExp: number | null = null,
     account = false,
     tabShowsAll = false,
+    // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
+    // none mints one for this socket.
+    collabKey: string | null = null,
   ): void {
     // A full room (ROOM_MAX_CONNECTIONS, docs/specs/015-api/api.md "A room holds 100 connections") turns the
     // newcomer away with a close the browser can read: accepted, closed at once, never a session.
@@ -1222,6 +1226,7 @@ export class PlanRoom extends DurableObject<Env> {
       newSessionAttachment(
         {
           verifiedRole,
+          collabKey,
           tabScope,
           shareCode,
           personTag,
@@ -1461,6 +1466,9 @@ export class PlanRoom extends DurableObject<Env> {
       // see the size note on SessionAttachment.
       const presence = helloPresence(msg.participant, session);
       ws.serializeAttachment({ ...session, presence } satisfies SessionAttachment);
+      // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab
+      // key"): its editor records its answers and reactions under it from now on.
+      if (presence.key) this.sendTo(ws, { kind: 'collab-key', key: presence.key });
       // Where the ordered stream stands as this session joins, so a later
       // reconnect asks for what came after it, not for the whole log.
       this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });

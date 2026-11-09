@@ -12,6 +12,7 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Tab-Scope': 't1',
         'X-Verified-Share-Code': '',
         'X-Verified-Person': 'p',
+        'X-Verified-Collab-Key': '0123456789abcdef0123456789abcdef',
         'X-Verified-Account': '1',
         'X-Verified-Workbench-Pairing': 'w',
         'X-Verified-Adder': 'a',
@@ -25,6 +26,7 @@ describe('verifiedSessionOf', () => {
       tabScope: 't1',
       shareCode: null,
       personTag: 'p',
+      collabKey: '0123456789abcdef0123456789abcdef',
       account: true,
       workbenchPairing: 'w',
       adderKey: 'a',
@@ -36,6 +38,27 @@ describe('verifiedSessionOf', () => {
 
   it('ignores a role it does not know', () => {
     expect(verifiedSessionOf(upgrade({ 'X-Verified-Role': 'admin' })).verifiedRole).toBeUndefined();
+  });
+});
+
+describe('the collab key (docs/specs/013-workspace/share-roles.md "The collab key")', () => {
+  const base = { tabScope: null, shareCode: null, personTag: null, isOwner: false } as Parameters<
+    typeof newSessionAttachment
+  >[0];
+
+  it('keeps the key the upgrade forwarded', () => {
+    expect(
+      newSessionAttachment({ ...base, collabKey: '0123456789abcdef0123456789abcdef' }, 'p1')
+        .collabKey,
+    ).toBe('0123456789abcdef0123456789abcdef');
+  });
+
+  it('mints a fresh key for a session with none, or a malformed one, different for every socket', () => {
+    const a = newSessionAttachment({ ...base, collabKey: null }, 'p1').collabKey;
+    const b = newSessionAttachment({ ...base, collabKey: 'x'.repeat(500) }, 'p2').collabKey;
+    expect(a).toMatch(/^[0-9a-f]{32}$/);
+    expect(b).toMatch(/^[0-9a-f]{32}$/);
+    expect(a).not.toBe(b);
   });
 });
 

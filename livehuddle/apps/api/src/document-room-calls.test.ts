@@ -51,7 +51,14 @@ function newRoom() {
   const join = (id: string, role: 'edit' | 'participate' | 'view', key?: string) => {
     const s: Socket = {
       sent: [],
-      attachment: { presenceId: id, verifiedRole: role, presence: null, documentId: DOC },
+      // The upgrade pins the key on the session (docs/specs/013-workspace/share-roles.md "The collab key").
+      attachment: {
+        presenceId: id,
+        verifiedRole: role,
+        presence: null,
+        documentId: DOC,
+        ...(key ? { collabKey: key } : {}),
+      },
     };
     sockets.push(s);
     room.webSocketMessage(

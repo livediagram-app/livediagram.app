@@ -974,6 +974,7 @@ export class DocumentRoom extends DurableObject<Env> {
       v.documentId,
       v.grantExp ?? null,
       v.account === true,
+      v.collabKey ?? null,
     );
     if (v.documentId) {
       this.bindDocument(v.documentId);
@@ -1077,6 +1078,9 @@ export class DocumentRoom extends DurableObject<Env> {
     grantExp: number | null = null,
     // A signed-in account's session (room-session.ts `account`): it may show a Google picture and see others'.
     account = false,
+    // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
+    // none mints one for this socket.
+    collabKey: string | null = null,
   ): void {
     // The room's size (docs/specs/015-api/api.md "Room size"): past ROOM_MAX_CONNECTIONS the socket is accepted
     // only to be closed with ROOM_FULL_CLOSE, which a browser can read where a refused upgrade says nothing. A
@@ -1092,6 +1096,7 @@ export class DocumentRoom extends DurableObject<Env> {
       newSessionAttachment(
         {
           verifiedRole,
+          collabKey,
           tabScope,
           shareCode,
           personTag,
@@ -1365,6 +1370,9 @@ export class DocumentRoom extends DurableObject<Env> {
       // see the size note on SessionAttachment.
       const presence = helloPresence(msg.participant, session);
       ws.serializeAttachment({ ...session, presence } satisfies SessionAttachment);
+      // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab
+      // key"): its editor records its answers and reactions under it from now on.
+      if (presence.key) this.sendTo(ws, { kind: 'collab-key', key: presence.key });
       // Where the ordered stream stands as this session joins, so a later
       // reconnect asks for what came after it, not for the whole log.
       this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });
