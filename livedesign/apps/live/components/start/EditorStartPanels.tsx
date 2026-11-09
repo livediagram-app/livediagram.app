@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { pagesOf } from '@livedesign/design';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
+import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
 import { templateStartMode } from '@/components/start/template-start-mode';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
@@ -46,6 +47,9 @@ export function EditorStartPanels() {
         mode={templateStart}
         tabId={activeTab.id}
         onTemplate={(kind) => {
+          // A blank closes the start as the × does: Blank Illustration lands nothing, so the tab would still read as
+          // empty and the start would stay over it (start-diagramming.md "The first page").
+          closeStartForBlank(activeTab.id, kind);
           void ctx.chooseTemplate(kind);
           moveOnTemplatePick(kind);
         }}
