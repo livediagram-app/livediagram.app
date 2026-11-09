@@ -43,7 +43,7 @@ by the root AGENTS.md rule it goes in `packages/`, and it moves **before** the f
   Avatar Pad's placement: 2,470 lines across the office, chair, fence and portal files) move where they read no
   element union, into `@liveworkspace/avatar` beside the walk that uses them. The element kinds themselves stay in
   each product's union, as every element kind does.
-- **Specs first:** livediagram's [Avatar mode](../../../../livediagram/docs/specs/008-canvas/avatar-mode.md) and its
+- **Specs first:** [Avatar mode](../008-canvas/avatar-mode.md) (livediagram's copy then; it left livediagram with Work Tracker #650) and its
   blueprints name the new home; docs/structure.md's layout tree gains the package.
 - livediagram's behaviour does not change: the same tests pass, only imports move.
 
