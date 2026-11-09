@@ -1,6 +1,7 @@
 // Responses and request bodies. Every refusal is `{ "error": "<code>" }` with a 4xx status
 // (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Reaching the index").
 
+import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import type { IndexErrorCode } from '@liveworkspace/index-client';
 import { MAX_BODY_BYTES } from './config';
 
@@ -21,14 +22,23 @@ export const notFound = (error: IndexErrorCode = 'not_found') => fail(404, error
 export const conflict = (error: IndexErrorCode) => fail(409, error);
 export const noContent = () => new Response(null, { status: 204 });
 
-// The JSON object a request carries, or null for a missing, oversized or malformed one.
+// The JSON object a request carries, or null for a missing, oversized or malformed one. Read through a byte counter
+// (api-kit's readCappedBody): a chunked body declares no length, so the Content-Length gate alone let one of any size
+// be held in memory whole before it was measured.
 export async function readObject(request: Request): Promise<Record<string, unknown> | null> {
   const length = Number(request.headers.get('Content-Length') ?? '0');
   if (length > MAX_BODY_BYTES) return null;
+  if (request.body === null) return {};
   // A body that broke off mid-read is no body, not an empty one: `{}` would read as "clear everything" to a route like
   // PUT /items/:id/share-password.
-  const text = await request.text().catch(() => null);
-  if (text === null || text.length > MAX_BODY_BYTES) return null;
+  let text: string;
+  try {
+    const bytes = await readCappedBody(request.body as ReadableStream<Uint8Array>, MAX_BODY_BYTES);
+    if (bytes === null) return null;
+    text = new TextDecoder().decode(bytes);
+  } catch {
+    return null;
+  }
   if (!text) return {};
   try {
     const value = JSON.parse(text) as unknown;

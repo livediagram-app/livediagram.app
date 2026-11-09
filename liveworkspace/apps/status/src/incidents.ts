@@ -29,11 +29,13 @@ export type IncidentStep = {
   after: Incident[];
 };
 
-/** One run's effect on the open incidents. A service missing from `results` this run leaves its incident as it is. */
+/** One run's effect on the open incidents. A service missing from `results` this run leaves its incident as it is,
+ *  unless it is no longer on the list at all (`listed`): then nothing will ever close it, so this run does. */
 export function stepIncidents(
   open: readonly Incident[],
   results: ReadonlyMap<string, CheckResult>,
   at: number,
+  listed?: ReadonlySet<string>,
 ): IncidentStep {
   const byService = new Map(open.map((i) => [i.service, i]));
   const opened: Incident[] = [];
@@ -74,7 +76,11 @@ export function stepIncidents(
     opened.push(fresh);
     after.push(fresh);
   }
-  // Open incidents of services not checked this run stay open, untouched.
-  after.push(...byService.values());
+  // Open incidents of services not checked this run stay open, untouched; a service taken off the list closes its
+  // one here, and it leaves the snapshot with the service.
+  for (const current of byService.values()) {
+    if (listed && !listed.has(current.service)) changed.push({ ...current, endedAt: at });
+    else after.push(current);
+  }
   return { opened, changed, after };
 }

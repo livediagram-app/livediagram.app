@@ -8,6 +8,7 @@ import {
   parseDetailsSort,
   serialiseDetailsSort,
   sortDetailsEntries,
+  summaryCount,
 } from './details-columns';
 import { formatDateTime, formatSize } from './details-format';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
@@ -76,6 +77,34 @@ describe('the Details sort', () => {
       kindOne,
     });
     expect(byComments.folders.map((f) => f.name)).toEqual(['alpha', 'Beta']);
+  });
+
+  // The summary is the app's own JSON: a null or a string there is no count, a dash sorted last, not a number.
+  it('reads a summary count that is not a number as a dash, last both ways', () => {
+    // As it may arrive over the wire, whatever the type says.
+    const raw = (summary: Record<string, unknown>) => summary as ShownItem['summary'];
+    const items = [
+      item(1, { summary: raw({ comments: 'many' }) }),
+      item(2, { summary: { comments: 5 } }),
+      item(3, { summary: raw({ comments: null }) }),
+      item(4, { summary: { comments: 2 } }),
+      item(5, { summary: { comments: Number.NaN } }),
+    ];
+    for (const direction of ['asc', 'desc'] as const) {
+      const ids = sortDetailsEntries({
+        folders: [],
+        items,
+        sort: { column: 'comments', direction },
+        itemCount: () => undefined,
+        kindOne,
+      }).items.map((i) => i.id);
+      expect(ids.slice(0, 2)).toEqual(
+        direction === 'asc' ? ['item-4', 'item-2'] : ['item-2', 'item-4'],
+      );
+      expect(new Set(ids.slice(2))).toEqual(new Set(['item-1', 'item-3', 'item-5']));
+    }
+    expect(summaryCount(item(1, { summary: raw({ bytes: '9' }) }), 'bytes')).toBeUndefined();
+    expect(summaryCount(item(1, { summary: { bytes: 9 } }), 'bytes')).toBe(9);
   });
 
   it('sorts 20,000 items within budget', () => {

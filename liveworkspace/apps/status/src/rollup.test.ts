@@ -126,4 +126,22 @@ describe('stepIncidents', () => {
     expect(step.after).toEqual([{ ...a, endedAt: 300 }, b]);
     expect(step.opened).toEqual([]);
   });
+
+  // A retired service is never checked again: left open, its outage would be "Ongoing" and never pruned.
+  it('closes the open incident of a service no longer on the list, and keeps it out of after', () => {
+    const a: Incident = {
+      id: 1,
+      service: 'a',
+      startedAt: 100,
+      lastAt: 200,
+      endedAt: null,
+      worst: 'down',
+      checks: 2,
+      error: 'network',
+    };
+    const gone: Incident = { ...a, id: 2, service: 'gone' };
+    const step = stepIncidents([a, gone], new Map(), 300, new Set(['a']));
+    expect(step.changed).toEqual([{ ...gone, endedAt: 300 }]);
+    expect(step.after).toEqual([a]);
+  });
 });

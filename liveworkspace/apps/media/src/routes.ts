@@ -24,6 +24,7 @@ import {
   type MediaImage,
   type MediaRefsSync,
 } from '@liveworkspace/media';
+import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import { MAX_JSON_BYTES } from './config';
 import { appKey, indexAppOf, parsePositiveCap, type Env } from './env';
 import { badRequest, forbidden, json, notFound, ok, unauthorized, unavailable } from './http';
@@ -70,14 +71,16 @@ async function callerApp(request: Request, env: Env): Promise<MediaApp | null> {
   return (await timingSafeEqual(token, expected)) ? app : null;
 }
 
+// Read through a byte counter (api-kit's readCappedBody): a chunked body declares no length, so the Content-Length
+// gate alone let one of any size be held whole before it was measured.
 async function readJson(request: Request): Promise<unknown> {
   const length = Number(request.headers.get('Content-Length') ?? '0');
-  if (length > MAX_JSON_BYTES) return undefined;
-  const text = await request.text();
-  if (text.length > MAX_JSON_BYTES) return undefined;
+  if (length > MAX_JSON_BYTES || request.body === null) return undefined;
   try {
-    return JSON.parse(text);
+    const bytes = await readCappedBody(request.body as ReadableStream<Uint8Array>, MAX_JSON_BYTES);
+    return bytes === null ? undefined : JSON.parse(new TextDecoder().decode(bytes));
   } catch {
+    // Broken off mid-read, or not JSON.
     return undefined;
   }
 }

@@ -113,14 +113,16 @@ none answered); `worst` by `down > slow > up`; an empty day is `up` with no time
 | open | `down`                            | open   | `lastAt = at`, `checks + 1`, first error kept                   |
 | open | `up` or `slow`                    | closed | `endedAt = at`                                                  |
 | open | not checked this run              | open   | untouched                                                       |
+| open | no longer on the list             | closed | `endedAt = at`, left out of `after`                             |
 
 `worst` is always `'down'`; the table's `CHECK (worst IN ('slow', 'down'))` allows `slow`, which the code never writes.
 
 ### The history snapshot (`buildHistory`)
 
 For each service: `w` is one letter per day (`-` without checks), oldest first; `u` lists `[dayIndex, tenths]` for
-days under 1000; `p` is answered over checked across the window, to two decimals. Incidents open or ended inside the
-window, newest first, at most `INCIDENTS_MAX` (50), as `[service, started, ended, letter, checks, error]`.
+days under 1000; `p` is answered over checked across the window, to two decimals. Incidents of the listed services
+open or ended inside the window, newest first, at most `INCIDENTS_MAX` (50), as `[service, started, ended, letter,
+checks, error]`.
 
 ### Reads (`handleRead`)
 
@@ -208,15 +210,15 @@ them apart.
 
 ## Testing
 
-| Test                                   | Pins                                                                                                                                                                                                                                                                  |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/status/src/run.test.ts`          | a row per service, the rollup and both snapshots; today re-rolled each run; consecutive non-up checks as one incident closed by the next up; the 90-day prune; midnight; probing when no results are given; one batch, all or nothing                                 |
-| `apps/status/src/probe.test.ts`        | up with code and time; slow past 1.5 s; wrong code and HTML-for-JSON down; reach 2xx/3xx up, 4xx/5xx down; network and timeout down with no code; no body read, the method and user agent; six at a time, in order; targets per environment, every app by URL         |
-| `apps/status/src/api.test.ts`          | empty before a run; the last run, cacheable; slicing and `bad_days`; repeats from the edge without D1; HEAD from the edge without a body; no cache in development; GET/HEAD and two paths only; bad stored JSON; the per-network limit on misses; the worst-case size |
-| `apps/status/src/rollup.test.ts`       | counts, percentiles, worst; empty days; nearest rank; the worst-case speed; incidents open, extend (first error kept), close on slow or up, and untouched when unchecked                                                                                              |
-| `packages/status/src/judge.test.ts`    | expected codes and JSON; reach on the server; down, slow, up; state order; derived rooms and router; router down only when nothing answered                                                                                                                           |
-| `packages/status/src/services.test.ts` | group order; each app's seven services; unique ids, derived on real checks; read only own origin or CORS routes; addresses per environment; path resolution; 27 requests a round                                                                                      |
-| `packages/status/src/wire.test.ts`     | day uptime; UTC days; slicing (never widening, at least a day, null uptime without checks); the parser's accept and reject; the empty window                                                                                                                          |
+| Test                                   | Pins                                                                                                                                                                                                                                                                                  |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/status/src/run.test.ts`          | a row per service, the rollup and both snapshots; today re-rolled each run; consecutive non-up checks as one incident closed by the next up; a retired service's incident closed and unsent; the 90-day prune; midnight; probing when no results are given; one batch, all or nothing |
+| `apps/status/src/probe.test.ts`        | up with code and time; slow past 1.5 s; wrong code and HTML-for-JSON down; reach 2xx/3xx up, 4xx/5xx down; network and timeout down with no code; no body read, the method and user agent; six at a time, in order; targets per environment, every app by URL                         |
+| `apps/status/src/api.test.ts`          | empty before a run; the last run, cacheable; slicing and `bad_days`; repeats from the edge without D1; HEAD from the edge without a body; no cache in development; GET/HEAD and two paths only; bad stored JSON; the per-network limit on misses; the worst-case size                 |
+| `apps/status/src/rollup.test.ts`       | counts, percentiles, worst; empty days; nearest rank; the worst-case speed; incidents open, extend (first error kept), close on slow or up, untouched when unchecked, closed once unlisted                                                                                            |
+| `packages/status/src/judge.test.ts`    | expected codes and JSON; reach on the server; down, slow, up; state order; derived rooms and router; router down only when nothing answered                                                                                                                                           |
+| `packages/status/src/services.test.ts` | group order; each app's seven services; unique ids, derived on real checks; read only own origin or CORS routes; addresses per environment; path resolution; 27 requests a round                                                                                                      |
+| `packages/status/src/wire.test.ts`     | day uptime; UTC days; slicing (never widening, at least a day, null uptime without checks); the parser's accept and reject; the empty window                                                                                                                                          |
 
 ## Constants and configuration
 
