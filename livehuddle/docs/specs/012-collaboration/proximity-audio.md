@@ -217,6 +217,9 @@ live, with your own equaliser and bubble, while nothing reached anyone).
 - A session that is gone again straight after renewing is a broken call, not an idle one: after 3 renewals inside a
   minute the call fails into **Retry** (Audio Unavailable), as a failed connection does. No loop.
 - A publish that fails leaves nothing behind that claims it worked, so the next attempt publishes afresh.
+- A microphone, camera or screen the browser is still asking for when the session goes is published on the session
+  as it is when the browser answers: the renewed one, or, while that is still being minted, by the renewal once it
+  is up. Never on the closed one the press found, where it would look live to you and reach nobody.
 
 ## Turning calls on
 

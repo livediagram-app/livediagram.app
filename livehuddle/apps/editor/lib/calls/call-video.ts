@@ -30,11 +30,13 @@ export type CallVideoHost = {
 
 // Publish a camera or a screen, with its encodings. A refused publish (already logged by the session) is false: the
 // bubble stays on your own screen, and a session Realtime dropped is renewed by the call, which publishes it again.
+// No session (one being renewed) is false too: the renewal publishes what is on once its session is up.
 async function published(
-  sfu: SfuSession,
+  sfu: SfuSession | null,
   stream: MediaStream,
   name: typeof CALL_VIDEO_TRACK_NAME | typeof CALL_SCREEN_TRACK_NAME,
 ): Promise<boolean> {
+  if (!sfu) return false;
   const encodings = name === CALL_VIDEO_TRACK_NAME ? CAMERA_ENCODINGS : SCREEN_ENCODINGS;
   try {
     await sfu.publish(stream.getVideoTracks()[0]!, name, encodings);
@@ -62,8 +64,9 @@ export class CallVideo {
       this.stopCamera();
       return;
     }
-    const sfu = this.host.sfu();
-    if (!sfu || !this.host.trackToken() || !this.host.input.canSpeak || this.host.stopped()) return;
+    const { input } = this.host;
+    if (!this.host.sfu() || !this.host.trackToken() || !input.canSpeak || this.host.stopped())
+      return;
     if (!callsModeAllows(callSelf().mode, 'video') || callSelf().camera === 'starting') return;
     setCallSelf({ camera: 'starting' });
     let stream: MediaStream;
@@ -78,7 +81,8 @@ export class CallVideo {
       if (!this.host.stopped()) setCallSelf({ camera: 'off' });
       return;
     }
-    await this.sendCamera(sfu, stream);
+    // The session as it is now: one renewed while the browser asked replaced the one the press found.
+    await this.sendCamera(stream);
   }
 
   /**
@@ -86,19 +90,19 @@ export class CallVideo {
    * turning it on, without asking the browser again. False (the stream untouched) when this call may not send one.
    */
   adoptCamera(stream: MediaStream): boolean {
-    const sfu = this.host.sfu();
-    if (this.camera || !sfu || !this.host.trackToken() || !this.host.input.canSpeak) return false;
+    if (this.camera || !this.host.sfu() || !this.host.trackToken() || !this.host.input.canSpeak)
+      return false;
     if (this.host.stopped() || !callsModeAllows(callSelf().mode, 'video')) return false;
-    void this.sendCamera(sfu, stream);
+    void this.sendCamera(stream);
     return true;
   }
 
-  private async sendCamera(sfu: SfuSession, stream: MediaStream): Promise<void> {
+  private async sendCamera(stream: MediaStream): Promise<void> {
     this.camera = stream;
     setCallMedia(SELF_MEDIA_ID, 'video', stream);
     setCallSelf({ camera: 'on' });
     this.cameraAnnounced = true;
-    if (await published(sfu, stream, CALL_VIDEO_TRACK_NAME)) this.host.announce();
+    if (await published(this.host.sfu(), stream, CALL_VIDEO_TRACK_NAME)) this.host.announce();
   }
 
   stopCamera(): void {
@@ -120,9 +124,9 @@ export class CallVideo {
       this.stopScreen();
       return;
     }
-    const sfu = this.host.sfu();
     const { input } = this.host;
-    if (!sfu || !this.host.trackToken() || !input.canShare || this.host.stopped()) return;
+    if (!this.host.sfu() || !this.host.trackToken() || !input.canShare || this.host.stopped())
+      return;
     if (!callsModeAllows(callSelf().mode, 'screen') || callSelf().screen === 'starting') return;
     setCallSelf({ screen: 'starting' });
     const getDisplayMedia =
@@ -141,19 +145,19 @@ export class CallVideo {
       if (!this.host.stopped()) setCallSelf({ screen: 'off' });
       return;
     }
-    await this.sendScreen(sfu, stream);
+    await this.sendScreen(stream);
   }
 
   /** Send a screen the local preview already captured: an Editor's alone, no second picker. */
   adoptScreen(stream: MediaStream): boolean {
-    const sfu = this.host.sfu();
-    if (this.screen || !sfu || !this.host.trackToken() || !this.host.input.canShare) return false;
+    if (this.screen || !this.host.sfu() || !this.host.trackToken() || !this.host.input.canShare)
+      return false;
     if (this.host.stopped() || !callsModeAllows(callSelf().mode, 'screen')) return false;
-    void this.sendScreen(sfu, stream);
+    void this.sendScreen(stream);
     return true;
   }
 
-  private async sendScreen(sfu: SfuSession, stream: MediaStream): Promise<void> {
+  private async sendScreen(stream: MediaStream): Promise<void> {
     const track = stream.getVideoTracks()[0]!;
     // Text stays sharp: the encoder keeps detail and drops frames rather than resolution.
     track.contentHint = 'detail';
@@ -165,7 +169,7 @@ export class CallVideo {
     setCallMedia(SELF_MEDIA_ID, 'screen', stream);
     setCallSelf({ screen: 'on' });
     this.screenAnnounced = true;
-    if (await published(sfu, stream, CALL_SCREEN_TRACK_NAME)) this.host.announce();
+    if (await published(this.host.sfu(), stream, CALL_SCREEN_TRACK_NAME)) this.host.announce();
   }
 
   stopScreen(): void {
