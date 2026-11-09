@@ -265,8 +265,10 @@ liveworkspace.app.
   **This Browser** pill and its local picture (`LocalPreview`). The Explorer's open shows the archived dialog, and the
   app's editor reads the mark (`isThisBrowserArchived`) and shows its archived card instead of opening it. Change
   Folder from Archived offers **This Browser** (the mark cleared) and, signed in, the account's places, through Sync
-  as a This Browser drop does (`sync-local`). It can't be renamed while archived: only its app's editor renames a
-  local record, and the editor doesn't open it (moved back to This Browser, it renames in its editor as before). Delete deletes it for good, as any This Browser item. On
+  as a This Browser drop does (`sync-local`). **Rename** (a pencil button on its row) edits the name in place: the
+  Explorer writes the record's `name` and `savedAt` into the app's offline store (`renameThisBrowserRecord`, as the
+  editor's own rename writes them; the page shares the app's origin), then its row in the list, the mark kept. Where
+  it can't reach the store, a toast says it couldn't rename. Delete deletes it for good, as any This Browser item. On
   liveworkspace.app, which can't read an app's store, Archived lists the account's documents alone, as This Browser
   there is a link into the app.
 - **Change Folder.** "Choose a Space" lists My Work and each team, then, under a divider, **Archived** ("Out of every
