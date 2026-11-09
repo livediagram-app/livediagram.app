@@ -104,7 +104,7 @@ const EMBEDDED: EmbeddedWork[] = [
     licence: 'ISC',
     carrier: 'our own source',
     homepage: 'https://lucide.dev',
-    trigger: { sources: ['packages/icons/src/lucide.generated.ts'] },
+    trigger: { sources: ['packages/icons/src/lucide/', 'packages/icons/src/lucide.generated.ts'] },
     texts: [{ label: 'LICENSE', file: 'xnn.txt' }],
   },
 ];
@@ -346,6 +346,15 @@ describe('collectWorks: embedded works', () => {
       'Lucide',
     ]);
     expect(collect(['packages/icons/src/other.ts']).works).toEqual([]);
+  });
+
+  // Lucide's glyphs are a module each, and a bundler skips the side-effect-free file that re-exports them: a trigger
+  // naming that file alone missed every page, so the folder is the trigger.
+  it('lists vendored source material when any file under a folder trigger is bundled', () => {
+    expect(collect(['packages/icons/src/lucide/x.ts']).works.map((w) => w.name)).toEqual([
+      'Lucide',
+    ]);
+    expect(collect(['packages/icons/src/lucide-vendor.ts']).works).toEqual([]);
   });
 
   it('fails a committed text that was edited', () => {

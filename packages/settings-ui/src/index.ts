@@ -43,12 +43,8 @@ export {
 export { SETTINGS_ROW_ATTRIBUTE } from './settings-scroll-anchor';
 export { readSettingsView, writeSettingsView } from './settings-view-memory';
 export { SettingsScopeSwitch, useSettingsScope, type SettingsScope } from './scope';
-export {
-  SettingsPanel,
-  preloadSettingsPanel,
-  settingsPanelApp,
-  type SettingsPanelApp,
-} from './SettingsPanel';
+export { SettingsPanel, settingsPanelApp, type SettingsPanelApp } from './SettingsPanel';
+export { preloadSettingsPanel } from './settings-panel-preload';
 export type { AccountHost } from './CatalogueSettingsView';
 export { accountCategories, type AccountSection } from './account-model';
 export {

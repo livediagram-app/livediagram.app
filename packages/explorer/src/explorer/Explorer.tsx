@@ -46,13 +46,17 @@ import {
 import { ExplorerDialogs } from './Dialogs';
 import { HomeHero } from './HomeHero';
 import { HomePane } from './HomePane';
-import { InboxPane } from './InboxPane';
-import { InvitesPane } from './InvitesPane';
-import { GalleryView, ShapeLibrariesView } from '../library/LibraryViews';
+import {
+  GalleryView,
+  InboxPane,
+  InvitesPane,
+  preloadExplorerPanesWhenIdle,
+  ShapeLibrariesView,
+  TimelinePane,
+} from './lazy-panes';
 import { ItemsPane } from './ItemsPane';
 import { SearchField } from './SearchField';
 import { Sidebar } from './Sidebar';
-import { TimelinePane } from './TimelinePane';
 import { useHeroPresence } from './useHeroPresence';
 import { HostExtrasProvider, type SidebarLink } from './host';
 import { ThisBrowserPane, useThisBrowserItems, type ThisBrowserHost } from './ThisBrowser';
@@ -540,6 +544,8 @@ function Pane({
   onOpenNav: () => void;
   hero: boolean;
 }) {
+  // The other sections' code, fetched once the page is idle so a move to one draws at once (lazy-panes.ts).
+  useEffect(() => preloadExplorerPanesWhenIdle(), []);
   switch (view.kind) {
     case 'home':
       return <HomePane onOpenNav={onOpenNav} hero={hero} />;

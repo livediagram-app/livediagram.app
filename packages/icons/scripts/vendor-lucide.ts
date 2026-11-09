@@ -1,11 +1,11 @@
-// Writes src/lucide.generated.ts from the pinned lucide-static package and lucide-manifest.json
-// (docs/specs/004-interface-design/iconography.md, "Source"). Run: `pnpm icons:vendor`.
-// `--adopt-installed` first moves the manifest's pin to the installed lucide-static, for a
-// Dependabot bump (.github/workflows/lucide-revendor.yml).
-import { readFileSync, writeFileSync } from 'node:fs';
+// Writes src/lucide/ (one module per glyph) and src/lucide.generated.ts (their re-exports) from the pinned
+// lucide-static package and lucide-manifest.json (docs/specs/004-interface-design/iconography.md, "Source").
+// Run: `pnpm icons:vendor`. `--adopt-installed` first moves the manifest's pin to the installed lucide-static,
+// for a Dependabot bump (.github/workflows/lucide-revendor.yml).
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
-import { lucideModule, type LucideManifest } from '../src/lucide-vendor.ts';
+import { LUCIDE_DIR, lucideModules, type LucideManifest } from '../src/lucide-vendor.ts';
 
 const require = createRequire(import.meta.url);
 const manifestUrl = new URL('../lucide-manifest.json', import.meta.url);
@@ -28,10 +28,13 @@ const readSvg = (name: string) => {
   }
 };
 const licence = readFileSync(require.resolve('lucide-static/LICENSE'), 'utf8');
-writeFileSync(
-  new URL('../src/lucide.generated.ts', import.meta.url),
-  lucideModule(manifest, readSvg, licence),
-);
+const src = new URL('../src/', import.meta.url);
+// A glyph dropped from the manifest leaves no module behind.
+rmSync(new URL(`${LUCIDE_DIR}/`, src), { recursive: true, force: true });
+mkdirSync(new URL(`${LUCIDE_DIR}/`, src), { recursive: true });
+for (const [path, text] of lucideModules(manifest, readSvg, licence)) {
+  writeFileSync(new URL(path, src), text);
+}
 console.log(
   `vendor-lucide: wrote ${manifest.glyphs.length} glyphs from lucide-static@${manifest.version}`,
 );

@@ -65,7 +65,10 @@ this way. Where switching to one must stay instant, its code is fetched once the
   request, so a design that has one finds its code already in, while the first load does not carry it.
 - **Surfaces someone opens**: the Explorer popover (mounted from its first opening on,
   then kept, so its state survives), search, the quick style panel and the tool panels. Fetched once the opened design has rendered and the page is idle.
-- **At the press**: a template's canvas overrides load with its builders when one is applied.
+- **At the press**: a template's canvas overrides load with its builders when one is applied. Inspect's Export
+  loads the tab exporters (and the page motion they draw) when it is pressed (`lib/inspect-export.ts`): the
+  Inspect host names that module as the canvas mounts, and a static import there put the exporters in every
+  design's first load. 1,059 KiB gzipped, 1,049 KiB with the import at the press (measured 2026-11-09).
 - A panel whose code cannot load (offline behind the load-error card) draws nothing rather than
   throwing into the screen around it.
 - `apps/live/app/design/[id]/design-lazy-load.test.ts` fails if any of these become static

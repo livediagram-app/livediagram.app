@@ -9,8 +9,11 @@ import {
   type Tab,
 } from '@livedesign/design';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import { downloadBlob, exportTabAsPng, exportTabAsSvg, loadTabImages } from './export-tab';
 import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
+
+// The tab exporters (and the page motion they draw) load at the press: the Inspect host names this module as the
+// canvas mounts, and a static import put them in every design's first load (docs/specs/016-platform/web-performance.md).
+const loadExporters = () => import('./export-tab');
 
 export type InspectExportFormat = 'png' | 'svg';
 export const INSPECT_EXPORT_SCALES = [1, 2, 3] as const;
@@ -44,7 +47,10 @@ export async function exportInspectedElement(input: {
   imageContext?: InspectImageContext;
 }): Promise<void> {
   const tab = inspectExportTab(input.tab, input.el);
-  await ensureIconCatalogs();
+  const [{ downloadBlob, exportTabAsPng, exportTabAsSvg, loadTabImages }] = await Promise.all([
+    loadExporters(),
+    ensureIconCatalogs(),
+  ]);
   const images = input.imageContext ? await loadTabImages(tab, input.imageContext) : undefined;
   const opts = {
     images,

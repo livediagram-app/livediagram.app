@@ -1,10 +1,16 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 
 import manifest from '../lucide-manifest.json';
 import * as LUCIDE from './lucide.generated';
-import { lucideExportName, lucideModule, svgToPrims } from './lucide-vendor';
+import {
+  LUCIDE_DIR,
+  lucideExportName,
+  lucideGlyphPath,
+  lucideModules,
+  svgToPrims,
+} from './lucide-vendor';
 
 const require = createRequire(import.meta.url);
 const readSvg = (name: string) =>
@@ -55,8 +61,32 @@ describe('vendored Lucide', () => {
   });
 
   it('is up to date with the pinned package (run pnpm icons:vendor)', () => {
-    const current = readFileSync(new URL('./lucide.generated.ts', import.meta.url), 'utf8');
-    expect(lucideModule(manifest, readSvg, licence)).toBe(current);
+    const files = lucideModules(manifest, readSvg, licence);
+    for (const [path, text] of files)
+      expect(readFileSync(new URL(path, import.meta.url), 'utf8'), path).toBe(text);
+    // No module left behind by a glyph the manifest dropped.
+    const onDisk = readdirSync(new URL(`./${LUCIDE_DIR}/`, import.meta.url)).map(
+      (file) => `${LUCIDE_DIR}/${file}`,
+    );
+    expect(onDisk.sort()).toEqual(
+      [...files.keys()].filter((p) => p !== 'lucide.generated.ts').sort(),
+    );
+  });
+
+  // Every glyph its own module: a bundler keeps an export any page uses in every page that loads its module, so one
+  // module holding every glyph put each glyph a lazy catalogue draws in every page's first load.
+  it('keeps each glyph in a module of its own, re-exported by lucide.generated.ts', () => {
+    const files = lucideModules(manifest, readSvg, licence);
+    const barrel = files.get('lucide.generated.ts')!;
+    expect(barrel).not.toMatch(/export const/);
+    expect(barrel.match(/^export \{ lucide\w+ \} from '\.\/lucide\/[\w-]+';$/gm)).toHaveLength(
+      manifest.glyphs.length,
+    );
+    for (const name of manifest.glyphs) {
+      const own = files.get(lucideGlyphPath(name))!;
+      expect(own.match(/^export const /gm), name).toHaveLength(1);
+      expect(own).toContain(`export const ${lucideExportName(name)}:`);
+    }
   });
 
   it('carries the Lucide licence notice', () => {

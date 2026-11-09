@@ -37,7 +37,7 @@ reach a deployed artefact, and nothing else.
   own licence texts: the Emscripten runtime inside a WebAssembly module, libwebp inside `@jsquash/webp`,
   resvg and tiny-skia inside `@resvg/resvg-wasm`, and the Inter font (both bundled by no livehuddle app today, kept
   for when one does). The same table covers material vendored into our own source (Lucide and Feather icon
-  geometry), triggered by the first-party source file that carries it being bundled.
+  geometry), triggered by the first-party source file that carries it being bundled (or, for a trigger ending in `/`, any file in that folder: Lucide's glyphs are a module each).
 
 ## Licence texts
 

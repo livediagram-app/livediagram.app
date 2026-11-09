@@ -161,7 +161,7 @@ import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { announcePageLocked, guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
 import { announceTextOnly, guardFlashcardsIn, setTextOnlyToast } from '@/lib/flashcard-guard';
-import { setArticleCapsToast } from '@/lib/article/article-caps';
+import { setArticleCapsToast } from '@/lib/article/article-caps-notice';
 
 // The guards every local edit of the active tab passes (Pages mode): locked pages, then text-only
 // flashcards (docs/specs/007-editor/flashcards.md "Text only"), each saying why after the commit.

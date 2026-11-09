@@ -58,6 +58,12 @@ fetched once the page is idle.
 - **Surfaces someone opens**: the Explorer popover (mounted from its first opening on,
   then kept, so its state survives), search, the quick style panel, the tool panels and presenting. Fetched once the opened document has rendered and the page is idle.
 - **At the press**: a template's canvas overrides load with its builders when one is applied.
+- **ProseMirror comes with the first article.** The article editor and the writing caps plugin load with the
+  pages; what the editor sets as it mounts (where the caps' notice goes) sits in its own module
+  (`lib/article/article-caps-notice.ts`). A one-symbol import of the plugin's module for it put ProseMirror in
+  every document's first load: 973 KiB gzipped, 941 KiB with the notice apart and the Lucide glyphs a module each
+  (measured 2026-11-09; the lighter pages, which carry no ProseMirror, dropped 11 KiB from the glyphs alone).
+  The lazy-load test walks the page's static imports and fails if any reaches a `prosemirror-*` module.
 - **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
   the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys
   listen from its first frame.

@@ -140,7 +140,7 @@ export function linkRefusalOnReturn(): string | null {
   const code = url.searchParams.get('error');
   if (!code || !url.searchParams.has('settings')) return null;
   url.searchParams.delete('error');
-  window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
   return LINK_REFUSALS[code] ?? 'Google couldn’t be connected just now. Try again in a moment.';
 }
 

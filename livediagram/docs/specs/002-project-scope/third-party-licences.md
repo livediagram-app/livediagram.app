@@ -40,7 +40,8 @@ reach a deployed artefact, and nothing else.
   resvg and tiny-skia inside `@resvg/resvg-wasm`, and the Inter font inside the mcp worker. The same
   table covers material vendored into our own source (Lucide and Feather icon geometry, draw.io's
   view geometry ported into the draw.io importer), triggered by the first-party source file that
-  carries it being bundled.
+  carries it being bundled (or, for a trigger ending in `/`, any file in that folder: Lucide's glyphs are a
+  module each).
 
 ## Licence texts
 
