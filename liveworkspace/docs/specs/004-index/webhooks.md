@@ -97,6 +97,8 @@ many new responses and the total, never what anyone answered. A push that doesn'
   hears it (the outbox), in the same D1 batch, so no write path can forget one and none waits on a network call.
   After the response, the index wakes one Durable Object (`WebhookDispatcher`), whose alarm sends what is due and
   sleeps until the next retry. No Cloudflare Queues; the 15-minute cron wakes it too, in case a wake was lost.
+  Each run reads only the pending deliveries, never the kept history: with 2,000 webhooks and their 20 recent
+  deliveries each, a run used to walk all 40,000 rows to find the few due.
 - **Retries with backoff.** A delivery succeeds on any 2xx within 10 seconds. A network error, a timeout, 408,
   429 or 5xx is tried again after 1 minute, 5 minutes, 30 minutes, 2 hours, 6 hours and 12 hours (seven tries in
   about 21 hours), then given up. A redirect is never followed and counts as a failure, as does any other 4xx,

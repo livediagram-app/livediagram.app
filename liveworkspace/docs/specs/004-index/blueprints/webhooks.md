@@ -76,7 +76,8 @@ Scope, by file:
 - `alarm()`: `dispatch`, then `setAlarm(roomAlarmAt(nextAt, now))` when `nextAt` is not null: never sooner than a
   second from now (`@liveworkspace/api-kit/room-alarm`), so a row stuck due can't fire the alarm back to back.
 - `dispatch`: without a `WEBHOOK_KEY` that imports, nothing. Reads the due rows (`next_at <= now`, webhook live, no
-  earlier pending row of the webhook not yet due) oldest first by `id`, `LIMIT DISPATCH_BATCH` (50); groups them by webhook; runs `DISPATCH_CONCURRENCY` (6) webhooks at once,
+  earlier pending row of the webhook not yet due) oldest first by `id`, `LIMIT DISPATCH_BATCH` (50), through
+  `INDEXED BY webhook_deliveries_due` (unforced, SQLite walks every row in `id` order to skip the sort); groups them by webhook; runs `DISPATCH_CONCURRENCY` (6) webhooks at once,
   each webhook's rows in order:
   1. `creatorCanEdit`: `created_by` still edits the whole item. The owner of a personal item: yes. Else a
      `shared_with` row for them on the item whose `share_links` row is live, `level = 'edit'` and `tab_id IS NULL`:

@@ -357,7 +357,8 @@ export async function dispatch(env: Env, deps: DispatchDeps): Promise<DispatchRe
           `SELECT d.id, d.webhook_id, d.event_id, d.type, d.app, d.item_id, d.title, d.actor_id, d.actor_name,
                   d.detail, d.occurred_at, d.attempts, w.item_id AS document_id, i.owner_id, i.team_id, w.kind,
                   w.url_sealed, w.secret_sealed, w.created_by
-           FROM webhook_deliveries d JOIN webhooks w ON w.id = d.webhook_id JOIN items i ON i.id = w.item_id
+           FROM webhook_deliveries d INDEXED BY webhook_deliveries_due
+             JOIN webhooks w ON w.id = d.webhook_id JOIN items i ON i.id = w.item_id
            -- In order per webhook: a row waits while an earlier one of its webhook is not yet due.
            WHERE d.state = 'pending' AND d.next_at <= ?1 AND w.paused_at IS NULL
              AND NOT EXISTS (SELECT 1 FROM webhook_deliveries p
