@@ -369,7 +369,7 @@ describe('applySheetWrite', () => {
     const wb = new Workbook({ sheets: [after, read], locale: 'en' });
     const f = (r: string) =>
       renderFormula(
-        (read.cells.get(cellKey(r, 's1c0'))?.input as { f: never }).f,
+        (read.cells.get(cellKey(r, 's1c0'))!.input as { f: never }).f,
         wb.ctxFor(read.id),
       );
     expect([f('s1r0'), f('s1r1'), f('s1r2')]).toEqual([
