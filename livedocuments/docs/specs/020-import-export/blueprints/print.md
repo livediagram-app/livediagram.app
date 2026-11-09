@@ -29,7 +29,8 @@ Derived from [Print](../print.md). Everything lives in `apps/editor`.
     dialog, any other as `laidOutPagesOf(other)`; a tab whose pages `offersPageKindChoice` (only page, no kind,
     no elements) gives none.
 - `printDocumentHtml(sheets, svgOf)`: one `<style>` then one `<section class="sheet">` per sheet holding
-  `svgOf(sheet)`. Each distinct page size gets one named rule, `@page s<W>x<H> { size: <W>px <H>px; margin: 0 }`,
+  `sheetScopedSvg(svgOf(sheet), i)`: every ` id="X"` in the drawing becomes `id="p<i>-X"`, and each `url(#X)`,
+  `href="#X"` and `xlink:href="#X"` naming one of those ids follows it (others are left). Each distinct page size gets one named rule, `@page s<W>x<H> { size: <W>px <H>px; margin: 0 }`,
   and its sheets `page: s<W>x<H>`, `width`/`height` the page's px, `break-after: page` (none on the last).
   `html, body { margin: 0; background: #fff; print-color-adjust: exact; -webkit-print-color-adjust: exact }`.
   The svg is set to `width: 100%; height: 100%; display: block`.
@@ -39,7 +40,9 @@ Derived from [Print](../print.md). Everything lives in `apps/editor`.
 `printInFrame(html, doc = document)`: removes any earlier frame, appends an `<iframe>` with the attribute,
 `sandbox="allow-same-origin allow-modals"`, `aria-hidden`, `tabindex=-1`, styled `position: fixed; right: 0;
 bottom: 0; width: 0; height: 0; border: 0; visibility: hidden` (laid out, so printable). Sets `srcdoc` to
-`trustedHtml(html)`, and on `load` calls `frame.contentWindow.print()`; resolves once called. Removes the frame on
+`trustedHtml(html)`, and on `load` waits for the frame's `document.fonts.ready` (at most `PRINT_FONTS_WAIT_MS`,
+3,000; absent: no wait), then calls `frame.contentWindow.print()`; resolves once called. A frame a second print
+removed meanwhile is not printed (resolves). Removes the frame on
 the frame window's `afterprint` or after `PRINT_FRAME_CLEANUP_MS`.
 
 ## The dialog
@@ -56,5 +59,8 @@ closes.
 - `printSheets`: current page; whole document across tabs, in tab order, skipping a Start-screen tab, the current
   tab's live pages used.
 - `printDocumentHtml`: one named rule per size, each sheet its size, no break after the last, colour adjust set.
-- `printInFrame`: one frame, sandboxed, `print()` called on load, a second replaces the first, removed after print.
+- `sheetScopedSvg`: two sheets drawn with the same ids hold no id twice and each `url(#…)` names its own sheet's;
+  a reference to an id the drawing does not hold, and `data-element-id`, are left.
+- `printInFrame`: one frame, sandboxed, `print()` called on load once the fonts are ready (or the wait runs out), a
+  second replaces the first (the first, still waiting, never prints), removed after print.
 - A CPU-time budget for a 200-page document's HTML.
