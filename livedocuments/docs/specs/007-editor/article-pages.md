@@ -111,6 +111,12 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
   only reads, so a blank title never leaves an empty heading. An empty table header cell is named
   "Column header" the same way. The names come from a decoration, so they go as soon as the block holds text. A
   template's headings step down one level at a time, never from the title straight to Heading 2.
+- **How much an article holds**: at most **5,000** blocks, a block at most **20,000** characters (a link's
+  address and a footnote's text count towards it) and a table cell at most **2,000**. Writing never goes past
+  them and is never cut afterwards: a paste that would is refused whole, and typing, Enter or a join that would
+  adds nothing; either way a notice says which limit it met ("An article holds at most 5,000 blocks", "A
+  paragraph holds at most 20,000 characters", "A table cell holds at most 2,000 characters"), at most once
+  every few seconds. A block already past a limit (written before it) can still be shortened.
 
 ### Text formatting (runs)
 
@@ -163,7 +169,9 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links, and a
   paragraph's, a quote's or a list item's line ending in two spaces or a backslash as a line break); other
   plain text pastes as paragraphs, one per line. A pasted table (from a spreadsheet, a web page,
-  Word or Google Docs, or a Markdown pipe table) becomes a table block (see "Tables"). Pasted images go into object zones. A paste of
+  Word or Google Docs, or a Markdown pipe table) becomes a table block (see "Tables"). Pasted images go into object zones;
+  a picture the clipboard carries beside writing (Excel and Word add one of what was copied) is left, and the writing is
+  pasted. A paste of
   canvas elements (copied from a canvas) lands as a drawing zone holding them. A whole Word
   document (from Word or Google Docs) comes in through the tab's Import as an article of its own
   ([Word and PowerPoint import](../020-import-export/office-import.md)).

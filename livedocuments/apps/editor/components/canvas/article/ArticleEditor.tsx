@@ -33,6 +33,7 @@ import { replaceContentTr } from '@/lib/article/article-replace';
 import type { ArticleNotePlace } from '@livedocuments/document';
 import { articleKeymap, articleInputRules } from '@/lib/article/article-keys';
 import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/article/article-plugins';
+import { announceArticleCap, articleCapsPlugin } from '@/lib/article/article-caps';
 import { findHighlightPlugin } from '@/lib/article/article-find-plugin';
 import {
   insertBlocksAfterCaret,
@@ -540,6 +541,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           },
         }),
         articleInputRules(),
+        // Never past the article's caps: a paste or a key that would go past them is refused, said once.
+        articleCapsPlugin((cap) => announceArticleCap(cap)),
         blockIdsPlugin,
         decorationsPlugin(isEditable),
         todoTogglePlugin(isEditable),
