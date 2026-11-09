@@ -2,7 +2,12 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createImage, createShape, layOutPages, type Element, type Page } from '@livedesign/design';
+import { createElement, type ReactNode } from 'react';
 import * as pageThumb from '@/lib/page-thumb';
+import {
+  ComponentFaceContext,
+  type ComponentFaceContextValue,
+} from '@/components/canvas/component/component-face-context';
 import { usePageThumbnails, type PageThumbTab } from './usePageThumbnails';
 
 vi.mock('@liveworkspace/workbench/hooks/ui/useIconCatalogs', () => ({
@@ -140,5 +145,49 @@ describe('usePageThumbnails', () => {
     };
     renderHook(() => usePageThumbnails(tabWith([image]), ['p2']));
     expect(images.asked.at(-1)).toEqual([]);
+  });
+
+  // docs/specs/009-elements/components.md "Exports, thumbnails and agents": a page pictures what its instances show.
+  it("pictures an instance as its component's elements, not a dashed frame", () => {
+    const main = {
+      id: 'm1',
+      name: 'Wordmark',
+      width: 200,
+      height: 60,
+      updatedAt: 1,
+      elements: [{ ...createShape('square', 0, 0), id: 'w', width: 200, height: 60, label: 'Sunny' }],
+    };
+    const instance: Element = {
+      ...createShape('instance' as never, laid[0]!.rect.x + 40, laid[0]!.rect.y + 40),
+      id: 'i1',
+      width: 200,
+      height: 60,
+      componentId: 'm1',
+    } as Element;
+    const faces = (lookup: ComponentFaceContextValue['lookup']): ComponentFaceContextValue => ({
+      lookup,
+      loaded: true,
+      tab: {},
+      paper: '#ffffff',
+    });
+    let value = faces((id) => (id === 'm1' ? main : undefined));
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(ComponentFaceContext.Provider, { value }, children);
+    const tab = tabWith([instance, boxOn(1, 'b')]);
+    const { result, rerender } = renderHook(({ tab }) => usePageThumbnails(tab, ids), {
+      initialProps: { tab },
+      wrapper,
+    });
+    expect(result.current.get('p1')?.markup).toContain('Sunny');
+    expect(result.current.get('p1')?.markup).not.toContain('>Component<');
+    // A change to the library redraws only the page with the instance.
+    const draw = vi.spyOn(pageThumb, 'pageThumbFor');
+    const before = result.current;
+    const edited = { ...main, elements: [{ ...main.elements[0]!, label: 'Rainy' }] };
+    value = faces((id) => (id === 'm1' ? edited : undefined));
+    rerender({ tab });
+    expect(draw.mock.calls.map((c) => c[0])).toEqual(['p1']);
+    expect(result.current.get('p1')?.markup).toContain('Rainy');
+    expect(result.current.get('p2')).toBe(before.get('p2'));
   });
 });
