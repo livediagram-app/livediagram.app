@@ -170,6 +170,33 @@ describe('GET /api/auth/callback', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('carries a return path past Latin-1 there and back (Équipe Café, ☕東京)', async () => {
+    fetchMock.mockResolvedValue(tokenResponse());
+    const { res: start, location, pkce } = await signInCookie('/x/Équipe%20Café?q=☕東京#☕');
+    expect(start.status).toBe(302);
+    const res = await call(
+      `/api/auth/callback?code=the-code&state=${location.searchParams.get('state')}`,
+      { headers: { Cookie: `lp_pkce=${pkce}` } },
+    );
+    expect(res.status).toBe(302);
+    expect(res.headers.get('Location')).toBe(
+      '/x/%C3%89quipe%20Caf%C3%A9?q=%E2%98%95%E6%9D%B1%E4%BA%AC#%E2%98%95',
+    );
+  });
+
+  it('finishes a sign-in whose cookie the old Latin-1 encoder wrote (mid-sign-in across a deploy)', async () => {
+    fetchMock.mockResolvedValue(tokenResponse());
+    const old = btoa(JSON.stringify({ state: 'st', verifier: 'v', returnTo: '/x/Équipe' }))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    const res = await call('/api/auth/callback?code=the-code&state=st', {
+      headers: { Cookie: `lp_pkce=${old}` },
+    });
+    expect(res.headers.get('Location')).toBe('/x/%C3%89quipe');
+    expect(sentForm(fetchMock.mock.calls[0]![1]).get('code_verifier')).toBe('v');
+  });
+
   it('sends the browser back to sign in when the swap fails', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
@@ -428,6 +455,7 @@ describe('safeReturnPath', () => {
   // The cases live with the one check, in @liveworkspace/auth-client/return-path; this binds the Explorer fallback.
   it('keeps a path on this site and sends anything else to the Explorer', () => {
     expect(safeReturnPath('/project/abc?tab=1')).toBe('/project/abc?tab=1');
+    expect(safeReturnPath('/x/☕東京')).toBe('/x/%E2%98%95%E6%9D%B1%E4%BA%AC');
     for (const unsafe of [null, '//evil.example', '/\t/evil.example']) {
       expect(safeReturnPath(unsafe)).toBe('/explorer/home');
     }

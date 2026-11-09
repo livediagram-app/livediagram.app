@@ -8,18 +8,18 @@ relative to the repository root.
 
 Scope, by file:
 
-| File                                                                            | Role                                                                                     |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/accounts/src/auth-options.ts`                               | `oauthProvider` options, `customAccessTokenClaims`, `idTokenClaims`, `signUpClientId`    |
-| `liveworkspace/apps/accounts/src/resources.ts`                                  | `RESOURCES`: the app APIs a token may be addressed to, per environment                   |
-| `liveworkspace/apps/accounts/src/clients.ts`                                    | `POST /api/auth/internal/clients`, `clientApp`                                           |
-| `liveworkspace/apps/accounts/src/account-api.ts`                                | `verifiedClient`, `vouchedPerson`: client credentials and access tokens by introspection |
-| `liveworkspace/apps/accounts/scripts/register-client.ts`, `map-clients.ts`      | Registering a client; mapping existing ones to apps                                      |
-| `liveworkspace/apps/accounts/scripts/local-clients.ts`, `seed-local-clients.ts` | Each app's fixed local client, written into the local database by the dev script         |
-| `packages/auth-client/src/oauth.ts`, `silent.ts`, `verify.ts`, `return-path.ts` | Each app's side: PKCE code flow, `prompt=none`, offline verification, safe returns       |
-| `packages/auth-client/src/sign-out.ts`                                          | The page's side of signing out: `askSignOut`, the app API's answer and its hop           |
-| `packages/mcp-kit/src/oauth-device.ts`, `packages/api-kit/src/oauth.ts`         | The device grant each app's MCP server runs for CLIs                                     |
-| `packages/mcp-kit/src/oauth.ts`, `oauth-names.ts`                               | Registration, authorize and the token each app's MCP server runs for MCP clients         |
+| File                                                                                              | Role                                                                                     |
+| ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/accounts/src/auth-options.ts`                                                 | `oauthProvider` options, `customAccessTokenClaims`, `idTokenClaims`, `signUpClientId`    |
+| `liveworkspace/apps/accounts/src/resources.ts`                                                    | `RESOURCES`: the app APIs a token may be addressed to, per environment                   |
+| `liveworkspace/apps/accounts/src/clients.ts`                                                      | `POST /api/auth/internal/clients`, `clientApp`                                           |
+| `liveworkspace/apps/accounts/src/account-api.ts`                                                  | `verifiedClient`, `vouchedPerson`: client credentials and access tokens by introspection |
+| `liveworkspace/apps/accounts/scripts/register-client.ts`, `map-clients.ts`                        | Registering a client; mapping existing ones to apps                                      |
+| `liveworkspace/apps/accounts/scripts/local-clients.ts`, `seed-local-clients.ts`                   | Each app's fixed local client, written into the local database by the dev script         |
+| `packages/auth-client/src/oauth.ts`, `silent.ts`, `verify.ts`, `return-path.ts`, `pkce-cookie.ts` | Each app's side: PKCE code flow, `prompt=none`, offline verification, safe returns       |
+| `packages/auth-client/src/sign-out.ts`                                                            | The page's side of signing out: `askSignOut`, the app API's answer and its hop           |
+| `packages/mcp-kit/src/oauth-device.ts`, `packages/api-kit/src/oauth.ts`                           | The device grant each app's MCP server runs for CLIs                                     |
+| `packages/mcp-kit/src/oauth.ts`, `oauth-names.ts`                                                 | Registration, authorize and the token each app's MCP server runs for MCP clients         |
 
 ## Domain and naming
 
@@ -92,6 +92,13 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
   runs in the app's Worker) answers the ticket, or null on any failure or after 5 s; `endSessionUrl` builds the browser's hop
   (`client_id`, `post_logout_redirect_uri`, `ticket`) ([sessions-and-guests.md](sessions-and-guests.md#ending-a-session-end-sessionts)).
 - `safeReturnPath` passes only a path on the same site (no `//`, scheme, backslash or control character).
+- `normalisedReturnPath` is `safeReturnPath` then `sameOriginPath`: the path as the browser resolves it, percent-encoded
+  ASCII, for every return an api sends in a `Location` header (the clicked sign-in's `return_to`, silent's `return`).
+- `pkce-cookie.ts` (`encodePkceCookie`, `decodePkceCookie`) is the one encoding of the `{ state, verifier, returnTo }`
+  cookie, for every app's clicked sign-in and for silent sign-in: base64url (no padding) over the JSON's UTF-8 bytes.
+  Decoding tries strict UTF-8, then falls back to Latin-1 (the old `btoa`-on-JSON cookies); it answers null for bad
+  base64, bad JSON, a missing or non-string field, or a `returnTo` that `sameOriginPath` refuses, and otherwise
+  returns `returnTo` normalised.
 - `verify.ts` checks access tokens offline against the published key set.
 
 ### The device grant (each app's MCP server, `mcp-kit`)
