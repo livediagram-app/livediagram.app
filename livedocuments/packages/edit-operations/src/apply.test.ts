@@ -224,6 +224,29 @@ describe('applyEditOperations', () => {
       });
     });
 
+    // docs/specs/009-elements/badge.md "The cap holds for agents".
+    it('refuses a badge label over 24 and a step label over 3, naming the element and the cap', () => {
+      const chip = { x: 400, y: 0, width: 40, height: 24 };
+      expect(
+        refused(
+          run([add({ id: 'b1', type: 'shape', shape: 'badge', label: 'x'.repeat(25), ...chip })]),
+        ),
+      ).toEqual({
+        code: 'invalid_result',
+        details: ["b1 label: a badge's label is at most 24 characters"],
+        hint: 'see the format: livedocuments schema badge',
+      });
+      expect(
+        refused(run([add({ id: 's1', type: 'shape', shape: 'step', label: '1234', ...chip })]))
+          .details,
+      ).toEqual(["s1 label: a step's label is at most 3 characters"]);
+      // At the cap is fine.
+      applied(
+        run([add({ id: 'b2', type: 'shape', shape: 'badge', label: 'x'.repeat(24), ...chip })]),
+      );
+      applied(run([add({ id: 's2', type: 'shape', shape: 'step', label: '12a', ...chip })]));
+    });
+
     it('refuses a tab an untouched element already makes invalid', () => {
       const tab = checkoutFlow();
       tab.elements.push({ id: 'broken', type: 'shape', shape: 'square' } as Element);
