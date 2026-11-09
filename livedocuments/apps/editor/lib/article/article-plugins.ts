@@ -123,6 +123,8 @@ function decorations(state: EditorState, editable: boolean): DecorationSet {
       const isFirstBody = style === 'body' && firstBody;
       if (style === 'body') firstBody = false;
       if (node.content.size > 0) return;
+      // A ticked to-do's ::after is its tick (article-pages.css), so it has no placeholder.
+      if (isList && node.attrs.checked === true) return;
       const text =
         PLACEHOLDER[style] ??
         (isFirstBody && state.doc.childCount <= 3
