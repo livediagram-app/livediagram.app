@@ -119,7 +119,9 @@ Writes an article's text from **Markdown**.
 - **The Markdown** (the editor's paste reading, `parseMarkdownBlocks`, shared): `#`, `##`, `###` headings (h1 to
   h3), paragraphs, `-` / `*` / `1.` lists by indent (five levels), `- [ ]` / `- [x]` to-dos, `>` quotes, fenced
   code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto), an underscore
-  marking nothing inside a word as CommonMark has it (`snake_case_name` stays as written). A paragraph's, a
+  marking nothing inside a word as CommonMark has it (`snake_case_name` stays as written). A heading's closing
+  `#`s are dropped (`# Title #` is "Title"), and a heading ending in a space and `#`s is written with the first
+  escaped (`## Learn C \#`), so it reads back whole. A paragraph's, a
   quote's or a list item's line ending in two or more spaces or in a backslash (CommonMark's hard breaks) breaks the
   line there, so an address block keeps its lines: a quote goes on into the `>` line after it (a `>` line with no
   break is a quote of its own), a list item into the line after it unless that line opens a block of its own (a

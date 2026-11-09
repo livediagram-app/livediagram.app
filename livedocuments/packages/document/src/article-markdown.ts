@@ -262,6 +262,31 @@ function joinParagraph(lines: readonly { text: string; brk: HardBreak }[]): stri
 const levelOf = (indent: string) => Math.min(4, Math.floor(indent.replace(/\t/g, '  ').length / 2));
 
 const HEADING_LINE = /^(#{1,6})\s+(.*)$/;
+
+// Where a heading's closing sequence starts: a run of `#` at its end (trailing spaces aside) after a space or tab, or
+// the whole text, which CommonMark drops (`# Title #` is "Title"); -1 when there is none. A scan from the end, never
+// a regex such as `\s+#+\s*$`, which retries every space of a long run.
+function closingHashesAt(text: string): number {
+  let end = text.length;
+  while (end > 0 && (text[end - 1] === ' ' || text[end - 1] === '\t')) end--;
+  let at = end;
+  while (at > 0 && text[at - 1] === '#') at--;
+  if (at === end) return -1;
+  return at === 0 || text[at - 1] === ' ' || text[at - 1] === '\t' ? at : -1;
+}
+
+/** A heading line's text as CommonMark reads it: its closing `#` sequence dropped. */
+export function withoutClosingHashes(text: string): string {
+  const at = closingHashesAt(text);
+  return at === -1 ? text : text.slice(0, at).trimEnd();
+}
+
+/** A heading's written text with an ending `#` run escaped (`C \#`), so it is not read as a closing sequence. */
+export function escapeClosingHashes(markdown: string): string {
+  const at = closingHashesAt(markdown);
+  return at === -1 ? markdown : `${markdown.slice(0, at)}\\${markdown.slice(at)}`;
+}
+
 const DIVIDER_LINE = /^\s*(-{3,}|\*{3,}|_{3,})\s*$/;
 const TODO_LINE = /^(\s*)[-*+]\s+\[( |x|X)\]\s+(.*)$/;
 const BULLET_LINE = /^(\s*)[-*+]\s+(.*)$/;
@@ -352,7 +377,7 @@ export function parseMarkdownBlocks(text: string, given?: FootnoteNotes): Articl
         id: id(),
         type: 'paragraph',
         style,
-        runs: parseInline(heading[2]!, {}, notes),
+        runs: parseInline(withoutClosingHashes(heading[2]!), {}, notes),
       });
       continue;
     }
