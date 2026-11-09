@@ -50,7 +50,8 @@ Scope, by file:
 Every exit answers `204` with `Access-Control-Allow-Origin: *`, stored or not.
 
 1. `TELEMETRY_ENABLED !== 'true'`: stop.
-2. `Content-Length` over `MAX_BODY_BYTES` (64 KiB): stop. Read the body as text; over 64 KiB, or not JSON: stop.
+2. `Content-Length` over `MAX_BODY_BYTES` (64 KiB): stop. Read the body through api-kit's `readCappedBody`, which
+   counts bytes and stops reading past 64 KiB (a chunked body declares no length); over it, no body, or not JSON: stop.
 3. `app` must pass `isTelemetrySender` and `events` must be an array: else stop.
 4. `senderOf(request, env, app)`:
    1. `X-Telemetry-Key` present: `app` must be an app (never `liveworkspace.app`), its `appKey` set, and the key equal
@@ -164,7 +165,7 @@ SELECT date(ts / 1000, 'unixepoch') AS day, app, category, action, type, COUNT(*
 | Case                                                                                                         | Answer                                                       |
 | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
 | Telemetry off                                                                                                | ingest `204`, nothing stored; summary `{ enabled: false }`   |
-| Body over 64 KiB (header or text), not JSON, wrong shape                                                     | `204`, nothing stored                                        |
+| Body over 64 KiB (header or bytes read), no body, not JSON, wrong shape                                      | `204`, nothing stored                                        |
 | A key for `liveworkspace.app`, a wrong key, an unset key                                                     | `204`, nothing stored                                        |
 | An app page naming another app; a foreign origin                                                             | `204`, nothing stored                                        |
 | A localhost page outside development                                                                         | `204`, nothing stored                                        |

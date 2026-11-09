@@ -109,6 +109,34 @@ describe('createApiClient', () => {
     await expect(quiet.text('/x')).rejects.toThrow('offline');
   });
 
+  it('doesn’t report a request the caller cancelled, but does report a timeout', async () => {
+    const failures: string[] = [];
+    const hang = (request: Request) =>
+      new Promise<Response>((_, reject) => {
+        request.signal.addEventListener('abort', () => reject(request.signal.reason as Error));
+      });
+    const api = createApiClient({
+      baseUrl: base,
+      fetch: hang,
+      headers: () => ({}),
+      onFailure: (k) => failures.push(k),
+    });
+    const cancel = new AbortController();
+    const pending = api.json('/x', { signal: cancel.signal });
+    cancel.abort();
+    await expect(pending).rejects.toThrow();
+    expect(failures).toEqual([]);
+    const slow = createApiClient({
+      baseUrl: base,
+      fetch: hang,
+      headers: () => ({}),
+      onFailure: (k) => failures.push(k),
+      timeoutMs: 5,
+    });
+    await expect(slow.json('/x', { signal: new AbortController().signal })).rejects.toThrow();
+    expect(failures).toEqual(['Internal']);
+  });
+
   it('times out a slow answer', async () => {
     const api = createApiClient({
       baseUrl: base,

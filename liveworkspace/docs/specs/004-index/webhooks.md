@@ -148,7 +148,8 @@ dialog titled "Webhooks for “<document>”" whose first line says that what is
 only. In it: the document's webhooks, each with Send Test, Pause or Resume, Delete, Edit Events and its Recent
 Deliveries, and **Add Webhook**: where it posts (Slack, Microsoft Teams, Your Own Service), the address with how to
 get it, a name, **What Should It Send?** (the document's app's events in groups, none chosen at first, with Select
-All and Clear) and **Who Did It** (Anyone or Only Me). A plain webhook's signing secret shows once. Settings has no
+All and Clear) and **Who Did It** (Anyone or Only Me). A plain webhook's signing secret shows once. Edit Events'
+Save waits for a change: the same events in another order is none. Settings has no
 Webhooks category ([../010-site/site.md "Settings"](../010-site/site.md#settings)).
 
 The routes, under `/api/index`, for a signed-in account who can edit the whole document (checked as above on every

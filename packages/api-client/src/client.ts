@@ -1,7 +1,7 @@
 // The api client every product's MCP and CLI share (a product's docs/specs/015-api/blueprints/cli.md "api-client"): one injected
 // fetch, the caller's headers, JSON and text answers, and an `ApiError` naming the status and the body's
-// error code. A 5xx or a request that never completed is reported through `onFailure`; a 4xx is the
-// caller's to handle, never reported.
+// error code. A 5xx or a request that never completed is reported through `onFailure`; a 4xx, or a request the
+// caller cancelled through its own signal, is the caller's to handle, never reported.
 
 type ApiClientOptions = {
   // Where the api answers: `https://livediagram-api/api` (or its sibling's) over the MCP's binding, the host's api base for the CLI.
@@ -9,7 +9,8 @@ type ApiClientOptions = {
   fetch: (request: Request) => Promise<Response>;
   // Authorization, the client header, a share code when addressed by a link.
   headers: () => Record<string, string>;
-  // `Http503`, `Internal`: 5xx answers and requests that never completed.
+  // `Http503`, `Internal`: 5xx answers and requests that never completed (timeouts included, the caller's
+  // own aborts not).
   onFailure?: (kind: string) => void;
   timeoutMs?: number;
 };
@@ -72,7 +73,8 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     try {
       res = await raw(path, init);
     } catch (err) {
-      options.onFailure?.('Internal');
+      // A request the caller cancelled is their choice, not a failure; a timeout still counts.
+      if (!init?.signal?.aborted) options.onFailure?.('Internal');
       throw err;
     }
     if (!res.ok) {

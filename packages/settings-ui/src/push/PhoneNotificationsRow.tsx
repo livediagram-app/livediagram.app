@@ -51,13 +51,15 @@ export function PhoneNotificationsRow({
   const [problem, setProblem] = useState<string | null>(null);
   const [thisDevice, setThisDevice] = useState<string | null>(null);
   const [removing, setRemoving] = useState<PushDeviceView | null>(null);
+  // Set again on every mount: React's development double mount (and a remount) runs the cleanup first, and a flag
+  // only ever cleared would drop every answer after it, leaving the row loading for good.
   const live = useRef(true);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    live.current = true;
+    return () => {
       live.current = false;
-    },
-    [],
-  );
+    };
+  }, []);
 
   const load = useCallback(async () => {
     const result = await phone.request<DevicesAnswer>(PUSH_DEVICES_PATH);
