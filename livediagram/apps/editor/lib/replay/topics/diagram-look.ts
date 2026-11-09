@@ -77,8 +77,13 @@ function lookOf(tab: Tab, demo: readonly Element[], look: TabLook): Look {
 
 // Three steps of a little plan, side by side on a wide view, stacked near the top on a phone (where the dialog is a
 // sheet over the bottom). On a wide view they sit up and to the left, clear of the dialog flying up at the bottom right.
+// Their top edge keeps a screen distance from the view's top at any zoom, below the player, which moves to the top
+// while the dialog is open.
+export const LOOK_CLEAR_TOP_PX = 240;
+export const LOOK_CLEAR_TOP_PX_NARROW = 200;
 function demo(env: TopicEnv): Element[] {
   const { centre, size, tab } = env;
+  const zoom = env.zoom && env.zoom > 0 ? env.zoom : 1;
   const narrow = size.width < 700;
   const labels = ['Idea', 'Plan', 'Launch'];
   const w = narrow ? 96 : 150;
@@ -88,7 +93,8 @@ function demo(env: TopicEnv): Element[] {
   const left = narrow
     ? centre.x - row / 2
     : Math.max(centre.x - size.width / 2 + 60, centre.x - row - 40);
-  const top = narrow ? centre.y - size.height / 2 + 120 : centre.y - size.height / 2 + 150;
+  const clear = (narrow ? LOOK_CLEAR_TOP_PX_NARROW : LOOK_CLEAR_TOP_PX) / zoom;
+  const top = centre.y - size.height / 2 + clear;
   const ids = [LOOK_IDS.a, LOOK_IDS.b, LOOK_IDS.c];
   const shapes = labels.map((label, i) =>
     boxedShape(
