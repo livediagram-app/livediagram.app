@@ -4,14 +4,18 @@
 // `use` piece with no main action right now (an idle Screen, a Room Sign nobody may knock on). Sticky and Text show
 // their words at reading size, an Image its picture; a Screen says what it shows and a Room Sign opens its own door panel (RoomSignReader); everything else is
 // a still, read-only copy of its own face scaled to fit. Mounted only while open.
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import type { BoxedElement, Element } from '@livehuddle/document';
 import { kindLabel } from '@/lib/element-names';
-import { CompactEmptyState, lucideGlyph } from '@livehuddle/ui';
+import { CompactEmptyState, lazyPanel, lucideGlyph } from '@livehuddle/ui';
 import { lucideImage, lucideMusic } from '@liveworkspace/icons/lucide';
+import { loadRoomSignReader } from '@/lib/editor-deferred-code';
 import { ReaderShell } from './ReaderShell';
-import { RoomSignReader } from './RoomSignReader';
 import { ScreenReaderBody } from './ScreenReaderBody';
+
+// The Room Sign's door panel loads the first time one is read (docs/specs/016-platform/web-performance.md "A piece's
+// panel"), fetched as soon as someone walks, the only way to read one.
+const RoomSignReader = lazyPanel('room-sign', loadRoomSignReader);
 
 // A copy is never blown up past this: a tiny badge at 3x already reads, and more only pixelates.
 const MAX_SCALE = 3;
@@ -22,12 +26,21 @@ const BODY_H = 560;
 const elementNode = (id: string): HTMLElement | null =>
   document.querySelector<HTMLElement>(`[data-element-id="${CSS.escape(id)}"]`);
 
-/** The canvas's reader: `open(id)` shows that element large; `reader` is the dialog to mount (null while shut). */
-export function useElementReader(elements: readonly Element[]): {
+/**
+ * The canvas's reader: `open(id)` shows that element large; `reader` is the dialog to mount (null while shut).
+ * `walking`: someone walks, so a reader can open; the Room Sign's is fetched then.
+ */
+export function useElementReader(
+  elements: readonly Element[],
+  walking = false,
+): {
   open: (elementId: string) => void;
   reader: ReactNode;
 } {
   const [openId, setOpenId] = useState<string | null>(null);
+  useEffect(() => {
+    if (walking) void RoomSignReader.preload();
+  }, [walking]);
   // Looked up as it renders, so a deleted element closes it and a changed one shows its latest words.
   const element = openId ? elements.find((el) => el.id === openId) : undefined;
   return {

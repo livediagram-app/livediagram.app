@@ -949,17 +949,15 @@ html {
 [data-plan-busy='minimal'] .plan-card-run {
   contain-intrinsic-size: auto calc(var(--run-cards, 1) * 52px - 8px);
 }
-/* A far run's cards are not drawn at all (useCardRunReveal; plan-board.md "Cards out of view wait"): Safari styles a
- * `content-visibility` subtree all the same, two thousand cards' worth on a filter or a column expanding. The run
- * keeps its place: its last drawn height (`--run-h`), else its cards at the usual height plus its padding, less a gap. */
+/* A far run's cards are not built at all (PlanCardRun, useCardRunReveal; plan-board.md "Cards out of view wait"):
+ * Safari styles a `content-visibility` subtree all the same, two thousand cards' worth on a filter or a column
+ * expanding. The empty run keeps its place: its last drawn height (`--run-h`), else its cards at the usual height
+ * plus its padding, less a gap. */
 .plan-card-run:not([data-plan-run-near]) {
   height: var(--run-h, calc(var(--run-cards, 1) * 140px + 40px));
 }
 [data-plan-busy='minimal'] .plan-card-run:not([data-plan-run-near]) {
   height: var(--run-h, calc(var(--run-cards, 1) * 52px + 40px));
-}
-.plan-card-run:not([data-plan-run-near]) > * {
-  display: none;
 }
 
 /* A Plan card's frame (PlanCardFace; docs/specs/026-plan/plan-board.md "Card hover"): its face, edge and shadow from

@@ -8,7 +8,11 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { stairsFlights, type StairsFlight, type StairsLanding } from '@/lib/wayfinding';
 import { useFloorsOnOpen } from './useFloorsOnOpen';
 import { useWayfindingSelect, type Wayfinding } from './wayfinding-store';
-import { WayfindingHeader, WayfindingPopover } from './WayfindingPopover';
+import {
+  LazyWayfindingPopover,
+  WayfindingHeader,
+  wayfindingPrefetchProps,
+} from './wayfinding-panel-parts';
 
 // The Stairs' face (docs/specs/009-elements/stairs.md): a button over the drawing (FurnitureView paints the flight)
 // that opens the Up / Down panel, which a walk-on opens too (through the store). Choosing a floor climbs the flight
@@ -40,6 +44,7 @@ export function StairsFace({
           aria-label={NAME}
           aria-expanded={pressed}
           aria-haspopup="dialog"
+          {...wayfindingPrefetchProps}
           {...press}
           data-piece-main=""
           className="pointer-events-auto relative h-full w-full cursor-pointer rounded-md transition duration-100 active:scale-[0.98] sm:hover:brightness-[1.06]"
@@ -75,9 +80,9 @@ function StairsPanelHost({
     if (walkedIn) wayfinding.actions.closePanel();
   };
   return (
-    <WayfindingPopover elementId={element.id} label={NAME} width={264} onClose={close}>
+    <LazyWayfindingPopover elementId={element.id} label={NAME} width={264} onClose={close}>
       <StairsPanel element={element} wayfinding={wayfinding} onDone={close} />
-    </WayfindingPopover>
+    </LazyWayfindingPopover>
   );
 }
 

@@ -5,7 +5,7 @@
 // an item reached through a link can be opened, copied, starred and dismissed, and renamed when
 // the link edits; one in the Trash can be restored or deleted for good.
 
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader, PortalMenu } from '../ui/Menu';
@@ -34,6 +34,7 @@ import { useExtras } from './extras';
 import { thenReload } from './ThisBrowser';
 import { useLibraryHost } from '../library/context';
 import { HistoryIcon, WebhookIcon } from '../ui/library-icons';
+import { preloadMenuDialogs } from './lazy-dialogs';
 
 export function canManage(item: ShownItem): boolean {
   return item.access === 'edit' && !item.sharedVia;
@@ -54,6 +55,11 @@ export function ItemMenu({
   const { actions, openItem, setRenamingId, openDialog, navigate, reloadLists } = useExplorer();
   const { slideOut, signedIn } = useExtras();
   const host = useLibraryHost();
+  const trashed = item.trashedAt !== null;
+  // Share and Change Folder load as the menu opens, so a press on either opens it at once (lazy-dialogs.ts).
+  useEffect(() => {
+    if (!trashed) preloadMenuDialogs('item');
+  }, [trashed]);
   const run = (fn: () => void) => () => {
     onClose();
     fn();
@@ -61,7 +67,7 @@ export function ItemMenu({
   const title = item.title || 'Untitled';
   const header = <MenuHeader title={title} aside={<VisibilityBadge item={item} />} />;
 
-  if (item.trashedAt !== null) {
+  if (trashed) {
     return (
       <PortalMenu anchor={anchor} onClose={onClose} label={`Actions for ${title}`}>
         {header}
@@ -199,6 +205,8 @@ export function FolderMenu({
 }) {
   const { folders, setRenamingId, openDialog, navigate, expansion } = useExplorer();
   const rename = onRename ?? setRenamingId;
+  // Move Folder and Use as Default load as the menu opens (lazy-dialogs.ts).
+  useEffect(() => preloadMenuDialogs('folder'), []);
   const run = (fn: () => void) => () => {
     onClose();
     fn();
@@ -262,6 +270,8 @@ export function MyWorkMenu({
 }) {
   const { folders, navigate, expansion, openDialog, setRenamingId } = useExplorer();
   const rename = onRename ?? setRenamingId;
+  // Use as Default loads as the menu opens (lazy-dialogs.ts).
+  useEffect(() => preloadMenuDialogs('folder'), []);
   const run = (fn: () => void) => () => {
     onClose();
     fn();

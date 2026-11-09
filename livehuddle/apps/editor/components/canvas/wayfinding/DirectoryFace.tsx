@@ -5,7 +5,13 @@ import { HoverCard } from '@livehuddle/ui';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { spacePlaces, type PlaceKind, type WayPerson } from '@/lib/wayfinding';
 import { useWayfindingSelect, type Wayfinding } from './wayfinding-store';
-import { PeopleChips, RowAction, WayfindingHeader, WayfindingPopover } from './WayfindingPopover';
+import {
+  LazyWayfindingPopover,
+  PeopleChips,
+  RowAction,
+  WayfindingHeader,
+  wayfindingPrefetchProps,
+} from './wayfinding-panel-parts';
 
 // The Directory's face (docs/specs/009-elements/directory.md): a button over the drawing (FurnitureView paints the
 // stand) that opens the list of the space's places and who is in each. A click presses, a drag moves it
@@ -40,13 +46,14 @@ export function DirectoryFace({
           aria-label="Directory"
           aria-expanded={open}
           aria-haspopup="dialog"
+          {...wayfindingPrefetchProps}
           {...press}
           data-piece-main=""
           className="pointer-events-auto relative h-full w-full cursor-pointer rounded-md transition duration-100 active:scale-[0.98] sm:hover:brightness-[1.06]"
         />
       </HoverCard>
       {open && wayfinding ? (
-        <WayfindingPopover
+        <LazyWayfindingPopover
           elementId={elementId}
           label="Directory"
           width={320}
@@ -55,7 +62,7 @@ export function DirectoryFace({
           onClose={() => setOpen(false)}
         >
           <DirectoryList wayfinding={wayfinding} onDone={() => setOpen(false)} />
-        </WayfindingPopover>
+        </LazyWayfindingPopover>
       ) : null}
     </>
   );

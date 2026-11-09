@@ -8,7 +8,12 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { elevatorName, spaceFloors, type WayPoint } from '@/lib/wayfinding';
 import { createWayfindingStore, useWayfindingSelect, type Wayfinding } from './wayfinding-store';
 import { useFloorsOnOpen } from './useFloorsOnOpen';
-import { RowAction, WayfindingHeader, WayfindingPopover } from './WayfindingPopover';
+import {
+  LazyWayfindingPopover,
+  RowAction,
+  WayfindingHeader,
+  wayfindingPrefetchProps,
+} from './wayfinding-panel-parts';
 
 // The Elevator's face (docs/specs/009-elements/elevator.md): a button over the drawing (FurnitureView paints the
 // lift) that opens the floor panel, which a walk-in opens too (through the store), and the doors that open as a
@@ -50,6 +55,7 @@ export function ElevatorFace({
           aria-label={name}
           aria-expanded={pressed}
           aria-haspopup="dialog"
+          {...wayfindingPrefetchProps}
           {...press}
           data-piece-main=""
           className="pointer-events-auto relative h-full w-full cursor-pointer rounded-md transition duration-100 active:scale-[0.98] sm:hover:brightness-[1.06]"
@@ -100,9 +106,9 @@ function ElevatorPanelHost({
     if (walkedIn) wayfinding.actions.closePanel();
   };
   return (
-    <WayfindingPopover elementId={elementId} label={name} width={288} onClose={close}>
+    <LazyWayfindingPopover elementId={elementId} label={name} width={288} onClose={close}>
       <ElevatorPanel elementId={elementId} name={name} wayfinding={wayfinding} onDone={close} />
-    </WayfindingPopover>
+    </LazyWayfindingPopover>
   );
 }
 

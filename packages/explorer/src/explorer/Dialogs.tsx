@@ -5,14 +5,16 @@
 import { lazy, Suspense, useMemo } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import { isWithin } from '../data/useFolders';
-import { MoveToFolderDialog } from '../dialogs/MoveToFolderDialog';
 import type { PickerFolder, PickerTeam } from '../dialogs/PlacementBrowser';
-import { ShareDialog } from '../dialogs/ShareDialog';
 import { ConfirmDialog } from '@liveworkspace/ui';
-import { DefaultFoldersDialog } from '../defaults/DefaultFolders';
 import { folderDefaultEntries, folderDeleteConfirmation } from '../defaults/entries';
-import { UseAsDefaultDialog } from '../defaults/UseAsDefaultDialog';
 import type { ShareUrl } from '../types';
+import {
+  DefaultFoldersDialog,
+  MoveToFolderDialog,
+  ShareDialog,
+  UseAsDefaultDialog,
+} from './lazy-dialogs';
 import { thisBrowserDeleteCopy } from '../this-browser';
 import type { ShareTelemetry } from '../dialogs/share/types';
 import type { ExplorerView } from '../views';

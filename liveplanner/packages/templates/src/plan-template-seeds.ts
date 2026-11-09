@@ -11,7 +11,7 @@ import {
   type ItemFields,
   type ItemPerson,
 } from '@liveplanner/items';
-import { isPlanTemplateKind } from './template-builders-plan';
+import { isPlanTemplateKind } from './plan-template-kinds';
 import {
   PLAN_TEMPLATE_SEEDS,
   SEED_PEOPLE,

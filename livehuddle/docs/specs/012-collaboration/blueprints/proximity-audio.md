@@ -67,7 +67,9 @@ against the wanted set when it runs, so a peer walking in and out while a reques
 
 **Audio graph** (`lib/calls/audio-graph.ts`): one `AudioContext`, resumed by the Join press. Per heard peer:
 `MediaStreamAudioSourceNode → GainNode → StereoPannerNode → destination`, values set with `setTargetAtTime(…,
-GLIDE_S)`. A muted `<audio>` element holds each remote stream (Chrome plays a WebRTC stream into Web Audio only while
+GLIDE_S)`. `place(id, gain, pan)` sets each value only when it moved by `PLACE_EPSILON` or more from the one last
+set for that voice, or when it lands exactly on 0 or 1 (silence and full volume are always reached); the first place
+after `attach` always sets both. A muted `<audio>` element holds each remote stream (Chrome plays a WebRTC stream into Web Audio only while
 an element holds it). The microphone feeds an `AnalyserNode` (`fftSize` 512) read every `VOICE_SAMPLE_MS`.
 
 ## Interfaces and contracts
@@ -154,9 +156,18 @@ held frames for one step. The editor's store is memory only and empties on leavi
   Measured 2026-11-04 (a shared machine at a load of about 22 on 10 cores, so CPU is noisy): 100 walkers, 1,009
   frames a second silent and 879 all talking, 29.9 and 30.2 MB/s, room CPU 56% and 53%; 32 walkers, 559 and 439
   frames a second, 5.2 and 4.4 MB/s, 32% and 29%. Talking adds no frames.
-- `SfuSession.want` runs on every step anyone walks and returns at once while the subscribed set is the wanted one;
+- The scene reaches `ProximityCall.update` from the coarse copy of the characters and your feet ([Peer-motion
+  store](../../008-canvas/blueprints/peer-motion-store.md) "The coarse copy"): at most once per `COARSE_MOTION_MS`
+  while people walk, and at once when someone joins or leaves the tab, sits or stands, or crosses into another room or
+  onto a stage, or you do. The view, the rooms and the stages are not coarsened (the view is already snapped). Mute
+  and Do Not Disturb never go through the scene. Measured by `CanvasCharactersLayer.perf.test.tsx`: 50 peers walking,
+  60 updates a second before, 13 now (10 for the interval, the rest for walls crossed).
+- Placing: measured by `call-receiver.perf.test.ts`, 20 heard voices (half still, half walking): 2,400 AudioParam
+  events a second placed every frame before; 822 with `PLACE_EPSILON` alone at frame rate, and 151 placed 10 times a
+  second (400 without it).
+- `SfuSession.want` runs on every scene update and returns at once while the subscribed set is the wanted one;
   a locator Realtime refuses is never asked for again in a loop.
-- The hearing check runs on each change of `remoteAvatars` (at most once a frame), linear in walkers.
+- The hearing check runs on each scene update (at most about 10 a second while walking), linear in walkers.
 - Bars animate in CSS from a level custom property; a level change re-renders one bar group.
 - The hearing ring renders nothing while you are silent; it re-renders on your own steps and level changes
   (at most 4 a second), finds your room only while you talk (linear in rooms), and animates one transform and
@@ -198,23 +209,26 @@ token. The editor logs through `debugLog('calls', …)`.
 
 ## Testing
 
-| Rule                                                          | Test                                                  |
-| ------------------------------------------------------------- | ----------------------------------------------------- |
-| Secrets unset refuses; production open once they are set      | `apps/api/src/calls/calls-gate.test.ts`               |
-| Tokens bind Space, session and role                           | `apps/api/src/calls/call-tokens.test.ts`              |
-| Routes: grant, gate, listener publish, bad token, upstream    | `apps/api/src/routes/calls.test.ts` (Realtime mocked) |
-| Room drops a Viewer's voice and track ops, and malformed ones | `apps/api/src/room-op-gate.test.ts`                   |
-| Voice is tab-scoped and coalesced; 100 talking walkers bound  | `apps/api/src/document-room-fanout.test.ts`           |
-| Parsers                                                       | `packages/api-schema/src/call-voice.test.ts`          |
-| Hearing, gain, pan, hysteresis, bars fade                     | `apps/editor/lib/calls/hearing.test.ts`               |
-| Detector: threshold, hangover, quantise, rate, refresh, mute  | `apps/editor/lib/calls/voice-detector.test.ts`        |
-| Store: receive, stale, prune                                  | `apps/editor/lib/calls/calls-store.test.ts`           |
-| Button states per role; bars hover text and walk              | `apps/editor/components/calls/*.test.tsx`             |
-| The call: mint, publish, earshot, mute, idle close, errors    | `apps/editor/lib/calls/proximity-call.test.ts`        |
-| One queue, batches, refused locators, closes                  | `apps/editor/lib/calls/sfu-session.test.ts`           |
-| Session gone: renew, republish, prove, cap                    | `apps/editor/lib/calls/proximity-call.test.ts`        |
-| Editor allows camera, microphone and screen for self          | `apps/editor/src/worker.test.ts`                      |
-| Join, leave with the mode or tab, rejoin after failure        | `apps/editor/lib/calls/useProximityCall.test.tsx`     |
+| Rule                                                          | Test                                                                |
+| ------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Secrets unset refuses; production open once they are set      | `apps/api/src/calls/calls-gate.test.ts`                             |
+| Tokens bind Space, session and role                           | `apps/api/src/calls/call-tokens.test.ts`                            |
+| Routes: grant, gate, listener publish, bad token, upstream    | `apps/api/src/routes/calls.test.ts` (Realtime mocked)               |
+| Room drops a Viewer's voice and track ops, and malformed ones | `apps/api/src/room-op-gate.test.ts`                                 |
+| Voice is tab-scoped and coalesced; 100 talking walkers bound  | `apps/api/src/document-room-fanout.test.ts`                         |
+| Parsers                                                       | `packages/api-schema/src/call-voice.test.ts`                        |
+| Hearing, gain, pan, hysteresis, bars fade                     | `apps/editor/lib/calls/hearing.test.ts`                             |
+| Detector: threshold, hangover, quantise, rate, refresh, mute  | `apps/editor/lib/calls/voice-detector.test.ts`                      |
+| Store: receive, stale, prune                                  | `apps/editor/lib/calls/calls-store.test.ts`                         |
+| Button states per role; bars hover text and walk              | `apps/editor/components/calls/*.test.tsx`                           |
+| The call: mint, publish, earshot, mute, idle close, errors    | `apps/editor/lib/calls/proximity-call.test.ts`                      |
+| One queue, batches, refused locators, closes                  | `apps/editor/lib/calls/sfu-session.test.ts`                         |
+| Session gone: renew, republish, prove, cap                    | `apps/editor/lib/calls/proximity-call.test.ts`                      |
+| Editor allows camera, microphone and screen for self          | `apps/editor/src/worker.test.ts`                                    |
+| Join, leave with the mode or tab, rejoin after failure        | `apps/editor/lib/calls/useProximityCall.test.tsx`                   |
+| A voice moved less than `PLACE_EPSILON` is left; 0 and 1 land | `apps/editor/lib/calls/audio-graph.test.ts`                         |
+| 20 heard voices: AudioParam events a second, bounded          | `apps/editor/lib/calls/call-receiver.perf.test.ts`                  |
+| 50 walkers: the call's scene about 10 a second                | `apps/editor/components/canvas/CanvasCharactersLayer.perf.test.tsx` |
 
 ## Constants and configuration
 
@@ -225,6 +239,7 @@ token. The editor logs through `debugLog('calls', …)`.
 | `FULL_VOLUME_RADIUS_PX`  | 90        | Two or three characters side by side               |
 | `MAX_PAN`                | 0.8       | Never hard left or right                           |
 | `GLIDE_S`                | 0.12      | Gain and pan changes are never heard as steps      |
+| `PLACE_EPSILON`          | 0.005     | Half a percent of volume or side: never heard      |
 | `BARS_FADE_END_PX`       | 1500      | About a screen away at 100%                        |
 | `BARS_FAR_OPACITY_NEAR`  | 0.9       | Out of earshot reads quieter than in earshot (1)   |
 | `BARS_FAR_OPACITY_MIN`   | 0.3       | Still findable far away                            |

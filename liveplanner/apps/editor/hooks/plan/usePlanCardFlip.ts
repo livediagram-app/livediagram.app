@@ -42,8 +42,8 @@ function placeWithin(node: HTMLElement, root: HTMLElement): { x: number; y: numb
 // The cards to measure. A busy board draws its cards in runs (components/plan/card-runs.ts), and the browser skips a run
 // out of view: reading a place in one lays all its cards out again, so on a 2,000-card board one drop laid out the whole
 // board. Only the runs within a view's length of the body's view are read; a card further off never glides, as none
-// would see it. Each run read is drawn first (useCardRunReveal): the flip runs in React's commit, before the reveal's
-// own pass, and a far run's cards would read as boxes of 0.
+// would see it. Each run read is asked to draw (useCardRunReveal): one that is still far has no cards yet, and its
+// cards are learnt as they are built (the hook's `remember`).
 export function cardsToMeasure(body: HTMLElement): HTMLElement[] {
   const runs = body.querySelectorAll<HTMLElement>('[data-plan-run]');
   if (runs.length === 0) return [...body.querySelectorAll<HTMLElement>('[data-plan-card]')];
@@ -60,14 +60,21 @@ export function cardsToMeasure(body: HTMLElement): HTMLElement[] {
 
 // `signature` changes when the cards' order or columns change; the board's body is `root`; `skipId` is the card
 // being dragged; `hold` says a column is gliding (useColumnMoveFlip), its cards riding in their cells, so they are
-// measured but not played.
+// measured but not played. Returns `remember(run)`: a busy board's run whose cards were just built (PlanCardRun) has
+// their places learnt, so a card drawn after the last change still glides on the next.
 export function usePlanCardFlip(
   root: RefObject<HTMLElement | null>,
   signature: string,
   skipId: string | null,
   hold?: () => boolean,
-): void {
+): (run: HTMLElement) => void {
   const last = useRef(new Map<string, { x: number; y: number }>());
+  const remember = (run: HTMLElement) => {
+    const body = root.current;
+    if (!body) return;
+    for (const card of run.querySelectorAll<HTMLElement>('[data-plan-card]'))
+      last.current.set(card.dataset.planCard!, placeWithin(card, body));
+  };
   useLayoutEffect(() => {
     const body = root.current;
     if (!body) return;
@@ -111,4 +118,5 @@ export function usePlanCardFlip(
       });
     }
   }, [root, signature, skipId, hold]);
+  return remember;
 }

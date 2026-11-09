@@ -15,6 +15,8 @@ import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-sto
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { markResponseOpened, resetFreshResponses } from '@/components/forms/fresh-responses';
+import { FROM_FORM_FIELD } from '@liveplanner/forms';
 
 const counts = vi.hoisted(() => ({ face: 0 }));
 vi.mock('./PlanCardFace', async (orig) => {
@@ -205,6 +207,36 @@ describe('A Tab Style pick on a busy board', () => {
     r.rerender(tree({ ...value, items: moved }));
     expect(counts.face).toBeGreaterThan(0);
     expect(counts.face).toBeLessThanOrEqual(1 + 2 * CARD_RUN_MAX);
+  }, 120_000);
+
+  // docs/specs/030-forms/forms.md "Hearing about responses": opening a response's card takes its New mark off that
+  // card alone; every card's face redrew (730 to 930 ms on 2,000 cards).
+  it('redraws only the opened response’s card as a response is opened', () => {
+    resetFreshResponses();
+    const value = plan(BUSY_CARDS);
+    const now = Date.now();
+    const all = value.items as Map<string, Item>;
+    for (const [id, card] of all)
+      if (Number(id.slice(1)) % 2 === 0)
+        all.set(id, {
+          ...card,
+          createdAt: now,
+          fields: { ...card.fields, [FROM_FORM_FIELD]: 'tab:3' },
+        });
+    render(
+      <SelectionStoreProvider store={createSelectionStore()}>
+        <PlanProvider value={value}>
+          <PlanBoardView element={element()} />
+        </PlanProvider>
+      </SelectionStoreProvider>,
+    );
+    counts.face = 0;
+    act(() => markResponseOpened(value.items.get('i2')!));
+    expect(counts.face).toBeLessThanOrEqual(1);
+    counts.face = 0;
+    // A card no form made has no mark to change.
+    act(() => markResponseOpened(value.items.get('i3')!));
+    expect(counts.face).toBe(0);
   }, 120_000);
 
   // docs/specs/026-plan/plan-board.md "Cards out of view wait": a busy board's cards sit in runs the browser skips out

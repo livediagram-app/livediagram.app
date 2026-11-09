@@ -8,6 +8,7 @@ import {
   BARE_LEG_CLOTHING,
   DEFAULT_AVATAR_CONFIG,
   parseAvatarConfig,
+  peerAvatarConfig,
   randomAvatarConfig,
   type AvatarConfig,
 } from './config';
@@ -56,6 +57,33 @@ describe('parseAvatarConfig', () => {
       ...DEFAULT_AVATAR_CONFIG,
       gender: 'female',
     });
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md "Walking renders the characters, not the canvas": a peer's costume is
+// read once per costume, not on every frame of their walk.
+describe('peerAvatarConfig', () => {
+  it('reads a costume as parseAvatarConfig does, once per costume object', () => {
+    const raw = { gender: 'female', clothing: 'hoodie', hair: 'ponytail', size: 'tall' };
+    const first = peerAvatarConfig(raw);
+    expect(first).toEqual(parseAvatarConfig(raw));
+    expect(peerAvatarConfig(raw)).toBe(first);
+  });
+
+  it('hands an equal costume in a new object the same config, and a different one its own', () => {
+    const a = peerAvatarConfig({ gender: 'male', hair: 'bun', hairColour: 'black' });
+    expect(peerAvatarConfig({ gender: 'male', hair: 'bun', hairColour: 'black' })).toBe(a);
+    expect(peerAvatarConfig({ gender: 'male', hair: 'bun', hairColour: 'ginger' })).not.toBe(a);
+    // A costume sent as stored JSON parses each time, and still lands on the shared config.
+    expect(
+      peerAvatarConfig(JSON.stringify({ gender: 'male', hair: 'bun', hairColour: 'black' })),
+    ).toBe(a);
+  });
+
+  it('gives an older peer with no costume the default, one shared object', () => {
+    const none = peerAvatarConfig(undefined);
+    expect(none).toEqual(DEFAULT_AVATAR_CONFIG);
+    expect(peerAvatarConfig(null)).toBe(none);
   });
 });
 

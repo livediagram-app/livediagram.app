@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { CountBadge, Glyph, Tooltip } from '@livehuddle/ui';
+import { useEffect, useMemo, useState } from 'react';
+import { CountBadge, Glyph, lazyPanel, Tooltip } from '@livehuddle/ui';
 import {
   CALENDAR_GRID,
   CALENDAR_HEADER,
@@ -15,14 +15,47 @@ import {
 import { calendarMonth, cursorOf, monthTitle, WEEKDAY_INITIALS } from '@/lib/calendar-month';
 import { useMinuteNow } from '@/lib/minute-clock';
 import { pieceControlProps } from '@/lib/piece-control';
-import { CalendarWallPopover, CalendarWallReader, notesByDay } from './CalendarWallPopover';
+import { loadCalendarWallPanels, loadSuggestionBoxPanels } from '@/lib/editor-deferred-code';
+import { notesByDay } from './calendar-notes';
 import { Overlay, PILL, ReaderHit } from './SocialFaces';
-import { SuggestionBoxPopover, SuggestionBoxReader } from './SuggestionBoxPopover';
 
 // The live faces of the Calendar Wall and the Suggestion Box (docs/specs/009-elements/team-pieces.md) laid over their
 // art: the calendar's month on the viewer's clock with its notes' tabs and its Calendar button, and the box's Suggest
 // button. Each opens its popover by the button, or large in the reader while walking. The month turns over on the
 // one minute clock the World Clock reads (lib/minute-clock), so no calendar keeps a timer of its own.
+//
+// The popovers and readers load the first time one is opened (docs/specs/016-platform/web-performance.md "A piece's
+// panel"): the face fetches their code as a pointer comes over its button, the button takes focus, or someone walks.
+
+const CalendarWallPopover = lazyPanel('calendar-wall', () =>
+  loadCalendarWallPanels().then((m) => m.CalendarWallPopover),
+);
+const CalendarWallReader = lazyPanel('calendar-wall', () =>
+  loadCalendarWallPanels().then((m) => m.CalendarWallReader),
+);
+const SuggestionBoxPopover = lazyPanel('suggestion-box', () =>
+  loadSuggestionBoxPanels().then((m) => m.SuggestionBoxPopover),
+);
+const SuggestionBoxReader = lazyPanel('suggestion-box', () =>
+  loadSuggestionBoxPanels().then((m) => m.SuggestionBoxReader),
+);
+
+/** Fetches the Calendar Wall's popover and reader code. Never rejects. */
+export const preloadCalendarWall = () =>
+  Promise.all([CalendarWallPopover.preload(), CalendarWallReader.preload()]);
+/** Fetches the Suggestion Box's popover and reader code. Never rejects. */
+export const preloadSuggestionBox = () =>
+  Promise.all([SuggestionBoxPopover.preload(), SuggestionBoxReader.preload()]);
+
+/** The props a face's button takes to fetch its panels' code ahead of the press; walking fetches it too. */
+function usePanelPrefetch(preload: () => Promise<unknown>, walking: boolean) {
+  // Walking opens the reader from anywhere on the face, with no hover first.
+  useEffect(() => {
+    if (walking) void preload();
+  }, [walking, preload]);
+  const prefetch = () => void preload();
+  return { onPointerEnter: prefetch, onFocus: prefetch };
+}
 
 /** Whether a kind has a team piece's live face over its art. */
 export function hasTeamFace(kind: string): boolean {
@@ -54,6 +87,7 @@ function CalendarWallFace({ element, walking }: { element: ShapeElement; walking
   const cells = useMemo(() => (today ? calendarMonth(cursorOf(today), today) : []), [today]);
   const byDay = useMemo(() => notesByDay(element.noticeNotes), [element.noticeNotes]);
   const count = element.noticeNotes?.length ?? 0;
+  const prefetch = usePanelPrefetch(preloadCalendarWall, walking);
   const art = OFFICE_ART['calendar-wall'].front;
   const { x, y, w, h, cols, rows } = CALENDAR_GRID;
   const cw = w / cols;
@@ -154,6 +188,7 @@ function CalendarWallFace({ element, walking }: { element: ShapeElement; walking
           aria-label={`Open Calendar, ${count} ${count === 1 ? 'note' : 'notes'}`}
           aria-expanded={anchor !== null}
           {...pieceControlProps}
+          {...prefetch}
           onClick={(e) => {
             e.stopPropagation();
             if (walking) {
@@ -191,6 +226,7 @@ function CalendarGlyph() {
 function SuggestionBoxFace({ element, walking }: { element: ShapeElement; walking: boolean }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [reading, setReading] = useState(false);
+  const prefetch = usePanelPrefetch(preloadSuggestionBox, walking);
   return (
     <Overlay element={element}>
       {walking ? (
@@ -203,6 +239,7 @@ function SuggestionBoxFace({ element, walking }: { element: ShapeElement; walkin
           aria-label="Open the Suggestion Box"
           aria-expanded={anchor !== null}
           {...pieceControlProps}
+          {...prefetch}
           onClick={(e) => {
             e.stopPropagation();
             if (walking) {

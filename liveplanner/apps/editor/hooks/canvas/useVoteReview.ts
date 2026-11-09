@@ -8,6 +8,7 @@ import {
   type Tab,
 } from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
+import { cardOrRunSelector } from '@/hooks/plan/useCardRunReveal';
 
 // Vote-results review (docs/specs/012-collaboration/session-tools.md). Once a vote's results are revealed, the
 // HOST walks the voted elements one at a time, most dots first: the
@@ -78,12 +79,12 @@ export function useVoteReview({
   // reads the elements as an effect event.
   const lastCentred = useRef<string | null>(null);
   const centreOn = useEffectEvent((id: string) => {
-    // A card centres its card element, else the board drawing it (found by the card on screen).
+    // A card centres its card element, else the board drawing it (found by the card, or a
+    // busy board's far run naming it).
     const itemId = itemIdOfVoteKey(id);
     const boardId = itemId
-      ? document
-          .querySelector(`[data-plan-card="${CSS.escape(itemId)}"]`)
-          ?.closest<HTMLElement>('[data-plan-board]')?.dataset.planBoard
+      ? document.querySelector(cardOrRunSelector(itemId))?.closest<HTMLElement>('[data-plan-board]')
+          ?.dataset.planBoard
       : undefined;
     const el =
       activeTab.elements.find((e) => voteKeyOf(e) === id && isBoxed(e)) ??

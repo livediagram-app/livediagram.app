@@ -108,6 +108,8 @@ export {
 // icons' contract (icons/), shared by the editor's palette and the marketing site's mock of it.
 export * from '@liveworkspace/ui/palette-tab-icons';
 export * from '@liveworkspace/ui/palette-group-icons';
+// A panel from its own chunk, preloaded by its opener (the pieces' panels, web-performance.md "A piece's panel").
+export { lazyPanel, type LazyPanel } from '@liveworkspace/ui/lazy-panel';
 // Everything above is this product's own. The design system every liveworkspace app shares (buttons,
 // fields, dialogs, menus, hints, the optical primitives and the hooks they use) is @liveworkspace/ui.
 export * from '@liveworkspace/ui';
