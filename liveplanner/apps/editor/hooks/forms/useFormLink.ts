@@ -3,7 +3,7 @@
 // A Form tab's link as its page shows it (docs/specs/030-forms/forms.md "Publishing and the form link", "Hearing
 // about responses"): read when the tab opens (which marks its responses seen for this reader), polled while it stays
 // open so the count moves as responses arrive, and changed by Publish, the Accepting Responses switch and Delete Link.
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormLinkResponse } from '@liveplanner/api-schema';
 import {
   apiDeleteFormLink,
@@ -66,12 +66,17 @@ export function useFormLink(input: {
   const status: FormLinkState['status'] = enabled && projectId ? loadStatus : 'offline';
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Counts the link's changes that landed (Publish, the switch, Delete Link): a read that began before one landed may
+  // answer the link as it was, so it is dropped rather than flipping the switch back.
+  const changes = useRef(0);
 
   // A reread (the poll, a reload): the count as it is now.
   const read = useCallback(async () => {
     if (!enabled || !projectId) return;
+    const at = changes.current;
     try {
       const next = await apiFormLink(ownerId, projectId, tabId, share);
+      if (at !== changes.current) return;
       setLink(next);
       setStatus('ready');
     } catch {
@@ -81,12 +86,14 @@ export function useFormLink(input: {
 
   useEffect(() => {
     if (!enabled || !projectId) return;
+    const at = changes.current;
     // Opening the tab marks what is here seen; a reader elsewhere only reads.
     (markSeen
       ? apiMarkFormSeen(ownerId, projectId, tabId, share)
       : apiFormLink(ownerId, projectId, tabId, share)
     ).then(
       (next) => {
+        if (at !== changes.current) return;
         setLink(next);
         setStatus('ready');
       },
@@ -103,7 +110,10 @@ export function useFormLink(input: {
       setBusy(true);
       setError(null);
       try {
-        setLink(await call());
+        const next = await call();
+        changes.current += 1;
+        setLink(next);
+        setStatus('ready');
         return true;
       } catch (e) {
         const code = e instanceof ApiError ? e.code : undefined;

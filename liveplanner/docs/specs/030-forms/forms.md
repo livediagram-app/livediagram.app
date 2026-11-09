@@ -631,7 +631,9 @@ board settings, for switching back.
   On or at its Response Limit reads **Closed**, as its link is, and is not locked), the count ("14 responses · 3 new",
   new to this reader), which opens the destination's tab (its tooltip names it), and, for an Editor while the form has
   any problem, **Problems with this Form** with a warning triangle to the right of the count, which opens Share Form
-  where they are listed. The count is read when the tab opens and every 30 seconds while it is shown.
+  where they are listed. The count is read when the tab opens and every 30 seconds while it is shown; a read still
+  in flight when the person publishes, switches Accepting Responses or deletes the link is dropped, so the state
+  they set never flips back to what that read saw.
 - **Not Taking Responses**: for an Editor, a form that has been published but takes no responses now shows a red
   (danger) warning right after the count, before Problems with this Form (amber), so a paused form is never missed:
   the warning triangle and **Not Taking Responses**, a button whose tooltip says why and what it opens. The reasons,
