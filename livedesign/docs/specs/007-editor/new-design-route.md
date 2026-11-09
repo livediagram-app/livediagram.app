@@ -87,7 +87,8 @@ adding another.
 - **Owner opens a design:** an Explorer row opens `/design/<id>`; the create never loads.
 - **Visitor follows a share link:** `/design/shared?s=<code>` hydrates the editor's share branch; the visitor's
   name prompt (`IdentityPrompt`, while `identityPromptOpen`) is the editor's, since it is about the visitor's
-  session, not about creating a design.
+  session, not about creating a design. It says others will see the name on the visitor's cursor and comments; a
+  Viewer, who never comments, is told only its cursor.
 - **Empty tab:** an Editor sees the template start in the middle of the canvas
   ([Template start](start-diagramming.md)); a Participant or Viewer sees the empty canvas, since the start is
   never offered to a read-only session (`templateStartMode`).
