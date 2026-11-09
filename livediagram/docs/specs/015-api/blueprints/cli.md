@@ -296,7 +296,9 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
 - **CLI27a** Before writing, `pull` reads this document's file at the path it would write; when `isLocallyChanged`
   (`apps/cli/src/link/sync-state.ts`, the test `sync` uses for `ahead`) finds a tab hashing other than its pulled
   record, or a tab added or gone, nothing is written and the pull exits 1 with `unpushed_changes`. `--force` skips
-  the check and overwrites.
+  the check and overwrites. The hint names `push` only when push would send something (a tab whose elements hash
+  differs, or one without a record); a file changed only where push sends nothing (a tab's settings, a tab gone,
+  CLI28) says so and names `--force` alone.
 - `push <file>`: parses the pull file (`parsePullFile`), refuses another host than the profile's (exit 2); for each
   tab whose elements hash (`tabHashes`) differs from the pulled one, submits `replace { elements }` with
   `base { rev }` (the tab's pulled revision) and `strict: true`; a tab missing from the document, or from `livediagramSync`, is created

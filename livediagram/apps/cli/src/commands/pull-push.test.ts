@@ -213,6 +213,24 @@ describe('pull', () => {
     expect(first.io.fileMap.get(path)!.data).not.toContain('"API"');
   });
 
+  // CLI27a, CLI28: push never sends a tab's name, theme or background, nor a removal, so a file changed only there
+  // is refused naming --force alone; naming push sent the person to "nothing to push" and back.
+  it('names only --force for changes push does not send', async () => {
+    const h = host();
+    const first = await cli(['pull', DOC], h.route);
+    const path = '/work/shop-checkout.livediagram.json';
+    edit(first.io, path, (f) => {
+      f.document.tabs[0]!.name = 'Renamed here';
+    });
+    const pushed = await cli(['push', path], h.route, first.io);
+    expect(pushed.out).toContain('nothing to push');
+    const refused = await cli(['pull', DOC], h.route, first.io);
+    expect(refused.code).toBe(1);
+    expect(refused.err).toContain('which push does not send; not overwritten');
+    expect(refused.err).toContain(`hint: drop those changes: livediagram pull "${DOC}" --force`);
+    expect(refused.err).not.toContain('livediagram push');
+  });
+
   it('pulls through a share link, sending its code', async () => {
     const { code, io } = await cli(['pull', `${HOST}/document/shared?s=CODE1234`], host().route);
     expect(code).toBe(0);
