@@ -14,18 +14,10 @@ import {
   insertSuggestion,
   listSuggestions,
 } from '../db';
+import { badRequest, conflict, json, methodNotAllowed, noContent, notFound } from '../responses';
 import {
-  badRequest,
-  conflict,
-  forbidden,
-  json,
-  methodNotAllowed,
-  noContent,
-  notFound,
-} from '../responses';
-import {
-  deniedParticipate,
   deniedEdit,
+  deniedParticipate,
   gateEdit,
   gateParticipate,
   missingDocument,
