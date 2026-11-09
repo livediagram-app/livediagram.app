@@ -26,6 +26,8 @@ rev? }`: the pixel size, the layer stack ([Photo layers](photo-layers.md)), the 
 - **A pixel layer's pixels**: `pixels: { tiles: TileMap, source?: { blob, width, height } }`; a mask's the same,
   its tiles grey (one channel used). A tile entry `""` is a cleared tile (transparent, or for a mask black), over
   the source. A tile map holds at most 40 million pixels' worth of places (a 512 tile is 262,144 pixels).
+  A source that arrives late (a slow fetch or decode) is drawn only while the layer still names it, and only
+  where its tile map still has no entry: an earlier source finishing after a newer one never covers it.
 - **Tiles are PNGs** (lossless, 8 bits a channel, RGBA; a mask's grey), sources are the picture as opened (PNG,
   JPEG or WebP, its EXIF already stripped in the browser), previews WebP at quality 85.
 - **One decoded tile, many places**: the browser keeps one decoded copy per blob id, so tiles that read the same (every

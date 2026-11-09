@@ -83,3 +83,50 @@ describe('a peer’s change to the layer in hand', () => {
     expect(pixel(h, PHOTO_TILE + 1, 0)).toEqual([0, 0, 0, 0]);
   });
 });
+
+// docs/specs/031-photo/photo-pages.md "Collaboration": a layer's source picture decoded late (a slow
+// fetch) is placed only while the photo still names it, and never over a tile the photo now holds.
+describe('a source picture that loads late', () => {
+  type Pic = { width: number; height: number; data: Uint8ClampedArray };
+  const sourced = (blob: string, tiles: Record<string, string> = {}): Photo =>
+    photoOf(PHOTO_TILE, PHOTO_TILE, [
+      pixelLayer('a', {
+        pixels: { tiles, source: { blob, width: PHOTO_TILE, height: PHOTO_TILE } },
+      }),
+    ]);
+  const solidPic = (rgba: number[]): Pic => {
+    const data = new Uint8ClampedArray(PHOTO_TILE * PHOTO_TILE * 4);
+    for (let i = 0; i < data.length; i += 4) data.set(rgba, i);
+    return { width: PHOTO_TILE, height: PHOTO_TILE, data };
+  };
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+
+  it('never overwrites the newer source it was replaced by', async () => {
+    const h = harness(photoOf(PHOTO_TILE, PHOTO_TILE));
+    const waiting = new Map<string, (pic: Pic) => void>();
+    h.store.source = (_tab, src) =>
+      new Promise<Pic>((resolve) => waiting.set(src.blob, resolve)) as never;
+    h.s.setPhoto(sourced('old'));
+    h.s.setPhoto(sourced('new'));
+    waiting.get('new')!(solidPic(GREEN));
+    await tick();
+    expect(pixel(h, 0, 0)).toEqual(GREEN);
+    // The earlier source's slow decode finishes last.
+    waiting.get('old')!(solidPic(RED));
+    await tick();
+    expect(pixel(h, 0, 0)).toEqual(GREEN);
+    expect(h.s.loading).toBe(false);
+  });
+
+  it('never fills a tile the photo has since made explicit', async () => {
+    const h = harness(photoOf(PHOTO_TILE, PHOTO_TILE));
+    let finish: (pic: Pic) => void = () => {};
+    h.store.source = () => new Promise<Pic>((resolve) => (finish = resolve)) as never;
+    h.s.setPhoto(sourced('pic'));
+    greenTile(h, 'painted');
+    h.s.setPhoto(sourced('pic', { [LEFT]: 'painted' }));
+    finish(solidPic(RED));
+    await tick();
+    expect(pixel(h, 0, 0)).toEqual(GREEN);
+  });
+});
