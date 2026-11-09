@@ -155,6 +155,7 @@ export function ComponentMenuSection({
                 onSet={(elementId, field, value) =>
                   componentActions.setOverride(target.id, elementId, field, value)
                 }
+                onReset={(elementId) => componentActions.resetOverrides(target.id, elementId)}
               />
             </>
           ) : null}
@@ -212,10 +213,13 @@ export function ComponentOverrides({
   instance,
   main,
   onSet,
+  onReset,
 }: {
   instance: InstanceElement;
   main: DesignComponent;
   onSet: (elementId: string, field: keyof ComponentOverride, value: string | undefined) => void;
+  // One element's overrides back to the main's, as one edit.
+  onReset: (elementId: string) => void;
 }) {
   const targets = componentOverrideTargets(main);
   if (targets.length === 0) return null;
@@ -231,6 +235,7 @@ export function ComponentOverrides({
             target={t}
             override={instance.componentOverrides?.[t.elementId]}
             onSet={(field, value) => onSet(t.elementId, field, value)}
+            onReset={() => onReset(t.elementId)}
           />
         ))}
       </ul>
@@ -242,10 +247,12 @@ function OverrideRow({
   target,
   override,
   onSet,
+  onReset,
 }: {
   target: OverrideTarget;
   override: ComponentOverride | undefined;
   onSet: (field: keyof ComponentOverride, value: string | undefined) => void;
+  onReset: () => void;
 }) {
   const main = target.main as Element & Partial<Record<keyof ComponentOverride, string>>;
   const changed = override && Object.keys(override).length > 0;
@@ -263,10 +270,7 @@ function OverrideRow({
             <button
               type="button"
               aria-label={`Reset ${target.name}`}
-              onClick={() => {
-                for (const f of Object.keys(override) as (keyof ComponentOverride)[])
-                  onSet(f, undefined);
-              }}
+              onClick={onReset}
               className="cursor-pointer rounded p-0.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
               <ResetIcon />

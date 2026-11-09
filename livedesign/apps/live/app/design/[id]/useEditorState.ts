@@ -204,6 +204,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     redo: tabRedo,
     // The history's place, which a photo page's History reads (docs/specs/031-photo/photo-pages.md).
     depth: historyDepth,
+    branch: historyBranch,
   } = useDesignHistory(initialTabs);
   const canHistoryUndo = canTabUndo;
   const canHistoryRedo = canTabRedo;
@@ -1868,6 +1869,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     undo: undoHistory,
     redo: redoHistory,
     depth: historyDepth,
+    branch: historyBranch,
     visibleRect: getViewportCanvasRect,
     viewport,
     scope: imageContext ?? null,

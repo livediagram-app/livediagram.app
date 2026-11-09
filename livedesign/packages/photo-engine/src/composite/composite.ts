@@ -5,6 +5,7 @@ import { adjustmentForm, applyForm, type AdjustmentForm } from '../adjust/catalo
 import { blendChannel, blendRgb, blendSpan, isSeparable } from '../colour/blend';
 import { hexToBytes } from '../colour/colour';
 import { fillGradientLine, renderGradient } from '../paint/gradient';
+import { maskOffsetOf } from '../model/stack';
 import type { BlendMode, PhotoLayer, TextLayer } from '../model/types';
 import { createRaster, cropRaster, solidRaster, type Raster, type Rect } from '../raster/raster';
 import type { TiledRaster } from '../raster/tiles';
@@ -87,7 +88,7 @@ class Compositor {
   private maskOver(l: PhotoLayer, rect: Rect): Uint8Array | undefined {
     if (!l.mask || l.mask.enabled === false) return undefined;
     const tiles = this.pixels.mask(l.id);
-    const at = l.mask.linked === false ? (l.mask.offset ?? { x: 0, y: 0 }) : offsetOf(l);
+    const at = maskOffsetOf(l);
     const r = { x: rect.x - at.x, y: rect.y - at.y, width: rect.width, height: rect.height };
     if (!tiles) {
       // A mask whose pixels are not loaded reads as showing everything.

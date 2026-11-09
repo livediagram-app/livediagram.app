@@ -16,6 +16,7 @@ import {
   rotate as rotateMatrix,
   rotateQuarter,
   chain,
+  maskOffsetOf,
   translate,
   TiledRaster,
   transformRaster,
@@ -95,7 +96,7 @@ function rework(
       targets.push({ layerId: l.id, target: 'layer', dropSource: true });
     }
     if (l.mask) {
-      const at = l.mask.linked === false ? (l.mask.offset ?? { x: 0, y: 0 }) : offsetOf(l);
+      const at = maskOffsetOf(l);
       // A mask's white beyond its tiles: worked as a grey picture of its tiles' extent.
       const p = picture(s.raster(l.id, 'mask'), at);
       const next = p ? map(p, 'mask', l.id) : null;
@@ -107,9 +108,10 @@ function rework(
           const a = d[i + 3]!;
           if (a < 255) d[i] = (d[i]! * a + 255 * (255 - a)) / 255;
         }
-        // Written relative to where the layer now sits.
+        // Written relative to where it now sits: a linked mask where its layer now sits, an
+        // unlinked one at its own offset, which the rework keeps (drawn there, as the composite does).
         const base =
-          l.mask.linked === false ? { x: 0, y: 0 } : (offsets.get(l.id) ?? { x: 0, y: 0 });
+          l.mask.linked === false ? maskOffsetOf(l) : (offsets.get(l.id) ?? { x: 0, y: 0 });
         t.write(next.raster, next.x - base.x, next.y - base.y);
       }
       s.replacePixels(l.id, 'mask', t);

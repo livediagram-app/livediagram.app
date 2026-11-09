@@ -23,8 +23,18 @@ import { remapElementRefs as sharedRemapElementRefs } from '@liveworkspace/model
 // about that element, and an assigned action is work handed to a person under its own id (docs/specs/012-collaboration/assigned-actions.md
 // "A copy doesn't carry the action"): a duplicate under the same id is a second action nobody assigned, which the
 // timeline never sees added. A Sheet's cell threads go the same way.
+// A component edit session's marks (docs/specs/009-elements/components.md "Editing the main: the edit session") are
+// the original's too: a copy still naming the member it came from derived a main with two elements under one id
+// (and was deleted by the next session's Done), and a copy of an instance mid-session stayed hidden for good. A copy
+// made during the session joins it as a new member (stampSessionMembers); one made after is a plain element.
 // The clipboard strips the same list on the way out (stripIdentity in apps/live).
-export const ORIGINAL_ONLY_FIELDS = ['commentThread', 'action', 'actions'] as const;
+export const ORIGINAL_ONLY_FIELDS = [
+  'commentThread',
+  'action',
+  'actions',
+  'componentMember',
+  'componentEditBy',
+] as const;
 
 export function freshCopyFields(el: Element): {
   rotation?: number;
@@ -32,6 +42,8 @@ export function freshCopyFields(el: Element): {
   commentThread?: undefined;
   action?: undefined;
   actions?: undefined;
+  componentMember?: undefined;
+  componentEditBy?: undefined;
 } {
   const fresh: { addedBy?: undefined } & {
     [K in (typeof ORIGINAL_ONLY_FIELDS)[number]]?: undefined;
@@ -153,7 +165,7 @@ export function duplicateElements(
     }
     // Spread the source so styling (stroke, ends, dash, arrowhead, curve,
     // label) survives the copy; only the id + endpoints are replaced.
-    newArrows.push({ ...el, id: idMap.get(el.id)!, from, to });
+    newArrows.push({ ...el, ...freshCopyFields(el), id: idMap.get(el.id)!, from, to });
   }
 
   // Element-to-element references on the BOXED copies, rewired last because

@@ -45,6 +45,7 @@ function setup({ canEdit = true, addPhotoPage = true } = {}) {
         undo: vi.fn(),
         redo: vi.fn(),
         depth: 0,
+        branch: 0,
         visibleRect: () => null,
         viewport: createViewportStore(1),
         scope: null,

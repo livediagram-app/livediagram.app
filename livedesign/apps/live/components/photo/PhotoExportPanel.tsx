@@ -101,19 +101,24 @@ export function PhotoExportPanel({
         return;
       }
       const { session, done } = await loadedSession(tab, page.id, store, live?.session ?? null);
-      const flat = format === 'png' || format === 'jpeg' || format === 'webp';
-      const elements =
-        flat && withElements
-          ? await elementsImage(tab, page, await loadTabImages(tab, scope).catch(() => undefined))
-          : null;
-      const file = await photoFile(session, `${designName || 'Photo'} - ${page.name ?? 'Photo'}`, {
-        format,
-        quality,
-        lossless,
-        matte: jpegMatte(matte, photoTools.get().background),
-        elements,
-      });
-      done();
+      let file: Awaited<ReturnType<typeof photoFile>>;
+      try {
+        const flat = format === 'png' || format === 'jpeg' || format === 'webp';
+        const elements =
+          flat && withElements
+            ? await elementsImage(tab, page, await loadTabImages(tab, scope).catch(() => undefined))
+            : null;
+        file = await photoFile(session, `${designName || 'Photo'} - ${page.name ?? 'Photo'}`, {
+          format,
+          quality,
+          lossless,
+          matte: jpegMatte(matte, photoTools.get().background),
+          elements,
+        });
+      } finally {
+        // A session made for a page out of focus is let go even when the export fails, as All Sizes does.
+        done();
+      }
       download(file.blob, file.name);
       track('Document', 'Exported', `Photo${format === 'layers' ? 'Layers' : pascal(format)}`);
       onDone();

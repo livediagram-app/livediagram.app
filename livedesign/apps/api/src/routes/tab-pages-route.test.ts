@@ -184,4 +184,21 @@ describe('the room ops', () => {
     ]);
     expect(pagesRoomOps(after, after)).toEqual([]);
   });
+
+  // An open editor drops `photos` from a tab-meta: a photo page an agent added or duplicated reached it
+  // blank, and its next save wrote the photo away.
+  it('sends the photo of a photo page added, after the pages', () => {
+    const photo = { width: 640, height: 480, layers: [] };
+    const before = { id: 't', name: 'T', elements: [], pages: [] };
+    const after = {
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [{ id: 'p2', kind: 'photo' }],
+      photos: { p2: photo },
+    } as never;
+    const ops = pagesRoomOps(before, after);
+    expect(ops.map((o) => o.kind)).toEqual(['tab-meta', 'photo']);
+    expect(ops[1]).toMatchObject({ kind: 'photo', tabId: 't', pageId: 'p2' });
+  });
 });

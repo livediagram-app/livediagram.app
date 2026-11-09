@@ -197,6 +197,19 @@ export async function gateEdit(
   return holds(ctx, designId, 'edit', tabId);
 }
 
+/** The level an agent's presence entry shows (docs/specs/024-agents/blueprints/DEFAULTS.md PR27): the one the gates
+ *  resolve for its token on the design and tab, Participant included; a read-only token is a Viewer. */
+export function agentLevel(
+  ctx: RouteContext,
+  designId: string,
+  tabId: string,
+  readOnly: boolean,
+): ShareRole {
+  if (readOnly) return 'view';
+  if (holds(ctx, designId, 'edit', tabId)) return 'edit';
+  return holds(ctx, designId, 'participate', tabId) ? 'participate' : 'view';
+}
+
 // The caller's grant on a design, scope included, for the doors that narrow
 // what they return to a scoped visitor's tab rather than refuse them
 // (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access. A Community post's link answers null

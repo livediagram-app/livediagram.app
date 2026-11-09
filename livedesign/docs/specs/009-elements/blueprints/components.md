@@ -112,6 +112,9 @@ never reads past the main's elements.
 - `stampSessionMembers(prev, next, instanceId)`: every element in `next` absent from `prev`, allowed in a component
   and unmarked, gets `componentMember: { instanceId, elementId: its id }`. Runs at the commit choke point
   (`commitTabs`) on the active tab while it has one session.
+- Copies: `componentMember` and `componentEditBy` are in `ORIGINAL_ONLY_FIELDS` (`duplicate.ts`), so a duplicate,
+  an arrow's copy and the clipboard (`stripIdentity`) drop both; `stampSessionMembers` then marks a copy made during
+  the session as a new member under its own id.
 - `deriveComponentFromSession(elements, instanceId, main, now)`: members in array order; each element's id becomes
   `componentMember.elementId`; positions map back by `((x - ix) / sx, (y - iy) / sy)`, sizes by `1 / s`; pinned ends
   to members re-target their `elementId`, to anything else become free; the frame is kept. Returns `null` with no

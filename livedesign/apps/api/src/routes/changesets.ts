@@ -28,6 +28,7 @@ import { submitChangeset, type SubmitResult } from '../changesets/submit';
 import type { Author } from '../changesets/write';
 import type { DesignDTO } from '../types';
 import {
+  agentLevel,
   deniedEdit,
   gateEdit,
   gateGrant,
@@ -215,11 +216,9 @@ export function refreshAfterRead(
   const designId = design.id;
   ctx.waitUntil(
     (async () => {
-      const [author, personTag, edits] = await Promise.all([
+      const [author, personTag] = await Promise.all([
         authorOf(ctx, owner),
         personTagFor(designId, owner),
-        // The level the gates resolve for the token, as an explicit set's (PR27).
-        token.readOnly ? false : gateEdit(ctx, designId, design.ownerId, design.teamId, tabId),
       ]);
       await refreshAgentPresence(ctx.env, {
         designId,
@@ -229,7 +228,8 @@ export function refreshAfterRead(
         shareCode: grantOn(ctx, designId)?.shareCode ?? null,
         name: author.name,
         color: author.color,
-        role: edits ? 'edit' : 'view',
+        // The level the gates resolve for the token, as an explicit set's (PR27).
+        role: agentLevel(ctx, designId, tabId, !!token.readOnly),
       });
     })().catch((err: unknown) =>
       console.warn('[agent-presence] read stamp failed', { designId, tabId, error: String(err) }),
