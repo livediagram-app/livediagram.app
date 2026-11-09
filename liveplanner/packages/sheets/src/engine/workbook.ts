@@ -74,6 +74,8 @@ export class Workbook {
   // Formulas that may spill, per sheet, and whether all of them have been worked out.
   private readonly spillers = new Map<string, Set<string>>();
   private readonly spillersReady = new Set<string>();
+  // The formulas that call a card function, by cell id.
+  private readonly cardFormulas = new Set<string>();
   private readonly extents = new Map<string, { rows: number; cols: number }>();
   private readonly ctxs = new Map<string, SheetsCtx>();
   private readonly computing = new Set<string>();
@@ -124,7 +126,7 @@ export class Workbook {
     const changed: string[] = [];
     for (const key of keys) {
       const id = `${sheet.id}|${key}`;
-      this.indexSpiller(sheet, key);
+      this.indexCell(sheet, key);
       changed.push(id);
     }
     this.invalidate([...changed, ...this.volatileCells]);
@@ -305,16 +307,10 @@ export class Workbook {
     return e;
   }
 
-  // Whether any formula on the tab reads Plan cards (so the editor loads the items).
+  // Whether any formula on the tab reads Plan cards (so the editor loads the items). Kept as cells change (indexCell),
+  // since every drawn Sheet asks on every change and a walk of every formula cost milliseconds on a big sheet.
   usesCards(): boolean {
-    for (const sheet of this.sheets.values())
-      for (const cell of sheet.cells.values()) {
-        const f = cell.input && 'f' in cell.input ? cell.input.f : null;
-        if (!f) continue;
-        const ast = storedAst(f);
-        if (ast && [...callsOf(ast)].some((n) => CARD_FUNCTION_NAMES.has(n))) return true;
-      }
-    return false;
+    return this.cardFormulas.size > 0;
   }
 
   ctxFor(sheetId: string): SheetsCtx {
@@ -635,15 +631,19 @@ export class Workbook {
 
   private reindexAll(): void {
     this.spillers.clear();
+    this.cardFormulas.clear();
     for (const sheet of this.sheets.values())
-      for (const key of sheet.cells.keys()) this.indexSpiller(sheet, key);
+      for (const key of sheet.cells.keys()) this.indexCell(sheet, key);
   }
 
-  private indexSpiller(sheet: Sheet, key: string): void {
+  // What the workbook keeps about one cell's formula: whether it may spill, and whether it reads Plan cards.
+  private indexCell(sheet: Sheet, key: string): void {
     const id = `${sheet.id}|${key}`;
     let set = this.spillers.get(sheet.id);
     const input = sheet.cells.get(key)?.input;
     const ast = input && 'f' in input ? storedAst(input.f) : null;
+    if (ast && callsCards(ast)) this.cardFormulas.add(id);
+    else this.cardFormulas.delete(id);
     if (input && 'f' in input && ast && maySpill(ast, input.f.r)) {
       if (!set) {
         set = new Set();
@@ -676,6 +676,11 @@ export class Workbook {
     });
     return names.join(' → ');
   }
+}
+
+function callsCards(ast: Node): boolean {
+  for (const name of callsOf(ast)) if (CARD_FUNCTION_NAMES.has(name)) return true;
+  return false;
 }
 
 function scalarCell(v: Value): Scalar {

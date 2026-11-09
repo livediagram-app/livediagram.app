@@ -264,6 +264,15 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   parse-and-paint at 4x from about 210 ms to about 100 ms. `svgFontDefs` stays left out.
 - Tests: `Minimap.test.tsx` (one `<image>`, no board nodes in the page; a standalone picture).
 
+### Peers' viewports
+
+- `usePresenceState` holds every peer's last `viewport` op in a `createStateStore` store
+  (`@liveworkspace/workbench/lib/state-store`), and hands the room its `set` in place of a state
+  setter. `useFollowMe` reads the followed peer's entry through `useStoreSlice`, so a viewport from
+  anyone else selects the same value and renders nothing; the Focus Here press reads the whole map
+  from the store when it runs. Held by `useFollowMe.test.tsx` ("renders for the followed peer's
+  viewport alone"): a hundred viewports from a peer not followed, no render.
+
 ### At rest
 
 - The still-canvas rule is held in a real browser by `e2e/canvas-still.spec.ts`: on a seeded board,

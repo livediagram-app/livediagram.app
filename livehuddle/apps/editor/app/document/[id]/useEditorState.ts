@@ -1095,7 +1095,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
           focusPressOutcome({
             sent,
             peerIds: livePresence.map((p) => p.id),
-            viewports: remoteViewports,
+            viewports: remoteViewports.get(),
             tabId: activeId,
             at,
           })

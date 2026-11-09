@@ -3,6 +3,7 @@ import {
   applySheetWrite,
   cellKey,
   emptyLayout,
+  readTypedInput,
   sheetFromJson,
   sheetToJson,
   type Sheet,
@@ -154,6 +155,55 @@ describe('the sheet store client', () => {
     expect(value(0, 0)).toBe(4);
     await s.settle();
     expect(srv.sheet.rev).toBe(1);
+  });
+  // Blueprint sheet-store.md "Client": the answer to our own write changes nothing we show, so what reads the cell is
+  // worked out when the write is made and not again when it lands. Before, every edit worked its dependents out twice.
+  it('works a dependent out once per edit, not again when the answer lands', async () => {
+    const wb = s.workbook('t1');
+    const formula = (text: string) => {
+      const read = readTypedInput(text, 'en-GB', wb.ctxFor('sheet0001'));
+      if (read.kind !== 'value') throw new Error(text);
+      return read.input;
+    };
+    s.write('sheet0001', {
+      kind: 'cells',
+      cells: [
+        { r: rows[0]!, c: cols[0]!, i: { n: 1 } },
+        { r: rows[0]!, c: cols[1]!, i: formula('=A1*2') },
+        { r: rows[0]!, c: cols[2]!, i: formula('=B1+1') },
+      ],
+    });
+    await s.settle();
+    for (const op of srv.drain()) s.receive(op);
+    expect(value(0, 2)).toBe(3);
+    // A formula worked out, not a kept value read back.
+    const internals = wb as unknown as {
+      compute: (id: string) => unknown;
+      vals: Map<string, unknown>;
+    };
+    const compute = internals.compute.bind(wb);
+    let worked = 0;
+    internals.compute = (id) => {
+      if (!internals.vals.has(id)) worked++;
+      return compute(id);
+    };
+    const workedOut = () => worked;
+    srv.hold(true);
+    s.write('sheet0001', set(0, 0, 5));
+    expect([value(0, 1), value(0, 2)]).toEqual([10, 11]);
+    const onEdit = workedOut();
+    expect(onEdit).toBe(2);
+    srv.hold(false);
+    srv.release();
+    await s.settle();
+    for (const op of srv.drain()) s.receive(op);
+    expect([value(0, 1), value(0, 2)]).toEqual([10, 11]);
+    // The answer and the room's echo: nothing worked out again.
+    expect(workedOut()).toBe(onEdit);
+    // Someone else changing A1 still reaches B1 and C1.
+    s.receive(srv.external(set(0, 0, 7)));
+    expect([value(0, 1), value(0, 2)]).toEqual([14, 15]);
+    expect(workedOut()).toBe(onEdit + 2);
   });
   it('shows a write at once, sends writes in order, and converges with others', async () => {
     srv.hold(true);

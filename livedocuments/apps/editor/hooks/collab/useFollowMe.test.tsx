@@ -2,7 +2,11 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
 import { useFollowMe, type RemoteViewport } from './useFollowMe';
+
+const peers = (entries: [string, RemoteViewport][]) =>
+  createStateStore(new Map<string, RemoteViewport>(entries));
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -11,9 +15,7 @@ type Args = Parameters<typeof useFollowMe>[0];
 function setup(overrides: Partial<Args> = {}) {
   const viewport = createViewportStore(1);
   const args: Args = {
-    remoteViewports: new Map<string, RemoteViewport>([
-      ['p1', { tabId: 'tab1', pan: { x: 10, y: 20 }, zoom: 2 }],
-    ]),
+    remoteViewports: peers([['p1', { tabId: 'tab1', pan: { x: 10, y: 20 }, zoom: 2 }]]),
     livePresenceIds: ['p1'],
     activeId: 'tab1',
     viewport,
@@ -38,10 +40,8 @@ describe('useFollowMe', () => {
   it('follows the peer as they move on', () => {
     const { hook, args, viewport } = setup();
     act(() => hook.result.current.startFollowing('p1'));
-    const moved = new Map<string, RemoteViewport>([
-      ['p1', { tabId: 'tab1', pan: { x: 40, y: 0 }, zoom: 3 }],
-    ]);
-    hook.rerender({ ...args, remoteViewports: moved });
+    const moved = peers([['p1', { tabId: 'tab1', pan: { x: 40, y: 0 }, zoom: 3 }]]);
+    act(() => (args.remoteViewports as ReturnType<typeof peers>).set(moved.get()));
     expect(viewport.get()).toEqual({ zoom: 3, offset: { x: 40, y: 0 } });
     expect(hook.result.current.followingId).toBe('p1');
   });
@@ -93,5 +93,48 @@ describe('useFollowMe', () => {
     act(() => hook.result.current.stopFollowing());
     expect(sendFollow).toHaveBeenLastCalledWith(null);
     expect(sendFollow).toHaveBeenCalledTimes(2);
+  });
+
+  // docs/specs/008-canvas/canvas-performance.md: every peer who pans sends ten viewports a second. Before, each one was
+  // editor state and rendered the whole editor; now a pan by someone not followed renders nothing, and the followed
+  // peer's renders only the follow.
+  it("renders for the followed peer's viewport alone, never for another peer's", () => {
+    const store = peers([
+      ['p1', { tabId: 'tab1', pan: { x: 10, y: 20 }, zoom: 2 }],
+      ['p2', { tabId: 'tab1', pan: { x: 0, y: 0 }, zoom: 1 }],
+    ]);
+    let renders = 0;
+    const viewport = createViewportStore(1);
+    const hook = renderHook(() => {
+      renders++;
+      return useFollowMe({
+        remoteViewports: store,
+        livePresenceIds: ['p1', 'p2'],
+        activeId: 'tab1',
+        viewport,
+        onFollowTab: vi.fn(),
+        onNotice: vi.fn(),
+      });
+    });
+    const panP2 = (x: number) =>
+      store.set((prev) => new Map(prev).set('p2', { tabId: 'tab1', pan: { x, y: 0 }, zoom: 1 }));
+    const before = renders;
+    act(() => {
+      for (let x = 1; x <= 100; x++) panP2(x);
+    });
+    // Not following anyone: a hundred viewports from p2, no render.
+    expect(renders).toBe(before);
+    act(() => hook.result.current.startFollowing('p1'));
+    const following = renders;
+    for (let x = 1; x <= 100; x++) act(() => panP2(x));
+    // Following p1: p2's hundred still render nothing.
+    expect(renders).toBe(following);
+    act(() =>
+      store.set((prev) =>
+        new Map(prev).set('p1', { tabId: 'tab1', pan: { x: 50, y: 0 }, zoom: 2 }),
+      ),
+    );
+    expect(renders).toBe(following + 1);
+    expect(viewport.get()).toEqual({ zoom: 2, offset: { x: 50, y: 0 } });
   });
 });

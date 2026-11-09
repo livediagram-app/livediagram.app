@@ -9,6 +9,8 @@
 
 import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
+import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
+import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
@@ -56,7 +58,9 @@ export function useFollowMe({
   sendFollow = () => {},
   readCanvasSize = () => null,
 }: {
-  remoteViewports: Map<string, RemoteViewport>;
+  // Every peer's last viewport, in a store: read here for the followed peer alone, so another peer's pan renders
+  // nothing (docs/specs/008-canvas/canvas-performance.md).
+  remoteViewports: ReadableStore<Map<string, RemoteViewport>>;
   // Who is still in the room, so a follow ends by itself when they leave.
   livePresenceIds: string[];
   activeId: string;
@@ -162,6 +166,13 @@ export function useFollowMe({
     });
   }, [followingId, viewport]);
 
+  // The followed peer's viewport: a pan by anyone else selects the same value and renders nothing.
+  const followedSlice = useCallback(
+    (all: Map<string, RemoteViewport>) => (followingId ? all.get(followingId) : undefined),
+    [followingId],
+  );
+  const seen = useStoreSlice(remoteViewports, followedSlice);
+
   // Apply the followed peer's viewport.
   //
   // Zoom is mirrored EXACTLY rather than re-fitted. A follower on a smaller
@@ -172,13 +183,12 @@ export function useFollowMe({
   // promise is the same view.
   useEffect(() => {
     if (!followingId) return;
-    const seen = remoteViewports.get(followingId);
     if (!seen) return;
     if (seen.tabId !== activeId) onFollowTab(seen.tabId);
     const pan = followedPan(seen, readSizeRef.current());
     appliedRef.current = { pan, zoom: seen.zoom };
     viewport.setView({ zoom: seen.zoom, offset: pan });
-  }, [followingId, remoteViewports, activeId, onFollowTab, viewport, readSizeRef]);
+  }, [followingId, seen, activeId, onFollowTab, viewport, readSizeRef]);
 
   return { followingId, startFollowing, stopFollowing, followerCount: followerIds.length };
 }

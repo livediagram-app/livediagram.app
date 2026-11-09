@@ -261,6 +261,24 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - Measured (WebKit, 1180 x 820, 20 A4 pages, 2,000 elements, a 60-move drag of one shape, best of two): frames over
   50 ms 56 to 6, time over 50 ms 3,381 ms to 112 ms; a marquee then group drag 2,740 ms to 408 ms.
 
+### Peers' viewports
+
+- `usePresenceState` holds every peer's last `viewport` op in a `createStateStore` store
+  (`@liveworkspace/workbench/lib/state-store`), and hands the room its `set` in place of a state
+  setter. `useFollowMe` reads the followed peer's entry through `useStoreSlice`, so a viewport from
+  anyone else selects the same value and renders nothing. Held by `useFollowMe.test.tsx` ("renders
+  for the followed peer's viewport alone"): a hundred viewports from a peer not followed, no render.
+
+### Peers' laser trails
+
+- `usePresenceState` holds every peer's laser trail in a `createStateStore` store, and hands the
+  presence coalescer its `set`. `usePresenceRows` joins it with the local trail and the presence
+  rows through `mapStore` (`@liveworkspace/workbench/lib/state-store`), made again only when those
+  render inputs change, so `laserTrails` reaches the canvas as a store. `ZoomedLaserOverlay`
+  (`view-readers.tsx`) is the one reader (`useSyncExternalStore`). Held by
+  `usePresenceRows.test.tsx` ("renders nothing for a peer's laser trail"): fifty trail frames, no
+  render of the hook that owns the rows, and every frame reaches a subscriber.
+
 ### At rest
 
 - The still-canvas rule is held in a real browser by `e2e/canvas-still.spec.ts`: on a seeded board,

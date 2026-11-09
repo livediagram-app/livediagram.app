@@ -27,6 +27,7 @@ export * from './merge-guards';
 export * from './commands-paste';
 export * from './commands-shift';
 export * from './store';
+export * from './changed-inputs';
 export * from './store-layout';
 export * from './range-names';
 export * from './validate';

@@ -200,6 +200,11 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
   - The workbook evaluates lazily and is told which cells changed (`updateSheet(sheet, touched)`); a value is worked
     out when it is read, so a change costs what depends on it (no frame slicing). Cards reach it through
     `setCards(cardSourceOf(items, types, ...))` from `useSheetModel` when any formula uses a card function.
+  - A write landing (its answer, or a room op) tells the workbook only the touched cells whose input differs from
+    what the view already showed (`changedInputs`, `packages/sheets/src/changed-inputs.ts`). The person's own write
+    was shown, and worked out, when it was made: its answer changes nothing, so what reads it is not worked out a
+    second time. Before, every edit worked its dependents out twice (once made, once answered). Held by
+    `sheet-store-client.test.ts` ("works a dependent out once per edit, not again when the answer lands").
 - **Model** (`apps/editor/components/sheets/useSheetModel.ts`): attaches the store to the room through the bridge
   (reference-counted across the tab's Sheets), loads the tab, makes a placed sheet (`takePlacedSheet`: blank, or
   from a dropped CSV with its file name) or a copy (`copyOf`: from the loaded source, a clipboard seed, or the
