@@ -74,6 +74,9 @@ inside, and walls block sound fully. Inside a room, as on the open floor, the ru
   equaliser. The first unmute opens the microphone (the browser asks then).
 - **Unmuted, the microphone stays open**, alone or not, so you can see it work. Muted and alone on a tab for 15
   seconds, it is released (the browser's recording light goes out) and opens again on your next unmute.
+- **A microphone the browser ends** (unplugged, its permission withdrawn) is released, never left published and
+  silent. Unmuted, it opens again at once on whichever microphone the browser has now (Mic Blocked with none); muted,
+  on your next unmute.
 - **The mic indicator** on the button shows, at a glance:
   - **Live** (the button fills from its foot with your voice level, white on the solid brand: you are transmitting to someone): somebody is in earshot and hears you (in a room,
     anyone else in it).

@@ -109,7 +109,13 @@ const session = {
 };
 
 function micStream() {
-  const track = { enabled: true, stop: vi.fn() };
+  const listeners = new Map<string, () => void>();
+  const track = {
+    enabled: true,
+    stop: vi.fn(),
+    addEventListener: (name: string, fn: () => void) => listeners.set(name, fn),
+    end: () => listeners.get('ended')?.(),
+  };
   return {
     track,
     stream: { getAudioTracks: () => [track], getTracks: () => [track] } as unknown as MediaStream,
@@ -353,6 +359,25 @@ describe('ProximityCall', () => {
     vi.advanceTimersByTime(MIC_IDLE_CLOSE_MS * 2);
     expect(mic.track.stop).not.toHaveBeenCalled();
     expect(callSelf().mic).toBe('open');
+    call.stop();
+  });
+
+  // An unplugged microphone, or its permission withdrawn: the browser ends the track.
+  it('releases a microphone the browser ended, and opens one again while unmuted', async () => {
+    const { call, mic, getUserMedia } = makeCall();
+    await speak(call);
+    mic.track.end();
+    expect(mic.track.stop).toHaveBeenCalledTimes(1);
+    await settle();
+    expect(getUserMedia).toHaveBeenCalledTimes(2);
+    expect(callSelf()).toMatchObject({ mic: 'open', muted: false });
+    expect(sfu.instances[0]!.replaceMic).toHaveBeenLastCalledWith(mic.track);
+    // Muted, it is released and stays closed until the next unmute.
+    call.toggleMute();
+    mic.track.end();
+    await settle();
+    expect(getUserMedia).toHaveBeenCalledTimes(2);
+    expect(callSelf()).toMatchObject({ mic: 'closed', muted: true });
     call.stop();
   });
 

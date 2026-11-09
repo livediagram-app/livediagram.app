@@ -79,6 +79,13 @@ export class CallMic {
     }
     this.stream = stream;
     const track = stream.getAudioTracks()[0]!;
+    // A microphone the browser ends (unplugged, its permission withdrawn) is released, never left published silent:
+    // unmuted, it opens again at once, on whichever microphone the browser has now (Mic Blocked with none).
+    track.addEventListener('ended', () => {
+      if (this.stream !== stream || this.host.stopped()) return;
+      this.close();
+      if (!this.muted && this.host.input.canSpeak) void this.open();
+    });
     track.enabled = !this.muted;
     this.host.graph.listenTo(stream);
     setCallSelf({ mic: 'open' });
