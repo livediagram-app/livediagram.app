@@ -6,6 +6,7 @@
 // list and the usage), each tile's picture only as it nears the screen (./blobs).
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { IMAGE_ACCEPT_ATTR } from '@liveworkspace/api-schema/image-limits';
 import { ConfirmDialog, EmptyState } from '@liveworkspace/ui';
 import { TrashIcon } from '../ui/icons';
 import { ImageIcon, UploadIcon } from '../ui/library-icons';
@@ -328,7 +329,7 @@ function UploadZone({
       <input
         ref={input}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif"
+        accept={IMAGE_ACCEPT_ATTR}
         className="hidden"
         aria-label="Upload an image"
         onChange={(e) => {

@@ -6,6 +6,12 @@
 // takes the app's renderer.
 
 import { createElement } from 'react';
+import {
+  ACCEPTED_IMAGE_TYPES,
+  IMAGE_TYPES_LABEL,
+  MAX_IMAGE_BYTES,
+  MAX_IMAGE_MB,
+} from '@liveworkspace/api-schema/image-limits';
 import { APP_ITEMS, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { ShapePreview } from './ShapePreview';
 import type {
@@ -17,7 +23,7 @@ import type {
   ShapeLibrary,
 } from './types';
 
-const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+const ACCEPTED: readonly string[] = ACCEPTED_IMAGE_TYPES;
 
 class LibraryError extends Error {
   readonly status: number;
@@ -53,9 +59,9 @@ export function uploadRefusal(e: unknown): string {
   const code = e instanceof LibraryError ? e.code : null;
   switch (code) {
     case 'unsupported_type':
-      return 'That file type isn’t supported. Use a PNG, JPEG, WebP or GIF.';
+      return `That file type isn’t supported. Use a ${IMAGE_TYPES_LABEL}.`;
     case 'file_too_large':
-      return 'That image is too large.';
+      return `That image is too large. Images can be up to ${MAX_IMAGE_MB} MB.`;
     case 'gallery_full':
       return 'Your gallery is full. Delete an image to make room.';
     default:
@@ -142,6 +148,9 @@ function galleryHost(app: AppName, path: string, token: Token, origin: string): 
     upload: async (file) => {
       if (!ACCEPTED.includes(file.type))
         throw new Error(uploadRefusal(new LibraryError(415, 'unsupported_type')));
+      // Over the media service's cap: refused before the file is decoded, read or sent.
+      if (file.size > MAX_IMAGE_BYTES)
+        throw new Error(uploadRefusal(new LibraryError(413, 'file_too_large')));
       try {
         const { width, height } = await imageSize(file);
         const bytes = await file.arrayBuffer();

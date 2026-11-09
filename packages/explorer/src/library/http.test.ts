@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { MAX_IMAGE_BYTES } from '@liveworkspace/api-schema/image-limits';
 import { appLibraryHosts, uploadRefusal } from './http';
 
 const token = async () => 'tok';
@@ -92,6 +93,20 @@ describe("the Library's hosts over an app's API", () => {
       ),
     ).rejects.toThrow('That file type isn’t supported');
     expect(uploadRefusal(new Error('x'))).toBe('Upload failed.');
+  });
+
+  it('refuses a file over the cap before decoding or sending it', async () => {
+    const send = vi.fn(async () => json({ image: {} }));
+    vi.stubGlobal('fetch', send);
+    const decode = vi.fn(async () => ({ width: 1, height: 1, close() {} }));
+    vi.stubGlobal('createImageBitmap', decode);
+    const big = new File(['x'], 'huge.png', { type: 'image/png' });
+    Object.defineProperty(big, 'size', { value: MAX_IMAGE_BYTES + 1 });
+    await expect(libraryHosts('livediagram').gallery!.upload!(big)).rejects.toThrow(
+      'That image is too large. Images can be up to 10 MB.',
+    );
+    expect(decode).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
   });
 
   it('renames and trims shape libraries through the app, sending the shapes back whole', async () => {
