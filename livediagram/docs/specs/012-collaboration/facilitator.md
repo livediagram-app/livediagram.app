@@ -122,21 +122,21 @@ the room's own storage is the natural home for something that means "right now".
 When somebody holds the baton, these answer to them alone. When nobody does,
 every one of them behaves exactly as it does today.
 
-| Gated                                                                 | Where it lives today      |
-| --------------------------------------------------------------------- | ------------------------- |
-| Timer: start, pause, resume, set duration, reset, clear               | `useTabSession.ts`        |
-| Dot vote: start, end, reveal, clear, and stepping through the results | `useTabSession.ts`        |
-| Poll: start, end                                                      | `useLivePoll.ts`          |
-| Session button: pressing it **and configuring it**                    | `useBehaviourElements.ts` |
-| Agenda item press (it starts that item's countdown)                   | `useCollabElements.ts`    |
-| Estimate / Temperature: reveal responses, clear for a new round       | `useCollabElements.ts`    |
-| Idea box: reveal, clear, scatter to the canvas                        | `useCollabElements.ts`    |
-| Done check: "Reset Everyone"                                          | `DoneCheckFace.tsx`       |
-| Quiz: edit the question, start, lock, reveal, run again               | `useQuizElements.ts`      |
-| Picker: the roll everyone watches                                     | `useBehaviourElements.ts` |
-| Roll call: take the roll                                              | `useCollabElements.ts`    |
-| Reveal zone: lifting a cover                                          | `useBehaviourElements.ts` |
-| Bring Focus: pressing it                                              | `useEditorState.ts`       |
+| Gated                                                                 | Where it lives today                |
+| --------------------------------------------------------------------- | ----------------------------------- |
+| Timer: start, pause, resume, set duration, reset, clear               | `useTabSession.ts`                  |
+| Dot vote: start, end, reveal, clear, and stepping through the results | `useTabSession.ts`                  |
+| Poll: start, end                                                      | `useLivePoll.ts`                    |
+| Session button: pressing it **and configuring it**                    | `useBehaviourElements.ts`           |
+| Agenda item press (it starts that item's countdown)                   | `useCollabElements.ts`              |
+| Estimate / Temperature: reveal responses, clear for a new round       | `useCollabElements.ts`              |
+| Idea box: reveal, clear, scatter to the canvas                        | `useCollabElements.ts`              |
+| Done check: "Reset Everyone"                                          | `DoneCheckFace.tsx`                 |
+| Quiz: edit the question, start, lock, reveal, run again               | `useQuizElements.ts`                |
+| Picker: the roll everyone watches                                     | `useBehaviourElements.ts`           |
+| Roll call: take the roll                                              | `useCollabElements.ts`              |
+| Reveal zone: lifting a cover                                          | `useBehaviourElements.ts`           |
+| Bring Focus: pressing it                                              | `editor-state/useEditorViewport.ts` |
 
 The session button is the one that reads oddly against "authoring is not
 running", and it earns its place: its configuration IS the timer's length and

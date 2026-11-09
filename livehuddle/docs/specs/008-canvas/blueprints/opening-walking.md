@@ -5,19 +5,19 @@ Derived from [Avatar mode](../avatar-mode.md) "Where it lives" and "Opening walk
 
 ## Files
 
-| File                                                   | Role                                                                                   |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| `apps/editor/lib/walk-entrance.ts`                     | Pure: `walkEntrance(elements)`, the tab's entrance (a pad, an Avatar button) or null   |
-| `apps/editor/lib/pad-only-tab.ts`                      | Pure: `holdsOnlyPads(elements)`, a blank tab whose only element is its pad             |
-| `apps/editor/app/document/[id]/useOpenWalking.ts`      | Judges each tab once per visit; asks for the walk; hands the start spot on as `walkIn` |
-| `apps/editor/hooks/canvas/useCanvasTool.ts`            | `openWalking()`: enters Avatar mode as a pick does, remembered, but uncounted          |
-| `apps/editor/app/document/[id]/useEditorState.ts`      | Wires the hook: `enabled` off in an embed, `loaded` from `loadedTabIds`                |
-| `apps/editor/app/document/[id]/useTemplateFlow.ts`     | `onLanded(tabId)` after a template lands content, so the tab is judged afresh          |
-| `apps/editor/components/canvas/useWalkIn.ts`           | Puts the start spot in `spawnAtRef`, and brings the view to it when it is off screen   |
-| `apps/editor/components/canvas/useCanvasAvatar.tsx`    | Calls `useWalkIn` before `useAvatarWalk`, so the enter effect finds the spot           |
-| `apps/editor/components/palette/EditWalkToggle.tsx`    | Walk on the Edit                                                                       | Walk toggle, greyed only while Start a Space is open |
-| `apps/editor/lib/editor-commands.ts`                   | `tool:avatar`, Avatar Mode, in the search panel                                        |
-| `apps/editor/components/start/start-template-items.ts` | the rail order (Recommended first), `initial`                                          |
+| File                                                           | Role                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `apps/editor/lib/walk-entrance.ts`                             | Pure: `walkEntrance(elements)`, the tab's entrance (a pad, an Avatar button) or null   |
+| `apps/editor/lib/pad-only-tab.ts`                              | Pure: `holdsOnlyPads(elements)`, a blank tab whose only element is its pad             |
+| `apps/editor/app/document/[id]/useOpenWalking.ts`              | Judges each tab once per visit; asks for the walk; hands the start spot on as `walkIn` |
+| `apps/editor/hooks/canvas/useCanvasTool.ts`                    | `openWalking()`: enters Avatar mode as a pick does, remembered, but uncounted          |
+| `apps/editor/app/document/[id]/editor-state/useEditorModes.ts` | Wires the hook: `enabled` off in an embed, `loaded` from `loadedTabIds`                |
+| `apps/editor/app/document/[id]/useTemplateFlow.ts`             | `onLanded(tabId)` after a template lands content, so the tab is judged afresh          |
+| `apps/editor/components/canvas/useWalkIn.ts`                   | Puts the start spot in `spawnAtRef`, and brings the view to it when it is off screen   |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`            | Calls `useWalkIn` before `useAvatarWalk`, so the enter effect finds the spot           |
+| `apps/editor/components/palette/EditWalkToggle.tsx`            | Walk on the Edit                                                                       | Walk toggle, greyed only while Start a Space is open |
+| `apps/editor/lib/editor-commands.ts`                           | `tool:avatar`, Avatar Mode, in the search panel                                        |
+| `apps/editor/components/start/start-template-items.ts`         | the rail order (Recommended first), `initial`                                          |
 
 ## Domain and naming
 

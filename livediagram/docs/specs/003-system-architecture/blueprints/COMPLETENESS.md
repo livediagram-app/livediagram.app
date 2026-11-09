@@ -14,3 +14,11 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## editor-state
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Performance and limits
+- [x] Testing
