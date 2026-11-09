@@ -160,6 +160,23 @@ export const VIEWPORTS_FOLLOWED: Metric = {
     "Someone pinned their view to a teammate's, following their pan, zoom and tab: the strongest signal that a session is being presented rather than just co-edited.",
 };
 
+export const NUDGES_SENT: Metric = {
+  category: 'Canvas',
+  action: 'Used',
+  type: 'Nudge',
+  title: 'Nudges Sent',
+  blurb:
+    'Someone nudged a person in their Space from Collaborators (docs/specs/012-collaboration/nudge.md): a call for attention, at most once every 2 minutes per person.',
+};
+
+export const NUDGES_ANSWERED: Metric = {
+  category: 'Canvas',
+  action: 'Used',
+  type: 'NudgeGoTo',
+  title: 'Nudges Answered',
+  blurb: 'A nudged person pressed Go To on the nudge, from its toast or desktop notification.',
+};
+
 export const EDIT_LINKS_SHARED: Metric = {
   category: 'Document',
   action: 'Shared',
@@ -322,6 +339,8 @@ export const LIVE_TOGETHER: MetricStack = {
   members: [
     MULTIPLAYER_SESSIONS,
     VIEWPORTS_FOLLOWED,
+    NUDGES_SENT,
+    NUDGES_ANSWERED,
     FACILITATOR_CLAIMED,
     FACILITATOR_RELEASED,
     AVATARS_CUSTOMISED,
