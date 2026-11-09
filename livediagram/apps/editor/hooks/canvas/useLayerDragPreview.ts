@@ -3,6 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
   elementIndexFor,
+  isBoxed,
   spreadOverBase,
   type Element,
   type ElementGrid,
@@ -19,7 +20,7 @@ import {
 } from '@/components/canvas/drag-affected-arrows';
 import type { Rect } from '@livediagram/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { ridingElements, type RideOffset } from './drag-ride';
+import { ridingElements, type RideOffset } from '@liveworkspace/workbench/lib/drag-ride';
 import { createRideWriter } from '@liveworkspace/workbench/lib/drag-ride-dom';
 
 // The element layer's drag preview (docs/specs/008-canvas/drag-preview.md "The preview",
@@ -27,7 +28,7 @@ import { createRideWriter } from '@liveworkspace/workbench/lib/drag-ride-dom';
 // like while a gesture lasts, derived once per preview change outside React and read per element, so a
 // preview frame re-renders the elements it changes and never the layer that holds all of them. The
 // layer itself re-renders only when the preview adds or removes elements (a Shift-duplicate), which
-// changes what it lists. What a preview only moves rides an offset written outside React (drag-ride.ts), so a move
+// changes what it lists. What a preview only moves rides an offset written outside React (workbench drag-ride), so a move
 // frame re-renders none of it: only the arrows between the moved and the unmoved
 // (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
 
@@ -204,16 +205,15 @@ export function createLayerPreviewStore(): LayerPreviewStore {
     const { elementIndex, arrowLinks, drawnElements } = inputs;
     // A board without arrows has no element index; the board's cached one finds what rides (built once per board,
     // not per frame).
-    const rides = ridingElements(
-      overlay,
-      elementIndex ?? elementIndexFor(drawnElements),
-      arrowLinks,
-      inputs.stackedIds,
-    );
+    const rides = ridingElements(overlay, elementIndex ?? elementIndexFor(drawnElements), {
+      isBoxed,
+      links: arrowLinks,
+      still: inputs.stackedIds,
+    });
     for (const [id, element] of overlay.changed) if (!rides.has(id)) out.set(id, { element });
     for (const { el } of overlay.added) out.set(el.id, { element: el });
     if (!elementIndex || !arrowLinks) return { out, rides };
-    const ids = affectedArrows(overlay, drawnElements, arrowLinks);
+    const ids = affectedArrows(overlay, drawnElements, arrowLinks, rides);
     // An arrow riding the offset is drawn as the document has it: only the rest re-route.
     for (const id of rides.keys()) ids.delete(id);
     for (const { el } of overlay.added) if (el.type === 'arrow') ids.add(el.id);

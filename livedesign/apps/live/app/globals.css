@@ -830,6 +830,20 @@ body:has([data-mode-message]) [data-yields-to-mode] {
    elements passes through on purpose (the rule below matches the plane too). */
 [data-element-plane] {
   cursor: auto;
+  /* Its box is its parent's (docs/specs/008-canvas/drag-preview.md "A very large move rides as one layer"), so it
+     takes no press of its own: a press between the elements reaches the canvas beneath, as it would with no box. */
+  pointer-events: none;
+}
+/* Its children take presses as they did before the plane had a box: in the base layer, so an element's own
+   pointer-events (a utility class, an inline style) still wins, and none while the canvas layer is inert
+   (Spotlight, which sets data-elements-inert beside its pointer-events-none). */
+@layer base {
+  [data-element-plane] > * {
+    pointer-events: auto;
+  }
+  [data-elements-inert] [data-element-plane] > * {
+    pointer-events: none;
+  }
 }
 
 /* A pen in hand draws wherever it presses: elements, handles and labels under it keep the pen

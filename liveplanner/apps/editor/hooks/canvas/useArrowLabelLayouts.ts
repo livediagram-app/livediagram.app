@@ -12,6 +12,7 @@ import {
   DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
   arrowLabelFontStack,
   arrowLabelPass,
+  labelClaimGrid,
   layoutArrowLabel,
   type ArrowElement,
   type Finish,
@@ -89,16 +90,16 @@ export function useArrowLabelLayouts(
   // Lays out an arrow's label for text being typed, against the other labels
   // as placed, so the editor sits and wraps where the label will land.
   const latestDraftLayout = useMemo(() => {
-    const claimed = (id: ElementId) =>
-      [...renders]
-        .filter(([other]) => other !== id)
-        .flatMap(([, r]) => (r.layout ? [r.layout.knockout ?? labelPlate(r.layout)] : []));
+    // Every label's claimed rect, in a grid built once per pass: a draft asks its neighbourhood, less its own
+    // (docs/specs/008-canvas/canvas-performance.md "Arrow labels ask their neighbourhood").
+    const claims = labelClaimGrid([...renders].map(([id, r]) => [id, r.layout] as const));
     // `over`: the elements as a drag preview draws them (docs/specs/008-canvas/drag-preview.md), for a
     // previewed arrow's label.
     return (arrow: ArrowElement, text: string, over?: Element[]): ArrowLabelLayout | null =>
       layoutArrowLabel(arrow, text, {
         elements: over ?? elements,
-        claimed: claimed(arrow.id),
+        claimed: [],
+        claimedGrid: { grid: claims, except: arrow.id },
         options: {
           ...DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
           ...stableOptions,

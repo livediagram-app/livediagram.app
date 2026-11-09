@@ -5,20 +5,24 @@ drags for collaborators.
 
 ## Files
 
-| File                                                  | Role                                                                           |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `apps/live/lib/drag-preview.ts`                       | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`   |
-| `apps/live/hooks/canvas/useEditorDrag.ts`             | Writes ticks to the preview; reads through the virtual tab; commits on release |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx` | Lists the elements; renders for a preview only when it adds or removes some    |
-| `apps/live/hooks/canvas/useLayerDragPreview.ts`       | The layer's preview store: one entry per previewed element and affected arrow  |
-| `apps/live/components/canvas/CanvasElementList.tsx`   | Lists a `PreviewedElement` per element, in paint order                         |
-| `apps/live/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the design                        |
-| `apps/live/components/canvas/drag-affected-arrows.ts` | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
-| `apps/live/hooks/canvas/useCanvasSelectionView.ts`    | Derives the selection from the previewed elements while a preview lasts        |
-| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
-| `packages/api-schema/src/room-messages.ts`            | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
-| `apps/live/hooks/collab/useDragPreviewBroadcast.ts`   | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                 |
-| `apps/live/hooks/collab/peer-drag-previews.ts`        | Receives peers' previews: role check, expiry, cleared by real ops              |
+| File                                                    | Role                                                                           |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `apps/live/lib/drag-preview.ts`                         | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`   |
+| `apps/live/hooks/canvas/useEditorDrag.ts`               | Writes ticks to the preview; reads through the virtual tab; commits on release |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`   | Lists the elements; renders for a preview only when it adds or removes some    |
+| `apps/live/hooks/canvas/useLayerDragPreview.ts`         | The layer's preview store: one entry per previewed element and affected arrow  |
+| `apps/live/components/canvas/CanvasElementList.tsx`     | Lists a `PreviewedElement` per element, in paint order                         |
+| `apps/live/components/canvas/PreviewedElement.tsx`      | One element, drawn from its preview entry or the design                        |
+| `apps/live/components/canvas/drag-affected-arrows.ts`   | The workbench's `createDragAffectedArrows`, bound to this design's model       |
+| `../packages/workbench/src/lib/drag-affected-arrows.ts` | `affectedArrows`, `previewArrowGeometry`: by grids, per frame; shared          |
+| `../packages/model-core/src/rect-grid.ts`               | `RectGrid`: rects bucketed by id, asked by neighbourhood; shared               |
+| `../packages/workbench/src/lib/drag-ride.ts`            | `ridingElements`: what the preview only translates, by how much; shared        |
+| `../packages/workbench/src/lib/drag-ride-dom.ts`        | `createRideWriter`: writes the offsets to nodes or planes, outside React       |
+| `apps/live/hooks/canvas/useCanvasSelectionView.ts`      | Derives the selection from the previewed elements while a preview lasts        |
+| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`        | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
+| `packages/api-schema/src/room-messages.ts`              | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
+| `apps/live/hooks/collab/useDragPreviewBroadcast.ts`     | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                 |
+| `apps/live/hooks/collab/peer-drag-previews.ts`          | Receives peers' previews: role check, expiry, cleared by real ops              |
 
 ## Domain and naming
 
@@ -29,6 +33,9 @@ drags for collaborators.
 | Peer preview    | `PeerDragPreview`  | One peer's overlay: `{ presenceId, tabId, patches, at }`                                                      |
 | Patch           | `DragPreviewPatch` | `{ id }` plus the geometry a gesture changes (below)                                                          |
 | Affected arrows | `affectedArrows`   | Arrows previewed themselves, pinned to a changed element, or whose bounds meet a changed box's old or new box |
+| Ride            | `ridingElements`   | The elements the preview only translates, each with its `RideOffset` `{ dx, dy }`                             |
+| Ride node       | `data-ride-id`     | A node a riding element's offset is written to: its root, its arrow `<svg>`, its grips                        |
+| Ride plane      | `data-ride-plane`  | A node whose children are all ride nodes, which carries a very large move's offset as one layer               |
 
 ## Behaviour and state
 
@@ -99,7 +106,41 @@ drags for collaborators.
   candidates minus changed ids plus the changed boxes that meet the arrow's query rect.
 - `affectedArrows(overlay, doc)`: previewed arrows, plus arrows pinned to a changed id (a reverse
   map built once per design change), plus arrows whose bounds meet a changed box's old or new box
-  (a linear pass over the arrows' bounds, built once per design change).
+  (each changed box asks `links.rects`, a `RectGrid` of the arrows' route-behind rects built once
+  per design change, `eachRectMeeting`: linear in what moved, never arrows × moved).
+- `previewArrowGeometry(arrow, index, grid, overlay, moved)`: `moved` is `movedBoxesGrid(overlay)`,
+  an element grid of the changed and added boxes built once per derive; an arrow's holes take the design grid's
+  candidates minus the changed and removed ids, plus `queryElementGrid(moved, queryRect)`, instead of every moved
+  box.
+- Riding (spec "Moves ride an offset"): each derive first takes `ridingElements(overlay, elementIndex,
+{ isBoxed, links: arrowLinks, still: stackedIds })` (`@liveworkspace/workbench/lib/drag-ride`; on a board without
+  arrows, which has no `elementIndex`, the board's cached `elementIndexFor(drawnElements)`): a changed boxed
+  element whose every field but `x` and `y` is the same value as the design's rides `{ dx: x - x₀, dy: y - y₀ }`;
+  then each arrow the gesture changed or pinned to a riding box rides when every field but `from` and `to` is
+  unchanged and both ends give the same offset (a free end: its own shift; a pinned end: the same pin, by identity
+  or value, to a riding element: that element's offset; any other end kind: none). Every offset is
+  `rideOffset(dx, dy)`, rounded to a thousandth of a pixel. A stack's children (`stackedIds`) never ride. No riding box, no ride. A
+  riding element gets no entry, and riding arrows are taken out of the affected arrows, so a ride frame notifies
+  none of them; with no arrow left to re-route, no preview board is built. `affectedArrows` takes the ride
+  (`riding`): when it carries every arrow on the board, no moved box asks the arrow grid.
+- `createRideWriter` (`@liveworkspace/workbench/lib/drag-ride-dom`, one per layer store, its root the element
+  plane's parent, set by the plane's ref, `attachPlane`): `apply(rides)` puts `style.translate = "<dx>px <dy>px"`
+  on every `[data-ride-id="<id>"]` node of each riding id and `''` on the nodes of ids no longer riding. Tagged
+  nodes: `BoxedElementView`'s root, the arrow `<svg data-arrow-svg>`, `SelectionChromeLayer`'s portalled box
+  (`data-grips-for`) and `ArrowGripsPortal`'s `<g>` (the workbench's grips layer). React never sets `translate`.
+- Ride planes (spec "A very large move rides as one layer"): with at least `RIDE_PLANE_MIN_NODES` rides, the
+  writer also finds the `[data-ride-plane]` nodes under the root: the element plane (`data-ride-plane`,
+  `absolute inset-0`, always: its parent's box) and the grips layer's two hosts. Per plane, the commonest offset,
+  when shared by at least `RIDE_PLANE_MIN_NODES` children and more than half of them, is the plane's
+  `style.transform = translate(<dx>px, <dy>px)` (no `will-change`, D126); each child gets `translate` = its own
+  offset less the plane's. The element plane's CSS (`app/globals.css`): `[data-element-plane] { pointer-events:
+none }`, in `@layer base` `[data-element-plane] > * { pointer-events: auto }` and `[data-elements-inert]
+[data-element-plane] > * { pointer-events: none }` (the canvas layer sets `data-elements-inert` beside its `pointer-events-none` in Spotlight).
+- Dropping the offsets: when the preview ends, the store keeps them while the layer draws the same
+  `drawnElements` they were written over; the layout effect of the render that draws another board (the
+  release's write) drops them before that paint. A `requestAnimationFrame` set when the preview ends drops them
+  at the latest before the next paint (a cancel writes nothing, so nothing renders). A new frame with rides
+  cancels that drop.
 - Labels of affected arrows are laid out with `draftLayout(arrow, label, virtualElements)`; others
   keep the design's label pass.
 - The selection chrome derives the selection (bounds, union resize, quick-connect pluses) from
@@ -196,7 +237,9 @@ type DragPreviewOp =
 ## Performance and limits
 
 - Per drag frame: one identity pass over the elements (overlay), re-render of the changed elements
-  and affected arrows, one linear pass over arrow bounds. No index, grid, label pass, Map or
+  that do not ride and of the affected arrows that do not ride, a grid query per moved box for the
+  arrows it crosses, a grid query per affected arrow for the moved boxes that cut it, and one
+  `translate` write per node whose offset changed. No index, grid, label pass, Map or
   selection derivation over the whole board, except the selection's `applyOverlay` (linear), made
   once a frame and shared by every chrome reader (`previewedElements`, `sharedCanvasSelection`).
 - Once a gesture, not once a frame: the board's index (`elementIndexFor(doc)`, `doc` being the
@@ -207,6 +250,9 @@ ids)` has the preview board's endpoint spread placed from the base's, again only
   that read a changed id, and in full when a changed arrow joins other pins or an element changes
   kind; equal to placing every fan, by a seeded equivalence test
   (`arrow-endpoint-spread-over.test.ts`).
+- 2,000 boxes and 1,999 arrows, every box resized (a union resize, nothing rides): one frame at most 60 ms of
+  CPU (`useLayerDragPreview.perf.test.ts`), 16 to 17 ms measured; about 480 ms before the grids (each arrow
+  scanned every moved box). A move of all of them rides whole: about 2.5 ms.
 - Wire: at most 30 messages a second per dragger, each at most `DRAG_PREVIEW_MAX_ELEMENTS` patches.
 
 ## Presentation and UX
@@ -225,6 +271,7 @@ ids)` has the preview board's endpoint spread placed from the base's, again only
 ## Observability
 
 - `[drag-preview] begin` / `commit` / `cancel` (debug) `{ gesture, count }`.
+- `[drag-preview] ride` (debug) `{ count, planes }` when the number of riding elements changes.
 - `[drag-preview] peer ignored` (debug) `{ presenceId }`; `[drag-preview] peer expired` (debug);
   `[drag-preview] bad op` (debug, once per peer).
 
@@ -239,7 +286,10 @@ ids)` has the preview board's endpoint spread placed from the base's, again only
 | In a real browser                                     | `e2e/drag-preview.spec.ts`: drawn mid-drag, nothing saved, saved on release; Escape; one undo                                                                                       |
 | Overlay derivation and application                    | `drag-preview.test.ts`                                                                                                                                                              |
 | What is redrawn                                       | `CanvasElementsLayer.renders.test.tsx`: a preview re-renders the moved element and affected arrows only, never the layer; added and removed elements; `useLayerDragPreview.test.ts` |
-| Affected arrows                                       | `drag-affected-arrows.test.ts`                                                                                                                                                      |
+| Affected arrows                                       | `drag-affected-arrows.test.ts`; `@liveworkspace/workbench` `drag-affected-arrows.test.ts`; `rect-grid.test.ts` (`@liveworkspace/model-core`)                                        |
+| Arrow work linear in what moved                       | `useLayerDragPreview.perf.test.ts` "a union resize of all 2,000 boxes"; the workbench's "the affected arrows' cost"                                                                 |
+| Moves ride an offset                                  | `useLayerDragPreview.test.ts`; the workbench's "the ride rules", `drag-ride-dom.test.ts`; `CanvasElementsLayer.renders.test.tsx` "a move riding an offset"                          |
+| A very large move rides as one layer                  | `CanvasElementsLayer.renders.test.tsx` "renders no element view for a whole 1,770-element selection"; the workbench's `drag-ride-dom.test.ts`, `SelectionGripsLayer.test.tsx`       |
 | Selection follows the preview                         | `usePreviewedElements.test.tsx`; `useCanvasSelectionView.drag-preview.test.ts`: the chrome follows its own tab's preview                                                            |
 | Live movement, expiry, end, real-op clear, role check | `peer-drag-previews.test.ts`, `useDragPreviewBroadcast.test.tsx`                                                                                                                    |
 | Presence classification                               | `room-messages` test: `drag-preview` is presence                                                                                                                                    |
@@ -252,7 +302,8 @@ ids)` has the preview board's endpoint spread placed from the base's, again only
 | `DRAG_PREVIEW_SEND_MS`      | 33    | Spec       | Spec-fixed |
 | `PEER_PREVIEW_EXPIRY_MS`    | 2000  | Spec       | Spec-fixed |
 | `DRAG_PREVIEW_MAX_ELEMENTS` | 200   | D71        | 50-1000    |
+| `RIDE_PLANE_MIN_NODES`      | 200   | D126       | 50-1000    |
 
 ## Defaults ledger
 
-D71 to D74 in [DEFAULTS.md](DEFAULTS.md).
+D71 to D74, D123 and D126 in [DEFAULTS.md](DEFAULTS.md).

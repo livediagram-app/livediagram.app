@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { createArrow, createPinnedArrow, createShape, type Element } from '@livediagram/document';
+import {
+  createArrow,
+  createPinnedArrow,
+  createShape,
+  isBoxed,
+  type Element,
+} from '@livediagram/document';
 import { overlayBetween } from '@/lib/drag-preview';
 import { buildArrowLinks } from '@/components/canvas/drag-affected-arrows';
-import { ridingElements } from './drag-ride';
+import { ridingElements } from '@liveworkspace/workbench/lib/drag-ride';
 
-// docs/specs/008-canvas/drag-preview.md "Moves ride an offset": what a preview only translates rides an offset.
+// docs/specs/008-canvas/drag-preview.md "Moves ride an offset": what a preview only translates rides an offset, by the
+// workbench's ride rules over this document's elements.
 
 const box = (id: string, x: number, y = 0) => ({ ...createShape('square', x, y), id });
 const a = box('a', 0);
@@ -24,7 +31,9 @@ const BEFORE = new Map(DOC.map((el) => [el.id, el]));
 const LINKS = buildArrowLinks(DOC);
 
 const rides = (next: Element[], still: ReadonlySet<string> = new Set()) =>
-  Object.fromEntries(ridingElements(overlayBetween('t', next, DOC), BEFORE, LINKS, still));
+  Object.fromEntries(
+    ridingElements(overlayBetween('t', next, DOC), BEFORE, { isBoxed, links: LINKS, still }),
+  );
 const swap = (...els: Element[]) => DOC.map((el) => els.find((n) => n.id === el.id) ?? el);
 
 describe('ridingElements', () => {
@@ -71,6 +80,6 @@ describe('ridingElements', () => {
     expect(rides(swap(freeOnly))).toEqual({});
     // An element the preview adds is not in the board it is laid over: it draws from the preview.
     const added = [...DOC, box('new', 900)];
-    expect(ridingElements(overlayBetween('t', added, DOC), BEFORE, null, new Set()).size).toBe(0);
+    expect(ridingElements(overlayBetween('t', added, DOC), BEFORE, { isBoxed }).size).toBe(0);
   });
 });

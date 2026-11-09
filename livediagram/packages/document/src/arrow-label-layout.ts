@@ -32,6 +32,13 @@ import { arrowPolyline } from './arrow-path-hits';
 import { elementIndexFor, endpointPosition, type ElementIndex } from './geometry';
 import { rectsIntersect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import {
+  addToRectGrid,
+  anyRectMeeting,
+  createRectGrid,
+  eachRectMeeting,
+  type RectGrid,
+} from '@liveworkspace/model-core/rect-grid';
+import {
   isBoxed,
   type ArrowElement,
   type BoxedElement,
@@ -340,6 +347,34 @@ function hitsAny(rect: Rect, boxes: Rect[]): boolean {
   return boxes.some((b) => rectsIntersect(rect, b));
 }
 
+// The boxes a label steers clear of, in a grid of their own, built once per board (by the array's identity, as the
+// element index is): a label asks its neighbourhood, not every box on the board
+// (docs/specs/008-canvas/canvas-performance.md "Arrow labels ask their neighbourhood").
+const obstacleGrids = new WeakMap<readonly Element[], RectGrid>();
+function obstacleGridFor(elements: readonly Element[]): RectGrid {
+  let grid = obstacleGrids.get(elements);
+  if (!grid) {
+    grid = createRectGrid();
+    let n = 0;
+    for (const el of elements)
+      if (isBoxed(el) && isObstacle(el))
+        addToRectGrid(grid, String(n++), { x: el.x, y: el.y, width: el.width, height: el.height });
+    obstacleGrids.set(elements, grid);
+  }
+  return grid;
+}
+
+// Every label's claimed rect (its knockout, else its plate) by arrow id, in a grid: what a label being typed or
+// dragged avoids (the editor's draftLayout), built once per label pass rather than once per label.
+export function labelClaimGrid(
+  layouts: Iterable<readonly [ElementId, ArrowLabelLayout | null | undefined]>,
+): RectGrid {
+  const grid = createRectGrid();
+  for (const [id, l] of layouts)
+    if (l) addToRectGrid(grid, id, l.knockout ?? rectAround(l.center, l.width, l.height));
+  return grid;
+}
+
 // ---------------------------------------------------------------------
 // Layout
 // ---------------------------------------------------------------------
@@ -348,6 +383,9 @@ type ArrowLabelContext = {
   elements: Element[];
   // Rects already claimed by earlier labels.
   claimed: Rect[];
+  // More claimed rects, in a grid (layoutArrowLabels' as it places, labelClaimGrid's for a draft), less `except`'s:
+  // the same as listing them in `claimed`, asked by neighbourhood.
+  claimedGrid?: { grid: RectGrid; except?: ElementId };
   options: ArrowLabelLayoutOptions;
 };
 
@@ -366,10 +404,13 @@ export function layoutArrowLabel(
     (o.measureFor ?? defaultMeasureFor)(fontPx, !!arrow.textBold, !!arrow.textItalic, family),
     fontPx,
   );
-  const obstacles: Rect[] = [
-    ...ctx.elements.filter(isBoxed).filter(isObstacle),
-    ...ctx.claimed,
-  ].map((r) => ({ x: r.x, y: r.y, width: r.width, height: r.height }));
+  // Whether a rect meets a box or a claimed rect: the board's boxes and the claimed grid by neighbourhood.
+  const boxes = obstacleGridFor(ctx.elements);
+  const claimedGrid = ctx.claimedGrid;
+  const hits = (rect: Rect) =>
+    anyRectMeeting(boxes, rect) ||
+    hitsAny(rect, ctx.claimed) ||
+    (claimedGrid !== undefined && anyRectMeeting(claimedGrid.grid, rect, claimedGrid.except));
   const { route, from, to } = arrowRoute(arrow, ctx.elements);
   const base = { fontPx, lineHeightPx };
 
@@ -422,7 +463,7 @@ export function layoutArrowLabel(
       const b = blockOf(text, width, measure, lineHeightPx);
       for (const sign of [1, -1]) {
         const c = place(b, sign);
-        if (!hitsAny(rectAround(c, b.width, b.height), obstacles)) {
+        if (!hits(rectAround(c, b.width, b.height))) {
           chosen = { b, c };
           break search;
         }
@@ -483,7 +524,7 @@ export function layoutArrowLabel(
     if (footprintAlong(block, u) > 2 * Math.min(s - s0, s1 - s) + 1e-9) continue;
     const center = pointAt(route, s);
     const knockout = rectAround(center, block.width, block.height, KNOCKOUT_MARGIN_PX);
-    if (hitsAny(knockout, obstacles)) continue;
+    if (hits(knockout)) continue;
     return {
       ...base,
       mode: 'on-line',
@@ -512,18 +553,22 @@ export function layoutArrowLabels(
   elements: Element[],
   options: Partial<ArrowLabelLayoutOptions> = {},
 ): Map<ElementId, ArrowLabelLayout> {
+  // Each placed label's rect goes into a grid, so the next asks its neighbourhood, not every label before it.
+  const claimed = createRectGrid();
   const ctx: ArrowLabelContext = {
     elements,
     claimed: [],
+    claimedGrid: { grid: claimed },
     options: { ...DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS, ...options },
   };
   const out = new Map<ElementId, ArrowLabelLayout>();
+  let n = 0;
   for (const el of elements) {
     if (el.type !== 'arrow' || !el.label) continue;
     const l = layoutArrowLabel(el, el.label, ctx);
     if (!l) continue;
     out.set(el.id, l);
-    ctx.claimed.push(l.knockout ?? rectAround(l.center, l.width, l.height));
+    addToRectGrid(claimed, String(n++), l.knockout ?? rectAround(l.center, l.width, l.height));
   }
   return out;
 }
@@ -578,6 +623,32 @@ export function arrowLabelPass(
     return null;
   };
   const labelled = [...layouts].filter(([, l]) => l.knockout);
+  // The labelled centres in a grid, keyed by their place in `labelled`, built on the first ask: a line asks which
+  // centres lie near its own path, not every label (canvas-performance.md "Arrow labels ask their neighbourhood").
+  let centres: RectGrid | null = null;
+  // The labels whose centre could lie on `pts`, in `labelled` order: those inside its bounds widened past runAt's
+  // one-pixel tolerance; every label when the bounds are not finite.
+  const near = (pts: Pt[]): (typeof labelled)[number][] => {
+    if (pts.length === 0) return [];
+    let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+    for (const p of pts) {
+      x0 = Math.min(x0, p.x);
+      y0 = Math.min(y0, p.y);
+      x1 = Math.max(x1, p.x);
+      y1 = Math.max(y1, p.y);
+    }
+    if (![x0, y0, x1, y1].every(Number.isFinite)) return labelled;
+    if (!centres) {
+      centres = createRectGrid();
+      labelled.forEach(([, l], k) =>
+        addToRectGrid(centres!, String(k), { x: l.center.x, y: l.center.y, width: 0, height: 0 }),
+      );
+    }
+    const hits: number[] = [];
+    const query = { x: x0 - 2, y: y0 - 2, width: x1 - x0 + 4, height: y1 - y0 + 4 };
+    eachRectMeeting(centres, query, new Set(), (k) => hits.push(Number(k)));
+    return hits.sort((a, b) => a - b).map((k) => labelled[k]!);
+  };
   return {
     layouts,
     // A label cuts its own line, and any other line run along it on the same track (a bus several arrows share),
@@ -586,7 +657,7 @@ export function arrowLabelPass(
     knockoutsOf: (id) => {
       const own = layouts.get(id)?.knockout;
       const out = own ? [own] : [];
-      for (const [other, l] of labelled) {
+      for (const [other, l] of near(pathOf(id))) {
         if (other === id) continue;
         const mine = runAt(pathOf(id), l.center);
         if (mine && mine === runAt(pathOf(other), l.center)) out.push(l.knockout!);

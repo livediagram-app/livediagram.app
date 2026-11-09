@@ -464,6 +464,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           <CanvasElementList
             shownOrder={shownOrder}
             previewStore={previewStore}
+            attachPlane={previewStore.attachPlane}
             h={h}
             boxedShared={boxedShared}
             arrowGeometry={arrowGeometry}

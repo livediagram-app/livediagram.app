@@ -21,7 +21,7 @@ import { CanvasSurfaceProvider } from './CanvasSurfaceContext';
 import { ElementFaceRouter } from './ElementFaceRouter';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { HIT_PAD_INWARD } from './element-parts';
-import { SelectionGripsContext } from './SelectionGripsLayer';
+import { SelectionGripsContext } from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
 import { indicatorClusterRect } from './ElementIndicators';
 import type { IndicatorItem } from './indicator-items';
 import { placeCluster } from './useIndicatorLayout';
@@ -335,7 +335,12 @@ describe('the placeholder Delete button', () => {
     for (const zoom of [0.1, 0.25, 0.5, 1, 2, 4]) {
       for (const selected of [false, true]) {
         const { container } = render(
-          <SelectionGripsContext.Provider value={{ box: host }}>
+          <SelectionGripsContext.Provider
+            value={{
+              box: host,
+              arrows: document.createElementNS('http://www.w3.org/2000/svg', 'g'),
+            }}
+          >
             <CanvasZoomProvider zoom={zoom}>
               <RetiredElementFace element={pie} selected={selected} onDelete={() => {}} />
             </CanvasZoomProvider>

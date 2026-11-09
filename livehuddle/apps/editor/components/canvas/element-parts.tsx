@@ -4,7 +4,7 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import type { DragMode } from '@/lib/canvas';
 import { handlePressStarts } from '@liveworkspace/workbench/lib/double-press';
-import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
+import { BoxGripsPortal } from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
 import {
   FLOATING_CONTROL_CLASS,
   FLOATING_CONTROL_HOVER_CLASS,

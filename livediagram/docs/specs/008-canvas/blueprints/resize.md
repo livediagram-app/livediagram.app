@@ -95,11 +95,12 @@ snapEdge)` with `lead` from the raw pointer, so the square survives the snap; wi
 - `apps/editor/lib/resize-geometry.ts` (re-exported from `lib/canvas.ts`): `nextBounds`,
   `constrainedBounds`, `leadingAxis`, `minUniformScale`, `snapLeadingAxis(candidate, handle, lead,
 snapEdge, minScale = 0)`, `unionResizeMember`, `ResizeAxis`. All pure.
-- `apps/editor/components/canvas/SelectionGripsLayer.tsx`: `SelectionGripsLayer({ onHosts, isoDepth,
-children })`, `SelectionGripsContext` (`SelectionGripHosts | null`, `{ box: HTMLElement; arrows:
-SVGGElement }`), `BoxGripsPortal({ children })`, `ArrowGripsPortal({ arrowId, children })` (wraps
-  its children in `<g transform="translate(shiftX 0)">` from `useInsertShift().xFor(arrowId)`),
-  `SELECTION_GRIPS_Z_INDEX`.
+- `../packages/workbench/src/components/canvas/SelectionGripsLayer.tsx`: `SelectionGripsLayer({ onHosts,
+isoDepth?, children })`, `SelectionGripsContext` (`SelectionGripHosts | null`, `{ box: HTMLElement; arrows:
+SVGGElement }`, both hosts `data-ride-plane`), `BoxGripsPortal({ children })`, `ArrowGripsPortal({ arrowId,
+shiftX?, children })` (wraps its children in `<g data-ride-id={arrowId} transform="translate(shiftX 0)">`),
+  `SELECTION_GRIPS_Z_INDEX`. One module for every editor. This one's `components/canvas/ArrowGripsPortal.tsx` passes `shiftX` from
+  `useInsertShift().xFor(arrowId)`.
 - `SelectionChromeLayer({ elementId, box, zoom, rotation, shiftX?, showHandles, showAnchors,
 onBeginDrag })` in `element-parts.tsx`.
 - `MenuFlyoutSection` treats a press inside `[data-grips-for]` as a press on the element, as it

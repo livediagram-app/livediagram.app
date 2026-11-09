@@ -1,4 +1,11 @@
-import { createContext, useContext, useLayoutEffect, useRef, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useLayoutEffect,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 // The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize", "The handles are always on
@@ -19,11 +26,15 @@ export const SelectionGripsContext = createContext<SelectionGripHosts | null>(nu
 
 export function SelectionGripsLayer({
   onHosts,
+  isoDepth,
   children,
 }: {
   // Receives the hosts once mounted (in a layout effect, so the portals fill before the first
   // paint) and null on unmount.
   onHosts: (hosts: SelectionGripHosts | null) => void;
+  // One past the top element's paint index, so isometric view (livediagram's) lifts the layer above every
+  // element's stagger (its globals.css [data-iso] [data-selection-grips]).
+  isoDepth?: number;
   // Grips the canvas draws itself (union handles, quick-connect pluses), under the portalled ones.
   children?: ReactNode;
 }) {
@@ -37,15 +48,17 @@ export function SelectionGripsLayer({
     <div
       data-selection-grips=""
       className="pointer-events-none absolute inset-0"
-      style={{ zIndex: SELECTION_GRIPS_Z_INDEX }}
+      style={{ zIndex: SELECTION_GRIPS_Z_INDEX, '--iso-z': isoDepth } as CSSProperties}
     >
       {children}
       {/* An arrow's grips are SVG in canvas coordinates, as in the arrow's own <svg>. */}
       <svg className="absolute inset-0 h-full w-full" style={{ overflow: 'visible' }} aria-hidden>
-        <g ref={arrowsRef} />
+        {/* Hosts the arrows' grips; carries a very large move's offset for them (drag-ride-dom.ts). */}
+        <g ref={arrowsRef} data-ride-plane="" />
       </svg>
       {/* After the arrow grips: a free arrow's frame handles sit over its end grips. */}
-      <div ref={boxRef} />
+      {/* Where the layer is, so it can carry a very large move's offset for the grips in it. */}
+      <div ref={boxRef} data-ride-plane="" className="absolute inset-0" />
     </div>
   );
 }
@@ -56,9 +69,24 @@ export function BoxGripsPortal({ children }: { children: ReactNode }) {
   return hosts ? createPortal(children, hosts.box) : null;
 }
 
-// SVG grips, in canvas coordinates, moved into the layer's <svg>.
-export function ArrowGripsPortal({ children }: { children: ReactNode }) {
+// SVG grips, in canvas coordinates, moved into the layer's <svg>. An arrow standing aside for livediagram's
+// insert-between preview shifts its <svg>, so its grips take the same shift (`shiftX`) here.
+export function ArrowGripsPortal({
+  arrowId,
+  shiftX,
+  children,
+}: {
+  arrowId: string;
+  shiftX?: number;
+  children: ReactNode;
+}) {
   const hosts = useContext(SelectionGripsContext);
   if (!hosts) return null;
-  return createPortal(<g>{children}</g>, hosts.arrows);
+  return createPortal(
+    // Tagged so the arrow's grips ride a move's offset with it (each editor's drag-preview.md "Moves ride an offset").
+    <g data-ride-id={arrowId} transform={shiftX ? `translate(${shiftX} 0)` : undefined}>
+      {children}
+    </g>,
+    hosts.arrows,
+  );
 }

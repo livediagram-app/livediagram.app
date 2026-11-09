@@ -26,7 +26,7 @@ vi.mock('./BoxedElementView', () => ({
     bump(renders.boxed, element.id);
     drawnAs.set(element.id, element);
     // A mark where the view mounts, so a test can see where each boxed element is drawn.
-    return <span data-boxed-stub={element.id} />;
+    return <span data-boxed-stub={element.id} data-ride-id={element.id} />;
   }),
 }));
 vi.mock('./ArrowView', async (importOriginal) => {
@@ -81,7 +81,7 @@ vi.mock(
     };
   },
 );
-import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
+import { clearLocalPreview, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { createPeerMotion } from '@/lib/peer-motion';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
@@ -270,9 +270,10 @@ describe('arrow views render only for their own changes', () => {
 describe('drawing a drag preview', () => {
   afterEach(() => resetDragPreviewForTests());
 
-  it('draws the moved element where the preview has it, and redraws it and its arrow only', () => {
+  it('draws a reshaped element where the preview has it, and redraws it and its arrow only', () => {
     mount();
-    const movedA = { ...a, y: 40 };
+    // A reshape, not a move: a move rides an offset instead (below).
+    const movedA = { ...a, y: 40, width: 160 };
     act(() =>
       setLocalPreview(
         't',
@@ -293,7 +294,7 @@ describe('drawing a drag preview', () => {
       act(() =>
         setLocalPreview(
           't',
-          BOARD.map((el) => (el.id === a.id ? { ...a, y } : el)),
+          BOARD.map((el) => (el.id === a.id ? { ...a, y, width: 120 + y } : el)),
           BOARD,
         ),
       );
@@ -350,6 +351,83 @@ describe('drawing a drag preview', () => {
   });
 });
 
+// docs/specs/008-canvas/drag-preview.md "Moves ride an offset": a move renders no element view; each moved node
+// carries the offset, and only the arrows between the moved and the unmoved redraw.
+describe('a move riding an offset', () => {
+  afterEach(() => resetDragPreviewForTests());
+
+  const shifted = (els: readonly Element[], ids: ReadonlySet<string>, dx: number, dy: number) =>
+    els.map((el) =>
+      ids.has(el.id) && 'x' in el && 'y' in el ? { ...el, x: el.x + dx, y: el.y + dy } : el,
+    );
+  const translateOf = (root: ParentNode, id: string) =>
+    [...root.querySelectorAll<HTMLElement | SVGElement>(`[data-ride-id="${id}"]`)].map(
+      (n) => n.style.translate,
+    );
+
+  it('renders no moved element, shifts its nodes, and redraws only the arrow leaving the selection', () => {
+    const { container } = mount();
+    for (const k of [1, 2, 3])
+      act(() => setLocalPreview('t', shifted(BOARD, new Set([a.id, c.id]), 10 * k, 5 * k), BOARD));
+    expect(counts().boxed).toBe(0);
+    expect(layerRenders.count).toBe(0);
+    expect(translateOf(container, a.id)).toEqual(['30px 15px']);
+    expect(translateOf(container, c.id)).toEqual(['30px 15px']);
+    expect(translateOf(container, b.id)).toEqual(['']);
+    // ab joins a (moved) to b (not): it re-routes, frame by frame, and does not ride.
+    expect([...renders.arrow.keys()]).toEqual([ab.id]);
+    expect(translateOf(container, ab.id)).toEqual(['']);
+  });
+
+  it('carries an arrow whose ends both move, without redrawing it', () => {
+    const { container } = mount();
+    act(() => setLocalPreview('t', shifted(BOARD, new Set([a.id, b.id]), 7, 0), BOARD));
+    expect(counts()).toEqual({ boxed: 0, arrows: 0 });
+    expect(translateOf(container, ab.id)).toEqual(['7px 0px']);
+  });
+
+  it('drops the offsets in the paint the released board is drawn in', () => {
+    const { container, rerender } = mount();
+    const next = shifted(BOARD, new Set([a.id]), 12, 0);
+    act(() => setLocalPreview('t', next, BOARD));
+    expect(translateOf(container, a.id)).toEqual(['12px 0px']);
+    act(() => {
+      clearLocalPreview('landed');
+      rerender(<CanvasElementsLayer {...layerProps({ elements: next })} />);
+    });
+    expect(translateOf(container, a.id)).toEqual(['']);
+    expect(drawnAs.get(a.id)).toBe(next[0]);
+  });
+
+  it('drops the offsets by the next frame when a cancel writes nothing', async () => {
+    const { container } = mount();
+    act(() => setLocalPreview('t', shifted(BOARD, new Set([a.id]), 12, 0), BOARD));
+    act(() => clearLocalPreview('cancelled'));
+    // Held until the next frame, so a release's write lands in the same paint.
+    expect(translateOf(container, a.id)).toEqual(['12px 0px']);
+    await act(() => new Promise((r) => requestAnimationFrame(() => r(undefined))));
+    expect(translateOf(container, a.id)).toEqual(['']);
+  });
+
+  // docs/specs/008-canvas/drag-preview.md "A very large move rides as one layer": the element plane carries it,
+  // and no element node is written.
+  it('renders no element view for a whole 1,770-element selection moving, and its layer carries it', () => {
+    // A 30 x 30 grid of boxes, each joined to its right-hand neighbour: 1,770 elements.
+    const large = largeBoard();
+    const all = new Set(large.map((el) => el.id));
+    const { container } = mount(layerProps({ elements: large }));
+    for (const k of [1, 2, 3, 4, 5])
+      act(() => setLocalPreview('t', shifted(large, all, 4 * k, 2 * k), large));
+    expect(counts()).toEqual({ boxed: 0, arrows: 0 });
+    expect(slotRenders.count).toBe(0);
+    expect(layerRenders.count).toBe(0);
+    const plane = container.querySelector<HTMLElement>('[data-element-plane]')!;
+    expect(plane.style.transform).toBe('translate(20px, 10px)');
+    expect(translateOf(container, large[0]!.id)).toEqual(['']);
+    expect(translateOf(container, large.at(-1)!.id)).toEqual(['']);
+  });
+});
+
 // docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the elements": every
 // element sits in the plane that stops the canvas's cursor (globals.css [data-element-plane]).
 describe('the element plane', () => {
@@ -357,7 +435,7 @@ describe('the element plane', () => {
     const { container } = mount();
     const plane = container.querySelector('[data-element-plane]');
     expect(plane).not.toBeNull();
-    expect(plane!.className).toBe('contents');
+    expect(plane!.className).toBe('absolute inset-0');
     // Every element: the three boxed ones and the arrow, none of them outside it.
     expect(plane!.querySelectorAll('[data-boxed-stub]').length).toBe(3);
     expect(container.querySelectorAll('[data-boxed-stub]').length).toBe(3);
@@ -388,3 +466,20 @@ describe('charts that sit in a Sheet', () => {
     expect(drawnAs.has(orphan.id)).toBe(true);
   });
 });
+
+// The large-selection board, as livediagram's e2e/perf/large-selection-board.ts builds it: 900 boxes in a 30 x 30
+// grid and 870 arrows, each from a box to its right-hand neighbour.
+function largeBoard(): Element[] {
+  const nodes: Element[] = [];
+  const arrows: Element[] = [];
+  for (let row = 0; row < 30; row++)
+    for (let col = 0; col < 30; col++) {
+      nodes.push({ ...createShape('square', col * 200, row * 140), id: `n-${row}-${col}` });
+      if (col > 0)
+        arrows.push({
+          ...createPinnedArrow(`n-${row}-${col - 1}`, 'e', `n-${row}-${col}`, 'w'),
+          id: `a-${row}-${col}`,
+        });
+    }
+  return [...nodes, ...arrows];
+}
