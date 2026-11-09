@@ -260,6 +260,15 @@ describe('format rules for agents', () => {
         style: red,
       }),
     ).toBeNull();
+    for (const value of [null, '  '])
+      expect(
+        code({
+          op: 'conditional_format',
+          range: 'A1',
+          when: { condition: 'greater_than', value: value as never },
+          style: red,
+        }),
+      ).toBe('rule_invalid');
     expect(
       code({
         op: 'conditional_format',
