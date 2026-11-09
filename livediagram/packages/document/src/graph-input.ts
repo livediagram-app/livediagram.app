@@ -45,7 +45,7 @@ import { branchExits, withExactEnds } from './graph-branches';
 import { layoutCycle } from './graph-cycle';
 import { layoutMindmapGraph } from './graph-mindmap';
 import { layoutStormGraph } from './graph-storm';
-import { parseMermaid } from './mermaid';
+import { MERMAID_UNSUPPORTED_ERROR, parseMermaid } from './mermaid';
 import { turnBack } from './er-hub-first';
 import {
   afterWord,
@@ -492,6 +492,11 @@ export function graphShapeError(graph: GraphInput): string | undefined {
     : undefined;
 }
 
+// What an agent is told of a diagram type it cannot draw. The editor's message says sequence diagrams are out, as its
+// import refuses them; the agents' input draws them, so it names them among the types it takes.
+export const MERMAID_AGENT_UNSUPPORTED_ERROR =
+  'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram), ER diagrams (erDiagram) and sequence diagrams (sequenceDiagram) are supported, not class, gantt or other diagram types.';
+
 export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }): {
   graph?: GraphInput;
   error?: string;
@@ -508,5 +513,7 @@ export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }
   const parsed = graphFromMermaid(args.mermaid);
   return parsed.ok
     ? { graph: parsed.graph, ...(parsed.notes ? { notes: parsed.notes } : {}) }
-    : { error: `Could not read the Mermaid: ${parsed.error}` };
+    : {
+        error: `Could not read the Mermaid: ${parsed.error === MERMAID_UNSUPPORTED_ERROR ? MERMAID_AGENT_UNSUPPORTED_ERROR : parsed.error}`,
+      };
 }

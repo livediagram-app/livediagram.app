@@ -7,6 +7,7 @@
 
 import type { GraphCluster, GraphEdge, GraphNode } from './graph-authoring';
 import {
+  accessibilityLine,
   cleanLine,
   decodeLabel,
   directionOf,
@@ -18,21 +19,31 @@ import {
 } from './mermaid-shared';
 
 const HEADER_RE = /^stateDiagram(?:-v2)?$/i;
-// `A --> B`, `[*] --> A`, `A --> [*] : label` — ids may carry hyphens.
+// A state id: letters and digits in any script (`开始`, as flowchart ids take them), `_` and `-`.
+const ID = String.raw`[\p{L}\p{M}\p{N}_-]+`;
+// A class on a state (`Crash:::badBadEvent`), styling the tab theme owns: skipped. Words joined by single `-`s, so
+// the dashes of a `-->` right after it are the transition's.
+const CLASS = String.raw`(?::::[\p{L}\p{M}\p{N}_]+(?:-[\p{L}\p{M}\p{N}_]+)*)?`;
+// `A --> B`, `[*] --> A`, `A --> [*] : label`: ids may carry hyphens, and either end a class.
 // Labels are `(\S.*)`, never `(.+)`: after a `\s*` the two both match a space,
 // which gives the engine several ways to split a run of spaces and turns a
 // failed match into quadratic backtracking. `\S` cannot overlap `\s*`, so the
 // split is forced, and requiring one non-space still means "at least one
 // character" exactly as `(.+)` did.
-const TRANSITION_RE = /^(\[\*\]|[A-Za-z0-9_-]+)\s*-->\s*(\[\*\]|[A-Za-z0-9_-]+)\s*(?::\s*(\S.*))?$/;
+const TRANSITION_RE = new RegExp(
+  String.raw`^(\[\*\]|${ID})${CLASS}\s*-->\s*(\[\*\]|${ID})${CLASS}\s*(?::\s*(\S.*))?$`,
+  'u',
+);
 // `state "Long description" as s1` (optionally opening a composite `{`).
-const STATE_AS_RE = /^state\s+"([^"]*)"\s+as\s+([A-Za-z0-9_-]+)\s*(\{)?$/i;
+const STATE_AS_RE = new RegExp(String.raw`^state\s+"([^"]*)"\s+as\s+(${ID})\s*(\{)?$`, 'iu');
 // `state s1 <<choice>>` / `<<fork>>` / `<<join>>`.
-const STEREOTYPE_RE = /^state\s+([A-Za-z0-9_-]+)\s*<<(choice|fork|join)>>$/i;
+const STEREOTYPE_RE = new RegExp(String.raw`^state\s+(${ID})\s*<<(choice|fork|join)>>$`, 'iu');
 // `state Composite {` — a plain composite state block.
-const COMPOSITE_RE = /^state\s+([A-Za-z0-9_-]+)\s*\{$/i;
+const COMPOSITE_RE = new RegExp(String.raw`^state\s+(${ID})\s*\{$`, 'iu');
 // `s1 : description text`. Same `\S.*` treatment as TRANSITION_RE.
-const DESCRIPTION_RE = /^([A-Za-z0-9_-]+)\s*:\s*(\S.*)$/;
+const DESCRIPTION_RE = new RegExp(String.raw`^(${ID})\s*:\s*(\S.*)$`, 'u');
+// `state X`, `X` or `X:::cls` on its own line declares the state.
+const BARE_RE = new RegExp(String.raw`^(?:state\s+)?(${ID})${CLASS}$`, 'iu');
 
 const STEREOTYPE_SHAPE: Record<string, GraphNode['shape']> = {
   choice: 'diamond',
@@ -55,6 +66,7 @@ export function parseStateDiagram(rawLines: string[]): ParseMermaidResult {
   // Each nested composite's id, by the top-level composite it folded into: a transition naming it points at that frame.
   const foldedInto = new Map<string, string>();
   let inNote = false;
+  const accessibility = { block: false };
 
   const touch = (id: string) => {
     if (!nodes.has(id)) {
@@ -97,6 +109,7 @@ export function parseStateDiagram(rawLines: string[]): ParseMermaidResult {
     }
 
     if (HEADER_RE.test(line)) continue;
+    if (accessibilityLine(line, accessibility)) continue;
     const dir = /^direction\s+([A-Za-z]{2})$/i.exec(line);
     if (dir) {
       // Only the top-level direction drives the layout; a composite's
@@ -166,7 +179,7 @@ export function parseStateDiagram(rawLines: string[]): ParseMermaidResult {
     }
 
     // `state X` / a bare state id on its own line declares the state.
-    const bare = /^(?:state\s+)?([A-Za-z0-9_-]+)$/i.exec(line);
+    const bare = BARE_RE.exec(line);
     if (bare) {
       touch(bare[1]!);
       implicit.delete(bare[1]!);

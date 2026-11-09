@@ -457,6 +457,37 @@ describe('parseMermaid real-world forms', () => {
     expect(edgesOf('flowchart TD\n a[Label]:::hot --> b:::cold & c')).toEqual(['a>b', 'a>c']);
   });
 
+  it('keeps the edge when the class sits against its operator', () => {
+    // The class name's `[\w-]+` ate the edge's dashes: `a:::hot-->b` imported `a` alone.
+    expect(edgesOf('flowchart TD\n a:::hot-->b')).toEqual(['a>b']);
+    expect(edgesOf('flowchart TD\n a[x]:::my-class-.->b')).toEqual(['a>b']);
+    expect(edgesOf('flowchart TD\n a:::hot==>b:::cold---c')).toEqual(['a>b', 'b>c']);
+  });
+
+  it("reads past an edge's id and skips the line that styles it", () => {
+    const r = parseMermaid('flowchart TD\n A e1@--> B\n A e2@==>|go| C\n e1@{ animate: true }');
+    if (!r.ok) throw new Error(r.error);
+    expect(r.graph.nodes.map((n) => n.id)).toEqual(['A', 'B', 'C']);
+    expect(r.graph.edges.map((e) => `${e.from}>${e.to}${e.label ?? ''}`)).toEqual(['A>B', 'A>Cgo']);
+  });
+
+  it('skips the accessibility lines rather than drawing them as boxes', () => {
+    const r = parseMermaid(
+      'flowchart TD\n accTitle: Checkout\n accDescr: How an order is paid\n accDescr {\n  Two\n  lines\n }\n A --> B',
+    );
+    if (!r.ok) throw new Error(r.error);
+    expect(r.graph.nodes.map((n) => n.id)).toEqual(['A', 'B']);
+    const oneLine = parseMermaid('flowchart TD\n accDescr { all on one line }\n A --> B');
+    expect(oneLine.ok && oneLine.graph.nodes.map((n) => n.id)).toEqual(['A', 'B']);
+  });
+
+  it("decodes Mermaid's named entity codes, as its docs write a quote", () => {
+    const r = parseMermaid(
+      'flowchart TD\n A["#quot;Hi#quot; #lt;b#gt; #amp; #hearts; #nosuch;"] --> B',
+    );
+    expect(r.ok && r.graph.nodes[0]!.label).toBe('"Hi" <b> & \u2665 #nosuch;');
+  });
+
   it("reads a markdown string's words without its backticks and emphasis", () => {
     const r = parseMermaid('flowchart TD\n A["`**Bold** and _soft_ text`"] --> B');
     expect(r.ok && r.graph.nodes.find((n) => n.id === 'A')!.label).toBe('Bold and soft text');
@@ -717,7 +748,7 @@ describe('mermaidFromTab', () => {
   });
 
   it('round-trips labels holding %% and entity-looking text, node and edge alike', () => {
-    const labels = ['50%% done', 'a %%%b', '#124; and #37;', '#%%', '100%'];
+    const labels = ['50%% done', 'a %%%b', '#124; and #37;', '#%%', '100%', 'Say #quot;hi#quot;'];
     const els = graphToElements({
       nodes: [...labels.map((label, i) => ({ id: `n${i}`, label })), { id: 'z', label: 'Z' }],
       edges: labels.map((label, i) => ({ from: `n${i}`, to: 'z', label })),
