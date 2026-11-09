@@ -59,6 +59,9 @@ describe('helloPresence', () => {
     expect(p.color).toHaveLength(MAX_COLOR_LEN);
     expect(p.tabId).toHaveLength(MAX_TAB_ID_LEN);
     expect(p.key).toHaveLength(MAX_PARTICIPANT_KEY_LEN);
+    // An emoji across the cap goes whole rather than leaving half of it to draw as a box.
+    const fox = helloPresence({ name: `${'n'.repeat(MAX_PARTICIPANT_NAME_LEN - 1)}🦊` }, SESSION);
+    expect(fox.name).toBe('n'.repeat(MAX_PARTICIPANT_NAME_LEN - 1));
   });
 
   it('drops non-string and absent fields rather than trusting them', () => {
