@@ -55,6 +55,17 @@ describe('parseCsvLineData (docs/specs/009-elements/pie-chart.md)', () => {
     ]);
   });
 
+  it('reads a currency sign after the number, and dotted thousands in a `;` file', () => {
+    // `10 €` and `1.234` (one thousand two hundred and thirty-four, where `,` is the decimal point) read 0 and 1.234.
+    const semi = parseCsvLineData('Month;Sales;Units\nJan;1.234,50 €;1.234\nFeb;12 €;12.345.678');
+    expect(semi!.series).toEqual([
+      { name: 'Sales', values: [1234.5, 12] },
+      { name: 'Units', values: [1234, 12345678] },
+    ]);
+    const comma = parseCsvLineData('x,Price\nA,10£\nB,1.5');
+    expect(comma!.series[0]!.values).toEqual([10, 1.5]);
+  });
+
   it('returns null when there is no usable data', () => {
     expect(parseCsvLineData('')).toBeNull();
     expect(parseCsvLineData('just-a-header,A')).toBeNull();
