@@ -131,7 +131,9 @@ describe('settings catalogue', () => {
     const taken = rowsOf({ watchTopics: all, elementToursSeen: true });
     for (const id of all) expect(taken).toContain(`watchTopic-${id}`);
     expect(taken.some((k) => k.startsWith('elementTour-'))).toBe(true);
-    const panel = SWITCHES.find((r) => r.parent && r.parent !== 'elementToursSeen' && !r.key.startsWith('watchTopic-'))!;
+    const panel = SWITCHES.find(
+      (r) => r.parent && r.parent !== 'elementToursSeen' && !r.key.startsWith('watchTopic-'),
+    )!;
     const parent = SWITCHES.find((r) => r.key === panel.parent)!;
     const off = parent.write({}, false);
     expect(rowsOf(off)).not.toContain(panel.key);
