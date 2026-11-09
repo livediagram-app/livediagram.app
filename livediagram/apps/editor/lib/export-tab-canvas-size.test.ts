@@ -49,12 +49,13 @@ describe('renderTabToCanvas size', () => {
   });
 
   it('never rounds a part pixel past the area limit', () => {
-    for (const [w, h] of [
+    const sizes: [number, number][] = [
       [8048.3, 6048.7],
       [4096.5, 4096.5],
       [100000, 170],
       [3001, 9973.1],
-    ]) {
+    ];
+    for (const [w, h] of sizes) {
       const s = exportScale(2, w, h);
       expect(Math.ceil(w * s) * Math.ceil(h * s)).toBeLessThanOrEqual(MAX_EXPORT_CANVAS_AREA);
       expect(Math.max(w, h) * s).toBeLessThanOrEqual(MAX_EXPORT_CANVAS_SIDE);
