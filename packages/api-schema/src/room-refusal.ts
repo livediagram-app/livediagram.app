@@ -10,6 +10,8 @@ export const ROOM_OP_REFUSAL_REASONS = [
   'duplicate-element',
   // A tab op holds more elements than a tab may.
   'too-many-elements',
+  // An op only the room makes (an `el` patch, from a Participant's change) arrived on a socket.
+  'room-made-op',
 ] as const;
 
 export type RoomOpRefusalReason = (typeof ROOM_OP_REFUSAL_REASONS)[number];
