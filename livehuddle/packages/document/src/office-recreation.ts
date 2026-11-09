@@ -1,7 +1,7 @@
 // The social pieces' second set (docs/specs/009-elements/social-pieces.md "Pool Table, Foosball Table, Dartboard",
 // "Vending Machine", "Bean Bag, Reading Nook"): drawings in the furniture's vocabulary (seating.ts), upright from the
 // room's camera like the rest of the office, which both renderers paint (the editor's views and svg-render-faces).
-// They join OFFICE_ART (office.ts). The seats and footprints are @liveworkspace/avatar's; where a lit piece glows on
+// They join OFFICE_ART (office.ts). The seats and footprints are @livehuddle/avatar's; where a lit piece glows on
 // dark paper is named here (NIGHT_GLOW) for the editor's live layer. Pure: no React, no DOM.
 
 import type { FurnitureDrawing, FurniturePart } from './seating';
@@ -13,7 +13,7 @@ import {
   READING_NOOK_SEATS,
   READING_NOOK_SEATS_BACK,
   READING_NOOK_SEATS_SIDE,
-} from '@liveworkspace/avatar/seats';
+} from '@livehuddle/avatar/seats';
 
 // Fixed colours, as SOCIAL_TONES: wood, cloth, balls, the board's rings, the machine's paint and its lit glass.
 export const RECREATION_TONES = {

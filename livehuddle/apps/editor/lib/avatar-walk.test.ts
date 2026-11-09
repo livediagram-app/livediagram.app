@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from '@livehuddle/document';
-import { elementUnderFeet } from '@liveworkspace/avatar/walk';
+import { elementUnderFeet } from '@livehuddle/avatar/walk';
 
 describe('elementUnderFeet', () => {
   const box: Element = { ...createShape('square', 100, 100), id: 'a', width: 200, height: 100 };

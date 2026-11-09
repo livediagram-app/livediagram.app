@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
-import { NO_POSE, type AvatarPose } from '@liveworkspace/avatar/pose';
+import { NO_POSE, type AvatarPose } from '@livehuddle/avatar/pose';
 import type { AvatarPresence } from '@livehuddle/api-schema';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { Participant } from '@/lib/identity';
@@ -46,11 +46,11 @@ const tally = (key: keyof typeof counts) => {
 };
 
 // The drawing: stand-ins, so the bench counts the layer's own work and not the sprites'.
-vi.mock('@liveworkspace/avatar/components/AvatarWalker', () => ({ AvatarWalker: () => null }));
-vi.mock('@liveworkspace/avatar/components/AvatarSelfWalker', () => ({
+vi.mock('@livehuddle/avatar/components/AvatarWalker', () => ({ AvatarWalker: () => null }));
+vi.mock('@livehuddle/avatar/components/AvatarSelfWalker', () => ({
   AvatarSelfWalker: () => null,
 }));
-vi.mock('@liveworkspace/avatar/components/AvatarPadArrivals', () => ({
+vi.mock('@livehuddle/avatar/components/AvatarPadArrivals', () => ({
   AvatarPadArrivals: () => null,
 }));
 vi.mock('./receptionist/ReceptionistLayer', () => ({ ReceptionistLayer: () => null }));
@@ -94,8 +94,8 @@ vi.mock('@/lib/calls/proximity-call', () => ({
     setDoNotDisturb = () => {};
   },
 }));
-vi.mock('@liveworkspace/avatar/config', async (actual) => {
-  const real = await actual<typeof import('@liveworkspace/avatar/config')>();
+vi.mock('@livehuddle/avatar/config', async (actual) => {
+  const real = await actual<typeof import('@livehuddle/avatar/config')>();
   return {
     ...real,
     parseAvatarConfig: (raw: unknown) => {

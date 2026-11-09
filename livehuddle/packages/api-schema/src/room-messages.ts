@@ -3,8 +3,8 @@ import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { ElementDelta, RoomElementOp, Tab } from '@livehuddle/document';
 import type { ParticipantPresence } from './index';
-import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
-import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
+import type { AvatarOp, AvatarPushOp } from '@livehuddle/avatar/wire';
+import type { AvatarSayOp } from '@livehuddle/avatar/wire-say';
 import type { AvatarVoiceOp, CallsCheckOp, CallTrackOp } from './call-voice';
 import type { AvatarHandOp, AvatarLetSpeakOp } from './call-hand';
 import type { CallSessionOp, CallStopShareOp } from './call-control';
@@ -21,10 +21,10 @@ import type { ChangesetRoomOp } from './changesets';
 // Realtime room messages
 // ---------------------------------------------------------------------
 
-// One participant's Avatar-mode character and its statuses (docs/specs/008-canvas/avatar-mode.md) are every
-// product's wire shapes, in @liveworkspace/api-schema/avatar; re-exported so this package's surface is unchanged.
-export { AVATAR_STATUS_IDS, expandAvatarPacket } from '@liveworkspace/api-schema/avatar';
-export type { AvatarPacket, AvatarPresence, AvatarStatus } from '@liveworkspace/api-schema/avatar';
+// One participant's Avatar-mode character and its statuses (docs/specs/008-canvas/avatar-mode.md) are Avatar mode's
+// wire shapes, in @livehuddle/avatar/wire; re-exported so this package's surface is unchanged.
+export { AVATAR_STATUS_IDS, expandAvatarPacket, isLeanAvatarPacket } from '@livehuddle/avatar/wire';
+export type { AvatarPacket, AvatarPresence, AvatarStatus } from '@livehuddle/avatar/wire';
 
 // Room op kinds that are ephemeral signals: they mutate no document state,
 // so they relay unordered (no seq) and from any role.
@@ -487,7 +487,7 @@ export type RoomOp =
   // participants who are looking at the same tab as us.
   | { kind: 'cursor'; tabId: string; x: number | null; y: number | null }
   // The sender's Avatar-mode character, and one character SHOVING another (docs/specs/008-canvas/avatar-mode.md):
-  // every product's wire shapes, in @liveworkspace/api-schema/avatar.
+  // Avatar mode's wire shapes, in @livehuddle/avatar/wire.
   | AvatarOp
   | AvatarPushOp
   | AvatarSayOp

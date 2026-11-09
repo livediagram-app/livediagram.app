@@ -7,8 +7,8 @@ import {
   SHAPE_KINDS,
   type Element as CanvasElement,
 } from '@livehuddle/document';
-import { FENCE_REACH } from '@liveworkspace/avatar/collision';
-import { officeFootprint } from '@liveworkspace/avatar/office-geometry';
+import { FENCE_REACH } from '@livehuddle/avatar/collision';
+import { officeFootprint } from '@livehuddle/avatar/office-geometry';
 import { arcadeAt } from '@/components/canvas/collab/useSocialPieces';
 import { receptionAt } from '@/lib/office/useWorkdayPieces';
 import {

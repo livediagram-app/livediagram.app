@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import type { Element } from '@livehuddle/document';
 import type { AvatarPresence } from '@livehuddle/api-schema';
-import type { AvatarPoint } from '@liveworkspace/avatar/walk';
-import type { AvatarConfig } from '@liveworkspace/avatar/config';
+import type { AvatarPoint } from '@livehuddle/avatar/walk';
+import type { AvatarConfig } from '@livehuddle/avatar/config';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { peopleKey, placeFinder, whoIsWhere } from '@/lib/wayfinding';
 import type { Wayfinding } from './wayfinding-store';

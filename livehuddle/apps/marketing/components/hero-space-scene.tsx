@@ -1,13 +1,13 @@
 // The Space feature scenes (docs/specs/019-marketing/marketing-site.md "Feature scenes"): a real Space in use, drawn
 // once on the server. The room is the template drawn by the editor's renderer (public/hero/<id>-light.svg and
-// -dark.svg); every character is Avatar mode's own sprite (@liveworkspace/avatar), its stills in one cached sprite
+// -dark.svg); every character is Avatar mode's own sprite (@livehuddle/avatar), its stills in one cached sprite
 // sheet per scene (public/hero/<id>-cast.svg); app/hero-scenes/space.css does every move, so a scene ships no
 // JavaScript. Under reduced motion the stylesheet shows the settled frame. Three Spaces play: the Team Pod's
 // stand-up, the Virtual Office's walk to the meeting room and the All-Hands Hall's welcome (hero-space-cast.ts,
 // hero-space-places.ts).
 
 import type { CSSProperties, ReactNode } from 'react';
-import { avatarBox } from '@liveworkspace/avatar/walk';
+import { avatarBox } from '@livehuddle/avatar/walk';
 import { FONT } from './art-tokens';
 import {
   CHEER_LIFTS,

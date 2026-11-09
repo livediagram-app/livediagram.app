@@ -6,12 +6,12 @@
 
 import { useEffect } from 'react';
 import type { Element } from '@livehuddle/document';
-import type { PadArrival } from '@liveworkspace/avatar/pad';
-import type { AvatarPoint } from '@liveworkspace/avatar/walk';
-import { avatarScale } from '@liveworkspace/avatar/config';
-import { headPoint } from '@liveworkspace/avatar/speech';
-import { reactionPose } from '@liveworkspace/avatar/reactions';
-import { AvatarWalker } from '@liveworkspace/avatar/components/AvatarWalker';
+import type { PadArrival } from '@livehuddle/avatar/pad';
+import type { AvatarPoint } from '@livehuddle/avatar/walk';
+import { avatarScale } from '@livehuddle/avatar/config';
+import { headPoint } from '@livehuddle/avatar/speech';
+import { reactionPose } from '@livehuddle/avatar/reactions';
+import { AvatarWalker } from '@livehuddle/avatar/components/AvatarWalker';
 import {
   askReceptionist,
   closeReceptionist,

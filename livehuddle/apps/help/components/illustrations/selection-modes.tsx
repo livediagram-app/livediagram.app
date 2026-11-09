@@ -8,7 +8,7 @@
 
 import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { PixelCharacter } from '@liveworkspace/help-site/art/pixel-character';
+import { PixelCharacter } from './pixel-character';
 import { EditWalkToggle, PainterGlyph } from './palette-modes-parts';
 
 function Chevron({ x, y }: { x: number; y: number }) {

@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AvatarSprite } from '@liveworkspace/avatar/components/avatar-sprite';
-import { StatusDot } from '@liveworkspace/avatar/components/AvatarWalker';
-import type { AvatarConfig } from '@liveworkspace/avatar/config';
+import { AvatarSprite } from '@livehuddle/avatar/components/avatar-sprite';
+import { StatusDot } from '@livehuddle/avatar/components/AvatarWalker';
+import type { AvatarConfig } from '@livehuddle/avatar/config';
 import {
   reactionDuration,
   reactionPose,
   type AvatarReactionKind,
   type ReactionPose,
-} from '@liveworkspace/avatar/reactions';
-import { avatarStatusLabel, type AvatarStatus } from '@liveworkspace/avatar/status';
+} from '@livehuddle/avatar/reactions';
+import { avatarStatusLabel, type AvatarStatus } from '@livehuddle/avatar/status';
 import { prefersReducedMotion } from '@livehuddle/ui';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { behaviourStill } from '@/lib/avatar-palette';

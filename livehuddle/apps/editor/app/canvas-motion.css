@@ -1107,7 +1107,7 @@
 
 /* The meeting pieces' slow canvas changes (docs/specs/009-elements/office.md "Office Pod",
  * screen-and-room-sign.md, meeting-rooms-and-stage.md "The stage shows who is on it"): a pod's sliding door
- * (POD_DOOR_MS in @liveworkspace/avatar/pod, which the walk waits on), a Room Sign's stripe changing state, and
+ * (POD_DOOR_MS in @livehuddle/avatar/pod, which the walk waits on), a Room Sign's stripe changing state, and
  * a stage's spotlight fading. Canvas motion, so the chrome budget does not apply; reduced motion drops each. */
 .lh-pod-door {
   transition: transform 600ms ease-in-out;

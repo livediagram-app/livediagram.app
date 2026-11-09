@@ -46,14 +46,9 @@ function sources(dir: string, out: string[] = []): string[] {
 
 // The shared design system (@liveworkspace/ui) renders here too, so its hooks are held to the rule as well.
 // So is the editor code every editor shares (@liveworkspace/workbench).
-// And Avatar mode's shared code (@liveworkspace/avatar).
-const files = [
-  'apps',
-  'packages',
-  '../packages/ui/src',
-  '../packages/workbench/src',
-  '../packages/avatar/src',
-].flatMap((d) => sources(`${repo}${d}`));
+const files = ['apps', 'packages', '../packages/ui/src', '../packages/workbench/src'].flatMap((d) =>
+  sources(`${repo}${d}`),
+);
 const rel = (path: string) => path.slice(repo.length);
 
 describe('browser globals in components', () => {

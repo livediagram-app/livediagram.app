@@ -4,7 +4,7 @@
 // deliberately pixel art.
 
 import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
-import { PixelCharacter } from '@liveworkspace/help-site/art/pixel-character';
+import { PixelCharacter } from './pixel-character';
 import { MenuCard, Strip } from './toolbar-layout';
 import { SelectionToolbar } from './user-interface';
 

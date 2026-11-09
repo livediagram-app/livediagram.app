@@ -16,7 +16,7 @@ export function setStartPanelOpen(next: boolean): void {
 }
 
 // The same, read once, for window-level listeners that run outside React (the walk's keys and clicks,
-// @liveworkspace/avatar/walk-guard).
+// @livehuddle/avatar/walk-guard).
 export function startPanelIsOpen(): boolean {
   return open;
 }

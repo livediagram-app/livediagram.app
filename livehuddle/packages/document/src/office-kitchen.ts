@@ -1,7 +1,7 @@
 // The office amenities' kitchenette (docs/specs/009-elements/office-amenities.md "Kitchenette"): a Kitchen Counter and a
 // Kitchen Sink built as one run of units, a Fridge, and a Microwave and a Kettle that stand on a counter's worktop.
 // Drawings in the furniture's vocabulary (seating.ts), upright from the room's camera, which both renderers paint. They
-// join OFFICE_ART (office.ts). The footprints are @liveworkspace/avatar's. Pure: no React, no DOM.
+// join OFFICE_ART (office.ts). The footprints are @livehuddle/avatar's. Pure: no React, no DOM.
 
 import type { FurnitureArt, FurnitureDrawing, FurniturePart } from './seating';
 import { ellipse, path, rect } from './furniture-parts';

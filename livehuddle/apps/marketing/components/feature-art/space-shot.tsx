@@ -6,7 +6,7 @@
 
 import type { CSSProperties, ReactNode } from 'react';
 import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
-import { avatarBox } from '@liveworkspace/avatar/walk';
+import { avatarBox } from '@livehuddle/avatar/walk';
 import { FONT } from '../art-tokens';
 import { RoomArt } from '../room-art';
 import {

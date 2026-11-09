@@ -1,10 +1,10 @@
 // The avatar palette's flyout widths and what its flyouts act on (docs/specs/008-canvas/avatar-mode.md "The avatar
 // palette"), apart from the flyouts' bodies, so the strip (AvatarPalette) hangs a flyout before its code has loaded.
 
-import type { AvatarConfig } from '@liveworkspace/avatar/config';
-import type { AvatarReactionKind } from '@liveworkspace/avatar/reactions';
-import type { Reaction } from '@liveworkspace/avatar/reaction-bursts';
-import type { AvatarStatus } from '@liveworkspace/avatar/status';
+import type { AvatarConfig } from '@livehuddle/avatar/config';
+import type { AvatarReactionKind } from '@livehuddle/avatar/reactions';
+import type { Reaction } from '@liveworkspace/model-core/reaction-bursts';
+import type { AvatarStatus } from '@livehuddle/avatar/status';
 import type { AvatarPaletteCategoryId } from '@/lib/avatar-palette';
 
 /** What the flyouts change and play: the character, its choices' handlers, and the actions. */

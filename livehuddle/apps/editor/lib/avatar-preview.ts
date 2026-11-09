@@ -3,10 +3,10 @@
 // pointing along a flyout's tiles re-renders the preview card alone, never the flyout. No React in the pure parts.
 
 import { useSyncExternalStore } from 'react';
-import type { AvatarConfig } from '@liveworkspace/avatar/config';
-import type { AvatarReactionKind } from '@liveworkspace/avatar/reactions';
-import type { Reaction } from '@liveworkspace/avatar/reaction-bursts';
-import type { AvatarStatus } from '@liveworkspace/avatar/status';
+import type { AvatarConfig } from '@livehuddle/avatar/config';
+import type { AvatarReactionKind } from '@livehuddle/avatar/reactions';
+import type { Reaction } from '@liveworkspace/model-core/reaction-bursts';
+import type { AvatarStatus } from '@livehuddle/avatar/status';
 
 /** One option being tried on. `label` is its Title Case name, as its tile reads. */
 export type AvatarPreview =

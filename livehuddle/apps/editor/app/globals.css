@@ -4,8 +4,8 @@
 @import '@liveworkspace/explorer/explorer.css';
 @import '@livehuddle/template-previews/preview-art-tile.css';
 @import '@livehuddle/template-previews/preview-motion.css';
-/* Avatar mode's status signatures' loops (@liveworkspace/avatar, docs/specs/008-canvas/avatar-mode.md "Status"). */
-@import '@liveworkspace/avatar/status-effects.css';
+/* Avatar mode's status signatures' loops (@livehuddle/avatar, docs/specs/008-canvas/avatar-mode.md "Status"). */
+@import '@livehuddle/avatar/status-effects.css';
 @import './meeting-motion.css';
 @import './social-motion.css';
 @import './piece-moments.css';
@@ -71,8 +71,8 @@
 @source '../../../../packages/settings-ui/src';
 /* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
 @source '../../../../packages/workbench/src';
-/* So does Avatar mode's shared code (@liveworkspace/avatar). */
-@source '../../../../packages/avatar/src';
+/* So does Avatar mode's code (@livehuddle/avatar). */
+@source '../../../packages/avatar/src';
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating

@@ -1,8 +1,8 @@
 'use client';
 
 import { memo } from 'react';
-import { AvatarSprite } from '@liveworkspace/avatar/components/avatar-sprite';
-import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
+import { AvatarSprite } from '@livehuddle/avatar/components/avatar-sprite';
+import { DEFAULT_AVATAR_CONFIG } from '@livehuddle/avatar/config';
 import {
   OFFICE_ART,
   PHOTO_FRAME_RECTS,

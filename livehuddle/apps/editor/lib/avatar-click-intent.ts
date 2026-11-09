@@ -1,5 +1,5 @@
 import { pieceFacing, type Element as CanvasElement, type ShapeKind } from '@livehuddle/document';
-import { officeFootprint } from '@liveworkspace/avatar/office-geometry';
+import { officeFootprint } from '@livehuddle/avatar/office-geometry';
 
 // What a click on a piece means in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Clicking a piece"): `walk`
 // walks the character there (and arriving does what it does: sit, drink, travel), `use` does the piece's main action

@@ -5,10 +5,10 @@
 // stop's thing for the rest of the leg. Pure: no React, no DOM, no clock of its own (the caller passes `now`).
 
 import { hashId, seeded, type Element } from '@livehuddle/document';
-import { drinkFrom, roomInterior, type DrinkKind } from '@liveworkspace/avatar/office-geometry';
-import { findWalkPath, type NavGrid } from '@liveworkspace/avatar/pathing';
-import type { AvatarFacing } from '@liveworkspace/avatar/walk';
-import type { AvatarReactionKind } from '@liveworkspace/avatar/reactions';
+import { drinkFrom, roomInterior, type DrinkKind } from '@livehuddle/avatar/office-geometry';
+import { findWalkPath, type NavGrid } from '@livehuddle/avatar/pathing';
+import type { AvatarFacing } from '@livehuddle/avatar/walk';
+import type { AvatarReactionKind } from '@livehuddle/avatar/reactions';
 
 /** One leg of his day: he sets off at its start, strolls to its stop, then does the stop's thing. */
 export const RECEPTIONIST_LEG_MS = 16_000;

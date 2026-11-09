@@ -12,8 +12,8 @@ import { describe, expect, it } from 'vitest';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 // The editor code every editor shares (@liveworkspace/workbench) is scanned beside this app's own.
 const WORKBENCH = join(ROOT, '../../../packages/workbench/src');
-// And Avatar mode's shared code (@liveworkspace/avatar).
-const AVATAR = join(ROOT, '../../../packages/avatar/src');
+// And Avatar mode's code (@livehuddle/avatar).
+const AVATAR = join(ROOT, '../../packages/avatar/src');
 const SKIP_DIRS = new Set([
   'node_modules',
   '.next',

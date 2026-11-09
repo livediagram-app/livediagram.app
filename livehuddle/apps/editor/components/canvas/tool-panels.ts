@@ -3,5 +3,5 @@
 // lib/editor-deferred-code.ts fetches it once the editor is idle).
 export { AvatarPaletteFlyout } from '@/components/palette/AvatarPaletteFlyouts';
 export { AvatarPalettePreview } from '@/components/palette/AvatarPalettePreview';
-export { AvatarMessagePopover } from '@liveworkspace/avatar/components/AvatarMessagePopover';
+export { AvatarMessagePopover } from '@livehuddle/avatar/components/AvatarMessagePopover';
 export { FormatPanel } from '@/components/panels/FormatPanel';

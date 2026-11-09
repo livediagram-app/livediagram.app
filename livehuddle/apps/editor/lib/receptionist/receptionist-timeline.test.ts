@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livehuddle/document';
-import { reactionDuration } from '@liveworkspace/avatar/reactions';
+import { reactionDuration } from '@livehuddle/avatar/reactions';
 import {
   RECEPTIONIST_GREET_MS,
   RECEPTIONIST_HOME_EVERY,

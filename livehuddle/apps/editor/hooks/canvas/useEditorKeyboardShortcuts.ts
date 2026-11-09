@@ -29,7 +29,7 @@ import {
 } from './editor-shortcut-keys';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
-import { avatarActionForKey } from '@liveworkspace/avatar/action-keys';
+import { avatarActionForKey } from '@livehuddle/avatar/action-keys';
 import { altGraphHeld } from '@liveworkspace/workbench/lib/composed-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.

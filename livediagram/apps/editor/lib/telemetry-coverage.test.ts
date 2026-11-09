@@ -103,7 +103,6 @@ const CATALOGUE = join(APP_ROOT, 'components/dialogs/settings/settings-catalogue
 const emitted = (() => {
   const pairs = new Set<string>();
   // With the editor code every editor shares (@liveworkspace/workbench).
-  // And Avatar mode's (@liveworkspace/avatar), which sends this editor's Avatar events.
   for (const file of [APP_ROOT, join(APP_ROOT, '../../../packages/workbench/src')].flatMap(
     sourceFiles,
   )) {

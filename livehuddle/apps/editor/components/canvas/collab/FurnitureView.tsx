@@ -1,8 +1,8 @@
 'use client';
 
-import { seatPillBottom, seatRing, type Sitter } from '@liveworkspace/avatar/chair-sitters';
+import { seatPillBottom, seatRing, type Sitter } from '@livehuddle/avatar/chair-sitters';
 import { useEffect, useId, useRef } from 'react';
-import { podClosed } from '@liveworkspace/avatar/pod';
+import { podClosed } from '@livehuddle/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
 import { hasMoment, type PieceMomentPlay } from '@/lib/piece-moments';

@@ -18,7 +18,7 @@
     "@livehuddle/template-previews": "workspace:*",
     "@livehuddle/templates": "workspace:*",
     "@livehuddle/ui": "workspace:*",
-    "@liveworkspace/avatar": "workspace:*",
+    "@livehuddle/avatar": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/comparisons": "workspace:*",
     "@liveworkspace/icons": "workspace:*",

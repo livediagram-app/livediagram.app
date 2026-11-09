@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from 'react';
 import { CountBadge, Glyph, Tooltip } from '@livehuddle/ui';
-import { drawnRect } from '@liveworkspace/avatar/seats';
-import { facingView } from '@liveworkspace/avatar/facing';
+import { drawnRect } from '@livehuddle/avatar/seats';
+import { facingView } from '@livehuddle/avatar/facing';
 import {
   CLOCK_DIALS_ON_FACE,
   CLOCK_FACE,

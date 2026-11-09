@@ -14,7 +14,7 @@ import {
   POD_DOOR,
   POD_DOORS,
 } from './office-garden';
-import { SEAT_VIEWS } from '@liveworkspace/avatar/seats';
+import { SEAT_VIEWS } from '@livehuddle/avatar/seats';
 import { roomZones, zoneAt } from './call-geometry';
 import { defaultFillColor } from './colors';
 
@@ -192,7 +192,7 @@ describe('the pod and the bar turned', () => {
     expect(art.side).toBe(art.front);
   });
 
-  it('seats the pod on its turned benches, from @liveworkspace/avatar/seats', () => {
+  it('seats the pod on its turned benches, from @livehuddle/avatar/seats', () => {
     const art = OFFICE_ART['office-pod'];
     expect(art.back.seats).toEqual(SEAT_VIEWS['office-pod'].back.seats);
     expect(art.side.seats).toEqual(SEAT_VIEWS['office-pod'].side.seats);

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
-import { AvatarSprite } from '@liveworkspace/avatar/components/avatar-sprite';
-import { avatarBindings } from '@liveworkspace/avatar/bindings';
+import { AvatarSprite } from '@livehuddle/avatar/components/avatar-sprite';
+import { avatarBindings } from '@livehuddle/avatar/bindings';
 import {
   AVATAR_CLOTHING,
   AVATAR_GENDERS,
@@ -10,16 +10,16 @@ import {
   AVATAR_HAIR_COLOURS,
   AVATAR_SIZES,
   type AvatarConfig,
-} from '@liveworkspace/avatar/config';
-import { AVATAR_REACTIONS, type AvatarReactionKind } from '@liveworkspace/avatar/reactions';
-import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@liveworkspace/avatar/action-keys';
+} from '@livehuddle/avatar/config';
+import { AVATAR_REACTIONS, type AvatarReactionKind } from '@livehuddle/avatar/reactions';
+import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@livehuddle/avatar/action-keys';
 import {
   REACTION_EMOJI,
   REACTION_LABEL,
   REACTIONS,
   type Reaction,
-} from '@liveworkspace/avatar/reaction-bursts';
-import { AVATAR_STATUS_GROUPS, type AvatarStatusEntry } from '@liveworkspace/avatar/status';
+} from '@liveworkspace/model-core/reaction-bursts';
+import { AVATAR_STATUS_GROUPS, type AvatarStatusEntry } from '@livehuddle/avatar/status';
 import { Button, HoverCard, RefreshIcon } from '@livehuddle/ui';
 import { behaviourStill, titleCase, type AvatarPaletteCategoryId } from '@/lib/avatar-palette';
 import { setJukeboxListening, useJukeboxListening } from '@/lib/jukebox-listening';

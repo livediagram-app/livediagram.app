@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { facingView, type SeatFacing } from '@liveworkspace/avatar/facing';
+import { facingView, type SeatFacing } from '@livehuddle/avatar/facing';
 import {
   ARCADE_SCREEN,
   ARCADE_SCREEN_SIDE,

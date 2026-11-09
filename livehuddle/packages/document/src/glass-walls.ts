@@ -12,7 +12,7 @@ import {
   roomDoorSpan,
   roomWalls,
   type RoomDoor,
-} from '@liveworkspace/avatar/office-geometry';
+} from '@livehuddle/avatar/office-geometry';
 import { pieceVariant, ROOM_WALL_VARIANTS } from './piece-variants';
 
 /** The `variant` a glass-walled room stores (office.md "Glass walls"). */

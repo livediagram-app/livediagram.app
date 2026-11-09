@@ -109,5 +109,5 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
 }
 
 // The five reactions a walking character throws (docs/specs/008-canvas/avatar-mode.md "Reactions"), their names and
-// glyphs, are @liveworkspace/avatar's.
-export * from '@liveworkspace/avatar/reaction-bursts';
+// glyphs, are @livehuddle/avatar's.
+export * from '@liveworkspace/model-core/reaction-bursts';

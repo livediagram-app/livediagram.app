@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SEAT_VIEWS } from '@liveworkspace/avatar/seats';
+import { SEAT_VIEWS } from '@livehuddle/avatar/seats';
 import { OFFICE_ART } from './office';
 import type { FurnitureDrawing, FurniturePart } from './seating';
 import {

@@ -7,7 +7,7 @@ import {
   reactionPose,
   type AvatarReactionKind,
   type ReactionPose,
-} from '@liveworkspace/avatar/reactions';
+} from '@livehuddle/avatar/reactions';
 
 /** Which strip sits at the top of the canvas: the building palette, the avatar palette, or none. */
 export type StripPalette = 'build' | 'avatar' | null;

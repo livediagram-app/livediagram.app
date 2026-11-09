@@ -11,9 +11,9 @@ import {
   PET_LEG_MS,
   type ShapeElement,
 } from '@livehuddle/document';
-import { AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
-import { avatarScale } from '@liveworkspace/avatar/config';
-import { drawnRect } from '@liveworkspace/avatar/seats';
+import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
+import { avatarScale } from '@livehuddle/avatar/config';
+import { drawnRect } from '@livehuddle/avatar/seats';
 
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useOptionalEditorContext: () => null }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

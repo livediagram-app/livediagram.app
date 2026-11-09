@@ -4,7 +4,7 @@
 // table in the Boardroom, desk pods in the Open Plan, a kitchen along the Kitchen's back wall, sofas round a fire in the
 // Lounge). Placed in one change with the Room and its Door (`withDoorPiece`, room-builder.ts). Pure: no React, no DOM.
 
-import { ROOM_DOOR_WIDTH } from '@liveworkspace/avatar/office-geometry';
+import { ROOM_DOOR_WIDTH } from '@livehuddle/avatar/office-geometry';
 import type { ChairFacing, ShapeElement, ShapeKind } from './index';
 import { createShape } from './shape-factory';
 import { RESTROOM_VARIANT, applyShapeVariant } from './shape-variants';

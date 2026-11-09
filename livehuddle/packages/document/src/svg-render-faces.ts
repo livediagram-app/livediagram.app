@@ -11,7 +11,7 @@
 // the canvas: a card is composed at its kind's default size and scaled to the
 // box, so a big one has bigger type rather than more padding.
 
-import { fenceParts, FENCE_RAIL_OPACITY } from '@liveworkspace/avatar/fence';
+import { fenceParts, FENCE_RAIL_OPACITY } from '@livehuddle/avatar/fence';
 import {
   AVATAR_PAD_ART,
   AVATAR_PAD_GLOW,

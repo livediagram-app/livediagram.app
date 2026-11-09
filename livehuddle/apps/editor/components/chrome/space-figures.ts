@@ -3,7 +3,7 @@
 // two stride frames, the seated pose) on its 16 x 24 grid and from its palette. Each view is a handful of paths, one
 // per colour, so the figures cost a few hundred bytes rather than a sprite module and its walk code.
 
-import { AVATAR_PALETTE as P } from '@liveworkspace/avatar/palette';
+import { AVATAR_PALETTE as P } from '@livehuddle/avatar/palette';
 
 export type Who = 'you' | 'sam';
 export type Pose = 'up' | 'left' | 'right' | 'seated';

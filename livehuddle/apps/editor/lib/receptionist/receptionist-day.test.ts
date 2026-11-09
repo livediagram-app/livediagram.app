@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livehuddle/document';
-import { buildNavGrid } from '@liveworkspace/avatar/pathing';
-import { fenceReachFor, fenceSegments, shutDoorLines } from '@liveworkspace/avatar/collision';
-import { roomInterior } from '@liveworkspace/avatar/office-geometry';
+import { buildNavGrid } from '@livehuddle/avatar/pathing';
+import { fenceReachFor, fenceSegments, shutDoorLines } from '@livehuddle/avatar/collision';
+import { roomInterior } from '@livehuddle/avatar/office-geometry';
 import {
   RECEPTIONIST_HOME_EVERY,
   RECEPTIONIST_LEG_MS,

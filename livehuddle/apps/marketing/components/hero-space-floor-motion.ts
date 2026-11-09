@@ -8,7 +8,7 @@
 // transform alone, so the browser composites them without repainting; a bubble fades on opacity and rises on
 // transform.
 
-import type { AvatarFacing } from '@liveworkspace/avatar/walk';
+import type { AvatarFacing } from '@livehuddle/avatar/walk';
 import {
   LOOP_S,
   SETTLED_AT,

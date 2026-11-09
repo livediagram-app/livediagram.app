@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ArcadeScore, type ShapeElement } from '@livehuddle/document';
-import { avatarKeyClaimed } from '@liveworkspace/avatar/key-claims';
+import { avatarKeyClaimed } from '@livehuddle/avatar/key-claims';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 
 // docs/specs/009-elements/social-pieces.md "The panel", "Controls", "High Scores"; blueprint "The panel": the panel

@@ -12,7 +12,7 @@ import {
   AVATAR_PAD_TONES,
   avatarPadCore,
   avatarPadFootprint,
-} from '@liveworkspace/avatar/pad-art';
+} from '@livehuddle/avatar/pad-art';
 import {
   FURNITURE_FACE_SHADE,
   FURNITURE_GLINT,

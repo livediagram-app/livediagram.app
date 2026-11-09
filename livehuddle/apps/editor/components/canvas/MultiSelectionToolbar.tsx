@@ -1,7 +1,7 @@
 import type { Element } from '@livehuddle/document';
 import { DuplicateIcon, EllipsisIcon, TrashIcon, HoverCard, Glyph } from '@livehuddle/ui';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
-import { TurnButtons } from '@liveworkspace/workbench/components/canvas/TurnButtons';
+import { TurnButtons } from '@livehuddle/avatar/components/TurnButtons';
 import { TOOLBAR_BTN } from '@liveworkspace/workbench/components/canvas/toolbar-buttons';
 
 type MultiSelectionToolbarProps = {

@@ -9,7 +9,7 @@ import {
   type ChairFacing,
   type Element,
 } from '@livehuddle/document';
-import { createPlacingFacing } from '@liveworkspace/workbench/lib/placing-facing';
+import { createPlacingFacing } from '@livehuddle/avatar/placing-facing';
 
 // The way the piece being placed faces (docs/specs/009-elements/furniture-facing.md "Turning while placing"): Space
 // turns it while its tile is armed or carried onto the canvas, and the click or the drop lands it turned. The store is

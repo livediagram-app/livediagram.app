@@ -4,7 +4,7 @@
 // Meeting Booth's glass walls, which are the room's own wall style. A LEAF module: types and the avatar's outline
 // geometry only.
 
-import { pointInPolygon, type OutlinePoint } from '@liveworkspace/avatar/room-outline';
+import { pointInPolygon, type OutlinePoint } from '@livehuddle/avatar/room-outline';
 import type { ShapeElement } from './index';
 
 type RoomPreset = {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { fenceSegments } from '@liveworkspace/avatar/collision';
+import { fenceSegments } from '@livehuddle/avatar/collision';
 import {
   applyShapeVariant,
   createOutlinedRoom,

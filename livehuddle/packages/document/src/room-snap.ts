@@ -1,7 +1,7 @@
 // Rooms snap wall to wall (docs/specs/009-elements/office.md "Rooms line up"): two rectangular Rooms side by side share
 // one wall line rather than standing their walls back to back, so the ordinary edge snap (box edge to box edge, which
 // leaves a double wall) is joined by a shared-wall snap. Pure, and linear in the elements: it runs per pointer frame.
-import { ROOM_BACK_FACE, ROOM_WALL } from '@liveworkspace/avatar/office-geometry';
+import { ROOM_BACK_FACE, ROOM_WALL } from '@livehuddle/avatar/office-geometry';
 import type { AlignmentGuide } from './geometry-guides';
 import type { Element, ElementId, ShapeElement } from './index';
 

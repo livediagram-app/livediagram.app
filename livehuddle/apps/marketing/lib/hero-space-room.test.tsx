@@ -4,11 +4,11 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { renderElementsToSvg, shade, tint, type Element, type Tab } from '@livehuddle/document';
 import { buildTemplate } from '@livehuddle/templates';
-import { AVATAR_DEFAULTS, configureAvatar } from '@liveworkspace/avatar/bindings';
-import { AvatarSprite } from '@liveworkspace/avatar/components/avatar-sprite';
-import { reactionPose } from '@liveworkspace/avatar/reactions';
-import { seatPoints, type SeatedBox } from '@liveworkspace/avatar/seats';
-import { avatarBox, type AvatarFacing } from '@liveworkspace/avatar/walk';
+import { AVATAR_DEFAULTS, configureAvatar } from '@livehuddle/avatar/bindings';
+import { AvatarSprite } from '@livehuddle/avatar/components/avatar-sprite';
+import { reactionPose } from '@livehuddle/avatar/reactions';
+import { seatPoints, type SeatedBox } from '@livehuddle/avatar/seats';
+import { avatarBox, type AvatarFacing } from '@livehuddle/avatar/walk';
 import { SpaceScene } from '@/components/hero-space-scene';
 import {
   CHEER_LIFTS,

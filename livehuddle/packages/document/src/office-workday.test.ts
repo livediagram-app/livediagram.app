@@ -6,7 +6,7 @@ import {
   STANDING_DESK_SEATS,
   TREADMILL_SEATS,
   WEIGHT_BENCH_SEATS,
-} from '@liveworkspace/avatar/seats';
+} from '@livehuddle/avatar/seats';
 import { createShape } from './shape-factory';
 import { isGridOfficeShape, OFFICE_ART } from './office';
 import {
@@ -19,9 +19,9 @@ import {
   TREADMILL_BELT,
   TREADMILL_BELTS,
 } from './office-workday';
-import { SEAT_VIEWS } from '@liveworkspace/avatar/seats';
-import { footprintFraction } from '@liveworkspace/avatar/office-geometry';
-import { facingView } from '@liveworkspace/avatar/facing';
+import { SEAT_VIEWS } from '@livehuddle/avatar/seats';
+import { footprintFraction } from '@livehuddle/avatar/office-geometry';
+import { facingView } from '@livehuddle/avatar/facing';
 import { pieceFacing, turnsWithFacing } from './furniture-facing';
 import { svgBoxed } from './svg-render';
 import { isValidElement } from './validate';

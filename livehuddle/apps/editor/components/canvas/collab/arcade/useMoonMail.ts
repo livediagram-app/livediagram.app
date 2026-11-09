@@ -14,7 +14,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { claimAvatarKeys, type ClaimedKey } from '@liveworkspace/avatar/key-claims';
+import { claimAvatarKeys, type ClaimedKey } from '@livehuddle/avatar/key-claims';
 import { isEnterActivatedTarget, isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { PREFERS_REDUCED_MOTION, prefersReducedMotion, useMediaQuery } from '@livehuddle/ui';

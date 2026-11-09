@@ -11,18 +11,18 @@
 import type { ShapeKind } from './index';
 import { isSelfDrawingShape } from './data-shapes';
 import { SHAPE_KINDS } from './shape-kinds';
-import type { AvatarFacing } from '@liveworkspace/avatar/walk';
+import type { AvatarFacing } from '@livehuddle/avatar/walk';
 import {
   DEFAULT_SEATING_FACING,
   SEAT_SITTER_FACING,
   type SeatFacing,
-} from '@liveworkspace/avatar/seats';
+} from '@livehuddle/avatar/seats';
 
 // --- Chair (docs/specs/009-elements/chair.md) ------------------------------------------------------
 
 // Which way the seat points. 'n' = the chair's back is at the top, so the
 // sitter faces down the canvas toward the reader. The vocabulary is the seat
-// geometry's (@liveworkspace/avatar/seats), which every product seats with.
+// geometry's (@livehuddle/avatar/seats), which every product seats with.
 export type ChairFacing = SeatFacing;
 export const CHAIR_FACINGS: readonly ChairFacing[] = ['n', 'e', 's', 'w'];
 export const DEFAULT_CHAIR_FACING: ChairFacing = DEFAULT_SEATING_FACING.chair;

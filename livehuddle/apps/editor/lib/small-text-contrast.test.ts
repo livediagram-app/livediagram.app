@@ -15,7 +15,7 @@ const DIRS = [
   'app',
   'hooks',
   '../../../packages/workbench/src',
-  '../../../packages/avatar/src',
+  '../../packages/avatar/src',
 ];
 
 function sourceFiles(dir: string, acc: string[] = []): string[] {

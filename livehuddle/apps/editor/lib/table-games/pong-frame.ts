@@ -6,7 +6,7 @@
 // the same rally on the same table, and a player's keys and pointer move their paddle the way it moves on screen.
 // Pure.
 
-import { facingView, type SeatFacing } from '@liveworkspace/avatar/facing';
+import { facingView, type SeatFacing } from '@livehuddle/avatar/facing';
 import { OFFICE_ART, PING_PONG_TOP, PING_PONG_TOP_SIDE } from '@livehuddle/document';
 
 type Box = { x: number; y: number; w: number; h: number };

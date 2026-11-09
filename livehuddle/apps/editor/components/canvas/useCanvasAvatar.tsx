@@ -5,9 +5,9 @@ import { isStandingSeatShape } from '@livehuddle/document';
 import { useSeatStatus } from './useSeatStatus';
 import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
 import { joinStores } from '@liveworkspace/workbench/lib/state-store';
-import { useAvatarPose } from '@liveworkspace/avatar/hooks/useAvatarPose';
-import type { AvatarPose } from '@liveworkspace/avatar/pose';
-import type { SeatHolder } from '@liveworkspace/avatar/seat-claims';
+import { useAvatarPose } from '@livehuddle/avatar/hooks/useAvatarPose';
+import type { AvatarPose } from '@livehuddle/avatar/pose';
+import type { SeatHolder } from '@livehuddle/avatar/seat-claims';
 import {
   peerAvatarRowsOf,
   readPeerAvatarRows,
@@ -21,7 +21,7 @@ import {
   seatedPeer,
   seatsOnBoard,
   sittersByChair,
-} from '@liveworkspace/avatar/chair-sitters';
+} from '@livehuddle/avatar/chair-sitters';
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_BUTTON_MODE,
@@ -32,14 +32,14 @@ import {
 } from '@livehuddle/document';
 import { stageStanders } from '@/lib/calls/stage-presence';
 import { track } from '@/lib/telemetry';
-import { useAvatarSpeech } from '@liveworkspace/avatar/hooks/useAvatarSpeech';
-import { useSpeechBubbles } from '@liveworkspace/avatar/speech-store';
-import { avatarScale } from '@liveworkspace/avatar/config';
-import { useAvatarActionKeys } from '@liveworkspace/avatar/hooks/useAvatarActionKeys';
-import { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
-import { avatarSpawnFromButton, type AvatarPoint } from '@liveworkspace/avatar/walk';
+import { useAvatarSpeech } from '@livehuddle/avatar/hooks/useAvatarSpeech';
+import { useSpeechBubbles } from '@livehuddle/avatar/speech-store';
+import { avatarScale } from '@livehuddle/avatar/config';
+import { useAvatarActionKeys } from '@livehuddle/avatar/hooks/useAvatarActionKeys';
+import { useAvatarWalk } from '@livehuddle/avatar/hooks/useAvatarWalk';
+import { avatarSpawnFromButton, type AvatarPoint } from '@livehuddle/avatar/walk';
 import { seatsACharacter, drinkFrom, type DrinkKind } from '@livehuddle/document';
-import { closePods } from '@liveworkspace/avatar/pod';
+import { closePods } from '@livehuddle/avatar/pod';
 
 // Which machine a drink came from, as the telemetry names it (docs/specs/009-elements/office.md "Telemetry").
 const DRINK_TELEMETRY: Record<DrinkKind, string> = {
@@ -48,9 +48,9 @@ const DRINK_TELEMETRY: Record<DrinkKind, string> = {
   juice: 'DrinksCabinet',
   soda: 'DrinksFridge',
 };
-import { seatOnArrival } from '@liveworkspace/avatar/seat-claims';
-import { useSeatYield } from '@liveworkspace/avatar/hooks/useSeatYield';
-import { useAvatarConfig } from '@liveworkspace/avatar/hooks/useAvatarConfig';
+import { seatOnArrival } from '@livehuddle/avatar/seat-claims';
+import { useSeatYield } from '@livehuddle/avatar/hooks/useSeatYield';
+import { useAvatarConfig } from '@livehuddle/avatar/hooks/useAvatarConfig';
 import type { Reaction } from '@livehuddle/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';

@@ -11,8 +11,8 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { claimAvatarKeys, type ClaimedKey } from '@liveworkspace/avatar/key-claims';
-import { walkInputBlocked } from '@liveworkspace/avatar/walk-guard';
+import { claimAvatarKeys, type ClaimedKey } from '@livehuddle/avatar/key-claims';
+import { walkInputBlocked } from '@livehuddle/avatar/walk-guard';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { PREFERS_REDUCED_MOTION, prefersReducedMotion, useMediaQuery } from '@livehuddle/ui';
 import { onGameOp } from '@/lib/table-games/table-game-inbox';

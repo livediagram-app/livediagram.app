@@ -14,7 +14,7 @@ import type { BorderRadius } from '@liveworkspace/model-core/border-style';
 import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
-import { FENCE_WOOD } from '@liveworkspace/avatar/fence';
+import { FENCE_WOOD } from '@livehuddle/avatar/fence';
 import { isOfficeShape, ROOM_FLOOR, RUG_FILL, STAGE_FLOOR, STAGE_FLOOR_DARK } from './office';
 import {
   GARDEN_PATH_FILL,

@@ -4,8 +4,8 @@
 // a scene; app/hero-scenes/space.css moves it. This file holds the shape every scene shares and the Team Pod's
 // stand-up; hero-space-places.ts holds the Virtual Office and the All-Hands Hall.
 
-import type { AvatarConfig } from '@liveworkspace/avatar/config';
-import type { AvatarFacing } from '@liveworkspace/avatar/walk';
+import type { AvatarConfig } from '@livehuddle/avatar/config';
+import type { AvatarFacing } from '@livehuddle/avatar/walk';
 import type { TemplateKind } from '@livehuddle/templates';
 
 // The paper each drawing is inked for: the Default canvas's light paper and its dark one (pen-colours.ts).

@@ -14,8 +14,8 @@ import { isTimerPieceShape, TIMER_PIECE_SIZE } from './timer-pieces';
 import { DEFAULT_BUTTON_MODE } from './selection-mode';
 import { DEFAULT_CHAIR_FACING } from './collab-shapes';
 import { DEFAULT_SEATING_FACING } from './seating';
-import { FENCE_DEFAULT_SIZE } from '@liveworkspace/avatar/fence';
-import { AVATAR_PAD_DEFAULT_SIZE } from '@liveworkspace/avatar/pad-art';
+import { FENCE_DEFAULT_SIZE } from '@livehuddle/avatar/fence';
+import { AVATAR_PAD_DEFAULT_SIZE } from '@livehuddle/avatar/pad-art';
 import type { ShapeElement, ShapeKind } from './index';
 
 // --- Factories -------------------------------------------------------------

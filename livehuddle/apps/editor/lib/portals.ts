@@ -121,5 +121,5 @@ export function portalExitPoint(portal: PortalBox): { x: number; y: number } {
 }
 
 // The viewport offset that centres a portal in the viewport is the walk's camera maths too
-// (@liveworkspace/avatar/walk), re-exported for the portal travel.
-export { viewportOffsetCentredOn } from '@liveworkspace/avatar/walk';
+// (@livehuddle/avatar/walk), re-exported for the portal travel.
+export { viewportOffsetCentredOn } from '@livehuddle/avatar/walk';

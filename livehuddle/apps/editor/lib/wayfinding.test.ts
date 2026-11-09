@@ -6,9 +6,9 @@ import {
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
-import { fenceSegments, fenceStalled, fenceStep } from '@liveworkspace/avatar/collision';
-import { avatarFigureHeight } from '@liveworkspace/avatar/walk';
-import { buildNavGrid, findWalkPath } from '@liveworkspace/avatar/pathing';
+import { fenceSegments, fenceStalled, fenceStep } from '@livehuddle/avatar/collision';
+import { avatarFigureHeight } from '@livehuddle/avatar/walk';
+import { buildNavGrid, findWalkPath } from '@livehuddle/avatar/pathing';
 import {
   elevatorExitPoint,
   peopleKey,
@@ -25,7 +25,7 @@ import {
   type WayPoint,
 } from './wayfinding';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { DEFAULT_AVATAR_CONFIG, type AvatarConfig } from '@liveworkspace/avatar/config';
+import { DEFAULT_AVATAR_CONFIG, type AvatarConfig } from '@livehuddle/avatar/config';
 
 const at = (kind: Parameters<typeof createShape>[0], x: number, y: number, over = {}) =>
   ({ ...createShape(kind, x, y), id: `${kind}-${x}-${y}`, ...over }) as Element;

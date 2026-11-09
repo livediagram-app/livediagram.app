@@ -4,7 +4,7 @@
 // it goes back to its bed. A spot where the dog would stand behind or under a piece, or in another room's walls, is
 // passed over for the generator's next one, the same on every screen. Pure: no React, no DOM, no clock of its own (the caller passes `now`).
 
-import { roomInterior } from '@liveworkspace/avatar/office-geometry';
+import { roomInterior } from '@livehuddle/avatar/office-geometry';
 
 /** One leg: the dog trots to its spot over the first PET_TROT_MS, then sits there. */
 export const PET_LEG_MS = 9_000;

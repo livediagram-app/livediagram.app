@@ -17,6 +17,7 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
+    "@livehuddle/avatar": "workspace:*",
     "@livehuddle/document": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",

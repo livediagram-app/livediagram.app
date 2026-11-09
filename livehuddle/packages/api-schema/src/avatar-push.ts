@@ -1,6 +1,6 @@
 // A shove's wire (docs/specs/008-canvas/avatar-mode.md "You can push each other"): the room's check on an
 // `avatar-push` before it addresses it, so a hand-made one with a direction that is not a number reaches nobody.
-import type { AvatarPushOp } from '@liveworkspace/api-schema/avatar';
+import type { AvatarPushOp } from '@livehuddle/avatar/wire';
 import { PRESENCE_ID_MAX } from './call-hand';
 
 const TAB_ID_MAX = 64;

@@ -10,10 +10,10 @@ import {
   type Element,
   type Tab,
 } from '@livehuddle/document';
-import { AVATAR_DEFAULTS, configureAvatar } from '@liveworkspace/avatar/bindings';
-import { AvatarSprite } from '@liveworkspace/avatar/components/avatar-sprite';
-import { reactionPose } from '@liveworkspace/avatar/reactions';
-import { avatarBox, type AvatarFacing } from '@liveworkspace/avatar/walk';
+import { AVATAR_DEFAULTS, configureAvatar } from '@livehuddle/avatar/bindings';
+import { AvatarSprite } from '@livehuddle/avatar/components/avatar-sprite';
+import { reactionPose } from '@livehuddle/avatar/reactions';
+import { avatarBox, type AvatarFacing } from '@livehuddle/avatar/walk';
 import { Hero } from '@/components/Hero';
 import {
   FLOOR_AVATAR_SCALE,

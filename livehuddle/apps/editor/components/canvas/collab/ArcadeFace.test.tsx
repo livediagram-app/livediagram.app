@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement } from '@livehuddle/document';
-import { avatarKeyClaimed } from '@liveworkspace/avatar/key-claims';
+import { avatarKeyClaimed } from '@livehuddle/avatar/key-claims';
 import { modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
 
 // docs/specs/009-elements/social-pieces.md "Arcade Machine", "The panel": the machine's face while you stand at it,

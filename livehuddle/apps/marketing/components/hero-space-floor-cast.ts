@@ -4,8 +4,8 @@
 // the characters keep their size. hero-space-floor-motion.ts turns the walks into keyframes; HeroSpaceStage.tsx draws
 // it; lib/hero-space-floor.test.tsx writes the furniture, the sprite sheet and the keyframes from it.
 
-import type { AvatarConfig } from '@liveworkspace/avatar/config';
-import type { AvatarFacing } from '@liveworkspace/avatar/walk';
+import type { AvatarConfig } from '@livehuddle/avatar/config';
+import type { AvatarFacing } from '@livehuddle/avatar/walk';
 
 export type Point = { x: number; y: number };
 export type Rect = { x: number; y: number; width: number; height: number };

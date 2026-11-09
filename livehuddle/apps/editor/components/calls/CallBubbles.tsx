@@ -6,8 +6,8 @@
 // close have their bubbles nudged apart ("Close together", lib/calls/bubble-layout.ts), and the rects they end up
 // in are handed on so speech bubbles keep clear of them.
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
-import { avatarGlides } from '@liveworkspace/avatar/relay';
-import { AVATAR_HEAD_CHROME, AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
+import { avatarGlides } from '@livehuddle/avatar/relay';
+import { AVATAR_HEAD_CHROME, AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
 import {
   SELF_MEDIA_ID,
   setCallMaximised,

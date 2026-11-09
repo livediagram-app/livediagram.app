@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AVATAR_REACTIONS } from '@liveworkspace/avatar/reactions';
+import { AVATAR_REACTIONS } from '@livehuddle/avatar/reactions';
 import {
   AVATAR_PALETTE_CATEGORIES,
   behaviourStill,

@@ -9,11 +9,11 @@ import {
   AVATAR_CLOTHING,
   AVATAR_HAIR,
   AVATAR_HAIR_COLOURS,
-} from '@liveworkspace/avatar/config';
+} from '@livehuddle/avatar/config';
 import { bindAvatar } from '@/lib/avatar-bindings';
 import { resetCallSelf, setCallActions, setCallSelf } from '@/lib/calls/calls-store';
 import { AVATAR_PALETTE_CATEGORIES } from '@/lib/avatar-palette';
-import { AVATAR_CALL_STATUSES, AVATAR_STATUS_GROUPS } from '@liveworkspace/avatar/status';
+import { AVATAR_CALL_STATUSES, AVATAR_STATUS_GROUPS } from '@livehuddle/avatar/status';
 import { AvatarPalette, type AvatarPaletteProps } from './AvatarPalette';
 import { AvatarPaletteFlyout } from './AvatarPaletteFlyouts';
 import { previewFits, type AvatarPaletteActions } from './avatar-palette-widths';

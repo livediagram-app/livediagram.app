@@ -10,8 +10,8 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 import { PET_FLOOR_KINDS, petArea, type Element, type PetArea } from '@livehuddle/document';
-import { officeFootprint } from '@liveworkspace/avatar/office-geometry';
-import type { SeatFacing } from '@liveworkspace/avatar/facing';
+import { officeFootprint } from '@livehuddle/avatar/office-geometry';
+import type { SeatFacing } from '@livehuddle/avatar/facing';
 
 /** How far in front of a reception desk's counter your feet may be for its Welcome. */
 export const RECEPTION_REACH = 32;

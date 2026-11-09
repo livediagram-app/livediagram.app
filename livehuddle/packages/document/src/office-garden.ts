@@ -2,7 +2,7 @@
 // drawings, as tables of parts in the furniture's vocabulary (seating.ts), drawn upright from the room's camera like
 // the rest of the office, which both renderers paint (the editor's views and svg-render-faces). The grid pieces join
 // OFFICE_ART (office.ts); the garden path, grass and the garden fence are drawn to their own size, as a room is. The
-// geometry the walk needs (the pod's seats, walls and door, the footprints) is @liveworkspace/avatar's. Pure: no React, no DOM.
+// geometry the walk needs (the pod's seats, walls and door, the footprints) is @livehuddle/avatar's. Pure: no React, no DOM.
 
 import type { FurnitureDrawing, FurniturePart } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';
@@ -12,9 +12,9 @@ import {
   POD_SEATS_BACK,
   POD_SEATS_SIDE,
   type SeatView,
-} from '@liveworkspace/avatar/seats';
-import { fenceRun } from '@liveworkspace/avatar/fence';
-import { POD_DOOR_SPAN, POD_SIDE_DOOR_SPAN } from '@liveworkspace/avatar/pod';
+} from '@livehuddle/avatar/seats';
+import { fenceRun } from '@livehuddle/avatar/fence';
+import { POD_DOOR_SPAN, POD_SIDE_DOOR_SPAN } from '@livehuddle/avatar/pod';
 
 // Fixed colours for what keeps its colour whatever the theme, as OFFICE_TONES: leaves, bark, stone, wood, glass,
 // bottles and cans. Outlines stay the theme's stroke.

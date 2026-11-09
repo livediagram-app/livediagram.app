@@ -3,20 +3,20 @@
 // vocabulary (seating.ts), drawn upright from the room's camera, which both renderers paint (the editor's views
 // and svg-render-faces), so an office on the canvas and in an export are the same office. The geometry the
 // Avatar-mode walk needs (a room's walls and doorway, the footprints of the scenery that blocks) is
-// @liveworkspace/avatar/office-geometry, re-exported here. Pure: no React, no DOM.
+// @livehuddle/avatar/office-geometry, re-exported here. Pure: no React, no DOM.
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { FurnitureArt, FurniturePart } from './seating';
 import { path, rect } from './furniture-parts';
-import { SHARED_OFFICE_ART } from '@liveworkspace/avatar/furniture-art';
+import { SHARED_OFFICE_ART } from '@livehuddle/avatar/furniture-art';
 import {
   brokenRun,
   roomDoorSpan,
   ROOM_BACK_FACE,
   ROOM_WALL,
   type RoomDoor,
-} from '@liveworkspace/avatar/office-geometry';
-import { LONG_TABLE_VARIANT } from '@liveworkspace/avatar/seats';
+} from '@livehuddle/avatar/office-geometry';
+import { LONG_TABLE_VARIANT } from '@livehuddle/avatar/seats';
 import { OFFICE_EXTRA_ART } from './office-garden';
 import { OFFICE_SOCIAL_ART } from './office-social';
 import { OFFICE_RECREATION_ART } from './office-recreation';
@@ -29,8 +29,8 @@ import { WAYFINDING_ART } from './office-wayfinding';
 import { OFFICE_TEAM_ART } from './office-team';
 
 // The geometry the Avatar-mode walk reads (floors, drinks, seats, a room's walls and doorway, the scenery's
-// footprints) is @liveworkspace/avatar's, shared with every product that has Avatar mode.
-export * from '@liveworkspace/avatar/office-geometry';
+// footprints) is @livehuddle/avatar's, shared with every product that has Avatar mode.
+export * from '@livehuddle/avatar/office-geometry';
 
 export type OfficeKind =
   | 'room'
@@ -237,7 +237,7 @@ export function isOfficeShape(kind: string): kind is OfficeKind {
 }
 
 // The pieces livediagram draws too (the Meeting Table, the Plant, the Bookshelf, the Water Cooler, the Coffee Machine,
-// the Rug) and the fixed colours they keep whatever the theme are @liveworkspace/avatar/furniture-art's, shared.
+// the Rug) and the fixed colours they keep whatever the theme are @livehuddle/avatar/furniture-art's, shared.
 // The machines' answers sit on those drawings, so they are shared with them.
 export {
   MACHINE_ANSWER_AT,
@@ -245,7 +245,7 @@ export {
   MEETING_TABLE_VIEW,
   OFFICE_TONES,
   type MachineAnswerSpot,
-} from '@liveworkspace/avatar/furniture-art';
+} from '@livehuddle/avatar/furniture-art';
 
 /** Whether a piece is a Long Table (office.md "Long Table"): a Meeting Table of the `long` type. */
 export function isLongTable(el: { shape: string; variant?: unknown }): boolean {
@@ -253,8 +253,8 @@ export function isLongTable(el: { shape: string; variant?: unknown }): boolean {
 }
 
 // A Long Table's drawings, built for its box at its facing, are shared with the Meeting Table's
-// (@liveworkspace/avatar/furniture-art).
-export { longTableArt } from '@liveworkspace/avatar/furniture-art';
+// (@livehuddle/avatar/furniture-art).
+export { longTableArt } from '@livehuddle/avatar/furniture-art';
 
 // Every office piece but the room and the stage, which are drawn to their size (roomParts, stageParts).
 export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {

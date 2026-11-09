@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type Ref } from 'react';
 import type { Element, Tab } from '@livehuddle/document';
-import type { AvatarPoint } from '@liveworkspace/avatar/walk';
+import type { AvatarPoint } from '@livehuddle/avatar/walk';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { viewportOffsetCentredOn } from '@/lib/portals';
