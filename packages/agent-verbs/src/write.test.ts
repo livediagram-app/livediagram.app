@@ -276,6 +276,11 @@ describe('writeFlagsOf', () => {
     const { summary } = writeFlagsOf(12);
     expect(summary.safeParse('x'.repeat(12)).success).toBe(true);
     expect(summary.safeParse('x'.repeat(13)).success).toBe(false);
+    // Counted as the api counts it (CS10): in characters, after trimming and dropping control characters.
+    expect(summary.safeParse('😀'.repeat(12)).success).toBe(true);
+    expect(summary.safeParse(`  ${'x'.repeat(12)}\n`).success).toBe(true);
+    expect(summary.safeParse(`x\u0007`.repeat(12)).success).toBe(true);
+    expect(summary.safeParse('😀'.repeat(13)).success).toBe(false);
     expect(summary.description).toBe('What the change is for, up to 12 characters');
     expect(write.writeFlags.summary.description).toBe(
       'What the change is for, up to 80 characters',
