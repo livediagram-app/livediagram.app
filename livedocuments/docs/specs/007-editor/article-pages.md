@@ -489,8 +489,9 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
   signal, not the page's palette.
 
 - **The marker** carries its own count, so no badge strip rides on it. A click on it, or a plain
-  click on its tinted text, opens its thread, or its action (the Assign Action dialog while none is
-  assigned). Hovering lifts it with a shadow; selected, it wears the selection ring as any element
+  click on its tinted text, opens its thread, or its action (for an Editor, the Assign Action dialog
+  while none is assigned; a Viewer or a Participant, who assigns nothing, gets nothing from an
+  unassigned one). Hovering lifts it with a shadow; selected, it wears the selection ring as any element
   does. On a touch screen its press area grows past the chip to 44 px wide and 38 px tall at full
   size (half the 6 px gap above and below), so stacked markers never take each other's presses.
 - **Its name** says which it is and where it stands, for a screen reader: "Comment, 2 open",

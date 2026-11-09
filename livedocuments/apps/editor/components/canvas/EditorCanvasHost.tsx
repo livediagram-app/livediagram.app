@@ -166,6 +166,7 @@ export function EditorCanvasHost() {
     narrowMultiSelection,
     newDocument,
     openActionPopover,
+    openAssignAction,
     completeAction,
     reopenAction,
     openCellLinkPicker,
@@ -685,7 +686,9 @@ export function EditorCanvasHost() {
             onSetTextAlign={setTextAlignSelected}
             onFollowLink={followLink}
             onOpenComments={openComments}
-            onOpenAction={openActionPopover}
+            // An action note's marker opens its action, or for an Editor the Assign Action dialog while none is
+            // assigned (docs/specs/007-editor/article-pages.md "Comments and actions"), as a click on its text does.
+            onOpenAction={isReadOnly ? openActionPopover : openAssignAction}
             onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
             onOpenEditDialog={isReadOnly ? undefined : openEditDialog}
             imageContext={imageContext}

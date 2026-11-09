@@ -1,5 +1,6 @@
 'use client';
 
+import { actionNoteOpens } from '@/lib/action-note-open';
 import type { FindDeps, FindDoor } from '@/hooks/editor/useFindReplace';
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { setOwnPictureShown } from '@/lib/own-picture';
@@ -1753,10 +1754,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     openNote: (id, kind) => {
       if (kind === 'comment') return openComments(id);
-      // An action already assigned shows in its popover; a new one opens the dialog to assign it.
+      // An action already assigned shows in its popover; a new one opens the dialog to assign it, for an Editor
+      // only (actionNoteOpens).
       const el = activeTab.elements.find((e) => e.id === id);
-      if (el && isBoxed(el) && elementActions(el).length > 0) openActionPopover(id);
-      else openAssignActionDialog(id);
+      const opens = actionNoteOpens(
+        !!el && isBoxed(el) && elementActions(el).length > 0,
+        isReadOnly,
+      );
+      if (opens === 'popover') openActionPopover(id);
+      else if (opens === 'assign') openAssignActionDialog(id);
     },
     reveal: (x, y, w, h) => scrollIntoView(x, y, w, h),
   });
