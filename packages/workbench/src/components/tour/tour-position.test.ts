@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   pickDockEdge,
   placeTourPopover,
@@ -136,12 +137,13 @@ describe('placeTourPopover on a phone', () => {
     expect(above.maxHeight).toBeGreaterThanOrEqual(TOUR_MIN_ROOM);
   });
 
-  it('places a 360px card on a 740px phone in under a microsecond each', () => {
+  it('places a 360px card on a 740px phone in under 50 microseconds each', () => {
     const view = { width: 360, height: 740 };
-    const start = performance.now();
-    for (let i = 0; i < 100_000; i++)
-      placeTourPopover(rect(16, i % 700, 340, 44), { width: 336, height: 360 }, view);
-    expect((performance.now() - start) / 100_000).toBeLessThan(0.001 * 50);
+    const spent = cpuMsOf(() => {
+      for (let i = 0; i < 100_000; i++)
+        placeTourPopover(rect(16, i % 700, 340, 44), { width: 336, height: 360 }, view);
+    });
+    expect(spent / 100_000).toBeLessThan(0.05);
   });
 });
 
