@@ -126,6 +126,7 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   - **Speed budgets:** a change may not add `performance.now()` to a test (see [Speed budgets](#speed-budgets)).
   - **Copies across products:** a change may not add a source file byte-identical in two or more products
     (see [Copies across products](#copies-across-products)).
+  - **File size:** a change may not take a source file past 800 lines (see [File size](#file-size)).
   - **Tests:** every affected workspace's suite once. Those with `test:coverage` run that, so their
     per-file thresholds are enforced in CI; the rest run `test`. Coverage goes to Codecov, one flag
     per group, carried forward when a run doesn't reach that group (`codecov.yml`).
@@ -217,6 +218,26 @@ new package carries) and a product's thin binding, a file whose only statements 
   a binding: about 0.1 seconds on the whole repository (1,300 files in 450 groups). Its tests run with
   `node --test .github/scripts/*.test.mjs`.
 
+## File size
+
+A source file over 800 lines holds several concerns, and the rule is no god files: new features go in
+focused modules and a big file splits on cohesion, with the original kept as the entry that re-exports
+its pieces so no importer changes. The Checks job's **No new files over 800 lines** step
+(`.github/scripts/file-size-guard.mjs`, also in the pre-push hook) counts the lines of every tracked,
+non-test source file in the repository (generated files and `.d.ts` declarations aside) and compares the
+ones over 800 with the committed baseline, `.github/scripts/file-size-baseline.txt`: flat data files
+(tables, catalogues, registries of strings), which are exempt, and the real code still waiting for its
+split.
+
+- **It fails** when a file that the baseline doesn't list passes 800 lines: a new file, or one that grew.
+  Split it instead.
+- **It also fails** when a listed file is back at 800 lines or under, or gone. Run
+  `node .github/scripts/file-size-guard.mjs --update` and commit the smaller baseline, so it stays tight.
+- **The baseline only shrinks:** `--update` refuses to write while a file outside it is over the limit.
+  A listed file may grow (a data file gains rows), since the list is the exception, not a size cap.
+- It takes about 0.3 seconds on the whole repository. Its tests run with
+  `node --test .github/scripts/*.test.mjs`.
+
 ## Drift report
 
 livehuddle was forked in-tree from livediagram and both carry the meeting kit (Avatar mode, the Spaces,
@@ -265,7 +286,7 @@ deterministic failure shows up on the machine in minutes rather than on CI later
   saying so, when `CI` is set or outside a git work tree.
 - `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`. It takes the merge base with
   `origin/main`, asks CI's planner (`ci-plan.mjs`) which groups the change reaches, and runs each
-  group's steps as `ci.yml` does: the copies guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
+  group's steps as `ci.yml` does: the copies guard and the file size guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
   each reached editor's suite once (unsharded). It stops at the first failing step.
 - It checks only a push of the checked-out `HEAD`; a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.

@@ -6,26 +6,26 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                       | Role                                                              |
-| ---------------------------------------------------------- | ----------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                     | `REACTIONS`, hues, labels, emoji, hints, pad labels, `isReaction` |
-| `packages/document/src/shape-factory.ts`                   | 150x110, `reaction: REACTION_DEFAULT`, label "Celebrate"          |
-| `packages/document/src/validate.ts`                        | Validates the `reaction` field [QF21]                             |
-| `packages/document/src/session.ts`                         | `NON_VOTABLE_SHAPES` includes `reaction-pad`                      |
-| `packages/document/src/svg-render-faces.ts`                | `reactionPad`: the export wash, spot, emoji and label chip        |
-| `packages/api-schema/src/room-messages.ts`                 | The `reaction` op; `'reaction'` in `PRESENCE_OP_KINDS`            |
-| `apps/editor/components/canvas/ReactionPadFace.tsx`        | The face: glow, emoji, spot, press ring, label pill; the press    |
-| `apps/editor/app/qa-board.css`                             | `pad-bob`, `pad-ring`, the hover lift and the press squash        |
-| `apps/editor/components/canvas/ReactionBurst.tsx`          | Canvas surface, clock, reduced motion, cleanup                    |
-| `apps/editor/lib/reaction-particles.ts`                    | Pure spawn, step, alpha, draw                                     |
-| `apps/editor/hooks/canvas/useReactionBursts.ts`            | Bursts keyed by element id; play, receive, clear                  |
-| `apps/editor/app/document/[id]/useEditorState.ts`          | `fireReaction`: play, broadcast, track                            |
-| `apps/editor/hooks/collab/useEditorBroadcast.ts`           | `broadcastReaction` and its gate                                  |
-| `apps/editor/app/document/[id]/useRoomConnection.ts`       | Receives the op                                                   |
-| `apps/editor/components/canvas/BoxedElementView.tsx`       | Mounts `ReactionBurst` beside the label stack                     |
-| `apps/editor/components/palette/palette-tile-defs.tsx`     | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`              |
-| `apps/editor/components/palette/BehaviourMenuSections.tsx` | `ReactionMenuSection`                                             |
-| `apps/editor/hooks/canvas/usePortalSetters.ts`             | `setReactionSelected`                                             |
+| File                                                           | Role                                                              |
+| -------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `packages/document/src/data-shapes.ts`                         | `REACTIONS`, hues, labels, emoji, hints, pad labels, `isReaction` |
+| `packages/document/src/shape-factory.ts`                       | 150x110, `reaction: REACTION_DEFAULT`, label "Celebrate"          |
+| `packages/document/src/validate.ts`                            | Validates the `reaction` field [QF21]                             |
+| `packages/document/src/session.ts`                             | `NON_VOTABLE_SHAPES` includes `reaction-pad`                      |
+| `packages/document/src/svg-render-faces.ts`                    | `reactionPad`: the export wash, spot, emoji and label chip        |
+| `packages/api-schema/src/room-messages.ts`                     | The `reaction` op; `'reaction'` in `PRESENCE_OP_KINDS`            |
+| `apps/editor/components/canvas/ReactionPadFace.tsx`            | The face: glow, emoji, spot, press ring, label pill; the press    |
+| `apps/editor/app/qa-board.css`                                 | `pad-bob`, `pad-ring`, the hover lift and the press squash        |
+| `apps/editor/components/canvas/ReactionBurst.tsx`              | Canvas surface, clock, reduced motion, cleanup                    |
+| `apps/editor/lib/reaction-particles.ts`                        | Pure spawn, step, alpha, draw                                     |
+| `apps/editor/hooks/canvas/useReactionBursts.ts`                | Bursts keyed by element id; play, receive, clear                  |
+| `apps/editor/app/document/[id]/useEditorState.ts`              | `fireReaction`: play, broadcast, track                            |
+| `apps/editor/hooks/collab/useEditorBroadcast.ts`               | `broadcastReaction` and its gate                                  |
+| `apps/editor/app/document/[id]/useRoomConnection.ts`           | Receives the op                                                   |
+| `apps/editor/components/canvas/boxed-element-chrome.tsx`       | Mounts `ReactionBurst` beside the label stack                     |
+| `apps/editor/components/palette/tile-defs/behaviour-tiles.tsx` | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`              |
+| `apps/editor/components/palette/BehaviourMenuSections.tsx`     | `ReactionMenuSection`                                             |
+| `apps/editor/hooks/canvas/usePortalSetters.ts`                 | `setReactionSelected`                                             |
 
 ## Domain and naming
 

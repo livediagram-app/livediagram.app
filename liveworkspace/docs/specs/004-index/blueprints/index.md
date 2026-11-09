@@ -196,11 +196,11 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `warn`  | `[grant] refused`                                   | `service.ts`           |
 | `warn`  | `[index-app] images_report_failed`                  | `person-events.ts`     |
 | `log`   | `[index] GRANT_SIGNING_KEY is unset: signing grant` | `grants.ts`            |
-| `warn`  | `[index] copy failed`                               | `items.ts`             |
+| `warn`  | `[index] copy failed`                               | `items/item-routes.ts` |
 | `error` | `[index] create failed`                             | `request.ts`           |
-| `log`   | `[index] created`                                   | `items.ts`             |
+| `log`   | `[index] created`                                   | `items/create.ts`      |
 | `error` | `[index] cron step failed: …`                       | `index.ts`             |
-| `log`   | `[index] emptied trash`                             | `items.ts`             |
+| `log`   | `[index] emptied trash`                             | `items/list-routes.ts` |
 | `warn`  | `[index] malformed stored share password refused`   | `password-hash.ts`     |
 | `log`   | `[index] merged a guest`                            | `merge.ts`             |
 | `log`   | `[index] migration handoff`                         | `migration-handoff.ts` |
@@ -215,7 +215,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `warn`  | `[index] person notices given up`                   | `person-notices.ts`    |
 | `warn`  | `[index] purge: apps unreachable, kept for the nex` | `purge.ts`             |
 | `error` | `[index] purge: tombstone drain failed`             | `purge.ts`             |
-| `log`   | `[index] purged`                                    | `items.ts`             |
+| `log`   | `[index] purged`                                    | `items/item-routes.ts` |
 | `log`   | `[index] purged a closed account`                   | `account-purge.ts`     |
 | `log`   | `[index] purges`                                    | `index.ts`             |
 | `warn`  | `[index] revoke not delivered`                      | `sharing.ts`           |
@@ -275,6 +275,11 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/index/src/inbox.ts`             | The Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"): across every app, open actions and cards assigned to or by me, unresolved threads (an element's or a car…     |
 | `liveworkspace/apps/index/src/index.ts`             | liveworkspace's index (liveworkspace/docs/specs/004-index/index-service.md): one Worker on liveworkspace.app/api/index holding where every Canvas, Plan, Document and Design is and who ca…     |
 | `liveworkspace/apps/index/src/items.ts`             | Items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"): listing, making, reading, renaming and moving, the Trash, copies, opens and grants.                               |
+| `liveworkspace/apps/index/src/items/shared.ts`      | What the item routes share: `clientIpOf`, `DEFAULT_TITLE`, `EMPTY_TRASH_MAX`                                                                                                                    |
+| `liveworkspace/apps/index/src/items/list-routes.ts` | Listing items and the Trash: filters, list specs, `handleList`, `handleTrash`                                                                                                                   |
+| `liveworkspace/apps/index/src/items/create.ts`      | Making an item: `createItem`, `insertItem`                                                                                                                                                      |
+| `liveworkspace/apps/index/src/items/item-routes.ts` | One item's routes, /items/:id and below: read, rename and move, the Trash, copies, grants                                                                                                       |
+| `liveworkspace/apps/index/src/items/opens.ts`       | Opens: recording an open, use days, `sharedWithUpsert`                                                                                                                                          |
 | `liveworkspace/apps/index/src/lists.ts`             | The Explorer's lists (`GET /items`, `GET /trash`): one query per page, keyset-paged, each driven by an index that starts with the person (their scopes, their opens, favou…                     |
 | `liveworkspace/apps/index/src/merge.ts`             | A guest becoming an account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Becoming an account"): accounts calls this with its own key, and everything the guest had moves…     |
 | `liveworkspace/apps/index/src/migration-handoff.ts` | The migration's handoff (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "The migration's handoff", docs/migration.md step 6): livediagram's api splits a browser's Local onl…     |

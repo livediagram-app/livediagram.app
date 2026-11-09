@@ -526,7 +526,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 - **Plan card onto a board**: in `useEditorDrag`'s drag end, a moved `plan-card` released over a board cell
   (`data-plan-status` under the pointer) → `onPlanCardDroppedOnBoard(card, status)`: the item moves to the end of
   that column and the card element is removed (two undo steps: the removal, then the move).
-- **Card types a board shows**: `boardAddTypes(setup, types)` (`packages/items/src/board.ts`) is what Add Card
+- **Card types a board shows**: `boardAddTypes(setup, types)` (`packages/items/src/board-setup.ts`) is what Add Card
   offers and what the Cards menu's Card Types shows pressed: `setup.addTypes` filtered to the catalogue, in its
   order, or every type when it is unset or names none still in the catalogue. `boardTakesType(setup, types, id)`
   is the same rule for one type, and `boardShowsType(setup, type, types?)` applies it (or, without a catalogue,

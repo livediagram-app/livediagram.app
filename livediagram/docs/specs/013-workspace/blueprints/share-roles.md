@@ -15,29 +15,29 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 
 ## Scope, by file
 
-| File                                                                                                           | Role                                                                                           |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/access-levels.ts` (new)                                                            | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`         |
-| `packages/api-schema/src/index.ts`                                                                             | `ShareRole` becomes an alias of `AccessLevel`                                                  |
-| `packages/api-schema/src/room-messages.ts`                                                                     | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                     |
-| `packages/document/src/participant-content.ts` (new)                                                           | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets    |
-| `packages/document/src/element-types.ts`, `validate.ts`                                                        | `addedBy?: string` on `StickyElement` and `TextElement`; validated                             |
-| `packages/document/src/collab-ledger.ts`                                                                       | `mergeLedgerAnswersIntoTab`: votes, responses and ideas only                                   |
-| `../liveworkspace/apps/index/migrations/0001_index.sql`                                                        | A `level` column on `share_links`                                                              |
-| `apps/api/src/room-op-gate.ts`, `apps/api/src/adder-key.ts`                                                    | Readers through `parseStoredLevel`; the room's `adderKeyFor`                                   |
-| `apps/api/src/routes/context.ts`                                                                               | Gates compare levels on the index's grant                                                      |
-| `apps/api/src/routes/context.ts`                                                                               | `gateParticipate` is the Participant check                                                     |
-| `../liveworkspace/apps/index/src/sharing.ts`                                                                   | The index's share route takes three levels                                                     |
-| `apps/api/src/adder-key.ts` (new)                                                                              | `adderKeyFor(documentId, ownerId)`                                                             |
-| `apps/api/src/routes/document-room-routes.ts`                                                                  | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`       |
-| `apps/api/src/document-room/document-room.ts`, `room-op-gate.ts`, `document-room-rules.ts`                     | Level on the session; op gate by class; participant `el` ops through the tab write queue       |
-| `apps/api/src/participant-write.ts` (new)                                                                      | `writeParticipantOps`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
-| `packages/agent-verbs/src/mcp/*`                                                                               | `share_document.role` takes three levels, default `participate`                                |
-| `apps/editor/lib/editor-capabilities.ts` (new)                                                                 | `resolveEditorCapabilities`, `EditorCapabilities`                                              |
-| `apps/editor/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                   |
-| `../packages/explorer/src/dialogs/share/ShareComposer.tsx`, `parts.tsx`                                        | Three cards                                                                                    |
-| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/document/[id]/useRoleIndicator.ts`                     | Participating pill                                                                             |
-| `apps/editor/lib/collaborator-roster.ts`, `../packages/explorer/src/explorer/SharedList.tsx`                   | Participant badge; Participate chip                                                            |
+| File                                                                                                                                     | Role                                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `../packages/api-schema/src/access-levels.ts` (new)                                                                                      | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`         |
+| `packages/api-schema/src/index.ts`                                                                                                       | `ShareRole` becomes an alias of `AccessLevel`                                                  |
+| `packages/api-schema/src/room-messages.ts`                                                                                               | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                     |
+| `packages/document/src/participant-content.ts` (new)                                                                                     | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets    |
+| `packages/document/src/element-types.ts`, `validate.ts`                                                                                  | `addedBy?: string` on `StickyElement` and `TextElement`; validated                             |
+| `packages/document/src/collab-ledger.ts`                                                                                                 | `mergeLedgerAnswersIntoTab`: votes, responses and ideas only                                   |
+| `../liveworkspace/apps/index/migrations/0001_index.sql`                                                                                  | A `level` column on `share_links`                                                              |
+| `apps/api/src/room-op-gate.ts`, `apps/api/src/adder-key.ts`                                                                              | Readers through `parseStoredLevel`; the room's `adderKeyFor`                                   |
+| `apps/api/src/routes/context.ts`                                                                                                         | Gates compare levels on the index's grant                                                      |
+| `apps/api/src/routes/context.ts`                                                                                                         | `gateParticipate` is the Participant check                                                     |
+| `../liveworkspace/apps/index/src/sharing.ts`                                                                                             | The index's share route takes three levels                                                     |
+| `apps/api/src/adder-key.ts` (new)                                                                                                        | `adderKeyFor(documentId, ownerId)`                                                             |
+| `apps/api/src/routes/document-room-routes.ts`                                                                                            | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`       |
+| `apps/api/src/document-room/document-room.ts`, `apps/api/src/document-room/room-message.ts`, `room-op-gate.ts`, `document-room-rules.ts` | Level on the session; op gate by class; participant `el` ops through the tab write queue       |
+| `apps/api/src/participant-write.ts` (new)                                                                                                | `writeParticipantOps`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
+| `packages/agent-verbs/src/mcp/*`                                                                                                         | `share_document.role` takes three levels, default `participate`                                |
+| `apps/editor/lib/editor-capabilities.ts` (new)                                                                                           | `resolveEditorCapabilities`, `EditorCapabilities`                                              |
+| `apps/editor/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`)                           | `sessionRole: AccessLevel`; `can`; the participant save flow                                   |
+| `../packages/explorer/src/dialogs/share/ShareComposer.tsx`, `parts.tsx`                                                                  | Three cards                                                                                    |
+| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/document/[id]/useRoleIndicator.ts`                                               | Participating pill                                                                             |
+| `apps/editor/lib/collaborator-roster.ts`, `../packages/explorer/src/explorer/SharedList.tsx`                                             | Participant badge; Participate chip                                                            |
 
 ## Domain and naming
 

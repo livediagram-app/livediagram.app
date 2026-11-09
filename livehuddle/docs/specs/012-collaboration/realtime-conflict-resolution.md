@@ -262,7 +262,7 @@ dormant.
 - `packages/document`: `element-deltas.ts` (`applyElementDelta`,
   `mergeIncomingElement`), `collab-ledger.ts` (the ledger's entries and the
   save merge), `comments.ts` (`opForTheWire`, `stampCommentAuthor`).
-- `apps/api/src/document-room/document-room.ts`: the role / class gate, seq + epoch
+- `apps/api/src/document-room/document-room.ts` (each frame in `apps/api/src/document-room/room-message.ts`): the role / class gate, seq + epoch
   (persisted as `order-state`), the bounded in-memory op log and the
   `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration

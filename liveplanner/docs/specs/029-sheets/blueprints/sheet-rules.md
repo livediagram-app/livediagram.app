@@ -154,7 +154,7 @@ ranges)` (the Space and press write; `null` when no checkbox cell is selected).
 - `useSheetActions`: `commitEdit` checks the edit against the cell's rule first (`ruleRefusal`: `validateWrite` on
   `writeForRules`) and answers `{ ok: false, message: line, at: 0 }`; `customFormat(code)` sets `nf: 'custom'` and
   `nc`; `numberFormat` clears `nc`.
-- `sheet-store-client.ts`: `WriteOpts` gains `unchecked`; `writeAll` runs `writeForRules` and passes `{ checkRules,
+- `sheet-store-types.ts`: `WriteOpts` gains `unchecked`; `writeAll` runs `writeForRules` and passes `{ checkRules,
 rangeValues }` to `validateWrite` (checked unless an undo, `unchecked`, or a quiet `undoable: false` write) and
   toasts `value_invalid` as `<A1>: <line>` (`writeRefusalMessage`); `send` adds `unchecked: true` to the request
   body for unchecked and quiet writes. Import CSV writes with `unchecked`.

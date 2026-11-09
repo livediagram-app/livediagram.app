@@ -260,7 +260,7 @@ Apply points (user-drawn only), each passing the built element through `styleNew
 `useShapeDrawing.commitDraw` (arrow and boxed intents), `makeCommitFreehand` (a recognised shape or
 arrow), `useElementCreation.dropPaletteItem`, `useArrowConnect.connectArrowTo`,
 `useBoxedDragHandlers` (quick-connect arrow, both the drag and `placeOutPx`), `useEditorDrag`'s
-`chainNextArrow`. Nothing else calls it.
+`chainNextArrow` (in `editor-drag-release.ts`). Nothing else calls it.
 
 ## Placement
 

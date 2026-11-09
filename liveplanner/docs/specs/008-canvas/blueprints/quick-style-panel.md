@@ -114,7 +114,7 @@ Capture points (the element menu):
 Apply points (user-drawn only), each passing the built element through `styleNewElement`:
 `useElementCreation.dropPaletteItem` (the editor's own creation path),
 `useBoxedDragHandlers` (quick-connect arrow, both the drag and `placeOutPx`), `useEditorDrag`'s
-`chainNextArrow`. Nothing else calls it.
+`chainNextArrow` (in `editor-drag-release.ts`). Nothing else calls it.
 
 ## Observability
 

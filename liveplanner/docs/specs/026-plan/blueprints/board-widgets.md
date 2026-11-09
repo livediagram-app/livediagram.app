@@ -23,7 +23,7 @@ Derived from [Board widgets](../board-widgets.md).
 ```
 packages/items/src/board-widgets.ts      kinds, default set, readBoardWidgets, widgetsOf, placeWidget,
                                          nudgeWidget, removeWidget (pure)
-packages/items/src/board.ts              PlanBoardSetup.widgets; normaliseBoardSetup keeps it via readBoardWidgets
+packages/items/src/board-setup.ts        PlanBoardSetup.widgets; normaliseBoardSetup keeps it via readBoardWidgets
 packages/plan-art/src/board-widget-info.ts            BOARD_WIDGET_INFO (label, description)
 apps/editor/components/plan/plan-tile-art.tsx           BoardWidgetArt (one Glyph per kind)
 packages/plan-art/src/widget-stats.ts                 boardItems, boardPeople, boardTypeCounts, overWipColumns,

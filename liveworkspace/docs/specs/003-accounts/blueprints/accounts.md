@@ -214,11 +214,11 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `error` | `[lifecycle] welcome failed`                        | `index.ts`                        |
 | `error` | `[lifecycle] … send failed`                         | `lifecycle.ts`                    |
 | `error` | `[profile-picture] store failed`                    | `auth-options.ts`                 |
-| `error` | `[profiles] guest seen failed`                      | `account-api.ts`                  |
-| `error` | `[settings] guest seen failed`                      | `account-api.ts`                  |
+| `error` | `[profiles] guest seen failed`                      | `account-api/internal.ts`         |
+| `error` | `[settings] guest seen failed`                      | `account-api/internal.ts`         |
 | `log`   | `[teams] invitation sweep`                          | `index.ts`                        |
-| `error` | `[teams] invite email failed`                       | `account-api.ts`                  |
-| `error` | `[teams] invite response email failed`              | `account-api.ts`                  |
+| `error` | `[teams] invite email failed`                       | `account-api/both-doors.ts`       |
+| `error` | `[teams] invite response email failed`              | `account-api/shared.ts`           |
 | `warn`  | `[telemetry] batch not sent`                        | `telemetry.ts`                    |
 | `warn`  | `[timeline] events not taken; the cron sends them`  | `index-timeline.ts`               |
 | `warn`  | `[timeline] flush failed`                           | `index-timeline.ts`               |
@@ -250,6 +250,13 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | File                                                          | Role                                                                                                                                                                                                               |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `liveworkspace/apps/accounts/src/account-api.ts`              | The account API under /api/account (liveworkspace/docs/specs/003-accounts/accounts.md "Teams" and "API tokens"): - for the signed-in person on liveworkspace.app, by their session cookie: th…                     |
+| `liveworkspace/apps/accounts/src/account-api/http.ts`         | The account API's answers and request bodies                                                                                                                                                                       |
+| `liveworkspace/apps/accounts/src/account-api/shared.ts`       | What the doors share: the team helpers (`tellAdmins`, `peopleNames`, `overLinkLimit`), the shared settings patch, an account's name                                                                                |
+| `liveworkspace/apps/accounts/src/account-api/index-door.ts`   | The index's door: `/index/teams`, `/index/people`                                                                                                                                                                  |
+| `liveworkspace/apps/accounts/src/account-api/signed-in.ts`    | The signed-in person's door on liveworkspace.app: `sessionActor`, `handleOpen`, `handleSignedIn`                                                                                                                   |
+| `liveworkspace/apps/accounts/src/account-api/both-doors.ts`   | The routes both doors answer: API tokens, the profile, running teams, the reads                                                                                                                                    |
+| `liveworkspace/apps/accounts/src/account-api/bearer-door.ts`  | An app's bearer's door: `handleBearer`                                                                                                                                                                             |
+| `liveworkspace/apps/accounts/src/account-api/internal.ts`     | The apps' servers' door, `/api/account/internal/*`: `verifiedClient`, `vouchedPerson`, `handleInternal`                                                                                                            |
 | `liveworkspace/apps/accounts/src/app-caller.ts`               | An app's server acting for someone signed in to it: `basicClientId`, `introspectCaller`                                                                                                                            |
 | `liveworkspace/apps/accounts/src/account-apps.ts`             | What one app keeps about an account (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups and milestones per app"): when it first saw the account, which is how it counts a sign-up, a…                     |
 | `liveworkspace/apps/accounts/src/auth-options.ts`             | Everything Better Auth is configured with, apart from where the database lives                                                                                                                                     |
@@ -286,6 +293,14 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/accounts/src/settings.ts`                 | A person's settings (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"), kept with the account so every app reads the same ones                                                                         |
 | `liveworkspace/apps/accounts/src/sign-in-options.ts`          | What the sign-in pages need to know about this deployment                                                                                                                                                          |
 | `liveworkspace/apps/accounts/src/teams.ts`                    | Teams (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"): made and run on liveworkspace.app, the same team in every app                                                                                   |
+| `liveworkspace/apps/accounts/src/teams/shared.ts`             | The team limits, row types and the helpers every write uses                                                                                                                                                        |
+| `liveworkspace/apps/accounts/src/teams/reads.ts`              | An account's teams, invitations and memberships, and a team's members                                                                                                                                              |
+| `liveworkspace/apps/accounts/src/teams/manage.ts`             | Making, renaming and deleting a team                                                                                                                                                                               |
+| `liveworkspace/apps/accounts/src/teams/members.ts`            | Inviting, roles, removing, answering an invitation, `leaveAllTeams`                                                                                                                                                |
+| `liveworkspace/apps/accounts/src/teams/changes.ts`            | The change feed the apps follow                                                                                                                                                                                    |
+| `liveworkspace/apps/accounts/src/teams/tokens.ts`             | The secrets behind team links, and declining from the email                                                                                                                                                        |
+| `liveworkspace/apps/accounts/src/teams/join-link.ts`          | A team's join link                                                                                                                                                                                                 |
+| `liveworkspace/apps/accounts/src/teams/reminders.ts`          | Invitation reminders and expiry, and who hears an answer                                                                                                                                                           |
 | `liveworkspace/apps/accounts/src/telemetry.ts`                | The accounts Worker's own telemetry (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails", liveworkspace/docs/specs/008-telemetry/telemetry.md "Sending events"): `Email·Sent·<kind>` for each o… |
 | `liveworkspace/apps/accounts/src/token-expiry.ts`             | The expiring-token warning (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): once a day, the owner of each live token that expires within a week hears about it once, so a sc…                     |
 | `liveworkspace/apps/accounts/src/tokens.ts`                   | API tokens (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): one per integration, belonging to the account, so the same token works on every app's API and MCP server                              |
@@ -296,6 +311,9 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/accounts/src/workbench/revoke.ts`         | Ending a workbench's access from accounts' side (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access"): a token revoked ends its pairings and requests, an account closed drops…                    |
 | `liveworkspace/apps/accounts/src/workbench/routes.ts`         | /api/account/workbench/* (liveworkspace/docs/specs/011-workbench/workbench.md "Addresses"): every app's workbench pairing, tickets and sessions                                                                    |
 | `liveworkspace/apps/accounts/src/workbench/store.ts`          | One person's workbench (liveworkspace/docs/specs/011-workbench/workbench.md "The store"): their pairing requests, pairings, tickets, sessions, the rooms a workspace session joined, and their…                    |
+| `liveworkspace/apps/accounts/src/workbench/store-types.ts`    | The workbench store's limits, secrets and shapes                                                                                                                                                                   |
+| `liveworkspace/apps/accounts/src/workbench/store-schema.ts`   | The workbench store's tables, and its rows as the store reads them                                                                                                                                                 |
+| `liveworkspace/apps/accounts/src/workbench/store-stub.ts`     | Reaching a person's workbench store from the routes                                                                                                                                                                |
 | `liveworkspace/apps/accounts/src/workspace-token.ts`          | The liveworkspace Explorer's identity (liveworkspace/docs/specs/003-accounts/accounts.md "liveworkspace.app's own token")                                                                                          |
 | `liveworkspace/apps/accounts/scripts/csv.ts`                  | RFC 4180 CSV: quoted fields, doubled quotes, and newlines inside quotes.                                                                                                                                           |
 | `liveworkspace/apps/accounts/scripts/e2e-local.ts`            | Walks the whole sign-in flow against a local `pnpm dev`, the way an app would: redirect to /oauth2/authorize, register with a code and a name, swap the code for                                                   |
@@ -534,19 +552,19 @@ redo it (or drop it once upstream batches the lookup) and keep that test passing
 | `ADMIN_HEADER`                      | `'x-liveworkspace-admin'`                                                | `secrets.ts`         |
 | `SETTINGS_MAX_BYTES`                | `16_384`                                                                 | `settings.ts`        |
 | `SIGN_IN_OPTIONS_PATH`              | `'/sign-in-options'`                                                     | `sign-in-options.ts` |
-| `TEAM_NAME_MAX_LENGTH`              | `80`                                                                     | `teams.ts`           |
-| `MAX_TEAMS_PER_ACCOUNT`             | `50`                                                                     | `teams.ts`           |
-| `MAX_MEMBERS_PER_TEAM`              | `200`                                                                    | `teams.ts`           |
-| `ORGANISATION_MAX_LENGTH`           | `80`                                                                     | `teams.ts`           |
-| `INVITE_LINK_TTL_MS`                | `7 * 24 * 60 * 60 * 1000`                                                | `teams.ts`           |
-| `REMINDER_AGES_MS`                  | `[1 * DAY_MS, 7 * DAY_MS, 21 * DAY_MS] as const`                         | `teams.ts`           |
-| `INVITATION_TTL_MS`                 | `28 * DAY_MS`                                                            | `teams.ts`           |
-| `EXPIRE_BATCH`                      | `500`                                                                    | `teams.ts`           |
-| `REMINDER_BATCH`                    | `100`                                                                    | `teams.ts`           |
-| `MAX_REMINDER_ATTEMPTS`             | `3`                                                                      | `teams.ts`           |
-| `LIST_PREVIEW_MEMBERS`              | `4`                                                                      | `teams.ts`           |
-| `DELETED_MEMBER_EMAIL`              | `'Deleted account'`                                                      | `teams.ts`           |
-| `CHANGES_PAGE_SIZE`                 | `500`                                                                    | `teams.ts`           |
+| `TEAM_NAME_MAX_LENGTH`              | `80`                                                                     | `teams/shared.ts`    |
+| `MAX_TEAMS_PER_ACCOUNT`             | `50`                                                                     | `teams/shared.ts`    |
+| `MAX_MEMBERS_PER_TEAM`              | `200`                                                                    | `teams/shared.ts`    |
+| `ORGANISATION_MAX_LENGTH`           | `80`                                                                     | `teams/shared.ts`    |
+| `INVITE_LINK_TTL_MS`                | `7 * 24 * 60 * 60 * 1000`                                                | `teams/shared.ts`    |
+| `REMINDER_AGES_MS`                  | `[1 * DAY_MS, 7 * DAY_MS, 21 * DAY_MS] as const`                         | `teams/shared.ts`    |
+| `INVITATION_TTL_MS`                 | `28 * DAY_MS`                                                            | `teams/shared.ts`    |
+| `EXPIRE_BATCH`                      | `500`                                                                    | `teams/shared.ts`    |
+| `REMINDER_BATCH`                    | `100`                                                                    | `teams/shared.ts`    |
+| `MAX_REMINDER_ATTEMPTS`             | `3`                                                                      | `teams/shared.ts`    |
+| `LIST_PREVIEW_MEMBERS`              | `4`                                                                      | `teams/reads.ts`     |
+| `DELETED_MEMBER_EMAIL`              | `'Deleted account'`                                                      | `teams/members.ts`   |
+| `CHANGES_PAGE_SIZE`                 | `500`                                                                    | `teams/changes.ts`   |
 | `TELEMETRY_TIMEOUT_MS`              | `2_000`                                                                  | `telemetry.ts`       |
 | `TOKEN_EXPIRY_WARNING_MS`           | `7 * DAY_MS`                                                             | `token-expiry.ts`    |
 | `TOKEN_EXPIRY_SWEEP_LIMIT`          | `100`                                                                    | `token-expiry.ts`    |
@@ -563,17 +581,17 @@ redo it (or drop it once upstream batches the lookup) and keep that test passing
 | `WORKBENCH_NAME_MAX_LENGTH`         | `40`                                                                     | `routes.ts`          |
 | `WORKBENCH_ORIGIN_MAX_LENGTH`       | `255`                                                                    | `routes.ts`          |
 | `WORKBENCH_POLL_INTERVAL_S`         | `5`                                                                      | `routes.ts`          |
-| `WORKBENCH_SESSION_PREFIX`          | `'lvw_'`                                                                 | `store.ts`           |
-| `WORKBENCH_TICKET_BYTES`            | `16`                                                                     | `store.ts`           |
-| `WORKBENCH_PAIRING_CODE_BYTES`      | `16`                                                                     | `store.ts`           |
-| `WORKBENCH_SESSION_SECRET_BYTES`    | `32`                                                                     | `store.ts`           |
-| `WORKBENCH_PAIRING_TTL_MS`          | `10 * 60 * 1000`                                                         | `store.ts`           |
-| `WORKBENCH_SESSION_GRACE_MS`        | `24 * 60 * 60 * 1000`                                                    | `store.ts`           |
-| `WORKBENCH_QUOTA_MAX`               | `1_000`                                                                  | `store.ts`           |
-| `WORKBENCH_SESSION_ROOMS_MAX`       | `500`                                                                    | `store.ts`           |
-| `WORKBENCH_TICKET_PATTERN`          | `/^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/`                                    | `store.ts`           |
-| `WORKBENCH_SESSION_PATTERN`         | `/^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/`                                | `store.ts`           |
-| `WORKBENCH_CODE_PATTERN`            | `/^[A-Za-z0-9_-]{22}$/`                                                  | `store.ts`           |
+| `WORKBENCH_SESSION_PREFIX`          | `'lvw_'`                                                                 | `store-types.ts`     |
+| `WORKBENCH_TICKET_BYTES`            | `16`                                                                     | `store-types.ts`     |
+| `WORKBENCH_PAIRING_CODE_BYTES`      | `16`                                                                     | `store-types.ts`     |
+| `WORKBENCH_SESSION_SECRET_BYTES`    | `32`                                                                     | `store-types.ts`     |
+| `WORKBENCH_PAIRING_TTL_MS`          | `10 * 60 * 1000`                                                         | `store-types.ts`     |
+| `WORKBENCH_SESSION_GRACE_MS`        | `24 * 60 * 60 * 1000`                                                    | `store-types.ts`     |
+| `WORKBENCH_QUOTA_MAX`               | `1_000`                                                                  | `store-types.ts`     |
+| `WORKBENCH_SESSION_ROOMS_MAX`       | `500`                                                                    | `store-types.ts`     |
+| `WORKBENCH_TICKET_PATTERN`          | `/^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/`                                    | `store-types.ts`     |
+| `WORKBENCH_SESSION_PATTERN`         | `/^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/`                                | `store-types.ts`     |
+| `WORKBENCH_CODE_PATTERN`            | `/^[A-Za-z0-9_-]{22}$/`                                                  | `store-types.ts`     |
 | `WORKSPACE_TOKEN_PATH`              | `'/workspace-token'`                                                     | `workspace-token.ts` |
 | `WORKSPACE_TOKEN_TTL_SECONDS`       | `15 * 60`                                                                | `workspace-token.ts` |
 | `ACCOUNT_NAME_MAX_LENGTH`           | `64`                                                                     | `account-name.ts`    |

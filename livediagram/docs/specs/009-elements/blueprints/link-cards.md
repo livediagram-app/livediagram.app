@@ -27,9 +27,9 @@ Scope, by file:
 | `apps/editor/components/canvas/element-variant.ts`                             | The card chrome: 10 px radius, 1 px border, fill                                                                          |
 | `apps/editor/components/canvas/BoxedElementView.tsx`                           | Excludes link cards from the corner link badge                                                                            |
 | `apps/editor/components/canvas/useBoxedElementGestures.ts`                     | Double-click → `onEditLink`                                                                                               |
-| `apps/editor/components/canvas/EditorCanvasHost.tsx`                           | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`                                                            |
+| `apps/editor/components/canvas/editor-canvas-host/useEditCanvasProps.ts`       | `onEditLink: isReadOnly ? undefined : setLinkPickerOpenForId`                                                             |
 | `apps/editor/components/dialogs/LinkPickerDialog.tsx`                          | The shared link editor                                                                                                    |
-| `apps/editor/components/palette/palette-tile-defs.tsx`                         | `tools:link-card` tile                                                                                                    |
+| `apps/editor/components/palette/tile-defs/concept-tiles.tsx`                   | `tools:link-card` tile                                                                                                    |
 | `apps/editor/app/document/[id]/useElementCreation.ts`                          | `addLinkCard`: arms the draw gesture                                                                                      |
 | `apps/editor/hooks/canvas/useShapeDrawing.ts`                                  | Commit: `track('Element', 'Added', 'LinkCard')`                                                                           |
 | `apps/editor/lib/search.ts`                                                    | Palette search entry                                                                                                      |

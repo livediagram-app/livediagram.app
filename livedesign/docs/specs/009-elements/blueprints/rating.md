@@ -8,12 +8,12 @@ Scope, by file:
 
 | File                                                      | Role                                                                                                                 |
 | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `packages/design/src/data-shapes.ts`                    | `RATING_MAX`, `RATING_DEFAULT`, `RatingAnim`, `RATING_ANIMS`, `RATING_LOOPING_ANIMS`, `isRatingShape`, `clampRating` |
-| `packages/design/src/element-types.ts`                  | `rating`, `ratingAnim`, `ratingAnimSpeed`, `ratingAnimRepeat`                                                        |
-| `packages/design/src/shape-factory.ts`                  | Size 200 × 44; seeds `rating` and the amber stroke                                                                   |
-| `packages/design/src/colors.ts`                         | `SELF_PAINTING_SHAPES` membership                                                                                    |
-| `packages/design/src/svg-render-data.ts`                | `svgRating`: the export body                                                                                         |
-| `packages/design/src/svg-render-body.ts`                | `svgElementBody`: routes `'rating'` to `svgRating` with the resolved stroke                                          |
+| `packages/design/src/data-shapes.ts`                      | `RATING_MAX`, `RATING_DEFAULT`, `RatingAnim`, `RATING_ANIMS`, `RATING_LOOPING_ANIMS`, `isRatingShape`, `clampRating` |
+| `packages/design/src/element-types.ts`                    | `rating`, `ratingAnim`, `ratingAnimSpeed`, `ratingAnimRepeat`                                                        |
+| `packages/design/src/shape-factory.ts`                    | Size 200 × 44; seeds `rating` and the amber stroke                                                                   |
+| `packages/design/src/colors.ts`                           | `SELF_PAINTING_SHAPES` membership                                                                                    |
+| `packages/design/src/svg-render-data.ts`                  | `svgRating`: the export body                                                                                         |
+| `packages/design/src/svg-render-body.ts`                  | `svgElementBody`: routes `'rating'` to `svgRating` with the resolved stroke                                          |
 | `apps/live/components/canvas/RatingView.tsx`              | Canvas stars, animation class, stagger                                                                               |
 | `apps/live/components/canvas/ShapeContentRouter.tsx`      | Routes `'rating'` to `RatingView`                                                                                    |
 | `apps/live/components/canvas/element-variant.ts`          | Borderless wrapper via `SELF_PAINTING_SHAPES`                                                                        |
@@ -21,7 +21,7 @@ Scope, by file:
 | `apps/live/components/palette/context-menu-data-rows.tsx` | `RatingPickerRow`, `RatingAnimTiles`, `AnimTiles`, `RatingMenuGlyph`                                                 |
 | `apps/live/components/palette/ElementDataSections.tsx`    | The Rating section inside the Tools flyout                                                                           |
 | `apps/live/hooks/canvas/useChartSetters.ts`               | The four rating setters, via `makeShapePatcher`                                                                      |
-| `apps/live/components/palette/palette-tile-defs.tsx`      | Tile `data:rating`                                                                                                   |
+| `apps/live/components/palette/tile-defs/data-tiles.tsx`   | Tile `data:rating`                                                                                                   |
 
 ## Domain and naming
 
@@ -149,17 +149,17 @@ Telemetry only: `track('Element', 'Added', 'Rating')` on create (`shapeTelemetry
 
 ## Testing
 
-| Rule                                     | Test                                                   | File                                               |
-| ---------------------------------------- | ------------------------------------------------------ | -------------------------------------------------- |
+| Rule                                     | Test                                                   | File                                             |
+| ---------------------------------------- | ------------------------------------------------------ | ------------------------------------------------ |
 | `isRatingShape` matches only `'rating'`  | rating matches only its own kind                       | `packages/design/src/data-shapes.test.ts`        |
-| Score clamps to 0..5                     | sets the star score (clamped 0..5) on the rating shape | `apps/live/hooks/canvas/useElementStyle.test.ts`   |
-| Animation set and clear                  | sets and clears the rating animation                   | `apps/live/hooks/canvas/useElementStyle.test.ts`   |
-| Kind gate                                | leaves non-rating shapes untouched                     | `apps/live/hooks/canvas/useElementStyle.test.ts`   |
-| Patcher: own kind only, empty = no trace | `makeShapePatcher` cases                               | `apps/live/hooks/canvas/shape-patcher.test.ts`     |
+| Score clamps to 0..5                     | sets the star score (clamped 0..5) on the rating shape | `apps/live/hooks/canvas/useElementStyle.test.ts` |
+| Animation set and clear                  | sets and clears the rating animation                   | `apps/live/hooks/canvas/useElementStyle.test.ts` |
+| Kind gate                                | leaves non-rating shapes untouched                     | `apps/live/hooks/canvas/useElementStyle.test.ts` |
+| Patcher: own kind only, empty = no trace | `makeShapePatcher` cases                               | `apps/live/hooks/canvas/shape-patcher.test.ts`   |
 | Export draws stars                       | draws more than a box and a label for each of them     | `packages/design/src/export-consistency.test.ts` |
-| Default three filled, amber              | none [GE11]                                            |                                                    |
-| Pop / rock once, twinkle / pulse loop    | none [GE11]                                            |                                                    |
-| Stagger only for pop / twinkle           | none [GE11]                                            |                                                    |
+| Default three filled, amber              | none [GE11]                                            |                                                  |
+| Pop / rock once, twinkle / pulse loop    | none [GE11]                                            |                                                  |
+| Stagger only for pop / twinkle           | none [GE11]                                            |                                                  |
 
 ## Constants and configuration
 

@@ -7,28 +7,28 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                     | Role                                                                |
-| -------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/design/src/element-types.ts`                   | `AnnotationElement`                                                 |
-| `packages/design/src/index.ts`                           | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
-| `packages/design/src/factories.ts`                       | `createAnnotation`, `ANNOTATION_SIZE`                               |
-| `packages/design/src/colors.ts`                          | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
-| `packages/design/src/themes.ts`                          | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
-| `packages/design/src/svg-render-describe.ts`             | Export shape: an ellipse                                            |
-| `apps/live/lib/canvas.ts`                                | `inheritedSizeFor` keeps the marker size                            |
-| `apps/live/lib/canvas-selection.ts`                      | No quick-connect plus on an annotation                              |
-| `apps/live/lib/themes.ts`                                | `deriveNewBoxedColours` treats an annotation like a shape           |
-| `apps/live/lib/draw-mode.ts`                             | Annotation is absent from draw-to-size                              |
-| `apps/live/app/design/[id]/useElementCreation.ts`        | `addAnnotation`: viewport-centre drop + telemetry                   |
-| `apps/live/components/palette/palette-tile-defs.tsx`     | Tile `tools:annotation`, `toolGroup: 'write'`                       |
-| `apps/live/components/palette/PaletteTileGrid.tsx`       | Routes the tile to `addAnnotation`, never arms a draw               |
-| `apps/live/components/canvas/element-variant.ts`         | The round, bordered wrapper style                                   |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`      | Renders `AnnotationGlyph` as the face                               |
-| `apps/live/components/canvas/AnnotationMarker.tsx`       | `AnnotationGlyph`, `AnnotationHoverNote`                            |
-| `apps/live/components/canvas/BoxedElementView.tsx`       | Hover state, preview gate, badge suppression                        |
-| `apps/live/components/canvas/useBoxedElementGestures.ts` | Double-click opens the note [QD9]                                   |
-| `apps/live/components/canvas/element-parts.tsx`          | `SelectionChromeLayer`: resize handles for a selected marker [QD8]  |
-| `apps/live/components/palette/EditorContextMenu.tsx`     | Size section shown, Rotation hidden for an annotation [QD8]         |
+| File                                                       | Role                                                                |
+| ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| `packages/design/src/element-types.ts`                     | `AnnotationElement`                                                 |
+| `packages/design/src/index.ts`                             | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
+| `packages/design/src/factories.ts`                         | `createAnnotation`, `ANNOTATION_SIZE`                               |
+| `packages/design/src/colors.ts`                            | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
+| `packages/design/src/themes.ts`                            | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
+| `packages/design/src/svg-render-describe.ts`               | Export shape: an ellipse                                            |
+| `apps/live/lib/canvas.ts`                                  | `inheritedSizeFor` keeps the marker size                            |
+| `apps/live/lib/canvas-selection.ts`                        | No quick-connect plus on an annotation                              |
+| `apps/live/lib/themes.ts`                                  | `deriveNewBoxedColours` treats an annotation like a shape           |
+| `apps/live/lib/draw-mode.ts`                               | Annotation is absent from draw-to-size                              |
+| `apps/live/app/design/[id]/useElementCreation.ts`          | `addAnnotation`: viewport-centre drop + telemetry                   |
+| `apps/live/components/palette/tile-defs/concept-tiles.tsx` | Tile `tools:annotation`, `toolGroup: 'write'`                       |
+| `apps/live/components/palette/PaletteTileGrid.tsx`         | Routes the tile to `addAnnotation`, never arms a draw               |
+| `apps/live/components/canvas/element-variant.ts`           | The round, bordered wrapper style                                   |
+| `apps/live/components/canvas/ElementFaceRouter.tsx`        | Renders `AnnotationGlyph` as the face                               |
+| `apps/live/components/canvas/AnnotationMarker.tsx`         | `AnnotationGlyph`, `AnnotationHoverNote`                            |
+| `apps/live/components/canvas/BoxedElementView.tsx`         | Hover state, preview gate, badge suppression                        |
+| `apps/live/components/canvas/useBoxedElementGestures.ts`   | Double-click opens the note [QD9]                                   |
+| `apps/live/components/canvas/element-parts.tsx`            | `SelectionChromeLayer`: resize handles for a selected marker [QD8]  |
+| `apps/live/components/palette/EditorContextMenu.tsx`       | Size section shown, Rotation hidden for an annotation [QD8]         |
 
 ## Domain and naming
 

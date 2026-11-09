@@ -39,7 +39,7 @@ Scope, by file:
 | `apps/editor/components/canvas/QuickConnectRing.tsx` (+ options, pluses) | Add Related Entity, Add Field                                           |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`                        | `setEntityFieldsSelected` (the menu)                                    |
 | `apps/editor/components/palette/EntityFieldsEditor.tsx`                  | The Fields menu section                                                 |
-| `apps/editor/components/palette/palette-tile-defs.tsx`                   | Tile `tools:entity`, section `components`                               |
+| `apps/editor/components/palette/tile-defs/element-tiles.tsx`             | Tile `tools:entity`, section `components`                               |
 | `packages/templates/src/template-builders-uml.ts`                        | UML class template built from entities                                  |
 | `packages/templates/src/template-builders-er.ts`                         | Database schema template: keys and ER ends                              |
 | `packages/document-views/src/content-summary.ts`                         | A field's key in the text views                                         |

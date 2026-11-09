@@ -25,7 +25,7 @@ Scope, by file:
 | `apps/live/components/palette/context-menu-data-rows.tsx` | `ProgressRow`, `PercentSliderRow`, `ProgressAnimTiles`, `AnimTiles`          |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`           | The four progress setters, via `makeShapePatcher`                            |
 | `apps/live/hooks/canvas/shape-patcher.ts`                 | `makeShapePatcher`: selection-wide, kind-gated patch plus telemetry          |
-| `apps/live/components/palette/palette-tile-defs.tsx`      | Tiles `data:progress-bar` and `data:progress-ring`                           |
+| `apps/live/components/palette/tile-defs/data-tiles.tsx`   | Tiles `data:progress-bar` and `data:progress-ring`                           |
 
 ## Domain and naming
 

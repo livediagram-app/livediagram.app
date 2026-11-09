@@ -28,7 +28,7 @@ Scope, by file:
 | `apps/editor/lib/excalidraw-embedded.ts`                                                 | `extractExcalidrawScene`: PNG / SVG / JSON input to scene text                     |
 | `apps/editor/hooks/canvas/useClipboard.ts`                                               | Paste branches and `dropBoardFile`: scenes go to the board-scene insert            |
 | `apps/editor/hooks/canvas/usePaletteDrop.ts`                                             | `onDropFile`: a dropped file with its canvas point                                 |
-| `apps/editor/components/canvas/Canvas.tsx`, `EditorCanvasHost.tsx`                       | Thread `onDropFile` (`dropBoardFile`, not when read-only)                          |
+| `apps/editor/components/canvas/Canvas.tsx`, `editor-canvas-host/useInsertCanvasProps.ts` | Thread `onDropFile` (`dropBoardFile`, not when read-only)                          |
 | `apps/editor/hooks/persistence/useTabImport.ts`                                          | Extraction, `sceneFromExcalidrawText`, then `importScene` (useBoardSceneImport)    |
 | `apps/editor/components/dialogs/TextImportPanel.tsx`                                     | Progress label; hands the outcome to the dialog                                    |
 | `apps/editor/components/dialogs/ImportTabDialog.tsx`                                     | Shows the report view when the outcome carries one                                 |

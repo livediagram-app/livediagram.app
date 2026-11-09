@@ -7,17 +7,17 @@ the repository root.
 
 Scope, by file:
 
-| File                                                    | Role                                                                      |
-| ------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/archive.ts`               | `POST /items/:id/archive`, `archiveStatements`, `refuseArchived`          |
-| `liveworkspace/apps/index/src/auth.ts`                  | `archivedScope`, `ownScopes` (a person's own scopes, Archived's included) |
-| `liveworkspace/apps/index/src/lists.ts`                 | `view=archived`; Search's and the Trash's own scopes                      |
-| `liveworkspace/apps/index/src/items.ts`                 | the move out (`PATCH`), the refusals on grant, open and copy              |
-| `liveworkspace/apps/index/migrations/0015_archived.sql` | `items.archived_at`                                                       |
-| `packages/index-client/src/client.ts`                   | `archiveItem`                                                             |
-| `packages/explorer/src/explorer/archived/`              | the Archived view's empty state, the archived dialog, the badge           |
-| `packages/explorer/src/dialogs/PlacementBrowser.tsx`    | the Archived space (`ARCHIVED_PLACEMENT`)                                 |
-| `packages/workbench/src/components/chrome/NotFound.tsx` | the editors' archived card (`archived`)                                   |
+| File                                                                                               | Role                                                                                            |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/archive.ts`                                                          | `POST /items/:id/archive`, `archiveStatements`, `refuseArchived`                                |
+| `liveworkspace/apps/index/src/auth.ts`                                                             | `archivedScope`, `ownScopes` (a person's own scopes, Archived's included)                       |
+| `liveworkspace/apps/index/src/lists.ts`                                                            | `view=archived`; Search's and the Trash's own scopes                                            |
+| `liveworkspace/apps/index/src/items/item-routes.ts`, `liveworkspace/apps/index/src/items/opens.ts` | the move out (`PATCH`), the refusals on grant and copy (`item-routes.ts`) and open (`opens.ts`) |
+| `liveworkspace/apps/index/migrations/0015_archived.sql`                                            | `items.archived_at`                                                                             |
+| `packages/index-client/src/client.ts`                                                              | `archiveItem`                                                                                   |
+| `packages/explorer/src/explorer/archived/`                                                         | the Archived view's empty state, the archived dialog, the badge                                 |
+| `packages/explorer/src/dialogs/PlacementBrowser.tsx`                                               | the Archived space (`ARCHIVED_PLACEMENT`)                                                       |
+| `packages/workbench/src/components/chrome/NotFound.tsx`                                            | the editors' archived card (`archived`)                                                         |
 
 ## Domain and naming
 
