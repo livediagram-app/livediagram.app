@@ -428,7 +428,7 @@ describe('the Settings panel, opened on a section', () => {
         ?.textContent?.includes('No tokens yet'),
     );
     const cell = document.querySelector('[data-settings-cell="tokens"]')!;
-    expect(cell.textContent).toContain('Make a token');
+    expect(cell.textContent).toContain('Make a Token');
     expect(cell.textContent).toContain('No tokens yet');
     expect(fetchMock.mock.calls.filter(([url]) => url === '/api/account/tokens')).toHaveLength(1);
   });
