@@ -7,6 +7,8 @@ from the keyboard.
 
 - **Tab** on a selected node adds a **child**.
 - **Enter** adds a **sibling** directly after it.
+- Neither key grows the map while a control focused from the keyboard (a toolbar or panel button reached with F6
+  or Tab) holds focus: there Tab moves focus on and Enter presses the control.
 - **Shift+Enter**, while typing a node's label, starts a **new line** in it (see "New lines"
   below).
 

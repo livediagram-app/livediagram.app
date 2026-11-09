@@ -922,6 +922,9 @@ The remaining shape kinds (hexagon, stadium, document, cloud, devices, …) have
 - **Space-tap** on a single selected element edits its label; **Space-drag** pans the canvas (the tap-vs-drag split lives in the hook).
 - **Type-to-edit**: a printable key on a single selected, label-bearing element (a character composed with AltGr, such as a German layout's `€`, included: its Ctrl is not a shortcut's, `../packages/workbench/src/lib/composed-key.ts`) opens its label editor seeded with that character, instead of firing the tool / add / number shortcuts (so selecting a shape and typing never accidentally drops new elements). The seed replaces the label at once (everyone in the room sees it), so **Escape takes it back**: the label and its formatting are as they were before the first key, for everyone, with no redo step left behind. Leaving the editor any other way keeps what was typed, as **one step**: the commit takes the seed's place in the undo history, so one Cmd/Ctrl+Z puts back the label from before the first key rather than the lone seed character.
 - **`+`** (or `=`) / **`-`** on a single votable element while a dot vote is open add or take back one of your dots ([Session tools](../012-collaboration/session-tools.md) "Casting from the keyboard"); otherwise they type into the label as any printable key does.
+- **Alt is never a plain key's.** With Alt (Option) held, the plain-key shortcuts (the tools, the adds, type-to-edit)
+  stand down, so Alt+R adds no Square and never overwrites a selected label; a character Alt composes (a Mac's
+  Option+3 `£`, AltGr's `€`) still types into the label.
 - **`⇧`-Click** toggles an element in the multi-selection.
 - Holding **`⌘`** reveals the shortcut-letter badges on the palette tiles (`useModKeyHeld`).
 
