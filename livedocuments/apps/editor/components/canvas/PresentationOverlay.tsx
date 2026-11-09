@@ -56,7 +56,10 @@ export function PresentationOverlay({
   onSetCanvasTool: (tool: 'laser' | 'spotlight' | 'select') => void;
   /** Index into `steps`, or steps.length for the end state. */
   at: number;
-  onGo: (next: number) => void;
+  /** A move to `next`; a step (Next, Back, a click, auto-advance) names its direction too, so the host counts it
+   *  from the slide last asked for and decides Loop and the end there. Answers where it went (null: the deck
+   *  ended), or nothing. */
+  onGo: (next: number, step?: 1 | -1) => number | null | void;
   onExit: () => void;
   direction: 'forward' | 'back';
   config: PresentationConfig;
@@ -131,21 +134,27 @@ export function PresentationOverlay({
   }, [wantsClock]);
 
   const go = useCallback(
-    (next: number) => {
+    (next: number, step?: 1 | -1) => {
       // Advancing closes what is open, so the next slide starts clean; the notes stay, on the next slide's
       // first card, so a speaker's cards are up for the whole talk.
       setSettingsOpen(false);
       setJumpOpen(false);
       setCardOf(null);
       setDetail(null);
-      if (next < 0) return;
+      if (next < 0 && step === undefined) return;
       // Every slide change while the deck runs comes through here (the host
       // hands `onGo` straight to the deck), so this is where a slide is
-      // entered; a move that lands where it already is keeps the clock.
+      // entered; a move that lands where it already is keeps the clock. A step
+      // goes with its direction: the host places it from a move still on its
+      // way, and says where it landed.
       const enter = (target: number) => {
-        if (target !== at) setSlideEnteredAt(Date.now());
-        onGo(target);
+        const landed = onGo(target, step);
+        if (landed !== null && (landed ?? target) !== at) setSlideEnteredAt(Date.now());
       };
+      if (next < 0) {
+        enter(0);
+        return;
+      }
       // Looping (a cog setting) turns the end of the deck back into the start
       // instead of the end state, for a deck left running in a room.
       if (config.loop && next >= steps.length) {
@@ -170,7 +179,7 @@ export function PresentationOverlay({
   // timer restarted on every render would never fire. It restarts on an arrival
   // (`slideEnteredAt`, set by `go` alone), never on the slide's place in the run:
   // a collaborator moving or hiding a slide before it shifts `at` and is no move.
-  const advance = useEffectEvent(() => go(at + 1));
+  const advance = useEffectEvent(() => go(at + 1, 1));
   useEffect(() => {
     const seconds = config.autoAdvanceSeconds;
     if (seconds <= 0 || atEnd || notesVisible || settingsOpen || jumpOpen || detail) return;
@@ -334,12 +343,12 @@ export function PresentationOverlay({
     if ((key === ' ' || key === 'Enter') && isPressableControl(e.target)) return;
     if (key === 'ArrowRight' || key === ' ' || key === 'PageDown' || key === 'Enter') {
       handled();
-      go(at + 1);
+      go(at + 1, 1);
       return;
     }
     if (key === 'ArrowLeft' || key === 'PageUp') {
       handled();
-      go(Math.max(0, at - 1));
+      go(at - 1, -1);
       return;
     }
     // The note cards (docs/specs/012-collaboration/speaker-note-cards.md "Presenting"): while they show, the up
@@ -416,7 +425,7 @@ export function PresentationOverlay({
     }
     // Click-to-advance is a cog setting: a presenter who gestures at the
     // screen with the mouse can turn it off and drive from the keys alone.
-    if (config.advanceOnClick) go(at + 1);
+    if (config.advanceOnClick) go(at + 1, 1);
   };
 
   return (
@@ -494,8 +503,8 @@ export function PresentationOverlay({
               ? { minutes: slideMinutes, onSlideMs: now - slideEnteredAt }
               : null
           }
-          onBack={at > 0 ? () => go(at - 1) : undefined}
-          onNext={() => go(at + 1)}
+          onBack={at > 0 ? () => go(at - 1, -1) : undefined}
+          onNext={() => go(at + 1, 1)}
           onClose={onExit}
           hidden={idle}
         />

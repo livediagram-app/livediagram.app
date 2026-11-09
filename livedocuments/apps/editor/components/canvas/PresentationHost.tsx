@@ -120,17 +120,31 @@ export function PresentationHost() {
   if (!slideDeck || at === null || !config || !Overlay) return null;
   // An item slide is the card itself, drawn over the canvas (docs/specs/012-collaboration/presentation-mode.md
   // "Item slides").
-  // A move: a step (one slide either way) counts from the slide last asked for, a jump is taken as given; then it
-  // runs as a transition typed by its direction, or plainly for None (startTypedTransition cuts under reduced motion).
-  const go = (next: number) => {
+  // A move: a step (one slide either way, named by the overlay) counts from the slide last asked for, so quick
+  // presses near the deck's ends wrap (Loop), stop at the end state or leave from where the last one went; a jump
+  // is taken as given. Then it runs as a transition typed by its direction, or plainly for None
+  // (startTypedTransition cuts under reduced motion). Answers where it went, or null when the deck ended.
+  const go = (next: number, step?: 1 | -1): number | null => {
     const from = asked.current ?? at;
-    const step = next - at;
-    const target =
-      Math.abs(step) === 1 ? Math.min(Math.max(0, from + step), slideDeck.runnable.length) : next;
+    const ends = slideDeck.runnable.length;
+    let target = Math.min(Math.max(0, next), ends);
+    if (step !== undefined) {
+      target = Math.max(0, from + step);
+      if (target >= ends && config.loop) target = 0;
+      else if (target > ends) {
+        // Past the end state: leave, unless a move there is still on its way (a quick double press stops at it).
+        if (asked.current === null) {
+          slideDeck.exitPresentation();
+          return null;
+        }
+        target = ends;
+      }
+    }
     asked.current = target;
     const type = slideTransitionType(config.transition, from, target);
     if (type) startTypedTransition(type, () => slideDeck.setPresentingAt(target));
     else slideDeck.setPresentingAt(target);
+    return target;
   };
   return (
     <Overlay
