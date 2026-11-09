@@ -14,6 +14,7 @@ import {
   type TelemetrySender,
 } from '@liveworkspace/telemetry';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import { insertEvents } from './db';
 import { appKey, type Env } from './env';
 import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
@@ -30,9 +31,10 @@ export async function handleIngest(request: Request, env: Env): Promise<Response
   if (Number(request.headers.get('Content-Length') ?? 0) > MAX_BODY_BYTES) return noop();
   let body: unknown;
   try {
-    const text = await request.text();
-    if (text.length > MAX_BODY_BYTES) return noop();
-    body = JSON.parse(text);
+    // Read through a byte counter: a chunked body declares no length, and characters undercount UTF-8 bytes.
+    const bytes = request.body && (await readCappedBody(request.body, MAX_BODY_BYTES));
+    if (!bytes) return noop();
+    body = JSON.parse(new TextDecoder().decode(bytes));
   } catch {
     return noop();
   }
