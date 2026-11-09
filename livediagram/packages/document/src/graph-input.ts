@@ -11,6 +11,7 @@
 //    clustered layout), tree or mindmap, in the requested direction.
 //  - The arrows get their routing (lines), defaulting per style.
 
+import { isRetiredShapeKind, retiredKindRefusal } from './retired-elements';
 import { autoLayoutElements, type LayoutDirection, type LayoutStyle } from './auto-layout';
 import { layoutClusteredGraph, sweepEdgelessNodes } from './auto-layout-clusters';
 import { withOrthogonalBends } from './arrow-orthogonal';
@@ -454,6 +455,9 @@ export function graphShapeError(graph: GraphInput): string | undefined {
     (graph.nodes.length > SEQUENCE_MAX_PARTICIPANTS || graph.edges.length > SEQUENCE_MAX_ITEMS)
   )
     return `a sequence graph is too large: up to ${SEQUENCE_MAX_PARTICIPANTS} participants (nodes) and ${SEQUENCE_MAX_ITEMS} messages (edges)`;
+  // A node never draws as a piece that moved to livehuddle (docs/specs/009-elements/retired-elements.md).
+  for (const n of graph.nodes)
+    if (isRetiredShapeKind(n.shape)) return `node "${n.id}": ${retiredKindRefusal(n.shape)}`;
   // Each node and each group becomes an element of its id, so no id can name two of either.
   const twiceNode = repeatedId(graph.nodes.map((n) => n.id));
   if (twiceNode !== undefined)

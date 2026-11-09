@@ -1,12 +1,11 @@
 import { useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
-// Which guided tour is on screen (docs/specs/007-editor/watch-it-built.md, docs/specs/008-canvas/avatar-tour.md):
+// Which guided tour is on screen (docs/specs/007-editor/watch-it-built.md):
 // tours never run at once, so each host publishes itself here while it is active and waits for the others to clear. A module
 // store, like the modal guard: one editor per page.
 type ActiveTour =
   | 'welcome'
-  | 'avatar'
   | 'element'
   // Any Show Me running (ShowMeStage): an offer never comes up beside one.
   | 'show-me';

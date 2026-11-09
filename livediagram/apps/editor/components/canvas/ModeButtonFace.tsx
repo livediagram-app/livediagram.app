@@ -8,19 +8,18 @@
 //     is left alone rather than swallowed, so dragging the button still moves
 //     it — a click is a click, a drag is a drag.
 //  2. It keeps `pointer-events: auto` even inside a pointer-inert canvas
-//     layer, which is what makes a button still work while someone is walking
-//     around in Avatar mode. A control bar of these is useless if the mode it
+//     layer, which is what makes a button still work while someone is in
+//     Spotlight or Isometric. A control bar of these is useless if the mode it
 //     hands out is a one-way portal.
 //  3. It carries the affordances a button needs to look pressable: the glyph
 //     over the label (the toolbar-button shape), a hover lift, and a press that
 //     scales and sinks. Hover is desktop-only — a touch device has no hover, and
 //     a sticky :hover after a tap reads as a stuck button.
 
-import { SELECTION_MODE_LABEL, type SelectionMode } from '@livediagram/document';
+import { SELECTION_MODE_LABEL, type ButtonMode, type SelectionMode } from '@livediagram/document';
 import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import {
-  AvatarModeIcon,
   EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
@@ -32,12 +31,11 @@ import {
 
 // The picker's own glyphs, so a button advertises the mode with exactly the
 // icon the palette uses for it.
-const MODE_ICON: Record<SelectionMode, React.ReactNode> = {
+const MODE_ICON: Record<ButtonMode, React.ReactNode> = {
   select: <SelectIcon />,
   pan: <PanIcon />,
   laser: <LaserIcon />,
   spotlight: <SpotlightIcon />,
-  avatar: <AvatarModeIcon />,
   eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
   isometric: <IsometricIcon />,
@@ -59,13 +57,13 @@ export function ModeButtonFace({
   textColor,
   onPress,
 }: {
-  mode: SelectionMode;
+  mode: ButtonMode;
   // The element's own label. Empty (the default) falls back to naming the
-  // action — "Switch to Avatar" — so the face never goes stale when the button
+  // action — "Switch to Spotlight" — so the face never goes stale when the button
   // is re-pointed, and an author who types their own copy still wins.
   label: string;
   // The mode the viewer is in RIGHT NOW. A button for the mode you are already
-  // in becomes the way back out — it reads "Leave Avatar" and presses you into
+  // in becomes the way back out — it reads "Leave Spotlight" and presses you into
   // the tool you came from — because on a read-only walkthrough it can be the
   // only control on screen, and a one-way door strands the viewer.
   activeMode?: SelectionMode;

@@ -37,7 +37,6 @@
     "@livediagram/ui": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
-    "@liveworkspace/avatar": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",

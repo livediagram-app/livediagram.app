@@ -10,8 +10,7 @@
 // and because the editor needs to answer one question about all of them at
 // once: does this element carry a `…` on its face?
 
-import { isOfficeShape } from './office';
-import { isSeatingShape } from './seating';
+import { isRetiredShapeKind } from './retired-elements';
 import type { ShapeKind } from './index';
 
 // Every kind the palette's Behaviours category can place.
@@ -22,15 +21,13 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'reveal',
   'picker',
   'reaction-pad',
+  // The retired Spaces pieces (docs/specs/009-elements/retired-elements.md) stay in the family: a stored one is
+  // still a Behaviour to the share roles, though livediagram no longer offers it.
   'chair',
-  // Fence (docs/specs/009-elements/fence.md): it does nothing until a character walks into it.
   'fence',
-  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): it does nothing until somebody enters Avatar mode.
   'avatar-pad',
   'desk',
   'sofa',
-  // The virtual office (docs/specs/009-elements/office.md): what happens is a character walking in, round
-  // or up to it.
   'room',
   'meeting-table',
   'plant',
@@ -93,9 +90,7 @@ export function drawsOwnElementMenu(kind: ShapeKind): boolean {
  *   Its colours and label are reached the ordinary way, by right-clicking the
  *   element like any other, so a `…` would only open the menu that was already
  *   one click away: one more dot on the card and one more thing to explain.
- * - A chair (docs/specs/009-elements/chair.md) is furniture, not a card. Its one setting, which way it
- *   faces, is set from the element menu, and an ellipsis floating over the
- *   backrest read as a control on the seat.
+
  * - A reveal zone (docs/specs/009-elements/reveal-zone.md) is a cover whose whole face says what it
  *   does ("Double-click to reveal"); a `…` in its corner was a control on
  *   something meant to read as closed. Reveal for everyone is on its
@@ -108,10 +103,7 @@ export function drawsOwnElementMenu(kind: ShapeKind): boolean {
 export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
   if (
     kind === 'focus-button' ||
-    isSeatingShape(kind) ||
-    kind === 'fence' ||
-    kind === 'avatar-pad' ||
-    isOfficeShape(kind) ||
+    isRetiredShapeKind(kind) ||
     kind === 'reveal' ||
     kind === 'comment-pin' ||
     kind === 'action-card'

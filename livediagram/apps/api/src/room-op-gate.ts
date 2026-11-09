@@ -3,8 +3,8 @@
 import {
   isParticipationOp,
   isPresenceOpKind,
+  isRetiredOpKind,
   isSystemOpKind,
-  parseAvatarSay,
   parseStoredLevel,
 } from '@livediagram/api-schema';
 import { answersAsSelf } from './document-room-rules';
@@ -65,6 +65,10 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // could forge `share-revoked` with the code from their own URL
   // and force-redirect every collaborator out of the session.
   if (isSystemOpKind(opKind)) return DROP;
+  // Avatar mode's ops went to livehuddle (docs/specs/015-api/api.md "Retired ops are ignored"): an older editor's
+  // are dropped without a word, never refused, so it keeps working. Ahead of the classification, whose mutation
+  // branch is the fall-through.
+  if (isRetiredOpKind(opKind)) return DROP;
   // A tab-scoped session acts on its own tab only, and never on the
   // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
@@ -79,9 +83,6 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a poll answer and a
   // reaction are taking part, so they need a Participant.
   if (level === 'view' && (opKind === 'poll-answer' || opKind === 'reaction')) return DROP;
-  // Speaking is taking part too (docs/specs/008-canvas/avatar-mode.md "Who may speak"), and a message is held to
-  // the limits here as every receiver holds it, so a malformed one reaches nobody.
-  if (opKind === 'avatar-say' && (level === 'view' || !parseAvatarSay(op))) return DROP;
   // Bring Focus moves everyone's view (docs/specs/012-collaboration/bring-focus.md): running the session, so an
   // Editor's alone.
   if (opKind === 'focus-here' && level !== 'edit') return DROP;

@@ -17,17 +17,13 @@ import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
 import { isConceptShape } from './concept';
-import { FENCE_WOOD } from '@liveworkspace/avatar/fence';
-import { isOfficeShape, ROOM_FLOOR, RUG_FILL } from './office';
-import { isSeatingShape } from './seating';
+import { isRetiredShapeKind } from './retired-elements';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
   switch (element.type) {
     case 'shape':
-      // A room's name sits in its back wall's face (docs/specs/009-elements/office.md "Room"): the roomier
-      // padding clears the wall's top.
-      return element.shape === 'room' ? 'md' : 'sm';
+      return 'sm';
     case 'text':
       return 'none';
     case 'sticky':
@@ -220,7 +216,7 @@ export const DARK_INK = {
 // buttons (mode, session: the timer, vote and poll; picker) wear a real UI
 // button's skin, a light card on light paper and a raised slate one on dark,
 // never the shape default, so they read as pressable before anyone styles
-// them. The reveal cover and the chair paint themselves; only their outline
+// them. The reveal cover and a retired piece paint themselves; only their outline
 // and label ink follow the paper.
 // The Reveal cover's opaque base, from the PAPER under it rather than the
 // app's appearance, so a dark theme in light mode still gets a dark cover
@@ -244,38 +240,20 @@ function behaviourSkin(
   if (kind === 'mode-button' || kind === 'session-button' || kind === 'picker') {
     return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
   }
-  // A fence (docs/specs/009-elements/fence.md) is timber: a wood brown on each paper, no box.
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels in the sprite's palette, no box.
-  if (kind === 'avatar-pad') {
-    return { fill: 'transparent', stroke: 'transparent', text: OUTLINE_SKIN_LIGHT.text };
-  }
-  if (kind === 'fence') {
-    return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
-  }
-  // A room's floor and a rug are the element's fill (docs/specs/009-elements/office.md): warm on light paper,
-  // deep on dark. Their outlines are the furniture's.
-  if (kind === 'room' || kind === 'rug') {
-    const fill =
-      kind === 'room'
-        ? surface === 'dark'
-          ? '#292524'
-          : ROOM_FLOOR
-        : surface === 'dark'
-          ? '#713f12'
-          : RUG_FILL;
+  // A retired piece (docs/specs/009-elements/retired-elements.md) draws its own placeholder card: no box, ink
+  // from the paper.
+  if (isRetiredShapeKind(kind)) {
     return surface === 'dark'
-      ? { fill, stroke: DARK_INK.stroke, text: DARK_INK.text }
-      : { fill, ...OUTLINE_SKIN_LIGHT };
+      ? { fill: 'transparent', stroke: 'transparent', text: DARK_INK.text }
+      : { fill: 'transparent', stroke: 'transparent', text: OUTLINE_SKIN_LIGHT.text };
   }
-  if (kind === 'reveal' || isSeatingShape(kind) || isOfficeShape(kind)) {
+  if (kind === 'reveal') {
     if (surface === 'dark') {
       return { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text };
     }
     // The reveal cover's stroke is its ACCENT (docs/specs/009-elements/reveal-zone.md "The look"), so on
-    // light paper it takes the shape accent, not the chair's grey outline.
-    return kind === 'reveal'
-      ? { fill: 'transparent', stroke: '#0ea5e9', text: OUTLINE_SKIN_LIGHT.text }
-      : { fill: 'transparent', ...OUTLINE_SKIN_LIGHT };
+    // light paper it takes the shape accent.
+    return { fill: 'transparent', stroke: '#0ea5e9', text: OUTLINE_SKIN_LIGHT.text };
   }
   return null;
 }
@@ -600,16 +578,12 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
   'portal',
   'reveal',
-  // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
-  // which is what the canvas does too (isSvgRenderedShape excludes it).
+  // A retired piece (docs/specs/009-elements/retired-elements.md) draws its own placeholder card, no box behind it.
   'chair',
-  // A fence, a desk and a sofa (docs/specs/009-elements/fence.md, chair.md) draw themselves too.
   'fence',
   'desk',
   'sofa',
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) is its pixels.
   'avatar-pad',
-  // The office pieces (docs/specs/009-elements/office.md) draw themselves, the room its own floor.
   'room',
   'meeting-table',
   'plant',

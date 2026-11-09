@@ -30,7 +30,6 @@ import { entityTourSteps } from './entity-tour-steps';
 import { laneTourSteps } from './lane-tour-steps';
 import { boundaryTourSteps } from './boundary-tour-steps';
 import { diagramKeyTourSteps } from './diagram-key-tour-steps';
-import { portalTourSteps } from './portal-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -41,7 +40,6 @@ import {
   stepTelemetryType,
   type TourStepOf,
 } from '@liveworkspace/workbench/components/tour/tour-step';
-import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // What the steps may know about where the tour runs, read when Play is pressed.
 type ElementTourEnv = {
@@ -67,9 +65,6 @@ type ElementTourDef = {
 
 const conceptRows = (el: Element) => (el as ShapeElement).conceptRows ?? [];
 
-// Whether a part of the element is on screen when Play is pressed (a linked portal's Open button).
-const inDom = (selector: string) =>
-  typeof document !== 'undefined' && document.querySelector(selector) !== null;
 
 export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
   sankey: {
@@ -259,18 +254,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
       diagramKeyTourSteps({
         elementId: el.id,
         firstRowId: (el as ShapeElement).keyRows?.[0]?.id ?? null,
-        touch: env.touch,
-      }),
-  },
-  portal: {
-    token: 'PortalTour',
-    eyebrow: 'Portal tour',
-    helpArticle: 'portals',
-    steps: (el, env) =>
-      portalTourSteps({
-        elementId: el.id,
-        linked: inDom(elementSelector(el.id, 'button[aria-label*=": go to"]')),
-        hasMore: env.hasMore,
         touch: env.touch,
       }),
   },

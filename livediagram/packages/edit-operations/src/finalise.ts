@@ -12,6 +12,7 @@ import {
   isContainer,
   chipLabelIssue,
   elementValidationIssue,
+  retiredCreateRefusal,
   isValidTab,
   landWorkshopArrivals,
   lanesToFront,
@@ -29,7 +30,7 @@ import {
 import { kindOf } from './element-text';
 import { ROUTE_KEYS, rerouted } from './operations/connect';
 import { sameValue } from './equality';
-import { invalidResult } from './rejections';
+import { invalidResult, retiredRefusal } from './rejections';
 import { currentElements, replaceElement, type EditState } from './state';
 import type { EditLog } from './types';
 import { ALIAS_FIELDS } from './fields';
@@ -109,6 +110,10 @@ function touchedIssue(state: EditState): EditRejection | null {
     // A chip's label cap holds for agent writes, on what they touch (docs/specs/009-elements/badge.md).
     const issue = el && (elementValidationIssue(el) ?? chipLabelIssue(el));
     if (issue) return invalidResult(id, kindOf(el), issue);
+    // Nothing new may be a retired piece (docs/specs/009-elements/retired-elements.md "Nothing new"): an element
+    // that already was one may still be moved, resized or relabelled, but none may become one.
+    const retired = el && retiredCreateRefusal(el);
+    if (retired && !retiredCreateRefusal(state.before.get(id))) return retiredRefusal(id, retired);
   }
   return null;
 }

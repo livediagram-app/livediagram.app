@@ -9,7 +9,6 @@
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livediagram/ui';
 import {
-  lucideBuilding2,
   lucideCalendarRange,
   lucideCode,
   lucideDices,
@@ -77,7 +76,6 @@ const RAIL_ICONS: Readonly<
   software: glyph(lucideCode),
   strategy: glyph(lucideMap),
   learning: glyph(lucideGraduationCap),
-  spaces: glyph(lucideBuilding2),
 };
 
 const COPY: Record<

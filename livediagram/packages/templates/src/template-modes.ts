@@ -32,10 +32,6 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): run on quiz cards, pickers and polls.
   'pub-quiz': 'workshop',
   'icebreaker-questions': 'workshop',
-  'virtual-office': 'workshop',
-  'coworking-space': 'workshop',
-  'team-pod': 'workshop',
-  'all-hands-hall': 'workshop',
   'two-truths-and-a-lie': 'workshop',
   'would-you-rather': 'workshop',
   'people-bingo': 'workshop',

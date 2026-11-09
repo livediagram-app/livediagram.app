@@ -12,7 +12,6 @@ import { searchTechIcons } from '@liveworkspace/workbench/lib/tech-icons';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
-import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
@@ -38,7 +37,6 @@ type Deps = Pick<
   PaletteProps,
   | 'canvasTool'
   | 'onSetCanvasTool'
-  | 'onExitAvatarMode'
   | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'
@@ -55,7 +53,6 @@ type Deps = Pick<
 export function usePaletteCatalogue({
   canvasTool,
   onSetCanvasTool,
-  onExitAvatarMode,
   onToggleZen,
   canvasEmpty,
   onAddShape,
@@ -162,37 +159,28 @@ export function usePaletteCatalogue({
   // The add-handler bundle every catalogue-driven tile grid consumes
   // (palette-tile-defs). All handlers above already wrap the mobile-close /
   // draw-armed behaviour, so a tile behaves the same from any tab.
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only, so reaching for a tile means the user
-  // wants to edit again: every add leaves the mode first (back to whichever
-  // tool preceded it) and then drops as normal. Wrapping the bundle covers
-  // every tile, including ones added later.
-  const tileActions: PaletteTileActions = withTileActionPreamble<PaletteTileActions>(
-    {
-      addShape,
-      addText,
-      beginFreehand,
-      beginHighlighter,
-      beginMarker,
-      beginShapePen,
-      beginPolygon,
-      addArrow,
-      addSticky,
-      addTable,
-      addImage,
-      addAnnotation,
-      addLinkCard,
-      addVideo,
-      addSticker,
-      addComponent,
-      addIcon,
-      addTechIcon,
-      cancelDraw: onCancelDraw,
-      hasImage: !!onAddImage,
-    },
-    () => {
-      if (canvasTool === 'avatar') onExitAvatarMode?.();
-    },
-  );
+  const tileActions: PaletteTileActions = {
+    addShape,
+    addText,
+    beginFreehand,
+    beginHighlighter,
+    beginMarker,
+    beginShapePen,
+    beginPolygon,
+    addArrow,
+    addSticky,
+    addTable,
+    addImage,
+    addAnnotation,
+    addLinkCard,
+    addVideo,
+    addSticker,
+    addComponent,
+    addIcon,
+    addTechIcon,
+    cancelDraw: onCancelDraw,
+    hasImage: !!onAddImage,
+  };
   // Icon-picker search query (Icons tab). Filters the catalogue
   // by label / keyword as the user types.
   const [iconQuery, setIconQuery] = useState('');
@@ -264,7 +252,6 @@ export function usePaletteCatalogue({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
-    currentTool: canvasTool,
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))

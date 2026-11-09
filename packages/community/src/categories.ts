@@ -109,12 +109,6 @@ export const COMMUNITY_APP_CATEGORIES = {
       blurb: 'Concept maps, KWL charts and visual notes.',
       type: 'Learning',
     },
-    {
-      id: 'spaces',
-      label: 'Virtual Spaces',
-      blurb: 'Offices and halls to walk round as an avatar.',
-      type: 'Spaces',
-    },
     OTHER,
   ],
   'liveplanner.app': [
@@ -409,7 +403,6 @@ export type CommunityCategory =
   | 'shopping'
   | 'social'
   | 'software'
-  | 'spaces'
   | 'speeches'
   | 'strategy'
   | 'support'

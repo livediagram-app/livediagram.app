@@ -1,9 +1,4 @@
 import type { Dispatch, SetStateAction } from 'react';
-import {
-  expandAvatarPacket,
-  type AvatarPacket,
-  type AvatarPresence,
-} from '@livediagram/api-schema';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 
@@ -11,9 +6,6 @@ export type CursorPos = { tabId: string; x: number; y: number } | null;
 // The pen (docs/specs/008-canvas/laser-panel.md) rides along with the samples so peers render the
 // sender's laser rather than their own default.
 export type LaserTrail = { tabId: string; points: LaserPoint[]; config?: LaserConfig };
-// A character as it arrives: full or lean (docs/specs/008-canvas/avatar-mode.md "The costume rides only when it is
-// needed"). The flush fills a lean one back out with the costume last seen from that peer.
-export type AvatarEntry = { tabId: string; avatar: AvatarPacket } | null;
 
 // Presence-packet coalescing: cursor / laser ops arrive at up to
 // 30 Hz per peer, and committing state per packet re-rendered the
@@ -31,7 +23,6 @@ export type AvatarEntry = { tabId: string; avatar: AvatarPacket } | null;
 export type PresenceCoalescer = {
   cursor(from: string, pos: CursorPos): void;
   laser(from: string, incoming: { tabId: string; point: LaserPoint; config?: LaserConfig }): void;
-  avatar(from: string, entry: AvatarEntry): void;
   /**
    * Forget buffered packets from anyone not in `present` (the roster just received). A peer's last
    * cursor move often lands in the same frame as the roster that drops them; flushed after the
@@ -45,20 +36,12 @@ export type PresenceCoalescer = {
 export function createPresenceCoalescer({
   setRemoteCursors,
   setRemoteLaserTrails,
-  setRemoteAvatars,
 }: {
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
   setRemoteLaserTrails: Dispatch<SetStateAction<Map<string, LaserTrail>>>;
-  setRemoteAvatars: Dispatch<
-    SetStateAction<Map<string, { tabId: string; avatar: AvatarPresence }>>
-  >;
 }): PresenceCoalescer {
   const pendingCursors = new Map<string, CursorPos>();
   const pendingLasers = new Map<string, LaserTrail>();
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the latest character snapshot per peer, or null
-  // for "they left the mode". Coalesced exactly like cursors — a walking
-  // avatar publishes at the same ~30 Hz.
-  const pendingAvatars = new Map<string, AvatarEntry>();
   let presenceRafId: number | null = null;
 
   const flushPresence = () => {
@@ -69,24 +52,6 @@ export function createPresenceCoalescer({
       setRemoteCursors((prev) => {
         const next = new Map(prev);
         for (const [id, pos] of moves) next.set(id, pos);
-        return next;
-      });
-    }
-    if (pendingAvatars.size > 0) {
-      const moves = new Map(pendingAvatars);
-      pendingAvatars.clear();
-      setRemoteAvatars((prev) => {
-        const next = new Map(prev);
-        for (const [id, entry] of moves) {
-          // Leaving the mode DELETES the entry rather than storing a null:
-          // nothing renders a character that isn't there, so the map stays
-          // exactly as big as the number of people walking around.
-          // A packet that carries no costume keeps the one we last saw from them, and its resting values back.
-          if (entry) {
-            const known = prev.get(id)?.avatar.config;
-            next.set(id, { tabId: entry.tabId, avatar: expandAvatarPacket(entry.avatar, known) });
-          } else next.delete(id);
-        }
         return next;
       });
     }
@@ -149,22 +114,8 @@ export function createPresenceCoalescer({
       });
       schedule();
     },
-    avatar(from, entry) {
-      // Latest-wins per peer (no accumulation, unlike laser points): the
-      // character has one position at a time.
-      // A costume a packet held back this frame carried is kept, should the newer one carry none.
-      const held = pendingAvatars.get(from);
-      const config = entry?.avatar.config ?? held?.avatar.config;
-      pendingAvatars.set(
-        from,
-        entry && config && !entry.avatar.config
-          ? { tabId: entry.tabId, avatar: { ...entry.avatar, config } }
-          : entry,
-      );
-      schedule();
-    },
     prune(present) {
-      for (const pending of [pendingCursors, pendingLasers, pendingAvatars]) {
+      for (const pending of [pendingCursors, pendingLasers]) {
         for (const id of pending.keys()) if (!present.has(id)) pending.delete(id);
       }
     },

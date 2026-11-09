@@ -69,7 +69,7 @@ const TAGLINES: Readonly<Record<string, string>> = {
   'collab-record': 'Keep what happened: comments, actions, decisions.',
   'collab-react': 'Celebrate on the canvas.',
   'collab-mode': 'Buttons that switch how everyone points.',
-  'collab-navigate': 'Places to go, and things to sit at.',
+  'collab-navigate': 'Take everyone somewhere on the board.',
   logo: 'The tools a logo is made with.',
   components: 'Ready-made blocks that follow the theme.',
   devices: 'Frames to set a screen design in.',

@@ -4,8 +4,6 @@
 @import '@liveworkspace/explorer/explorer.css';
 @import '@livediagram/template-previews/preview-art-tile.css';
 @import '@livediagram/template-previews/preview-motion.css';
-/* Avatar mode's status signatures' loops (@liveworkspace/avatar, docs/specs/008-canvas/avatar-mode.md "Status"). */
-@import '@liveworkspace/avatar/status-effects.css';
 @import './qa-board.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';
@@ -66,8 +64,6 @@
 @source '../../../../packages/settings-ui/src';
 /* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
 @source '../../../../packages/workbench/src';
-/* So does Avatar mode's shared code (@liveworkspace/avatar). */
-@source '../../../../packages/avatar/src';
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating
@@ -176,16 +172,6 @@
   --animate-nudge-down: nudge-down 0.9s ease-in-out infinite;
   --animate-nudge-left: nudge-left 0.9s ease-in-out infinite;
   --animate-nudge-right: nudge-right 0.9s ease-in-out infinite;
-  /* A drink in an Avatar-mode character's hand (docs/specs/009-elements/office.md "Using it"): a sip every
-     8 seconds, and a coffee's steam. Looping; reduced motion stops them. */
-  --animate-avatar-sip: avatar-sip 8s ease-in-out infinite;
-  --animate-avatar-steam: avatar-steam 2.4s ease-out infinite;
-  /* An Away Avatar-mode character's Zz (docs/specs/008-canvas/avatar-mode.md "Status"): rising and fading.
-     Looping; reduced motion stops it. */
-  --animate-avatar-zz: avatar-zz 3s ease-out infinite;
-  /* An Avatar-mode speech bubble opening above a character's head (docs/specs/008-canvas/avatar-mode.md "Speech
-     bubbles"): it pops, growing from 60% with a little overshoot. Long motion token. */
-  --animate-speech-pop: speech-pop var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
   /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
      "Templates section"): a longer rise than fly-up-in, so opening a tile below
@@ -276,57 +262,6 @@
 }
 
 /* The waiting arrow drifts up and back: about a pixel on screen at 14px. */
-@keyframes avatar-sip {
-  0%,
-  84%,
-  100% {
-    transform: translateY(0);
-  }
-  88%,
-  95% {
-    transform: translateY(-5px);
-  }
-}
-
-@keyframes avatar-steam {
-  0% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(-4px);
-    opacity: 0;
-  }
-}
-
-/* No opacity `to`, like fade-in: the bubble lands on its own resting opacity. */
-@keyframes speech-pop {
-  from {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-  }
-}
-
-@keyframes avatar-zz {
-  0% {
-    transform: translateY(4px);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-8px);
-    opacity: 0;
-  }
-}
-
 @keyframes sync-rise {
   0%,
   100% {
@@ -575,25 +510,13 @@
   animation: none !important;
 }
 
-/* The direction nudges and a held drink's sip and steam (above) loop, so reduced motion stops them outright
-   rather than freezing a frame. */
+/* The direction nudges (above) loop, so reduced motion stops them outright rather than freezing a frame. */
 @media (prefers-reduced-motion: reduce) {
-  /* A speech bubble only fades in: no pop. */
-  .animate-speech-pop {
-    animation-name: fade-in;
-  }
-
-  [class*='animate-nudge-'],
-  .animate-avatar-sip,
-  .animate-avatar-steam,
-  .animate-avatar-zz {
+  [class*='animate-nudge-'] {
     animation: none !important;
   }
 }
-:root.reduce-motion [class*='animate-nudge-'],
-:root.reduce-motion .animate-avatar-sip,
-:root.reduce-motion .animate-avatar-steam,
-:root.reduce-motion .animate-avatar-zz {
+:root.reduce-motion [class*='animate-nudge-'] {
   animation: none !important;
 }
 
@@ -949,7 +872,7 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 }
 /* Its children take presses as they did before the plane had a box: in the base layer, so an element's own
    pointer-events (a utility class, an inline style) still wins, and none while the canvas layer is inert (Spotlight,
-   isometric view, Avatar mode, which set data-elements-inert beside their pointer-events-none). */
+   isometric view, which set data-elements-inert beside their pointer-events-none). */
 @layer base {
   [data-element-plane] > * {
     pointer-events: auto;
@@ -1052,15 +975,6 @@ html {
 ::view-transition-new(.start-mode) {
   animation-duration: var(--transition-duration-short);
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* A palette tile carried onto the canvas by the pointer (lib/palette-carry.ts, docs/specs/009-elements/
- * furniture-facing.md "Turning while placing") shows the copy cursor a browser's own drag does, everywhere it goes,
- * and selects no text on its way. */
-:root[data-palette-carry],
-:root[data-palette-carry] * {
-  cursor: copy !important;
-  user-select: none;
 }
 
 /* Watch It Built (docs/specs/007-editor/blueprints/watch-it-built.md "The fade"): while a replay runs, the person's own

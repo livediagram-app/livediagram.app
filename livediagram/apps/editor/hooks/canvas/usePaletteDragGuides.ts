@@ -11,7 +11,6 @@ import {
 } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
-import { placingSize, subscribePlacingFacing } from '@/lib/placing-facing';
 import {
   canInsertBetweenOn,
   findInsertionSlot,
@@ -116,11 +115,8 @@ export function usePaletteDragGuides({
       setInsertionSlot(null);
       setLanePreview(null);
     };
-    // The last move, so a turn (Space, with the pointer still) re-measures the turned piece where it is.
     type Move = { target: EventTarget | null; clientX: number; clientY: number; altKey: boolean };
-    let last: Move | null = null;
     const onDragOver = (e: Move) => {
-      last = { target: e.target, clientX: e.clientX, clientY: e.clientY, altKey: e.altKey };
       const target = e.target as Element2 | null;
       // A drag back over a floating panel is a "changed my mind": no snap,
       // no guides — matching the ghost's own over-panel guard.
@@ -170,9 +166,7 @@ export function usePaletteDragGuides({
         return;
       }
       setInsertionSlot(null);
-      // A piece turned while placed (docs/specs/009-elements/furniture-facing.md "Turning while placing") snaps at
-      // its turned box.
-      const { width, height } = placingSize(preview.kind, preview);
+      const { width, height } = preview;
       const snap = paletteDragSnapAt({
         canvasX: x,
         canvasY: y,
@@ -201,17 +195,11 @@ export function usePaletteDragGuides({
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') clear();
     };
-    // A tile carried by the pointer (lib/palette-carry.ts) moves by pointermoves; the browser's drag by dragovers.
-    const move = preview.carried ? 'pointermove' : 'dragover';
-    document.addEventListener(move, onDragOver);
+    document.addEventListener('dragover', onDragOver);
     document.addEventListener('dragleave', onDragLeave);
     document.addEventListener('keydown', onKeyDown);
-    const unturn = subscribePlacingFacing(() => {
-      if (last) onDragOver(last);
-    });
     return () => {
-      unturn();
-      document.removeEventListener(move, onDragOver);
+      document.removeEventListener('dragover', onDragOver);
       document.removeEventListener('dragleave', onDragLeave);
       document.removeEventListener('keydown', onKeyDown);
       clearGuides();

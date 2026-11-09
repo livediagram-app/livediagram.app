@@ -3,7 +3,7 @@
 // cycle observable at runtime.
 import type { Element, ElementId, Tab } from './index';
 import { eventStormingKindOf } from './event-storming';
-import { isFloorShape } from './office';
+import { isRetiredFloorKind } from './retired-elements';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md). A tab optionally carries an ordered
 // `layers` array (BOTTOM -> TOP: index 0 paints lowest) and each element
@@ -79,7 +79,7 @@ function paintTier(el: Element): number {
     (el.shape === 'frame' ||
       el.shape === 'boundary' ||
       el.shape === 'stack' ||
-      isFloorShape(el.shape))
+      isRetiredFloorKind(el.shape))
   )
     return 0;
   // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything in its band, so a

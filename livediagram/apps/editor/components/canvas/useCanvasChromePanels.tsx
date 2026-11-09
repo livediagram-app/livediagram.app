@@ -1,6 +1,5 @@
 'use client';
 
-import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
@@ -95,8 +94,6 @@ export function useCanvasChromePanels({
   sessionPopoverEl: ReactNode;
   // The Tidy Up popover over its button, in Diagram mode.
   tidyUpPopoverEl: ReactNode;
-  // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
-  avatarPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -207,7 +204,7 @@ export function useCanvasChromePanels({
     commentsPanelPosition,
     onResetCommentsPanel,
   );
-  // The six tool-config panels (avatar / laser / spotlight / eraser / format /
+  // The five tool-config panels (laser / spotlight / eraser / format /
   // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
   // The Tidy Up popover belongs to its button: leaving Diagram mode, Zen or a locked-out session closes it.
@@ -221,33 +218,10 @@ export function useCanvasChromePanels({
   useEffect(() => {
     if (activeDockPanel === 'tidy-up' && !tidyUpShown) closeDockPanel();
   }, [activeDockPanel, tidyUpShown, closeDockPanel]);
-  // The Avatar panel belongs to its button, which belongs to the mode: leaving Avatar mode closes it.
-  const avatarMode = props.canvasTool === 'avatar';
-  const avatarOpen = activeDockPanel === 'avatar' && avatarMode;
-  useEffect(() => {
-    if (activeDockPanel === 'avatar' && !avatarMode) closeDockPanel();
-  }, [activeDockPanel, avatarMode, closeDockPanel]);
-  // Escape closes the Avatar panel and nothing else (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"):
-  // caught ahead of the editor's shortcuts, where Escape would otherwise leave Avatar mode altogether. A typing
-  // field in the panel (the message view) handles its own Escape first.
-  useEffect(() => {
-    if (!avatarOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.defaultPrevented || isTypingTarget(e.target)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      closeDockPanel();
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [avatarOpen, closeDockPanel]);
-  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
+  const { laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     panelWiringFor,
-    avatarPopover: avatarOpen
-      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
-      : null,
   });
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
@@ -459,7 +433,6 @@ export function useCanvasChromePanels({
     explorerEl,
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
-    avatarPopoverEl: avatarEl,
     tidyUpPopoverEl:
       tidyUpOpen && tidyUp ? (
         <LazyPopover onError={closeDockPanel}>

@@ -12,7 +12,7 @@ import { describeOne } from '@/lib/element-names';
 import {
   canvasSurface,
   DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_BUTTON_MODE,
+  isButtonMode,
   PEN_INK,
 } from '@livediagram/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
@@ -152,10 +152,6 @@ export function EditorCanvasHost() {
     beginMarker,
     beginShapePen,
     beginPolygon,
-    broadcastAvatar,
-    broadcastAvatarPush,
-    broadcastAvatarSay,
-    avatarShove,
     fireReaction,
     pressFocusButton,
     reactionBursts,
@@ -203,7 +199,6 @@ export function EditorCanvasHost() {
     duplicateSelected,
     stackSelectedFront,
     stackSelectedBack,
-    turnSelected,
     editCursorAtEnd,
     editingId,
     embedMode,
@@ -244,7 +239,6 @@ export function EditorCanvasHost() {
     pauseTimer,
     pendingDraw,
     redo,
-    remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
     resetTimer,
@@ -262,7 +256,6 @@ export function EditorCanvasHost() {
     selfParticipant,
     sessionShareCode,
     sessionTabScope,
-    exitAvatarTool,
     pressModeButton,
     pressSessionButton,
     revealedIds,
@@ -600,15 +593,6 @@ export function EditorCanvasHost() {
             snapGuideStore={snapGuideStore}
             remoteSelectionsByElement={remoteSelectionsByElement}
             remoteCursors={remoteCursorRows}
-            remoteAvatars={remoteAvatarRows}
-            onAvatarPresence={broadcastAvatar}
-            // Who could see a character standing still: alone, its heartbeat rests (docs/specs/008-canvas/avatar-mode.md).
-            avatarPeers={livePresence.length}
-            // Avatar mode (docs/specs/008-canvas/avatar-mode.md): clicking a peer's character walks over and
-            // shoves it; their own client decides what to do with the request.
-            onAvatarPush={broadcastAvatarPush}
-            onAvatarSay={broadcastAvatarSay}
-            avatarShove={avatarShove}
             onFireReaction={can.takePart ? fireReaction : undefined}
             // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is live for view-role visitors too: it mutates
             // nothing, which makes it the same read-only act as following somebody,
@@ -637,7 +621,6 @@ export function EditorCanvasHost() {
             onSelectMarquee={selectMarquee}
             canvasTool={canvasTool}
             onSetCanvasTool={setCanvasTool}
-            onExitAvatarMode={exitAvatarTool}
             // Mode button (docs/specs/009-elements/mode-button.md): pressing one is exactly picking that mode from
             // the palette, so it goes through the same setter — telemetry, the
             // selection clear, and the empty-canvas guard all included. Pressing it
@@ -645,7 +628,9 @@ export function EditorCanvasHost() {
             // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS): a button set to the Eraser or
             // Format Painter does nothing for it (docs/specs/013-workspace/share-roles.md).
             onPressModeButton={(element) => {
-              const mode = element.mode ?? DEFAULT_BUTTON_MODE;
+              // A retired Avatar button (docs/specs/009-elements/retired-elements.md) hands out nothing.
+              const mode = element.mode;
+              if (!isButtonMode(mode)) return;
               if (isReadOnly && !PARTICIPANT_CANVAS_TOOLS.includes(mode)) return;
               pressModeButton(mode);
             }}
@@ -1136,7 +1121,6 @@ export function EditorCanvasHost() {
             onDuplicateSelected={duplicateSelected}
             onBringSelectedToFront={stackSelectedFront}
             onSendSelectedToBack={stackSelectedBack}
-            onTurnSelected={turnSelected}
             onCanvasDoubleClick={handleCanvasDoubleClick}
             tabLoadState={tabLoadState}
             onRetryTabLoad={retryActiveTabLoad}

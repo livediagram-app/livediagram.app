@@ -14,7 +14,6 @@ import {
   DECISION_MAX_DRIVERS,
   DECISION_MAX_TEXT,
   type AgendaItem,
-  type ChairFacing,
   type DecisionStatus,
   type EstimateScale,
   type EntityField,
@@ -28,13 +27,8 @@ import {
   type Element,
   type ProgressAnim,
   type ShapeElement,
-  turnsWithFacing,
-  turnPiece,
-  turnPieceBy,
-  type RoomDoor,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { shapeTelemetryToken } from '@/lib/element-telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
 import { useMindMapSetters } from '@/hooks/canvas/useMindMapSetters';
 import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
@@ -277,32 +271,6 @@ export function useDataShapeSetters({
       'Decision',
     );
 
-  // Every piece of furniture that turns (docs/specs/009-elements/furniture-facing.md "A turn"): a facing picked from
-  // the element menu, or a quarter turn from the Rotate buttons, the command palette or a multi-selection. Each piece
-  // turns about its own centre, its box taking the turned drawing's proportions; a piece that does not turn, and a
-  // locked one, stays as it is. One change, so one undo step, reported once under the first piece turned.
-  const turnSelection = (turn: (el: ShapeElement) => ShapeElement) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    const turns = (el: Element): el is ShapeElement =>
-      ids.has(el.id) && el.type === 'shape' && turnsWithFacing(el.shape) && !el.locked;
-    const first = elements().find(turns);
-    if (!first) return;
-    commit((els) => els.map((el) => (turns(el) ? turn(el) : el)));
-    track('Element', 'Changed', shapeTelemetryToken(first.shape));
-  };
-  const setChairFacingSelected = (facing: ChairFacing) =>
-    turnSelection((el) => turnPiece(el, facing));
-  const turnSelected = (quarters: number) => turnSelection((el) => turnPieceBy(el, quarters));
-
-  // Room (docs/specs/009-elements/office.md "Room"): which wall the doorway is in.
-  const setRoomDoorSelected = makeShapePatcher({
-    currentSelectionIds,
-    commit,
-    matches: (kind) => kind === 'room',
-  });
-  const setRoomDoor = (door: RoomDoor) => setRoomDoorSelected({ roomDoor: door }, 'Room');
-
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -361,9 +329,6 @@ export function useDataShapeSetters({
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
-    setChairFacingSelected,
-    turnSelected,
-    setRoomDoorSelected: setRoomDoor,
     setButtonModeSelected,
   };
 }

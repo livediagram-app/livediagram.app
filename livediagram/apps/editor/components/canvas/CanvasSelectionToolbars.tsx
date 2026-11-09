@@ -12,7 +12,6 @@ import {
   isFlowchartStep,
   isMindNode,
   joinsEntities,
-  turnsWithFacing,
   type Element,
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
@@ -91,13 +90,6 @@ export function CanvasSelectionToolbars({
     onOpenElementContextMenu,
     onOpenMultiContextMenu,
   } = props;
-  // The pieces of furniture in a multi-selection that turn (docs/specs/009-elements/furniture-facing.md "Several pieces
-  // at once"), read only while the multi-selection toolbar shows.
-  const turning = showMultiToolbar
-    ? elements.filter(
-        (el) => multiSelectedIds.has(el.id) && el.type === 'shape' && turnsWithFacing(el.shape),
-      )
-    : [];
   return (
     <>
       {/* SelectionPopover rides on a sibling wrapper that mirrors
@@ -161,16 +153,6 @@ export function CanvasSelectionToolbars({
                     if (props.pendingDraw) props.onCancelDraw();
                     props.onBeginEdit(selected.id);
                   }
-                : undefined
-            }
-            // A piece of furniture's quarter turns (docs/specs/009-elements/furniture-facing.md "Turning a placed piece"),
-            // an Editor's, on a piece that turns.
-            onTurn={
-              !readOnly &&
-              props.onTurnSelected &&
-              selected?.type === 'shape' &&
-              turnsWithFacing(selected.shape)
-                ? props.onTurnSelected
                 : undefined
             }
             // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, the toolbar home
@@ -291,8 +273,6 @@ export function CanvasSelectionToolbars({
               allLocked={elements
                 .filter((el) => multiSelectedIds.has(el.id))
                 .every((el) => el.locked === true)}
-              onTurn={readOnly || !turning.length ? undefined : props.onTurnSelected}
-              turnLocked={turning.every((el) => el.locked === true)}
               selectedElements={elements.filter((el) => multiSelectedIds.has(el.id))}
               onDuplicate={props.onDuplicateMultiSelected}
               onDelete={props.onDeleteMultiSelected}

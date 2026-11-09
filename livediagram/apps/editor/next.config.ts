@@ -22,7 +22,6 @@ const nextConfig: NextConfig = {
     '@livediagram/ui',
     '@liveworkspace/ui',
     '@liveworkspace/workbench',
-    '@liveworkspace/avatar',
     '@livediagram/document',
     '@livediagram/api-schema',
   ],

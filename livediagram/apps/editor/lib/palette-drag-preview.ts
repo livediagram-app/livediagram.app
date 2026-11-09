@@ -17,9 +17,6 @@ type PaletteDragPreview = {
   // The shape's default footprint (canvas units); the ghost scales it by zoom.
   width: number;
   height: number;
-  // Carried by the pointer rather than dragged by the browser (palette-carry.ts): its moves are pointermoves, not
-  // dragovers.
-  carried?: boolean;
   // This will land as a sticky NOTE, whatever the ghost draws. A note has no
   // shape kind of its own, so a note drag publishes a square footprint at the
   // note's real size; this says what it will actually become. Insert between

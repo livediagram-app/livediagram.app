@@ -163,6 +163,15 @@ export function invalidResult(
   };
 }
 
+// A piece that moved to livehuddle written as new (docs/specs/009-elements/retired-elements.md "Nothing new").
+export function retiredRefusal(subject: string, why: string): EditRejection {
+  return {
+    code: 'invalid_result',
+    details: [`${subject}: ${why}`],
+    hint: 'livehuddle has it now: make it there',
+  };
+}
+
 function header(rejection: EditRejection): string {
   const parts = [`error ${rejection.code}`];
   if (rejection.line !== undefined) parts.push(`line ${rejection.line}`);

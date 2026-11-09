@@ -2,7 +2,7 @@
 // plus the numbers the overlay draws from and the compact form that rides the
 // wire so peers see the same pen.
 //
-// Device-local by design, like the avatar costume (docs/specs/008-canvas/avatar-mode.md) and the panel
+// Device-local by design, like the panel
 // layout (docs/specs/007-editor/panel-docking.md): which pen suits you depends on your screen and the room you
 // are presenting in, not on the document. It lives ONLY in localStorage and is
 // never sent to the api or folded into the synced preferences blob (docs/specs/007-editor/user-preferences.md).

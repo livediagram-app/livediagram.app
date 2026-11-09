@@ -3,8 +3,6 @@ import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
 import type { ParticipantPresence } from './index';
-import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
-import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch, DragPreviewRide } from './drag-preview';
@@ -13,11 +11,6 @@ import type { ChangesetRoomOp } from './changesets';
 // ---------------------------------------------------------------------
 // Realtime room messages
 // ---------------------------------------------------------------------
-
-// One participant's Avatar-mode character and its statuses (docs/specs/008-canvas/avatar-mode.md) are every
-// product's wire shapes, in @liveworkspace/api-schema/avatar; re-exported so this package's surface is unchanged.
-export { AVATAR_STATUS_IDS, expandAvatarPacket } from '@liveworkspace/api-schema/avatar';
-export type { AvatarPacket, AvatarPresence, AvatarStatus } from '@liveworkspace/api-schema/avatar';
 
 // Room op kinds that are ephemeral signals: they mutate no document state,
 // so they relay unordered (no seq) and from any role.
@@ -29,10 +22,6 @@ export type { AvatarPacket, AvatarPresence, AvatarStatus } from '@liveworkspace/
 // `poll-start` / `poll-end` are deliberately NOT here — they stay behind
 // the edit-role gate below, so an audience member can answer a poll but
 // can't start one or end someone else's.
-// `avatar` (docs/specs/008-canvas/avatar-mode.md) is presence in the plainest sense: someone's walking
-// character, at cursor rates, mutating nothing. View-role senders included —
-// an audience member walking around a document they were shown a link to is
-// the same kind of harmless as their cursor.
 // This classification used to live inside the room worker while the editor kept
 // its own list of the kinds it sends and handles, in another app, with nothing
 // comparing them. That is how `viewport` shipped absent from here (see its note
@@ -48,20 +37,13 @@ export const PRESENCE_OP_KINDS = [
   'laser',
   'tab-focus',
   'poll-answer',
-  'avatar',
-  // A shove (docs/specs/008-canvas/avatar-mode.md) moves nothing on the server and nothing in the
-  // document — it asks one peer to step aside. Same trust level as `avatar`.
-  'avatar-push',
-  // A character saying something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): a message that floats
-  // away in seconds, so nothing to order, log or replay. The room relays it from an Editor or a Participant only.
-  'avatar-say',
   // A reaction burst (docs/specs/009-elements/reaction-pad.md) is pure theatre: nothing on the server,
   // nothing in the document, and nothing worth replaying to somebody who
   // arrives after it finished.
   'reaction',
   // Where the sender is looking, for anyone following them (docs/specs/012-collaboration/follow-me-viewport.md). Its
   // own wire contract calls it "ephemeral presence exactly like cursor /
-  // laser / avatar: throttled, never logged, never ordered (no `seq`), never
+  // laser: throttled, never logged, never ordered (no `seq`), never
   // replayed to a reconnecting client" — and while it was missing from this
   // set it was all four of those things, because the mutation branch is the
   // fall-through.
@@ -190,6 +172,16 @@ export function isSystemOpKind(kind: unknown): kind is (typeof SYSTEM_OP_KINDS)[
   return typeof kind === 'string' && (SYSTEM_OP_KINDS as readonly string[]).includes(kind);
 }
 
+// Retired ops (docs/specs/015-api/api.md "Retired ops are ignored"): Avatar mode's character, shove and speech
+// bubble, gone to livehuddle (docs/specs/002-project-scope/not-in-livediagram.md). An older editor still open in a
+// tab may send them; the room drops them without a word rather than refusing, so that editor keeps working. Kept
+// out of ROOM_OP_KINDS, whose mutation branch is the fall-through.
+export const RETIRED_OP_KINDS = ['avatar', 'avatar-push', 'avatar-say'] as const;
+
+export function isRetiredOpKind(kind: unknown): kind is (typeof RETIRED_OP_KINDS)[number] {
+  return typeof kind === 'string' && (RETIRED_OP_KINDS as readonly string[]).includes(kind);
+}
+
 // ---------------------------------------------------------------------
 // Facilitator (docs/specs/012-collaboration/facilitator.md)
 // ---------------------------------------------------------------------
@@ -309,13 +301,10 @@ export function isRoomOpRef(ref: unknown): ref is number {
 // The server's document format number (docs/specs/016-platform/new-version-prompt.md), sent to
 // each socket on `hello`: a deploy restarts the room, so every open editor hears it on reconnect.
 // `build`: the live build id when the deploy set one (docs/specs/016-platform/stale-builds.md).
-// `leanAvatars`: the room takes lean avatar packets and fills them back out for an older editor
-// (docs/specs/015-api/api.md "A busy room bounds its presence fan-out"); an editor sends them only when it says so.
 export type FormatMessage = {
   kind: 'format';
   format: number;
   build?: string;
-  leanAvatars?: boolean;
 };
 
 // Incoming WebSocket frames clients send to the room.
@@ -327,14 +316,11 @@ export type ClientMessage =
   // hands the baton to this new socket. Absent on every ordinary hello.
   // `batches`: this editor takes a busy room's coalesced `batch` frames (docs/specs/015-api/api.md "A busy room
   // bounds its presence fan-out"); a room never sends one to a session that did not say so.
-  // `leanAvatars`: this editor reads lean avatar packets (AvatarPacket), filling in the costume it last saw; a room
-  // fills them back out for a session that did not say so.
   | {
       kind: 'hello';
       participant: ParticipantPresence;
       facilitatorToken?: string;
       batches?: boolean;
-      leanAvatars?: boolean;
     }
   // `ref`: asks the room to echo it on this op's `cursor` frame (CursorMessage).
   | { kind: 'op'; op: unknown; ref?: number }
@@ -505,13 +491,8 @@ export type RoomOp =
         effect: 'beam' | 'glow' | 'comet' | 'spark';
       };
     }
-  // The sender's Avatar-mode character, and one character SHOVING another (docs/specs/008-canvas/avatar-mode.md):
-  // every product's wire shapes, in @liveworkspace/api-schema/avatar.
-  | AvatarOp
-  | AvatarPushOp
-  | AvatarSayOp
   // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor
-  // / laser / avatar: never logged, never ordered, never replayed to a
+  // / laser: never logged, never ordered, never replayed to a
   // reconnecting client — a burst you missed is a burst that is over.
   //
   // Carries the pad's id rather than coordinates: the burst is drawn around
@@ -535,7 +516,7 @@ export type RoomOp =
     }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
-  // cursor / laser / avatar: throttled, never logged, never ordered (no
+  // cursor / laser: throttled, never logged, never ordered (no
   // `seq`), never replayed to a reconnecting client.
   //
   // Sent by everyone on change rather than on request. The alternative — a
@@ -631,7 +612,6 @@ export type RoomOutgoing =
       participant: ParticipantPresence;
       facilitatorToken?: string;
       batches?: boolean;
-      leanAvatars?: boolean;
     }
   | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }

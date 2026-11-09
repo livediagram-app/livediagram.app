@@ -32,15 +32,14 @@ import {
   chartTypeOf,
   PIE_DEFAULT_SLICES,
   RATING_DEFAULT,
-  DEFAULT_BUTTON_MODE,
-  SELECTION_MODES,
+  BUTTON_MODES,
+  type ButtonMode,
   type ChecklistItem,
   type EntityField,
   type LegendItem,
   type PieSlice,
 } from '@livediagram/document';
 import {
-  AvatarModeIcon,
   EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
@@ -61,8 +60,6 @@ import { LegendTextSize } from '@/components/palette/TypographySections';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import {
   AgendaMenuSection,
-  ChairMenuSection,
-  RoomMenuSection,
   DecisionMenuSection,
   EstimateMenuSection,
 } from '@/components/palette/CollabMenuSections';
@@ -136,7 +133,6 @@ type ElementDataSectionsProps = {
   isEstimate: boolean;
   isAgenda: boolean;
   isDecision: boolean;
-  isChair: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
 };
@@ -150,12 +146,11 @@ const NO_LEGEND_ITEMS: LegendItem[] = [];
 
 // The mode tiles' glyphs — the palette picker's own icons, so a button's
 // configured mode is recognisable from the same artwork everywhere (docs/specs/009-elements/mode-button.md).
-const MODE_TILE_ICON: Record<(typeof SELECTION_MODES)[number], React.ReactNode> = {
+const MODE_TILE_ICON: Record<ButtonMode, React.ReactNode> = {
   select: <SelectIcon />,
   pan: <PanIcon />,
   laser: <LaserIcon />,
   spotlight: <SpotlightIcon />,
-  avatar: <AvatarModeIcon />,
   eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
   isometric: <IsometricIcon />,
@@ -183,7 +178,6 @@ export function ElementDataSections({
   isEstimate,
   isAgenda,
   isDecision,
-  isChair,
   sectionProps,
   flyoutProps,
 }: ElementDataSectionsProps) {
@@ -224,8 +218,6 @@ export function ElementDataSections({
     isEstimate ||
     isAgenda ||
     isDecision ||
-    isChair ||
-    shapeTarget?.shape === 'room' ||
     !!props.flowchart;
   return (
     <>
@@ -333,20 +325,6 @@ export function ElementDataSections({
               onSetStatus={props.onSetDecisionStatus}
               onSetDate={props.onSetDecisionDate}
               onSetDrivers={props.onSetDecisionDrivers}
-            />
-          ) : null}
-          {shapeTarget?.shape === 'room' ? (
-            <RoomMenuSection
-              target={shapeTarget}
-              sectionProps={sectionProps}
-              onSetDoor={props.onSetRoomDoor}
-            />
-          ) : null}
-          {isChair ? (
-            <ChairMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetFacing={props.onSetChairFacing}
             />
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
@@ -542,12 +520,12 @@ export function ElementDataSections({
                 Switches the presser to
               </p>
               <MenuTileGrid cols={3}>
-                {SELECTION_MODES.map((mode) => (
+                {BUTTON_MODES.map((mode) => (
                   <MenuTile
                     key={mode}
                     icon={MODE_TILE_ICON[mode]}
                     label={MODE_LABEL[mode]}
-                    active={(shapeTarget?.mode ?? DEFAULT_BUTTON_MODE) === mode}
+                    active={shapeTarget?.mode === mode}
                     onClick={() => props.onSetButtonMode(mode)}
                   />
                 ))}

@@ -1213,9 +1213,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // without the runtime noticing yet, so we just shed its rate entry — the
   // runtime reaps the socket itself.
   // Deliver to the ONE session holding `presenceId`, skipping the sender.
-  // Used by the addressed presence ops (the Avatar-mode shove, docs/specs/008-canvas/avatar-mode.md):
+  // Used by the addressed messages (the facilitator's, docs/specs/012-collaboration/facilitator.md):
   // everyone else has no use for the packet, and fanning it out would leak who
-  // is being pushed to the whole room.
+  // it is for to the whole room.
   sendToPresence(presenceId: string, payload: ServerMessage, except?: WebSocket): void {
     const serialized = JSON.stringify(payload);
     for (const ws of this.state.getWebSockets()) {
@@ -1520,8 +1520,7 @@ export class DocumentRoom extends DurableObject<Env> {
       // see the size note on SessionAttachment.
       const presence = helloPresence(msg.participant, session);
       const batches = (msg as { batches?: unknown }).batches === true;
-      const leanAvatars = (msg as { leanAvatars?: unknown }).leanAvatars === true;
-      const hello = { ...session, presence, batches, leanAvatars } satisfies SessionAttachment;
+      const hello = { ...session, presence, batches } satisfies SessionAttachment;
       ws.serializeAttachment(hello);
       this.presenceRelay.noteSession(ws, relaySessionOf(hello));
       // Where the ordered stream stands as this session joins, so a later
@@ -1530,13 +1529,7 @@ export class DocumentRoom extends DurableObject<Env> {
       // The server's document format number (docs/specs/016-platform/new-version-prompt.md): an editor
       // older than it offers a reload. With the live build id (docs/specs/016-platform/stale-builds.md).
       const build = parseBuildId(this.roomEnv?.BUILD_ID);
-      // `leanAvatars`: this room fills lean avatar packets back out for an older editor, so a new one may send them.
-      this.sendTo(ws, {
-        kind: 'format',
-        format: DOCUMENT_FORMAT,
-        ...(build ? { build } : {}),
-        leanAvatars: true,
-      });
+      this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT, ...(build ? { build } : {}) });
       // The running poll, and every answer so far (docs/specs/012-collaboration/collab-race-hardening.md).
       for (const op of this.poll.replayOps()) this.sendTo(ws, { kind: 'op', from: 'system', op });
       // A repeat hello that changes nothing on the roster sends nobody a new one, so one socket cannot make the
@@ -1642,12 +1635,6 @@ export class DocumentRoom extends DurableObject<Env> {
       // ops get a monotonic seq within the epoch and land in the catch-up
       // log so a reconnecting peer can replay the delta (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
       if (isPresenceOp) {
-        // A shove (docs/specs/008-canvas/avatar-mode.md) is ADDRESSED, not broadcast: it asks one peer to
-        // step aside, and only the room knows which socket that is. Presence
-        // ids are server-minted precisely so a client never learns another
-        // peer's real owner id (docs/specs/015-api/public-api-and-tokens.md §6) — which also means a receiver can't
-        // recognise its own id in the packet. So the routing happens here, and
-        // a client acts on any avatar-push that reaches it.
         // The room decides who an answer belongs to, and relays only what it accepted, under the key it chose
         // (docs/specs/012-collaboration/vote-integrity.md): the sender's proof never leaves the room.
         // Chained, so answers apply in the order they arrived even though each one is hashed first: a quick change
@@ -1657,13 +1644,6 @@ export class DocumentRoom extends DurableObject<Env> {
           this.pollAnswers = this.pollAnswers
             .then(() => this.relayPollAnswer(ws, op))
             .catch(() => {});
-          return;
-        }
-        if (opKind === 'avatar-push') {
-          const targetId = (msg.op as { targetId?: unknown }).targetId;
-          if (typeof targetId === 'string') {
-            this.sendToPresence(targetId, { kind: 'op', from: sender.id, op: msg.op }, ws);
-          }
           return;
         }
         if (this.presenceRelay.relay(ws, sender.id, msg.op)) return;
@@ -1981,8 +1961,7 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 }
 
-// What the presence relay reads of a session: its tab, the other pane of a split, whether it batches, and whether it
-// reads lean avatar packets.
+// What the presence relay reads of a session: its tab, the other pane of a split, and whether it batches.
 function relaySessionOf(session: SessionAttachment | null): RelaySession | null {
   const presence = session?.presence;
   if (!presence) return null;
@@ -1990,6 +1969,5 @@ function relaySessionOf(session: SessionAttachment | null): RelaySession | null 
     ...(presence.tabId ? { tabId: presence.tabId } : {}),
     ...(presence.besideTabId ? { besideTabId: presence.besideTabId } : {}),
     batches: session.batches === true,
-    leanAvatars: session.leanAvatars === true,
   };
 }

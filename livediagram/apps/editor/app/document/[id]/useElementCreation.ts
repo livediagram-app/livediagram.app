@@ -27,7 +27,6 @@ import { takeInsertionSlot } from '@/lib/insertion-preview';
 import type { InsertionSlot } from '@/lib/insert-between';
 import { getTechIcon, isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
-import { withPlacingFacing } from '@/lib/placing-facing';
 import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
@@ -371,9 +370,7 @@ export function useElementCreation(opts: {
                 ? { label: getTechIcon(iconId)?.label ?? '', aspectLocked: false }
                 : {}),
             }
-          : // A piece that turns lands the way Space turned it while it was dragged
-            // (docs/specs/009-elements/furniture-facing.md "Turning while placing").
-            withPlacingFacing({
+          : {
               // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
               ...applyShapeVariant(createShape(kind, x, y), art?.choice),
               // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
@@ -400,7 +397,7 @@ export function useElementCreation(opts: {
               ...(art?.choice && kind === 'estimate'
                 ? { estimateScale: art.choice as EstimateScale }
                 : {}),
-            }),
+            },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, session buttons, ...). A preset's own colour (the Warning badge's
       // rose) is put back after the theme and the remembered style.

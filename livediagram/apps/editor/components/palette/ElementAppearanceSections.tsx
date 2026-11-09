@@ -41,7 +41,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-  turnsWithFacing,
+  isRetiredElement,
 } from '@livediagram/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
@@ -135,7 +135,9 @@ export function ElementAppearanceSections({
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
   const isEntity = target.type === 'shape' && target.shape === 'entity';
   // Mode button (docs/specs/009-elements/mode-button.md): its one setting is which mode it hands out.
-  const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
+  // A retired Avatar button (docs/specs/009-elements/retired-elements.md) has no Button section to set.
+  const isModeButton =
+    target.type === 'shape' && target.shape === 'mode-button' && !isRetiredElement(target);
   // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
   const isPortal = target.type === 'shape' && target.shape === 'portal';
   // The other Behaviour kinds with settings (docs/specs/012-collaboration/session-button.md, /106, /107).
@@ -149,9 +151,6 @@ export function ElementAppearanceSections({
   const isEstimate = target.type === 'shape' && target.shape === 'estimate';
   const isAgenda = target.type === 'shape' && target.shape === 'agenda';
   const isDecision = target.type === 'shape' && target.shape === 'decision';
-  // Every piece of furniture that turns has a facing section titled for it
-  // (docs/specs/009-elements/furniture-facing.md "Turning a placed piece").
-  const isChair = target.type === 'shape' && turnsWithFacing(target.shape);
   // The Text band (docs/specs/008-canvas/canvas-and-palette.md): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
@@ -255,7 +254,6 @@ export function ElementAppearanceSections({
         isEstimate={isEstimate}
         isAgenda={isAgenda}
         isDecision={isDecision}
-        isChair={isChair}
         sectionProps={sectionProps}
         flyoutProps={flyoutProps}
       />

@@ -20,7 +20,6 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { requestWatchRelaunch } from '@/lib/watch-relaunch';
 import { topicsOwed } from '@/lib/watch-topics';
-import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { track } from '@/lib/telemetry';
 import { visibleCategories } from '@/components/dialogs/settings/settings-catalogue';
 import { SETTINGS_KIT } from '@/components/dialogs/settings/settings-kit';
@@ -167,14 +166,10 @@ export function SettingsDialog({
   // opened and one owed again as it closes opens that mode's start panel in place, as the Start Tour button does.
   const watchOwed = WATCH_MODES.map((m) => topicsOwed(settings, m).length > 0);
   const watchOwedAtOpen = useRef(watchOwed);
-  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as the Workshop tour's.
-  const avatarTourSeen = settings.avatarTourSeen === true;
-  const avatarTourSeenAtOpen = useRef(avatarTourSeen);
   const close = () => {
     WATCH_MODES.forEach((m, i) => {
       if (watchOwed[i] && !watchOwedAtOpen.current[i]) requestWatchRelaunch(m);
     });
-    if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
     onClose();
   };
 

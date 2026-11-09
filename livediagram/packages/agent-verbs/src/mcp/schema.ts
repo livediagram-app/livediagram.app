@@ -40,7 +40,7 @@ import {
   SANKEY_NAME_MAX,
   SANKEY_UNIT_MAX,
   SANKEY_VALUE_LABELS,
-  SHAPE_KINDS,
+  CREATABLE_SHAPE_KINDS,
   STEP_LABEL_MAX,
   STICKY_PRESETS,
   THEMES,
@@ -51,7 +51,7 @@ export const SCHEMA_RESOURCE_URI = 'livediagram://schema/elements';
 
 const types = [...ELEMENT_TYPES].join(', ');
 const anchors = [...ANCHORS].join(', ');
-const shapeKinds = [...SHAPE_KINDS].join(', ');
+const shapeKinds = [...CREATABLE_SHAPE_KINDS].join(', ');
 const themeIds = THEMES.map((t) => t.id).join(', ');
 
 // The content fields of the kinds that carry content (docs/specs/015-api/mcp-server.md §4.7a), as

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element, type ShapeElement, type Tab } from '@livediagram/document';
 import {
-  portalExitPoint,
+  viewportOffsetCentredOn,
   portalName,
   portalsOnTab,
   resolvePortalDestination,
@@ -147,12 +147,10 @@ describe('resolvePortalDestination', () => {
   });
 });
 
-describe('portalExitPoint', () => {
-  it('puts you centred in the portalway, on its threshold', () => {
-    // The avatar's position is its FEET, so the exit is the bottom edge.
-    expect(portalExitPoint({ x: 100, y: 200, width: 72, height: 112 })).toEqual({
-      x: 136,
-      y: 312,
-    });
+describe('viewportOffsetCentredOn', () => {
+  it('centres the far portal in the viewport', () => {
+    expect(
+      viewportOffsetCentredOn({ x: 100, y: 200, width: 72, height: 112 }, { width: 800, height: 600 }),
+    ).toEqual({ x: 264, y: 44 });
   });
 });
