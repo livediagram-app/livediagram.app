@@ -1,5 +1,6 @@
 import { useEffect, type MutableRefObject } from 'react';
 import {
+  canAddTableRow,
   isTabularClipboard,
   parseClipboardTableText,
   pasteIntoTable,
@@ -79,9 +80,12 @@ export function useTableCellInput({
         const flat = r * cols + c + (e.shiftKey ? -1 : 1);
         if (flat >= rows * cols) {
           // Tab off the end appends a row (Word / Docs convention) and
-          // lands on its first cell.
-          addRow(rows);
-          setSelectedCell({ r: rows, c: 0 });
+          // lands on its first cell. At a cap no row is added, so the selection stays: a row that
+          // does not exist would take an edit whose text is thrown away.
+          if (canAddTableRow(element)) {
+            addRow(rows);
+            setSelectedCell({ r: rows, c: 0 });
+          }
         } else if (flat >= 0) {
           setSelectedCell({ r: Math.floor(flat / cols), c: flat % cols });
         }

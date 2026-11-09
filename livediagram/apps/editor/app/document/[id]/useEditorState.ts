@@ -989,6 +989,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     lastSavedTabsRef,
     setTabLoadErrors,
     noteChangesetSeen: realtime.changesetSeen.noteSeen,
+    setDocumentName,
+    lastSavedNameRef,
   });
   // Agent changesets relayed through the room (docs/specs/024-agents/agent-changesets.md "In the
   // editor"): applied, outlined, toasted. See useChangesetFeed.
@@ -3229,11 +3231,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       }
     },
     onSelectAll: () => {
-      // Hidden / locked layers are left out.
-      const allIds = selectAllIds(activeTab, layerInertIds);
+      // Hidden / locked layers and elements another participant holds are left out.
+      const allIds = selectAllIds(activeTab, layerInertIds, lockedByOther);
       if (allIds.size === 0) return;
-      setSelectedId(null);
-      setMultiSelectedIds(allIds);
+      // The marquee's commit: one element becomes the single selection (type-to-edit, Space), more a multi.
+      selectMarquee(allIds);
     },
     onDuplicate: () => {
       if (readSelection().multiSelectedIds.size > 0) {

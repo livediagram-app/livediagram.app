@@ -291,6 +291,7 @@ export function ElementDataSections({
               ) : (
                 <PieDataEditor
                   palette={chartFallbackPalette}
+                  allowNegative={shapeTarget?.shape !== 'pie-chart'}
                   slices={shapeTarget?.pieSlices ?? DEFAULT_PIE_ROWS}
                   onChange={props.onSetPieData}
                 />

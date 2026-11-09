@@ -133,7 +133,6 @@ export const addTabOutput = {
   tabId: tabId.describe('The new tab id.'),
   name: z.string().describe('The stored tab name (shortened if it was over the cap).'),
   url,
-  note: z.string().optional().describe('Said when a template has more tabs than add_tab adds.'),
   ...changesetAnswer,
 };
 

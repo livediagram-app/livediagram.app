@@ -90,6 +90,28 @@ describe('row names', () => {
     expect(screen.getByRole('button', { name: 'Slice 2 colour' })).toBeTruthy();
   });
 
+  it('takes a negative value on a column chart, the minus typed first, and floors a pie at zero', () => {
+    const onChange = vi.fn();
+    render(
+      <PieDataEditor slices={[{ label: 'Q1', value: 3 }]} allowNegative onChange={onChange} />,
+    );
+    const field = screen.getByLabelText('Slice 1 value');
+    // A number field reads a lone minus as empty: the 3 must not become 0 under the caret.
+    fireEvent.change(field, { target: { value: '' } });
+    expect(field).toHaveProperty('value', '');
+    fireEvent.change(field, { target: { value: '-20' } });
+    fireEvent.blur(field);
+    expect(onChange).toHaveBeenLastCalledWith([{ label: 'Q1', value: -20 }]);
+    cleanup();
+
+    const onPie = vi.fn();
+    render(<PieDataEditor slices={[{ label: 'Cats', value: 3 }]} onChange={onPie} />);
+    const pie = screen.getByLabelText('Slice 1 value');
+    fireEvent.change(pie, { target: { value: '-20' } });
+    fireEvent.blur(pie);
+    expect(onPie).toHaveBeenLastCalledWith([{ label: 'Cats', value: 0 }]);
+  });
+
   it('names every legend and checklist remove button after its row', () => {
     render(<LegendDataEditor items={[{ label: 'A' }, { label: 'B' }]} onChange={vi.fn()} />);
     expect(screen.getByRole('button', { name: 'Remove legend row 2' })).toBeTruthy();

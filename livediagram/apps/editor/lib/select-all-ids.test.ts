@@ -15,4 +15,8 @@ describe('selectAllIds', () => {
   it('leaves out the inert ones', () => {
     expect([...selectAllIds(tab, new Set(['c']))].sort()).toEqual(['a', 'b']);
   });
+
+  it('leaves out what another participant holds, as a marquee does', () => {
+    expect([...selectAllIds(tab, new Set(), (id) => id === 'b')].sort()).toEqual(['a', 'c']);
+  });
 });

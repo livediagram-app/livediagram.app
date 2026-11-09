@@ -17,8 +17,8 @@ import {
 // just "re-read the tab rows from D1".
 //
 // What a reconnect gap can lose is the document's content: the tabs' content
-// and the tab list (a peer's tab added, deleted, renamed or moved, a
-// `document-meta` op), so a full resync reads both back. Everything else the
+// and the tab list and name (a peer's tab added, deleted, renamed or moved, or
+// the document renamed, a `document-meta` op), so a full resync reads both back. Everything else the
 // editor holds (which tab is active, where the canvas is panned, what's
 // selected, presence) is either unaffected or re-established by the reconnect.
 export function useRoomResync(opts: {
@@ -37,6 +37,10 @@ export function useRoomResync(opts: {
   setTabLoadErrors: Dispatch<SetStateAction<Set<string>>>;
   // Moves with the refetched content (useChangesetSeen). Stable.
   noteChangesetSeen: (tabId: string, rev: number) => void;
+  // The document's own name, on screen and in the save baseline: a peer's rename is a lost
+  // `document-meta` op too, so the stored name comes back with the list.
+  setDocumentName: Dispatch<SetStateAction<string>>;
+  lastSavedNameRef: MutableRefObject<string>;
 }) {
   const {
     documentId,
@@ -48,6 +52,8 @@ export function useRoomResync(opts: {
     lastSavedTabsRef,
     setTabLoadErrors,
     noteChangesetSeen,
+    setDocumentName,
+    lastSavedNameRef,
   } = opts;
 
   // `tabIds` narrows the refetch to the tabs a relayed changeset could not bring
@@ -111,6 +117,13 @@ export function useRoomResync(opts: {
           return { ...rebaseLocalEdits(next, t, savedBefore.get(t.id)), folder: t.folder };
         }),
       );
+      // The name as a peer's `document-meta` op sets it, except a rename here not saved yet, which
+      // stays on screen while the baseline moves (so the autosave still writes it).
+      if (list && list.name !== lastSavedNameRef.current) {
+        const savedName = lastSavedNameRef.current;
+        setDocumentName((shown) => (shown === savedName ? list.name : shown));
+        lastSavedNameRef.current = list.name;
+      }
       // In the same batch as the content it describes (useChangesetSeen).
       for (const [tabId, rev] of revs) noteChangesetSeen(tabId, rev);
       // Inbound, not a local edit: moving the baseline with it is what keeps
@@ -134,6 +147,8 @@ export function useRoomResync(opts: {
       lastSavedTabsRef,
       setTabLoadErrors,
       noteChangesetSeen,
+      setDocumentName,
+      lastSavedNameRef,
     ],
   );
 }

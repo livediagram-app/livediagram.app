@@ -432,6 +432,54 @@ describe('Space tap', () => {
   });
 });
 
+describe('Alt with a plain key (docs/specs/008-canvas/canvas-and-palette.md "Navigate & select")', () => {
+  it('adds nothing and types nothing, but a character Alt composes still types', () => {
+    const addShape = vi.fn();
+    const onTypeIntoSelected = vi.fn(() => true);
+    const { bag } = deps({ selectedId: null, addShape });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('r', { code: 'KeyR', altKey: true }).defaultPrevented).toBe(false);
+    expect(press('D', { code: 'KeyD', altKey: true, shiftKey: true }).defaultPrevented).toBe(false);
+    expect(addShape).not.toHaveBeenCalled();
+    cleanup();
+
+    const typed = deps({ onTypeIntoSelected });
+    renderHook(() => useEditorKeyboardShortcuts(typed.bag));
+    press('r', { code: 'KeyR', altKey: true });
+    expect(onTypeIntoSelected).not.toHaveBeenCalled();
+    // A Mac's Option+3 composes £.
+    press('£', { code: 'Digit3', altKey: true });
+    expect(onTypeIntoSelected).toHaveBeenCalledWith('a', '£');
+  });
+});
+
+describe('Tab and Enter on a selected mind node (docs/specs/009-elements/mind-node.md)', () => {
+  it('grow the map from the canvas, but leave a keyboard-focused button its own Tab and Enter', () => {
+    const onGrowMindNode = vi.fn();
+    const { bag } = deps({ onGrowMindNode, canGrowMindNode: () => true });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('Tab');
+    expect(onGrowMindNode).toHaveBeenCalledWith('a', 'child');
+    onGrowMindNode.mockClear();
+
+    const button = document.createElement('button');
+    document.body.append(button);
+    button.focus();
+    const matches = Element.prototype.matches;
+    // jsdom has no focus modality: answer `:focus-visible` for the button as a browser does after F6 or a Tab.
+    vi.spyOn(Element.prototype, 'matches').mockImplementation(function (this: Element, sel) {
+      return sel === ':focus-visible' ? this === button : matches.call(this, sel);
+    });
+    for (const key of ['Tab', 'Enter']) {
+      const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      button.dispatchEvent(e);
+      expect(e.defaultPrevented, key).toBe(false);
+    }
+    expect(onGrowMindNode).not.toHaveBeenCalled();
+    button.remove();
+  });
+});
+
 describe('Escape on a just-grown mind node (docs/specs/009-elements/mind-node.md)', () => {
   it('drops the empty node instead of deselecting', () => {
     const onEscapeMindNode = vi.fn(() => true);

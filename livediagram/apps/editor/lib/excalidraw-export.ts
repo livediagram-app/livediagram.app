@@ -18,6 +18,10 @@ import {
   isBoxed,
   pathAnchors,
   samplePath,
+  arrowPathMidpoint,
+  arrowPathPolyline,
+  arrowStyleOf,
+  curveAnchorPoints,
   type ArrowElement,
   type ArrowheadShape,
   type BoxedElement,
@@ -246,25 +250,47 @@ export function tabToExcalidrawText(tab: Tab): string {
     const from = endpointPosition(el.from, tab.elements);
     const to = endpointPosition(el.to, tab.elements);
 
-    // Bends: curved control points (deltas from the chord midpoint) and the
-    // angled elbow flatten into the point list — Excalidraw arrows are
-    // polylines, so the bend positions carry even though the smoothing won't.
-    const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
-    const bends: { x: number; y: number }[] = [];
-    if (el.arrowStyle === 'curved') {
-      const cps = el.curvePoints?.length ? el.curvePoints : el.curveOffset ? [el.curveOffset] : [];
-      for (const cp of cps) bends.push({ x: mid.x + cp.dx, y: mid.y + cp.dy });
-    } else if (el.arrowStyle === 'angled') {
-      bends.push({
-        x: to.x + (el.elbowOffset?.dx ?? 0),
-        y: from.y + (el.elbowOffset?.dy ?? 0),
-      });
-    }
-    const points: [number, number][] = [
-      [0, 0],
-      ...bends.map((b): [number, number] => [b.x - from.x, b.y - from.y]),
-      [to.x - from.x, to.y - from.y],
-    ];
+    // The line as the canvas draws it (arrow-path.ts). Excalidraw arrows are polylines through their
+    // points, smoothed when `roundness` is set, so: an angled arrow's corners are the ones the canvas
+    // draws (every bend of a multi-bend arrow, squared to its pinned ends, and a single elbow on the
+    // side its ends choose); a curve's points lie ON the curve, its multi-bend anchors as they are
+    // (the canvas spline passes through them) and a single bow's middle rather than its quadratic
+    // control point, which sits twice as far out as the line.
+    const style = arrowStyleOf(el);
+    const vertices =
+      style === 'angled'
+        ? arrowPathPolyline(
+            style,
+            from,
+            to,
+            el.from,
+            el.to,
+            undefined,
+            el.elbowOffset,
+            el.curvePoints,
+          )
+        : style === 'curved'
+          ? [
+              from,
+              ...(el.curvePoints?.length
+                ? curveAnchorPoints(from, to, el.curvePoints)
+                : [arrowPathMidpoint(style, from, to, el.from, el.to, el.curveOffset)]),
+              to,
+            ]
+          : [from, to];
+    const points = vertices.map((v): [number, number] => [v.x - from.x, v.y - from.y]);
+    const xs = points.map((p) => p[0]);
+    const ys = points.map((p) => p[1]);
+    const mid = arrowPathMidpoint(
+      style,
+      from,
+      to,
+      el.from,
+      el.to,
+      el.curveOffset,
+      el.elbowOffset,
+      el.curvePoints,
+    );
 
     const binding = (end: ArrowElement['from']) =>
       end.kind === 'pinned' ? { elementId: end.elementId, focus: 0, gap: 4 } : null;
@@ -280,8 +306,10 @@ export function tabToExcalidrawText(tab: Tab): string {
       type: 'arrow',
       x: from.x,
       y: from.y,
-      width: Math.abs(to.x - from.x),
-      height: Math.abs(to.y - from.y),
+      width: Math.max(...xs) - Math.min(...xs),
+      height: Math.max(...ys) - Math.min(...ys),
+      // A curve is smoothed through its points over there; an angled or straight arrow stays sharp.
+      roundness: style === 'curved' ? { type: 2 } : null,
       strokeColor: el.strokeColor ?? '#64748b',
       backgroundColor: 'transparent',
       strokeWidth: el.strokeWidth ?? 2,

@@ -120,18 +120,39 @@ function stripEmphasis(line: string, re: RegExp): string {
 // A GFM table delimiter row: cells of dashes with optional leading /
 // trailing colons (alignment), pipe-separated. `|---|:--:|` etc.
 function isDelimiterRow(line: string): boolean {
-  const t = line.trim();
-  if (!t.includes('-')) return false;
-  const cells = t.replace(/^\||\|$/g, '').split('|');
+  if (!line.includes('-')) return false;
+  const cells = pipeCells(line);
   return cells.length > 0 && cells.every((c) => /^\s*:?-{1,}:?\s*$/.test(c));
 }
 
+// A pipe-table row's raw cells, as GFM splits it: on every `|` that is not escaped as `\|`, with
+// one leading and one trailing pipe dropped as the row's edges. An escaped pipe stays in its cell
+// as a plain `|`, so `a \| b` is one cell reading "a | b". One pass, linear in the line.
+function pipeCells(line: string): string[] {
+  const t = line.trim();
+  const cells: string[] = [];
+  let cell = '';
+  for (let k = 0; k < t.length; k++) {
+    const ch = t[k]!;
+    if (ch === '\\' && t[k + 1] === '|') {
+      cell += '|';
+      k++;
+    } else if (ch === '|') {
+      cells.push(cell);
+      cell = '';
+    } else {
+      cell += ch;
+    }
+  }
+  cells.push(cell);
+  if (t.startsWith('|')) cells.shift();
+  // The trailing edge pipe leaves an empty last cell; an escaped one was read into its cell above.
+  if (cells.length > 1 && /(^|[^\\])\|$/.test(t)) cells.pop();
+  return cells;
+}
+
 function splitTableRow(line: string): string[] {
-  return line
-    .trim()
-    .replace(/^\||\|$/g, '')
-    .split('|')
-    .map((c) => cleanInline(c.trim()));
+  return pipeCells(line).map((c) => cleanInline(c.trim()));
 }
 
 export function parseMarkdown(markdown: string): ParsedMarkdown {

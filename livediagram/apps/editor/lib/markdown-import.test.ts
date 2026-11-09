@@ -121,6 +121,18 @@ describe('parseMarkdown — tables', () => {
       ['Lee', 'PM'],
     ]);
   });
+
+  it('keeps an escaped pipe inside its cell', () => {
+    const md = ['| Op | Means |', '| --- | --- |', '| `a \\| b` | a or b |', 'x | y \\|'].join(
+      '\n',
+    );
+    const { tables } = parseMarkdown(md);
+    expect(tables[0]!.headers).toEqual(['Op', 'Means']);
+    expect(tables[0]!.rows).toEqual([
+      ['a | b', 'a or b'],
+      ['x', 'y |'],
+    ]);
+  });
 });
 
 describe('layoutOutline', () => {
