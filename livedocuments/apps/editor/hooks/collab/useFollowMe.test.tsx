@@ -15,9 +15,7 @@ type Args = Parameters<typeof useFollowMe>[0];
 function setup(overrides: Partial<Args> = {}) {
   const viewport = createViewportStore(1);
   const args: Args = {
-    remoteViewports: peers([
-      ['p1', { tabId: 'tab1', pan: { x: 10, y: 20 }, zoom: 2 }],
-    ]),
+    remoteViewports: peers([['p1', { tabId: 'tab1', pan: { x: 10, y: 20 }, zoom: 2 }]]),
     livePresenceIds: ['p1'],
     activeId: 'tab1',
     viewport,
@@ -42,9 +40,7 @@ describe('useFollowMe', () => {
   it('follows the peer as they move on', () => {
     const { hook, args, viewport } = setup();
     act(() => hook.result.current.startFollowing('p1'));
-    const moved = peers([
-      ['p1', { tabId: 'tab1', pan: { x: 40, y: 0 }, zoom: 3 }],
-    ]);
+    const moved = peers([['p1', { tabId: 'tab1', pan: { x: 40, y: 0 }, zoom: 3 }]]);
     act(() => (args.remoteViewports as ReturnType<typeof peers>).set(moved.get()));
     expect(viewport.get()).toEqual({ zoom: 3, offset: { x: 40, y: 0 } });
     expect(hook.result.current.followingId).toBe('p1');
@@ -134,7 +130,9 @@ describe('useFollowMe', () => {
     // Following p1: p2's hundred still render nothing.
     expect(renders).toBe(following);
     act(() =>
-      store.set((prev) => new Map(prev).set('p1', { tabId: 'tab1', pan: { x: 50, y: 0 }, zoom: 2 })),
+      store.set((prev) =>
+        new Map(prev).set('p1', { tabId: 'tab1', pan: { x: 50, y: 0 }, zoom: 2 }),
+      ),
     );
     expect(renders).toBe(following + 1);
     expect(viewport.get()).toEqual({ zoom: 2, offset: { x: 50, y: 0 } });

@@ -105,7 +105,9 @@ export function usePresenceState() {
   // collected for everyone and read only while somebody is being followed: held in a store, not state here, since each
   // peer who pans sends ten a second and state would render the whole editor for every one; only the follow reads it,
   // and it renders for the peer it follows (docs/specs/008-canvas/canvas-performance.md).
-  const [remoteViewports] = useState(() => createStateStore<Map<string, RemoteViewport>>(new Map()));
+  const [remoteViewports] = useState(() =>
+    createStateStore<Map<string, RemoteViewport>>(new Map()),
+  );
   // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id, as the
   // room tells this socket alone.
   const [followerIds, setFollowerIds] = useState<readonly string[]>([]);
