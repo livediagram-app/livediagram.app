@@ -62,8 +62,10 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       lastChangesetRev(env, tabId),
       args.tokenId ? readSelections(env, project.id, tabId, args.author.id) : null,
     ]);
-    if (!stored) {
-      if (request.body.kind !== 'replace') return { status: 404, body: { error: 'not_found' } };
+    // Only a replace makes a missing tab, and never a tab-scoped grant's: its tab gone reads as missing, so a replace
+    // cannot bring it back under a name of the caller's choosing (docs/specs/013-workspace/tab-scoped-share-links.md).
+    if (!stored && (request.body.kind !== 'replace' || args.scope)) {
+      return { status: 404, body: { error: 'not_found' } };
     }
     const compiled = compile(args, stored, selections);
     if ('errors' in compiled) return rejected(args, stored, compiled.errors, where);

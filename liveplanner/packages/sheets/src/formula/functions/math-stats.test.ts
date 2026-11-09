@@ -36,6 +36,12 @@ describe('maths', () => {
     ['=MROUND(0.3, 0.1)', 0.3],
     ['=ROUND(-2.5)', -3],
     ['=ROUND(1234, -2)', 1200],
+    // Places past a double's range: the value as it is, or 0, never #NUM!.
+    ['=ROUND(1.5, 400)', 1.5],
+    ['=ROUNDUP(2, 400)', 2],
+    ['=TRUNC(1E10, 300)', 1e10],
+    ['=ROUND(123, -400)', 0],
+    ['=ROUNDDOWN(-123, -400)', 0],
     ['=ROUNDUP(3.21, 1)', 3.3],
     ['=ROUNDDOWN(3.29, 1)', 3.2],
     ['=INT(-7.8)', -8],

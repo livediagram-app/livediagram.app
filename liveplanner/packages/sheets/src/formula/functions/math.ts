@@ -7,14 +7,18 @@ import { dims } from '../values';
 
 // A whole number of steps of 10^digits back to the value's scale. Negative digits multiply by a whole power of ten
 // rather than divide by an inexact fraction (987654321 to -4 digits is 987650000, not 987650000.0000001).
+// No steps is zero at any scale (a scale past a double's range would make it 0 × Infinity).
 function unscale(steps: number, digits: number): number {
+  if (steps === 0) return 0;
   return digits >= 0 ? steps / 10 ** digits : steps * 10 ** -digits;
 }
 
-// Round half away from zero, as spreadsheets do, without float drift (2.675 → 2.68).
+// Round half away from zero, as spreadsheets do, without float drift (2.675 → 2.68). Places past what a double holds
+// (the scaled value overflows) leave the value as it is: ROUND(1.5, 400) is 1.5, as in Google Sheets.
 function roundHalfAway(x: number, digits: number): number {
   const m = 10 ** digits;
   const scaled = Math.abs(x) * m;
+  if (!Number.isFinite(scaled)) return x;
   const r = Math.round(Number(scaled.toPrecision(15)));
   return unscale(Math.sign(x) * r, digits);
 }
@@ -22,6 +26,7 @@ function roundHalfAway(x: number, digits: number): number {
 function roundDir(x: number, digits: number, up: boolean): number {
   const m = 10 ** digits;
   const scaled = Number((Math.abs(x) * m).toPrecision(15));
+  if (!Number.isFinite(scaled)) return x;
   const r = up ? Math.ceil(scaled) : Math.floor(scaled);
   return unscale(Math.sign(x) * r, digits);
 }

@@ -228,3 +228,32 @@ describe('a tab-scoped Editor and its form’s destination', () => {
     expect(await res.json()).toMatchObject({ error: 'tab_structure' });
   });
 });
+
+describe('a tab-scoped Editor and its deleted tab', () => {
+  it('cannot bring the tab back with a whole-tab save or a replace changeset', async () => {
+    expect((await call('DELETE', '/api/projects/D/tabs/t1')).status).toBe(204);
+    const save = await call(
+      'PUT',
+      '/api/projects/D/tabs/t1',
+      { id: 't1', name: 'Back', elements: [sticky('s1')] },
+      'TAB1',
+    );
+    expect(save.status).toBe(404);
+    const replace = await call(
+      'POST',
+      '/api/projects/D/tabs/t1/changesets',
+      { replace: { elements: [], name: 'Back' } },
+      'TAB1',
+    );
+    expect(replace.status).toBe(404);
+    expect(db.sql.prepare('SELECT id FROM tabs WHERE id = ?').get('t1')).toBeUndefined();
+    // An Editor of every tab still makes a tab with a replace.
+    const made = await call(
+      'POST',
+      '/api/projects/D/tabs/t3/changesets',
+      { replace: { elements: [], name: 'New' } },
+      'ALL',
+    );
+    expect(made.status).toBe(200);
+  });
+});
