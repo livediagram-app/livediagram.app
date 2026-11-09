@@ -217,7 +217,10 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 - `page ls <doc> [--tab]` → the `pages` view.
 - `page set <doc> [--tab] --changes <file|->` (a JSON list, or one change) or flags for one change (`--add slide
 --layout slide-title`, `--page 2 --name Cover`, `--page 2 --delete`, `--move`, `--duplicate`, `--background-to-all`, `--size`,
-  `--orientation`).
+  `--orientation`). `--add` takes `--name`, `--size`, `--orientation`, `--layout` and `--move` (as `at`); with `--page`
+  one of delete, duplicate, background to all, move, layout or a `set` of name/size/orientation. Two of those, `--add`
+  with `--page`/`--delete`/`--duplicate`/`--background-to-all`, or any change flag beside `--changes`: `invalid_value`
+  naming the flags, nothing sent.
 - `article get <doc> [--tab] [--article]` → Markdown on stdout.
 - `article set <doc> <file|-> [--tab] [--article] [--new] [--append] [--size] [--orientation] [--look]
 [--accent] [--page-numbers]`.

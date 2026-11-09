@@ -270,8 +270,10 @@ export function applyPageChanges(
         }
         case 'move': {
           const page = pageOf(change);
+          // Said by its places, from and to, as every other line names a page (blueprint "move").
+          const from = placeOf(page.id);
           current = take(pageMovedTo(current, page.id, unitAt(change.to)), page);
-          lines.push(`Moved page ${page.id} to ${placeOf(page.id)}.`);
+          lines.push(`Moved page ${from} to ${placeOf(page.id)}.`);
           return;
         }
         case 'duplicate': {
