@@ -295,9 +295,10 @@ describe('SettingsPanel', () => {
       el.getAttribute('aria-label'),
     );
     expect(marks).toEqual(expect.arrayContaining(['liveplanner']));
-    expect(marks).toEqual(expect.arrayContaining(['livediagram']));
-    // livehuddle's Receptionist's Welcome is its own row, not livediagram's Avatar Tour.
+    // livehuddle's Receptionist's Welcome is its own row. livediagram has none here since its Avatar Tour went to
+    // livehuddle (livediagram's Work Tracker #650).
     expect(marks).toEqual(expect.arrayContaining(['livehuddle']));
+    expect(marks).not.toContain('livediagram');
     const sections = [...pane().querySelectorAll('h3')].map((h) => h.textContent);
     expect(new Set(sections).size).toBe(sections.length);
   });
@@ -345,7 +346,7 @@ describe('SettingsPanel', () => {
   it('lands a category remembered from the old per-app layout on its merged category', async () => {
     localStorage.setItem(
       'test:settings-view:all',
-      JSON.stringify({ categoryId: 'livediagram.app:tours', anchor: null }),
+      JSON.stringify({ categoryId: 'liveplanner.app:tours', anchor: null }),
     );
     const { request } = fakeRequest();
     renderWithKit(<Host request={request} initial="all" />);
@@ -355,7 +356,7 @@ describe('SettingsPanel', () => {
         .getByRole('button', { name: /^Getting Started/ })
         .getAttribute('aria-current'),
     ).toBe('page');
-    expect(pane().querySelector('[aria-label="livediagram"]')).not.toBeNull();
+    expect(pane().querySelector('[aria-label="liveplanner"]')).not.toBeNull();
   });
 
   it("shows the app's own side's settings, a common one among them, written to the shared scope", async () => {

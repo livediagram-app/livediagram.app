@@ -47,7 +47,7 @@ describe('livehuddle in the telemetry service', () => {
     expect(livehuddleRouteLabel('POST', '/api/ai/notes')).toBe('Post.Unknown');
     // And the palette tokens livehuddle ranks that livediagram does not are its Space pieces: the Corridor, the
     // Stage, and the meeting, wayfinding, recreation and garden pieces only a Space holds, and a room drawn by hand
-    // (CustomRoom). The palette groups them by its own categories, so the order here is not the palette's.
+    // (CustomRoom), and the furniture livediagram retired. The palette groups them by its own categories, so the order here is not the palette's.
     const huddleOnly = palette(LIVEHUDDLE_PALETTE_TYPES).filter(
       (t) => !palette(LIVEDIAGRAM_PALETTE_TYPES).includes(t),
     );
@@ -126,6 +126,19 @@ describe('livehuddle in the telemetry service', () => {
         'Photo-wall',
         'Timer',
         'Stopwatch',
+        // And, since livediagram's Work Tracker #650, the furniture that moved to livehuddle with Avatar mode.
+        'Chair',
+        'Desk',
+        'Sofa',
+        'Fence',
+        'Avatar-pad',
+        'Room',
+        'Meeting-table',
+        'Plant',
+        'Bookshelf',
+        'Water-cooler',
+        'Coffee-machine',
+        'Rug',
       ].toSorted(),
     );
   });
