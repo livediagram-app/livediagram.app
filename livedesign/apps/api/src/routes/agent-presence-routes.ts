@@ -108,7 +108,7 @@ async function presenceRoute(ctx: DesignRouteContext): Promise<Response | null> 
   if (focus instanceof Response) return focus;
   // The entry's name and colour are the owner's (I2); its level the one the gates resolve for the token (PR27).
   const participant = await getParticipant(env, owner);
-  const role: ShareRole = await agentLevel(ctx, designId, tabId, !!token.readOnly);
+  const role: ShareRole = agentLevel(ctx, designId, tabId, !!token.readOnly);
   let answer: Awaited<ReturnType<typeof putAgentPresence>>;
   try {
     answer = await putAgentPresence(env, {

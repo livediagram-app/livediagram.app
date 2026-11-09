@@ -199,15 +199,15 @@ export async function gateEdit(
 
 /** The level an agent's presence entry shows (docs/specs/024-agents/blueprints/DEFAULTS.md PR27): the one the gates
  *  resolve for its token on the design and tab, Participant included; a read-only token is a Viewer. */
-export async function agentLevel(
+export function agentLevel(
   ctx: RouteContext,
   designId: string,
   tabId: string,
   readOnly: boolean,
-): Promise<ShareRole> {
+): ShareRole {
   if (readOnly) return 'view';
-  if (await holds(ctx, designId, 'edit', tabId)) return 'edit';
-  return (await holds(ctx, designId, 'participate', tabId)) ? 'participate' : 'view';
+  if (holds(ctx, designId, 'edit', tabId)) return 'edit';
+  return holds(ctx, designId, 'participate', tabId) ? 'participate' : 'view';
 }
 
 // The caller's grant on a design, scope included, for the doors that narrow

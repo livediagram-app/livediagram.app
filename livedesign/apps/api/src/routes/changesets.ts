@@ -216,11 +216,9 @@ export function refreshAfterRead(
   const designId = design.id;
   ctx.waitUntil(
     (async () => {
-      const [author, personTag, role] = await Promise.all([
+      const [author, personTag] = await Promise.all([
         authorOf(ctx, owner),
         personTagFor(designId, owner),
-        // The level the gates resolve for the token, as an explicit set's (PR27).
-        agentLevel(ctx, designId, tabId, !!token.readOnly),
       ]);
       await refreshAgentPresence(ctx.env, {
         designId,
@@ -230,7 +228,8 @@ export function refreshAfterRead(
         shareCode: grantOn(ctx, designId)?.shareCode ?? null,
         name: author.name,
         color: author.color,
-        role,
+        // The level the gates resolve for the token, as an explicit set's (PR27).
+        role: agentLevel(ctx, designId, tabId, !!token.readOnly),
       });
     })().catch((err: unknown) =>
       console.warn('[agent-presence] read stamp failed', { designId, tabId, error: String(err) }),
