@@ -16,7 +16,7 @@ import {
   createSelectionStore,
   type SelectionStore,
 } from '@liveworkspace/workbench/lib/selection-store';
-import { setActiveTour, activeTour } from '@/lib/tour-active';
+import { setActiveTour, activeTour } from '@liveworkspace/workbench/lib/tour-active';
 import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import type { TourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
 import type { SankeyElementTourApi } from './sankey-element-tour-steps';

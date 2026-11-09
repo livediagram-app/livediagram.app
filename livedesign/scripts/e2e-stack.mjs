@@ -45,7 +45,7 @@ import {
   IMMUTABLE_CACHE_CONTROL,
   cacheRule,
   isBuildAsset,
-} from '../apps/router/src/cache-policy.ts';
+} from '../../packages/sites/src/cache-policy.ts';
 import { createTokenStandIn } from '../../packages/auth-client/src/e2e-token-stand-in.ts';
 import {
   isWorkspaceFramePath,

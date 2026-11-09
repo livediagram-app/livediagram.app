@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react';
 import { HoverCard, lucideGlyph } from '@livedesign/ui';
 import { lucideFootprints } from '@liveworkspace/icons/lucide';
 import { helpArticleHref, type HelpArticleKey } from '@/lib/help-articles';
-import { setActiveTour } from '@/lib/tour-active';
+import { setActiveTour } from '@liveworkspace/workbench/lib/tour-active';
 import { TourStage } from './TourStage';
 import type { TourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
 

@@ -6,7 +6,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerChartDataDialog } from '@liveworkspace/workbench/lib/chart-data-dialog-handle';
 import { parseCsvLineData } from '@/lib/csv';
-import { useActiveTour } from '@/lib/tour-active';
+import { useActiveTour } from '@liveworkspace/workbench/lib/tour-active';
 
 // Line-chart data editor in a modal (docs/specs/009-elements/pie-chart.md). The context menu's Data category
 // only summarises the series + offers "Edit Data", which opens this — the 2-D

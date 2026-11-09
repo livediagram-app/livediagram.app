@@ -99,7 +99,7 @@ import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-co
 import { getSessionSharePassword } from '@/lib/api/core';
 import { useConnectedTabActions } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
 import { useDocumentList } from '@/hooks/persistence/useDocumentList';
-import { useDocumentShareState } from '@/hooks/persistence/useDocumentShareState';
+import { useDocumentShareState } from '@liveworkspace/workbench/hooks/persistence/useDocumentShareState';
 import { useTokenTeams } from '@/lib/explorer-host';
 import {
   actionRowsFromElements,
@@ -137,7 +137,7 @@ import { holdsOnlyPads, padOnlyTabCentre } from '@/lib/pad-only-tab';
 import { STRIP_MORPH_MS } from '@/lib/strip-morph';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
-import { useTabScope } from './useTabScope';
+import { useTabScope } from '@liveworkspace/workbench/hooks/editor/useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';

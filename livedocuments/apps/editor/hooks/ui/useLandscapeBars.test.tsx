@@ -4,7 +4,7 @@
 // elsewhere and while a tour is on screen.
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { setActiveTour } from '@/lib/tour-active';
+import { setActiveTour } from '@liveworkspace/workbench/lib/tour-active';
 import { useLandscapeBars } from './useLandscapeBars';
 
 const track = vi.hoisted(() => vi.fn());

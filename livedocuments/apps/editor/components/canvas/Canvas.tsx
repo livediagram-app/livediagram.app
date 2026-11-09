@@ -33,7 +33,7 @@ import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { flashcardStage } from '@/lib/flashcard-stack';
 import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { canvasGestureNow } from '@/lib/canvas-gesture';
+import { canvasGestureNow } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useKeyboardElementMenu } from '@/hooks/canvas/useKeyboardElementMenu';

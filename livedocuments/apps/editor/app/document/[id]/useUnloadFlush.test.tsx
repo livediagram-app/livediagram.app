@@ -9,7 +9,9 @@ const flush = vi.fn<typeof import('@/lib/api-client').flushDocumentSavesBeacon>(
 vi.mock('@/lib/api-client', () => ({
   flushDocumentSavesBeacon: (...a: Parameters<typeof flush>) => flush(...a),
 }));
-vi.mock('@/lib/document-tombstones', () => ({ isDocumentDeleted: () => false }));
+vi.mock('@liveworkspace/workbench/lib/document-tombstones', () => ({
+  isDocumentDeleted: () => false,
+}));
 
 const { useUnloadFlush, shouldWarnOnLeave } = await import('./useUnloadFlush');
 const { noteSaveFailing, noteTabTooLarge } =

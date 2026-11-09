@@ -104,5 +104,8 @@ export default {
   },
 };
 import { isEditorPath } from '../lib/editor-path';
-import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
+import {
+  isWorkspaceFramePath,
+  WORKSPACE_FRAME_PAGE,
+} from '@liveworkspace/workbench/lib/workbench/workbench-frame-path';
 import { isSharePagePath, sharePage } from './share-page';

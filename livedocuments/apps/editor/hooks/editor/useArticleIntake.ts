@@ -37,7 +37,7 @@ import {
   forgetZonesReleased,
   takeZoneReleased,
 } from '@/lib/article/article-editor-store';
-import { useElementGestureActive } from '@/lib/canvas-gesture';
+import { useElementGestureActive } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { articleTextBox } from '@/lib/article/article-flow-geometry';
 import { lockedArticleFlows } from '@/lib/article/article-lock';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

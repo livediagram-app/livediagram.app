@@ -13,5 +13,5 @@ export { BringFocusArt, FacilitatorArt } from './feature-art/room';
 // Being in the Space together, and sharing it.
 export { PresenceArt, RealtimeArt } from './feature-art/together';
 export { ExpiryArt, RevokeArt, ShareLinksArt, TeamsArt } from './feature-art/sharing';
-export { TimelineFeedArt } from './feature-art/embeds-timeline';
+export { TimelineFeedArt } from '@liveworkspace/marketing-site/components/feature-art/embeds-timeline';
 export { ApiArt } from './feature-art/foundations';

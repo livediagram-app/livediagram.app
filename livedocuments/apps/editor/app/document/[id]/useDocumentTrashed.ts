@@ -11,7 +11,7 @@ import type { TrashedDocument } from '@/components/chrome/DocumentTrashedCard';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { isDocumentDeleted } from '@/lib/document-tombstones';
+import { isDocumentDeleted } from '@liveworkspace/workbench/lib/document-tombstones';
 
 type DocumentTrashedState = {
   trashed: boolean;

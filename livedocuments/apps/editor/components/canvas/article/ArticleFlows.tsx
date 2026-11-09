@@ -42,7 +42,7 @@ import { useObjectDropCaret } from './useObjectDropCaret';
 import { useTouchPagePan } from './useTouchPagePan';
 import { publishZoneClips } from '@/lib/article/zone-clip-store';
 import { lockedArticleFlows } from '@/lib/article/article-lock';
-import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
+import { selectionMoving, useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 

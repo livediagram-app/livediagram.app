@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { segmentDistance } from './segment-geometry';
+import { insidePolygon, segmentDistance } from './segment-geometry';
 
 describe('segmentDistance', () => {
   it('is zero for segments that cross', () => {
@@ -22,5 +22,24 @@ describe('segmentDistance', () => {
 
   it('measures a segment of no length to its point', () => {
     expect(segmentDistance({ x: 3, y: 4 }, { x: 3, y: 4 }, { x: 0, y: 0 }, { x: 0, y: 0 })).toBe(5);
+  });
+});
+
+describe('insidePolygon', () => {
+  const square = [
+    { x: 0, y: 0 },
+    { x: 10, y: 0 },
+    { x: 10, y: 10 },
+    { x: 0, y: 10 },
+  ];
+
+  it('is true inside the ring and false outside it', () => {
+    expect(insidePolygon({ x: 5, y: 5 }, square)).toBe(true);
+    expect(insidePolygon({ x: 15, y: 5 }, square)).toBe(false);
+    expect(insidePolygon({ x: 5, y: -1 }, square)).toBe(false);
+  });
+
+  it('reads a ring of no points as outside', () => {
+    expect(insidePolygon({ x: 0, y: 0 }, [])).toBe(false);
   });
 });

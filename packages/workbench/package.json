@@ -435,7 +435,19 @@
     "./lib/viewport-store": "./src/lib/viewport-store.ts",
     "./lib/zip-writer": "./src/lib/zip-writer.ts",
     "./lib/zoom-range": "./src/lib/zoom-range.ts",
-    "./lib/useArchivedAddress": "./src/lib/useArchivedAddress.ts"
+    "./lib/useArchivedAddress": "./src/lib/useArchivedAddress.ts",
+    "./lib/editor-surface": "./src/lib/editor-surface.ts",
+    "./lib/share-link-ops": "./src/lib/share-link-ops.ts",
+    "./lib/tab-save-queue": "./src/lib/tab-save-queue.ts",
+    "./hooks/editor/useTabRevisions": "./src/hooks/editor/useTabRevisions.ts",
+    "./hooks/editor/useTabScope": "./src/hooks/editor/useTabScope.ts",
+    "./lib/canvas-gesture": "./src/lib/canvas-gesture.ts",
+    "./lib/tour-active": "./src/lib/tour-active.ts",
+    "./lib/tour-tracks": "./src/lib/tour-tracks.ts",
+    "./components/dialogs/settings/settings-icons": "./src/components/dialogs/settings/settings-icons.tsx",
+    "./hooks/persistence/useDocumentShareState": "./src/hooks/persistence/useDocumentShareState.ts",
+    "./lib/document-tombstones": "./src/lib/document-tombstones.ts",
+    "./lib/workbench/workbench-frame-path": "./src/lib/workbench/workbench-frame-path.ts"
   },
   "scripts": {
     "lint": "oxlint",

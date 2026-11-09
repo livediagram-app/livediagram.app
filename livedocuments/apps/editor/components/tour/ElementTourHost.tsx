@@ -22,7 +22,7 @@ import { sankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dia
 import { setSankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { track } from '@/lib/telemetry';
-import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { setActiveTour, useActiveTour } from '@liveworkspace/workbench/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';

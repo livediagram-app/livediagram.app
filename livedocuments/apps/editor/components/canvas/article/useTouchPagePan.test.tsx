@@ -4,7 +4,10 @@ import { act, renderHook } from '@testing-library/react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LONG_PRESS_MS } from '@liveworkspace/workbench/hooks/ui/useLongPress';
-import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
+import {
+  canvasGestureNow,
+  resetCanvasGesturesForTests,
+} from '@liveworkspace/workbench/lib/canvas-gesture';
 import { TOUCH_PAN_SLOP, useTouchPagePan } from './useTouchPagePan';
 
 // A finger on an article page (docs/specs/007-editor/article-pages.md "A finger on a page"): it

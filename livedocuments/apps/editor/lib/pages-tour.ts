@@ -1,5 +1,5 @@
 import type { PageKind } from '@livedocuments/document';
-import { withTracksAnswered } from './tour-tracks';
+import { withTracksAnswered } from '@liveworkspace/workbench/lib/tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
 // The Pages tour's relaunch signal (docs/specs/007-editor/pages-tour.md "Where it appears"): the Settings

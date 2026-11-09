@@ -11,7 +11,9 @@ vi.mock('@/lib/api-client', () => ({
   flushDocumentSavesBeacon: (...a: Parameters<typeof flush>) => flush(...a),
   claimPlacedImagesOnUnload: (...a: Parameters<typeof claim>) => claim(...a),
 }));
-vi.mock('@/lib/document-tombstones', () => ({ isDocumentDeleted: () => false }));
+vi.mock('@liveworkspace/workbench/lib/document-tombstones', () => ({
+  isDocumentDeleted: () => false,
+}));
 
 const { useUnloadFlush, shouldWarnOnLeave } = await import('./useUnloadFlush');
 const { noteSaveFailing, noteTabTooLarge } =

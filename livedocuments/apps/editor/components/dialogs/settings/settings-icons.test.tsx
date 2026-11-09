@@ -3,7 +3,7 @@ import { SettingsCategoryTile, SettingsUiKitProvider } from '@liveworkspace/sett
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { SETTINGS_TILES } from './settings-icons';
+import { SETTINGS_TILES } from '@liveworkspace/workbench/components/dialogs/settings/settings-icons';
 import { SETTINGS_KIT } from './settings-kit';
 
 // Each Settings category glyph sits centred in its tile, drawn with this editor's Glyph: ink within

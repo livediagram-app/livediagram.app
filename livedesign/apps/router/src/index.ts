@@ -3,7 +3,7 @@
 // don't exist and each app is a plain HTTP origin to proxy instead.
 // See docs/specs/016-platform/router-app.md.
 
-import { applyCachePolicy } from './cache-policy';
+import { applyCachePolicy } from '@liveworkspace/sites/cache-policy';
 import { LIVE_ROUTE_SEGMENTS, SIGNED_IN_HINT_COOKIE } from '@livedesign/api-schema';
 import { openExplorerRedirect } from '@liveworkspace/sites/open-explorer';
 import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
