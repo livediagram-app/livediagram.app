@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { emptyLayout, single, type SheetLayout } from '@liveplanner/sheets';
-import { EDIT_LOST, followSelection, useFollowLayout } from './useFollowLayout';
+import { EDIT_LOST, clampSelection, followSelection, useFollowLayout } from './useFollowLayout';
 
 let seq = 11;
 const rand = () => ((seq = (seq * 16807) % 2147483647) - 1) / 2147483646;
@@ -86,5 +86,25 @@ describe('following rows that move', () => {
     const same = setup();
     same.change({ ...base, frozenRows: 1 });
     expect(same.setSelection).not.toHaveBeenCalled();
+  });
+
+  // Undoing a paste that grew the sheet takes its rows away under a selection still over them: the selection is held
+  // inside the grid (it drew at NaN height before).
+  it("holds this person's selection inside the grid when their own change shortens it", () => {
+    const own = setup(true);
+    own.change(withRows([a, b]));
+    expect(own.setSelection).toHaveBeenCalledWith(single({ r: 1, c: 1 }));
+    const sel = {
+      ranges: [{ r1: 1, c1: 0, r2: 40, c2: 9 }],
+      active: { r: 1, c: 0 },
+      anchor: { r: 1, c: 0 },
+    };
+    expect(clampSelection(sel, 6, 4)).toEqual({
+      ranges: [{ r1: 1, c1: 0, r2: 5, c2: 3 }],
+      active: { r: 1, c: 0 },
+      anchor: { r: 1, c: 0 },
+    });
+    const inside = single({ r: 2, c: 2 });
+    expect(clampSelection(inside, 6, 4)).toBe(inside);
   });
 });
