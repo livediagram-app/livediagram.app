@@ -30,7 +30,9 @@ export function ganttOrderRows<T extends { item: { id: string } }>(
 
 // The next full order after `id` moves to `toIndex` within its lane (`laneIds`, the lane's rows as shown): taken
 // out of the chart's current row ids (`rowIds`, as shown) and put before the lane's row now at `toIndex`, or after
-// the lane's last row past its end, so it never leaves its lane. Only the ids given survive (stale ones drop).
+// the lane's last row past its end, so it never leaves its lane. Only the ids given survive (stale ones drop). A card
+// in several lanes (a Person field holding several) is one row id per lane: the order names it once, at its first, so
+// the order stays one id per card (isGanttRowOrder) and within GANTT_ROW_ORDER_MAX, the 2,000-card cap.
 // Null when nothing moves.
 export function ganttReorder(
   rowIds: readonly string[],
@@ -43,7 +45,7 @@ export function ganttReorder(
   const others = laneIds.filter((x) => x !== id);
   const to = Math.max(0, Math.min(others.length, toIndex));
   if (to === from) return null;
-  const rest = rowIds.filter((x) => x !== id);
+  const rest = [...new Set(rowIds)].filter((x) => x !== id);
   const next =
     to < others.length
       ? rest.indexOf(others[to]!)

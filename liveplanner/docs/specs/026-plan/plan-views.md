@@ -251,7 +251,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 - The order belongs to the chart (`planView.rowOrder`, a list of card ids, at most 2000): the cards it names come
   first, in its order; cards it does not name (newly made, or newly accepted) follow in date order. A card that
   leaves the chart (deleted, archived, its type no longer accepted) is ignored, and dropped from the list on the
-  next reorder.
+  next reorder. A card shown in several lanes (swimlanes by a Person field holding several) is named once, so the
+  list never repeats a card nor passes the 2,000-card cap, and moving it in one lane moves it in each.
 - **Sort by Date**, an action row in the chart's **View** flyout (shown while an order is set), clears the order:
   the rows go back to date order.
 - It works the same maximised. The chart does not scroll its rows (a chart taller than its rows is clipped, as
