@@ -6,6 +6,7 @@
 // apply, else the one button).
 
 import type { App } from '@liveworkspace/index-client';
+import { possessive } from '@liveworkspace/sites';
 import { useState, type ReactNode } from 'react';
 import { AppScopeToggle, BackBar, Button } from '@liveworkspace/ui';
 import { PortalMenu } from '../ui/Menu';
@@ -228,9 +229,9 @@ export function FilterToggle() {
       app={{
         label: siteOf(app).name,
         logo: renderAppLogo?.(app),
-        description: `Only ${siteOf(app).name}'s ${kind.lowerMany}`,
+        description: `Only ${possessive(siteOf(app).name)} ${kind.lowerMany}`,
       }}
-      all={{ label: allLabel, logo: renderAppLogo?.('all'), description: "Every app's items" }}
+      all={{ label: allLabel, logo: renderAppLogo?.('all'), description: 'Every app’s items' }}
     />
   );
 }

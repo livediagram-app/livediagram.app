@@ -1,5 +1,6 @@
 'use client';
 
+import { possessive } from '@liveworkspace/sites';
 import { useState, type ReactNode } from 'react';
 
 // The Settings panel's header switch, as the Explorer's (each app's name with its logo, beside All with
@@ -58,7 +59,7 @@ export function SettingsScopeSwitch({
         type="button"
         aria-pressed={value === 'app'}
         onClick={() => onChange('app')}
-        title={`Only ${appName}’s settings`}
+        title={`Only ${possessive(appName)} settings`}
         className={segment(value === 'app')}
       >
         <Logo>{appLogo}</Logo>
