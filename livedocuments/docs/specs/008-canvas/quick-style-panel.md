@@ -355,7 +355,9 @@ WCAG 2.2 AA.
 Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), each bar choice emits
 `Element·Changed` with its own token, distinct from the context menu's, so bar use can be read
 against menu use: `QuickStroke`,
-`QuickBackground`, `QuickTextColour`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, and `QuickIconAlign` (`QuickCorners` and `QuickClearStyles` are retired with their controls). Editing the palette is a setting, not a style change: `UI·Changed·QuickSwatchCustom`
+`QuickBackground`, `QuickTextColour`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, and `QuickIconAlign` (`QuickCorners` and `QuickClearStyles` are retired with their controls). Opening a button's popover, or its row in a phone's Appearance sheet, emits
+`UI·Opened·QuickStyle<Button>` (`QuickStyleStroke`, `QuickStyleFill`, ...), so the buttons people
+reach for can be read too. Editing the palette is a setting, not a style change: `UI·Changed·QuickSwatchCustom`
 when a swatch is overridden, `UI·Changed·QuickSwatchReset` when an override is cleared, both
 counted as Custom Swatches in the dashboard's Look & Feel stack.
 
