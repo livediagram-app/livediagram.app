@@ -7,9 +7,9 @@
 // sitting is remembered with the seat it was picked on, and wins over the piece's until you stand.
 
 import { useMemo, useState } from 'react';
-import { useAvatarStatus } from '@liveworkspace/avatar/hooks/useAvatarStatus';
-import { pieceStatusOf, shownStatus } from '@liveworkspace/avatar/seat-status';
-import type { AvatarStatus } from '@liveworkspace/avatar/status';
+import { useAvatarStatus } from '@livehuddle/avatar/hooks/useAvatarStatus';
+import { pieceStatusOf, shownStatus } from '@livehuddle/avatar/seat-status';
+import type { AvatarStatus } from '@livehuddle/avatar/status';
 
 type Piece = { id: string; type: string; shape?: string };
 

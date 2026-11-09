@@ -7,7 +7,7 @@ import {
   type NoticeNote,
   type ShapeElement,
 } from '@livehuddle/document';
-import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
+import { DEFAULT_AVATAR_CONFIG } from '@livehuddle/avatar/config';
 import { isPieceControlPress } from '@/lib/piece-control';
 import { createWayfindingStore, type Wayfinding } from '../wayfinding/wayfinding-store';
 

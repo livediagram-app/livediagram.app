@@ -2,9 +2,9 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { ChairFacing, ShapeElement } from '@livehuddle/document';
-import { seatPillBottom } from '@liveworkspace/avatar/chair-sitters';
-import { SEAT_GRIDS } from '@liveworkspace/avatar/seats';
-import { AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
+import { seatPillBottom } from '@livehuddle/avatar/chair-sitters';
+import { SEAT_GRIDS } from '@livehuddle/avatar/seats';
+import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
 import { FurnitureView } from './FurnitureView';
 
 afterEach(cleanup);

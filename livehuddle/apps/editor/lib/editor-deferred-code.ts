@@ -7,7 +7,7 @@
 // Speech bubbles and the composer (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): fetched once someone who
 // may speak enters Avatar mode, or when a bubble first arrives.
 export const loadAvatarSpeechLayer = () =>
-  import('@liveworkspace/avatar/components/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer);
+  import('@livehuddle/avatar/components/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer);
 
 export const loadExplorerPanel = () => import('@/components/panels/Explorer');
 export const loadEditorSearchPanel = () =>

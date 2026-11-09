@@ -6,9 +6,9 @@ import {
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
-import { fenceSegments, fenceStep, type FenceSegment } from '@liveworkspace/avatar/collision';
+import { fenceSegments, fenceStep, type FenceSegment } from '@livehuddle/avatar/collision';
 
-// docs/specs/009-elements/fence.md "Blocking": the collision is @liveworkspace/avatar's (its own tests); this
+// docs/specs/009-elements/fence.md "Blocking": the collision is @livehuddle/avatar's (its own tests); this
 // editor's fences, rooms and scenery meeting it are tested here.
 
 // Walks a character from `from` towards `to` in frame-sized steps, the way the walk loop does.

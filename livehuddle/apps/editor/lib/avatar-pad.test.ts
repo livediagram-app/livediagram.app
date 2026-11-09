@@ -9,7 +9,7 @@ import {
   padUnderFeet,
   pickSpawnPad,
   type PadArrival,
-} from '@liveworkspace/avatar/pad';
+} from '@livehuddle/avatar/pad';
 
 // docs/specs/009-elements/avatar-pad.md
 const pad = (id: string, x: number, y: number) =>

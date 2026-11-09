@@ -2,7 +2,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, turnPiece, type ShapeElement } from '@livehuddle/document';
-import type { SeatFacing } from '@liveworkspace/avatar/facing';
+import type { SeatFacing } from '@livehuddle/avatar/facing';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 
 vi.mock('@/lib/jukebox-listening', async (actual) => ({

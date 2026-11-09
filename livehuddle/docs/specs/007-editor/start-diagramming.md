@@ -204,5 +204,5 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A
 - `../packages/community-ui/src/start/start-tiles.test.tsx`: a group's Community cards, a search with them joined
   in, and the badge's colours reading at AA in light and dark (shared by every app's start).
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
-- `../packages/avatar/src/walk-guard.test.ts`, `components/palette/EditWalkToggle.test.tsx`: no walking over a start.
+- `packages/avatar/src/walk-guard.test.ts`, `components/palette/EditWalkToggle.test.tsx`: no walking over a start.
 - `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).

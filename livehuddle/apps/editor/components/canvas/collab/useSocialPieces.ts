@@ -9,7 +9,7 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 import { pieceFacing, roomInterior, type Element } from '@livehuddle/document';
-import type { SeatFacing } from '@liveworkspace/avatar/facing';
+import type { SeatFacing } from '@livehuddle/avatar/facing';
 import { setJukeboxArea } from '@/lib/jukebox-listening';
 
 /** How far round a jukebox standing in no room it is heard, from its base. */

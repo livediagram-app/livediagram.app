@@ -6,10 +6,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Element } from '@livehuddle/document';
-import type { PadArrival } from '@liveworkspace/avatar/pad';
-import type { AvatarPoint } from '@liveworkspace/avatar/walk';
-import { buildNavGrid } from '@liveworkspace/avatar/pathing';
-import { fenceReachFor, fenceSegments, shutDoorLines } from '@liveworkspace/avatar/collision';
+import type { PadArrival } from '@livehuddle/avatar/pad';
+import type { AvatarPoint } from '@livehuddle/avatar/walk';
+import { buildNavGrid } from '@livehuddle/avatar/pathing';
+import { fenceReachFor, fenceSegments, shutDoorLines } from '@livehuddle/avatar/collision';
 import {
   nearestRoomSpot,
   receptionistWorld,

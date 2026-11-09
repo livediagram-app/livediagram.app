@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
+import { DEFAULT_AVATAR_CONFIG } from '@livehuddle/avatar/config';
 import {
   clearAvatarPreview,
   getAvatarPreview,

@@ -4,7 +4,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
-import { NO_POSE, type AvatarPose } from '@liveworkspace/avatar/pose';
+import { NO_POSE, type AvatarPose } from '@livehuddle/avatar/pose';
 import type { AvatarPresence } from '@livehuddle/api-schema';
 import type { Element } from '@livehuddle/document';
 import { callPlacesOf, placeOf } from '@/lib/calls/call-places';

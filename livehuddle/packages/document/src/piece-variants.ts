@@ -5,7 +5,7 @@
 //
 // A LEAF module: types only from './index'.
 
-import { CORRIDOR_VARIANTS, corridorShape } from '@liveworkspace/avatar/corridor';
+import { CORRIDOR_VARIANTS, corridorShape } from '@livehuddle/avatar/corridor';
 
 export {
   CORRIDOR_ARM,
@@ -14,7 +14,7 @@ export {
   corridorVariant,
   corridorWalls,
   type CorridorVariant,
-} from '@liveworkspace/avatar/corridor';
+} from '@livehuddle/avatar/corridor';
 
 /** A Door's types (room-builder.md "Door types"), the first the one an absent `variant` draws. */
 export const DOOR_VARIANTS = ['swing', 'double', 'sliding', 'revolving'] as const;

@@ -6,8 +6,8 @@ import {
   seatsACharacter,
   type Element,
 } from '@livehuddle/document';
-import { AVATAR_WIDTH } from '@liveworkspace/avatar/walk';
-import { avatarScale } from '@liveworkspace/avatar/config';
+import { AVATAR_WIDTH } from '@livehuddle/avatar/walk';
+import { avatarScale } from '@livehuddle/avatar/config';
 import { buildTemplate } from './build-template';
 import { templateFloors } from './template-floors';
 import { templateCategories, templateCategory } from './template-categories';

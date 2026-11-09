@@ -1,13 +1,13 @@
 // Turning furniture (docs/specs/009-elements/furniture-facing.md): which pieces take a facing, the drawing a piece
 // shows at its facing, and a turn, which keeps the piece's centre and scale and gives its box the turned drawing's
 // proportions. The arithmetic of a facing (its drawing, a quarter turn, a sitter's turn, the turned box) is
-// @liveworkspace/avatar's facing.ts, shared with the walk that reads a piece's seats and footprint. Pure.
+// @livehuddle/avatar's facing.ts, shared with the walk that reads a piece's seats and footprint. Pure.
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
-import { turnFacing, type SeatFacing } from '@liveworkspace/avatar/facing';
-import { turnWithArt } from '@liveworkspace/avatar/furniture-art';
-import { DEFAULT_SEATING_FACING } from '@liveworkspace/avatar/seats';
-import { seatsACharacter } from '@liveworkspace/avatar/office-geometry';
+import { turnFacing, type SeatFacing } from '@livehuddle/avatar/facing';
+import { turnWithArt } from '@livehuddle/avatar/furniture-art';
+import { DEFAULT_SEATING_FACING } from '@livehuddle/avatar/seats';
+import { seatsACharacter } from '@livehuddle/avatar/office-geometry';
 import { FURNITURE_ART, isSeatingShape, type FurnitureArt } from './seating';
 import { isGridOfficeShape, isLongTable, longTableArt, OFFICE_ART } from './office';
 
@@ -120,7 +120,7 @@ type Turnable = Rect & {
 /**
  * A piece turned to face `to` (furniture-facing.md "A turn"): its box keeps its centre and scale and takes the turned
  * drawing's proportions, and any rotation stored before furniture stopped rotating is dropped, so it stands upright
- * (@liveworkspace/avatar/furniture-art's turnWithArt, shared with livediagram). A piece that does not turn comes back
+ * (@livehuddle/avatar/furniture-art's turnWithArt, shared with livediagram). A piece that does not turn comes back
  * as it was.
  */
 export function turnPiece<E extends Turnable>(el: E, to: SeatFacing): E {

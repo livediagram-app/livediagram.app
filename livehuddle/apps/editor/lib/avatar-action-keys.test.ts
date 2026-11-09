@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { avatarActionForKey } from '@liveworkspace/avatar/action-keys';
+import { avatarActionForKey } from '@livehuddle/avatar/action-keys';
 import { VIEW_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 
-// docs/specs/008-canvas/avatar-mode.md "Keyboard actions": the key map is @liveworkspace/avatar's (its own
+// docs/specs/008-canvas/avatar-mode.md "Keyboard actions": the key map is @livehuddle/avatar's (its own
 // tests); this editor's view-tool keys are its own, so the check that the two never collide is here.
 const press = (
   key: string,

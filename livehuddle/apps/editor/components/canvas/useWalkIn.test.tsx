@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { avatarSpawnBelow, type AvatarPoint } from '@liveworkspace/avatar/walk';
+import { avatarSpawnBelow, type AvatarPoint } from '@livehuddle/avatar/walk';
 import type { WalkInButton } from '@/lib/walk-entrance';
 import { useWalkIn, WALK_IN_MAX_FRAMES, WALK_IN_STILL_FRAMES } from './useWalkIn';
 

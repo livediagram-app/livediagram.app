@@ -13,10 +13,10 @@
 import { execFileSync } from 'node:child_process';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 
-// The editors' stepped cadence (@liveworkspace/avatar/relay `avatarSendIntervalMs`), mirrored so the driver needs
+// The editors' stepped cadence (@livehuddle/avatar/relay `avatarSendIntervalMs`), mirrored so the driver needs
 // no build step: the room holds `walkers` connections.
 const stepped = (n) => (n <= 10 ? 33 : n <= 32 ? 50 : 66);
-// The costume's refresh (@liveworkspace/api-schema/avatar `AVATAR_COSTUME_REFRESH_MS`), mirrored the same way.
+// The costume's refresh (@livehuddle/avatar/wire `AVATAR_COSTUME_REFRESH_MS`), mirrored the same way.
 const COSTUME_REFRESH_MS = 2000;
 
 if (isMainThread) {
@@ -82,7 +82,7 @@ if (isMainThread) {
   const { port, room, every, batches, tabs, talk, lean, ids } = workerData;
   const costume = { gender: 'female', clothing: 'hoodie', hair: 'bun', size: 'regular' };
   // One walker's character this step: the full packet every editor sent before, or the lean one
-  // (@liveworkspace/api-schema/avatar `leanAvatarPacket`): the position to a hundredth of a px, the resting values
+  // (@livehuddle/avatar/wire `leanAvatarPacket`): the position to a hundredth of a px, the resting values
   // left out, and the costume on the first packet and every COSTUME_REFRESH_MS after.
   const character = (x, y, stepFrame, withCostume) =>
     lean

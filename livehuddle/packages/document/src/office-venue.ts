@@ -2,11 +2,11 @@
 // Swimming Pool, and the Stage Curtains and Podium that pair with the Stage. Drawings in the furniture's vocabulary
 // (seating.ts), upright from the room's camera like the rest of the office, which both renderers paint (the editor's
 // views and svg-render-faces). The grid pieces join OFFICE_ART (office.ts); the pool is drawn to its own size, as the
-// pond is. The footprints (and the pool's deck) are @liveworkspace/avatar's. Pure: no React, no DOM.
+// pond is. The footprints (and the pool's deck) are @livehuddle/avatar's. Pure: no React, no DOM.
 
 import type { FurnitureDrawing, FurniturePart } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';
-import { poolDeck } from '@liveworkspace/avatar/office-geometry';
+import { poolDeck } from '@livehuddle/avatar/office-geometry';
 
 // Fixed colours, as SOCIAL_TONES: stone, tarmac and paint, the cars, steel, water and tile, velvet, gold and wood. A
 // pillar's body has none: it takes the piece's own colour, else a wash of the theme's stroke.

@@ -8,8 +8,8 @@ Scope, by file:
 
 | File                                                              | Role                                                                      |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `../packages/avatar/src/palette.ts`                               | `AVATAR_PALETTE`: the sprite's tones, shared by the sprite and the pad    |
-| `../packages/avatar/src/pad-art.ts`                               | Grid, tones, `avatarPadArtRect`, `avatarPadCore`, footprint (shared)      |
+| `packages/avatar/src/palette.ts`                                  | `AVATAR_PALETTE`: the sprite's tones, shared by the sprite and the pad    |
+| `packages/avatar/src/pad-art.ts`                                  | Grid, tones, `avatarPadArtRect`, `avatarPadCore`, footprint (shared)      |
 | `packages/document/src/avatar-pad-art.ts`                         | `AVATAR_PAD_ART` vector table, `avatarPadPaint`, `AVATAR_PAD_CORE_POINT`  |
 | `packages/document/src/shape-kind.ts`, `validate.ts`              | `'avatar-pad'` in `ShapeKind` and `SHAPE_KINDS`                           |
 | `packages/document/src/shape-factory.ts`                          | 128 x 80, `label: ''`, `aspectLocked: true`                               |
@@ -19,15 +19,15 @@ Scope, by file:
 | `packages/document/src/colors.ts`                                 | Furniture skin (theme stroke, no box); in `SELF_PAINTING_SHAPES`          |
 | `packages/document/src/animation-membership.ts`                   | Wordless                                                                  |
 | `packages/document/src/svg-render-faces.ts`                       | `avatarPadArt`: the export drawing                                        |
-| `../packages/avatar/src/components/avatar-sprite-palette.ts`      | Re-exports the sprite tones from `AVATAR_PALETTE`                         |
+| `packages/avatar/src/components/avatar-sprite-palette.ts`         | Re-exports the sprite tones from `AVATAR_PALETTE`                         |
 | `apps/editor/components/canvas/collab/AvatarPadView.tsx`          | The canvas drawing; the shimmering lights                                 |
 | `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts `AvatarPadView`                                                    |
 | `apps/editor/components/canvas/shape-svg-overlay.tsx`             | Not an SVG-overlay shape                                                  |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts`       | Silhouette animations on the drawing                                      |
-| `../packages/avatar/src/pad.ts`                                   | `pickSpawnPad`, `padEntry`, `padUnderFeet`, `nextArrivals`, constants     |
-| `../packages/avatar/src/hooks/useAvatarWalk.ts`                   | Entry order: pad, button, remembered spot, view centre; camera; telemetry |
-| `../packages/avatar/src/hooks/useAvatarPadArrivals.ts`            | Arrivals from presence: own and peers'                                    |
-| `../packages/avatar/src/components/AvatarPadArrivals.tsx`         | The beam, floor flash and sparks                                          |
+| `packages/avatar/src/pad.ts`                                      | `pickSpawnPad`, `padEntry`, `padUnderFeet`, `nextArrivals`, constants     |
+| `packages/avatar/src/hooks/useAvatarWalk.ts`                      | Entry order: pad, button, remembered spot, view centre; camera; telemetry |
+| `packages/avatar/src/hooks/useAvatarPadArrivals.ts`               | Arrivals from presence: own and peers'                                    |
+| `packages/avatar/src/components/AvatarPadArrivals.tsx`            | The beam, floor flash and sparks                                          |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`, `Canvas.tsx` | Compose the arrivals; draw them over the characters                       |
 | `apps/editor/app/canvas-motion.css`                               | `avatar-pad-shimmer`, `-beam`, `-flash`, `-spark`; reduced motion         |
 | `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:avatar-pad` in **Travel** (`tileGroup: 'travel'`)                  |
@@ -89,7 +89,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// ../packages/avatar/src/pad-art.ts
+// packages/avatar/src/pad-art.ts
 export const AVATAR_PAD_GRID = { width: 32, height: 20 } as const;
 export const AVATAR_PAD_DEFAULT_SIZE = { width: 128, height: 80 } as const;
 export const AVATAR_PAD_TONES: {
@@ -138,7 +138,7 @@ export const AVATAR_PAD_GLOW: { color; innerOpacity };
 export function isAvatarPadLight(role): boolean; // glow, ring, ringLit, lamp
 export function avatarPadPaint(role, stroke, body, glowFill): AvatarPadPaint;
 
-// ../packages/avatar/src/pad.ts
+// packages/avatar/src/pad.ts
 export const AVATAR_PAD_ARRIVAL_MS = 900;
 export const AVATAR_PAD_MAX_ARRIVALS = 8;
 export function avatarPads(elements: readonly Element[]): ShapeElement[];

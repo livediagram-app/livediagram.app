@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     '@livehuddle/ui',
     '@liveworkspace/ui',
     '@liveworkspace/workbench',
-    '@liveworkspace/avatar',
+    '@livehuddle/avatar',
     '@livehuddle/document',
     '@livehuddle/api-schema',
   ],

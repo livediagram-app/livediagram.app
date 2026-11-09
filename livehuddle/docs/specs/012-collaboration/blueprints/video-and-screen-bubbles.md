@@ -145,7 +145,7 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
   glide. The tail: a 10 px square turned 45°, the person's colour, under the row, at `tailShift(dx, width)` off the
   row's centre (`-dx` held `BUBBLE_TAIL_INSET_PX` inside each end), with the same transition.
 - **Speech clear of bubbles**: `Canvas.tsx` hands the same ref to `AvatarSpeechLayer` as `obstacles`; the layer's
-  flight loop lifts each speech bubble by `speechLift` (`../packages/avatar/src/speech.ts`, the
+  flight loop lifts each speech bubble by `speechLift` (`packages/avatar/src/speech.ts`, the
   [avatar speech blueprint](../../008-canvas/blueprints/avatar-speech.md)).
 - `components/calls/MaximisedBubble.tsx`: the large panel, a fixed overlay outside the canvas transform, marked
   `data-call-maximised`. With the bubble layer (`data-call-bubbles`) it is listed in `CHROME_OVER_CANVAS`
@@ -174,7 +174,7 @@ restores, focus moves to Restore on open and back to the bubble on close. The Sc
 | Room drops a non-Editor's screen locator                   | `apps/api/src/room-op-gate.test.ts`                    |
 | Earshot, viewport, hidden tab, caps, maximised kept        | `apps/editor/lib/calls/bubbles.test.ts`                |
 | Rows, nudge, swap hysteresis, layout CPU budget            | `apps/editor/lib/calls/bubble-layout.test.ts`          |
-| Speech lift past bubbles                                   | `../packages/avatar/src/speech.test.ts`                |
+| Speech lift past bubbles                                   | `packages/avatar/src/speech.test.ts`                   |
 | Keys per track, layer change, publish by name              | `apps/editor/lib/calls/sfu-session.test.ts`            |
 | Camera and share on and off, ended, audio-only stops them  | `apps/editor/lib/calls/proximity-call.test.ts`         |
 | Strip segments per role, Video Paused                      | `apps/editor/components/calls/CallStripGroup.test.tsx` |

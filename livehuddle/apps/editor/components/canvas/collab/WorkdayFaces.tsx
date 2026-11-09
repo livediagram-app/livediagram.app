@@ -15,11 +15,11 @@ import {
   type PetArea,
   type ShapeElement,
 } from '@livehuddle/document';
-import type { SeatFacing } from '@liveworkspace/avatar/facing';
+import type { SeatFacing } from '@livehuddle/avatar/facing';
 import { Glyph } from '@livehuddle/ui';
 import { useReducedMotion } from '@/lib/reduced-motion';
-import { seatPillBottom } from '@liveworkspace/avatar/chair-sitters';
-import { drawnRect, type SeatGrid } from '@liveworkspace/avatar/seats';
+import { seatPillBottom } from '@livehuddle/avatar/chair-sitters';
+import { drawnRect, type SeatGrid } from '@livehuddle/avatar/seats';
 import { pieceControlProps } from '@/lib/piece-control';
 import { track } from '@/lib/telemetry';
 import { ringBell, useBellRings, useBellRung } from '@/lib/office/reception-bell';

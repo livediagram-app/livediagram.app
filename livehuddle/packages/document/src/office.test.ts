@@ -22,7 +22,7 @@ import {
   stageTop,
 } from './office';
 import { isValidElement } from './validate';
-import { MEETING_TABLE_SEATS, SEAT_VIEWS } from '@liveworkspace/avatar/seats';
+import { MEETING_TABLE_SEATS, SEAT_VIEWS } from '@livehuddle/avatar/seats';
 import type { FurnitureDrawing } from './seating';
 
 // docs/specs/009-elements/office.md
@@ -283,7 +283,7 @@ describe('the stage', () => {
 });
 
 describe('the meeting table', () => {
-  it('draws its six chairs where @liveworkspace/avatar/seats seats them', () => {
+  it('draws its six chairs where @livehuddle/avatar/seats seats them', () => {
     expect(MEETING_TABLE_VIEW.tableSeats).toHaveLength(6);
     expect(MEETING_TABLE_VIEW.tableSeats).toBe(MEETING_TABLE_SEATS.seats);
     expect([MEETING_TABLE_VIEW.width, MEETING_TABLE_VIEW.height]).toEqual([232, 168]);
@@ -344,7 +344,7 @@ describe('the office pieces turned', () => {
     expect(side.parts.every((p) => p.tag === 'ellipse' && p.ry > p.rx)).toBe(true);
   });
 
-  it('seats the meeting table on its turned chairs, from @liveworkspace/avatar/seats', () => {
+  it('seats the meeting table on its turned chairs, from @livehuddle/avatar/seats', () => {
     const art = OFFICE_ART['meeting-table'];
     expect(art.back.parts).toBe(art.front.parts);
     expect(art.back.seats).toEqual(SEAT_VIEWS['meeting-table'].back.seats);

@@ -1266,8 +1266,8 @@ export class DocumentRoom extends DurableObject<Env> {
   // made that a structured-clone read per peer per packet. Lost with the
   // object when the room hibernates, and read again on the next frame.
   private readonly scopes = new WeakMap<WebSocket, string | null>();
-  // The sample streams, walking characters and cursors (docs/specs/015-api/api.md "A busy room bounds its
-  // presence fan-out"): sent to a character's tab only, and coalesced per socket in a busy room.
+  // The sample stream, the cursors (docs/specs/015-api/api.md "A busy room bounds its presence fan-out"):
+  // coalesced per socket in a busy room.
   private readonly presenceRelay = new PresenceRelay<WebSocket>({
     sockets: () => this.state.getWebSockets(),
     sessionOf: (ws) => relaySessionOf(this.readSession(ws)),

@@ -33,7 +33,7 @@ describe('View Transitions', () => {
       '../hooks',
       '../lib',
       '../../../../packages/workbench/src',
-      '../../../../packages/avatar/src',
+      '../../../packages/avatar/src',
     ].map(here);
     const offenders: string[] = [];
     const walk = (dir: string) => {

@@ -3,9 +3,9 @@
 // to talk to you (on your screen only). When a detour ends he picks his day up from where he stands. Pure: the caller
 // holds the detour and passes `now`.
 
-import { reactionDuration, type AvatarReactionKind } from '@liveworkspace/avatar/reactions';
-import type { DrinkKind } from '@liveworkspace/avatar/office-geometry';
-import type { AvatarFacing } from '@liveworkspace/avatar/walk';
+import { reactionDuration, type AvatarReactionKind } from '@livehuddle/avatar/reactions';
+import type { DrinkKind } from '@livehuddle/avatar/office-geometry';
+import type { AvatarFacing } from '@livehuddle/avatar/walk';
 import {
   RECEPTIONIST_GREET_MS,
   RECEPTIONIST_LEG_MS,

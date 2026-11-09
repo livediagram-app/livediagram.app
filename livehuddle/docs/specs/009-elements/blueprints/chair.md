@@ -9,9 +9,9 @@ Scope, by file:
 | File                                                        | Role                                                                     |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------ |
 | `packages/document/src/collab-shapes.ts`                    | `ChairFacing`, labels, guard, `CHAIR_SITTER_FACING` (the package's)      |
-| `../packages/avatar/src/seats.ts`                           | Seat geometry: grids, seats, `seatPoints`, `nearestSeat`, `seatFor`      |
-| `../packages/avatar/src/seat-claims.ts`                     | Taken seats, `seatOnArrival`, the tiebreak (`claimBeats`), `seatToYield` |
-| `../packages/avatar/src/hooks/useSeatYield.ts`              | The later of two sitters on one seat stands up beside it                 |
+| `packages/avatar/src/seats.ts`                              | Seat geometry: grids, seats, `seatPoints`, `nearestSeat`, `seatFor`      |
+| `packages/avatar/src/seat-claims.ts`                        | Taken seats, `seatOnArrival`, the tiebreak (`claimBeats`), `seatToYield` |
+| `packages/avatar/src/hooks/useSeatYield.ts`                 | The later of two sitters on one seat stands up beside it                 |
 | `packages/document/src/shape-geometry.ts`                   | `chairSeatFill`                                                          |
 | `packages/document/src/shape-factory.ts`                    | 76x84, `chairFacing: DEFAULT_CHAIR_FACING`, `aspectLocked`, label bottom |
 | `packages/document/src/colors.ts`                           | `behaviourSkin`: transparent box, outline and label ink per paper        |
@@ -25,9 +25,9 @@ Scope, by file:
 | `apps/editor/components/palette/palette-tile-defs.tsx`      | `tools:chair` in **Seats** (`tileGroup: 'seating'`)                      |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                     |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`         | `onWalkIntoChair` → `sitOn(seatFor)`; `chairSitters` from presence       |
-| `../packages/avatar/src/hooks/useAvatarWalk.ts`             | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
+| `packages/avatar/src/hooks/useAvatarWalk.ts`                | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
 | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`      | A click walks (standing you up); a seated peer is walked to, not pushed  |
-| `../packages/avatar/src/components/AvatarWalker.tsx`        | Seated pose (no Stand press, #560)                                       |
+| `packages/avatar/src/components/AvatarWalker.tsx`           | Seated pose (no Stand press, #560)                                       |
 | `apps/editor/components/palette/CollabMenuSections.tsx`     | `ChairMenuSection` (facing tiles)                                        |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`           | `setChairFacingSelected` (`Element·Changed·Chair`)                       |
 
@@ -82,14 +82,14 @@ in `useAvatarWalk`; published on every avatar presence packet.
 | seated   | disconnect, tab change (peer's view)     |                  | gone with presence           |
 
 1. **Sit.** `Canvas` passes `onWalkIntoChair(element, feet)` for any `isSeatingShape` kind:
-   `seatOnArrival(element, feet, peers)` (`@liveworkspace/avatar/seat-claims`) picks the nearest seat no peer's
+   `seatOnArrival(element, feet, peers)` (`@livehuddle/avatar/seat-claims`) picks the nearest seat no peer's
    presence holds (`takenSeats`: a peer's `seat.index`, or for a packet without `seat` the seat nearest its feet),
    with its facing, the seat's own (a meeting table's) or `CHAIR_SITTER_FACING[seatingFacing(element)]`, then
    `sitOn(id, seat, seat.facing, seat.index)`. With every seat taken it answers `{ stopAt }`, a point `BESIDE_GAP`
    outside the piece's box nearest the feet (`besideBox`), and the canvas calls `stepAside(stopAt)`. A chair has one seat; a sofa two; a desk one (each view's `seats`). `sitOn` drops the walk target, arrival callback and held keys,
    snaps the feet, sets the facing, marks seated with a fresh claim (`at: Date.now()`, `tie: Math.random()`),
    records the chair as under the feet so standing still does not re-seat, and publishes at once.
-2. **Seat point.** `seatPoints(element)` (`@liveworkspace/avatar/seats`, so livehuddle seats without this product's
+2. **Seat point.** `seatPoints(element)` (`@livehuddle/avatar/seats`, so livehuddle seats without this product's
    document package): the facing's view (`facingView`) of the kind's seat grid (`SEAT_GRIDS`, which each
    `FurnitureDrawing` here spreads, so the seats and the drawing share one grid), each seat's `(u, v)` as
    fractions of the drawing as drawn, `u` mirrored for `w`: both renderers fit the view's grid whole and centred in
@@ -136,7 +136,7 @@ export const CHAIR_FACING_LABELS: Record<ChairFacing, string>;
 export function isChairFacing(value: unknown): value is ChairFacing;
 export type ChairSitterFacing = 'down' | 'left' | 'up' | 'right';
 export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing>;
-// @liveworkspace/avatar/seats (ChairFacing is its SeatFacing, ChairSitterFacing its AvatarFacing)
+// @livehuddle/avatar/seats (ChairFacing is its SeatFacing, ChairSitterFacing its AvatarFacing)
 export type SeatGrid = { width: number; height: number; seats: readonly { u: number; v: number }[] };
 export const SEAT_GRIDS: Record<'chair' | 'desk' | 'sofa', Record<'front' | 'back' | 'side', SeatGrid>>;
 export const MEETING_TABLE_SEATS: { width: number; height: number; seats: readonly TableSeat[] };
@@ -158,7 +158,7 @@ seatedOn?: string | null;   // absent parses as standing
 seat?: { index: number; at: number; tie: number } | null;   // absent: the seat nearest the feet, earliest
 
 // apps/editor
-export type ChairSitter = Sitter; // @liveworkspace/avatar/chair-sitters: { name; color; seat?; scale? }
+export type ChairSitter = Sitter; // @livehuddle/avatar/chair-sitters: { name; color; seat?; scale? }
 export function FurnitureView(props: { element: ShapeElement; stroke: string; sitters: ChairSitter[];
   animClass?: string }): JSX.Element | null;
 ```
@@ -250,7 +250,7 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
 No log, by design (Work Tracker #579). The editors keep no client logs (no `console.debug` in app code), and a sit
 or a stand is already observable where it matters: each publishes the character's `seatedOn` and `seat` on its
 presence packet at once ("tells the room at once which seat it sat on …", "frees the seat for the room at once …" in
-`../packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx`), and every peer draws it. The `[chair] sit` and
+`packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx`), and every peer draws it. The `[chair] sit` and
 `[chair] stand` fingerprints once proposed here are not built.
 
 ## Testing
@@ -269,23 +269,23 @@ presence packet at once ("tells the room at once which seat it sat on …", "fre
 | Canvas draws the same table, upright          | "FurnitureView draws the table chair, upright …"                     | `apps/editor/components/canvas/shape-svg-overlay.test.tsx`          |
 | Export draws a body                           | "draws more than a box and a label"                                  | `packages/document/src/export-consistency.test.ts`                  |
 | Frontmost element under the feet              | `elementUnderFeet` block                                             | `apps/editor/lib/avatar-walk.test.ts`                               |
-| Sit once on arrival                           | "asks to sit once when the feet arrive …", "asks again only after …" | `../packages/avatar/src/hooks/useAvatarWalk.arrival.test.tsx`       |
-| A click, tap or arrow stands up and walks     | "a walk while seated stands up …", "an arrow key …"                  | `../packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx`         |
+| Sit once on arrival                           | "asks to sit once when the feet arrive …", "asks again only after …" | `packages/avatar/src/hooks/useAvatarWalk.arrival.test.tsx`          |
+| A click, tap or arrow stands up and walks     | "a walk while seated stands up …", "an arrow key …"                  | `packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx`            |
 | A seated tap reaches the walk (gesture)       | "stands you up and walks you to the tapped spot"                     | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.seated.test.tsx` |
-| Typing in a field never stands you up         | "keys typed into a field …"                                          | `../packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx`         |
-| Clicking your own seat keeps you in it        | "a walk onto the piece you sit on …"                                 | `../packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx`         |
+| Typing in a field never stands you up         | "keys typed into a field …"                                          | `packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx`            |
+| Clicking your own seat keeps you in it        | "a walk onto the piece you sit on …"                                 | `packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx`            |
 | Leaving the mode vacates the chair            | "vacates the chair, stands still and tells peers"                    | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`                   |
 | Re-entering the mode starts unseated          | "comes back unseated"                                                | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`                   |
 | Created with no stored colour; stamp is unset | "are created with no stored colour", "treat the …"                   | `packages/document/src/behaviour-skin.test.ts`                      |
-| Occupancy from presence only (I1, I2)         | "lists our own character and every seated peer …"                    | `../packages/avatar/src/chair-sitters.test.ts`                      |
+| Occupancy from presence only (I1, I2)         | "lists our own character and every seated peer …"                    | `packages/avatar/src/chair-sitters.test.ts`                         |
 | The exact seat ringed; pill clears the head   | "rings each sofa cushion …", "lifts the name pill clear …"           | `apps/editor/components/canvas/collab/FurnitureView.test.tsx`       |
 | Label survives export                         | "prints a chair label under the seat"                                | `packages/document/src/svg-render-fidelity.test.ts`                 |
 | Unknown facing rejected                       | "rejects an off-vocabulary chair facing"                             | `packages/document/src/collab-shapes.test.ts`                       |
 | Desk faces the computer; sofa the reader      | "a new desk faces its sitter at the computer …"                      | `packages/document/src/seating.test.ts`                             |
-| Sofa has two seats; nearest seat taken        | `seatPoints`, `nearestSeat` blocks                                   | `../packages/avatar/src/seats.test.ts`                              |
-| Taken seat skipped; full piece stops beside   | `seatOnArrival` block                                                | `../packages/avatar/src/seat-claims.test.ts`                        |
-| Tiebreak: earlier, then lower tie; old client | `claimBeats`, `seatToYield` blocks                                   | `../packages/avatar/src/seat-claims.test.ts`                        |
-| Seated ignores a push; sit and stand publish  | "a seated character …"                                               | `../packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx`         |
+| Sofa has two seats; nearest seat taken        | `seatPoints`, `nearestSeat` blocks                                   | `packages/avatar/src/seats.test.ts`                                 |
+| Taken seat skipped; full piece stops beside   | `seatOnArrival` block                                                | `packages/avatar/src/seat-claims.test.ts`                           |
+| Tiebreak: earlier, then lower tie; old client | `claimBeats`, `seatToYield` blocks                                   | `packages/avatar/src/seat-claims.test.ts`                           |
+| Seated ignores a push; sit and stand publish  | "a seated character …"                                               | `packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx`            |
 | Quarter turn swaps a desk or sofa box         | "swaps a desk or sofa box about its centre …"                        | `packages/document/src/seating.test.ts`                             |
 
 ## Constants and configuration

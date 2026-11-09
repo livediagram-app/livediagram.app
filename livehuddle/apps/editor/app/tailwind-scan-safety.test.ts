@@ -27,8 +27,8 @@ import { describe, expect, it } from 'vitest';
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 // The editor code every editor shares (@liveworkspace/workbench), which app/globals.css points Tailwind at too.
 const WORKBENCH = join(ROOT, '../../../packages/workbench/src');
-// And Avatar mode's shared code (@liveworkspace/avatar), which it points Tailwind at as well.
-const AVATAR = join(ROOT, '../../../packages/avatar/src');
+// And Avatar mode's code (@livehuddle/avatar), which it points Tailwind at as well.
+const AVATAR = join(ROOT, '../../packages/avatar/src');
 
 // Everything Tailwind is pointed at. Build output is excluded: it CONTAINS the
 // compiled result, so scanning it would report the rule we are preventing.

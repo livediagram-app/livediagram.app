@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { roomInterior } from '@liveworkspace/avatar/office-geometry';
+import { roomInterior } from '@livehuddle/avatar/office-geometry';
 import {
   hashId,
   msToNextLeg,

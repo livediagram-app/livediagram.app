@@ -2,8 +2,8 @@
 import { act, renderHook } from '@testing-library/react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
-import { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
+import { DEFAULT_AVATAR_CONFIG } from '@livehuddle/avatar/config';
+import { useAvatarWalk } from '@livehuddle/avatar/hooks/useAvatarWalk';
 import { useCanvasSurfaceGestures } from './useCanvasSurfaceGestures';
 
 // docs/specs/009-elements/chair.md "Any movement stands you up": a finger's tap on the canvas while seated stands you

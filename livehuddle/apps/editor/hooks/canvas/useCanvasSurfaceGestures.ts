@@ -5,13 +5,13 @@ import {
 } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
 import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
-import { peerPushTarget } from '@liveworkspace/avatar/walk';
-import { walkInputBlocked } from '@liveworkspace/avatar/walk-guard';
-import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
+import { peerPushTarget } from '@livehuddle/avatar/walk';
+import { walkInputBlocked } from '@livehuddle/avatar/walk-guard';
+import { avatarScale, parseAvatarConfig } from '@livehuddle/avatar/config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { RemoteAvatarRow } from '@/lib/presence-rows';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import type { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
+import type { useAvatarWalk } from '@livehuddle/avatar/hooks/useAvatarWalk';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

@@ -7,7 +7,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livehuddle/document';
-import type { PadArrival } from '@liveworkspace/avatar/pad';
+import type { PadArrival } from '@livehuddle/avatar/pad';
 import {
   askReceptionist,
   getReceptionistState,

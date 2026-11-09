@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from '@livehuddle/document';
 import { buildTemplate, TEMPLATES, templateCategory } from '@livehuddle/templates';
-import { AVATAR_SIZES, avatarScale } from '@liveworkspace/avatar/config';
-import { avatarFigureHeight, avatarSpawnBelow } from '@liveworkspace/avatar/walk';
+import { AVATAR_SIZES, avatarScale } from '@livehuddle/avatar/config';
+import { avatarFigureHeight, avatarSpawnBelow } from '@livehuddle/avatar/walk';
 import { walkEntrance } from './walk-entrance';
 
 // docs/specs/008-canvas/avatar-mode.md "Opening walking": which tab offers the walk, and where it starts you.

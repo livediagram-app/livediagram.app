@@ -9,8 +9,8 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { AccessLevel, AvatarPresence } from '@livehuddle/api-schema';
-import type { SeatsOf } from '@liveworkspace/avatar/chair-sitters';
-import { claimOf, type SeatClaim } from '@liveworkspace/avatar/seat-claims';
+import type { SeatsOf } from '@livehuddle/avatar/chair-sitters';
+import { claimOf, type SeatClaim } from '@livehuddle/avatar/seat-claims';
 import type { GameSeatSource } from './game-seats';
 import { setTableGameScene, type GameSignal } from './table-game-scene';
 

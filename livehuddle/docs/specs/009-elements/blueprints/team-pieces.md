@@ -164,7 +164,7 @@ documentId, tabId })` logs neither the caller nor the text; the drop is not rela
 ## Assets and external resources
 
 - Art is parts tables in `office-team.ts` (MIT, this repo), drawn by FurnitureView and svg-render-faces; palette
-  glyphs in `palette-icons-team.tsx`. Portraits are `@liveworkspace/avatar`'s `AvatarSprite`.
+  glyphs in `palette-icons-team.tsx`. Portraits are `@livehuddle/avatar`'s `AvatarSprite`.
 
 ## Defaults ledger
 

@@ -1,6 +1,6 @@
 // The Room Builder and the Door (docs/specs/009-elements/room-builder.md), as the model sees them: the room the tool
 // commits, a room's outline in canvas px, and a door put onto the nearest wall (when dropped, when moved, and when
-// its room moves). The pure geometry is @liveworkspace/avatar's room-outline, shared with the walk.
+// its room moves). The pure geometry is @livehuddle/avatar's room-outline, shared with the walk.
 import {
   doorLine,
   doorSpanOnWall,
@@ -8,7 +8,7 @@ import {
   outlineWalls,
   pointInPolygon,
   type OutlinePoint,
-} from '@liveworkspace/avatar/room-outline';
+} from '@livehuddle/avatar/room-outline';
 import {
   DEFAULT_ROOM_DOOR,
   ROOM_BACK_FACE,
@@ -16,14 +16,14 @@ import {
   roomInterior,
   roomWalls,
   type RoomDoor,
-} from '@liveworkspace/avatar/office-geometry';
+} from '@livehuddle/avatar/office-geometry';
 import type { Element, ElementId, ShapeElement } from './index';
 import { createShape } from './shape-factory';
 import { roomPresetCompanions } from './room-presets';
 import { outlineNameAlign, roomPresetDoorAt } from './room-preset-shapes';
 import { corridorShape, corridorWalls } from './piece-variants';
 
-export { snap45, pointInPolygon, polygonArea } from '@liveworkspace/avatar/room-outline';
+export { snap45, pointInPolygon, polygonArea } from '@livehuddle/avatar/room-outline';
 
 /** How near a character's feet must be to a door's opening to swing it (room-builder.md "Opening and closing"). */
 export const DOOR_REACH = 48;

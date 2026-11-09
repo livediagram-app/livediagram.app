@@ -81,22 +81,22 @@ type ChromeExtras = {
   // useAvatarConfig in Canvas (it persists per browser, so it lives with the
   // sprite rather than in the editor's document state) and edited by the
   // Avatar Panel down in the chrome.
-  avatarConfig: import('@liveworkspace/avatar/config').AvatarConfig;
-  onChangeAvatarField: <K extends keyof import('@liveworkspace/avatar/config').AvatarConfig>(
+  avatarConfig: import('@livehuddle/avatar/config').AvatarConfig;
+  onChangeAvatarField: <K extends keyof import('@livehuddle/avatar/config').AvatarConfig>(
     field: K,
-    value: import('@liveworkspace/avatar/config').AvatarConfig[K],
+    value: import('@livehuddle/avatar/config').AvatarConfig[K],
   ) => void;
   // Roll a whole new character, and play one of the panel's reactions.
   onRandomiseAvatar: () => void;
-  onAvatarReaction: (kind: import('@liveworkspace/avatar/reactions').AvatarReactionKind) => void;
+  onAvatarReaction: (kind: import('@livehuddle/avatar/reactions').AvatarReactionKind) => void;
   // Throw one of the Reactions bursts (docs/specs/008-canvas/avatar-mode.md) around the character.
   onAvatarBurst?: (reaction: import('@livehuddle/document').Reaction) => void;
   // Say something from the Avatar panel (docs/specs/008-canvas/avatar-mode.md "The message popover"): absent for
   // a Viewer, who may not speak. Answers whether the message went; `avatarSpeechCooling` holds Send meanwhile.
   onSendAvatarMessage?: (text: string) => boolean;
   // Your status (docs/specs/008-canvas/avatar-mode.md "Status"), set from the Avatar panel.
-  avatarStatus?: import('@liveworkspace/avatar/status').AvatarStatus | null;
-  onSetAvatarStatus?: (status: import('@liveworkspace/avatar/status').AvatarStatus | null) => void;
+  avatarStatus?: import('@livehuddle/avatar/status').AvatarStatus | null;
+  onSetAvatarStatus?: (status: import('@livehuddle/avatar/status').AvatarStatus | null) => void;
   avatarSpeechCooling?: boolean;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.

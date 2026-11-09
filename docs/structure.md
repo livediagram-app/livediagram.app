@@ -12,7 +12,6 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, a write body's byte cap, rate-limit keys, link unfurls, refusal logs, the realtime room's element-op gate, a Durable Object alarm's one-second floor, the server renders' image embedder (`embedImages`), the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check, the one return-path check
-│  ├─ avatar                   Avatar mode's parts that read no element union: walker, sprite, walking, speech, action keys, pads, fences, office walls; livehuddle's alone since #650 (moving into livehuddle), livediagram reads only its reaction bursts
 │  ├─ brand                    every app's logo drawn once: the Living Prism and wordmark, as React and as SVG strings
 │  ├─ cli-kit                  a product CLI's shared modules: the io shape, exit codes and errors, config.toml, XDG paths, debug lines, credentials and the keychain, OAuth sign-in, the api transport, PNG pictures; each product binds its names
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
@@ -32,7 +31,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ edit-operations          the edit engine's parts that read no element union: element text, equality, result lines
 │  ├─ email                    the one caller of Cloudflare Email Service's `send_email` binding, for accounts and every app
 │  ├─ fake-google              an in-memory Google (Drive v3 and OAuth) for the Drive mirror's tests
-│  ├─ model-core               what every product's model shares and needs nothing of its element union; each re-exports it
+│  ├─ model-core               what every product's model shares and needs nothing of its element union (the Reaction Pad's five bursts among it); each re-exports it
 │  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
 │  ├─ marketing-site           the marketing pages every product shares (hero, Build with AI, FAQ, licences)
 │  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts, tool results and fixable errors; each product hands in its server and OAuth config
@@ -85,7 +84,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  └─ packages/                @livedesign/*, with photo-engine of its own
 └─ livehuddle/                 forked from livediagram in-tree (meetings, workshops, Avatar mode)
    ├─ apps/                    livediagram's set without mcp and cli: editor, api, marketing, help, router
-   ├─ packages/                @livehuddle/*
+   ├─ packages/                @livehuddle/*, with avatar of its own (Avatar mode, the walk, the furniture and its turning, the wire shapes)
    └─ docs/specs               its specs, folded back to the code (build plan step 9)
 ```
 
@@ -474,7 +473,7 @@ Each step is its own PR, and both products build and pass their tests after ever
        `room-scope.ts` (its op kinds are the product's) and `person-tag.ts`.
 
 6. **Avatar mode out of livediagram's editor**, so a second product (livehuddle) can walk the same characters.
-   `@liveworkspace/avatar` (`packages/avatar`) holds the parts of Avatar mode that read no element union: the sprite
+   `@liveworkspace/avatar` (`packages/avatar` then) held the parts of Avatar mode that read no element union: the sprite
    and head, the Avatar panel's body, the walker, walking and the camera, speech bubbles and the composer, the action
    keys, Avatar Pad arrivals, the costume and its parser, and the pure office pieces (walls and doorways, fence and
    footprint collision, chair seats, the seat points of every seating kind, Avatar Pad placement). It reads a board through a structural contract
@@ -485,8 +484,13 @@ Each step is its own PR, and both products build and pass their tests after ever
    `@liveworkspace/model-core/segment-geometry`. livediagram re-exports what it used to own, so its callers and
    behaviour are unchanged. Since Work Tracker #650 (2026-11-09) livediagram has no Avatar mode at all: it moved to
    livehuddle with the Spaces templates and the furniture, livediagram draws a stored piece as a placeholder and its
-   room drops the avatar ops, so the package is livehuddle's alone and moves into livehuddle next. livediagram still
-   reads its reaction bursts, which go to a shared home first.
+   room drops the avatar ops. Part 2 of #650 then moved the package into livehuddle as `@livehuddle/avatar`
+   (`livehuddle/packages/avatar`), with what only it used elsewhere: the wire shapes (from `@liveworkspace/api-schema`),
+   furniture turning (the Rotate buttons, the placing facing and its Space key, from `@liveworkspace/workbench`), the
+   room's walker memory and lean packets (from `@liveworkspace/api-kit/room-presence-relay`, which keeps the cursor
+   relay and batching both rooms use and takes a product's own sample tracks), and the help centres' pixel character
+   (from `@liveworkspace/help-site`). The reaction bursts, which livediagram's Reaction Pad still throws, went to
+   `@liveworkspace/model-core/reaction-bursts`.
 
 ## One home
 

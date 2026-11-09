@@ -2,12 +2,12 @@
 // stage"): every Office room's floor as a call, every stage's top and who may speak from it, and which of each a point
 // is in. Pure geometry over a tab's visible elements, read by the editor's call (apps/editor/lib/calls) and by the
 // api's room when it checks who may hear whom (apps/api/src/calls/call-hearing.ts), so both answer the same.
-import { roomInterior } from '@liveworkspace/avatar/office-geometry';
-import { pointInPolygon, polygonArea } from '@liveworkspace/avatar/room-outline';
+import { roomInterior } from '@livehuddle/avatar/office-geometry';
+import { pointInPolygon, polygonArea } from '@livehuddle/avatar/room-outline';
 import { isRoomOutline } from './room-outline-field';
-import { podInterior } from '@liveworkspace/avatar/pod';
-import { isSeatFacing } from '@liveworkspace/avatar/facing';
-import { boothInterior } from '@liveworkspace/avatar/booth';
+import { podInterior } from '@livehuddle/avatar/pod';
+import { isSeatFacing } from '@livehuddle/avatar/facing';
+import { boothInterior } from '@livehuddle/avatar/booth';
 import { DEFAULT_STAGE_SPEAKERS, isStageSpeakers, stageTop, type StageSpeakers } from './office';
 
 /**

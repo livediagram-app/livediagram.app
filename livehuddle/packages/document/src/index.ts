@@ -319,10 +319,10 @@ export * from './data-shapes';
 export * from './collab-shapes';
 export * from './shape-geometry';
 // Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
-export * from '@liveworkspace/avatar/fence';
+export * from '@livehuddle/avatar/fence';
 // The avatar sprite's palette and the Avatar Pad drawn in it (docs/specs/009-elements/avatar-pad.md).
-export * from '@liveworkspace/avatar/palette';
-export * from '@liveworkspace/avatar/pad-art';
+export * from '@livehuddle/avatar/palette';
+export * from '@livehuddle/avatar/pad-art';
 export * from './avatar-pad-art';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';

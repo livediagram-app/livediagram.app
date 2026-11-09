@@ -5,9 +5,9 @@ import { createShape, type ShapeElement } from '@livehuddle/document';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { FurnitureView, isFurnitureViewShape } from './FurnitureView';
 import { hasSocialArt } from './SocialArt';
-import { seatPillBottom } from '@liveworkspace/avatar/chair-sitters';
-import { BEAN_BAG_SEATS, READING_NOOK_SEATS } from '@liveworkspace/avatar/seats';
-import { AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
+import { seatPillBottom } from '@livehuddle/avatar/chair-sitters';
+import { BEAN_BAG_SEATS, READING_NOOK_SEATS } from '@livehuddle/avatar/seats';
+import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
 
 afterEach(cleanup);
 

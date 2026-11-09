@@ -21,7 +21,7 @@
     "@livehuddle/document": "workspace:*"
   },
   "devDependencies": {
-    "@liveworkspace/avatar": "workspace:^",
+    "@livehuddle/avatar": "workspace:^",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "oxlint": "^1.90.0",

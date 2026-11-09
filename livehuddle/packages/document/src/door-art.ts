@@ -3,7 +3,7 @@
 // y = height / 2. A moving part carries its open and shut poses, so the canvas eases between them and the export draws
 // the one it is in. Pure: no React, no DOM.
 
-import { ROOM_WALL } from '@liveworkspace/avatar/office-geometry';
+import { ROOM_WALL } from '@livehuddle/avatar/office-geometry';
 import { doorParts } from './room-builder';
 import { pieceVariant } from './piece-variants';
 

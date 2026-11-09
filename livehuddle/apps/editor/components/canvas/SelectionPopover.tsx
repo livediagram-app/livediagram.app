@@ -15,7 +15,7 @@ import {
   TextIcon,
 } from '@liveworkspace/workbench/components/canvas/selection-popover-icons';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
-import { TurnButtons } from '@liveworkspace/workbench/components/canvas/TurnButtons';
+import { TurnButtons } from '@livehuddle/avatar/components/TurnButtons';
 import type { Rect } from '@livehuddle/document';
 
 type SelectionPopoverProps = {

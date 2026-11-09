@@ -1,7 +1,7 @@
 // The office amenities' workplace kit (docs/specs/009-elements/office-amenities.md "Printer, Copier", "Lockers, Coat
 // Rack, Umbrella Stand"): drawings in the furniture's vocabulary (seating.ts), upright from the room's camera like the
 // rest of the office, which both renderers paint (the editor's views and svg-render-faces). They join OFFICE_ART
-// (office.ts). The footprints are @liveworkspace/avatar's. Pure: no React, no DOM.
+// (office.ts). The footprints are @livehuddle/avatar's. Pure: no React, no DOM.
 
 import type { FurnitureArt, FurnitureDrawing, FurniturePart } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';

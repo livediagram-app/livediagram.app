@@ -1,5 +1,5 @@
 // The distance between two segments, for every product's hit tests, the whiteboard eraser and the Avatar-mode
-// walk's collision (@liveworkspace/avatar/collision). Pure; canvas coords.
+// walk's collision (@livehuddle/avatar/collision). Pure; canvas coords.
 import type { Point } from './geometry-primitives';
 
 // Distance from `p` to the segment a-b; a segment of no length measures to `a`. (Exact zero, unlike

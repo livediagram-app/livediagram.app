@@ -16,7 +16,7 @@ import {
 // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md "The custom room"): the floor polygon
 // in the element's fill and the walls a fixed ROOM_WALL thick along the outline, outlined in the stroke and mitred at
 // the corners. Drawn at the element's own size so the walls keep their thickness. The walls also block walking
-// (@liveworkspace/avatar collision, broken where a Door stands).
+// (@livehuddle/avatar collision, broken where a Door stands).
 export function OutlinedRoomView({
   element,
   outline,
@@ -177,7 +177,7 @@ export function DoorView({
 
 // A Corridor (docs/specs/009-elements/corridor.md): its floor in the element's fill and the walls down its sides
 // ROOM_WALL thick, outlined in the stroke as a room's are, open at its ends. Drawn at its own size so the walls keep
-// their thickness; the walls also block walking (@liveworkspace/avatar collision, cut where a Door stands).
+// their thickness; the walls also block walking (@livehuddle/avatar collision, cut where a Door stands).
 export function CorridorView({
   element,
   stroke,

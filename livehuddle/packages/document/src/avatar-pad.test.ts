@@ -4,7 +4,7 @@ import {
   AVATAR_PAD_TONES,
   avatarPadCore,
   avatarPadFootprint,
-} from '@liveworkspace/avatar/pad-art';
+} from '@livehuddle/avatar/pad-art';
 import {
   AVATAR_PAD_ART,
   AVATAR_PAD_CORE_POINT,
@@ -12,7 +12,7 @@ import {
   avatarPadPaint,
   isAvatarPadLight,
 } from './avatar-pad-art';
-import { AVATAR_PALETTE } from '@liveworkspace/avatar/palette';
+import { AVATAR_PALETTE } from '@livehuddle/avatar/palette';
 import { tint } from './colors';
 import { createShape } from './shape-factory';
 import { isFloorShape } from './office';

@@ -6,9 +6,9 @@ Derived from [Room Builder and Door](../room-builder.md).
 
 | File                                                       | Role                                                                                                                       |
 | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/avatar/src/room-outline.ts`                   | Pure geometry: `snap45`, `outlineWalls` (a custom room's walls), `doorLine`, `cutByDoors`, `nearestWall`, `pointInPolygon` |
-| `../packages/avatar/src/office-geometry.ts`                | `roomWalls` reads `roomOutline` when a room has one                                                                        |
-| `../packages/avatar/src/collision.ts`                      | `fenceSegments` cuts room walls at every door on them                                                                      |
+| `packages/avatar/src/room-outline.ts`                      | Pure geometry: `snap45`, `outlineWalls` (a custom room's walls), `doorLine`, `cutByDoors`, `nearestWall`, `pointInPolygon` |
+| `packages/avatar/src/office-geometry.ts`                   | `roomWalls` reads `roomOutline` when a room has one                                                                        |
+| `packages/avatar/src/collision.ts`                         | `fenceSegments` cuts room walls at every door on them                                                                      |
 | `packages/document/src/room-builder.ts`                    | `createOutlinedRoom` (the tool's commit), `roomOutlinePoints`, `snapDoorToWall`, `snapMovedDoors`, `withAttachedDoors`     |
 | `packages/document/src/validate-shape.ts`                  | `roomOutline` validation                                                                                                   |
 | `packages/document/src/call-geometry.ts`                   | A custom room's zone is its outline (`CallZone.polygon`)                                                                   |
@@ -36,8 +36,8 @@ Derived from [Door types](../room-builder.md#door-types), [Room presets](../offi
 
 | File                                                              | Role                                                                                                                                 |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `../packages/avatar/src/corridor.ts`                              | `corridorWalls(el)`: a corridor's walls in canvas px, turned by its rotation; `corridorShape`, `CORRIDOR_ARM`                        |
-| `../packages/avatar/src/collision.ts`                             | `fenceSegments` adds a corridor's walls, cut by the doors on them                                                                    |
+| `packages/avatar/src/corridor.ts`                                 | `corridorWalls(el)`: a corridor's walls in canvas px, turned by its rotation; `corridorShape`, `CORRIDOR_ARM`                        |
+| `packages/avatar/src/collision.ts`                                | `fenceSegments` adds a corridor's walls, cut by the doors on them                                                                    |
 | `packages/document/src/piece-variants.ts`                         | `DOOR_VARIANTS`, `RUG_VARIANTS`, `CORRIDOR_VARIANTS`, `pieceVariant(el)` (the stored type, or the first), the sizes, `corridorPaths` |
 | `packages/document/src/shape-variants.ts`                         | `applyShapeVariant` stores a door's, rug's or corridor's `variant` and its size; a room preset's size, name, outline                 |
 | `packages/document/src/room-preset-shapes.ts`                     | `ROOM_PRESETS`, `roomAsPreset`, the point a shaped preset's Door snaps to (`roomPresetDoorAt`), `outlineNameAlign`                   |
@@ -45,7 +45,7 @@ Derived from [Door types](../room-builder.md#door-types), [Room presets](../offi
 | `packages/document/src/door-art.ts`                               | `doorArt(width, height, variant)`: each type's parts with their open and shut poses, for the canvas and the export                   |
 | `packages/document/src/svg-render-doors.ts`                       | The export's `doorSvg` (over `doorArt`) and `corridorSvg` (over `corridorPaths`)                                                     |
 | `packages/document/src/rug-art.ts`                                | `rugParts(width, height, variant)`: each patterned rug drawn to its size, in `tint`, `sheen` and `dye` parts                         |
-| `../packages/avatar/src/furniture-art.ts`                         | The `tint`, `sheen` and `dye` part roles and their opacities (`FURNITURE_WEAVE`), re-exported by `seating.ts`                        |
+| `packages/avatar/src/furniture-art.ts`                            | The `tint`, `sheen` and `dye` part roles and their opacities (`FURNITURE_WEAVE`), re-exported by `seating.ts`                        |
 | `packages/document/src/room-builder.ts`                           | `wallsOf` and `doorOnRoom` read a corridor's walls, so doors snap onto it, ride it and follow its resize                             |
 | `packages/document/src/validate-shape.ts`, `element-fields.ts`    | `variant` validated (`isPieceVariant`) and listed                                                                                    |
 | `apps/editor/components/canvas/collab/RoomBuilderViews.tsx`       | `DoorView` draws `doorArt`; `CorridorView`                                                                                           |
@@ -63,9 +63,9 @@ Notes:
 - `CategoryFlyoutSide` lifts the side panel against `[data-canvas-root]`'s bottom (`sideFloor`), at its settled height
   (the opening animation's scale divided out, `animationScale`), re-measured on `animationend`, resize and a
   ResizeObserver.
-- The Long Table (office.md "Long Table") is the Meeting Table's `long` variant: `@liveworkspace/avatar/seats`
+- The Long Table (office.md "Long Table") is the Meeting Table's `long` variant: `@livehuddle/avatar/seats`
   `longTableLength(width, height, facing)` gives its length (across the box, or down it on its side) and
-  `longTableSeatViews(length)` its seats in each drawing (`seatPoints` reads `variant`); `@liveworkspace/avatar/
+  `longTableSeatViews(length)` its seats in each drawing (`seatPoints` reads `variant`); `@livehuddle/avatar/
 furniture-art` `longTableArt(width, height, facing)` (re-exported by `office.ts`) draws its front, back and side on
   those grids, both cached by length, for `FurnitureView`, the export's `furnitureArt` and `turnPiece`.
 - A corridor's arm is `min(CORRIDOR_ARM, the box's shorter side)`; its walls are polylines along each arm's sides at

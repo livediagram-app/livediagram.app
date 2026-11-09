@@ -20,12 +20,12 @@ import {
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
-import { podDoorway } from '@liveworkspace/avatar/pod';
-import { doorLine, pointInPolygon } from '@liveworkspace/avatar/room-outline';
-import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
-import { avatarScale, type AvatarConfig } from '@liveworkspace/avatar/config';
-import { AVATAR_SPAWN_GAP, avatarPortraitBox, avatarSpawnBelow } from '@liveworkspace/avatar/walk';
-import { facingView, type SeatFacing } from '@liveworkspace/avatar/facing';
+import { podDoorway } from '@livehuddle/avatar/pod';
+import { doorLine, pointInPolygon } from '@livehuddle/avatar/room-outline';
+import { avatarPadCore } from '@livehuddle/avatar/pad-art';
+import { avatarScale, type AvatarConfig } from '@livehuddle/avatar/config';
+import { AVATAR_SPAWN_GAP, avatarPortraitBox, avatarSpawnBelow } from '@livehuddle/avatar/walk';
+import { facingView, type SeatFacing } from '@livehuddle/avatar/facing';
 
 export type WayPoint = { x: number; y: number };
 export type WayBox = { x: number; y: number; width: number; height: number };

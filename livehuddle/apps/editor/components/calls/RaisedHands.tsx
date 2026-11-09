@@ -6,8 +6,8 @@
 // raised hand, Done on a speaking one. Drawn inside the canvas's transformed layer, beside the talking bars.
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { lucideHand, lucideMic } from '@liveworkspace/icons/lucide';
-import { avatarGlides } from '@liveworkspace/avatar/relay';
-import { AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
+import { avatarGlides } from '@livehuddle/avatar/relay';
+import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
 import { HoverCard, lucideGlyph } from '@livehuddle/ui';
 import { useCallHands, useCallSelf } from '@/lib/calls/calls-store';
 import type { Point } from '@/lib/calls/hearing';

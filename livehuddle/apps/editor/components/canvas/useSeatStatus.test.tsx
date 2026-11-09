@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 // Your own status, as the avatar package keeps it: a plain state here, so the test sees what is written.
 const written: (string | null)[] = [];
-vi.mock('@liveworkspace/avatar/hooks/useAvatarStatus', () => ({
+vi.mock('@livehuddle/avatar/hooks/useAvatarStatus', () => ({
   useAvatarStatus: () => {
     const [own, setOwn] = useState<string | null>('meeting');
     return [

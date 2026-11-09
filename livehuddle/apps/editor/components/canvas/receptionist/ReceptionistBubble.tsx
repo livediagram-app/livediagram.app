@@ -5,9 +5,9 @@
 // ringed, or his farewell. Yours alone: it is drawn on your screen and sent nowhere. It takes no focus.
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { SpeechCard } from '@liveworkspace/avatar/components/AvatarSpeechBubble';
-import { SPEECH_TOP_CLEAR, tailOffset } from '@liveworkspace/avatar/speech';
-import type { AvatarPoint } from '@liveworkspace/avatar/walk';
+import { SpeechCard } from '@livehuddle/avatar/components/AvatarSpeechBubble';
+import { SPEECH_TOP_CLEAR, tailOffset } from '@livehuddle/avatar/speech';
+import type { AvatarPoint } from '@livehuddle/avatar/walk';
 import {
   RECEPTIONIST_TOPIC_GROUPS,
   receptionistTopicTelemetryType,

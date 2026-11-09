@@ -9,8 +9,8 @@
 
 import { lazy, Suspense, useEffect, useState } from 'react';
 import type { ShapeElement } from '@livehuddle/document';
-import { claimAvatarKeys, type ClaimedKey } from '@liveworkspace/avatar/key-claims';
-import { walkInputBlocked } from '@liveworkspace/avatar/walk-guard';
+import { claimAvatarKeys, type ClaimedKey } from '@livehuddle/avatar/key-claims';
+import { walkInputBlocked } from '@livehuddle/avatar/walk-guard';
 import { isEnterActivatedTarget, isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { formatArcadeScore } from '@/lib/arcade/arcade-format';

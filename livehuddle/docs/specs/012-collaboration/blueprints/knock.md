@@ -14,7 +14,7 @@ Derived from [Knock](../knock.md).
 | `apps/editor/app/document/[id]/useRoomConnection.ts` | Hands received ops to `receiveKnockOp`                                                                            |
 | `apps/editor/lib/office/knock-inbox.ts`              | Parses and fans out received knocks and answers                                                                   |
 | `apps/editor/lib/office/useMeetingPieces.ts`         | Sends knocks (`setKnocker`), shows the knock and answer toasts, the closed pod door toast, Let In standing you up |
-| `../packages/avatar/src/pod.ts`                      | `podDoorFront`: the strip in front of a pod's doorway                                                             |
+| `packages/avatar/src/pod.ts`                         | `podDoorFront`: the strip in front of a pod's doorway                                                             |
 
 ## Flow
 

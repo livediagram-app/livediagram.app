@@ -306,8 +306,8 @@ The rules:
   of the Session strip's Timer and Vote, Bring Focus and the facilitator baton are the next extraction, to
   `@liveworkspace/session-tools`, the first time a change has to land in both.
 - What is already one copy stays one: the realtime room's shared shapes, and everything else in `packages/`. The
-  avatar core is livehuddle's own (it moves out of `packages/` with #650's second part); livediagram imports none of it
-  but the reaction bursts its Reaction Pad throws.
+  avatar core is livehuddle's own (`livehuddle/packages/avatar` since #650's second part) and livediagram imports none
+  of it; the reaction bursts its Reaction Pad throws are `@liveworkspace/model-core/reaction-bursts`.
 - Only livediagram has: Diagram and Draw modes and the elements only they offer, the rest of Workshop mode (the retro and workshop templates, the Collaborate elements, the Poll, Presentation mode and the Slide Deck, the Page), Event Storming, repository links, the wall-photo import (`sticky-vision`, `sticky-model`).
 - CI's **Drift report** (the Plan job's summary, `.github/scripts/drift-report.mjs`, the root docs/ci.md) counts the
   identical, changed and one-only files between `livediagram/` and `livehuddle/`, names ignored. It never fails a

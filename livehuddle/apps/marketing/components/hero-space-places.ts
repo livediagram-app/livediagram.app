@@ -1,7 +1,7 @@
 // Two more Spaces in use, for the landing beats (docs/specs/019-marketing/marketing-site.md "Feature scenes"): the
 // Virtual Office, where the team at their desks walks over to the meeting room, and the All-Hands Hall, where the
 // room sits facing the stage. Pure data in each template's own canvas coordinates (buildTemplate(kind, 0, 0)), as
-// hero-space-cast.ts holds the Team Pod's; every seat is the template's own (@liveworkspace/avatar seatPoints).
+// hero-space-cast.ts holds the Team Pod's; every seat is the template's own (@livehuddle/avatar seatPoints).
 
 import type { SpaceSceneSpec } from './hero-space-cast';
 

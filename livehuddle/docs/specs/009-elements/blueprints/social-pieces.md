@@ -13,9 +13,9 @@ Derived from [Social pieces](../social-pieces.md).
 | `packages/document/src/participant-content.ts`                   | `mergeNoticeNotes`: a Participant adds and removes only its own notes                                            |
 | `packages/document/src/element-deltas.ts`                        | The `notice-pin` and `notice-unpin` deltas, applied on every screen and in the store                             |
 | `packages/document/src/validate-shape.ts`                        | `noticeNotes`, `clockZones`, `jukeboxSource` validation                                                          |
-| `../packages/avatar/src/office-geometry.ts`                      | Footprints (`OFFICE_FOOTPRINT`), the fixed seats, `isWallPieceShape`                                             |
-| `../packages/avatar/src/seats.ts`                                | `PING_PONG_SEATS`, `BENCH_SEATS`, `PICNIC_TABLE_SEATS`, `HAMMOCK_SEATS`, `BEAN_BAG_SEATS`, `READING_NOOK_SEATS`  |
-| `../packages/avatar/src/walk.ts`                                 | `elementUnderFeet` skips wall pieces                                                                             |
+| `packages/avatar/src/office-geometry.ts`                         | Footprints (`OFFICE_FOOTPRINT`), the fixed seats, `isWallPieceShape`                                             |
+| `packages/avatar/src/seats.ts`                                   | `PING_PONG_SEATS`, `BENCH_SEATS`, `PICNIC_TABLE_SEATS`, `HAMMOCK_SEATS`, `BEAN_BAG_SEATS`, `READING_NOOK_SEATS`  |
+| `packages/avatar/src/walk.ts`                                    | `elementUnderFeet` skips wall pieces                                                                             |
 | `apps/editor/components/canvas/collab/SocialArt.tsx`             | The live parts drawn over a piece's art: rally, fire, water, screen, jukebox lights, night glow                  |
 | `apps/editor/components/canvas/collab/SocialFaces.tsx`           | The Notice Board's cards and Notes button, the World Clock's dials, the Jukebox's button                         |
 | `apps/editor/lib/piece-control.ts`                               | `pieceControlProps`, `isPieceControlPress`: a face's control keeps its press from the canvas                     |
@@ -37,7 +37,7 @@ Derived from [Social pieces](../social-pieces.md).
 | `apps/editor/lib/table-games/pong-session.ts`                    | `PongSession`: one table's game on one screen: seats, trust, your moments, the silent rule, the scoreboard       |
 | `apps/editor/components/canvas/collab/usePingPong.ts`            | The session wired to the seats, the inbox, the keys and one rAF loop that draws through refs                     |
 | `apps/editor/components/canvas/collab/PingPongGame.tsx`          | The ball, both paddles, the scoreboard and your paddle's pointer control, over the table's art (a social face)   |
-| `../packages/avatar/src/key-claims.ts`                           | `claimAvatarKeys`, `avatarKeyClaimed`: keys a piece takes from the walk and the action keys while it holds them  |
+| `packages/avatar/src/key-claims.ts`                              | `claimAvatarKeys`, `avatarKeyClaimed`: keys a piece takes from the walk and the action keys while it holds them  |
 | `packages/document/src/arcade-scores.ts`                         | `ArcadeScore`, `MOON_MAIL_SCORING`, `arcadeScoreCeiling`, `isArcadeScore(s)`, `arcadeTableWith`, `arcadePlaceOf` |
 | `packages/document/src/element-deltas.ts`                        | The `arcade-score` and `arcade-clear` deltas, applied on every screen and in the store                           |
 | `packages/document/src/collab-ledger.ts`                         | The latest clear and the ten best scores after it, per machine; merged into saves and a Participant's answers    |

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
-import { AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
+import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
 import { ARROW_SIZE, EDGE_GAP, OBSTACLE_GAP, type Point } from './people-arrows-geometry';
 import { createPeopleArrowsEngine, measureObstacles } from './people-arrows-engine';
 

@@ -1,7 +1,7 @@
 // The office amenities' restroom (docs/specs/009-elements/office-amenities.md "Restroom"): a Toilet Cubicle, a
 // Washbasin under its mirror and a Hand Dryer, drawings in the furniture's vocabulary (seating.ts), upright from the
 // room's camera, which both renderers paint. They join OFFICE_ART (office.ts). The footprints are
-// @liveworkspace/avatar's; the Restroom preset that places them is room-presets.ts. Pure: no React, no DOM.
+// @livehuddle/avatar's; the Restroom preset that places them is room-presets.ts. Pure: no React, no DOM.
 
 import type { FurnitureArt, FurnitureDrawing } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';

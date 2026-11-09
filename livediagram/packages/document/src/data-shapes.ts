@@ -12,7 +12,7 @@
 import type { ShapeKind } from './index';
 import { isSankeyShape } from './sankey-model';
 import { isRetiredShapeKind } from './retired-elements';
-import { REACTIONS, type Reaction } from '@liveworkspace/avatar/reaction-bursts';
+import { REACTIONS, type Reaction } from '@liveworkspace/model-core/reaction-bursts';
 
 // The two progress ShapeKinds, grouped so renderers + context-menu gates can
 // branch on "is this a progress element" without repeating the literal pair.
@@ -247,8 +247,8 @@ export function clampRating(value: number): number {
 export { clampPercent } from '@liveworkspace/model-core/progress-label';
 
 // Reaction pads (docs/specs/009-elements/reaction-pad.md). The five reactions, their names and glyphs, are
-// @liveworkspace/avatar's: a walking character throws the same bursts (docs/specs/002-project-scope/not-in-livediagram.md).
-export * from '@liveworkspace/avatar/reaction-bursts';
+// @liveworkspace/model-core's: livehuddle's pads and walking characters throw the same bursts.
+export * from '@liveworkspace/model-core/reaction-bursts';
 
 // Each reaction's colour, a pair of hues from one end of its glow to the other
 // (docs/specs/009-elements/reaction-pad.md "The look"). Fixed rather than the theme's: the reaction's

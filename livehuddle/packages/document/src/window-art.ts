@@ -3,7 +3,7 @@
 // y = height / 2. A frame in the wall's band, a glass pane with a mullion, a sill on the inside face, and the patch of
 // light it casts on the floor inside (+y, the side the snap turns inward), drawn past its box. Pure: no React, no DOM.
 
-import { ROOM_WALL } from '@liveworkspace/avatar/office-geometry';
+import { ROOM_WALL } from '@livehuddle/avatar/office-geometry';
 
 /** The light patch's colour and strongest opacity on each paper (DEFAULTS.md D228): sunlight, and a fainter moonlight. */
 export const WINDOW_LIGHT = {

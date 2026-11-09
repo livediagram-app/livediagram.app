@@ -5,8 +5,8 @@
 // and walk over. Drawn inside the canvas's transformed layer, so they pan and zoom with the characters.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { HoverCard } from '@livehuddle/ui';
-import { avatarGlides } from '@liveworkspace/avatar/relay';
-import { AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
+import { avatarGlides } from '@livehuddle/avatar/relay';
+import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
 import type { VoiceLevel } from '@livehuddle/api-schema';
 import {
   levelNow,

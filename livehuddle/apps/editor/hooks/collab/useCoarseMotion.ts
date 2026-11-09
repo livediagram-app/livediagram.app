@@ -6,8 +6,8 @@
 import { useMemo } from 'react';
 import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
 import { joinStores, type ReadableStore } from '@liveworkspace/workbench/lib/state-store';
-import type { AvatarPose } from '@liveworkspace/avatar/pose';
-import type { AvatarPoint } from '@liveworkspace/avatar/walk';
+import type { AvatarPose } from '@livehuddle/avatar/pose';
+import type { AvatarPoint } from '@livehuddle/avatar/walk';
 import { coarseStore } from '@/lib/coarse-store';
 import { placeOf, type CallPlaces } from '@/lib/calls/call-places';
 import type { PeerAvatar, PeerRowsSource } from '@/lib/peer-motion';

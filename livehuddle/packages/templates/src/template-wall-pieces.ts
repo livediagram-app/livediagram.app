@@ -19,7 +19,7 @@ export type DoorVariant = (typeof DOOR_VARIANTS)[number];
 export type WallWindow = { side: DoorSide; at: number };
 
 // A Room's wall centre lines sit half a wall (5 px) inside its box, the back wall at its back face (36 px down):
-// @liveworkspace/avatar/office-geometry's ROOM_WALL and ROOM_BACK_FACE.
+// @livehuddle/avatar/office-geometry's ROOM_WALL and ROOM_BACK_FACE.
 const HALF_WALL = 5;
 const BACK_FACE = 36;
 

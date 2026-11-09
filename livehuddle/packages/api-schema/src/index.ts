@@ -25,7 +25,7 @@ export type {
   AvatarGender,
   AvatarHair,
   AvatarSize,
-} from '@liveworkspace/api-schema/avatar';
+} from '@livehuddle/avatar/wire';
 
 // ---------------------------------------------------------------------
 // Documents
@@ -337,7 +337,7 @@ export * from './placement-defaults';
 // Explorer Home: the open marker and the use window (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
-export * from '@liveworkspace/api-schema/avatar-say';
+export * from '@livehuddle/avatar/wire-say';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from '@liveworkspace/api-schema/within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).

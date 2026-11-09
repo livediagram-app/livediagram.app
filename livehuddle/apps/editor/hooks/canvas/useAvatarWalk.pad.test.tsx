@@ -3,11 +3,11 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { avatarPadCore, createShape, type Element } from '@livehuddle/document';
-import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
-import type { AvatarPoint } from '@liveworkspace/avatar/walk';
+import { DEFAULT_AVATAR_CONFIG } from '@livehuddle/avatar/config';
+import type { AvatarPoint } from '@livehuddle/avatar/walk';
 import { track } from '@/lib/telemetry';
 import { bindAvatar } from '@/lib/avatar-bindings';
-import { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
+import { useAvatarWalk } from '@livehuddle/avatar/hooks/useAvatarWalk';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // This editor's telemetry reaches Avatar mode through its bindings (lib/avatar-bindings.ts).

@@ -8,9 +8,9 @@ import {
   AVATAR_PALETTE,
   isAvatarPadLight,
 } from '@livehuddle/document';
-import { AvatarPadArrivals } from '@liveworkspace/avatar/components/AvatarPadArrivals';
+import { AvatarPadArrivals } from '@livehuddle/avatar/components/AvatarPadArrivals';
 import { AvatarPadView } from './collab/AvatarPadView';
-import type { PadArrival } from '@liveworkspace/avatar/pad';
+import type { PadArrival } from '@livehuddle/avatar/pad';
 
 // docs/specs/009-elements/avatar-pad.md "The element" and "The arrival".
 const arrival = (over: Partial<PadArrival> = {}): PadArrival => ({

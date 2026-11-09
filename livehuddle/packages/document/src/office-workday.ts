@@ -2,13 +2,13 @@
 // Phone Booth, the Standing Desk and the Hot Desk, the Pet Bed and the Reception Desk. Drawings in the furniture's
 // vocabulary (seating.ts), upright from the room's camera like the rest of the office, which both renderers paint (the
 // editor's views and svg-render-faces). Each piece that turns (furniture-facing.md) has a front, a back and a side
-// drawing; facing right is the side mirrored. Their seats and the desk's footprint are @liveworkspace/avatar's; the live
+// drawing; facing right is the side mirrored. Their seats and the desk's footprint are @livehuddle/avatar's; the live
 // parts (the running belt, the booth's lamp, the hot desk's card, the bell's ring and the dog) are the editor's, laid
 // over these at the grid spots named here, per drawing. Pure: no React, no DOM.
 
 import type { FurnitureDrawing, FurniturePart } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';
-import type { SeatView } from '@liveworkspace/avatar/facing';
+import type { SeatView } from '@livehuddle/avatar/facing';
 import {
   HOT_DESK_SEATS,
   HOT_DESK_SEATS_FRONT,
@@ -30,7 +30,7 @@ import {
   WEIGHT_BENCH_SEATS_SIDE,
   seatSpots,
   type SeatGrid,
-} from '@liveworkspace/avatar/seats';
+} from '@livehuddle/avatar/seats';
 
 // Fixed colours, as VENUE_TONES: the pod's shell and lining, the gym's steel and vinyl, the booth's oak and felt, the
 // desks' wood and screens, the bed and the dog, the reception's brass. A hot desk's top and a reception desk's band have

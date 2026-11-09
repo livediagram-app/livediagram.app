@@ -55,7 +55,7 @@ import {
   receivePeerDragPreview,
 } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
-import { receivePeerSay, resetSpeechBubbles } from '@liveworkspace/avatar/speech-store';
+import { receivePeerSay, resetSpeechBubbles } from '@livehuddle/avatar/speech-store';
 import {
   forgetCallPeer,
   noteRoomDropped,

@@ -2,7 +2,7 @@
 // themselves"). Its own module so the kind lists it reads (selection-mode, office, the seating) never import each
 // other.
 
-import { isSeatingShape } from '@liveworkspace/avatar/office-geometry';
+import { isSeatingShape } from '@livehuddle/avatar/office-geometry';
 import { isGridOfficeShape, isLongTable } from './office';
 import { isFixedSizeShape } from './selection-mode';
 

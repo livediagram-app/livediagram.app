@@ -7,9 +7,9 @@ import {
   seatsACharacter,
   type Element,
 } from '@livehuddle/document';
-import { AVATAR_WIDTH, avatarFigureHeight } from '@liveworkspace/avatar/walk';
-import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
-import { avatarScale } from '@liveworkspace/avatar/config';
+import { AVATAR_WIDTH, avatarFigureHeight } from '@livehuddle/avatar/walk';
+import { avatarPadCore } from '@livehuddle/avatar/pad-art';
+import { avatarScale } from '@livehuddle/avatar/config';
 import { buildTemplate } from './build-template';
 import { ARRIVAL_HINT_W } from './template-arrival';
 import { templateFloors } from './template-floors';

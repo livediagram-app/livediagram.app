@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROOM_BACK_FACE, ROOM_WALL } from '@liveworkspace/avatar/office-geometry';
+import { ROOM_BACK_FACE, ROOM_WALL } from '@livehuddle/avatar/office-geometry';
 import { roomZones, zoneAt, zoning } from './zones';
 
 const room = (id: string, x: number, y: number, width = 480, height = 320) => ({

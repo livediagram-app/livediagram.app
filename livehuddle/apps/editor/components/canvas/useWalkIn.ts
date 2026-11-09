@@ -13,7 +13,7 @@ import {
   followCorrection,
   viewportOffsetCentredOn,
   type AvatarPoint,
-} from '@liveworkspace/avatar/walk';
+} from '@livehuddle/avatar/walk';
 import type { WalkIn } from '@/app/document/[id]/useOpenWalking';
 
 // How long the view must hold still before the opening spot is judged against it (about 100ms), and the longest the

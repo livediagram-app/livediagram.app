@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type ShapeElement } from '@livehuddle/document';
-import { avatarFigureHeight } from '@liveworkspace/avatar/walk';
-import { avatarScale } from '@liveworkspace/avatar/config';
+import { avatarFigureHeight } from '@livehuddle/avatar/walk';
+import { avatarScale } from '@livehuddle/avatar/config';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   elevatorExitPoint,

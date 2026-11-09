@@ -28,8 +28,8 @@ function tsxFiles(dir: string, out: string[] = []): string[] {
 
 // The editor code every editor shares (@liveworkspace/workbench) renders here too.
 const WORKBENCH = `${ROOT}../../../packages/workbench/src`;
-// Avatar mode's shared code (@liveworkspace/avatar) renders here too.
-const AVATAR = `${ROOT}../../../packages/avatar/src`;
+// Avatar mode's code (@livehuddle/avatar) renders here too.
+const AVATAR = `${ROOT}../../packages/avatar/src`;
 
 const FILES = [...tsxFiles(ROOT), ...tsxFiles(WORKBENCH), ...tsxFiles(AVATAR)].map((path) => ({
   path: relative(ROOT, path),

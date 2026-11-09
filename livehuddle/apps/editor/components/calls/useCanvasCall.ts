@@ -7,7 +7,7 @@
 // bars (meeting-rooms-and-stage.md "Raise hand", "Do Not Disturb").
 import { useMemo } from 'react';
 import { computeViewportCanvasRect } from '@liveworkspace/workbench/lib/viewport';
-import { avatarScale, peerAvatarConfig } from '@liveworkspace/avatar/config';
+import { avatarScale, peerAvatarConfig } from '@livehuddle/avatar/config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { RemoteAvatarRow } from '@/lib/presence-rows';
 import type { CanvasTool } from '@/components/palette/palette.types';

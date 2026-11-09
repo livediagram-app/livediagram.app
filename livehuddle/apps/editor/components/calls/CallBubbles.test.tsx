@@ -9,7 +9,7 @@ import {
   setCallMedia,
   setCallSelf,
 } from '@/lib/calls/calls-store';
-import { AVATAR_HEAD_CHROME } from '@liveworkspace/avatar/walk';
+import { AVATAR_HEAD_CHROME } from '@livehuddle/avatar/walk';
 import { receiveCallOp, resetCallPeers } from '@/lib/calls/calls-store';
 import { BUBBLE_GAP_PX } from '@/lib/calls/bubble-layout';
 import { BUBBLE_LIFT_PX, CallBubbles, useCallBubbleRects } from './CallBubbles';

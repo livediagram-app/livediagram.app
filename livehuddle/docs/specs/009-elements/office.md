@@ -205,7 +205,7 @@ its width, the Boardroom preset's table.
   divided by 60, plus one), spaced evenly, and one chair at each end in profile. At 560 wide, seven a side and two
   ends: **sixteen seats**.
 - Every seat sits as the Meeting Table's do: the far side faces down, the near side up, the ends inward; nearest free
-  seat, one sitter each, rings and the sitters' pill (`@liveworkspace/avatar/seats`, `longTableGrid`).
+  seat, one sitter each, rings and the sitters' pill (`@livehuddle/avatar/seats`, `longTableGrid`).
 - Not aspect locked: dragged wider it takes more chairs, narrower fewer (never under two a side). Its drawing keeps its
   proportions; a box of other proportions is drawn as wide as that depth allows. Default 560 × 168.
 - **Turned** ([Turning furniture](furniture-facing.md)), it turns as the Meeting Table does, at its own length: from

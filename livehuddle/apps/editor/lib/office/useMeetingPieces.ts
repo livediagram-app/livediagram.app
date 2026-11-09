@@ -17,7 +17,7 @@ import {
   type Element,
 } from '@livehuddle/document';
 import { placePoints, walkThereRoute } from '@/lib/wayfinding';
-import { podClosed, podDoorFront } from '@liveworkspace/avatar/pod';
+import { podClosed, podDoorFront } from '@livehuddle/avatar/pod';
 import { useToast } from '@/hooks/ui/useToast';
 import type { CallSignal } from '@/lib/calls/call-config';
 import { SELF_MEDIA_ID } from '@/lib/calls/calls-media-store';

@@ -10,8 +10,8 @@
 // hooks/canvas/editor-shortcut-keys.ts. The test pins the two together.
 
 import { REACTION_LABEL, REACTIONS } from '@livehuddle/document';
-import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@liveworkspace/avatar/action-keys';
-import { AVATAR_REACTIONS } from '@liveworkspace/avatar/reactions';
+import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@livehuddle/avatar/action-keys';
+import { AVATAR_REACTIONS } from '@livehuddle/avatar/reactions';
 
 export type ShortcutRow = {
   keys: string[];

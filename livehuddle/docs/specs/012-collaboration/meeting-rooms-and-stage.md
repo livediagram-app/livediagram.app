@@ -160,7 +160,7 @@ screen reader hears it once on stepping on.
   so turning to a neighbour does not need the status cleared.
 - Set and cleared from the avatar palette's Status flyout, like the others, for the session only. While you are in a call,
   the Call dock shows a **Do Not Disturb** segment beside the microphone; pressing it clears the status.
-- **Only livehuddle offers it.** The status vocabulary is shared with livediagram (`@liveworkspace/avatar`), which has
+- **Only livehuddle offers it.** The status vocabulary is shared with livediagram (`@livehuddle/avatar`), which has
   no calls: there the Avatar panel keeps offering the four (livehuddle's avatar palette offers the five), though a `dnd` status on the wire still parses and draws.
 
 ## The stage's way in (part 4, built)

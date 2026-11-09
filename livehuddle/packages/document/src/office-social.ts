@@ -4,7 +4,7 @@
 // the rest of the office, which both renderers paint (the editor's views and svg-render-faces). The grid pieces join
 // OFFICE_ART (office.ts); the pond is drawn to its own size, as grass is. The notes a notice board holds, the zones a
 // world clock shows and a jukebox's source are element fields, bounded and checked here. The geometry the walk needs
-// (the seats, the footprints) is @liveworkspace/avatar's. Pure: no React, no DOM.
+// (the seats, the footprints) is @livehuddle/avatar's. Pure: no React, no DOM.
 
 import type { FurnitureDrawing, FurniturePart } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';
@@ -20,7 +20,7 @@ import {
   PING_PONG_SEATS,
   PING_PONG_SEATS_BACK,
   PING_PONG_SEATS_SIDE,
-} from '@liveworkspace/avatar/seats';
+} from '@livehuddle/avatar/seats';
 
 // Fixed colours for what keeps its colour whatever the theme, as OFFICE_TONES: cork, wood, brick, stone, fire, water,
 // felt, chrome and lights. Outlines stay the theme's stroke.

@@ -1,7 +1,7 @@
-// This editor's facts for Avatar mode (@liveworkspace/avatar, docs/specs/008-canvas/avatar-mode.md "Where the
+// This editor's facts for Avatar mode (@livehuddle/avatar, docs/specs/008-canvas/avatar-mode.md "Where the
 // code lives"), handed over once, at module scope, before any of it renders: the canvas's avatar wiring
 // (components/canvas/useCanvasAvatar.tsx) calls bindAvatar, so the root chunk carries none of it.
-import { configureAvatar } from '@liveworkspace/avatar/bindings';
+import { configureAvatar } from '@livehuddle/avatar/bindings';
 import { shade, tint } from '@livehuddle/document';
 import { identityVars } from '@livehuddle/ui';
 import { track } from './telemetry';

@@ -11,7 +11,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import type { AvatarPresence, RoomOutgoing } from '@livehuddle/api-schema';
-import { avatarSendIntervalMs } from '@liveworkspace/avatar/relay';
+import { avatarSendIntervalMs } from '@livehuddle/avatar/relay';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { CallSignal } from '@/lib/calls/proximity-call';
 

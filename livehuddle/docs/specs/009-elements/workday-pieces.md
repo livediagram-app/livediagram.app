@@ -71,7 +71,7 @@ Your [status](../008-canvas/avatar-mode.md#status) can come from where you are, 
   presses it too, so the flyout and your chip never disagree.
 - **On a Break** (a blue dot; a water bottle in the hand) joins the Activity group after Out to Lunch, and **Busy** (a
   brown dot; a phone held to the ear) the Availability group after Away, so they can be set by hand as well. Like Do Not Disturb, they are in the shared status list
-  (`@liveworkspace/avatar`), which livediagram parses and draws but does not offer.
+  (`@livehuddle/avatar`), which livediagram parses and draws but does not offer.
 - Busy is a status, not Do Not Disturb: knocks, toasts and other people's equalisers still reach you. The Phone
   Booth's privacy comes from its call (below), not from the status.
 
