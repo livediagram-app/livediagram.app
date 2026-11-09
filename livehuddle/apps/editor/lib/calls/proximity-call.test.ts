@@ -697,6 +697,21 @@ describe('ProximityCall video and screens', () => {
     expect(callSelf().camera).toBe('off');
   });
 
+  // An unplugged camera, one another app took, or its permission withdrawn: the browser ends the track.
+  it('turns a camera the browser ended off, as a press would, and tells the room', async () => {
+    const { call, sent, camera } = makeCall();
+    await speak(call);
+    await call.toggleCamera();
+    expect(callSelf().camera).toBe('on');
+    camera.track.end();
+    expect(callSelf().camera).toBe('off');
+    expect(camera.track.stop).toHaveBeenCalled();
+    expect(callMedia().get('self')?.video ?? null).toBeNull();
+    expect(sfu.instances[0]!.replaceTrack).toHaveBeenCalledWith('cam', null);
+    expect(sent.at(-1)).toEqual({ kind: 'call-track', track: me('mic'), video: null });
+    call.stop();
+  });
+
   it('shares a screen for an Editor, capped and tuned for text, and stops from either control', async () => {
     const { call, sent, display, getDisplayMedia } = makeCall({ canShare: true });
     await speak(call);

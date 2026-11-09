@@ -98,6 +98,11 @@ export class CallVideo {
   }
 
   private async sendCamera(stream: MediaStream): Promise<void> {
+    // A camera the browser ends (unplugged, taken by another app, its permission withdrawn) turns off, as a press
+    // would: never a frozen bubble under a button that still reads on.
+    stream.getVideoTracks()[0]?.addEventListener('ended', () => {
+      if (this.camera === stream) this.stopCamera();
+    });
     this.camera = stream;
     setCallMedia(SELF_MEDIA_ID, 'video', stream);
     setCallSelf({ camera: 'on' });
