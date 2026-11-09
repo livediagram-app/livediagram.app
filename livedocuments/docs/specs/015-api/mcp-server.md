@@ -145,6 +145,15 @@ This implements the OAuth flow Manager Toolkit uses:
    `access_token` (= the `lwt_` secret). `expires_in` reflects the token's
    remaining 6-month lifetime.
 
+**A token the api stops accepting.** `POST /mcp` lets any Bearer through to the transport (only the api can tell
+whether liveworkspace still knows it), so a revoked, expired or unknown token used to come back as HTTP 200 with every
+tool call failing "the token is not accepted", and a client never learned to sign in again: reconnecting reused the
+same dead token. Now, when any call the request made to the api answered 401, the MCP answers the whole request
+`401` with `WWW-Authenticate: Bearer error="invalid_token", resource_metadata="<origin>/.well-known/oauth-protected-resource"`
+(RFC 6750 §3.1), the same challenge a request with no Bearer gets, so an MCP client starts the connect flow again
+(`../packages/mcp-kit/src/token-refusal.ts`). A request that never reaches the api (`initialize`, `tools/list`) is
+answered as before. It costs nothing extra: the api's own answers are watched, no call is added.
+
 **State storage.** Add a **KV namespace binding (`OAUTH_KV`) to `apps/mcp`** for
 client registrations, authorize sessions, and codes (all short TTLs). `apps/api`
 needs no KV: liveworkspace mints the token ([Public API and API tokens](public-api-and-tokens.md)).
