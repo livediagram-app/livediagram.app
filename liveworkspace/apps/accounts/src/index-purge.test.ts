@@ -193,4 +193,46 @@ describe('deleteAccount', () => {
     answer = () => Response.json({ done: true, items: 0 });
     expect(await retryPendingPurges(db, config)).toMatchObject({ sent: 1, waiting: 0 });
   });
+
+  it('still names the teams that closed when a try stopped part way and the person tries again', async () => {
+    const solo = (await createTeam(db, { id: 'user_ada', email: 'ada@example.com' }, 'Solo')) as {
+      ok: true;
+      value: { id: string };
+    };
+    // The first try closes her team, then fails before the user goes.
+    const failing = {
+      ...auth,
+      $context: Promise.resolve({
+        internalAdapter: {
+          deleteUser: async () => {
+            throw new Error('D1 hiccup');
+          },
+        },
+      }),
+    } as unknown as Auth;
+    await expect(
+      deleteAccount(closeRequest(), db, { auth: failing, index: config }),
+    ).rejects.toThrow('D1 hiccup');
+    expect(sql.prepare('SELECT id FROM "user" WHERE id = ?').all('user_ada')).toHaveLength(1);
+    // Her account is still open: the cron leaves the request alone.
+    expect(await retryPendingPurges(db, config)).toEqual({ sent: 0, failed: 0, waiting: 0 });
+    expect(sent).toEqual([]);
+
+    await storeDeletionCode(db, 'user_ada', '123456');
+    expect(await (await close()).json()).toEqual({ deleted: true });
+    expect(sent).toEqual([
+      expect.objectContaining({ body: { personId: 'user_ada', teamIds: [solo.value.id] } }),
+    ]);
+    expect(pending()).toEqual([]);
+  });
+
+  it('keeps the teams an earlier request named and adds new ones', async () => {
+    await recordPendingPurge(db, 'user_gone', ['team_1', 'team_2']);
+    await recordPendingPurge(db, 'user_gone', ['team_2', 'team_3']);
+    expect(JSON.parse((pending()[0] as { teamIds: string }).teamIds).sort()).toEqual([
+      'team_1',
+      'team_2',
+      'team_3',
+    ]);
+  });
 });

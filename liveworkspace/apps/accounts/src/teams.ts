@@ -889,6 +889,9 @@ export async function leaveAllTeams(
   db: D1Database,
   userId: string,
   now = Date.now(),
+  // Statements for the same batch, given the teams that close (the account deletion's purge record), so what
+  // closed is written down with the closing itself: a retry after a later step failed finds those teams gone.
+  alongside: (closed: string[]) => D1PreparedStatement[] = () => [],
 ): Promise<string[]> {
   const { results } = await db
     .prepare(
@@ -948,7 +951,7 @@ export async function leaveAllTeams(
         DELETED_MEMBER_EMAIL,
       ),
   );
-  await db.batch(statements);
+  await db.batch([...statements, ...alongside(closed)]);
   return closed;
 }
 

@@ -8,12 +8,12 @@
 // the profile are cleared first, explicitly. Every app's refresh token stops working at once; an access token
 // already issued runs out on its own (minutes). Then the index is told to purge everything it holds
 // for the person (index-purge.ts): recorded before the user goes, so it can't be lost, and sent again
-// by the cron if the index doesn't take it now. Its workbench goes last: pairings, sessions and the rooms they had
+// by the cron if the index doesn't take it now (and only once the user is gone). Its workbench goes last: pairings, sessions and the rooms they had
 // open (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access"), and its Google Drive mirror is disconnected, its files left in
 // Drive (liveworkspace/docs/specs/005-drive/drive.md). The account is closed either way.
 import { introspectCaller, type CallerConfig } from './app-caller.ts';
 import { checkDeletionCode, underCheckLimit } from './deletion-code.ts';
-import { purgeFromIndex, recordPendingPurge, type IndexPurgeConfig } from './index-purge.ts';
+import { pendingPurgeStatement, purgeFromIndex, type IndexPurgeConfig } from './index-purge.ts';
 import { deleteProfile } from './profiles.ts';
 import { deleteSettings } from './settings.ts';
 import { leaveAllTeams } from './teams.ts';
@@ -49,13 +49,16 @@ export async function deleteAccount(
   });
   if (checked !== 'ok') return Response.json({ error: checked }, { status: 403 });
 
-  // Teams first, so the apps hear that the account left each one and a team it ran passes on.
-  const closedTeams = await leaveAllTeams(db, userId);
+  // Teams first, so the apps hear that the account left each one and a team it ran passes on. The purge request is
+  // recorded in the same batch, naming the teams that closed: should a later step fail, the retry finds them gone and
+  // the request still names them (the cron sends it only once the user is deleted).
+  await leaveAllTeams(db, userId, Date.now(), (closed) => [
+    pendingPurgeStatement(db, userId, closed),
+  ]);
   // Settings and the profile have no foreign key to the account (a guest's rows have no account), so
   // they go here.
   await deleteSettings(db, userId);
   await deleteProfile(db, userId);
-  await recordPendingPurge(db, userId, closedTeams);
   const ctx = await config.auth.$context;
   await ctx.internalAdapter.deleteUser(userId);
   // A failure is logged and left for the cron; it never keeps the account open.
