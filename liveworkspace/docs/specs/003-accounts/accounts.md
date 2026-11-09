@@ -1286,8 +1286,10 @@ The account is closed whatever the index answers. A request it doesn't take (an 
 `INDEX_URL` or `INDEX_MERGE_KEY` unset) stays in `pending_purges` with its attempts and last error, and
 the Worker's cron sends it again every 15 minutes (`*/15 * * * *`, 25 a run, the longest-waiting first)
 until it lands. The cron sends only a request whose user is gone: one whose closing stopped before step 4 waits for
-the person to try again, and is never sent while they can still sign in. Each failure is logged, as an error from the
-third on. The index's purge is idempotent, so a request sent twice does no harm.
+the person to try again, and is never sent while they can still sign in. Such a request waits 30 days
+(`STALE_PURGE_DAYS`) from its first try; then the cron drops it (logged with how many teams it named), so closings
+nobody finished can't pile up. A later close records a new one, naming only the teams it closes itself. Each failure
+is logged, as an error from the third on. The index's purge is idempotent, so a request sent twice does no harm.
 
 ## Which app a client is
 
