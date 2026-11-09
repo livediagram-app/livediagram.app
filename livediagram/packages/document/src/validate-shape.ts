@@ -3,7 +3,7 @@
 // check names its field and rule, so a refusal says which value to fix.
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
-import { isRoomDoor } from './office';
+import { isChairFacing, isRoomDoor } from './retired-elements';
 import { isFlowchartDirection } from './flowchart';
 import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
@@ -22,7 +22,6 @@ import {
   IDEA_MAX_TEXT,
   ROLL_CALL_MAX,
   ROLL_CALL_MAX_TEXT,
-  isChairFacing,
   isDecisionDate,
   isDecisionStatus,
   isEstimateScale,

@@ -24,7 +24,6 @@ const viewport = { current: { getBoundingClientRect: () => ({ width: 800, height
 function setup(over: Partial<PortalTravelDeps> = {}) {
   const onFollowLink = vi.fn();
   const setViewportOffset = vi.fn();
-  const teleportTo = vi.fn();
   const { result } = renderHook(() =>
     usePortalTravel({
       elements: [],
@@ -32,48 +31,37 @@ function setup(over: Partial<PortalTravelDeps> = {}) {
       onFollowLink,
       mainRef: viewport as unknown as PortalTravelDeps['mainRef'],
       setViewportOffset,
-      teleportTo,
       ...over,
     }),
   );
   const travel = result.current;
-  return { travel, onFollowLink, setViewportOffset, teleportTo };
+  return { travel, onFollowLink, setViewportOffset };
 }
 
 describe('usePortalTravel', () => {
   it('switches tab first when the far portal is on another one', () => {
     const here = portal('a', { portalTarget: 'b' });
     const there = portal('b');
-    const { travel, onFollowLink, teleportTo } = setup({
+    const { travel, onFollowLink, setViewportOffset } = setup({
       elements: [here],
       tabs: [tabOf('t1', [here]), tabOf('t2', [there])],
     });
     travel.enterPortal(here);
     expect(onFollowLink).toHaveBeenCalledWith({ kind: 'tab', tabId: 't2' });
     // And still lands: the tab switch replaces the elements, it doesn't abort.
-    expect(teleportTo).toHaveBeenCalledTimes(1);
+    expect(setViewportOffset).toHaveBeenCalledTimes(1);
   });
 
   it('does not switch tab when the far portal is on this one', () => {
     const here = portal('a', { portalTarget: 'b' });
     const there = portal('b');
-    const { travel, onFollowLink, teleportTo } = setup({
+    const { travel, onFollowLink, setViewportOffset } = setup({
       elements: [here, there],
       tabs: [tabOf('t1', [here, there])],
     });
     travel.enterPortal(here);
     expect(onFollowLink).not.toHaveBeenCalled();
-    expect(teleportTo).toHaveBeenCalledTimes(1);
-  });
-
-  it('steps the character out at the far portal’s base, and names it as the one to ignore', () => {
-    // Ignoring it matters: a character dropped on top of a portal would
-    // otherwise be walked straight back through it.
-    const here = portal('a', { portalTarget: 'b' });
-    const there = portal('b', { x: 100, y: 200, width: 60, height: 40 });
-    const { travel, teleportTo } = setup({ elements: [here, there] });
-    travel.enterPortal(here);
-    expect(teleportTo).toHaveBeenCalledWith({ x: 130, y: 240 }, 'b');
+    expect(setViewportOffset).toHaveBeenCalledTimes(1);
   });
 
   it('centres the camera on the far portal', () => {
@@ -86,11 +74,10 @@ describe('usePortalTravel', () => {
 
   it('does nothing at all for an unlinked portal', () => {
     const lonely = portal('a');
-    const { travel, onFollowLink, setViewportOffset, teleportTo } = setup({ elements: [lonely] });
+    const { travel, onFollowLink, setViewportOffset } = setup({ elements: [lonely] });
     travel.enterPortal(lonely);
     expect(onFollowLink).not.toHaveBeenCalled();
     expect(setViewportOffset).not.toHaveBeenCalled();
-    expect(teleportTo).not.toHaveBeenCalled();
   });
 
   it('leaves an unlinked portal’s face inert, with no name and no travel action', () => {
@@ -121,13 +108,13 @@ describe('usePortalTravel', () => {
     // camera move is skipped rather than throwing, and the character still lands.
     const here = portal('a', { portalTarget: 'b' });
     const there = portal('b');
-    const { travel, setViewportOffset, teleportTo } = setup({
+    const { travel, onFollowLink, setViewportOffset } = setup({
       elements: [here, there],
       mainRef: (() => {}) as unknown as PortalTravelDeps['mainRef'],
     });
     travel.enterPortal(here);
     expect(setViewportOffset).not.toHaveBeenCalled();
-    expect(teleportTo).toHaveBeenCalledTimes(1);
+    expect(onFollowLink).not.toHaveBeenCalled();
   });
 });
 
@@ -141,19 +128,18 @@ describe('usePortalTravel resolver identity', () => {
     const first = vi.fn();
     const second = vi.fn();
     const { result, rerender } = renderHook(
-      ({ teleportTo }) =>
+      ({ setViewportOffset }) =>
         usePortalTravel({
           elements,
           activeTabId: 't1',
           onFollowLink: vi.fn(),
           mainRef: viewport as unknown as PortalTravelDeps['mainRef'],
-          setViewportOffset: vi.fn(),
-          teleportTo,
+          setViewportOffset,
         }),
-      { initialProps: { teleportTo: first } },
+      { initialProps: { setViewportOffset: first } },
     );
     const resolver = result.current.resolvePortal;
-    rerender({ teleportTo: second });
+    rerender({ setViewportOffset: second });
 
     expect(result.current.resolvePortal).toBe(resolver);
     result.current.resolvePortal(here).travel!();

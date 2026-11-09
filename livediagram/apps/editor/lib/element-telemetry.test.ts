@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SHAPE_KINDS, type Element } from '@livediagram/document';
+import { CREATABLE_SHAPE_KINDS, type Element } from '@livediagram/document';
 import { ALL_PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 
 const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
@@ -99,9 +99,10 @@ describe('shapeTelemetryToken', () => {
   // Every shape kind reports a token the Palette tab ranks. A kind whose token
   // is missing from the catalogue is counted nowhere on the dashboard: that is
   // how 'Session-button' and friends read zero while being drawn every day.
+  // A retired kind (docs/specs/009-elements/retired-elements.md) is never added, so it needs no token.
   it('maps every shape kind to a token the palette catalogue knows', () => {
     const known = new Set(ALL_PALETTE_TELEMETRY_TYPES);
-    const unknown = [...SHAPE_KINDS].filter((k) => !known.has(shapeTelemetryToken(k)));
+    const unknown = [...CREATABLE_SHAPE_KINDS].filter((k) => !known.has(shapeTelemetryToken(k)));
     expect(unknown).toEqual([]);
   });
 });

@@ -40,9 +40,6 @@ export type CommandContext = {
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
   // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
   singleRotates: boolean;
-  // True when the selection (single or multi) holds a piece of furniture that turns
-  // (docs/specs/009-elements/furniture-facing.md): gates Rotate Left and Rotate Right.
-  selectionTurns?: boolean;
   // True when the single selection is a plain shape (markers are shape-only).
   singleIsShape: boolean;
   // True when the single selection already carries a looping animation
@@ -97,8 +94,6 @@ export type CommandHandlers = {
   bringToFront: () => void;
   sendToBack: () => void;
   rotate: (deg: number) => void;
-  // A quarter turn of the selection's furniture: +1 clockwise, -1 anticlockwise.
-  turn: (quarters: 1 | -1) => void;
   clearAnimation: () => void;
   setMarker: (marker: ShapeMarker | null) => void;
   addComment: () => void;

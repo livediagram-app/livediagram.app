@@ -416,11 +416,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, read by the paint and edited from the Format Panel.
   const formatSettings = useFormatConfig();
-  const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent } =
-    useCanvasTool({
-      defaultPan: embedMode,
-      tabId: activeId,
-    });
+  const { canvasTool, setCanvasTool, selectCanvasTool, toolBeforeCurrent } = useCanvasTool({
+    defaultPan: embedMode,
+  });
   useDesktopOnlyToolExit(canvasTool, setCanvasTool);
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
@@ -475,7 +473,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         tool === 'format' ||
         tool === 'laser' ||
         tool === 'spotlight' ||
-        tool === 'avatar' ||
         tool === 'isometric')
     ) {
       return;
@@ -492,9 +489,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       toast.info('Slide Deck is only available on a larger screen');
       return;
     }
-    // Spotlight and Avatar mode (docs/specs/008-canvas/avatar-mode.md) are both non-editing presenter
-    // modes, so both clear the selection on entry.
-    if (tool === 'spotlight' || tool === 'avatar') {
+    // Spotlight is a non-editing presenter mode, so it clears the selection on entry.
+    if (tool === 'spotlight') {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
     }
@@ -659,8 +655,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setRemoteCursors,
     remoteLaserTrails,
     setRemoteLaserTrails,
-    remoteAvatars,
-    setRemoteAvatars,
     remoteViewports,
     setRemoteViewports,
     followerIds,
@@ -1013,15 +1007,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   // Realtime room: WebSocket per shared document (presence + ops). See
   // useRoomConnection.
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a shove somebody sent us, bumped by a sequence
-  // number so two identical pushes both land. Canvas replays it onto our own
-  // character — a push is a request to its owner, never a remote write.
-  const [avatarShove, setAvatarShove] = useState<{ dx: number; dy: number; seq: number } | null>(
-    null,
-  );
-  const receiveAvatarPush = useCallback((dx: number, dy: number) => {
-    setAvatarShove((prev) => ({ dx, dy, seq: (prev?.seq ?? 0) + 1 }));
-  }, []);
   // Reaction bursts (docs/specs/009-elements/reaction-pad.md): ephemeral, per-client, never document state.
   const reactions = useReactionBursts();
 
@@ -1110,11 +1095,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setRemoteCursors,
     setRemoteTabFocus,
     setRemoteLaserTrails,
-    setRemoteAvatars,
     setRemoteViewports,
     setDocumentName,
     setSelfParticipant,
-    receiveAvatarPush,
     receiveReaction: reactions.receive,
     // Filled by the hook below, which cannot be declared up here because
     // taking an invitation navigates through the viewport (declared later
@@ -1229,9 +1212,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const {
     broadcastCursor,
     broadcastLaser,
-    broadcastAvatar,
-    broadcastAvatarPush,
-    broadcastAvatarSay,
     broadcastReaction,
     broadcastViewport,
     broadcastFocusHere,
@@ -1246,8 +1226,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canvasTool,
     // A vote hides them.
     cursorsHidden: voteCursorsHidden,
-    // The roster holds our peers; the room holds us too.
-    roomSize: livePresence.length + 1,
   });
   // Our drags, live for collaborators (docs/specs/008-canvas/drag-preview.md), whenever the room is open.
   useDragPreviewBroadcast({
@@ -1605,7 +1583,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const {
     participantsByTab,
     remoteCursorRows,
-    remoteAvatarRows,
     laserTrailRows,
     remoteSelectionsByElement,
     agentFocusByElement,
@@ -1623,10 +1600,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     remoteCursors,
     remoteSelections,
     remoteLaserTrails,
-    remoteAvatars,
     localLaserTrail,
     selfLaserConfig: laserPen.config,
-    // A presenter sees nobody else's cursor, laser or character: it is their screen on a projector
+    // A presenter sees nobody else's cursor or laser: it is their screen on a projector
     // (docs/specs/012-collaboration/presentation-mode.md). Inbound only; our own laser still broadcasts.
     cursorsHidden: voteCursorsHidden || presenting,
   });
@@ -2726,9 +2702,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
-    setChairFacingSelected,
-    turnSelected,
-    setRoomDoorSelected,
     setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,
@@ -3483,10 +3456,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginShapePen,
     beginPolygon,
     bringSelectedToFront,
-    broadcastAvatar,
-    broadcastAvatarPush,
-    broadcastAvatarSay,
-    avatarShove,
     fireReaction,
     pressFocusButton,
     focusInvite,
@@ -3503,7 +3472,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Side by side (docs/specs/007-editor/split-view.md) hands the editor a tab already aimed.
     skipTabFitRef,
     canvasTool,
-    exitAvatarTool,
     exitFormatTool,
     beginErase,
     chooseTemplate,
@@ -3610,7 +3578,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pollCollaborators,
     redo,
     refreshRecentImages,
-    remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
     removeImageFromElement,
@@ -3753,9 +3720,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setDecisionStatusSelected,
     setDecisionDateSelected,
     setDecisionDriversSelected,
-    setChairFacingSelected,
-    turnSelected,
-    setRoomDoorSelected,
     setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,

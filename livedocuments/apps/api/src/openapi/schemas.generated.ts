@@ -1868,7 +1868,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shopping",
       "social",
       "software",
-      "spaces",
       "speeches",
       "strategy",
       "support",

@@ -6,12 +6,12 @@ import {
   ELEMENT_FIELD_NAMES,
   FLOWCHART_STEP_KIND,
   LIVE_ELEMENT_FIELDS,
-  SHAPE_KINDS,
+  CREATABLE_SHAPE_KINDS,
   STICKY_PRESETS,
   TEXT_PX_MAX,
   TEXT_PX_MIN,
   THEMES,
-  TURNING_SHAPES,
+  RETIRED_FACING_KINDS,
   type Element,
   withArticle,
 } from '@livediagram/document';
@@ -39,7 +39,7 @@ function wrapped(words: readonly string[], indent: string, sep = ' '): string[] 
 
 // Every kind `add` makes: the boxed kinds, then the shape kinds.
 export function addableKinds(): string[] {
-  return [...OTHER_KINDS, ...SHAPE_KINDS];
+  return [...OTHER_KINDS, ...CREATABLE_SHAPE_KINDS];
 }
 
 export function elementKindsText(): string {
@@ -47,7 +47,7 @@ export function elementKindsText(): string {
     'Element kinds: add <kind> makes one; livediagram schema <kind> shows its fields.',
     `  ${OTHER_KINDS.join(', ')}`,
     '  shapes:',
-    ...wrapped([...SHAPE_KINDS], '    ', ', '),
+    ...wrapped([...CREATABLE_SHAPE_KINDS], '    ', ', '),
     '  arrow: connect <a> -> <b>',
     `  ${Object.keys(NOT_ADDED)
       .filter((k) => k !== 'arrow')
@@ -166,9 +166,9 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
   estimate: ['estimateScale'],
-  // docs/specs/009-elements/furniture-facing.md: every piece of furniture that turns takes a facing.
-  ...Object.fromEntries(TURNING_SHAPES.map((kind) => [kind, ['chairFacing']])),
-  // docs/specs/009-elements/office.md: which wall a room's doorway is in.
+  // Retired furniture (docs/specs/009-elements/retired-elements.md) still reads with its stored facing, and a
+  // retired room with its doorway.
+  ...Object.fromEntries(RETIRED_FACING_KINDS.map((kind) => [kind, ['chairFacing']])),
   room: ['roomDoor'],
   portal: ['portalTarget'],
 };

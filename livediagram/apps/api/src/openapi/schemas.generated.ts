@@ -672,7 +672,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "ChairFacing": {
-    "$ref": "#/components/schemas/SeatFacing"
+    "enum": [
+      "n",
+      "e",
+      "s",
+      "w"
+    ],
+    "type": "string"
   },
   "ChangesetAuthor": {
     "additionalProperties": false,
@@ -1296,7 +1302,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shopping",
       "social",
       "software",
-      "spaces",
       "speeches",
       "strategy",
       "support",
@@ -5054,14 +5059,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "RoomDoor": {
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w",
-      "none"
-    ],
-    "type": "string"
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/ChairFacing"
+      },
+      {
+        "const": "none",
+        "type": "string"
+      }
+    ]
   },
   "RunHeading": {
     "enum": [
@@ -5163,16 +5169,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "value",
       "percent",
       "none"
-    ],
-    "type": "string"
-  },
-  "SeatFacing": {
-    "description": "Where a piece's back is: 'n' at the top, so its front (and its sitter) faces down the canvas.",
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w"
     ],
     "type": "string"
   },

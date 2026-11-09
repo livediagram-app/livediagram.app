@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EDIT_KEYS, VIEW_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import { SHORTCUT_SECTIONS } from './shortcut-sections';
-import { avatarActionForKey } from '@liveworkspace/avatar/action-keys';
 
 // The Keyboard settings list and the key maps are two hand-kept lists of one thing.
 // The list calls itself "a reference card of every binding the editor knows"
@@ -27,10 +26,8 @@ const handledKeys = new Set([
 // deliberately outside the editor's maps — while a deck runs, the editor's
 // shortcuts are dead. So its rows describe real bindings that `handledKeys`
 // will never contain, and checking them against it would fail on the truth.
-// Avatar mode's keys are the same: the walk's own listeners (useAvatarKeys, useAvatarActionKeys) bind them.
 const EDITOR_SECTIONS = SHORTCUT_SECTIONS.filter(
-  (section) =>
-    section.heading !== 'While presenting' && !section.heading.startsWith('While walking'),
+  (section) => section.heading !== 'While presenting',
 );
 
 // Rows whose `keys` are a single printable character: the ones that name one
@@ -105,15 +102,9 @@ describe('the mind node keys', () => {
   });
 });
 
-describe('the While walking rows match the Avatar action keys', () => {
-  it('lists each action key once, on a key that plays it', () => {
-    const walking = SHORTCUT_SECTIONS.find((s) => s.heading.startsWith('While walking'))!;
-    const actionRows = walking.rows.filter((row) => /^[A-Z0-9]$/.test(row.keys[0]!));
-    expect(actionRows).toHaveLength(10);
-    for (const row of actionRows) {
-      const key = row.keys[0]!.toLowerCase();
-      const plain = { key, metaKey: false, ctrlKey: false, altKey: false, shiftKey: false };
-      expect(avatarActionForKey(plain), row.label).not.toBeNull();
-    }
+// Avatar mode moved to livehuddle (docs/specs/009-elements/retired-elements.md): no While walking rows remain.
+describe('the shortcuts list', () => {
+  it('has no While walking section', () => {
+    expect(SHORTCUT_SECTIONS.some((s) => s.heading.startsWith('While walking'))).toBe(false);
   });
 });

@@ -14,8 +14,7 @@ export function usePanelLayout() {
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): present only while the Laser tool is active, so
   // position only — there is nothing to minimise when leaving the tool dismisses the panel outright. (Poll and
-  // Vote open over the Session strip's buttons, and the Avatar panel over its own, so they keep no position:
-  // docs/specs/012-collaboration/session-tools.md, docs/specs/008-canvas/avatar-mode.md.)
+  // Vote open over the Session strip's buttons, so they keep no position: docs/specs/012-collaboration/session-tools.md.)
   const [laserPanelPosition, setLaserPanelPosition] = useState<Pos | null>(null);
   // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the same.
   const [spotlightPanelPosition, setSpotlightPanelPosition] = useState<Pos | null>(null);

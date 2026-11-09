@@ -14,8 +14,9 @@ The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 [org chart](../009-elements/org-chart.md)'s person node; the [sequence diagram](../009-elements/sequence-diagram.md); the
 [data charts](../009-elements/pie-chart.md); the [stack](../009-elements/stack.md); the
 [entity](../009-elements/entity.md); the
-[lane](../009-elements/lane.md); the [boundary](../009-elements/boundary.md); the
-[diagram key](../009-elements/diagram-key.md); and the [portal](../009-elements/portal-element.md).
+[lane](../009-elements/lane.md); the [boundary](../009-elements/boundary.md); and the
+[diagram key](../009-elements/diagram-key.md). (The portal's tour went with Avatar mode, [Not in
+livediagram](../002-project-scope/not-in-livediagram.md); its `PortalTour*` series are retired.)
 
 ## Domain language
 
@@ -59,8 +60,8 @@ section is still called **Show Me**. "Element tour" is the code's and the specs'
 
 ## Settings
 
-Settings' **Getting Started** category holds element tours in their own section, **Show Me**, below the mode tours'
-**Offer Again** section. It is a closed accordion (people rarely look for it): its header names the section and
+Settings' **Getting Started** category holds element tours in their own section, **Show Me**, below the Watch It Built
+sections. It is a closed accordion (people rarely look for it): its header names the section and
 how many are on (`1 of 1 On`). Opened, it shows the section's line, then **Show Me on Every Element**, one switch
 over them all (on while any is not yet taken; off marks every kind taken, on forgets every run), with one switch per
 toured kind nested beneath it, named for the element alone: **Sankey Diagram**, linking the Sankey Diagram article.
@@ -322,7 +323,7 @@ step puts it away. While it runs, Escape is the tour's and never closes the dial
 
 ## Menu steps on the elements of round two
 
-The chart, stack, entity, lane, boundary and portal are edited mostly from their own section of the
+The chart, stack, entity, lane and boundary are edited mostly from their own section of the
 element menu (More, then **Tools**). Their tours keep that step for everyone: it rings **More** while More shows, and
 otherwise the element itself, with "Right-click it" in place of "More".
 The tour points at the section by name; it never opens the menu itself.
@@ -413,18 +414,6 @@ On a selected diagram key, from `diagram-key-tour-steps.ts`. It has no menu sect
 3. **Its Title**: rings the key; "Key" by default, double-click (double-tap) to rename; it grows downward on its own.
 4. **That Is a Diagram Key**: the closing card, with **Diagram Keys Help**.
 
-## The Portal tour
-
-On a selected portal, from `portal-tour-steps.ts`.
-
-1. **A Way Through**: rings the portal; two linked portals are a shortcut across the canvas or to another tab.
-2. **Step Through** (a linked portal, this one's link or one into it): rings it; a click (tap) comes out of the other,
-   a drag only moves it. An unlinked portal instead has **Not Linked Yet**: a dim ring leads nowhere until linked.
-3. **Link It**: the menu step. Portal: Name, Leads To (a link works both ways), Create Portal (a linked partner
-   beside it).
-4. **Walk Into It**: rings the portal; an Avatar-mode character walking in steps out of the other.
-5. **That Is a Portal**: the closing card, with **Portals Help**.
-
 ## Share roles
 
 | Role        | Element tours                                                                                   |
@@ -435,13 +424,12 @@ On a selected portal, from `portal-tour-steps.ts`.
 
 The gate is the toured kind's own edit check on the session's `can` (for a Sankey, `canEditSankey`; for a concept
 graphic, a mind node (a person node included) or a flowchart step, an Editor on an unlocked element; for a sequence
-diagram, `canEditSequence`; for a chart, a stack, an entity, a lane, a boundary, a diagram key or a
-portal, an Editor on an unlocked element, since its data, its arrangement, its fields, the tab it shows, its gutter,
-its style, its meanings and its link are an Editor's), never `isReadOnly` alone.
+diagram, `canEditSequence`; for a chart, a stack, an entity, a lane, or a diagram key, an Editor on an unlocked element, since its data, its arrangement, its fields, the tab it shows, its gutter,
+its style and its meanings are an Editor's), never `isReadOnly` alone.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`, `ChartTour`, `StackTour`, `EntityTour`, `LaneTour`, `BoundaryTour`, `DiagramKeyTour`, `PortalTour`), named in its registry entry:
+Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`, `ChartTour`, `StackTour`, `EntityTour`, `LaneTour`, `BoundaryTour`, `DiagramKeyTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the Start Tour button shows that kind's tour in a
   page load. Until 25 October 2026 it counted the offer toolbar showing, and `UI` · `Closed` · `<Kind>TourOffer`
@@ -468,8 +456,7 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
   `EntityTourStepEntity`, `...Title`, `...Rows`, `...Menu`, `...Relate` and `...Outro`; the Lane's
   `LaneTourStepLane`, `...Gutter`, `...Seam`, `...Carry`, `...Menu` and `...Outro`; the Boundary's
   `BoundaryTourStepZone`, `...Title`, `...Meta`, `...Menu` and `...Outro`; the Diagram Key's `DiagramKeyTourStepKey`,
-  `...Meaning`, `...Empty`, `...Title` and `...Outro`; the Portal's `PortalTourStepPortal`, `...Travel`,
-  `...Unlinked`, `...Menu`, `...Walk` and `...Outro`.
+  `...Meaning`, `...Empty`, `...Title` and `...Outro`.
 - **End**: `UI` · `Ended` · `<Kind>TourCompleted` | `<Kind>TourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
@@ -499,8 +486,7 @@ help article's tour section; and a section here.
 - `apps/editor/components/tour/mind-node-tour-steps.ts`, `flowchart-tour-steps.ts`, `org-chart-tour-steps.ts`,
   `sequence-tour-steps.ts`: the Mind Map, Flowchart, Org Chart and Sequence tours' steps.
 - `apps/editor/components/tour/chart-tour-steps.ts`, `stack-tour-steps.ts`, `entity-tour-steps.ts`,
-  `lane-tour-steps.ts`, `boundary-tour-steps.ts`, `diagram-key-tour-steps.ts`,
-  `portal-tour-steps.ts`: the round-two tours' steps; `menu-tour-step.ts`: their menu step.
+  `lane-tour-steps.ts`, `boundary-tour-steps.ts`, `diagram-key-tour-steps.ts`: the round-two tours' steps; `menu-tour-step.ts`: their menu step.
 - `../packages/workbench/src/lib/dialog-handle.ts`: the slot an open dialog registers its tabs and close in, for a tour that runs inside
   it (`sankey-flows-dialog-handle.ts`, `sequence-dialog-handle.ts`, `chart-data-dialog-handle.ts`).
 - `../packages/workbench/src/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.

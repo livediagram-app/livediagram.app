@@ -11,6 +11,7 @@
 
 import type { ShapeKind } from './index';
 import { isSankeyShape } from './sankey-model';
+import { isRetiredShapeKind } from './retired-elements';
 import { REACTIONS, type Reaction } from '@liveworkspace/avatar/reaction-bursts';
 
 // The two progress ShapeKinds, grouped so renderers + context-menu gates can
@@ -217,17 +218,9 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isLegendShape(kind) ||
     isSankeyShape(kind) ||
     kind === 'sticker' ||
-    // A fence (docs/specs/009-elements/fence.md) is posts and rails, with nothing to write on.
-    kind === 'fence' ||
-    // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) is pixels, with nothing to write on.
-    kind === 'avatar-pad' ||
-    // The office's scenery and machines (docs/specs/009-elements/office.md) have nothing to write on; a room
-    // keeps its label (its name plate) and a meeting table and the furniture theirs (under them).
-    kind === 'plant' ||
-    kind === 'bookshelf' ||
-    kind === 'water-cooler' ||
-    kind === 'coffee-machine' ||
-    kind === 'rug' ||
+    // A retired piece (docs/specs/009-elements/retired-elements.md) is its placeholder card: kept as saved, with
+    // nothing to write on, mark or morph.
+    isRetiredShapeKind(kind) ||
     // A layer stack, a pyramid, an onion and a chevron process draw all their own text
     // (docs/specs/009-elements/concept-graphics.md); a cycle and a hub keep their label, the words at the centre.
     kind === 'layer-stack' ||
@@ -254,7 +247,7 @@ export function clampRating(value: number): number {
 export { clampPercent } from '@liveworkspace/model-core/progress-label';
 
 // Reaction pads (docs/specs/009-elements/reaction-pad.md). The five reactions, their names and glyphs, are
-// @liveworkspace/avatar's: a walking character throws the same bursts (docs/specs/008-canvas/avatar-mode.md).
+// @liveworkspace/avatar's: a walking character throws the same bursts (docs/specs/002-project-scope/not-in-livediagram.md).
 export * from '@liveworkspace/avatar/reaction-bursts';
 
 // Each reaction's colour, a pair of hues from one end of its glow to the other

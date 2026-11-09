@@ -462,7 +462,7 @@ and behaves as it always did (absent = off).
 ### Hide participant cursors (default **on**)
 
 While `vote.active`, peer **cursors**, peer **laser trails**, and peer
-**Avatar-mode characters** ([Avatar mode](../008-canvas/avatar-mode.md)) are neither drawn
+**Avatar-mode characters** (livehuddle's, [Not in livediagram](../002-project-scope/not-in-livediagram.md)) are neither drawn
 nor sent:
 
 - **Render:** `usePresenceRows` returns empty `remoteCursorRows` and

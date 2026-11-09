@@ -84,6 +84,7 @@ import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
 import { shadowFilterId, supportsShadow, svgShadowFilterDef } from './shadow';
+import { isRetiredElement } from './retired-elements';
 
 // The export descriptor layer (constants, ExportShape / resolver types,
 // describeBoxedExport) lives in svg-render-describe.ts; re-exported so
@@ -247,7 +248,8 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   // Drop shadow (docs/specs/008-canvas/element-shadows.md): reference the shared feDropShadow def the
   // document emitter collects via svgShadowDefs (deterministic id, so
   // this stays in lockstep without threading the def through).
-  const shadow = supportsShadow(el) ? el.shadow : undefined;
+  // A retired piece's placeholder (docs/specs/009-elements/retired-elements.md) is flat: its stored shadow is kept, not drawn.
+  const shadow = supportsShadow(el) && !isRetiredElement(el) ? el.shadow : undefined;
   const shadowAttr = shadow ? ` filter="url(#${shadowFilterId(shadow)})"` : '';
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;

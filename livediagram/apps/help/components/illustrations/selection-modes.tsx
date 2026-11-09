@@ -1,8 +1,7 @@
 // Selection-mode illustrations (docs/specs/018-help/help-app.md): the palette's canvas-tool picker
 // as the editor actually draws it (a trigger at the start of the palette strip that
 // opens a tile grid in three bands), the panels each tool opens while it is
-// active, the pixel character Avatar mode walks, and the isometric orbit
-// button. The per-mode canvas scenes in palette-modes.tsx put PickerTrigger on
+// active, and the isometric orbit button. The per-mode canvas scenes in palette-modes.tsx put PickerTrigger on
 // top, so every selection-mode article shows the same picker with its own tool
 // chosen.
 //
@@ -12,9 +11,7 @@
 
 import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, Panel, Label, Cursor } from '@liveworkspace/help-site/art/primitives';
-import { PixelCharacter } from '@liveworkspace/help-site/art/pixel-character';
 import {
-  AvatarGlyph,
   EraserGlyph,
   HandGlyph,
   IsoCard,
@@ -38,7 +35,6 @@ const TOOLS = [
   { key: 'format', label: 'Format', shortcut: undefined, band: 0, Glyph: PainterGlyph },
   { key: 'laser', label: 'Laser', shortcut: 'K', band: 1, Glyph: LaserGlyph },
   { key: 'spotlight', label: 'Spotlight', shortcut: undefined, band: 1, Glyph: SpotlightGlyph },
-  { key: 'avatar', label: 'Avatar', shortcut: 'W', band: 1, Glyph: AvatarGlyph },
   { key: 'slide-deck', label: 'Slide Deck', shortcut: undefined, band: 1, Glyph: SlideDeckGlyph },
   { key: 'isometric', label: 'Isometric', shortcut: 'I', band: 2, Glyph: IsometricGlyph },
   { key: 'zen', label: 'Zen', shortcut: 'Z', band: 2, Glyph: ZenGlyph },
@@ -538,25 +534,6 @@ export function SpotlightTool() {
           below B's label so the lit shape still reads. No ring: the light's edge is the shroud. */}
       <circle cx={234} cy={166} r={8} className="fill-sky-400/30" />
       <circle cx={234} cy={166} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
-    </Scene>
-  );
-}
-
-// --- Avatar -----------------------------------------------------------------
-
-/** Walking together: your character (no chip) beside two colleagues', each in
- *  their participant colour with a name chip, one of them on the box being
- *  discussed. */
-export function WalkingTogether() {
-  return (
-    <Scene w={420} h={220}>
-      <Shape x={40} y={60} w={96} h={48} label="Sign up" />
-      <Shape x={250} y={60} w={150} h={48} accent label="Payment" />
-      {/* No ring under Priya: only your own character rings what it stands on (Canvas.tsx). */}
-      <Arrow from={[136, 84]} to={[250, 84]} tone="muted" />
-      <PixelCharacter fx={92} fy={196} />
-      <PixelCharacter fx={204} fy={186} shirt="emerald" name="Sam" hair="fill-slate-800" />
-      <PixelCharacter fx={272} fy={112} shirt="violet" name="Priya" hair="fill-slate-900" />
     </Scene>
   );
 }

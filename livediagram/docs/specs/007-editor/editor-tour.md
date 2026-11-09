@@ -34,7 +34,7 @@ the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), t
   Search, Settings or the appearance switch.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
   `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): the selected element's own
-  tour first, then a tool in hand or a surface on the tab (the Avatar tour), then the tab's
+  tour first, then the tab's
   mode (Diagram, Draw, Workshop). Between two of the same rank, the one published last wins. With
   no tour on offer the button is not drawn.
 - **Only in Diagram mode.** This tour is on offer, and runs, only while the open tab is in Diagram mode, to an

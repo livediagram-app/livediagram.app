@@ -6,7 +6,7 @@
 import type { EditRejection } from '@livediagram/api-schema';
 import {
   SHAPE_DEFAULT_SIZE,
-  SHAPE_KINDS,
+  CREATABLE_SHAPE_KINDS,
   coerceShapeKind,
   createAnnotation,
   createLinkCard,
@@ -16,6 +16,8 @@ import {
   EVENT_STORMING_NOTES,
   eventStormingNoteFields,
   createText,
+  isRetiredShapeKind,
+  retiredKindRefusal,
   kindWordOf,
   LABEL_FONT_PX,
   labelBoxSize,
@@ -64,12 +66,14 @@ export type Built = { el: BoxedElement; coerced: string | null };
 export function buildKind(kind: string): Built | { refusal: string } {
   const refused = NOT_ADDED[kind];
   if (refused !== undefined) return { refusal: refused };
+  // A piece that moved to livehuddle (docs/specs/009-elements/retired-elements.md "Nothing new").
+  if (isRetiredShapeKind(kind)) return { refusal: retiredKindRefusal(kind) };
   const factory = FACTORIES[kind];
   if (factory) return { el: { ...factory(), textSize: 'sm' }, coerced: null };
   const shape = kind === 'shape' ? 'square' : coerceShapeKind(kind);
   return {
     el: { ...createShape(shape, 0, 0), textSize: 'sm' },
-    coerced: kind === 'shape' || SHAPE_KINDS.has(kind) ? null : shape,
+    coerced: kind === 'shape' || CREATABLE_SHAPE_KINDS.has(kind) ? null : shape,
   };
 }
 

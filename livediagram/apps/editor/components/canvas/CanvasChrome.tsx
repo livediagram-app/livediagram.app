@@ -56,7 +56,6 @@ import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-it
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
-import { AvatarClusterButton } from '@/components/canvas/AvatarClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { loadWhiteboardDock } from '@/lib/editor-deferred-code';
@@ -105,29 +104,8 @@ type ChromeExtras = {
   // Reset the isometric camera to its default angle (wired to
   // `isoCamera.reset`) — fired when the dock orbit button is clicked.
   onIsoReset: () => void;
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the character's customisation, owned by
-  // useAvatarConfig in Canvas (it persists per browser, so it lives with the
-  // sprite rather than in the editor's document state) and edited by the
-  // Avatar Panel down in the chrome.
-  avatarConfig: import('@liveworkspace/avatar/config').AvatarConfig;
-  onChangeAvatarField: <K extends keyof import('@liveworkspace/avatar/config').AvatarConfig>(
-    field: K,
-    value: import('@liveworkspace/avatar/config').AvatarConfig[K],
-  ) => void;
-  // Roll a whole new character, and play one of the panel's reactions.
-  onRandomiseAvatar: () => void;
-  onAvatarReaction: (kind: import('@liveworkspace/avatar/reactions').AvatarReactionKind) => void;
-  // Throw one of the Reaction Pad's bursts (docs/specs/009-elements/reaction-pad.md) around the character.
-  onAvatarBurst?: (reaction: import('@livediagram/document').Reaction) => void;
-  // Say something from the Avatar panel (docs/specs/008-canvas/avatar-mode.md "The message popover"): absent for
-  // a Viewer, who may not speak. Answers whether the message went; `avatarSpeechCooling` holds Send meanwhile.
-  onSendAvatarMessage?: (text: string) => boolean;
-  // Your status (docs/specs/008-canvas/avatar-mode.md "Status"), set from the Avatar panel.
-  avatarStatus?: import('@liveworkspace/avatar/status').AvatarStatus | null;
-  onSetAvatarStatus?: (status: import('@liveworkspace/avatar/status').AvatarStatus | null) => void;
-  avatarSpeechCooling?: boolean;
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
-  // persists per browser, like the avatar's costume) and edited down here.
+  // persists per browser) and edited down here.
   laserConfig?: import('@/lib/laser-config').LaserConfig;
   onChangeLaserField?: <K extends keyof import('@/lib/laser-config').LaserConfig>(
     field: K,
@@ -359,7 +337,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     collaborateEl,
     sessionPopoverEl,
     tidyUpPopoverEl,
-    avatarPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
     props,
@@ -525,7 +502,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           against the canvas, so it renders outside the corner layer, as Layers does. */}
       {zenMode ? null : collaborateEl}
       {tidyUpPopoverEl}
-      {avatarPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
       {paletteShown ? (
@@ -537,7 +513,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           hidden={chromeHidden}
           canvasTool={canvasTool}
           onSetCanvasTool={props.onSetCanvasTool}
-          onExitAvatarMode={props.onExitAvatarMode}
           onToggleZen={onToggleZen}
           canvasEmpty={elements.length === 0}
           {...pickPaletteAddHandlers(props)}
@@ -617,15 +592,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onRedo={onRedo}
                 canUndo={canUndo}
                 canRedo={canRedo}
-              />
-            ) : null}
-            {/* Avatar (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): beside Undo / Redo while the mode
-                is on, for every role, Zen included: it is the mode's one piece of chrome. */}
-            {props.canvasTool === 'avatar' ? (
-              <AvatarClusterButton
-                popoverOpen={activeDockPanel === 'avatar'}
-                onTogglePopover={(button) => handleDockButtonClick('avatar', button, true)}
-                canSpeak={!!props.onSendAvatarMessage}
               />
             ) : null}
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of

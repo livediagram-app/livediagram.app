@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ELEMENT_FIELD_NAMES } from '@livediagram/document';
+import { ELEMENT_FIELD_NAMES, isRetiredShapeKind } from '@livediagram/document';
 import { estimateTokens } from '@livediagram/document-views';
 import {
   addableKinds,
@@ -50,7 +50,11 @@ describe('the element format', () => {
     const stored = new Set<string>(ELEMENT_FIELD_NAMES.shape);
     for (const field of [...SHAPE_COMMON_FIELDS, ...Object.values(SHAPE_KIND_FIELDS).flat()])
       expect(stored.has(field), field).toBe(true);
-    for (const kind of Object.keys(SHAPE_KIND_FIELDS)) expect(addableKinds()).toContain(kind);
+    // A retired kind (docs/specs/009-elements/retired-elements.md) keeps its fields for a read, but is never added.
+    for (const kind of Object.keys(SHAPE_KIND_FIELDS)) {
+      if (isRetiredShapeKind(kind)) expect(addableKinds()).not.toContain(kind);
+      else expect(addableKinds()).toContain(kind);
+    }
   });
 
   it('teaches an add form the parser reads', () => {

@@ -24,7 +24,7 @@ import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
-import { isSeatingShape } from './seating';
+import { isRetiredElement } from './retired-elements';
 import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
@@ -405,14 +405,16 @@ export function describeBoxedExport(
 }
 
 // A shape that writes its own text, so no centred label is printed over it: a self-drawing shape
-// (charts; the legend is its own case), a Collaborate panel, a Behaviour face other than the chair, a
+// (charts; the legend is its own case), a Collaborate panel, a Behaviour face or a retired placeholder, a
 // web component.
 export function selfLabelled(el: BoxedElement): boolean {
   if (el.type !== 'shape') return false;
   return (
     (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
     isCollabPanelShape(el.shape) ||
-    (BEHAVIOUR_FACE_SHAPES.has(el.shape) && !isSeatingShape(el.shape) && el.shape !== 'room') ||
+    BEHAVIOUR_FACE_SHAPES.has(el.shape) ||
+    // A retired piece's placeholder writes its own name and label (docs/specs/009-elements/retired-elements.md).
+    isRetiredElement(el) ||
     isWebComponentShape(el.shape) ||
     // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
     el.shape === 'boundary' ||

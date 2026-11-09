@@ -3,7 +3,7 @@
 // cycle observable at runtime.
 import type { Element, ElementId, Tab } from './index';
 import { eventStormingKindOf } from './event-storming';
-import { isFloorShape } from './office';
+import { isRetiredFloorKind } from './retired-elements';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md). A tab optionally carries an ordered
 // `layers` array (BOTTOM -> TOP: index 0 paints lowest) and each element
@@ -72,14 +72,14 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 // Array order decides within a tier.
 function paintTier(el: Element): number {
   // Frames and boundaries are backdrops (docs/specs/009-elements/boundary.md "A container"), and so are an office's
-  // floors (docs/specs/009-elements/office.md): a room and a rug lie under the furniture however they were added (drawn
+  // floors (docs/specs/009-elements/retired-elements.md): a room and a rug lie under the furniture however they were added (drawn
   // to size, pasted, by an agent), and the larger paints first, so a rug lies on its room's floor.
   if (
     el.type === 'shape' &&
     (el.shape === 'frame' ||
       el.shape === 'boundary' ||
       el.shape === 'stack' ||
-      isFloorShape(el.shape))
+      isRetiredFloorKind(el.shape))
   )
     return 0;
   // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything in its band, so a

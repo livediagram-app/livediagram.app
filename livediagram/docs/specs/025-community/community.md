@@ -127,8 +127,11 @@ categories](../../../../liveworkspace/docs/specs/007-community/community.md#movi
 | `software`  | Software & IT         |
 | `strategy`  | Strategy              |
 | `learning`  | Teaching & Learning   |
-| `spaces`    | Virtual Spaces        |
 | `other`     | Something Else        |
+
+Virtual Spaces (`spaces`) was retired on 9 November 2026, when Spaces moved to livehuddle
+([Not in livediagram](../002-project-scope/not-in-livediagram.md)): its posts read as Something Else, moved there by
+the community's migration 0005 ([community](../../../../liveworkspace/docs/specs/007-community/community.md)).
 
 The month's most liked posts in each category also show in the editor's template starts, after that category's
 templates ([Start Diagramming "From the Community"](../007-editor/start-diagramming.md#from-the-community)).

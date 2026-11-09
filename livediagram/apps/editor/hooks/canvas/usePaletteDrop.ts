@@ -7,13 +7,11 @@
 // onDragOver / onDrop handlers to spread onto the
 // canvas <main>.
 
-import { useEffect, type DragEvent as ReactDragEvent, type RefObject } from 'react';
-import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import type { DragEvent as ReactDragEvent, RefObject } from 'react';
 import type { ShapeKind } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { ICON_DND_MIME, PALETTE_DND_MIME, STICKER_DND_MIME, TECH_ICON_DND_MIME } from '@/lib/icons';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
-import { lastCarryDrop, subscribeCarryDrop } from '@/lib/palette-carry';
 import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
 import {
   LIBRARY_SHAPE_DND_MIME,
@@ -162,25 +160,6 @@ export function usePaletteDrop({
       );
   };
 
-  // A tile carried by the pointer (lib/palette-carry.ts, the tiles of pieces that turn) and released over the
-  // canvas lands exactly as a dropped one: same point, same snap, same drop. The carry already ruled out a release
-  // over a floating panel. Read through the latest-value ref, so the subscription is made once.
-  const carried = useLatest({ onDropPalette, viewportZoom, wrapperRef });
-  useEffect(
-    () =>
-      subscribeCarryDrop(() => {
-        const drop = lastCarryDrop();
-        const { onDropPalette: land, viewportZoom: zoom, wrapperRef: wrapper } = carried.current;
-        const rect = wrapper.current?.getBoundingClientRect();
-        if (!drop || !rect || !land) return;
-        // Released over this canvas, not another one (a split view shows two).
-        const main = wrapper.current?.closest('main');
-        if (main && !main.contains(drop.target)) return;
-        const at = snappedDropPoint(drop.clientX, drop.clientY, rect, zoom);
-        land(drop.kind, at.x, at.y, drop.choice ? { choice: drop.choice } : undefined);
-      }),
-    [carried],
-  );
   return { onDragOver, onDrop };
 }
 

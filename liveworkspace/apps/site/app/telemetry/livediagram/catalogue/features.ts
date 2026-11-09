@@ -566,7 +566,6 @@ const MODE_TITLES: Record<string, string> = {
   Eraser: 'Eraser',
   FormatPainter: 'Format Painter',
   Isometric: 'Isometric',
-  AvatarMode: 'Avatar Mode',
 };
 
 export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
@@ -579,75 +578,11 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
   ),
 );
 
-// The office's machines (docs/specs/009-elements/office.md "Using it"): a drink taken in Avatar mode.
-export const OFFICE_DRINKS = chart(
-  'Canvas',
-  'Used',
-  'Office Drinks',
-  'A drink taken at a water cooler or a coffee machine in Avatar mode.',
-  { types: ['WaterCooler', 'CoffeeMachine'] },
-);
-
-// Avatar Pad arrivals (docs/specs/009-elements/avatar-pad.md "Telemetry"): an entry into Avatar mode that started on a
-// pad, once per entry, never per peer seen arriving.
-export const AVATAR_PAD_ARRIVALS = chart(
-  'Canvas',
-  'Used',
-  'Avatar Pad Arrivals',
-  'An entry into Avatar mode that started on an Avatar Pad, the character beamed in.',
-  { types: ['AvatarPadArrival'] },
-);
-
-// Avatar-mode speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): that somebody spoke, by
-// either door, never what they said.
-export const AVATAR_MESSAGES = chart(
-  'Canvas',
-  'Used',
-  'Avatar Messages',
-  'A message said in a speech bubble in Avatar mode, typed above the character or sent from the Avatar panel.',
-  { types: ['AvatarMessage', 'AvatarMessagePanel'] },
-);
-
-// What a character does in Avatar mode (docs/specs/008-canvas/avatar-mode.md, docs/specs/009-elements/chair.md):
-// a move from the Behaviour panel, a Reactions burst, sitting on a chair. Never which, never where.
-export const AVATAR_ACTIONS = chart(
-  'Canvas',
-  'Used',
-  'Avatar Actions',
-  'A move performed from the Avatar panel\u2019s Behaviour or its keys: a wave, a spin, a cheer, a dance or jumping jacks.',
-  { types: ['AvatarAction'] },
-);
-
-export const AVATAR_REACTIONS = chart(
-  'Canvas',
-  'Used',
-  'Avatar Reactions',
-  'A burst played round the character from the Avatar panel\u2019s Reactions: confetti, sparkles, hearts, applause or fireworks.',
-  { types: ['AvatarReaction'] },
-);
-
-export const SITS = chart(
-  'Canvas',
-  'Used',
-  'Sat Down',
-  'A character sat on a chair, a sofa or another piece with a seat.',
-  { types: ['Sit'] },
-);
-
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [
-    ...MODE_METRICS,
-    OFFICE_DRINKS,
-    AVATAR_PAD_ARRIVALS,
-    AVATAR_MESSAGES,
-    AVATAR_ACTIONS,
-    AVATAR_REACTIONS,
-    SITS,
-    MODE_OPTIONS,
-  ],
+  members: [...MODE_METRICS, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
@@ -768,13 +703,6 @@ export const DRAW_TOUR_OFFERED = opened(
   'Draw Tour Offered',
   'The Draw tour offered, the first time someone works in Draw mode. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => t === 'DrawTourOffer',
-);
-
-// The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
-export const AVATAR_TOUR_OFFERED = opened(
-  'Avatar Tour Offered',
-  'The Avatar tour offered, the first time someone walks as an avatar. Since 25 October 2026, the Start Tour button in the footer showing it.',
-  (t) => t === 'AvatarTourOffer',
 );
 
 // The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on

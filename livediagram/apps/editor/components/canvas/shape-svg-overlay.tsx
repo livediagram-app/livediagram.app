@@ -7,6 +7,7 @@ import {
   type ShapeKind,
   type ShapePart,
   type ShapePartRole,
+  isRetiredShapeKind,
 } from '@livediagram/document';
 import { useRef, type CSSProperties, type SVGAttributes } from 'react';
 import { useTraceDashes } from '@liveworkspace/workbench/components/canvas/useTraceDashes';
@@ -101,14 +102,8 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // content on top, and the rest paint their own surfaces (they are
     // self-painting, so the box path gives them a bare wrapper).
     !isWebComponentShape(kind) &&
-    // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it.
-    kind !== 'chair' &&
-    // A fence, a desk and a sofa (docs/specs/009-elements/fence.md, chair.md) draw themselves too.
-    kind !== 'fence' &&
-    // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels.
-    kind !== 'avatar-pad' &&
-    kind !== 'desk' &&
-    kind !== 'sofa'
+    // A retired piece (docs/specs/009-elements/retired-elements.md) is its own placeholder card.
+    !isRetiredShapeKind(kind)
   );
 }
 

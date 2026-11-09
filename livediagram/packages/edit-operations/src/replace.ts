@@ -19,6 +19,8 @@ import {
   landWorkshopArrivals,
   normaliseElements,
   resolveGraphInput,
+  retiredCreateRefusal,
+  withNewButtonModes,
   type Element,
   type GraphInput,
   type Tab,
@@ -31,7 +33,7 @@ import {
 } from '@livediagram/templates';
 import { tabRejection } from './finalise';
 import { graphBodyIssue } from './graph-body';
-import { invalidResult, tabLocked } from './rejections';
+import { invalidResult, retiredRefusal, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
 
@@ -72,8 +74,16 @@ function fromElements(
       const ref = typeof subject.id === 'string' && subject.id !== '' ? subject.id : 'an element';
       return invalidResult(ref, typeof subject.type === 'string' ? subject.type : undefined, issue);
     }
+    // A piece that moved to livehuddle may stay where the tab already has it, never arrive new
+    // (docs/specs/009-elements/retired-elements.md "Nothing new").
+    // Validated above, so the element has its id.
+    const { id } = el as Element;
+    const retired = kept.has(id) ? null : retiredCreateRefusal(el as Element);
+    if (retired) return retiredRefusal(id, retired);
   }
-  const valid = normalised as Element[];
+  // A new Selection Mode button with no mode hands out the new default, never the retired Avatar one an absent
+  // mode once meant (docs/specs/009-elements/mode-button.md).
+  const valid = withNewButtonModes(normalised as Element[], kept);
   const coerced = valid.map((el) =>
     el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
   );

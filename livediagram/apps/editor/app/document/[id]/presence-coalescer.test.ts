@@ -5,7 +5,6 @@ import {
   type LaserTrail,
   type PresenceCoalescer,
 } from './presence-coalescer';
-import type { AvatarPresence } from '@livediagram/api-schema';
 
 // The coalescer is the one part of the room that treats a packet as a sample
 // rather than an event: many arrive per frame and exactly one state commit
@@ -45,14 +44,12 @@ type Harness = {
   presence: PresenceCoalescer;
   cursors: () => Map<string, CursorPos>;
   lasers: () => Map<string, LaserTrail>;
-  avatars: () => Map<string, { tabId: string; avatar: AvatarPresence }>;
   commits: () => number;
 };
 
 function setup(): Harness {
   let cursors = new Map<string, CursorPos>();
   let lasers = new Map<string, LaserTrail>();
-  let avatars = new Map<string, { tabId: string; avatar: AvatarPresence }>();
   let commits = 0;
   const apply =
     <T>(get: () => T, set: (v: T) => void) =>
@@ -69,21 +66,15 @@ function setup(): Harness {
       () => lasers,
       (v) => (lasers = v),
     ),
-    setRemoteAvatars: apply(
-      () => avatars,
-      (v) => (avatars = v),
-    ),
   });
   return {
     presence,
     cursors: () => cursors,
     lasers: () => lasers,
-    avatars: () => avatars,
     commits: () => commits,
   };
 }
 
-const avatarOf = (x: number) => ({ x, y: 0 }) as unknown as AvatarPresence;
 const point = (x: number) => ({ x, y: 0, t: x });
 
 describe('createPresenceCoalescer', () => {
@@ -103,7 +94,7 @@ describe('createPresenceCoalescer', () => {
     h.presence.cursor('peer', { tabId: 't1', x: 1, y: 0 });
     runFrame();
     // Only cursors moved, so only that setter is called — a frame must not
-    // churn the laser and avatar maps and re-render their consumers.
+    // churn the laser map and re-render their consumers.
     expect(h.commits()).toBe(1);
   });
 
@@ -112,13 +103,11 @@ describe('createPresenceCoalescer', () => {
     const h = setup();
     h.presence.cursor('gone', { tabId: 't1', x: 5, y: 0 });
     h.presence.laser('gone', { tabId: 't1', point: point(1) });
-    h.presence.avatar('gone', { tabId: 't1', avatar: avatarOf(1) });
     h.presence.cursor('here', { tabId: 't1', x: 1, y: 0 });
     h.presence.prune(new Set(['here']));
     runFrame();
     expect(h.cursors().has('gone')).toBe(false);
     expect(h.lasers().has('gone')).toBe(false);
-    expect(h.avatars().has('gone')).toBe(false);
     expect(h.cursors().get('here')).toEqual({ tabId: 't1', x: 1, y: 0 });
   });
 
@@ -128,18 +117,6 @@ describe('createPresenceCoalescer', () => {
     runFrame();
     expect(h.cursors().has('peer')).toBe(true);
     expect(h.cursors().get('peer')).toBeNull();
-  });
-
-  it('DELETES an avatar rather than storing a null one', () => {
-    // Asymmetric with cursors on purpose: nothing renders a character that
-    // isn't there, so the map stays as big as the number of people walking.
-    const h = setup();
-    h.presence.avatar('peer', { tabId: 't1', avatar: avatarOf(1) });
-    runFrame();
-    expect(h.avatars().has('peer')).toBe(true);
-    h.presence.avatar('peer', null);
-    runFrame();
-    expect(h.avatars().has('peer')).toBe(false);
   });
 
   it('accumulates laser points within one frame', () => {
@@ -230,60 +207,5 @@ describe('createPresenceCoalescer', () => {
     expect(rafCalls).toBe(2);
     runFrame();
     expect(h.cursors().get('peer')).toEqual({ tabId: 't1', x: 2, y: 0 });
-  });
-});
-
-// docs/specs/008-canvas/avatar-mode.md "A busy room", "The costume rides only when it is needed".
-describe('createPresenceCoalescer with lean avatar packets', () => {
-  const costume = { gender: 'female', clothing: 'hoodie', hair: 'bun', size: 'regular' } as const;
-  const lean = (x: number, withCostume = false) => ({
-    x,
-    y: 0,
-    facing: 'down' as const,
-    walking: true,
-    ...(withCostume ? { config: costume } : null),
-  });
-
-  it('keeps the last costume seen from a peer, and fills the resting values back in', () => {
-    const h = setup();
-    h.presence.avatar('peer', { tabId: 't1', avatar: lean(1, true) });
-    runFrame();
-    h.presence.avatar('peer', { tabId: 't1', avatar: lean(2) });
-    runFrame();
-    expect(h.avatars().get('peer')).toEqual({
-      tabId: 't1',
-      avatar: { ...lean(2), config: costume, stepFrame: 0, lift: 0, wave: null },
-    });
-  });
-
-  it('keeps a costume a packet held back in the same frame carried', () => {
-    const h = setup();
-    h.presence.avatar('peer', { tabId: 't1', avatar: lean(1, true) });
-    h.presence.avatar('peer', { tabId: 't1', avatar: lean(2) });
-    runFrame();
-    expect(h.avatars().get('peer')?.avatar.config).toEqual(costume);
-    expect(h.avatars().get('peer')?.avatar.x).toBe(2);
-  });
-
-  it('draws a peer whose costume it was never sent without one, until one arrives', () => {
-    const h = setup();
-    h.presence.avatar('peer', { tabId: 't1', avatar: lean(1) });
-    runFrame();
-    expect(h.avatars().get('peer')?.avatar.config).toBeUndefined();
-    const other = { ...costume, hair: 'afro' } as const;
-    h.presence.avatar('peer', { tabId: 't1', avatar: { ...lean(2), config: other } });
-    runFrame();
-    expect(h.avatars().get('peer')?.avatar.config).toEqual(other);
-  });
-
-  it('forgets the costume once the peer has left the mode', () => {
-    const h = setup();
-    h.presence.avatar('peer', { tabId: 't1', avatar: lean(1, true) });
-    runFrame();
-    h.presence.avatar('peer', null);
-    runFrame();
-    h.presence.avatar('peer', { tabId: 't1', avatar: lean(3) });
-    runFrame();
-    expect(h.avatars().get('peer')?.avatar.config).toBeUndefined();
   });
 });

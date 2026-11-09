@@ -14,8 +14,6 @@
 
 import type { Element, ShapeElement, Tab } from '@livediagram/document';
 
-type PortalBox = { x: number; y: number; width: number; height: number; label?: string };
-
 // Every portal on the tab, in element order — the candidate list the "where does
 // this portal lead?" picker offers.
 export function portalsOnTab(elements: Element[]): ShapeElement[] {
@@ -114,12 +112,13 @@ export function resolvePortalDestination(
   return target ? { portal: target, tabId: activeTabId, elements } : null;
 }
 
-// Where a character stands when it comes OUT of a portal: centred on the ring,
-// at its base (the bottom edge), since the avatar's position is its feet.
-export function portalExitPoint(portal: PortalBox): { x: number; y: number } {
-  return { x: portal.x + portal.width / 2, y: portal.y + portal.height };
+// The viewport offset that centres a portal in a viewport of this size: the camera's landing after travel.
+export function viewportOffsetCentredOn(
+  box: { x: number; y: number; width: number; height: number },
+  size: { width: number; height: number },
+): { x: number; y: number } {
+  return {
+    x: size.width / 2 - (box.x + box.width / 2),
+    y: size.height / 2 - (box.y + box.height / 2),
+  };
 }
-
-// The viewport offset that centres a portal in the viewport is the walk's camera maths too
-// (@liveworkspace/avatar/walk), re-exported for the portal travel.
-export { viewportOffsetCentredOn } from '@liveworkspace/avatar/walk';

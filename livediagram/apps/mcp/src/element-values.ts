@@ -8,6 +8,7 @@ import {
   ELEMENT_FIELD_NAMES,
   chipLabelIssue,
   elementValidationIssue,
+  retiredCreateRefusal,
   fieldValueIssue,
   withArticle,
   type Element,
@@ -102,6 +103,9 @@ export function tabElementsIssue(elements: readonly unknown[]): string | null {
     const where = id !== null ? `element "${id}"` : `element ${i + 1}`;
     const issue = elementValidationIssue(el);
     if (issue) return `${where}: "${issue.field}" must be ${issue.rule}.`;
+    // A piece that moved to livehuddle is never made new (docs/specs/009-elements/retired-elements.md).
+    const retired = retiredCreateRefusal(el as { type: string });
+    if (retired) return `${where}: ${retired}`;
     // A chip's label cap holds for agent writes (docs/specs/009-elements/badge.md "The cap holds for agents").
     const chip = chipLabelIssue(el);
     if (chip) return `${where}: ${chip.rule}.`;

@@ -17,6 +17,8 @@ import {
   isValidTab,
   normaliseElements,
   resolveGraphInput,
+  withNewButtonModes,
+  type Element,
   type Tab,
 } from '@livediagram/document';
 import {
@@ -177,7 +179,7 @@ export function registerTools(server: McpServer, env: Env): void {
       if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
       const ended = resolveArrowEnds(drawn.elements, idsOf(drawn.elements));
       if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
-      const finished = normaliseElements(ended.elements);
+      const finished = withNewButtonModes(normaliseElements(ended.elements) as Element[]);
       const candidate: unknown = { id: tabId, name: t.name, elements: finished };
       // What is wrong, named, before the general shape of an element.
       const shapeIssue = t.elements ? tabElementsIssue(finished) : null;

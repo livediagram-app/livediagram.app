@@ -31,7 +31,6 @@ import {
 import { boardShape, whiteboardPenIntent } from '@/lib/whiteboard-tool';
 import { loadWhiteboardPrefs, type WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
-import { withPlacingFacing } from '@/lib/placing-facing';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
 import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
@@ -198,20 +197,16 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       track('Element', 'Added', componentTelemetryType(intent.kind));
       return;
     }
-    // A piece that turns lands the way Space turned it while armed (docs/specs/009-elements/furniture-facing.md
-    // "Turning while placing"), about the centre the tap put it at.
     const dressed = dress(
-      withPlacingFacing(
-        buildDrawnBoxed(
-          intent,
-          startX,
-          startY,
-          endX,
-          endY,
-          inheritSizeRef.current,
-          activeTab,
-          drawMode,
-        ),
+      buildDrawnBoxed(
+        intent,
+        startX,
+        startY,
+        endX,
+        endY,
+        inheritSizeRef.current,
+        activeTab,
+        drawMode,
       ),
     );
     // A preset's own colour (the Warning badge's rose) outlasts the theme and the remembered style it was dressed in.

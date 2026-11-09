@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-While the **Laser** tool ([Canvas and palette](canvas-and-palette.md)) is active, a **Laser** panel is present: the pen's settings (width, colour, trail length, and effect). The same relationship the [Avatar Panel](avatar-mode.md) has with Avatar mode.
+While the **Laser** tool ([Canvas and palette](canvas-and-palette.md)) is active, a **Laser** panel is present: the pen's settings (width, colour, trail length, and effect).
 
 ## Why
 

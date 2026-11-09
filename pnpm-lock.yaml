@@ -1447,9 +1447,6 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
-      '@liveworkspace/avatar':
-        specifier: workspace:*
-        version: link:../../../packages/avatar
       '@liveworkspace/community-ui':
         specifier: workspace:*
         version: link:../../../packages/community-ui
@@ -2290,9 +2287,6 @@ importers:
         specifier: workspace:*
         version: link:../document
     devDependencies:
-      '@liveworkspace/avatar':
-        specifier: workspace:^
-        version: link:../../../packages/avatar
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config

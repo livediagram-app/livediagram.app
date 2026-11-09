@@ -105,9 +105,6 @@ unchanged; only the mode they open in moved from Diagram.
   Tree, Flywheel, Sequence Diagram) and stays a diagram, and a sticky board one person keeps for themselves stays a
   diagram too (**Eisenhower Matrix**, a person's own week, and **30-60-90 Day Plan**, a new starter's own plan).
   Event Storming is its own kind of tab and keeps its own mode.
-- The spaces: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
-  (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), in the **Virtual Spaces** category ([Virtual Office
-  template](../012-collaboration/virtual-office-template.md)).
 - The games: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions** (`icebreaker-questions`), **Two Truths and a Lie**
   (`two-truths-and-a-lie`), **Would You Rather** (`would-you-rather`) and **Find Someone Who Bingo**
   (`people-bingo`), in **Quizzes & Games** ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).

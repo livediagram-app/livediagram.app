@@ -2,9 +2,13 @@
 
 import dynamic from 'next/dynamic';
 import type { CSSProperties, ReactNode } from 'react';
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
 import {
-  DEFAULT_BUTTON_MODE,
+  BORDER_STROKE_PX,
+  DEFAULT_BORDER_STROKE,
+  isButtonMode,
+  isRetiredElement,
+} from '@livediagram/document';
+import {
   PADDING_PX,
   reactionOf,
   defaultFillColor,
@@ -36,6 +40,7 @@ import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
+import { RetiredElementFace } from '@/components/canvas/RetiredElementFace';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
@@ -200,7 +205,9 @@ export function ElementFaceRouter({
     !isEditing &&
     !readOnly &&
     onOpenElementSettings &&
-    carriesSharedSettingsMenu(element.shape) ? (
+    carriesSharedSettingsMenu(element.shape) &&
+    // A retired Avatar button is a placeholder, not a Selection Mode button: no `…` (retired-elements.md).
+    !isRetiredElement(element) ? (
       <ElementSettingsButton
         label={`${elementKindLabel(element)} settings`}
         color={textColor}
@@ -220,20 +227,26 @@ export function ElementFaceRouter({
   return (
     <>
       {settingsMenu}
-      {/* Mode button (docs/specs/009-elements/mode-button.md): a pressable face instead of a plain label —
+      {/* A retired piece (docs/specs/009-elements/retired-elements.md): its placeholder card. Mid-edit it falls through
+          to the label editor like any shape, and the new label becomes the card's title. */}
+      {element.type === 'shape' && isRetiredElement(element) && !isEditing ? (
+        <RetiredElementFace element={element} label={label} />
+      ) : /* Mode button (docs/specs/009-elements/mode-button.md): a pressable face instead of a plain label —
           the mode's glyph plus the author's call to action. Mid-edit it falls
           through to the normal label editor below, so the text is retyped like
-          any other shape's. */}
-      {element.type === 'shape' && element.shape === 'mode-button' && !isEditing ? (
+          any other shape's. */
+      element.type === 'shape' &&
+        element.shape === 'mode-button' &&
+        isButtonMode(element.mode) &&
+        !isEditing ? (
         <ModeButtonFace
-          mode={element.mode ?? DEFAULT_BUTTON_MODE}
+          mode={element.mode}
           label={label}
           activeMode={activeMode}
           textColor={textColor}
           // A mode a read-only session lacks (the Eraser, Format Painter) draws an inert face for it.
           onPress={
-            onPressModeButton &&
-            (!readOnly || PARTICIPANT_CANVAS_TOOLS.includes(element.mode ?? DEFAULT_BUTTON_MODE))
+            onPressModeButton && (!readOnly || PARTICIPANT_CANVAS_TOOLS.includes(element.mode))
               ? () => onPressModeButton(element)
               : undefined
           }

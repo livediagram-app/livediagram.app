@@ -162,7 +162,6 @@ describe('settings catalogue', () => {
       ['watchTopic-workshop-stickies', 'toggle', 'Stickies and Stickers', 'workshopTour'],
       ['watchTopic-workshop-reveal', 'toggle', 'Reactions and Reveals', 'workshopTour'],
       ['watchTopic-workshop-run', 'toggle', 'Run the Room', 'workshopTour'],
-      ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
@@ -185,10 +184,9 @@ describe('settings catalogue', () => {
       ['elementTour-lane', 'toggle', 'Lane', 'lanes'],
       ['elementTour-boundary', 'toggle', 'Boundary', 'boundaries'],
       ['elementTour-diagram-key', 'toggle', 'Diagram Key', 'diagramKeys'],
-      ['elementTour-portal', 'toggle', 'Portal', 'portals'],
     ]);
-    // One shared explanation under the section heading, not one per row.
-    expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
+    // The Avatar Tour's Offer Again section went with Avatar mode (docs/specs/009-elements/retired-elements.md).
+    expect(tours.sectionNotes?.['Offer Again']).toBeUndefined();
     const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
     expect(accessibility.rows.some((r) => r.key.toLowerCase().includes('tour'))).toBe(false);
   });
@@ -214,7 +212,6 @@ describe('settings catalogue', () => {
         ['WatchWorkshopStickiesSeenOff', 'WatchWorkshopStickiesSeenOn'],
         ['WatchWorkshopRevealSeenOff', 'WatchWorkshopRevealSeenOn'],
         ['WatchWorkshopRunSeenOff', 'WatchWorkshopRunSeenOn'],
-        ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
         ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
@@ -235,7 +232,6 @@ describe('settings catalogue', () => {
         ['LaneTourSeenOff', 'LaneTourSeenOn'],
         ['BoundaryTourSeenOff', 'BoundaryTourSeenOn'],
         ['DiagramKeyTourSeenOff', 'DiagramKeyTourSeenOn'],
-        ['PortalTourSeenOff', 'PortalTourSeenOn'],
       ],
     );
   });
@@ -319,7 +315,6 @@ describe('settings catalogue', () => {
       'elementTour-lane': ['elementTourKinds'],
       'elementTour-boundary': ['elementTourKinds'],
       'elementTour-diagram-key': ['elementTourKinds'],
-      'elementTour-portal': ['elementTourKinds'],
     };
     for (const row of TOGGLES) {
       const after = row.write(before, !row.read(before));

@@ -98,6 +98,58 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Agent', 'Applied', 'Mcp')).toBe(false);
   });
 
+  it('retires Avatar mode, the Avatar and Portal tours, the furniture and the Spaces templates', () => {
+    for (const t of [
+      'AvatarMode',
+      'WaterCooler',
+      'CoffeeMachine',
+      'AvatarPadArrival',
+      'AvatarMessage',
+      'AvatarMessagePanel',
+      'AvatarAction',
+      'AvatarReaction',
+      'Sit',
+    ])
+      expect(isRetiredEvent('Canvas', 'Used', t), t).toBe(true);
+    for (const t of ['AvatarClothing', 'AvatarHair', 'AvatarStatus', 'AvatarRandomised'])
+      expect(isRetiredEvent('UI', 'Changed', t), t).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'AvatarPanel')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'AvatarTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'AvatarTour')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'AvatarTourStepCharacter')).toBe(true);
+    expect(isRetiredEvent('UI', 'Ended', 'AvatarTourSkipped')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'AvatarTourSeenOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'AvatarTourSeenOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'PortalTour')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'PortalTourStepWalk')).toBe(true);
+    expect(isRetiredEvent('UI', 'Ended', 'PortalTourCompleted')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PortalTourSeenOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PortalTourSeenOff')).toBe(true);
+    for (const t of ['Chair', 'Sofa', 'Avatar-pad', 'Meeting-table', 'Water-cooler', 'Rug'])
+      expect(isRetiredEvent('Element', 'Added', t), t).toBe(true);
+    for (const t of ['Chair', 'Desk', 'Bookshelf', 'Room'])
+      expect(isRetiredEvent('Element', 'Changed', t), t).toBe(true);
+    for (const t of ['Virtual-office', 'Coworking-space', 'Team-pod', 'All-hands-hall'])
+      expect(isRetiredEvent('Template', 'Used', t), t).toBe(true);
+    for (const id of ['avatar-mode', 'walking-together', 'chairs', 'turning-furniture'])
+      expect(isRetiredEvent('Help', 'View', id), id).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'virtual-office')).toBe(true);
+    // Kept: portal travel, the Reaction Pad, Mode buttons, Bring Focus, follow-me, the other tours, the Avatar web
+    // component (a person's picture), the other selection modes and templates, and the Portals help article.
+    expect(isRetiredEvent('Element', 'Changed', 'Portal')).toBe(false);
+    expect(isRetiredEvent('Element', 'Added', 'Portal')).toBe(false);
+    expect(isRetiredEvent('Element', 'Used', 'ReactionPad')).toBe(false);
+    expect(isRetiredEvent('Element', 'Changed', 'ModeButton')).toBe(false);
+    expect(isRetiredEvent('Element', 'Added', 'Focus-button')).toBe(false);
+    expect(isRetiredEvent('Element', 'Added', 'Avatar')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'FollowMe')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'Laser')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'SankeyTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'DrawTourSeenOn')).toBe(false);
+    expect(isRetiredEvent('Template', 'Used', 'Flowchart')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'portals')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

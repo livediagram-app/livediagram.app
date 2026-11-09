@@ -2,8 +2,8 @@
 
 // The element-menu sections for the collaboration elements that carry
 // settings: the estimate card's scale (docs/specs/012-collaboration/estimate-card.md), the agenda's segments
-// (docs/specs/012-collaboration/agenda.md), the decision record's status / date / drivers (docs/specs/012-collaboration/decision-record.md), and
-// a piece of furniture's facing (docs/specs/009-elements/furniture-facing.md).
+// (docs/specs/012-collaboration/agenda.md), and the decision record's status / date / drivers
+// (docs/specs/012-collaboration/decision-record.md).
 //
 // Their own file for the same reason BehaviourMenuSections has one: each is a
 // small form, and none of it belongs in the data-shape sections beside charts
@@ -15,8 +15,6 @@ import {
   AGENDA_MAX_MINUTES,
   AGENDA_MAX_TEXT,
   AGENDA_MIN_MINUTES,
-  CHAIR_FACINGS,
-  CHAIR_FACING_LABELS,
   DECISION_MAX_DRIVERS,
   DECISION_MAX_TEXT,
   DECISION_STATUSES,
@@ -31,21 +29,12 @@ import {
   moveAgendaCurrent,
   removeAgendaCurrent,
   type AgendaItem,
-  type ChairFacing,
   type DecisionStatus,
   type EstimateScale,
   type ShapeElement,
-  elementKindLabel,
-  pieceFacing,
-  seatsACharacter,
-  DEFAULT_ROOM_DOOR,
-  ROOM_DOOR_LABELS,
-  ROOM_DOORS,
-  type RoomDoor,
 } from '@livediagram/document';
 import { DateInput } from '@livediagram/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import {
@@ -326,96 +315,6 @@ export function DecisionMenuSection({
           </button>
         </div>
       </div>
-    </MenuAccordionSection>
-  );
-}
-
-// --- Facing (docs/specs/009-elements/furniture-facing.md "Turning a placed piece") ------------------------------
-
-const FACING_ARROW: Record<ChairFacing, string> = { n: '↓', e: '←', s: '↑', w: '→' };
-
-// The section's title and hint name the furniture it is on (docs/specs/009-elements/chair.md).
-// Every piece that turns has this section, titled for the piece (Sofa, Bookshelf), its four facings as tiles.
-export function ChairMenuSection({
-  target,
-  sectionProps,
-  onSetFacing,
-}: {
-  target: ShapeElement | undefined;
-  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
-  onSetFacing: (facing: ChairFacing) => void;
-}) {
-  const facing = target ? pieceFacing(target) : 'n';
-  const noun = target ? elementKindLabel(target) : 'Chair';
-  const seats = !!target && seatsACharacter(target.shape);
-  return (
-    <MenuAccordionSection title={noun} icon={<ToolsMenuGlyph />} {...sectionProps('chair')}>
-      {/* Tiles rather than a list: the arrow IS the answer here, which is the
-          same test the palette applies to its own categories (docs/specs/010-palette/palette-top-level-categories.md). */}
-      <MenuTileGrid cols={4}>
-        {CHAIR_FACINGS.map((f) => (
-          <MenuTile
-            key={f}
-            icon={
-              <span aria-hidden className="text-[15px] leading-none">
-                {FACING_ARROW[f]}
-              </span>
-            }
-            label={CHAIR_FACING_LABELS[f].replace('Facing ', '')}
-            active={facing === f}
-            onClick={() => onSetFacing(f)}
-          />
-        ))}
-      </MenuTileGrid>
-      <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-        {seats ? (
-          <>
-            Which way somebody sitting here faces. Walk an Avatar-mode character into the{' '}
-            {noun.toLowerCase()} to sit down.
-          </>
-        ) : (
-          'Which way its front faces. Rotate Left and Rotate Right on the toolbar turn it a quarter.'
-        )}
-      </p>
-    </MenuAccordionSection>
-  );
-}
-
-// --- Room (docs/specs/009-elements/office.md "Room") -------------------------------------------------
-
-const DOOR_GLYPH: Record<RoomDoor, string> = { n: '↑', e: '→', s: '↓', w: '←', none: '✕' };
-
-export function RoomMenuSection({
-  target,
-  sectionProps,
-  onSetDoor,
-}: {
-  target: ShapeElement | undefined;
-  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
-  onSetDoor: (door: RoomDoor) => void;
-}) {
-  const door = target?.roomDoor ?? DEFAULT_ROOM_DOOR;
-  return (
-    <MenuAccordionSection title="Room" icon={<ToolsMenuGlyph />} {...sectionProps('room')}>
-      <MenuTileGrid cols={3}>
-        {ROOM_DOORS.map((d) => (
-          <MenuTile
-            key={d}
-            icon={
-              <span aria-hidden className="text-[13px] leading-none">
-                {DOOR_GLYPH[d]}
-              </span>
-            }
-            label={ROOM_DOOR_LABELS[d]}
-            active={door === d}
-            onClick={() => onSetDoor(d)}
-          />
-        ))}
-      </MenuTileGrid>
-      <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-        Which wall the doorway is in. Avatar-mode characters walk through the doorway and nowhere
-        else; with None, only a portal gets you in.
-      </p>
     </MenuAccordionSection>
   );
 }

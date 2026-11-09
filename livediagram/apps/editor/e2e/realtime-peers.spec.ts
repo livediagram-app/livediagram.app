@@ -12,8 +12,8 @@ import {
 
 // Two people on one shared document (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
 // the other online, an edit reaches the other side live, the autosave keeps everyone's edits (a peer's is
-// never saved back over or reverted), and a walking avatar shows on the other screen
-// (docs/specs/008-canvas/avatar-mode.md).
+// never saved back over or reverted), and a stored Avatar button, whose mode moved to livehuddle, shows as its
+// placeholder on both screens (docs/specs/009-elements/retired-elements.md).
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const CANVAS = '[data-canvas-a11y-root]';
@@ -64,7 +64,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         opensIn: 'workshop',
         elements: [
           { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
-          // Avatar mode's one way in (docs/specs/008-canvas/avatar-mode.md "Where it lives").
+          // A board saved before Avatar mode moved to livehuddle (docs/specs/009-elements/retired-elements.md).
           {
             id: 'walk',
             type: 'shape',
@@ -130,10 +130,11 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   await ownerPage.locator(CANVAS).waitFor();
   await expect(squares(ownerPage)).toHaveCount(3);
 
-  // The peer walks as an avatar; the owner sees the character.
-  await peerPage.getByRole('button', { name: /switch to Avatar mode/ }).click();
-  await peerPage.locator(CANVAS).click({ position: { x: 900, y: 300 } });
-  await expect(ownerPage.locator('[data-avatar="peer"]')).toHaveCount(1);
+  // The stored Avatar button is kept, drawn as its placeholder, and hands out nothing.
+  for (const page of [ownerPage, peerPage]) {
+    await expect(page.locator('[data-retired-element]')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: /switch to Avatar mode/ })).toHaveCount(0);
+  }
 
   await ownerPage.context().close();
   await peerPage.context().close();

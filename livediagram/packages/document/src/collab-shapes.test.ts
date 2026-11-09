@@ -11,12 +11,8 @@ import {
   AGENDA_MAX_MINUTES,
   ESTIMATE_SCALE_VALUES,
   agendaTotalMinutes,
-  CHAIR_FACINGS,
-  CHAIR_FACING_LABELS,
-  CHAIR_SITTER_FACING,
   clampAgendaMinutes,
   estimateValues,
-  isChairFacing,
   isCollabPanelShape,
   isDecisionDate,
   isDecisionStatus,
@@ -82,20 +78,6 @@ describe('decision record', () => {
   });
 });
 
-describe('chair', () => {
-  it('accepts only the four facings', () => {
-    expect(isChairFacing('n')).toBe(true);
-    expect(isChairFacing('ne')).toBe(false);
-  });
-
-  it('turns the sitter the way the seat points', () => {
-    for (const facing of CHAIR_FACINGS) {
-      // The menu label and the sitter's pose must say the same thing.
-      expect(CHAIR_FACING_LABELS[facing]).toBe(`Facing ${CHAIR_SITTER_FACING[facing]}`);
-    }
-  });
-});
-
 describe('isCollabPanelShape', () => {
   it('covers every kind that draws its own card', () => {
     for (const kind of [
@@ -113,7 +95,7 @@ describe('isCollabPanelShape', () => {
     }
   });
 
-  it('excludes the chair, which keeps a plain label (docs/specs/009-elements/chair.md)', () => {
+  it('excludes a retired chair, which draws a placeholder (docs/specs/009-elements/retired-elements.md)', () => {
     expect(isCollabPanelShape('chair')).toBe(false);
   });
 });
@@ -222,7 +204,7 @@ describe('validation bounds', () => {
   });
 });
 
-describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/chair.md)', () => {
+describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/retired-elements.md)', () => {
   it('is on every Behaviours card except the chair and the ones with their own', () => {
     expect(carriesSharedSettingsMenu('chair')).toBe(false);
     expect(carriesSharedSettingsMenu('done-check')).toBe(false);

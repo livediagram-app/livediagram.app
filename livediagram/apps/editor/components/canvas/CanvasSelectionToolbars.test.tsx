@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape } from '@livediagram/document';
 import {
@@ -94,45 +94,17 @@ describe('selection chrome while a selection moves', () => {
   }
 });
 
-// docs/specs/009-elements/furniture-facing.md "Turning a placed piece".
-describe('the Rotate buttons', () => {
+// docs/specs/009-elements/retired-elements.md: a retired piece of furniture no longer turns, so no toolbar offers it.
+describe('a retired piece of furniture', () => {
   const sofa = createShape('sofa', 100, 100);
   const plant = createShape('plant', 400, 100);
   afterEach(cleanup);
 
-  it('turn a selected piece of furniture a quarter either way', () => {
-    const onTurnSelected = vi.fn();
-    renderToolbars(false, { elements: [sofa, plant], onTurnSelected });
-    fireEvent.click(screen.getByRole('button', { name: 'Rotate Left' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Rotate Right' }));
-    expect(onTurnSelected.mock.calls).toEqual([[-1], [1]]);
-  });
-
-  it('show disabled on a locked piece', () => {
-    renderToolbars(false, {
-      elements: [{ ...sofa, locked: true }, plant],
-      onTurnSelected: vi.fn(),
-    });
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Rotate Left' }).disabled).toBe(
-      true,
-    );
-  });
-
-  it('are not offered for a piece that does not turn, or read-only', () => {
-    renderToolbars(false, { elements: [plant, sofa], onTurnSelected: vi.fn() });
+  it('offers no Rotate buttons, alone or in a multi-selection', () => {
+    renderToolbars(false, { elements: [sofa, plant] });
     expect(screen.queryByRole('button', { name: 'Rotate Left' })).toBeNull();
     cleanup();
-    renderToolbars(false, { elements: [sofa, plant], onTurnSelected: vi.fn(), readOnly: true });
-    expect(screen.queryByRole('button', { name: 'Rotate Left' })).toBeNull();
-  });
-
-  it('turn a multi-selection holding a piece that turns', () => {
-    const onTurnSelected = vi.fn();
-    renderToolbars(true, { elements: [plant, sofa], onTurnSelected });
-    fireEvent.click(screen.getByRole('button', { name: 'Rotate Right' }));
-    expect(onTurnSelected).toHaveBeenCalledWith(1);
-    cleanup();
-    renderToolbars(true, { elements: [shape, plant], onTurnSelected });
+    renderToolbars(true, { elements: [plant, sofa] });
     expect(screen.queryByRole('button', { name: 'Rotate Right' })).toBeNull();
   });
 });

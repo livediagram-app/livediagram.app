@@ -201,8 +201,79 @@ function isTagsEvent(category: string, action: string, type: string | null): boo
 // mirror"): every Drive event. Google Drive sync is liveworkspace's now, for every app, and sends none of these.
 const DRIVE_MIRROR_CATEGORY = 'Drive';
 
+// Avatar mode, the Spaces templates and the furniture (removed 2026-11-09, they live in livehuddle now:
+// docs/specs/009-elements/retired-elements.md and docs/specs/002-project-scope/not-in-livediagram.md). Avatar mode
+// switched on, a character's drinks, pad arrivals, speech bubbles, moves, bursts and seats; its customisations and
+// status; the Avatar panel; the Avatar tour and its Settings row; the Portal element tour (Show Me > Portal) and its
+// Settings row; a piece of furniture added, turned (Rotate Left or Right) or a Room's doorway moved; a Spaces template
+// picked (Virtual Office, Coworking Space, Team Pod, All-Hands Hall); and their help articles. Portal travel
+// (Element·Changed·Portal), the Reaction Pad, Selection Mode buttons, Bring Focus, follow-me and the facilitator
+// carry on, as does the Avatar web component (Element·Added·Avatar), a person's picture and not Avatar mode.
+const AVATAR_MODE_CANVAS_TYPES = new Set([
+  'AvatarMode',
+  'WaterCooler',
+  'CoffeeMachine',
+  'AvatarPadArrival',
+  'AvatarMessage',
+  'AvatarMessagePanel',
+  'AvatarAction',
+  'AvatarReaction',
+  'Sit',
+]);
+// The Avatar tour (offer, start, steps, end, Settings row), the Portal tour likewise, and the Avatar panel.
+const AVATAR_MODE_UI_TYPE = /^(AvatarTour|PortalTour|AvatarPanel$)/;
+// A character's customisations and status, from the Avatar panel (UI·Changed·Avatar<Clothing|Hair|Status|...>).
+const AVATAR_CUSTOMISED_TYPE = /^Avatar[A-Z]/;
+// The furniture's Element tokens (shapeTelemetryToken of each retired shape kind), on Added and Changed.
+const FURNITURE_ELEMENT_TYPES = new Set([
+  'Chair',
+  'Desk',
+  'Sofa',
+  'Fence',
+  'Avatar-pad',
+  'Room',
+  'Meeting-table',
+  'Plant',
+  'Bookshelf',
+  'Water-cooler',
+  'Coffee-machine',
+  'Rug',
+]);
+// The Spaces templates, as Template·Used sends them (titleCaseType of the template kind).
+const SPACES_TEMPLATE_TYPES = new Set([
+  'Virtual-office',
+  'Coworking-space',
+  'Team-pod',
+  'All-hands-hall',
+]);
+const AVATAR_MODE_HELP_IDS = new Set([
+  'avatar-mode',
+  'avatar-tour',
+  'walking-together',
+  'chairs',
+  'fences',
+  'avatar-pads',
+  'virtual-office',
+  'turning-furniture',
+]);
+
+function isAvatarModeEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'Canvas') return action === 'Used' && AVATAR_MODE_CANVAS_TYPES.has(t);
+  if (category === 'Element') return FURNITURE_ELEMENT_TYPES.has(t);
+  if (category === 'Template') return SPACES_TEMPLATE_TYPES.has(t);
+  if (category === 'Help') return AVATAR_MODE_HELP_IDS.has(t);
+  if (category === 'UI') {
+    if (action === 'Opened' && AVATAR_MODE_HELP_IDS.has(t)) return true;
+    if (action === 'Changed' && AVATAR_CUSTOMISED_TYPE.test(t)) return true;
+    return AVATAR_MODE_UI_TYPE.test(t);
+  }
+  return false;
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (isAvatarModeEvent(category, action, type)) return true;
   if (category === DRIVE_MIRROR_CATEGORY) return true;
   if (isTagsEvent(category, action, type)) return true;
   if (isAiAssistantEvent(category, action, type)) return true;

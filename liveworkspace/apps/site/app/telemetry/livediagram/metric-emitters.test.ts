@@ -4,12 +4,7 @@ import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { COMPUTED_EMITTERS, TOUR_STEP_SOURCE } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from '../emitter-scan';
 import { isValidTelemetryEvent } from '@livediagram/api-schema';
-import {
-  platformEmitters,
-  avatarEmitters,
-  sharedClientEmitters,
-  sharedSiteEmitters,
-} from '../platform-emitters';
+import { platformEmitters, sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
 import { RECOVERY_TYPES } from '../_shared/ExceptionsView';
 import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from '../_shared/LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
@@ -22,6 +17,7 @@ import {
   type MetricGroup,
 } from '../_shared/metric-series';
 import { TOUR_STEP_TYPES } from './tour-steps';
+import { isRetiredEvent } from './retired-events';
 import { LIVEDIAGRAM as APP } from './config';
 
 const EDITING = APP.editing.groups;
@@ -68,8 +64,6 @@ const EMITS = [
   ...platformEmitters(isValidTelemetryEvent, 'Document'),
   // Every app's client errors and timings, sent through the shared browser client.
   ...sharedClientEmitters(),
-  // Avatar mode's events, sent through this editor's bound track.
-  ...avatarEmitters(),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
 ];
@@ -309,5 +303,16 @@ describe('no event is counted by two unrelated charts', () => {
   });
   it('finds only the rollups and headline subsets that are meant to overlap', () => {
     expect([...new Set(clashes)].sort()).toEqual([]);
+  });
+});
+
+// A retired feature's events are dropped from the summary (retired-events.ts), so retiring a token something still
+// sends would blank a live chart without a word. Every event the code can send stays unretired.
+describe('no event the code still sends is retired', () => {
+  it('retires only what nothing sends any more', () => {
+    const live = SENDS.filter((e) => isRetiredEvent(e.category, e.action, e.type as string | null));
+    expect([...new Set(live.map((e) => `${e.category}·${e.action}·${String(e.type)}`))]).toEqual(
+      [],
+    );
   });
 });

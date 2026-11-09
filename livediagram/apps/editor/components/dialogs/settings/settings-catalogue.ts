@@ -367,7 +367,7 @@ function panelSwitch(
 function tourSwitch(
   key: TourSeenKey,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
-  section = 'Offer Again',
+  section?: string,
 ): SettingsToggleRowSpec {
   return {
     kind: 'toggle',
@@ -472,8 +472,7 @@ function watchRows(
   ];
 }
 
-type TourSeenKey =
-  'tourSeen' | 'workshopTourSeen' | 'drawTourSeen' | 'avatarTourSeen' | 'elementToursSeen';
+type TourSeenKey = 'tourSeen' | 'workshopTourSeen' | 'drawTourSeen' | 'elementToursSeen';
 
 // A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
 // lib/presentation-config, which keeps the whole config in one preference. The telemetry token is the one the
@@ -985,9 +984,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       [ELEMENT_TOURS_SECTION]: {
         note: 'Select a complex element and press Start Tour in the bottom bar to see how it works. A switch is on until you have taken its tour.',
       },
-      'Offer Again': {
-        note: 'Start a tour from the Start Tour button in the bottom bar, left of Search: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
-      },
     },
     rows: [
       // Watch It Built (docs/specs/007-editor/watch-it-built.md "Settings"): one switch per mode over its topics,
@@ -1014,14 +1010,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords:
           'tour walkthrough onboarding tutorial workshop facilitate session retro timer vote poll replay learn',
         description: 'Short replays of Workshop.',
-      }),
-      tourSwitch('avatarTourSeen', {
-        label: 'Avatar Tour',
-        event: { category: 'UI', on: 'AvatarTourSeenOff', off: 'AvatarTourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
-        description: 'While you walk as an avatar.',
-        helpArticle: 'avatarTour',
       }),
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
       // them all over one per toured kind.
@@ -1179,13 +1167,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'diagram key legend line styles tag colours meanings tour',
         description: 'With a diagram key selected.',
         helpArticle: 'diagramKeys',
-      }),
-      elementTourSwitch('portal', {
-        label: 'Portal',
-        event: { category: 'UI', on: 'PortalTourSeenOff', off: 'PortalTourSeenOn' },
-        keywords: 'portal link travel teleport avatar shortcut tour',
-        description: 'With a portal selected.',
-        helpArticle: 'portals',
       }),
     ],
   },

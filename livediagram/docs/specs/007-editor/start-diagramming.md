@@ -75,7 +75,7 @@ palette](../008-canvas/canvas-and-palette.md) "Template categories"): in the cat
 each holding the mode's templates listed in it (primary or cross-listed), a category with none of the mode's left out.
 Diagram's rail reads Brainstorming, Decisions, Goals & Metrics and on; Draw's Brainstorming, Decisions, Meetings &
 Workshops, Product & UX, Quizzes & Games, Retrospectives, Strategy and Teaching & Learning; Workshop's runs from
-Brainstorming to Virtual Spaces. The categories are grouped by use case, so they already say which session a Workshop
+Brainstorming to Teaching & Learning. The categories are grouped by use case, so they already say which session a Workshop
 template runs and what a Draw template is for; a mode no longer keeps groups of its own, and a new template joins
 every start's rail with no change here.
 
@@ -190,7 +190,7 @@ picked after creation"). The move is `useTemplatePickMove` (`apps/editor/compone
 
 ## The tours wait
 
-A tour never lands over a start: while one is on screen the Diagram, Workshop, Draw and Avatar tours are not on
+A tour never lands over a start: while one is on screen the Diagram, Workshop and Draw tours are not on
 offer, so the footer's Start Tour button does not show them, and they come onto it once a template is picked or the
 start closed (`start-panel-open.ts`, `useStartPanelOpen`).
 

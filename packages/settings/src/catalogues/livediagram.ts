@@ -736,36 +736,6 @@ export const CATALOGUE: AppCatalogue = {
       ],
     },
     {
-      id: 'tours',
-      label: 'Getting Started',
-      aliases: ['/tours'],
-      tile: 'tours',
-      sectionNotes: {
-        'Offer Again':
-          'Start a tour from the Start Tour button in the bottom bar, left of Search: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
-      },
-      rows: [
-        {
-          kind: 'toggle',
-          id: 'avatarTourSeen',
-          label: 'Avatar Tour',
-          description: 'While you walk as an avatar.',
-          keywords:
-            'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
-          section: 'Offer Again',
-          key: 'avatarTourSeen',
-          on: false,
-          off: true,
-          fallback: true,
-          event: {
-            category: 'UI',
-            on: 'AvatarTourSeenOff',
-            off: 'AvatarTourSeenOn',
-          },
-        },
-      ],
-    },
-    {
       id: 'documents',
       label: 'Explorer',
       aliases: ['/canvases'],

@@ -3,7 +3,7 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livediagram/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
-import type { RoomDoor } from './office';
+import type { ChairFacing, RoomDoor } from './retired-elements';
 import type { Finish } from './finish';
 import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
@@ -46,13 +46,7 @@ import type { ParticipantResponse } from './responses';
 import type { QaNote } from './qa-board';
 import type { HeroCaption, StatItem } from './web-components';
 import type { ImageCredit } from './image-credit';
-import type {
-  AgendaItem,
-  ChairFacing,
-  DecisionStatus,
-  EstimateScale,
-  RollCallEntry,
-} from './collab-shapes';
+import type { AgendaItem, DecisionStatus, EstimateScale, RollCallEntry } from './collab-shapes';
 import type {
   AnimationSpeed,
   ChecklistItem,
@@ -255,8 +249,8 @@ export type ShapeElement = {
   fillSwatch?: QuickSwatchSlot;
   // Mode Button (docs/specs/009-elements/mode-button.md): which selection mode pressing this element hands
   // whoever clicked it. Only meaningful on the 'mode-button' kind, and absent
-  // means DEFAULT_BUTTON_MODE ('avatar') — so a button authored without one
-  // still does the thing it looks like it should.
+  // means DEFAULT_BUTTON_MODE ('avatar', the old default): such a button, like one
+  // stored with 'avatar', is a retired element (docs/specs/009-elements/retired-elements.md).
   mode?: SelectionMode;
   // Portal (docs/specs/009-elements/portal-element.md): the id of the portal this one leads to, on the same tab.
   // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
@@ -277,13 +271,10 @@ export type ShapeElement = {
   pickerSource?: PickerSource;
   pickerOptions?: string[];
   pickerResult?: string;
-  // Chair (docs/specs/009-elements/chair.md): which way the seat points. Only meaningful on the
-  // 'chair' kind; absent = DEFAULT_CHAIR_FACING ('n'). WHO is sitting in it is
-  // deliberately NOT here — occupancy rides the avatar presence op, so a chair
-  // can't be left stuck by someone who disconnected.
+  // A retired piece's stored fields (docs/specs/009-elements/retired-elements.md "Stored data"): which way a
+  // chair, desk, sofa or other turning furniture faced, and the wall a Room's doorway was in. Kept and
+  // validated so a save writes them back unchanged; livediagram reads neither.
   chairFacing?: ChairFacing;
-  // Room (docs/specs/009-elements/office.md "Room"): the wall its doorway is in, or 'none' for a closed room.
-  // Absent = DEFAULT_ROOM_DOOR ('s', the front wall).
   roomDoor?: RoomDoor;
   // --- The collaboration family (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md) ---------------------
   // One value per participant (docs/specs/012-collaboration/participant-responses.md), shared by the estimate card and the
@@ -1480,9 +1471,9 @@ export type VideoElement = {
 // something that isn't theirs to edit.
 const UNTYPED_SHAPES = new Set<string>([
   'sticker',
-  // A fence (docs/specs/009-elements/fence.md) carries no label.
+  // A fence (docs/specs/009-elements/retired-elements.md) carries no label.
   'fence',
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) carries no label.
+  // An Avatar Pad (docs/specs/009-elements/retired-elements.md) carries no label.
   'avatar-pad',
   'session-button',
   'reaction-pad',

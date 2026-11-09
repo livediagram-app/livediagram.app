@@ -80,7 +80,6 @@ type Props = Pick<
   PaletteProps,
   | 'canvasTool'
   | 'onSetCanvasTool'
-  | 'onExitAvatarMode'
   | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'

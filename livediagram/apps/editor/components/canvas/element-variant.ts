@@ -15,6 +15,7 @@ import {
   DEFAULT_BORDER_STYLE,
   defaultFillColor,
   defaultStrokeColor,
+  isRetiredElement,
   ownColours,
   shadowBoxCss,
   shadowFilterCss,
@@ -74,7 +75,8 @@ export function describeVariant(
   // alpha instead, needed when the wrapper is transparent and the visible
   // body is an inner SVG / bitmap — a box-shadow there would draw a
   // floating rectangle around nothing.
-  const shadow = supportsShadow(element) ? element.shadow : undefined;
+  // A retired piece's placeholder is flat (docs/specs/009-elements/retired-elements.md): its stored shadow is kept, not drawn.
+  const shadow = supportsShadow(element) && !isRetiredElement(element) ? element.shadow : undefined;
   const boxShadow: CSSProperties = shadow ? { boxShadow: shadowBoxCss(shadow) } : {};
   const filterShadow: CSSProperties = shadow ? { filter: shadowFilterCss(shadow) } : {};
   switch (element.type) {
@@ -103,7 +105,8 @@ export function describeVariant(
       // drifted, leaving dead Border controls on a code block, a checklist, a
       // portal and a reveal. `actor` / `icon` are in the set too but reach
       // this branch already handled above, so including them changes nothing.
-      if (SELF_PAINTING_SHAPES.has(element.shape)) {
+      // A retired piece (an Avatar button included) draws its own placeholder card the same way.
+      if (SELF_PAINTING_SHAPES.has(element.shape) || isRetiredElement(element)) {
         return { className: ring, style: { borderRadius: '4px', ...filterShadow } };
       }
       // CSS-rendered shapes (square / circle / stadium and the

@@ -28,10 +28,43 @@ export const SELECTION_MODES = [
 
 export type SelectionMode = (typeof SELECTION_MODES)[number];
 
-// The mode a Mode Button switches to when it carries none — the reason the
-// element exists (docs/specs/008-canvas/avatar-mode.md walkthroughs), so it is the default rather than
-// Select.
+// The mode a STORED Mode Button carries when it has none: Avatar, the old default. Avatar mode moved to
+// livehuddle (docs/specs/002-project-scope/not-in-livediagram.md), so such a button is a retired element
+// (docs/specs/009-elements/retired-elements.md); it stays the reading so no stored button changes meaning.
 export const DEFAULT_BUTTON_MODE: SelectionMode = 'avatar';
+
+// The modes livediagram's buttons hand out and its Button menu offers: every selection mode but Avatar.
+export const BUTTON_MODES = SELECTION_MODES.filter(
+  (mode): mode is Exclude<SelectionMode, 'avatar'> => mode !== 'avatar',
+);
+export type ButtonMode = (typeof BUTTON_MODES)[number];
+
+// What a button made in livediagram hands out when nothing names a mode (an agent's create, the factory).
+export const NEW_BUTTON_MODE: ButtonMode = 'spotlight';
+
+export function isButtonMode(value: unknown): value is ButtonMode {
+  return isSelectionMode(value) && value !== 'avatar';
+}
+
+/**
+ * New elements from outside the editor (an agent's create, a replace's new elements), with every Mode Button that
+ * names no mode handed NEW_BUTTON_MODE: an absent mode on a stored button means the retired Avatar one, so a new
+ * button must never be saved without one. `kept` names elements that already exist, which keep their own reading.
+ */
+export function withNewButtonModes<E extends { type: string; id: string }>(
+  elements: readonly E[],
+  kept: ReadonlySet<string> = new Set(),
+): E[] {
+  return elements.map((el) => {
+    const button = el as E & { shape?: string; mode?: string };
+    return button.type === 'shape' &&
+      button.shape === 'mode-button' &&
+      button.mode === undefined &&
+      !kept.has(el.id)
+      ? { ...el, mode: NEW_BUTTON_MODE }
+      : el;
+  });
+}
 
 // What each mode is called on a Mode Button's face ("Switch to Avatar"): the
 // canvas face and the export both name the destination from here.

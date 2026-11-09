@@ -1,8 +1,7 @@
 'use client';
 
 // The Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, present only while the Laser
-// tool is active — the same relationship the Avatar Panel has with Avatar mode,
-// down to the width and the corner it homes to.
+// tool is active, with the width and the corner every mode panel homes to (ModePanel).
 //
 // Four settings: Width, Colour, Trail, Effect. Each is a single-open accordion
 // row with its current value in the collapsed header, so a closed panel is a

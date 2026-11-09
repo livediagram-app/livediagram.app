@@ -11,7 +11,6 @@ function handlers(): CommandHandlers {
     bringToFront: vi.fn(),
     sendToBack: vi.fn(),
     rotate: vi.fn(),
-    turn: vi.fn(),
     clearAnimation: vi.fn(),
     renumberSteps: vi.fn(),
     setMarker: vi.fn(),
@@ -199,13 +198,9 @@ describe('buildEditorCommands — dispatch', () => {
     expect(h.deleteSelection).toHaveBeenCalledOnce();
   });
 
-  it('turns furniture a quarter either way (docs/specs/009-elements/furniture-facing.md)', () => {
-    const h = handlers();
-    expect(ids({ ...base, selectionCount: 1, singleIsBoxed: true })).not.toContain('rotate-left');
-    const cmds = buildEditorCommands({ ...base, selectionCount: 2, selectionTurns: true }, h);
-    cmds.find((c) => c.id === 'rotate-left')!.run();
-    cmds.find((c) => c.id === 'rotate-right')!.run();
-    expect(vi.mocked(h.turn).mock.calls).toEqual([[-1], [1]]);
+  it('offers no Rotate Left or Right: furniture moved to livehuddle (docs/specs/009-elements/retired-elements.md)', () => {
+    expect(ids({ ...base, selectionCount: 2 })).not.toContain('rotate-left');
+    expect(ids({ ...base, selectionCount: 2 })).not.toContain('rotate-right');
   });
 
   it('Clear marker dispatches setMarker(null)', () => {
@@ -463,7 +458,7 @@ describe('buildEditorCommands — locked tab', () => {
     expect(got).toEqual(expect.arrayContaining(['auto-align', 'tool:eraser', 'tool:format']));
   });
 
-  it('never offers Avatar Mode (docs/specs/008-canvas/avatar-mode.md "Where it lives")', () => {
+  it('never offers Avatar Mode (docs/specs/002-project-scope/not-in-livediagram.md "Where it lives")', () => {
     expect(ids(base)).not.toContain('tool:avatar');
     expect(ids({ ...base, isReadOnly: true })).not.toContain('tool:avatar');
     expect(ids({ ...base, canvasTool: 'avatar' })).not.toContain('tool:avatar');

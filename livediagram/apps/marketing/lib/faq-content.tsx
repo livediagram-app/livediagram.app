@@ -21,9 +21,9 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 88;
+export const TEMPLATE_COUNT = 84;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 14;
+export const TEMPLATE_CATEGORY_COUNT = 13;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -307,18 +307,18 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a teammate: your view goes wherever theirs goes, until you move away yourself. See following along.',
       },
       {
-        q: 'Can we walk around a board together?',
+        q: 'Can I point everyone at the same thing?',
         a: (
           <>
-            Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel
-            character around the canvas, with speech bubbles, a status and reactions. The Virtual
-            Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a
-            coffee machine to meet at. See{' '}
-            <a href="/help/selection-modes/avatar-mode/">Avatar mode</a>.
+            Yes. Drop a Bring Focus element and press it: everyone else is offered a jump to it,
+            rather than being dragged there. Reaction pads throw confetti or applause over the
+            canvas for the whole room. See{' '}
+            <a href="/help/palette/behaviour/bring-focus/">Bring Focus</a>. To meet in a shared
+            space and walk around as characters, use livehuddle.
           </>
         ),
         aText:
-          'Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel character around the canvas, with speech bubbles, a status and reactions. The Virtual Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a coffee machine to meet at. See Avatar mode.',
+          'Yes. Drop a Bring Focus element and press it: everyone else is offered a jump to it, rather than being dragged there. Reaction pads throw confetti or applause over the canvas for the whole room. See Bring Focus. To meet in a shared space and walk around as characters, use livehuddle.',
       },
       {
         q: 'Can I stop a finished tab being changed?',

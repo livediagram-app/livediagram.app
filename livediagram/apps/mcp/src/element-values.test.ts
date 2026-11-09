@@ -77,6 +77,16 @@ describe('tabElementsIssue', () => {
     expect(tabElementsIssue([box({ id: 's', shape: 'step', label: '100' })])).toBeNull();
   });
 
+  // docs/specs/009-elements/retired-elements.md "Nothing new": the pieces that moved to livehuddle are refused, saying so.
+  it('refuses a retired piece or an Avatar button, naming where it went', () => {
+    expect(tabElementsIssue([box({ id: 'c', shape: 'chair' })])).toBe(
+      'element "c": Chair moved to livehuddle and can no longer be added in livediagram.',
+    );
+    expect(tabElementsIssue([box({ id: 'm', shape: 'mode-button', mode: 'avatar' })])).toMatch(
+      /^element "m": Avatar mode moved to livehuddle/,
+    );
+  });
+
   it('names an id given twice', () => {
     expect(tabElementsIssue([box({ id: 'svc' }), box({ id: 'svc' })])).toBe(
       'element "svc": the id is used twice; give each element its own.',

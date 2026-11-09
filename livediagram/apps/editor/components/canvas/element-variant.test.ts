@@ -209,6 +209,26 @@ describe('describeVariant — element shadows (docs/specs/008-canvas/element-sha
     expect(style.boxShadow).toBeUndefined();
   });
 
+  it('a retired piece stays flat: an Avatar button keeps its stored shadow but draws none (retired-elements.md)', () => {
+    for (const el of [
+      shape({ shape: 'mode-button', mode: 'avatar', shadow, borderRadius: 'lg' }),
+      shape({ shape: 'mode-button', shadow }),
+      shape({ shape: 'chair', shadow }),
+    ]) {
+      const { style } = describeVariant(el, false, false, null);
+      expect(style.boxShadow).toBeUndefined();
+      expect(style.filter).toBeUndefined();
+    }
+    // A live Selection Mode button keeps it.
+    const live = describeVariant(
+      shape({ shape: 'mode-button', mode: 'spotlight', shadow }),
+      false,
+      false,
+      null,
+    ).style;
+    expect(live.boxShadow ?? live.filter).toBeDefined();
+  });
+
   it('an SVG-rendered silhouette takes the filter path (shadow follows the drawn alpha)', () => {
     const { style } = describeVariant(shape({ shape: 'diamond', shadow }), false, false, null);
     expect(style.filter).toBe(filterCss);

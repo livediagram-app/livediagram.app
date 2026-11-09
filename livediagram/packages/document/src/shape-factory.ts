@@ -8,9 +8,8 @@
 // SHAPE_DEFAULT_SIZE reads RAIL_* at module-init time, and a runtime read
 // through the index cycle TDZ-crashes plain-Node ESM consumers. Only TYPES
 // come from './index', and those are erased at build.
-import { DEFAULT_ROOM_DOOR, isOfficeShape } from './office';
 import {
-  DEFAULT_BUTTON_MODE,
+  NEW_BUTTON_MODE,
   DEFAULT_PICKER_SOURCE,
   DEFAULT_SESSION_TOOL,
   DEFAULT_TIMER_MINUTES,
@@ -24,15 +23,8 @@ import {
   RATING_DEFAULT,
   REACTION_DEFAULT,
 } from './data-shapes';
-import {
-  AGENDA_DEFAULT_MINUTES,
-  DEFAULT_CHAIR_FACING,
-  DEFAULT_DECISION_STATUS,
-} from './collab-shapes';
+import { AGENDA_DEFAULT_MINUTES, DEFAULT_DECISION_STATUS } from './collab-shapes';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
-import { DEFAULT_SEATING_FACING } from './seating';
-import { FENCE_DEFAULT_SIZE } from '@liveworkspace/avatar/fence';
-import { AVATAR_PAD_DEFAULT_SIZE } from '@liveworkspace/avatar/pad-art';
 import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
@@ -171,20 +163,13 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   reveal: { width: 320, height: 220 },
   // Picker (docs/specs/012-collaboration/picker.md): a card wide enough for a name at a readable size.
   picker: { width: 220, height: 132 },
-  // Chair (docs/specs/009-elements/chair.md): furniture at human scale beside a 40px-wide Avatar-mode
-  // character — a seat the sprite fits into rather than a throne it rattles
-  // around in.
+  // The retired Spaces pieces (docs/specs/009-elements/retired-elements.md): never created here any more, but the
+  // table covers every stored kind, at the sizes they were placed at.
   chair: { width: 76, height: 84 },
-  // Fence (docs/specs/009-elements/fence.md): a short run across, thin enough to read as a barrier.
-  fence: { ...FENCE_DEFAULT_SIZE },
-  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): its pixel grid at four canvas px a pixel.
-  'avatar-pad': { ...AVATAR_PAD_DEFAULT_SIZE },
-  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): their drawings' grids, at the
-  // chair's scale, so a character fits the seat.
+  fence: { width: 240, height: 24 },
+  'avatar-pad': { width: 128, height: 80 },
   desk: { width: 120, height: 112 },
   sofa: { width: 152, height: 85 },
-  // The virtual office (docs/specs/009-elements/office.md): each at its drawing's grid, at the chair's scale; a
-  // room is a floor big enough to furnish.
   room: { width: 480, height: 320 },
   'meeting-table': { width: 232, height: 168 },
   plant: { width: 56, height: 88 },
@@ -266,8 +251,8 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     textSize: 'md',
   };
   // Mode button (docs/specs/009-elements/mode-button.md): looks like a button, so it arrives pill-shaped
-  // with a call to action already written and pointed at Avatar mode — the
-  // walkthrough case it exists for. The author retypes the label like any
+  // with a call to action already written and pointed at NEW_BUTTON_MODE (Spotlight); Avatar mode moved to
+  // livehuddle (docs/specs/002-project-scope/not-in-livediagram.md). The author retypes the label like any
   // other shape's, and picks a different mode from the element menu.
   if (kind === 'mode-button') {
     return {
@@ -276,7 +261,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       // mode it carries, so re-pointing a button relabels it instead of leaving
       // yesterday's copy on it. An author who types their own label wins — it
       // is still a shape's label — but the useful default is the derived one.
-      mode: DEFAULT_BUTTON_MODE,
+      mode: NEW_BUTTON_MODE,
       // A button has to look pressable BEFORE anyone styles it, and the
       // theme-derived shape fill made it read as one more labelled box on the
       // canvas. So it ships with a real UI button's colours: a light surface, a
@@ -351,56 +336,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.2 },
       borderRadius: 'lg',
       textSize: 'sm',
-    };
-  }
-  // Chair (docs/specs/009-elements/chair.md): furniture, so it paints its own seat and back and the
-  // element box carries no fill. The label (a name, a role) sits UNDER the
-  // chair, out of the way of the character that will sit in it.
-  if (kind === 'chair') {
-    return {
-      ...base,
-      chairFacing: DEFAULT_CHAIR_FACING,
-      textSize: 'sm',
-      textAlignY: 'bottom',
-      // A chair stretched wide stops reading as a chair, the same reason the
-      // portal locks its aspect. Unlockable from the menu like any element.
-      aspectLocked: true,
-    };
-  }
-  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa"): furniture like the chair, each
-  // with the facing it is drawn at, its label under it, and its proportions held.
-  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): pixels and no words, its grid kept square.
-  if (kind === 'avatar-pad') {
-    return { ...base, label: '', aspectLocked: true };
-  }
-  if (kind === 'desk' || kind === 'sofa') {
-    return {
-      ...base,
-      chairFacing: DEFAULT_SEATING_FACING[kind],
-      textSize: 'sm',
-      textAlignY: 'bottom',
-      aspectLocked: true,
-    };
-  }
-  // The virtual office (docs/specs/009-elements/office.md). A room is any rectangle, its name on a plate at the
-  // top left of its back wall; everything else keeps its drawing's proportions, a table's label under it.
-  if (kind === 'room') {
-    return {
-      ...base,
-      label: 'Room',
-      roomDoor: DEFAULT_ROOM_DOOR,
-      textSize: 'sm',
-      textAlignX: 'left',
-      textAlignY: 'top',
-    };
-  }
-  if (isOfficeShape(kind)) {
-    return {
-      ...base,
-      ...(kind === 'meeting-table'
-        ? { textSize: 'sm' as const, textAlignY: 'bottom' as const }
-        : {}),
-      aspectLocked: true,
     };
   }
   // The collaboration panels (docs/specs/012-collaboration/estimate-card.md, 124, 125, 127, 129): each paints a

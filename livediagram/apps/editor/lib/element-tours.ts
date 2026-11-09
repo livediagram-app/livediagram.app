@@ -29,7 +29,6 @@ export const ELEMENT_TOUR_KINDS = [
   'lane',
   'boundary',
   'diagram-key',
-  'portal',
 ] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
@@ -55,7 +54,6 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   lane: 'lane',
   boundary: 'boundary',
   'diagram-key': 'diagram key',
-  portal: 'portal',
 };
 
 // The toured kind an element is, or null when its type has no tour.
@@ -79,7 +77,6 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'lane') return 'lane';
   if (el.shape === 'boundary') return 'boundary';
   if (el.shape === 'diagram-key') return 'diagram-key';
-  if (el.shape === 'portal') return 'portal';
   // Last: a step guard that fails narrows the element to nothing for any check after it.
   if (isFlowchartStep(el)) return 'flowchart';
   return null;
@@ -97,9 +94,8 @@ export function canTourElement(
       return canEditSankey(can, el);
     // A concept graphic's rows are structure, an Editor's on an unlocked element
     // (docs/specs/009-elements/concept-graphics.md "Share roles"); so are a chart's data, a stack's arrangement, an
-    // entity's fields, a lane's gutter, a boundary's style, a key's meanings and a portal's link.
+    // entity's fields, a lane's gutter, a boundary's style and a key's meanings.
     case 'layer-stack':
-    case 'portal':
     case 'diagram-key':
     case 'boundary':
     case 'lane':

@@ -17,7 +17,6 @@ import { templatePreviewGroup17 } from './template-preview-17';
 import { templatePreviewGroup18 } from './template-preview-18';
 import { templatePreviewGroup19 } from './template-preview-19';
 import { templatePreviewGroup22 } from './template-preview-22';
-import { templatePreviewGroup23 } from './template-preview-23';
 import { templatePreviewGroup25 } from './template-preview-25';
 import { templatePreviewGroup26 } from './template-preview-26';
 
@@ -50,7 +49,6 @@ export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement 
     templatePreviewGroup18(kind) ??
     templatePreviewGroup19(kind) ??
     templatePreviewGroup22(kind) ??
-    templatePreviewGroup23(kind) ??
     templatePreviewGroup25(kind) ??
     templatePreviewGroup26(kind)
   );

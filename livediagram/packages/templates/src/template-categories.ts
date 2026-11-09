@@ -1,4 +1,4 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): fourteen,
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): thirteen,
 // grouped by what a person is using the template for (the use case), never by the shape of artefact it is. Every
 // template but the three blanks has exactly one primary category and may be cross-listed in others where people would
 // genuinely look for it. Read by every template start (Diagram, Draw and Workshop), the marketing gallery and the
@@ -19,8 +19,7 @@ export type TemplateCategory =
   | 'retros'
   | 'software'
   | 'strategy'
-  | 'learning'
-  | 'spaces';
+  | 'learning';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
 // are kept to a similar length (40 to 50 characters) so the folded category tiles read as an even set. No id is stored
@@ -112,12 +111,6 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     label: 'Teaching & Learning',
     searchWords: 'school classroom students teachers lesson education study',
     description: 'Concept maps, KWL charts and visual notes.',
-  },
-  {
-    id: 'spaces',
-    label: 'Virtual Spaces',
-    searchWords: 'office avatar walk room',
-    description: 'Offices and halls to walk round as an avatar.',
   },
 ];
 
@@ -232,11 +225,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'concept-map': 'learning',
   'kwl-chart': 'learning',
   sketchnote: 'learning',
-  // Virtual Spaces: the spaces to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
-  'virtual-office': 'spaces',
-  'coworking-space': 'spaces',
-  'team-pod': 'spaces',
-  'all-hands-hall': 'spaces',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -255,8 +243,6 @@ export const TEMPLATE_ALSO_IN: Readonly<
   sketchnote: ['meetings'],
   // Event storming is a workshop, and maps a business process.
   'event-storming': ['meetings', 'processes'],
-  // An all-hands is a meeting.
-  'all-hands-hall': ['meetings'],
   // Looking back at an incident, or forward at a failure, is a retro's job.
   'incident-postmortem': ['retros'],
   'pre-mortem': ['retros', 'strategy'],

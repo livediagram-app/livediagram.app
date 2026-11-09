@@ -21,9 +21,7 @@ describe('Show Me section (element tours)', () => {
   it('starts closed, saying how many tours are on', () => {
     render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
     expect(header().getAttribute('aria-expanded')).toBe('false');
-    expect(header().textContent).toContain('20 of 20 On');
-    // Offer Again stays open beside it.
-    expect(screen.getByRole('switch', { name: 'Avatar Tour' })).toBeTruthy();
+    expect(header().textContent).toContain('19 of 19 On');
   });
 
   it('opens from its heading, the master switch over each element', () => {
@@ -42,7 +40,7 @@ describe('Show Me section (element tours)', () => {
         onChange={vi.fn()}
       />,
     );
-    expect(header().textContent).toContain('19 of 20 On');
+    expect(header().textContent).toContain('18 of 19 On');
   });
 
   it('opens on its own when Settings lands on one of its rows', () => {

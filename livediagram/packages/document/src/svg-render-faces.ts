@@ -13,31 +13,13 @@
 // the canvas: a card is composed at its kind's default size and scaled to the
 // box, so a big one has bigger type rather than more padding.
 
-import { fenceParts, FENCE_RAIL_OPACITY } from '@liveworkspace/avatar/fence';
-import { avatarPadArtRect, AVATAR_PAD_PARTS } from '@liveworkspace/avatar/pad-art';
+import { isRetiredElement, RETIRED_SHAPE_KINDS, retiredElementName } from './retired-elements';
 import {
-  FURNITURE_ART,
-  FURNITURE_FACE_SHADE,
-  FURNITURE_GLINT,
-  FURNITURE_LINE_STROKE,
-  FURNITURE_PANEL_STROKE,
-  FURNITURE_RAIL_OPACITY,
-  FURNITURE_RAIL_STROKE,
-  FURNITURE_SHADOW,
-  FURNITURE_WEAVE,
-  furnitureFrame,
-  isSeatingShape,
-  type FurniturePart,
-} from './seating';
-import {
-  DEFAULT_ROOM_DOOR,
-  isOfficeShape,
-  OFFICE_ART,
-  ROOM_FLOOR,
-  roomParts,
-  RUG_FILL,
-} from './office';
-import { chairSeatFill } from './shape-geometry';
+  RETIRED_GLYPH_PATHS,
+  RETIRED_PLACEHOLDER_TONES,
+  RETIRED_TEXT,
+  retiredPlaceholderPlan,
+} from './retired-placeholder';
 import type { ResolveEmojiArt } from './svg-render-describe';
 import { REACTION_EMOJI, REACTION_HUES, reactionOf } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -63,7 +45,6 @@ import {
 import { svgActionPanel, svgCommentPanel } from './svg-render-panel-faces';
 import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@liveworkspace/icons';
 import { MODE_GLYPHS } from './mode-glyphs';
-import { pieceFacing } from './furniture-facing';
 
 // The canvas draws a mode glyph at the palette's 14px weight and scales the
 // SVG to 22px on the button face, with non-scaling strokes, so its lines stay
@@ -97,20 +78,8 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'comment-pin',
   'action-card',
   'portal',
-  'chair',
-  'desk',
-  'sofa',
-  'fence',
-  // Avatar Pad (docs/specs/009-elements/avatar-pad.md).
-  'avatar-pad',
-  // The virtual office (docs/specs/009-elements/office.md).
-  'room',
-  'meeting-table',
-  'plant',
-  'bookshelf',
-  'water-cooler',
-  'coffee-machine',
-  'rug',
+  // The retired Spaces pieces (docs/specs/009-elements/retired-elements.md): their placeholder card.
+  ...RETIRED_SHAPE_KINDS,
   'focus-button',
 ]);
 
@@ -132,6 +101,9 @@ export function svgBehaviourFace(
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
   const title = label.trim();
+  // A retired piece, or an Avatar button (docs/specs/009-elements/retired-elements.md): the placeholder card, as on
+  // the canvas.
+  if (isRetiredElement(el)) return retiredFace(el, title, surface);
   switch (el.shape) {
     case 'focus-button': {
       // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the chip and its target, over the label. The
@@ -200,25 +172,6 @@ export function svgBehaviourFace(
       return picker(el, cx, cy, title, color, surface);
     case 'reaction-pad':
       return reactionPad(el, cx, cy, title, color, resolveEmojiArt);
-    case 'chair':
-    case 'desk':
-    case 'sofa':
-    case 'meeting-table':
-    case 'plant':
-    case 'bookshelf':
-    case 'water-cooler':
-    case 'coffee-machine':
-      return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
-    // A rug and a room are floor: their own fill, not the seats' wash (docs/specs/009-elements/office.md), resolved
-    // for the paper as the canvas resolves it (deep on a dark tab).
-    case 'rug':
-      return furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
-    case 'room':
-      return roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
-    case 'fence':
-      return fenceArt(el, stroke);
-    case 'avatar-pad':
-      return avatarPadArt(el);
     case 'comment-pin':
       // docs/specs/012-collaboration/comment-pin.md "The look": the thread as bubbles, the composer.
       return svgCommentPanel(el, title, color, collabAccent(stroke, fill ?? '#ffffff', color));
@@ -523,111 +476,6 @@ function sessionWords(
   );
 }
 
-// A fence (docs/specs/009-elements/fence.md): rails then posts, from the table FenceView draws, in the
-// element's own box (its rotation is the generic element rotation, applied by the caller).
-function fenceArt(el: Face, stroke: string): string {
-  const line = xmlEscape(stroke);
-  return fenceParts(el.width, el.height)
-    .map(
-      (p) =>
-        `<rect x="${r2(el.x + p.x)}" y="${r2(el.y + p.y)}" width="${r2(p.width)}" height="${r2(p.height)}" rx="${r2(p.rx)}" fill="${line}"${p.role === 'rail' ? ` opacity="${FENCE_RAIL_OPACITY}"` : ''}/>`,
-    )
-    .join('');
-}
-
-// An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel table AvatarPadView draws, scaled whole into the
-// box and centred, crisp-edged, its ring lit (the shimmer and the arrival are the canvas's).
-function avatarPadArt(el: Face): string {
-  const art = avatarPadArtRect(el);
-  const s = art.scale;
-  if (s <= 0) return '';
-  const ox = el.x + art.x;
-  const oy = el.y + art.y;
-  return (
-    `<g shape-rendering="crispEdges">` +
-    AVATAR_PAD_PARTS.map(
-      (p) =>
-        `<rect x="${r2(ox + p.x * s)}" y="${r2(oy + p.y * s)}" width="${r2(p.width * s)}" height="${r2(s)}" fill="${p.fill}"/>`,
-    ).join('') +
-    `</g>`
-  );
-}
-
-// A piece of furniture (docs/specs/009-elements/furniture-facing.md "The camera"), from the FURNITURE_ART table
-// FurnitureView draws: the drawing for its facing, mirrored for facing right, exactly as the canvas.
-function furnitureArt(el: Face, seat: string, stroke: string): string {
-  const art = isSeatingShape(el.shape)
-    ? FURNITURE_ART[el.shape]
-    : isOfficeShape(el.shape) && el.shape !== 'room'
-      ? OFFICE_ART[el.shape]
-      : null;
-  if (!art) return '';
-  // Every piece at its facing (docs/specs/009-elements/furniture-facing.md), as the canvas draws it.
-  const frame = furnitureFrame(art, pieceFacing(el));
-  const parts = frame.view.parts
-    .map((p) => furniturePart(p, xmlEscape(seat), xmlEscape(stroke)))
-    .join('');
-  return (
-    `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="${frame.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
-    (frame.transform ? `<g transform="${frame.transform}">${parts}</g>` : parts) +
-    `</svg>`
-  );
-}
-
-// A room (docs/specs/009-elements/office.md "Room"), drawn to its own size so its walls keep their thickness.
-function roomSvg(el: Face, floor: string, stroke: string): string {
-  const parts = roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR)
-    .map((p) => furniturePart(p, xmlEscape(floor), xmlEscape(stroke)))
-    .join('');
-  return `<g transform="translate(${r2(el.x)} ${r2(el.y)})">${parts}</g>`;
-}
-
-function furniturePart(p: FurniturePart, seat: string, line: string): string {
-  const paint = (() => {
-    switch (p.role) {
-      case 'shadow':
-        return `fill="${FURNITURE_SHADOW.fill}" opacity="${FURNITURE_SHADOW.opacity}"`;
-      case 'panel':
-      case 'face':
-        return `fill="${p.fill ? xmlEscape(p.fill) : seat}" stroke="${line}" stroke-width="${FURNITURE_PANEL_STROKE}"`;
-      case 'floor':
-        return `fill="${seat}"`;
-      case 'mark':
-        return `fill="${p.fill ? xmlEscape(p.fill) : line}"`;
-      case 'line':
-        return `fill="none" stroke="${line}" stroke-width="${FURNITURE_LINE_STROKE}" stroke-linecap="round"`;
-      case 'rail':
-        return `fill="none" stroke="${line}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_RAIL_OPACITY}" stroke-linecap="round"`;
-      case 'screen':
-        return `fill="${line}"`;
-      case 'glint':
-        return `fill="none" stroke="${FURNITURE_GLINT.stroke}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_GLINT.opacity}" stroke-linecap="round"`;
-      // The woven roles (a patterned rug's, shared with livehuddle): unstroked, faint over the fill.
-      case 'tint':
-        return `fill="${line}" opacity="${FURNITURE_WEAVE.tint}"`;
-      case 'sheen':
-        return `fill="${FURNITURE_GLINT.stroke}" opacity="${FURNITURE_WEAVE.sheen}"`;
-      case 'dye':
-        return `fill="${p.fill ? xmlEscape(p.fill) : line}" opacity="${FURNITURE_WEAVE.dye}"`;
-    }
-  })();
-  // A face toward the room is the panel, shaded with its stroke colour.
-  const shade = `fill="${line}" opacity="${FURNITURE_FACE_SHADE}"`;
-  switch (p.tag) {
-    case 'rect':
-      return (
-        `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${paint}/>` +
-        (p.role === 'face'
-          ? `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" ${shade}/>`
-          : '')
-      );
-    case 'ellipse':
-      return `<ellipse cx="${p.cx}" cy="${p.cy}" rx="${p.rx}" ry="${p.ry}" ${paint}/>`;
-    case 'path':
-      return `<path d="${p.d}" ${paint}/>`;
-  }
-}
-
 // An emoji centred on (cx, cy) at `size`: its art where the caller has it (a preview with no emoji font), else the
 // glyph as text for the viewer's emoji font.
 function emojiGlyph(
@@ -647,4 +495,53 @@ function emojiGlyph(
     `<text x="${r2(cx)}" y="${r2(cy)}" text-anchor="middle" dominant-baseline="central"` +
     ` font-size="${r2(size)}">${xmlEscape(glyph)}</text>`
   );
+}
+
+// The retired placeholder (docs/specs/009-elements/retired-elements.md "What it looks like"): a muted card with a
+// dashed hairline, the moved-out glyph, the name and "Moved to livehuddle", laid out by the same plan as the canvas.
+// A line's baseline from its top: the cap height (about 0.7 of the size) centred in the line box, as CSS sets it.
+const baseline = (line: number, size: number) => (line + size * 0.7) / 2;
+
+function retiredFace(el: Face, label: string, surface: CanvasSurface): string {
+  const tones = RETIRED_PLACEHOLDER_TONES[surface];
+  const T = RETIRED_TEXT;
+  const plan = retiredPlaceholderPlan(el, retiredElementName(el) ?? 'Retired', label);
+  const cx = el.x + el.width / 2;
+  // The same block the canvas face lays out: the glyph row, the title lines, the caption lines, centred in the box
+  // or (a Room) from its top.
+  const rows =
+    (plan.glyph ? T.glyphRow : 0) +
+    plan.titleLines.length * T.titleLine +
+    plan.captionLines.length * T.captionLine;
+  let y = plan.anchor === 'top' ? el.y + T.padY * 2 : el.y + el.height / 2 - rows / 2;
+  let out =
+    `<rect x="${r2(el.x + 0.5)}" y="${r2(el.y + 0.5)}" width="${r2(Math.max(0, el.width - 1))}" height="${r2(Math.max(0, el.height - 1))}"` +
+    ` rx="${r2(plan.radius)}" fill="${tones.fill}" stroke="${tones.border}" stroke-width="1" stroke-dasharray="4 3"/>`;
+  if (plan.glyph) {
+    out +=
+      `<svg x="${r2(cx - 10)}" y="${r2(y)}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${tones.caption}"` +
+      ` stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">` +
+      RETIRED_GLYPH_PATHS.map((d) => `<path d="${d}"/>`).join('') +
+      `</svg>`;
+    y += T.glyphRow;
+  }
+  for (const line of plan.titleLines) {
+    out += text(cx, y + baseline(T.titleLine, T.titleSize), line, {
+      size: T.titleSize,
+      weight: 600,
+      color: tones.title,
+      anchor: 'middle',
+    });
+    y += T.titleLine;
+  }
+  for (const line of plan.captionLines) {
+    out += text(cx, y + baseline(T.captionLine, T.captionSize), line, {
+      size: T.captionSize,
+      weight: 500,
+      color: tones.caption,
+      anchor: 'middle',
+    });
+    y += T.captionLine;
+  }
+  return out;
 }

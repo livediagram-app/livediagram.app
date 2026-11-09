@@ -45,7 +45,6 @@ export const HELP_ARTICLES = {
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
-  avatarMode: 'selection-modes/avatar-mode',
   laser: 'selection-modes/laser',
   spotlight: 'selection-modes/spotlight',
   eraser: 'selection-modes/eraser',
@@ -73,7 +72,6 @@ export const HELP_ARTICLES = {
   // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
   eventStormingBoards: 'canvas/event-storming-boards',
   drawTour: 'canvas/draw-mode/draw-tour',
-  avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -111,7 +109,6 @@ export const HELP_ARTICLES = {
   lanes: 'palette/lanes',
   boundaries: 'palette/boundaries',
   diagramKeys: 'palette/diagram-keys',
-  portals: 'palette/tools/portals',
   sequenceDiagram: 'palette/sequence-diagrams',
   conceptGraphics: 'palette/concept-graphics',
   palette: 'palette',
@@ -149,10 +146,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   drawTour: {
     title: 'Learn about Watch It Built in Draw',
     description: 'The Draw topics and how to watch one again.',
-  },
-  avatarTour: {
-    title: 'Learn about the Avatar Tour',
-    description: 'What the tour shows you and how replaying works.',
   },
   sharing: {
     title: 'Learn about sharing',
@@ -193,10 +186,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   isometricMode: {
     title: 'Learn about the isometric view',
     description: 'How the isometric projection works and when to use it.',
-  },
-  avatarMode: {
-    title: 'Learn about Avatar mode',
-    description: 'Tips for walking the canvas as an avatar and leading a session.',
   },
   laser: {
     title: 'Learn about the Laser',
@@ -406,10 +395,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   diagramKeys: {
     title: 'Learn about diagram keys',
     description: 'A legend that lists the line styles and tag colours you use.',
-  },
-  portals: {
-    title: 'Learn about portals',
-    description: 'Linked rings that take you across the canvas or to another tab.',
   },
   conceptGraphics: {
     title: 'Learn about concept graphics',

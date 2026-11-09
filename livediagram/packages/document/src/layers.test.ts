@@ -466,7 +466,7 @@ describe('layerBands — event-storming stacking', () => {
   });
 });
 
-// An office's floors (docs/specs/009-elements/office.md): rooms and rugs lie under everything, the larger first.
+// An office's floors (docs/specs/009-elements/retired-elements.md): rooms and rugs lie under everything, the larger first.
 describe('layerBands — office floors', () => {
   const shape = (id: string, kind: string, w: number) =>
     ({ id, type: 'shape', shape: kind, x: 0, y: 0, width: w, height: w }) as Element;

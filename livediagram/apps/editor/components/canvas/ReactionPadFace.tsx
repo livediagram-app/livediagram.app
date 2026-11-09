@@ -14,15 +14,14 @@ import { tint } from '@/lib/element-tint';
 // The face of a Reaction Pad (docs/specs/009-elements/reaction-pad.md): a big pressable glyph over a
 // spotlight in the reaction's own colour, the label under it ("The look").
 //
-// The pad has TWO triggers, a click and an Avatar-mode character walking onto
-// it, so it has to look like something you can stand on: the glowing spot
-// under the emoji is that, without drawing hardware. The emoji bobs, lifts
+// It has to look like something you can press: the glowing spot under the
+// emoji is that, without drawing hardware. The emoji bobs, lifts
 // under the pointer, and on a press squashes and throws a ring out from the
 // spot. Motion lives in qa-board.css and stops under reduced motion.
 //
 // Interaction rules match the Selection Mode button (docs/specs/009-elements/mode-button.md) and the Portal
 // (docs/specs/009-elements/portal-element.md): a real <button> so a click travels rather than only selecting,
-// `pointer-events: auto` so it works inside the pointer-inert Avatar /
+// `pointer-events: auto` so it works inside the pointer-inert
 // Spotlight / Isometric layers, and pointer-down left alone so dragging still
 // moves the element.
 

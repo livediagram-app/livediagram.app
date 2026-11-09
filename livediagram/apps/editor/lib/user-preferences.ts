@@ -205,8 +205,8 @@ export type UserPreferences = {
   // reads neither (they showed none of its topics); kept in the type because they are already stored.
   workshopTourSeen?: boolean;
   drawTourSeen?: boolean;
-  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
+  // The retired Avatar tour's seen-guard: Avatar mode moved to livehuddle (docs/specs/002-project-scope/
+  // not-in-livediagram.md), so nothing reads it; kept in the type because it is already stored.
   avatarTourSeen?: boolean;
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been taken,
   // a record for Settings (it never hides the Start Tour button). Surfaced in Settings as Tours › Show Me, one switch
