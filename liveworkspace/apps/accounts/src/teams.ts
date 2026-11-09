@@ -92,6 +92,10 @@ const memberGuard = (memberId: string, status: MemberStatus, now: number) => ({
   args: [memberId, status, now],
 });
 
+// A unique index refusing a row (two invitations or joins at once): the one race a team write answers as done. Any
+// other failure (D1 down, a foreign key) is no answer at all and goes on to the request-failure guard.
+const isUniqueClash = (err: unknown) => /UNIQUE constraint failed/i.test(String(err));
+
 // The people in a team, for an event they must see once it is gone.
 async function joinedPeople(db: D1Database, teamId: string): Promise<string[]> {
   const { results } = await db
@@ -571,9 +575,10 @@ export async function inviteMember(
         detail: { memberName: email, personId: invitee?.id ?? null, role },
       }),
     ]);
-  } catch {
+  } catch (err) {
     // Two invitations to one address at once: the unique index lets one through.
-    return fail(409, 'already_invited');
+    if (isUniqueClash(err)) return fail(409, 'already_invited');
+    throw err;
   }
   return ok({
     member: {
@@ -775,6 +780,9 @@ export async function answerInvitation(
     teamName: string;
     status: 'joined' | 'declined';
     inviterApp: SettingsApp | null;
+    // Whether this request answered it: false for a repeat (a double click, a second tab) and for an invitation to
+    // a team the account is already in, so the admins hear of an answer once and only of a real one.
+    answered: boolean;
   }>
 > {
   if (!actor.email) return fail(403, 'email_unverified');
@@ -808,11 +816,12 @@ export async function answerInvitation(
         teamName: row.teamName,
         status: 'joined',
         inviterApp,
+        answered: false,
       });
     }
   }
-  const status = accept ? 'joined' : 'declined';
-  await db.batch([
+  const status: 'joined' | 'declined' = accept ? 'joined' : 'declined';
+  const [, updated] = await db.batch([
     db.prepare(BUMP),
     db
       .prepare(
@@ -835,7 +844,17 @@ export async function answerInvitation(
       memberGuard(memberId, status, now),
     ),
   ]);
-  return ok({ id: memberId, teamId: row.teamId, teamName: row.teamName, status, inviterApp });
+  const answer = { id: memberId, teamId: row.teamId, teamName: row.teamName, status, inviterApp };
+  if ((updated?.meta?.changes ?? 0) > 0) return ok({ ...answer, answered: true });
+  // Not `invited` any more since it was read: the same answer already given by this account stands; anything else
+  // (withdrawn, expired, cleared) is gone.
+  const after = await db
+    .prepare('SELECT status, userId FROM team_member WHERE id = ?')
+    .bind(memberId)
+    .first<{ status: string; userId: string | null }>();
+  return after?.status === status && (!accept || after.userId === actor.id)
+    ? ok({ ...answer, answered: false })
+    : fail(404, 'not_found');
 }
 
 // What a closed account's team rows say in place of its address (as the apps say it in place of its name).
@@ -1356,9 +1375,13 @@ export async function joinByInviteLink(
         .bind(memberId, team.id, actor.id, actor.email ?? `${actor.id}@account.invalid`, now, now),
       joinedEvent(memberId),
     ]);
-  } catch {
-    // Two joins at once by one person: the unique index lets one through, and they are in.
-    return ok({ ...result, alreadyMember: true, acceptedInvite: false });
+  } catch (err) {
+    // Two joins at once by one person: the unique index lets one through, and they are in. Anything else (D1 down,
+    // or a clash that left them out) is no join, never answered as one.
+    if (isUniqueClash(err) && (await getMembership(db, team.id, actor.id))) {
+      return ok({ ...result, alreadyMember: true, acceptedInvite: false });
+    }
+    throw err;
   }
   return ok({ ...result, alreadyMember: false, acceptedInvite: false });
 }
@@ -1483,13 +1506,16 @@ export async function sweepInvitations(
 export async function inviteResponseRecipients(
   db: D1Database,
   teamId: string,
+  // The account that answered: an invitation as an admin makes them one, and they never hear of their own answer.
+  responderId: string | null = null,
 ): Promise<{ email: string; name: string }[]> {
   const { results } = await db
     .prepare(
       `SELECT u.id, u.email, u.name FROM team_member m JOIN "user" u ON u.id = m.userId
-       WHERE m.teamId = ? AND m.status = 'joined' AND m.role = 'admin' LIMIT 50`,
+       WHERE m.teamId = ?1 AND m.status = 'joined' AND m.role = 'admin' AND (?2 IS NULL OR m.userId <> ?2)
+       LIMIT 50`,
     )
-    .bind(teamId)
+    .bind(teamId, responderId)
     .all<{ id: string; email: string; name: string }>();
   if (!results.length) return [];
   let optedOut = new Set<string>();
