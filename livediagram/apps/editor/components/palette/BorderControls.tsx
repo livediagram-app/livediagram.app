@@ -81,6 +81,7 @@ export function BorderControls({
           {BORDER_RADII.map((v) => (
             <SizeButton
               key={v}
+              label={RADIUS_LABELS[v]}
               active={radius === v}
               onClick={() => onCommitBorderRadius(v)}
               onPointerEnter={onMouseHover(() => onPreviewBorderRadius(v))}
@@ -101,3 +102,12 @@ const tileLabel = (v: string) =>
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
+
+// The Radius tiles' names: their values are abbreviations ('sm'), and Strength already has a Medium.
+const RADIUS_LABELS: Record<BorderRadius, string> = {
+  none: 'Square Corners',
+  sm: 'Small Radius',
+  md: 'Medium Radius',
+  lg: 'Large Radius',
+  full: 'Fully Round',
+};
