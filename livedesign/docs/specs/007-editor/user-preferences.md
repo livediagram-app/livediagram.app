@@ -458,7 +458,8 @@ and the dialog stays as the one complete, browsable index of them.
   - **Phone** (below the `sm:` breakpoint, via `useIsMobileViewport`) takes
     the iPhone push navigation: a root list of the same categories, each a
     tappable row, which pushes that category's pane with a back control in
-    the header. One screen at a time.
+    the header. One screen at a time. A search that matches nothing says so
+    under the search box, above the dimmed list.
 
   The desktop pane is never empty: with no category chosen (the phone's root
   list, carried across a resize or rotate), or one not (yet) among the
