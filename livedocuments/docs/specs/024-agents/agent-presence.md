@@ -63,9 +63,9 @@ as a share link: reading needs read access; comments, taking part and presence n
 (`gateParticipate`); changesets need the edit gate. A participate token comments, takes part and sets presence and
 submits no changesets; a view token reads and writes nothing, comments and presence included.
 
-Until [share roles](../013-workspace/share-roles.md) are built, `gateParticipate` names today's rule: read access to
-the document or tab, as a view link may already comment, with a read-only token refused every write at the choke
-point. It becomes the Participant check when share roles land, and no route changes then.
+`gateParticipate` is the Participant check of [share roles](../013-workspace/share-roles.md): a token whose grant is
+a Viewer's sets and clears no presence (403), however its own level reads, since a status line and focus rings are
+put in front of everyone in the room. A read-only token is refused every write at the choke point.
 
 ## Limits
 
