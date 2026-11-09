@@ -56,4 +56,41 @@ describe('NotFound', () => {
     expect(screen.queryByRole('button', { name: 'Open Explorer' })).toBeNull();
     expect(screen.getByRole('button', { name: 'New Design' })).toBeTruthy();
   });
+
+  it('says the file is archived, with Change Folder and Open Explorer, and no 404', () => {
+    const onChangeFolder = vi.fn();
+    const onOpenExplorer = vi.fn();
+    render(
+      <NotFound
+        noun="design"
+        archived={{ onChangeFolder }}
+        onCreateNew={() => {}}
+        onOpenExplorer={onOpenExplorer}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Design Archived' })).toBeTruthy();
+    expect(screen.queryByText('404')).toBeNull();
+    expect(
+      screen.getByText(
+        'This design is archived, so it can’t be opened or edited. Move it out of Archived with Change Folder to work on it again.',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'New Design' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Change Folder' }));
+    expect(onChangeFolder).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'Open Explorer' }));
+    expect(onOpenExplorer).toHaveBeenCalledOnce();
+  });
+
+  it('offers only Open Explorer for an archived file in an embed', () => {
+    render(<NotFound noun="plan" archived={{}} onCreateNew={() => {}} onOpenExplorer={() => {}} />);
+    expect(screen.getByRole('heading', { name: 'Plan Archived' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Change Folder' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open Explorer' })).toBeTruthy();
+  });
+
+  it('offers nothing to press for an archived file where there is nowhere to go', () => {
+    render(<NotFound noun="plan" archived={{}} onCreateNew={() => {}} />);
+    expect(screen.queryByRole('button')).toBeNull();
+  });
 });

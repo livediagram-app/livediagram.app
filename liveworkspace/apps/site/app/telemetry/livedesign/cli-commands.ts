@@ -14,6 +14,8 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
     command: 'design restore',
     what: 'restoring a design from the Trash',
   },
+  { type: 'DesignArchive', command: 'design archive', what: 'putting a design away in Archived' },
+  { type: 'DesignUnarchive', command: 'design unarchive', what: 'moving a design out of Archived' },
   { type: 'TabLs', command: 'tab ls', what: 'listing a design’s tabs' },
   { type: 'TabView', command: 'tab view', what: 'reading a view of a tab' },
   { type: 'TabRender', command: 'tab render', what: 'drawing a tab as a picture' },

@@ -9,7 +9,23 @@ export interface ApiRefusal {
   message: string;
 }
 
-export function createApiRefusal(product: Pick<AgentProduct, 'noun' | 'collection'>) {
+// Archived's refusals (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Archived"), by the index's code:
+// an archived file opens and changes for nobody until it is moved out (the MCP's unarchive_<noun>, the CLI's
+// unarchive, or the Explorer's Change Folder); a teammate edits a team's file but only its maker puts it away; and a
+// file in the Trash comes back first. A product with its own refusal table (liveplanner's) spreads these into it.
+export function archiveRefusalWords(
+  product: Pick<AgentProduct, 'noun' | 'word'>,
+): Readonly<Record<string, string>> {
+  const { noun } = product;
+  const word = product.word ?? noun;
+  return {
+    archived: `this ${word} is archived, so it can't be opened or changed. Move it out of Archived with unarchive_${noun} (or Change Folder in the Explorer) first.`,
+    not_owner: `only the ${word}'s owner can archive it.`,
+    trashed: `that ${word} is in the Trash: restore it with restore_${noun} first.`,
+  };
+}
+
+export function createApiRefusal(product: Pick<AgentProduct, 'noun' | 'collection' | 'word'>) {
   const { noun, collection } = product;
   const BY_STATUS: Readonly<Record<number, string>> = {
     401: 'the token is not accepted: sign in again.',
@@ -20,10 +36,13 @@ export function createApiRefusal(product: Pick<AgentProduct, 'noun' | 'collectio
     // A burst past the per-token limit (docs/specs/015-api/public-api-and-tokens.md §3.5): the window is a minute.
     429: 'too many calls in the last minute (the limit is per token). Wait about a minute, then make the same call again.',
   };
+  const BY_CODE = archiveRefusalWords(product);
 
   return function apiRefusalOf(err: unknown): ApiRefusal | null {
     if (!(err instanceof ApiError) || err.status >= 500) return null;
     const code = err.code ?? `http_${err.status}`;
+    const coded = BY_CODE[code];
+    if (coded) return { code, message: `The api refused it: ${coded}` };
     const known = BY_STATUS[err.status];
     if (known) return { code, message: `The api refused it: ${known}` };
     return { code, message: `The api refused it (${code}).` };

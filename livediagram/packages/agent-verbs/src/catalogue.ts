@@ -44,6 +44,7 @@ import {
   tabRename,
   tabRm,
 } from './verbs/lifecycle';
+import { documentArchive, documentUnarchive } from './verbs/archive';
 import { tabLint, tabLs, tabView } from './verbs/tab';
 import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
@@ -57,6 +58,8 @@ export const VERBS: readonly Verb[] = [
   documentShare,
   documentRm,
   documentRestore,
+  documentArchive,
+  documentUnarchive,
   tabLs,
   tabView,
   tabLint,

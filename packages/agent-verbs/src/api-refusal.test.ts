@@ -37,6 +37,26 @@ describe('apiRefusalOf', () => {
     });
   });
 
+  it('says an archived file can’t be opened, and how to move it out', () => {
+    expect(apiRefusalOf(new ApiError(409, JSON.stringify({ error: 'archived' })))).toEqual({
+      code: 'archived',
+      message:
+        "The api refused it: this sketch is archived, so it can't be opened or changed. Move it out of Archived with unarchive_sketch (or Change Folder in the Explorer) first.",
+    });
+  });
+
+  it('says only the owner archives, and a file in the Trash comes back first', () => {
+    expect(apiRefusalOf(new ApiError(403, JSON.stringify({ error: 'not_owner' })))).toEqual({
+      code: 'not_owner',
+      message: "The api refused it: only the sketch's owner can archive it.",
+    });
+    expect(apiRefusalOf(new ApiError(409, JSON.stringify({ error: 'trashed' })))).toEqual({
+      code: 'trashed',
+      message:
+        'The api refused it: that sketch is in the Trash: restore it with restore_sketch first.',
+    });
+  });
+
   it('is no refusal for a 5xx or anything not from the api', () => {
     expect(apiRefusalOf(new ApiError(503, ''))).toBeNull();
     expect(apiRefusalOf(new TypeError('fetch failed'))).toBeNull();

@@ -16,6 +16,8 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   delete_design: 'design rm',
   list_trash: 'api GET /trash',
   restore_design: 'design restore',
+  archive_design: 'design archive',
+  unarchive_design: 'design unarchive',
   list_images: 'image ls',
   change_pages: 'page set',
   change_components: 'component make',

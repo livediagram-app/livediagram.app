@@ -24,13 +24,18 @@ export type Libraries<C extends string, S, F> = {
 };
 
 // One search hit. `library` is 'personal' or the team's name, so the calling model can tell the user where a file
-// lives (and disambiguate same-named files across libraries).
+// lives (and disambiguate same-named files across libraries). `archived` marks a file in the caller's Archived
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Archived"), found only when asked for.
 export type FoundFile = {
   id: string;
   name: string;
   updatedAt: number;
   library: string;
+  archived?: true;
 };
+
+// What a search asks for besides its words: `archived`, the caller's Archived alone instead of the live libraries.
+export type SearchOptions = { archived?: boolean };
 
 type TeamsAnswer = { teams: { id: string; name: string }[] };
 
@@ -123,20 +128,25 @@ export function createFind<S extends FileSummary, F, C extends string>(
   // The MCP's find_<collection>: the caller's files (personal and every joined team's) whose name or folder's name
   // holds each word of `query`, newest saved first, at most `limit`, searched and capped at the index in one request
   // (`GET /<collection>?team=all&q=&limit=`), not read whole and matched here. A query the index cannot answer as
-  // the name match did (not ASCII, or one it refuses as too long) falls back to the sweep and `matchFiles`.
+  // the name match did (not ASCII, or one it refuses as too long) falls back to the sweep and `matchFiles`. With
+  // `archived`, the caller's Archived alone (`&archived=1`), always at the index: the sweep reads only live libraries,
+  // so an archived search has no fallback, and every file it finds is `archived`.
   async function searchFiles(
     api: ApiClient,
     query: string | undefined,
     limit: number,
+    options: SearchOptions = {},
   ): Promise<FoundFile[]> {
     const q = (query ?? '').trim();
+    const archived = options.archived === true;
     const sweep = async () => {
       const [personal, teams] = await Promise.all([readPersonal(api), fetchTeamLibraries(api)]);
       return matchFiles(listOf(personal), teams, query, limit);
     };
-    if (NOT_ASCII.test(q)) return sweep();
+    if (!archived && NOT_ASCII.test(q)) return sweep();
     const params = new URLSearchParams({ team: 'all', limit: String(limit) });
     if (q) params.set('q', q);
+    if (archived) params.set('archived', '1');
     let found: S[];
     let names: Map<string, string>;
     try {
@@ -145,7 +155,7 @@ export function createFind<S extends FileSummary, F, C extends string>(
         teamNames(api),
       ]);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 400) return sweep();
+      if (!archived && err instanceof ApiError && err.status === 400) return sweep();
       throw err;
     }
     return found.map((d) => ({
@@ -153,6 +163,7 @@ export function createFind<S extends FileSummary, F, C extends string>(
       name: d.name,
       updatedAt: d.savedAt,
       library: d.teamId ? (names.get(d.teamId) ?? d.teamId) : 'personal',
+      ...(archived ? { archived: true as const } : {}),
     }));
   }
 

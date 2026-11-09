@@ -31,6 +31,8 @@ import { OtherAppsHere } from './OtherAppsHere';
 import { FilteredEmpty, LensAnnouncer, LensBar } from './Lens';
 import { useLensContext } from './SearchField';
 import { TrashNote, TrashPane } from './TrashPane';
+import { ThisBrowserArchivedGroup, useThisBrowserArchived } from './ArchivedThisBrowser';
+import { useArchivedAsk } from './useArchivedAsk';
 import { ListView } from './ListView';
 import { SharedList } from './SharedList';
 import { TeamPage } from './TeamPane';
@@ -121,7 +123,15 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
   // The empty states' one button makes the host app's kind.
   const createOwn = createItem ? () => createItem() : undefined;
 
-  const empty = !state.loading && state.items.length === 0 && folderRows.length === 0;
+  // Archived also lists what this browser archived (its own group below); only both empty is empty.
+  const localArchived = useThisBrowserArchived();
+  const archivedView = view.kind === 'archived';
+  useArchivedAsk(archivedView, state.items, localArchived, state.loading);
+  const empty =
+    !state.loading &&
+    state.items.length === 0 &&
+    folderRows.length === 0 &&
+    !(archivedView && localArchived.length > 0);
   // Empty in this app, a place may still hold other apps' items: say so, so it is never deleted as empty.
   const others = useOtherApps({
     client,
@@ -166,7 +176,7 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
       </div>
     ) : state.loading && folderRows.length === 0 ? (
       <SkeletonRows />
-    ) : view.kind === 'trash' ? (
+    ) : archivedView && state.items.length === 0 && !empty ? null : view.kind === 'trash' ? (
       <TrashPane
         items={state.items}
         hasMore={state.hasMore && !state.moreFailed}
@@ -230,6 +240,10 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
       ) : null}
       {view.kind === 'trash' ? <TrashNote words={words} /> : null}
       {view.kind === 'team' && !view.folderId ? <TeamPage teamId={view.id}>{body}</TeamPage> : body}
+      {/* Kept in this browser, so it shows even when the account's list can't load (offline). */}
+      {archivedView && !state.loading ? (
+        <ThisBrowserArchivedGroup first={!state.error && state.items.length === 0} />
+      ) : null}
       {state.moreFailed && !state.error ? (
         <MoreFailed onRetry={state.retryMore} loading={state.loadingMore} />
       ) : null}

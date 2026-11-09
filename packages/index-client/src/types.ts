@@ -52,6 +52,9 @@ export type Item = {
   updatedAt: number;
   trashedAt: number | null;
   trashReason: TrashReason | null;
+  // In its owner's Archived since (one-explorer-contracts.md "Archived"): it opens nowhere until moved out. Always
+  // sent by the index; absent reads as not archived.
+  archivedAt?: number | null;
   summary: ItemSummary;
   // For the person asking:
   access: Level;

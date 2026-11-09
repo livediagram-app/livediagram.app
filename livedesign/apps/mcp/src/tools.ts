@@ -65,6 +65,7 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
+import { registerArchiveTools } from './archive-tools';
 import { registerPagesTools } from './pages-tools';
 import { registerComponentsTools } from './components-tools';
 import {
@@ -98,7 +99,9 @@ export function registerTools(server: McpServer, env: Env): void {
     // Personal + team shared libraries (docs/specs/013-workspace/team-shared-designs.md): a design filed into a
     // team leaves the personal list, so both are searched, at the index in one
     // request (@liveworkspace/agent-verbs/find `searchFiles`).
-    const found = await searchDesigns(clientFor(env, token), args.query, args.limit ?? 20);
+    const found = await searchDesigns(clientFor(env, token), args.query, args.limit ?? 20, {
+      archived: args.archived,
+    });
     const matched = found.map((d) => ({ ...d, url: deepLink(env, d.id) }));
     return textResult({ count: matched.length, designs: matched });
   });
@@ -483,6 +486,9 @@ export function registerTools(server: McpServer, env: Env): void {
       })),
     });
   });
+
+  // Archived (docs/specs/015-api/mcp-server.md "Archived"): archive_design and unarchive_design.
+  registerArchiveTools(server, env);
 
   registerTool(server, env, mcpRestoreDesign, async (args, extra) => {
     const token = requireToken(extra);

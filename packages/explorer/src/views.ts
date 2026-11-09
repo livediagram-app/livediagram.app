@@ -19,6 +19,8 @@ export type ExplorerView =
   // Shared with me: items reached through a link.
   | ({ kind: 'shared' } & Lensed)
   | { kind: 'trash' }
+  // The person's Archived: documents put away, out of every other list and closed until moved out.
+  | { kind: 'archived' }
   // Open actions and unresolved threads, across every app.
   | { kind: 'inbox' }
   // What happened to the items you can reach, and your teams', newest first.
@@ -126,6 +128,7 @@ export function viewFromLocation(
     case 'shared':
       return lensed({ kind: section });
     case 'trash':
+    case 'archived':
     case 'inbox':
     case 'timeline':
     case 'home':
@@ -170,6 +173,7 @@ export const SIDEBAR_LABELS = {
   myWork: 'My Work',
   library: 'Library',
   trash: 'Trash',
+  archived: 'Archived',
   newTeam: 'New Team',
   invites: 'Invites',
   gallery: 'Image Gallery',
@@ -184,6 +188,7 @@ export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, s
   shared: SIDEBAR_LABELS.shared,
   all: SIDEBAR_LABELS.myWork,
   trash: SIDEBAR_LABELS.trash,
+  archived: SIDEBAR_LABELS.archived,
   recent: 'Recent',
   favourites: 'Favourites',
   search: 'Search results',

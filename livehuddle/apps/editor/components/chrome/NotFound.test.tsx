@@ -29,4 +29,15 @@ describe('NotFound', () => {
     expect(screen.queryByRole('button', { name: 'Open Explorer' })).toBeNull();
     expect(screen.getByRole('button', { name: 'New Space' })).toBeTruthy();
   });
+
+  it('says the space is archived, with Change Folder and Open Explorer', () => {
+    const onChangeFolder = vi.fn();
+    render(
+      <NotFound archived={{ onChangeFolder }} onCreateNew={() => {}} onOpenExplorer={() => {}} />,
+    );
+    expect(screen.getByRole('heading', { name: 'Space Archived' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'New Space' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Change Folder' }));
+    expect(onChangeFolder).toHaveBeenCalledOnce();
+  });
 });

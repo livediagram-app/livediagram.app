@@ -14,6 +14,16 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
     command: 'project restore',
     what: 'restoring a project from the Trash',
   },
+  {
+    type: 'ProjectArchive',
+    command: 'project archive',
+    what: 'putting a project away in Archived',
+  },
+  {
+    type: 'ProjectUnarchive',
+    command: 'project unarchive',
+    what: 'moving a project out of Archived',
+  },
   { type: 'TabLs', command: 'tab ls', what: 'listing a project’s tabs' },
   { type: 'TabView', command: 'tab view', what: 'reading a view of a tab' },
   { type: 'TabRender', command: 'tab render', what: 'drawing a tab as a picture' },

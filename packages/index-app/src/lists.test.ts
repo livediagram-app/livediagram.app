@@ -97,8 +97,22 @@ describe('listAskedOf (GET /api/<collection>)', () => {
     expect(asked(`limit=${LIST_LIMIT_MAX}`)).toEqual({ team: 'personal', limit: LIST_LIMIT_MAX });
   });
 
+  it('takes the Archived alone with archived=1 or true, and the live list with 0 or false', () => {
+    expect(asked('archived=1')).toEqual({ team: 'personal', archived: true });
+    expect(asked('team=all&archived=true&q=plan&limit=5')).toEqual({
+      team: undefined,
+      q: 'plan',
+      limit: 5,
+      archived: true,
+    });
+    expect(asked('archived=0')).toEqual({ team: 'personal' });
+    expect(asked('archived=false')).toEqual({ team: 'personal' });
+  });
+
   it('refuses another team, or a page size that is not one the index takes', () => {
     for (const query of [
+      'archived=yes',
+      'archived=',
       'team=t1',
       'limit=0',
       'limit=-1',
@@ -120,6 +134,13 @@ describe('listItemsAsked', () => {
       await listItemsAsked(client, 'livediagram', { team: undefined, q: 'road', limit: 20 }),
     ).toEqual([item('a')]);
     expect(listItems).toHaveBeenCalledWith({ app: 'livediagram', q: 'road', limit: 20 });
+  });
+
+  it('reads the Archived view when asked for it', async () => {
+    const listItems = vi.fn(async () => ({ items: [item('a')], nextCursor: null }));
+    const client = { listItems } as unknown as IndexClient;
+    await listItemsAsked(client, 'livediagram', { team: undefined, limit: 20, archived: true });
+    expect(listItems).toHaveBeenCalledWith({ app: 'livediagram', view: 'archived', limit: 20 });
   });
 
   it('reads every page without one', async () => {

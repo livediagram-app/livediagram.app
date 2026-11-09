@@ -29,4 +29,15 @@ describe('NotFound', () => {
     expect(screen.queryByRole('button', { name: 'Open Explorer' })).toBeNull();
     expect(screen.getByRole('button', { name: 'New Document' })).toBeTruthy();
   });
+
+  it('says the document is archived, with Change Folder and Open Explorer', () => {
+    const onChangeFolder = vi.fn();
+    render(
+      <NotFound archived={{ onChangeFolder }} onCreateNew={() => {}} onOpenExplorer={() => {}} />,
+    );
+    expect(screen.getByRole('heading', { name: 'Document Archived' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'New Document' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Change Folder' }));
+    expect(onChangeFolder).toHaveBeenCalledOnce();
+  });
 });

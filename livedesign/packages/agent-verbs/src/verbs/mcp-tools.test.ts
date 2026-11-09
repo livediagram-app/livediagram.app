@@ -22,6 +22,8 @@ describe('the MCP tool verbs', () => {
       'rename_design',
       'delete_design',
       'list_trash',
+      'archive_design',
+      'unarchive_design',
       'restore_design',
     ]);
     for (const v of MCP_TOOL_VERBS) {

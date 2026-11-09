@@ -10,6 +10,7 @@
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
 import { z } from 'zod';
+import { findArchived } from './archive-tools';
 import {
   FIND_QUERY_MAX_LENGTH,
   REF_INPUT_MAX_LENGTH,
@@ -282,7 +283,7 @@ tabs in a create_document call.
 // resources (docs/specs/015-api/mcp-server.md §4.5). Phrased as facts about the server (what it does
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
-export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livediagram documents.
+export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, archive and unarchive, delete (to the Trash) and restore the user's livediagram documents. An archived document is its owner's alone: it can't be read or changed until unarchive_document moves it out, and find_documents lists archived documents only with archived true.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). The full element format is
@@ -571,6 +572,7 @@ export const findDocumentsShape = {
       "Only documents whose name, or whose folder's name, contains each word of this text (any case).",
     ),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
+  archived: findArchived,
 };
 
 // What read_document fits every view to unless told otherwise (docs/specs/024-agents/document-views.md

@@ -23,8 +23,9 @@ import {
   type ItemView,
 } from '@liveworkspace/index-client';
 import { loadItem } from './access';
+import { archivedRefusal, archiveItem, isArchived } from './archive';
 import { callApp } from './app-calls';
-import { personalScope, scopeOf, teamScope, type Person } from './auth';
+import { archivedScope, ownScopes, personalScope, scopeOf, teamScope, type Person } from './auth';
 import { decodeCursor, isId, parseLimit } from './codec';
 import { defaultPlacement } from './default-placement';
 import { touchItem } from './drive';
@@ -160,7 +161,8 @@ export async function parseListSpec(
   // The data export lists one scope: the person's personal items, or the one team it named.
   if (person.export) {
     spec.view = 'all';
-    spec.scopes = [person.teams[0] ? teamScope(person.teams[0]) : personalScope(person.id)];
+    // Its personal scope keeps the person's Archived: Download Your Data holds every document they own.
+    spec.scopes = person.teams[0] ? [teamScope(person.teams[0])] : ownScopes(person.id);
   }
   const folder = params.get('folder');
   if (folder !== null) {
@@ -224,12 +226,13 @@ export async function handleTrash(ctx: PersonContext): Promise<Response> {
   if (person.app && appParam !== person.app) return forbidden('wrong_app');
   const team = url.searchParams.get('team');
   if (team && !(await inTeamNow(env, person, team))) return forbidden('not_team_member');
-  const scope = team ? teamScope(team) : personalScope(person.id);
+  // The person's own Trash holds their archived items' too (blueprints/archive.md).
+  const scopes = JSON.stringify(team ? [teamScope(team)] : ownScopes(person.id));
   const { results } = await env.INDEX_DB.prepare(
-    `SELECT id, app FROM items WHERE scope = ? AND trashed_at IS NOT NULL${appParam ? ' AND app = ?' : ''}
+    `SELECT id, app FROM items WHERE scope IN (SELECT value FROM json_each(?)) AND trashed_at IS NOT NULL${appParam ? ' AND app = ?' : ''}
      ORDER BY updated_at DESC LIMIT ?`,
   )
-    .bind(...(appParam ? [scope, appParam, EMPTY_TRASH_MAX] : [scope, EMPTY_TRASH_MAX]))
+    .bind(...(appParam ? [scopes, appParam, EMPTY_TRASH_MAX] : [scopes, EMPTY_TRASH_MAX]))
     .all<Pick<ItemRow, 'id' | 'app'>>();
   await purgeRows(env, results, Date.now(), { actorId: person.id });
   if (results.length > 0 && !team) ctx.drive.add(person.id);
@@ -309,6 +312,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     updated_at: now,
     trashed_at: null,
     trash_reason: null,
+    archived_at: null,
   };
   try {
     await insertItem(
@@ -397,6 +401,7 @@ export async function handleItem(ctx: RouteContext, id: string): Promise<Respons
     if (sub === 'copy') return copyItem(ctx, id);
     if (sub === 'open') return recordOpen(ctx, id);
     if (sub === 'grant') return grantItem(ctx, id);
+    if (sub === 'archive') return archiveItem(ctx, id);
   }
   return notFound();
 }
@@ -438,6 +443,9 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
   let teamId = row.team_id;
   let ownerId = row.owner_id;
   let folderId = row.folder_id;
+  // An archived item is in no team and no folder: naming either moves it out (blueprints/archive.md "The move
+  // out"); a rename alone leaves it in Archived.
+  const archived = isArchived(row);
   if (person && body.teamId !== undefined && (body.teamId ?? null) !== row.team_id) {
     const target = body.teamId ?? null;
     // Into or out of a team: joined membership of each team involved.
@@ -450,7 +458,8 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
     // Its folder was in the old scope.
     folderId = null;
   }
-  const scope = scopeOf(ownerId, teamId);
+  const scope = archived && !moving ? archivedScope(ownerId) : scopeOf(ownerId, teamId);
+  const archivedAt = archived && !moving ? row.archived_at : null;
   let folderName: string | null = null;
   if (body.folderId !== undefined) {
     folderId = body.folderId ?? null;
@@ -477,7 +486,7 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
       }),
     );
   }
-  if (folderId !== row.folder_id || teamId !== row.team_id) {
+  if (folderId !== row.folder_id || teamId !== row.team_id || scope !== row.scope) {
     const teamChanged = teamId !== row.team_id;
     // Its events go where it went (who sees its history is who reaches it), then the move is recorded there.
     events.push(...moveScopeStatements(db, id, row.scope, scope));
@@ -498,10 +507,10 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
   await db.batch([
     db
       .prepare(
-        `UPDATE items SET title = ?, owner_id = ?, team_id = ?, scope = ?, folder_id = ?, updated_at = ?
-         WHERE id = ?`,
+        `UPDATE items SET title = ?, owner_id = ?, team_id = ?, scope = ?, folder_id = ?, updated_at = ?,
+         archived_at = ? WHERE id = ?`,
       )
-      .bind(title, ownerId, teamId, scope, folderId, updatedAt, id),
+      .bind(title, ownerId, teamId, scope, folderId, updatedAt, archivedAt, id),
     ...events,
   ]);
   // Renamed or moved: its owner's mirror before and after (into or out of a team, one side is personal).
@@ -517,6 +526,7 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
     scope,
     folder_id: folderId,
     updated_at: updatedAt,
+    archived_at: archivedAt,
   };
   const nextAccess: Access =
     access.via === 'link' ? access : { level: 'edit', tabId: null, via: 'owner', code: null };
@@ -628,6 +638,7 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
   const loaded = await loadItem(env, id, caller, 'view');
   if (loaded instanceof Response) return loaded;
   const { row: from, access } = loaded;
+  if (isArchived(from)) return archivedRefusal();
   const body = await readObject(request);
   if (!body) return badRequest();
   let title = `${from.title} (copy)`.slice(0, TITLE_MAX);
@@ -652,6 +663,7 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
     updated_at: now,
     trashed_at: null,
     trash_reason: null,
+    archived_at: null,
   };
   await insertItem(env, row, { copiedFrom: from.title });
   // A link scoped to one tab copies only that tab. The app hears who copies and the link they came in by, so the
@@ -761,6 +773,8 @@ async function recordOpen(ctx: RouteContext, id: string): Promise<Response> {
   const { env, caller } = ctx;
   const loaded = await loadItem(env, id, caller, 'view');
   if (loaded instanceof Response) return loaded;
+  // Never opened while archived: no Recent or Most Used row comes back.
+  if (isArchived(loaded.row)) return archivedRefusal();
   const person = caller.person;
   // A link visitor with no identity has no Recent to keep.
   if (!person) return noContent();
@@ -803,6 +817,8 @@ async function grantItem(ctx: RouteContext, id: string): Promise<Response> {
   const loaded = await loadItem(env, id, caller, 'view');
   if (loaded instanceof Response) return loaded;
   const { row, access } = loaded;
+  // An archived item is never granted: its owner (the only one who still reaches it) hears why.
+  if (isArchived(row)) return archivedRefusal();
   const sub = caller.person ? caller.person.id : `link:${access.code}`;
   const grant = await mintGrant(env, {
     app: row.app,

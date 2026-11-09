@@ -124,7 +124,8 @@ describe('expansion', () => {
   it('remembers a folded My Work', async () => {
     localStorage.setItem(EXPANDED_KEY, JSON.stringify([]));
     const index = createFakeIndex({ folders: [folder('f1', 'Projects')] });
-    page(index);
+    // On a view My Work doesn't hold: its own view opens it (below).
+    page(index, { kind: 'home' });
     await waitFor(() => expect(row('My Work').getAttribute('aria-expanded')).toBe('false'));
     expect(within(nav()).queryByRole('treeitem', { name: 'Projects' })).toBeNull();
   });
@@ -167,7 +168,8 @@ describe('the keyboard tree', () => {
     key(home, 'ArrowDown');
     expect(document.activeElement).toBe(rows[1]);
     key(document.activeElement!, 'End');
-    expect(document.activeElement).toBe(row('Trash'));
+    // The Library, folded: its rows (the Trash last) are inside.
+    expect(document.activeElement).toBe(row('Library'));
     key(document.activeElement!, 'Home');
     expect(document.activeElement).toBe(home);
 
@@ -188,7 +190,8 @@ describe('the keyboard tree', () => {
   });
 
   it('jumps to the next row starting with a typed letter, wrapping', async () => {
-    page(createFakeIndex(), { kind: 'home' });
+    // On a Library page, so the Library is open.
+    page(createFakeIndex(), { kind: 'recent' });
     const home = await findRow('Home');
     act(() => home.focus());
     key(home, 't');

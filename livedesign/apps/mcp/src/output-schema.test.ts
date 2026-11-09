@@ -100,6 +100,7 @@ async function api(request: Request): Promise<Response> {
     });
   }
   if (path.endsWith('/restore')) return json({ design: LIVE_DOC });
+  if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ design: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   if (path.endsWith('/pages')) return json(PAGES);
@@ -158,6 +159,12 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
   { tool: 'list_images', output: 'listImagesOutput', args: { query: 'shot' } },
   { tool: 'restore_design', output: 'restoreDesignOutput', args: { designId: 'd2' } },
+  { tool: 'archive_design', output: 'archiveDesignOutput', args: { designId: 'd1' } },
+  {
+    tool: 'unarchive_design',
+    output: 'unarchiveDesignOutput',
+    args: { designId: 'd1', teamId: 't1' },
+  },
   {
     tool: 'change_pages',
     output: 'changePagesOutput',

@@ -144,14 +144,14 @@ export async function makeConnection(ctx: RouteContext, hostId: string): Promise
   ) {
     return forbidden();
   }
-  if (!host || host.trashed_at !== null) return notFound();
+  if (!host || host.trashed_at !== null || host.archived_at !== null) return notFound();
 
   // The target: live, and the person may share it (its owner or a joined member of its team).
   const self: Caller = { person, share: null };
   const loaded = await loadItem(env, input.targetId, self, 'edit', { manage: true });
   if (loaded instanceof Response) return loaded;
   const target = loaded.row;
-  if (target.trashed_at !== null) return notFound();
+  if (target.trashed_at !== null || target.archived_at !== null) return notFound();
   const level = input.level ?? connectionDefaultLevel(target.app);
   if (!connectionLevels(target.app).includes(level)) return badRequest('level_not_offered');
   // Both ways shares the host too, so the person must manage it.
@@ -310,6 +310,7 @@ type OpenRow = {
   owner_id: string | null;
   team_id: string | null;
   trashed_at: number | null;
+  archived_at: number | null;
   share_code: string | null;
   pass_level: Level | null;
   pass_expires_at: number | null;
@@ -327,7 +328,7 @@ async function reachable(
   if (!grant || !isConnectionId(id) || !levelAtLeast(grant.level, need)) return null;
   const row = await env.INDEX_DB.prepare(
     `SELECT c.host_item_id, c.host_tab_id, h.app AS host_app, c.confirmed_at, c.target_item_id,
-       t.app AS target_app, t.title AS target_title, t.updated_at AS target_updated_at, t.owner_id, t.team_id, t.trashed_at, c.share_code,
+       t.app AS target_app, t.title AS target_title, t.updated_at AS target_updated_at, t.owner_id, t.team_id, t.trashed_at, t.archived_at, c.share_code,
        sl.level AS pass_level, sl.expires_at AS pass_expires_at, gl.public AS grant_link_public
      FROM connections c
      JOIN items h ON h.id = c.host_item_id
@@ -398,7 +399,12 @@ export async function handleConnection(ctx: RouteContext, id: string): Promise<R
 }
 
 function openAnswer(env: Env, person: Person | null, row: OpenRow): Response {
-  if (row.target_item_id === null || row.target_app === null || row.trashed_at !== null) {
+  if (
+    row.target_item_id === null ||
+    row.target_app === null ||
+    row.trashed_at !== null ||
+    row.archived_at != null
+  ) {
     return json({ error: 'connection_target_gone' }, { status: 410 });
   }
   const app = row.target_app;

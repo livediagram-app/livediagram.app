@@ -270,6 +270,7 @@ async function api(request: Request): Promise<Response> {
   if (path.endsWith('/item-types')) return json({ itemTypes: null });
   if (/\/items(\/[^/]+(\/move)?)?$/.test(path)) return json({ item: ITEM, rev: 2 });
   if (path.endsWith('/restore')) return json({ project: LIVE_DOC });
+  if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ project: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   if (path.endsWith('/changesets')) return json(CHANGESET);
@@ -359,6 +360,12 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   },
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
   { tool: 'restore_project', output: 'restoreProjectOutput', args: { projectId: 'd2' } },
+  { tool: 'archive_project', output: 'archiveProjectOutput', args: { projectId: 'd1' } },
+  {
+    tool: 'unarchive_project',
+    output: 'unarchiveProjectOutput',
+    args: { projectId: 'd1', teamId: 't1' },
+  },
   { tool: 'list_items', output: 'listItemsOutput', args: { projectId: 'd1' } },
   {
     tool: 'change_items',

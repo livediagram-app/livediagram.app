@@ -550,6 +550,26 @@ and every team Trash they have joined.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
 
+### 4.9b `archive_document` and `unarchive_document`
+
+The owner's Archived ([One Explorer contracts "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)), with exactly the
+REST doors' authority (`POST /api/documents/<id>/archive` and `POST /api/documents/<id>/unarchive`, which pass to the
+index as the caller; `@liveworkspace/index-app` `archive-doors.ts`). Both are declared once for every product
+(`@liveworkspace/agent-verbs/mcp/archive-tools`) in this product's words.
+
+- **`archive_document`**: `{ documentId }`. Destructive. Moves a document the user owns to their Archived: it leaves
+  every list, its share links end, and its favourites, Recent and Most Used rows and Inbox threads are deleted for
+  everyone, so moving it out starts fresh. Returns `{ archived, id, name }`. Only its owner archives it (a
+  teammate is refused 403 `not_owner`), a document in the Trash is refused 409 `trashed` (pointing at
+  `restore_document`), and one already archived answers as it is. Each refusal is a model-correctable error.
+- **`unarchive_document`**: `{ documentId, folderId?, teamId? }`. Write. Moves it out: to the top of the personal
+  library by default, or into the folder named (a team's folder with that `teamId`), or the top of the team named.
+  Returns `{ unarchived, id, name, library, url }`, `library` as `find_documents` names it.
+- **`find_documents` with `archived: true`** lists only the user's archived documents (`GET /api/documents?team=all&archived=1`,
+  the index's `view=archived`), each marked `archived: true`. Without it, an archived document is never listed.
+- While archived, every tool that opens or changes the document (`read_document`, `update_document` and the rest) is
+  refused 409 `archived`, in words that name `unarchive_document` (`@liveworkspace/agent-verbs/api-refusal`).
+
 ### 4.9d The Pages tools
 
 The pages of a tab and the articles written on them ([Pages for agents](../024-agents/pages-for-agents.md)).
@@ -644,14 +664,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the fifteen tools, and each is a preset in
+Three behaviours cover the seventeen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                            |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------ |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_images` |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`            |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_pages`, `write_article`                            |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                       |
+| --------------- | -------------- | ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_images`            |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `unarchive_document` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `archive_document`, `change_pages`, `write_article`                   |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -760,19 +780,21 @@ code or status: a document in the Trash, a view-only grant, an id that names not
 (a tab id the document lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
-| Tool               | Result object                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `find_documents`   | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                         |
-| `read_document`    | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`       |
-| `list_templates`   | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
-| `create_document`  | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                         |
-| `add_tab`          | `documentId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                  |
-| `update_document`  | `id` and `documentId` (the same), `tabId`, `url`                                                          |
-| `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                   |
-| `rename_document`  | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab            |
-| `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
-| `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
-| `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
+| Tool                 | Result object                                                                                             |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| `find_documents`     | `count`, `documents[]` of `{ id, name, updatedAt, library, url, archived? }`                              |
+| `read_document`      | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`       |
+| `list_templates`     | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
+| `create_document`    | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                         |
+| `add_tab`            | `documentId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                  |
+| `update_document`    | `id` and `documentId` (the same), `tabId`, `url`                                                          |
+| `share_document`     | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                   |
+| `rename_document`    | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab            |
+| `delete_document`    | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
+| `list_trash`         | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
+| `restore_document`   | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
+| `archive_document`   | `archived`, `id`, `name`                                                                                  |
+| `unarchive_document` | `unarchived`, `id`, `name`, `library`, `url`                                                              |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its

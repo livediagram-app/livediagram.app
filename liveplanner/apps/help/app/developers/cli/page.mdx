@@ -140,7 +140,7 @@ liveplanner changeset revert "Sprint 14" cs_tbrfqcvm1w
 
 A change to a tab is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `liveplanner guide edit` explains how [edit operations](/help/developers/working-with-projects/edit-operations/) read; for cards, boards, sheets and forms, the commands below are simpler.
 
-`project rm` moves a plan to the [Trash](/help/account-and-data/trash/) for 30 days, and `project restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
+`project rm` moves a plan to the [Trash](/help/account-and-data/trash/) for 30 days, and `project restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete. `project archive` puts a plan you own away in Archived, out of every list with its share links ended, and `project unarchive` moves it back, to the top of My Work or the folder (`--folder`) or team (`--team`) you name; `project ls --archived` lists what is there.
 
 ## Cards, Boards and Sheets
 

@@ -40,7 +40,9 @@ Scope, by file:
 | own item  | `DELETE ?reason=offline&permanent=true`              | purged  | `taken_offline` (`off:<item>:<now>`) on the person's Timeline                         |
 | trashed   | 30 days in the Trash                                 | purged  | daily sweep                                                                           |
 
-Delete and restore need `edit` and `manage` (owner or team, never a link).
+Delete and restore need `edit` and `manage` (owner or team, never a link). An archived item keeps `archived_at` and
+its `a:<owner>` scope in the Trash, so a restore puts it back in Archived; the Trash's list and Empty Trash read the
+person's `a:` scope with their own, and `sweepEmpty` passes archived items by ([archive.md](archive.md)).
 
 ### The Trash routes
 

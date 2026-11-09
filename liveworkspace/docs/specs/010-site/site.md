@@ -408,6 +408,16 @@ built once here. It is shown here and, through each switched-on app's router, at
   A guest's close is kept in this browser.
 - **Telemetry.** What people use here counts for the app the page shows, or `liveworkspace.app` on All Apps,
   batched and only with the person's consent ([telemetry.md](../008-telemetry/telemetry.md#the-explorer-on-liveworkspaceapp)).
+- **The sidebar.** As [one-explorer.md "The sidebar"](../004-index/one-explorer.md#the-sidebar) has it: Overview
+  (Home, Inbox, Shared With Me), Spaces, and the Library holding Recent, Timeline, Favourites, Archived and the Trash.
+  The current view's rows open themselves (its space and folders, or the Library), and a drag resting on the folded
+  Library opens it.
+- **Archived.** A row of the sidebar's Library, before the Trash, at `/explorer/archived`
+  (`app/explorer/archived/page.tsx`): a person's archived documents from every app, kept out of every other list
+  ([one-explorer.md](../004-index/one-explorer.md#archived)). `?move=<id>` there opens Change Folder on that
+  document, the editors' way back from their archived card, and `?open=<id>` (a Search panel's result) its archived
+  dialog; each is dropped from the address once read. This browser's archived items aren't listed here: this origin
+  can't read an app's This Browser store, as This Browser here is a link into the app.
 - **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.
 - **Teams.** Made, run and answered here ([one-explorer.md](../004-index/one-explorer.md#teams-are-run-in-the-explorer)): the
   page hands the Explorer `createTeamsHost({ fetch: accountFetch })` over this origin's `/api/account/teams…`, and

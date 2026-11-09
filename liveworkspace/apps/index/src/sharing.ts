@@ -19,6 +19,7 @@ import {
   type ShareLinkExpiry,
 } from '@liveworkspace/index-client';
 import { linkAccess, loadItem } from './access';
+import { archivedRefusal, isArchived } from './archive';
 import { callApp } from './app-calls';
 import { scopesOf } from './auth';
 import {
@@ -137,6 +138,8 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
   const { row } = loaded;
   const db = env.INDEX_DB;
   const method = request.method;
+  // Archived, it has no links and takes none (blueprints/archive.md); reading or clearing them still answers.
+  if (isArchived(row) && (method === 'POST' || method === 'PUT')) return archivedRefusal();
 
   if (segments[2] === 'share-password') {
     if (method !== 'PUT') return notFound();

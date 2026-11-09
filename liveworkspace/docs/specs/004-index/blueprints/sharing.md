@@ -89,6 +89,9 @@ dismissed until a link changes.
 
 ### Shared with me
 
+Archiving an item deletes its links, its share password and every `shared_with` row for it
+([archive.md](archive.md), IDX42); the link and password routes answer `409 archived` while it is archived.
+
 `GET /shared?app=&limit=&cursor=&<filters>`: the person's `shared_with` rows whose link is live and item untrashed and
 not in their own scopes, by `last_seen DESC, item_id DESC`; `{ shared: [{ item, code, level, tabId, lastSeenAt }],
 nextCursor }`. `DELETE /shared/:itemId` removes the row.

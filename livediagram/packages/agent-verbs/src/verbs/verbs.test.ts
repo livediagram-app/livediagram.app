@@ -20,6 +20,21 @@ describe('columns', () => {
 });
 
 describe('document ls', () => {
+  it('lists the Archived alone with --archived, from the index', async () => {
+    const api = fakeApi({
+      '/documents?team=all&limit=200&archived=1': {
+        documents: [{ id: DOC_C, name: 'Put away', savedAt: Date.UTC(2026, 8, 1), teamId: null }],
+      },
+      '/teams': { teams: [] },
+    });
+    const archived = await documentLs.run!(
+      contextOf(api),
+      documentLs.input.parse({ archived: true }),
+    );
+    expect(archived.documents.map((d) => [d.name, d.library])).toEqual([['Put away', 'personal']]);
+    expect(api.calls).not.toContain('/documents');
+  });
+
   it('lists newest first with refs, and narrows by a query', async () => {
     const ctx = contextOf(fakeApi(library));
     const all = await documentLs.run!(ctx, documentLs.input.parse({}));

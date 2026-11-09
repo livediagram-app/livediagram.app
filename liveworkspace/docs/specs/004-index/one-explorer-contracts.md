@@ -123,6 +123,7 @@ type Item = {
   updatedAt: number; // last content or title change
   trashedAt: number | null;
   trashReason: 'deleted' | 'empty' | null;
+  archivedAt: number | null; // in its owner's Archived since (below)
   summary: ItemSummary; // pushed by the item, see below
   // For the person asking:
   access: Level; // what they may do
@@ -147,42 +148,43 @@ every one is minted as a UUID, a `user_` or `guest_` id, a Clerk id or a hex has
 as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an element, an action) are any 1 to
 128 characters, because the apps' documents take any non-empty id there.
 
-| Call                           | Who                 | Does                                                                         |
-| ------------------------------ | ------------------- | ---------------------------------------------------------------------------- |
-| `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                |
-|                                |                     | `shared`, `trash`, `unsorted` (no folder: My Work's and a team's roots; the  |
-|                                |                     | Explorer has no Unsorted view), `search`: every live item the person can     |
-|                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`       |
-|                                |                     | and the lens's (below). Sorted by `updatedAt`, or by                         |
-|                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first          |
-|                                |                     | page) adds `mostUsed`: up to N items opened in the last 14 days, ranked by   |
-|                                |                     | how many times (ties: opened last first), each with `useOpens` (and          |
-|                                |                     | `useDays`), in the same response (Jump Back In). On any first page,          |
-|                                |                     | `mine=N` (1 to 200) adds `mine: {count, more}`, the live items in `app` in   |
-|                                |                     | every space the person is in (their own and each team's; each item once)     |
-|                                |                     | counted up to N (Home's pill), and `any=1` adds `any`, whether               |
-|                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.     |
-| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201             |
-|                                |                     | `{item, grant}`. The index makes the id unless the client names the one it   |
-|                                |                     | minted (409 `item_exists` when taken); the item's Durable Object             |
-|                                |                     | starts empty the first time it is opened with a grant.                       |
-| `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the  |
-|                                |                     | public link's code when that is their only way in (previews.md)              |
-| `POST /items/lookup`           | person              | `{ids}` (up to 200) → `{items}`: each item `GET /items/:id` would answer     |
-|                                |                     | the person without a share password, in the order asked; the rest left out.  |
-|                                |                     | One request for a page of names (the apps' Image Gallery usage).             |
-| `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a           |
-|                                |                     | team needs joined membership.                                                |
-| `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                              |
-| `POST /items/:id/restore`      | owner / team        | `{item}`                                                                     |
-| `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the            |
-|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`). |
-| `POST /items/:id/open`         | person or link      | Records an open for Recent, and counts it on the day's row for Most Used     |
-|                                |                     | (`use_days.opens`, kept 14 days). Debounced: at most one write a minute      |
-|                                |                     | per person and item.                                                         |
-| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                   |
-|                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                            |
-| `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).               |
+| Call                           | Who                 | Does                                                                                   |
+| ------------------------------ | ------------------- | -------------------------------------------------------------------------------------- |
+| `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                          |
+|                                |                     | `shared`, `trash`, `archived`, `unsorted` (no folder: My Work's and a team's           |
+|                                |                     | roots; the Explorer has no Unsorted view), `search`: every live item the               |
+|                                |                     | person can open, links and their own Archived included), `folder`                      |
+|                                |                     | (`deep=1`: its subfolders too), `team` and the lens's (below). Sorted by               |
+|                                |                     | `updatedAt`, or by `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent`             |
+|                                |                     | only, first page) adds `mostUsed`: up to N items opened in the last 14 days, ranked by |
+|                                |                     | how many times (ties: opened last first), each with `useOpens` (and                    |
+|                                |                     | `useDays`), in the same response (Jump Back In). On any first page,                    |
+|                                |                     | `mine=N` (1 to 200) adds `mine: {count, more}`, the live items in `app` in             |
+|                                |                     | every space the person is in (their own and each team's; each item once)               |
+|                                |                     | counted up to N (Home's pill), and `any=1` adds `any`, whether                         |
+|                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.               |
+| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201                       |
+|                                |                     | `{item, grant}`. The index makes the id unless the client names the one it             |
+|                                |                     | minted (409 `item_exists` when taken); the item's Durable Object                       |
+|                                |                     | starts empty the first time it is opened with a grant.                                 |
+| `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the            |
+|                                |                     | public link's code when that is their only way in (previews.md)                        |
+| `POST /items/lookup`           | person              | `{ids}` (up to 200) → `{items}`: each item `GET /items/:id` would answer               |
+|                                |                     | the person without a share password, in the order asked; the rest left out.            |
+|                                |                     | One request for a page of names (the apps' Image Gallery usage).                       |
+| `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a                     |
+|                                |                     | team needs joined membership.                                                          |
+| `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                                        |
+| `POST /items/:id/restore`      | owner / team        | `{item}`                                                                               |
+| `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the                      |
+|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`).           |
+| `POST /items/:id/open`         | person or link      | Records an open for Recent, and counts it on the day's row for Most Used               |
+|                                |                     | (`use_days.opens`, kept 14 days). Debounced: at most one write a minute                |
+|                                |                     | per person and item.                                                                   |
+| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                             |
+|                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                                      |
+| `POST /items/:id/archive`      | owner               | To its owner's Archived (below) → `{item}`.                                            |
+| `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).                         |
 
 **The lens's filters**, on `GET /items` and `GET /shared` (the Explorer's filter field and chips): `q`, words
 (at most 16), each in the title or the item's folder's name, taken literally; `apps`, the apps the items open in
@@ -214,6 +216,36 @@ summary's `hasContent` is false, or it never pushed a summary) that has not chan
 `trashReason: 'empty'` and the run's moment as `trashedAt`, so it waits the full 30 days there. It covers every
 app, and a team's item goes to its team's Trash. The check and the move are one statement; an item restored
 unchanged is not moved again until it changes. At most 1,000 a run, oldest change first. No Timeline entry.
+
+**Archived.** A document its owner has put away: out of every list but its owner's Archived view and Search, and
+closed to opening and editing until it is moved out ([blueprints/archive.md](blueprints/archive.md)).
+
+- `POST /items/:id/archive` is the owner's alone: a personal item's owner, or a team item's maker while they are in
+  the team (another teammate is `403 not_owner`, a link `403 forbidden`). An item in the Trash is `409 trashed`; one
+  already archived answers `{item}` unchanged. Folders are never archived, and Archived holds no folders.
+- In one batch the item takes `archivedAt`, leaves its folder and its team (`teamId` null), and moves to its owner's
+  archive scope (`a:<owner>`). Its share links and share password are deleted for good, with every Shared with me
+  row they made; its favourites, opens (Hide from Recent's too) and use days are deleted for everyone; its Inbox rows
+  (threads, the people in them, actions, forms and form reads) are deleted. Its Timeline follows it (as a scope
+  move does), the rows that reached other people alone (their favourites, an assignee's) are deleted, and a `moved`
+  event with `{archived: true}` is recorded (in its team's audit log when it left one). The app is told to end the
+  sessions its links admitted (`POST <app>/api/internal/items/:id/revoke`); an owner's or teammate's open session
+  ends when its grant is next renewed.
+- `view=archived` lists the person's archived items that are not in the Trash, newest change first, with `app` and
+  the lens. `view=search` includes them whenever it searches the person's own space (no `team`, `team=personal`, or
+  `space` naming `mine`). Every other list leaves them out: their scope is in nobody's, and their favourite, open,
+  use-day, link and Inbox rows are gone.
+- `POST /items/:id/grant`, `POST /items/:id/open`, `POST /items/:id/copy`, `PUT /favourites/:id`,
+  `PUT /recent-hidden/:id`, `POST /items/:id/share` and `PUT /items/:id/share-password` answer `409 archived` to the
+  owner (the only person who still reaches it); everyone else gets `404`. `GET /items/:id` answers as before, so the
+  owner's preview (`006-media/previews.md`) still draws.
+- `PATCH /items/:id` with only `title` renames it in place. Naming `folderId` or `teamId` moves it out: `archivedAt`
+  is cleared and it lands in My Work (its root or a folder) or in a team the owner has joined, its scope following.
+  It starts fresh there: no favourite, no Recent, no links.
+- `DELETE /items/:id` sends it to the Trash as any item, keeping `archivedAt`; the Trash lists and empties the
+  person's archive scope with their own, and a restore puts it back in Archived. The empty clean-up passes archived
+  items by. A collab push for one is accepted and dropped (`204`), so its Inbox stays empty; a summary push is kept,
+  so its preview stays current.
 
 ## Closing an account
 
@@ -375,6 +407,14 @@ the owner-only "Add to <Item>") would fall away with it. The header only adds to
 keeps its own copy of both (for its emails, its pushes and its alarm), and takes it from every grant it is handed
 (`@liveworkspace/index-app` `createItemHeadSync`), so a guest's merge into an account or a move to another team
 reaches the item the next time anyone opens it.
+
+An archived item is never granted: `POST /items/:id/grant` answers its owner `409 archived` (everyone else `404`,
+as for any item they don't reach), and the held grants remember it as the refusal (`refusal(id) === 'archived'`).
+Every editor reads that refusal where it would show its not-found card and shows the archived card instead: the
+item is archived and can't be opened or edited, with **Change Folder** (to
+`/explorer/archived?move=<id>`, which opens the Explorer's Change Folder on it) and **Open Explorer**. An app's
+API, MCP and CLI that ask a grant for a person or token (`requestGrant`) answer `409 archived` with a sentence
+saying it is archived and how to move it out.
 
 It lasts 10 minutes. The editor fetches it while the item's code loads and asks for a fresh one a minute
 before it runs out; the item's Durable Object checks each against the cached keys and drops a socket

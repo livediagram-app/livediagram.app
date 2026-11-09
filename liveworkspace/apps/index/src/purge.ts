@@ -133,7 +133,7 @@ export async function sweepEmpty(
      WHERE id IN (
        SELECT id FROM items
        WHERE trashed_at IS NULL AND (summary = '{}' OR json_extract(summary, '$.hasContent') = 0)
-         AND updated_at < ? AND (empty_swept_for IS NULL OR empty_swept_for <> updated_at)
+         AND archived_at IS NULL AND updated_at < ? AND (empty_swept_for IS NULL OR empty_swept_for <> updated_at)
        ORDER BY updated_at LIMIT ?)
      RETURNING owner_id, team_id`,
   )

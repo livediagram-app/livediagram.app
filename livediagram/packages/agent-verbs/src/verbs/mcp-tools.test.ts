@@ -20,6 +20,8 @@ describe('the MCP tool verbs', () => {
       'rename_document',
       'delete_document',
       'list_trash',
+      'archive_document',
+      'unarchive_document',
       'restore_document',
     ]);
     for (const v of MCP_TOOL_VERBS) {

@@ -15,7 +15,14 @@ import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { CARD_PREVIEW, CARD_SHELL, DROP_TARGET_RING, RENAME_INPUT } from '../ui/classes';
 import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
-import { AppMark, FavouriteMarker, FolderChip, MadeByAiBadge, VisibilityBadge } from './badges';
+import {
+  AppMark,
+  ArchivedBadge,
+  FavouriteMarker,
+  FolderChip,
+  MadeByAiBadge,
+  VisibilityBadge,
+} from './badges';
 import { useExplorer } from './context';
 import { elsewhereLabel, FolderMosaic } from './FolderMosaic';
 import { FolderMenu, ItemMenu } from './menus';
@@ -78,26 +85,31 @@ export function useItemBits(item: ShownItem) {
   // Where the item lives, for the location chip (livediagram's rowLocation): its folder, its team's library for a
   // team item in no folder, My Work for one of yours in none; nothing for an item reached through a link, which
   // lives in someone else's library.
+  // An archived one lives in Archived (one-explorer.md "Archived").
+  const archived = Boolean(item.archivedAt);
   const placeLabel = item.sharedVia
     ? null
-    : folder
-      ? folder.name
-      : item.folderId
-        ? null
-        : item.teamId
-          ? teamName(item.teamId)
-          : SIDEBAR_LABELS.myWork;
+    : archived
+      ? SIDEBAR_LABELS.archived
+      : folder
+        ? folder.name
+        : item.folderId
+          ? null
+          : item.teamId
+            ? teamName(item.teamId)
+            : SIDEBAR_LABELS.myWork;
   const placeTeam = item.teamId;
   const placeFolderId = folder?.id ?? null;
   const open = useCallback(() => {
-    if (placeFolderId)
+    if (archived) navigate({ kind: 'archived' });
+    else if (placeFolderId)
       navigate(
         placeTeam
           ? { kind: 'team', id: placeTeam, folderId: placeFolderId }
           : { kind: 'folder', id: placeFolderId },
       );
     else navigate(placeTeam ? { kind: 'team', id: placeTeam } : { kind: 'all' });
-  }, [navigate, placeFolderId, placeTeam]);
+  }, [navigate, placeFolderId, placeTeam, archived]);
   const place: ItemPlace | null = useMemo(
     () => (placeLabel ? { label: placeLabel, open } : null),
     [placeLabel, open],
@@ -165,6 +177,7 @@ export const ItemRow = memo(function ItemRow({
           </span>
         ) : null}
         <MadeByAiBadge item={item} />
+        <ArchivedBadge item={item} />
       </span>
       {showOwner ? (
         <span className="hidden truncate text-xs text-slate-500 sm:block dark:text-slate-400">
@@ -404,6 +417,7 @@ export const ItemCard = memo(function ItemCard({
         <div className="flex min-w-0 items-center gap-x-2 [&>*]:shrink-0">
           <VisibilityBadge item={item} />
           <MadeByAiBadge item={item} />
+          <ArchivedBadge item={item} />
           {item.favourite ? <FavouriteMarker /> : null}
           {renderItemMark?.(item, 'title')}
           {options.showFolder && bits.place ? (

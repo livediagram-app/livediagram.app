@@ -77,6 +77,18 @@ no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
 only, opening the app in a new tab. Only the editor's own empty route (`/document`,
 `/document/placeholder`) hands off to `/new`., so a mistyped page never makes a document with no word of what went wrong.
 
+### Archived
+
+A document its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
+never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
+**Document not found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-document/offline-mode.md#archived-in-this-browser)).
+Either way the editor shows the same card in place of the document, titled **Document Archived** ("This document is archived, so it
+can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
+tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on
+it; **Open Explorer** goes to `/explorer`. An embed or a workbench frame shows the card with Open Explorer only (a step
+back, in a workspace frame), since nothing inside a frame moves it out. The code is
+`@liveworkspace/workbench/lib/archived` and the card's `archived` variant.
+
 ### A failed load is not a missing document
 
 NotFound means "this document doesn't exist, or isn't yours". A load

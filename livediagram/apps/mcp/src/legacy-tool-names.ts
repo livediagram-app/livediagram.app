@@ -13,8 +13,20 @@ import { z } from 'zod';
 
 export const LEGACY_TOOL_SUNSET = '2027-04-30';
 
+// The tools that had a `*_diagram(s)` name. A tool added since (archive_document, unarchive_document) never had one.
+const RENAMED_TOOLS: ReadonlySet<string> = new Set([
+  'create_document',
+  'delete_document',
+  'find_documents',
+  'read_document',
+  'rename_document',
+  'restore_document',
+  'share_document',
+  'update_document',
+]);
+
 export function legacyToolName(name: string): string | null {
-  return /_documents?$/.test(name) ? name.replace(/_document(s?)$/, '_diagram$1') : null;
+  return RENAMED_TOOLS.has(name) ? name.replace(/_document(s?)$/, '_diagram$1') : null;
 }
 
 export function successorToolName(name: string): string {

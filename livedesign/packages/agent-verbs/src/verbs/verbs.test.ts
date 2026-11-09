@@ -20,6 +20,18 @@ describe('columns', () => {
 });
 
 describe('design ls', () => {
+  it('lists the Archived alone with --archived, from the index', async () => {
+    const api = fakeApi({
+      '/designs?team=all&limit=200&archived=1': {
+        designs: [{ id: DOC_C, name: 'Put away', savedAt: Date.UTC(2026, 8, 1), teamId: null }],
+      },
+      '/teams': { teams: [] },
+    });
+    const archived = await designLs.run!(contextOf(api), designLs.input.parse({ archived: true }));
+    expect(archived.designs.map((d) => [d.name, d.library])).toEqual([['Put away', 'personal']]);
+    expect(api.calls).not.toContain('/designs');
+  });
+
   it('lists newest first with refs, and narrows by a query', async () => {
     const ctx = contextOf(fakeApi(library));
     const all = await designLs.run!(ctx, designLs.input.parse({}));

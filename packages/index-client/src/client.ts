@@ -212,6 +212,9 @@ export function createIndexClient({
       }),
     restoreItem: (id: string) =>
       call<{ item: Item }>(`/items/${enc(id)}/restore`, { method: 'POST' }),
+    // To its owner's Archived; `updateItem` naming a folder or a team moves it out.
+    archiveItem: (id: string) =>
+      call<{ item: Item }>(`/items/${enc(id)}/archive`, { method: 'POST' }),
     copyItem: (id: string, input: { title?: string } = {}, share?: ShareAccess | null) =>
       call<{ item: Item }>(`/items/${enc(id)}/copy`, { method: 'POST', body: input, share }),
     recordOpen: (id: string, share?: ShareAccess | null) =>

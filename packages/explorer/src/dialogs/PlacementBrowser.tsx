@@ -23,6 +23,13 @@ import {
 export type PickerFolder = { id: string; name: string; parentId: string | null };
 export type PickerTeam = { id: string; name: string; folders: PickerFolder[] };
 export type Destination = { teamId: string | null; folderId: string | null };
+/** A place that is a space of its own, holding no folders (Archived, This Browser): listed under the spaces, after a
+ *  divider, its `value` the placement chosen. */
+export type PlacementSpace = { value: string; label: string; sub: string; icon: ReactNode };
+
+/** Archived's placement, and This Browser's for an item kept only here. */
+export const ARCHIVED_PLACEMENT = 'archived';
+export const THIS_BROWSER_PLACEMENT = 'this-browser';
 
 export function placementValue(teamId: string | null, folderId: string | null): string {
   if (teamId) return folderId ? `team:${teamId}:folder:${folderId}` : `team:${teamId}`;
@@ -42,6 +49,7 @@ export function parsePlacement(placement: string): Destination {
 }
 
 const PERSONAL = 'personal';
+const NO_SPACES: readonly PlacementSpace[] = [];
 
 // The longest team name accounts keep (liveworkspace/apps/accounts teams.ts TEAM_NAME_MAX_LENGTH).
 export const TEAM_NAME_MAX = 80;
@@ -67,7 +75,9 @@ export function PlacementBrowser({
   showPersonal = true,
   onCreateFolder,
   onCreateTeam,
+  spaces = NO_SPACES,
 }: {
+  spaces?: readonly PlacementSpace[];
   placement: string;
   onPlacement: (value: string) => void;
   onCommitPlacement?: (value: string) => void;
@@ -91,10 +101,14 @@ export function PlacementBrowser({
   );
   // The spaces are shown wherever there is a choice, and wherever New Team can make one.
   const hasOverview =
-    (showPersonal ? 1 : 0) + teams.length > 1 || Boolean(showPersonal && onCreateTeam);
-  // Opens where the current placement is: its space, and the folder holding it.
-  const [space, setSpace] = useState<string | null>(
-    () => chosen.teamId ?? (showPersonal ? PERSONAL : hasOverview ? null : (teams[0]?.id ?? null)),
+    (showPersonal ? 1 : 0) + teams.length + spaces.length > 1 ||
+    Boolean(showPersonal && onCreateTeam);
+  const special = spaces.some((s) => s.value === placement);
+  // Opens where the current placement is: its space, and the folder holding it; on the spaces for a space of its own.
+  const [space, setSpace] = useState<string | null>(() =>
+    special
+      ? null
+      : (chosen.teamId ?? (showPersonal ? PERSONAL : hasOverview ? null : (teams[0]?.id ?? null))),
   );
   const spaceFolders =
     space === PERSONAL ? folders : (teams.find((t) => t.id === space)?.folders ?? []);
@@ -116,12 +130,12 @@ export function PlacementBrowser({
             label="My Work"
             sub="Your folders"
             icon={<PersonalSpaceIcon />}
-            selected={chosen.teamId === null}
+            selected={!special && chosen.teamId === null}
             drills
             onSelect={() => {
               setSpace(PERSONAL);
               setOpenId(null);
-              if (chosen.teamId !== null) onPlacement('unsorted');
+              if (special || chosen.teamId !== null) onPlacement('unsorted');
             }}
           />
         ) : null}
@@ -131,12 +145,12 @@ export function PlacementBrowser({
             label={t.name}
             sub="Team"
             icon={<TeamPlaceIcon />}
-            selected={chosen.teamId === t.id}
+            selected={!special && chosen.teamId === t.id}
             drills
             onSelect={() => {
               setSpace(t.id);
               setOpenId(null);
-              if (chosen.teamId !== t.id) onPlacement(`team:${t.id}`);
+              if (special || chosen.teamId !== t.id) onPlacement(`team:${t.id}`);
             }}
           />
         ))}
@@ -175,6 +189,22 @@ export function PlacementBrowser({
               onSelect={() => setNamingTeam(true)}
             />
           )
+        ) : null}
+        {spaces.length > 0 ? (
+          <>
+            <hr className="my-1 border-slate-200 dark:border-slate-700" />
+            {spaces.map((s) => (
+              <PlacementCard
+                key={s.value}
+                label={s.label}
+                sub={s.sub}
+                icon={s.icon}
+                selected={placement === s.value}
+                onSelect={() => onPlacement(s.value)}
+                onCommit={() => onCommitPlacement?.(s.value)}
+              />
+            ))}
+          </>
         ) : null}
       </div>
     );

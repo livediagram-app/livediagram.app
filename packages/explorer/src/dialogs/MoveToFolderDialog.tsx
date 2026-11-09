@@ -11,6 +11,7 @@ import {
   parsePlacement,
   placementValue,
   type Destination,
+  type PlacementSpace,
   type PickerFolder,
   type PickerTeam,
 } from './PlacementBrowser';
@@ -33,6 +34,10 @@ export type MoveToFolderDialogProps = {
   onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   onPick: (dest: Destination) => void;
   onClose: () => void;
+  // Spaces of their own (Archived, This Browser), chosen by `onPickSpace`; `currentSpace` when it is in one now.
+  spaces?: readonly PlacementSpace[];
+  currentSpace?: string | null;
+  onPickSpace?: (value: string) => void;
 };
 
 export function MoveToFolderDialog({
@@ -46,12 +51,16 @@ export function MoveToFolderDialog({
   onCreateTeam,
   onPick,
   onClose,
+  spaces,
+  currentSpace = null,
+  onPickSpace,
 }: MoveToFolderDialogProps) {
-  const current = placementValue(currentTeamId, currentFolderId);
+  const current = currentSpace ?? placementValue(currentTeamId, currentFolderId);
   const [placement, setPlacement] = useState(current);
   const commit = (value: string) => {
     if (value === current) return;
-    onPick(parsePlacement(value));
+    if (spaces?.some((s) => s.value === value)) onPickSpace?.(value);
+    else onPick(parsePlacement(value));
     onClose();
   };
   const teamList = teams ?? [];
@@ -79,6 +88,7 @@ export function MoveToFolderDialog({
           teams={teamList}
           onCreateFolder={onCreateFolder}
           onCreateTeam={onCreateTeam}
+          spaces={spaces}
         />
       </div>
       <DialogFooter>

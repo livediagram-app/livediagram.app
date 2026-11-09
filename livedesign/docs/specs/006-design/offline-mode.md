@@ -143,6 +143,15 @@ fresh browser profile per first visit), guest create to first canvas paint:
 The one request left is `GET /api/capabilities`; the guest id, participant and
 Explorer lists follow after the paint.
 
+## Archived in This Browser
+
+A design in This Browser can be moved to Archived from the Explorer's menu, like an account's. Nothing leaves the
+browser: the mark (`archivedAt`) lives only in This Browser's shared list (`@liveworkspace/explorer/this-browser`),
+and every rewrite of the list carries the marks it held. Before the editor opens a design it reads the mark once
+(`isThisBrowserArchived`), and an archived one shows the **Design Archived** card in place of the design
+([Archived](../007-editor/new-design-route.md#archived)), whether or not the early open would have taken it. Change Folder moves it out,
+back into This Browser's list.
+
 ## "This Browser" badge + Explorer
 
 - **Editor header badge.** The status pill reads Private / Shared / Team

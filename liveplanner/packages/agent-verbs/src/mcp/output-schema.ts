@@ -5,6 +5,7 @@
 // wrong contract. Error results are exempt and carry text only.
 import { EMPTY_PROJECT_STALE_DAYS, TRASH_REASONS } from '@liveplanner/api-schema';
 import { z } from 'zod';
+import { foundArchived } from './archive-tools';
 
 const url = z.string().describe('Link that opens the plan in the liveplanner editor.');
 const projectId = z.string().describe('The plan id.');
@@ -22,6 +23,7 @@ export const findProjectsOutput = {
           .string()
           .describe('Where it lives: "personal", or the name of the team whose library holds it.'),
         url,
+        archived: foundArchived,
       }),
     )
     .describe('The matches, most relevant first.'),

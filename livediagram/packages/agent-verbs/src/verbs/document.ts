@@ -2,7 +2,8 @@
 
 import { z } from 'zod';
 import { defineVerb } from '../define';
-import { listAllDocuments, type FoundDocument } from '../find-documents';
+import { ARCHIVED_READ_MAX } from '@liveworkspace/agent-verbs/verbs/archive';
+import { listAllDocuments, searchDocuments, type FoundDocument } from '../find-documents';
 import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
 import { columns, day, documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, moreLine } from './shared';
 
@@ -61,6 +62,7 @@ export const documentLs = defineVerb({
       .max(LIST_MAX_LIMIT)
       .default(LIST_DEFAULT_LIMIT)
       .describe('At most this many'),
+    archived: z.boolean().optional().describe('List your Archived documents instead'),
   }),
   output: z.object({
     documents: z.array(listedDocument),
@@ -68,8 +70,11 @@ export const documentLs = defineVerb({
     query: z.string().optional(),
   }),
   listKey: 'documents',
-  run: async (ctx, { query, limit }) => {
-    const all = await listAllDocuments(ctx.api);
+  run: async (ctx, { query, limit, archived }) => {
+    // Archived files are in no live library: the index lists them, one page.
+    const all = archived
+      ? await searchDocuments(ctx.api, undefined, ARCHIVED_READ_MAX, { archived: true })
+      : await listAllDocuments(ctx.api);
     const refs = shortestUniquePrefixes(all.map((d) => d.id));
     const q = query?.toLowerCase();
     const kept = q ? all.filter((d) => d.name.toLowerCase().includes(q)) : all;

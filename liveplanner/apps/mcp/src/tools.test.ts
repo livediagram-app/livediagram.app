@@ -140,6 +140,7 @@ function okResponse(request: Request): Response {
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
   if (path.endsWith('/restore')) return json({ project: LIVE_DOC });
+  if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ project: LIVE_DOC });
   if (path.endsWith('/share')) {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   }
@@ -236,7 +237,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the twenty-eight documented tools, each with a description', () => {
+  it('registers the thirty documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered;
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -244,6 +245,7 @@ describe('registerTools', () => {
       'add_form',
       'add_sheet',
       'add_tab',
+      'archive_project',
       'change_board',
       'change_card_types',
       'change_form',
@@ -267,6 +269,7 @@ describe('registerTools', () => {
       'share_form',
       'share_project',
       'try_form',
+      'unarchive_project',
       'update_project',
     ]);
     // The description is what the calling model reads to pick a tool, so an
@@ -370,6 +373,8 @@ describe('tool annotations', () => {
     rename_project: 'write',
     list_trash: 'read',
     restore_project: 'write',
+    archive_project: 'destructive',
+    unarchive_project: 'write',
     update_project: 'destructive',
     delete_project: 'destructive',
     // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
@@ -459,6 +464,7 @@ describe('tool annotations', () => {
       .map((r) => r.name)
       .sort();
     expect(destructive).toEqual([
+      'archive_project',
       'change_card_types',
       'change_form',
       'change_items',

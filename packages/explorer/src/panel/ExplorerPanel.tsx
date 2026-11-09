@@ -48,6 +48,7 @@ import type { ThisBrowserItem } from '../this-browser';
 import { PanelLocalCard, PanelThisBrowser } from './PanelThisBrowser';
 import { BackBar, Button, ConfirmDialog, Tooltip } from '@liveworkspace/ui';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
+import { ThisBrowserArchivedGroup } from '../explorer/ArchivedThisBrowser';
 import {
   TRASH_BIN,
   TRASH_OVER,
@@ -82,6 +83,7 @@ import {
   TeamIcon,
   TimelineIcon,
   TrashIcon,
+  ArchiveIcon,
 } from '../ui/icons';
 import { relativeSince, useNow } from '../time';
 import { explorerPath, SIDEBAR_LABELS, type ExplorerView } from '../views';
@@ -459,6 +461,7 @@ function sectionOfView(
     case 'shared':
     case 'favourites':
     case 'offline':
+    case 'archived':
     case 'trash':
       return { section: { kind: v.kind }, folderId: null };
     case 'all':
@@ -676,6 +679,8 @@ function SectionIcon({ kind }: { kind: PanelSection['kind'] }) {
       return <TimelineIcon />;
     case 'library':
       return <LibraryIcon />;
+    case 'archived':
+      return <ArchiveIcon />;
     case 'trash':
       return <TrashIcon />;
   }
@@ -1006,14 +1011,18 @@ function Pane({
     ) : section.kind === 'offline' ? (
       <PanelThisBrowser />
     ) : (
-      <PlaceSection
-        section={section}
-        folderId={here}
-        onOpenFolder={onOpenFolder}
-        currentId={currentId}
-        rootLabel={title}
-        pendingRename={pendingRename}
-      />
+      <>
+        <PlaceSection
+          section={section}
+          folderId={here}
+          onOpenFolder={onOpenFolder}
+          currentId={currentId}
+          rootLabel={title}
+          pendingRename={pendingRename}
+        />
+        {/* Archived also lists what this browser archived (one-explorer.md "Archived"). */}
+        {section.kind === 'archived' ? <ThisBrowserArchivedGroup /> : null}
+      </>
     );
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">

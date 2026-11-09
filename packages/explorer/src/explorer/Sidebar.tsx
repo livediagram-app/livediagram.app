@@ -1,9 +1,10 @@
 'use client';
 
-// The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Timeline, Shared With Me), Spaces
-// (My Work and its folders, each team and its folders), and More (the Library's Recent and Favourites, then
-// the Trash). Rows carry toned tiles and the current row is a raised pill, in the
-// host app's brand colour. The tree reads the folder store, so it costs no request of its own.
+// The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Shared With Me), Spaces (My Work
+// and its folders, each team and its folders), and More (the Library: Recent, Timeline, Favourites, the host's
+// Gallery and Shape Libraries, Archived and the Trash; then This Browser and the host's own rows). Rows carry toned
+// tiles and the current row is a raised pill, in the host app's brand colour. The tree reads the folder store, so it
+// costs no request of its own. The current view's rows are always open: its space and folders, or the Library.
 //
 // It is one keyboard tree (sidebar/useTreeNavigation): one tab stop, arrows, Home and End, Left and Right to fold and
 // open, type-ahead. Folder rows and My Work carry a menu (⋯, right-click, Shift+F10) and rename in place.
@@ -45,15 +46,17 @@ import {
   TimelineIcon,
   TrashIcon,
   TreeChevronIcon,
+  ArchiveIcon,
 } from '../ui/icons';
 import { inboxCount } from '../data/useInbox';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
-import { sameView, SIDEBAR_LABELS, type ExplorerView } from '../views';
+import { explorerPath, sameView, SIDEBAR_LABELS, withLens, type ExplorerView } from '../views';
 import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
 import { useThisBrowserItems } from './ThisBrowser';
 import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
-import { LIBRARY, MY_WORK, teamKey } from './sidebar/expansion';
+import { LIBRARY, MY_WORK, rowsAbove, teamKey, type Expansion } from './sidebar/expansion';
+import { useDragHoverOpen } from './sidebar/useDragHoverOpen';
 import { useFolderRowMenu, useMyWorkMenu } from './sidebar/rowMenus';
 import { useTreeNavigation } from './sidebar/useTreeNavigation';
 import { useExtras } from './extras';
@@ -86,10 +89,41 @@ const INDENT_STEP = 16;
 // The Library's pages: opening one unfolds the Library, so the current row is never hidden.
 const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
   'recent',
+  'timeline',
   'favourites',
   'gallery',
   'shape-libraries',
+  'archived',
+  'trash',
 ]);
+
+/** The rows to open so the current view's own row shows: the Library for one of its pages, a space for its page,
+ *  and a space and every folder down to it for a folder (rowsAbove). Empty for a view with no row inside a fold. */
+export function rowsForView(view: ExplorerView, byId: Parameters<typeof rowsAbove>[1]): string[] {
+  if (LIBRARY_VIEWS.has(view.kind)) return [LIBRARY];
+  if (view.kind === 'all') return [MY_WORK];
+  if (view.kind === 'folder') return rowsAbove(view.id, byId);
+  if (view.kind === 'team')
+    return view.folderId
+      ? [...new Set([teamKey(view.id), ...rowsAbove(view.folderId, byId)])]
+      : [teamKey(view.id)];
+  return [];
+}
+
+/** Opens the current view's rows (rowsForView) as it changes, before paint: only ever adds to what is open, and once
+ *  per change of the rows it needs, so a row the person folds stays folded until the view (or its place) changes. */
+export function useOpenCurrentRows(
+  view: ExplorerView,
+  byId: Parameters<typeof rowsAbove>[1],
+  expansion: Pick<Expansion, 'expand'>,
+): void {
+  const rows = rowsForView(view, byId).join('\n');
+  // The view's place, its lens left out: typing in the field is no change of view.
+  const place = explorerPath(withLens(view, ''));
+  useLayoutEffect(() => {
+    if (rows) expansion.expand(...rows.split('\n'));
+  }, [rows, place, expansion]);
+}
 
 const START_FOLDS: ReadonlySet<string> = new Set([MY_WORK]);
 const startFolds = () => START_FOLDS;
@@ -97,13 +131,10 @@ const startFolds = () => START_FOLDS;
 /** The open rows, from the Explorer's expansion store: read as the sidebar first renders, so it paints open where it
  *  was left. The Library opens before paint when one of its pages is current, so the current row is never hidden. */
 function useExpanded(view: ExplorerView) {
-  const { expansion } = useExplorer();
+  const { expansion, folders } = useExplorer();
   const expanded = useSyncExternalStore(expansion.subscribe, expansion.get, startFolds);
-  const inLibrary = LIBRARY_VIEWS.has(view.kind);
-  useLayoutEffect(() => {
-    if (inLibrary) expansion.expand(LIBRARY);
-  }, [inLibrary, expansion]);
-  return { expanded, toggle: expansion.toggle };
+  useOpenCurrentRows(view, folders.byId, expansion);
+  return { expanded, toggle: expansion.toggle, expand: expansion.expand };
 }
 
 /** Which sidebar row is being renamed in place (only one, and only here: the pane's rows rename their own). */
@@ -380,7 +411,7 @@ const MY_WORK_ROOT: DropPlace = { teamId: null, folderId: null };
  * Trash"), fills with the brand colour with its bin's lid tipped while the drag is over it ("Let go to trash it"),
  * and bounces once as it swallows an item. Under reduced motion only the colours and words change.
  */
-function TrashRow() {
+function TrashRow({ depth = 0 }: { depth?: number }) {
   const { view, navigate } = useExplorer();
   const trash = useTrashTarget();
   return (
@@ -415,7 +446,7 @@ function TrashRow() {
       }
       selected={view.kind === 'trash'}
       onActivate={() => navigate({ kind: 'trash' })}
-      depth={0}
+      depth={depth}
       rowClassName={
         trash.state === 'over' ? TRASH_OVER : trash.state === 'waiting' ? TRASH_WAITING : ''
       }
@@ -439,7 +470,11 @@ export function Sidebar() {
   const { view, navigate, folders, teams, inbox, viewerId } = useExplorer();
   const { sidebarLinks } = useHostExtras();
   const library = useLibraryHost();
-  const { expanded, toggle } = useExpanded(view);
+  const { expanded, toggle, expand } = useExpanded(view);
+  const libraryOpen = expanded.has(LIBRARY);
+  // A drag resting on the folded Library opens it, so the Trash inside is in reach.
+  const libraryDrag = useDragHoverOpen(libraryOpen ? null : () => expand(LIBRARY));
+  const timeline = timelineBadge(inbox.data?.timelineNew);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const rename: SidebarRename = { renamingId, setRenamingId };
   const myWorkMenu = useMyWorkMenu({ onRename: setRenamingId });
@@ -481,15 +516,6 @@ export function Sidebar() {
           onActivate={() => navigate({ kind: 'inbox' })}
           depth={0}
           badge={inboxCount(inbox.data, viewerId)}
-        />
-        <SidebarRow
-          icon={<TimelineIcon />}
-          tone="amber"
-          label={SIDEBAR_LABELS.timeline}
-          selected={view.kind === 'timeline'}
-          onActivate={() => navigate({ kind: 'timeline' })}
-          depth={0}
-          {...timelineBadge(inbox.data?.timelineNew)}
         />
         <SidebarRow
           icon={<ShareIcon />}
@@ -600,8 +626,11 @@ export function Sidebar() {
           onActivate={() => toggle(LIBRARY)}
           depth={0}
           expandable
-          expanded={expanded.has(LIBRARY)}
+          expanded={libraryOpen}
           onToggleExpand={() => toggle(LIBRARY)}
+          rowHandlers={libraryDrag}
+          // Folded, the Library carries the Timeline's count, so it is never hidden.
+          {...(libraryOpen ? {} : timeline)}
         >
           <SidebarRow
             icon={<ClockIcon />}
@@ -609,6 +638,14 @@ export function Sidebar() {
             selected={is({ kind: 'recent' })}
             onActivate={() => navigate({ kind: 'recent' })}
             depth={1}
+          />
+          <SidebarRow
+            icon={<TimelineIcon />}
+            label={SIDEBAR_LABELS.timeline}
+            selected={view.kind === 'timeline'}
+            onActivate={() => navigate({ kind: 'timeline' })}
+            depth={1}
+            {...timeline}
           />
           <SidebarRow
             icon={<StarIcon />}
@@ -636,6 +673,15 @@ export function Sidebar() {
               depth={1}
             />
           ) : null}
+          {/* No menu, no rename, no drops: a place of its own, out of every list. */}
+          <SidebarRow
+            icon={<ArchiveIcon />}
+            label={SIDEBAR_LABELS.archived}
+            selected={view.kind === 'archived'}
+            onActivate={() => navigate({ kind: 'archived' })}
+            depth={1}
+          />
+          <TrashRow depth={1} />
         </SidebarRow>
         <ThisBrowserRow />
         {/* The host's own rows (This Browser on liveworkspace.app): each leaves for its page. */}
@@ -650,7 +696,6 @@ export function Sidebar() {
             depth={0}
           />
         ))}
-        <TrashRow />
       </SidebarGroup>
     </nav>
   );

@@ -2,7 +2,7 @@
 // and the next call to make, the same words on the CLI and the MCP. A 5xx or anything not from the api is not a
 // refusal: the caller lets it throw.
 import { ApiError } from '@liveworkspace/api-client';
-import { createDeleteRefusal } from '@liveworkspace/agent-verbs/api-refusal';
+import { archiveRefusalWords, createDeleteRefusal } from '@liveworkspace/agent-verbs/api-refusal';
 import { AGENT_PRODUCT } from '../agent-product';
 import { SHEET_REFUSAL_WORDS } from '../sheets/sheet-refusals';
 
@@ -47,6 +47,8 @@ const BY_CODE: Readonly<Record<string, string>> = {
   form_full: 'the board or sheet its responses go to is full.',
   form_busy: 'the form is busy: wait a minute, then try again.',
   not_a_form_tab: 'that tab holds no form: add one with add_form.',
+  // Archived (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Archived").
+  ...archiveRefusalWords(AGENT_PRODUCT),
 };
 
 const BY_STATUS: Readonly<Record<number, string>> = {

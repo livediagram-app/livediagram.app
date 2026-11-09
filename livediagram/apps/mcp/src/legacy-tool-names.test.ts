@@ -44,6 +44,9 @@ describe('legacy tool names', () => {
     expect(legacyToolName('create_document')).toBe('create_diagram');
     expect(legacyToolName('find_documents')).toBe('find_diagrams');
     expect(legacyToolName('add_tab')).toBeNull();
+    // A tool added after the rename never had an old name.
+    expect(legacyToolName('archive_document')).toBeNull();
+    expect(legacyToolName('unarchive_document')).toBeNull();
     expect(successorToolName('find_diagrams')).toBe('find_documents');
     expect(successorToolName('add_tab')).toBe('add_tab');
   });
