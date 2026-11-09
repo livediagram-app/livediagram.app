@@ -1,5 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
-import { ItemDb } from '@liveworkspace/index-app';
+import { ItemDb, type ItemSql } from '@liveworkspace/index-app';
 import { migratePlanSchema } from './plan-room/plan-schema';
 import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { AccessLevel } from '@liveplanner/api-schema';
@@ -16,6 +16,21 @@ import type { Env, PlanEnv } from './types';
 //
 // Not a `.test.ts` file, so vitest doesn't collect it as a suite.
 
+// A Durable Object's SQLite refuses a statement with more than 100 bound parameters, where node:sqlite allows 32,766;
+// the plans' storage here refuses one too, so a query that passes its tests cannot fail in production.
+export const PLAN_SQL_BOUND_PARAMETERS_MAX = 100;
+
+function withBoundParameterCap(inner: ItemSql): ItemSql {
+  return {
+    exec: (query, ...bindings) => {
+      if (bindings.length > PLAN_SQL_BOUND_PARAMETERS_MAX) {
+        throw new Error('too many SQL variables: SQLITE_ERROR');
+      }
+      return inner.exec(query, ...bindings);
+    },
+  };
+}
+
 export type SqliteD1 = {
   // The worker's bindings and the plans' (PLAN_DB): every content module runs against it.
   env: PlanEnv;
@@ -28,7 +43,7 @@ export type SqliteD1 = {
 export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
-  const planSql = nodeItemSql(sql);
+  const planSql = withBoundParameterCap(nodeItemSql(sql));
   migratePlanSchema((q) => planSql.exec(q));
   // Test scaffolding for what the index holds in production (liveworkspace/docs/specs/004-index/one-explorer.md): `test_plans`
   // writes a started plan's own row (what a create writes), and `test_share_links` holds the links the index
