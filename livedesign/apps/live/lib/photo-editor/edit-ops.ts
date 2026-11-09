@@ -34,8 +34,8 @@ const offsetOf = (l: PhotoLayer, target: 'layer' | 'mask') =>
       ? (l.offset ?? { x: 0, y: 0 })
       : { x: 0, y: 0 };
 
-/** What a fill or a delete acts on: the active pixel layer (or its mask), refusing a locked or hidden one. */
-function target(s: PhotoSession): { layer: PhotoLayer; target: 'layer' | 'mask' } | string {
+/** What a fill, a delete or a cut acts on: the active pixel layer (or its mask), refusing a locked or hidden one. */
+export function target(s: PhotoSession): { layer: PhotoLayer; target: 'layer' | 'mask' } | string {
   const layer = s.layer(s.active);
   if (!layer) return 'Choose a layer first.';
   const t = s.target === 'mask' && layer.mask ? 'mask' : 'layer';
@@ -145,6 +145,29 @@ export function clearSelection(s: PhotoSession, background: string): string | nu
   raster.write(dst, local.x, local.y);
   s.changed();
   s.commitPixels('Clear', [{ layerId: t.layer.id, target: t.target }]);
+  return null;
+}
+
+/** Cut with no selection: the whole active layer's pixels made transparent (on a mask, black); with
+ *  locked transparency, the background colour instead. Refused, as Delete is, on a locked or hidden layer. */
+export function clearLayer(s: PhotoSession, background: string): string | null {
+  const t = target(s);
+  if (typeof t === 'string') return t;
+  if (t.target === 'layer' && t.layer.locks?.transparency)
+    return fillSelection(s, { contents: 'background' }, { foreground: background, background }) as
+      string | null;
+  const raster = s.raster(t.layer.id, t.target);
+  if (t.target === 'mask') {
+    // A mask cleared hides the whole layer: black over the photo.
+    const { rect } = areaOf(s);
+    const o = offsetOf(t.layer, 'mask');
+    const local = { x: rect.x - o.x, y: rect.y - o.y, width: rect.width, height: rect.height };
+    const dst = raster.read(local);
+    for (let i = 0; i < rect.width * rect.height; i++) dst.data[i * 4] = 0;
+    raster.write(dst, local.x, local.y);
+  } else for (const k of raster.keys()) raster.clearTile(k);
+  s.changed();
+  s.commitPixels('Cut', [{ layerId: t.layer.id, target: t.target }]);
   return null;
 }
 
