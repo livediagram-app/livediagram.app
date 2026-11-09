@@ -43,6 +43,8 @@ export { kindWords, heroWords, type AppFilter, type HeroWords, type Words } from
 export type { LensOption, LensTelemetryType } from './lens';
 export type { FolderShown, NavigateOptions } from './explorer/context';
 export type { HelpHref } from './explorer/context';
+// The icon an item's row or card draws when its host has no picture for it, for a host's own fallback.
+export { ItemIcon } from './ui/icons';
 export type {
   ItemHref,
   ItemPlace,

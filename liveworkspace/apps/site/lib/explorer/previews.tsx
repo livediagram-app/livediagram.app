@@ -25,7 +25,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Item } from '@liveworkspace/index-client';
-import type { RenderThumbnail } from '@liveworkspace/explorer';
+import { ItemIcon, type RenderThumbnail } from '@liveworkspace/explorer';
 import { PREVIEWS_PATH } from '@liveworkspace/sites/workspace-proxy';
 import { getResolvedAppearance, useAppearance, type Appearance } from '@livediagram/ui';
 import { workspaceToken } from './token';
@@ -199,7 +199,7 @@ export function resetPreviews() {
 
 // ---------- Drawing one ---------------------------------------------------------------------------------------
 
-function Preview({ item }: { item: Item }) {
+function Preview({ item, size }: { item: Item; size: 'row' | 'card' }) {
   // Redrawn when the reader switches appearance: its key (the address) names the other half then.
   useAppearance();
   const key = keyOf(item);
@@ -246,14 +246,24 @@ function Preview({ item }: { item: Item }) {
           draggable={false}
           className="h-full w-full object-cover object-top"
         />
+      ) : entry?.status === 'none' ? (
+        // Nothing to draw (404) or no picture to give (503): the icon an empty item's box shows, never a blank box.
+        <span
+          data-preview-fallback=""
+          className={`flex h-full w-full items-center justify-center text-slate-300 dark:text-slate-600 ${
+            size === 'card' ? '[&_svg]:h-7 [&_svg]:w-7' : ''
+          }`}
+        >
+          <ItemIcon />
+        </span>
       ) : null}
     </span>
   );
 }
 
 /** The Explorer's previews: the item's picture, or the kind's icon (null) for an empty item. */
-export const renderPreview: RenderThumbnail = (item): ReactNode =>
-  isEmpty(item) ? null : <Preview item={item} />;
+export const renderPreview: RenderThumbnail = (item, size): ReactNode =>
+  isEmpty(item) ? null : <Preview item={item} size={size} />;
 
 /** Asked for ahead, when a row is pointed at, so its card opens with the picture. */
 export const prefetchPreview = (item: Item) => void loadPreview(item);
