@@ -28,7 +28,7 @@ Input is treated as a hierarchical outline:
   nested items attach under their parent item. Task-list checkboxes
   (`- [ ]` / `- [x]`) are stripped to their text.
 - **GFM pipe tables** (a header row followed by a `---|---` delimiter)
-  become a `table` element.
+  become a `table` element. Cells split on unescaped pipes; an escaped `\|` stays in its cell as `|`.
 - **Prose lines** become leaf nodes under the current heading (so content
   isn't silently dropped), and end the current list.
 - **Skipped:** fenced code blocks (``` / ~~~) and their contents,
