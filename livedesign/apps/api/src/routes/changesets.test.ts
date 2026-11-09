@@ -198,6 +198,37 @@ describe('submitting a changeset', () => {
     expect(relay.op.tab).toMatchObject({ name: 'Detail' });
   });
 
+  // A tab-scoped grant never makes a tab (docs/specs/013-workspace/tab-scoped-share-links.md): its tab deleted
+  // reads as missing, so a `replace` cannot bring it back.
+  it("never recreates a tab-scoped grant's deleted tab", async () => {
+    quiet();
+    const { db } = await setUp();
+    db.sql.prepare("DELETE FROM tabs WHERE id = 't1'").run();
+    const res = await handleDesigns(
+      makeTestRouteContext('POST', '/api/designs/D/tabs/t1/changesets', {
+        env: db.env,
+        owner: 'user_v',
+        accountUserId: 'user_v',
+        verifiedUserId: 'user_v',
+        grant: {
+          item: 'D',
+          level: 'edit',
+          tab: 't1',
+          sub: 'user_v',
+          team: null,
+          exp: 2_000_000_000,
+          shareCode: 'code1',
+          token: 'g',
+        },
+        body: { replace: { elements: [box('a')], name: 'Back again' } },
+        waitUntil: (p) => void pending.push(p),
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.sql.prepare("SELECT id FROM tabs WHERE id = 't1'").get()).toBeUndefined();
+    expect(records(db)).toEqual([]);
+  });
+
   it('writes nothing on any refusal, and says why', async () => {
     quiet();
     const { db, room: r } = await setUp();

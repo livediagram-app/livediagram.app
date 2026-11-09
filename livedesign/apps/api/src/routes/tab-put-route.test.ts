@@ -194,6 +194,34 @@ describe('the tab PUT', () => {
     });
   });
 
+  // A tab-scoped editor's save never makes a tab (docs/specs/013-workspace/tab-scoped-share-links.md): its tab
+  // deleted while the editor was open reads as missing rather than coming back.
+  it("never recreates a tab-scoped editor's deleted tab", async () => {
+    const db = await designWith([box('a')]);
+    db.sql.prepare("DELETE FROM tabs WHERE id = 't1'").run();
+    const res = await handleDesigns(
+      makeTestRouteContext('PUT', '/api/designs/D/tabs/t1', {
+        env: db.env,
+        owner: 'user_v',
+        accountUserId: 'user_v',
+        verifiedUserId: 'user_v',
+        grant: {
+          item: 'D',
+          level: 'edit',
+          tab: 't1',
+          sub: 'user_v',
+          team: null,
+          exp: 2_000_000_000,
+          shareCode: 'code1',
+          token: 'g',
+        },
+        body: { id: 't1', name: 'Back again', elements: [box('a')] },
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.sql.prepare("SELECT id FROM tabs WHERE id = 't1'").get()).toBeUndefined();
+  });
+
   it('answers the new revision and strips record fields from the body', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await designWith([box('a')]);
@@ -324,7 +352,11 @@ describe('comments in a tab PUT', () => {
       stored(db)[0] as unknown as { commentThread: { comments: Record<string, unknown>[] } }
     ).commentThread.comments;
     expect(comments[0]).toMatchObject({ text: 'Ship it', authorName: 'Bob', authorId: 'user_bob' });
-    expect(comments[1]).toMatchObject({ text: 'Delete it all', authorId: OWNER, authorName: '' });
+    expect(comments[1]).toMatchObject({
+      text: 'Delete it all',
+      authorId: OWNER,
+      authorName: 'Alice',
+    });
     expect(comments[1]).not.toHaveProperty('tokenId');
   });
 });
