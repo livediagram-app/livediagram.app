@@ -421,8 +421,15 @@ export function EditorContextMenuHost() {
       onSetChartRightAxis={setChartRightAxisSelected}
       onSetChartLegendPosition={setChartLegendPositionSelected}
       onSetChartType={setChartTypeSelected}
-      onEditLineData={setLineDataOpenForId}
-      onEditCodeBlock={setCodeEditOpenForId}
+      // A modal opened from the menu takes over from it: the menu closes first, or it stays drawn over the dialog.
+      onEditLineData={(id) => {
+        closeContextMenu();
+        setLineDataOpenForId(id);
+      }}
+      onEditCodeBlock={(id) => {
+        closeContextMenu();
+        setCodeEditOpenForId(id);
+      }}
       onSetCodeWrap={setCodeWrapSelected}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
@@ -430,7 +437,10 @@ export function EditorContextMenuHost() {
         ctxSelectedEl?.type === 'shape' &&
         ctxSelectedEl.shape === 'sequence' &&
         canEditSequence(can, ctxSelectedEl)
-          ? setSequenceOpenForId
+          ? (id: string) => {
+              closeContextMenu();
+              setSequenceOpenForId(id);
+            }
           : undefined
       }
       chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}

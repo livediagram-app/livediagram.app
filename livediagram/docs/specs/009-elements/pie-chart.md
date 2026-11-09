@@ -21,7 +21,8 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   [colour picker](../004-interface-design/colour-picker.md) in a popover), a **label**, and a **value**, plus
   add / remove. The line chart's 2-D grid is too wide for the narrow menu, so
   the category instead **summarises the series** (a colour dot + name) and an
-  **Edit Data** button opens a **modal** (`LineDataDialog`): a row per category,
+  **Edit Data** button closes the menu and opens a **modal** (`LineDataDialog`; the menu once stayed drawn over it,
+  as it did over Edit Code and Edit Sequence): a row per category,
   a column per series, add / remove either axis, and an **Import CSV** button
   (header row = series names, first column = category labels). The chart +
   legend redraw live from the data.
