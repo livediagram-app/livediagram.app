@@ -595,7 +595,7 @@ export function useRoomConnection(opts: {
     const presence = createPresenceCoalescer({
       setRemoteCursors,
       setRemoteLaserTrails,
-      });
+    });
 
     const handlers: RoomHandlers = {
       onPresence: (participants, agents) => {

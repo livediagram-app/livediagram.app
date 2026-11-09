@@ -74,7 +74,6 @@ import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFont
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
-
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
 export const Canvas = withStableEventProps(CanvasView);
@@ -515,9 +514,7 @@ function CanvasView(props: CanvasProps) {
             // it's a read-only view tool. Clicks fall through to <main>, where a
             // drag pans (canvasTool === 'isometric' is added to `wantsPan`).
             className={`absolute inset-0 origin-center touch-none ${
-              canvasTool === 'spotlight' || canvasTool === 'isometric'
-                ? 'pointer-events-none'
-                : ''
+              canvasTool === 'spotlight' || canvasTool === 'isometric' ? 'pointer-events-none' : ''
             } ${pendingDraw ? '' : cursorClass}`}
             // Scopes the [data-iso] CSS (globals.css): frames settle just under
             // the base plane while the camera orbits so they can't z-fight
@@ -525,9 +522,7 @@ function CanvasView(props: CanvasProps) {
             data-iso={canvasTool === 'isometric' ? '' : undefined}
             // The same modes, said to the element plane's children, which take presses of their own (globals.css).
             data-elements-inert={
-              canvasTool === 'spotlight' || canvasTool === 'isometric'
-                ? ''
-                : undefined
+              canvasTool === 'spotlight' || canvasTool === 'isometric' ? '' : undefined
             }
             // A whiteboard pen draws wherever it presses, so nothing under it swaps
             // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").

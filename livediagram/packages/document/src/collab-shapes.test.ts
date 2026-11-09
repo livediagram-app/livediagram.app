@@ -78,7 +78,6 @@ describe('decision record', () => {
   });
 });
 
-
 describe('isCollabPanelShape', () => {
   it('covers every kind that draws its own card', () => {
     for (const kind of [

@@ -65,7 +65,6 @@ type ElementTourDef = {
 
 const conceptRows = (el: Element) => (el as ShapeElement).conceptRows ?? [];
 
-
 export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
   sankey: {
     token: 'SankeyTour',

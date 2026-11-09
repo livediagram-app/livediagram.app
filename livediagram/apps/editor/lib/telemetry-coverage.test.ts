@@ -104,10 +104,9 @@ const emitted = (() => {
   const pairs = new Set<string>();
   // With the editor code every editor shares (@liveworkspace/workbench).
   // And Avatar mode's (@liveworkspace/avatar), which sends this editor's Avatar events.
-  for (const file of [
-    APP_ROOT,
-    join(APP_ROOT, '../../../packages/workbench/src'),
-  ].flatMap(sourceFiles)) {
+  for (const file of [APP_ROOT, join(APP_ROOT, '../../../packages/workbench/src')].flatMap(
+    sourceFiles,
+  )) {
     for (const pair of pairsIn(readFileSync(file, 'utf8'))) pairs.add(pair);
   }
   for (const pair of cataloguePairs(readFileSync(CATALOGUE, 'utf8'))) pairs.add(pair);

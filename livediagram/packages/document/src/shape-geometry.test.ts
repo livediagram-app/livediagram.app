@@ -139,4 +139,3 @@ describe('the browser chrome strip', () => {
     for (const d of n.paths) expect(svg).toContain(`<path d="${d}"`);
   });
 });
-

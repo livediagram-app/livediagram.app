@@ -23,10 +23,7 @@ import {
   RATING_DEFAULT,
   REACTION_DEFAULT,
 } from './data-shapes';
-import {
-  AGENDA_DEFAULT_MINUTES,
-  DEFAULT_DECISION_STATUS,
-} from './collab-shapes';
+import { AGENDA_DEFAULT_MINUTES, DEFAULT_DECISION_STATUS } from './collab-shapes';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
 import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';

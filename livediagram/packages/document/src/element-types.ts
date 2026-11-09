@@ -46,12 +46,7 @@ import type { ParticipantResponse } from './responses';
 import type { QaNote } from './qa-board';
 import type { HeroCaption, StatItem } from './web-components';
 import type { ImageCredit } from './image-credit';
-import type {
-  AgendaItem,
-  DecisionStatus,
-  EstimateScale,
-  RollCallEntry,
-} from './collab-shapes';
+import type { AgendaItem, DecisionStatus, EstimateScale, RollCallEntry } from './collab-shapes';
 import type {
   AnimationSpeed,
   ChecklistItem,

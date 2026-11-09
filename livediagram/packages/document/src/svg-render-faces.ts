@@ -475,11 +475,6 @@ function sessionWords(
   );
 }
 
-
-
-
-
-
 // An emoji centred on (cx, cy) at `size`: its art where the caller has it (a preview with no emoji font), else the
 // glyph as text for the viewer's emoji font.
 function emojiGlyph(

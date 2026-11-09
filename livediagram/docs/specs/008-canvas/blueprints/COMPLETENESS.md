@@ -218,4 +218,3 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
-

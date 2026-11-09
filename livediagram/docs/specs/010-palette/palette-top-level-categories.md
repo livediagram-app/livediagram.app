@@ -165,13 +165,13 @@ author?** Pressing something that acts on your session and the canvas collecting
 both what you reach for while running a session, so they are one category ([The Done check](../012-collaboration/done-check.md)
 is filed with the estimate card, not apart from it).
 
-| Group              | Holds                                                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                            |
-| **Tools**          | Reveal, Done, Picker, Timer                                                                                                       |
-| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                 |
-| **Reactions**      | the five pads                                                                                                                     |
-| **Selection Mode** | one button per mode (7)                                                                                                           |
+| Group              | Holds                                                                                                                                           |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                                          |
+| **Tools**          | Reveal, Done, Picker, Timer                                                                                                                     |
+| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                               |
+| **Reactions**      | the five pads                                                                                                                                   |
+| **Selection Mode** | one button per mode (7)                                                                                                                         |
 | **Navigate**       | Portal, Bring Focus (the furniture, Fence and Avatar Pad moved to livehuddle, [Not in livediagram](../002-project-scope/not-in-livediagram.md)) |
 
 **There is no Session group**: a group named after the machinery rather than the job. A poll and a dot vote ARE

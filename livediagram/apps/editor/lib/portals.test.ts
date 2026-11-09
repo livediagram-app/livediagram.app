@@ -150,7 +150,10 @@ describe('resolvePortalDestination', () => {
 describe('viewportOffsetCentredOn', () => {
   it('centres the far portal in the viewport', () => {
     expect(
-      viewportOffsetCentredOn({ x: 100, y: 200, width: 72, height: 112 }, { width: 800, height: 600 }),
+      viewportOffsetCentredOn(
+        { x: 100, y: 200, width: 72, height: 112 },
+        { width: 800, height: 600 },
+      ),
     ).toEqual({ x: 264, y: 44 });
   });
 });
