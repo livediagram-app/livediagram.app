@@ -122,7 +122,8 @@ function isDateSection(section: string): boolean {
   const bare = section
     .replace(/"[^"]*"/g, '')
     .replace(/\\./g, '')
-    .replace(/\[[^\]hms]*\]/gi, '');
+    // A colour or condition (`[Magenta]`, `[White]`, `[>100]`) is no date part; only elapsed `[h]`, `[mm]`, `[ss]` are.
+    .replace(/\[(?![hms]+\])[^\]]*\]/gi, '');
   return /[dmyhs]|am\/pm|a\/p/i.test(bare) && !/[0#?]/.test(bare.replace(/\.0+/g, ''));
 }
 
@@ -164,11 +165,15 @@ function formatNumberSection(n: number, toks: Tok[]): string {
     body = '';
   } else if (expTok) {
     const fracDigits = fracPh.length;
-    let exp = value === 0 ? 0 : Math.floor(Math.log10(Math.abs(value)));
+    // Engineering notation: integer placeholders led by a "#" (`##0.0E+0`) step the exponent by their count, so
+    // 12345 reads 12.3E+3, as in Excel; otherwise one digit leads (`0.00E+00`).
+    const step = intPh.length > 1 && intPh.some((t) => t.k === 'ph' && t.v === '#') ? intPh.length : 1;
+    let exp =
+      value === 0 ? 0 : Math.floor(Math.floor(Math.log10(Math.abs(value))) / step) * step;
     let mant = value / 10 ** exp;
-    if (Number(Math.abs(mant).toFixed(fracDigits)) >= 10) {
-      mant /= 10;
-      exp += 1;
+    if (Number(Math.abs(mant).toFixed(fracDigits)) >= 10 ** step) {
+      mant /= 10 ** step;
+      exp += step;
     }
     const m = Math.abs(mant).toFixed(fracDigits);
     const expText = String(Math.abs(exp)).padStart(expTok.digits, '0');
@@ -312,7 +317,8 @@ function formatDateSection(serial: number, toks: Tok[]): string {
         out += p.h < 12 ? 'AM' : 'PM';
         break;
       case v === 'a/p':
-        out += p.h < 12 ? 'A' : 'P';
+        // `a/p` writes its own case (`a` or `p`), `A/P` capitals, as in Excel and Google Sheets.
+        out += t.v[0] === 'a' ? (p.h < 12 ? 'a' : 'p') : p.h < 12 ? 'A' : 'P';
         break;
       case /^\[h+\]$/.test(v):
         out += String(Math.floor(totalSecs / 3600)).padStart(v.length - 2, '0');

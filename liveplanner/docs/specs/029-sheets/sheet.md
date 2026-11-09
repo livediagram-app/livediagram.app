@@ -550,8 +550,10 @@ view gets the header and **Copy** alone.
   it (or of `1234.5` when the cell holds no number), and the codes people use most as rows to pick (`0.00`, `#,##0`,
   `0%`, `0.00%`, `£#,##0.00`, `$#,##0.00`, `0.00E+00`, `dd/mm/yyyy`, `d mmm yyyy`, `mmm yyyy`, `dddd`, `hh:mm`,
   `[h]:mm:ss`, `@`), then **Cancel** and **Apply** (one change, one undo step). A code takes what
-  [`TEXT`](formulas.md#functions) reads: digits (`0`, `#`, `,`, `.`), percent, scientific, literal text in quotes, a
-  currency symbol, the date and time parts, elapsed hours, `@` for text, and up to four `;` sections (positive,
+  [`TEXT`](formulas.md#functions) reads: digits (`0`, `#`, `,`, `.`), percent, scientific (integer placeholders led by
+  a `#` step the exponent by their count, so `##0.0E+0` shows 12345 as `12.3E+3`), literal text in quotes, a
+  currency symbol, a colour or condition in brackets (`[Red]`, `[Magenta]`, `[>100]`, read past and never taken for
+  a date part), the date and time parts (`a/p` writes `a` or `p`, `A/P` capitals), elapsed hours, `@` for text, and up to four `;` sections (positive,
   negative, zero, text; an empty one hides its values, so `;;;` hides everything, text too; a negative drawn by a
   section of its own shows only the signs that section writes, so `0;0` shows -5 as `5`). Literal text between digit
   placeholders stays among the digits (`000-000` shows `123-456`, `(000) 000-0000` a phone number), and `General`
