@@ -25,6 +25,7 @@ import {
 } from '../responses';
 import {
   deniedParticipate,
+  deniedEdit,
   gateEdit,
   gateParticipate,
   missingDocument,
@@ -50,7 +51,7 @@ async function admitted(
     if (!(await gateParticipate(ctx, id, doc.ownerId, doc.teamId, tabId)))
       return deniedParticipate(ctx, doc, tabId);
   } else if (!(await gateEdit(ctx, id, doc.ownerId, doc.teamId, tabId))) {
-    return forbidden();
+    return deniedEdit(ctx, id, tabId);
   }
   return doc;
 }
