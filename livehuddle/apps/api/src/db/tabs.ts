@@ -354,13 +354,20 @@ export async function deleteTabRow(
   env: DocumentEnv,
   documentId: string,
   tabId: string,
-): Promise<DeletedTab | null> {
-  const [unlinked] = await env.DOCUMENT_DB.batch([
-    env.DOCUMENT_DB.prepare(
+  opts: { keepLast?: boolean } = {},
+): Promise<DeletedTab | null | 'last'> {
+  const db = env.DOCUMENT_DB;
+  // `keepLast` (a token's delete, which may not take the last tab): the count rides the delete itself, so two
+  // deletes that each read two tabs before either ran can't take both.
+  const unlink = db
+    .prepare(
       `DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?
+          AND (? = 0 OR (SELECT COUNT(*) FROM document_tabs WHERE document_id = ?) > 1)
         RETURNING (SELECT t.data FROM tabs t WHERE t.id = document_tabs.tab_id) AS data,
                   (SELECT t.connection FROM tabs t WHERE t.id = document_tabs.tab_id) AS connection`,
-    ).bind(documentId, tabId),
+    )
+    .bind(documentId, tabId, opts.keepLast ? 1 : 0, documentId);
+  const rest = [
     // A shared tab (document-room/tab-shares.ts): every other holder hears that this document left, and nothing
     // else it owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
     ...shareLeaveStatements(env.DOCUMENT_DB, tabId),
@@ -372,10 +379,25 @@ export async function deleteTabRow(
       documentId,
       tabId,
     ),
-  ]);
-  const row = (
-    unlinked as { results?: { data?: string | null; connection?: string | null }[] } | undefined
-  )?.results?.[0];
+  ];
+  type Row = { data?: string | null; connection?: string | null };
+  const rowOf = (r: unknown) => (r as { results?: Row[] } | undefined)?.results?.[0];
+  let row: Row | undefined;
+  if (!opts.keepLast) {
+    row = rowOf((await db.batch([unlink, ...rest]))[0]);
+  } else {
+    // A refused unlink must not tell the tab's other holders it left, so the rest runs only after one that
+    // happened. The room's SQLite answers both at once, with no I/O between them to let another request in.
+    row = rowOf((await db.batch([unlink]))[0]);
+    if (!row) {
+      const held = await db
+        .prepare('SELECT 1 AS held FROM document_tabs WHERE document_id = ? AND tab_id = ?')
+        .bind(documentId, tabId)
+        .first('held');
+      return held ? 'last' : null;
+    }
+    await db.batch(rest);
+  }
   if (row?.data == null) return null;
   return { data: row.data, connection: storedTabConnection(row.connection) };
 }
@@ -420,13 +442,25 @@ export async function reorderTabs(
   entries: ReorderEntry[],
 ): Promise<void> {
   const now = Date.now();
-  // Order and folder live on the link, so moving a tab leaves its body untouched.
-  const batch = entries.map((entry, idx) => {
-    const { id: tabId, folder } = normalizeReorderEntry(entry);
-    return env.DOCUMENT_DB.prepare(
-      'UPDATE document_tabs SET order_index = ?, folder = ? WHERE document_id = ? AND tab_id = ?',
-    ).bind(idx, folder, documentId, tabId);
+  // Only the document's own tabs, each once at the last place the request names it (what writing every entry in
+  // turn left): ids it lacks would update nothing, and a body of a million of them was a statement each.
+  const { results } = await env.DOCUMENT_DB.prepare(
+    'SELECT tab_id FROM document_tabs WHERE document_id = ?',
+  )
+    .bind(documentId)
+    .all<{ tab_id: string }>();
+  const held = new Set(results.map((r) => r.tab_id));
+  const placed = new Map<string, { idx: number; folder: string | null }>();
+  entries.forEach((entry, idx) => {
+    const { id, folder } = normalizeReorderEntry(entry);
+    if (held.has(id)) placed.set(id, { idx, folder });
   });
+  // Order and folder live on the link, so moving a tab leaves its body untouched.
+  const batch = [...placed].map(([tabId, { idx, folder }]) =>
+    env.DOCUMENT_DB.prepare(
+      'UPDATE document_tabs SET order_index = ?, folder = ? WHERE document_id = ? AND tab_id = ?',
+    ).bind(idx, folder, documentId, tabId),
+  );
   batch.push(
     env.DOCUMENT_DB.prepare('UPDATE document SET saved_at = ? WHERE id = ?').bind(now, documentId),
   );
