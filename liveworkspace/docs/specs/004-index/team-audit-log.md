@@ -109,7 +109,8 @@ reads, so the two are never mistaken for each other.
   one kind by its label, grouped People, the host app's own items in its word (Canvases, Plans, Documents, Designs,
   Spaces) and Webhooks), and **From** and **To** (whole days in the reader's
   time zone, both included: To is sent as the next day's midnight). **Clear Filters** shows while any is set. There is
-  no filter by whom an event is about (`IDX32`). A From after To is turned round, never refused.
+  no filter by whom an event is about (`IDX32`). A From after To is turned round, never refused. A day not on the
+  calendar (2026-02-31) bounds nothing, never rolling into the next month.
 - **Each row**: the kind's glyph; one line saying who did what ("Ann Lee made a share link on Roadmap", "Ann Lee
   removed Bo Chen", "Ann Lee added the webhook hooks.slack.com"); then the kind's label, the detail that matters
   (the link's level, into or out of the team, the webhook's kind, a renamed team's old name, Take Offline), the app
