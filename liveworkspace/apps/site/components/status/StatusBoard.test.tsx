@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StatusHistory } from '@liveworkspace/status';
 import { StatusBoard } from './StatusBoard';
+import { formatAgo } from './status-ui';
 
 // liveworkspace/docs/specs/010-site/site.md "Status": the board shows every group, and each service's state from its check, as an
 // icon and a word.
@@ -315,5 +316,19 @@ describe('Check now', () => {
       await new Promise((r) => setTimeout(r, 0));
     });
     expect(checks).toBe(first * 2);
+  });
+});
+
+// "Checked by liveworkspace" when the hourly run stopped days ago reads in days, not "75 h ago".
+describe('formatAgo', () => {
+  const now = Date.UTC(2026, 10, 9, 12);
+  const ago = (ms: number) => formatAgo(now - ms, now);
+  it('reads seconds, minutes, hours, then days', () => {
+    expect(ago(2_000)).toBe('just now');
+    expect(ago(12_000)).toBe('12 s ago');
+    expect(ago(23 * 60_000)).toBe('23 min ago');
+    expect(ago(23 * 3_600_000)).toBe('23 h ago');
+    expect(ago(25 * 3_600_000)).toBe('1 day ago');
+    expect(ago(75 * 3_600_000)).toBe('3 days ago');
   });
 });
