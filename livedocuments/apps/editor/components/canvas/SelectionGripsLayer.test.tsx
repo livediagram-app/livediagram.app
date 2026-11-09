@@ -174,7 +174,7 @@ describe('SelectionGripsLayer', () => {
     const { container, getByTestId } = render(
       <Harness>
         <svg>
-          <ArrowGripsPortal>
+          <ArrowGripsPortal arrowId="ar">
             <SelectedArrowHandles
               arrow={arrow}
               from={{ x: 0, y: 0 }}

@@ -1,23 +1,36 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
-import type { Element, ElementGrid, ElementIndex } from '@livedesign/design';
+import {
+  elementIndexFor,
+  isBoxed,
+  spreadOverBase,
+  type Element,
+  type ElementGrid,
+  type ElementIndex,
+} from '@livedesign/design';
 import { dragPreviewFor, subscribeDragPreview, type DragOverlay } from '@/lib/drag-preview';
 import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { sameArrowViewFrame, type ArrowViewFrame } from '@/components/canvas/arrow-view-frame';
 import {
   affectedArrows,
+  movedBoxesGrid,
   previewArrowGeometry,
   type ArrowLinks,
 } from '@/components/canvas/drag-affected-arrows';
-import { spreadOverBase, type Rect } from '@livedesign/design';
+import type { Rect } from '@livedesign/design';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { ridingElements, type RideOffset } from '@liveworkspace/workbench/lib/drag-ride';
+import { createRideWriter } from '@liveworkspace/workbench/lib/drag-ride-dom';
 
 // The element layer's drag preview (docs/specs/008-canvas/drag-preview.md "The preview",
 // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved"): what each element looks
 // like while a gesture lasts, derived once per preview change outside React and read per element, so a
 // preview frame re-renders the elements it changes and never the layer that holds all of them. The
 // layer itself re-renders only when the preview adds or removes elements (a Shift-duplicate), which
-// changes what it lists.
+// changes what it lists. What a preview only moves rides an offset written outside React (workbench drag-ride), so a move
+// frame re-renders none of it: only the arrows between the moved and the unmoved
+// (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
 
 export type LayerDrawn = { element: Element; layerOpacity: number };
 
@@ -42,6 +55,8 @@ export type LayerPreviewInputs = {
   arrowLinks: ArrowLinks | null;
   gridFor: (elements: readonly Element[]) => ElementGrid;
   arrowLabels: ArrowLabels;
+  // A stack's children, which glide when it reflows and so never ride an offset.
+  stackedIds: ReadonlySet<string>;
 };
 
 export type LayerPreviewStore = {
@@ -51,6 +66,8 @@ export type LayerPreviewStore = {
   structure: () => PreviewStructure | null;
   // Re-derives from the latest preview and inputs, notifying only the elements whose entry changed.
   update: (inputs: LayerPreviewInputs) => void;
+  // The element plane (a ref callback): the riding offsets are written to nodes under its parent.
+  attachPlane: (plane: HTMLElement | null) => void;
 };
 
 // `ordered` with the preview laid over it: changed elements swapped in, removed ones dropped, added ones in the order
@@ -98,7 +115,8 @@ function sameInputs(a: LayerPreviewInputs | null, b: LayerPreviewInputs): boolea
     a.drawnElements === b.drawnElements &&
     a.elementIndex === b.elementIndex &&
     a.arrowLinks === b.arrowLinks &&
-    a.arrowLabels === b.arrowLabels
+    a.arrowLabels === b.arrowLabels &&
+    a.stackedIds === b.stackedIds
   );
 }
 
@@ -139,30 +157,75 @@ const structureKey = (s: PreviewStructure | null) =>
     ? ''
     : `${[...s.removed].join(',')}|${s.added.map((a) => `${a.el.id}<${a.after ?? ''}`).join(',')}`;
 
+const NO_RIDES: ReadonlyMap<string, RideOffset> = new Map();
+
 export function createLayerPreviewStore(): LayerPreviewStore {
   let entries = new Map<string, PreviewEntry>();
+  const rideWriter = createRideWriter();
+  // The board the offsets were written over: they stay until the layer draws another (the release's write, in the
+  // same paint as the elements at their new place), or the next frame when nothing is written (a cancel).
+  let rodeOver: readonly Element[] | null = null;
+  let rideCount = 0;
+  let dropFrame: number | null = null;
+  const dropRides = () => {
+    if (dropFrame !== null) cancelAnimationFrame(dropFrame);
+    dropFrame = null;
+    rodeOver = null;
+    rideWriter.apply(NO_RIDES);
+  };
+  const writeRides = (rides: ReadonlyMap<string, RideOffset>, over: readonly Element[]) => {
+    if (dropFrame !== null) cancelAnimationFrame(dropFrame);
+    dropFrame = null;
+    if (rides.size === 0 && !rideWriter.active()) {
+      rideCount = 0;
+      return;
+    }
+    rodeOver = rides.size > 0 ? over : null;
+    rideWriter.apply(rides);
+    // Logged when the count changes, with how many planes carry the offset as one layer.
+    if (rides.size !== rideCount) {
+      rideCount = rides.size;
+      if (rides.size > 0)
+        debugLog('[drag-preview] ride', { count: rides.size, planes: rideWriter.planesCarrying() });
+    }
+  };
   let structure: PreviewStructure | null = null;
   let lastOverlay: DragOverlay | null = null;
   let lastInputs: LayerPreviewInputs | null = null;
   const byId = new Map<string, Set<() => void>>();
   const structureListeners = new Set<() => void>();
 
-  function derive(overlay: DragOverlay, inputs: LayerPreviewInputs): Map<string, PreviewEntry> {
+  function derive(
+    overlay: DragOverlay,
+    inputs: LayerPreviewInputs,
+  ): { out: Map<string, PreviewEntry>; rides: ReadonlyMap<string, RideOffset> } {
     const out = new Map<string, PreviewEntry>();
-    for (const [id, element] of overlay.changed) out.set(id, { element });
-    for (const { el } of overlay.added) out.set(el.id, { element: el });
     const { elementIndex, arrowLinks, drawnElements } = inputs;
-    if (!elementIndex || !arrowLinks) return out;
+    // A board without arrows has no element index; the board's cached one finds what rides (built once per board,
+    // not per frame).
+    const rides = ridingElements(overlay, elementIndex ?? elementIndexFor(drawnElements), {
+      isBoxed,
+      links: arrowLinks,
+      still: inputs.stackedIds,
+    });
+    for (const [id, element] of overlay.changed) if (!rides.has(id)) out.set(id, { element });
+    for (const { el } of overlay.added) out.set(el.id, { element: el });
+    if (!elementIndex || !arrowLinks) return { out, rides };
+    const ids = affectedArrows(overlay, drawnElements, arrowLinks, rides);
+    // An arrow riding the offset is drawn as the design has it: only the rest re-route.
+    for (const id of rides.keys()) ids.delete(id);
+    for (const { el } of overlay.added) if (el.type === 'arrow') ids.add(el.id);
+    // Nothing to re-route (a move that rides whole): no board to build for it.
+    if (ids.size === 0) return { out, rides };
     const index = new Map(elementIndex);
     for (const [id, el] of overlay.changed) index.set(id, el);
     for (const { el } of overlay.added) index.set(el.id, el);
-    // The board's fans are placed again only where they read what moved (docs/specs/008-canvas/canvas-performance.md
-    // "A frame's arrow work is linear in what moved").
+    // The board's fans are placed again only where they read what moved (docs/specs/008-canvas/blueprints/
+    // drag-preview.md "Performance and limits").
     if (overlay.added.length === 0 && overlay.removed.size === 0)
       spreadOverBase(index, elementIndex, overlay.changed.keys());
     const grid = inputs.gridFor(drawnElements);
-    const ids = affectedArrows(overlay, drawnElements, arrowLinks);
-    for (const { el } of overlay.added) if (el.type === 'arrow') ids.add(el.id);
+    const moved = movedBoxesGrid(overlay);
     // The board as the preview shows it, which a moved label is laid out against; only built when
     // an affected arrow has a label.
     let virtual: Element[] | null = null;
@@ -171,7 +234,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       if (!arrow || arrow.type !== 'arrow') continue;
       const entry: PreviewEntry = {
         element: arrow,
-        geometry: previewArrowGeometry(arrow, index, grid, overlay),
+        geometry: previewArrowGeometry(arrow, index, grid, overlay, moved),
       };
       if (arrow.label) {
         virtual ??= shownWithOverlay(inputs.ordered, overlay).map((o) => o.element);
@@ -187,7 +250,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       }
       out.set(id, entry);
     }
-    return out;
+    return { out, rides };
   }
 
   return {
@@ -208,14 +271,27 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       };
     },
     structure: () => structure,
+    attachPlane(plane) {
+      rideWriter.setRoot(plane?.parentElement ?? null);
+    },
     update(inputs) {
       const overlay = dragPreviewFor(inputs.tabId, inputs.drawnElements);
+      // The preview ended and the layer now draws another board (the release landed): the offsets go, in this
+      // commit, before it paints.
+      if (!overlay && rodeOver && inputs.drawnElements !== rodeOver) dropRides();
       // Nothing to do: no preview before or now, or the same preview over the same inputs.
       if (overlay === lastOverlay && (overlay === null || sameInputs(lastInputs, inputs))) return;
       lastOverlay = overlay;
       lastInputs = inputs;
       const prev = entries;
-      entries = overlay ? derive(overlay, inputs) : new Map<string, PreviewEntry>();
+      const derived = overlay ? derive(overlay, inputs) : null;
+      entries = derived?.out ?? new Map<string, PreviewEntry>();
+      if (derived) writeRides(derived.rides, inputs.drawnElements);
+      else if (rodeOver && dropFrame === null) {
+        // No board written yet (a cancel, or the release's write still on its way): drop them before the next
+        // paint at the latest.
+        dropFrame = requestAnimationFrame(dropRides);
+      }
       for (const [id, entry] of entries) entries.set(id, steadyEntry(prev.get(id), entry));
       const nextStructure: PreviewStructure | null =
         overlay && (overlay.removed.size > 0 || overlay.added.length > 0)

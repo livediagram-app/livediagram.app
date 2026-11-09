@@ -328,6 +328,8 @@ function BoxedElementViewImpl({
     <div
       ref={wrapperRef}
       data-element-id={element.id}
+      // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
+      data-ride-id={element.id}
       data-stack-glide={stackGlide ? '' : undefined}
       // A margin note's kind, for its touch reach and for hiding it while presenting (article-pages.css).
       data-article-note={articleNote}

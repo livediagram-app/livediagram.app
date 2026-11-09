@@ -165,9 +165,17 @@ whitespace; a single word wider than the cap is not broken (D22).
 
 - Word widths cached per `(font, word)` in a module `Map`, capped at 2 000 entries (cleared when
   full, D24). Wrap sums cached widths; it never measures joined strings.
-- Per arrow: at most `words` re-wraps, 8 balance wraps, 9 slide candidates × obstacles. 300 arrows
-  × 200 boxes stays well under one frame on the hot path, which is a layout pass per element
-  change, not per pointer move of an unrelated gesture.
+- Per arrow: at most `words` re-wraps, 8 balance wraps, 9 slide candidates, each asking its neighbourhood
+  (canvas-performance.md "Arrow labels ask their neighbourhood"): the boxes that are obstacles sit in a
+  `RectGrid` (`@liveworkspace/model-core/rect-grid`) built once per board array (`obstacleGridFor`, a `WeakMap`
+  on the array, as `elementIndexFor` is), and the labels placed so far in another, filled as
+  `layoutArrowLabels` places them (`claimedGrid`); `anyRectMeeting` answers what `rects.some(rectsIntersect)`
+  did. A draft (`draftLayout`) asks `labelClaimGrid(renders)`, every label's claim built once per pass, less its
+  own (`except`). `knockoutsOf(id)` asks a grid of the labelled centres for those inside the arrow's path bounds
+  widened by 2 px (runAt's tolerance is 1 px), in pass order, every label when the bounds are not finite.
+  Identical results, by a seeded equivalence test (`arrow-label-layout-grid.test.ts`). 2,000 labelled arrows
+  among 2,000 boxes: the pass and every `knockoutsOf` about 6 ms (about 650 ms by the scan), held under 250 ms
+  of CPU; a union resize's drafts about 16 ms a frame (about 1.8 s by the scan).
 
 ## Web experience
 

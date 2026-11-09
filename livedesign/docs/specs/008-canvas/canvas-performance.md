@@ -101,11 +101,28 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   recomputed. A preview frame renders neither the canvas nor the element layer: each element view
   reads its own part of the preview, so a frame's work follows what moved, not the board, and only
   what follows the moved selection (its chrome) reads the whole preview.
-- **A frame's arrow work is linear in what moved.** What the moved boxes crossed where they started
-  is the same on every frame of a gesture, so it is asked once a gesture; the board the gesture is
-  laid over is indexed once, not once a frame. The endpoint spread over a preview's board places
-  again only the fans that read something the gesture moved, and gives exactly what placing every
-  fan would.
+- **A move that only translates renders nothing.** When a gesture shifts elements without
+  reshaping them (a move, of any number of elements), each of them is drawn where the design has
+  it, shifted by one offset written to the page outside React, so a move frame renders no element
+  view at all, however large the selection. Arrows with both ends on moved elements ride along the
+  same way; only an arrow with one end in the selection and the other outside it re-routes, frame by
+  frame ([Drag preview](drag-preview.md) "Moves ride an offset").
+- **A frame's arrow work is linear in what moved.** Which arrows a moved box crosses, and which
+  moved boxes cut an arrow, are asked of spatial grids (the arrows' bounds, bucketed once per
+  design change; the moved boxes, once per frame), never by scanning every moved element for
+  every arrow. What the moved boxes crossed where they started is the same on every frame of a
+  gesture, so it is asked once a gesture; the board the gesture is laid over is indexed once, not
+  once a frame. The endpoint spread over a preview's board places again only the fans that read
+  something the gesture moved, and gives exactly what placing every fan would. A move that rides
+  whole re-routes no arrow, so it builds no preview board at all. A union resize of 2,000 boxes and
+  1,999 arrows re-routed every arrow against every moved box, about half a second of script a
+  pointer move, and froze Safari for tens of seconds.
+- **Arrow labels ask their neighbourhood.** Laying a label out tests its candidate places against
+  the boxes and the labels already placed; both are asked of a grid of their bounds (the boxes built
+  once per board, the labels as they are placed), never by scanning every box and label for every
+  label. A label being typed or dragged asks the same of the other labels' places, built once per
+  label pass. Which other lines a label cuts (a bus several arrows share) asks a grid of the label
+  centres. The places are exactly those the scan gave, by a seeded equivalence test.
 - **Selection chrome derives a frame once.** Every piece of chrome that follows the selection (the
   layer's resize box and pluses, the toolbars and popover) reads the same preview frame: the board
   with the preview laid over it, and the selection derived from it, are built once a frame and

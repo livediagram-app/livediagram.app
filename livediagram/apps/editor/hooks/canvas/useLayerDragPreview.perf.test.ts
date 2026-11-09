@@ -86,6 +86,25 @@ describe('the layer preview store’s frame', () => {
       expect(best).toBeLessThan(cpuBudgetMs(16));
     });
 
+  // A union resize of every box (docs/specs/008-canvas/canvas-performance.md "A frame's arrow work is linear in what
+  // moved"): nothing rides, so every arrow re-routes, each asking the moved boxes' grid for what cuts it. Scanning
+  // every moved box for every arrow took about half a second a frame here.
+  it('updates a union resize of all 2,000 boxes on a 4,000-element board within budget, each frame', () => {
+    const store = createLayerPreviewStore();
+    let grow = 0;
+    const frame = () => {
+      grow += 2;
+      const resized = BOARD.map((el) => ('width' in el ? { ...el, width: el.width + grow } : el));
+      setLocalPreview('t', resized, BOARD);
+      store.update({ ...inputs });
+    };
+    for (let i = 0; i < 3; i++) frame();
+    let best = Infinity;
+    for (let i = 0; i < 5; i++) best = Math.min(best, cpuMsOf(frame));
+    if (process.env.PERF_LOG) console.log(`union resize frame ${best.toFixed(2)} ms`);
+    expect(best).toBeLessThan(cpuBudgetMs(60));
+  });
+
   it('does no work when the layer re-renders mid-drag with nothing changed', () => {
     const store = createLayerPreviewStore();
     setLocalPreview('t', moved(3), BOARD);

@@ -13,7 +13,7 @@ import {
   SelectionGripsContext,
   SelectionGripsLayer,
   type SelectionGripHosts,
-} from './SelectionGripsLayer';
+} from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // The handles are always on top (docs/specs/008-canvas/canvas-and-palette.md "Resize"): every grip

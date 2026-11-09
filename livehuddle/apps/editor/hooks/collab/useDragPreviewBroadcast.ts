@@ -8,7 +8,7 @@
 // on release.
 
 import { useEffect, useEffectEvent, type RefObject } from 'react';
-import { elementIndexFor, type Element } from '@livehuddle/document';
+import { elementIndexFor, isBoxed, type Element } from '@livehuddle/document';
 import {
   DRAG_PREVIEW_BOX_FIELDS,
   DRAG_PREVIEW_MAX_ELEMENTS,
@@ -24,7 +24,7 @@ import {
   subscribeDragPreview,
   type DragOverlay,
 } from '@/lib/drag-preview';
-import { ridingElements, type RideOffset } from '@/hooks/canvas/drag-ride';
+import { ridingElements, type RideOffset } from '@liveworkspace/workbench/lib/drag-ride';
 
 // The cursor's rate (docs/specs/015-api/api.md).
 export const DRAG_PREVIEW_SEND_MS = 33;
@@ -39,7 +39,7 @@ export function rideOf(
   overlay: DragOverlay,
   base: readonly Element[],
 ): { offset: RideOffset; ids: string[]; patches: DragPreviewPatch[] } | null {
-  const rides = ridingElements(overlay, elementIndexFor(base));
+  const rides = ridingElements(overlay, elementIndexFor(base), { isBoxed, arrowsRide: false });
   const tally = new Map<string, { offset: RideOffset; n: number }>();
   let best: { offset: RideOffset; n: number } | null = null;
   for (const o of rides.values()) {

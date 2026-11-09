@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import { createShape, isBoxed, type Element } from '@livehuddle/document';
 import { overlayBetween } from '@/lib/drag-preview';
-import { ridingElements } from './drag-ride';
+import { ridingElements } from '@liveworkspace/workbench/lib/drag-ride';
 
 // docs/specs/008-canvas/drag-preview.md "Moves ride an offset": what a preview only translates rides an offset.
 
@@ -18,9 +18,11 @@ const ab = {
 } as Element;
 const DOC: Element[] = [a, b, ab];
 const BEFORE = new Map(DOC.map((el) => [el.id, el]));
+// Retired arrows never ride (livehuddle's binding of the workbench's ride rules).
+const RULES = { isBoxed, arrowsRide: false };
 
 const rides = (next: Element[]) =>
-  Object.fromEntries(ridingElements(overlayBetween('t', next, DOC), BEFORE));
+  Object.fromEntries(ridingElements(overlayBetween('t', next, DOC), BEFORE, RULES));
 const swap = (...els: Element[]) => DOC.map((el) => els.find((n) => n.id === el.id) ?? el);
 
 describe('ridingElements', () => {
@@ -38,6 +40,6 @@ describe('ridingElements', () => {
   it('carries nothing a preview adds', () => {
     // An element the preview adds is not in the board it is laid over: it draws from the preview.
     const added = [...DOC, box('new', 900)];
-    expect(ridingElements(overlayBetween('t', added, DOC), BEFORE).size).toBe(0);
+    expect(ridingElements(overlayBetween('t', added, DOC), BEFORE, RULES).size).toBe(0);
   });
 });

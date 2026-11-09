@@ -326,6 +326,8 @@
     "./lib/crc32": "./src/lib/crc32.ts",
     "./lib/cursor-hover": "./src/lib/cursor-hover.ts",
     "./lib/debug-log": "./src/lib/debug-log.ts",
+    "./lib/drag-affected-arrows": "./src/lib/drag-affected-arrows.ts",
+    "./lib/drag-ride": "./src/lib/drag-ride.ts",
     "./lib/drag-ride-dom": "./src/lib/drag-ride-dom.ts",
     "./lib/dedupe": "./src/lib/dedupe.ts",
     "./lib/dialog-handle": "./src/lib/dialog-handle.ts",

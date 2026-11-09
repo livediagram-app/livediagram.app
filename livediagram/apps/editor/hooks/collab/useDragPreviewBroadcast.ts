@@ -8,7 +8,7 @@
 // on release.
 
 import { useEffect, useEffectEvent, type RefObject } from 'react';
-import { elementIndexFor, type Element } from '@livediagram/document';
+import { elementIndexFor, isBoxed, type Element } from '@livediagram/document';
 import {
   DRAG_PREVIEW_ARROW_FIELDS,
   DRAG_PREVIEW_BOX_FIELDS,
@@ -25,15 +25,13 @@ import {
   subscribeDragPreview,
   type DragOverlay,
 } from '@/lib/drag-preview';
-import { ridingElements, type RideOffset } from '@/hooks/canvas/drag-ride';
+import { ridingElements, type RideOffset } from '@liveworkspace/workbench/lib/drag-ride';
 
 // The cursor's rate (docs/specs/015-api/api.md).
 export const DRAG_PREVIEW_SEND_MS = 33;
 // docs/specs/008-canvas/blueprints/DEFAULTS.md D128: how often a ride names its ids again though they have not
 // changed, so a collaborator who joins mid-gesture, or missed the first message, sees the move within it.
 export const DRAG_PREVIEW_RIDE_IDS_MS = 1000;
-
-const NONE: ReadonlySet<string> = new Set();
 
 // The ride for a very large move: the offset most changed elements ride from where the gesture found them, the
 // ids riding it, and a patch for each other changed element; null when nothing rides, or what does not is too
@@ -42,7 +40,7 @@ export function rideOf(
   overlay: DragOverlay,
   base: readonly Element[],
 ): { offset: RideOffset; ids: string[]; patches: DragPreviewPatch[] } | null {
-  const rides = ridingElements(overlay, elementIndexFor(base), null, NONE);
+  const rides = ridingElements(overlay, elementIndexFor(base), { isBoxed });
   const tally = new Map<string, { offset: RideOffset; n: number }>();
   let best: { offset: RideOffset; n: number } | null = null;
   for (const o of rides.values()) {

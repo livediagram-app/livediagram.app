@@ -2,6 +2,7 @@
 
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
+  isBoxed,
   isRetiredArrow,
   retiredArrowEnds,
   type Element,
@@ -11,7 +12,7 @@ import {
 import { dragPreviewFor, subscribeDragPreview, type DragOverlay } from '@/lib/drag-preview';
 import { arrowsReading, type RetiredArrowLinks } from '@/components/canvas/retired-arrow-links';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { ridingElements, type RideOffset } from './drag-ride';
+import { ridingElements, type RideOffset } from '@liveworkspace/workbench/lib/drag-ride';
 import { createRideWriter } from '@liveworkspace/workbench/lib/drag-ride-dom';
 
 // The element layer's drag preview (docs/specs/008-canvas/drag-preview.md "The preview",
@@ -177,7 +178,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
   ): { out: Map<string, PreviewEntry>; rides: ReadonlyMap<string, RideOffset> } {
     const out = new Map<string, PreviewEntry>();
     const { elementIndex, arrowLinks } = inputs;
-    const rides = ridingElements(overlay, elementIndex);
+    const rides = ridingElements(overlay, elementIndex, { isBoxed, arrowsRide: false });
     for (const [id, element] of overlay.changed) if (!rides.has(id)) out.set(id, { element });
     for (const { el } of overlay.added) out.set(el.id, { element: el });
     if (!arrowLinks) return { out, rides };

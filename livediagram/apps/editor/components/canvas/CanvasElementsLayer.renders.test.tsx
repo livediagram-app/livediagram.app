@@ -65,16 +65,22 @@ vi.mock('./PreviewedElement', async (importOriginal) => {
 });
 // The grips layer is re-created on every layer render, so its count is the layer's.
 const layerRenders = { count: 0 };
-vi.mock('@/components/canvas/SelectionGripsLayer', async (importOriginal) => {
-  const real = await importOriginal<typeof import('@/components/canvas/SelectionGripsLayer')>();
-  return {
-    ...real,
-    SelectionGripsLayer: (props: Parameters<typeof real.SelectionGripsLayer>[0]) => {
-      layerRenders.count += 1;
-      return real.SelectionGripsLayer(props);
-    },
-  };
-});
+vi.mock(
+  '@liveworkspace/workbench/components/canvas/SelectionGripsLayer',
+  async (importOriginal) => {
+    const real =
+      await importOriginal<
+        typeof import('@liveworkspace/workbench/components/canvas/SelectionGripsLayer')
+      >();
+    return {
+      ...real,
+      SelectionGripsLayer: (props: Parameters<typeof real.SelectionGripsLayer>[0]) => {
+        layerRenders.count += 1;
+        return real.SelectionGripsLayer(props);
+      },
+    };
+  },
+);
 import { clearLocalPreview, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { buildLargeSelectionBoard } from '@/e2e/perf/large-selection-board';
 

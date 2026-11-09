@@ -445,6 +445,8 @@ function CanvasView(props: CanvasProps) {
               className={`absolute inset-0 origin-center touch-none ${
                 canvasTool === 'spotlight' ? 'pointer-events-none' : ''
               } ${pendingDraw ? '' : cursorClass}`}
+              // The same mode, said to the element plane's children, which take presses of their own (globals.css).
+              data-elements-inert={canvasTool === 'spotlight' ? '' : undefined}
               style={{
                 // Translate is in canvas-coords (applied first); scale is centred
                 // on the wrapper so zooming keeps the viewport centre stable.

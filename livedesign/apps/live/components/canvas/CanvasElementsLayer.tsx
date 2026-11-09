@@ -289,6 +289,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     arrowLinks,
     gridFor: (els) => gridTracker.gridFor(els),
     arrowLabels,
+    stackedIds,
   });
   const shownOrder = useMemo(
     () => (previewStructure ? shownWithOverlay(ordered, previewStructure) : ordered),
@@ -331,6 +332,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           <CanvasElementList
             shownOrder={shownOrder}
             previewStore={previewStore}
+            attachPlane={previewStore.attachPlane}
             h={h}
             boxedShared={boxedShared}
             arrowGeometry={arrowGeometry}

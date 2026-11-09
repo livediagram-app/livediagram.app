@@ -149,6 +149,12 @@ large move rides as one layer").
   recomputed. A preview frame renders neither the canvas nor the element layer: each element view
   reads its own part of the preview, so a frame's work follows what moved, not the board, and only
   what follows the moved selection (its chrome) reads the whole preview.
+- **Arrow labels ask their neighbourhood.** Laying a label out tests its candidate places against
+  the boxes and the labels already placed; both are asked of a grid of their bounds (the boxes built
+  once per board, the labels as they are placed), never by scanning every box and label for every
+  label. A label being typed or dragged asks the same of the other labels' places, built once per
+  label pass. Which other lines a label cuts (a bus several arrows share) asks a grid of the label
+  centres. The places are exactly those the scan gave, by a seeded equivalence test.
 - **Selection chrome derives a frame once.** Every piece of chrome that follows the selection (the
   layer's resize box and pluses, the toolbars and popover) reads the same preview frame: the board
   with the preview laid over it, and the selection derived from it, are built once a frame and

@@ -250,6 +250,8 @@ export function SelectionChromeLayer({
     <BoxGripsPortal>
       <div
         data-grips-for={elementId}
+        // The grips ride a move's offset with their element (docs/specs/008-canvas/drag-preview.md).
+        data-ride-id={elementId}
         className="pointer-events-none absolute"
         style={{
           left: box.x,

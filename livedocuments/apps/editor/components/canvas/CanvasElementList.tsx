@@ -69,6 +69,8 @@ type CanvasElementListProps = Pick<
 > & {
   shownOrder: readonly LayerDrawn[];
   previewStore: LayerPreviewStore;
+  // The preview store's plane ref (LayerPreviewStore.attachPlane): where riding offsets are written.
+  attachPlane: (plane: HTMLElement | null) => void;
   h: ElementListHandlers;
   boxedShared: BoxedShared;
   arrowGeometry: ReadonlyMap<string, ReturnType<typeof arrowViewGeometry>>;
@@ -82,6 +84,7 @@ type CanvasElementListProps = Pick<
 export const CanvasElementList = memo(function CanvasElementList({
   shownOrder,
   previewStore,
+  attachPlane,
   h,
   boxedShared,
   arrowGeometry,
@@ -102,9 +105,12 @@ export const CanvasElementList = memo(function CanvasElementList({
 }: CanvasElementListProps) {
   return (
     // The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
-    // elements"): no box of its own, and a cursor of its own (globals.css), so the canvas's cursor
-    // changing restyles this node and not the board beneath it.
-    <div data-element-plane="" className="contents">
+    // elements"): a cursor of its own (globals.css), so the canvas's cursor changing restyles this node and
+    // not the board beneath it. Its box is its parent's, always, and takes no press itself (globals.css):
+    // a very large move carries its offset as one transform, which lays nothing out again
+    // (docs/specs/008-canvas/drag-preview.md "A very large move rides as one layer").
+    // Its parent holds every node a riding element's offset is written to (useLayerDragPreview).
+    <div data-element-plane="" data-ride-plane="" className="absolute inset-0" ref={attachPlane}>
       {shownOrder.map(({ element: listed, layerOpacity }) => (
         <PreviewedElement
           key={listed.id}
@@ -123,6 +129,8 @@ export const CanvasElementList = memo(function CanvasElementList({
                     className="absolute inset-0 h-full w-full"
                     // Tagged for tests and e2e, which find an arrow's path by it.
                     data-arrow-svg=""
+                    // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
+                    data-ride-id={element.id}
                     style={{
                       pointerEvents: 'none',
                       overflow: 'visible',
