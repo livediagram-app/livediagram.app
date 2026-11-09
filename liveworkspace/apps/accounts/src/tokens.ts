@@ -42,10 +42,15 @@ export async function hashApiToken(token: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Six calendar months from creation, the only lifetime there is.
+// Six calendar months from creation, the only lifetime there is. A day the sixth month lacks is its last day (31 August
+// ends on the last day of February), never a day or three into the month after.
 export function apiTokenExpiry(createdAt: number): number {
   const date = new Date(createdAt);
+  const day = date.getUTCDate();
+  date.setUTCDate(1);
   date.setUTCMonth(date.getUTCMonth() + 6);
+  const lastDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
+  date.setUTCDate(Math.min(day, lastDay));
   return date.getTime();
 }
 
@@ -267,12 +272,13 @@ export async function liveApiTokenIds(
 ): Promise<string[]> {
   const asked = [...new Set(ids)].slice(0, MAX_LIVE_TOKEN_IDS);
   if (asked.length === 0) return [];
+  // The ids alone are bound, so the most asked (100) is the most D1 takes in one statement; expiry is checked here.
   const { results } = await db
     .prepare(
-      `SELECT id FROM api_token WHERE id IN (${asked.map(() => '?').join(', ')})
-         AND revokedAt IS NULL AND expiresAt > ?`,
+      `SELECT id, expiresAt FROM api_token WHERE id IN (${asked.map(() => '?').join(', ')})
+         AND revokedAt IS NULL`,
     )
-    .bind(...asked, now)
-    .all<{ id: string }>();
-  return results.map((row) => row.id);
+    .bind(...asked)
+    .all<{ id: string; expiresAt: number }>();
+  return results.filter((row) => row.expiresAt > now).map((row) => row.id);
 }

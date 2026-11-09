@@ -204,6 +204,11 @@ describe('file', () => {
     ).toBe(404);
     expect((await handle(req('GET', path), deps({ file: async () => null }).d)).status).toBe(404);
     expect((await handle(req('GET', '/internal/exports/bad/file'), deps().d)).status).toBe(404);
+    // A key that doesn't decode is a key that names nothing, never a throw the entry answers 503.
+    expect((await handle(req('GET', '/internal/exports/team%3At%E0/file'), deps().d)).status).toBe(
+      404,
+    );
+    expect((await handle(req('DELETE', '/internal/exports/%'), deps().d)).status).toBe(404);
     expect((await handle(req('PUT', path), deps().d)).status).toBe(404);
     expect((await handle(req('GET', '/internal/exports'), deps().d)).status).toBe(404);
   });

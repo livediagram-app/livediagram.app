@@ -624,8 +624,9 @@ redo it (or drop it once upstream batches the lookup) and keep that test passing
 
 ## Testing
 
-Suites run against an in-memory D1 (`test-d1.ts`). Each feature file names the suites that pin it; these pin the
-Worker as a whole:
+Suites run against an in-memory D1 (`test-d1.ts`), which refuses what D1 does and SQLite would allow: a compound SELECT
+of more than five terms, and a statement with more than 100 bound parameters. Each feature file names the suites that
+pin it; these pin the Worker as a whole:
 
 | Test                                                                  | Pins                                                                                                                                                                         |
 | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

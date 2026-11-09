@@ -84,6 +84,17 @@ describe('settings', () => {
     expect(after.app).toEqual({ grid: { size: 16 } });
   });
 
+  it('takes a patch of as many keys as fit in a row, in one statement D1 accepts', async () => {
+    // Keys with dots and dashes too, named in a JSON path quoted.
+    const many = Object.fromEntries(Array.from({ length: 300 }, (_, i) => [`k.${i}-x`, i]));
+    await write(ADA, 'livediagram.app', { all: { ...many, kept: true } });
+    const next = Object.fromEntries(Object.keys(many).map((key, i) => [key, i % 2 ? null : 'v']));
+    const after = await write(ADA, 'livediagram.app', { all: next });
+    expect(Object.keys(after.all)).toHaveLength(151);
+    expect(after.all).toMatchObject({ kept: true, 'k.0-x': 'v', 'k.298-x': 'v' });
+    expect(after.all['k.1-x']).toBeUndefined();
+  });
+
   it('answers the merged result, with the later of the two stamps', async () => {
     await writeSettings(db, ADA, 'livediagram.app', { all: { a: 1 } }, 1_000);
     const result = await writeSettings(db, ADA, 'livediagram.app', { app: { b: 2 } }, 2_000);

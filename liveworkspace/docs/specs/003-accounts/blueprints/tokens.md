@@ -21,7 +21,7 @@ Scope, by file:
 | Secret    | `lwt_` + 32 random bytes base64url (47 chars) | Shown once                                                      |
 | Legacy    | `lvd_…`                                       | Copied from the old livediagram.app; verifies and revokes alike |
 | Hash      | SHA-256 hex of the whole secret               | The only stored form (`tokenHash`, unique)                      |
-| Lifetime  | six calendar months from `createdAt` (UTC)    | The only one                                                    |
+| Lifetime  | six calendar months from `createdAt` (UTC)    | The only one; 31 August ends on the last day of February        |
 | Read-only | `readOnly` 0/1                                | The app caps what the token may do                              |
 
 A secret passes `isApiTokenFormat` when it has either prefix and more than 24 characters.
@@ -93,7 +93,7 @@ Columns: `userId` (`ON DELETE CASCADE`), `name`, `readOnly` (default 0), `create
 
 | Test                                                          | Pins                                                         |
 | ------------------------------------------------------------- | ------------------------------------------------------------ |
-| `liveworkspace/apps/accounts/src/tokens.test.ts` (9)          | API tokens; tokens carried over from the old livediagram.app |
+| `liveworkspace/apps/accounts/src/tokens.test.ts` (11)         | API tokens; tokens carried over from the old livediagram.app |
 | `liveworkspace/apps/accounts/src/token-expiry.test.ts` (8)    | the expiring-token warning and note                          |
 | `liveworkspace/apps/accounts/src/bench-accounts.test.ts` (3)  | bench accounts                                               |
 | `liveworkspace/apps/accounts/src/index-timeline.test.ts` (16) | API token events                                             |

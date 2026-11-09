@@ -6,6 +6,8 @@ import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 
+const D1_BOUND_PARAMETERS_MAX = 100;
+
 const MIGRATIONS = fileURLToPath(new URL('../migrations/', import.meta.url).href);
 
 const toSql = (value: unknown): SQLInputValue =>
@@ -35,7 +37,13 @@ export function testD1(): { db: D1Database; sql: DatabaseSync } {
       return { success: true, results: [], meta: { changes: Number(result.changes) } };
     };
     return {
-      bind: (...next: unknown[]) => statement(query, next.map(toSql)),
+      bind: (...next: unknown[]) => {
+        // D1 refuses a statement with more than 100 bound parameters, where node:sqlite allows 32,766.
+        if (next.length > D1_BOUND_PARAMETERS_MAX) {
+          throw new Error('D1_ERROR: too many SQL variables: SQLITE_ERROR');
+        }
+        return statement(query, next.map(toSql));
+      },
       first: async (column?: string) => {
         const row = rows()[0] as Record<string, unknown> | undefined;
         if (!row) return null;

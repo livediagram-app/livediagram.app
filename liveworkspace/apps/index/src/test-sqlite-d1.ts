@@ -16,6 +16,8 @@ export type TestDb = {
   sql: DatabaseSync;
 };
 
+const D1_BOUND_PARAMETERS_MAX = 100;
+
 // D1 binds a boolean as 1 / 0; node:sqlite refuses one outright.
 function toSql(value: unknown): SQLInputValue {
   if (typeof value === 'boolean') return value ? 1 : 0;
@@ -42,7 +44,13 @@ export function testDb(overrides: Partial<Env> = {}): TestDb {
         .all(...args)
         .map((row) => ({ ...row }));
     return {
-      bind: (...next: unknown[]) => statement(query, next.map(toSql)),
+      bind: (...next: unknown[]) => {
+        // D1 refuses a statement with more than 100 bound parameters, where node:sqlite allows 32,766.
+        if (next.length > D1_BOUND_PARAMETERS_MAX) {
+          throw new Error('D1_ERROR: too many SQL variables: SQLITE_ERROR');
+        }
+        return statement(query, next.map(toSql));
+      },
       first: async (column?: string) => {
         const row = rows()[0] ?? null;
         return column && row ? (row[column] ?? null) : row;

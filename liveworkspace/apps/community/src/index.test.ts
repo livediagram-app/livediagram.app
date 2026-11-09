@@ -199,6 +199,13 @@ describe('the app routes', () => {
     expect(await edit.res.json()).toEqual({ error: 'post_hidden' });
     const remove = await asApp('/app/documents/d1?owner=user_author', { method: 'DELETE' });
     expect(remove.status).toBe(409);
+    // Nor replaced by the document's next owner: that would clear its reports and list it again.
+    const replace = await publish('d1', { owner: 'user_heir', shareCode: 'CODE2' });
+    expect(replace.res.status).toBe(409);
+    expect(await replace.res.json()).toEqual({ error: 'post_hidden' });
+    expect(db.sql.prepare('SELECT owner, state FROM posts').all()).toEqual([
+      { owner: 'user_author', state: 'hidden' },
+    ]);
   });
 
   it('remove a post', async () => {
