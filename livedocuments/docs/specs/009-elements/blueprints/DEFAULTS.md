@@ -120,3 +120,8 @@ One row per default applied where a spec is silent or qualitative.
 | D191 | tag-colours            | The tinted tag chip                                                         | A mapped tag's chip washed at 16% of its colour with a border in it                                                                                                              |
 | D192 | stack                  | A new stack and its reflow                                                  | 360 × 160 empty row, gap 16, padding 16, centred, 2 grid columns, a faint dashed outline and no fill; children glide 160 ms to their slots                                       |
 | D193 | images                 | Alt text field: when it writes                                              | On blur, on Enter and when the menu closes with a changed draft; never per keystroke                                                                                             |
+| D194 | map | Pin and label sizes | Pin radius `clamp(min(w, h) * 0.022, 3.5, 9)` with a paper ring; labels `clamp(min(w, h) * 0.055, 10, 22)` px, weight 600, a paper halo |
+| D195 | map | Land and border colours | Land is the fill colour, else `#dbe3ec` on light paper and `#334155` on dark; borders the paper colour, `0.5..1.2` px |
+| D196 | map | How faint the context countries are | 45% opacity |
+| D197 | map | The region windows | The longitude and latitude windows in the blueprint table, each framing the region with a little sea round it |
+| D198 | map | What draws before the geometry loads | A rounded rect in the land colour at 60% opacity |

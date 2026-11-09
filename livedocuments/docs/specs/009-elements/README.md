@@ -10,6 +10,7 @@ Follow the references below only as needed; never upfront.
 - ./shape-markers.md - when working on Shape markers: Status glyph inside a shape (traffic-light dots + checkbox), left of the label; Markers context-menu band
 - ./timeline-rail.md - when reading a stored Timeline rail, or the composite-component pattern self-drawing elements follow
 - ./rating.md - when working on Rating: 1–5 star rating element with a Rating context-menu category (score picker + star-specific animations)
+- ./map.md - when working on the Map: a world, region or one-country map (Natural Earth 1:110m, public domain, lazy-loaded) with highlighted countries and labelled pins, edited in the Map dialog; Editor-only edits; drawn from one layout on canvas and in every export
 - ./pie-chart.md - when working on Data charts (pie + bar + line): Data palette category + pie chart element: editable label/value rows + chart-specific slice animations
 - ./code-block.md - when working on Code block: Monospace syntax-highlighted snippet as a `code-block` data shape (`code` + `codeLanguage` fields): fixed dark editor-card identity, lazy hand-rolled tokenizer chunk (10 languages), double-click Edit code dialog + context-menu Code section; headless render is plain mono
 - ./checklist.md - when working on Checklist: Checkable to-do rows as a `checklist` data shape (`checklistItems`): themed card, on-canvas box toggling (rating-style, edit-role gated, undoable), row editing via a context-menu Checklist section, done-count footer
