@@ -28,7 +28,8 @@ no tiles, no zoom and no streets, and nothing is fetched from anywhere when it d
 - **Highlighted countries** are filled in the accent (the element's stroke colour). The rest of the
   land is the element's fill colour, else a soft neutral for the paper it sits on. Country borders
   are thin lines in the paper colour.
-- **Pins** are accent dots with a paper-coloured ring, each with an optional **label** beside it,
+- **Pins** are dots in the text colour with a paper-coloured ring (so a pin reads on a highlighted
+  country as well as on plain land), each with an optional **label** beside it,
   written in the element's text colour and font with a paper-coloured halo so it reads over land and
   sea. A label sits right of its pin, or left when it would run past the box's right edge.
 - A country focus with highlighted countries highlights them as usual; the faint context countries

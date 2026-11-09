@@ -108,7 +108,7 @@ const CONTENT_KINDS =
   'default world) picks the view, or "mapCountry" (an ISO 3166 alpha-2 code such as "FR", "JP") frames one ' +
   'country with its neighbours faint. "mapHighlights" lists country codes filled in the accent ' +
   `(the shape's "strokeColor"; up to ${MAP_HIGHLIGHTS_MAX}), "mapPins" [{ "id", "lat", "lon", "label"? }] ` +
-  `drops a dot with a haloed label (up to ${MAP_PINS_MAX} pins, latitude within ${MAP_LAT_MAX}, labels up to ` +
+  `drops a dot in the text colour with a haloed label (up to ${MAP_PINS_MAX} pins, latitude within ${MAP_LAT_MAX}, labels up to ` +
   `${MAP_PIN_LABEL_MAX} chars); "fillColor" is the land. Make it wide (about 2:1); it draws no title. ` +
   // The diagram-building kinds (docs/specs/015-api/mcp-server.md §4.7a).
   'shape "card": a node with a title, meta line and body; "pageTitle" is the title, "pageSubtitle" ' +

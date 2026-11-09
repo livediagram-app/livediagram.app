@@ -42,7 +42,7 @@ export function svgMap(
     const px = x + p.x;
     const py = y + p.y;
     out +=
-      `<circle cx="${r2(px)}" cy="${r2(py)}" r="${r2(layout.pinRadius)}" fill="${xmlEscape(colours.accent)}"` +
+      `<circle cx="${r2(px)}" cy="${r2(py)}" r="${r2(layout.pinRadius)}" fill="${xmlEscape(colours.text)}"` +
       ` stroke="${xmlEscape(colours.paper)}" stroke-width="${r2(layout.pinRing)}"/>`;
     if (!p.label) continue;
     const at = pinLabelAnchor(p, layout);

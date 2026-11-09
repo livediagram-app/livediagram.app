@@ -119,7 +119,8 @@ export const MapDrawing = memo(function MapDrawing({
                 cx={p.x}
                 cy={p.y}
                 r={layout.pinRadius}
-                fill={colours.accent}
+                // In the ink, not the accent, so a pin reads on a highlighted country (map.md "What it shows").
+                fill={colours.text}
                 stroke={colours.paper}
                 strokeWidth={layout.pinRing}
               />

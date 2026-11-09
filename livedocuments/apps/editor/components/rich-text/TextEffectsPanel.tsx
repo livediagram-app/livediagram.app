@@ -94,7 +94,7 @@ export function TextEffectsPanel({
   const surface = useCanvasSurface();
   const paper = surface === 'dark' ? '#0f172a' : '#ffffff';
   const tile = (active: boolean) =>
-    `flex h-9 cursor-pointer items-center justify-center rounded-md border text-[15px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+    `flex h-9 w-full cursor-pointer items-center justify-center rounded-md border text-[15px] font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
       active
         ? 'border-brand-500 ring-2 ring-brand-500/40'
         : 'border-slate-200 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-500'
