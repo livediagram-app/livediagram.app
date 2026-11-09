@@ -55,25 +55,22 @@ function sortedIndex(list: Scalar[], key: Scalar, descending = false): number {
   let hi = list.length - 1;
   let found = -1;
   while (lo <= hi) {
+    // A value of another kind (a blank row, a heading) is skipped: the nearest one of the key's kind at or before the
+    // middle is compared instead (rare in sorted data, so found linearly).
     const mid = (lo + hi) >> 1;
-    const v = list[mid]!;
-    if (v === null || isError(v) || !sameKind(v, key)) {
-      // Skip values of another kind by narrowing linearly (rare in sorted data).
-      let j = mid - 1;
-      while (j >= lo && !sameKind(list[j]!, key)) j--;
-      if (j < lo) {
-        lo = mid + 1;
-        continue;
-      }
-      hi = j;
+    let at = mid;
+    while (at >= lo && !sameKind(list[at]!, key)) at--;
+    if (at < lo) {
+      lo = mid + 1;
       continue;
     }
-    const c = compareScalars(v, key);
+    const c = compareScalars(list[at]!, key);
     if (descending ? c >= 0 : c <= 0) {
-      found = mid;
+      // Everything after `at` up to the middle is of another kind: the search goes on past the middle.
+      found = at;
       lo = mid + 1;
     } else {
-      hi = mid - 1;
+      hi = at - 1;
     }
   }
   return found;
