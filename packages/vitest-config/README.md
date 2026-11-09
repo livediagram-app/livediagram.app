@@ -39,9 +39,15 @@ Add the scripts:
 ```jsonc
 "scripts": {
   "test": "vitest run",
-  "test:coverage": "vitest run --coverage"
+  "test:coverage": "vitest run --coverage && vitest-budgets"
 }
 ```
+
+`vitest-budgets` reruns, without coverage, the test files that import
+`@liveworkspace/vitest-config/cpu-time`: under coverage `cpuBudgetMs` is
+unbounded, so a speed budget is only judged there ([docs/ci.md](../../docs/ci.md),
+"Speed budgets"). Extra arguments pass through to `vitest run` (a CI editor
+shard adds `--shard=n/3`).
 
 ## Exports
 
@@ -50,6 +56,7 @@ Add the scripts:
 - `@liveworkspace/vitest-config/react-cleanup`: a setup file that unmounts every tree React Testing
   Library rendered after each test.
 - `@liveworkspace/vitest-config/cpu-time`: CPU-time measures and budgets for speed tests.
+- `vitest-budgets` (bin): the speed-budget run above.
 - `@liveworkspace/vitest-config/inline-script`: `runInlineScript(source, globals)`, which runs an
   inline `<script>`'s source as a browser would, against stub globals.
 - `@liveworkspace/vitest-config/sent-request`: `sentJson`, `sentText`, `sentForm` and `sentUrl`,
