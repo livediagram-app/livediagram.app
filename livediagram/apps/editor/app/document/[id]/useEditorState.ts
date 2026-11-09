@@ -989,6 +989,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     lastSavedTabsRef,
     setTabLoadErrors,
     noteChangesetSeen: realtime.changesetSeen.noteSeen,
+    setDocumentName,
+    lastSavedNameRef,
   });
   // Agent changesets relayed through the room (docs/specs/024-agents/agent-changesets.md "In the
   // editor"): applied, outlined, toasted. See useChangesetFeed.

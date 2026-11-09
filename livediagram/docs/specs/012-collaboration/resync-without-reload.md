@@ -97,7 +97,9 @@ saved yet kept as it is here (`keepUnsavedTabChanges`), and an unvisited
 placeholder taking its stored name (a held tab's name comes with its refetched
 content). A list that can't be read leaves the list as it is; the content
 refetch still runs. A refetch narrowed to named tabs (an agent's oversize
-changeset) reads no list. The document's own name is not re-read.
+changeset) reads no list. The document's own name comes with the list, applied
+as that op applies it: on screen and in the save baseline, unless the name here
+was changed and not saved yet, which stays (and the next autosave writes it).
 
 ## No toast
 

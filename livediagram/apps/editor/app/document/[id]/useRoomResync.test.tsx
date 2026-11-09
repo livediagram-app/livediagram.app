@@ -24,9 +24,11 @@ const summary = (id: string, orderIndex: number) => ({
   updatedAt: 1,
 });
 
-function setUp(shareCode: string | null) {
+function setUp(shareCode: string | null, names = { shown: 'Doc', saved: 'Doc' }) {
   let screen = [t('a'), t('gone'), t('b')];
   const lastSaved = { current: screen };
+  let shownName = names.shown;
+  const lastSavedName = { current: names.saved };
   const { result } = renderHook(() =>
     useRoomResync({
       documentId: 'd1',
@@ -40,9 +42,19 @@ function setUp(shareCode: string | null) {
       lastSavedTabsRef: lastSaved,
       setTabLoadErrors: () => {},
       noteChangesetSeen: () => {},
+      setDocumentName: (next) => {
+        shownName = typeof next === 'function' ? next(shownName) : next;
+      },
+      lastSavedNameRef: lastSavedName,
     }),
   );
-  return { resync: result.current, screen: () => screen, lastSaved };
+  return {
+    resync: result.current,
+    screen: () => screen,
+    lastSaved,
+    name: () => shownName,
+    lastSavedName,
+  };
 }
 
 describe('useRoomResync', () => {
@@ -62,6 +74,21 @@ describe('useRoomResync', () => {
       ['new', 'NEW'],
     ]);
     expect(lastSaved.current.map((x) => x.id)).toEqual(['a', 'b', 'new']);
+  });
+
+  it("takes a peer's rename of the document, keeping a rename here that is not saved yet", async () => {
+    api.apiLoadTabRevisioned.mockResolvedValue({ tab: t('a'), rev: 3 });
+    api.apiLoadDocument.mockResolvedValue({ id: 'd1', name: 'Renamed', tabs: [summary('a', 0)] });
+    const clean = setUp(null);
+    await act(() => clean.resync());
+    expect(clean.name()).toBe('Renamed');
+    expect(clean.lastSavedName.current).toBe('Renamed');
+
+    const typing = setUp(null, { shown: 'Mine', saved: 'Doc' });
+    await act(() => typing.resync());
+    expect(typing.name()).toBe('Mine');
+    // The baseline moves, so the autosave still sees 'Mine' as unsaved and writes it.
+    expect(typing.lastSavedName.current).toBe('Renamed');
   });
 
   it('reads the list through the share link for a visitor, and reads none for a narrowed refetch', async () => {
