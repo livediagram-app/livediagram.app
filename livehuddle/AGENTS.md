@@ -200,6 +200,7 @@ apps/
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects; images in liveworkspace's media service, /api)
   router/       # Cloudflare Worker stitching the apps under one hostname
 packages/
+  avatar/         # Avatar mode's parts that read no element union: the walk, the sprite, speech, statuses, the pads, the furniture's pure parts and turning, and the wire shapes
   ui/             # this product's own UI (Brand, SiteHeader, Select, chrome icons), re-exporting @liveworkspace/ui
   document/       # document data model (Tab, Element types + element helpers) over @liveworkspace/model-core
   templates/      # template catalogue + pure element builders (editor template starts + api)
@@ -274,16 +275,21 @@ livehuddle was forked from livediagram (`livehuddle/.forked-from`) and carried a
 Tracker #423 livehuddle is for meeting in Spaces and keeps only the meeting kit, so these features exist twice, once in
 each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-project-roadmap/build-plan.md#keeping-the-two-products-from-drifting)):
 
-- **Avatar mode and the Navigate elements**: the walk, the Avatar panel and tour, Portal, Bring Focus, Chair, Desk,
-  Sofa, Fence, Link card, Office and the Avatar Pad, and the Selection Mode buttons
-  (`docs/specs/008-canvas/avatar-mode.md`, `docs/specs/009-elements/`), over `@liveworkspace/avatar`.
+- **The Navigate elements both keep**: Portal, Bring Focus, the Link card and the Selection Mode buttons
+  (`docs/specs/009-elements/`); livediagram's buttons offer no Avatar mode.
 - **The light meeting tools**: Bring Focus, the facilitator baton and follow-me (`bring-focus.md`, `facilitator.md`).
   livehuddle's Timer is a placed piece of its own (`docs/specs/009-elements/timer-and-stopwatch.md`); the Session
   strip's Timer is livediagram's alone (`docs/specs/012-collaboration/session-tools.md`).
 - **Comments and actions**: comments with mentions, reactions, assigned actions and the Collaborate Panel.
-- **The Spaces templates**: Virtual Office, Coworking Space, Team Pod and All-Hands Hall (`packages/templates`,
-  `docs/specs/012-collaboration/virtual-office-template.md`).
 - **Share roles on a board**: what a Participant may do (`docs/specs/013-workspace/share-roles.md`).
+
+**Left livediagram for livehuddle** (Work Tracker #650): Avatar mode (the walk, the Avatar panel and tour,
+`docs/specs/008-canvas/avatar-mode.md`), the Spaces templates (Virtual Office, Coworking Space, Team Pod and All-Hands
+Hall, `docs/specs/012-collaboration/virtual-office-template.md`) and every piece only an avatar uses: Chair, Desk,
+Sofa, the Office pieces, Fence, the Avatar Pad, turning and seats. They are livehuddle's alone, and so is their code:
+`packages/avatar` (`@livehuddle/avatar`: the walk, the sprite, the furniture's pure parts and turning, the wire
+shapes), `packages/templates` and the api's walker track (`apps/api/src/room-avatar-track.ts`). None of it goes back
+into the monorepo's `packages/` unless a second product needs it.
 
 **Leaving livehuddle** (Work Tracker #423, [Not in livehuddle](../livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md)):
 the retro and workshop templates, the quizzes and games, every Collaborate element but the Reaction Pads (polls,
@@ -297,8 +303,9 @@ The rules:
   `packages/` first** (as `@liveworkspace/*`, the root AGENTS.md order) so there is one copy to change. The pure parts
   of Bring Focus and the facilitator baton are the next extraction, to
   `@liveworkspace/session-tools`, the first time a change has to land in both.
-- What is already one copy stays one: the avatar core and its wire shapes (`@liveworkspace/avatar`,
-  `@liveworkspace/api-schema`), the realtime room's shared shapes, and everything else in `packages/`.
+- What is already one copy stays one: the realtime room's shared shapes (the presence relay in `@liveworkspace/api-kit`,
+  which takes this product's walker track), the Reaction Pad's bursts (`@liveworkspace/model-core/reaction-bursts`),
+  and everything else in `packages/`.
 - Only livehuddle has: Avatar mode first-class (the Selection Mode picker offers Avatar and a Spaces board opens walking), the meeting board and its palette, proximity audio and calls, the Space noun, and its emerald brand (`@livehuddle/tailwind-config`).
 - CI's **Drift report** (the Plan job's summary, `.github/scripts/drift-report.mjs`, the root docs/ci.md) counts the
   identical, changed and one-only files between `livediagram/` and `livehuddle/`, names ignored. It never fails a

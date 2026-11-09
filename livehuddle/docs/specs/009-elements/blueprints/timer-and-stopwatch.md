@@ -16,7 +16,7 @@ Derived from [Timer and Stopwatch](../timer-and-stopwatch.md).
 | `packages/document/src/retired-timer.ts`                      | `dropRetiredTimer`: a stored tab's old `timer` field is dropped on read                                         |
 | `packages/api-schema/src/room-messages.ts`                    | `piece-timer` joins `PARTICIPATION_DELTA_KINDS`                                                                 |
 | `apps/api/src/document-room-rules.ts`                         | `answersAsSelf` admits a `piece-timer` delta (it names nobody)                                                  |
-| `../packages/avatar/src/office-geometry.ts`                   | `isWallPieceShape` holds both kinds                                                                             |
+| `packages/avatar/src/office-geometry.ts`                      | `isWallPieceShape` holds both kinds                                                                             |
 | `apps/editor/lib/timer-ticker.ts`                             | The one 250 ms ticker (`useTickerValue`)                                                                        |
 | `apps/editor/lib/timer-chime.ts`                              | The Web Audio chime and its per-run scheduling (`useTimerChime`)                                                |
 | `apps/editor/lib/office/timer-earshot.ts`                     | Which Timers this viewer hears: the store `useTimerEarshot` writes and `hearsTimer` reads                       |

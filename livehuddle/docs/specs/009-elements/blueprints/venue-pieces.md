@@ -11,7 +11,7 @@ Derived from [Venue pieces](../venue-pieces.md).
 | `packages/document/src/colors.ts`                                         | `FLOOR_FILLS['swimming-pool']`: the water, light and dark                                                              |
 | `packages/document/src/svg-render-faces.ts`                               | The grid pieces through `furnitureArt`; the pool through `sizedSvg(swimmingPoolParts)`                                 |
 | `packages/document/src/shape-factory.ts`                                  | Default sizes; grid pieces wordless and aspect locked; the pool wordless and free                                      |
-| `../packages/avatar/src/office-geometry.ts`                               | Footprints (`OFFICE_FOOTPRINT`), `POOL_DECK`, `poolDeck`, the pool's inset footprint, `stage-curtains` a wall piece    |
+| `packages/avatar/src/office-geometry.ts`                                  | Footprints (`OFFICE_FOOTPRINT`), `POOL_DECK`, `poolDeck`, the pool's inset footprint, `stage-curtains` a wall piece    |
 | `apps/editor/components/canvas/collab/FurnitureView.tsx`                  | `NOUN` for the six grid pieces                                                                                         |
 | `apps/editor/components/canvas/collab/SwimmingPoolView.tsx`               | The pool at its own size, with the Pond's `lh-ripple`                                                                  |
 | `apps/editor/components/canvas/collab/RoomView.tsx`                       | `SizedPieceView` paints every part through `FurniturePartView`, so the stage's own colours (nosing, skirt, lamps) show |

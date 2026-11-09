@@ -86,7 +86,7 @@ there).
   chair (a desk, a sofa, a meeting table) walks you there and sits you down, but a walk to somewhere else that
   happens to cross a chair on the way walks straight through it, neither sitting you nor stopping you beside a
   taken one. Steering with the arrow keys sits you in whatever you steer into, since steering into a chair is
-  choosing it; walking alongside one, feet outside it, never does. (`sitsOnEntry` in `@liveworkspace/avatar`'s
+  choosing it; walking alongside one, feet outside it, never does. (`sitsOnEntry` in `@livehuddle/avatar`'s
   walk.)
 
 - The character **snaps to the chair's seat point** and switches to a seated

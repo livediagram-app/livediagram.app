@@ -8,7 +8,7 @@ Disturb and the stage line) and part 4 (the palette tile, settings, template and
 
 | Term                    | Identifier                                                                                         | Meaning                                                                        |
 | ----------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| room's interior         | `roomInterior(el)` (`@liveworkspace/avatar`)                                                       | The box inside a room's wall centre lines: x+5 to x+w−5, y+31 to y+h−5         |
+| room's interior         | `roomInterior(el)` (`@livehuddle/avatar`)                                                          | The box inside a room's wall centre lines: x+5 to x+w−5, y+31 to y+h−5         |
 | zone                    | `CallZone` `{ id, x0, y0, x1, y1, area }`                                                          | A visible room's interior, as the call reads it                                |
 | zone of a point         | `zoneAt(at, zones)`                                                                                | The innermost (smallest) zone strictly containing the feet, or null (the open) |
 | zone ids                | `CallZoning` `{ self, of }`                                                                        | Your zone and each walker's, worked out once per scene                         |
@@ -53,7 +53,7 @@ changing re-runs `hear()` with the kept zoning.
 plank lines, the front face `STAGE_FRONT` (24) tall shaded with the stroke, and a plate centred on the face, 40% of
 the width between 64 and 160 px). A new stage is 360 × 140, label "Stage", `sm` text centred at the bottom (on the
 plate), not aspect locked, neither field stored (absent reads as `edit` and off). `isFloorShape`
-(`../packages/avatar/src/office-geometry.ts`) counts it, so it goes in at the back, paints under the furniture and is
+(`packages/avatar/src/office-geometry.ts`) counts it, so it goes in at the back, paints under the furniture and is
 never a destination. Its label is its plate, as a room's is (`selfLabelled` false, no Text animation set). The export
 draws it with `stageSvg` (`svg-render-faces.ts`); the canvas with `StageView` (`components/canvas/collab/StageView.tsx`),
 both from `stageParts`, the canvas through the room's `SizedPieceView`. Beside its On Stage badge, `StageView` draws
@@ -170,8 +170,8 @@ whether you may let speak (`mayLetSpeakSelf`: an Editor, or standing on a stage 
 peer's badge is a button: a raised hand sends `avatar-let-speak` `{ on: true }` (tracks `LetSpeak`), a speaking one
 `{ on: false }` (Done), each through `props.onCallSignal` with the tab added, and `noteLetSpeak` records it.
 
-**Do Not Disturb**: `'dnd'` joins `AVATAR_STATUS_IDS` (the wire, `@liveworkspace/api-schema/avatar`) and the status
-catalogue (`../packages/avatar/src/status.ts`: label "Do Not Disturb", colour `#e11d48`, drawn with a white bar).
+**Do Not Disturb**: `'dnd'` joins `AVATAR_STATUS_IDS` (the wire, `@livehuddle/avatar/wire`) and the status
+catalogue (`packages/avatar/src/status.ts`: label "Do Not Disturb", colour `#e11d48`, drawn with a white bar).
 `AVATAR_STATUSES` stays the four every product offers; `AVATAR_CALL_STATUSES` adds Do Not Disturb, and
 livediagram's Avatar Panel offers the four, and livehuddle's avatar palette (its Status flyout,
 `AvatarPaletteFlyouts.tsx`) the five. While your status is `dnd`, `ProximityCall.setDoNotDisturb(true)` makes `hear()` want
@@ -296,7 +296,7 @@ room`; the browser counts `CallNotHeard`.
 
 | Rule                                                                                    | Test                                                                                                                             |
 | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| A room's interior is inside its wall centre lines, for any size and door                | `../packages/avatar/src/office-geometry.test.ts`                                                                                 |
+| A room's interior is inside its wall centre lines, for any size and door                | `packages/avatar/src/office-geometry.test.ts`                                                                                    |
 | Zones from rooms only; strict edges; innermost wins; ties by id                         | `apps/editor/lib/calls/zones.test.ts`                                                                                            |
 | Same room by distance; next room through a wall silent;                                 | `apps/editor/lib/calls/hearing.test.ts`                                                                                          |
 | hallway to room silent; hallway to hallway by distance; 100 × 50 in budget              |                                                                                                                                  |
@@ -315,7 +315,7 @@ room`; the browser counts `CallNotHeard`.
 | Raise, Let Speak, Done, walking out, leaving; Do Not Disturb hears nobody               | `apps/editor/lib/calls/proximity-call.test.ts`                                                                                   |
 | Strip: Raise/Lower/Speaking by role, count, stage line, DND segment                     | `apps/editor/components/calls/CallStripGroup.test.tsx`                                                                           |
 | Badges: who sees a button, Let Speak and Done sent                                      | `apps/editor/components/calls/RaisedHands.test.tsx`                                                                              |
-| The panel offers the list it is given; dnd parses and draws                             | `../packages/avatar/src/status.test.ts` and the panel's tests                                                                    |
+| The panel offers the list it is given; dnd parses and draws                             | `packages/avatar/src/status.test.ts` and the panel's tests                                                                       |
 | Server verdicts: rooms, booths, margins, tabs, grace, stages, let-speak                 | `apps/api/src/calls/call-hearing.test.ts`                                                                                        |
 | Room state by role: hearing, let-speak, stopped shares, tab cache, cost                 | `apps/api/src/calls/room-calls.test.ts`                                                                                          |
 | The route answers `not_heard` in place, fails open                                      | `apps/api/src/calls/subscribe-hearing.test.ts`, `routes/calls.test.ts`                                                           |

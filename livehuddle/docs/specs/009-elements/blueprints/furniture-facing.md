@@ -6,15 +6,15 @@ Scope, by file:
 
 | File                                                                              | Role                                                                                          |
 | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `../packages/avatar/src/facing.ts`                                                | `SeatFacing`, `facingView`, `turnFacing`, `turnedSitterFacing`, `mirrorFraction`, `turnedBox` |
-| `../packages/avatar/src/seats.ts`                                                 | `SEAT_VIEWS`: each kind's seats on its front, back and side drawings; `seatPoints`            |
-| `../packages/avatar/src/office-geometry.ts`                                       | `OFFICE_FOOTPRINT_TURNED`, `footprintFraction(shape, facing)`, `officeFootprint`              |
-| `../packages/avatar/src/hooks/useAvatarWalk.ts`                                   | `followSeat`: a sitter carried round when the piece turns or moves                            |
+| `packages/avatar/src/facing.ts`                                                   | `SeatFacing`, `facingView`, `turnFacing`, `turnedSitterFacing`, `mirrorFraction`, `turnedBox` |
+| `packages/avatar/src/seats.ts`                                                    | `SEAT_VIEWS`: each kind's seats on its front, back and side drawings; `seatPoints`            |
+| `packages/avatar/src/office-geometry.ts`                                          | `OFFICE_FOOTPRINT_TURNED`, `footprintFraction(shape, facing)`, `officeFootprint`              |
+| `packages/avatar/src/hooks/useAvatarWalk.ts`                                      | `followSeat`: a sitter carried round when the piece turns or moves                            |
 | `packages/document/src/furniture-facing.ts`                                       | `TURNING_SHAPES`, `turnsWithFacing`, `pieceFacing`, `defaultPieceFacing`, `turnPiece(By)`     |
 | `packages/document/src/rotation.ts`                                               | `supportsRotation` is false for every piece of furniture (`isFurnitureShape`)                 |
 | `packages/document/src/svg-render-faces.ts`                                       | The export draws `furnitureFrame(art, pieceFacing(el))`                                       |
 | `apps/editor/components/canvas/collab/FurnitureView.tsx`                          | The canvas draws the same frame                                                               |
-| `../packages/workbench/src/components/canvas/TurnButtons.tsx`                     | Rotate Left / Right                                                                           |
+| `packages/avatar/src/components/TurnButtons.tsx`                                  | Rotate Left / Right                                                                           |
 | `apps/editor/components/canvas/SelectionPopover.tsx`, `MultiSelectionToolbar.tsx` | The pair after More and Edit Text, before Duplicate                                           |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`                                 | `turnSelection`: one commit, non-turning pieces skipped, one telemetry event                  |
 | `apps/editor/lib/editor-commands-selection.ts`                                    | `rotate-left` / `rotate-right` when `selectionTurns`                                          |
@@ -42,10 +42,11 @@ Scope, by file:
 
 ## Testing
 
-- `../packages/avatar/src/facing.test.ts`, `seats.test.ts`, `amenity-pieces.test.ts`, `useAvatarWalk.seats.test.tsx`
+- `packages/avatar/src/facing.test.ts`, `seats.test.ts`, `amenity-pieces.test.ts`, `useAvatarWalk.seats.test.tsx`
 - `packages/document/src/furniture-facing.test.ts` (every turning kind has its own back and side, bar the Bar Stool
   and the Rug's back), the per-group art tests
 - `apps/editor`: `placing-facing.test.ts`, `palette-carry.test.ts`, `usePlacingTurnKeys.test.tsx`,
   `usePaletteDragGuides.test.tsx`, `usePaletteDrop.test.ts`, `PlacementPreview.test.tsx`,
   `CanvasSelectionToolbars.test.tsx`, `useDataShapeSetters.facing.test.ts`, `editor-commands.test.ts`
-- `packages/workbench`: `TurnButtons.test.tsx`
+- `packages/avatar`: `packages/avatar/src/components/TurnButtons.test.tsx`, `placing-facing.test.ts` and
+  `packages/avatar/src/hooks/usePlacingTurnKeys.test.tsx` (the shapes `apps/editor` binds)

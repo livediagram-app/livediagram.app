@@ -36,7 +36,7 @@ size for size: `viewBox="-24 -34 528 392"`.
   `(124, 76)` less its end chairs (two far chairs, two near), bookshelf at `(20, 46)` scaled 0.58, coffee machine at
   `(392, 40)`, plants at `(22, 214)` and `(402, 214)`.
 - Characters: the Avatar sprite's 16 x 24 grid at 2.5 units a pixel (a 56-unit figure), placed by the feet. Colours
-  from `@liveworkspace/avatar/palette`; shirts `#0ea5e9` / `#8b5cf6` with the sprite's 22% darker side precomputed
+  from `@livehuddle/avatar/palette`; shirts `#0ea5e9` / `#8b5cf6` with the sprite's 22% darker side precomputed
   (`#0b81b6`, `#6c48c0`). Hair: you `short`, Sam `bob` (female build, one-pixel shoulder inset). Views: back
   (walking up), profile (left, mirrored for right), seated front (body five rows down, legs folded).
 - Paths (feet): you `(228,350) → (228,290) → (112,290) → (112,128) → (210,128)`; Sam mirrored about `x = 240`

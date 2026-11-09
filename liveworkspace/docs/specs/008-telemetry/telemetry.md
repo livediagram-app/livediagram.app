@@ -249,8 +249,9 @@ track called on its bindings with the category written out (`avatarBindings.trac
 and each Settings catalogue row, including one built by a helper or spread from a shared base, whose kind it reads from
 the row's event (an on/off pair is a toggle, a lone `changed` a slider; `emitter-scan-settings.ts`). Each app's scan
 adds what the platform sends in its name (`platform-emitters.ts`): the accounts Worker, the Explorer and the Community
-page on liveworkspace.app, the shared browser client, editor and UI packages, and the shared help centre; livediagram's
-and livehuddle's add Avatar mode (`@liveworkspace/avatar`), the two editors that mount it.
+page on liveworkspace.app, the shared browser client, editor and UI packages, and the shared help centre. A package
+only one product uses lives in that product's folder and its own scan reads it (livehuddle's Avatar mode,
+`@livehuddle/avatar`, since Work Tracker #650).
 
 An app whose palette is not the diagram one gives its config `palette.cards`, one ranking card per palette category in
 the palette's order, and the shared Palette section shows those (livehuddle's Space categories); without it the

@@ -16,10 +16,10 @@ Derived from [Office](../office.md).
 | `apps/editor/components/canvas/collab/FurnitureView.tsx` | Canvas drawing of every piece but the room; `MachineAnswer`                                                |
 | `apps/editor/components/canvas/collab/RoomView.tsx`      | Canvas drawing of a room at its own size; `SizedPieceView`, shared with the stage                          |
 | `apps/editor/components/canvas/collab/StageView.tsx`     | Canvas drawing of a stage at its own size                                                                  |
-| `../packages/avatar/src/collision.ts`                    | `fenceSegments`: fences, room walls and footprints                                                         |
-| `../packages/avatar/src/walk.ts`                         | `elementUnderFeet` skips floor and scenery                                                                 |
-| `../packages/avatar/src/hooks/useAvatarWalk.ts`          | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                                         |
-| `../packages/avatar/src/components/avatar-sprite.tsx`    | `HeldCup`                                                                                                  |
+| `packages/avatar/src/collision.ts`                       | `fenceSegments`: fences, room walls and footprints                                                         |
+| `packages/avatar/src/walk.ts`                            | `elementUnderFeet` skips floor and scenery                                                                 |
+| `packages/avatar/src/hooks/useAvatarWalk.ts`             | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                                         |
+| `packages/avatar/src/components/avatar-sprite.tsx`       | `HeldCup`                                                                                                  |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                                              |
 | `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room, rug or stage goes in at the back; a drop selects every piece it placed                             |
 | `apps/editor/lib/placed-selection.ts`                    | `placedSelection`: one piece alone, several as one multi-selection (also `useShapeDrawing`'s armed tap)    |
@@ -28,7 +28,7 @@ Derived from [Office](../office.md).
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`, `setStageSelected`                                                                  |
 | `apps/editor/components/palette/palette-tile-defs.tsx`   | The office tiles                                                                                           |
 | `packages/document/src/office-garden.ts`                 | The pod, bar and garden drawings (`OFFICE_EXTRA_ART`), `gardenPathParts`, `grassParts`, `gardenFenceParts` |
-| `../packages/avatar/src/pod.ts`                          | `POD_SEATS`, `podWalls`, `podInterior`, `podClosed`, `closePods`                                           |
+| `packages/avatar/src/pod.ts`                             | `POD_SEATS`, `podWalls`, `podInterior`, `podClosed`, `closePods`                                           |
 | `apps/editor/components/canvas/collab/GardenViews.tsx`   | Canvas drawing of a garden path, grass and a garden fence at their own size                                |
 | `packages/document/src/call-geometry.ts`                 | `roomZones` takes a pod's interior as a call                                                               |
 
@@ -66,7 +66,7 @@ Derived from [Office](../office.md).
   centred, `min(ROOM_DOOR_WIDTH, length - 2 · ROOM_WALL - 8)` wide, none if that is ≤ 0 or `door` is `'none'`.
 - **Destinations**: `elementUnderFeet` skips `isFloorShape`, `plant` and `bookshelf`. A meeting table and the
   machines remain destinations.
-- **Sitting at the table**: `seatPoints` (`@liveworkspace/avatar/seats`) returns the six `MEETING_TABLE_SEATS` with
+- **Sitting at the table**: `seatPoints` (`@livehuddle/avatar/seats`) returns the six `MEETING_TABLE_SEATS` with
   their `facing` turned to the table's (`SEAT_VIEWS['meeting-table']`, [Turning furniture](furniture-facing.md));
   `Canvas.onWalkIntoChair` sits with `seatFor`, which takes `seat.facing`.
 - **Drinks**: `arriveOn` calls `onWalkIntoDrink(el)` when `drinkFrom(el.shape)`. `Canvas` then calls

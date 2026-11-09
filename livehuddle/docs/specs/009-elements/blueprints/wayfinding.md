@@ -62,7 +62,7 @@ Scope, by file:
   the walk has a position. Then the route `walkThereRoute(feet, place)` is walked leg by leg, each `walkTo`'s
   arrival starting the next: from outside the place's walls box (`SpacePlace.bounds`, rooms and pods only), the
   approach then the arrival; from inside it, the arrival alone. Each leg is routed by `walkTo` itself
-  (`findWalkPath` in `@liveworkspace/avatar`, avatar-mode.md "Finding the way"), so the walk goes round the place's
+  (`findWalkPath` in `@livehuddle/avatar`, avatar-mode.md "Finding the way"), so the walk goes round the place's
   walls and anything else in the way.
 - **Go / Ride.** `go({ tabId, point, ignoreId })`: while walking, arm the ignored Elevator and `teleportTo(point)`
   first. Same tab: centre the camera (`viewportOffsetCentredOn` on a zero box at the point). Another tab: remember

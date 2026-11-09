@@ -7,10 +7,10 @@ not the canvas**. The same shape as the [Peer-motion store](peer-motion-store.md
 
 | File                                                      | Role                                                                            |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `../packages/avatar/src/pose.ts`                          | `AvatarPose`, `NO_POSE`, `mergePose`, `poseFeet`, `posePlaced`                  |
-| `../packages/avatar/src/hooks/useAvatarWalk.ts`           | Owns the `poseStore`; writes it from the loop; returns `placed`, `standingOnId` |
-| `../packages/avatar/src/hooks/useAvatarPose.ts`           | `useAvatarPose(store, select, equal)`: a by-value slice of the pose             |
-| `../packages/avatar/src/components/AvatarSelfWalker.tsx`  | Your character, subscribed to the whole pose                                    |
+| `packages/avatar/src/pose.ts`                             | `AvatarPose`, `NO_POSE`, `mergePose`, `poseFeet`, `posePlaced`                  |
+| `packages/avatar/src/hooks/useAvatarWalk.ts`              | Owns the `poseStore`; writes it from the loop; returns `placed`, `standingOnId` |
+| `packages/avatar/src/hooks/useAvatarPose.ts`              | `useAvatarPose(store, select, equal)`: a by-value slice of the pose             |
+| `packages/avatar/src/components/AvatarSelfWalker.tsx`     | Your character, subscribed to the whole pose                                    |
 | `../packages/workbench/src/lib/state-store.ts`            | `joinStores(a, b)`: two stores read as one, for a slice over both               |
 | `apps/editor/hooks/collab/usePeerRows.ts`                 | `peerAvatarRowsOf`, `readPeerAvatarRows`, `usePeerAvatarSlice`                  |
 | `apps/editor/components/canvas/CanvasCharactersLayer.tsx` | Every character and what rides on them, subscribed to both stores               |

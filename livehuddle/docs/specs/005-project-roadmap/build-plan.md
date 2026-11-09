@@ -31,7 +31,8 @@ Each step is one PR, specs first. Every product builds and passes its tests afte
 The card keeps Avatar mode in livediagram and puts it in livehuddle too, so two products need it from the first day:
 by the root AGENTS.md rule it goes in `packages/`, and it moves **before** the fork so there is never a second copy.
 
-- **New package `@liveworkspace/avatar`**: the parts of Avatar mode that read no element union. Measured on `main`,
+- **New package `@liveworkspace/avatar`** (`@livehuddle/avatar` in this product's `packages/avatar` since Work
+  Tracker #650 left livehuddle its only user): the parts of Avatar mode that read no element union. Measured on `main`,
   livediagram's files named for the avatar are 60 files, 5,767 lines of source and 2,836 of tests, in
   `apps/editor` and `packages/` (the sprite and head, the Avatar panel, the walker, walking, speech bubbles and the
   composer, the action keys, Avatar Pad arrivals, the costume config and its parser). The product binds its storage
@@ -157,7 +158,7 @@ after part 3; deleting it reaches the element engine both shapes and Spaces stan
 
 **Everything** (Work Tracker #99: "Don't remove these capabilities from livediagram"). Avatar mode, every Navigate
 element, the Spaces templates and all of Workshop mode stay in livediagram, behaving as they do today. The only change
-livediagram sees is step 1: its avatar code is imported from `@liveworkspace/avatar` instead of its own folders.
+livediagram sees is step 1: its avatar code is imported from `@livehuddle/avatar` instead of its own folders.
 
 livediagram gets no link to livehuddle in v1. A "meeting in it? Try livehuddle" door from a Spaces template is a later
 marketing decision, not part of this card.
@@ -174,7 +175,7 @@ and drops the old avatar ops unread (livediagram's
 copy left to drift. Four rules keep the rest small:
 
 1. **One copy of what can be shared.** The realtime room's shapes live once, in `packages/`. The avatar core
-   (`@liveworkspace/avatar`, step 1) moves into livehuddle with #650's second part, since only livehuddle uses it; the
+   (`@livehuddle/avatar`, step 1) moves into livehuddle with #650's second part, since only livehuddle uses it; the
    reaction bursts both products throw stay shared.
 2. **The next extraction is named now.** The Session strip's Timer, Bring Focus and the facilitator baton
    are the next candidates (the Collaborate elements were, until step 10 took them out of livehuddle). Their pure parts move to a
