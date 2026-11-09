@@ -1,8 +1,14 @@
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import type { Tab } from '@liveplanner/project';
-import { apiLoadTabRevisioned } from '@/lib/api-client';
+import { apiLoadProject, apiLoadShared, apiLoadTabRevisioned } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { rebaseLocalEdits } from './rebase-local-edits';
+import {
+  applyTabList,
+  applyTabListOnScreen,
+  tabListOf,
+  type ResyncTabList,
+} from './resync-tab-list';
 
 // Re-hydrating a project in place after the room can't bridge our
 // reconnect gap (docs/specs/012-collaboration/resync-without-reload.md). This used to be `window.location.reload()`:
@@ -10,10 +16,11 @@ import { rebaseLocalEdits } from './rebase-local-edits';
 // undo stack, and any tab the user hadn't saved yet — for what is really
 // just "re-read the tab rows from D1".
 //
-// The room's op log only carries content changes, so a resync only ever
-// needs the tab CONTENT back. Everything else the editor holds (which tab
-// is active, where the canvas is panned, what's selected, presence) is
-// either unaffected or re-established by the reconnect itself.
+// What a reconnect gap can lose is the project's content: the tabs' content
+// and the tab list (a peer's tab added, deleted, renamed or moved, a
+// `project-meta` op), so a full resync reads both back. Everything else the
+// editor holds (which tab is active, where the canvas is panned, what's
+// selected, presence) is either unaffected or re-established by the reconnect.
 export function useRoomResync(opts: {
   projectId: string | null;
   selfId: string;
@@ -57,15 +64,17 @@ export function useRoomResync(opts: {
         .map((t) => t.id)
         .filter((id) => loadedTabIdsRef.current.has(id))
         .filter((id) => !scope?.tabIds || scope.tabIds.includes(id));
-      const fetched = await Promise.all(
-        targets.map(async (id) => {
+      const [list, ...fetched] = await Promise.all([
+        // The tab list, on a full resync only: a narrowed refetch is about content alone.
+        scope?.tabIds ? null : loadTabList(selfId, projectId, sessionShareCode),
+        ...targets.map(async (id) => {
           try {
             return await apiLoadTabRevisioned(selfId, projectId, id, sessionShareCode);
           } catch {
             return null;
           }
         }),
-      );
+      ]);
       const byId = new Map<string, Tab>();
       const revs = new Map<string, number>();
       for (const loaded of fetched) {
@@ -73,7 +82,7 @@ export function useRoomResync(opts: {
         byId.set(loaded.tab.id, loaded.tab);
         revs.set(loaded.tab.id, loaded.rev);
       }
-      if (byId.size === 0) {
+      if (byId.size === 0 && !list) {
         // Every fetch failed — almost certainly the same outage that broke
         // the socket. Leave local state alone (it's the better copy right
         // now) and let usePerTabLoad's retry path own the recovery.
@@ -83,16 +92,20 @@ export function useRoomResync(opts: {
       // content: we know we missed ops, so the server's copy is the base. What
       // was edited here and not yet saved goes back on top of it
       // (rebaseLocalEdits), judged against the baseline before it moves.
-      const savedBefore = new Map(lastSavedTabsRef.current.map((t) => [t.id, t] as const));
+      const savedTabs = lastSavedTabsRef.current;
+      const savedBefore = new Map(savedTabs.map((t) => [t.id, t] as const));
+      const loaded = loadedTabIdsRef.current;
       const overwrite = (prev: Tab[]): Tab[] =>
-        prev.map((t) => {
+        (list ? applyTabList(prev, list, loaded) : prev).map((t) => {
           const next = byId.get(t.id);
           // Keep the local folder: per-project link metadata (docs/specs/006-project/tab-folders.md) owned
           // by the meta path, not the content fetch.
           return next ? { ...next, folder: t.folder } : t;
         });
+      // The list first, as a peer's `project-meta` op is applied (useRoomConnection): a tab added or deleted here
+      // and not saved yet stays as it is here.
       applyRemoteTabs((prev) =>
-        prev.map((t) => {
+        (list ? applyTabListOnScreen(prev, list, loaded, savedTabs) : prev).map((t) => {
           const next = byId.get(t.id);
           if (!next) return t;
           return { ...rebaseLocalEdits(next, t, savedBefore.get(t.id)), folder: t.folder };
@@ -123,4 +136,23 @@ export function useRoomResync(opts: {
       noteChangesetSeen,
     ],
   );
+}
+
+// The project's stored tab list, through the share link for a visitor. Null when it can't be read: the content
+// refetch still runs, and the next resync or reload reads the list again.
+async function loadTabList(
+  selfId: string,
+  projectId: string,
+  shareCode: string | null,
+): Promise<ResyncTabList | null> {
+  try {
+    if (shareCode) {
+      const shared = await apiLoadShared(shareCode, selfId);
+      return shared && 'project' in shared && shared.project ? tabListOf(shared.project) : null;
+    }
+    const project = await apiLoadProject(selfId, projectId);
+    return project ? tabListOf(project) : null;
+  } catch {
+    return null;
+  }
 }
