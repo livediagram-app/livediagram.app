@@ -136,4 +136,38 @@ describe('the retired placeholder plan', () => {
       radius: 7.5,
     });
   });
+
+  it('wraps a long name over two lines and the caption over two rows rather than clipping them', () => {
+    // An Avatar button's 104 x 96 box: neither line fits whole on one row.
+    const plan = retiredPlaceholderPlan({ width: 104, height: 96 }, 'Avatar Button', '');
+    expect(plan.titleLines).toEqual(['Avatar', 'Button']);
+    expect(plan.captionLines).toEqual(['Moved to', 'livehuddle']);
+    expect(plan.glyph).toBe(false);
+    for (const line of [...plan.titleLines, ...plan.captionLines])
+      expect(line).not.toContain('\u2026');
+  });
+
+  it('drops the caption it cannot fit whole, and keeps the name, clipped only when nothing else is left', () => {
+    const chair = retiredPlaceholderPlan({ width: 76, height: 84 }, 'Chair', undefined);
+    expect(chair).toMatchObject({ titleLines: ['Chair'], caption: null, captionLines: [] });
+    const tiny = retiredPlaceholderPlan({ width: 40, height: 60 }, 'Water Cooler', undefined);
+    expect(tiny.titleLines.length).toBeLessThanOrEqual(2);
+    expect(tiny.titleLines.at(-1)).toMatch(/\u2026$/);
+  });
+
+  it('falls back to the plain line when the labelled caption does not fit', () => {
+    const plan = retiredPlaceholderPlan({ width: 140, height: 44 }, 'Room', 'Kitchen');
+    expect(plan.titleLines).toEqual(['Kitchen']);
+    expect(plan.captionLines).toEqual([RETIRED_ELEMENT_LINE]);
+  });
+
+  it('puts a Room at its top, with no glyph, so the pieces inside never cover it', () => {
+    const plan = retiredPlaceholderPlan(
+      { width: 480, height: 320, shape: 'room' },
+      'Room',
+      'Studio',
+    );
+    expect(plan).toMatchObject({ anchor: 'top', glyph: false, titleLines: ['Studio'] });
+    expect(retiredPlaceholderPlan({ width: 480, height: 320 }, 'Sofa', '').anchor).toBe('center');
+  });
 });

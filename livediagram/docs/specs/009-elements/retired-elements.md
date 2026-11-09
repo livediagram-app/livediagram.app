@@ -26,8 +26,14 @@ Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug, Avatar
 - Centred in it, top to bottom: a small glyph (the moved-out arrow), a **title** in the card's title weight, and a
   caption in the muted text colour. The title is the element's own label when it has one (a Room's name, a Chair's
   label), else the piece's name; the caption is **Moved to livehuddle**, or `<Name> · Moved to livehuddle` under an own
-  label, so a board with ten Rooms still tells them apart. On a smaller box the glyph goes first (under 96 x 88), then
-  the caption (under 72 x 44), so the title always shows (`retiredPlaceholderPlan`).
+  label, so a board with ten Rooms still tells them apart. A Room holds other pieces, so its title and caption sit at
+  its top, where its name bar was, with no glyph, and the pieces inside never cover them.
+- Text is fitted, never clipped mid-word where a whole form fits (`retiredPlaceholderPlan`): the title takes one line,
+  or two when it needs them and the box is tall enough; the caption takes the first form that fits whole (the labelled
+  one, then the plain line, each on one row or two); the glyph shows only on a box of 96 x 88 or more with a row to
+  spare. So on a smaller box the glyph goes first, then the caption, and the title always shows, with an ellipsis only
+  when even one word of it cannot fit. The canvas and the export draw the plan's own lines, so they break the same way.
+- The card is flat: no button skin, no stored shadow and no `…` settings button, an Avatar button's included.
 - Hovering shows a hover card titled `<Name>: Moved to livehuddle`: "This piece lives in livehuddle now. It is kept
   here as saved; you can move or delete it."
 - The export draws the same card (name and line), so an SVG, PNG or PDF of an old board matches the canvas.
@@ -45,7 +51,8 @@ It follows the ordinary element rules for its share role ([Share roles](../013-w
 
 - Its context menu is the ordinary element menu (Layer, Rotation where the kind turns, Delete and the rest); a retired
   Avatar button has no Button section, so it cannot be pointed at a mode. A style or label change is stored as it is on
-  any element (the placeholder shows a new label as its title) and reaches livehuddle unchanged; it never makes the
+  any element (the placeholder shows a new label as its title; an Avatar button's label is edited in place like any
+  button's, while the furniture kinds, which never had an inline label, take theirs from livehuddle or an agent) and reaches livehuddle unchanged; it never makes the
   piece work here. "Stored only" in the table means that.
 - Copy and paste, duplicate and undo carry it like any element, data unchanged: the one way it is ever "added" is as a
   copy of one already on a board.

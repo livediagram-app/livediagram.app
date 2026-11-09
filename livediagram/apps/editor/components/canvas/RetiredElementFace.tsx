@@ -11,6 +11,7 @@ import {
   RETIRED_ELEMENT_HINT,
   RETIRED_GLYPH_PATHS,
   RETIRED_PLACEHOLDER_TONES,
+  RETIRED_TEXT,
   retiredElementName,
   retiredPlaceholderPlan,
   type ShapeElement,
@@ -37,36 +38,58 @@ export const RetiredElementFace = memo(function RetiredElementFace({
     >
       <div
         data-retired-element=""
-        className="flex h-full w-full flex-col items-center justify-center gap-1 overflow-hidden border border-dashed px-2 text-center"
+        className={`flex h-full w-full flex-col items-center overflow-hidden border border-dashed text-center ${
+          plan.anchor === 'top' ? 'justify-start' : 'justify-center'
+        }`}
         style={{
           backgroundColor: tones.fill,
           borderColor: tones.border,
           borderRadius: plan.radius,
+          padding: `${RETIRED_TEXT.padY}px ${RETIRED_TEXT.padX}px`,
+          ...(plan.anchor === 'top' ? { paddingTop: RETIRED_TEXT.padY * 2 } : null),
         }}
         role="img"
         aria-label={`${plan.title}. ${name}, moved to livehuddle.`}
       >
         {plan.glyph ? (
-          <Glyph size={20} units={24} className="mb-1 shrink-0" style={{ color: tones.caption }}>
+          <Glyph
+            size={20}
+            units={24}
+            className="shrink-0"
+            style={{ color: tones.caption, marginBottom: RETIRED_TEXT.glyphRow - 20 }}
+          >
             {RETIRED_GLYPH_PATHS.map((d) => (
               <path key={d} d={d} />
             ))}
           </Glyph>
         ) : null}
-        <span
-          className="block max-w-full truncate text-[13px] font-semibold leading-tight"
-          style={{ color: tones.title }}
-        >
-          {plan.title}
-        </span>
-        {plan.caption ? (
+        {/* The plan's own lines (never the browser's wrap), so the canvas and an export break them the same way. */}
+        {plan.titleLines.map((line, i) => (
           <span
-            className="block max-w-full truncate text-[11px] font-medium leading-tight"
-            style={{ color: tones.caption }}
+            key={`t${i}`}
+            className="block max-w-full whitespace-nowrap font-semibold"
+            style={{
+              color: tones.title,
+              fontSize: RETIRED_TEXT.titleSize,
+              lineHeight: `${RETIRED_TEXT.titleLine}px`,
+            }}
           >
-            {plan.caption}
+            {line}
           </span>
-        ) : null}
+        ))}
+        {plan.captionLines.map((line, i) => (
+          <span
+            key={`c${i}`}
+            className="block max-w-full whitespace-nowrap font-medium"
+            style={{
+              color: tones.caption,
+              fontSize: RETIRED_TEXT.captionSize,
+              lineHeight: `${RETIRED_TEXT.captionLine}px`,
+            }}
+          >
+            {line}
+          </span>
+        ))}
       </div>
     </HoverCard>
   );

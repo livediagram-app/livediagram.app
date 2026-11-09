@@ -522,7 +522,7 @@ export function ReactionPadArt() {
         It shipped
       </text>
       {/* You, reaching over to press it. */}
-      <Pointer x={256} y={70} color={YOU} className="fa-a-move" style={from(-150, 6, 0)} />
+      <Pointer x={270} y={71} color={YOU} className="fa-a-move" style={from(-150, 6, 0)} />
     </Scene>
   );
 }

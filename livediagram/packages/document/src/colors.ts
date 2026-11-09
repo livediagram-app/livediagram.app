@@ -17,7 +17,7 @@ import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
 import { isConceptShape } from './concept';
-import { isRetiredShapeKind } from './retired-elements';
+import { isRetiredElement } from './retired-elements';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
@@ -237,15 +237,15 @@ function behaviourSkin(
 ): { fill: string; stroke: string; text: string } | null {
   if (element.type !== 'shape') return null;
   const kind = element.shape;
-  if (kind === 'mode-button' || kind === 'session-button' || kind === 'picker') {
-    return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
-  }
   // A retired piece (docs/specs/009-elements/retired-elements.md) draws its own placeholder card: no box, ink
-  // from the paper.
-  if (isRetiredShapeKind(kind)) {
+  // from the paper. First, so an Avatar button (a mode-button kind) loses the button skin too.
+  if (isRetiredElement(element)) {
     return surface === 'dark'
       ? { fill: 'transparent', stroke: 'transparent', text: DARK_INK.text }
       : { fill: 'transparent', stroke: 'transparent', text: OUTLINE_SKIN_LIGHT.text };
+  }
+  if (kind === 'mode-button' || kind === 'session-button' || kind === 'picker') {
+    return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
   }
   if (kind === 'reveal') {
     if (surface === 'dark') {

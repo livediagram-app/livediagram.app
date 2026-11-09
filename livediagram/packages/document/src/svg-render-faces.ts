@@ -17,6 +17,7 @@ import { isRetiredElement, RETIRED_SHAPE_KINDS, retiredElementName } from './ret
 import {
   RETIRED_GLYPH_PATHS,
   RETIRED_PLACEHOLDER_TONES,
+  RETIRED_TEXT,
   retiredPlaceholderPlan,
 } from './retired-placeholder';
 import type { ResolveEmojiArt } from './svg-render-describe';
@@ -498,13 +499,21 @@ function emojiGlyph(
 
 // The retired placeholder (docs/specs/009-elements/retired-elements.md "What it looks like"): a muted card with a
 // dashed hairline, the moved-out glyph, the name and "Moved to livehuddle", laid out by the same plan as the canvas.
+// A line's baseline from its top: the cap height (about 0.7 of the size) centred in the line box, as CSS sets it.
+const baseline = (line: number, size: number) => (line + size * 0.7) / 2;
+
 function retiredFace(el: Face, label: string, surface: CanvasSurface): string {
   const tones = RETIRED_PLACEHOLDER_TONES[surface];
+  const T = RETIRED_TEXT;
   const plan = retiredPlaceholderPlan(el, retiredElementName(el) ?? 'Retired', label);
   const cx = el.x + el.width / 2;
-  const cy = el.y + el.height / 2;
-  const rows = (plan.glyph ? 30 : 0) + 16 + (plan.caption ? 16 : 0);
-  let y = cy - rows / 2;
+  // The same block the canvas face lays out: the glyph row, the title lines, the caption lines, centred in the box
+  // or (a Room) from its top.
+  const rows =
+    (plan.glyph ? T.glyphRow : 0) +
+    plan.titleLines.length * T.titleLine +
+    plan.captionLines.length * T.captionLine;
+  let y = plan.anchor === 'top' ? el.y + T.padY * 2 : el.y + el.height / 2 - rows / 2;
   let out =
     `<rect x="${r2(el.x + 0.5)}" y="${r2(el.y + 0.5)}" width="${r2(Math.max(0, el.width - 1))}" height="${r2(Math.max(0, el.height - 1))}"` +
     ` rx="${r2(plan.radius)}" fill="${tones.fill}" stroke="${tones.border}" stroke-width="1" stroke-dasharray="4 3"/>`;
@@ -514,23 +523,25 @@ function retiredFace(el: Face, label: string, surface: CanvasSurface): string {
       ` stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">` +
       RETIRED_GLYPH_PATHS.map((d) => `<path d="${d}"/>`).join('') +
       `</svg>`;
-    y += 30;
+    y += T.glyphRow;
   }
-  const width = el.width - 16;
-  out += text(cx, y + 12, fitLine(plan.title, width, 13), {
-    size: 13,
-    weight: 600,
-    color: tones.title,
-    anchor: 'middle',
-  });
-  y += 16;
-  if (plan.caption) {
-    out += text(cx, y + 12, fitLine(plan.caption, width, 11), {
-      size: 11,
+  for (const line of plan.titleLines) {
+    out += text(cx, y + baseline(T.titleLine, T.titleSize), line, {
+      size: T.titleSize,
+      weight: 600,
+      color: tones.title,
+      anchor: 'middle',
+    });
+    y += T.titleLine;
+  }
+  for (const line of plan.captionLines) {
+    out += text(cx, y + baseline(T.captionLine, T.captionSize), line, {
+      size: T.captionSize,
       weight: 500,
       color: tones.caption,
       anchor: 'middle',
     });
+    y += T.captionLine;
   }
   return out;
 }

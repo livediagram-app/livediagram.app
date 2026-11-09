@@ -205,7 +205,9 @@ export function ElementFaceRouter({
     !isEditing &&
     !readOnly &&
     onOpenElementSettings &&
-    carriesSharedSettingsMenu(element.shape) ? (
+    carriesSharedSettingsMenu(element.shape) &&
+    // A retired Avatar button is a placeholder, not a Selection Mode button: no `…` (retired-elements.md).
+    !isRetiredElement(element) ? (
       <ElementSettingsButton
         label={`${elementKindLabel(element)} settings`}
         color={textColor}
@@ -225,8 +227,9 @@ export function ElementFaceRouter({
   return (
     <>
       {settingsMenu}
-      {/* A retired piece (docs/specs/009-elements/retired-elements.md): its placeholder card, never a label editor. */}
-      {element.type === 'shape' && isRetiredElement(element) ? (
+      {/* A retired piece (docs/specs/009-elements/retired-elements.md): its placeholder card. Mid-edit it falls through
+          to the label editor like any shape, and the new label becomes the card's title. */}
+      {element.type === 'shape' && isRetiredElement(element) && !isEditing ? (
         <RetiredElementFace element={element} label={label} />
       ) : /* Mode button (docs/specs/009-elements/mode-button.md): a pressable face instead of a plain label —
           the mode's glyph plus the author's call to action. Mid-edit it falls
