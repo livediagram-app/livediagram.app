@@ -104,8 +104,7 @@ describe('a source picture that loads late', () => {
   it('never overwrites the newer source it was replaced by', async () => {
     const h = harness(photoOf(PHOTO_TILE, PHOTO_TILE));
     const waiting = new Map<string, (pic: Pic) => void>();
-    h.store.source = (_tab, src) =>
-      new Promise<Pic>((resolve) => waiting.set(src.blob, resolve)) as never;
+    h.store.source = (_tab, src) => new Promise<Pic>((resolve) => waiting.set(src.blob, resolve));
     h.s.setPhoto(sourced('old'));
     h.s.setPhoto(sourced('new'));
     waiting.get('new')!(solidPic(GREEN));
@@ -121,7 +120,7 @@ describe('a source picture that loads late', () => {
   it('never fills a tile the photo has since made explicit', async () => {
     const h = harness(photoOf(PHOTO_TILE, PHOTO_TILE));
     let finish: (pic: Pic) => void = () => {};
-    h.store.source = () => new Promise<Pic>((resolve) => (finish = resolve)) as never;
+    h.store.source = () => new Promise<Pic>((resolve) => (finish = resolve));
     h.s.setPhoto(sourced('pic'));
     greenTile(h, 'painted');
     h.s.setPhoto(sourced('pic', { [LEFT]: 'painted' }));
