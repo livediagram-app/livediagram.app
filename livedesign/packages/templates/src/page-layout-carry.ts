@@ -12,6 +12,8 @@ import {
   type TextElement,
 } from '@livedesign/design';
 import { LOGO_LAYOUTS } from './logo-layouts';
+import { WIREFRAME_LAYOUTS } from './wireframe-layouts';
+import type { LayoutBox } from './page-layout-kit';
 
 // What a shape carries into the next shape of its kind: its words and its data, never its
 // geometry or look (the new place's own).
@@ -66,6 +68,10 @@ const REFERENCE_BOXES = [
   { x: 0, y: 0, width: 760, height: 1075 },
   { x: 0, y: 0, width: 1700, height: 956 },
 ];
+// A wireframe layout's words follow its screen (a phone's column drops what a desktop's row shows), so its
+// placeholders are gathered from a phone's safe area too; a watch's layouts from a watch's alone.
+const SCREEN_BOXES = [...REFERENCE_BOXES, { x: 0, y: 0, width: 361, height: 760 }];
+const WATCH_BOXES = [{ x: 0, y: 0, width: 174, height: 214 }];
 
 type Role = 'title' | 'large' | 'body' | 'figure';
 
@@ -258,20 +264,37 @@ export function warmLayoutPlaceholders(): void {
 }
 
 // Every layout's placeholder words and untouched shapes, gathered once (on the first carry, or
-// warmLayoutPlaceholders) from each layout built in a tall and a wide box: ~15 ms each warm.
+// warmLayoutPlaceholders) from each layout built in a tall and a wide box, and a wireframe layout in each device
+// class's screen too.
 let marked: { labels: Set<string>; shapes: Set<string> } | null = null;
 function placeholders(): { labels: Set<string>; shapes: Set<string> } {
   if (marked) return marked;
   const labels = new Set<string>(['']);
   const shapes = new Set<string>();
-  for (const layout of LOGO_LAYOUTS) {
-    for (const box of REFERENCE_BOXES) {
-      for (const el of layout.build(box)) {
-        if (el.type === 'text') labels.add(labelOf(el));
-        else if (el.type === 'shape') shapes.add(contentKey(el));
+  // Every catalogue's: a wireframe screen's "Welcome Back" and its Sign In button are placeholders as much as a
+  // logo's "Brand", so a template's untouched screen never scatters its words over the next layout.
+  const gather = (
+    layouts: readonly { build: (box: LayoutBox) => Element[] }[],
+    boxes: readonly LayoutBox[],
+  ) => {
+    for (const layout of layouts) {
+      for (const box of boxes) {
+        for (const el of layout.build(box)) {
+          if (el.type === 'text') labels.add(labelOf(el));
+          else if (el.type === 'shape') shapes.add(contentKey(el));
+        }
       }
     }
-  }
+  };
+  gather(LOGO_LAYOUTS, REFERENCE_BOXES);
+  gather(
+    WIREFRAME_LAYOUTS.filter((l) => l.category !== 'wf-watch'),
+    SCREEN_BOXES,
+  );
+  gather(
+    WIREFRAME_LAYOUTS.filter((l) => l.category === 'wf-watch'),
+    WATCH_BOXES,
+  );
   marked = { labels, shapes };
   return marked;
 }
