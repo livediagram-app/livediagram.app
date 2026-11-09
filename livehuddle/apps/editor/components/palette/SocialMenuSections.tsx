@@ -151,8 +151,11 @@ function ZoneRow({
   onRemove: () => void;
 }) {
   const [draft, setDraft] = useFollowingDraft(`${zone.zone}\u0000${zone.label}`, () => zone.label);
+  // A label is never empty: a field cleared and left goes back to the label the clock still shows.
   const commit = () => {
-    if (draft.trim() && draft !== zone.label) onLabel(draft.trim());
+    const label = draft.trim();
+    if (!label) setDraft(zone.label);
+    else if (label !== zone.label) onLabel(label);
   };
   return (
     <li className="flex items-center gap-1.5">

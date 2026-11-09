@@ -128,7 +128,9 @@ A wooden plaque on the wall with small clock dials, one per time zone.
   and a remove button, and an **Add Zone** row: a zone field that suggests from the browser's list of zones as you
   type, with the label filled from the city part of the zone ("New_York" → "New York"). The zone is stored by the
   name the browser gives it, whatever its case or alias: "europe/london" is Europe/London (labelled London) and
-  "US/Eastern" is America/New_York. A zone with no label reads as **Local**, on the dial and to a screen reader. Participants and Viewers see
+  "US/Eastern" is America/New_York. A label is never cleared from the menu: a label field
+  emptied and left goes back to the zone's label. A zone stored with no label reads as **Local**, on the dial and to a
+  screen reader. Participants and Viewers see
   the clock and never the section.
 - Its label is not drawn. It does not turn. Aspect locked.
 
