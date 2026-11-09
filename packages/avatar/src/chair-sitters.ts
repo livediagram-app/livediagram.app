@@ -4,7 +4,7 @@
 // with several, and the name pill clear of the highest head. Pure: no React, no DOM.
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
-import { avatarScale, parseAvatarConfig } from './config';
+import { avatarScale, peerAvatarConfig } from './config';
 import { seatsACharacter } from './office-geometry';
 import { isSceneShape, type AvatarSceneElement } from './scene';
 import { claimOf, type SeatClaim } from './seat-claims';
@@ -78,7 +78,7 @@ export function seatedPeer(peer: {
     seat: avatar.seat,
     x: avatar.x,
     y: avatar.y,
-    scale: avatarScale(parseAvatarConfig(avatar.config).size),
+    scale: avatarScale(peerAvatarConfig(avatar.config).size),
   };
 }
 

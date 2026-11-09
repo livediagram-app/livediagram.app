@@ -9,9 +9,6 @@ import {
   localDay,
   NOTE_PAPER,
   NOTES_MAX,
-  noteDay,
-  notesNewestFirst,
-  type NoticeNote,
   type ShapeElement,
 } from '@livehuddle/document';
 import { lucideGlyph, Tooltip } from '@livehuddle/ui';
@@ -27,6 +24,7 @@ import {
   WEEKDAY_NAMES,
   type MonthCursor,
 } from '@/lib/calendar-month';
+import { notesByDay } from './calendar-notes';
 import { ReaderShell } from './ReaderShell';
 import { NOTE_SIZES, NoteAddForm, NoteCard } from './NoteParts';
 import { useNoteSigner } from './useNoteSigner';
@@ -38,18 +36,6 @@ import { useNoteSigner } from './useNoteSigner';
 
 const PrevIcon = lucideGlyph(lucideChevronLeft, 14);
 const NextIcon = lucideGlyph(lucideChevronRight, 14);
-
-/** A day's notes, by day, newest first within each: built once per change of the notes. */
-export function notesByDay(notes: readonly NoticeNote[] | undefined): Map<string, NoticeNote[]> {
-  const byDay = new Map<string, NoticeNote[]>();
-  for (const note of notesNewestFirst(notes)) {
-    const day = noteDay(note);
-    const list = byDay.get(day);
-    if (list) list.push(note);
-    else byDay.set(day, [note]);
-  }
-  return byDay;
-}
 
 export function CalendarWallPopover({
   element,

@@ -221,19 +221,36 @@ export async function readRowTexts(
   return out;
 }
 
-// The rows of a sheet holding a value (a form's response goes under the last of them). A cell with only a format (a
-// banded or boxed look's empty rows) holds none, so a styled sheet's response lands under its last value, in view.
-export async function usedSheetRows(
+// The ids of a sheet's first probe window of rows, from its end; each window after it twice the last.
+export const USED_ROW_WINDOW = 64;
+
+// The last of `rows` holding a value, as a set of at most that one id (a form's response goes under it): a cell with
+// only a format (a banded or boxed look's empty rows) holds none, so a styled sheet's response lands under its last
+// value, in view. Probed from the end in windows (USED_ROW_WINDOW, doubling while a window holds none), each row one
+// indexed seek that stops at its first value: a response read every cell of a sheet that grew with each response.
+export async function lastUsedSheetRow(
   env: PlanEnv,
   projectId: string,
   sheetId: string,
+  rows: readonly string[],
 ): Promise<Set<string>> {
-  const rows = await env.PLAN_DB.prepare(
-    `SELECT DISTINCT row_id FROM sheet_cells WHERE plan_id = ? AND sheet_id = ? AND input IS NOT NULL`,
-  )
-    .bind(projectId, sheetId)
-    .all<{ row_id: string }>();
-  return new Set((rows.results ?? []).map((r) => r.row_id));
+  const stmt = env.PLAN_DB.prepare(
+    `SELECT value AS row_id FROM json_each(?) AS r
+      WHERE EXISTS (SELECT 1 FROM sheet_cells
+                     WHERE plan_id = ? AND sheet_id = ? AND row_id = r.value AND input IS NOT NULL)`,
+  );
+  let end = rows.length;
+  for (let size = USED_ROW_WINDOW; end > 0; size *= 2) {
+    const window = rows.slice(Math.max(0, end - size), end);
+    const found = await stmt
+      .bind(JSON.stringify(window), projectId, sheetId)
+      .all<{ row_id: string }>();
+    const used = new Set((found.results ?? []).map((r) => r.row_id));
+    for (let i = window.length - 1; i >= 0; i--)
+      if (used.has(window[i]!)) return new Set([window[i]!]);
+    end -= window.length;
+  }
+  return new Set();
 }
 
 // How many of `keys` exist, and their stored bytes, for an exact cap check near the limit.

@@ -209,8 +209,11 @@ types)` (`sheetOnItsTab`: the sheet head on its tab and that tab still in the pr
 board check) for publishing and the public read; `respond` branches on
 `form.sheet` (`sheetThere`, claim, `writeResponseRow`, `accepted`; any outcome but `written` runs
 `releaseResponseNumber(env, code, number)`, which takes the count back only while it still reads that number);
-`previewToSheet` for an unlinked preview; `writeResponseRow` reads the head, the header cells and `usedSheetRows`
-(`SELECT DISTINCT row_id … WHERE input IS NOT NULL`: rows holding a value), plans, and stores through
+`previewToSheet` for an unlinked preview; `writeResponseRow` reads the head, the header cells and `lastUsedSheetRow`
+(the last of the layout's rows holding a value, as a set of at most one id: the plan needs only the last one; the
+layout's rows are probed from the end in windows of `USED_ROW_WINDOW` (64) ids, doubling while a window holds none,
+each one indexed `EXISTS` seek a row through `json_each`, so a response reads about a window's rows, never every
+cell of a sheet that grows with each response), plans, and stores through
 `storeSheetWrite(ctx, projectId, sheetId, { write, unchecked: true }, by, null, { atRev })`, the route's write path
 factored out: `atRev` makes it answer `sheet_moved` (409) rather than apply a plan to a sheet that changed since it
 was read, and the row is planned again (`SHEET_WRITE_RETRIES`); a stored answer whose `applied` cells are fewer than
@@ -372,6 +375,10 @@ with `open: true` and the publish `POST` share `notReadyToOpen` (`form-link-rout
 
 - The Inbox: liveplanner's own Inbox once listed live links with unseen responses (a read since removed). The
   Inbox is now the index's ([One Explorer](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)), which carries no form responses yet.
+- The New mark (`fresh-responses.ts` `useFreshResponse`): each card's `useSyncExternalStore` snapshot is its own
+  answer (`isFreshResponse(item, today)`), so a response opened (`markResponseOpened`) redraws only the cards whose
+  mark changes, and a card no form made subscribes to nothing (on a 2,000-card board the first open of a response
+  redrew every card's face, 730 to 930 ms).
 - Settings (`person/settings.ts`): `notifyFormResponses` (default on), liveplanner's own scope at the accounts Worker.
 - `LIVE_ROUTE_SEGMENTS` += `form`; `pageViewPath('/form/…')` is `/form`; `API_ROUTE_RESOURCES` += `forms`.
 
@@ -449,7 +456,8 @@ editor modules: `forms-public.ts`, the shared controls and `@liveplanner/ui`.
 | Forms in plan templates: the target found, fields renamed, type untouched, ready to publish, unpublished, every path             | `packages/templates/src/template-forms.test.ts`, `template-builders-plan.test.ts`                                                                                                                       |
 | Builder by role, selection, options, sections, rename                                                                            | `apps/editor/components/forms/builder/FormBuilderColumn.test.tsx`                                                                                                                                       |
 | The form page flow                                                                                                               | `components/forms/respond/FormFill.test.tsx`, `FormRespondPage.test.tsx`                                                                                                                                |
-| New on a response's card                                                                                                         | `components/forms/fresh-responses.test.ts`                                                                                                                                                              |
+| New on a response's card                                                                                                         | `components/forms/fresh-responses.test.ts`; one redraw: `components/plan/PlanBoardView.busy.perf.test.tsx`                                                                                              |
+| A response's row: under the last row holding a value, probed from the end                                                        | `apps/api/src/db/sheets-plans.test.ts` (`lastUsedSheetRow`), `apps/api/src/forms/sheet-response.test.ts`                                                                                                |
 | Start Planning's Forms                                                                                                           | `components/plan/PlanBoardPicker.test.tsx`                                                                                                                                                              |
 | The Inbox section                                                                                                                | Removed with liveplanner's Inbox                                                                                                                                                                        |
 | The worker rewrite                                                                                                               | `apps/editor/src/worker.test.ts`, `lib/form-path.test.ts`                                                                                                                                               |

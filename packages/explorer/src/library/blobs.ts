@@ -4,7 +4,7 @@
 // <img>), once its tile nears the screen, at most BLOB_CONCURRENCY at a time across the page, as an object URL
 // revoked when the tile goes. A gallery of hundreds asks only for what is looked at.
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const BLOB_CONCURRENCY = 4;
 const ROOT_MARGIN = '200px';
@@ -30,7 +30,10 @@ function release() {
 export type BlobState =
   { status: 'loading' } | { status: 'ready'; src: string } | { status: 'broken' };
 
-/** The tile's picture, read once `ref`'s element nears the screen (at once where there is no IntersectionObserver). */
+/**
+ * The tile's picture, read once `ref`'s element nears the screen (at once where there is no IntersectionObserver).
+ * `ref` is one function for the tile's life, so a re-render never drops and re-attaches its observer.
+ */
 export function useBlobUrl<T extends Element>(
   key: string,
   load: (signal: AbortSignal) => Promise<Blob | null>,
@@ -40,26 +43,33 @@ export function useBlobUrl<T extends Element>(
   const loadRef = useRef(load);
   loadRef.current = load;
   const observer = useRef<IntersectionObserver | null>(null);
-  const ref = (el: T | null) => {
+  // Read by `ref`, which never changes: once near, a remounted element needs no observer.
+  const nearRef = useRef(false);
+  const ref = useCallback((el: T | null) => {
     observer.current?.disconnect();
     observer.current = null;
-    if (!el || near) return;
-    if (typeof IntersectionObserver === 'undefined') {
+    if (!el || nearRef.current) return;
+    const nowNear = () => {
+      nearRef.current = true;
       setNear(true);
+    };
+    if (typeof IntersectionObserver === 'undefined') {
+      nowNear();
       return;
     }
     const seen = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
           seen.disconnect();
-          setNear(true);
+          if (observer.current === seen) observer.current = null;
+          nowNear();
         }
       },
       { rootMargin: ROOT_MARGIN },
     );
     seen.observe(el);
     observer.current = seen;
-  };
+  }, []);
   useEffect(() => () => observer.current?.disconnect(), []);
   useEffect(() => {
     if (!near) return;

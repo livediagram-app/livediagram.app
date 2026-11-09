@@ -12,11 +12,12 @@ export { POPULAR_TEMPLATE_KINDS } from './popular';
 export { isUntitledProjectName, UNTITLED_PROJECT_NAME } from './legacy-untitled';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
 export { templateFamilyOf } from './template-families';
+// The kinds alone, import-free: asking whether a kind is a Plan template carries no catalogue.
 export {
   PLAN_TEMPLATE_KINDS,
   isPlanTemplateKind,
   type PlanTemplateKind,
-} from './template-builders-plan';
+} from './plan-template-kinds';
 export { isSpreadsheetPlanTemplate, planTemplateTabCount } from './plan-template-catalogue';
 export * from './template-tab';
 export * from './dashboard-builder';

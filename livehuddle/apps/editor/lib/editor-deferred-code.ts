@@ -14,6 +14,17 @@ export const loadEditorSearchPanel = () =>
   import('@/components/panels/EditorSearchPanel').then((m) => m.EditorSearchPanel);
 export const loadToolPanels = () => import('@/components/canvas/tool-panels');
 
+// A piece's panel (web-performance.md "A piece's panel"): fetched as a pointer comes over the face's button, it takes
+// focus, or someone walks, and drawn the first time it is opened (lazyPanel, @livehuddle/ui).
+export const loadCalendarWallPanels = () =>
+  import('@/components/canvas/collab/CalendarWallPopover');
+export const loadSuggestionBoxPanels = () =>
+  import('@/components/canvas/collab/SuggestionBoxPopover');
+export const loadRoomSignReader = () =>
+  import('@/components/canvas/collab/RoomSignReader').then((m) => m.RoomSignReader);
+export const loadWayfindingPopover = () =>
+  import('@/components/canvas/wayfinding/WayfindingPopover').then((m) => m.WayfindingPopover);
+
 export const EDITOR_SURFACE_CODE = [
   loadExplorerPanel,
   loadEditorSearchPanel,

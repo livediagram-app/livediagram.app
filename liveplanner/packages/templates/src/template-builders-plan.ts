@@ -29,6 +29,7 @@ import {
 } from './plan-template-catalogue';
 
 export { PLAN_TEMPLATE_KINDS, PLAN_TEMPLATE_TABS, type PlanTemplateKind };
+export { isPlanTemplateKind } from './plan-template-kinds';
 
 // Every element a template tab holds is a shape: a board, a Sheet or a plan view.
 type Box = ShapeElement;
@@ -189,8 +190,4 @@ function centred<T extends Box>(el: T, cx: number, cy: number): T {
 // The first tab's elements: what a template's preview and a one-tab replace use.
 export function buildPlanTemplate(kind: PlanTemplateKind, cx: number, cy: number): Element[] {
   return planTemplateTabs(kind)[0]!.build(cx, cy);
-}
-
-export function isPlanTemplateKind(kind: string): kind is PlanTemplateKind {
-  return (PLAN_TEMPLATE_KINDS as readonly string[]).includes(kind);
 }

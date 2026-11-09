@@ -23,7 +23,7 @@ describe('ElementReader', () => {
     expect(screen.getByText('Nothing written here yet.')).toBeTruthy();
   });
 
-  it('shows an idle Screen, a silent Jukebox and a free Room Sign by what they would show', () => {
+  it('shows an idle Screen, a silent Jukebox and a free Room Sign by what they would show', async () => {
     const { unmount } = render(
       <ElementReader element={box({ type: 'shape', shape: 'screen' })} onClose={noop} />,
     );
@@ -35,7 +35,8 @@ describe('ElementReader', () => {
     expect(screen.getByText('No music set')).toBeTruthy();
     jukebox.unmount();
     render(<ElementReader element={box({ type: 'shape', shape: 'room-sign' })} onClose={noop} />);
-    expect(screen.getByText('Free')).toBeTruthy();
+    // The Room Sign's door panel loads the first time one is read (web-performance.md "A piece's panel").
+    expect(await screen.findByText('Free')).toBeTruthy();
   });
 
   it("says an image with nothing loaded has no picture, and shows the canvas's own source when it has one", () => {

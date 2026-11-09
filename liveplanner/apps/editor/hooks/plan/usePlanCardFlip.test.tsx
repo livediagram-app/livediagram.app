@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react';
-import { useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { FLIP_CARDS_MAX, cardsToMeasure, usePlanCardFlip } from './usePlanCardFlip';
 
@@ -9,6 +9,7 @@ afterEach(cleanup);
 
 // jsdom lays nothing out: each card's place is set by hand, as offsets within the body.
 const places = new Map<string, { x: number; y: number }>();
+const remembered: { current: ((run: HTMLElement) => void) | null } = { current: null };
 function Board({
   ids,
   signature,
@@ -21,7 +22,10 @@ function Board({
   hold?: () => boolean;
 }) {
   const body = useRef<HTMLDivElement>(null);
-  usePlanCardFlip(body, signature, skip, hold);
+  const remember = usePlanCardFlip(body, signature, skip, hold);
+  useLayoutEffect(() => {
+    remembered.current = remember;
+  });
   return (
     <div ref={body} data-testid="body">
       {ids.map((id) => (
@@ -59,6 +63,18 @@ describe('cards moving on a board', () => {
     rerender(<Board ids={['a']} signature="2" hold={hold} />);
     expect(card('a').classList.contains('plan-card-flip')).toBe(false);
     expect(card('a').style.transform).toBe('');
+  });
+
+  // A busy board's run built after the last change (PlanCardRun): its cards' places are learnt as they are built.
+  it('glides a card built after the last change once its place was remembered', () => {
+    places.set('a', { x: 0, y: 0 }).set('b', { x: 0, y: 100 });
+    const { rerender } = render(<Board ids={['a']} signature="1" />);
+    rerender(<Board ids={['a', 'b']} signature="1" />);
+    remembered.current!(document.querySelector<HTMLElement>('[data-testid="body"]')!);
+    places.set('b', { x: 240, y: 100 });
+    rerender(<Board ids={['a', 'b']} signature="2" />);
+    expect(card('b').classList.contains('plan-card-flip')).toBe(true);
+    expect(card('a').classList.contains('plan-card-flip')).toBe(false);
   });
 
   it('glides a card that moved, and only that card', () => {

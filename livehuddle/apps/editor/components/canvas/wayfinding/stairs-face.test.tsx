@@ -1,12 +1,17 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement, type ShapeElement } from '@livehuddle/document';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { stairsFlights, type WayTab } from '@/lib/wayfinding';
 import { createWayfindingStore, type Wayfinding } from './wayfinding-store';
 import { StairsFace, StairsPanel } from './StairsFace';
 import { FLOOR_WAIT_MS } from './useFloorsOnOpen';
+import { LazyWayfindingPopover } from './wayfinding-panel-parts';
+
+// The panel's card loads the first time one opens (web-performance.md "A piece's panel"): fetched ahead here, as a
+// hover on the face does, so it draws in the press's own commit.
+beforeAll(() => LazyWayfindingPopover.preload());
 
 // docs/specs/009-elements/stairs.md "The panel", and that every role may take them
 // (docs/specs/013-workspace/share-roles.md: an Editor, a Participant and a Viewer all walk and travel).

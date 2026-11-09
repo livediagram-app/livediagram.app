@@ -18,7 +18,6 @@ const KEY = 'liveplanner:form-responses-opened';
 let opened: string[] | null = null;
 // The same ids as a set, so each card's check is one lookup however many were opened.
 let openedSet: ReadonlySet<string> = new Set();
-let version = 0;
 const listeners = createListeners();
 
 function load(): string[] {
@@ -40,7 +39,6 @@ export function markResponseOpened(item: Pick<Item, 'id' | 'fields'>): void {
   if (openedSet.has(item.id)) return;
   opened = [...list, item.id].slice(-FRESH_OPENED_MAX);
   openedSet = new Set(opened);
-  version += 1;
   try {
     localStorage.setItem(KEY, JSON.stringify(opened));
   } catch {
@@ -59,22 +57,22 @@ export function isFreshResponse(
   return !openedSet.has(item.id);
 }
 
-// Whether `item` shows New now; it re-renders when any response is opened.
+const noSubscribe = () => () => {};
+
+// Whether `item` shows New now. The snapshot is this card's own answer, so opening a response redraws only the cards
+// whose mark changes (it redrew every card's face on a 2,000-card board), and a card no form made listens to nothing.
 export function useFreshResponse(item: Pick<Item, 'id' | 'fields' | 'createdAt'>): boolean {
-  useSyncExternalStore(
-    listeners.subscribe,
-    () => version,
-    () => 0,
-  );
   // The week is coarse, so it is measured from today (useToday, which moves on at midnight), never the clock read
   // while drawing: a card stops showing New at the first midnight after it turns a week old.
-  const today = useToday();
-  return isFreshResponse(item, today.getTime());
+  const now = useToday().getTime();
+  const fromForm = !!readFromForm(item.fields[FROM_FORM_FIELD]);
+  const fresh = () => fromForm && isFreshResponse(item, now);
+  return useSyncExternalStore(fromForm ? listeners.subscribe : noSubscribe, fresh, fresh);
 }
 
 // For tests: forget what this browser opened.
 export function resetFreshResponses(): void {
   opened = null;
   openedSet = new Set();
-  version += 1;
+  listeners.notify();
 }

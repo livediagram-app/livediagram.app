@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createShape,
   type Element,
@@ -29,13 +29,19 @@ vi.mock('@/app/document/[id]/EditorContext', () => ({
 vi.mock('@/lib/telemetry', () => ({ track }));
 vi.mock('@/lib/api-client', () => api);
 
-import { hasTeamFace, TeamFace } from './TeamFaces';
-import { CalendarWallPopover, notesByDay } from './CalendarWallPopover';
+import { hasTeamFace, preloadCalendarWall, preloadSuggestionBox, TeamFace } from './TeamFaces';
+import { CalendarWallPopover } from './CalendarWallPopover';
+import { notesByDay } from './calendar-notes';
 import { SuggestionBoxPanel } from './SuggestionBoxPopover';
 import { SignpostFace } from '../wayfinding/SignpostFace';
 import { PhotoWallFace } from '../wayfinding/PhotoWallFace';
 
 const ADDER = 'a'.repeat(32);
+
+// The popovers and readers load the first time one opens (web-performance.md "A piece's panel"): fetched ahead here,
+// as a hover on the face or walking does, so each opens in the press's own commit (lazyPanel's own test covers a
+// press before the code is in).
+beforeAll(() => Promise.all([preloadCalendarWall(), preloadSuggestionBox()]));
 // 7 November 2026, 10:00 on this machine's clock.
 const NOW = new Date(2026, 10, 7, 10, 0).getTime();
 
@@ -121,7 +127,7 @@ describe('the Calendar Wall face', () => {
     expect(twenty?.textContent).toBe('2');
   });
 
-  it('keeps its Calendar button’s press from the piece, and opens the month by it', () => {
+  it('keeps its Calendar button’s press from the piece, and opens the month by it', async () => {
     const onPointerDown = vi.fn();
     render(
       <div onPointerDown={onPointerDown}>
@@ -133,13 +139,14 @@ describe('the Calendar Wall face', () => {
     expect(onPointerDown).not.toHaveBeenCalled();
     expect(isPieceControlPress(button)).toBe(true);
     fireEvent.click(button);
-    expect(screen.getByRole('grid', { name: 'November 2026' })).toBeTruthy();
+    // The month's code loads the first time it opens (web-performance.md "A piece's panel").
+    expect(await screen.findByRole('grid', { name: 'November 2026' })).toBeTruthy();
   });
 
-  it('opens in the reader while walking, from the button or the whole face', () => {
+  it('opens in the reader while walking, from the button or the whole face', async () => {
     render(<TeamFace element={piece('calendar-wall')} walking />);
     fireEvent.click(screen.getByRole('button', { name: 'Open the Calendar' }));
-    expect(document.querySelector('[data-calendar-reader]')).not.toBeNull();
+    await waitFor(() => expect(document.querySelector('[data-calendar-reader]')).not.toBeNull());
   });
 });
 
@@ -259,23 +266,23 @@ describe('the Calendar Wall month', () => {
 describe('the Suggestion Box', () => {
   const box = (over: Partial<ShapeElement> = {}) => piece('suggestion-box', over);
 
-  it('opens from its Suggest button, and in the reader while walking', () => {
+  it('opens from its Suggest button, and in the reader while walking', async () => {
     const { unmount } = render(<TeamFace element={box()} />);
     const button = screen.getByRole('button', { name: 'Open the Suggestion Box' });
     expect(isPieceControlPress(button)).toBe(true);
     fireEvent.click(button);
-    expect(screen.getByLabelText('Suggestion')).toBeTruthy();
+    expect(await screen.findByLabelText('Suggestion')).toBeTruthy();
     unmount();
     render(<TeamFace element={box()} walking />);
     // The pill, while walking, opens the reader too.
     const [hit, pill] = screen.getAllByRole('button', { name: 'Open the Suggestion Box' });
     expect(hit!.hasAttribute('data-piece-main')).toBe(true);
     fireEvent.click(pill!);
-    expect(document.querySelector('[data-suggestion-reader]')).not.toBeNull();
+    await waitFor(() => expect(document.querySelector('[data-suggestion-reader]')).not.toBeNull());
   });
 
   // furniture-facing.md "Live faces": a control stays reachable at every facing, its words never mirrored.
-  it('keeps its Suggest button reachable and unmirrored at every facing', () => {
+  it('keeps its Suggest button reachable and unmirrored at every facing', async () => {
     for (const chairFacing of ['n', 'e', 's', 'w'] as const) {
       const { unmount } = render(<TeamFace element={box({ chairFacing })} />);
       const button = screen.getByRole('button', { name: 'Open the Suggestion Box' });
@@ -283,7 +290,7 @@ describe('the Suggestion Box', () => {
       for (let el: HTMLElement | null = button; el; el = el.parentElement)
         expect(el.getAttribute('style') ?? '', chairFacing).not.toMatch(/scale\(-1/);
       fireEvent.click(button);
-      expect(screen.getByLabelText('Suggestion'), chairFacing).toBeTruthy();
+      expect(await screen.findByLabelText('Suggestion'), chairFacing).toBeTruthy();
       unmount();
     }
   });

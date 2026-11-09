@@ -65,6 +65,21 @@ describe('the editor’s first load', () => {
     expect(imports).not.toContain('@/components/sheets/sheet-csv');
   });
 
+  // docs/specs/016-platform/web-performance.md "At the press": the editor asks whether a kind is a Plan template on
+  // every load. Answered from the catalogue, that put every Plan template's tabs, dashboards and forms in the
+  // project page's first load (about 15 KiB gzip).
+  it('asks whether a kind is a Plan template without the catalogue', () => {
+    expect(staticImports(read('../../packages/templates/src/plan-template-kinds.ts'))).toEqual([]);
+    const index = read('../../packages/templates/src/index.ts');
+    expect(index).toMatch(/isPlanTemplateKind,[^}]*\}\s*from\s+'\.\/plan-template-kinds'/);
+    const flow = read('app/project/[id]/useTemplateFlow.ts');
+    // The form template's starter comes with the builders loaded at the press.
+    expect(flow).not.toMatch(/^import\s+\{[^}]*\bformTemplateStarter\b[^}]*\}\s*from/m);
+    expect(flow).toMatch(
+      /\bformTemplateStarter,?\s[^;]*await import\('@\/lib\/template-builders'\)/,
+    );
+  });
+
   it('keeps the untitled name apart from the template catalogue', () => {
     // The untitled name is read on every load: it lives in its own leaf module.
     expect(staticImports(read('../../packages/templates/src/legacy-untitled.ts'))).toEqual([]);

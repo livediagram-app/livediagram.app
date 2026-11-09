@@ -29,7 +29,8 @@
     "./page-view-tracker": "./src/page-view-tracker.tsx",
     "./web-vitals": "./src/web-vitals.ts",
     "./web-vitals-reporter": "./src/WebVitalsReporter.tsx",
-    "./identity-fill": "./src/identity-fill.ts"
+    "./identity-fill": "./src/identity-fill.ts",
+    "./lazy-panel": "./src/lazy-panel.tsx"
   },
   "scripts": {
     "lint": "oxlint",

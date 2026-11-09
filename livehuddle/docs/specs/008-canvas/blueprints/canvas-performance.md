@@ -489,6 +489,9 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
   changed holes, versus every view today.
 - The Map: one full rebuild per gesture instead of one per frame.
 - Selection chrome: zero `getBoundingClientRect` calls per gesture frame.
+- A busy office walking (50 peers and you, every frame): the characters layer renders once a frame; what reads
+  positions as facts reads the coarse copy ([Peer-motion store](peer-motion-store.md) "The coarse copy"), at most
+  about 10 a second plus one per discrete change.
 
 ## Presentation and UX
 
@@ -546,6 +549,7 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | Timings come from the trace, never a profiler                      | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                                                                                                                                                                                             |
 | The budget holds                                                   | The nightly probe                                                                                                                                                                                                                                                                                                           |
 | A Tab Style change on a busy Space eases the canvas, not its parts | `canvas-busy.test.ts`; `canvas-motion.test.ts`: the parts' transition is gated on `:not([data-canvas-busy])`; `tab-theme-apply.perf.test.ts` (CPU time, one whole-`tab` op on 2,000 elements); `useTabTheme.test.ts` (one commit)                                                                                           |
+| What follows positions as a fact reads the coarse copy             | `CanvasCharactersLayer.perf.test.tsx`: 50 walking peers, the call's scene, the pieces and the game scene about 10 a second, no costume parse; `coarse-store.test.ts`                                                                                                                                                        |
 | Dragging a very large selection                                    | `drag-affected-arrows.perf.test.ts` (CPU time); `CanvasElementsLayer.renders.test.tsx` (no element renders, 1,770 elements); `drag-ride-dom.test.ts` (a plane carries the move); `e2e/perf/large-selection-drag.perf.ts` (script and frame, by hand); `e2e/drag-live.spec.ts` (a collaborator sees a 250-element move live) |
 
 ## Constants and configuration

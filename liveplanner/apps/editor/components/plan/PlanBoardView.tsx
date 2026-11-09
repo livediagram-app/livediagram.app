@@ -67,7 +67,7 @@ import { BoardSettingsButton } from './BoardSettingsButton';
 import { useRegisterConfigurableBoard } from '@/hooks/plan/board-configure-store';
 import { SlotBoardCog } from './SlotBoardCog';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
-import { revealCard, useCardRunReveal } from '@/hooks/plan/useCardRunReveal';
+import { RunRevealContext, focusPlanCard, useCardRunReveal } from '@/hooks/plan/useCardRunReveal';
 import { COLUMN_ATTR, useColumnMoveFlip } from './column-move-flip';
 import { COLUMN_REORDERED, useColumnReorder } from './useColumnReorder';
 import { columnBackgroundMenu } from './column-settings-request';
@@ -333,12 +333,8 @@ export function PlanBoardView({
     const id = focusNextRef.current;
     if (!id) return;
     focusNextRef.current = null;
-    const card = boardRef.current?.querySelector<HTMLElement>(
-      `[data-plan-card="${CSS.escape(id)}"]`,
-    );
-    // Its run drawn first: a far run's card takes no focus (useCardRunReveal).
-    revealCard(card);
-    card?.focus();
+    // A far run's card is built first (useCardRunReveal).
+    focusPlanCard(boardRef.current, id);
   });
   useEffect(() => {
     const id = focusToggleRef.current;
@@ -375,9 +371,14 @@ export function PlanBoardView({
     `${setup?.columns.map((c) => c.id).join('|') ?? ''}/${shutKey}`,
     COLLAPSED_COLUMN_PX,
   );
-  // A busy board draws only its runs near the view (useCardRunReveal): Safari styled every card it held.
-  useCardRunReveal(bodyRef, busy);
-  usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null, columnMove.isMoving);
+  const rememberCards = usePlanCardFlip(
+    bodyRef,
+    flipSignature,
+    drag.drag?.itemId ?? null,
+    columnMove.isMoving,
+  );
+  // A busy board builds only its runs near the view (useCardRunReveal, PlanCardRun): it built all 2,000 cards.
+  const runReveal = useCardRunReveal(busy, rememberCards);
   // An Editor reorders the columns by dragging a head, or Alt+Shift+Arrows on one, on a desktop (plan-board.md "Drag a
   // column"); never on a phone nor a slot board (setUpHere is false there).
   const reorder = useColumnReorder({
@@ -470,11 +471,7 @@ export function PlanBoardView({
       if (went) plan.announce(`${went === 1 ? '1 card' : `${went} cards`} moved to the Trash`);
       selection.clear();
     } else if (action.kind === 'focus') {
-      const card = boardRef.current?.querySelector<HTMLElement>(
-        `[data-plan-card="${CSS.escape(action.itemId)}"]`,
-      );
-      revealCard(card);
-      card?.focus();
+      focusPlanCard(boardRef.current, action.itemId);
     } else if (action.kind === 'open') plan.openItem(item.id);
     else if (action.kind === 'trash') {
       // Focus goes on to a neighbour rather than falling to the page with the card.
@@ -764,6 +761,8 @@ export function PlanBoardView({
       ) : null}
       <div
         ref={bodyRef}
+        // The runs' observer root (useCardRunReveal RUN_BODY_ATTR).
+        data-plan-body=""
         // A scroll container resets touch-action, so without touch-none a finger on a card starts a native
         // scroll and the browser cancels the drag; the canvas pans across empty board instead. Maximised, filling
         // its tab or in a Dashboard slot, nothing under the board pans, so a finger on empty board scrolls the board
@@ -1092,7 +1091,7 @@ export function PlanBoardView({
         borderStyle: 'solid',
       }}
     >
-      {board}
+      <RunRevealContext value={runReveal}>{board}</RunRevealContext>
     </MaximisableSlot>
   );
 }
