@@ -23,7 +23,7 @@ import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
 import { takeAccessEnded } from '@/lib/access-notice';
-import { surfaceFlags, type EditorSurface } from './editor-surface';
+import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import { projectIdFromPath, isEditorPath } from '@/lib/editor-path';

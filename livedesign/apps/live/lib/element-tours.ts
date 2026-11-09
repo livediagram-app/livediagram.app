@@ -1,7 +1,7 @@
 import { isChartShape, type Element } from '@livedesign/design';
 import type { EditorCapabilities } from './editor-capabilities';
 import { canEditSankey } from './sankey-edit';
-import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
+import { tourTrackSeen, withTracksAnswered } from '@liveworkspace/workbench/lib/tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
 // Element tours (docs/specs/007-editor/element-tours.md): a tour of one complex element type, on the footer's

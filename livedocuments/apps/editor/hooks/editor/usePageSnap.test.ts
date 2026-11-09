@@ -7,7 +7,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pagesOf, layOutPages, type Tab } from '@livedocuments/document';
-import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
+import {
+  beginCanvasGesture,
+  resetCanvasGesturesForTests,
+} from '@liveworkspace/workbench/lib/canvas-gesture';
 import { track } from '@/lib/telemetry';
 import { computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
 import {

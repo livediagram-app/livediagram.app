@@ -6,7 +6,7 @@ vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { trashOpenDocument } = await import('./document-delete-undo');
-const { isDocumentDeleted } = await import('./document-tombstones');
+const { isDocumentDeleted } = await import('@liveworkspace/workbench/lib/document-tombstones');
 
 afterEach(() => {
   vi.clearAllMocks();

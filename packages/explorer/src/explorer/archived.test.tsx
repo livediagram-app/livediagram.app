@@ -3,7 +3,9 @@
 // badge, and the same for an item kept only in this browser.
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { IDBFactory } from 'fake-indexeddb';
 import { IndexError, type Folder } from '@liveworkspace/index-client';
+import { APP_ITEMS } from '@liveworkspace/sites';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import {
   isThisBrowserArchived,
@@ -357,6 +359,65 @@ describe('This Browser', () => {
     fireEvent.click(within(move).getByRole('button', { name: 'Move Here' }));
     expect(isThisBrowserArchived('liveplanner', 'local-1')).toBe(false);
     expect(await screen.findByText('Moved “⁨Local 1⁩” to This Browser.')).toBeTruthy();
+  });
+
+  it('renames one archived here in the app’s store and the list, without opening it', async () => {
+    const idb = new IDBFactory();
+    const { db, store } = APP_ITEMS.liveplanner.offlineStore;
+    await new Promise<void>((resolve) => {
+      const req = idb.open(db, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(store, { keyPath: 'id' });
+      req.onsuccess = () => {
+        const tx = req.result.transaction(store, 'readwrite');
+        tx.objectStore(store).put({ id: 'local-1', name: 'Local 1', savedAt: 1 });
+        tx.oncomplete = () => {
+          req.result.close();
+          resolve();
+        };
+      };
+    });
+    vi.stubGlobal('indexedDB', idb);
+    writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
+    page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
+    const group = await screen.findByRole('region', { name: 'This Browser' });
+    fireEvent.click(within(group).getByRole('button', { name: 'Rename Local 1' }));
+    const input = within(group).getByRole('textbox', { name: 'Rename Local 1' });
+    fireEvent.change(input, { target: { value: 'Old Launch Plan' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() =>
+      expect(readThisBrowser('liveplanner')[0]).toMatchObject({
+        title: 'Old Launch Plan',
+        archivedAt: 9_000,
+      }),
+    );
+    expect(screen.queryByRole('dialog')).toBeNull();
+    vi.unstubAllGlobals();
+  });
+
+  it('says so when a rename here can’t reach the app’s store', async () => {
+    vi.stubGlobal('indexedDB', undefined);
+    writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
+    page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
+    const group = await screen.findByRole('region', { name: 'This Browser' });
+    fireEvent.click(within(group).getByRole('button', { name: 'Rename Local 1' }));
+    const input = within(group).getByRole('textbox', { name: 'Rename Local 1' });
+    fireEvent.change(input, { target: { value: 'Other' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(await screen.findByText('Couldn’t rename “⁨Local 1⁩”. Try again.')).toBeTruthy();
+    expect(readThisBrowser('liveplanner')[0]!.title).toBe('Local 1');
+    vi.unstubAllGlobals();
+  });
+
+  it('keeps the name when a rename here is cancelled', async () => {
+    writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
+    page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
+    const group = await screen.findByRole('region', { name: 'This Browser' });
+    fireEvent.click(within(group).getByRole('button', { name: 'Rename Local 1' }));
+    fireEvent.keyDown(within(group).getByRole('textbox', { name: 'Rename Local 1' }), {
+      key: 'Escape',
+    });
+    expect(within(group).getByRole('button', { name: /^Local 1/ })).toBeTruthy();
+    expect(readThisBrowser('liveplanner')[0]!.title).toBe('Local 1');
   });
 
   it('still lists those archived here when the account’s list can’t load', async () => {

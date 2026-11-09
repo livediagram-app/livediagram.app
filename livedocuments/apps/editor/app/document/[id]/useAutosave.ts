@@ -19,7 +19,7 @@ import {
 } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { saveFailureStatus } from './save-failure';
-import { isDocumentDeleted } from '@/lib/document-tombstones';
+import { isDocumentDeleted } from '@liveworkspace/workbench/lib/document-tombstones';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';
@@ -33,7 +33,7 @@ import {
   tabsChangedByPeersSince,
   type RemoteOpJournal,
 } from './save-baseline';
-import { createTabSaveQueue, type TabSaveQueue } from './tab-save-queue';
+import { createTabSaveQueue, type TabSaveQueue } from '@liveworkspace/workbench/lib/tab-save-queue';
 import { useUnloadFlush } from './useUnloadFlush';
 import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
 import { noteSaveFailing, noteTabTooLarge } from '@liveworkspace/workbench/lib/save-health';

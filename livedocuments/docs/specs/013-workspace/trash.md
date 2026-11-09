@@ -4,7 +4,7 @@ The Trash is the index's. Deleting a document moves it to the Trash for 30 days,
 
 ## Deleting
 
-Deleting the document open in the editor (`trashOpenDocument`, `apps/editor/lib/document-delete-undo.ts`) marks it deleted first (`lib/document-tombstones.ts`), so neither the autosave nor the unload flush writes it back, asks the index to delete it, and leaves for the Explorer at `/explorer?trashed=<id>&title=<name>`, which offers **“Name” deleted** with **Undo** on arrival and drops both from the address once read. The workbench frame's Explorer takes the same document from sessionStorage, kept for one page load.
+Deleting the document open in the editor (`trashOpenDocument`, `apps/editor/lib/document-delete-undo.ts`) marks it deleted first (`../packages/workbench/src/lib/document-tombstones.ts`), so neither the autosave nor the unload flush writes it back, asks the index to delete it, and leaves for the Explorer at `/explorer?trashed=<id>&title=<name>`, which offers **“Name” deleted** with **Undo** on arrival and drops both from the address once read. The workbench frame's Explorer takes the same document from sessionStorage, kept for one page load.
 
 An editor left open on a document that was trashed has its saves refused (410 `document_trashed`) and shows the deleted state. API clients list, restore and delete trashed documents at `/api/trash` ([API](../015-api/api.md)), which reads and writes the index.
 

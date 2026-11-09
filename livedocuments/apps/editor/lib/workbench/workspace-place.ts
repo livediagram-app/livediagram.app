@@ -6,7 +6,7 @@
 // hrefs; these functions translate both ways, so nothing inside it learns where it runs.
 
 import { explorerPath, viewFromLocation, type ExplorerView } from '@liveworkspace/explorer';
-import { WORKSPACE_FRAME_PAGE } from './workbench-frame-path';
+import { WORKSPACE_FRAME_PAGE } from '@liveworkspace/workbench/lib/workbench/workbench-frame-path';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export type WorkspacePlace =

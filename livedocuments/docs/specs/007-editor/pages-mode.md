@@ -716,7 +716,12 @@ the tab's look, opening Tab Style ([Canvas and theme dialog](../011-theme/canvas
 article's Text, Layout, Background), then **tools** (Notes, Tidy), then **the page
 itself** (its lock, then its cog), last at the corner. A group with nothing to show is left out with
 its hairline. The label beside it shows the page's name in the label's strong ink and the rest
-(its size, its kind) muted, so the name reads first.
+(its size, its kind) muted, so the name reads first. **The label wears the same card** (`PageLabelCard`,
+`packages/workbench/src/components/canvas/PageLabelCard.tsx`, shared by every editor with pages): its text on
+the bar's near-solid white card (dark in dark mode), hairline border and soft shadow, as tall as the bar, so
+it reads over whatever is behind it, the canvas, another page or a stack's pages fanned out behind the page
+in front, and the two read as a pair. One press target inside it, quiet until hovered as the bar's buttons are;
+a name too long for its room truncates and the label's hover card says it whole. No backdrop blur, as on the bar.
 
 **On a phone, three buttons at most.** A phone (the mobile viewport) has no room for a row of small
 controls, so its bar is simplified to **Appearance**, **Notes** (a slide in the deck) and the **cog**, each a 44 px

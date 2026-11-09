@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
+import {
+  markDocumentDeleted,
+  unmarkDocumentDeleted,
+} from '@liveworkspace/workbench/lib/document-tombstones';
 import { useDocumentTrashed } from './useDocumentTrashed';
 
 const index = vi.hoisted(() => ({ getItem: vi.fn(), restoreItem: vi.fn() }));

@@ -12,7 +12,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerSankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dialog-handle';
-import { useActiveTour } from '@/lib/tour-active';
+import { useActiveTour } from '@liveworkspace/workbench/lib/tour-active';
 import { Button, DialogCloseButton, DialogHeader } from '@livedocuments/ui';
 import {
   parseSankeyText,

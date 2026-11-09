@@ -4,7 +4,7 @@
 // toolbar"): the one being worked on, else the article page under the pointer; and a press off the
 // worked-on article's pages ending the work on it.
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { canvasGestureNow } from '@/lib/canvas-gesture';
+import { canvasGestureNow } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { clearActiveArticle, type ActiveArticle } from '@/lib/article/article-editor-store';
 
 // Screen px of slack around a page that still counts as on it, and how long the pointer may be off

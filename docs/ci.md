@@ -124,6 +124,8 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
     own `format:check`; the platform's Prettier over `packages/`, `liveworkspace/`, `docs/`,
     `.github/` and the root files).
   - **Speed budgets:** a change may not add `performance.now()` to a test (see [Speed budgets](#speed-budgets)).
+  - **Copies across products:** a change may not add a source file byte-identical in two or more products
+    (see [Copies across products](#copies-across-products)).
   - **Tests:** every affected workspace's suite once. Those with `test:coverage` run that, so their
     per-file thresholds are enforced in CI; the rest run `test`. Coverage goes to Codecov, one flag
     per group, carried forward when a run doesn't reach that group (`codecov.yml`).
@@ -191,6 +193,30 @@ for a pass of their own, and so is a copy of one: a line another product already
 (a fork, such as livehuddle's of livediagram) isn't new. A line that truly needs the wall clock says why
 in a `wall-clock:` comment.
 
+## Copies across products
+
+The five products were forked from one another, and code two or more of them need belongs in `packages/`
+as `@liveworkspace/*` ([structure.md](structure.md), "Getting there, safest first"). The Checks job's **No
+new copies across products** step (`.github/scripts/duplicate-guard.mjs`, also the pre-push hook's first
+step) lists the non-test source files (`.ts`, `.tsx`, `.js`, `.mjs` and the rest) that are byte-identical
+in two or more of `livediagram/`, `liveplanner/`, `livedocuments/`, `livedesign/` and `livehuddle/`, and
+compares them with the committed baseline, `.github/scripts/duplicate-baseline.txt` (the copies that
+existed when it came in, one group per line). It leaves out generated files, each workspace's tool configs
+(`oxlint.config.ts`, `vitest.config.ts` and the like, a few lines over the shared config packages that every
+new package carries) and a product's thin binding, a file whose only statements are
+`export … from '@liveworkspace/…'`, since that is how a move ends.
+
+- **It fails** when a group appears that the baseline doesn't hold, or a baseline group gains a copy, and
+  names the files: move the module to a package instead of copying it.
+- **It also fails** when a baseline group no longer exists as listed: moved to `packages/`, changed in one
+  product only, renamed or deleted. Run `node .github/scripts/duplicate-guard.mjs --update` and commit the
+  smaller baseline, so it stays tight. A removal that deletes one copy of a group (a feature leaving a
+  product) needs that `--update` too.
+- **The baseline only shrinks:** `--update` refuses to write while there is a new group or a new copy.
+- It reads blob hashes from the index (`git ls-files -s`) and opens one copy per identical group, to spot
+  a binding: about 0.1 seconds on the whole repository (1,300 files in 450 groups). Its tests run with
+  `node --test .github/scripts/*.test.mjs`.
+
 ## Drift report
 
 livehuddle was forked in-tree from livediagram and both carry the meeting kit (Avatar mode, the Spaces,
@@ -239,7 +265,7 @@ deterministic failure shows up on the machine in minutes rather than on CI later
   saying so, when `CI` is set or outside a git work tree.
 - `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`. It takes the merge base with
   `origin/main`, asks CI's planner (`ci-plan.mjs`) which groups the change reaches, and runs each
-  group's steps as `ci.yml` does: lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
+  group's steps as `ci.yml` does: the copies guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
   each reached editor's suite once (unsharded). It stops at the first failing step.
 - It checks only a push of the checked-out `HEAD`; a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.

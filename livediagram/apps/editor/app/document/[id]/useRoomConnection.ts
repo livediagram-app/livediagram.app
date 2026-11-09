@@ -44,7 +44,7 @@ import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { shareLinkOpEffect } from './share-link-ops';
+import { shareLinkOpEffect } from '@liveworkspace/workbench/lib/share-link-ops';
 import {
   endPeerDragPreview,
   prunePeerDragPreviews,

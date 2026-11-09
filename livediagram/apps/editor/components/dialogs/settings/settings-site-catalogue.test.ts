@@ -7,7 +7,7 @@ import { DEVICE_PREFERENCES } from '@liveworkspace/settings/device';
 import { STORAGE_KEY } from '@/lib/user-preferences';
 import { PREFERENCES_UNSYNCED_KEY } from '@/lib/preferences-sync';
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
-import { SETTINGS_TILES } from './settings-icons';
+import { SETTINGS_TILES } from '@liveworkspace/workbench/components/dialogs/settings/settings-icons';
 
 // liveworkspace.app shows this app's own settings in a dialog on its settings page, from a plain-data
 // copy of this catalogue (packages/settings/src/catalogue.ts). This keeps the copy in step: change a

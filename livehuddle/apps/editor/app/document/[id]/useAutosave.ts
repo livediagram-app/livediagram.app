@@ -19,7 +19,7 @@ import {
 } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { saveFailureStatus } from './save-failure';
-import { isDocumentDeleted } from '@/lib/document-tombstones';
+import { isDocumentDeleted } from '@liveworkspace/workbench/lib/document-tombstones';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';

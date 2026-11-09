@@ -255,8 +255,10 @@ export function TitleBarCard({
   );
 }
 
-/** The page's label above its top-left corner as the editor sets it: the page's name (when it has one) in strong
- *  ink, then its size and kind muted, so a row of pages scans by name. No "Page n": the navigator says that. */
+/** The page's label above its top-left corner as the editor sets it (PageLabelCard.tsx): the page's name (when it has
+ *  one) in strong ink, then its size and kind muted, so a row of pages scans by name, on the title bar's card (white,
+ *  a hairline border, a soft shadow) from the page's left edge at `x`, centred on `y`. No "Page n": the navigator says
+ *  that. */
 export function PageLabel({
   x,
   y,
@@ -270,15 +272,39 @@ export function PageLabel({
   rest: string;
   size?: number;
 }) {
+  const text = name ? `${name} · ${rest}` : rest;
+  // A system-ui character's mean advance at weight 500, and the card's inner padding and height, in figure units.
+  const pad = size * 0.7;
+  const width = text.length * size * 0.55 + 2 * pad;
+  const h = size * 2;
   return (
-    <Label x={x} y={y} size={size} weight={500} tone="muted">
-      {name ? (
-        <tspan className="fill-slate-700" fontWeight={600}>
-          {name}
-        </tspan>
-      ) : null}
-      {name ? ' · ' : null}
-      {rest}
-    </Label>
+    <g>
+      <rect
+        x={x}
+        y={y - h / 2 + 1.5}
+        width={width}
+        height={h}
+        rx={h * 0.3}
+        className="fill-slate-200"
+      />
+      <rect
+        x={x}
+        y={y - h / 2}
+        width={width}
+        height={h}
+        rx={h * 0.3}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1}
+      />
+      <Label x={x + pad} y={y} size={size} weight={500} tone="muted">
+        {name ? (
+          <tspan className="fill-slate-700" fontWeight={600}>
+            {name}
+          </tspan>
+        ) : null}
+        {name ? ' · ' : null}
+        {rest}
+      </Label>
+    </g>
   );
 }

@@ -141,6 +141,15 @@ forwards each service's paths, so `http://localhost:3000` works as liveworkspace
 root AGENTS.md); the Workers keep their own ports (8787 and up, 3010 and 3011). Each app has a block of its own:
 livediagram 3100, liveplanner 3200, livedocuments 3300, livedesign 3400 and livehuddle 3500.
 
+## Shared code
+
+Code two or more products need lives once, in `packages/` as `@liveworkspace/*`, each module a subpath
+([docs/structure.md](../../../../docs/structure.md)). A product keeps what is its own (its element model, its
+vocabulary, its copy) and, where its package's surface must stay stable, a one-line `export * from
+'@liveworkspace/…'` binding. A new copy of a source file across two or more products is refused in CI, and the
+copies the products still hold may only become fewer ([docs/ci.md](../../../../docs/ci.md#copies-across-products)).
+Each product's router reads one set of caching rules, `@liveworkspace/sites/cache-policy`.
+
 ## Adding an app
 
 An app joins by registering its OAuth client and API resource with accounts

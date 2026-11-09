@@ -39,7 +39,7 @@ import {
 } from '@/lib/eraser-config';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { beginCanvasGesture } from '@/lib/canvas-gesture';
+import { beginCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 
 type EraserDeps = {
   editsBlocked: boolean;

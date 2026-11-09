@@ -7,7 +7,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { handOffDeleteUndo, takeDeleteUndo, trashOpenDocument } =
   await import('./document-delete-undo');
-const { isDocumentDeleted } = await import('./document-tombstones');
+const { isDocumentDeleted } = await import('@liveworkspace/workbench/lib/document-tombstones');
 
 afterEach(() => {
   vi.clearAllMocks();

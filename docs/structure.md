@@ -372,6 +372,24 @@ Each step is its own PR, and both products build and pass their tests after ever
      workbench sit on its api-schema's rules and its model's ref functions; the `find-*` and `verbs/shared` bindings
      stay because the apps read their product-named keys (`Libraries.personal.documents`, `tabOf`'s
      `{ document, tab }`).
+   - Byte-identical copies, first sweep: of the 486 groups of non-test `.ts`/`.tsx` files that read the same in
+     two or more products, 101 imported no element union, no `@<product>/*` package and no `@/` alias. 22 of
+     them moved, each a subpath at its old path, with their tests: 22 modules and 14 tests, about 1,920 lines in
+     `packages/`, and about 5,500 fewer in the products. To `@liveworkspace/workbench`: the editor surface, the
+     share-link ops, the tab save queue, `useTabRevisions` and `useTabScope` (now `hooks/editor/`), livedesign's
+     and livedocuments' `canvas-gesture`, `tour-active` and `tour-tracks`, the Settings icons, the document share
+     state, the tombstones and the workspace frame path; the editors import them from there (livehuddle keeps a
+     binding for the share-link ops while its room hook is being reworked). To `@liveworkspace/model-core`:
+     `animation` and `animation-sets` (livedesign and livedocuments; livediagram's sets are older and stay),
+     `polyline`, `selection-mode`, `slug`, `drawn-count`, `image-credit`, and `insidePolygon` beside
+     `segment-geometry`; each model package keeps a one-line `export *` binding. `server-emitted-events` to
+     `@liveworkspace/api-schema` (each product still checks the pairs against its own vocabulary), the routers'
+     `cache-policy` to `@liveworkspace/sites` (each e2e stack runs it from there) and `embeds-timeline` to
+     `@liveworkspace/marketing-site`. Left: route files (`page.tsx`, `layout.tsx`), tool configs, e2e harness
+     files and test fixtures; product tables that happen to match (licence apps and overrides, help telemetry
+     overrides, retired patterns, the conversion header); files that are already a binding; and the groups only
+     livediagram and livehuddle share, which wait for livediagram's feature removal (Work Tracker #650). CI
+     refuses any new copy and the rest may only shrink ([ci.md](ci.md#copies-across-products)).
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    every editor.

@@ -7,8 +7,8 @@ import { setOwnPictureShown } from '@/lib/own-picture';
 import { pageStep } from '@liveworkspace/workbench/lib/page-step';
 import { useDeckFollowsPages } from './useDeckFollowsPages';
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
-import { surfaceFlags, type EditorSurface } from './editor-surface';
-import { useTabRevisions } from './useTabRevisions';
+import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
+import { useTabRevisions } from '@liveworkspace/workbench/hooks/editor/useTabRevisions';
 import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
@@ -117,7 +117,7 @@ import { getSessionSharePassword } from '@/lib/api/core';
 import { useConnectedTabActions } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
 import { useDocumentList } from '@/hooks/persistence/useDocumentList';
-import { useDocumentShareState } from '@/hooks/persistence/useDocumentShareState';
+import { useDocumentShareState } from '@liveworkspace/workbench/hooks/persistence/useDocumentShareState';
 import { useTokenTeams } from '@/lib/explorer-host';
 import {
   actionRowsFromElements,
@@ -155,7 +155,7 @@ import { useFormatTool } from './useFormatTool';
 import { useTabEntryEffects } from './useTabEntryEffects';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
-import { useTabScope } from './useTabScope';
+import { useTabScope } from '@liveworkspace/workbench/hooks/editor/useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';

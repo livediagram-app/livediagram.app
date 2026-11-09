@@ -10,7 +10,7 @@ const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const { useDocumentActions } = await import('./useDocumentActions');
-const { isDocumentDeleted } = await import('@/lib/document-tombstones');
+const { isDocumentDeleted } = await import('@liveworkspace/workbench/lib/document-tombstones');
 
 const assign = vi.fn();
 

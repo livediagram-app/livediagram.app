@@ -680,7 +680,7 @@ and the dialog stays as the one complete, browsable index of them.
   "already seen", and its telemetry tokens still describe the PREFERENCE (switching on is `...SeenOff`), so each
   dashboard series keeps its meaning.
 
-  The Plan tour is a tour of several tracks (`apps/editor/lib/tour-tracks.ts`): **Plan Tours** is one switch over all
+  The Plan tour is a tour of several tracks (`../packages/workbench/src/lib/tour-tracks.ts`): **Plan Tours** is one switch over all
   of them (`tourTracksSwitch`, key `planTourSeen`: on while any track is owed, off answers every track, on forgets
   every answer), and each track has its own row nested beneath it (`parent: 'planTourSeen'`), named for itself:
   **Boards Tour**, **Card Types Tour**, **Board Setup Tour**, **Sheets Tour** and **Dashboards Tour**

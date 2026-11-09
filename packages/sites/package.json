@@ -10,7 +10,8 @@
     "./network": "./src/network.ts",
     "./picture": "./src/picture.ts",
     "./www": "./src/www.ts",
-    "./security": "./src/security.ts"
+    "./security": "./src/security.ts",
+    "./cache-policy": "./src/cache-policy.ts"
   },
   "scripts": {
     "lint": "oxlint",

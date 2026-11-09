@@ -15,7 +15,7 @@ import {
   type connectRoom,
 } from '@/lib/api-client';
 import { placedImageIds } from '@liveworkspace/media';
-import { isDocumentDeleted } from '@/lib/document-tombstones';
+import { isDocumentDeleted } from '@liveworkspace/workbench/lib/document-tombstones';
 import { commitOpenEdit } from '@liveworkspace/workbench/lib/open-edit';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { computeTabSaveDiff } from './editor-page-helpers';
