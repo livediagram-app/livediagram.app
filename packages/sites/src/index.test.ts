@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LOCAL_PORTS, PLATFORM_SITE, SITES, siteUrl, workspaceOriginFor } from './index';
+import { LOCAL_PORTS, PLATFORM_SITE, SITES, possessive, siteUrl, workspaceOriginFor } from './index';
 
 describe('workspaceOriginFor', () => {
   it("is staging's site from a staging app, else the platform's", () => {
@@ -60,5 +60,13 @@ describe('each site’s light shade', () => {
         expect(contrast(site.light, surface), `${site.id} on ${surface}`).toBeGreaterThanOrEqual(
           4.5,
         );
+  });
+});
+
+describe('possessive', () => {
+  it('takes ’s, or the apostrophe alone after an s', () => {
+    expect(possessive('livediagram')).toBe('livediagram’s');
+    expect(possessive('livedocuments')).toBe('livedocuments’');
+    expect(possessive('Acme Teams')).toBe('Acme Teams’');
   });
 });
