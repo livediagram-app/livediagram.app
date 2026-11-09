@@ -37,8 +37,14 @@ describe('gateClientOp', () => {
   it('keeps a viewer from taking part: speech and focus', () => {
     for (const op of [say, { kind: 'focus-here' }])
       expect(gateClientOp(op, as('view'))).toEqual(DROP);
-    expect(gateClientOp(say, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp(say, as('participate'))).toEqual(relayed(say));
     expect(gateClientOp({ kind: 'focus-here' }, as('participate'))).toEqual(DROP);
+  });
+
+  // docs/specs/008-canvas/avatar-mode.md "The wire": the room relays the checked copy, never the op as sent.
+  it('relays a speech bubble as its checked copy, trimmed and without fields the wire lacks', () => {
+    const forged = { ...say, text: '  hi  ', name: 'The Owner', html: '<b>x</b>' };
+    expect(gateClientOp(forged, as('edit'))).toEqual(relayed(say));
   });
 
   it('drops a malformed speech bubble from anyone', () => {

@@ -30,8 +30,8 @@ type OpGate =
   | { kind: 'participant-content' }
   /**
    * Relayed: unordered when `presence`; a Participant's answers also schedule their write. `op` is the parsed copy
-   * for a kind the gate parses (a knock, a ring, a hand, a let-speak, a voice level, a track, a game move): what the
-   * room acts on and relays, so a field the wire does not define never reaches a peer.
+   * for a kind the gate parses (a speech bubble, a knock, a ring, a hand, a let-speak, a voice level, a track, a game
+   * move): what the room acts on and relays, so a field the wire does not define never reaches a peer.
    */
   | { kind: 'relay'; presence: boolean; participantAnswers: boolean; op?: unknown };
 
@@ -101,10 +101,15 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   const level = parseStoredLevel(sender.role);
   // Speaking is taking part too (docs/specs/008-canvas/avatar-mode.md "Who may speak"), and a message is held to
   // the limits here as every receiver holds it, so a malformed one reaches nobody.
-  if (opKind === 'avatar-say' && (level === 'view' || !parseAvatarSay(op))) return DROP;
+  // The room relays the checked copy, trimmed and clamped, so a field the wire does not define never reaches a peer.
+  let parsed: unknown = undefined;
+  if (opKind === 'avatar-say') {
+    const say = level === 'view' ? null : parseAvatarSay(op);
+    if (!say) return DROP;
+    parsed = { kind: 'avatar-say', ...say };
+  }
   // So is talking (docs/specs/012-collaboration/proximity-audio.md "Share roles"): a Viewer listens, so it shows no
   // equaliser and publishes no microphone, and a malformed level or locator reaches nobody.
-  let parsed: unknown = undefined;
   if (opKind === 'avatar-voice' && (level === 'view' || !(parsed = parseAvatarVoice(op))))
     return DROP;
   // A silent call's nudge to read the kill switch (docs/specs/016-platform/calls-kill-switch.md "The room tells its
