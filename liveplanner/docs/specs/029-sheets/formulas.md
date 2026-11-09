@@ -192,8 +192,10 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
   character's (`CODE("😀")` is 128512, not half of it), and `CHAR` and `UNICHAR` make the character of one, so
   `CHAR(CODE(t))` is `t`'s first character. A code that is no character (below 1, past 1114111, or one half of a
   surrogate pair, 55296 to 57343) is `#VALUE!`.
-- `VALUE` reads empty text, or an empty cell, as 0, as Google Sheets does; other text that is no number, date or time
-  is `#VALUE!`.
+- `VALUE` reads empty text, or an empty cell, as 0, as Google Sheets does; it reads a number as typed in a cell
+  (grouping, a percentage, a currency symbol before or after the sign: `VALUE("-$5")` and `VALUE("$-5")` are -5) and,
+  as Excel does, an accounting negative in brackets (`VALUE("(5)")` and `VALUE("($1,200)")` are negative); other text
+  that is no number, date or time is `#VALUE!`.
 - `SPLIT` reads each part as Google Sheets does: one that reads as a number (or a percentage) is that number, and one
   written as an ISO date, `YYYY-MM-DD` (a time after it allowed, `2026-10-26 12:00`), is that date. Other
   date-looking text (`26/10/2026`, `Oct 26 2026`, `2026-1-5`) stays text, as its day and month read differently by
@@ -214,6 +216,10 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
   case. The text after a comparison reads as a number when it is one, a percentage (`">50%"` is above 0.5) or an
   ISO date (`">=2026-01-01"` compares dates), as in Google Sheets; other date forms stay text, as a criterion has no
   locale to read them by.
+- `VLOOKUP` and `HLOOKUP` take a column (row) index from 1: one below 1 is `#VALUE!`, one past the table `#REF!`, as
+  in Excel. `XMATCH` and `XLOOKUP` take a match mode of 0, -1, 1 or 2 and a search mode of 1, -1, 2 or -2 (2 and -2
+  search sorted data, as 1 and -1 find the same rows there); any other is `#VALUE!`. Searching from the end (-1, -2)
+  finds the last of equal matches, for an exact match and for the next smaller or larger alike.
 - A lookup key with wildcards (`VLOOKUP`, `MATCH`, `XLOOKUP`, `XMATCH`) is a wildcard pattern only, never a
   comparison: `VLOOKUP("<a*", …)` finds text starting `<a`. `~` escapes a wildcard there as in a criterion:
   `MATCH("~*", …)` finds a star.

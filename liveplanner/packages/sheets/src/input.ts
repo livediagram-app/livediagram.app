@@ -107,6 +107,12 @@ function readNumberish(text: string, locale: string): LiteralRead | null {
   return { kind: 'value', input: { n } };
 }
 
+// The number a text reads as when typed in a cell (a sign, grouping, a currency symbol, a percentage), or null.
+export function readNumberText(text: string, locale: string): number | null {
+  const read = readNumberish(text.trim(), locale);
+  return read?.kind === 'value' && 'n' in read.input ? read.input.n : null;
+}
+
 // A typed input that is not a formula, read in `locale`. `asText` is the cell's Plain Text format.
 export function readLiteralInput(text: string, locale: string, asText = false): LiteralRead {
   if (asText) return text === '' ? { kind: 'clear' } : { kind: 'value', input: { s: text } };

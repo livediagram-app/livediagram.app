@@ -929,7 +929,7 @@ Every tab is in Plan, so a Sheet element goes on any tab, as a board does
 ## CSV
 
 - **Import CSV…** (Sheet Settings; on a Sheet tab, the [Import dialog](../026-plan/plan-tabs.md#the-import-dialog)'s **CSV** row, or a CSV dropped on that dialog) opens a file picker for a `.csv` or `.tsv`, read as tab-separated when its first
-  line holds a tab outside quotes, semicolon-separated when its first lines (up to 20) read with semicolons split into the same
+  line holds a tab outside quotes (a quote opens a quoted field only at a field's start, so the inch mark in `5" pipe` is text and the tab after it still separates), semicolon-separated when its first lines (up to 20) read with semicolons split into the same
   number of fields on every line, more than one, and read with commas do not, or into no more (Excel's CSV where
   the decimal mark is a comma, so `Tea;3,50` and a header like `Amount, EUR` stay semicolon lines; a quoted comma,
   semicolon or tab is the field's, never a separator, and a reading that leaves a quote outside RFC 4180's quoting

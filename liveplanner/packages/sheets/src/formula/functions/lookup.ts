@@ -25,6 +25,7 @@ import {
   isError,
   scalarOf,
   type Scalar,
+  type SheetError,
   type Value,
   type ValueArray,
 } from '../values';
@@ -94,7 +95,9 @@ function vhLookup(vertical: boolean): FnDef {
     if (isError(sortedMode)) return sortedMode;
     const d = dims(table);
     const span = vertical ? d.cols : d.rows;
-    if (idx < 1 || idx > span) return err('#REF!', `Index ${idx} is outside the range`);
+    // As in Excel: an index below 1 is no column (row) at all, one past the table points outside it.
+    if (idx < 1) return err('#VALUE!', `Index ${idx} must be 1 or more`);
+    if (idx > span) return err('#REF!', `Index ${idx} is outside the range`);
     const keys = vertical ? column(table, 0) : row(table, 0);
     const i = sortedMode ? sortedIndex(keys, key) : exactIndex(keys, key);
     if (i < 0) return err('#N/A', 'No match was found');
@@ -103,14 +106,33 @@ function vhLookup(vertical: boolean): FnDef {
   });
 }
 
+const MATCH_MODES = new Set([0, -1, 1, 2]);
+const SEARCH_MODES = new Set([1, -1, 2, -2]);
+
+// XMATCH's and XLOOKUP's match and search modes as Excel takes them, or the #VALUE! for one it does not.
+function matchModes(
+  mode: number | SheetError,
+  search: number | SheetError,
+): { mode: number; search: number } | SheetError {
+  if (isError(mode)) return mode;
+  if (isError(search)) return search;
+  if (!MATCH_MODES.has(mode)) return err('#VALUE!', `Match mode ${mode} is not 0, -1, 1 or 2`);
+  if (!SEARCH_MODES.has(search))
+    return err('#VALUE!', `Search mode ${search} is not 1, -1, 2 or -2`);
+  return { mode, search };
+}
+
 function matchIn(list: Scalar[], key: Scalar, mode: number, search: number): number {
   const reverse = search < 0;
   if (mode === 2) return exactIndex(list, key, reverse, true);
   const exact = exactIndex(list, key, reverse, false);
   if (exact >= 0 || mode === 0) return exact;
-  // Exact or next smaller (-1) / next larger (1), over unsorted data.
+  // Exact or next smaller (-1) / next larger (1), over unsorted data, in the search's direction: of equal values the
+  // first met is kept, so a search from the end finds the last of them.
   let best = -1;
-  for (let i = 0; i < list.length; i++) {
+  const n = list.length;
+  for (let k = 0; k < n; k++) {
+    const i = reverse ? n - 1 - k : k;
     const v = list[i]!;
     if (!sameKind(v, key)) continue;
     const c = compareScalars(v, key);
@@ -179,11 +201,9 @@ export const LOOKUP_FUNCTIONS: Record<string, FnDef> = {
     if (isError(key)) return key;
     const line = lineOf(arrayArg(args[1]!, f));
     if (!line) return err('#N/A', 'XMATCH needs one row or one column');
-    const mode = opt(args, 2, f, intArg, 0);
-    const search = opt(args, 3, f, intArg, 1);
-    if (isError(mode)) return mode;
-    if (isError(search)) return search;
-    const i = matchIn(line.list, key, mode, search);
+    const modes = matchModes(opt(args, 2, f, intArg, 0), opt(args, 3, f, intArg, 1));
+    if (isError(modes)) return modes;
+    const i = matchIn(line.list, key, modes.mode, modes.search);
     return i < 0 ? err('#N/A', 'No match was found') : i + 1;
   }),
   XLOOKUP: fn(3, 6, (args, f) => {
@@ -193,11 +213,9 @@ export const LOOKUP_FUNCTIONS: Record<string, FnDef> = {
     const line = lineOf(keys);
     if (!line) return err('#VALUE!', 'The lookup range must be one row or one column');
     const results = arrayArg(args[2]!, f);
-    const mode = opt(args, 4, f, intArg, 0);
-    const search = opt(args, 5, f, intArg, 1);
-    if (isError(mode)) return mode;
-    if (isError(search)) return search;
-    const i = matchIn(line.list, key, mode, search);
+    const modes = matchModes(opt(args, 4, f, intArg, 0), opt(args, 5, f, intArg, 1));
+    if (isError(modes)) return modes;
+    const i = matchIn(line.list, key, modes.mode, modes.search);
     if (i < 0) {
       const missing = args[3];
       return missing !== undefined && missing !== null
