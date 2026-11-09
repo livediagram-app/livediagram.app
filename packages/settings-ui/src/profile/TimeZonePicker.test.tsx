@@ -178,6 +178,26 @@ describe('the Time Zone row', () => {
     expect(screen.getByRole('listbox')).toBeTruthy();
   });
 
+  it('closes when focus moves on to another control, leaving focus there', () => {
+    render(
+      <>
+        <TimeZoneRow initial={profile(detected, true)} host={fakeHost()} />
+        <button type="button">Next</button>
+      </>,
+    );
+    open();
+    const field = screen.getByRole('combobox', { name: 'Search time zones' });
+    const next = screen.getByRole('button', { name: 'Next' });
+    // Leaving the window (no new target) keeps it.
+    fireEvent.blur(field, { relatedTarget: null });
+    expect(screen.getByRole('listbox')).toBeTruthy();
+    next.focus();
+    fireEvent.blur(field, { relatedTarget: next });
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(zoneButton().getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(next);
+  });
+
   it('closes when the pointer goes down outside it', () => {
     render(
       <>
