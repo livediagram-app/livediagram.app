@@ -60,7 +60,8 @@ export const MATH_FUNCTIONS: Record<string, FnDef> = {
   PRODUCT: fn(1, MANY, (args, f) => {
     const ns = numbersOf(args, f);
     if (isError(ns)) return ns;
-    return ns.reduce((p, n) => p * n, 1);
+    // No numbers at all is 0, as in Excel and Google Sheets, never the empty product 1.
+    return ns.length === 0 ? 0 : ns.reduce((p, n) => p * n, 1);
   }),
   SUMIF: fn(2, 3, (args, f) => {
     const m = criteriaMask([[args[0]!, args[1]!]], f);

@@ -17,7 +17,7 @@ import {
   type FnDef,
 } from '../fn';
 import { parseFormula } from '../parse';
-import { wildcardCriterion } from '../criteria';
+import { unescape, wildcardCriterion } from '../criteria';
 import {
   compareScalars,
   dims,
@@ -36,11 +36,14 @@ function sameKind(a: Scalar, b: Scalar): boolean {
 // The index of an exact match in `list` (text ignoring case, wildcards when the key has them), or -1.
 function exactIndex(list: Scalar[], key: Scalar, reverse = false, wildcards = true): number {
   const crit = wildcards && typeof key === 'string' ? wildcardCriterion(key) : null;
+  // A key whose wildcards are all escaped ("~*", "a~?") looks for the characters themselves, as COUNTIF reads it.
+  const want =
+    !crit && wildcards && typeof key === 'string' && key.includes('~') ? unescape(key) : key;
   const n = list.length;
   for (let k = 0; k < n; k++) {
     const i = reverse ? n - 1 - k : k;
     const v = list[i]!;
-    if (crit ? crit(v) : sameKind(v, key) && compareScalars(v, key) === 0) return i;
+    if (crit ? crit(v) : sameKind(v, want) && compareScalars(v, want) === 0) return i;
   }
   return -1;
 }
@@ -158,7 +161,8 @@ export const LOOKUP_FUNCTIONS: Record<string, FnDef> = {
       );
     }
     const result = lineOf(arrayArg(args[2], f));
-    return result ? (result.list[i] ?? err('#N/A')) : err('#N/A');
+    // A blank result cell is its answer (null), not a miss: only a result line too short to reach the match is #N/A.
+    return result && i < result.list.length ? result.list[i]! : err('#N/A');
   }),
   MATCH: fn(2, 3, (args, f) => {
     const key = scalarArg(args[0]!, f);
