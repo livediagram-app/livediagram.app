@@ -100,7 +100,7 @@ export function WatchItBuiltPlayer({
     const size = host
       ? { width: host.width / view.zoom, height: host.height / view.zoom }
       : { width: 1200, height: 800 };
-    layoutRef.current = topic.layout({ centre, size, tab: ctx.activeTab });
+    layoutRef.current = topic.layout({ centre, size, tab: ctx.activeTab, zoom: view.zoom });
     pauseTelemetry();
     ctx.closeContextMenu();
     document.documentElement.setAttribute('data-replay', '');

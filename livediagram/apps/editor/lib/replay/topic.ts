@@ -29,6 +29,9 @@ export type TopicEnv = {
   readonly centre: Point;
   readonly size: { readonly width: number; readonly height: number };
   readonly tab: Tab;
+  // The view's zoom (screen px per canvas unit), so a demo can keep a screen distance from chrome drawn over the canvas
+  // (the player moved to the top). 1 when not given.
+  readonly zoom?: number;
 };
 
 /** Where Example points, as something the player finds on screen. */
