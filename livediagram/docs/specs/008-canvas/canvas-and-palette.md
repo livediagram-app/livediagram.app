@@ -422,7 +422,7 @@ Arrows with one pinned endpoint and one free endpoint are deleted in the same wa
 
 ### Locking arrows
 
-A locked arrow's endpoint handles are not draggable. Same semantics as a locked shape: it can't be moved or deleted (including via another element's [cascade](#cascading-delete)); unlock it first.
+A locked arrow's endpoint handles are not draggable. Same semantics as a locked shape: it can't be moved or deleted (including via another element's [cascade](#cascading-delete)); unlock it first. The same holds for an arrow on a locked layer. When what such an arrow is attached to goes (a delete, an erase, a [layer](../006-document/layers.md) deleted or cleared), the arrow stays and that end is freed where it was drawn (`freeEndsAttachedTo` in `packages/document/src/arrow-free-ends.ts`), never left naming an element that is gone.
 
 ### Data model
 

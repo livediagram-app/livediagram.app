@@ -171,6 +171,30 @@ describe('deleteLayer', () => {
     expect(ids(out.elements)).toEqual(['safe']);
   });
 
+  // docs/specs/008-canvas/canvas-and-palette.md "Locking arrows": a locked arrow, or one on a locked layer, is never
+  // taken by another element's cascade; its end on the deleted box is freed where it was drawn.
+  it('keeps a locked arrow and one on a locked layer, freeing their ends where they were drawn', () => {
+    const end = { kind: 'pinned', elementId: 'doomed', anchor: 'e' } as const;
+    const t = tab(
+      [
+        box('doomed', { layerId: 'top', x: 100, y: 0 }),
+        box('safe'),
+        arrow('locked', { locked: true, from: end }),
+        arrow('onLocked', { layerId: 'frozen', to: end }),
+        arrow('plain', { from: end }),
+        arrow('hung', { from: { kind: 'on-arrow', arrowId: 'plain', t: 0.5 } }),
+      ],
+      [L(DEFAULT_LAYER_ID), L('frozen', { locked: true }), L('top')],
+    );
+    for (const out of [deleteLayer(t, 'top'), clearLayerElements(t, 'top')]) {
+      expect(ids(out.elements)).toEqual(['safe', 'locked', 'onLocked']);
+      const [locked, onLocked] = out.elements.slice(1) as (Element & { type: 'arrow' })[];
+      expect(locked!.from).toEqual({ kind: 'free', x: 200, y: 50 });
+      expect(onLocked!.to).toEqual({ kind: 'free', x: 200, y: 50 });
+      expect(onLocked!.from).toEqual({ kind: 'free', x: 0, y: 0 });
+    }
+  });
+
   it('elements with a missing layerId follow the default layer to deletion', () => {
     const t = tab(
       [box('legacy'), box('kept', { layerId: 'top' })],

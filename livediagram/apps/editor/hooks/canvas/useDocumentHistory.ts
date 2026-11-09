@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { graftLiveTabState, type Tab } from '@livediagram/document';
+import { freeDanglingEnds, graftLiveTabState, type Tab } from '@livediagram/document';
 import {
   clearedStacks,
   stacksAfterStep,
@@ -92,13 +92,32 @@ export function historyMarkCheckpoint(h: History): History {
 // them). Restoring a snapshot verbatim silently dropped both (then
 // autosave persisted + broadcast the stripped tab to every peer).
 
+// The restored tabs: the live state grafted on, and each arrow end that names an element the restore took away
+// freed where it was drawn. A peer's arrow to a box the person added rides into the snapshot from before the add
+// (withRemoteOp); undoing the add takes the box back, never the peer's arrow, which kept naming the gone box and was
+// drawn, and saved, at the canvas origin. Linear in the elements of the tabs the restore changed.
+function restore(present: Tab[], snapshot: Tab[]): Tab[] {
+  const grafted = graftLiveTabState(present, snapshot);
+  const before = new Map(present.map((tab) => [tab.id, tab] as const));
+  let changed = false;
+  const out = grafted.map((tab) => {
+    const was = before.get(tab.id);
+    if (was === tab) return tab;
+    const elements = freeDanglingEnds(tab.elements, was ? was.elements : tab.elements);
+    if (elements === tab.elements) return tab;
+    changed = true;
+    return { ...tab, elements };
+  });
+  return changed ? out : grafted;
+}
+
 export function historyUndo(h: History): History {
   if (h.past.length === 0) return h;
   const { snapshot, stacks } = stepBack(h, HISTORY_LIMIT, true);
   return {
     ...h,
     ...stacks,
-    present: graftLiveTabState(h.present, snapshot),
+    present: restore(h.present, snapshot),
   };
 }
 
@@ -113,7 +132,7 @@ export function historyCancel(h: History): History {
   return {
     ...h,
     ...stacks,
-    present: graftLiveTabState(h.present, snapshot),
+    present: restore(h.present, snapshot),
   };
 }
 
@@ -123,7 +142,7 @@ export function historyRedo(h: History): History {
   return {
     ...h,
     ...stacks,
-    present: graftLiveTabState(h.present, snapshot),
+    present: restore(h.present, snapshot),
   };
 }
 
