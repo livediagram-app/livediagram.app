@@ -2,7 +2,7 @@
 // board, a Sheet tab's Sheet with the charts drawn from it, and a Dashboard tab's views and charts. Edit operations
 // add, set and test these and nothing else, so an agent can make only what liveplanner draws.
 
-import type { Element } from '@liveplanner/project';
+import { PLAN_COLUMN_NAME_MAX, PLAN_TITLE_MAX, type Element } from '@liveplanner/project';
 
 export const PLAN_ELEMENT_KINDS = [
   'plan-board',
@@ -83,6 +83,30 @@ export function planElementIssue(raw: Readonly<Record<string, unknown>>): string
   if (CHARTS.has(kind) && (typeof raw.chartSource !== 'object' || raw.chartSource === null))
     return `a ${kind} reads a Sheet's cells: it needs "chartSource" { "sheetId", "range" }`;
   return null;
+}
+
+// A board set-up over its caps, as the field and rule an agent write is refused with
+// (docs/specs/024-agents/edit-operations.md "A board's caps hold for agents"): a title over PLAN_TITLE_MAX, or a column
+// name over PLAN_COLUMN_NAME_MAX. Null for anything else; the set-up's other checks are normaliseBoardSetup's.
+export function planBoardCapIssue(el: unknown): { field: string; rule: string } | null {
+  if (typeof el !== 'object' || el === null) return null;
+  const setup = (el as { planBoard?: unknown }).planBoard;
+  if (typeof setup !== 'object' || setup === null) return null;
+  const { title, columns } = setup as { title?: unknown; columns?: unknown };
+  if (typeof title === 'string' && title.length > PLAN_TITLE_MAX)
+    return { field: 'planBoard', rule: `a board title is at most ${PLAN_TITLE_MAX} characters` };
+  const long = Array.isArray(columns)
+    ? columns.find((c: unknown) => {
+        const name = typeof c === 'object' && c !== null ? (c as { name?: unknown }).name : null;
+        return typeof name === 'string' && name.length > PLAN_COLUMN_NAME_MAX;
+      })
+    : undefined;
+  return long
+    ? {
+        field: 'planBoard',
+        rule: `a column name is at most ${PLAN_COLUMN_NAME_MAX} characters`,
+      }
+    : null;
 }
 
 // The hint a refused kind carries: the kinds there are.
