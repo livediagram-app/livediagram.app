@@ -10,14 +10,14 @@ Scope, by file:
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `packages/document/scripts/build-world-map.mjs`          | Builds the geometry module from the two Natural Earth files                                  |
 | `packages/document/src/map-geometry.generated.ts`        | `MAP_GEOMETRY`: countries and places (subpath `@livedocuments/document/map-geometry` only)   |
-| `packages/document/src/map-model.ts`                     | Types, limits, regions, projection, validators, `clampMapPins`, `MAP_REGIONS`                |
+| `packages/document/src/map-model.ts`                     | Types, limits, regions, projection, validators, `MAP_REGIONS`, `provideMapGeometry` / `providedMapGeometry` |
 | `packages/document/src/map-layout.ts`                    | `mapLayout`: view window, transform, country fills, pins and labels, shared by every surface |
 | `packages/document/src/svg-render-map.ts`                | `svgMap`: the export body from `mapLayout`                                                   |
 | `packages/document/src/svg-render-body.ts`               | Routes `'map'` to `svgMap` with the resolved colours                                         |
 | `packages/document/src/shape-factory.ts`                 | Size 480 × 260, no data                                                                      |
 | `packages/document/src/colors.ts`                        | `SELF_PAINTING_SHAPES` membership                                                            |
 | `packages/document/src/validate.ts`, `validate-shape.ts` | Kind accepted; field checks                                                                  |
-| `apps/editor/lib/map-geometry-loader.ts`                 | `loadMapGeometry()` (one dynamic import, cached), `useMapGeometry()`                         |
+| `apps/editor/lib/map-geometry-loader.ts`                 | `loadMapGeometry()` (one dynamic import, cached, provided to the document package), `useMapGeometry()`, `ensureMapGeometryFor(tab)` before an export |
 | `apps/editor/components/canvas/MapView.tsx`              | Canvas drawing (lazy chunk via `ShapeContentRouter`)                                         |
 | `apps/editor/components/canvas/MapDrawing.tsx`           | The pure SVG drawing shared by the view and the dialog preview                               |
 | `apps/editor/components/dialogs/MapDialog.tsx`           | The Edit Map dialog                                                                          |
@@ -132,7 +132,7 @@ maps. Copy, duplicate and paste carry them like any shape field; pin ids are cop
 
 ## Errors and edge cases
 
-- Geometry not loaded yet: the canvas and an export without `resolveMapGeometry` draw the
+- Geometry not loaded yet (nothing provided): the canvas and an export draw the
   placeholder, a rounded rect in the land colour at 60% opacity (D198).
 - Geometry import fails (offline first load): the placeholder stays; the loader retries on the next
   mount.

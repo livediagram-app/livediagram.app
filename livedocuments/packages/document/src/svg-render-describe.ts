@@ -4,6 +4,7 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
+import { exportRunEffects } from './svg-render-text-effects';
 import type { ResolveTabWindow } from './tab-window';
 import type { TagColour } from './tag-colours';
 import { imageCornerPx } from './drawn-outline-finish';
@@ -312,6 +313,8 @@ export function describeBoxedExport(
         bold: run.bold ?? !!el.textBold,
         italic: run.italic ?? !!el.textItalic,
         ...(run.muted ? { muted: true } : {}),
+        // Highlight and gradient (docs/specs/008-canvas/text-effects.md), unknown values dropped.
+        ...exportRunEffects(run),
       }))
     : undefined;
   // Mirror the editor's label layout: alignment defaults per element type

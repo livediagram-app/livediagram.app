@@ -3,6 +3,7 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livedocuments/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
+import type { MapPin, MapRegion } from './map-model';
 import type { Finish } from './finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
@@ -260,6 +261,13 @@ export type ShapeElement = {
   // recoloured, and how the diagram draws. Only meaningful on the 'sankey' kind; bounded in validate.ts.
   // Absent options read as their defaults: bands blended, end nodes to the right, amounts shown, no unit.
   sankeyFlows?: SankeyFlow[];
+  // Map (docs/specs/009-elements/map.md): the region it shows (absent: the world), or one country it
+  // frames (outranks the region); the countries filled in the accent; the pins. Only meaningful on the
+  // 'map' kind; bounded in validate-shape.ts.
+  mapRegion?: MapRegion;
+  mapCountry?: string;
+  mapHighlights?: string[];
+  mapPins?: MapPin[];
   sankeyNodes?: SankeyNodeStyle[];
   sankeyLinkColor?: SankeyLinkColor;
   sankeyAlign?: SankeyAlign;
@@ -497,6 +505,8 @@ export type TextElement = {
   // Bends the text along a circle, -360 to 360 degrees: positive bows up, negative down. Absent is
   // flat. Arched text is one line.
   textArc?: number;
+  // A soft shadow behind the letters (docs/specs/008-canvas/element-shadows.md); see shadow.ts.
+  shadow?: ElementShadow;
 };
 
 // --- Tables ----------------------------------------------------------------

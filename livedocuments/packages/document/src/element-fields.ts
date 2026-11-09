@@ -95,6 +95,10 @@ export const ELEMENT_FIELD_NAMES = {
     'lineSeries',
     'legendItems',
     'sankeyFlows',
+    'mapRegion',
+    'mapCountry',
+    'mapHighlights',
+    'mapPins',
     'sankeyNodes',
     'sankeyLinkColor',
     'sankeyAlign',
@@ -203,6 +207,7 @@ export const ELEMENT_FIELD_NAMES = {
     'fontWeight',
     'textCase',
     'textArc',
+    'shadow',
   ]),
   sticky: fieldsOf<StickyElement>()([
     'id',

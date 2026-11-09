@@ -135,6 +135,7 @@ export const SHAPE_KINDS = new Set<string>([
   'checklist',
   'legend',
   'sankey',
+  'map',
   'icon',
   'sticker',
 ]);

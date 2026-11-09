@@ -54,6 +54,7 @@ export {
   xmlEscape,
 } from './svg-render-primitives';
 import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
+import { textEffectIdPrefix } from './svg-render-text-effects';
 import { svgWordmarkLabel } from './svg-render-wordmark';
 import { hasWordmarkType } from './wordmark';
 
@@ -434,6 +435,8 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
               label.maxWidth,
               label.valign,
               label.fontFamily,
+              undefined,
+              textEffectIdPrefix(el.id),
             )
           : svgWrappedLabel(
               // Wrapped in the face it paints in, or a wide face breaks at the

@@ -19,6 +19,8 @@ import {
 import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
 import { svgSankey } from './svg-render-sankey';
 import { isSankeyShape } from './sankey-model';
+import { isMapShape, mapLandColour, mapPaperColour } from './map-model';
+import { svgMap } from './svg-render-map';
 import { svgProgressBar, svgProgressRing, svgRating } from './svg-render-data';
 import { progressTrackColour } from './progress-colours';
 import { svgWebComponent } from './svg-render-web';
@@ -86,6 +88,18 @@ export function svgElementBody(
     return svgLineChart(el, labelColor, chartPalette, fontFamily, chartGround);
   if (isSankeyShape(el.shape))
     return svgSankey(el, labelColor, chartPalette, fontFamily, chartGround);
+  // Map (docs/specs/009-elements/map.md): land in its own fill or the paper's soft default.
+  if (isMapShape(el.shape))
+    return svgMap(
+      el,
+      {
+        land: mapLandColour(el.fillColor, o.surface),
+        accent: stroke,
+        paper: mapPaperColour(o.surface),
+        text: labelColor,
+      },
+      fontFamily,
+    );
   // The empty track is the element's OWN fill, else the paper's default track,
   // the one the canvas's ProgressView draws (docs/specs/009-elements/progress.md).
   const track = progressTrackColour(el, o.surface);

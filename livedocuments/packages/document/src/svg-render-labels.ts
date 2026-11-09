@@ -9,6 +9,12 @@ import { LABEL_LINE_HEIGHT, labelMeasure, r2, xmlEscape } from './svg-render-pri
 // One resolved span of a rich label (run + element defaults).
 import { MUTED_RUN_OPACITY } from '@liveworkspace/model-core/title-caption';
 import { bidiLine, bidiMarkup } from '@liveworkspace/model-core/svg-bidi';
+import {
+  sameEffects,
+  svgLineEffects,
+  type ExportRunEffects,
+  type PlacedFragment,
+} from './svg-render-text-effects';
 
 export type ExportRun = {
   text: string;
@@ -18,7 +24,7 @@ export type ExportRun = {
   italic: boolean;
   // Drawn at MUTED_RUN_OPACITY (a Title and Caption caption, docs/specs/009-elements/block-type-picker.md).
   muted?: boolean;
-};
+} & ExportRunEffects; // Highlight and gradient (docs/specs/008-canvas/text-effects.md).
 
 // The default face an export paints in when nothing else is asked for — the
 // editor's own default (docs/specs/004-interface-design/fonts.md's "editor default" rung).
@@ -165,7 +171,8 @@ export function wrapExportRuns(
           last.size === run.size &&
           last.bold === run.bold &&
           last.italic === run.italic &&
-          !!last.muted === !!run.muted
+          !!last.muted === !!run.muted &&
+          sameEffects(last, run)
         ) {
           last.text += frag;
         } else {
@@ -191,6 +198,8 @@ export function svgRichWrappedLabel(
   valign: 'top' | 'middle' | 'bottom' = 'middle',
   fontFamily?: string,
   wordmark?: WordmarkAttrs,
+  // Names the label's gradient defs (textEffectIdPrefix of its element), unique in the drawing.
+  effectIds = 'tg',
 ): string {
   const maxSize = Math.max(...runs.map((r) => r.size));
   const trackingPx = wordmark?.letterSpacing
@@ -199,12 +208,24 @@ export function svgRichWrappedLabel(
   const lines = wrapExportRuns(runs, maxWidth, fontFamily, trackingPx);
   const lineH = LABEL_LINE_HEIGHT * maxSize;
   const firstY = blockFirstY(y, lines.length, lineH, valign);
+  // Text effects need each fragment's place on its line; a label without any skips the measuring.
+  const effects = runs.some((r) => r.highlight || r.gradient);
+  const next = { n: 0 };
+  let defs = '';
+  let bands = '';
   const body = lines
     .map((line, i) => {
+      const fills = effects
+        ? placeEffects(line, x, firstY + i * lineH, anchor, fontFamily, trackingPx, effectIds, next)
+        : null;
+      if (fills) {
+        defs += fills.defs;
+        bands += fills.bands;
+      }
       const frags = line
         .map(
-          (run) =>
-            `<tspan fill="${xmlEscape(run.color)}"${run.muted ? ` fill-opacity="${MUTED_RUN_OPACITY}"` : ''} font-size="${run.size}"` +
+          (run, j) =>
+            `<tspan fill="${xmlEscape(fills?.fills[j] ?? run.color)}"${run.muted ? ` fill-opacity="${MUTED_RUN_OPACITY}"` : ''} font-size="${run.size}"` +
             ` font-weight="${run.bold ? 600 : weightOf(false, wordmark)}"${run.italic ? ' font-style="italic"' : ''}>` +
             `${xmlEscape(run.text)}</tspan>`,
         )
@@ -214,8 +235,45 @@ export function svgRichWrappedLabel(
     })
     .join('');
   return (
+    (defs ? `<defs>${defs}</defs>` : '') +
+    bands +
     `<text x="${r2(x)}" y="${r2(firstY)}"${svgFontFamilyAttr(fontFamily)}` +
     `${trackingAttr(wordmark, maxSize)}` +
     ` text-anchor="${anchor}" dominant-baseline="central">${body}</text>`
   );
+}
+
+// One line's effects: each fragment measured as the wrap measured it, the line placed by its anchor,
+// a fragment's leading joining space left out of its band (docs/specs/008-canvas/text-effects.md).
+function placeEffects(
+  line: ExportRun[],
+  x: number,
+  lineY: number,
+  anchor: 'start' | 'middle' | 'end',
+  fontFamily: string | undefined,
+  trackingPx: number,
+  idPrefix: string,
+  next: { n: number },
+) {
+  const widths = line.map((run) => {
+    const m = labelMeasure(run.size, run.bold, run.italic, fontFamily);
+    const w = (s: string) => m(s) + trackingPx * [...s].length;
+    const lead = run.text.match(/^\s*/)![0];
+    return { lead: lead ? w(lead) : 0, all: w(run.text) };
+  });
+  const total = widths.reduce((sum, w) => sum + w.all, 0);
+  let at = anchor === 'start' ? x : anchor === 'end' ? x - total : x - total / 2;
+  const placed: PlacedFragment[] = line.map((run, j) => {
+    const w = widths[j]!;
+    const frag = {
+      x: at + w.lead,
+      width: w.all - w.lead,
+      size: run.size,
+      highlight: run.highlight,
+      gradient: run.gradient,
+    };
+    at += w.all;
+    return frag;
+  });
+  return svgLineEffects(placed, lineY, idPrefix, next);
 }

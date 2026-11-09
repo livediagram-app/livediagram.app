@@ -94,9 +94,10 @@ Map is a `ShapeKind` `'map'`, following the composite-component pattern ([Timeli
 ## Exports and other surfaces
 
 - **SVG export, snapshots, embeds, MCP renders and the api's thumbnails** draw the map from the same
-  pure layout (`mapLayout`) the canvas uses, through a `resolveMapGeometry` render option; the
-  callers load the geometry first. Without it (a renderer that has not loaded it) the map draws as
-  its placeholder.
+  pure layout (`mapLayout`) the canvas uses. The geometry reaches the renderer the way icon art
+  does: whoever loads it hands it to the document package once (`provideMapGeometry`), and the
+  renderer reads what has been provided. Each caller that renders a tab with a map loads it first;
+  without it the map draws as its placeholder.
 - **PNG and PDF** export rasterise it through that SVG, like the other self-drawing shapes.
 - **PowerPoint** exports it as a picture of itself, like every other shape a native slide shape
   cannot say.

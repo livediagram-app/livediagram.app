@@ -12,6 +12,7 @@ import {
   type WordmarkAttrs,
 } from './svg-render-labels';
 import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
+import { textEffectIdPrefix } from './svg-render-text-effects';
 import { arcGeometry, arcText, resolvedFontWeight, wordmarkDisplayText } from './wordmark';
 
 /** A width measure that counts tracking: each glyph is followed by `letterSpacing` em. */
@@ -43,6 +44,7 @@ export function svgWordmarkLabel(el: TextElement, label: ExportLabel): string {
       label.valign,
       label.fontFamily,
       attrs,
+      textEffectIdPrefix(el.id),
     );
   }
   const text = wordmarkDisplayText(label.text, el.textCase);

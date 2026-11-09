@@ -120,7 +120,7 @@ Tiles are buttons with `aria-label` "{Name} gradient" and `aria-pressed`; None i
 
 ## Observability
 
-`track('Element', 'Changed', 'TextHighlight' | 'TextGradient')`.
+The session's `trackFormat` (`TextFormat`) through `onPatch(patch, 'Highlight' | 'Gradient')`.
 
 ## Testing
 

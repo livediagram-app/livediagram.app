@@ -78,4 +78,5 @@ it, as with every cosmetic run attribute.
 
 ## Telemetry
 
-`track('Element', 'Changed', 'TextHighlight' | 'TextGradient')` on each pick (not on hover).
+Each pick is a label format command, so it reports as every other one does,
+`track('Element', 'Changed', 'TextFormat')`; nothing new is counted.
