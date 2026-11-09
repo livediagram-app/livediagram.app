@@ -197,10 +197,13 @@ describe('the card panel, for an Editor or a Participant', () => {
     const items = (plan.value as { items: Map<string, Item> }).items;
     const fillTo = (n: number, prefix: string) =>
       items.set(item.id, make(Array.from({ length: n }, (_, i) => pic(`${prefix}${i}`))));
-    const upload = api.upload.getMockImplementation()!;
-    api.upload.mockImplementationOnce(async (...args: Parameters<typeof upload>) => {
+    const upload = api.upload.getMockImplementation() as (
+      scope: unknown,
+      f: File,
+    ) => Promise<unknown>;
+    api.upload.mockImplementationOnce(async (scope: unknown, f: File) => {
       fillTo(ITEM_ATTACHMENTS_MAX - 1, 'p');
-      return upload(...args);
+      return upload(scope, f);
     });
     const input = document.querySelector('input[type=file]') as HTMLInputElement;
     fireEvent.change(input, { target: { files: [file('a.png'), file('b.png'), file('c.png')] } });
@@ -213,9 +216,9 @@ describe('the card panel, for an Editor or a Participant', () => {
     patchItem.mockClear();
     announce.mockClear();
     items.set(item.id, make());
-    api.upload.mockImplementationOnce(async (...args: Parameters<typeof upload>) => {
+    api.upload.mockImplementationOnce(async (scope: unknown, f: File) => {
       fillTo(ITEM_ATTACHMENTS_MAX, 'q');
-      return upload(...args);
+      return upload(scope, f);
     });
     fireEvent.change(input, { target: { files: [file('d.png')] } });
     await flush();
