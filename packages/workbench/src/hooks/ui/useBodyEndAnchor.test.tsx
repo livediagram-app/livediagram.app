@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { afterEach, describe, expect, it } from 'vitest';
 import { BODY_END_ATTR, useBodyEndAnchor } from './useBodyEndAnchor';
 
-// docs/specs/026-plan/blueprints/plan-board.md "Body end anchor".
+// Each editor's docs/specs/008-canvas/canvas-performance.md "Nothing shown over the page restyles the editor".
 afterEach(cleanup);
 
 function Editor({ overlay }: { overlay: boolean }) {

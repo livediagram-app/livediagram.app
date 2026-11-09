@@ -28,6 +28,9 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/hooks/canvas/useEdgeAwarePlacement.ts`                    | Takes `suspended`; never measures while suspended                                                               |
 | `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`            | `toolbarsStale` includes `selectionMoving`                                                                      |
 | `../packages/workbench/src/hooks/canvas/useCanvasLongTaskLog.ts`       | The `[canvas-perf] long task` debug log                                                                         |
+| `../packages/workbench/src/hooks/ui/useBodyEndAnchor.ts`               | `useBodyEndAnchor`: an empty `div[data-body-end]` kept at the end of `<body>`, called by `SplitViewFrame`       |
+| `../packages/workbench/src/hooks/canvas/useNoCanvasTextSelection.ts`   | `useNoCanvasTextSelection(mainRef)`, `cancelsCanvasSelectStart`: no text selection starts on the canvas         |
+| `../packages/workbench/src/components/canvas/MarqueeRect.tsx`          | The marquee rectangle: one element, `hidden` between sweeps                                                     |
 | `../packages/workbench/src/components/canvas/CanvasArrivalContext.tsx` | `CanvasArrivalProvider`, `useArrivesWithBoard()`, `ARRIVAL_BURST`: what a tab opens with, and a burst           |
 | `apps/editor/hooks/ui/useLayerThumbnails.ts`                           | `enabled`: no renderer pass while the Layers panel is closed (`NO_THUMBNAILS`)                                  |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts`            | Pops in only what is added after the board arrived; no timer when nothing pops                                  |
@@ -276,6 +279,26 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   reference board: the picture drops from 417 KB to 305 KB (550 texts, 642 lines gone), and Chrome's
   parse-and-paint at 4x from about 210 ms to about 100 ms. `svgFontDefs` stays left out.
 - Tests: `Minimap.test.tsx` (one `<image>`, no board nodes in the page; a standalone picture).
+
+### What comes and goes beside the board
+
+- `SplitViewFrame` calls `useBodyEndAnchor()` first: its effect appends a hidden, `aria-hidden` `div[data-body-end]`
+  to `<body>` after the editor's root and removes it on unmount. Every portal (`Portal`, `HintSurface`, the menus,
+  toasts and dialogs) and every element appended to `<body>` lands after it, so the editor's root never gains or
+  loses `:last-child`. WebKit restyles the whole subtree of a sibling whose positional state changes, and Tailwind's
+  `space-y-*` / `divide-*` (`:where(.x > :not(:last-child))`) mark every parent as having its children read
+  `:last-child`.
+- `Canvas` calls `useNoCanvasTextSelection(mainRef)`: a `selectstart` listener on `<main>` that calls
+  `preventDefault()` unless `cancelsCanvasSelectStart(target)` is false, which is when the target (an element, or a
+  text node's parent) sits in `input`, `textarea`, `[contenteditable]:not([contenteditable="false"])` or
+  `.select-text`. A callback ref, or no surface, attaches nothing.
+- `MarqueeRect` renders `<div aria-hidden data-marquee hidden />` while the store holds no sweep, and the same `div`
+  (same type and place, so React keeps the node) with its class and style during one.
+- Measured in WebKit (Playwright 1180 x 820, livedesign, 2,000 labelled boxes and 1,999 pinned arrows at fit zoom,
+  three runs each): a tooltip shown and hidden, long frames 854 to 881 ms to 174 to 206 ms; a marquee's press 807 to
+  821 ms to 134 to 164 ms, its first move 709 to 725 ms to 15 to 40 ms; a union resize's first frame 1,570 to
+  1,596 ms to 1,088 to 1,125 ms. Its later frames (about 0.8 s), the release that selects everything (about 0.5 s) and
+  the deselect (0.6 to 0.9 s) are unchanged: they restyle, lay out and paint every element they change.
 
 ### Peers' viewports
 
@@ -583,6 +606,9 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | A closed panel draws nothing of the board        | `useLayerThumbnails.test.ts`: disabled, no renderer pass and the one empty value; enabled again, the previews are drawn                                                                                                                                                                                                     |
 | Opening animates nothing across the board        | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world                                                                                                                                                                             |
 | Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                                                                                                                                                                                             |
+| Nothing shown over the page restyles the editor  | `useBodyEndAnchor.test.tsx` (workbench): the anchor stays last as an overlay comes and goes, and leaves with the editor                                                                                                                                                                                                     |
+| A press on the canvas selects no text            | `useNoCanvasTextSelection.test.tsx` (workbench): cancelled on the board, left alone in editors, fields and `select-text`                                                                                                                                                                                                    |
+| A sweep adds and removes no element              | `MarqueeRect.test.tsx` (workbench): one node through a sweep, hidden between                                                                                                                                                                                                                                                |
 | The budget holds                                 | The nightly probe                                                                                                                                                                                                                                                                                                           |
 | Dragging a very large selection                  | `drag-affected-arrows.perf.test.ts` (CPU time); `CanvasElementsLayer.renders.test.tsx` (no element renders, 1,770 elements); `drag-ride-dom.test.ts` (a plane carries the move); `e2e/perf/large-selection-drag.perf.ts` (script and frame, by hand); `e2e/drag-live.spec.ts` (a collaborator sees a 250-element move live) |
 

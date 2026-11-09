@@ -138,7 +138,23 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   compositor layer of its own and is placed by transform, so a sweep frame moves it without
   repainting the board beneath it. The selection's resize outline is placed by transform too but is
   not promoted: it spans the whole selection, so a layer of its own made WebKit split every element
-  over it into layers too (a 4,000-element drag's frame went from 57 ms to 200 ms).
+  over it into layers too (a 4,000-element drag's frame went from 57 ms to 200 ms). The rectangle stays
+  in the page between sweeps, hidden, so a sweep's start and end add and remove no element: an element
+  added beside the board, or taken away, makes Safari restyle the board (the next rule).
+- **Nothing shown over the page restyles the editor.** A tooltip, a menu, a toast, a dialog or a
+  dragged copy is added at the end of the page and taken away again. Safari restyles the whole of
+  whatever was last in the page before it, and after it goes, and the editor was last: showing and
+  hiding one tooltip over a design of 2,000 boxes and 1,999 arrows froze it for about 0.87 s (three frames
+  of 0.2 to 0.4 s). An empty element stays at the end of the page while an editor is up, so what comes
+  and goes there restyles only that (one frame of about 0.19 s, measured in WebKit).
+- **A press on the canvas selects no text.** The canvas is not selectable text, yet Safari starts a
+  text selection from a mouse press on it and, on the drag's first move, works out where that
+  selection would run across the whole board: one frame of about 0.7 s at the start of every marquee
+  or pan on 2,000 boxes and 1,999 arrows. The canvas cancels a text selection as it starts, except in
+  what is being typed (a label, a note, a field) and in an element that is selectable text on purpose
+  (measured in WebKit with the rectangle kept in the page: a marquee's press went from about 0.8 s
+  to 0.13 to 0.16 s and its first move from about 0.7 s to 15 to 40 ms; a union resize's first
+  frame from about 1.6 s to 1.1 s).
 - **The canvas's cursor stays off the elements.** The cursor the canvas shows (the tool's, a pan's
   grab, a draw tool's intent) changes on a tool switch, at the start and end of a pan and when a
   stroke lands, and a cursor is inherited: set on what holds the elements, each change restyled

@@ -120,7 +120,10 @@ describe('decorationsPlugin', () => {
 
   // A key typed into a 1,500-block (about 50-page) article worked every marker and placeholder out again: about
   // 2.5 ms a key on a laptop, a hundred keys 265 ms (with the editor's own 14 ms of applying them). Moved with the
-  // text instead, the hundred keys take about 15 ms in all.
+  // text instead, the hundred keys take about 15 ms in all. Measured 2026-11-09 on a busy laptop (load 67 on 10
+  // cores): moved, 42 to 56 ms plain and 75 to 98 under coverage; rebuilt, 305 to 343 plain and 1,660 to 1,910 under
+  // coverage. CI's coverage run measured 200 moved, so 150 (450 on CI and under coverage) keeps room there and still
+  // fails a rebuild in either mode.
   it('costs a key typed into a long article a move of the set, not a rebuild', () => {
     const started = start(article());
     const { plugin } = started;
@@ -133,6 +136,6 @@ describe('decorationsPlugin', () => {
         shown(state, plugin);
       }
     });
-    expect(spent).toBeLessThan(cpuBudgetMs(60));
+    expect(spent).toBeLessThan(cpuBudgetMs(150));
   });
 });
