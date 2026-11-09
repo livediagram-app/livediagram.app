@@ -53,4 +53,13 @@ describe('JoinPage', () => {
     expect(bdi?.textContent).toBe('\u202Eevil org');
     expect(bdi?.parentElement?.textContent).toBe('\u202Eevil org · 3 members');
   });
+
+  it('holds its header, card and footer in a column at least the window high, so a short page keeps its footer at the foot', async () => {
+    act(() => root.render(<JoinPage />));
+    await act(async () => new Promise((r) => setTimeout(r, 0)));
+    const shell = container.querySelector('[data-join-shell]')!;
+    expect(shell.className).toContain('min-h-dvh');
+    expect(shell.className).toContain('flex-col');
+    expect(shell.querySelector(':scope > main')?.className).toContain('flex-1');
+  });
 });

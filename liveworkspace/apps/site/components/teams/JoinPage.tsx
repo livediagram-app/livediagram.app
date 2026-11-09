@@ -162,10 +162,12 @@ export function JoinPage() {
   );
 }
 
-// The frame of the join and decline pages: the site's header and footer around one centred card.
+// The frame of the join and decline pages (and the Drive pages): the site's header and footer around one centred
+// card. A column at least the window's height, so the card's main takes the room left and the footer sits at the
+// foot of the window rather than halfway up it with bare page below.
 export function JoinShell({ children }: { children: ReactNode }) {
   return (
-    <>
+    <div data-join-shell="" className="flex min-h-dvh flex-col">
       <Header />
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-4 py-16 sm:px-6 sm:py-24">
         <div className="rounded-3xl border border-slate-200 bg-white px-6 py-10 shadow-xl shadow-slate-900/5 sm:px-10 sm:py-12 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30">
@@ -173,7 +175,7 @@ export function JoinShell({ children }: { children: ReactNode }) {
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
 
