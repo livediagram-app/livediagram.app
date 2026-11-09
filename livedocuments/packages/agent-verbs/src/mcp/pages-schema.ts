@@ -196,11 +196,13 @@ export const changePagesOutput = answerOut;
 export const writeArticleShape = {
   documentId,
   tabId,
+  // No max here: the request reader refuses an over-long write as article_too_large, pointing at mode "append"
+  // (docs/specs/024-agents/pages-for-agents.md), which a schema check before it would only answer generically.
   markdown: z
     .string()
-    .max(ARTICLE_MARKDOWN_MAX)
     .describe(
-      'The text, in Markdown: # ## ### headings, paragraphs, - and 1. lists (indent two spaces a level), ' +
+      `At most ${ARTICLE_MARKDOWN_MAX.toLocaleString('en')} characters a write (mode "append" adds more). ` +
+        'The text, in Markdown: # ## ### headings, paragraphs, - and 1. lists (indent two spaces a level), ' +
         '- [ ] to-dos, > quotes, ``` code, --- dividers, **bold**, *italic*, ~~strike~~, `code`, [links](https://…). ' +
         'Front matter sets the title and subtitle: a first line ---, then title: …, subtitle: …, then ---. ' +
         'A line \\pagebreak starts a new page; a line [zone <id>] keeps an existing zone there. ' +

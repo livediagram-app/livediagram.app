@@ -409,7 +409,10 @@ with content copied in; geometry and look are always the placed element's.
   `objectFit: 'cover'`.
 - Shapes: `previous` shapes with content (`hasContent`: a non-blank string or any value in
   `SHAPE_CONTENT`) and a non-placeholder `contentKey`, in reading order, each into the next free
-  `placed` shape of the same `shape` kind: its `SHAPE_CONTENT` fields.
+  `placed` shape of the same `shape` kind: its `SHAPE_CONTENT` fields. A slot `holdsWords` when its trimmed label
+  is not blank or it has `richText`. A shape whose only content is its words (`label`, `richText`) takes the
+  first free slot that holds words (none: not carried); any other takes the next free slot, and into a slot that
+  holds no words its `label` and `richText` are left out.
 - Everything else (arrows, unmatched elements, other types) is not carried.
 - The hover preview (`InfographicLayoutPreview`, given `view.elements` and `view.pages`) builds
   `buildPageLayoutOver` in a `useMemo` on the layout, the rect and the content, and resolves carried

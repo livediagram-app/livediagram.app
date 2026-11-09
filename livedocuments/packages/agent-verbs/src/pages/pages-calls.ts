@@ -112,6 +112,10 @@ export async function writeArticle(
 }
 
 /** `article get`: one article's writing as the Markdown write_article takes. */
+// A title as an article is named by, case and spacing aside: the key write_article finds one by (edit-operations
+// article-write's nameKey), so `article get` reads the article `article set` writes.
+const titleKey = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+
 export async function readArticle(
   api: ApiClient,
   documentId: string,
@@ -123,10 +127,10 @@ export async function readArticle(
   if ('ok' in found) return found;
   const articles = articlesOf(found.tab);
   const flows = Object.keys(articles);
-  const key = input.article?.trim().toLowerCase();
+  const key = input.article === undefined ? '' : titleKey(input.article);
   const flow = key
     ? (flows.find((f) => f === input.article) ??
-      flows.find((f) => articleTitleOf(articles[f]!).toLowerCase() === key))
+      flows.find((f) => titleKey(articleTitleOf(articles[f]!)) === key))
     : flows.length === 1
       ? flows[0]
       : undefined;
