@@ -964,6 +964,12 @@ export function cardsMatchingFilters(
   return out;
 }
 
+// Whether a state is one of the board's done columns' (a Rollup's Count Done and a Children Done read it).
+export function boardIsDone(setup: PlanBoardSetup): IsDoneStatus {
+  return (s) =>
+    s !== undefined && setup.columns.some((c) => c.status === s && isDoneColumn(setup, c));
+}
+
 export function projectBoard(
   setup: PlanBoardSetup,
   items: ReadonlyMap<string, Item>,
@@ -1001,8 +1007,7 @@ export function projectBoard(
   // Sort Cards: stable, so rank still orders the cards each level ties.
   const sorted = !!setup.sortBy?.length;
   // The board's done columns, for a Rollup's Count Done and a Children Done it sorts or lanes by.
-  const isDone: IsDoneStatus = (s) =>
-    s !== undefined && setup.columns.some((c) => c.status === s && isDoneColumn(setup, c));
+  const isDone = boardIsDone(setup);
   if (sorted) scoped.sort(boardSortComparator(setup.sortBy!, types, items, isDone));
   unplaced.sort((a, b) => a.key - b.key);
 
