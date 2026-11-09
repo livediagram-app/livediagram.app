@@ -500,6 +500,12 @@ columns) is never refused.
 - Layout index lookups are O(1) (`Map` per layout object, built once, O(rows + cols)).
 - `renderWindow` touches only the cells in its window (plus their precedents on demand).
 - Parse cache: one `storedAst` per stored formula object; inputs are immutable, so identity is a sound key.
+- A one-cell edit costs the cells it touches, not the sheet. `cellBytes` keeps each cell's stored size by the cell
+  object (cells are immutable, so identity is a sound key), so `validateWrite`'s byte cap no longer serialises every
+  cell of the sheet per edit: 12.5 ms for one typed value on a 50,000-cell sheet before, a pass over cached sizes
+  after. The workbook keeps the set of formulas that read Plan cards up to date as cells change, so `usesCards`, read
+  by every drawn Sheet on every store change, is a lookup rather than a walk of every formula's syntax tree. Both
+  are tests (`packages/sheets/src/edit-cost.perf.test.ts`).
 
 ## Observability
 
