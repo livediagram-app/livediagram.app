@@ -244,18 +244,20 @@ async function runWebhook(
   const db = env.INDEX_DB;
   const head = rows[0]!;
   const now = deps.now();
-  const ids = JSON.stringify(rows.map((r) => r.id));
-  const holdAll = (until: number) =>
+  // Every pending delivery of the webhook from `fromId` on waits until then, the ones past this run's batch too, so
+  // none overtakes the one held (webhooks.md "Delivery": in order).
+  const holdFrom = (until: number, fromId: number) =>
     db
       .prepare(
-        `UPDATE webhook_deliveries SET next_at = MAX(next_at, ?) WHERE id IN (SELECT value FROM json_each(?))`,
+        `UPDATE webhook_deliveries SET next_at = MAX(next_at, ?1)
+         WHERE webhook_id = ?2 AND state = 'pending' AND id >= ?3`,
       )
-      .bind(until, ids);
+      .bind(until, head.webhook_id, fromId);
 
   // Its creator must still edit the whole document. Accounts not answering holds them, uncounted.
   const can = await creatorCanEdit(env, head, teamsOf, now);
   if (can === null) {
-    await holdAll(now + ACCESS_RETRY_MS).run();
+    await holdFrom(now + ACCESS_RETRY_MS, head.id).run();
     counts.retrying += rows.length;
     return;
   }
@@ -314,12 +316,7 @@ async function runWebhook(
              WHERE id = ?`,
           )
           .bind(outcome.status, outcome.error, at, next, row.id),
-        db
-          .prepare(
-            `UPDATE webhook_deliveries SET next_at = MAX(next_at, ?)
-             WHERE id IN (SELECT value FROM json_each(?))`,
-          )
-          .bind(next, JSON.stringify(rows.slice(i + 1).map((r) => r.id))),
+        holdFrom(next, row.id + 1),
       );
       counts.retrying += rows.length - i;
       break;
@@ -361,8 +358,12 @@ export async function dispatch(env: Env, deps: DispatchDeps): Promise<DispatchRe
                   d.detail, d.occurred_at, d.attempts, w.item_id AS document_id, i.owner_id, i.team_id, w.kind,
                   w.url_sealed, w.secret_sealed, w.created_by
            FROM webhook_deliveries d JOIN webhooks w ON w.id = d.webhook_id JOIN items i ON i.id = w.item_id
-           WHERE d.state = 'pending' AND d.next_at <= ? AND w.paused_at IS NULL
-           ORDER BY d.next_at, d.id LIMIT ?`,
+           -- In order per webhook: a row waits while an earlier one of its webhook is not yet due.
+           WHERE d.state = 'pending' AND d.next_at <= ?1 AND w.paused_at IS NULL
+             AND NOT EXISTS (SELECT 1 FROM webhook_deliveries p
+                             WHERE p.webhook_id = d.webhook_id AND p.state = 'pending' AND p.id < d.id
+                               AND p.next_at > ?1)
+           ORDER BY d.id LIMIT ?2`,
         )
         .bind(now, DISPATCH_BATCH)
         .all<DueRow>()

@@ -124,6 +124,10 @@ account closes. Events about no item that no scope sees any more are swept daily
 `EVENT_ID_MAX` 300, `TITLE_MAX` 200, `DETAIL_KEYS_MAX` 12, `DETAIL_VALUE_MAX` 500 (`timeline.ts`); `D1_COMPOUND_MAX`
 5 (`packages/api-kit/src/d1-compound.ts`).
 
+The feed's and the new count's ranges bind by number (`?1`, `?2`, …): the person, the page size, the cursor, the apps
+and the time once each, and each scope once, so a statement binds at most 6 + 51 values, under D1's 100 for an
+account in its 50 teams.
+
 ## Defaults ledger
 
 - `IDX9`: an event from a clock more than 5 minutes fast is dated now, so it can't pin itself to the top.

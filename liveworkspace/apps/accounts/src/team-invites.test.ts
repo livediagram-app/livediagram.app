@@ -338,6 +338,59 @@ describe('telling the admins', () => {
   });
 });
 
+describe('answering once', () => {
+  it('answers two accepts at once as one answer, the second not answering again', async () => {
+    const id = await team();
+    const bea = await invite(id, BEA.email!);
+    const both = await Promise.all([
+      answerInvitation(db, BEA, bea.member.id, true, T0 + 1),
+      answerInvitation(db, BEA, bea.member.id, true, T0 + 2),
+    ]);
+    const answered = both.map((r) => (r.ok ? r.value.answered : r.error)).sort();
+    expect(answered).toContain(true);
+    expect(answered.filter((a) => a === true)).toHaveLength(1);
+  });
+
+  it('refuses an invitation withdrawn between its read and its answer', async () => {
+    const id = await team();
+    const bea = await invite(id, BEA.email!);
+    // The withdrawal lands as the answer's batch runs.
+    const racing = {
+      ...db,
+      prepare: db.prepare.bind(db),
+      batch: async (statements: D1PreparedStatement[]) => {
+        sql.prepare(`UPDATE team_member SET status = 'removed' WHERE id = ?`).run(bea.member.id);
+        return db.batch(statements);
+      },
+    } as D1Database;
+    expect(await answerInvitation(racing, BEA, bea.member.id, true, T0 + 1)).toEqual({
+      ok: false,
+      status: 404,
+      error: 'not_found',
+    });
+  });
+
+  it('never answers a join or an invitation that failed as done', async () => {
+    const id = await team();
+    const made = await makeInviteLink(db, ADA, id, SECRET, BASE, T0);
+    if (!made.ok) throw new Error(made.error);
+    const down = {
+      ...db,
+      prepare: db.prepare.bind(db),
+      batch: async () => {
+        throw new Error('D1_ERROR: Network connection lost.');
+      },
+    } as unknown as D1Database;
+    await expect(joinByInviteLink(down, CY, tokenOf(made.value.url), T0 + 1)).rejects.toThrow(
+      'Network connection lost',
+    );
+    await expect(inviteMember(down, ADA, id, BEA.email!, 'member', T0 + 1)).rejects.toThrow(
+      'Network connection lost',
+    );
+    expect(await listMyTeams(db, CY.id)).toEqual([]);
+  });
+});
+
 describe('the account API routes', () => {
   let env: Env;
   let mail: { to: string[]; subject: string; text: string }[];
@@ -414,6 +467,19 @@ describe('the account API routes', () => {
     signedIn = { id: ADA.id, name: 'Ada', email: ADA.email!, emailVerified: true };
     expect((await call(`/teams/${id}/invite-link`, 'DELETE')).status).toBe(200);
     expect((await call(`/join/${token}`)).status).toBe(404);
+  });
+
+  it('tells the other admins of an accepted invitation once, never the new admin who accepted it', async () => {
+    const id = await team();
+    await call(`/teams/${id}/members`, 'POST', { email: BEA.email, role: 'admin' });
+    signedIn = { id: BEA.id, name: 'Bea', email: BEA.email!, emailVerified: true };
+    const { invitations } = (await (await call('/teams')).json()) as {
+      invitations: { id: string }[];
+    };
+    const before = mail.length;
+    const accepted = await call(`/invitations/${invitations[0]!.id}/accept`, 'POST', {});
+    expect(await accepted.json()).not.toHaveProperty('answered');
+    expect(mail.slice(before).map((m) => m.to)).toEqual([[ADA.email]]);
   });
 
   it('puts a Decline link in the invitation, which works signed out and tells the admins', async () => {

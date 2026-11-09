@@ -56,7 +56,7 @@ An invitation is a member row with the invited address, `invited` until answered
 takes a signed-in account whose **verified** address is the one invited (signing in by code, or
 with Google, verifies it). The invitation email links to the Explorer's Invites (`/explorer/invites`),
 where it waits with the team's name, organisation and member count, beside **Accept** and **Decline**. Accepting or declining tells the team's admins by
-email, unless an admin has turned that off (the `notifyInviteResponse` setting, `false`, in the
+email, once per answer and never the person who answered (invited as an admin, they are one by then), unless an admin has turned that off (the `notifyInviteResponse` setting, `false`, in the
 `all` scope; [Settings](#settings)). That email links to the account's settings on liveworkspace.app,
 where it is turned off, and sends it as `List-Unsubscribe`.
 
@@ -124,7 +124,8 @@ who opens it sees the team's name and joins as a member with one click.
   no session, so someone signed out sees what they'd join, then signs in and comes back to the
   same link. Joining, or someone already in the team, opens the team in the Explorer.
 - **Joining**, `POST /join/:token`, signed in: adds them as a joined member. Already in: nothing
-  changes. An invitation waiting for their address is accepted in place rather than doubled. An
+  changes. An invitation waiting for their address is accepted in place rather than doubled. Only two joins
+  at once by the same person answer `alreadyMember`; a join that failed (D1 out of reach) is never answered as one. An
   off, expired or unknown token is `404 invite_not_found`.
 
 The two doors that need no session, the join preview and the Decline link, are limited per network

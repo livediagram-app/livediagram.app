@@ -16,6 +16,7 @@ import { importSealKey, seal } from '@liveworkspace/api-kit/sealed';
 import {
   isWebhookKind,
   isWebhookWho,
+  WEBHOOK_DELIVERIES_KEPT,
   WEBHOOK_EVENT_APPS,
   WEBHOOK_EVENTS,
   WEBHOOK_NAME_MAX,
@@ -56,8 +57,12 @@ export type WebhookRouteDeps = { resolve: Resolve; now: () => number };
 
 const defaultDeps = (): WebhookRouteDeps => ({ resolve: dohResolve, now: () => Date.now() });
 
-// The newest deliveries a webhook's list shows: its kept finished ones and what is still waiting.
+// The newest deliveries a webhook's list shows: its kept finished ones and, beside them, the newest still waiting.
+// Each part has its own limit, so a backlog of retries never pushes the finished ones (their statuses) off the list.
 const DELIVERIES_LISTED = 40;
+const PENDING_LISTED = DELIVERIES_LISTED - WEBHOOK_DELIVERIES_KEPT;
+const DELIVERY_COLUMNS =
+  'id, type, app, title, state, attempts, status, error, occurred_at, last_at, next_at';
 
 type WebhookRow = {
   id: string;
@@ -120,7 +125,8 @@ function readEvents(value: unknown, app: App): WebhookEvent[] | null {
   if (!Array.isArray(value) || value.length === 0) return null;
   const held = new Set<unknown>(value);
   for (const event of held) {
-    if (typeof event !== 'string' || !(event in WEBHOOK_EVENT_APPS)) return null;
+    // Own keys only: `in` also finds Object.prototype's (`constructor`, `toString`), which have no app list.
+    if (typeof event !== 'string' || !Object.hasOwn(WEBHOOK_EVENT_APPS, event)) return null;
     if (!WEBHOOK_EVENT_APPS[event as WebhookEvent].includes(app)) return null;
   }
   return WEBHOOK_EVENTS.filter((event) => held.has(event));
@@ -302,10 +308,14 @@ export async function handleWebhooks(
     const rows =
       (
         await env.INDEX_DB.prepare(
-          `SELECT id, type, app, title, state, attempts, status, error, occurred_at, last_at, next_at
-           FROM webhook_deliveries WHERE webhook_id = ? ORDER BY id DESC LIMIT ?`,
+          `SELECT * FROM (SELECT ${DELIVERY_COLUMNS} FROM webhook_deliveries
+                          WHERE webhook_id = ?1 AND state <> 'pending' ORDER BY id DESC LIMIT ?2)
+           UNION ALL
+           SELECT * FROM (SELECT ${DELIVERY_COLUMNS} FROM webhook_deliveries
+                          WHERE webhook_id = ?1 AND state = 'pending' ORDER BY id DESC LIMIT ?3)
+           ORDER BY id DESC`,
         )
-          .bind(id, DELIVERIES_LISTED)
+          .bind(id, WEBHOOK_DELIVERIES_KEPT, PENDING_LISTED)
           .all<{
             id: number;
             type: WebhookDelivery['type'];

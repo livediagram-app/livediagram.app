@@ -178,7 +178,7 @@ A route but `config` answers `503` when not configured, then `401` without an ac
 
 | Route                              | Caller   | Auth                        | Answers                                                                                    |
 | ---------------------------------- | -------- | --------------------------- | ------------------------------------------------------------------------------------------ |
-| `POST /api/drive/push`             | Google   | `X-Goog-Channel-Token`      | always `200` at once; `sync` ignored; a bad token logged; else `signal` after the response |
+| `POST /api/drive/push`             | Google   | `X-Goog-Channel-Token`      | always `200` at once (unconfigured too); `sync` ignored; a bad token logged; else `signal` |
 | `POST /app/changes` `{ personId }` | index    | `Bearer DRIVE_KEY_INDEX`    | `204` after `signal`; `400`; `401`                                                         |
 | `DELETE /app/people/:personId`     | accounts | `Bearer DRIVE_KEY_ACCOUNTS` | `204` disconnected; `404` none                                                             |
 

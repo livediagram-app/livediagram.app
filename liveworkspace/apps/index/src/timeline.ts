@@ -249,6 +249,22 @@ export type TimelineSpec = {
 export type BuiltQuery = { sql: string; args: unknown[] };
 
 /**
+ * Numbered parameters (`?1`, `?2`, …), each value bound once however often the SQL names it. D1 refuses a statement
+ * binding more than 100, and the Timeline's ranges repeat the person, the app, the cursor and the page size per
+ * scope: bound per range, someone in seven teams passed it. Now only the scopes grow, one each (at most 51).
+ */
+function numbered(): { args: unknown[]; param: (value: unknown) => string } {
+  const args: unknown[] = [];
+  return {
+    args,
+    param: (value) => {
+      args.push(value);
+      return `?${args.length}`;
+    },
+  };
+}
+
+/**
  * One page of one item's history: its events newest first, through the events' item index, each kept when one of
  * the person's scopes sees it and they haven't removed it. An item's events are few, so this reads at most the
  * page plus what the person can't see or removed.
@@ -281,43 +297,39 @@ function buildItemHistoryQuery(person: Person, spec: TimelineSpec & { item: stri
 /** One page of a person's Timeline as one statement (exported for its plan test). */
 export function buildTimelineQuery(person: Person, spec: TimelineSpec): BuiltQuery {
   if (spec.item) return buildItemHistoryQuery(person, { ...spec, item: spec.item });
-  const take = spec.limit + 1;
-  const args: unknown[] = [person.id];
+  const { args, param } = numbered();
+  const pid = param(person.id);
+  const take = param(spec.limit + 1);
+  const cursor = spec.cursor ? { at: param(spec.cursor.at), id: param(spec.cursor.id) } : null;
   const ranges: string[] = [];
   // Filtered to one app, the account's own events (teams, tokens) show too: a second range per scope.
-  const apps: (TimelineApp | null)[] = spec.app ? [spec.app, TIMELINE_PLATFORM] : [null];
+  const apps = spec.app ? [param(spec.app), param(TIMELINE_PLATFORM)] : [null];
   // A team's activity reads the team's scope alone: one range (two with an app), never a compound past D1's limit.
   const scopes = spec.team ? [teamScope(spec.team)] : scopesOf(person);
   for (const scope of scopes) {
+    const sc = param(scope);
     for (const app of apps) {
       // An event the person removed from their Timeline is skipped in the range; removals are rare, so the
       // range reads at most limit + 1 rows plus those.
-      let sql = `SELECT event_id FROM timeline_event_scopes s WHERE scope = ?
-      AND NOT EXISTS (SELECT 1 FROM timeline_dismissals d WHERE d.person_id = ? AND d.event_id = s.event_id)`;
-      args.push(scope, person.id);
-      if (app) {
-        sql += ' AND app = ?';
-        args.push(app);
+      let sql = `SELECT event_id FROM timeline_event_scopes s WHERE scope = ${sc}
+      AND NOT EXISTS (SELECT 1 FROM timeline_dismissals d WHERE d.person_id = ${pid} AND d.event_id = s.event_id)`;
+      if (app) sql += ` AND app = ${app}`;
+      if (cursor) {
+        sql += ` AND (occurred_at < ${cursor.at} OR (occurred_at = ${cursor.at} AND event_id < ${cursor.id}))`;
       }
-      if (spec.cursor) {
-        sql += ' AND (occurred_at < ? OR (occurred_at = ? AND event_id < ?))';
-        args.push(spec.cursor.at, spec.cursor.at, spec.cursor.id);
-      }
-      sql += ' ORDER BY occurred_at DESC, event_id DESC LIMIT ?';
-      args.push(take);
+      sql += ` ORDER BY occurred_at DESC, event_id DESC LIMIT ${take}`;
       ranges.push(`SELECT event_id FROM (${sql})`);
     }
   }
-  args.push(take);
   const sql = `SELECT s.seen_at, x.* FROM (
-      SELECT (SELECT last_seen_at FROM timeline_scope_state WHERE person_id = ?) AS seen_at
+      SELECT (SELECT last_seen_at FROM timeline_scope_state WHERE person_id = ${pid}) AS seen_at
     ) s LEFT JOIN (
       SELECT e.id AS e_id, e.app AS e_app, e.item_id AS e_item_id, e.actor_id AS e_actor_id,
              e.actor_name AS e_actor_name, e.type AS e_type, e.title AS e_title, e.detail AS e_detail,
              e.occurred_at AS e_occurred_at, ${ITEM_COLUMNS}
       FROM timeline_events e LEFT JOIN items i ON i.id = e.item_id
       WHERE e.id IN (${unionAll(ranges)})
-      ORDER BY e.occurred_at DESC, e.id DESC LIMIT ?
+      ORDER BY e.occurred_at DESC, e.id DESC LIMIT ${take}
     ) x ON 1`;
   return { sql, args };
 }
@@ -399,30 +411,27 @@ export async function listTimeline(
  * newest first, back to the last look. Never looked: 0.
  */
 export function timelineNewQuery(person: Person, app: App | null, now: number): BuiltQuery {
-  const take = TIMELINE_NEW_CAP + 1;
-  const args: unknown[] = [person.id];
+  const { args, param } = numbered();
+  const pid = param(person.id);
+  const take = param(TIMELINE_NEW_CAP + 1);
+  const until = param(now);
   const ranges: string[] = [];
-  const apps: (TimelineApp | null)[] = app ? [app, TIMELINE_PLATFORM] : [null];
+  const apps = app ? [param(app), param(TIMELINE_PLATFORM)] : [null];
   for (const scope of scopesOf(person)) {
+    const sc = param(scope);
     for (const one of apps) {
       let sql = `SELECT s.event_id FROM timeline_event_scopes s JOIN timeline_events e ON e.id = s.event_id
-      WHERE s.scope = ?`;
-      args.push(scope);
-      if (one) {
-        sql += ' AND s.app = ?';
-        args.push(one);
-      }
-      sql += ` AND s.occurred_at > (SELECT seen FROM st) AND s.occurred_at <= ?
-      AND (e.actor_id IS NULL OR e.actor_id != ?)
-      AND NOT EXISTS (SELECT 1 FROM timeline_dismissals d WHERE d.person_id = ? AND d.event_id = s.event_id)
-      ORDER BY s.occurred_at DESC LIMIT ?`;
-      args.push(now, person.id, person.id, take);
+      WHERE s.scope = ${sc}`;
+      if (one) sql += ` AND s.app = ${one}`;
+      sql += ` AND s.occurred_at > (SELECT seen FROM st) AND s.occurred_at <= ${until}
+      AND (e.actor_id IS NULL OR e.actor_id != ${pid})
+      AND NOT EXISTS (SELECT 1 FROM timeline_dismissals d WHERE d.person_id = ${pid} AND d.event_id = s.event_id)
+      ORDER BY s.occurred_at DESC LIMIT ${take}`;
       ranges.push(`SELECT event_id FROM (${sql})`);
     }
   }
-  args.push(take);
-  const sql = `WITH st AS (SELECT last_seen_at AS seen FROM timeline_scope_state WHERE person_id = ?)
-    SELECT COUNT(*) AS n FROM (SELECT DISTINCT event_id FROM (${unionAll(ranges)}) LIMIT ?)`;
+  const sql = `WITH st AS (SELECT last_seen_at AS seen FROM timeline_scope_state WHERE person_id = ${pid})
+    SELECT COUNT(*) AS n FROM (SELECT DISTINCT event_id FROM (${unionAll(ranges)}) LIMIT ${take})`;
   return { sql, args };
 }
 

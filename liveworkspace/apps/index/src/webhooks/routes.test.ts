@@ -243,6 +243,10 @@ describe('what an add checks', () => {
     // The per-app topics of before are not events.
     [{ events: ['livediagram:shared'] }, 'invalid_webhook'],
     [{ events: ['shared', 7] }, 'invalid_webhook'],
+    // Object.prototype's names are no events (once a 500: they have no app list).
+    [{ events: ['constructor'] }, 'invalid_webhook'],
+    [{ events: ['toString', 'shared'] }, 'invalid_webhook'],
+    [{ events: ['__proto__'] }, 'invalid_webhook'],
     [{ who: 'everyone' }, 'invalid_webhook'],
     [{ kind: 'discord' }, 'invalid_webhook'],
     [{ url: 'http://hooks.example.com' }, 'webhook_url_invalid'],
@@ -497,6 +501,29 @@ describe('testing one and its deliveries', () => {
       status: 200,
       at: 5,
     });
+  });
+
+  it('keeps the finished ones listed beside a backlog of retries', async () => {
+    const ada = await person('user_wt3');
+    const item = await makeItem(ada.auth);
+    const { webhook } = await addWebhook(ada.auth, item.id, { name: 'Ops' });
+    const insert = h.db.sql.prepare(
+      `INSERT INTO webhook_deliveries (id, webhook_id, event_id, type, app, title, occurred_at, state, next_at)
+       VALUES (?, ?, ?, 'ping', 'liveworkspace', 'Ops', 1, ?, 1)`,
+    );
+    // Three finished first, then 45 still waiting behind a failing endpoint.
+    for (let i = 1; i <= 48; i++) {
+      insert.run(i, webhook.id, `e${i}`, i <= 3 ? (i === 2 ? 'failed' : 'delivered') : 'pending');
+    }
+    const listed = await body<{ deliveries: WebhookDelivery[] }>(
+      await call(`/webhooks/${webhook.id}/deliveries`, { auth: ada.auth }),
+    );
+    expect(listed.deliveries.map((d) => d.id)).toEqual([
+      ...Array.from({ length: 20 }, (_, i) => 48 - i),
+      3,
+      2,
+      1,
+    ]);
   });
 
   it('writes no ping when a pause lands between reading the webhook and queuing it', async () => {

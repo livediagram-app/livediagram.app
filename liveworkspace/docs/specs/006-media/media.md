@@ -80,7 +80,7 @@ header so an app can apply its "the image's owner owns this document" rule from 
 
 The data export's service ([data-export.md](../003-accounts/data-export.md#the-media-service)) calls with
 `X-Media-App: export` and `MEDIA_KEY_EXPORT`, which opens `GET /images?owner=` and `GET /images/<id>/bytes` alone: an
-owner's gallery and its bytes, for their download. Any other route answers it `401`.
+owner's gallery and its bytes, for their download. Any other route answers it `404`, as missing; a wrong key `401`.
 
 Any app may read any image's bytes: reuse across the suite depends on it, and each app guards its own
 doors. Without a bucket every route answers `503 { error: "media_unavailable" }`; with `MEDIA_ENABLED`

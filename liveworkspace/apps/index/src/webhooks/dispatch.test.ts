@@ -197,6 +197,28 @@ describe('retries', () => {
     });
   });
 
+  it('keeps a delivery queued during a retry behind it, so none overtakes the one waiting', async () => {
+    const { bump } = await personWithHook('user_wr9');
+    await bump('A');
+    answer = () => new Response('busy', { status: 503 });
+    await run();
+    expect(sent.map((s) => JSON.parse(s.body).item.title)).toEqual(['A']);
+    // Queued while A waits: it waits behind A, not due before it.
+    answer = () => new Response(null, { status: 204 });
+    await bump('B');
+    await bump('C');
+    expect(deliveries().map((d) => d.next_at)).toEqual(Array(3).fill(clock + RETRY_DELAYS_MS[0]!));
+    // Even a row someone made due early waits for the earlier one.
+    h.db.sql.prepare("UPDATE webhook_deliveries SET next_at = 0 WHERE title = 'C'").run();
+    sent = [];
+    clock += 1_000;
+    expect(await run()).toMatchObject({ delivered: 0 });
+    expect(sent).toEqual([]);
+    clock += RETRY_DELAYS_MS[0]!;
+    await run();
+    expect(sent.map((s) => JSON.parse(s.body).item.title)).toEqual(['A', 'B', 'C']);
+  });
+
   it.each([
     [408, 'retry'],
     [429, 'retry'],

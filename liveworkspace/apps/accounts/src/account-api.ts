@@ -325,9 +325,10 @@ async function tellAdmins(
   env: Env,
   teamId: string,
   response: { teamName: string; responder: string; accepted: boolean; app: SettingsApp | null },
+  responderId: string | null = null,
 ): Promise<void> {
   try {
-    const recipients = await inviteResponseRecipients(env.AUTH_DB, teamId);
+    const recipients = await inviteResponseRecipients(env.AUTH_DB, teamId, responderId);
     if (recipients.length) {
       await sendInviteResponseEmails(env, recipients, { ...response, teamId });
     }
@@ -567,18 +568,25 @@ async function teamRoutes(
     method === 'POST'
   ) {
     const result = await answerInvitation(db, actor, id, sub === 'accept');
-    if (result.ok && result.value.status === 'joined') {
-      reportServerEvent(env, 'Team', 'Joined', null, home);
-    } else if (result.ok) {
-      reportServerEvent(env, 'Team', 'Declined', 'Invite', home);
+    // Counted and told once, for an answer this request gave.
+    if (result.ok && result.value.answered) {
+      if (result.value.status === 'joined') reportServerEvent(env, 'Team', 'Joined', null, home);
+      else reportServerEvent(env, 'Team', 'Declined', 'Invite', home);
+      await tellAdmins(
+        env,
+        result.value.teamId,
+        {
+          teamName: result.value.teamName,
+          responder: actor.email ?? actor.name,
+          accepted: result.value.status === 'joined',
+          app: result.value.inviterApp,
+        },
+        actor.id,
+      );
     }
     if (result.ok) {
-      await tellAdmins(env, result.value.teamId, {
-        teamName: result.value.teamName,
-        responder: actor.email ?? actor.name,
-        accepted: result.value.status === 'joined',
-        app: result.value.inviterApp,
-      });
+      const { answered: _answered, ...value } = result.value;
+      return answer({ ok: true, value });
     }
     return answer(result);
   }
