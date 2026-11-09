@@ -83,13 +83,20 @@ function dateArg(v: EvalValue, f: Frame): number | Value {
   return toNumber(x);
 }
 
+// The holidays NETWORKDAYS and WORKDAY skip: numbers, or text that reads as a date ("2026-12-25"), as Google
+// Sheets reads them; other text and empty cells are no holiday.
 function holidaysOf(args: EvalValue[], i: number, f: Frame): Set<number> | Value {
   const out = new Set<number>();
   const a = args[i];
   if (a === undefined || a === null) return out;
+  const dayFirst = localeDayFirst(f.locale);
   for (const x of flatValues(arrayArg(a, f))) {
     if (isError(x)) return x;
     if (typeof x === 'number') out.add(Math.floor(x));
+    else if (typeof x === 'string') {
+      const d = parseDateText(x, dayFirst);
+      if (d) out.add(Math.floor(d.serial));
+    }
   }
   return out;
 }
@@ -207,7 +214,9 @@ export const DATE_FUNCTIONS: Record<string, FnDef> = {
   HOUR: dateFn(1, 1, ([s]) => dateFromSerial(s!).h),
   MINUTE: dateFn(1, 1, ([s]) => dateFromSerial(s!).min),
   SECOND: dateFn(1, 1, ([s]) => dateFromSerial(s!).s),
-  WEEKDAY: dateFn(1, 2, ([s, type = 1]) => {
+  // The type is truncated, as Excel does: WEEKDAY(d, 2.9) is type 2.
+  WEEKDAY: dateFn(1, 2, ([s, t = 1]) => {
+    const type = Math.trunc(t);
     const wd = dateFromSerial(s!).weekday;
     if (type === 1) return wd + 1;
     if (type === 2) return ((wd + 6) % 7) + 1;
@@ -215,7 +224,8 @@ export const DATE_FUNCTIONS: Record<string, FnDef> = {
     const start = weekStartOfType(type);
     return start === null ? err('#NUM!') : ((wd - start + 7) % 7) + 1;
   }),
-  WEEKNUM: dateFn(1, 2, ([s, type = 1]) => {
+  WEEKNUM: dateFn(1, 2, ([s, t = 1]) => {
+    const type = Math.trunc(t);
     if (type === 1 || type === 2) return weekNumber(s!, type === 2 ? 1 : 0);
     if (type === 21) return isoWeek(s!);
     const start = weekStartOfType(type);
