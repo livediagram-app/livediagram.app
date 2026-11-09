@@ -144,7 +144,9 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       };
     }
     case 'idea': {
-      if (el.type !== 'shape' || !sameRound(el, delta.round)) return el;
+      // Only an idea box takes a card (docs/specs/012-collaboration/idea-box.md): a Participant's hand-sent idea
+      // aimed at any other shape would write cards onto an element it may not change (share-roles.md).
+      if (el.type !== 'shape' || el.shape !== 'idea-box' || !sameRound(el, delta.round)) return el;
       if (typeof delta.text !== 'string') return el;
       const text = delta.text.trim();
       if (!text || text.length > IDEA_MAX_TEXT) return el;
