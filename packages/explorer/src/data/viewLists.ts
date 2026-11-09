@@ -31,7 +31,8 @@ export type ViewList = {
 /** Recent shows the 12 most recently opened. It reads twice that, so hiding one from Recent lets the next in. */
 export const RECENT_LIMIT = 12;
 
-const live = (i: ShownItem) => i.trashedAt === null;
+// Live: out of the Trash and out of Archived, which every list but Archived and Search leaves out.
+const live = (i: ShownItem) => i.trashedAt === null && !i.archivedAt;
 
 /** The list's lens, as the index takes it: set, the filters sent with every page, their key (a new key reads the
  *  list again), whether a row still matches once changed here, and a folder's subtree for a lens set inside it
@@ -172,12 +173,21 @@ export function viewList(
         belongs: (i) => i.trashedAt !== null && ofApp(i),
         enabled: true,
       };
+    case 'archived':
+      // The person's Archived, newest change first.
+      return {
+        key: key('archived'),
+        load: items({ view: 'archived' }),
+        belongs: (i) => i.trashedAt === null && Boolean(i.archivedAt) && ofApp(i),
+        enabled: true,
+      };
     case 'search':
-      // Every item the person can open, theirs and shared, narrowed by the lens; nothing until it narrows.
+      // Every item the person can open, theirs and shared, and their own Archived, narrowed by the lens; nothing
+      // until it narrows.
       return {
         key: key('search'),
         load: items({ view: 'search' }),
-        belongs: (i) => live(i) && ofApp(i),
+        belongs: (i) => i.trashedAt === null && ofApp(i),
         enabled: lens !== null && lens !== undefined,
       };
     case 'folder': {

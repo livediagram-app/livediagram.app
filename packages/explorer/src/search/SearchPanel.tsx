@@ -32,6 +32,7 @@ import type { ItemHref, RenderAppLogo, TeamRef } from '../types';
 import { matchAll, queryWords } from './match';
 import { useItemSearch } from './useItemSearch';
 import { quoted } from '../quoted';
+import { archivedAskHref } from '../explorer/useArchivedAsk';
 
 /** A host's own result: a help article or a settings section. */
 export type SearchEntry = {
@@ -118,7 +119,17 @@ export function SearchPanel({
           key: `item:${item.id}`,
           label: item.title || 'Untitled',
           icon: renderAppLogo ? renderAppLogo(item.app) : <ItemIcon />,
-          href: itemHref(item),
+          // An archived one has no address: its result opens the Archived view on it, which says so.
+          ...(item.archivedAt
+            ? {
+                hint: 'Archived',
+                href: archivedAskHref(
+                  explorerPath({ kind: 'archived' }, basePath),
+                  'open',
+                  item.id,
+                ),
+              }
+            : { href: itemHref(item) }),
         })),
       },
       {

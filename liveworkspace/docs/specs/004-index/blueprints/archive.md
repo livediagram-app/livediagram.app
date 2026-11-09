@@ -7,47 +7,47 @@ the repository root.
 
 Scope, by file:
 
-| File                                                     | Role                                                                                     |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/archive.ts`                | `POST /items/:id/archive`, `archiveStatements`, `refuseArchived`                         |
-| `liveworkspace/apps/index/src/auth.ts`                   | `archivedScope`, `ownScopes` (a person's own scopes, Archived's included)                |
-| `liveworkspace/apps/index/src/lists.ts`                  | `view=archived`; Search's and the Trash's own scopes                                     |
-| `liveworkspace/apps/index/src/items.ts`                  | the move out (`PATCH`), the refusals on grant, open and copy                             |
-| `liveworkspace/apps/index/migrations/0015_archived.sql`  | `items.archived_at`                                                                      |
-| `packages/index-client/src/client.ts`                    | `archiveItem`                                                                            |
-| `packages/explorer/src/explorer/archived/`               | the Archived view's empty state, the archived dialog, the badge                          |
-| `packages/explorer/src/dialogs/PlacementBrowser.tsx`     | the Archived space (`ARCHIVED_PLACEMENT`)                                                |
-| `packages/workbench/src/components/chrome/NotFound.tsx`  | the editors' archived card (`archived`)                                                  |
+| File                                                    | Role                                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/archive.ts`               | `POST /items/:id/archive`, `archiveStatements`, `refuseArchived`          |
+| `liveworkspace/apps/index/src/auth.ts`                  | `archivedScope`, `ownScopes` (a person's own scopes, Archived's included) |
+| `liveworkspace/apps/index/src/lists.ts`                 | `view=archived`; Search's and the Trash's own scopes                      |
+| `liveworkspace/apps/index/src/items.ts`                 | the move out (`PATCH`), the refusals on grant, open and copy              |
+| `liveworkspace/apps/index/migrations/0015_archived.sql` | `items.archived_at`                                                       |
+| `packages/index-client/src/client.ts`                   | `archiveItem`                                                             |
+| `packages/explorer/src/explorer/archived/`              | the Archived view's empty state, the archived dialog, the badge           |
+| `packages/explorer/src/dialogs/PlacementBrowser.tsx`    | the Archived space (`ARCHIVED_PLACEMENT`)                                 |
+| `packages/workbench/src/components/chrome/NotFound.tsx` | the editors' archived card (`archived`)                                   |
 
 ## Domain and naming
 
-| Term          | Identifier                         | Meaning                                                                   |
-| ------------- | ---------------------------------- | ------------------------------------------------------------------------- |
-| Archived      | `items.archived_at`, `archivedAt`  | Put away by its owner since then; null for every other item               |
-| Archive scope | `a:<owner>` (`archivedScope`)      | Where an archived item lives: in no person's or team's scopes             |
-| Own scopes    | `ownScopes(person)`                | `p:<me>`, `a:<me>`: what Search and the Trash read of the person's own     |
-| Archived view | `view=archived`                    | `a:<me>`, not in the Trash                                                |
-| Refusal       | `409 archived`                     | Grant, open, copy, favourite, Hide from Recent, share, share password      |
+| Term          | Identifier                        | Meaning                                                                |
+| ------------- | --------------------------------- | ---------------------------------------------------------------------- |
+| Archived      | `items.archived_at`, `archivedAt` | Put away by its owner since then; null for every other item            |
+| Archive scope | `a:<owner>` (`archivedScope`)     | Where an archived item lives: in no person's or team's scopes          |
+| Own scopes    | `ownScopes(person)`               | `p:<me>`, `a:<me>`: what Search and the Trash read of the person's own |
+| Archived view | `view=archived`                   | `a:<me>`, not in the Trash                                             |
+| Refusal       | `409 archived`                    | Grant, open, copy, favourite, Hide from Recent, share, share password  |
 
 `archived_at IS NOT NULL` and `scope = 'a:' || owner_id` always hold together: the archive and the move out each
 write both in one statement.
 
 ## Behaviour and state
 
-| From          | Event                                       | To       | Effect                                                                           |
-| ------------- | ------------------------------------------- | -------- | -------------------------------------------------------------------------------- |
-| live          | `POST /items/:id/archive` (owner)           | archived | `archiveStatements`, one batch; `{item}`                                         |
-| archived      | `POST /items/:id/archive`                   | archived | nothing written; `{item}`                                                        |
-| archived      | `PATCH {title}`                             | archived | renamed; `renamed` event; stays in `a:<owner>`                                   |
-| archived      | `PATCH {folderId?, teamId?}` (either named) | live     | `archived_at` null, scope `p:<owner>` or `t:<team>`; Timeline moves; `moved`     |
-| archived      | `DELETE /items/:id`                         | trashed  | keeps `archived_at` and `a:<owner>`; `trashed` event                             |
-| trashed + arc | `POST /items/:id/restore`                   | archived | back in Archived                                                                 |
-| trashed       | `POST /items/:id/archive`                   | trashed  | `409 trashed`                                                                    |
+| From          | Event                                       | To       | Effect                                                                       |
+| ------------- | ------------------------------------------- | -------- | ---------------------------------------------------------------------------- |
+| live          | `POST /items/:id/archive` (owner)           | archived | `archiveStatements`, one batch; `{item}`                                     |
+| archived      | `POST /items/:id/archive`                   | archived | nothing written; `{item}`                                                    |
+| archived      | `PATCH {title}`                             | archived | renamed; `renamed` event; stays in `a:<owner>`                               |
+| archived      | `PATCH {folderId?, teamId?}` (either named) | live     | `archived_at` null, scope `p:<owner>` or `t:<team>`; Timeline moves; `moved` |
+| archived      | `DELETE /items/:id`                         | trashed  | keeps `archived_at` and `a:<owner>`; `trashed` event                         |
+| trashed + arc | `POST /items/:id/restore`                   | archived | back in Archived                                                             |
+| trashed       | `POST /items/:id/archive`                   | trashed  | `409 trashed`                                                                |
 
 ### `archiveStatements` (in order, one batch)
 
 1. `UPDATE items SET archived_at = now, scope = 'a:' || owner_id, team_id = NULL, folder_id = NULL WHERE id = ? AND
-   archived_at IS NULL AND trashed_at IS NULL`.
+archived_at IS NULL AND trashed_at IS NULL`.
 2. Timeline: `moveScopeStatements(old scope → a:<owner>)`; then every scope row of the item's events that is not
    `a:<owner>` is deleted (another person's favourite, an assignee's), and its `favourited` events with them.
 3. The `moved` event, `detail {archived: true, fromTeamId?}`, scoped `a:<owner>`; in the team's audit log when it
@@ -107,25 +107,25 @@ event. Naming neither keeps `a:<owner>` whatever the title.
 
 ## Data and persistence
 
-| Table   | Column        | Index                                                       | Written by              |
-| ------- | ------------- | ----------------------------------------------------------- | ----------------------- |
-| `items` | `archived_at` | none: Archived is read by scope through `items_live[_app]`  | archive, move out       |
+| Table   | Column        | Index                                                      | Written by        |
+| ------- | ------------- | ---------------------------------------------------------- | ----------------- |
+| `items` | `archived_at` | none: Archived is read by scope through `items_live[_app]` | archive, move out |
 
 No new index: every live list is driven by scope, and `a:<owner>` is a scope of its own, so the partial indexes
 (`WHERE trashed_at IS NULL`) serve the Archived view unchanged and every other list never meets an archived row.
 
 ## Errors and edge cases
 
-| Case                                         | Behaviour                                                              |
-| -------------------------------------------- | ---------------------------------------------------------------------- |
-| A teammate who isn't the maker archives      | `403 not_owner`                                                        |
-| A link editor archives                       | `403 forbidden`                                                        |
-| A folder id                                  | `404` (no item has it)                                                 |
-| Archiving an item in the Trash               | `409 trashed`                                                          |
-| An old teammate opens it                     | `404`: not in the team any more, no link                               |
-| An open session when it is archived          | link sessions end at once; others when the grant is next renewed       |
-| A favourite or open sent for it              | `409 archived`; nothing written                                        |
-| Moved out into a team the owner has left      | `403 not_team_member`                                                  |
+| Case                                     | Behaviour                                                        |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| A teammate who isn't the maker archives  | `403 not_owner`                                                  |
+| A link editor archives                   | `403 forbidden`                                                  |
+| A folder id                              | `404` (no item has it)                                           |
+| Archiving an item in the Trash           | `409 trashed`                                                    |
+| An old teammate opens it                 | `404`: not in the team any more, no link                         |
+| An open session when it is archived      | link sessions end at once; others when the grant is next renewed |
+| A favourite or open sent for it          | `409 archived`; nothing written                                  |
+| Moved out into a team the owner has left | `403 not_team_member`                                            |
 
 ## Security and trust
 
@@ -141,11 +141,11 @@ one `items_live` range: pinned by `lists.test.ts` "query plans".
 
 ## Testing
 
-| Test                                               | Pins                                                                                                   |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `liveworkspace/apps/index/src/archive.test.ts`     | the archive, its deletions, the refusals, previews, lists, move out, Trash, team, roles, guest merge   |
-| `liveworkspace/apps/index/src/lists.test.ts`       | the Archived, Search and Trash plans                                                                   |
-| `packages/explorer/src/explorer/archived.test.tsx` | the sidebar row, the view and empty state, the menu, the dialog, Change Folder's space, `?move=`       |
+| Test                                               | Pins                                                                                                 |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/archive.test.ts`     | the archive, its deletions, the refusals, previews, lists, move out, Trash, team, roles, guest merge |
+| `liveworkspace/apps/index/src/lists.test.ts`       | the Archived, Search and Trash plans                                                                 |
+| `packages/explorer/src/explorer/archived.test.tsx` | the sidebar row, the view and empty state, the menu, the dialog, Change Folder's space, `?move=`     |
 
 ## Constants and configuration
 

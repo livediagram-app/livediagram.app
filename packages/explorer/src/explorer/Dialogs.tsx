@@ -5,7 +5,13 @@
 import { lazy, Suspense, useMemo } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import { isWithin } from '../data/useFolders';
-import type { PickerFolder, PickerTeam } from '../dialogs/PlacementBrowser';
+import {
+  ARCHIVED_PLACEMENT,
+  THIS_BROWSER_PLACEMENT,
+  type PickerFolder,
+  type PickerTeam,
+  type PlacementSpace,
+} from '../dialogs/PlacementBrowser';
 import { ConfirmDialog } from '@liveworkspace/ui';
 import { folderDefaultEntries, folderDeleteConfirmation } from '../defaults/entries';
 import type { ShareUrl } from '../types';
@@ -15,11 +21,14 @@ import {
   ShareDialog,
   UseAsDefaultDialog,
 } from './lazy-dialogs';
-import { thisBrowserDeleteCopy } from '../this-browser';
+import { setThisBrowserArchived, thisBrowserDeleteCopy } from '../this-browser';
+import { ArchiveIcon } from '../ui/icons';
+import { canArchive } from './menus';
+import { archivedCopy } from './archived-copy';
 import type { ShareTelemetry } from '../dialogs/share/types';
 import type { ExplorerView } from '../views';
-import { useExplorer } from './context';
-import { useHostExtras } from './host';
+import { useExplorer, type DialogTarget } from './context';
+import { BrowserIcon, useHostExtras } from './host';
 import { SIDEBAR_LABELS } from '../views';
 import { useTeams } from '../teams/context';
 import { quoted } from '../quoted';
@@ -46,6 +55,20 @@ const defaultShareUrl: ShareUrl = (link) =>
   typeof window === 'undefined' ? `/s/${link.code}` : `${window.location.origin}/s/${link.code}`;
 
 const pick = (f: Folder): PickerFolder => ({ id: f.id, name: f.name, parentId: f.parentId });
+
+// Change Folder's spaces of their own (one-explorer.md "Archived").
+const ARCHIVED_SPACE: PlacementSpace = {
+  value: ARCHIVED_PLACEMENT,
+  label: SIDEBAR_LABELS.archived,
+  sub: 'Out of every list, and closed',
+  icon: <ArchiveIcon size={16} />,
+};
+const THIS_BROWSER_SPACE: PlacementSpace = {
+  value: THIS_BROWSER_PLACEMENT,
+  label: SIDEBAR_LABELS.thisBrowser,
+  sub: 'Kept only in this browser',
+  icon: <BrowserIcon size={16} />,
+};
 
 export function ExplorerDialogs() {
   const ctx = useExplorer();
@@ -95,6 +118,9 @@ export function ExplorerDialogs() {
   switch (dialog.kind) {
     case 'move-item': {
       const item = ctx.overlay.apply(dialog.item);
+      // Archived is a space of its own, where Move to Archived would be offered, and where the item is now.
+      const archived = Boolean(item.archivedAt);
+      const spaces = archived || canArchive(item, ctx.viewerId) ? [ARCHIVED_SPACE] : undefined;
       return (
         <MoveToFolderDialog
           subjectName={item.title || 'Untitled'}
@@ -107,7 +133,58 @@ export function ExplorerDialogs() {
           // New Team, as livediagram's Move dialog has it: a team made on the spot, the item filed into it.
           onCreateTeam={onCreateTeam}
           onPick={(dest) => void actions.move(item, dest)}
+          spaces={spaces}
+          currentSpace={archived ? ARCHIVED_PLACEMENT : null}
+          onPickSpace={() => void actions.archive(item)}
           onClose={close}
+        />
+      );
+    }
+    case 'archived':
+    case 'archived-local': {
+      const item = dialog.item;
+      return (
+        <ConfirmDialog
+          open
+          {...archivedCopy(item.title, ctx.kind.lowerOne)}
+          onCancel={close}
+          onConfirm={() =>
+            openDialog(
+              dialog.kind === 'archived'
+                ? { kind: 'move-item', item: dialog.item }
+                : { kind: 'move-local', item: dialog.item },
+            )
+          }
+        />
+      );
+    }
+    case 'move-local': {
+      const item = dialog.item;
+      // Into the account goes through Sync, as a This Browser drop on a place does: only where the host syncs.
+      const syncs = Boolean(thisBrowser?.sync || thisBrowser?.syncHref?.(item));
+      // A place in the account asks to sync next: the dialog closes onto that question.
+      let next: DialogTarget = null;
+      return (
+        <MoveToFolderDialog
+          subjectName={item.title || 'Untitled'}
+          subjectKind="item"
+          personalFolders={syncs ? personal : undefined}
+          teams={syncs ? teamDests : []}
+          onCreateFolder={syncs ? createFolder : undefined}
+          onPick={(to) => void (next = { kind: 'sync-local', item, to, archived: true })}
+          spaces={[THIS_BROWSER_SPACE, ARCHIVED_SPACE]}
+          currentSpace={ARCHIVED_PLACEMENT}
+          onPickSpace={(value) => {
+            if (value !== THIS_BROWSER_PLACEMENT) return;
+            setThisBrowserArchived(ctx.app, item.id, null);
+            toast.show(
+              `Moved ${quoted(item.title || 'Untitled')} to ${SIDEBAR_LABELS.thisBrowser}.`,
+              {
+                tone: 'success',
+              },
+            );
+          }}
+          onClose={() => openDialog(next)}
         />
       );
     }
@@ -260,6 +337,8 @@ export function ExplorerDialogs() {
           onCancel={close}
           onConfirm={() => {
             close();
+            // Out of Archived first: the editor opens it to sync, and it opens no archived one.
+            if (dialog.archived) setThisBrowserArchived(ctx.app, item.id, null);
             if (!sync) {
               window.location.assign(syncHref!);
               return;

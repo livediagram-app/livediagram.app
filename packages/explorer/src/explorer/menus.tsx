@@ -24,6 +24,7 @@ import {
   DefaultPinIcon,
   TeamIcon,
   TrashIcon,
+  ArchiveIcon,
 } from '../ui/icons';
 import { useExplorer } from './context';
 import { kindWords } from '../words';
@@ -40,6 +41,12 @@ export function canManage(item: ShownItem): boolean {
   return item.access === 'edit' && !item.sharedVia;
 }
 
+/** Whether Move to Archived is the person's to offer (one-explorer.md "Archived"): a document they own, their own or
+ *  a team one they made, not reached through a link, not archived already. */
+export function canArchive(item: ShownItem, viewerId: string | null): boolean {
+  return canManage(item) && viewerId !== null && item.ownerId === viewerId && !item.archivedAt;
+}
+
 export function ItemMenu({
   item,
   anchor,
@@ -52,7 +59,8 @@ export function ItemMenu({
   /** Rows a surface adds before the destructive ones (the Timeline's Remove from Timeline). */
   extra?: ReactNode;
 }) {
-  const { actions, openItem, setRenamingId, openDialog, navigate, reloadLists } = useExplorer();
+  const { actions, openItem, setRenamingId, openDialog, navigate, reloadLists, viewerId } =
+    useExplorer();
   const { slideOut, signedIn } = useExtras();
   const host = useLibraryHost();
   const trashed = item.trashedAt !== null;
@@ -89,6 +97,32 @@ export function ItemMenu({
 
   const manage = canManage(item);
   const renames = item.access === 'edit';
+  // Archived: closed until moved out, so its menu only names it, moves it out, or deletes it.
+  if (item.archivedAt) {
+    return (
+      <PortalMenu anchor={anchor} onClose={onClose} label={`Actions for ${title}`}>
+        {header}
+        <MenuActionRow label="Open" icon={<OpenIcon />} onClick={run(() => openItem(item))} />
+        <MenuActionRow
+          label="Rename"
+          icon={<PencilIcon />}
+          onClick={run(() => setRenamingId(item.id))}
+        />
+        <MenuActionRow
+          label="Change Folder"
+          icon={<FolderOutlineIcon />}
+          onClick={run(() => openDialog({ kind: 'move-item', item }))}
+        />
+        {extra}
+        <MenuGroupSeparator />
+        <MenuActionRow
+          label={`Delete ${kindWords(item.app).one}`}
+          icon={<TrashIcon />}
+          onClick={run(() => slideOut(item.id, () => void actions.trash(item)))}
+        />
+      </PortalMenu>
+    );
+  }
   return (
     <PortalMenu anchor={anchor} onClose={onClose} label={`Actions for ${title}`}>
       {header}
@@ -110,6 +144,13 @@ export function ItemMenu({
           label="Change Folder"
           icon={<FolderOutlineIcon />}
           onClick={run(() => openDialog({ kind: 'move-item', item }))}
+        />
+      ) : null}
+      {canArchive(item, viewerId) ? (
+        <MenuActionRow
+          label="Move to Archived"
+          icon={<ArchiveIcon />}
+          onClick={run(() => slideOut(item.id, () => void actions.archive(item)))}
         />
       ) : null}
       {manage ? (

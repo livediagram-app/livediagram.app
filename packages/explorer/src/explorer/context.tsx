@@ -82,12 +82,19 @@ export type DialogTarget =
   | { kind: 'webhooks'; item: Item }
   // This Browser's Delete (its menu, or a drop on the Trash): gone for good, since nothing else holds it.
   | { kind: 'delete-local'; item: ThisBrowserItem }
-  // A This Browser item dropped on a place: synced to the account first, then moved there where the host can.
+  // A This Browser item dropped on a place: synced to the account first, then moved there where the host can. From
+  // Archived (`archived`), its mark is cleared as it syncs.
   | {
       kind: 'sync-local';
       item: ThisBrowserItem;
       to: { folderId: string | null; teamId: string | null };
+      archived?: boolean;
     }
+  // An archived document opened: it says so, with Change Folder (one-explorer.md "Archived").
+  | { kind: 'archived'; item: Item }
+  | { kind: 'archived-local'; item: ThisBrowserItem }
+  // Change Folder for an archived This Browser item: back to This Browser, or (signed in) into the account.
+  | { kind: 'move-local'; item: ThisBrowserItem }
   | null;
 
 export type ExplorerContextValue = {
@@ -194,6 +201,14 @@ export function useOptionalExplorer(): ExplorerContextValue | null {
   return useContext(Ctx);
 }
 
+/** An archived document's link (`#archived:<id>`): no address, a click opens the archived dialog. */
+export const ARCHIVED_HREF = '#archived:';
+export function archivedIdOf(href: string): string | null {
+  return href.startsWith(ARCHIVED_HREF)
+    ? decodeURIComponent(href.slice(ARCHIVED_HREF.length))
+    : null;
+}
+
 export function DefaultLink({
   href,
   className,
@@ -274,11 +289,11 @@ export function ExplorerProvider({
   filter,
   setFilter,
   onNavigate,
-  itemHref,
+  itemHref: hostItemHref,
   onCreate,
   newApps,
   onOpenItem,
-  Link = DefaultLink,
+  Link: HostLink = DefaultLink,
   basePath,
   teams = NO_TEAMS,
   viewerId = null,
@@ -342,6 +357,36 @@ export function ExplorerProvider({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [dialog, openDialog] = useState<DialogTarget>(null);
   const [expansion] = useState(createExpansion);
+  // An archived document has no address to open: its links carry ARCHIVED_HREF and its id, and a click on one opens
+  // the archived dialog instead (the items drawn are kept by id for it).
+  const archivedShown = useRef(new Map<string, Item>());
+  const itemHref = useCallback<ItemHref>(
+    (item, at) => {
+      const full = item as Partial<Item>;
+      if (!full.archivedAt) return hostItemHref(item, at);
+      archivedShown.current.set(item.id, full as Item);
+      return `${ARCHIVED_HREF}${encodeURIComponent(item.id)}`;
+    },
+    [hostItemHref],
+  );
+  const Link = useMemo<LinkComponent>(() => {
+    function ExplorerLink(props: LinkProps) {
+      const id = archivedIdOf(props.href);
+      if (id === null) return <HostLink {...props} />;
+      return (
+        <DefaultLink
+          {...props}
+          onClick={(e) => {
+            e.preventDefault();
+            props.onClick?.(e);
+            const item = archivedShown.current.get(id);
+            if (item) openDialog({ kind: 'archived', item });
+          }}
+        />
+      );
+    }
+    return ExplorerLink;
+  }, [HostLink]);
 
   const viewHref = useCallback((v: ExplorerView) => explorerPath(v, basePath), [basePath]);
   // Read when moving, so `navigate` stays the same function across lens writes.
@@ -369,6 +414,7 @@ export function ExplorerProvider({
   }, [folderId, folderTeam, folderLens, onNavigate, basePath]);
   const openItem = useCallback(
     (item: Item) => {
+      if (item.archivedAt) return openDialog({ kind: 'archived', item });
       const href = itemHref(item);
       if (onOpenItem) onOpenItem(href, item);
       else window.location.assign(href);

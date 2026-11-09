@@ -18,6 +18,7 @@ import {
   TeamIcon,
   TimelineIcon,
   TrashIcon,
+  ArchiveIcon,
 } from '../ui/icons';
 import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
 import type { ExplorerView } from '../views';
@@ -63,6 +64,13 @@ export function emptyCopy(
         icon: <TrashIcon />,
         title: 'Nothing in the Trash right now',
         description: `Delete a ${w.lowerOne} and it is kept here for 30 days, so you can restore it.`,
+        cta: false,
+      };
+    case 'archived':
+      return {
+        icon: <ArchiveIcon />,
+        title: 'Nothing Archived',
+        description: `${w.many} you move to Archived rest here, out of every other list. Move one back with Change Folder to open it again.`,
         cta: false,
       };
     case 'inbox':

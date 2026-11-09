@@ -186,6 +186,9 @@ export function createFakeIndex(
 
   function select(q: ItemListQuery): Item[] {
     let out = items.filter((i) => i.trashedAt === null);
+    // Archived as the index has it: its own scope, read by the Archived view and Search alone.
+    if (q.view === 'archived') out = out.filter((i) => i.archivedAt);
+    else if (q.view !== 'search') out = out.filter((i) => !i.archivedAt);
     if (q.app) out = out.filter((i) => i.app === q.app);
     if (q.view === 'unsorted') out = out.filter((i) => i.folderId === null);
     // My Work and the teams' libraries: what a link reaches lives in another's space.
@@ -341,7 +344,23 @@ export function createFakeIndex(
     updateItem: (id: string, input: Partial<Item>) =>
       answer('updateItem', [id, input], undefined, () => {
         const item = find(id);
-        Object.assign(item, input);
+        // Naming a place moves an archived one out (the index's PATCH).
+        const out = item.archivedAt && ('folderId' in input || 'teamId' in input);
+        Object.assign(item, input, out ? { archivedAt: null } : {});
+        return { item: { ...item } };
+      }),
+    archiveItem: (id: string) =>
+      answer('archiveItem', [id], undefined, () => {
+        const item = find(id);
+        if (item.ownerId !== 'user_me') throw new IndexError(403, 'not_owner');
+        Object.assign(item, {
+          archivedAt: Date.now(),
+          folderId: null,
+          teamId: null,
+          favourite: false,
+          lastOpenedAt: null,
+          hiddenFromRecent: false,
+        });
         return { item: { ...item } };
       }),
     favourite: (id: string) =>

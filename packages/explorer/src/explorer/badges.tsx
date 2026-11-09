@@ -13,6 +13,7 @@ import {
   PrivateBadgeGlyph,
   SharedDotGlyph,
   SparkleIcon,
+  ArchiveIcon,
   StarIcon,
   TeamBadgeGlyph,
 } from '../ui/icons';
@@ -127,6 +128,22 @@ export function MadeByAiBadge({ item }: { item: Pick<Item, 'source'> }) {
     >
       <SparkleIcon size={10} />
       Made by AI
+    </span>
+  );
+}
+
+/** An archived document, where Search lists it among live ones (one-explorer.md "Archived"): slate, no status
+ *  colour, the archive box and its word, so it never reads by colour alone. */
+export function ArchivedBadge({ item }: { item: Pick<Item, 'archivedAt'> }) {
+  if (!item.archivedAt) return null;
+  return (
+    <span
+      data-archived=""
+      title="Archived: it can't be opened until it is moved out with Change Folder."
+      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 ring-1 ring-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600"
+    >
+      <ArchiveIcon size={10} />
+      Archived
     </span>
   );
 }

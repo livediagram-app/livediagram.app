@@ -20,7 +20,7 @@ import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { useCascade } from '../ui/useCascade';
 import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 import { kindWords, siteOf } from '../words';
-import { AppMark, FavouriteMarker, MadeByAiBadge } from './badges';
+import { AppMark, ArchivedBadge, FavouriteMarker, MadeByAiBadge } from './badges';
 import { useExplorer } from './context';
 import {
   ALIGN_CLASS,
@@ -381,6 +381,7 @@ const DetailsRow = memo(function DetailsRow({
           </Link>
         )}
         <MadeByAiBadge item={item} />
+        <ArchivedBadge item={item} />
       </span>
       <span className={CELLS.type}>
         <TypeCell app={item.app} label={kind} />

@@ -14,6 +14,28 @@ import { lucideFolder } from '@liveworkspace/icons/lucide';
 
 const FolderIcon = lucideGlyph(lucideFolder, 16);
 
+// Lucide's archive box, drawn as the Explorer's Archived row draws it, so the card and the row read as one place.
+function ArchiveBoxIcon({ size = 24 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect x="2" y="3" width="20" height="5" rx="1" />
+      <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
+      <path d="M10 12h4" />
+    </svg>
+  );
+}
+
 const capitalised = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 
 export type NotFoundProps = {
@@ -29,6 +51,10 @@ export type NotFoundProps = {
   // The file was open a moment ago and access to it ended (a team removal, a changed link;
   // lib/access-notice.ts): say that, rather than "doesn't exist or isn't yours".
   accessEnded?: boolean;
+  // The file is in its owner's Archived (liveworkspace/docs/specs/004-index/one-explorer.md "Archived"): the index
+  // refused its grant as `archived`, or this browser holds it archived. The card says so and offers Change Folder,
+  // which moves it out; without `onChangeFolder` (an embed) only Open Explorer is offered.
+  archived?: { onChangeFolder?: () => void } | null;
 };
 
 export function NotFound({
@@ -37,8 +63,45 @@ export function NotFound({
   onOpenExplorer,
   page = false,
   accessEnded = false,
+  archived = null,
 }: NotFoundProps) {
   const Noun = capitalised(noun);
+  if (archived) {
+    return (
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+        <div className="pointer-events-auto flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <ArchiveBoxIcon />
+          </div>
+          <h1 className="mt-4 text-xl font-semibold text-slate-900 dark:text-slate-100">
+            {`${Noun} Archived`}
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            {`This ${noun} is archived, so it can’t be opened or edited. Move it out of Archived with Change Folder to work on it again.`}
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+            {onOpenExplorer ? (
+              <Button size="md" variant="secondary" onClick={onOpenExplorer}>
+                <FolderIcon />
+                Open Explorer
+              </Button>
+            ) : null}
+            {archived.onChangeFolder ? (
+              <Button
+                size="md"
+                onClick={archived.onChangeFolder}
+                className="shadow-sm"
+                title={`Choose where this ${noun} goes, out of Archived`}
+              >
+                <FolderIcon />
+                Change Folder
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
       <div className="pointer-events-auto flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">

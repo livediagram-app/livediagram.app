@@ -22,6 +22,8 @@ export type ItemActions = {
   /** Hide from Recent / Show in Recent: the person's own Recent and Jump Back In. */
   setHiddenFromRecent: (item: Item, hidden: boolean) => Promise<boolean>;
   move: (item: Item, to: { folderId: string | null; teamId: string | null }) => Promise<boolean>;
+  /** Move to Archived: out of every list but Archived and Search, closed until moved out (`move`). */
+  archive: (item: Item) => Promise<boolean>;
   trash: (item: Item) => Promise<boolean>;
   restore: (item: Item) => Promise<boolean>;
   purge: (item: Item) => Promise<boolean>;
@@ -74,7 +76,8 @@ export function createItemActions({
       await call();
       // Taken: the next read of the index stands in for the patch from here on.
       undo.settle();
-      if ('folderId' in patch || 'trashedAt' in patch || 'gone' in patch) onPlaced?.();
+      if ('folderId' in patch || 'trashedAt' in patch || 'archivedAt' in patch || 'gone' in patch)
+        onPlaced?.();
       return true;
     } catch (e) {
       undo();
@@ -111,7 +114,8 @@ export function createItemActions({
         hidden ? 'Couldn’t hide it from Recent.' : 'Couldn’t show it in Recent again.',
       ),
     move: async (item, to) => {
-      // The index drops the folder when an item changes team; send the team only when it changes.
+      // The index drops the folder when an item changes team; send the team only when it changes. Out of Archived,
+      // naming the folder is the move out.
       const input =
         to.teamId === item.teamId
           ? { folderId: to.folderId }
@@ -119,7 +123,9 @@ export function createItemActions({
       const from = { folderId: item.folderId, teamId: item.teamId };
       const ok = await optimistic(
         item,
-        { folderId: to.folderId, teamId: to.teamId },
+        item.archivedAt
+          ? { folderId: to.folderId, teamId: to.teamId, archivedAt: null }
+          : { folderId: to.folderId, teamId: to.teamId },
         () => client.updateItem(item.id, input),
         `Couldn’t move ${named(item)}. Try again.`,
       );
@@ -131,8 +137,11 @@ export function createItemActions({
           item.app,
         );
       }
-      // Said with an Undo that moves it back, from Change Folder and a drop alike.
-      if (ok && placeName) {
+      // Said with an Undo that moves it back, from Change Folder and a drop alike; out of Archived, no Undo (back in
+      // Archived is Move to Archived again, which would delete nothing new but is the person's own call).
+      if (ok && placeName && item.archivedAt) {
+        toast.show(`Moved ${named(item)} to ${isolated(placeName(to))}.`, { tone: 'success' });
+      } else if (ok && placeName) {
         toast.show(`Moved ${named(item)} to ${isolated(placeName(to))}.`, {
           tone: 'success',
           action: {
@@ -141,6 +150,25 @@ export function createItemActions({
           },
         });
       }
+      return ok;
+    },
+    archive: async (item) => {
+      const ok = await optimistic(
+        item,
+        // Archiving deletes everyone's favourite, Recent and link rows (one-explorer-contracts.md "Archived").
+        {
+          archivedAt: Date.now(),
+          folderId: null,
+          teamId: null,
+          favourite: false,
+          hiddenFromRecent: false,
+          lastOpenedAt: null,
+          hasLinks: false,
+        },
+        () => client.archiveItem(item.id),
+        `Couldn’t move ${named(item)} to Archived. Try again.`,
+      );
+      if (ok) toast.show(`Moved ${named(item)} to Archived.`, { tone: 'success' });
       return ok;
     },
     trash: async (item) => {

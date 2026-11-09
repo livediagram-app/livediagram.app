@@ -24,6 +24,10 @@ export type ThisBrowserItem = {
   // In the app's local Trash since then; null while live.
   trashedAt: number | null;
   favourite: boolean;
+  // Archived in this browser since then (liveworkspace/docs/specs/004-index/one-explorer.md "Archived"); null or absent
+  // while it is not. The mark lives only in this list: the app's own record never hears of it, so every write of the
+  // list carries the marks it already held (writeThisBrowser), and the editor reads it here before it opens one.
+  archivedAt?: number | null;
 };
 
 /** The This Browser pill's words: its label, and the sentence it gives on hover and to assistive technology. */
@@ -75,6 +79,7 @@ function clean(raw: unknown): ThisBrowserItem | null {
   const r = raw as Partial<Record<keyof ThisBrowserItem, unknown>> | null;
   if (!r || typeof r.id !== 'string' || !r.id) return null;
   const updatedAt = num(r.updatedAt, 0);
+  const archivedAt = numOrNull(r.archivedAt);
   return {
     id: r.id,
     title: typeof r.title === 'string' ? r.title : '',
@@ -83,6 +88,8 @@ function clean(raw: unknown): ThisBrowserItem | null {
     lastOpenedAt: numOrNull(r.lastOpenedAt),
     trashedAt: numOrNull(r.trashedAt),
     favourite: r.favourite === true,
+    // Only an archived one carries the mark, so the list stays as it was for every other.
+    ...(archivedAt !== null ? { archivedAt } : {}),
   };
 }
 
@@ -112,7 +119,16 @@ export function writeThisBrowser(
   items: readonly ThisBrowserItem[],
   store: Storage | null = storage(),
 ): void {
-  const kept = [...items].sort(newestFirst).slice(0, THIS_BROWSER_MAX);
+  // The archive marks the list already held stay on their items: the app republishes its records, which carry none.
+  const marks = new Map(
+    readThisBrowser(app, store).flatMap((i) => (i.archivedAt ? [[i.id, i.archivedAt]] : [])),
+  );
+  const kept = [...items]
+    .map((i) =>
+      i.archivedAt === undefined && marks.has(i.id) ? { ...i, archivedAt: marks.get(i.id)! } : i,
+    )
+    .sort(newestFirst)
+    .slice(0, THIS_BROWSER_MAX);
   try {
     if (!store) return;
     if (kept.length === 0) store.removeItem(thisBrowserKey(app));
@@ -132,7 +148,8 @@ const sameItem = (a: ThisBrowserItem, b: ThisBrowserItem) =>
   a.updatedAt === b.updatedAt &&
   a.lastOpenedAt === b.lastOpenedAt &&
   a.trashedAt === b.trashedAt &&
-  a.favourite === b.favourite;
+  a.favourite === b.favourite &&
+  (a.archivedAt ?? null) === (b.archivedAt ?? null);
 
 /** One item changed (written, renamed, trashed, restored, opened). */
 export function putThisBrowserItem(
@@ -145,6 +162,28 @@ export function putThisBrowserItem(
   // An autosave that changed nothing listed here writes nothing (and wakes no Explorer).
   if (kept && sameItem(kept, item)) return;
   writeThisBrowser(app, [item, ...items.filter((i) => i.id !== item.id)], store);
+}
+
+/** Archives one item in this browser (`at`), or moves it out again (null). Nothing leaves the browser. */
+export function setThisBrowserArchived(
+  app: App,
+  id: string,
+  at: number | null,
+  store: Storage | null = storage(),
+): void {
+  const items = readThisBrowser(app, store);
+  const item = items.find((i) => i.id === id);
+  if (!item || (item.archivedAt ?? null) === at) return;
+  writeThisBrowser(
+    app,
+    items.map((i) => (i.id === id ? { ...i, archivedAt: at } : i)),
+    store,
+  );
+}
+
+/** Whether this browser holds `id` archived: an editor asks before it opens one of its own. */
+export function isThisBrowserArchived(app: App, id: string, store: Storage | null = storage()) {
+  return Boolean(readThisBrowser(app, store).find((i) => i.id === id)?.archivedAt);
 }
 
 /** One item gone from this browser (deleted, or moved to the account). */

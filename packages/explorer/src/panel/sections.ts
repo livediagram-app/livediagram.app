@@ -17,6 +17,7 @@ export type PanelSection =
   | { kind: 'favourites' }
   | { kind: 'offline' }
   | { kind: 'library' }
+  | { kind: 'archived' }
   | { kind: 'trash' };
 
 /** The Library section's tabs, each one of its pages. */
@@ -42,6 +43,7 @@ const SIMPLE = [
   'favourites',
   'offline',
   'library',
+  'archived',
   'trash',
 ] as const;
 
@@ -60,7 +62,7 @@ export function panelSectionGroups(
   return [
     {
       id: 'overview',
-      sections: [{ kind: 'home' }, { kind: 'inbox' }, { kind: 'timeline' }, { kind: 'shared' }],
+      sections: [{ kind: 'home' }, { kind: 'inbox' }, { kind: 'shared' }],
     },
     {
       id: 'spaces',
@@ -68,11 +70,14 @@ export function panelSectionGroups(
     },
     {
       id: 'more',
+      // The sidebar's Library, in its order (Recent is Home's Jump Back In here), then This Browser.
       sections: [
+        { kind: 'timeline' },
         { kind: 'favourites' },
-        ...(thisBrowser ? [{ kind: 'offline' as const }] : []),
         ...(library ? [{ kind: 'library' as const }] : []),
+        { kind: 'archived' },
         { kind: 'trash' },
+        ...(thisBrowser ? [{ kind: 'offline' as const }] : []),
       ],
     },
   ];
@@ -98,6 +103,8 @@ export function sectionLabel(s: PanelSection, teamName: (id: string) => string |
       return SIDEBAR_LABELS.thisBrowser;
     case 'library':
       return SIDEBAR_LABELS.library;
+    case 'archived':
+      return SIDEBAR_LABELS.archived;
     case 'trash':
       return SIDEBAR_LABELS.trash;
   }

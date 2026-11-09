@@ -2,7 +2,7 @@
 // Jump Back In"): the same card as the index's, with This Browser's menu, and a drag each target reads as This
 // Browser's (the Trash deletes it for good after asking where the host can; a place asks to sync it first).
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Folder } from '@liveworkspace/index-client';
 import { THIS_BROWSER_DRAG_MIME } from '../drag/drag';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
@@ -86,6 +86,10 @@ const rowOf = (name: string) =>
 const findRow = async (name: string) =>
   (await sidebar().findByRole('treeitem', { name })).firstElementChild as HTMLElement;
 
+// The Trash is a Library row: open, as a person who keeps it open has it.
+beforeEach(() =>
+  localStorage.setItem('liveworkspace:explorer-expanded', JSON.stringify(['my-work', 'library'])),
+);
 afterEach(() => localStorage.clear());
 
 describe('a This Browser card in Jump Back In', () => {

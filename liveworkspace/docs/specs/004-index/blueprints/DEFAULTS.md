@@ -44,9 +44,9 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX37 | webhooks        | a test delivery's app is `liveworkspace`; the Webhooks dialog names it Test.                                                                 |
 | IDX40 | webhooks        | an Editor link limited to one tab can't manage the document's webhooks: they would carry the other tabs' comments and actions.               |
 | IDX41 | webhooks        | a card move or form response with no account behind it never reaches an Only Me webhook.                                                     |
-| IDX42 | archive | Shared with me rows go with the share links an archive deletes: they reach nothing once the link is gone. |
-| IDX43 | archive | the daily empty clean-up passes archived items by. |
-| IDX44 | archive | the Drive mirror leaves archived documents out; Download Your Data keeps them. |
-| IDX45 | archive | an archived item sent to the Trash is restored to Archived. |
-| IDX46 | archive | the Archived view takes no lens; Search finds archived documents, with an Archived badge. |
-| IDX47 | archive | Duplicate, Share, Favourites and Hide from Recent are refused while archived; Rename and Delete are not. |
+| IDX42 | archive         | Shared with me rows go with the share links an archive deletes: they reach nothing once the link is gone.                                    |
+| IDX43 | archive         | the daily empty clean-up passes archived items by.                                                                                           |
+| IDX44 | archive         | the Drive mirror leaves archived documents out; Download Your Data keeps them.                                                               |
+| IDX45 | archive         | an archived item sent to the Trash is restored to Archived.                                                                                  |
+| IDX46 | archive         | the Archived view takes no lens; Search finds archived documents, with an Archived badge.                                                    |
+| IDX47 | archive         | Duplicate, Share, Favourites and Hide from Recent are refused while archived; Rename and Delete are not.                                     |

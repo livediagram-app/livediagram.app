@@ -7,7 +7,7 @@
 //     (`service.requestGrant`, cached until a minute before it lapses): as that account with the app's key, or
 //     with the browser's own bearer and share headers.
 //
-// A refusal the caller can act on (the item's password) comes back as the index's answer, a Response; any other
+// A refusal the caller can act on (the item's password, an archived item) comes back as the index's answer, a Response; any other
 // miss leaves the request without a grant (null), and the item's gates answer it as they answer no access.
 
 import {
@@ -31,7 +31,9 @@ import {
 // The headers every app's editor sends (@liveworkspace/index-client), for the apps' servers.
 export { ITEM_GRANT_HEADER, SHARE_CODE_HEADER, SHARE_PASSWORD_HEADER };
 
-const PASSWORD_REFUSALS = new Set(['password_required', 'password_invalid']);
+// The refusals the caller can act on, answered as the index's: the item's password, and an archived item (its owner
+// moves it out of Archived first, one-explorer-contracts.md "Archived").
+const ACTIONABLE_REFUSALS = new Set(['password_required', 'password_invalid', 'archived']);
 
 // The share code a link visitor's request carries. The grant's `link` claim is the signal an app relies on (a person
 // who opened the link before may send no header); the header only adds to it, for a grant signed without the claim.
@@ -72,7 +74,7 @@ export async function resolveItemGrant(
   if (caller.kind === 'delegate' && !caller.personId) return null;
   const outcome = await service.requestGrant(env, caller, itemId, share);
   if (!outcome.ok) {
-    if (PASSWORD_REFUSALS.has(outcome.error))
+    if (ACTIONABLE_REFUSALS.has(outcome.error))
       return respond({ error: outcome.error }, outcome.status);
     return null;
   }

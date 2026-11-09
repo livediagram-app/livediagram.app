@@ -225,6 +225,14 @@ export const TrashIcon = lucide(
   <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2" />,
   13,
 );
+// Archived: lucide's archive box, the Library's third row and Move to Archived.
+export const ArchiveIcon = lucide(
+  <>
+    <rect width="20" height="5" x="2" y="3" rx="1" />
+    <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8M10 12h4" />
+  </>,
+  13,
+);
 export const OpenIcon = lucide(
   <path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />,
   13,

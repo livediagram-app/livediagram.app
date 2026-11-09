@@ -26,7 +26,13 @@ import { takeAccessEnded } from '@/lib/access-notice';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
-import { isEditorPath } from '@/lib/editor-path';
+import { projectIdFromPath, isEditorPath } from '@/lib/editor-path';
+import { planGrantRefusal } from '@/lib/api/plan-grants';
+import {
+  archivedByIndex,
+  archivedChangeFolderHref,
+  archivedInThisBrowser,
+} from '@liveworkspace/workbench/lib/archived';
 import { useBrowserTabTitle } from '@/hooks/ui/useBrowserTabTitle';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
@@ -81,6 +87,12 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // An access change just reloaded us (lib/access-notice.ts): taken once, on mount, so a refusal can say why. The
   // first page after the eject always takes it, whatever it shows (the editor, a password prompt, a refusal).
   const [accessEnded] = useState(() => takeAccessEnded());
+  // The plan the address names, and whether this browser holds it archived (@liveworkspace/workbench/lib/archived):
+  // read once, on mount, so an archived one never opens.
+  const [archivedId] = useState(() =>
+    typeof window === 'undefined' ? null : projectIdFromPath(window.location.pathname),
+  );
+  const [archivedHere] = useState(() => archivedInThisBrowser('liveplanner', archivedId));
   // Tab title reflects the project: "<name> | liveplanner" (falls back to
   // Untitled when the project has no name yet). Updates as the user renames. Held there (useBrowserTabTitle): Next.js
   // commits the route's static "liveplanner" title after hydration and wrote it over the plan's name.
@@ -98,6 +110,37 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // Whose data the owner-scoped providers read: nobody's while the reader is the 'self' placeholder,
   // which a project in This Browser opens under (docs/specs/006-project/offline-mode.md "Instant open").
   const ownerId = state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null);
+  // Archived by its owner (liveworkspace/docs/specs/004-index/one-explorer.md "Archived"): the index refused the
+  // grant as `archived`, or this browser holds it archived. It doesn't open; Change Folder moves it out, from the
+  // Explorer's Archived. A frame can't take the person there, so it offers only the way back.
+  if (archivedHere || (projectNotFound && archivedByIndex(archivedId, planGrantRefusal))) {
+    const card = (
+      <NotFound
+        archived={
+          appChrome && archivedId
+            ? {
+                onChangeFolder: () =>
+                  window.location.assign(
+                    archivedChangeFolderHref(archivedId, window.location.origin),
+                  ),
+              }
+            : {}
+        }
+        onCreateNew={() => window.location.assign(`${window.location.origin}/new`)}
+        onOpenExplorer={
+          appChrome
+            ? () => window.location.assign(`${window.location.origin}/explorer`)
+            : workspaceFrame?.back
+        }
+      />
+    );
+    return !appChrome ? (
+      <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
+    ) : (
+      <StatusShell title="Plan Archived">{card}</StatusShell>
+    );
+  }
+
   // The project is in the Trash (docs/specs/013-workspace/trash.md): from the
   // load, the room, or a refused save. Ahead of every other status because it
   // can arrive mid-session, over an editor that loaded fine.

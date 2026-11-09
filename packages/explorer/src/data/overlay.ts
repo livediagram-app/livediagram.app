@@ -56,7 +56,7 @@ type Base = { values: ItemPatch; seenAt: number };
 export const OVERLAY_BASE_MAX = 500;
 // The changes of place `raced` remembers: a read only races the ones settled while it was out, so the last few do.
 export const OVERLAY_PLACEMENTS_MAX = 20;
-const PLACE_KEYS = ['folderId', 'teamId', 'trashedAt', 'gone'] as const;
+const PLACE_KEYS = ['folderId', 'teamId', 'trashedAt', 'archivedAt', 'gone'] as const;
 
 export function createItemOverlay(): ItemOverlay {
   // Each item's patches in the order they were laid, and what they come to together. Taking one back removes

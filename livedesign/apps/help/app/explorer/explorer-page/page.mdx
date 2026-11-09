@@ -52,6 +52,7 @@ Pages that are not a place an item lives (the Inbox, the Timeline, Shared With M
 
 - **Library** expands to **Recent** (everything by when you last opened it, [Recent](/help/explorer/recent/)), **Favourites** (what you starred) and the **Image Gallery** (every image you have uploaded, with where each is used, [Image Gallery](/help/explorer/image-gallery/)).
 - **This Browser** lists the designs saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)), with how many there are, and shows only while there is at least one. They are newest first, each opening in the editor, and when you are signed in each has **Sync Design** to move it to your account. A design's menu offers **Take Offline** to do the reverse.
+- **Archived** holds the designs you have put away ([Archived](#archived)).
 - **Trash** holds deleted items for 30 days, ready to restore ([Trash](/help/account-and-data/trash/)). While you drag an item, the Trash row wakes up as a place to drop it.
 
 Which rows you expand is remembered in this browser, and opening a Library page opens the Library for you.
@@ -70,11 +71,25 @@ Every list of items (My Work, a folder, a team, Recent, Favourites and search re
 
 ## An item's menu
 
-Each row and card has a **⋯** button (or right-click it) with what you can do to that item: **Open**, **Rename**, **Duplicate**, **Change Folder**, **Share**, **Add to Favourites**, **History**, **Webhooks**, **Hide from Recent**, **Open Team** for a team's item, **Take Offline**, and **Delete Design** to move it to the Trash. What appears depends on your access: someone who reaches an item through a link cannot rename, move, share or delete it, and its menu offers **Remove from Shared With Me** instead.
+Each row and card has a **⋯** button (or right-click it) with what you can do to that item: **Open**, **Rename**, **Duplicate**, **Change Folder**, **Move to Archived**, **Share**, **Add to Favourites**, **History**, **Webhooks**, **Hide from Recent**, **Open Team** for a team's item, **Take Offline**, and **Delete Design** to move it to the Trash. What appears depends on your access: someone who reaches an item through a link cannot rename, move, share or delete it, and its menu offers **Remove from Shared With Me** instead.
 
 **Webhooks** posts what happens to this design to a Slack or Microsoft Teams channel, or to a service you run. It is the design's own: what you set up there applies to this design only, and each of your other designs has its own, up to 10 each. Choose **Add Webhook**, pick where it posts, paste the address (the dialog shows how to get one), name it, then tick what it should send (none are ticked at first) and **Who Did It**: **Anyone**, or **Only Me** for just your own changes. Each webhook has **Send Test**, **Pause**, **Delete**, **Edit Events** and its **Recent Deliveries**. You need to be signed in and able to edit the whole design: its owner, someone in its team, or someone with an Editor link to every tab.
 
 **Duplicate** makes a copy named after the original with "(copy)" on the end, every tab included, and puts it in your library.
+
+## Archived
+
+**Move to Archived** in a design's menu puts it away without deleting it. Only its owner can archive it: on a team's design, that is the person who made it.
+
+An archived design is hidden from every list except **Archived** and search results. It can't be opened, edited or shared, and opening it says so instead (from the Explorer, or from its address in the editor). It keeps its preview, and you can still rename it from its menu. Archiving it also removes, for everyone:
+
+- its share links, for good, so people who had them lose access;
+- its place in a team, so teammates no longer see it;
+- its favourites, its spot in Recent and Home, and its threads and actions in the Inbox.
+
+To work on it again, choose **Change Folder** from its menu (or from the card the editor shows) and pick a folder, My Work or a team. **Archived** is listed under your spaces in Change Folder too. The design comes back with no links and no favourites, so share it again if you need to.
+
+A design kept only in **This Browser** can be archived too. It stays in this browser, and **Change Folder** moves it back to This Browser (or, signed in, into your account). See [Offline Mode](/help/privacy-and-security/offline-mode/).
 
 ## On a phone
 

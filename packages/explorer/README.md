@@ -101,7 +101,7 @@ box of its own.
 | `onTimeline?`              | `(action, type) => void`               | The Timeline's reports for telemetry: `Changed`, `Selected`, `Loaded`, `Opened` or `Removed`, by a fixed token.                                                                                                                             |
 | `onHome?`                  | `(action, type) => void`               | Home's What Happened reports for telemetry: `Selected` (`WhatHappened`, `SeeTimeline`) or `Opened` (`Group`).                                                                                                                               |
 | `welcome?`                 | `WelcomeOptions`                       | Home's first run: the app's welcome manifest (loaded lazily on `onFirstRun`) in place of empty lists, and the hero's welcome. Each start shows its whole name and description, wrapped, never clamped.                                      |
-| `sidebarLinks?`            | `SidebarLink[]`                        | The host's own rows in the sidebar's More group, before the Trash (liveworkspace.app's This Browser, linking to an app's view).                                                                                                             |
+| `sidebarLinks?`            | `SidebarLink[]`                        | The host's own rows in the sidebar's More group, after the Library and This Browser (liveworkspace.app's This Browser, linking to an app's view).                                                                                           |
 | `allLabel?`                | `string`                               | The filter's every-app choice. "All" by default; "All Apps" on liveworkspace.app.                                                                                                                                                           |
 | `renderAppLogo?`           | `(app: App \| 'all') => ReactNode`     | The filter's logos: the app's on its choice, the platform's on the every-app one (the Explorer page and the panel). The host draws them, since the brands are its.                                                                          |
 | `arrivalNotice?`           | `string \| null`                       | A sentence said once on arrival, as a toast (a revoked link, say).                                                                                                                                                                          |
@@ -116,23 +116,24 @@ box of its own.
 
 Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` is its filter lens, written as `?q=`:
 
-| View                                  | Address                         | Shows                                                                    |
-| ------------------------------------- | ------------------------------- | ------------------------------------------------------------------------ |
-| `{ kind: 'home' }`                    | `/explorer` or `/explorer/home` | The hero, Jump Back In, Shared With You Recently and What Happened       |
-| `{ kind: 'all', q? }`                 | `/explorer/all`                 | My Work: your root folders and your items that are in no folder          |
-| `{ kind: 'recent', q? }`              | `/explorer/recent`              | By last opened                                                           |
-| `{ kind: 'favourites', q? }`          | `/explorer/favourites`          | Starred                                                                  |
-| `{ kind: 'shared', q? }`              | `/explorer/shared`              | Shared With Me: items reached through a link                             |
-| `{ kind: 'trash' }`                   | `/explorer/trash`               | The Trash, grouped by owner: Restore, Delete permanently, Empty Trash    |
-| `{ kind: 'inbox' }`                   | `/explorer/inbox`               | `GET /inbox`: actions, cards, forms and threads, each linking to its app |
-| `{ kind: 'timeline' }`                | `/explorer/timeline`            | `GET /timeline`: what happened, by day, as cards; filters and a calendar |
-| `{ kind: 'invites' }`                 | `/explorer/invites`             | The team invitations waiting for you, each with Accept and Decline       |
-| `{ kind: 'gallery' }`                 | `/explorer/images`              | The Image Gallery, from the host's `gallery`                             |
-| `{ kind: 'shape-libraries' }`         | `/explorer/shape-libraries`     | Shape Libraries, from the host's `shapeLibraries`                        |
-| `{ kind: 'search', q }`               | `/explorer/search?q=`           | Everything you can open, narrowed by the lens (`view=search`)            |
-| `{ kind: 'folder', id, q? }`          | `/explorer/folder?id=`          | A folder                                                                 |
-| `{ kind: 'team', id, folderId?, q? }` | `/explorer/team?id=[&folder=]`  | A team's card over its library, then Team Activity; or a folder          |
-| `{ kind: 'offline', q? }`             | `/explorer/offline`             | This Browser: the host's items kept only here, narrowed by the lens      |
+| View                                  | Address                         | Shows                                                                            |
+| ------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------- |
+| `{ kind: 'home' }`                    | `/explorer` or `/explorer/home` | The hero, Jump Back In, Shared With You Recently and What Happened               |
+| `{ kind: 'all', q? }`                 | `/explorer/all`                 | My Work: your root folders and your items that are in no folder                  |
+| `{ kind: 'recent', q? }`              | `/explorer/recent`              | By last opened                                                                   |
+| `{ kind: 'favourites', q? }`          | `/explorer/favourites`          | Starred                                                                          |
+| `{ kind: 'shared', q? }`              | `/explorer/shared`              | Shared With Me: items reached through a link                                     |
+| `{ kind: 'trash' }`                   | `/explorer/trash`               | The Trash, grouped by owner: Restore, Delete permanently, Empty Trash            |
+| `{ kind: 'archived' }`                | `/explorer/archived`            | Archived: closed documents, out of every other list; Change Folder moves one out |
+| `{ kind: 'inbox' }`                   | `/explorer/inbox`               | `GET /inbox`: actions, cards, forms and threads, each linking to its app         |
+| `{ kind: 'timeline' }`                | `/explorer/timeline`            | `GET /timeline`: what happened, by day, as cards; filters and a calendar         |
+| `{ kind: 'invites' }`                 | `/explorer/invites`             | The team invitations waiting for you, each with Accept and Decline               |
+| `{ kind: 'gallery' }`                 | `/explorer/images`              | The Image Gallery, from the host's `gallery`                                     |
+| `{ kind: 'shape-libraries' }`         | `/explorer/shape-libraries`     | Shape Libraries, from the host's `shapeLibraries`                                |
+| `{ kind: 'search', q }`               | `/explorer/search?q=`           | Everything you can open, narrowed by the lens (`view=search`)                    |
+| `{ kind: 'folder', id, q? }`          | `/explorer/folder?id=`          | A folder                                                                         |
+| `{ kind: 'team', id, folderId?, q? }` | `/explorer/team?id=[&folder=]`  | A team's card over its library, then Team Activity; or a folder                  |
+| `{ kind: 'offline', q? }`             | `/explorer/offline`             | This Browser: the host's items kept only here, narrowed by the lens              |
 
 There is no Unsorted view: My Work's root, and a team's, list the items in no folder (the index's `view=unsorted`).
 The old `/explorer/unsorted` reads as My Work, and the Explorer page replaces it with `/explorer/all`.

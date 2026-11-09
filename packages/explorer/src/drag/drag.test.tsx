@@ -7,6 +7,8 @@ import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { Explorer } from '../explorer/Explorer';
 import { ExplorerPanel } from '../panel/ExplorerPanel';
 import { DRAG_HOVER_OPEN_MS, FOLDER_DRAG_MIME, ITEM_DRAG_MIME } from './drag';
+import { EXPANDED_KEY } from '../explorer/sidebar/expansion';
+import { LIBRARY_HOVER_OPEN_MS } from '../explorer/sidebar/useDragHoverOpen';
 
 // A DataTransfer as a browser hands one to every event of a drag.
 function transfer() {
@@ -74,8 +76,61 @@ const lastUpdate = (index: ReturnType<typeof createFakeIndex>) =>
   index.calls.filter((c) => c.method === 'updateItem').at(-1)?.args;
 
 describe('drag and drop on the Explorer page', () => {
-  beforeEach(() => localStorage.setItem('liveworkspace:explorer-view-mode', 'list'));
-  afterEach(() => vi.useRealTimers());
+  beforeEach(() => {
+    localStorage.setItem('liveworkspace:explorer-view-mode', 'list');
+    // The Trash is a Library row: open, as a person who keeps it open has it.
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['my-work', 'library']));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    localStorage.clear();
+  });
+
+  it('opens the folded Library under a resting drag, so the Trash inside is in reach', async () => {
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['my-work']));
+    const index = createFakeIndex({ items: [makeItem(1)] });
+    renderPage(index);
+    const row = await itemRow('item-1');
+    expect(sections().queryByRole('treeitem', { name: 'Trash' })).toBeNull();
+    vi.useFakeTimers();
+    const dt = transfer();
+    fireEvent.dragStart(row, { dataTransfer: dt });
+    const library = rowOf('Library');
+    fireEvent.dragEnter(library, { dataTransfer: dt });
+    fireEvent.dragOver(library, { dataTransfer: dt });
+    // A drag passing over leaves it folded; it takes no drop of its own.
+    act(() => vi.advanceTimersByTime(LIBRARY_HOVER_OPEN_MS - 50));
+    expect(sections().queryByRole('treeitem', { name: 'Trash' })).toBeNull();
+    act(() => vi.advanceTimersByTime(60));
+    expect(sections().getByRole('treeitem', { name: 'Trash' })).toBeTruthy();
+    expect(library.getAttribute('data-drop-over')).toBeNull();
+    fireEvent.dragEnd(row, { dataTransfer: dt });
+  });
+
+  it('leaves the Library folded for a drag that leaves it, or one from elsewhere', async () => {
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['my-work']));
+    const index = createFakeIndex({ items: [makeItem(1)] });
+    renderPage(index);
+    const row = await itemRow('item-1');
+    vi.useFakeTimers();
+    const library = rowOf('Library');
+    // Not the Explorer's: no drag in the store.
+    fireEvent.dragEnter(library, { dataTransfer: transfer() });
+    act(() => vi.advanceTimersByTime(LIBRARY_HOVER_OPEN_MS * 2));
+    fireEvent.dragLeave(library, { dataTransfer: transfer() });
+    expect(sections().queryByRole('treeitem', { name: 'Trash' })).toBeNull();
+    const dt = transfer();
+    fireEvent.dragStart(row, { dataTransfer: dt });
+    fireEvent.dragEnter(library, { dataTransfer: dt });
+    fireEvent.dragLeave(library, { dataTransfer: dt });
+    act(() => vi.advanceTimersByTime(LIBRARY_HOVER_OPEN_MS * 2));
+    expect(sections().queryByRole('treeitem', { name: 'Trash' })).toBeNull();
+    fireEvent.dragEnter(library, { dataTransfer: dt });
+    fireEvent.drop(library, { dataTransfer: dt });
+    act(() => vi.advanceTimersByTime(LIBRARY_HOVER_OPEN_MS * 2));
+    expect(sections().queryByRole('treeitem', { name: 'Trash' })).toBeNull();
+    fireEvent.dragEnd(row, { dataTransfer: dt });
+  });
 
   it('moves a dragged row into a sidebar folder, says where, and undoes', async () => {
     const index = createFakeIndex({ items: [makeItem(1)], folders: [folder('f1')] });

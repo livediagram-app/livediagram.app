@@ -22,6 +22,7 @@ import type { App } from '@liveworkspace/index-client';
 import {
   readThisBrowser,
   readThisBrowserConversion,
+  setThisBrowserArchived,
   subscribeThisBrowser,
   thisBrowserKey,
   THIS_BROWSER_COPY,
@@ -34,7 +35,8 @@ import {
 import { DAY_MONTH, MEDIUM_DATE_TIME } from '@liveworkspace/ui/date-format';
 import { relativeSince, useNow } from '../time';
 import { LIST_CARD, MUTED } from '../ui/classes';
-import { OpenIcon, SyncIcon, TrashIcon } from '../ui/icons';
+import { ArchiveIcon, OpenIcon, SyncIcon, TrashIcon } from '../ui/icons';
+import { quoted } from '../quoted';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader, PortalMenu } from '../ui/Menu';
 import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
@@ -81,7 +83,24 @@ export function thenReload(result: Promise<unknown> | void, reloadLists: () => v
   if (result) void result.then(reloadLists, reloadLists);
 }
 
-const live = (i: ThisBrowserItem) => i.trashedAt === null;
+// Live: out of the app's Trash and out of Archived (one-explorer.md "Archived"), which only Archived lists.
+const live = (i: ThisBrowserItem) => i.trashedAt === null && !i.archivedAt;
+const localTrashed = (i: ThisBrowserItem) => i.trashedAt !== null && !i.archivedAt;
+/** Archived in this browser, newest first. */
+export const localArchived = (i: ThisBrowserItem) => i.trashedAt === null && Boolean(i.archivedAt);
+
+/** Move to Archived for an item kept only in this browser: marked in this browser alone, nothing uploaded
+ *  (one-explorer.md "Archived"). */
+export function useArchiveLocal(): (item: ThisBrowserItem) => void {
+  const { app, toast } = useExplorer();
+  return useCallback(
+    (item: ThisBrowserItem) => {
+      setThisBrowserArchived(app, item.id, Date.now());
+      toast.show(`Moved ${quoted(item.title || 'Untitled')} to Archived.`, { tone: 'success' });
+    },
+    [app, toast],
+  );
+}
 
 /** Opens one in its app: the host's `open` (the editor's panel, no page load), else a page load of its address. */
 export function openThisBrowserItem(host: ThisBrowserHost, item: ThisBrowserItem): void {
@@ -213,6 +232,7 @@ function LocalRow({
 }) {
   const { thisBrowser } = useHostExtras();
   const { app, kind, reloadLists, openDialog } = useExplorer();
+  const archive = useArchiveLocal();
   const name = item.title || 'Untitled';
   const syncHref = sync ? thisBrowser?.syncHref?.(item) : undefined;
   return (
@@ -245,6 +265,13 @@ function LocalRow({
         >
           Sync {kind.one}
         </button>
+      ) : null}
+      {sync ? (
+        <span className="mr-1 shrink-0">
+          <PaneIconButton label={`Move to Archived: ${name}`} onClick={() => archive(item)}>
+            <ArchiveIcon />
+          </PaneIconButton>
+        </span>
       ) : null}
       {sync && thisBrowser?.remove ? (
         // For good, asked first: the panel's This Browser rows do the same (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser").
@@ -324,20 +351,14 @@ function useHandOver(host: ThisBrowserHost | null) {
 /** How many of the host's local items wait in its Trash. */
 export function useThisBrowserTrashed(): number {
   const { thisBrowser } = useHostExtras();
-  return useMemo(
-    () => thisBrowser?.items.filter((i) => i.trashedAt !== null).length ?? 0,
-    [thisBrowser],
-  );
+  return useMemo(() => thisBrowser?.items.filter(localTrashed).length ?? 0, [thisBrowser]);
 }
 
 /** The Trash's This Browser group: each opens in its app, whose own Trash restores or deletes it. */
 export function ThisBrowserTrashGroup() {
   const { thisBrowser } = useHostExtras();
   const [now] = useState(() => Date.now());
-  const trashed = useMemo(
-    () => thisBrowser?.items.filter((i) => i.trashedAt !== null) ?? [],
-    [thisBrowser],
-  );
+  const trashed = useMemo(() => thisBrowser?.items.filter(localTrashed) ?? [], [thisBrowser]);
   if (trashed.length === 0) return null;
   return (
     <section
@@ -381,6 +402,7 @@ export function ThisBrowserItemMenu({
 }) {
   const { thisBrowser: host } = useHostExtras();
   const { kind, reloadLists, openDialog } = useExplorer();
+  const archive = useArchiveLocal();
   const title = item.title || 'Untitled';
   const run = (fn: () => void) => () => {
     onClose();
@@ -404,6 +426,11 @@ export function ThisBrowserItemMenu({
       {sync ? (
         <MenuActionRow label={`Sync ${kind.one}`} icon={<SyncIcon />} onClick={run(sync)} />
       ) : null}
+      <MenuActionRow
+        label="Move to Archived"
+        icon={<ArchiveIcon />}
+        onClick={run(() => archive(item))}
+      />
       {host.remove ? (
         <>
           <MenuGroupSeparator />

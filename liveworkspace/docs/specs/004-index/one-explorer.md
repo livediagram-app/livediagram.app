@@ -191,6 +191,34 @@ and someone might delete it thinking so. It never does:
 Deleting a folder never deletes what is in it (its folders and items move up a level), so this is about not
 misleading, not about loss.
 
+#### The sidebar
+
+Three groups, the same in every app's Explorer and on liveworkspace.app (`explorer/Sidebar.tsx`):
+
+- **Overview**: Home, Inbox and Shared With Me.
+- **Spaces**: My Work and its folders, each team and its folders, Invites while one waits, and New Team.
+- **More**: the **Library**, an accordion folded by default, whose rows are, in order, Recent, **Timeline**,
+  Favourites, the host's Image Gallery and Shape Libraries (where it has them), **Archived** and the **Trash**; then
+  This Browser and the host's own rows. The Trash keeps everything it does: its drop target (an item, a folder or a
+  This Browser item dragged there), its waiting and over states, and the Trash view's This Browser group. Folded, the
+  Library row carries the Timeline's "new since you last looked" count (`timelineBadge`), so it is never hidden;
+  open, only the Timeline row does.
+
+**The current view's rows are open.** Opening a view unfolds the rows that hold its own row, however it is reached
+(a sidebar click, a breadcrumb, an address, Back): My Work for My Work, a team's row for its page, a space and every
+folder down to it for a folder (that folder too, so its subfolders show), and the Library for any of its pages
+(Recent, Timeline, Favourites, the Gallery, Shape Libraries, Archived, the Trash). It only ever adds to what is open,
+and once per change of the rows a view needs, so a row the person folds stays folded until the view (or its place)
+changes (`rowsForView`, `useOpenCurrentRows`).
+
+**A drag opens the Library.** A drag of an item, a folder or a This Browser item resting on the folded Library row
+for half a second (`LIBRARY_HOVER_OPEN_MS`) opens it, so the Trash inside is in reach; the Library itself takes no
+drop. A folded folder or space opens the same way after `DRAG_HOVER_OPEN_MS`, as it did.
+
+**The editor's panel** has no accordion: its rail lists Home, Inbox and Shared With Me under Overview, the spaces,
+then under More the Library's order (Timeline, Favourites, the Library's pages, Archived, the Trash) and This
+Browser. Picking a view from a shared menu shows its section.
+
 #### Archived
 
 A document its owner has finished with but wants to keep goes to **Archived**: out of the way everywhere, and
@@ -198,8 +226,8 @@ closed until it is moved back (the index's side is
 [one-explorer-contracts.md "Archived"](one-explorer-contracts.md#items)). The same in every app's Explorer and on
 liveworkspace.app.
 
-- **The sidebar.** The Library's third row, after Recent and Favourites, with the archive-box tile (`ArchiveIcon`),
-  for anyone the index knows (an account or a guest). It has no menu, can't be renamed or deleted, has no
+- **The sidebar.** A row of the Library, after Recent, Timeline, Favourites and the host's Library pages and before
+  the Trash, with the archive-box icon (`ArchiveIcon`), for anyone the index knows (an account or a guest). It has no menu, can't be renamed or deleted, has no
   subfolders and takes no drops: a drag over it shows no target. Its address is `/explorer/archived`.
 - **The view.** The person's archived documents, every app's or the app's alone as the switch says, newest change
   first, as cards or rows with their previews (an archived item keeps its preview: the index still answers the
@@ -208,16 +236,18 @@ liveworkspace.app.
   again."
 - **Moving one there.** **Move to Archived** (the archive-box icon) in an item's ⋯ and right-click menus, beside
   Change Folder, for a document the person owns: their own, or a team document they made (the index's owner rule;
-  other teammates don't see it). Not for a folder, an item reached through a link, or one kept only in This
-  Browser. It moves at once, the card leaves where it was, and a toast says **Moved to Archived** with **Undo**
-  (which moves it back where it was). Change Folder offers the same as a space of its own.
+  other teammates don't see it), or one kept only in This Browser (below). Not for a folder or an item reached
+  through a link. It moves at once, the card leaves where it was, and a toast says "Moved “<title>” to Archived."
+  with no Undo: what archiving deleted (its links, everyone's favourites) can't come back, and Change Folder is the way
+  out. Change Folder offers the same as a space of its own.
 - **Gone from everywhere else.** Home (Jump Back In, Most Used, the hero's count), Recent, Favourites, Shared With
   Me, the Inbox, the Timeline, every folder and team, and the panel's lists leave it out. Archiving deletes its
   favourites, Recent, Most Used and Inbox rows for everyone, so moving it out starts fresh: not a favourite, not in
   Recent until it is opened again. Its share links (and password) are deleted for good; a team document leaves the
   team for its owner's Archived, and its teammates no longer see it.
 - **Search.** Search results and the Search panel find archived documents (the person's own), each with an
-  **Archived** badge (`ArchivedBadge`, slate, the archive-box icon) beside the title, so it reads as archived.
+  **Archived** badge (`ArchivedBadge`, slate, the archive-box icon) beside the title, so it reads as archived. A
+  Search panel result says Archived as its hint and goes to `/explorer/archived?open=<id>`, which opens its dialog.
 - **Opening one.** It can't be opened: a click, Enter or Open on an archived card doesn't navigate. It opens a
   dialog, "“<title>” is archived", saying archived documents can't be opened or edited until they are moved out of
   Archived, with **Cancel** and **Change Folder** (which opens Change Folder on it). Its menu offers **Open** (the
@@ -227,6 +257,18 @@ liveworkspace.app.
   Change Folder, which comes back here as `/explorer/archived?move=<id>` and opens Change Folder on it.
 - **Moving one out.** Change Folder, or a drag onto My Work, a folder or a team in the sidebar: it lands there,
   open again. A drag onto the Trash deletes it as any document.
+- **This Browser.** A document kept only in this browser archives in this browser alone: its record in This
+  Browser's list (`liveworkspace:this-browser:<app>`) takes `archivedAt` (`setThisBrowserArchived`) and nothing is
+  uploaded: from its This Browser row (an archive-box button beside Sync and Delete) or its Jump Back In card's
+  menu (**Move to Archived**), on the page and in the panel. Every write of the list keeps the marks it held, since the app republishes its records without them.
+  It leaves This Browser's view, Jump Back In and the Trash's This Browser group, and shows in Archived with the
+  **This Browser** pill and its local picture (`LocalPreview`). The Explorer's open shows the archived dialog, and the
+  app's editor reads the mark (`isThisBrowserArchived`) and shows its archived card instead of opening it. Change
+  Folder from Archived offers **This Browser** (the mark cleared) and, signed in, the account's places, through Sync
+  as a This Browser drop does (`sync-local`). It can't be renamed while archived: only its app's editor renames a
+  local record, and the editor doesn't open it (moved back to This Browser, it renames in its editor as before). Delete deletes it for good, as any This Browser item. On
+  liveworkspace.app, which can't read an app's store, Archived lists the account's documents alone, as This Browser
+  there is a link into the app.
 - **Change Folder.** "Choose a Space" lists My Work and each team, then, under a divider, **Archived** ("Out of every
   list, and closed") as a space of its own that holds no folders: choosing it and Move Here archives the document.
   It is offered only where Move to Archived would be. For an archived document Archived is where it is now, so the

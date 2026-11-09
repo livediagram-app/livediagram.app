@@ -124,6 +124,14 @@ describe('resolveItemGrant', () => {
     ).toBeNull();
   });
 
+  it('answers an archived item’s refusal as the index’s, for its owner to act on', async () => {
+    answer = () => Response.json({ error: 'archived' }, { status: 409 });
+    const res = await resolveItemGrant(service, ENV, req(), { kind: 'bearer', token: 'x' }, 'A');
+    expect(res).toBeInstanceOf(Response);
+    expect((res as Response).status).toBe(409);
+    expect(await (res as Response).json()).toEqual({ error: 'archived' });
+  });
+
   it('never keeps a grant on an item in the Trash, so a restore is seen at once', async () => {
     answer = () =>
       Response.json({
