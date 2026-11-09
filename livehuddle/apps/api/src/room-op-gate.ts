@@ -19,6 +19,7 @@ import {
   parseCallTrack,
   parseGameEvent,
   parseGameInput,
+  parseNudge,
   parseStoredLevel,
   parseViewport,
 } from '@livehuddle/api-schema';
@@ -140,6 +141,9 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "Share roles"): presence from any
   // level, as a knock is, a Viewer at the front desk above all; a malformed one reaches nobody. The room throttles it next.
   if (opKind === 'avatar-bell' && !(parsed = parseAvatarBell(op))) return DROP;
+  // A nudge (docs/specs/012-collaboration/nudge.md "Share roles"): taking part, since it reaches a person's desktop, so
+  // never a Viewer's; a malformed one reaches nobody. The room addresses it and holds each pair to one per 2 minutes.
+  if (opKind === 'nudge' && (level === 'view' || !(parsed = parseNudge(op)))) return DROP;
   // A camera (docs/specs/012-collaboration/follow-me-viewport.md): presence from any level, which a follower applies
   // to its own view, so a malformed one (a zoom of 0 or NaN) reaches nobody.
   if (opKind === 'viewport' && !(parsed = parseViewport(op))) return DROP;

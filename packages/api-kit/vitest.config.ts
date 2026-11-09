@@ -10,6 +10,7 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // runs a typed name as a formula in an admin's spreadsheet. And the tab swap: a gap there loses a Participant's write or answers it wrongly.
 // And the image embedder: a gap draws a picture past the preview's budget or out of document order.
 // And the ledger store: a gap there cuts an entry a save still needs, or hands a save less than it merges.
+// And the tab order: a gap there lands a new tab on a place another holds.
 export default defineProject({
   test: {
     coverage: {
@@ -28,6 +29,7 @@ export default defineProject({
         'src/request-body.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/request-failure.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-element-ops.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/tab-order.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/tab-swap.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-presence-relay.ts': {
           statements: 100,

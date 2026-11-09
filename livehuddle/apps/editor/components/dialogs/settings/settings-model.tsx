@@ -33,6 +33,7 @@ import {
   SettingsResetSettingsRow,
 } from './SettingsAccountRows';
 import { SettingsDefaultFoldersRow } from './SettingsDefaultFoldersRow';
+import { SettingsDesktopNotificationsRow } from './SettingsDesktopNotificationsRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
 
 // This editor's Settings catalogue (settings-catalogue.ts, rows that read and write themselves over
@@ -105,6 +106,14 @@ export function settingsModel(
         };
       case 'defaultFolders':
         return { ...row, kind: 'custom', render: () => <SettingsDefaultFoldersRow row={row} /> };
+      case 'desktopNotifications':
+        return {
+          ...row,
+          kind: 'custom',
+          render: () => (
+            <SettingsDesktopNotificationsRow row={row} settings={settings} onChange={onChange} />
+          ),
+        };
     }
   };
   return categories.map((category) => ({

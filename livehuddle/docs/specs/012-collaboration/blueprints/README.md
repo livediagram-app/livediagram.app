@@ -9,6 +9,8 @@ Follow the references below only as needed; never upfront.
 - ./proximity-audio.md - when building or changing proximity audio: the call phases, hearing radii, voice detection, the `avatar-voice` and `call-track` ops, the mint routes and their tokens
 - ./meeting-rooms-and-stage.md - when building or changing room zones in a call (`roomZones`, `zoneAt`, zoned `nextHeard`), the stage, hands or Do Not Disturb
 - ./knock.md - when implementing or changing Knock: the two presence ops, the room's throttle and addressing, the knock inbox and toasts, Let In at a closed pod
+- ./join-and-leave-sounds.md - when implementing or changing the join and leave chimes: the one AudioContext and its unlock, the roster watcher (people, seeding, flap debounce, burst), Do Not Disturb, the setting
+- ./nudge.md - when implementing or changing Nudge: the two ops, the room's ledger and addressing, the client cooldown and button, the recipient's chime, toast and desktop notification, the Desktop Notifications row and offer
 - ./video-and-screen-bubbles.md - when building or changing video and screen share bubbles: the bubble picker, per-track subscriptions and simulcast layers, the camera and share, the bubble, the maximised panel and the sharing bar
 - ./DEFAULTS.md - when a blueprint here applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a blueprint here covers

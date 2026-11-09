@@ -1,3 +1,4 @@
+import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
 import type {
   ChangesetResponse,
   ChangesetWritten,
@@ -113,7 +114,9 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       tabId,
       stored,
       next,
-      orderIndex: stored?.orderIndex ?? document.tabs.length,
+      // A new tab goes one past the highest place held, not at the count (docs/specs/006-document/per-tab-storage.md
+      // "New tabs and the tab order"): after a middle tab's delete the count is the last tab's own place.
+      orderIndex: stored?.orderIndex ?? nextOrderIndex(document.tabs),
       author: args.author,
       tokenId: args.tokenId,
       summary: request.summary,

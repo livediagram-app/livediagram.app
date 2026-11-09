@@ -11,6 +11,7 @@ import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
+import { NumberDraftInput } from '@/components/primitives/NumberDraftInput';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import {
   MENU_ADD_ROW_BUTTON,
@@ -61,9 +62,13 @@ function DataColour({
 export function PieDataEditor({
   slices,
   palette = PIE_PALETTE,
+  allowNegative = false,
   onChange,
 }: {
   slices: PieSlice[];
+  // A column or bar chart draws below zero (pie-chart.md "Below zero on a column or bar chart"); only a pie's
+  // values stop at zero.
+  allowNegative?: boolean;
   // The ramp an uncoloured slice falls back to, so the swatches here match
   // the chart. Defaults to the built-in one, which is what this showed
   // before chart palettes existed.
@@ -94,13 +99,12 @@ export function PieDataEditor({
               onChange={(e) => patch(i, { label: e.target.value })}
               onBlur={() => onChange(rows)}
             />
-            <input
+            <NumberDraftInput
               className={`${MENU_CELL_INPUT} w-12 text-right tabular-nums`}
-              type="number"
-              min={0}
               value={s.value}
+              min={allowNegative ? undefined : 0}
               aria-label={`Slice ${i + 1} value`}
-              onChange={(e) => patch(i, { value: Math.max(0, Number(e.target.value) || 0) })}
+              onValue={(value) => patch(i, { value })}
               onBlur={() => onChange(rows)}
             />
             <button

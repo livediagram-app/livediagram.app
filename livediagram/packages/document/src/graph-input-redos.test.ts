@@ -168,15 +168,23 @@ describe('the linear scans read exactly as the patterns they replaced', () => {
   });
 
   it('reads inline edge labels as before', () => {
+    // An optional start marker (`<`, `o`, `x`) right before the opener.
     const forms = [
-      { re: /^\s*--\s+(.+?)\s+(-{2,})([>ox])?/, line: 'solid' },
-      { re: /^\s*-\.\s+(.+?)\s+\.+(-)([>ox])?/, line: 'dashed' },
-      { re: /^\s*==\s+(.+?)\s+(={2,})([>ox])?/, line: 'thick' },
+      { re: /^\s*([<ox])?--\s+(.+?)\s+(-{2,})([>ox])?/, line: 'solid' },
+      { re: /^\s*([<ox])?-\.\s+(.+?)\s+\.+(-)([>ox])?/, line: 'dashed' },
+      { re: /^\s*([<ox])?==\s+(.+?)\s+(={2,})([>ox])?/, line: 'thick' },
     ] as const;
     const oracle = (s: string) => {
       for (const { re, line } of forms) {
         const m = re.exec(s);
-        if (m) return { label: m[1]!, ...(m[3] ? { trail: m[3] } : {}), line, length: m[0].length };
+        if (m)
+          return {
+            label: m[2]!,
+            ...(m[1] ? { lead: m[1] } : {}),
+            ...(m[4] ? { trail: m[4] } : {}),
+            line,
+            length: m[0].length,
+          };
       }
       return null;
     };
@@ -190,5 +198,7 @@ describe('the linear scans read exactly as the patterns they replaced', () => {
     // The generator reaches the matching cases, not only the refusals.
     expect(matched).toBeGreaterThan(50);
     expect(decodeLabel(readInlineLabel('-- yes -->')!.label)).toBe('yes');
+    expect(readInlineLabel(' <-- both -->')).toEqual(oracle(' <-- both -->'));
+    expect(readInlineLabel(' <-- both -->')).toMatchObject({ lead: '<', trail: '>' });
   });
 });

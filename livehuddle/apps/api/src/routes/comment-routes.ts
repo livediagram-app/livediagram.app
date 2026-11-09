@@ -139,6 +139,9 @@ function appended(tab: TabDTO, elementId: string, comment: Comment): Mutation {
   if (!target) return notFound();
   const { authorId: _a, tokenId: _t, ...publicComment } = comment;
   const next = applyElementDelta(target, { kind: 'comment-add', comment });
+  // A thread at the cap takes no more (COMMENTS_MAX): said, never answered 201 for a comment nobody stored, nor
+  // written, relayed or emailed about.
+  if (next === target) return json({ error: 'thread_full' }, { status: 409 });
   return {
     elements: tab.elements.map((el) => (el.id === elementId ? next : el)),
     elementId,

@@ -111,7 +111,8 @@ Chart" and a screen reader hears "Column chart", as the palette's tile says, nev
   bar's), and a column's name stays under the whole plot, never in among the hanging columns. Show Axis covers the
   negatives too: its ticks run from a round value under the smallest to one over the largest, zero always a tick.
   A chart with no negative value draws exactly as before (the baseline at the plot's foot). Only a pie reads below
-  zero as zero.
+  zero as zero. The Data section takes a negative value on a column or bar chart, the minus typed first or last; on
+  a pie its values stop at zero.
 - **Scatter's x**: when every category reads as a number (`12`, `-3.5`, `1,200`), each point sits at its number on
   an x-axis running from the least to the greatest (widened by 1 when they are all equal), labelled at five evenly
   spaced values; otherwise the categories are evenly spaced, as Line's are, and labelled as Line's. Its readout reads
@@ -140,10 +141,10 @@ groups all three (they're all in `isSelfDrawingShape` too).
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
   (`{ name, color?, values: number[] }`), aligned to the categories: a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
-- **Rows on the way in**: validation refuses a slice that is not `{ label, ... }`, a series that is
+- **Rows on the way in**: validation refuses a slice that is not `{ label, value, ... }` with a finite number value, a series that is
   not `{ name, values, ... }` and a category that is not text. A row that arrives malformed anyway
   (stored before, a peer's op, a file) is settled as it enters (`settleChartRows`): a slice or series
-  that is not an object is dropped; a label, name or category that is not text reads as its number or flag written out, else as empty, and a series' values that are not a list as none, so categories keep their places.
+  that is not an object is dropped; a label, name or category that is not text reads as its number or flag written out, else as empty, a slice's value that is not a finite number reads as its number when it is numeric text, else as 0, and a series' values that are not a list as none, so categories keep their places.
 - All three share `pieAnim?` / `pieAnimSpeed?` / `pieAnimRepeat?` / `chartLegend?` / `chartLegendPosition?` and
   `chartVariant?` (`'horizontal' | 'area' | 'scatter' | 'doughnut'`, Chart types above); `chartTypeOf(el)` and
   `chartShapeOf(type)` map between a chart and its type, `chartTypeChange(el, type)` gives the patch that changes it

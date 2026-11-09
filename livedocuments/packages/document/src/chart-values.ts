@@ -28,10 +28,14 @@ const GAP = 6;
 const CATEGORY_AIR = 4;
 
 // A number read short: 120000 as 120k, 1500000 as 1.5M, at most one decimal. Under 10,000 it reads in full (1,080),
-// since "1.1k" twice told 1,080 from 1,150 not at all.
-export function shortNumber(v: number): string {
+// since "1.1k" twice told 1,080 from 1,150 not at all, with `decimals` (an axis's fine step asks for more). A value
+// rounding to nothing reads 0, never -0.
+export function shortNumber(v: number, decimals = 1): string {
   const a = Math.abs(v);
-  if (a < 1e4) return Number(v.toFixed(1)).toLocaleString('en-US');
+  if (a < 1e4)
+    return (Number(v.toFixed(decimals)) + 0).toLocaleString('en-US', {
+      maximumFractionDigits: decimals,
+    });
   // The unit after rounding, so 999,960 reads 1M, not 1000k.
   const short = (div: number) => Number((v / div).toFixed(1));
   if (a >= 1e9 || Math.abs(short(1e6)) >= 1000) return `${short(1e9)}B`;

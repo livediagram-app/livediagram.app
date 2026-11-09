@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Participant } from './identity';
+import { MAX_SELECTION_IDS } from '@livediagram/api-schema';
 import {
   buildLaserTrailRows,
   buildParticipantsByTab,
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
+  remoteSelectionOf,
   resolveOwnerBadge,
 } from './presence-rows';
 
@@ -258,6 +260,35 @@ describe('buildRemoteSelectionsByElement', () => {
       't1',
     );
     expect(out.get('el1')!.map((x) => x.id)).toEqual(['b']);
+  });
+
+  it("holds every element of a peer's multi-selection, not just its primary", () => {
+    const a = p('a');
+    const out = buildRemoteSelectionsByElement(
+      new Map([
+        // A marquee: no primary element, three held.
+        ['a', remoteSelectionOf({ elementId: null, tabId: 't1', elementIds: ['x', 'y', 'z'] })],
+      ]),
+      byId(a),
+      'me',
+      't1',
+    );
+    expect([...out.keys()].sort()).toEqual(['x', 'y', 'z']);
+    expect(out.get('y')!.map((s) => s.id)).toEqual(['a']);
+  });
+});
+
+describe('remoteSelectionOf', () => {
+  it('keeps only string ids, capped at MAX_SELECTION_IDS', () => {
+    const many = Array.from({ length: MAX_SELECTION_IDS + 5 }, (_, i) => `e${i}`);
+    expect(
+      remoteSelectionOf({ elementId: 'a', tabId: 't', elementIds: [...many, 7] }).elementIds,
+    ).toHaveLength(MAX_SELECTION_IDS);
+    expect(remoteSelectionOf({ elementId: 'a', elementIds: [1, null] })).toEqual({
+      elementId: 'a',
+      tabId: undefined,
+    });
+    expect(remoteSelectionOf({ elementId: 'a', elementIds: 'a' })).not.toHaveProperty('elementIds');
   });
 });
 

@@ -12,9 +12,12 @@ const HREF = 'data:image/png;base64,iVBORw0KGgo=';
 
 // Every SVG the export rasterises, decoded, in the order it asked for them.
 let rasterised: string[] = [];
+// Whether the browser refuses every SVG asked of it (one it cannot parse).
+let refuseSvg = false;
 
 beforeEach(() => {
   rasterised = [];
+  refuseSvg = false;
   const ctx = new Proxy(
     {},
     {
@@ -30,7 +33,7 @@ beforeEach(() => {
     set src(value: string) {
       const prefix = 'data:image/svg+xml;charset=utf-8,';
       if (value.startsWith(prefix)) rasterised.push(decodeURIComponent(value.slice(prefix.length)));
-      queueMicrotask(() => this.onload?.());
+      queueMicrotask(() => (refuseSvg ? this.onerror : this.onload)?.());
     }
   }
   vi.stubGlobal('Image', FakeImage);
@@ -74,5 +77,20 @@ describe('renderTabToCanvas images drawn through their SVG', () => {
       fontCss: '',
     });
     expect(rasterised.some((svg) => svg.includes(HREF))).toBe(false);
+  });
+});
+
+describe('renderTabToCanvas when the browser refuses an SVG', () => {
+  it('still finishes the export with an arrow it could not draw', async () => {
+    refuseSvg = true;
+    const arrow = {
+      id: 'a',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 100, y: 100 },
+      label: 'Next',
+    };
+    const t = { id: 't', name: 'T', elements: [arrow, image({ rotation: 12 })] } as unknown as Tab;
+    await expect(renderTabToCanvas(t, { images, fontCss: '' })).resolves.toBeDefined();
   });
 });

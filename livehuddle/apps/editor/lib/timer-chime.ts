@@ -7,6 +7,7 @@
 import { useEffect } from 'react';
 import { pieceTimerRanOut, pieceTimerShown, type PieceTimer } from '@livehuddle/document';
 import { hearsTimer } from '@/lib/office/timer-earshot';
+import { playTones } from '@/lib/sounds/audio';
 
 /** The chime's two notes (E6 then C6), each with a soft attack and a long fade, and its peak gain. */
 const NOTES: readonly { hz: number; at: number }[] = [
@@ -16,60 +17,13 @@ const NOTES: readonly { hz: number; at: number }[] = [
 const NOTE_S = 0.9;
 const PEAK_GAIN = 0.12;
 
-let context: AudioContext | null = null;
-
-function audio(): AudioContext | null {
-  if (context) return context;
-  const Ctor =
-    typeof window === 'undefined'
-      ? undefined
-      : (window.AudioContext ??
-        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext);
-  if (!Ctor) return null;
-  try {
-    context = new Ctor();
-  } catch {
-    return null;
-  }
-  return context;
-}
-
 /** Play the chime now. Silent where the browser refuses sound (nothing pressed on the page yet) or has no Web Audio. */
 export function playChime(): void {
   playTones(NOTES, NOTE_S, PEAK_GAIN);
 }
 
-/**
- * Play sine notes now, each with a soft attack and a fade over `noteS` seconds, at `peak` gain: the chime's voice, and the
- * reception bell's ding (lib/office/reception-bell.ts). Silent where the browser refuses sound or has no Web Audio.
- */
-export function playTones(
-  notes: readonly { hz: number; at: number }[],
-  noteS: number,
-  peak: number,
-): void {
-  const ctx = audio();
-  if (!ctx) return;
-  try {
-    if (ctx.state === 'suspended') void ctx.resume().catch(() => {});
-    const t0 = ctx.currentTime + 0.02;
-    for (const note of notes) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = note.hz;
-      const start = t0 + note.at;
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(peak, start + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + noteS);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(start);
-      osc.stop(start + noteS + 0.05);
-    }
-  } catch {
-    // A browser that throws on any of it stays silent; the flash still shows.
-  }
-}
+// The reception bell's ding (lib/office/reception-bell.ts) plays in the same voice, through the editor's one context.
+export { playTones };
 
 /**
  * The ms until a running Timer reaches zero from `now`, or null when no chime is due: not a Timer, not running, or

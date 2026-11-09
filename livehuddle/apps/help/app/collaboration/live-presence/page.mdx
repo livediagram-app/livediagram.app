@@ -10,7 +10,7 @@ import { ReleaseHold } from '@liveworkspace/help-site/art/illustrations/release-
 export const metadata = helpMetadata({
   title: 'Live Presence',
   description:
-    "See who is in a space with you in real time: live cursors with names, each person's selection, who is on which tab and agents at work.",
+    "See who is in a space with you live: cursors with names, each person's selection, who is on which tab, a chime as people come and go, nudges and agents at work.",
   path: '/help/collaboration/live-presence/',
 });
 
@@ -54,6 +54,28 @@ Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Col
 - **Hide Participant Cursors**, at the foot of Collaborators, stops showing everyone else's cursor and name on your screen, for when a busy session gets distracting. Avatars and Follow stay, and others still see your cursor. It is the same switch as in **Settings**, under **Collaborate**, and it is remembered in this browser only.
 - **Follow** beside someone makes your view follow theirs (it changes to **Stop Following** while you do). See [Following someone](/help/canvas/follow-along/) for how it works.
 - The buttons to hand out the [facilitator](/help/collaboration/facilitator/) role live here too, on each person's row.
+- **Nudge** beside someone gets their attention: their screen plays a chime and shows "Sam nudged you" with a **Go to** button that takes them to you. See [Nudging someone](#nudging-someone).
+
+## Hearing people come and go
+
+When someone arrives in the space you have open, you hear a soft chime, and a softer one when they leave. It plays even while the space is on another browser tab, so you can get on with other work and still hear when someone comes in to talk to you.
+
+- Your own arrival is silent, and so is someone reloading or briefly losing their connection.
+- When several people arrive together you hear one chime, not one each.
+- Browsers keep a page silent until you have clicked or typed on it once, so click anywhere in the space after opening it.
+- Turn it off in **Settings**, under **Account**, **Notifications**, with **Join and Leave Sounds**. **Do Not Disturb** quiets it too.
+
+## Nudging someone
+
+Press **Nudge** beside someone in **Collaborators** to get their attention. You can nudge each person once every two minutes: the button reads **Nudged** until then, and its tooltip counts down to when you can nudge again. Editors and Participants can nudge; Viewers can't, but anyone can be nudged.
+
+When someone nudges you:
+
+- You hear a chime, louder than the join chime, even with the space on another tab.
+- A note says who nudged you, with a **Go to** button that switches to their tab and centres your view on them.
+- If the space is on a tab in the background, your computer shows a desktop notification, "Sam nudged you in Weekly Standup". Clicking it brings the tab back and goes to them.
+
+Desktop notifications need your browser's permission, which is only ever asked when you press something: the **Desktop Notifications** switch in **Settings** (beside **Join and Leave Sounds**), or the one-time offer the first time you nudge or are nudged. If your browser blocks notifications, Settings says so, and the sound and the note still work. On **Do Not Disturb** a nudge still shows its note, silently and with no desktop notification.
 
 ## Seeing what others have selected
 

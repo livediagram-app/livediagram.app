@@ -1036,19 +1036,19 @@ code or status: a document in the Trash, a view-only grant, an id that names not
 (a tab id the document lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
-| Tool               | Result object                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `find_documents`   | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                         |
-| `read_document`    | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`       |
-| `list_templates`   | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
-| `create_document`  | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                         |
-| `add_tab`          | `documentId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                  |
-| `update_document`  | `id` and `documentId` (the same), `tabId`, `url`                                                          |
-| `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                   |
-| `rename_document`  | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab            |
-| `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
-| `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
-| `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
+| Tool               | Result object                                                                                                                |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `find_documents`   | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                                            |
+| `read_document`    | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`                          |
+| `list_templates`   | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                    |
+| `create_document`  | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                            |
+| `add_tab`          | `documentId`, `tabId`, `name`, `url`, `changesetId`, `rev`, `text`, `lint`, `notes` when the graph or Mermaid lost something |
+| `update_document`  | `id` and `documentId` (the same), `tabId`, `url`                                                                             |
+| `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                                      |
+| `rename_document`  | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab                               |
+| `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`                               |
+| `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                            |
+| `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                                                 |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its

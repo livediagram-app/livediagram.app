@@ -992,6 +992,14 @@ describe('contentBounds', () => {
     expect(contentBounds(els).y).toBeLessThan(100);
   });
 
+  it('takes a turned box by its drawn corners, so the page does not cut it off', () => {
+    // 300 x 40 at the origin, turned a quarter: drawn from y -130 to 170 about its centre (150, 20).
+    const b = contentBounds([shape('a', { width: 300, height: 40, rotation: 90 })]);
+    expect(b.y).toBeCloseTo(-130);
+    expect(b.h).toBeCloseTo(300);
+    expect(b.w).toBeCloseTo(40);
+  });
+
   it('includes label plates when given the label pass', () => {
     const els = [pinnedArrow('arr', 'a', 'b', { label: 'x' }), shape('a'), shape('b', { x: 40 })];
     const labels = arrowLabelPass(els);

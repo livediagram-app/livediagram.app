@@ -19,6 +19,7 @@ import { listItems } from '../db';
 import { badRequest, forbidden, json } from '../responses';
 import { readBody, type PlanRouteContext } from './context';
 import {
+  blockersRefused,
   calculatedSet,
   clearedRequired,
   excludedStatus,
@@ -94,6 +95,14 @@ export async function moves(ctx: PlanRouteContext, projectId: string): Promise<R
         const bound = fieldsWithinBounds(next.fields);
         if (bound) return rejectedFor(id, bound);
       }
+      // A lane by a Blocked By field (or by type, which can make a field a blocker) moves blockers: those are an
+      // Editor's, and the batch never closes a loop (docs/specs/026-plan/item-types.md "Blocked By"), as by patches.
+      const blocked = await blockersRefused(
+        ctx,
+        caller,
+        [...nexts].map(([id, next]) => ({ before: stored.get(id)!, next })),
+      );
+      if (blocked) return blocked;
       return nexts;
     },
     { tag: historyTagOf(ctx, undo) },

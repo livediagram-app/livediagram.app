@@ -43,6 +43,9 @@ result for a click whose obvious meaning is "tell me about this person".
   browsers or devices have different keys, so they still show separately.
 - Within a group: you first, then by status (online, away, offline), then by
   name.
+- **Nudge.** For an Editor or a Participant, every other person's row has a **Nudge** beside Follow: a sound, a
+  toast and, in a hidden tab, a desktop notification on their screen, once per 2 minutes per person
+  ([Nudge](nudge.md)).
 - **Follow lives here now.** Every row but your own has a **Follow** button
   (**Stop Following** on the person you follow). Following starts exactly as it
   did from the avatar ([Follow-me viewport](follow-me-viewport.md): it follows their tab and viewport) and closes

@@ -1,3 +1,4 @@
+import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
 import type {
   ChangesetResponse,
   ChangesetWritten,
@@ -298,11 +299,4 @@ function priorOf(
 ): StoredTab['tab'] | 'template' | null {
   if (body.kind === 'replace' && 'template' in body.replace) return 'template';
   return stored?.tab ?? null;
-}
-
-// One past the highest place among a document's tabs; 0 with none.
-export function nextOrderIndex(tabs: readonly { orderIndex: number }[]): number {
-  let max = -1;
-  for (const t of tabs) if (t.orderIndex > max) max = t.orderIndex;
-  return max + 1;
 }

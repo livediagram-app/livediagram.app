@@ -71,6 +71,20 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   toggle(
     'UI',
+    'JoinLeaveSoundsOn',
+    'JoinLeaveSoundsOff',
+    'Join and Leave Sounds',
+    'A chime when someone arrives in or leaves your Space, heard in a background tab.',
+  ),
+  toggle(
+    'UI',
+    'DesktopNotificationsOn',
+    'DesktopNotificationsOff',
+    'Desktop Notifications',
+    'A desktop notification for a nudge while the tab is in the background.',
+  ),
+  toggle(
+    'UI',
     'HearingRingOn',
     'HearingRingOff',
     'Audio Proximity Ring',

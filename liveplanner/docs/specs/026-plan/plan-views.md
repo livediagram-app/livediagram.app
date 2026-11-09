@@ -234,7 +234,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   colour dot, its name and its count of projects; the timeline side carries only the gridlines. A lane collapses
   on its own, per person, like a board's. A lane with no projects is left out (nothing is dropped into a Gantt
   lane). Everything else works inside a lane: dragging and drawing dates, opening a card, the scale and
-  scrolling.
+  scrolling. The image export draws the lanes too, every one open: each lane's header (its colour dot, name and
+  count) then its rows, as many as fit, its diamonds filled or hollow as the live chart draws them.
 
 #### Row order
 

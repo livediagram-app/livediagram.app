@@ -7,6 +7,9 @@ import { defineVerb } from '../define';
 import { writeFlags } from '../write';
 import { columns } from './shared';
 
+/** The longest `wait --timeout`, in seconds: the longest a timer runs (2^31 - 1 ms). */
+const WAIT_TIMEOUT_MAX_S = 2_147_483;
+
 export const guide = defineVerb({
   id: 'guide',
   offline: true,
@@ -82,7 +85,10 @@ export const apiCall = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['method', 'path'],
-    examples: ['livedocuments api GET /documents', 'livedocuments api POST /documents --body doc.json'],
+    examples: [
+      'livedocuments api GET /documents',
+      'livedocuments api POST /documents --body doc.json',
+    ],
     prints: 'the response body',
   },
 });
@@ -195,7 +201,13 @@ export const waitFor = defineVerb({
     doc: z.string().describe('A name, id prefix or livedocuments URL'),
     for: z.enum(['comment', 'change']).describe('What to wait for: a comment, or a change'),
     tab: z.string().optional().describe('A tab name or id prefix; every tab when omitted'),
-    timeout: z.coerce.number().positive().optional().describe('Seconds to wait at most'),
+    // A timer runs at most 2^31 - 1 ms; a longer one would fire at once.
+    timeout: z.coerce
+      .number()
+      .positive()
+      .max(WAIT_TIMEOUT_MAX_S)
+      .optional()
+      .describe('Seconds to wait at most (up to about 24 days)'),
   }),
   output: streamOutput,
   text: ({ lines }) => lines,

@@ -54,10 +54,12 @@ export function useFormulaInput(actions: SheetActions): FormulaInput {
   const [error, setError] = useState<{ message: string; at: number } | null>(null);
   const [caret, setCaret] = useState(0);
   const [pick, setPick] = useState(0);
-  // Where the arrow keys are pointing while a formula is typed over a cell (point mode), with the slot it fills.
+  // Where the arrow keys are pointing while a formula is typed over a cell (point mode), with the slot it fills and
+  // the range's fixed corner (`anchor`), which Shift+arrows grow from as the selection's Shift+arrows do.
   const [point, setPoint] = useState<{
     r: number;
     c: number;
+    anchor: { r: number; c: number };
     slot: { start: number; end: number };
   } | null>(null);
   const editing = c.editing;
@@ -183,12 +185,14 @@ export function useFormulaInput(actions: SheetActions): FormulaInput {
         e.preventDefault();
         const from = point ?? { r: editing.r, c: editing.c };
         const moved = moveSelection(single({ r: from.r, c: from.c }), dir, c.grid).active;
+        // Shift keeps the range's first corner and moves the other, so each press grows (or shrinks) it.
+        const anchor = e.shiftKey && point ? point.anchor : { r: moved.r, c: moved.c };
         const text =
           e.shiftKey && point
-            ? formatRange(normaliseRange({ r: from.r, c: from.c }, moved))
+            ? formatRange(normaliseRange(anchor, moved))
             : formatA1(moved.r, moved.c);
         const next = insertReference(draft, slot, text);
-        setPoint({ r: moved.r, c: moved.c, slot: next.slot });
+        setPoint({ r: moved.r, c: moved.c, anchor, slot: next.slot });
         setDraft(next.draft, next.caret, el);
         return;
       }

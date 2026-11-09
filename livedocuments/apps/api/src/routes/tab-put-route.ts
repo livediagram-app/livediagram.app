@@ -118,7 +118,7 @@ export async function handleTabPut(
     ) {
       return conflict('empty_tab_overwrite_blocked');
     }
-    const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
+    const orderIndex = existingTab?.orderIndex ?? existing.nextOrderIndex;
     // Newly added comments carry the resolved owner's profile, never the client's claim
     // (docs/specs/014-identity/auth-and-guest-access.md). Read from the accounts Worker and remembered
     // per isolate for a minute (person/profiles.ts), so a run of autosaves asks once.

@@ -226,6 +226,11 @@ export type SettingsResetSettingsRowSpec = RowBase & { kind: 'resetSettings' };
 // a place. Not a preference: the shared Explorer reads and writes them on the index.
 export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
 
+// Desktop Notifications (docs/specs/012-collaboration/nudge.md "Desktop Notifications"): a preference that only acts
+// once the browser has granted permission, asked from the switch's own press. Drawn against both, so it carries no
+// read/write pair here (SettingsDesktopNotificationsRow).
+export type SettingsDesktopNotificationsRowSpec = RowBase & { kind: 'desktopNotifications' };
+
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
@@ -239,7 +244,8 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsResetSettingsRowSpec
   | SettingsDeleteAccountRowSpec
-  | SettingsDefaultFoldersRowSpec;
+  | SettingsDefaultFoldersRowSpec
+  | SettingsDesktopNotificationsRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -772,6 +778,34 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
+      },
+      {
+        kind: 'toggle',
+        // Join and leave sounds (docs/specs/012-collaboration/join-and-leave-sounds.md "Settings"). Missing means on.
+        key: 'joinLeaveSounds',
+        keywords:
+          'sound chime audio join leave arrive enter knock bell ding quiet mute background tab presence people',
+        section: 'In the Editor',
+        label: 'Join and Leave Sounds',
+        description:
+          'A soft chime when someone arrives in the Space you have open, and a softer one when they leave, even while this tab is in the background.',
+        helpArticle: 'livePresence',
+        read: (p) => p.joinLeaveSounds !== false,
+        write: (p, v) => ({ ...p, joinLeaveSounds: v }),
+        event: { category: 'UI', on: 'JoinLeaveSoundsOn', off: 'JoinLeaveSoundsOff' },
+      },
+      {
+        // Desktop Notifications (docs/specs/012-collaboration/nudge.md "Desktop Notifications"): the preference AND the
+        // browser's permission, so it is drawn against both (settings-model.tsx).
+        kind: 'desktopNotifications',
+        key: 'desktopNotifications',
+        keywords:
+          'desktop notifications system os alert nudge background tab permission browser popup banner',
+        section: 'In the Editor',
+        label: 'Desktop Notifications',
+        description:
+          'When someone nudges you while this tab is in the background, your computer shows a notification. Your browser asks first.',
+        helpArticle: 'livePresence',
       },
       // A guest gets the stand-in row instead of six switches that could
       // never apply: the same shape the API tokens row uses, so "you need

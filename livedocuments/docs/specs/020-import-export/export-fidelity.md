@@ -84,6 +84,10 @@ would be worse than the gap:
 - **The progress track on dark paper.** The canvas paints a fixed light
   track; the export keeps the element's fill on dark paper so its percentage
   stays readable.
+- **A part the browser will not draw.** A PNG or PDF draws each part (the
+  paper, a pattern, a boxed element, a run of arrows) through an SVG picture; one
+  the browser refuses is left out (a boxed element falls back to its plain box),
+  and the export still finishes, never a download that silently fails.
 
 ### Faces export as they look
 

@@ -111,6 +111,12 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
   only reads, so a blank title never leaves an empty heading. An empty table header cell is named
   "Column header" the same way. The names come from a decoration, so they go as soon as the block holds text. A
   template's headings step down one level at a time, never from the title straight to Heading 2.
+- **How much an article holds**: at most **5,000** blocks, a block at most **20,000** characters (a link's
+  address and a footnote's text count towards it) and a table cell at most **2,000**. Writing never goes past
+  them and is never cut afterwards: a paste that would is refused whole, and typing, Enter or a join that would
+  adds nothing; either way a notice says which limit it met ("An article holds at most 5,000 blocks", "A
+  paragraph holds at most 20,000 characters", "A table cell holds at most 2,000 characters"), at most once
+  every few seconds. A block already past a limit (written before it) can still be shortened.
 
 ### Text formatting (runs)
 
@@ -163,7 +169,9 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links, and a
   paragraph's, a quote's or a list item's line ending in two spaces or a backslash as a line break); other
   plain text pastes as paragraphs, one per line. A pasted table (from a spreadsheet, a web page,
-  Word or Google Docs, or a Markdown pipe table) becomes a table block (see "Tables"). Pasted images go into object zones. A paste of
+  Word or Google Docs, or a Markdown pipe table) becomes a table block (see "Tables"). Pasted images go into object zones;
+  a picture the clipboard carries beside writing (Excel and Word add one of what was copied) is left, and the writing is
+  pasted. A paste of
   canvas elements (copied from a canvas) lands as a drawing zone holding them. A whole Word
   document (from Word or Google Docs) comes in through the tab's Import as an article of its own
   ([Word and PowerPoint import](../020-import-export/office-import.md)).
@@ -269,15 +277,16 @@ laid out with it, holding ordinary canvas elements that move with it.
 - **Object zone** (`zone: 'object'`): one element (an image, a chart, a table, a code element, a
   video, an icon, a sticker, a sticky note, a component), the zone hugging it exactly, with no
   boundary of its own. Resizing the element
-  resizes the zone. The element is never wider than the text nor taller than the tallest zone
-  (`ARTICLE_ZONE_MAX`, 2,000 px): one past either is scaled down to fit, keeping its shape, so a
-  tall picture (a phone screenshot) never runs over the writing after it.
+  resizes the zone. The element is never wider than the text nor taller than a page's text area
+  (and never past the tallest zone, `ARTICLE_ZONE_MAX`, 2,000 px): one past either is scaled down to fit,
+  keeping its shape, so a tall picture (a phone screenshot) always sits whole on a page and never runs over
+  the writing after it.
 - **Drawing zone** (`zone: 'drawing'`): an area of the page for shapes, text labels
   and the arrows between them, worked on with the canvas's own tools. It is a size of its own (by
   default the text width x 240 px) with grips on its bottom edge (taller or shorter), its right
   edge (wider or narrower, up to the text width, a wrapped zone two thirds of it) and its
   bottom-right corner (both); it grows to keep its elements inside it with 24 px to spare, and never
-  shrinks past them. Each grip is a focus stop: the arrow keys grow or shrink the zone a step
+  shrinks past them. It is never taller than a page's text area, by its grips or by growing. Each grip is a focus stop: the arrow keys grow or shrink the zone a step
   (Shift: ten steps), one edit each; Escape during a grip drag puts the zone back as it was.
 - **An object in the writing connects to nothing**: no quick-connect pluses show on an element of
   an article page that is not a drawing element.
@@ -311,7 +320,8 @@ laid out with it, holding ordinary canvas elements that move with it.
 - **Moving a zone**: dragging the grip carries a dashed ghost of the zone with the pointer, the
   zone itself dimmed in place, and a **drop caret** (a brand line across the column, a ring at each
   end) at the block boundary nearest the pointer. Release moves the zone there, its elements with
-  it, as one edit; Escape, or a release where it already sits, leaves it be. Hovering a zone shows its outline faintly
+  it, as one edit; a paragraph running on onto the next column or page is one block, so the caret
+  beside either part shows where the zone really goes, above the paragraph's start or below its end; Escape, or a release where it already sits, leaves it be. Hovering a zone shows its outline faintly
   for someone who may edit.
 - **Selecting a zone**: a press on a drawing zone's empty area selects the zone (outlined); the
   arrow keys then move the caret off it, Backspace / Delete remove it (its elements with it), ⌘X

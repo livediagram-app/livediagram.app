@@ -32,7 +32,7 @@ import {
 } from './editor-shortcut-keys';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
-import { altGraphHeld } from '@liveworkspace/workbench/lib/composed-key';
+import { altGraphHeld, composedWithAlt } from '@liveworkspace/workbench/lib/composed-key';
 import { voteKeyDelta } from '@/lib/vote-by-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.
@@ -176,6 +176,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (
         (key === 'Tab' || key === 'Enter') &&
         !inText &&
+        // A button reached from the keyboard keeps Tab (focus moves on) and Enter (it is pressed).
+        !isPressableControl(e.target) &&
         !mod &&
         !e.shiftKey &&
         (!live.isReadOnly || live.participant) &&
@@ -341,6 +343,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           return;
         }
       }
+
+      // Alt is never a plain key's (docs/specs/008-canvas/canvas-and-palette.md "Navigate & select"): Alt+R on
+      // Windows or Linux added a Square, or overwrote a selected label with "r". A character Alt composes (£, €)
+      // still types into the label below.
+      if (e.altKey && !composedWithAlt(e)) return;
 
       // --- Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md Labels) ---
       // A printable key on a single selected, label-bearing element

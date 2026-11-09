@@ -27,11 +27,19 @@ vi.mock('@/app/document/[id]/EditorContext', () => ({
 vi.mock('@/components/canvas/CanvasSurfaceContext', () => ({ useCanvasSurface: () => 'light' }));
 // The overlay's controls, reduced to what they ask of the host: a step either way, and a jump.
 vi.mock('@/components/canvas/PresentationOverlay', () => ({
-  PresentationOverlay: ({ at, onGo }: { at: number; onGo: (next: number) => void }) => (
+  PresentationOverlay: ({
+    at,
+    onGo,
+  }: {
+    at: number;
+    onGo: (next: number, step?: 1 | -1) => void;
+  }) => (
     <div data-testid="presentation-overlay">
-      <button onClick={() => onGo(at + 1)}>Next</button>
-      <button onClick={() => onGo(at - 1)}>Back</button>
+      <button onClick={() => onGo(at + 1, 1)}>Next</button>
+      <button onClick={() => onGo(at - 1, -1)}>Back</button>
       <button onClick={() => onGo(3)}>Jump to 4</button>
+      <button onClick={() => onGo(0)}>Home</button>
+      <button onClick={() => onGo(at - 1)}>Jump to the one before</button>
     </div>
   ),
 }));
@@ -123,6 +131,42 @@ describe('PresentationHost', () => {
     press('Jump to 4');
     press('Back');
     expect(deck.setPresentingAt.mock.calls.map(([n]): unknown => n)).toEqual([1, 3, 2]);
+  });
+
+  // Quick presses near the deck's ends, before the move before them has landed.
+  it('wraps a quick second Next with Loop on, rather than ending the deck', () => {
+    deck.config = { ...DEFAULT_PRESENTATION_CONFIG, loop: true };
+    deck.presentingAt = 2;
+    render(<PresentationHost />);
+    press('Next');
+    press('Next');
+    press('Next');
+    expect(deck.setPresentingAt.mock.calls.map(([n]): unknown => n)).toEqual([3, 0, 1]);
+    expect(deck.exitPresentation).not.toHaveBeenCalled();
+  });
+
+  it('counts Back from the slide last asked for, and takes Home or a near jump as given', () => {
+    render(<PresentationHost />);
+    press('Next');
+    press('Next');
+    press('Back');
+    press('Home');
+    expect(deck.setPresentingAt.mock.calls.map(([n]): unknown => n)).toEqual([1, 2, 1, 0]);
+    deck.setPresentingAt.mockClear();
+    deck.presentingAt = 2;
+    cleanup();
+    render(<PresentationHost />);
+    press('Next');
+    press('Jump to the one before');
+    expect(deck.setPresentingAt.mock.calls.map(([n]): unknown => n)).toEqual([3, 1]);
+  });
+
+  it('leaves from the end state, Loop off', () => {
+    deck.presentingAt = 4;
+    render(<PresentationHost />);
+    press('Next');
+    expect(deck.exitPresentation).toHaveBeenCalledTimes(1);
+    expect(deck.setPresentingAt).not.toHaveBeenCalled();
   });
 
   it('steps from the slide on screen again once it catches up', () => {

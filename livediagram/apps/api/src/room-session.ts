@@ -87,8 +87,10 @@ export type SessionAttachment = {
 const MAX_PERSON_TAG_LEN = 64;
 // A workbench pairing id is a UUID.
 const MAX_PAIRING_ID_LEN = 36;
-// A document id is a UUID; the clamp keeps a forged header from bloating the attachment.
-const MAX_DOCUMENT_ID_LEN = 64;
+// A document id is usually a UUID, but an API or MCP client may choose a longer one, up to the documents route's
+// bound (200): the clamp keeps a forged header from bloating the attachment and never cuts an id the api accepts,
+// since a cut id fails every later check against the real one (a grant's renewal, a participant write).
+const MAX_DOCUMENT_ID_LEN = 200;
 // A network tag is a 32-hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_NETWORK_TAG_LEN = 32;
 

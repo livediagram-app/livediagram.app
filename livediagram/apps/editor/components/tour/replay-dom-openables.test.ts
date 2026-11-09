@@ -5,7 +5,7 @@
 // flyout closes over it.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { OPENABLES, syncOpen } from './replay-dom';
+import { holdOpen, HOLD_OPEN_FRAMES, OPENABLES, syncOpen } from './replay-dom';
 
 // jsdom lays nothing out: every node counts as on screen.
 beforeEach(() => {
@@ -92,5 +92,79 @@ describe('the bar and rail openables', () => {
     syncOpen([], opened);
     expect(log).toEqual(['open', 'row 3', 'row 1', 'close']);
     expect(opened.size).toBe(0);
+  });
+});
+
+// Marker 2 on the dock (DockToolbar.tsx DockButton): a press opens its flyout only while it reads as in hand, which the
+// dock draws a render after the replay's frame puts the pen there.
+function mountMarker(log: string[]) {
+  const dock = document.createElement('div');
+  dock.setAttribute('data-whiteboard-dock', '');
+  const button = document.createElement('button');
+  button.setAttribute('data-dock-item', 'second');
+  button.setAttribute('aria-pressed', 'false');
+  button.addEventListener('click', () => {
+    log.push('press');
+    const flyout = document.createElement('div');
+    flyout.id = 'whiteboard-flyout-second';
+    document.body.append(flyout);
+  });
+  dock.append(button);
+  document.body.append(dock);
+  return button;
+}
+
+describe('holdOpen (Work Tracker #668)', () => {
+  // Animation frames run by hand.
+  let frames: FrameRequestCallback[] = [];
+  const runFrame = () => {
+    const due = frames;
+    frames = [];
+    due.forEach((f) => f(0));
+  };
+  beforeEach(() => {
+    frames = [];
+    vi.stubGlobal('requestAnimationFrame', (f: FrameRequestCallback) => frames.push(f));
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => {
+      if (id > 0) frames.splice(id - 1, 1);
+    });
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('presses the marker again once the dock draws it in hand, with no clock to call it (reduced motion)', () => {
+    const log: string[] = [];
+    const marker = mountMarker(log);
+    holdOpen(['dock-pen-second'], new Set());
+    // Not in hand yet: never pressed, so the pen is never picked up for real.
+    expect(log).toEqual([]);
+    runFrame();
+    expect(log).toEqual([]);
+    marker.setAttribute('aria-pressed', 'true');
+    runFrame();
+    expect(log).toEqual(['press']);
+    expect(OPENABLES['dock-pen-second']!.isOpen()).toBe(true);
+    // Open: nothing more is asked for.
+    expect(frames).toEqual([]);
+  });
+
+  it('gives up after its frames, and its stop cancels the next try', () => {
+    const log: string[] = [];
+    mountMarker(log);
+    holdOpen(['dock-pen-second'], new Set());
+    for (let i = 0; i < HOLD_OPEN_FRAMES; i++) runFrame();
+    expect(frames).toEqual([]);
+    const stop = holdOpen(['dock-pen-second'], new Set());
+    expect(frames).toHaveLength(1);
+    stop();
+    expect(frames).toEqual([]);
+    expect(log).toEqual([]);
+  });
+
+  it('asks for no frame when everything named is already open', () => {
+    const log: string[] = [];
+    mountBar(log);
+    holdOpen(['bar-session'], new Set());
+    expect(log).toEqual(['open']);
+    expect(frames).toEqual([]);
   });
 });

@@ -15,7 +15,7 @@ import { TOPICS } from '@/lib/replay/topics';
 import type { TopicCard } from '@/lib/replay/curriculum';
 import { tourStepTelemetryType } from './tour-steps';
 import { ReplayOverlay, type ReplayCursor } from './ReplayOverlay';
-import { openMenuPath, resolveTarget, syncOpen, typeInto } from './replay-dom';
+import { holdOpen, openMenuPath, resolveTarget, syncOpen, typeInto } from './replay-dom';
 
 // Watch It Built's player (docs/specs/007-editor/watch-it-built.md "The replay", "The player"): loaded when a topic is
 // picked, it plays the topic (lib/replay/topics) on a clock from the moment it mounts, drawing the demo through the
@@ -65,6 +65,8 @@ export function WatchItBuiltPlayer({
   const signatureRef = useRef('');
   // What of the real chrome the replay opened, so it can close it again.
   const openedRef = useRef(new Set<string>());
+  // The last frame's hold on what it opens (replay-dom.ts holdOpen), stopped by the next frame or the end.
+  const stopHoldRef = useRef<() => void>(() => {});
   const mode = ctx.editorMode.mode;
   const startedMode = useRef(mode);
 
@@ -125,6 +127,7 @@ export function WatchItBuiltPlayer({
 
   // Everything it opened closed, the demo gone, the canvas back; telemetry runs again.
   const teardown = () => {
+    stopHoldRef.current();
     syncOpen([], openedRef.current);
     replayStore.reset();
     document.documentElement.removeAttribute('data-replay');
@@ -201,7 +204,8 @@ export function WatchItBuiltPlayer({
     const frame = topic.frame(clock.index, clock.ms, layoutRef.current);
     applyFrame(frame, signatureRef);
     setPlayerTop(frame.player === 'top');
-    syncOpen(frame.open ?? [], openedRef.current);
+    stopHoldRef.current();
+    stopHoldRef.current = holdOpen(frame.open ?? [], openedRef.current);
     if (frame.menu) openMenuPath(frame.menu.path);
     if (frame.typed) typeInto(frame.typed.selector, frame.typed.text);
     const point = cursorAt(

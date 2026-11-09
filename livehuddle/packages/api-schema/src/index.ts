@@ -296,6 +296,8 @@ export * from './knock';
 export * from './avatar-push';
 // The reception bell (docs/specs/009-elements/workday-pieces.md "The wire").
 export * from './bell';
+// Nudge (docs/specs/012-collaboration/nudge.md).
+export * from './nudge';
 // A peer's camera, checked before a follower applies it (docs/specs/012-collaboration/follow-me-viewport.md).
 export * from './viewport';
 // A game at a piece, the Ping-Pong Table's first (docs/specs/009-elements/social-pieces.md "The wire").

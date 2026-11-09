@@ -1,61 +1,47 @@
 // The Slides track of the Pages tour (docs/specs/007-editor/pages-tour.md "Slides track"): on the person's own
 // slide, it opens the Layout and Background popovers to choose from, points at the +, then at the slide's row in
 // Contents (the show's order), opens that row's menu (its place in the show) and points at Present. Each control
-// stays live, so a pick made while its step is up is kept.
-import type { PageTourApi, PageTourStep } from './page-tour-api';
+// stays live, so a pick made while its step is up is kept. On a phone the looks open from Appearance, Contents from
+// its button, and there is no Present (pages-tour.md "On a phone").
+import type { PageTourStep } from './page-tour-api';
+import { HEADER_PRESENT } from './page-tour-dom';
 import {
-  addPageAnchor,
-  closeTitlePopover,
-  contentsRow,
-  contentsRowMenu,
-  HEADER_PRESENT,
-  openTitlePopover,
-  pageButton,
-  pageOrPopover,
-} from './page-tour-dom';
-import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
+  addPageStep,
+  contentsMenuStep,
+  contentsRowStep,
+  lookStep,
+  type TrackOptions,
+} from './page-tour-parts';
 
-export function slideTourSteps(): PageTourStep[] {
+export function slideTourSteps({ phone = false }: TrackOptions = {}): PageTourStep[] {
   return [
-    {
-      id: 'layouts',
-      title: 'Choose a Layout',
-      body: 'Hover a layout to preview it. Press it to use it.',
-      selector: (api) => pageOrPopover(api.pageId, 'Layout'),
-      requires: (api) => pageButton(api.pageId, 'Layout'),
-      prepare: (api) => openTitlePopover(api.pageId, 'Layout'),
-      cleanup: (api) => closeTitlePopover(api.pageId, 'Layout'),
-    },
-    {
-      id: 'background',
-      title: 'Change the Background',
-      body: 'Colours, gradients, pictures or animated backgrounds. Hover to preview, press to keep.',
-      selector: (api) => pageOrPopover(api.pageId, 'Background'),
-      requires: (api) => pageButton(api.pageId, 'Background'),
-      prepare: (api) => openTitlePopover(api.pageId, 'Background'),
-      cleanup: (api) => closeTitlePopover(api.pageId, 'Background'),
-    },
-    {
-      id: 'add-page',
-      title: 'Add Slide',
-      body: '+ adds the next slide.',
-      selector: addPageAnchor,
-    },
-    {
+    lookStep(
+      {
+        id: 'layouts',
+        title: 'Choose a Layout',
+        body: 'Hover a layout to preview it. Press it to use it.',
+      },
+      'Layout',
+    ),
+    lookStep(
+      {
+        id: 'background',
+        title: 'Change the Background',
+        body: 'Colours, gradients, pictures or animated backgrounds. Hover to preview, press to keep.',
+      },
+      'Background',
+    ),
+    addPageStep({ id: 'add-page', title: 'Add Slide', body: '+ adds the next slide.' }),
+    contentsRowStep({
       id: 'contents',
       title: 'Your Slides',
       body: 'Every slide is in the show already, in this order. Drag a slide to move it; press one to go to it.',
-      selector: (api) => contentsRow(api.pageId),
-    },
-    opensFrom(
-      {
-        id: 'slide-menu',
-        title: 'Each Slide’s Menu',
-        body: 'Hide a slide from the show without deleting it, or present from it.',
-        selector: (api) => contentsRow(api.pageId),
-      },
-      (api: PageTourApi) => contentsRowMenu(api.pageId),
-    ),
+    }),
+    contentsMenuStep({
+      id: 'slide-menu',
+      title: 'Each Slide’s Menu',
+      body: 'Hide a slide from the show without deleting it, or present from it.',
+    }),
     {
       id: 'present',
       title: 'Present',
@@ -66,7 +52,10 @@ export function slideTourSteps(): PageTourStep[] {
       id: 'outro',
       card: 'outro',
       title: "You're ready to present",
-      body: 'Make your next slide. Present when you are ready.',
+      // A phone presents nothing (presentation-mode.md): the show is given from a bigger screen.
+      body: phone
+        ? 'Make your next slide. Present it from a tablet or computer.'
+        : 'Make your next slide. Present when you are ready.',
     },
   ];
 }

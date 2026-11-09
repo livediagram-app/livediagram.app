@@ -28,6 +28,23 @@ describe('settleChartRows', () => {
     ]);
   });
 
+  it("reads a slice's value as a number: numeric text as its number, anything else as 0", () => {
+    const [out] = settleChartRows([
+      chart('pie-chart', {
+        pieSlices: [
+          { label: 'A', value: '5' },
+          { label: 'B' },
+          { label: 'C', value: Infinity },
+          { label: 'D', value: 3 },
+        ],
+      }),
+    ]);
+    expect((out as ShapeElement).pieSlices!.map((s) => s.value)).toEqual([5, 0, 0, 3]);
+    expect(elementValidationIssue(chart('pie-chart', { pieSlices: [{ label: 'A' }] }))?.field).toBe(
+      'pieSlices',
+    );
+  });
+
   it('keeps every category in its place and repairs the series', () => {
     const [out] = settleChartRows([
       chart('line-chart', {

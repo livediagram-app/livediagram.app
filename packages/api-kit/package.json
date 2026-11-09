@@ -32,6 +32,7 @@
     "./room-presence-relay": "./src/room-presence-relay.ts",
     "./room-roster": "./src/room-roster.ts",
     "./sealed": "./src/sealed.ts",
+    "./tab-order": "./src/tab-order.ts",
     "./tab-swap": "./src/tab-swap.ts",
     "./testing/sqlite-d1": "./src/testing/sqlite-d1.ts",
     "./testing/unavailable-d1": "./src/testing/unavailable-d1.ts",

@@ -12,6 +12,7 @@ import { track } from '@/lib/telemetry';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
 import { isOnScreen } from '@liveworkspace/workbench/components/tour/tour-dom';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import {
   useTourEngine,
   type TourEngine,
@@ -74,7 +75,7 @@ export function usePageTour(editable: (pageId: string) => boolean): {
   const freeze = async (pageId: string, kind: PageKind) => {
     const { shownPageTourSteps, resetPageTour } = await import('./page-tour-steps');
     const api = { pageId, ...PAGE_PANEL };
-    const next = shownPageTourSteps(kind, api, isOnScreen);
+    const next = shownPageTourSteps(kind, api, isOnScreen, { phone: isMobileViewportSync() });
     resetPageTour();
     // The panel Show Me was pressed in makes way for the page: a step that is about the panel opens it again.
     PAGE_PANEL.closePanel();

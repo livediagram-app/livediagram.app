@@ -29,9 +29,10 @@ that can no longer be sent to it. `floor` reports an empty log honestly, so that
 
 ## A resync merges, it does not reload
 
-Even a legitimate resync only ever needs the **tab content** back. Everything
-else the editor holds is either unaffected (viewport, selection, active tab,
-undo stack) or re-established by the reconnect itself (presence, cursors). A
+Even a legitimate resync only ever needs the **document's content** back: the
+tabs' content and the tab list. Everything else the editor holds is either
+unaffected (viewport, selection, active tab, undo stack) or re-established by
+the reconnect itself (presence, cursors). A
 page reload would throw all of it away, and with it any edit not yet autosaved.
 
 `useRoomResync` re-fetches the loaded tabs from the server and merges them through
@@ -62,6 +63,21 @@ Three details it has to get right:
 
 Only tabs already in the loaded set are refetched: an unvisited placeholder
 has nothing to correct and would just race its own lazy load.
+
+## The tab list
+
+The ops a gap loses are not only content: a peer's tab added, deleted,
+renamed or moved travels as a `document-meta` op, and refetching the content of
+the tabs held here never brought it back (a deleted tab stayed on screen, an
+added one never appeared, until a reload). A full resync also reads the
+document (through the share link for a visitor) and applies its stored tab
+list exactly as that op is applied (`resync-tab-list.ts`): to the screen and
+to the save baseline, in order, a tab this editor added or deleted and has not
+saved yet kept as it is here (`keepUnsavedTabChanges`), and an unvisited
+placeholder taking its stored name (a held tab's name comes with its refetched
+content). A list that can't be read leaves the list as it is; the content
+refetch still runs. A refetch narrowed to named tabs (an agent's oversize
+changeset) reads no list. The document's own name is not re-read.
 
 ## No toast
 

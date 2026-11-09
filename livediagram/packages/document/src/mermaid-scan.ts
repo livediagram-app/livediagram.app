@@ -50,17 +50,21 @@ function runOf(s: string, at: number, ch: string, min: number): number {
   return end - at >= min ? end : -1;
 }
 
-// One inline-label edge off the front of `s`, as `^\s*<open>\s+(.+?)\s+<close>([>ox])?` read it:
+// One inline-label edge off the front of `s`, as `^\s*([<ox])?<open>\s+(.+?)\s+<close>([>ox])?` read it:
 // the label is the shortest text followed by a whitespace run and a closing run. A linear scan
 // (the lazy label against `\s+` backtracked quadratically over a long whitespace run).
 export function readInlineLabel(
   s: string,
-): { label: string; trail?: string; line: EdgeLine; length: number } | null {
+): { label: string; lead?: string; trail?: string; line: EdgeLine; length: number } | null {
   let i = 0;
   while (isSpace(s[i])) i += 1;
+  // A start marker (`<-- text -->`, `o-- text --o`, `x-. text .-x`), as on a plain operator: the
+  // edge then has a head at its start too.
+  const lead = s[i] === '<' || s[i] === 'o' || s[i] === 'x' ? s[i] : undefined;
   for (const form of INLINE_LABEL_FORMS) {
-    if (!s.startsWith(form.open, i)) continue;
-    let start = i + form.open.length;
+    const opensAt = lead && s.startsWith(form.open, i + 1) ? i + 1 : i;
+    if (!s.startsWith(form.open, opensAt)) continue;
+    let start = opensAt + form.open.length;
     if (!isSpace(s[start])) continue;
     while (isSpace(s[start])) start += 1;
     // Each whitespace run after the label's first character, in order: the first one a closing
@@ -74,6 +78,7 @@ export function readInlineLabel(
         const trail = s[end] === '>' || s[end] === 'o' || s[end] === 'x' ? s[end] : undefined;
         return {
           label: s.slice(start, at),
+          ...(opensAt > i ? { lead } : {}),
           ...(trail ? { trail } : {}),
           line: form.line,
           length: trail ? end + 1 : end,
