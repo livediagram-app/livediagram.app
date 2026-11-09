@@ -105,7 +105,10 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
    Tables are read as lists (`tablesAsLists` in `packages/document/src/article-markdown-io.ts`) and counted in
    `tables`; a count above zero adds the line "Wrote Markdown tables as lists (N): ...".
    Fresh ids never meet the article's own, so `append` concatenates after the current blocks (a new article's
-   placeholder Title and paragraph give way) and keeps every zone and note.
+   placeholder Title and paragraph give way) and keeps every zone and note. The leading `title` / `subtitle`
+   blocks (front matter) are not appended: each replaces the runs of the article's first block of its style
+   (keeping its id), or is inserted at the top (a subtitle after the title) when there is none (`withHeadingSet`);
+   one replaced is not counted in "blocks added".
 7. No blocks left → one empty paragraph. Blocks past `MAX_ARTICLE_BLOCKS` → `article_too_large`.
 8. Dropped zones: their elements removed (`withZoneContentsRemoved`); notes whose text is gone (`articleNoteIds`
    before and after): their markers removed (`withNoteMarkersRemoved`).

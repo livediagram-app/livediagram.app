@@ -144,7 +144,8 @@ Writes an article's text from **Markdown**.
   when it lists fewer than three levels).
 - **Front matter** sets the title and subtitle: a first line `---`, then `title: ...` and `subtitle: ...` lines, then
   `---`. They become the article's `title` and `subtitle` blocks, first. Without front matter the text is written as
-  given (a replace keeps no old title).
+  given (a replace keeps no old title). An append's front matter sets the article's own title and subtitle where
+  they are (a missing one goes first, a subtitle after the title), never a title block after the last block.
 - **Zones** (objects and drawings in the text) are written as a line `[zone <id>]`, as the `pages` view prints them.
   A replace keeps a zone exactly where its line is (an append leaves a zone it names where it already is); a zone of the article whose line is missing is removed with the
   elements in it, and the answer says so ("Removed zone z-12 and 3 elements"). An unknown zone id is refused
