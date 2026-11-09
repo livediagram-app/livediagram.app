@@ -1,6 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { VIEW_TOOL_KEYS, type ShortcutAction } from './useEditorKeyboardShortcuts';
-import { runModShortcut } from './editor-shortcut-keys';
+import { coveredKeyRole, runModShortcut } from './editor-shortcut-keys';
+
+// docs/specs/013-workspace/share-roles.md: a covered canvas swallows the z-order chords, by key or by code, and an
+// empty key (a synthetic event, some IMEs) is no bracket: `'[]{}'.includes('')` was true and swallowed it.
+describe('coveredKeyRole', () => {
+  const chord = (key: string, code = '') => ({
+    key,
+    code,
+    metaKey: true,
+    ctrlKey: false,
+    shiftKey: true,
+    altKey: false,
+  });
+  it('swallows the z-order chords by key or code', () => {
+    expect(coveredKeyRole(chord('}'), false)).toBe('swallow');
+    expect(coveredKeyRole(chord('', 'BracketLeft'), false)).toBe('swallow');
+  });
+  it('leaves an empty key alone rather than reading it as a bracket', () => {
+    expect(coveredKeyRole(chord(''), false)).toBe('ignore');
+  });
+});
 
 // The hook's keydown effect needs jsdom + window event dispatch, which
 // this workspace's node-env vitest doesn't run (see docs/specs/003-system-architecture/testing.md).
