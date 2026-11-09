@@ -98,15 +98,19 @@ export function useAttachmentUpload(
         const latest = planRef.current;
         const card = latest?.items.get(itemId);
         if (latest && card) {
-          const { list, skipped } = withAttachmentsAdded(itemAttachments(card), added);
+          const had = itemAttachments(card);
+          const { list, skipped } = withAttachmentsAdded(had, added);
           if (skipped > 0) failure ??= ATTACHMENTS_FULL;
-          const saved = await latest.patchItem(itemId, { set: { attachments: list } });
-          if (saved) {
+          // What lands is what the card had room for when the uploads ended (it may have filled meanwhile), and
+          // only that is announced; nothing landing writes nothing.
+          const landed = list.length - had.length;
+          const saved =
+            landed > 0 ? await latest.patchItem(itemId, { set: { attachments: list } }) : true;
+          if (!saved) failure ??= IMAGE_NOT_SAVED;
+          else if (landed > 0) {
             track('Plan', 'Added', 'CardAttachment');
-            latest.announce(
-              added.length === 1 ? 'Image attached' : `${added.length} images attached`,
-            );
-          } else failure ??= IMAGE_NOT_SAVED;
+            latest.announce(landed === 1 ? 'Image attached' : `${landed} images attached`);
+          }
         }
       }
       setError(failure);

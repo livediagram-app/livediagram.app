@@ -63,6 +63,44 @@ describe('applyEditOperations', () => {
     ]);
   });
 
+  // docs/specs/024-agents/edit-operations.md "A board's caps hold for agents".
+  describe("a board's caps", () => {
+    const board = (planBoard: Record<string, unknown>) => ({
+      id: 'pb1',
+      type: 'shape',
+      shape: 'plan-board',
+      x: 2000,
+      y: 0,
+      width: 400,
+      height: 300,
+      planBoard: { columns: [], ...planBoard },
+    });
+    const column = (name: string) => ({ id: 'c1', status: 'todo', name });
+
+    it('refuses a title over 80 and a column name over 40, naming the element and the cap', () => {
+      expect(refused(run([add(board({ title: 'y'.repeat(81) }))]))).toEqual({
+        code: 'invalid_result',
+        details: ['pb1 planBoard: a board title is at most 80 characters'],
+        hint: 'see the format: liveplanner schema plan-board',
+      });
+      expect(
+        refused(run([add(board({ title: 'Launch', columns: [column('z'.repeat(41))] }))])).details,
+      ).toEqual(['pb1 planBoard: a column name is at most 40 characters']);
+      // At the caps is fine.
+      applied(run([add(board({ title: 'y'.repeat(80), columns: [column('z'.repeat(40))] }))]));
+    });
+
+    it('checks only a set-up the write gives, so an older board still moves', () => {
+      const tab = sprintDashboard();
+      tab.elements.push(board({ title: 'y'.repeat(120) }) as unknown as Element);
+      applied(run([set('pb1', { x: 2100 })], tab));
+      expect(
+        refused(run([set('pb1', { planBoard: { title: 'y'.repeat(81), columns: [] } })], tab))
+          .details,
+      ).toEqual(['pb1 planBoard: a board title is at most 80 characters']);
+    });
+  });
+
   describe('invariants', () => {
     it('I1 applies all or nothing, and never mutates its input', () => {
       const tab = sprintDashboard();

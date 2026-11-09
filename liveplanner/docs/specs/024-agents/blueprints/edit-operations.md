@@ -82,8 +82,10 @@ logs the count and the code that stopped the read:
 4. **Apply each operation in order** against the working state, so an element added earlier is addressable later.
    Each operation adds the pre-existing ids it resolved to `state.targets` and records what it touched and created.
    An operation that would change an id in `locked` is `element_locked`.
-5. **Finalise** ([Finalise](#finalise)), then validate every touched element with `elementValidationIssue` and the
-   whole tab with `isValidTab`; the first issue is `invalid_result`.
+5. **Finalise** ([Finalise](#finalise)), then validate every touched element with `elementValidationIssue` (and,
+   on one added or whose `planBoard` was written, `planBoardCapIssue`: a board title over `PLAN_TITLE_MAX`, a column
+   name over `PLAN_COLUMN_NAME_MAX`) and the whole tab with `isValidTab`; the first issue is `invalid_result`. A
+   replace runs both on every element it is given.
 6. **Diff.** `elementOps = diffToElementOps(tab.elements, next.elements)`;
    `inverse = diffToElementOps(next.elements, tab.elements)`.
 7. **Results.** `buildResultLines(before, after, state)`; `targets` and `createdIds` in first-resolution and
