@@ -164,11 +164,18 @@ marketing decision, not part of this card.
 
 ## Keeping the two products from drifting
 
-Two copies of what both products carry will drift. Since step 10 that is Avatar mode, the Navigate elements, the
-office pieces, the Spaces templates, the Session strip's Timer, Bring Focus, the facilitator baton and
-follow-me; the rest of Workshop mode is livediagram's alone. Four rules keep the drift small:
+Two copies of what both products carry will drift. Since step 10 that is the Portal, Bring Focus and the Link card,
+the Selection Mode buttons, the Session strip's Timer and Vote, the Reaction Pads, the facilitator baton and
+follow-me; the rest of Workshop mode is livediagram's alone. Since livediagram's Work Tracker #650 (2026-11-09),
+Avatar mode, the Spaces templates and every avatar-only piece (Chair, Desk, Sofa, the office pieces, Fence, Avatar
+Pad, turning and seats) are livehuddle's alone: livediagram keeps a stored one as a "Moved to livehuddle" placeholder
+and drops the old avatar ops unread (livediagram's
+[Not in livediagram](../../../../livediagram/docs/specs/002-project-scope/not-in-livediagram.md)), so there is no
+copy left to drift. Four rules keep the rest small:
 
-1. **One copy of what can be shared.** The avatar core and its wire shapes live once, in `packages/` (step 1).
+1. **One copy of what can be shared.** The realtime room's shapes live once, in `packages/`. The avatar core
+   (`@liveworkspace/avatar`, step 1) moves into livehuddle with #650's second part, since only livehuddle uses it; the
+   reaction bursts both products throw stay shared.
 2. **The next extraction is named now.** The Session strip's Timer, Bring Focus and the facilitator baton
    are the next candidates (the Collaborate elements were, until step 10 took them out of livehuddle). Their pure parts move to a
    `@liveworkspace/session-tools` package the first time a change has to land in both products, instead of being

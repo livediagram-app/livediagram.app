@@ -23,12 +23,13 @@ Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug, Avatar
 - A rounded card filling the element's box, on the theme's muted surface with a dashed hairline border, so it reads as
   "something was here" and never as content the author drew. It follows the light and dark themes from the same tokens
   every card uses.
-- Centred in it, top to bottom: a small glyph (the moved-out arrow), the element's **name** in the card's title weight,
-  and the line **Moved to livehuddle** in the muted text colour. On a box too small for all three, the line goes first,
-  then the glyph, so the name always shows.
-- The element's own label, when it has one (a Room's name, a Chair's label), shows under the name instead of nothing,
-  so a board with ten Rooms still tells them apart.
-- Hovering shows a tooltip: "This piece lives in livehuddle now. It is kept here as saved; you can move or delete it."
+- Centred in it, top to bottom: a small glyph (the moved-out arrow), a **title** in the card's title weight, and a
+  caption in the muted text colour. The title is the element's own label when it has one (a Room's name, a Chair's
+  label), else the piece's name; the caption is **Moved to livehuddle**, or `<Name> · Moved to livehuddle` under an own
+  label, so a board with ten Rooms still tells them apart. On a smaller box the glyph goes first (under 96 x 88), then
+  the caption (under 72 x 44), so the title always shows (`retiredPlaceholderPlan`).
+- Hovering shows a hover card titled `<Name>: Moved to livehuddle`: "This piece lives in livehuddle now. It is kept
+  here as saved; you can move or delete it."
 - The export draws the same card (name and line), so an SVG, PNG or PDF of an old board matches the canvas.
 - No animation, no sound, nothing pressable on its face: it is a placeholder, not a control.
 
@@ -36,21 +37,22 @@ Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug, Avatar
 
 It follows the ordinary element rules for its share role ([Share roles](../013-workspace/share-roles.md)):
 
-| Role        | Select | Move, resize | Delete | Restyle, relabel | Add a new one |
-| ----------- | ------ | ------------ | ------ | ---------------- | ------------- |
-| Editor      | Yes    | Yes          | Yes    | No               | No            |
-| Participant | Yes    | As any element the room lets them move | As any element they may delete | No | No |
-| Viewer      | Yes    | No           | No     | No               | No            |
+| Role        | Select | Move, resize                           | Delete                         | Restyle, relabel | Add a new one |
+| ----------- | ------ | -------------------------------------- | ------------------------------ | ---------------- | ------------- |
+| Editor      | Yes    | Yes                                    | Yes                            | Stored only      | No            |
+| Participant | Yes    | As any element the room lets them move | As any element they may delete | Stored only      | No            |
+| Viewer      | Yes    | No                                     | No                             | No               | No            |
 
-- Its context menu holds only the categories every element has (Layer, Size, Lock, Delete) and a **Moved to
-  livehuddle** note; it offers no style, label or behaviour categories, because changing a piece that is not drawn
-  here would change data you cannot see.
+- Its context menu is the ordinary element menu (Layer, Rotation where the kind turns, Delete and the rest); a retired
+  Avatar button has no Button section, so it cannot be pointed at a mode. A style or label change is stored as it is on
+  any element (the placeholder shows a new label as its title) and reaches livehuddle unchanged; it never makes the
+  piece work here. "Stored only" in the table means that.
 - Copy and paste, duplicate and undo carry it like any element, data unchanged: the one way it is ever "added" is as a
   copy of one already on a board.
 - Nothing creates a new one: the palette, the templates, the search panel, Mermaid and the other imports, the MCP
   server, the CLI and the API's element create paths do not offer the retired kinds. The MCP and API refuse a create
-  that names one with "`<Name>` moved to livehuddle and can no longer be added in livediagram." Reading a document that
-  holds one (`read_document`, the CLI's views) lists it as `retired <kind>`.
+  that names one with a message saying it moved to livehuddle and can no longer be added here (`retiredKindRefusal`).
+  Reading a document that holds one (`read_document`, the CLI's views) lists it by its stored kind, as saved.
 
 ## Stored data
 

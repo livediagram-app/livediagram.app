@@ -60,8 +60,8 @@ section is still called **Show Me**. "Element tour" is the code's and the specs'
 
 ## Settings
 
-Settings' **Getting Started** category holds element tours in their own section, **Show Me**, below the mode tours'
-**Offer Again** section. It is a closed accordion (people rarely look for it): its header names the section and
+Settings' **Getting Started** category holds element tours in their own section, **Show Me**, below the Watch It Built
+sections. It is a closed accordion (people rarely look for it): its header names the section and
 how many are on (`1 of 1 On`). Opened, it shows the section's line, then **Show Me on Every Element**, one switch
 over them all (on while any is not yet taken; off marks every kind taken, on forgets every run), with one switch per
 toured kind nested beneath it, named for the element alone: **Sankey Diagram**, linking the Sankey Diagram article.

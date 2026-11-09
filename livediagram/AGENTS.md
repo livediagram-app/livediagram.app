@@ -278,16 +278,20 @@ livehuddle was forked from livediagram (`livehuddle/.forked-from`) and carried a
 Tracker #423 livehuddle is for meeting in Spaces and keeps only the meeting kit, so these features exist twice, once in
 each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-project-roadmap/build-plan.md#keeping-the-two-products-from-drifting)):
 
-- **Avatar mode and the Navigate elements**: the walk, the Avatar panel and tour, Portal, Bring Focus, Chair, Desk,
-  Sofa, Fence, Link card, Office and the Avatar Pad, and the Selection Mode buttons
-  (`docs/specs/008-canvas/avatar-mode.md`, `docs/specs/009-elements/`), over `@liveworkspace/avatar`.
+- **The Navigate elements kept here**: Portal (click to travel), Bring Focus and the Link card, and the Selection Mode
+  buttons without the Avatar mode (`docs/specs/009-elements/portal-element.md`, `mode-button.md`).
 - **The light meeting tools**: the Session strip's Timer and Vote (the dot vote), Bring Focus, the Reaction Pads, the
   facilitator baton and follow-me (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`,
   `docs/specs/009-elements/reaction-pad.md`).
 - **Comments and actions**: comments with mentions, reactions, assigned actions and the Collaborate Panel.
-- **The Spaces templates**: Virtual Office, Coworking Space, Team Pod and All-Hands Hall (`packages/templates`,
-  `docs/specs/012-collaboration/virtual-office-template.md`).
 - **Share roles on a board**: what a Participant may do (`docs/specs/013-workspace/share-roles.md`).
+
+**Left livediagram for livehuddle** (Work Tracker #650, [Not in livediagram](docs/specs/002-project-scope/not-in-livediagram.md)):
+Avatar mode (the walk, speech, push, statuses, the Avatar panel, button and tour), the Spaces templates (Virtual Office,
+Coworking Space, Team Pod, All-Hands Hall) with their walk-in, and every piece only an avatar used: Chair, Desk, Sofa,
+the Office pieces, Fence, Avatar Pad, turning and seats. They are livehuddle's alone; a board saved with one shows a
+"Moved to livehuddle" placeholder here ([Retired elements](docs/specs/009-elements/retired-elements.md)), and the room
+drops the old avatar ops unread.
 
 **Leaving livehuddle** (Work Tracker #423, [Not in livehuddle](../livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md)):
 the retro and workshop templates, the quizzes and games, every Collaborate element but the Reaction Pads (polls,
@@ -301,8 +305,9 @@ The rules:
   `packages/` first** (as `@liveworkspace/*`, the root AGENTS.md order) so there is one copy to change. The pure parts
   of the Session strip's Timer and Vote, Bring Focus and the facilitator baton are the next extraction, to
   `@liveworkspace/session-tools`, the first time a change has to land in both.
-- What is already one copy stays one: the avatar core and its wire shapes (`@liveworkspace/avatar`,
-  `@liveworkspace/api-schema`), the realtime room's shared shapes, and everything else in `packages/`.
+- What is already one copy stays one: the realtime room's shared shapes, and everything else in `packages/`. The
+  avatar core is livehuddle's own (it moves out of `packages/` with #650's second part); livediagram imports none of it
+  but the reaction bursts its Reaction Pad throws.
 - Only livediagram has: Diagram and Draw modes and the elements only they offer, the rest of Workshop mode (the retro and workshop templates, the Collaborate elements, the Poll, Presentation mode and the Slide Deck, the Page), Event Storming, repository links, the wall-photo import (`sticky-vision`, `sticky-model`).
 - CI's **Drift report** (the Plan job's summary, `.github/scripts/drift-report.mjs`, the root docs/ci.md) counts the
   identical, changed and one-only files between `livediagram/` and `livehuddle/`, names ignored. It never fails a

@@ -12,7 +12,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, a write body's byte cap, rate-limit keys, link unfurls, refusal logs, the realtime room's element-op gate, a Durable Object alarm's one-second floor, the server renders' image embedder (`embedImages`), the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check, the one return-path check
-│  ├─ avatar                   Avatar mode's parts that read no element union: walker, sprite, walking, speech, action keys, pads, fences, office walls; each product binds its storage prefix and telemetry
+│  ├─ avatar                   Avatar mode's parts that read no element union: walker, sprite, walking, speech, action keys, pads, fences, office walls; livehuddle's alone since #650 (moving into livehuddle), livediagram reads only its reaction bursts
 │  ├─ brand                    every app's logo drawn once: the Living Prism and wordmark, as React and as SVG strings
 │  ├─ cli-kit                  a product CLI's shared modules: the io shape, exit codes and errors, config.toml, XDG paths, debug lines, credentials and the keychain, OAuth sign-in, the api transport, PNG pictures; each product binds its names
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
@@ -483,8 +483,10 @@ Each step is its own PR, and both products build and pass their tests after ever
    `lib/avatar-bindings.ts`). The wire shapes (`AvatarPresence`, the `avatar`, `avatar-push` and `avatar-say` ops and
    their parsers) moved to `@liveworkspace/api-schema`, and the segment distance the fence and the whiteboard share to
    `@liveworkspace/model-core/segment-geometry`. livediagram re-exports what it used to own, so its callers and
-   behaviour are unchanged. Still in livediagram: the Avatar panel's frame, the furniture drawings (which take their seat
-   grids from the package), the room connection and the tests that build livediagram elements.
+   behaviour are unchanged. Since Work Tracker #650 (2026-11-09) livediagram has no Avatar mode at all: it moved to
+   livehuddle with the Spaces templates and the furniture, livediagram draws a stored piece as a placeholder and its
+   room drops the avatar ops, so the package is livehuddle's alone and moves into livehuddle next. livediagram still
+   reads its reaction bursts, which go to a shared home first.
 
 ## One home
 

@@ -75,7 +75,7 @@ palette](../008-canvas/canvas-and-palette.md) "Template categories"): in the cat
 each holding the mode's templates listed in it (primary or cross-listed), a category with none of the mode's left out.
 Diagram's rail reads Brainstorming, Decisions, Goals & Metrics and on; Draw's Brainstorming, Decisions, Meetings &
 Workshops, Product & UX, Quizzes & Games, Retrospectives, Strategy and Teaching & Learning; Workshop's runs from
-Brainstorming to Virtual Spaces. The categories are grouped by use case, so they already say which session a Workshop
+Brainstorming to Teaching & Learning. The categories are grouped by use case, so they already say which session a Workshop
 template runs and what a Draw template is for; a mode no longer keeps groups of its own, and a new template joins
 every start's rail with no change here.
 

@@ -226,9 +226,6 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - On mount the deferral has an initial value: `useDeferredValue(settled, NO_ELEMENTS)`. The first
   render draws no picture (a server render shows it: `Minimap.test.tsx`), so opening a board mounts
   the board in its first task and the Map's picture is built in a background render after it.
-- `Canvas` keeps the chair sitters by value (`useByValue(sittersByChair(...), sameSitters)`,
-  `../packages/avatar/src/chair-sitters.ts`): presence rebuilds the peers' list after opening, and a new map handed every
-  element view a new `chairSitters` and rendered all of them again.
 
 ### Opening animates nothing across the board
 
