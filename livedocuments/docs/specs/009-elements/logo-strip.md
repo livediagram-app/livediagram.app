@@ -43,11 +43,11 @@ the stack directly holds, one edit; a single logo can still be changed on its ow
 
 ## Share roles
 
-| Role        | May                                                                                    |
-| ----------- | -------------------------------------------------------------------------------------- |
-| Editor      | Everything above                                                                       |
-| Participant | Look; write a logo's alt text as for any image; never adds, moves or restyles a logo  |
-| Viewer      | Look                                                                                   |
+| Role        | May                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------ |
+| Editor      | Everything above                                                                     |
+| Participant | Look; write a logo's alt text as for any image; never adds, moves or restyles a logo |
+| Viewer      | Look                                                                                 |
 
 ## Telemetry
 

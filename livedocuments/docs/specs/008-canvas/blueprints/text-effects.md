@@ -6,43 +6,43 @@ precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
 Scope, by file:
 
-| File                                                          | Role                                                                          |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/model-core/src/rich-text.ts` (shared)               | `TextRun.highlight`, `TextRun.gradient`, `RunPatch`, `ATTR_KEYS`              |
-| `livedocuments/packages/document/src/text-effects.ts`         | `TEXT_GRADIENTS`, `TextGradientId`, `textGradientOf`, `isHighlightColour`, `highlightBandCss`, band geometry constants |
-| `livedocuments/packages/document/src/shadow.ts`               | `supportsShadow` takes `text`; `shadowTextCss`                                |
-| `livedocuments/packages/document/src/element-types.ts`        | `TextElement.shadow`                                                          |
-| `livedocuments/packages/document/src/svg-render-describe.ts`  | `ExportRun.highlight` / `.gradient` resolved from runs                        |
-| `livedocuments/packages/document/src/svg-render-labels.ts`    | Band rects and gradient defs in `svgRichWrappedLabel`; `wrapExportRuns` keeps fragments apart by effect |
-| `apps/editor/components/canvas/label-style.ts`                | `effectiveRunStyle` paints both effects                                       |
-| `apps/editor/components/canvas/element-variant.ts`            | Text `textShadow`                                                             |
-| `apps/editor/components/rich-text/rich-text-dom.ts`           | `data-rt-highlight`, `data-rt-gradient` round trip                            |
-| `apps/editor/components/rich-text/rich-text-format.ts`        | `ActiveFormat.highlight` / `.gradient` (uniform or null)                      |
-| `apps/editor/components/rich-text/TextEffectsPanel.tsx`       | The panel (Highlight picker, Gradient tiles)                                  |
-| `apps/editor/components/canvas/RichTextToolbar.tsx`           | The Text Effects dropdown                                                     |
-| `apps/editor/lib/export-tab-canvas-draw.ts`                   | PNG bands and gradients                                                       |
-| `apps/editor/lib/office-export/pptx-native.ts`, `pptx-types.ts`, `pptx-slide-xml.ts` | `highlight`, `gradFill`, `outerShdw` on runs           |
+| File                                                                                 | Role                                                                                                                   |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `packages/model-core/src/rich-text.ts` (shared)                                      | `TextRun.highlight`, `TextRun.gradient`, `RunPatch`, `ATTR_KEYS`                                                       |
+| `livedocuments/packages/document/src/text-effects.ts`                                | `TEXT_GRADIENTS`, `TextGradientId`, `textGradientOf`, `isHighlightColour`, `highlightBandCss`, band geometry constants |
+| `livedocuments/packages/document/src/shadow.ts`                                      | `supportsShadow` takes `text`; `shadowTextCss`                                                                         |
+| `livedocuments/packages/document/src/element-types.ts`                               | `TextElement.shadow`                                                                                                   |
+| `livedocuments/packages/document/src/svg-render-describe.ts`                         | `ExportRun.highlight` / `.gradient` resolved from runs                                                                 |
+| `livedocuments/packages/document/src/svg-render-labels.ts`                           | Band rects and gradient defs in `svgRichWrappedLabel`; `wrapExportRuns` keeps fragments apart by effect                |
+| `apps/editor/components/canvas/label-style.ts`                                       | `effectiveRunStyle` paints both effects                                                                                |
+| `apps/editor/components/canvas/element-variant.ts`                                   | Text `textShadow`                                                                                                      |
+| `apps/editor/components/rich-text/rich-text-dom.ts`                                  | `data-rt-highlight`, `data-rt-gradient` round trip                                                                     |
+| `apps/editor/components/rich-text/rich-text-format.ts`                               | `ActiveFormat.highlight` / `.gradient` (uniform or null)                                                               |
+| `apps/editor/components/rich-text/TextEffectsPanel.tsx`                              | The panel (Highlight picker, Gradient tiles)                                                                           |
+| `apps/editor/components/canvas/RichTextToolbar.tsx`                                  | The Text Effects dropdown                                                                                              |
+| `apps/editor/lib/export-tab-canvas-draw.ts`                                          | PNG bands and gradients                                                                                                |
+| `apps/editor/lib/office-export/pptx-native.ts`, `pptx-types.ts`, `pptx-slide-xml.ts` | `highlight`, `gradFill`, `outerShdw` on runs                                                                           |
 
 ## Domain and naming
 
-| Term      | Identifier                         | Meaning                                       |
-| --------- | ---------------------------------- | --------------------------------------------- |
-| Highlight | `TextRun.highlight`                | A marker band colour behind a run             |
-| Gradient  | `TextRun.gradient: TextGradientId` | A preset filling a run's glyphs                |
-| Preset    | `TEXT_GRADIENTS[]` `{ id, label, from, to }` | The six named gradients              |
-| Text shadow | `TextElement.shadow`             | The element shadow, drawn behind the glyphs    |
+| Term        | Identifier                                   | Meaning                                     |
+| ----------- | -------------------------------------------- | ------------------------------------------- |
+| Highlight   | `TextRun.highlight`                          | A marker band colour behind a run           |
+| Gradient    | `TextRun.gradient: TextGradientId`           | A preset filling a run's glyphs             |
+| Preset      | `TEXT_GRADIENTS[]` `{ id, label, from, to }` | The six named gradients                     |
+| Text shadow | `TextElement.shadow`                         | The element shadow, drawn behind the glyphs |
 
 Banned: "glow", "marker" as a field name (the spec's "marker band" is the look, `highlight` the field).
 
 ## Constants
 
-| Constant                 | Value          | Provenance |
-| ------------------------ | -------------- | ---------- |
-| `HIGHLIGHT_BAND_TOP`     | 0.38 of the line box | Spec |
-| `HIGHLIGHT_BAND_BOTTOM`  | 0.94 of the line box | Spec |
-| `HIGHLIGHT_PAD_EM`       | 0.125 em each side | Spec ("an eighth of an em") |
-| Band corner radius       | 0.2 em         | D127       |
-| Gradient angle           | 90° (left to right) | Spec  |
+| Constant                | Value                | Provenance                  |
+| ----------------------- | -------------------- | --------------------------- |
+| `HIGHLIGHT_BAND_TOP`    | 0.38 of the line box | Spec                        |
+| `HIGHLIGHT_BAND_BOTTOM` | 0.94 of the line box | Spec                        |
+| `HIGHLIGHT_PAD_EM`      | 0.125 em each side   | Spec ("an eighth of an em") |
+| Band corner radius      | 0.2 em               | D127                        |
+| Gradient angle          | 90° (left to right)  | Spec                        |
 
 ## Behaviour and state
 

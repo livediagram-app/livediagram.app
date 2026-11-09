@@ -31,10 +31,7 @@ import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
-import {
-  TextEffectsButton,
-  type TextEffectPatch,
-} from '@/components/rich-text/TextEffectsPanel';
+import { TextEffectsButton, type TextEffectPatch } from '@/components/rich-text/TextEffectsPanel';
 
 // What the swatch shows while the selection has no colour of its own.
 const DEFAULT_TEXT_COLOUR = '#0f172a';

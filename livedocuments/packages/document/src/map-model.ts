@@ -86,8 +86,7 @@ export function isMapPin(v: unknown): v is MapPin {
     typeof p.lon === 'number' &&
     Number.isFinite(p.lon) &&
     Math.abs(p.lon) <= 180 &&
-    (p.label === undefined ||
-      (typeof p.label === 'string' && p.label.length <= MAP_PIN_LABEL_MAX))
+    (p.label === undefined || (typeof p.label === 'string' && p.label.length <= MAP_PIN_LABEL_MAX))
   );
 }
 
@@ -188,7 +187,10 @@ export function providedMapGeometry(): MapGeometry | null {
 // paper a pin's ring and a label's halo are drawn in.
 export const MAP_DEFAULT_ACCENT = '#3b82f6';
 
-export function mapLandColour(fill: string | undefined, surface: 'light' | 'dark' = 'light'): string {
+export function mapLandColour(
+  fill: string | undefined,
+  surface: 'light' | 'dark' = 'light',
+): string {
   return fill ?? (surface === 'dark' ? '#334155' : '#dbe3ec');
 }
 

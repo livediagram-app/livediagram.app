@@ -28,7 +28,13 @@ export const MAP_FAINT_OPACITY = 0.45;
 // Below this a box draws nothing.
 const MIN_SIDE = 8;
 
-export type MapLayoutCountry = { code: string; name: string; d: string; fill: string; opacity: number };
+export type MapLayoutCountry = {
+  code: string;
+  name: string;
+  d: string;
+  fill: string;
+  opacity: number;
+};
 export type MapLayoutPin = {
   id: string;
   x: number;
@@ -63,7 +69,12 @@ export function mapWindow(
     const [, , , x0, y0, x1, y1] = row;
     const w = Math.max(1, x1 - x0);
     const h = Math.max(1, y1 - y0);
-    return { x: x0 - w * COUNTRY_PAD, y: y0 - h * COUNTRY_PAD, w: w * (1 + 2 * COUNTRY_PAD), h: h * (1 + 2 * COUNTRY_PAD) };
+    return {
+      x: x0 - w * COUNTRY_PAD,
+      y: y0 - h * COUNTRY_PAD,
+      w: w * (1 + 2 * COUNTRY_PAD),
+      h: h * (1 + 2 * COUNTRY_PAD),
+    };
   }
   return regionWindow(isMapRegion(el.mapRegion) ? el.mapRegion : 'world');
 }
@@ -130,5 +141,7 @@ export function pinLabelAnchor(
   layout: Pick<MapLayoutResult, 'pinRadius' | 'labelSize'>,
 ): { x: number; anchor: 'start' | 'end' } {
   const gap = layout.pinRadius + layout.labelSize * 0.35;
-  return pin.side === 'right' ? { x: pin.x + gap, anchor: 'start' } : { x: pin.x - gap, anchor: 'end' };
+  return pin.side === 'right'
+    ? { x: pin.x + gap, anchor: 'start' }
+    : { x: pin.x - gap, anchor: 'end' };
 }
