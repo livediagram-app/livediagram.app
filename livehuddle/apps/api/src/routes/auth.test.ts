@@ -150,6 +150,24 @@ describe('GET /api/auth/callback', () => {
     expect(waitUntil).toHaveBeenCalled();
   });
 
+  // A return path past Latin-1 (a crafted link naming a canvas in another script, an emoji) threw in btoa, failing
+  // the sign-in with a 500 before it left; and the callback's Location header can hold no such character either.
+  it('goes back to a return path holding any Unicode, percent-encoded as the browser would', async () => {
+    fetchMock.mockImplementation(async () => tokenResponse());
+    for (const [returnTo, back] of [
+      ['/document/Équipe-Café', '/document/%C3%89quipe-Caf%C3%A9'],
+      ['/document/a?name=☕東京', '/document/a?name=%E2%98%95%E6%9D%B1%E4%BA%AC'],
+    ] as const) {
+      const { res: out, location, pkce } = await signInCookie(returnTo);
+      expect(out.status).toBe(302);
+      const res = await call(
+        `/api/auth/callback?code=the-code&state=${location.searchParams.get('state')}`,
+        { headers: { Cookie: `lh_pkce=${pkce}` } },
+      );
+      expect(res.headers.get('Location')).toBe(back);
+    }
+  });
+
   it('refuses a state that does not match, without swapping anything', async () => {
     const res = await callback({ state: 'forged' });
     expect(res.headers.get('Location')).toBe('/sign-in?error=expired');
