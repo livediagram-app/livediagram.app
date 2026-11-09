@@ -97,7 +97,7 @@ describe('the join link', () => {
   it('is an admin’s to turn on, make anew and turn off', async () => {
     const id = await team();
     const bea = await invite(id, BEA.email!);
-    await answerInvitation(db, BEA, bea.member.id, true);
+    await answerInvitation(db, BEA, bea.member.id, true, T0);
     expect(await makeInviteLink(db, BEA, id, SECRET, BASE, T0)).toMatchObject({
       ok: false,
       error: 'admin_only',
@@ -197,7 +197,7 @@ describe('declining from the email', () => {
   it('can’t undo a membership, and refuses a token that isn’t one', async () => {
     const id = await team();
     const { member, declineToken } = await invite(id, BEA.email!);
-    await answerInvitation(db, BEA, member.id, true);
+    await answerInvitation(db, BEA, member.id, true, T0);
     expect(await readDeclineToken(db, declineToken)).toMatchObject({ status: 'joined' });
     expect(await declineByToken(db, declineToken)).toMatchObject({ ok: false, status: 409 });
     expect(await readDeclineToken(db, `${member.id}.wrong`)).toBeNull();
@@ -220,7 +220,7 @@ describe('invitations turned down', () => {
   it('stay on the list for the admins until one removes them', async () => {
     const id = await team();
     const { member } = await invite(id, BEA.email!);
-    await answerInvitation(db, BEA, member.id, false);
+    await answerInvitation(db, BEA, member.id, false, T0);
     expect(await listMembers(db, id)).toContainEqual(
       expect.objectContaining({ id: member.id, status: 'declined', expired: false }),
     );
@@ -683,6 +683,7 @@ describe('the teams list', () => {
             { id: `user_${t}_${m}`, email },
             invited.value.member.id,
             true,
+            T0 + m,
           );
         }
       }
