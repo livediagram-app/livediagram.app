@@ -5,6 +5,7 @@
 // A LEAF module (types only from './index'), for the same module-cycle reason
 // collab-shapes.ts is one. Re-exported from './index'.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import type { Element, ShapeKind } from './index';
 import { sha256 } from './sha256';
 
@@ -122,13 +123,13 @@ export function applyQaAction(notes: QaNote[], action: QaAction, actor: QaActor)
       if (notes.length >= QA_MAX_NOTES) return notes;
       const note: QaNote = {
         id: action.id,
-        text: action.text.slice(0, QA_MAX_TEXT),
+        text: cutText(action.text, QA_MAX_TEXT),
         at: actor.now,
         voters: [],
       };
       if (!action.anonymous && actor.author) {
         note.author = {
-          name: actor.author.name.slice(0, QA_MAX_NAME),
+          name: cutText(actor.author.name, QA_MAX_NAME),
           color: actor.author.color.slice(0, 32),
         };
       }

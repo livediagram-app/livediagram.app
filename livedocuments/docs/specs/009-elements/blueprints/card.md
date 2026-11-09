@@ -191,9 +191,9 @@ Telemetry only: `Element·Added·Card` on create, `Element·Changed·CardSlots` 
 
 ## Constants and configuration
 
-| Name            | Value     | Provenance / safe range                               |
-| --------------- | --------- | ----------------------------------------------------- |
-| `CARD_TAGS_MAX` | 6         | One row of chips at default width; 4 to 8             |
-| `CARD_TAG_MAX`  | 32        | A chip is a word or two; 16 to 40                     |
-| Card size       | 300 × 150 | Fits title, meta, two body lines and a tag row (D179) |
-| Pad clamp       | 10 to 18  | Callout's padding range                               |
+| Name            | Value     | Provenance / safe range                                                                                                |
+| --------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `CARD_TAGS_MAX` | 6         | One row of chips at default width; 4 to 8                                                                              |
+| `CARD_TAG_MAX`  | 32        | A chip is a word or two; 16 to 40. Cut by `cutText` (`../packages/model-core/src/text-cut.ts`), never through an emoji |
+| Card size       | 300 × 150 | Fits title, meta, two body lines and a tag row (D179)                                                                  |
+| Pad clamp       | 10 to 18  | Callout's padding range                                                                                                |

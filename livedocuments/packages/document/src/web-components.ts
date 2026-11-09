@@ -11,6 +11,7 @@
 // validator and the shape factory can read its constants at module-init time
 // without walking the index cycle.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { clamp, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { ShapeKind } from './index';
 import { CARD_TAGS_MAX, clampCardTag } from './card';
@@ -72,7 +73,7 @@ export const HERO_DEFAULT_CAPTION: HeroCaption = {
 
 // Trim + bound a row string the way every write path should.
 function clampWebText(s: string): string {
-  return s.replace(/\s+/g, ' ').trim().slice(0, WEB_TEXT_MAX);
+  return cutText(s.replace(/\s+/g, ' ').trim(), WEB_TEXT_MAX);
 }
 
 // --- Layout -----------------------------------------------------------------

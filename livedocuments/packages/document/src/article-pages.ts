@@ -2,6 +2,7 @@
 // docs/specs/007-editor/pages-mode.md "Page actions"): the row read as units (an
 // infographic page, or a whole article), and the pure tab edits that act on a whole article:
 // add, duplicate, remove, move, and grow or shrink to the pages its writing reaches.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   articlesOf,
   newArticleFlow,
@@ -155,7 +156,7 @@ export function withArticleDuplicated<T extends PagesTab>(
       id,
       flow: newFlow,
       locked: undefined,
-      ...(p.name ? { name: `${p.name} copy`.slice(0, PAGE_NAME_MAX) } : {}),
+      ...(p.name ? { name: cutText(`${p.name} copy`, PAGE_NAME_MAX) } : {}),
     };
   });
   const lastAt = pages.findIndex((p) => p.id === source[source.length - 1]!.id);

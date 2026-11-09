@@ -1,6 +1,6 @@
 import {
   MAX_COLOR_LEN,
-  MAX_PARTICIPANT_NAME_LEN,
+  cutParticipantName,
   type CommentListStatus,
   type DocumentCommentThread,
 } from '@livehuddle/api-schema';
@@ -300,7 +300,7 @@ export function threadsOfTab(
 
 // The name a writer without a profile posted their comment under, clamped as presence clamps it.
 function claimedName(name: unknown): string {
-  const trimmed = typeof name === 'string' ? name.trim().slice(0, MAX_PARTICIPANT_NAME_LEN) : '';
+  const trimmed = typeof name === 'string' ? cutParticipantName(name.trim()) : '';
   return trimmed || UNKNOWN_AUTHOR_NAME;
 }
 
