@@ -1139,7 +1139,8 @@ is while the rest of the tab is worked on.
 - **The arrow keys**: with nothing selected (and no text being typed in), **Right** and **Down** go
   to the next page and **Left** and **Up** to the previous one, from the page someone is on, as the
   navigator's arrows do (gliding there, the page fitted); at either end of the row the key does
-  nothing. With a selection the arrows nudge it, as everywhere. For every role: it only moves the
+  nothing. When the page they were on is gone (deleted, by them or someone else), Right and Down land on the first
+  page and Left and Up on the last. With a selection the arrows nudge it, as everywhere. For every role: it only moves the
   view.
 - **The view rests on a page**: the canvas never comes to rest between pages, beyond the row, or
   zoomed out past a page. Pan and zoom as freely as ever while a hand is on it (a drag, a finger, a
