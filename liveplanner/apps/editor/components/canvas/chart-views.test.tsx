@@ -65,7 +65,7 @@ describe('chart views', () => {
   it('letters every chart type in the UI face or the chart’s own Font', () => {
     for (const kind of ['pie-chart', 'bar-chart', 'line-chart'] as const) {
       const plain = render(
-        <div style={{ fontFamily: 'Caveat, cursive' }}>
+        <div style={{ fontFamily: 'Kalam, cursive' }}>
           <DataChartView
             element={el(kind, { chartAxis: true, chartValues: true, chartLegend: true })}
             textColor="#000"

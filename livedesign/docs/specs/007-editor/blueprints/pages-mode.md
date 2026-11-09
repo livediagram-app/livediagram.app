@@ -980,10 +980,14 @@ SVG `href` is escaped. The api counts a page picture as an image reference
   (Snowfall) to 122 ms (Mesh) to paint, once per distinct background per export; the SVG's JPEG
   encodes in 13 to 44 ms at 29 to 141 KiB. A frame kept for reuse is 33 MB of pixels, so an export
   keeps two.
-- A Fit to Content page's image export is drawn at 2x, lowered by `exportScale` so no canvas side
-  passes `MAX_EXPORT_CANVAS_SIDE` (16384 px); its PDF page is at most 14400 pt.
-- Carrying content: gathering the placeholders builds every layout twice, once per session
-  (measured ~15 ms per box warm, ~100 ms cold, in vitest on an M-series Mac), warmed while idle as
+- A Fit to Content page's image export is drawn at 2x, lowered by `exportScale` (shared,
+  `@liveworkspace/model-core/export-canvas`) so no canvas side passes `MAX_EXPORT_CANVAS_SIDE` (16384 px) and the
+  canvas holds no more than `MAX_EXPORT_CANVAS_AREA` (16,777,216 pixels, the iOS Safari limit), since a canvas past
+  either comes out blank; its PDF page is at most 14400 pt.
+- Carrying content: gathering the placeholders builds every logo layout twice and every wireframe layout in each
+  of its screens (the two reference boxes and a phone's, `SCREEN_BOXES`; a watch's layouts in a watch's,
+  `WATCH_BOXES`), once per session (measured 63 ms warm with the wireframes under heavy machine load, 5.5 ms for the
+  logo layouts alone, in vitest on an M-series Mac), warmed while idle as
   the layouts open; a carry itself is linear in the page's elements plus the layout's (measured
   2.5 ms for a title page into a poster; guarded by a 300-element budget test).
 - Layout thumbnails build once per page shape (`useMemo` on the rect); the overview draws two per category (12 over the six), a category at most eight (Data).

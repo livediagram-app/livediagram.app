@@ -2,16 +2,18 @@
 // can pick one; the id is stored in the model and mapped to a CSS stack
 // here at render time. Eleven Google Fonts spanning neutral / geometric /
 // rounded / condensed / techy sans, serif / display serif / slab, mono,
-// and handwriting / marker — a wide enough spread that a canvas can take
-// on a distinct voice without an open-ended font field.
+// and handwriting / marker: a wide enough spread that a canvas can take
+// on a distinct voice without an open-ended font field. Every face must
+// read at 12 px and at 50% zoom (fonts.md "Legible at every size").
 //
 // Fonts are a progressive enhancement: the stack always ends in a system
 // fallback and the stylesheet loads with `display=swap`, so if Google
-// Fonts is blocked (or a deployment opts out) text still renders — just in
+// Fonts is blocked (or a deployment opts out) text still renders, just in
 // the fallback face. Browsers only fetch a family that's actually applied.
 
 type FontOption = {
-  // Stable id stored in the model (Element.font / Tab.font).
+  // Stable id stored in the model (Element.font / Tab.font). A storage key, not
+  // a name: a face can be swapped behind its id without touching saved text.
   id: string;
   label: string;
   // Short descriptor shown under the label in the picker.
@@ -69,14 +71,15 @@ export const FONTS: readonly FontOption[] = [
   },
   {
     id: 'abril-fatface',
-    label: 'Abril Fatface',
+    // The id once named Abril Fatface, whose hairlines vanished and counters filled in below 16 px
+    // (fonts.md "Legible at every size"). Ids are storage keys, so saved text keeps the id and draws in
+    // Bodoni Moda: the same fat didone at headline size, and its optical-size axis (opsz 6..96, applied
+    // automatically by font-optical-sizing) thickens the hairlines and opens the counters at small px.
+    // One weight, like the face it replaces: regular and bold letter the same, never a synthesised bold.
+    label: 'Bodoni Moda',
     kind: 'Display serif',
-    stack: "'Abril Fatface', ui-serif, Georgia, serif",
-    // A dramatic fat-face didone, chosen over a second book serif (Playfair)
-    // so the display option reads as clearly distinct from Lora rather than a
-    // near-twin. Ships a single weight, so it has no :wght@ axis; the editor's
-    // medium/bold reuse that one face.
-    google: 'Abril+Fatface',
+    stack: "'Bodoni Moda', ui-serif, Georgia, serif",
+    google: 'Bodoni+Moda:opsz,wght@6..96,800',
   },
   {
     id: 'roboto-slab',
@@ -94,19 +97,23 @@ export const FONTS: readonly FontOption[] = [
   },
   {
     id: 'caveat',
-    label: 'Caveat',
+    // The id once named Caveat, whose lowercase is 0.36 em (Inter's is 0.55), so a 14 px label drew like
+    // 9 px. Kalam is a pen hand of the same informal character with a 0.51 em lowercase. The fallbacks are
+    // system hands that read, ahead of the generic cursive.
+    label: 'Kalam',
     kind: 'Handwriting',
-    stack: "'Caveat', ui-sans-serif, cursive",
-    google: 'Caveat:wght@400;500;700',
+    stack: "'Kalam', 'Chalkboard SE', 'Segoe Print', 'Comic Sans MS', cursive",
+    google: 'Kalam:wght@400;700',
   },
   {
     id: 'permanent-marker',
-    label: 'Permanent Marker',
+    // The id once named Permanent Marker: capitals only, with a 1, 3 and 0 that read as l, ʒ and O, and
+    // letters that clogged below 16 px. Shantell Sans is a marker hand with a lowercase and clear figures,
+    // loaded at one heavy weight (700) so every label reads as felt-tip, as the old single-weight face did.
+    label: 'Shantell Sans',
     kind: 'Marker',
-    stack: "'Permanent Marker', ui-sans-serif, cursive",
-    // Permanent Marker ships a single weight, so it has no :wght@ axis;
-    // the editor's medium/bold just reuse that one face.
-    google: 'Permanent+Marker',
+    stack: "'Shantell Sans', 'Chalkboard SE', 'Segoe Print', 'Comic Sans MS', cursive",
+    google: 'Shantell+Sans:wght@700',
   },
 ];
 

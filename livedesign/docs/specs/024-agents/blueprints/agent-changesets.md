@@ -589,7 +589,8 @@ rows wait with their design and go with its purge (cascade). A tab unlinked from
   2 px stroke in the author's colour, drawn in canvas space by `ChangesetRevealOverlay` above the elements and below
   the selection chrome, for `CHANGESET_REVEAL_MS` from arrival. Elements removed by the changeset show no outline.
 - Toast copy: `{name} changed {n} element` / `{n} elements`, followed by `: {summary}` when the latest changeset in
-  it has one. Buttons **Show** and **Undo**. After Undo: "Undone", or "Undone, {k} kept because they changed since";
+  it has one. Buttons **Show** and **Undo**; Undo only while the session's `canEdit` holds (`canUndo`, read
+  when the toast is drawn), Show alone otherwise. After Undo: "Undone", or "Undone, {k} kept because they changed since";
   on failure an error toast "Could not undo {name}'s change".
 - Name and colour are the author's: "Webber changed 3 elements" reads the same for Webber and for his agent.
 - No toast on a skipped op; a refetched op toasts as soon as the refetch lands. With "Show notifications" off there

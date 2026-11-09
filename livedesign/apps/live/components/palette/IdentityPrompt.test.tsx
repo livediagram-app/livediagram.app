@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { MAX_PARTICIPANT_NAME_LEN } from '@liveworkspace/api-schema/participants';
 import type { Participant } from '@/lib/identity';
 import { IdentityPrompt } from './IdentityPrompt';
 
@@ -27,6 +28,16 @@ describe('IdentityPrompt', () => {
     expect(screen.getByRole('heading', { name: 'Welcome to this design' })).toBeTruthy();
   });
 
+  // A Viewer was told its name would show on its comments, which it can never write.
+  it('promises comments only to a visitor who may comment', () => {
+    prompt();
+    expect(screen.getByText(/on your cursor and comments\./)).toBeTruthy();
+    cleanup();
+    prompt({ canComment: false });
+    expect(screen.getByText('Other participants will see this name on your cursor.')).toBeTruthy();
+    expect(screen.queryByText(/comments/)).toBeNull();
+  });
+
   it('joins with the name typed, or the one they had when left empty', () => {
     const { onJoin } = prompt();
     const field = screen.getByLabelText('Your name');
@@ -36,6 +47,15 @@ describe('IdentityPrompt', () => {
     fireEvent.change(field, { target: { value: '   ' } });
     fireEvent.click(screen.getByRole('button', { name: 'Join' }));
     expect(onJoin).toHaveBeenLastCalledWith('Ada');
+  });
+
+  // The participant route refuses a longer name (400), so one typed past the cap was never saved.
+  it("caps the name at the participant route's limit", () => {
+    prompt();
+    expect(screen.getByLabelText('Your name')).toHaveProperty(
+      'maxLength',
+      MAX_PARTICIPANT_NAME_LEN,
+    );
   });
 
   it('follows the participant until the visitor types', () => {

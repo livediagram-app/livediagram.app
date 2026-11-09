@@ -256,8 +256,8 @@ describe('image placeholder theme', () => {
   });
 
   it("sets the label in the element's font", () => {
-    const { container } = draw(image(), { fontFamily: '"Caveat", cursive' });
-    expect(box(container).style.fontFamily).toBe('"Caveat", cursive');
+    const { container } = draw(image(), { fontFamily: '"Kalam", cursive' });
+    expect(box(container).style.fontFamily).toBe('"Kalam", cursive');
   });
 
   it('leaves the broken state rose whatever the theme', () => {

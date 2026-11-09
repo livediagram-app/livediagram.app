@@ -265,3 +265,45 @@ describe('tidyMindmapFits', () => {
     expect(tidyMindmapFits([...tree, link('a', 's', 'b', 'e')])).toBe(false);
   });
 });
+
+describe('a panel whose arrows stay inside it', () => {
+  it('is in the way of the tidied flow, as it does not move', () => {
+    const els: Element[] = [
+      box('P', 0, 0, 400, 200),
+      box('A', 20, 20, 100, 50),
+      box('B', 200, 20, 100, 50),
+      link('A', 's', 'B', 'n'),
+      box('X', 20, -150, 100, 50),
+      box('Y', 500, -150, 100, 50),
+      box('Z', 800, -150, 100, 50),
+      link('X', 's', 'Y', 'n'),
+      link('Y', 's', 'Z', 'n'),
+    ];
+    const out = tidy(els, { direction: 'TB' });
+    const panel = find(out, 'P');
+    expect(panel.x).toBe(0);
+    expect(panel.y).toBe(0);
+    const overlaps = (a: BoxedElement, b: BoxedElement) =>
+      a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+    for (const id of ['X', 'Y', 'Z']) expect(overlaps(find(out, id), panel)).toBe(false);
+  });
+});
+
+describe('a box of no height', () => {
+  it('is routed like any other, down the flow and back up', () => {
+    const els: Element[] = [
+      box('a', 0, 0, 100, 0),
+      box('b', 300, 200, 100, 50),
+      box('c', 0, 400, 100, 50),
+      link('a', 's', 'b', 'n'),
+      link('b', 's', 'c', 'n'),
+      link('c', 'e', 'a', 'e'),
+    ];
+    const out = tidy(els, { direction: 'TB' });
+    for (const id of ['a>b', 'c>a']) {
+      const arrow = out.find((e) => e.id === id) as ArrowElement;
+      const p = endpointPosition(arrow.from, out);
+      expect(Number.isFinite(p.x)).toBe(true);
+    }
+  });
+});

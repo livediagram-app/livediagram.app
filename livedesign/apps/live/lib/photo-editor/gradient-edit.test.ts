@@ -69,4 +69,13 @@ describe('the gradient editor', () => {
       'linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 1) 100%)',
     );
   });
+
+  it('answers the new stop when it lands on an existing one, not the old one', () => {
+    const colour = withStop(bw, 'colour', 1);
+    expect(colour.gradient.colours).toHaveLength(3);
+    expect(colour.index).toBe(2);
+    expect(colour.gradient.colours[colour.index]!.colour).toBe('#ffffff');
+    const opacity = withStop(bw, 'opacity', 0);
+    expect(opacity.index).toBe(1);
+  });
 });

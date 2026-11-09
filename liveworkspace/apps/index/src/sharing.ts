@@ -143,14 +143,11 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
     const body = await readObject(request);
     if (!body) return badRequest();
     const password = body.password ?? null;
-    if (
-      password !== null &&
-      (typeof password !== 'string' || password.length > SHARE_PASSWORD_MAX)
-    ) {
-      return badRequest('invalid_password');
-    }
+    if (password !== null && typeof password !== 'string') return badRequest('invalid_password');
     // Whitespace only clears it, so a stray space can't lock an item in a way its owner can't see.
     const trimmed = password?.trim() ?? '';
+    // Both bounds count the trimmed password: spaces around one that fits never refuse it.
+    if (trimmed.length > SHARE_PASSWORD_MAX) return badRequest('invalid_password');
     if (!trimmed) {
       await db.prepare('DELETE FROM share_passwords WHERE item_id = ?').bind(id).run();
       return json({ passwordSet: false });

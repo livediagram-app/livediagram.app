@@ -136,6 +136,16 @@ export function settleChips(
   if (!next.some((el) => isChip(el) || isPointerNote(el))) return next;
   const prevById = new Map(prev.map((el) => [el.id, el]));
   const byId = new Map(next.map((el) => [el.id, el]));
+  // Pointer notes settle first, so a badge on one is placed on where the note now is: a note carried
+  // by its host left its badge on the note's old point.
+  const notes = new Map<ElementId, ShapeElement | null>();
+  for (const el of next) {
+    if (!isPointerNote(el)) continue;
+    const settled = settlePointerNote(el, prevById, byId);
+    notes.set(el.id, settled);
+    if (settled === null) byId.delete(el.id);
+    else if (settled !== el) byId.set(el.id, settled);
+  }
   let hosts: Boxed[] | null = null;
   const hostList = () => (hosts ??= next.filter((el): el is Boxed => canHost(el)));
   let changed = false;
@@ -150,7 +160,7 @@ export function settleChips(
   for (const el of next) {
     if (isPointerNote(el)) {
       // A pointer note (docs/specs/009-elements/blueprints/pointer-note.md "Settling"): its tip, not its box, holds.
-      const settled = settlePointerNote(el, prevById, byId);
+      const settled = notes.get(el.id)!;
       if (settled === null) {
         changed = true;
         continue;

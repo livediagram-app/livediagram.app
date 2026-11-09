@@ -1016,6 +1016,51 @@ describe('connectRoom: a reconnect says the call again', () => {
     b.close();
   });
 
+  it('proves our call session again on the new socket, so peers can still hear us', async () => {
+    const heard: { from: string; kind: string }[] = [];
+    const { a, b, reconnectA } = pair((from, op) => heard.push({ from, kind: op.kind }));
+    const session = { kind: 'call-session', tabId: 't', sessionId: 's', sessionToken: 'k' };
+    a.send({ kind: 'op', op: session as never });
+    heard.length = 0;
+    await reconnectA();
+    expect(heard).toEqual([{ from: 'p3', kind: 'call-session' }]);
+    a.close();
+    b.close();
+  });
+
+  it('places our character again on the new socket, at rest, and not once we left the mode', async () => {
+    const heard: unknown[] = [];
+    const { a, b, reconnectA } = pair((_from, op) => heard.push(op));
+    const walking = {
+      x: 10,
+      y: 20,
+      facing: 'left',
+      walking: true,
+      stepFrame: 1,
+      lift: 3,
+      wave: 2,
+      reaction: { kind: 'jump', at: 0 },
+    };
+    a.send({ kind: 'op', op: { kind: 'avatar', tabId: 't', avatar: walking } as never });
+    heard.length = 0;
+    await reconnectA();
+    expect(heard).toEqual([
+      {
+        kind: 'avatar',
+        tabId: 't',
+        avatar: { x: 10, y: 20, facing: 'left', walking: false, stepFrame: 0, lift: 0, wave: null },
+      },
+    ]);
+    a.send({ kind: 'op', op: { kind: 'avatar', tabId: 't', avatar: null } });
+    heard.length = 0;
+    RelaySocket.all[2]!.drop();
+    await vi.runOnlyPendingTimersAsync();
+    RelaySocket.all[3]!.open();
+    expect(heard).toEqual([]);
+    a.close();
+    b.close();
+  });
+
   it('says only the latest: a call that ended says it has nothing', async () => {
     const heard: unknown[] = [];
     const { a, b, reconnectA } = pair((_from, op) => heard.push(op));

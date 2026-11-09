@@ -44,6 +44,20 @@ describe('ConfirmPopover Enter', () => {
     expect(e.defaultPrevented).toBe(false);
   });
 
+  it("never confirms on an input method's Enter, which picks its word", () => {
+    const { anchor, onConfirm } = open();
+    anchor.focus();
+    const e = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+      isComposing: true,
+    });
+    anchor.dispatchEvent(e);
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(e.defaultPrevented).toBe(false);
+  });
+
   it('confirms on Enter from outside its buttons', () => {
     const { anchor, onConfirm } = open();
     anchor.focus();

@@ -22,7 +22,7 @@
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
-import { holdsNotes, isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
+import { holdsNotes, isNoticeNote, noteFields, NOTES_MAX, type NoticeNote } from './office-social';
 import { arcadeTableWith, type ArcadeScore } from './arcade-scores';
 import { isPieceTimer, isTimerPieceShape, samePieceTimer, type PieceTimer } from './timer-pieces';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
@@ -104,22 +104,8 @@ function openNotePiece(el: Element): ShapeElement | null {
   return el.type === 'shape' && holdsNotes(el.shape) ? el : null;
 }
 
-// The board with its notes set, the field dropped when none are left.
-// A pinned note's own fields alone: a field the wire does not define is never stored on the board, so a pin padded
-// with junk can't grow the tab past what a save takes.
-function noteFields(n: NoticeNote): NoticeNote {
-  return {
-    id: n.id,
-    ...(n.title === undefined ? {} : { title: n.title }),
-    text: n.text,
-    author: n.author,
-    by: n.by,
-    at: n.at,
-    ...(n.color === undefined ? {} : { color: n.color }),
-    ...(n.day === undefined ? {} : { day: n.day }),
-  };
-}
-
+// The board with its notes set, the field dropped when none are left. A pin stores its note's own fields alone
+// (`noteFields`), so a pin padded with junk can't grow the tab past what a save takes.
 function withNotes(el: ShapeElement, notes: NoticeNote[]): ShapeElement {
   const { noticeNotes: _drop, ...rest } = el;
   return notes.length > 0 ? { ...rest, noticeNotes: notes } : rest;

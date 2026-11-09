@@ -31,6 +31,8 @@ A new Show Me surface is added to this table, and its own spec says its steps.
   surface's help article. Order in a title row: Show Me, Help, then the close cross where there is one.
 - On a phone the button is the glyph alone (its name kept for assistive tech), so a title row keeps its close
   cross on screen.
+- Its hover card, like the Help link's, names it: **Show Me**, "A short tour of this, step by step." (`SHOW_ME_HINT`),
+  so the glyph alone below `sm` still says what it does. It stays shut while the tour runs.
 - `aria-pressed` while its tour runs; pressing it again then does nothing.
 - A surface whose steps load at the press ignores further presses until they arrive; if they fail to load (a
   dropped connection) nothing starts and the button can be pressed again.

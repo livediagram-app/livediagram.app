@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canvasCursorClass, computeDockAnchor } from './canvas-chrome';
+import { canvasCursorClass, computeDockAnchor, dockPopoverWidth } from './canvas-chrome';
 
 describe('computeDockAnchor', () => {
   const canvas = { left: 0, top: 0, width: 1000 };
@@ -98,5 +98,22 @@ describe('canvasCursorClass', () => {
   });
   it('falls back to grab', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'x' })).toBe('cursor-grab');
+  });
+});
+
+// A popover sized `w-[calc(100vw-2rem)] sm:w-[34rem]` is 574px wide in a 606px window: clamped as 544 it ran off.
+describe('dockPopoverWidth', () => {
+  it('is the drawn width: capped at the viewport less 2rem, the whole of it below sm when full', () => {
+    expect(dockPopoverWidth(544, 606, true)).toBe(574);
+    expect(dockPopoverWidth(544, 1200, true)).toBe(544);
+    expect(dockPopoverWidth(352, 300)).toBe(268);
+    expect(dockPopoverWidth(256, 606)).toBe(256);
+    const a = computeDockAnchor(
+      { left: 440, bottom: 700, width: 44 },
+      { left: 0, top: 0, width: 606 },
+      dockPopoverWidth(544, 606, true),
+      'button',
+    );
+    expect(a.left + 574).toBeLessThanOrEqual(606 - 8);
   });
 });

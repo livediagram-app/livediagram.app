@@ -324,8 +324,14 @@ export class PhotoSession {
   ): Promise<void> {
     const source = pixels.source!;
     this.loadingCount++;
-    const pic = await this.deps.store.source(this.tabId, source);
-    this.loadingCount--;
+    let pic: Awaited<ReturnType<SessionDeps['store']['source']>> = null;
+    try {
+      pic = await this.deps.store.source(this.tabId, source);
+    } catch {
+      // A store that throws reads as a missing source; the count below still comes down.
+    } finally {
+      this.loadingCount--;
+    }
     if (!pic || this.disposed) {
       // Told even when it failed: whoever waits on the loading hears it end.
       if (!this.disposed) this.changed();

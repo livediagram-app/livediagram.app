@@ -186,6 +186,26 @@ describe('mindmap style', () => {
     }
   });
 
+  it("keeps a map drawn round the compass where it was drawn, its first branch at 12 o'clock", () => {
+    const out = autoLayoutElements(map(), { style: 'mindmap' });
+    const hub = centerOf(find(out, 'hub'));
+    const at = (id: string) => centerOf(find(out, id));
+    expect(at('n').x).toBeCloseTo(hub.x, 5);
+    expect(at('n').y).toBeLessThan(hub.y);
+    expect(at('e').x).toBeGreaterThan(hub.x);
+    expect(at('e').y).toBeCloseTo(hub.y, 5);
+    expect(at('s').y).toBeGreaterThan(hub.y);
+    expect(at('w').x).toBeLessThan(hub.x);
+    // Laid out again, nothing turns.
+    const again = autoLayoutElements(out, { style: 'mindmap' });
+    for (const id of ['n', 'e', 's', 'w']) {
+      const a = centerOf(find(again, id));
+      const ah = centerOf(find(again, 'hub'));
+      expect(a.x - ah.x).toBeCloseTo(at(id).x - hub.x, 5);
+      expect(a.y - ah.y).toBeCloseTo(at(id).y - hub.y, 5);
+    }
+  });
+
   it('is deterministic', () => {
     const a = autoLayoutElements(map(), { style: 'mindmap' });
     const b = autoLayoutElements(map(), { style: 'mindmap' });

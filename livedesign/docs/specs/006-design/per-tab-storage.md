@@ -48,7 +48,8 @@ Owner / edit-role.
   (id, name, order; no `data`).
 - `GET    /api/designs/:id/tabs/:tabId`: full tab payload (data + everything).
 - `PUT    /api/designs/:id/tabs/:tabId`: upsert a single tab (active edit path).
-- `DELETE /api/designs/:id/tabs/:tabId`: remove a tab.
+- `DELETE /api/designs/:id/tabs/:tabId`: remove a tab. A token (an agent or the CLI) may not remove the design's last tab (`409 last_tab`); the count is
+  checked in the delete itself, so two token deletes at once can't take the last two tabs between them.
 - `PUT    /api/designs/:id`: design-level fields only, `{ name?, tabs?, tabIds? }`. `name` renames the design;
   `tabs` (`{ id, folder }` entries in the new order, [Tab folders](tab-folders.md)) reorders and sets each tab's
   folder, `tabIds` the same without folders; the API persists the order without touching tab content.
@@ -291,6 +292,9 @@ route, never a save.
 
 - Tab reorder rewrites every link's `order_index` (and folder) in one batch (`reorderTabs`). Acceptable for the
   small tab counts (< 20) seen in practice.
+  Only the tabs the design holds are written, each once (the last place a request names it): a request naming
+  ids the design lacks, or one id many times, writes no more than the design's own tabs, so a body of a million
+  ids can't hold the room up for a statement each.
 
 ## What this does NOT change
 

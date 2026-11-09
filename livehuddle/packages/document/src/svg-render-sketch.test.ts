@@ -118,12 +118,12 @@ describe('a face\'s words under Sketch (docs/specs/008-canvas/finish.md "Letteri
 
   it('gives words that name no face the element’s, through its group', () => {
     for (const kind of ['mode-button', 'focus-button']) {
-      expect(words(kind), kind).toMatch(/<g font-family="[^"]*Caveat/);
+      expect(words(kind), kind).toMatch(/<g font-family="[^"]*Kalam/);
     }
   });
 
   it('leaves a Flexible tab with no font to the default face', () => {
     const svg = renderElementsToSvg(tabOf([{ ...createShape('mode-button', 0, 0), id: 'x' }]));
-    expect(svg).not.toContain('Caveat');
+    expect(svg).not.toContain('Kalam');
   });
 });

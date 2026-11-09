@@ -86,9 +86,10 @@ that agree to a second agree on the Receptionist.
   screen: "Welcome in! I'm the receptionist. What should I show you?", with every topic as replies, then **I'll
   Explore**. Nobody else sees your bubble; they see the Receptionist wave.
 - **Welcomed once, on every device**: the synced `avatarTourSeen` preference records it as the bubble opens (the
-  Avatar tour's record, kept so nobody who took that tour is welcomed again). After that an arrival gets a short
-  "Welcome back, <your first name>!" bubble for four seconds instead (the first word of your display
-  name; plain "Welcome back!" when you have none), and the topics wait for **Ask Receptionist**.
+  Avatar tour's record, kept so nobody who took that tour is welcomed again). After that an arrival gets "Welcome back,
+  <your first name>! What can I help with?" (the first word of your display name; plain "Welcome back!" when you have
+  none) with the topics as replies straight away, and the bubble stays until you choose or press **I'll Explore**
+  (owner, 2026-11-09: "why not just move right into asking what they want", not a pointer to a button).
 - **Rerun from Settings**: Tours › **Receptionist's Welcome**, built like the other tour switches (on means not welcomed
   yet). Turning it on and closing Settings opens the welcome straight away when you are walking on a tab with the Receptionist.
 

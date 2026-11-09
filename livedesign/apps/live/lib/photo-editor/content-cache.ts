@@ -49,8 +49,10 @@ export class ContentCache {
     } else if (layer.layerKind === 'pixel' && hasEffects(layer.effects)) {
       const raster = pixels.layer(layer.id);
       if (!raster) return null;
-      // Keyed by the stored tiles: a stroke in progress shows without its effects until it lands.
-      key = `e|${JSON.stringify(layer.pixels)}|${JSON.stringify(layer.effects)}|${JSON.stringify(layer.offset ?? null)}`;
+      // Keyed by the stored tiles: a stroke in progress shows without its effects until it lands. And
+      // by the tiles loaded: a page opened before its tiles arrive drew its effects over nothing, and
+      // kept that empty picture until the next edit.
+      key = `e|${raster.loads}|${JSON.stringify(layer.pixels)}|${JSON.stringify(layer.effects)}|${JSON.stringify(layer.offset ?? null)}`;
       make = () => withEffectsTiles(raster, layer.offset ?? { x: 0, y: 0 }, layer);
     }
     if (!key || !make) return null;

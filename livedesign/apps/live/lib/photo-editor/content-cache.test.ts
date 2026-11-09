@@ -87,6 +87,19 @@ describe('the content cache', () => {
     ).toBeNull();
     c.clear();
   });
+
+  it('draws a pixel layer with effects again when its tiles load after the first draw', () => {
+    const c = new ContentCache();
+    const raster = new TiledRaster();
+    const before = c.get(withShadow(), photo, lookup({ p: raster }));
+    expect(before?.tileBounds()).toBeNull();
+    // The tile arrives from the store: the layer's stored tiles are what they were.
+    raster.load('0.0', TiledRaster.fromRaster(solid(4, 4, [0, 0, 255, 255])).peek(0, 0)!);
+    const after = c.get(withShadow(), photo, lookup({ p: raster }));
+    expect(after === before).toBe(false);
+    expect(after?.contentBounds()).not.toBeNull();
+    expect(c.get(withShadow(), photo, lookup({ p: raster })) === after).toBe(true);
+  });
 });
 
 describe('the pointer over the photo', () => {

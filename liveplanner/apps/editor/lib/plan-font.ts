@@ -5,7 +5,8 @@
 // each heading opts in with PLAN_HEADING_STYLE; an unset property is invalid at computed-value time, so a heading on
 // a board with no tab font inherits the UI face.
 //
-// Caveat's lowercase is small (0.36 em), so its headings are lifted to an x-height of PLAN_HANDWRITING_EX. A face
+// The handwriting face's headings are held to an x-height of PLAN_HANDWRITING_EX (Kalam's own 0.51 em barely moves; it
+// was a real lift for Caveat, 0.36 em, which the id named before 2026-11). A face
 // liveplanner does not offer (planner-fonts.ts) sets nothing, so its boards letter their headings in the UI face.
 import type { CSSProperties } from 'react';
 import { LABEL_FONT_PX } from '@liveworkspace/model-core/label-font';
@@ -28,7 +29,7 @@ const HAND_LETTERED_STACKS = new Set(
 );
 
 /** What a heading on a board or a card is drawn in: the face its root hands down, at the face's own weights (a
- *  one-weight face such as Abril Fatface is never thickened into a fake bold). */
+ *  one-weight face such as Bodoni Moda is never thickened into a fake bold). */
 export const PLAN_HEADING_STYLE: CSSProperties = {
   fontFamily: 'var(--plan-heading-font)',
   fontSizeAdjust: 'var(--plan-heading-adjust)',

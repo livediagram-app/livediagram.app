@@ -75,15 +75,16 @@ export async function writeParticipantOp(
   return { ok: true, outcome: result.answer };
 }
 
-// The room's recorded answers for a tab into its stored row; `changed` is false when the row already held them.
+// The room's recorded answers for a tab into its stored row, those sequenced after `since` (0: all of them);
+// `changed` is false when the row already held them.
 export async function writeParticipantAnswers(
   env: DocumentEnv,
-  req: { documentId: string; tabId: string; ledger: TabLedger },
+  req: { documentId: string; tabId: string; ledger: TabLedger; since?: number },
 ): Promise<{ ok: true; changed: boolean } | ParticipantWriteFailure> {
   const result = await swapTabChange(
     participantTabStore(env, req.documentId, req.tabId),
     (tab: Tab) => {
-      const merged = mergeLedgerAnswersIntoTab(tab, req.ledger);
+      const merged = mergeLedgerAnswersIntoTab(tab, req.ledger, req.since ?? 0);
       return merged === tab ? { next: null, answer: false } : { next: merged, answer: true };
     },
   );

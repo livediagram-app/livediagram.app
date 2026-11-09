@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ArcadeScore } from '@livehuddle/document';
+import { ARCADE_RUN_MS_MAX } from '@livehuddle/document';
 import { arcadePlaceLine, arcadeScoreFor } from './arcade-post';
 
 // docs/specs/009-elements/social-pieces.md "High Scores": what a finished run posts, and where it lands.
@@ -31,6 +32,11 @@ describe('arcadeScoreFor', () => {
     expect(arcadeScoreFor({ score: 0, ms: 9_000 }, [], who)).toBeNull();
     expect(arcadeScoreFor({ score: 10, ms: 0 }, [], who)).toBeNull();
     expect(arcadeScoreFor({ score: 10, ms: 9_000 }, [], { ...who, key: null })).toBeNull();
+  });
+
+  it('announces no place for a score every screen would drop', () => {
+    expect(arcadeScoreFor({ score: 10, ms: ARCADE_RUN_MS_MAX + 1 }, [], who)).toBeNull();
+    expect(arcadeScoreFor({ score: 10, ms: 9_000 }, [], { ...who, name: '   ' })).toBeNull();
   });
 
   it('posts nothing that the table’s ten all beat, and a tie stays below the earlier score', () => {

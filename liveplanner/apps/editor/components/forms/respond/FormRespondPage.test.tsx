@@ -90,7 +90,7 @@ describe('the form page', () => {
     // The tab's look dresses the page: its finish, font and colour.
     const main = document.querySelector('main')!;
     expect(main.getAttribute('data-form-finish')).toBe('sketch');
-    expect(main.style.fontFamily).toContain('Caveat');
+    expect(main.style.fontFamily).toContain('Kalam');
     expect(main.style.getPropertyValue('--form-accent-light')).toBe(OPEN.look.accent.light);
     answer();
     await submit();

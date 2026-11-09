@@ -362,14 +362,40 @@ describe('POST tracks', () => {
     expect(upstream).toEqual([]);
   });
 
-  it('refuses a locator from another Space, a forged one, a camera, an empty or oversized batch', async () => {
+  it('answers a locator from another Space or a forged one in its place, and still asks for the rest', async () => {
+    const proof = await listenerProof();
+    const res = await call('POST', 'tracks', {
+      ...proof,
+      subscribe: [
+        await locator('doc2'),
+        { ...(await locator()), token: 'forged' },
+        await locator(DOC, 'pub2'),
+      ],
+    });
+    expect(res.status).toBe(200);
+    expect(upstream[0]!.body).toEqual({
+      tracks: [{ location: 'remote', sessionId: 'pub2', trackName: 'mic' }],
+    });
+    const body = (await res.json()) as { tracks: unknown[] };
+    expect(body.tracks.slice(0, 2)).toEqual([
+      { sessionId: 'pub1', trackName: 'mic', errorCode: 'track_refused' },
+      { sessionId: 'pub1', trackName: 'mic', errorCode: 'track_refused' },
+    ]);
+    expect(body.tracks[2]).toMatchObject({ mid: '0' });
+    // Every one forged: Realtime is asked nothing.
+    upstream.length = 0;
+    const none = await call('POST', 'tracks', { ...proof, subscribe: [await locator('doc2')] });
+    expect(none.status).toBe(200);
+    expect(upstream).toEqual([]);
+  });
+
+  it('refuses a malformed locator, a camera, an empty or oversized batch', async () => {
     const proof = await listenerProof();
     const tooMany = await Promise.all(
       Array.from({ length: MAX_SUBSCRIBE_BATCH + 1 }, (_, i) => locator(DOC, `p${i}`)),
     );
     for (const subscribe of [
-      [await locator('doc2')],
-      [{ ...(await locator()), token: 'forged' }],
+      [{ ...(await locator()), token: '' }],
       [{ ...(await locator()), trackName: 'camera' }],
       [],
       tooMany,

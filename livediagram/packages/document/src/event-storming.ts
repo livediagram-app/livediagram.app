@@ -217,7 +217,7 @@ export function eventStormingLabelText(
 }
 
 // The notation's face (docs/specs/004-interface-design/fonts.md font id). A workshop note is written with a
-// marker, and Permanent Marker is the catalogue's marker: chunky, slightly
+// marker, and Shantell Sans is the catalogue's marker: chunky, slightly
 // irregular, and at home in the capitals the notes already wear. Like the
 // fill and the caps it is GRAMMAR, not styling — so it is resolved from the
 // note here rather than stamped on the element, which keeps every board

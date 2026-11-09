@@ -48,6 +48,19 @@ describe('tool input shapes', () => {
     expect(s.parse({ name: 'x', tab: { name: 'a', elements: [] } }).tab).toBeTruthy();
   });
 
+  it('create/add_tab: takes a known theme id and refuses an unknown one', () => {
+    const c = z.object(createDesignShape);
+    expect(c.parse({ name: 'x', tabs: [{ elements: [] }], theme: 'brand' }).theme).toBe('brand');
+    expect(() => c.parse({ name: 'x', tabs: [{ elements: [] }], theme: 'Ocean' })).toThrow(
+      /Unknown theme/,
+    );
+    expect(() => c.parse({ name: 'x', tabs: [{ elements: [], theme: 'nope' }] })).toThrow();
+    expect(() =>
+      z.object(addTabShape).parse({ designId: 'd', name: 'a', theme: 'nope' }),
+    ).toThrow();
+    expect(createDesignTab.parse({ theme: 'brand' }).theme).toBe('brand');
+  });
+
   it('create/add_tab: a tab may pass template instead of elements', () => {
     const c = z.object(createDesignShape);
     const viaTemplate = c.parse({ name: 'x', tabs: [{ name: 'Board', template: 'logo-design' }] });

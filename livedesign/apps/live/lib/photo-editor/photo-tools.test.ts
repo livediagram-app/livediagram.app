@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createMask, setLayer, type PixelLayer, type TextLayer } from '@livedesign/photo-engine';
 import { adjustArea, cancelApplying, commitApplying, filterArea, startApplying } from './apply-ops';
-import { copy, paste } from './clipboard';
+import { copy, cut, paste } from './clipboard';
+import { addMask } from './mask-ops';
 import { at, harness, photoOf, pixel, pixelLayer, solid } from './photo-test-utils';
 import { photoTools } from './tool-state';
 import {
@@ -436,6 +437,41 @@ describe('the clipboard', () => {
     const id = paste(h.s, true)!;
     await h.s.settled();
     expect((h.s.layer(id) as PixelLayer).offset).toEqual({ x: 2, y: 0 });
+  });
+
+  it('cuts the whole layer with no selection, and refuses a locked or hidden one as Delete does', async () => {
+    const locked = harness(photoOf(2, 1, [pixelLayer('a', { locks: { pixels: true } })]), {
+      a: solid(2, 1, [7, 7, 7, 255]),
+    });
+    expect(await cut(locked.s, '#ffffff')).toMatch(/locked/);
+    expect(locked.s.raster('a').sample(0, 0, 3)).toBe(255);
+    expect(locked.commits).toHaveLength(0);
+    const hidden = harness(photoOf(2, 1, [pixelLayer('a', { visible: false })]), {
+      a: solid(2, 1, [7, 7, 7, 255]),
+    });
+    expect(await cut(hidden.s, '#ffffff')).toMatch(/hidden/);
+    expect(hidden.s.raster('a').sample(0, 0, 3)).toBe(255);
+    const plain = harness(photoOf(2, 1), { a: solid(2, 1, [7, 7, 7, 255]) });
+    expect(await cut(plain.s, '#ffffff')).toBeNull();
+    await plain.s.settled();
+    expect(plain.s.raster('a').sample(1, 0, 3)).toBe(0);
+    expect(plain.commits.at(-1)?.label).toBe('Cut');
+  });
+
+  it('cuts with locked transparency to the background colour, and clears a targeted mask to black', async () => {
+    const kept = harness(photoOf(1, 1, [pixelLayer('a', { locks: { transparency: true } })]), {
+      a: solid(1, 1, [7, 7, 7, 255]),
+    });
+    expect(await cut(kept.s, '#0000ff')).toBeNull();
+    await kept.s.settled();
+    expect(pixel(kept, 0, 0)).toEqual([0, 0, 255, 255]);
+    const masked = harness(photoOf(1, 1), { a: solid(1, 1, [7, 7, 7, 255]) });
+    expect(addMask(masked.s, 'a', 'reveal')).toBeNull();
+    await masked.s.settled();
+    masked.s.choose('a', 'mask');
+    expect(await cut(masked.s, '#ffffff')).toBeNull();
+    expect(masked.s.raster('a', 'mask').sample(0, 0, 0)).toBe(0);
+    expect(masked.s.raster('a').sample(0, 0, 3)).toBe(255);
   });
 });
 

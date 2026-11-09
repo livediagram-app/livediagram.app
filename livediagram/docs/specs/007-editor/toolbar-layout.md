@@ -71,7 +71,7 @@ under the pointer as a category is switched.
   (`useBarLabels`). Measured, not estimated: the menu card is wider in a mode that shows the tab's name, and an
   estimate let a long bar run under it. **Too wide even bare**, as on a tablet (768px) where Diagram's glyphs
   need about 425px of the 382px centring leaves, the strip sits at the right instead, 12px from the edge, clear of
-  the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
+  the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the names (owner, 2026-11-09: "on mobile, show the labels on the palette categories, its okay, we can scroll"), and the bar swipes
   sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
   the tile rail) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an

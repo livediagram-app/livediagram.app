@@ -16,6 +16,7 @@ export function IdentityPrompt({
   participant,
   designName,
   lockedName,
+  canComment = true,
   onJoin,
   onCancel,
 }: {
@@ -24,6 +25,9 @@ export function IdentityPrompt({
   designName?: string;
   // The account's name: the input reads it, locked.
   lockedName?: string | null;
+  // False for a Viewer, who never comments (docs/specs/013-workspace/share-roles.md): the name shows on its cursor
+  // alone, so the footer never promises comments it cannot write.
+  canComment?: boolean;
   onJoin: (name: string) => void;
   onCancel: () => void;
 }) {
@@ -76,7 +80,9 @@ export function IdentityPrompt({
       </div>
       <DialogFooter>
         <p className="mr-auto text-[11px] text-slate-500 dark:text-slate-400">
-          Other participants will see this name on your cursor and comments.
+          {canComment
+            ? 'Other participants will see this name on your cursor and comments.'
+            : 'Other participants will see this name on your cursor.'}
         </p>
         <Button variant="secondary" size="xs" onClick={onCancel}>
           Cancel

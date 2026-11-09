@@ -99,6 +99,50 @@ describe('stripJpegMetadata', () => {
     expect(tail).toEqual(expectedTail);
   });
 
+  // A phone's JPEG can hold a second picture (MPF, a gain map) after its EOI, with an Exif and GPS of its own, or
+  // a motion photo's video: none of it is kept.
+  it('drops everything after EOI, a second picture and its Exif included', () => {
+    const exif = mkSegment(0xe1, [...ascii('Exif\0\0'), ...ascii('GPS 51.5N')]);
+    const second = [...SOI, ...exif, ...DQT, ...SOS, ...SCAN_DATA, ...EOI];
+    const input = bytes([SOI, DQT, SOS, SCAN_DATA, EOI, second, ascii('ftypmp42 video')]);
+    expect(new Uint8Array(stripJpegMetadata(input))).toEqual(
+      new Uint8Array(bytes([SOI, DQT, SOS, SCAN_DATA, EOI])),
+    );
+  });
+
+  // A progressive JPEG has several scans, with tables (kept) and, as the standard allows, APPn and COM (dropped)
+  // between them; stuffed bytes, restart markers and fill inside a scan are copied as they are.
+  it('walks the segments between scans, keeping every scan byte', () => {
+    const scan1 = [0x12, 0xff, 0x00, 0x34, 0xff, 0xd3, 0x56, 0xff, 0xff];
+    const DHT = mkSegment(0xc4, [0x10, 0x01]);
+    const com = mkSegment(0xfe, ascii('serial 123'));
+    const input = bytes([SOI, DQT, SOS, scan1, com, DHT, SOS, SCAN_DATA, EOI]);
+    expect(new Uint8Array(stripJpegMetadata(input))).toEqual(
+      new Uint8Array(bytes([SOI, DQT, SOS, scan1, DHT, SOS, SCAN_DATA, EOI])),
+    );
+  });
+
+  it('copies a scan with no EOI to the end, and refuses a scan header cut short', () => {
+    const open = bytes([SOI, DQT, SOS, SCAN_DATA, [0xff]]);
+    expect(new Uint8Array(stripJpegMetadata(open))).toEqual(new Uint8Array(open));
+    expect(() => stripJpegMetadata(bytes([SOI, DQT, [0xff, 0xda, 0x00]]))).toThrow();
+    expect(() => stripJpegMetadata(bytes([SOI, DQT, [0xff, 0xda, 0x00, 0x09, 0x01]]))).toThrow();
+  });
+
+  // The upload cap's worth of scan, every byte a stuffed 0xFF (the worst case for the scan's walk): well inside a
+  // Worker's CPU budget.
+  it('walks a worst-case 10 MB scan quickly', () => {
+    const scan = new Uint8Array(10 * 1024 * 1024);
+    for (let k = 0; k < scan.length; k += 2) scan[k] = 0xff;
+    const input = new Uint8Array([...SOI, ...DQT, ...SOS, ...scan, ...EOI]).buffer;
+    // CPU time, not wall time: a busy machine never fails it.
+    const before = process.cpuUsage();
+    const out = stripJpegMetadata(input);
+    const used = process.cpuUsage(before);
+    expect(out.byteLength).toBe(input.byteLength);
+    expect((used.user + used.system) / 1000).toBeLessThan(1000);
+  });
+
   it('throws on truncated input mid-segment so the upload endpoint fails loudly', () => {
     // A length prefix that runs past the end of the buffer is a
     // structural error; the helper must throw rather than silently

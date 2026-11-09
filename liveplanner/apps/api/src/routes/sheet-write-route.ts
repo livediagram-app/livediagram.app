@@ -62,8 +62,8 @@ function readWrite(raw: unknown): SheetWriteRequest | null {
   };
 }
 
-// Rows or columns deleted from `head` shrink the ranges into it held by the tab's other sheets, as its own formulas'
-// ranges shrink (formulas.md "Other sheets"): each reading sheet's formula cells read once, its rewrites stored and
+// Rows or columns deleted from `head` shrink the ranges into it held by the tab's other sheets, and a sort keeps them
+// on their rows, as its own formulas' ranges do (formulas.md "Other sheets", sheet.md "Sort"): each reading sheet's formula cells read once, its rewrites stored and
 // relayed as a write of its own. Linear in the tab's formula references; the tab's sheets are read side by side.
 async function shrinkReaders(
   ctx: PlanRouteContext,
@@ -93,10 +93,14 @@ async function shrinkReaders(
   );
 }
 
-function deletes(write: SheetWrite): boolean {
+// Deleting rows or columns shrinks ranges, and a sort pins them (formulas.md, sheet.md "Sort"): both rewrite formulas.
+function rewritesFormulas(write: SheetWrite): boolean {
   return (
     write.kind === 'layout' &&
-    write.changes.some((c) => c.k === 'deleteRows' || c.k === 'deleteCols')
+    write.changes.some(
+      (c) =>
+        c.k === 'deleteRows' || c.k === 'deleteCols' || c.k === 'orderRows' || c.k === 'orderCols',
+    )
   );
 }
 
@@ -195,10 +199,10 @@ export async function storeSheetWrite(
       if (heads.some((h) => h.id !== sheetId && h.title.toLowerCase() === lower))
         return sheetRejected('sheet_title_taken', 409);
     }
-    // The light sheet the engine applies to: the layout, and the formulas when rows or columns go.
+    // The light sheet the engine applies to: the layout, and the formulas when rows or columns go or are sorted.
     const light: Sheet = {
       ...head,
-      cells: deletes(write)
+      cells: rewritesFormulas(write)
         ? cellsFromJson(await readFormulaCells(ctx.env, projectId, sheetId))
         : new Map<string, Cell>(),
     };
@@ -291,7 +295,7 @@ export async function storeSheetWrite(
       by,
       ...(body.wid ? { wid: body.wid } : {}),
     });
-    if (applied.kind === 'layout' && deletes(write))
+    if (applied.kind === 'layout' && rewritesFormulas(write))
       await shrinkReaders(ctx, projectId, head, applied.changes, by);
     return json(answer);
   }

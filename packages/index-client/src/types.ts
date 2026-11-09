@@ -117,8 +117,12 @@ export type CollabThreadInput = {
   elementLabel: string;
   resolved: boolean;
   commentCount: number;
+  // Who wrote in it themselves.
   participantIds: string[];
   mentionedIds: string[];
+  // Who wrote in it only through an agent (an API token): they reach the thread as a participant does, but it is
+  // not "you commented", so an agent's question waits on them. Absent: none.
+  agentIds?: string[];
   latestText: string;
   latestAuthorName: string;
   // The latest author's colour (a CSS colour), for their avatar; '' for none.
@@ -145,7 +149,13 @@ export type CollabCard = {
   typeLabel: string;
   title: string;
   board: { tabId: string; elementId: string; title: string; tabName: string } | null;
+  // The column on that board holding the card's status as of the item's latest push (it pushes again when the card
+  // moves or the board changes): its name, its colour (#rrggbb) when it has one, whether it is a done column. Null
+  // or absent when no column holds it (an All Cards board, a deleted column), or from an older push.
+  column?: CardColumn | null;
 };
+
+export type CardColumn = { name: string; color?: string; done: boolean };
 
 export type ActionStatus = 'open' | 'done' | 'wont-do';
 
@@ -208,7 +218,10 @@ type InboxPlace = {
 };
 
 export type InboxThread = InboxPlace &
-  Omit<CollabThreadInput, 'participantIds' | 'mentionedIds' | 'latestAuthorColor' | 'card'> & {
+  Omit<
+    CollabThreadInput,
+    'participantIds' | 'mentionedIds' | 'agentIds' | 'latestAuthorColor' | 'card'
+  > & {
     latestAuthorColor: string;
     card: CollabCard | null;
     // Why the person sees it: they are @-mentioned in it, they commented in it, the item is theirs.

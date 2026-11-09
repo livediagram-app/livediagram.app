@@ -19,7 +19,7 @@ are, the panel draws them.
 - **Connect File** ([Connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md#connecting)):
   the rail's last entry, stuck to its very bottom under a hairline (the shared `ConnectRailEntry`), every app's
   logo fanned where its icon goes (its own too), its name on one line; on a phone the last chip. Chosen, the content area shows the shared Connect list (Recent
-  across every app, the role, both ways) in the panel's colours, its code loaded only then (`useConnectStart`). A
+  across every app, the role, both ways) in the panel's colours, its code loaded only then (`useConnectStart`); with nothing recent, its Open Explorer goes to the full-page Explorer. A
   press connects the file: the design gains the connected tab, which takes the place of this empty tab unless it is
   the design's only tab, and opens ready. Offered only to a signed-in Editor of a design on the server, outside a
   tab-scoped link, an embed and a workbench.

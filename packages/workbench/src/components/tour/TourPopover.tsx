@@ -29,10 +29,10 @@ export type TourOutroCard = { eyebrow: string; helpHref: string; finish: string 
 // Positioning is measured two-pass (render off-screen, measure, place) against the current target rect, before the
 // first paint. One card for the whole run: it fades in on the first step (dialog-in), then glides beside the ring to
 // each next step while its words cross-fade (useTourGlide), and otherwise follows its target exactly.
-// A caret on the popover's edge points at the target, so the card reads
-// as attached to what it explains — on phones the narrow viewport means
-// side placements never fit, so steps naturally land below (or above)
-// their target with the caret pointing up at it.
+// A caret on the popover's edge points at the target, so the card reads as attached to what it explains. On a phone
+// side placements never fit, so steps land below (or above) their target with the caret pointing at it; when neither
+// side holds the whole card it takes the side with more room, capped to it, its words scrolling inside, so the card
+// never covers the control it asks the person to press ("Where the card sits", tour-position.ts).
 export function TourPopover({
   stepId,
   stepNumber,
@@ -75,9 +75,13 @@ export function TourPopover({
   onSkip: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  // The card's words, which scroll inside it when it is capped to the room beside its target.
+  const wordsRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{
     left: number;
     top: number;
+    // The room the card was given, when that is less than it needs.
+    maxHeight?: number;
     // Which edge carries the caret (the side FACING the target), and how
     // far along that edge it sits, so the caret points at the target's
     // centre even after viewport clamping. Null = centred card, no caret.
@@ -113,7 +117,10 @@ export function TourPopover({
     const node = ref.current;
     if (!node) return;
     const place = () => {
-      const size = { width: node.offsetWidth, height: node.offsetHeight };
+      // The card's full height, even while capped: what its words scroll past is added back.
+      const words = wordsRef.current;
+      const hidden = words ? words.scrollHeight - words.clientHeight : 0;
+      const size = { width: node.offsetWidth, height: node.offsetHeight + hidden };
       const viewport = { width: window.innerWidth, height: window.innerHeight };
       if (!targetRect) {
         setPos({
@@ -136,11 +143,22 @@ export function TourPopover({
           offset: clamp(targetRect.top + targetRect.height / 2 - placed.top, 18, size.height - 18),
         };
       }
-      setPos({ left: placed.left, top: placed.top, caret });
+      setPos({
+        left: placed.left,
+        top: placed.top,
+        caret,
+        ...(placed.maxHeight !== undefined ? { maxHeight: placed.maxHeight } : {}),
+      });
     };
     place();
+    // A phone's keyboard or a pinch changes the visible viewport without a window resize.
+    const vv = window.visualViewport;
     window.addEventListener('resize', place);
-    return () => window.removeEventListener('resize', place);
+    vv?.addEventListener('resize', place);
+    return () => {
+      window.removeEventListener('resize', place);
+      vv?.removeEventListener('resize', place);
+    };
   }, [targetRect]);
 
   return (
@@ -160,7 +178,7 @@ export function TourPopover({
         ...colours,
         transition: glideTransition(gliding, ['left', 'top']),
         ...(pos
-          ? { left: pos.left, top: pos.top }
+          ? { left: pos.left, top: pos.top, maxHeight: pos.maxHeight }
           : // First paint before measurement: park off-screen so the
             // two-pass placement never flashes at 0,0.
             { left: -9999, top: -9999 }),
@@ -194,7 +212,8 @@ export function TourPopover({
           buttons wait (busy). */}
       <div
         key={stepId}
-        className={`flex animate-fade-in flex-col [&_button]:relative [&_button]:touch-target-y ${busy ? 'pointer-events-none [&_button]:opacity-50' : ''}`}
+        ref={wordsRef}
+        className={`-m-2 flex min-h-0 animate-fade-in flex-col overflow-y-auto overscroll-contain p-2 [&_button]:relative [&_button]:touch-target-y ${busy ? 'pointer-events-none [&_button]:opacity-50' : ''}`}
       >
         <>
           <div className="flex items-center justify-between gap-2">

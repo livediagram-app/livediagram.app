@@ -88,7 +88,10 @@ Derived from [Social pieces](../social-pieces.md).
   unpin only when the note's `by` matches. `mergeIncomingElement` keeps the receiver's `noticeNotes`,
   `elementChangeIsDeltaOnly` leaves them out of its comparison (so a notes-only change sends no `el` update), and
   `graftLiveTabState` carries them over an undo or redo. The room's ledger (`collab-ledger.ts`) records each pin and
-  unpin, so an Editor's save snapshotted before a pin merges it.
+  unpin, so an Editor's save snapshotted before a pin merges it; an unpin by the signer replaces its pin's entry,
+  and at `NOTE_EVENTS_MAX` the oldest events give way (`withRoomForOneNote`). Every stored note, on the board, in the
+  ledger or from a Participant's update (`mergeNoticeNotes`), keeps its own fields alone (`noteFields`), and
+  `isNoticeNote` holds `at` to a whole number a date can show.
 - **The room's rule**: `notice-pin` and `notice-unpin` are participation deltas (`PARTICIPATION_DELTA_KINDS`); the op
   gate (`room-op-gate.ts`) relays a Participant's only when `answersAsSelf` finds the note's (or the unpin's) `by`
   equal to the session's adder key, then schedules the room's answers write, which folds the ledger's notes into the
@@ -327,7 +330,8 @@ Editor's Clear High Scores, copies starting empty, the answers flush's no-op and
   (`useNoteSigner.ts`): a Participant's adder key, an Editor's adder key or participant key. The tab is
   `activeTab.id` as the panel opens, so a score posted as the tab is left reaches the machine's own tab.
 - **Posting** (`arcadeScoreFor(run, table, { key, name, now, id })`): null when the run scored 0, played under 1 ms,
-  there is no key or `arcadePlaceOf` finds no place; else `{ score: { id, name, score, ms, by: key, at: now }, place }`
+  there is no key, `isArcadeScore` refuses it (a run past two hours, say: every screen would drop it, so Game Over
+  never announces a place for it) or `arcadePlaceOf` finds no place; else `{ score: { id, name, score, ms, by: key, at: now }, place }`
   with `name` from `arcadeName(selfParticipant.name)`. Sent once per run as one
   `applyElementDelta(id, { kind: 'arcade-score', score }, tabId)`; `track('Canvas', 'Used', 'Arcade')` once per run
   ended, posted or not. `arcadePlaceLine(place)`: 1 is **New High Score!**, else **You Placed #n**.

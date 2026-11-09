@@ -367,7 +367,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
 - Dashboard (`components/plan/dashboard/DashboardPage.tsx`): the page provides `FaceFinishProvider` and
   `data-face-finish` from `resolveFinish(undefined, tab.finish)`, letters itself with
   `planFontStyle(resolveFontStack(elementFontId({}, tab.font, tab.finish)))`, and runs the pass as a page.
-- `lib/plan-font.ts`: only Sketch's Caveat takes `fontSizeAdjust: ex-height PLAN_HANDWRITING_EX`.
+- `lib/plan-font.ts`: only Sketch's handwriting face (Kalam) takes `fontSizeAdjust: ex-height PLAN_HANDWRITING_EX`.
 - Stickers: `sticker-markup.ts` marks the shadow `data-sticker-shadow` and the emoji art `data-finish-keep`;
   `faceFinishOf` returns Professional and Marker for a sticker (Sketch wobbles it whole); face-finish.css and
   `svgProfessionalFace` / `svgMarkerFace` drop the shadow.
@@ -475,7 +475,7 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
 - Menu rows: a glyph (a link for Follow Tab, a rounded square for Flexible, a crisp square for Professional, a wobbly
   square for Sketch, a bold square with crossing corners and a stroke of colouring for Marker), the name, and the line
   "As the tab is", "Soft and rounded", "Square and fine", "Drawn by hand", "Bold felt-tip".
-- Looks: **Workshop** (Sand, soft grid) is drawn in Marker, its lettering Marker's own Permanent Marker.
+- Looks: **Workshop** (Sand, soft grid) is drawn in Marker, its lettering Marker's own Shantell Sans.
   The checked row is the element's own finish (Follow Tab when it has none).
 - Finish panel: tiles of glyph over name, then a "Preview" heading over the sample diagram; heading "Finish", line "How lines, corners and lettering are drawn on this
   tab." (no apply button: a pick applies to the whole tab).
@@ -492,7 +492,7 @@ its focus rings (`:focus-visible` is exempt from the shadow reset).
 
 ## Web Experience
 
-No new network requests except the Caveat or Permanent Marker stylesheet, loaded on demand by the existing font loader when a sketched
+No new network requests except the Kalam or Shantell Sans stylesheet, loaded on demand by the existing font loader when a sketched
 element first needs it; no layout shift (overlays are absolutely positioned inside fixed-size boxes).
 
 ## Observability
@@ -572,5 +572,5 @@ per command letter.
 
 ## Assets and external resources
 
-Caveat and Permanent Marker are already in the font catalogue (`../packages/model-core/src/fonts.ts`, Google Fonts, OFL
+Kalam and Shantell Sans are already in the font catalogue (`../packages/model-core/src/fonts.ts`, Google Fonts, OFL
 and Apache 2.0). No new asset.

@@ -9,6 +9,11 @@ const TAB_ID_MAX = 64;
 
 /** A subscription the room says the subscriber may not hear now: answered in its place by the tracks route. */
 export const CALL_NOT_HEARD = 'not_heard';
+/**
+ * A subscription whose locator's token does not hold for this Space (a forged `call-track`): answered in its place,
+ * never asked of Realtime, and never asked for again by the browser.
+ */
+export const CALL_TRACK_REFUSED = 'track_refused';
 
 /** This connection's Realtime session and its private proof, for the room alone. */
 export type CallSessionOp = {

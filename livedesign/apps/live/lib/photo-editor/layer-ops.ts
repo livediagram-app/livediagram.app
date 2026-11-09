@@ -29,6 +29,7 @@ import {
   type Raster,
   type Rect,
 } from '@livedesign/photo-engine';
+import { shakeLock } from './lock-shake';
 import type { PhotoSession } from './session';
 import { rasterizeText, textBox } from './text-raster';
 import { selectionMaskRaster } from './selection-mask';
@@ -270,7 +271,16 @@ async function mergeVisibleNow(s: PhotoSession): Promise<string | null> {
   const gone = new Set(shown.map((l) => l.id));
   const edit = once(id, (p) => {
     const at = p.layers.findIndex((l) => gone.has(l.id));
-    const kept = p.layers.filter((l) => !gone.has(l.id) && !(l.parent && gone.has(l.parent)));
+    // A hidden layer stays (photo-layers.md "Merge Visible"), a hidden one inside a merged group too:
+    // it leaves the group, which is gone. Every layer before `at` is kept, so `at` is its place.
+    const kept = p.layers
+      .filter((l) => !gone.has(l.id))
+      .map((l) => {
+        if (!l.parent || !gone.has(l.parent)) return l;
+        const { parent: _gone, ...rest } = l;
+        void _gone;
+        return rest;
+      });
     const index = Math.max(0, Math.min(at, kept.length));
     return { ...p, layers: [...kept.slice(0, index), layer, ...kept.slice(index)] };
   });
@@ -433,6 +443,15 @@ export function rasterizeEffects(s: PhotoSession, id: string): string | null {
 export function layerVia(s: PhotoSession, cut: boolean): string | null {
   const layer = s.layer(s.active);
   if (!layer || layer.layerKind !== 'pixel') return 'Choose a pixel layer to copy from.';
+  if (cut) {
+    // Cut changes the layer's pixels (whatever the target): refused on a locked or hidden layer, as
+    // Delete is.
+    if (layer.visible === false) return `${layer.name} is hidden. Show it to change it.`;
+    if (layer.locks?.pixels || layer.locks?.all) {
+      shakeLock(layer.id);
+      return `${layer.name} is locked.`;
+    }
+  }
   const rect = s.selection
     ? { x: s.selection.x, y: s.selection.y, width: s.selection.width, height: s.selection.height }
     : extentOf(s, layer);

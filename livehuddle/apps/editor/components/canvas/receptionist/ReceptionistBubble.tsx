@@ -44,8 +44,7 @@ export function receptionistLine(
   name: string | null,
 ): string {
   if (reason === 'welcome') return "Welcome in! I'm the receptionist. What should I show you?";
-  if (reason === 'back')
-    return `Welcome back${name ? `, ${name}` : ''}! Ask me anything from the button down there.`;
+  if (reason === 'back') return `Welcome back${name ? `, ${name}` : ''}! What can I help with?`;
   if (reason === 'bell') return `You rang${name ? `, ${name}` : ''}? What can I help with?`;
   if (reason === 'farewell') return "Of course. Bring me back any time from the Avatar Pad's menu.";
   return 'What can I help with?';
@@ -254,7 +253,7 @@ export function ReceptionistBubble({
                     I&apos;ll Explore
                   </Reply>
                 </div>
-              ) : chat.reason === 'back' || chat.reason === 'farewell' ? null : (
+              ) : chat.reason === 'farewell' ? null : (
                 <>
                   <TopicList label="Topics">
                     {RECEPTIONIST_TOPIC_GROUPS.map((group) => {

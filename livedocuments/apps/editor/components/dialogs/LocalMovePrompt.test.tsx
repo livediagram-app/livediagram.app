@@ -64,6 +64,13 @@ describe('LocalMovePrompt', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'LocalMovePrompt');
   });
 
+  // It comes up on load with no click before it: focus rests on the dialog, not on the header's Help link, whose hover
+  // card would open over the subtitle at once.
+  it('opens with focus on the dialog itself, not its Help link', async () => {
+    await show();
+    expect(document.activeElement?.getAttribute('role')).toBe('dialog');
+  });
+
   it('stays away for a guest, before auth settles, when disabled, or with nothing local', async () => {
     auth.accountUserId = null;
     await show();
@@ -100,7 +107,9 @@ describe('LocalMovePrompt', () => {
     await show();
     fireEvent.click(screen.getByRole('button', { name: 'Move' }));
     await act(async () => {});
-    expect(screen.getByRole('alert').textContent).toContain('could not be moved');
+    expect(screen.getByRole('alert').textContent).toBe(
+      'This one could not be moved and is still in This Browser:',
+    );
     expect(screen.getByText('Older sketch')).toBeTruthy();
     expect(reload).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));

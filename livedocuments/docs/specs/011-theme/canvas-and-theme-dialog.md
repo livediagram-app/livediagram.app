@@ -56,10 +56,10 @@ The table is in the order the carousel shows them after the Mashup card, six to 
 | Boardroom       | Steel    | Professional | Inter         | Blank        | (kept)           |
 | Notebook        | Mocha    | Sketch       | (none)        | Lines        | (kept)           |
 | Seaside         | Ocean    | Flexible     | Nunito        | Waves        | (kept)           |
-| Doodle          | Rainbow  | Sketch       | Caveat        | Blank        | (kept)           |
+| Doodle          | Rainbow  | Sketch       | Kalam         | Blank        | (kept)           |
 | Editorial       | Cream    | Professional | Lora          | Blank        | (kept)           |
 | Midnight        | Midnight | Flexible     | (none)        | Grid         | (kept)           |
-| Poster          | Tropical | Professional | Abril Fatface | Diagonal     | 40%              |
+| Poster          | Tropical | Professional | Bodoni Moda   | Diagonal     | 40%              |
 | Workshop        | Sand     | Marker       | (none)        | Grid         | 60%              |
 | Graph Paper     | Indigo   | Professional | Roboto Mono   | Graph        | (kept)           |
 | Daydream        | Pastel   | Flexible     | Nunito        | Grid         | 60%              |
@@ -70,7 +70,7 @@ The table is in the order the carousel shows them after the Mashup card, six to 
 | Billboard       | Sunset   | Professional | Oswald        | Stripes      | 40%              |
 | Patchwork       | Pastel   | Sketch       | Lora          | Checkerboard | 30%              |
 | Northern Lights | Abyss    | Flexible     | Poppins       | Aurora       | 60%              |
-| Coffeehouse     | Espresso | Sketch       | Caveat        | Bricks       | 40%              |
+| Coffeehouse     | Espresso | Sketch       | Kalam         | Bricks       | 40%              |
 | Schematic       | UML      | Professional | Roboto Mono   | Crosshatch   | 40%              |
 | Flipchart       | Rainbow  | Marker       | (none)        | Lines        | 50%              |
 | Sketchbook      | Rose     | Sketch       | (none)        | Blank        | (kept)           |
@@ -141,14 +141,14 @@ tab matches) but they never appear among the everyday looks.
   catalogue order. The order is worked out once per open of the dialog.
 - **The card** names its season in a small line above the look's name.
 
-| Season    | Look              | Theme     | Finish       | Tab font      | Pattern       | Pattern strength |
-| --------- | ----------------- | --------- | ------------ | ------------- | ------------- | ---------------- |
-| New Year  | Countdown         | Sparkle   | Professional | Abril Fatface | Sparkles      | 70%              |
-| Easter    | Egg Hunt          | Spring    | Flexible     | Nunito        | Eggs          | 70%              |
-| Halloween | Haunted           | Pumpkin   | Marker       | (none)        | Cobwebs       | 70%              |
-| Christmas | Christmas Morning | Yuletide  | Flexible     | Lora          | Candy Stripes | 30%              |
-| Christmas | Winter Wonderland | Frost     | Sketch       | Caveat        | Snowflakes    | 80%              |
-| Christmas | Fireside          | Evergreen | Professional | Roboto Slab   | Drift         | 60%              |
+| Season    | Look              | Theme     | Finish       | Tab font    | Pattern       | Pattern strength |
+| --------- | ----------------- | --------- | ------------ | ----------- | ------------- | ---------------- |
+| New Year  | Countdown         | Sparkle   | Professional | Bodoni Moda | Sparkles      | 70%              |
+| Easter    | Egg Hunt          | Spring    | Flexible     | Nunito      | Eggs          | 70%              |
+| Halloween | Haunted           | Pumpkin   | Marker       | (none)      | Cobwebs       | 70%              |
+| Christmas | Christmas Morning | Yuletide  | Flexible     | Lora        | Candy Stripes | 30%              |
+| Christmas | Winter Wonderland | Frost     | Sketch       | Kalam       | Snowflakes    | 80%              |
+| Christmas | Fireside          | Evergreen | Professional | Roboto Slab | Drift         | 60%              |
 
 - **Seasonal themes.** Sparkle (gold on midnight navy), Spring (painted-egg pastels, a hue per branch), Pumpkin
   (orange, purple and green per branch on a night canvas), Yuletide (red, green and gold per branch), Frost (icy
@@ -182,7 +182,7 @@ and the user can keep pressing it to regenerate.
 - **Always new.** A roll that equals one of the named looks, or the mashup the card already shows, is rolled
   again (up to `MASHUP_REROLLS` times), so a press always changes the tab and never lands on a named look.
 - **The card.** Like a look's card (the sample diagram drawn in the mashup, in the viewer's half), named **Mashup**
-  with a dice badge, and a line naming its four ingredients the way a look's does ("Ocean, Sketch, Caveat, waves").
+  with a dice badge, and a line naming its four ingredients the way a look's does ("Ocean, Sketch, Kalam, waves").
   The dialog opens with a fresh roll on the card that is not applied yet, so the first press applies exactly what the
   card shows. While the tab wears the card's mashup the card is selected, and the next press rolls a new one and
   applies it. Its accessible name is "Mashup: a random look, press for another".

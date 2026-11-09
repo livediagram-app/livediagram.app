@@ -26,6 +26,7 @@ import {
   type SheetRenderModel,
   type Tab,
 } from '@liveplanner/project';
+import { exportScale, MAX_EXPORT_CANVAS_SIDE } from '@liveworkspace/model-core/export-canvas';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the project package so the
 // MCP worker reuses the same element drawing. The canvas / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
@@ -146,18 +147,16 @@ function svgToImage(svg: string): Promise<HTMLImageElement> {
 // PNG / PDF helpers — shared canvas rendering
 // ---------------------------------------------------------------------
 
-// The largest canvas side every browser draws (Safari and Firefox stop at 16384 px; Chrome 32767).
-export const MAX_EXPORT_CANVAS_SIDE = 16384;
+// The largest canvas side and area every browser draws, and the scale that keeps an export inside both (an
+// iOS Safari canvas past 16.7 MP comes out blank, however short its sides): one helper for every product.
+export {
+  exportScale,
+  MAX_EXPORT_CANVAS_AREA,
+  MAX_EXPORT_CANVAS_SIDE,
+} from '@liveworkspace/model-core/export-canvas';
 // How far past a whole pixel a size may be from float arithmetic alone (1024 x 2.0000000001) and still count as
 // that whole pixel when the canvas is sized.
 const PART_PIXEL_NOISE = 1e-6;
-
-/** The scale an image export draws at: `wanted`, lowered so neither side of a `w` x `h` drawing
- *  passes MAX_EXPORT_CANVAS_SIDE. */
-export function exportScale(wanted: number, w: number, h: number): number {
-  const longest = Math.max(w, h, 1);
-  return Math.min(wanted, MAX_EXPORT_CANVAS_SIDE / longest);
-}
 
 // The scale each rendered canvas was drawn at, so a caller can size it in CSS
 // px (the single-page PDF prints it at 0.75 pt per CSS px, not per pixel).
@@ -472,7 +471,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
 }
 
 // A downloaded SVG carries its own typefaces: the reader hasn't got
-// Permanent Marker installed, and an @import is dead in an offline viewer.
+// Shantell Sans installed, and an @import is dead in an offline viewer.
 export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
   const fontCss =

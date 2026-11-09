@@ -81,8 +81,10 @@ export type SessionAttachment = {
 
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_PERSON_TAG_LEN = 64;
-// A document id is a UUID; the clamp keeps a forged header from bloating the attachment.
-const MAX_DOCUMENT_ID_LEN = 64;
+// A document id is usually a UUID, but an API or MCP client may choose a longer one, up to the documents route's
+// bound: the clamp keeps a forged header from bloating the attachment and never cuts an id the api accepts, since a
+// cut id fails every later check against the real one (a grant's renewal, a call's session token).
+const MAX_DOCUMENT_ID_LEN = 200;
 
 /** The server-verified facts an upgrade carries, as the api worker set them (empty header = none). */
 type VerifiedSession = {

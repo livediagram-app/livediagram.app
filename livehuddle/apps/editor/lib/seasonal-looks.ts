@@ -19,7 +19,7 @@ export const SEASONAL_LOOKS: readonly (TabLook & { season: Season })[] = [
     id: 'countdown',
     season: 'new-year',
     label: 'Countdown',
-    description: 'Sparkle, Professional, Abril, sparkles',
+    description: 'Sparkle, Professional, Bodoni, sparkles',
     theme: 'sparkle',
     finish: 'professional',
     font: 'abril-fatface',
@@ -44,7 +44,7 @@ export const SEASONAL_LOOKS: readonly (TabLook & { season: Season })[] = [
     description: 'Pumpkin, Marker, cobwebs',
     theme: 'pumpkin',
     finish: 'marker',
-    // Marker letters in Permanent Marker itself.
+    // Marker letters in Shantell Sans itself.
     font: undefined,
     pattern: 'cobwebs',
     patternOpacity: 0.7,
@@ -64,7 +64,7 @@ export const SEASONAL_LOOKS: readonly (TabLook & { season: Season })[] = [
     id: 'winter-wonderland',
     season: 'christmas',
     label: 'Winter Wonderland',
-    description: 'Frost, Sketch, Caveat, snowflakes',
+    description: 'Frost, Sketch, Kalam, snowflakes',
     theme: 'frost',
     finish: 'sketch',
     font: 'caveat',

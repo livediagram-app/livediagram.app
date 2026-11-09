@@ -12,6 +12,7 @@ import {
   type TextElement,
 } from '@livedesign/design';
 import { pageLayoutById } from './layout-catalogue';
+import { WIREFRAME_LAYOUTS } from './wireframe-layouts';
 import { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';
 import type { PageLayoutId } from './page-layouts';
 
@@ -42,6 +43,29 @@ describe('carryPageContent', () => {
   it('leaves another layout untouched: placeholders stay behind', () => {
     const placed = build('logo-stacked');
     expect(carryPageContent(build('logo-icon-above'), placed)).toEqual(placed);
+  });
+
+  // A template's untouched phone screen given a layout (the Mobile App Wireframe's Sign In given Sign In again)
+  // scattered its words over the new one: the password dots in the Email field, Sign In in the Password field and
+  // Continue with Google on the Sign In button. Its words are a wireframe layout's placeholders, which stay behind.
+  it("leaves another wireframe layout untouched too, on a phone's screen and a desktop's", () => {
+    for (const box of [
+      { x: 0, y: 0, width: 361, height: 760 },
+      { x: 0, y: 0, width: 1700, height: 956 },
+    ]) {
+      const placed = pageLayoutById('wf-sign-in').build(box);
+      for (const from of WIREFRAME_LAYOUTS.filter((l) => l.category !== 'wf-watch')) {
+        expect(carryPageContent(from.build(box), placed), from.id).toEqual(placed);
+      }
+    }
+  });
+
+  it('carries what was written on a wireframe screen', () => {
+    const box = { x: 0, y: 0, width: 361, height: 760 };
+    const page = relabel(pageLayoutById('wf-sign-in').build(box), 'Welcome Back', 'Hello Again');
+    expect(labels(carryPageContent(page, pageLayoutById('wf-onboarding').build(box)))).toContain(
+      'Hello Again',
+    );
   });
 
   it('keeps the new layout ids, so its pinned arrows hold', () => {

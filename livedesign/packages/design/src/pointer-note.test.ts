@@ -75,6 +75,24 @@ describe('settling a pointer note (I1, I2)', () => {
     expect(n.y + pointerTipOf(n).y).toBeCloseTo(100, 5);
   });
 
+  it('carries a badge on it to where the note now is when its host moves', () => {
+    const chip = {
+      ...createShape('badge', 0, 0),
+      id: 'chip',
+      attachedTo: 'note',
+      attachAt: 'top-left',
+    } as ShapeElement;
+    // Settled once so the badge sits on the note's corner.
+    const start = settleChips([], [host(), attached(), chip]);
+    const next = start.map((e) => (e.id === 'host' ? { ...e, x: 160, y: 140 } : e));
+    const out = settleChips(start, next);
+    const n = byId(out, 'note');
+    const b = byId(out, 'chip');
+    expect(n.x).not.toBe(300);
+    expect(b.x + b.width / 2).toBeCloseTo(n.x, 5);
+    expect(b.y + b.height / 2).toBeCloseTo(n.y, 5);
+  });
+
   it('goes with its host when the host is deleted, and is detached when the host is unknown', () => {
     expect(settleChips([host(), attached()], [attached()]).some((e) => e.id === 'note')).toBe(
       false,

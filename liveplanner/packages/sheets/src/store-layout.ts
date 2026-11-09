@@ -101,6 +101,61 @@ export function shrinkRange(
   return { r1: rows[0], r2: rows[1], c1: cols[0], c2: cols[1] };
 }
 
+// A sort reorders rows (or columns) in their slots (sheet.md "Sort"). A range over more than one of them keeps
+// covering the same slots, the rows on screen, as in Google Sheets and Excel: its corner ids become the ids now in
+// its corners' places. Moved with the rows, its corners would land anywhere, and `SUM(C5:C12)` read C6:C8. A range
+// within one row (or column) moves with it, as a single cell does. Null when nothing moves.
+export function pinSpan(
+  a: string,
+  b: string,
+  before: ReadonlyMap<string, number>,
+  after: readonly string[],
+): readonly [string, string] | null {
+  if (a === b) return null;
+  const na = after[before.get(a) ?? -1] ?? a;
+  const nb = after[before.get(b) ?? -1] ?? b;
+  return na === a && nb === b ? null : [na, nb];
+}
+
+export function pinIdRange<T extends IdRange>(
+  range: T,
+  before: SheetLayout,
+  after: SheetLayout,
+  axis: Axis,
+): T {
+  const rows = axis === 'r';
+  const pos = rows ? layoutIndex(before).rowPos : layoutIndex(before).colPos;
+  const pinned = rows
+    ? pinSpan(range.r1, range.r2, pos, after.rows)
+    : pinSpan(range.c1, range.c2, pos, after.cols);
+  if (!pinned) return range;
+  return rows
+    ? { ...range, r1: pinned[0], r2: pinned[1] }
+    : { ...range, c1: pinned[0], c2: pinned[1] };
+}
+
+// The named ranges, validation rules (and a range dropdown's source) and format rules after a sort, each pinned to
+// its slots; a format rule's custom formula keeps each relative part's offset from its range's corner.
+function pinLayoutRanges(before: SheetLayout, after: SheetLayout, axis: Axis): SheetLayout {
+  if (after.rows === before.rows && after.cols === before.cols) return after;
+  const next = { ...after };
+  if (before.names?.length)
+    next.names = before.names.map((x) => pinIdRange(x, before, after, axis));
+  if (before.rules?.length)
+    next.rules = before.rules.map((x) => {
+      const rule = pinIdRange(x, before, after, axis);
+      const src = x.src && pinIdRange(x.src, before, after, axis);
+      return src && src !== x.src ? { ...rule, src } : rule;
+    });
+  if (before.formatRules?.length)
+    next.formatRules = before.formatRules.map((x) => {
+      const rule = pinIdRange(x, before, after, axis);
+      if (rule === x || !x.fx) return rule;
+      return { ...rule, fx: reanchorFormula(x.fx, before, after, x, rule) };
+    });
+  return next;
+}
+
 // A custom formula is written for its range's top-left cell (conditional-formatting.md). When a deletion takes
 // that corner's row or column, the range starts at the next one, so the formula's relative parts on this sheet move
 // with it: each keeps its offset from the corner, counted in the layout after. One the move takes off the grid is
@@ -290,9 +345,9 @@ export function applyLayoutChange(layout: SheetLayout, ch: LayoutChange): SheetL
     case 'moveCols':
       return { ...layout, cols: moveIds(layout.cols, ch.ids, ch.after) };
     case 'orderRows':
-      return { ...layout, rows: reorderSlots(layout.rows, ch.ids) };
+      return pinLayoutRanges(layout, { ...layout, rows: reorderSlots(layout.rows, ch.ids) }, 'r');
     case 'orderCols':
-      return { ...layout, cols: reorderSlots(layout.cols, ch.ids) };
+      return pinLayoutRanges(layout, { ...layout, cols: reorderSlots(layout.cols, ch.ids) }, 'c');
     case 'size': {
       const key = ch.axis === 'r' ? 'rowSize' : 'colSize';
       const live = new Set(ch.axis === 'r' ? layout.rows : layout.cols);

@@ -5,7 +5,7 @@
 import { FONTS, resolveFontStack } from '@liveplanner/project';
 import { ChevronDownIcon, Tooltip } from '@liveplanner/ui';
 
-// The button's width on the toolbar: room for the longest name (Permanent Marker) at 12px, and the chevron.
+// The button's width on the toolbar: room for the longest name (Space Grotesk, Shantell Sans) at 12px, and the chevron.
 export const FONT_BUTTON_PX = 132;
 
 export function fontLabel(id: string | undefined): string {

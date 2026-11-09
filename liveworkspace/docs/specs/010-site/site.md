@@ -281,7 +281,7 @@ Under that, each service shows its stored history, from one `GET /api/status/his
 
 - **liveworkspace's last check**, by a cloud icon, under this visit's (by a person icon), in the same columns: how
   long it took, its answer and its state as an icon and a word.
-- **90 days** as a bar per day, oldest on the left, with when the run was ("Checked by liveworkspace 23 min ago")
+- **90 days** as a bar per day, oldest on the left, with when the run was ("Checked by liveworkspace 23 min ago"; past a day, in days: "2 days ago")
   and the uptime over them (`99.98% over 90 days`) under it. A bar's colour and height
   both say its worst state (tall for up, middle for slow, short for down, a faint stub for a day without checks), and
   hovering, focusing or tapping the strip shows the day: its date, uptime, worst state as an icon and a word, and its
@@ -341,7 +341,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   Recent included, in liveworkspace's own colours. The last app used here (kept in this browser) only picks what
   **New** makes and whose welcome and hero Home shows; it no longer filters the lists.
 - **The header.** The liveworkspace logo (with the site switcher), a slanted hairline with equal space either
-  side, then the app's logo, which leads back to the app. On a phone, where there is less room, only the app's
+  side, then the app's logo, which leads back to the app. The two logos share one centre line, the header's middle (owner, 2026-11-09: the second "lower than the first one visually"). On a phone, where there is less room, only the app's
   logo shows (the liveworkspace logo shows when no app is). The search field sits in the middle (on Home the hero holds it), the account control on
   the right. Someone who came straight here sees no app logo.
   On the Explorer, the switcher keeps you on the Explorer: another app's row opens that app's Explorer at the same

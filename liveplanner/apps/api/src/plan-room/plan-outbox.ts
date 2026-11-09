@@ -65,6 +65,7 @@ export function collabPushOf(
       resolved: t.resolved,
       commentCount: t.commentCount,
       participantIds: t.participantIds,
+      ...(t.agentIds.length > 0 ? { agentIds: t.agentIds } : {}),
       mentionedIds: t.mentionedIds,
       latestText: t.latestText,
       latestAuthorName: t.latestAuthorName ?? '',

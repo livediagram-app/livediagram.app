@@ -166,6 +166,10 @@ Every tour (this one, [Show Me](show-me.md) and the [element tours](element-tour
   draws (`TourStage`: `TourSpotlight`, `TourPopover`, `TourShield`) live once, with the Start Tour button and the tour colours, in `@liveworkspace/workbench/components/tour`; each tour's host owns when it is on offer, its steps and what
   ending means. A step anchors by `data-tour-id`, or by a `selector` resolved when it runs, and an anchorless card's
   `prepare` runs too.
+- **The card never covers its target.** Beside it on a computer, else below or above it; when neither has room for
+  the whole card (a phone, a target mid-screen) it takes the side with more room, as tall as that room, its words
+  scrolling inside: never centred over the target. Placed again when the window or the visible viewport changes
+  size. (Owner, 2026-11-09: "on planner it says to hit the Card Types, but it covers it".)
 - The engine drives the **real UI**, not screenshots: a step's `prepare` opens the actual panel, popover or menu
   (pressing the same trigger a person would), then anchors the card to the resulting DOM node.
 - Targets are awaited (poll with timeout) because several menus are lazy-loaded chunks. A step whose target never

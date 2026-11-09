@@ -37,15 +37,23 @@ describe('FONTS catalogue invariants', () => {
     }
   });
 
-  it('every multi-weight Google family spec covers the editor weights 400 / 500 / 700', () => {
-    // Most families ship a weight axis and must expose 400/500/700 for the
-    // editor's regular/medium/bold text. A single-weight family (no `:wght@`
-    // suffix, e.g. Permanent Marker) is allowed and reuses its one face.
+  it('every Google family spec loads a regular and a bold, or one heavy weight', () => {
+    // A family with several weights must load 400 and 700 for the editor's
+    // regular and bold text (500 may fall to 400, as Kalam's does). A loud
+    // face (the marker, the display serif) loads one heavy weight and letters
+    // regular and bold alike, never a synthesised bold (fonts.md "Legible at
+    // every size").
     for (const f of FONTS) {
-      if (f.google.includes(':wght@')) {
-        expect(f.google).toContain('wght@400;500;700');
+      const weights = f.google
+        .split('wght@')[1]
+        ?.split(';')
+        .map((w) => w.split(',').pop());
+      expect(weights, f.id).toBeDefined();
+      if (weights!.length > 1) {
+        expect(weights, f.id).toContain('400');
+        expect(weights, f.id).toContain('700');
       } else {
-        expect(f.google).not.toContain(':');
+        expect(Number(weights![0]), f.id).toBeGreaterThanOrEqual(700);
       }
     }
   });

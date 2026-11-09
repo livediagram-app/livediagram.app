@@ -62,8 +62,15 @@ const itemOf = (p: Place) => ({
   itemTeamId: p.teamId,
 });
 
-function cardOf(c: Pick<ActivityCard, 'key' | 'type' | 'title' | 'board'>): CollabCard {
-  return { key: c.key, type: c.type, typeLabel: typeLabel(c.type), title: c.title, board: c.board };
+function cardOf(c: Pick<ActivityCard, 'key' | 'type' | 'title' | 'board' | 'column'>): CollabCard {
+  return {
+    key: c.key,
+    type: c.type,
+    typeLabel: typeLabel(c.type),
+    title: c.title,
+    board: c.board,
+    ...(c.column ? { column: c.column } : {}),
+  };
 }
 
 // The offline read's rows in the index's shape. `me` stands in for the reader's ids, which the read already matched.

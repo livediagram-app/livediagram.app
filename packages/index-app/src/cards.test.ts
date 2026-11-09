@@ -126,6 +126,43 @@ describe('cardsCollabPush', () => {
     expect(push.actions.map((a) => [a.assigneeId, a.assignerId])).toEqual([['user_c', 'o']]);
   });
 
+  // An agent's comment (an API token, `ai`) is not its author's own: they reach the thread through `agentIds`, so a
+  // question it asked still waits on them; someone who also wrote by hand is a participant alone.
+  it('pushes the authors who wrote only through an agent as agentIds, apart from the participants', async () => {
+    const comment = (authorId: string, createdAt: number, ai?: boolean) => ({
+      authorId,
+      authorName: authorId,
+      authorColor: '',
+      text: 'Why?',
+      createdAt,
+      ...(ai ? { ai } : {}),
+    });
+    const cards = [
+      await card('c1', {
+        threads: [
+          { id: 'asked', title: 'Q', resolved: false, comments: [comment('user_a', 1, true)] },
+          {
+            id: 'answered',
+            title: 'A',
+            resolved: false,
+            comments: [
+              comment('user_a', 1, true),
+              comment('user_a', 2),
+              comment('user_b', 3, true),
+            ],
+          },
+          { id: 'human', title: 'H', resolved: false, comments: [comment('user_b', 4)] },
+        ],
+      }),
+    ];
+    const { push } = await cardsCollabPush(cards, { people: [], hashOf, fallbackAssignerId: 'o' });
+    const byId = Object.fromEntries(push.threads.map((t) => [t.elementId, t]));
+    expect(byId.asked).toMatchObject({ participantIds: [], agentIds: ['user_a'] });
+    expect(byId.answered).toMatchObject({ participantIds: ['user_a'], agentIds: ['user_b'] });
+    expect(byId.human!.participantIds).toEqual(['user_b']);
+    expect(byId.human).not.toHaveProperty('agentIds');
+  });
+
   it('lists each thread once, on the first card naming it, and skips one with no comments', async () => {
     const comment = { authorName: 'Ada', authorColor: '#f00', text: 'hi', createdAt: 5 };
     const shared = { id: 'th-s', title: 'Shared', resolved: false, comments: [comment] };

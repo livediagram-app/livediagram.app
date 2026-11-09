@@ -84,6 +84,16 @@ of their steps ask the person to try things.
   zoom. A glide is one frame-by-frame tween written straight to the hole, with no render during it.
 - **One of each.** One spotlight and one card for the whole run, never remounted per step.
 
+### Where the card sits
+
+The card never covers the control it is about. Beside its target on a computer (right, then left), else below or
+above it. When neither below nor above has room for the whole card (a phone, a tall card, a target in the middle of
+the screen), it takes the side with more room, as tall as that room, and its words scroll inside it: never centred
+over the target. Only a step with no target (the last card, a target gone mid-step) is centred. The card is placed
+again whenever the window or the visible viewport changes size (a phone's keyboard, a pinch), so it stays clear.
+(Owner, 2026-11-09: "Review the new tours on mobile, they break the UI, for example on planner it says to hit the
+Card Types, but it covers it".)
+
 ## Mechanics
 
 - **One engine, every tour.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /

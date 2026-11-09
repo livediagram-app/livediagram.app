@@ -21,6 +21,7 @@ import {
   parseGameInput,
   parseNudge,
   parseStoredLevel,
+  parseViewport,
 } from '@livehuddle/api-schema';
 import { answersAsSelf } from './document-room-rules';
 import { scopedRenames, scopedSenderMayRelay } from './room-scope';
@@ -143,6 +144,9 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // A nudge (docs/specs/012-collaboration/nudge.md "Share roles"): taking part, since it reaches a person's desktop, so
   // never a Viewer's; a malformed one reaches nobody. The room addresses it and holds each pair to one per 2 minutes.
   if (opKind === 'nudge' && (level === 'view' || !(parsed = parseNudge(op)))) return DROP;
+  // A camera (docs/specs/012-collaboration/follow-me-viewport.md): presence from any level, which a follower applies
+  // to its own view, so a malformed one (a zoom of 0 or NaN) reaches nobody.
+  if (opKind === 'viewport' && !(parsed = parseViewport(op))) return DROP;
   // Playing a game at a piece is taking part (docs/specs/009-elements/social-pieces.md "Share roles"): a Viewer
   // watches, so its paddle and its moments reach nobody, and a malformed one from anyone reaches nobody. Each screen
   // then checks the sender sits on the seat it names.

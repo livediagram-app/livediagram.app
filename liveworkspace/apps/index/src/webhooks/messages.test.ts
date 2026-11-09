@@ -91,7 +91,10 @@ describe('bodyFor', () => {
 
   it('sends Slack a sentence with a link back, its control characters escaped', () => {
     const body = JSON.parse(bodyFor('slack', event({ title: 'A <b> & c' })));
-    expect(body.text).toBe('Ada moved “A <b> & c” to the Trash');
+    // The notification text is Slack markup too: escaped, so a title like <!channel> pings nobody.
+    expect(body.text).toBe('Ada moved “A &lt;b&gt; &amp; c” to the Trash');
+    const ping = JSON.parse(bodyFor('slack', event({ title: '<!channel>' })));
+    expect(ping.text).not.toContain('<!channel>');
     expect(body.blocks[0].text.text).toBe(
       'Ada moved “A &lt;b&gt; &amp; c” to the Trash\n<https://www.liveplanner.app/project/p1|Open in liveplanner>',
     );

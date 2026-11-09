@@ -126,6 +126,10 @@ describe('ToolbarPalette', () => {
     const card = document.querySelector('[data-tour-id="palette"]')!;
     expect(card.className).toContain('min-w-0');
     expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
+    // On a phone the bar swipes, so it names every category (toolbar-layout.md "On a phone", owner 2026-11-09).
+    const bar = [...document.querySelectorAll('[data-category-bar-button]')];
+    expect(bar.length).toBeGreaterThan(0);
+    for (const b of bar) expect(b.textContent).toBe(b.getAttribute('aria-label'));
   });
 
   it('draws the menu card on a phone’s row when given one', () => {

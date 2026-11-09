@@ -8,34 +8,13 @@
 
 import { useEffect, useState } from 'react';
 import { revealInScrollers } from '@liveworkspace/workbench/components/tour/tour-reveal';
+import { covered, firstDrawn } from './ring-target';
 
 const TRACK_MS = 150;
 // The ring sits this far outside its target.
 const RING_PAD_PX = 4;
 
 type Box = { left: number; top: number; width: number; height: number };
-
-// Whether another layer (a dialog opened over it) covers the target at its centre: the ring would float over that
-// layer, ringing a control nobody can press. The ring itself takes no pointer, so it is never what is hit. Off screen,
-// nothing is hit and the target counts as clear.
-function covered(el: Element, r: DOMRect): boolean {
-  if (typeof document.elementFromPoint !== 'function') return false;
-  const x = Math.min(Math.max(r.left + r.width / 2, 0), window.innerWidth - 1);
-  const y = Math.min(Math.max(r.top + r.height / 2, 0), window.innerHeight - 1);
-  const hit = document.elementFromPoint(x, y);
-  return hit !== null && hit !== el && !el.contains(hit) && !hit.contains(el);
-}
-
-// The first of `selectors` drawn on screen and not covered, read again at every measure, so the ring moves on as the
-// page changes.
-function firstDrawn(selectors: readonly string[]): DOMRect | null {
-  for (const s of selectors) {
-    const el = document.querySelector(s);
-    const r = el?.getBoundingClientRect();
-    if (el && r && (r.width > 0 || r.height > 0) && !covered(el, r)) return r;
-  }
-  return null;
-}
 
 // The target a hint brings into view: the first drawn that is off the window or not under another layer (a target
 // a dialog covers stays where it is, and the ring moves on to the next).

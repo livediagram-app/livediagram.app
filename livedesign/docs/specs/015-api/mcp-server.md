@@ -243,7 +243,11 @@ of `elements`; the server materialises the hand-tuned scaffold from
 `@livedesign/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
 canvas overrides; the model then personalises labels via `update_design`'s
-`ops` mode. The MCP:
+`ops` mode. A tab (on `create_design` or `add_tab`) given both a `template` and
+elements is refused, naming the tab, rather than built from the template with
+its elements dropped. A `theme` (the design's or a tab's) must be one of the
+theme ids the description lists; an unknown one is refused by the input check
+rather than taken silently as the Default scheme. The MCP:
 
 1. **Validates** each tab's `elements` with `isValidTab` (reject `400`-style with
    a clear message naming the offending tab).

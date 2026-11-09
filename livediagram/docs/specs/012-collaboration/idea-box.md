@@ -61,7 +61,8 @@ rather than bigger ones.
 Two people posting in the same second both land: a card travels as one
 `idea` delta ([Collaboration race hardening](collab-race-hardening.md)), with no author on the wire either, and a peer's
 whole-element update never replaces the box's cards unless it empties the
-box (a new round). A full box (`IDEA_MAX_CARDS`, 300) refuses the next card at
+box (a new round). An `idea` delta lands only on an idea box: one aimed at any other shape (a hand-sent frame) is
+dropped by every peer and by the room. A full box (`IDEA_MAX_CARDS`, 300) refuses the next card at
 the press, and the composer says so: at the cap its field reads **Box is full**
 and is off, and a post refused because the box filled meanwhile (as this
 viewer's copy shows it) keeps its draft rather than throwing the text away.

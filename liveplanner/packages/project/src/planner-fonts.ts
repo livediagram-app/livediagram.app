@@ -3,8 +3,9 @@
 // package's: the other apps keep every face.
 import { FONTS } from '@liveworkspace/model-core/fonts';
 
-/** Faces left out of liveplanner's pickers, and drawn in the UI face on its boards and cards. Permanent Marker has
- *  no lowercase, and its 1, 3 and 0 read as ), ʒ and O at card sizes. */
+/** Faces left out of liveplanner's pickers, and drawn in the UI face on its boards and cards. The marker id was left
+ *  out when it lettered Permanent Marker (no lowercase; its 1, 3 and 0 read as ), ʒ and O at card sizes). It letters
+ *  Shantell Sans since 2026-11 and stays out until liveplanner chooses to offer a marker face on cards (fonts.md). */
 export const PLANNER_EXCLUDED_FONT_IDS: readonly string[] = ['permanent-marker'];
 
 const EXCLUDED = new Set(PLANNER_EXCLUDED_FONT_IDS);

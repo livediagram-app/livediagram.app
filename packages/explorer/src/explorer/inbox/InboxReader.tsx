@@ -24,7 +24,7 @@ import type { InboxComment, InboxTarget, InboxVerb, ItemPlace } from '../../type
 import { relativeSince, useNow } from '../../time';
 import { CheckIcon, CommentIcon, OpenIcon, ReplyIcon, SendIcon, TeamIcon } from '../../ui/icons';
 import { kindWords, siteOf } from '../../words';
-import { AppMark } from '../badges';
+import { AppMark, CardStatusChip } from '../badges';
 import { useExplorer } from '../context';
 import { ThisBrowserPill } from '../ThisBrowser';
 import { CardGlyph, entryFacts, Lead, reasonIcon, type EntryFacts } from './InboxRows';
@@ -462,9 +462,11 @@ function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFacts }) {
           ? `${who} mentioned you`
           : f.reason?.kind === 'yours'
             ? `${who} commented on your ${siteKindLower(entry)}`
-            : who === 'You'
-              ? 'You replied'
-              : `${who} replied`;
+            : f.reason?.kind === 'agent'
+              ? 'Your agent wrote'
+              : who === 'You'
+                ? 'You replied'
+                : `${who} replied`;
       break;
     case 'FormResponses':
       sentence = f.reason?.label ?? 'New responses';
@@ -495,6 +497,7 @@ function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFacts }) {
             </span>
             {f.cardType.label}
           </span>
+          <CardStatusChip column={f.column} />
         </>
       ) : null}
     </p>

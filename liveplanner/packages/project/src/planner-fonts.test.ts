@@ -6,7 +6,7 @@ import { isPlannerExcludedStack, PLANNER_EXCLUDED_FONT_IDS, PLANNER_FONTS } from
 const stackOf = (id: string) => FONTS.find((f) => f.id === id)!.stack;
 
 describe('planner fonts', () => {
-  it('leaves Permanent Marker out of what liveplanner offers', () => {
+  it('leaves Shantell Sans out of what liveplanner offers', () => {
     expect(PLANNER_EXCLUDED_FONT_IDS).toEqual(['permanent-marker']);
     expect(PLANNER_FONTS.map((f) => f.id)).not.toContain('permanent-marker');
   });

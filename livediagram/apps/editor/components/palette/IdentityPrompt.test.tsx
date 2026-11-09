@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { MAX_PARTICIPANT_NAME_LEN } from '@liveworkspace/api-schema/participants';
 import type { Participant } from '@/lib/identity';
 import { IdentityPrompt } from './IdentityPrompt';
 
@@ -38,10 +39,29 @@ describe('IdentityPrompt', () => {
     expect(onJoin).toHaveBeenLastCalledWith('Ada');
   });
 
+  // The participant route refuses a longer name (400), so one typed past the cap was never saved.
+  it("caps the name at the participant route's limit", () => {
+    prompt();
+    expect(screen.getByLabelText('Your name')).toHaveProperty(
+      'maxLength',
+      MAX_PARTICIPANT_NAME_LEN,
+    );
+  });
+
   it('follows the participant until the visitor types', () => {
     const { view, onJoin, onCancel } = prompt({ participant: { ...ada, name: 'Guest' } });
     view.rerender(<IdentityPrompt participant={ada} onJoin={onJoin} onCancel={onCancel} />);
     expect(screen.getByLabelText('Your name')).toHaveProperty('value', 'Ada');
+  });
+
+  it('promises a Viewer only a cursor, never collaborating or comments', () => {
+    prompt();
+    expect(screen.getByText(/cursor and comments/)).toBeTruthy();
+    cleanup();
+    prompt({ looksOnly: true });
+    expect(screen.queryByText(/comments/)).toBeNull();
+    expect(screen.queryByText(/collaborate/)).toBeNull();
+    expect(screen.getByText('Other people will see this name on your cursor.')).toBeTruthy();
   });
 
   it("locks a signed-in visitor's account name", () => {

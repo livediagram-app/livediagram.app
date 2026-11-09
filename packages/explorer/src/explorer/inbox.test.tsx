@@ -210,8 +210,9 @@ describe('the Inbox list', () => {
     expect(options()[4]!.querySelector('[data-inbox-reason="responses"]')!.textContent).toBe(
       '2 new responses',
     );
-    // The sidebar counts the work assigned to me: the action and the card.
-    expect(screen.getByRole('treeitem', { name: 'Inbox (2)' })).toBeTruthy();
+    // The sidebar counts what waits on me: the action and the card assigned to me, and the thread mentioning me;
+    // not the thread I replied in, the work I handed out or the form.
+    expect(screen.getByRole('treeitem', { name: 'Inbox (3)' })).toBeTruthy();
   });
 
   it('says why a row is there in short words, a mention first', () => {
@@ -236,7 +237,8 @@ describe('the Inbox list', () => {
     expect(
       label(threadReason({ ...t, youCommented: true, latestAuthorId: 'user_me' }, 'user_me')),
     ).toBe('You replied');
-    expect(threadReason(t)).toBeNull();
+    // Reached for none of these: only my agent wrote in it.
+    expect(label(threadReason(t))).toBe('Your agent wrote');
     expect(actionReason({ assigneeName: 'Bo Chen' }, true).label).toBe('To do');
     expect(actionReason({ assigneeName: 'Bo Chen' }, false).label).toBe('Waiting on Bo');
     expect(actionReason({ assigneeName: null }, false).label).toBe('Waiting on a teammate');

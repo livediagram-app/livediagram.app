@@ -94,7 +94,7 @@ describe('ReceptionistHost', () => {
     expect(tourOffer()).toBeNull();
   });
 
-  it('gives the welcome on his first greeting, recorded as seen, then a hello that closes itself', () => {
+  it('gives the welcome on his first greeting, recorded as seen, then a hello that asks what they want', () => {
     editor();
     const { rerender } = render(<ReceptionistHost />);
     act(() => noteReceptionistGreetedYou());
@@ -107,10 +107,11 @@ describe('ReceptionistHost', () => {
     rerender(<ReceptionistHost />);
     act(() => noteReceptionistGreetedYou());
     expect(getReceptionistState().chat).toMatchObject({ open: true, reason: 'back' });
+    // It waits for a choice or I'll Explore rather than closing itself.
     act(() => {
-      vi.advanceTimersByTime(4_000);
+      vi.advanceTimersByTime(10_000);
     });
-    expect(getReceptionistState().chat.open).toBe(false);
+    expect(getReceptionistState().chat.open).toBe(true);
   });
 
   it('opens the welcome for a greeting that came before it loaded', () => {

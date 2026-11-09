@@ -393,6 +393,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           participant={selfParticipant}
           designName={designName}
           lockedName={identityLockedName}
+          canComment={paletteShown}
           onJoin={onConfirmIdentity}
           onCancel={onCancelIdentity}
         />

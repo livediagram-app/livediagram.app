@@ -5,9 +5,9 @@ the note's own tip. Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
 | File                                                      | Role                                                                |
 | --------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/design/src/pointer-note.ts`                   | Kind guard, tip read / write, leader geometry, tip snapping         |
-| `packages/design/src/attachment.ts`                     | `settleChips` settles a pointer note; `withAttached` carries it     |
-| `packages/design/src/svg-render-pointer-note.ts`        | Headless body: panel, leader, tip                                   |
+| `packages/design/src/pointer-note.ts`                     | Kind guard, tip read / write, leader geometry, tip snapping         |
+| `packages/design/src/attachment.ts`                       | `settleChips` settles a pointer note; `withAttached` carries it     |
+| `packages/design/src/svg-render-pointer-note.ts`          | Headless body: panel, leader, tip                                   |
 | `apps/live/components/canvas/PointerNoteOverlay.tsx`      | Canvas face: leader, tip, the tip handle while selected             |
 | `apps/live/components/palette/PointerNoteMenuSection.tsx` | Detach                                                              |
 | `apps/live/hooks/canvas/usePointerNoteSetters.ts`         | `setPointerTip(id, tipAbs)`: snap, attach or free, one history step |
@@ -36,6 +36,9 @@ For each pointer note `n` (before: `p`, the same id in `prev`):
 2. Attached to an id in `prev` that is gone from `next`: the note is removed (deleted with its host).
 3. Attached to an unknown or unhostable id, or with an invalid point: detached where it is, its tip unchanged.
 4. Unattached: unchanged. (A note is never attached by landing near a point; only its tip handle attaches it.)
+
+Pointer notes settle before badges and step numbers, and a chip on a note is placed on the note as it settled: a
+note carried by its host takes the badge on it along in the same write.
 
 `withAttached` adds attached pointer notes to a carried set, as it does chips; duplicate and paste remap `attachedTo`
 through the same path.
@@ -127,12 +130,12 @@ on key-up.
 
 ## Testing
 
-| Rule                                | Test file                                                                                                                    |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Rule                                | Test file                                                                                                                  |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | Settling (I1, I2, deletes, carries) | `packages/design/src/pointer-note.test.ts`                                                                                 |
-| Leader, snapping, export (I3)       | same                                                                                                                         |
-| Face, tip handle drag and keys      | `apps/live/components/canvas/PointerNoteOverlay.test.tsx`                                                                    |
-| Menu section                        | `apps/live/components/palette/PointerNoteMenuSection.test.tsx`                                                               |
+| Leader, snapping, export (I3)       | same                                                                                                                       |
+| Face, tip handle drag and keys      | `apps/live/components/canvas/PointerNoteOverlay.test.tsx`                                                                  |
+| Menu section                        | `apps/live/components/palette/PointerNoteMenuSection.test.tsx`                                                             |
 | E5, no turn kept or offered         | `packages/design/src/unturnable-rotation.test.ts`; `apps/live/components/palette/MultiPlacementSections.rotation.test.tsx` |
 
 ## Constants and configuration

@@ -82,6 +82,14 @@ describe('useControlMenu', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it("stays open on an input method's Escape, which drops its word", () => {
+    render(<Harness focusOnOpen />);
+    fireEvent.click(opener());
+    fireEvent.keyDown(document.body, { key: 'Escape', isComposing: true });
+    fireEvent.keyDown(document.body, { key: 'Escape', keyCode: 229 });
+    expect(screen.getByRole('dialog', { name: 'Element menu' })).toBeTruthy();
+  });
+
   it('closes the innermost sub-panel first, back to its trigger', () => {
     render(<Harness focusOnOpen />);
     opener().focus();

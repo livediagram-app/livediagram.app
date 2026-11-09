@@ -34,6 +34,9 @@ function hubOf(ids: ElementId[], edges: Edge[]): ElementId {
   return best;
 }
 
+// How far (radians, about half a degree) left of 12 o'clock a branch still counts as at 12.
+const TWELVE_TOLERANCE = 0.01;
+
 // Place one component as a radial mindmap around its hub.
 export function positionMindmapComponent(
   ids: ElementId[],
@@ -52,7 +55,10 @@ export function positionMindmapComponent(
   const angleOf = (id: ElementId) => {
     const c = centers.get(id)!;
     const a = Math.atan2(c.y - hubC.y, c.x - hubC.x) + Math.PI / 2;
-    return a < 0 ? a + 2 * Math.PI : a;
+    const turn = a < 0 ? a + 2 * Math.PI : a;
+    // A branch a hair left of 12 o'clock (a grid snap away from straight up) is the first one placed
+    // there, not the last.
+    return turn > 2 * Math.PI - TWELVE_TOLERANCE ? turn - 2 * Math.PI : turn;
   };
   for (const kids of children.values()) kids.sort((a, b) => angleOf(a) - angleOf(b));
 
@@ -113,7 +119,13 @@ export function positionMindmapComponent(
       a += share;
     }
   };
-  placeWedge(hub, -Math.PI / 2, 2 * Math.PI); // first branch starts at 12 o'clock
+  // The first branch sits at 12 o'clock (its wedge centred there), as layout-cleanup.md "Mindmap
+  // order" has it: a wedge starting there put it half its share clockwise, so a map drawn with one
+  // branch up and one down came out turned a quarter, one at 3 and one at 9.
+  const first = children.get(hub)![0];
+  const firstShare =
+    first === undefined ? 0 : (2 * Math.PI * leaves.get(first)!) / leaves.get(hub)!;
+  placeWedge(hub, -Math.PI / 2 - firstShare / 2, 2 * Math.PI);
 
   // Normalise to local top-left coords with the block starting at 0,0.
   let minX = Infinity;

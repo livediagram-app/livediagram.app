@@ -9,19 +9,19 @@ import { embeddedFontFaceCss, latinFaceBlocks } from './export-fonts';
 const GOOGLE_CSS = `
 /* cyrillic */
 @font-face {
-  font-family: 'Permanent Marker';
+  font-family: 'Shantell Sans';
   src: url(https://fonts.gstatic.com/s/pm/cyrillic.woff2) format('woff2');
   unicode-range: U+0301;
 }
 /* latin-ext */
 @font-face {
-  font-family: 'Permanent Marker';
+  font-family: 'Shantell Sans';
   src: url(https://fonts.gstatic.com/s/pm/latin-ext.woff2) format('woff2');
   unicode-range: U+0100;
 }
 /* latin */
 @font-face {
-  font-family: 'Permanent Marker';
+  font-family: 'Shantell Sans';
   src: url(https://fonts.gstatic.com/s/pm/latin.woff2) format('woff2');
   unicode-range: U+0000-00FF;
 }
@@ -54,7 +54,7 @@ describe('embeddedFontFaceCss', () => {
   it('inlines each font file as a data URL', async () => {
     const css = await embeddedFontFaceCss(['permanent-marker'], stubFetch());
     expect(css).toContain('@font-face');
-    expect(css).toContain("font-family: 'Permanent Marker'");
+    expect(css).toContain("font-family: 'Shantell Sans'");
     expect(css).toContain('data:font/woff2;base64,');
     expect(css).not.toContain('https://fonts.gstatic.com');
   });

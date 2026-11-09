@@ -54,6 +54,7 @@ const local: OfflineActivity = {
     {
       ...place,
       board,
+      column: { name: 'To Do', color: '#3b82f6', done: false },
       id: 'c1',
       key: 4,
       type: 'task',
@@ -99,7 +100,13 @@ describe('the Inbox host', () => {
       tabId: COLLAB_CARDS_TAB,
       elementId: 'c1',
       assigneeId: 'user_me',
-      card: { key: 4, type: 'task', title: 'Ship', board },
+      card: {
+        key: 4,
+        type: 'task',
+        title: 'Ship',
+        board,
+        column: { name: 'To Do', color: '#3b82f6', done: false },
+      },
     });
     expect(rows.threads[0]).toMatchObject({
       elementId: 'e2',
@@ -114,6 +121,8 @@ describe('the Inbox host', () => {
       elementLabel: 'Ada: Loose ends',
       card: { id: 'c2', typeLabel: 'Card', board: null },
     });
+    // No column holds it: no status chip.
+    expect(rows.threads[1]!.card).not.toHaveProperty('column');
   });
 
   it('reports each Inbox event as its own literal pair', () => {

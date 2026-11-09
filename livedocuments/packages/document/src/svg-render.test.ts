@@ -267,7 +267,7 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('fonts.googleapis.com');
       expect(svg).toContain('Lora');
       // Only what it used — an export shouldn't pull eleven families.
-      expect(svg).not.toContain('Permanent+Marker');
+      expect(svg).not.toContain('Shantell+Sans:wght@700');
     });
 
     it('says nothing about fonts when nothing asked for one', () => {

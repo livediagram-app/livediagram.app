@@ -492,12 +492,33 @@ export function connectRoom(
       raw.kind === 'op' ? { ...raw, op: opForTheWire(raw.op) as RoomOp } : raw;
     // State, not events: only the latest of each counts, so it is kept to say again on the next socket. Where our
     // call's media is too (proximity-audio.md "The wire"): a new socket is a new presence id that no peer has a
-    // locator for, and nothing else would say it until someone new walked onto the tab.
+    // locator for, and nothing else would say it until someone new walked onto the tab. So is the proof of our call's
+    // session (`call-session`): the room keeps it on the socket, so a new socket without it leaves everyone who asks
+    // to hear us refused, and a speaker with nothing new to hear never proves it again on its own.
     if (
       msg.kind === 'op' &&
-      (msg.op.kind === 'select' || msg.op.kind === 'tab-focus' || msg.op.kind === 'call-track')
+      (msg.op.kind === 'select' ||
+        msg.op.kind === 'tab-focus' ||
+        msg.op.kind === 'call-track' ||
+        msg.op.kind === 'call-session')
     ) {
       lastSaid.set(msg.op.kind, msg);
+    }
+    // And our character, standing (avatar-mode.md "Realtime"): the room forgets it with the old presence id, and a
+    // hidden tab sends no heartbeat, so without it a walker who reconnects in the background vanishes for everyone
+    // and is no longer placed for the call's hearing check. Kept at rest: a step or a reaction replayed later is stale.
+    if (msg.kind === 'op' && msg.op.kind === 'avatar') {
+      if (msg.op.avatar === null) lastSaid.delete('avatar');
+      else {
+        const { reaction: _reaction, ...standing } = msg.op.avatar;
+        lastSaid.set('avatar', {
+          ...msg,
+          op: {
+            ...msg.op,
+            avatar: { ...standing, walking: false, stepFrame: 0, lift: 0, wave: null },
+          },
+        });
+      }
     }
     if (msg.kind === 'op' && msg.op.kind === 'avatar') {
       // Leaving the mode: whatever comes next is new to everyone, costume and all.

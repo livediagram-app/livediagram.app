@@ -793,6 +793,9 @@ export function noteDay(note: NoticeNote): string {
   return note.day ?? localDay(note.at);
 }
 
+/** The latest time a JavaScript date holds (8.64e15 ms, about the year 275760). */
+const DATE_MS_MAX = 8.64e15;
+
 export const NOTE_TITLE_MAX = 60;
 export const NOTE_TEXT_MAX = 280;
 export const NOTE_AUTHOR_MAX = 60;
@@ -824,11 +827,28 @@ export function isNoticeNote(v: unknown): v is NoticeNote {
     typeof n.by === 'string' &&
     n.by.length > 0 &&
     n.by.length <= 128 &&
+    // A time a date can show: the face prints the day it was pinned, which throws past Date's range.
     typeof n.at === 'number' &&
-    Number.isFinite(n.at) &&
+    Number.isInteger(n.at) &&
+    n.at >= 0 &&
+    n.at <= DATE_MS_MAX &&
     (n.color === undefined || isNoteColor(n.color)) &&
     (n.day === undefined || isNoteDay(n.day))
   );
+}
+
+/** The note's own fields alone, so a field the wire does not define is never stored on the board. */
+export function noteFields(n: NoticeNote): NoticeNote {
+  return {
+    id: n.id,
+    ...(n.title === undefined ? {} : { title: n.title }),
+    text: n.text,
+    author: n.author,
+    by: n.by,
+    at: n.at,
+    ...(n.color === undefined ? {} : { color: n.color }),
+    ...(n.day === undefined ? {} : { day: n.day }),
+  };
 }
 
 export function isNoticeNotes(v: unknown): v is NoticeNote[] {
@@ -858,9 +878,9 @@ export function mergeNoticeNotes(
   );
   const storedIds = new Set(before.map((n) => n.id));
   const kept = before.filter((n) => n.by !== adderKey || incomingIds.has(n.id));
-  const added = incoming.filter(
-    (n): n is NoticeNote => isNoticeNote(n) && n.by === adderKey && !storedIds.has(n.id),
-  );
+  const added = incoming
+    .filter((n): n is NoticeNote => isNoticeNote(n) && n.by === adderKey && !storedIds.has(n.id))
+    .map(noteFields);
   const next = [...kept, ...added].slice(0, NOTES_MAX);
   if (next.length === before.length && next.every((n, i) => n === before[i]))
     return stored ? [...stored] : undefined;
