@@ -24,6 +24,8 @@ export type TimelineFeed = {
   loading: boolean;
   loadingMore: boolean;
   error: boolean;
+  /** The last Show More failed: the events shown stay, and Show More becomes Try Again. */
+  moreFailed: boolean;
   hasMore: boolean;
   /** When the reader last looked, from the visit's first page; null for never. */
   lastSeenAt: number | null;
@@ -56,6 +58,7 @@ export function useTimelineFeed(
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
+  const [moreFailed, setMoreFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   // Fixed by the visit's first page: a page read after the visit marked itself seen would mark nothing new.
   const [lastSeenAt, setLastSeenAt] = useState<number | null>(null);
@@ -75,6 +78,7 @@ export function useTimelineFeed(
     first.current = 'reading';
     more.current?.abort();
     setLoadingMore(false);
+    setMoreFailed(false);
     setLoading(true);
     setError(false);
     client.timeline(timelineQuery(only, team), { signal: abort.signal }).then(
@@ -129,6 +133,7 @@ export function useTimelineFeed(
     const abort = new AbortController();
     more.current = abort;
     setLoadingMore(true);
+    setMoreFailed(false);
     client.timeline({ ...timelineQuery(only, team), cursor }, { signal: abort.signal }).then(
       (page) => {
         setEvents((prev) => {
@@ -138,11 +143,13 @@ export function useTimelineFeed(
         setCursor(page.nextCursor);
         setLoadingMore(false);
       },
-      // A failed next page leaves what is shown and its cursor, so Show More asks again. `error` is the first
-      // page's alone: set here, it put the panel's whole Timeline behind "could not load" and a retry from page one.
+      // A failed next page leaves what is shown and its cursor, and says so (`moreFailed`), so Try Again asks for
+      // the same page. `error` is the first page's alone: set here, it put the panel's whole Timeline behind
+      // "could not load" and a retry from page one.
       (e: unknown) => {
         if (isAbort(e)) return;
         setLoadingMore(false);
+        setMoreFailed(true);
       },
     );
   }, [client, cursor, loadingMore, only, team]);
@@ -168,6 +175,7 @@ export function useTimelineFeed(
     loading,
     loadingMore,
     error,
+    moreFailed,
     hasMore: cursor !== null,
     lastSeenAt,
     loadMore,

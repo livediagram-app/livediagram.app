@@ -466,7 +466,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
   const focusPages = useRef(0);
   const focusFound = focusEventId ? events.some((e) => e.id === focusEventId) : true;
   useEffect(() => {
-    if (focusFound || feed.loading || feed.loadingMore || !feed.hasMore) return;
+    if (focusFound || feed.loading || feed.loadingMore || feed.moreFailed || !feed.hasMore) return;
     if (focusPages.current >= FOCUS_PAGES_MAX) return;
     focusPages.current += 1;
     feed.loadMore();
@@ -512,6 +512,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
         }}
         hasMore={feed.hasMore}
         loadingMore={feed.loadingMore}
+        moreFailed={feed.moreFailed}
         onLoadMore={() => {
           onTimeline?.('Loaded', 'More');
           feed.loadMore();

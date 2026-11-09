@@ -500,7 +500,8 @@ The Timeline moves too, and spans apps the same way: the index records what it c
 renamed, moved, trashed, restored, shared, favourited) and each app reports who edited what. The
 Explorer shows it filtered to the app it is in, or All, and Home's What Happened is read from it. Coming back to the
 browser tab reads its first page again and merges it in at the head (at most once in 30 seconds, as the Inbox
-does), keeping the pages loaded and the visit's New marks. A team's view carries **Team Activity** under its library,
+does), keeping the pages loaded and the visit's New marks. A Show More that fails keeps the events shown and says
+so, with Try Again in Show More's place, as the lists and the Audit Log do. A team's view carries **Team Activity** under its library,
 closed until opened: the team's own feed (`GET /timeline?team=`), every member seeing the team's whole history.
 
 ### 6. Content lives in one Durable Object per item

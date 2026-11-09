@@ -132,6 +132,29 @@ describe('the Timeline view', () => {
     expect(onTimeline).toHaveBeenCalledWith('Opened', 'Stack');
   });
 
+  it('says a failed Show More failed, keeps what is shown, and Try again reads the same page', async () => {
+    const now = Date.now();
+    const events = Array.from({ length: 45 }, (_, i) =>
+      makeEvent(i, { type: 'renamed', occurredAt: now - i * 1000 }),
+    );
+    const index = createFakeIndex({ events });
+    renderTimeline(index);
+    await waitFor(() => expect(screen.getByText('30 events · click to expand')).toBeTruthy());
+    index.fail.set('timeline', new IndexError(503, 'unavailable'));
+    fireEvent.click(screen.getByRole('button', { name: 'Show More' }));
+    const failed = await screen.findByText(/Couldn’t load the rest of this list/);
+    expect(screen.getByText('30 events · click to expand')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Show More' })).toBeNull();
+    index.fail.delete('timeline');
+    fireEvent.click(within(failed).getByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(screen.getByText('45 events · click to expand')).toBeTruthy());
+    expect(timelineQueries(index).slice(1)).toEqual([
+      { app: 'liveplanner', limit: 30, cursor: '30' },
+      { app: 'liveplanner', limit: 30, cursor: '30' },
+    ]);
+    expect(screen.queryByText(/Couldn’t load the rest of this list/)).toBeNull();
+  });
+
   it('says a failed read failed, never that nothing happened, and tries again', async () => {
     const index = createFakeIndex({ events: [makeEvent(1)] });
     index.fail.set('timeline', new IndexError(500, 'internal'));
