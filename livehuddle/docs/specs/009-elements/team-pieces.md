@@ -47,7 +47,9 @@ A large wall planner: a red header band hung from two binder rings, a white shee
   note with no day (none is made, but one could be stored) counts on the day it was pinned. A calendar holds up to 50
   notes, as a board does; once full, pinning says so.
 - **Opening it**: the face's **Calendar** button (a walking click anywhere on it) opens the calendar large: the month
-  with **‹** and **›** to step a month, **Today** to come back, each day a button showing its notes' tabs. Pressing a
+  with **‹** and **›** to step a month, **Today** to come back, each day a button showing its notes' tabs. A note's
+  day is from 2000 to 2100, so **‹** stops at January 2000 and **›** at December 2100, and a day spilling over past
+  either end is an empty cell rather than a day to pin to. Pressing a
   day selects it (today is selected on opening) and lists its notes below, newest first, each with its title, body,
   author and pin date, and an **Unpin** for those who may. Under the list, for those who may pin, the add box: title,
   body with a live 280 counter, the five colours and **Pin to 5 Nov**. While walking it opens in the reader, at reading

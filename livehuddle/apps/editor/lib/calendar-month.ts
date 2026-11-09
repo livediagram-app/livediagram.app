@@ -1,4 +1,4 @@
-import { localDay } from '@livehuddle/document';
+import { localDay, NOTE_DAY_YEAR_MAX, NOTE_DAY_YEAR_MIN } from '@livehuddle/document';
 
 // The Calendar Wall's month (docs/specs/009-elements/team-pieces.md "Calendar Wall"): six weeks of days, Monday first,
 // so any month fits the same ruled grid on every screen, each day named `YYYY-MM-DD` as a note's day is. Pure.
@@ -35,10 +35,21 @@ export function cursorOf(day: string): MonthCursor {
   return { year: Number(day.slice(0, 4)), month: Number(day.slice(5, 7)) - 1 };
 }
 
-/** A month `by` months on (or back). */
+// The months a note can be pinned in (isNoteDay's years), as month counts: ‹ and › stop at them, so the add box never
+// offers a day the room would refuse.
+const FIRST_MONTH = NOTE_DAY_YEAR_MIN * 12;
+const LAST_MONTH = NOTE_DAY_YEAR_MAX * 12 + 11;
+
+/** A month `by` months on (or back), held to the months a note can be pinned in. */
 export function stepMonth(cursor: MonthCursor, by: number): MonthCursor {
+  const m = Math.min(LAST_MONTH, Math.max(FIRST_MONTH, cursor.year * 12 + cursor.month + by));
+  return { year: Math.floor(m / 12), month: m % 12 };
+}
+
+/** Whether ‹ (`by` -1) or › (`by` 1) can step from this month: not past January 2000 or December 2100. */
+export function canStepMonth(cursor: MonthCursor, by: -1 | 1): boolean {
   const m = cursor.year * 12 + cursor.month + by;
-  return { year: Math.floor(m / 12), month: ((m % 12) + 12) % 12 };
+  return m >= FIRST_MONTH && m <= LAST_MONTH;
 }
 
 /** The six weeks shown for a month, Monday first; `today` is the viewer's own `YYYY-MM-DD`. */

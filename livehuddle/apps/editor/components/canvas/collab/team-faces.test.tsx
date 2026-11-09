@@ -214,6 +214,29 @@ describe('the Calendar Wall month', () => {
     expect(screen.getByRole('grid', { name: 'November 2026' })).toBeTruthy();
   });
 
+  // A note's day is 2000 to 2100 (isNoteDay): past either end, Pin sent a note every screen and the room dropped.
+  it('stops at December 2100 and January 2000, and offers no day past them', () => {
+    vi.setSystemTime(new Date(2100, 11, 15, 10, 0).getTime());
+    const { unmount } = open(piece('calendar-wall'));
+    const next = screen.getByRole('button', { name: 'Next month' }) as HTMLButtonElement;
+    expect(next.disabled).toBe(true);
+    fireEvent.click(next);
+    expect(screen.getByRole('grid', { name: 'December 2100' })).toBeTruthy();
+    // January 2101's spill-over days are empty cells, never buttons to pin to.
+    expect(screen.queryByRole('button', { name: '1 January' })).toBeNull();
+    expect(screen.getByRole('button', { name: '31 December' })).toBeTruthy();
+    unmount();
+    vi.setSystemTime(new Date(2000, 0, 15, 10, 0).getTime());
+    open(piece('calendar-wall'));
+    expect(
+      (screen.getByRole('button', { name: 'Previous month' }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    expect(screen.queryByRole('button', { name: '31 December' })).toBeNull();
+    expect((screen.getByRole('button', { name: 'Next month' }) as HTMLButtonElement).disabled).toBe(
+      false,
+    );
+  });
+
   it('lets a Viewer read, never pin, and unpins only what a Participant signed', () => {
     state.ctx = editor('view');
     const { unmount } = open(piece('calendar-wall', { noticeNotes: [note('a', '2026-11-07')] }));

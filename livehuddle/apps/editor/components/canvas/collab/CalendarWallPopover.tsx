@@ -5,6 +5,7 @@ import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/
 import { lucideChevronLeft, lucideChevronRight } from '@liveworkspace/icons/lucide';
 import {
   DEFAULT_NOTE_COLOR,
+  isNoteDay,
   localDay,
   NOTE_PAPER,
   NOTES_MAX,
@@ -16,6 +17,7 @@ import {
 import { lucideGlyph, Tooltip } from '@livehuddle/ui';
 import {
   calendarMonth,
+  canStepMonth,
   cursorOf,
   longDay,
   monthTitle,
@@ -110,7 +112,7 @@ function CalendarNotes({
   const dayNotes = byDay.get(selected) ?? [];
   const full = (element.noticeNotes?.length ?? 0) >= NOTES_MAX;
   const nav =
-    'flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-sky-500 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100';
+    'flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent focus-visible:outline-2 focus-visible:outline-sky-500 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 
   const pick = (day: string) => {
     setSelected(day);
@@ -129,6 +131,7 @@ function CalendarNotes({
             type="button"
             aria-label="Previous month"
             className={nav}
+            disabled={!canStepMonth(cursor, -1)}
             onClick={() => setCursor((c) => stepMonth(c, -1))}
           >
             <PrevIcon />
@@ -149,6 +152,7 @@ function CalendarNotes({
             type="button"
             aria-label="Next month"
             className={nav}
+            disabled={!canStepMonth(cursor, 1)}
             onClick={() => setCursor((c) => stepMonth(c, 1))}
           >
             <NextIcon />
@@ -173,6 +177,10 @@ function CalendarNotes({
             {cells.slice(week * 7, week * 7 + 7).map((cell) => {
               const notes = byDay.get(cell.day) ?? [];
               const isSelected = cell.day === selected;
+              // A day spilling over past the calendar's ends (before 2000, after 2100) takes no note: an empty cell.
+              if (!isNoteDay(cell.day)) {
+                return <span role="gridcell" key={cell.day} className={g.cell} />;
+              }
               return (
                 <span role="gridcell" key={cell.day} className="contents">
                   <button
