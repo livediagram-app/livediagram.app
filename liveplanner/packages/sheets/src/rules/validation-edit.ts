@@ -104,8 +104,9 @@ export function selectionHasCheckbox(layout: SheetLayout, ranges: readonly GridR
 }
 
 // Space, or a press on a box: every checkbox cell of the ranges ticked when any is not, else all unticked
-// (data-validation.md "Using a checkbox"). Null when no checkbox cell is selected. Merged-away cells are skipped by
-// the caller passing a merge's top-left.
+// (data-validation.md "Using a checkbox"). Null when no checkbox cell is selected. A merge's box is its top-left
+// cell's: the cells it hides are skipped, so Space on a selected merge (which selects the whole merge) reads and
+// toggles the one box it shows.
 export function toggleCheckboxes(
   wb: Workbook,
   sheetId: string,
@@ -121,12 +122,20 @@ export function toggleCheckboxes(
     const p = x.is === 'check' ? posRangeOf(layout, x) : null;
     return p ? [p] : [];
   });
+  const merges = (layout.merges ?? []).flatMap((m) => {
+    const p = posRangeOf(layout, m);
+    return p ? [p] : [];
+  });
+  const hidden = (r: number, c: number) =>
+    merges.some(
+      (m) => r >= m.r1 && r <= m.r2 && c >= m.c1 && c <= m.c2 && (r !== m.r1 || c !== m.c1),
+    );
   for (const g of ranges)
     for (const p of checks)
       for (let r = Math.max(g.r1, p.r1); r <= Math.min(g.r2, p.r2); r++)
         for (let c = Math.max(g.c1, p.c1); c <= Math.min(g.c2, p.c2); c++) {
           // The cell's own rule (a later rule may have split this one away).
-          if (validationRuleAt(layout, r, c)?.is !== 'check') continue;
+          if (validationRuleAt(layout, r, c)?.is !== 'check' || hidden(r, c)) continue;
           const rowId = layout.rows[r]!;
           const colId = layout.cols[c]!;
           const key = cellKey(rowId, colId);

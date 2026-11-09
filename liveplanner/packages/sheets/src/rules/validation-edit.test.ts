@@ -118,4 +118,23 @@ describe('the checkbox toggle', () => {
     expect(toggleCheckboxes(b.wb, sheet.id, [g(3, 1)])).toBeNull();
     expect(toggleCheckboxes(b.wb, 'nope', [g(0, 1)])).toBeNull();
   });
+  it('toggles a merged box by its top-left alone, so Space on a ticked merge unticks it', () => {
+    const b = book({ A1: 'TRUE' }, { rows: 4, cols: 4 });
+    const sheet = b.sheets[0]!;
+    const { rows, cols } = sheet.layout;
+    const withRule = apply(
+      sheet,
+      setValidationRule(sheet.layout, g(0, 0, 0, 1), { is: 'check' }, rand)!.write,
+    );
+    const merged = {
+      ...withRule,
+      layout: {
+        ...withRule.layout,
+        merges: [{ r1: rows[0]!, c1: cols[0]!, r2: rows[0]!, c2: cols[1]! }],
+      },
+    };
+    b.wb.updateSheet(merged);
+    const w = toggleCheckboxes(b.wb, merged.id, [g(0, 0, 0, 1)])!;
+    expect(w.kind === 'cells' && w.cells).toEqual([{ r: rows[0], c: cols[0], i: { b: false } }]);
+  });
 });
