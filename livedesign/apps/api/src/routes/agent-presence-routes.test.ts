@@ -115,6 +115,25 @@ describe('PUT presence', () => {
     expect(pending.length).toBe(1);
   });
 
+  // PR27: the level the gates resolve, so a Participant's agent badges as a Participant, not a Viewer.
+  it('shows a Participant’s token at Participant', async () => {
+    const res = await call({
+      body: {},
+      grant: {
+        item: 'd1',
+        level: 'participate',
+        tab: null,
+        sub: 'guest_00000000-0000-4000-8000-000000000002',
+        team: null,
+        exp: 9_999_999_999,
+        shareCode: 'LINKCODE',
+        token: 'signed',
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(put).toHaveBeenCalledWith(sql.env, expect.objectContaining({ role: 'participate' }));
+  });
+
   it('shows a read-only token as a viewer and counts no repeat set', async () => {
     put.mockResolvedValue({ ok: true, expiresAt: 31_000, created: false });
     await call({ body: {}, token: { id: 'tok_ro', readOnly: true } });
