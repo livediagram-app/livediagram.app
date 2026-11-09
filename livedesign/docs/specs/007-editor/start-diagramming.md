@@ -129,7 +129,9 @@ The tab's first page is drawn only once the start is done: while Start Making Pa
 it (`EditorCanvasHost` passes no pages), so nothing waits under the panel. Picking a template lands its pages;
 closing the panel shows the first page with its own **What Is This Page For?** ([Pages](pages-mode.md)). A blank of
 a page kind (Blank Logo, a blank wireframe) lands one page of that kind, already chosen, so it asks nothing and the
-start does not come back over it.
+start does not come back over it. **Blank Illustration** lands nothing (its one page is the unchosen page that asks
+what it is for), so picking it closes the start as the × does (`closeStartForBlank`): the tab would otherwise still
+read as empty, and the start would stay over it with the pick saved nowhere. Picking any blank closes it the same way.
 
 **The last page can be deleted.** Deleting it clears the tab, its pages and its elements, as one edit that Undo puts back, and brings Start Making Pages back even if it was closed. The tab is read again as the delete lands: a page a peer added since takes only this page away, and a lock or delete a peer made since takes nothing. The agents'
 page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`).
