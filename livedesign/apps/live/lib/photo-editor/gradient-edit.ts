@@ -68,12 +68,16 @@ export function withStop(
 ): { gradient: Gradient; index: number } {
   const at = clamp01(t);
   const [r, gr, b, a] = sampleGradient(g, at);
+  // The new stop found by itself, not by its place: one added on top of another (a press at either
+  // end) sorts after it, and the old stop's index had the editor pick up the old stop.
   if (kind === 'colour') {
-    const colours = byAt([...g.colours, { at, colour: `#${hex(r)}${hex(gr)}${hex(b)}` }]);
-    return { gradient: { ...g, colours }, index: colours.findIndex((s) => s.at === at) };
+    const stop = { at, colour: `#${hex(r)}${hex(gr)}${hex(b)}` };
+    const colours = byAt([...g.colours, stop]);
+    return { gradient: { ...g, colours }, index: colours.indexOf(stop) };
   }
-  const opacities = byAt([...g.opacities, { at, opacity: Math.round(a * 100) / 100 }]);
-  return { gradient: { ...g, opacities }, index: opacities.findIndex((s) => s.at === at) };
+  const stop = { at, opacity: Math.round(a * 100) / 100 };
+  const opacities = byAt([...g.opacities, stop]);
+  return { gradient: { ...g, opacities }, index: opacities.indexOf(stop) };
 }
 
 /** Stop `index` moved to t (and changed by `patch`); answers the gradient and where the stop now sits. */

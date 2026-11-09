@@ -22,6 +22,9 @@ export class TiledRaster {
   private dirty = new Set<TileKey>();
   // Tiles explicitly cleared (a mask's black, a layer's erased tile over a source).
   private cleared = new Set<TileKey>();
+  // How many tiles have been put in place from the store: what a picture drawn from the raster (its
+  // effects) keys on, as a load changes the pixels but not the layer's stored tiles.
+  private loadCount = 0;
 
   constructor(channels: Channels = 4, empty = 0) {
     this.channels = channels;
@@ -30,6 +33,11 @@ export class TiledRaster {
 
   get tileBytes(): number {
     return PHOTO_TILE * PHOTO_TILE * this.channels;
+  }
+
+  /** How many tiles have been loaded into it (load), counted up for its life. */
+  get loads(): number {
+    return this.loadCount;
   }
 
   keys(): TileKey[] {
@@ -73,6 +81,7 @@ export class TiledRaster {
    *  content id, so tiles that read the same (every white tile of a blank photo) arrive as one array, and the first
    *  write copies it rather than painting every tile that shares it. */
   load(key: TileKey, data: Uint8ClampedArray): void {
+    this.loadCount++;
     this.tiles.set(key, data);
     this.shared.add(key);
     this.cleared.delete(key);
