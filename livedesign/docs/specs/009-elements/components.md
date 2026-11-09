@@ -89,7 +89,8 @@ type ComponentOverride = {
 - An override **wins over the main**: a main change to an overridden field does not reach that instance; a main
   change to any other field does. So overrides survive a main change.
 - An override for an element the main no longer has is ignored (and kept, harmlessly, until Reset Overrides).
-- A cleared override (the reset arrow beside it) falls back to the main.
+- A cleared override (the reset arrow beside it) falls back to the main. A row's reset arrow clears every override of
+  that element in one undo step.
 - **The Overrides section** of an instance's menu lists the main's elements that take one, in the main's order: a text
   field for each with text (its placeholder is the main's text), a colour well for its fill, stroke or text colour
   (the shared colour picker), and an icon swap (the icon picker) for one with an icon. **Reset Overrides** clears
@@ -105,7 +106,9 @@ type ComponentOverride = {
    `componentMember: { instanceId, elementId }`. The instance's overrides and its opacity do not apply to them: this
    is the main, so a faded instance never fades the main it is edited from.
 3. They are edited with every ordinary tool: move, restyle, retype, delete, draw new ones. An element added on that
-   tab during the session joins it (it is marked as it lands). One edit, one undo step, as always.
+   tab during the session joins it (it is marked as it lands). One edit, one undo step, as always. A copy of a
+   member (Duplicate, or Copy and Paste) never carries its mark: made during the session it joins as a new member
+   (a new element of the main), and made after it is a plain element. A copy of the hidden instance is shown.
 4. **Live**: after each change the main is derived from the members (positions back into the frame's space, at the
    instance's scale) and saved, so every other instance redraws as the members change. Only the screen that opened
    the session derives live: a peer, and the same person on another device, receive a start or a Done one element at

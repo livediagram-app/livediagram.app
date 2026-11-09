@@ -245,6 +245,26 @@ live, with your own equaliser and bubble, while nothing reached anyone).
   is up. Never on the closed one the press found, where it would look live to you and reach nobody. A press of
   Camera or Share Screen while the session is renewed starts as an unmute does, and goes out the same way.
 
+### Someone who arrives later
+
+A Space left open for a long while, often in a tab you are not looking at, hears whoever walks up to you later at
+once, with no reload (owner, 2026-11-09: "If I stay on a livehuddle Space for a while, and somebody joins to talk to
+me, I have to reload the page in order to hear them"). Three things used to stop it, and each now recovers by itself:
+
+- **Characters reach the call in a hidden tab.** The browser stops animation frames in a tab that is hidden (another
+  tab in front, the window covered or minimised), and the other people's characters were committed only on a frame,
+  so someone who walked up while the tab was hidden never reached the call, and nobody subscribed to them. While the
+  page is hidden they are committed on a timer instead (the browser runs it about once a second there), on a frame
+  while it shows.
+- **The sound wakes.** A browser may hold a page's sound back: a call joined by walking in before any press, or sound
+  the browser suspended or interrupted later. The call tries to start it again when a voice arrives, when the tab shows
+  again or gets focus, and on your next press or key anywhere on the page. While the browser still holds it back and
+  you hear somebody, the Call dock shows a warn **Click to Hear** (title Sound Held Back) before the microphone; a press
+  starts the sound.
+- **A connection that fails renews.** A connection to the SFU that fails (a laptop that slept, a network change,
+  relay credentials that ran out) renews the session as one that expires does, with no press, counted in the same
+  budget: only after 3 renewals inside a minute does the call fail into **Retry**.
+
 ## Turning calls on
 
 Calls run on any deployment, production (`www.livehuddle.app`) included, where both of these hold (the owner lifted

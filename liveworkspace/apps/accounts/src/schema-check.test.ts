@@ -50,3 +50,26 @@ describe('Better Auth schema check', () => {
     expect(res.status).toBe(200);
   });
 });
+
+// A Google sign-in finds its account by provider and Google's id (0021): without the index, a full read of the table.
+describe("Better Auth's account lookup", () => {
+  it('finds a Google account by its index, not by reading every account', async () => {
+    const { db, sql } = testD1();
+    const prepared: string[] = [];
+    const prepare = db.prepare.bind(db);
+    db.prepare = (query: string) => {
+      prepared.push(query);
+      return prepare(query);
+    };
+    const ctx = await build(db).$context;
+    await ctx.internalAdapter.findAccountByKey({ providerId: 'google', accountId: 'g-1' });
+    const lookup = prepared.find((q) => /from "account"/i.test(q) && /"accountId"/.test(q));
+    expect(lookup).toBeDefined();
+    const plan = sql
+      .prepare(`EXPLAIN QUERY PLAN ${lookup!}`)
+      .all('google', 'g-1', 1)
+      .map((r) => String((r as { detail: string }).detail));
+    expect(plan.join('\n')).toContain('account_provider_account_idx');
+    expect(plan.filter((l) => /^SCAN account\b/.test(l))).toEqual([]);
+  });
+});

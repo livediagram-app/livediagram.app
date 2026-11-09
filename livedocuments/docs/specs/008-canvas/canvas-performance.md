@@ -66,6 +66,15 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   render for it. Handlers read the view from the store when they run. A touch pinch, whose events can
   outrun the display, changes the view at most once a frame, and measures the canvas once, as it
   starts.
+- **Someone else panning renders nothing.** Each peer's viewport (sent about ten a second while they
+  pan, for [Follow me](../012-collaboration/follow-me-viewport.md)) is held in a store, not as the
+  editor's render state. A viewport from a peer you are not following renders nothing; one from the
+  peer you follow renders the follow, which moves your view. Before, each one rendered the whole
+  editor, so a room of thirty people scrolling rendered it hundreds of times a second.
+- **A peer's laser renders the trails, not the editor.** Peers' laser trails (a frame of samples at
+  a time while someone points) are held in a store, not as the editor's render state. A frame of a
+  peer's trail renders the laser overlay alone; the editor root, the canvas layer and the chrome do
+  not render for it. Before, each frame rendered the whole editor while anyone pointed.
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry
@@ -190,6 +199,12 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   nothing for it. A new
   history object for an unchanged tab re-rendered the whole editor, every page's title bar among it,
   on every key typed into a long article.
+- **A key typed in an article does not redraw its list markers and placeholders.** They are
+  worked out from the whole article (a list's numbers run on through it), so they are kept from one
+  change to the next and only moved with the text, unless the change could alter one: a block added,
+  removed or restyled, a block emptied or filled, a table edited, or the caret moving into or out of
+  an empty block. Working them out on every key and every caret move cost about 2 ms a key on a
+  50-page article on a laptop.
 - **Chrome on every page draws no backdrop filter.** What every page wears (its title bar) is a
   plain card: Safari runs a backdrop filter again whenever anything behind it repaints, so a
   hundred title bars' blur ran on every keystroke of a 100-page article, about 60 ms a key in WebKit

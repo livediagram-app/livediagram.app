@@ -45,4 +45,13 @@ describe('xmlEscape', () => {
     const escaped = xmlEscape(`</text><script>alert('x')</script> "quoted"`);
     expect(escaped).not.toMatch(/[<>"']/);
   });
+
+  it('drops characters XML 1.0 cannot carry, keeping tab, LF and CR', () => {
+    // A vertical tab pasted into a label made the downloaded SVG fail to parse.
+    expect(xmlEscape('a\u000Bb\u0000c\u001Fd\uFFFEe\uFFFF')).toBe('abcde');
+    expect(xmlEscape('a\tb\nc\rd')).toBe('a\tb\nc\rd');
+    // An unpaired surrogate goes; a paired one (an emoji) stays.
+    expect(xmlEscape('x\uD83Dy\uDE00z')).toBe('xyz');
+    expect(xmlEscape('ok \u{1F600}')).toBe('ok \u{1F600}');
+  });
 });

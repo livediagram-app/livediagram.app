@@ -432,6 +432,8 @@ Migrations, in order:
 - `0019_sign_in_code_limit.sql`: `sign_in_code_limit`, each address's day of code sends
   ([sign-in.md](sign-in.md))
 - `0020_time_zone_chosen.sql`: `user.timeZoneChosen`, set while the zone was picked by hand in Settings › Profile
+- `0021_account_provider_index.sql`: `account_provider_account_idx (providerId, accountId)`, the account a Google
+  sign-in belongs to, found without reading the whole table ([sign-in.md](sign-in.md))
 
 Better Auth's runtime schema check is off (`advanced.database.validateSchema: false`, `src/auth-options.ts`): it would
 read D1's schema before a Worker's first answer. `src/schema-check.test.ts` runs the same check against

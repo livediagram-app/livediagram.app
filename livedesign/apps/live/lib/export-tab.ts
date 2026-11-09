@@ -53,7 +53,12 @@ import {
 } from '@liveworkspace/workbench/lib/icon-registry';
 import { drawBoxed } from './export-tab-canvas-draw';
 import { EXPORT_PAPER, pageExportFrame } from './export-page';
-import { pageScreenRect, tabWireframeFrameTheme, withinPageFrame } from '@livedesign/design';
+import {
+  pageScreenRect,
+  tabWireframeFrameTheme,
+  tagColoursOf,
+  withinPageFrame,
+} from '@livedesign/design';
 import type { ExportImageMap } from './export-tab-images';
 import { exportChartInk } from './export-chart-ink';
 import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page-motion-canvas';
@@ -199,9 +204,14 @@ export async function renderTabToCanvas(
         transparentPaper: opts.transparentPaper,
         imageHref: (id) => opts.images?.get(id)?.href,
         frameTheme: tabWireframeFrameTheme(tab),
+        // A photo page draws its photo's preview (loadTabImages), as the SVG export does: without it
+        // the PNG and PDF showed the empty-photo placeholder.
+        photoHref: (pageId) => opts.images?.get(photoImageKey(pageId))?.href,
       })
     : null;
   const chartInk = exportChartInk(tab, opts.page);
+  // A card's tag colour (docs/specs/009-elements/tag-colours.md): the canvas, exports and thumbnails agree.
+  const tagColours = tagColoursOf(tab);
   const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   // Hidden layers drop out of the export (bounds included) unless the
   // dialog's include-hidden option is on (docs/specs/006-design/layers.md). `ordered` is the
@@ -356,6 +366,7 @@ export async function renderTabToCanvas(
         tabFinish: tab.finish,
         sketchBackdrop: backdrops.has(el.id),
         surface,
+        tagColours,
         ...chartInk,
         resolveTabWindow: opts.resolveTabWindow,
       })}</svg>`;
@@ -510,6 +521,8 @@ export function renderTabToSvg(source: Tab, opts: ImageExportOpts = {}): string 
       })
     : null;
   const chartInk = exportChartInk(tab, opts.page);
+  // A card's tag colour (docs/specs/009-elements/tag-colours.md): the canvas, exports and thumbnails agree.
+  const tagColours = tagColoursOf(tab);
   const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   const els = (
     opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers)
@@ -569,9 +582,9 @@ export function renderTabToSvg(source: Tab, opts: ImageExportOpts = {}): string 
       `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${bg.fill}"/>`,
     );
   }
-  // Within each band: boxed elements first, then arrows on top (same
-  // z-order as the canvas); bands stack bottom -> top with frame
-  // sections behind their band-mates (docs/specs/006-design/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
+  // Within each band: every element in array order, arrows interleaved with boxes (same z-order as
+  // the canvas and the PNG / PDF); bands stack bottom -> top with frame sections behind their
+  // band-mates (docs/specs/006-design/layers.md "Exports stack like the canvas").
   const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
   // A wireframe page's elements are cut to its screen, its system bars over them (withinPageFrame).
   const bandsStart = parts.length;
@@ -591,14 +604,13 @@ export function renderTabToSvg(source: Tab, opts: ImageExportOpts = {}): string 
               tabFinish: tab.finish,
               sketchBackdrop: backdrops.has(el.id),
               surface,
+              tagColours,
               ...chartInk,
               resolveTabWindow: opts.resolveTabWindow,
             }),
           ),
         );
-    }
-    for (const el of band.elements) {
-      if (el.type === 'arrow')
+      else
         inner.push(
           svgArrow(
             el,

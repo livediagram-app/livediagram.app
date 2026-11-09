@@ -15,6 +15,8 @@
 // (This Browser, no calls on the server, calls paused), the microphone, the camera and Share Screen still show where
 // the browser can capture, as a local preview only you see (proximity-audio.md and video-and-screen-bubbles.md "Local
 // preview"). While a share is on, its controls are the Screen Share group's (ScreenShareStripGroup), not this group's.
+// While the browser holds the call's sound back and you hear somebody, Click to Hear leads the group (proximity-audio.md
+// "Someone who arrives later").
 import {
   lucideHeadphones,
   lucideMic,
@@ -259,6 +261,7 @@ function CallControl({
   return (
     <>
       <StageLine barredBy={self.barredBy} onStage={self.stage === 'speaker'} />
+      <AudioHeldSegment self={self} actions={actions} />
       <Segment
         label={self.muted ? 'Unmute' : indicator === 'listening' ? 'Listening' : 'Mute'}
         name={INDICATOR_NAME[indicator]}
@@ -293,6 +296,29 @@ function CallControl({
       <HandSegment self={self} actions={actions} />
       <MediaSegments self={self} actions={actions} />
     </>
+  );
+}
+
+/** Click to Hear's hover card: the browser holds the sound back, and a press anywhere starts it. */
+export const AUDIO_HELD_TEXT = {
+  title: 'Sound Held Back',
+  description:
+    'Your browser is holding back the call’s sound. Press here, or anywhere on the page, to hear the people near you.',
+} as const;
+
+/** Click to Hear: only while the browser holds the sound back and somebody is heard, so it never shows for nothing. */
+function AudioHeldSegment({ self, actions }: { self: CallSelf; actions: CallActions }) {
+  if (!self.audioHeld || self.heard.size === 0) return null;
+  return (
+    <Segment
+      label="Click to hear"
+      name="Click to Hear"
+      title={AUDIO_HELD_TEXT.title}
+      description={AUDIO_HELD_TEXT.description}
+      icon={<HeadphonesIcon />}
+      onClick={actions.hear}
+      tone="warn"
+    />
   );
 }
 

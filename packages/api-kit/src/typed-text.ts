@@ -32,13 +32,30 @@ export function clipText(value: string, max: number): string {
 // end, they make a name that looks blank (a team called only "\u200B" is a nameless row in every sidebar), or two
 // names that look the same and aren't.
 const EDGE = /[\s\p{Cf}]/u;
+const isHighSurrogate = (unit: number) => unit >= 0xd800 && unit <= 0xdbff;
 
-/** The text without spaces or invisible formatting characters at either end, found by a scan from each end. */
+/** The text without spaces or invisible formatting characters at either end, found by a scan from each end.
+ *  The scan steps a whole code point at a time: format characters past U+FFFF (the TAG characters, U+E0001 to
+ *  U+E007F, and the musical formatting controls) are surrogate pairs, and half a pair never matches. */
 export function trimInvisible(value: string): string {
   let start = 0;
   let end = value.length;
-  while (start < end && EDGE.test(value[start]!)) start += 1;
-  while (end > start && EDGE.test(value[end - 1]!)) end -= 1;
+  while (start < end) {
+    const point = String.fromCodePoint(value.codePointAt(start)!);
+    if (!EDGE.test(point)) break;
+    start += point.length;
+  }
+  while (end > start) {
+    const low = value.charCodeAt(end - 1);
+    const pair =
+      end - 2 >= start &&
+      low >= 0xdc00 &&
+      low <= 0xdfff &&
+      isHighSurrogate(value.charCodeAt(end - 2));
+    const width = pair ? 2 : 1;
+    if (!EDGE.test(value.slice(end - width, end))) break;
+    end -= width;
+  }
   return value.slice(start, end);
 }
 

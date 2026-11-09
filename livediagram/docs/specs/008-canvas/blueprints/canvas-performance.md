@@ -300,6 +300,25 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   1,596 ms to 1,088 to 1,125 ms. Its later frames (about 0.8 s), the release that selects everything (about 0.5 s) and
   the deselect (0.6 to 0.9 s) are unchanged: they restyle, lay out and paint every element they change.
 
+### Peers' viewports
+
+- `usePresenceState` holds every peer's last `viewport` op in a `createStateStore` store
+  (`@liveworkspace/workbench/lib/state-store`), and hands the room its `set` in place of a state
+  setter. `useFollowMe` reads the followed peer's entry through `useStoreSlice`, so a viewport from
+  anyone else selects the same value and renders nothing; the Focus Here press reads the whole map
+  from the store when it runs. Held by `useFollowMe.test.tsx` ("renders for the followed peer's
+  viewport alone"): a hundred viewports from a peer not followed, no render.
+
+### Peers' laser trails
+
+- `usePresenceState` holds every peer's laser trail in a `createStateStore` store, and hands the
+  presence coalescer its `set`. `usePresenceRows` joins it with the local trail and the presence
+  rows through `mapStore` (`@liveworkspace/workbench/lib/state-store`), made again only when those
+  render inputs change, so `laserTrails` reaches the canvas as a store. `ZoomedLaserOverlay`
+  (`view-readers.tsx`) is the one reader (`useSyncExternalStore`). Held by
+  `usePresenceRows.test.tsx` ("renders nothing for a peer's laser trail"): fifty trail frames, no
+  render of the hook that owns the rows, and every frame reaches a subscriber.
+
 ### At rest
 
 - The still-canvas rule is held in a real browser by `e2e/canvas-still.spec.ts`: on a seeded board,

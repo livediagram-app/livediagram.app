@@ -17,6 +17,9 @@ const UNSEAL =
 
 // `security -i` reads its commands from stdin; an argument is a double-quoted string there.
 const quoted = (value: string) => `"${value.replace(/["\\]/g, (c) => `\\${c}`)}"`;
+// It reads one command a line, and quoting carries no line break: a profile or token holding one would end
+// the command early and run the rest as a second command, so such a value never goes to it (the file keeps it).
+const oneLine = (value: string) => !/[\r\n]/.test(value) && !value.includes('\0');
 
 type Store = {
   put(profile: string, token: string): Promise<SavedToken | null>;
@@ -34,6 +37,8 @@ function storeFor(io: CliIo, service: string): Store | null {
     case 'darwin':
       return {
         put: async (profile, token) =>
+          !oneLine(profile) ||
+          !oneLine(token) ||
           (await run(
             'security',
             ['-i'],
@@ -44,13 +49,7 @@ function storeFor(io: CliIo, service: string): Store | null {
         get: (profile) =>
           run('security', ['find-generic-password', '-s', service, '-a', profile, '-w']),
         erase: async (profile) =>
-          void (await run('security', [
-            'delete-generic-password',
-            '-s',
-            service,
-            '-a',
-            profile,
-          ])),
+          void (await run('security', ['delete-generic-password', '-s', service, '-a', profile])),
       };
     case 'linux':
       return {
@@ -70,16 +69,9 @@ function storeFor(io: CliIo, service: string): Store | null {
           )) === null
             ? null
             : { keychain: true },
-        get: (profile) =>
-          run('secret-tool', ['lookup', 'service', service, 'account', profile]),
+        get: (profile) => run('secret-tool', ['lookup', 'service', service, 'account', profile]),
         erase: async (profile) =>
-          void (await run('secret-tool', [
-            'clear',
-            'service',
-            service,
-            'account',
-            profile,
-          ])),
+          void (await run('secret-tool', ['clear', 'service', service, 'account', profile])),
       };
     case 'win32':
       return {

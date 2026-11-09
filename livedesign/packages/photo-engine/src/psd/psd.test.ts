@@ -267,6 +267,34 @@ describe('PSD and photos', () => {
     expect(empty.raster.width).toBe(0);
     expect(readPsd(writePsd(psd)).children).toHaveLength(2);
   });
+
+  it('saves an unlinked mask where it draws, at its own offset, not its moved layer’s', () => {
+    const t = TiledRaster.fromRaster(solidRaster(4, 4, [5, 5, 5, 255]));
+    // The mask hides its own pixel (0, 0); unlinked at (1, 1), that is photo pixel (1, 1).
+    const m = new TiledRaster(1, 255);
+    m.writeChannel({ x: 0, y: 0, width: 1, height: 1 }, new Uint8Array([0]));
+    const photo: Photo = {
+      width: 4,
+      height: 4,
+      layers: [
+        {
+          id: 'ly-00000021',
+          name: 'Moved',
+          layerKind: 'pixel',
+          pixels: { tiles: {} },
+          offset: { x: 1, y: 0 },
+          mask: { pixels: { tiles: {} }, linked: false, offset: { x: 1, y: 1 } },
+        },
+      ],
+    };
+    const lookup: PixelsLookup = { layer: () => t, mask: () => m };
+    const layer = psdFromPhoto(photo, lookup).children[0]!;
+    if (layer.kind !== 'layer') throw new Error('layer');
+    // The PSD's mask is over the photo: hidden at (1, 1), as the composite draws it.
+    expect(layer.mask!.data[1 * 4 + 1]).toBe(0);
+    expect(layer.mask!.data[0]).toBe(255);
+    expect(pixelAt(compositeAll(photo, lookup), 1, 1)[3]).toBe(0);
+  });
 });
 
 describe('PNG stream', () => {

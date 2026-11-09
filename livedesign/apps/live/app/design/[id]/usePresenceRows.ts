@@ -5,6 +5,7 @@
 // no handlers, no setters, nothing here mutates state.
 
 import { useCallback, useMemo } from 'react';
+import { mapStore, type ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import {
   useLocalBesideTab,
   useRemoteBesideTabs,
@@ -39,7 +40,8 @@ type PresenceRowsDeps = {
   remoteTabFocus: Map<string, string>;
   remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>;
   remoteSelections: Map<string, RemoteSelection>;
-  remoteLaserTrails: Map<string, { tabId: string; points: LaserPoint[] }>;
+  // Peers' trails, in a store: joined into the rows below for the laser overlay alone to read.
+  remoteLaserTrails: ReadableStore<Map<string, { tabId: string; points: LaserPoint[] }>>;
   localLaserTrail: LaserPoint[];
   // The local participant's laser pen (docs/specs/008-canvas/laser-panel.md).
   selfLaserConfig?: LaserConfig;
@@ -133,17 +135,20 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   // whose latest sample is on the active tab and whose participant
   // entry is still live. The overlay handles fade + cleanup; we just
   // assemble per-tab visibility here.
+  // A store, read by the laser overlay alone: a peer's trail moving renders the overlay, never this hook's owner.
   const laserTrailRows = useMemo(
     () =>
-      buildLaserTrailRows({
-        localLaserTrail,
-        remoteLaserTrails,
-        livePresenceById,
-        selfId: selfParticipant.id,
-        selfColor: selfParticipant.color,
-        activeId,
-        selfLaserConfig,
-      }),
+      mapStore(remoteLaserTrails, (remote) =>
+        buildLaserTrailRows({
+          localLaserTrail,
+          remoteLaserTrails: remote,
+          livePresenceById,
+          selfId: selfParticipant.id,
+          selfColor: selfParticipant.color,
+          activeId,
+          selfLaserConfig,
+        }),
+      ),
     [
       localLaserTrail,
       remoteLaserTrails,

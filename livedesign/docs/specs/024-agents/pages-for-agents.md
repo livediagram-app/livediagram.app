@@ -116,8 +116,9 @@ The view keeps to the read budget. The outline's header names a Pages tab's page
   them in the same batch. A revision that moved meanwhile is read again and applied
   once more; a second move answers `409 tab_busy`.
 - Relays to the design's room what an editor's own edit sends: the changeset's element ops, a `tab-meta`
-  `{ pages }` patch. The room relays without
-  reading them, as it does an editor's.
+  `{ pages }` patch, then a `photo` op for each photo page added, duplicated or deleted (a `tab-meta` never carries
+  photos, so an open editor would hold the page blank and its next save would write the photo away). The room
+  relays without reading them, as it does an editor's.
 - **Known gap** (the tab rename's, [Agent changesets](agent-changesets.md#whole-tab-saves-and-tab-renames)): a
   whole-tab save an editor already had in flight when the write landed carries the pages it had. The
   relay reaches that editor first in every other case, and its next save carries the agent's.

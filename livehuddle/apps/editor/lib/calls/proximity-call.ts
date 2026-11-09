@@ -6,12 +6,14 @@
 // mint. The camera and a shared screen ride the same session (call-video.ts; docs/specs/012-collaboration/
 // video-and-screen-bubbles.md). A stage (meeting-rooms-and-stage.md "The stage") reaches the whole tab; its audience
 // raises a hand and may be let speak (call-staging.ts), and Do Not Disturb hears nobody. What the call tells the room
-// goes through its beacon (call-beacon.ts).
+// goes through its beacon (call-beacon.ts). Sound the browser holds back wakes on every chance it gets (audio-wake.ts),
+// and a connection that fails renews as a gone session does (proximity-audio.md "Someone who arrives later").
 import { callsModeAllows, type AccessLevel } from '@livehuddle/api-schema';
 import { apiCallSession, CallsApiError } from '@/lib/api/calls';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { AudioGraph } from './audio-graph';
+import { AudioWake } from './audio-wake';
 import { CallBeacon, trackSignalOf } from './call-beacon';
 import {
   RENEW_MAX,
@@ -77,6 +79,8 @@ const documentVisible = () =>
 export class ProximityCall {
   private readonly input: ProximityCallInput;
   private readonly graph: AudioGraph;
+  // Wakes sound the browser holds back, and says so for the dock's Click to Hear.
+  private readonly wake: AudioWake;
   private sfu: SfuSession | null = null;
   private trackToken: string | null = null;
   private readonly mic: CallMic;
@@ -106,6 +110,9 @@ export class ProximityCall {
   constructor(input: ProximityCallInput) {
     this.input = input;
     this.graph = new AudioGraph(input.context);
+    this.wake = new AudioWake(input.context, (held) => {
+      if (!this.stopped) setCallSelf({ audioHeld: held });
+    });
     this.receiver = new CallReceiver(this.graph);
     const sfu = () => this.sfu;
     const trackToken = () => this.trackToken;
@@ -195,12 +202,17 @@ export class ProximityCall {
     const current = () => this.sfu === sfu;
     const sfu: SfuSession = new SfuSession(this.input.caller, session, {
       onTrack: (publisher, trackName, stream) => {
-        if (current() && this.receiver.onTrack(publisher, trackName, stream)) this.place();
+        if (!current() || !this.receiver.onTrack(publisher, trackName, stream)) return;
+        this.place();
+        // A voice arrived: held sound gets its chance to start.
+        this.wake.nudge();
       },
       // Always: closing a renewed session ends its subscriptions here.
       onTrackEnded: (publisher, trackName) => this.receiver.onTrackEnded(publisher, trackName),
+      // A connection that failed (a laptop that slept, a network change, relay credentials that ran out) renews as a
+      // gone session does, in the same budget.
       onFailed: () => {
-        if (current()) this.fail('connection');
+        if (current()) void this.renew('connection');
       },
       onPaused: () => {
         if (current()) this.pause();
@@ -234,17 +246,17 @@ export class ProximityCall {
    * connected to it in time). Mint a new one, prove it, publish again what was live, and hear again. More than
    * RENEW_MAX inside RENEW_WINDOW_MS is a broken call: it fails into Retry.
    */
-  private async renew(): Promise<void> {
+  private async renew(why: 'session' | 'connection' = 'session'): Promise<void> {
     if (this.stopped || this.renewing) return;
     const now = performance.now();
     this.renewals = this.renewals.filter((at) => now - at < RENEW_WINDOW_MS);
     if (this.renewals.length >= RENEW_MAX) {
-      this.fail('session');
+      this.fail(why);
       return;
     }
     this.renewals.push(now);
     this.renewing = true;
-    debugLog('[calls] session gone, renewing');
+    debugLog(`[calls] ${why === 'session' ? 'session gone' : 'connection failed'}, renewing`);
     track('Canvas', 'Used', 'CallRenewed');
     const old = this.sfu;
     this.sfu = null;
@@ -329,6 +341,7 @@ export class ProximityCall {
       level: 0,
       // It hears nobody now, as after Leave Audio: no talking bars stay lit as heard.
       heard: new Set(),
+      audioHeld: false,
       someoneNear: false,
       camera: 'off',
       screen: 'off',
@@ -344,6 +357,11 @@ export class ProximityCall {
   /** Share a screen, or stop sharing. An Editor's alone; audio only pauses it. */
   toggleScreen(): Promise<void> {
     return this.video.toggleScreen();
+  }
+
+  /** Click to Hear: start the sound the browser held back (any press would; this one says so). */
+  resumeAudio(): void {
+    this.wake.nudge();
   }
 
   /** Mute or unmute: muted sends nothing, no audio and no equaliser. */
@@ -464,6 +482,7 @@ export class ProximityCall {
     this.stopped = true;
     this.mic.clearIdle();
     this.beacon.clear();
+    this.wake.dispose();
     for (const unsubscribe of this.unsubscribe) unsubscribe();
     if (typeof document !== 'undefined') {
       document.removeEventListener('visibilitychange', this.onVisibility);
@@ -503,6 +522,7 @@ export class ProximityCall {
       muted: true,
       level: 0,
       heard: new Set(),
+      audioHeld: false,
       someoneNear: false,
       camera: 'off',
       screen: 'off',

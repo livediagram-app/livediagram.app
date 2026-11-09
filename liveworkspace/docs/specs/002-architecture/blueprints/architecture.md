@@ -65,10 +65,18 @@ A handler that catches broadly and would turn an outage into another answer reth
 - `record(op, seq)`: chained on one queue, so entries apply in the room's order. Reads the key, takes the stamp off,
   hands the product's `recordInLedger` the entry, and puts the result with `ledgerStamp: { seq, at }` added; an
   entry past `LEDGER_VALUE_MAX_CHARS` (120,000, measured without the stamp) is not written. A throw is swallowed.
-- `read(tabId, since?)`: waits for the queue, lists the tab's prefix, and drops each entry whose stamp has
-  `seq <= since` and `at <= now - LEDGER_RECENT_MS`; an entry with no stamp always goes. No `since`: every entry.
-  The stamps are taken off before `tabLedgerFrom`. A `since` below the stored floor (`ledger-floor`, read once per
-  instance) logs `[ledger] stale cursor`.
+- `record` also keeps the entry's index row, `ledger-seq:<tab>:<seq padded to 16 digits>:<entry key>` valued with
+  its `at`: the row of the entry's previous stamp is deleted and the new one put in the same write as the entry (no
+  await between them, so the runtime lands them together). A key that names no tab (`ledger:<tab>:...`) gets no
+  row. At most every `LEDGER_MARK_EVERY_MS` it appends `{ seq, at }` to `ledger-marks`, keeping every mark from the
+  last `LEDGER_RECENT_MS` and the newest before it (about 26 at most).
+- `read(tabId, since?)`: waits for the queue. With `since`, a tab id with no `:`, a product prefix of
+  `ledger:<tab>:`, `ledger-indexed` set and a mark at or before `now - LEDGER_RECENT_MS`, it walks the tab's index
+  rows after `min(since, that mark's seq)` and fetches their entries with batched gets (`LEDGER_GET_BATCH` 128);
+  otherwise it lists the tab's prefix. Either way it drops each entry whose stamp has `seq <= since` and
+  `at <= now - LEDGER_RECENT_MS`; an entry with no stamp always goes. No `since`: every entry. The stamps are taken
+  off before `tabLedgerFrom`. A `since` below the stored floor (`ledger-floor`, read once per instance) logs
+  `[ledger] stale cursor`. `ledger-indexed` and `ledger-marks` are read once per instance.
 - The room's `GET /ledger?tab=&epoch=&since=` passes the save's cursor seq; the api's `fetchRoomLedger` sends it.
   The Participant answers write (`room-participant.ts`) reads with no `since`.
 - `upkeep({ now, seq, tabs })`: on the queue, pages through every `ledger:` key (`LEDGER_UPKEEP_PAGE` 128, by
@@ -76,7 +84,9 @@ A handler that catches broadly and would turn an outage into another answer reth
   no stamp is stamped `{ seq, at: now }`. An entry stamped at or before `now - LEDGER_RETENTION_MS` is deleted unless
   `ledgerEntryAccumulates` says so and its key starts with a stored tab's prefix (`tabs`, the ids in the room's
   `tabs` table; null when the room has no schema or no tabs, which keeps every accumulating entry). The highest seq
-  deleted raises `ledger-floor`. Answers `{ dropped, stamped }`. Each room runs it first in its daily `maintain`,
+  deleted raises `ledger-floor`. A stamped or deleted entry's index row is put or deleted with it; until
+  `ledger-indexed` is set, the pass also puts the row of every entry it keeps, and sets `ledger-indexed` once it
+  finishes. Answers `{ dropped, stamped }`. Each room runs it first in its daily `maintain`,
   logged `[ledger] upkeep` when it changed anything, `[ledger] upkeep failed` on a throw, never stopping the rest.
 - `settled()`: the queue; `purge` awaits it before `deleteAll`.
 
@@ -239,18 +249,18 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
 
 ## Testing
 
-| Test                                                                                         | Pins                                                                                                                                                                                                      |
-| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/sites/src/workspace-proxy.test.ts`                                                 | every router's forwards: routes, cookies, loop guard, visitor address and proof (a caller's copy removed), redirects, the status page                                                                     |
-| `packages/sites/src/network.test.ts`                                                         | a named address trusted only beside the right secret, a spoofed one ignored, and trusted as named while no secret is set                                                                                  |
-| `packages/sites/src/previews-proxy.test.ts` (3)                                              | the previews forward and the share link's picture doors                                                                                                                                                   |
-| `packages/api-kit/src/request-failure.test.ts` (23)                                          | D1 and Durable Object outages named, bugs left to the 500, the answers and their logs, the guard (held at 100%)                                                                                           |
-| `packages/api-kit/src/room-alarm.test.ts`                                                    | the floor, the earliest time, none due, a repeat skipped, a time passed or changed set again, an arm after a disarm set again (held at 100%)                                                              |
-| `packages/api-kit/src/room-ledger-store.test.ts`                                             | stamps, the save's read by cursor and by age, upkeep's cut, accumulating entries kept while their tab lives, legacy entries, paging, the stale-cursor log, storage counts before and after (held at 100%) |
-| each room's `*-grants.test.ts`                                                               | a time stuck in the past arms the alarm a second from now, and again a second on once it fires                                                                                                            |
-| index `webhooks/dispatch.test.ts`, Drive `mirror/pass.test.ts`                               | the dispatcher's next alarm and the next pass, already past, set a second from now                                                                                                                        |
-| `<app>/apps/api/src/request-failure.test.ts` (4 each)                                        | an outage and a bug before any route (the token lookup) and inside one, CORS and the release on the answer                                                                                                |
-| each service's `request-failure.test.ts`, `index.test.ts`, `api.test.ts` or `routes.test.ts` | its D1 or mirror outage answered 503 with its own headers and route words, through `unavailableD1()` (`@liveworkspace/api-kit/testing/unavailable-d1`)                                                    |
+| Test                                                                                         | Pins                                                                                                                                                                                                                                                                                                |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/sites/src/workspace-proxy.test.ts`                                                 | every router's forwards: routes, cookies, loop guard, visitor address and proof (a caller's copy removed), redirects, the status page                                                                                                                                                               |
+| `packages/sites/src/network.test.ts`                                                         | a named address trusted only beside the right secret, a spoofed one ignored, and trusted as named while no secret is set                                                                                                                                                                            |
+| `packages/sites/src/previews-proxy.test.ts` (3)                                              | the previews forward and the share link's picture doors                                                                                                                                                                                                                                             |
+| `packages/api-kit/src/request-failure.test.ts` (23)                                          | D1 and Durable Object outages named, bugs left to the 500, the answers and their logs, the guard (held at 100%)                                                                                                                                                                                     |
+| `packages/api-kit/src/room-alarm.test.ts`                                                    | the floor, the earliest time, none due, a repeat skipped, a time passed or changed set again, an arm after a disarm set again (held at 100%)                                                                                                                                                        |
+| `packages/api-kit/src/room-ledger-store.test.ts`                                             | stamps, the save's read by cursor and by age, upkeep's cut, accumulating entries kept while their tab lives, legacy entries, paging, the stale-cursor log, storage counts before and after, the index read matching the listing for every cursor, rows read per save on a busy board (held at 100%) |
+| each room's `*-grants.test.ts`                                                               | a time stuck in the past arms the alarm a second from now, and again a second on once it fires                                                                                                                                                                                                      |
+| index `webhooks/dispatch.test.ts`, Drive `mirror/pass.test.ts`                               | the dispatcher's next alarm and the next pass, already past, set a second from now                                                                                                                                                                                                                  |
+| `<app>/apps/api/src/request-failure.test.ts` (4 each)                                        | an outage and a bug before any route (the token lookup) and inside one, CORS and the release on the answer                                                                                                                                                                                          |
+| each service's `request-failure.test.ts`, `index.test.ts`, `api.test.ts` or `routes.test.ts` | its D1 or mirror outage answered 503 with its own headers and route words, through `unavailableD1()` (`@liveworkspace/api-kit/testing/unavailable-d1`)                                                                                                                                              |
 
 Each service's own tests are in its blueprint.
 
@@ -270,7 +280,7 @@ stuck time at one alarm a second, and every wait it can add to is seconds or mor
 `LEDGER_RECENT_MS` 24 h (`packages/api-kit/src/room-ledger-store.ts`): an entry changed this recently goes with every
 save whatever its cursor; it covers a comment's author save and an idea's first save landing late; safe from 1 h to
 7 days. `LEDGER_RETENTION_MS` 30 days: an entry untouched this long is cut by upkeep; the Trash's and the changesets'
-retention; safe from 7 to 365 days. `LEDGER_UPKEEP_PAGE` 128: keys per upkeep page, bounding the memory one page holds.
+retention; safe from 7 to 365 days. `LEDGER_UPKEEP_PAGE` 128: keys per upkeep page, bounding the memory one page holds. `LEDGER_MARK_EVERY_MS` 1 h: how often the room notes its seq for the index; a save walks up to this much more than the last day; safe from 1 min to 6 h.
 
 ## Defaults ledger
 

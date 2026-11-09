@@ -104,6 +104,12 @@ is each product's own pure module; how the entries are stored, read and kept is 
   had seen a day or more ago can change nothing in its save. Before, every save read and shipped every entry the
   tab ever had, so a long-lived workshop tab dragged months of comment text through each autosave. A read with no
   cursor (a Participant's answers, which take every answer the room holds) still reads the whole tab.
+- **A save finds those entries without reading the rest.** The store keeps an index of each tab's entries by the seq
+  that last changed them, and notes the room's seq about once an hour, so a save walks only the index rows after its
+  cursor or after the room's seq a day ago, whichever is lower, and reads just those entries. Before, the room read
+  every entry the tab held on each autosave to pick out the few it shipped: on a busy board, 1,000 entries read to
+  ship 10. A room indexes the entries written before the index in its first upkeep; until then, and in a room's first
+  day, a save reads the whole tab as before.
 - **An entry nobody has touched for 30 days goes** (`LEDGER_RETENTION_MS`, the Trash's and the changesets' 30 days),
   once a day in the room's upkeep: whatever it protected reached the store long ago, through the saves of everyone
   who saw it. Two kinds stay while their tab lives, because their merge needs every op of the round: an entry the

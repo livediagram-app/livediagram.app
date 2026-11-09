@@ -143,7 +143,10 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 
 ## Data and persistence
 
-- Stored fields touched: `Tab.pages`, `Tab.elements`. No new field, no migration.
+- Stored fields touched: `Tab.pages`, `Tab.elements`, `Tab.photos` (a photo page added, duplicated or deleted). No
+  new field, no migration.
+- Room ops (`pagesRoomOps`): the `tab-meta` patch, then `tabPhotoOps(before, after)`; the room's `/mutation`
+  accepts `photo` from the worker (`WORKER_MUTATION_KINDS`).
 - One write per call: `writeChangeset` when the elements changed (its batch writes the whole next tab, pages
   included, and records and relays the element ops), else `upsertTabAtRev`. The tab passes
   `withServerRules` first, as a changeset's does.

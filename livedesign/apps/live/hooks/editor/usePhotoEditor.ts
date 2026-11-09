@@ -117,6 +117,7 @@ export function usePhotoEditor<V extends PagesModeView>({
   undo,
   redo,
   depth,
+  branch,
   visibleRect,
   viewport,
   scope,
@@ -135,6 +136,8 @@ export function usePhotoEditor<V extends PagesModeView>({
   undo: () => void;
   redo: () => void;
   depth: number;
+  // Raised whenever the design's timeline takes a new step or resets (its redo steps gone).
+  branch: number;
   // The canvas rect in view now, and the view's store (its moves).
   visibleRect: () => Rect | null;
   viewport: ViewportStore;
@@ -185,6 +188,8 @@ export function usePhotoEditor<V extends PagesModeView>({
 
   const history = useMemo(() => new PhotoHistory(), []);
   const depthRef = useLatest(depth);
+  // The timeline branched: History drops the entries its redo steps were (photo-pages.md "History").
+  useEffect(() => history.branched(depthRef.current), [branch, history, depthRef]);
   const overlay = useMemo(() => new OverlayStore(), []);
   const [textEdit, setTextEdit] = useState<PhotoTextEdit | null>(null);
   // The checkpoint a gesture's steps sit under, and its History entry's depth.

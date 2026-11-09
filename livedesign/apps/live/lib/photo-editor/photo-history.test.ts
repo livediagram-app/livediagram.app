@@ -28,6 +28,24 @@ describe('PhotoHistory', () => {
     expect(h.entries.map((e) => e.label)).toEqual(['A', 'D']);
   });
 
+  // docs/specs/031-photo/photo-pages.md "History": the next edit drops the dimmed ones, whatever edit it is.
+  it('drops the undone steps when the timeline branches on another edit, keeping the photo edit that made it', () => {
+    const h = new PhotoHistory();
+    h.record('Brush', 'p', 1);
+    h.branched(1);
+    h.record('Levels', 'p', 2);
+    h.branched(2);
+    expect(h.entries.map((e) => e.label)).toEqual(['Brush', 'Levels']);
+    // Undone twice, then a shape moved on the canvas: depth 1 is the move now.
+    h.branched(1);
+    expect(h.entries).toEqual([]);
+    // A reset (a tab loaded) leaves nothing to step to.
+    h.record('Fill', 'p', 1);
+    h.branched(1);
+    h.branched(0);
+    expect(h.entries).toEqual([]);
+  });
+
   it('keeps the last fifty', () => {
     const h = new PhotoHistory();
     for (let i = 1; i <= PHOTO_HISTORY_STEPS + 5; i++) h.record(`E${i}`, 'p', i);

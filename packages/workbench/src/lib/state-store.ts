@@ -57,3 +57,25 @@ export function joinStores<A, B>(
     },
   };
 }
+
+/**
+ * A store's value seen through `select`: worked out once per value of `source` and kept, so a reader subscribed to it
+ * renders only when the source changes. What a peer streams (laser trails) reaches the one layer that draws it, joined
+ * with what the editor renders (docs/specs/008-canvas/canvas-performance.md); a new `select` (other render inputs) is
+ * a new store, made with useMemo.
+ */
+export function mapStore<S, T>(
+  source: ReadableStore<S>,
+  select: (value: S) => T,
+): ReadableStore<T> {
+  let last: { from: S; value: T } | null = null;
+  return {
+    get() {
+      const from = source.get();
+      if (last && Object.is(last.from, from)) return last.value;
+      last = { from, value: select(from) };
+      return last.value;
+    },
+    subscribe: source.subscribe,
+  };
+}

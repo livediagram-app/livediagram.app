@@ -37,7 +37,8 @@ function rendererFor(io: CliIo, npmPackage: string) {
 // The width and height an SVG declares on its root, in pixels.
 export function svgSize(svg: string): { width: number; height: number } {
   const root = /<svg\b[^>]*>/.exec(svg)?.[0] ?? '';
-  const attr = (name: string) => Number(new RegExp(`\\b${name}="([\\d.]+)`).exec(root)?.[1] ?? 0);
+  // After whitespace, not `\b`: a word boundary also sits after the `-` of `stroke-width`.
+  const attr = (name: string) => Number(new RegExp(`\\s${name}="([\\d.]+)`).exec(root)?.[1] ?? 0);
   return { width: Math.round(attr('width')), height: Math.round(attr('height')) };
 }
 

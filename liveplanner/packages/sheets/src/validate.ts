@@ -146,12 +146,21 @@ function inputProblem(input: CellInput): SheetRejection | null {
   return null;
 }
 
+// Each cell's stored size, by the cell object: cells are never changed in place (a write sets a new one), so
+// identity is a sound key, and the byte cap checked on every edit reads cached sizes instead of serialising every
+// cell of the sheet again (blueprint sheets-engine.md "Performance and limits").
+const CELL_BYTES = new WeakMap<Cell, number>();
+
 // The stored size of a cell, as the api counts it against SHEET_BYTES_MAX.
 export function cellBytes(cell: Cell): number {
-  return (
-    (cell.input ? JSON.stringify(cell.input).length : 0) +
-    (cell.format ? JSON.stringify(cell.format).length : 0)
-  );
+  let n = CELL_BYTES.get(cell);
+  if (n === undefined) {
+    n =
+      (cell.input ? JSON.stringify(cell.input).length : 0) +
+      (cell.format ? JSON.stringify(cell.format).length : 0);
+    CELL_BYTES.set(cell, n);
+  }
+  return n;
 }
 
 export function sheetBytes(sheet: Sheet): number {

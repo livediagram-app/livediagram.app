@@ -124,7 +124,7 @@ type LayerMask = {
   pixels: LayerPixels;
   enabled?: false;
   linked?: false;
-  offset?: { x: number; y: number };
+  offset?: { x: number; y: number }; // an unlinked mask's place; `maskOffsetOf(layer)` answers it
 };
 type LayerEffects = { shadow?: Shadow; glow?: Glow; stroke?: Stroke; overlay?: Overlay };
 type LayerBase = {
@@ -182,7 +182,10 @@ type Photo = {
 - **Incoming changes** (`setPhoto`): every tile a peer changed loads (changed keys only), except the tiles this
   session's own change has not finished with: dirty in the raster (painted) or taken by a commit not yet made
   (`committing`). Those are `held`, logged, and this person's commit, the later, wins them. A peer's tiles since
-  the raster's last commit or restore (`peerKeys`) are applied again onto a restored raster.
+  the raster's last commit or restore (`peerKeys`) are applied again onto a restored raster. A source load
+  (`loadSource`) checks, once its picture arrives, that the layer's loaded pixels (`loadedMaps`) still name the
+  same source blob, and slices it only into the places their tile map (not the one it started with) leaves empty;
+  a stale load slices nothing and still reports its end, so `whenLoaded` resolves.
 - **Commit** (`commitPixels`): from the dirty tiles, encode each (worker), compute blob ids, build the new tile maps,
   produce the next `Photo` (`rev + 1`), hand the new blobs to the `PhotoUploadQueue`, and call the editor's
   `commitTabs` with the tab's `photos[pageId]` replaced (one undo step, labelled for History).
@@ -193,7 +196,9 @@ type Photo = {
   each layer whose tile map changed reloads only the changed tiles from `PixelsStore` (which holds every blob of
   every photo step still in the history, pinned: `PixelsStore.pin(stepPhotoIds)`).
 - `photo-history.ts` keeps this person's photo commits by page (label, the tab history index), at most 50; the History
-  tab jumps by calling undo or redo the needed number of times.
+  tab jumps by calling undo or redo the needed number of times. When the design history's `branch` moves (any new
+  step, a photo's or not, or a reset), `branched(depth)` drops every entry at or past the new depth except the photo
+  edit just recorded there: their redo steps are gone, so none of them is Now or reachable.
 
 ### Live sync
 

@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ImageElement, Tab } from '@livedesign/design';
+import { layOutPages, type ImageElement, type Tab } from '@livedesign/design';
 import { renderTabToCanvas } from './export-tab';
-import type { ExportImageMap } from './export-tab-images';
+import { photoImageKey, type ExportImageMap } from './export-tab-images';
 
 // An image the PNG / PDF export draws through its SVG (a shadow, a turn, an accent edge, a
 // finish) embeds its bytes, as the SVG export does, rather than the empty-image placeholder: a
@@ -74,5 +74,25 @@ describe('renderTabToCanvas images drawn through their SVG', () => {
       fontCss: '',
     });
     expect(rasterised.some((svg) => svg.includes(HREF))).toBe(false);
+  });
+});
+
+// docs/specs/031-photo/photo-pages.md "Exports and other views": the composite is the page in every
+// export. The PNG and PDF drew the empty-photo placeholder while the SVG drew the photo.
+describe('renderTabToCanvas on a photo page', () => {
+  const photoTab = {
+    id: 't',
+    name: 'T',
+    elements: [],
+    pages: [{ id: 'p', orientation: 'landscape', kind: 'photo', size: 'photo' }],
+  } as unknown as Tab;
+  const page = layOutPages(photoTab.pages as never)[0]!;
+
+  it('draws the photo’s preview, not the placeholder', async () => {
+    const photos = new Map([
+      [photoImageKey('p'), { href: HREF, image: {} as HTMLImageElement }],
+    ]) as ExportImageMap;
+    await renderTabToCanvas(photoTab, { page, images: photos, fontCss: '' });
+    expect(rasterised.some((svg) => svg.includes(`href="${HREF}"`))).toBe(true);
   });
 });

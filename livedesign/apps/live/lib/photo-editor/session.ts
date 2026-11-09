@@ -337,6 +337,13 @@ export class PhotoSession {
       if (!this.disposed) this.changed();
       return;
     }
+    // A newer photo may have moved on since the load began: another source (a peer's, an undo), or
+    // none. A stale picture finishing late must not overwrite the newer one's pixels.
+    const current = this.loadedMaps.get(target === 'mask' ? maskId(layerId) : layerId);
+    if (current?.source?.blob !== source.blob) {
+      this.changed();
+      return;
+    }
     const raster = this.raster(layerId, target);
     const keys: string[] = [];
     for (const [col, row] of TiledRaster.tilesIn({
@@ -347,8 +354,8 @@ export class PhotoSession {
     })) {
       const k = tileKey(col, row);
       if (only && k !== only) continue;
-      // An explicit tile wins over the source.
-      if (pixels.tiles[k] !== undefined) continue;
+      // An explicit tile wins over the source, as the photo now says.
+      if (current.tiles[k] !== undefined) continue;
       const tile = new Uint8ClampedArray(PHOTO_TILE * PHOTO_TILE * 4);
       for (let y = 0; y < PHOTO_TILE; y++) {
         const py = row * PHOTO_TILE + y;

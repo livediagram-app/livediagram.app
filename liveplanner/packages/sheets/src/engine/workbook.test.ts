@@ -122,6 +122,22 @@ describe('values and recalculation', () => {
     expect(book({ A1: '=1' }).wb.usesCards()).toBe(false);
     expect(b.wb.extent('nope')).toEqual({ rows: 0, cols: 0 });
   });
+  it('keeps card use up to date as cells change, and as a sheet goes', () => {
+    const b = book({ 'Sheet 1': { A1: '=1' }, Other: { A1: '2' } });
+    expect(b.wb.usesCards()).toBe(false);
+    b.set('B2', '=CARDCOUNT()+1');
+    expect(b.wb.usesCards()).toBe(true);
+    b.set('C3', '=SUM(CARDCOUNT(), 2)', 'Other');
+    b.set('B2', '5');
+    // The other sheet's formula still reads cards.
+    expect(b.wb.usesCards()).toBe(true);
+    b.set('C3', '', 'Other');
+    expect(b.wb.usesCards()).toBe(false);
+    b.set('A1', '=CARDCOUNT()');
+    expect(b.wb.usesCards()).toBe(true);
+    b.wb.removeSheet(b.sheets[0]!.id);
+    expect(b.wb.usesCards()).toBe(false);
+  });
   it('resets on a layout change and on removing a sheet', () => {
     const b = book({ 'Sheet 1': { A1: '=Budget!A1' }, Budget: { A1: '7' } });
     expect(b.v('A1')).toBe(7);

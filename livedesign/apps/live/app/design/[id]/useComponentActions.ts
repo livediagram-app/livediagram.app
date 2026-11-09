@@ -55,7 +55,7 @@ export type ComponentActions = {
     field: keyof ComponentOverride,
     value: string | undefined,
   ) => void;
-  resetOverrides: (instanceId: string) => void;
+  resetOverrides: (instanceId: string, elementId?: string) => void;
   rename: (componentId: string, name: string) => void;
   removeFromLibrary: (componentId: string) => void;
   startEdit: (instanceId: string) => void;
@@ -162,9 +162,18 @@ export function useComponentActions(opts: {
     track('Element', 'Changed', 'ComponentOverride');
   };
 
-  const resetOverrides = (instanceId: string) => {
+  /** Every override on the instance back to its main's, or, given `elementId`, that element's alone: one
+   *  edit, one undo step either way (a row's reset made one step per field it cleared). */
+  const resetOverrides = (instanceId: string, elementId?: string) => {
     if (!canEdit) return;
     mapInstance(instanceId, (e) => {
+      if (elementId !== undefined) {
+        const fields = Object.keys(e.componentOverrides?.[elementId] ?? {});
+        return fields.reduce(
+          (out, f) => withOverride(out, elementId, f as keyof ComponentOverride, undefined),
+          e,
+        );
+      }
       const out = { ...e };
       delete out.componentOverrides;
       return out;

@@ -1,3 +1,4 @@
+import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
@@ -127,11 +128,14 @@ export type CanvasProps = {
   // Laser-pointer trails for the LaserOverlay — local user first
   // followed by any peers laser-pointing on the active tab. The
   // overlay handles fading and cleanup; Canvas just renders.
-  laserTrails: {
-    participantId: string;
-    color: string;
-    points: { x: number; y: number; t: number }[];
-  }[];
+  // A store, read by the laser overlay alone (docs/specs/008-canvas/canvas-performance.md).
+  laserTrails: ReadableStore<
+    {
+      participantId: string;
+      color: string;
+      points: { x: number; y: number; t: number }[];
+    }[]
+  >;
   // `target` is what the pointer is over, so a paste can tell the canvas from
   // a floating panel lying on top of it (@liveworkspace/workbench/lib/canvas-pointer.ts).
   onCanvasPointerMove: (

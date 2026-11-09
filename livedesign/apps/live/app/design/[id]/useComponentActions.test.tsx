@@ -142,6 +142,17 @@ describe('useComponentActions', () => {
     expect(s.get()[0]).not.toHaveProperty('componentOverrides');
   });
 
+  it('resets one element’s overrides in one commit', () => {
+    const s = setup([inst()]);
+    s.actions.setOverride('i', 'a', 'label', 'Hi');
+    s.actions.setOverride('i', 'a', 'fillColor', '#fff');
+    s.actions.setOverride('i', 'b', 'label', 'Kept');
+    s.commit.mockClear();
+    s.actions.resetOverrides('i', 'a');
+    expect(s.commit).toHaveBeenCalledTimes(1);
+    expect((s.get()[0] as InstanceElement).componentOverrides).toEqual({ b: { label: 'Kept' } });
+  });
+
   it('renames and removes a main through the library', () => {
     const s = setup([inst()]);
     s.actions.rename('m', '  Nav  bar ');

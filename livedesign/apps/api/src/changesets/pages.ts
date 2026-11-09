@@ -4,7 +4,13 @@
 // moved page's content) go through the changeset write, so they are recorded, merged into later
 // saves and relayed; the pages and mode ride the same batch. Then the room hears what an
 // editor's own edit sends. A lost race repeats once from the read.
-import type { PagesAnswer, PagesRefusal, PagesRequest, RoomOp } from '@livedesign/api-schema';
+import {
+  tabPhotoOps,
+  type PagesAnswer,
+  type PagesRefusal,
+  type PagesRequest,
+  type RoomOp,
+} from '@livedesign/api-schema';
 import { diffToElementOps, type Tab } from '@livedesign/design';
 import { applyPageChanges, pageSummaries } from '@livedesign/edit-operations';
 import { isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
@@ -38,7 +44,9 @@ const refused = (status: number, refusal: PagesRefusal): PagesResult => {
 const PAGE_FIELDS = ['pages', 'opensIn', 'pageOrientation'] as const;
 
 /** The ops an editor's own edit would send for the same change, minus the elements (the changeset
- *  carries those). */
+ *  carries those): the pages patch, then the photo of each photo page added, duplicated or deleted
+ *  (an open editor drops `photos` from a `tab-meta`, so without its photo ops it held the page blank,
+ *  and its next save wrote the photo away). */
 export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
   const ops: RoomOp[] = [];
   const patch: Record<string, unknown> = {};
@@ -55,6 +63,7 @@ export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
       patch: patch,
       ...(clear.length ? { clear: clear } : {}),
     });
+  ops.push(...tabPhotoOps(before, after));
   return ops;
 }
 
