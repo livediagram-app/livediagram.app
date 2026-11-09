@@ -58,9 +58,20 @@ function momentAnswer(value: string): string {
 export const numberedTitle = (heading: string, number: number) =>
   `${heading} #${number}`.slice(0, ITEM_TITLE_MAX);
 
+// A pick as the field spells it: fieldTakes matches a question's options to the field's case aside, so "yes" is kept
+// as the field's "Yes", the option its row and its filter read.
+function asOption(pick: string, field: CustomFieldDef): string {
+  const lower = pick.toLowerCase();
+  return (field.options ?? []).find((o) => o.toLowerCase() === lower) ?? pick;
+}
+
 // `value` as `field` keeps it.
 function fieldValue(q: FormQuestion, value: AnswerValue, field: CustomFieldDef): ItemFieldValue {
   switch (field.kind) {
+    case 'choice':
+      return typeof value === 'string' ? asOption(value, field) : value;
+    case 'multichoice':
+      return Array.isArray(value) ? value.map((v) => asOption(v, field)) : value;
     case 'currency':
       return Math.round((value as number) * 100) / 100;
     case 'longtext':

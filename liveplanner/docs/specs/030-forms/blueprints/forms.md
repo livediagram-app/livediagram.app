@@ -167,7 +167,8 @@ and the question has no Other. `effectiveTarget(q, type)` resolves `goesTo` or f
   `descriptionRich` the same runs with the prompts bold. Past ITEM_DESCRIPTION_MAX: the plain text cut with `…`, no
   runs.
 - a mapped field: currency rounded to 2 dp, Long Text from picks one a line, Text from any answer's text, a rating
-  capped at the field's scale.
+  capped at the field's scale, a Choice or Multiple Choice pick as the field spells that option (`fieldTakes` matches
+  options case aside).
 - `status`: the destination's. `fromForm`: `fromFormValue(tabId, number)`, read by `readFromForm`; none when `number`
   is null.
 

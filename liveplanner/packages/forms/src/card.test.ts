@@ -59,6 +59,26 @@ const form = (questions: FormQuestion[]): FormDefinition => ({
 const answers = (o: Record<string, AnswerValue>) => new Map(Object.entries(o));
 
 describe('responseCard', () => {
+  it("keeps a choice pick as the field spells the option, so it sits in that option's row", () => {
+    const t: ItemTypeDef = {
+      ...type,
+      fields: [...type.fields, 'f-rsvp'],
+      custom: [
+        ...type.custom!,
+        { id: 'f-rsvp', label: 'RSVP', kind: 'choice', options: ['Yes', 'No'] },
+      ],
+    };
+    const f = form([
+      Q('rsvp', 'single', { options: ['yes', 'no'], goesTo: { to: 'field', fieldId: 'f-rsvp' } }),
+      Q('diet', 'multi', {
+        options: ['vegan', 'HALAL'],
+        goesTo: { to: 'field', fieldId: 'f-diet' },
+      }),
+    ]);
+    const card = responseCard(f, 'tab-f', answers({ rsvp: 'yes', diet: ['vegan', 'HALAL'] }), t, 1);
+    expect(card.fields).toMatchObject({ 'f-rsvp': 'Yes', 'f-diet': ['Vegan', 'Halal'] });
+  });
+
   it('numbers the title when nothing goes to Title, and files it in the status', () => {
     const card = responseCard(form([Q('a', 'short')]), 'tab-f', answers({}), type, 14);
     expect(card).toEqual({

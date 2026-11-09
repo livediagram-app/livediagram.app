@@ -354,7 +354,9 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
 | Checkbox        | Checkbox                                             |
 
 - A Single or Multiple Choice question may map to a Choice or Multiple Choice field only while the field holds every
-  option it offers and it has no Other (an Other answer is no option of the field). Mapped, it keeps the field's
+  option it offers and it has no Other (an Other answer is no option of the field), case aside. A pick is kept as
+  the field spells the option ("Yes" for a question's "yes"), so the card sits in that option's row and matches its
+  filter. Mapped, it keeps the field's
   options in step: an option added or renamed on the question is added to the field. The field never loses an
   option this way (a card may hold it): one removed or renamed on the question stays on the field.
 - A mapping whose field is later deleted, hidden from the type, or no longer fits (its kind or options changed)
