@@ -72,3 +72,18 @@ describe('quickStyleStyledIds', () => {
     ).toEqual([]);
   });
 });
+
+// A worst-case selection stays well inside a frame: 2000 elements over 200 pages.
+describe('quickStyleBarPage on a big selection', () => {
+  it('counts an even spread of it, within budget', () => {
+    const row = Array.from({ length: 200 }, (_, i) => page(`p${i}`, i * 200));
+    const els = Array.from({ length: 2000 }, (_, i) => box(`e${i}`, i < 1200 ? 10 : 210));
+    const ids = els.map((e) => e.id);
+    expect(quickStyleBarPage(ids, els, row, null)).toBe('p0');
+    // CPU time, not wall time, so a busy machine cannot fail it.
+    const t = process.cpuUsage();
+    for (let k = 0; k < 10; k++) quickStyleBarPage(ids, els, row, null);
+    const used = process.cpuUsage(t);
+    expect((used.user + used.system) / 1000 / 10).toBeLessThan(8);
+  });
+});

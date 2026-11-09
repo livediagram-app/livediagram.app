@@ -265,6 +265,10 @@ Apply points (user-drawn only), each passing the built element through `styleNew
 
 ## Where the bar sits
 
+`quickStyleBarPage` counts at most `QUICK_STYLE_BAR_SAMPLE` (256) of the targets, evenly spread: each finds its page
+with a scan of the row, so a select-all over a long deck stays well inside a frame (2000 elements over 200
+pages measured 13.4 ms counting every one and 0.4 ms sampled; the budget test holds it under 8 ms of CPU).
+
 `quickStyleBarPage(targetIds, elements, pages)`: count `pageIdOf(el, elements, pages)` over the
 targets; the page with the most wins, a tie to the page first in `pages`. None on a page: the page
 whose rect is nearest the first target's `elementBounds` centre (squared distance to the rect, 0

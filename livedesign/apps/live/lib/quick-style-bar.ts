@@ -16,6 +16,9 @@ export function quickStyleStyledIds(view: QuickStyleView): string[] {
   ];
 }
 
+/** The most elements a selection counts to find its page. */
+export const QUICK_STYLE_BAR_SAMPLE = 256;
+
 export function quickStyleBarPage(
   styledIds: readonly string[],
   elements: readonly Element[],
@@ -31,7 +34,11 @@ export function quickStyleBarPage(
   if (styled.length === 0) return null;
   const all = elements as Element[];
   const count = new Map<string, number>();
-  for (const el of styled) {
+  // A big selection counts an even spread of at most QUICK_STYLE_BAR_SAMPLE of its elements: each finds its page
+  // with a scan of the row, and the majority shows long before every element is counted.
+  const step = Math.max(1, Math.ceil(styled.length / QUICK_STYLE_BAR_SAMPLE));
+  for (let i = 0; i < styled.length; i += step) {
+    const el = styled[i]!;
     const id = pageIdOf(el, all, pages);
     if (id) count.set(id, (count.get(id) ?? 0) + 1);
   }

@@ -269,6 +269,10 @@ arrow), `useElementCreation.dropPaletteItem`, `useArrowConnect.connectArrowTo`,
 
 ## Where the bar sits
 
+`quickStyleBarPage` counts at most `QUICK_STYLE_BAR_SAMPLE` (256) of the styled elements, evenly spread: each finds
+its page with a scan of the row, so a select-all over many pages stays well inside a frame (the budget test holds 2000
+elements over 200 pages under 8 ms of CPU).
+
 `quickStyleStyledIds(view)`: the view's `targetIds`, then the marker strokes' and the highlights'
 ids (`pen.subject` / `highlighter.subject` of kind `strokes`); empty for a tool in hand.
 

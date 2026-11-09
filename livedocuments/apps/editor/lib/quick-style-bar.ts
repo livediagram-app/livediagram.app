@@ -2,6 +2,9 @@
 // the centre of most of the styled elements; a selection off every page goes to the nearest page. Pure.
 import { elementBounds, pageIdOf, type Element, type LaidOutPage } from '@livedocuments/document';
 
+/** The most elements a selection counts to find its page. */
+export const QUICK_STYLE_BAR_SAMPLE = 256;
+
 export function quickStyleBarPage(
   targetIds: readonly string[],
   elements: readonly Element[],
@@ -13,7 +16,11 @@ export function quickStyleBarPage(
   if (targets.length === 0) return null;
   const all = elements as Element[];
   const count = new Map<string, number>();
-  for (const el of targets) {
+  // A big selection counts an even spread of at most QUICK_STYLE_BAR_SAMPLE of its elements: each finds its page
+  // with a scan of the row, and the majority shows long before every element is counted.
+  const step = Math.max(1, Math.ceil(targets.length / QUICK_STYLE_BAR_SAMPLE));
+  for (let i = 0; i < targets.length; i += step) {
+    const el = targets[i]!;
     const id = pageIdOf(el, all, pages);
     if (id) count.set(id, (count.get(id) ?? 0) + 1);
   }
