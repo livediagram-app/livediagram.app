@@ -5,6 +5,7 @@ import { debugLog } from './debug';
 import { didYouMean } from './did-you-mean';
 import { EXIT, exitCodeForStatus } from './exit-codes';
 import { inputReader } from './input';
+import { discover } from './oauth';
 import type { CliIo } from './io';
 import { cacheDir, configDir } from './paths';
 import { transport } from './transport';
@@ -149,6 +150,39 @@ describe('the product names', () => {
     await client.fetch('/x');
     expect(sent[0]?.headers.get('X-Example-Client')).toBe('cli');
     expect(sent[0]?.headers.get('User-Agent')).toBe('example-cli/1.2.3 node/22 test');
+  });
+});
+
+describe('discover', () => {
+  const meta = (body: string) =>
+    io({ fetch: async () => new Response(body, { status: 200 }) } as never).io;
+  const log = () => {};
+
+  it('takes metadata whose endpoints are on the issuer', async () => {
+    const good = JSON.stringify({
+      authorization_endpoint: 'https://host.test/authorize',
+      token_endpoint: 'https://host.test/token',
+    });
+    expect(await discover(meta(good), 'https://host.test', log)).toMatchObject({
+      token_endpoint: 'https://host.test/token',
+    });
+  });
+
+  it('refuses unreadable metadata or endpoints that are not URLs as a sign-in error, not a crash', async () => {
+    for (const body of [
+      '<html>oops</html>',
+      'null',
+      JSON.stringify({ authorization_endpoint: 'not a url', token_endpoint: 'https://host.test/t' }),
+      JSON.stringify({ authorization_endpoint: 'https://host.test/a', token_endpoint: 7 }),
+      JSON.stringify({
+        authorization_endpoint: 'https://host.test/a',
+        token_endpoint: 'https://evil.test/t',
+      }),
+    ]) {
+      const err = await discover(meta(body), 'https://host.test', log).catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(CliError);
+      expect((err as CliError).failure.exit).toBe(EXIT.auth);
+    }
   });
 });
 

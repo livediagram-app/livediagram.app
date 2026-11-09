@@ -66,14 +66,20 @@ async function postForm(io: CliIo, url: string, fields: Record<string, string>) 
 export async function discover(io: CliIo, issuer: string, log: DebugLog): Promise<AuthServer> {
   const res = await io.fetch(new Request(`${issuer}/.well-known/oauth-authorization-server`));
   if (!res.ok) throw authError(`${issuer} has no sign-in server (HTTP ${res.status})`);
-  const meta = (await res.json()) as Partial<AuthServer>;
+  // Metadata that isn't a JSON object (an HTML error page, `null`) is refused as a sign-in error, not a crash.
+  const parsed: unknown = await res.json().catch(() => null);
+  if (typeof parsed !== 'object' || parsed === null)
+    throw authError(`${issuer}'s sign-in metadata is unreadable`);
+  const meta = parsed as Partial<AuthServer>;
   const origin = new URL(issuer).origin;
   const endpoints = [
     meta.authorization_endpoint,
     meta.token_endpoint,
     meta.device_authorization_endpoint,
   ];
-  const foreign = endpoints.find((e) => e !== undefined && new URL(e).origin !== origin);
+  // An endpoint that isn't an absolute URL counts as pointing elsewhere.
+  const originOf = (e: unknown) => (typeof e === 'string' && URL.canParse(e) ? new URL(e).origin : null);
+  const foreign = endpoints.find((e) => e !== undefined && originOf(e) !== origin);
   if (!meta.authorization_endpoint || !meta.token_endpoint || foreign)
     throw authError(
       `${issuer}'s sign-in metadata points elsewhere (${foreign ?? 'missing endpoints'})`,
