@@ -141,11 +141,8 @@ import {
   type DocumentOutline,
 } from './document-content';
 import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
-import {
-  PresenceRelay,
-  RELAYED_SAMPLE_KINDS,
-  type RelaySession,
-} from '@liveworkspace/api-kit/room-presence-relay';
+import { PresenceRelay, RELAYED_SAMPLE_KINDS } from '@liveworkspace/api-kit/room-presence-relay';
+import { createAvatarTrack, type AvatarRelaySession } from '../room-avatar-track';
 import { exportDocumentComments } from './document-comments';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
 import { addConnectedDocumentTab, connectedTabArrival } from './connected-tab';
@@ -247,9 +244,9 @@ export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
 
 // The sample streams this room relays and coalesces (docs/specs/015-api/api.md "A busy room bounds its presence
-// fan-out"): the walking characters and cursors, plus proximity audio's talking level
-// (docs/specs/012-collaboration/proximity-audio.md "The wire"), so a full Space talking adds bytes to frames the
-// walkers already cause, never frames; and a game's paddle (docs/specs/009-elements/social-pieces.md "The wire"),
+// fan-out"): the cursors (the walking characters join as their own track, ../room-avatar-track.ts), plus proximity
+// audio's talking level (docs/specs/012-collaboration/proximity-audio.md "The wire"), so a full Space talking adds
+// bytes to frames the walkers already cause, never frames; and a game's paddle (docs/specs/009-elements/social-pieces.md "The wire"),
 // which only its tab can see.
 const ROOM_SAMPLE_KINDS: ReadonlySet<string> = new Set([
   ...RELAYED_SAMPLE_KINDS,
@@ -1319,7 +1316,7 @@ export class DocumentRoom extends DurableObject<Env> {
   });
   // The sample streams, walking characters and cursors (docs/specs/015-api/api.md "A busy room bounds its
   // presence fan-out"): sent to a character's tab only, and coalesced per socket in a busy room.
-  private readonly presenceRelay = new PresenceRelay<WebSocket>({
+  private readonly presenceRelay = new PresenceRelay<WebSocket, AvatarRelaySession>({
     sockets: () => this.state.getWebSockets(),
     sessionOf: (ws) => relaySessionOf(this.readSession(ws)),
     frameFor: (ws, payload, serialized) => this.frameFor(ws, payload, serialized),
@@ -1332,6 +1329,7 @@ export class DocumentRoom extends DurableObject<Env> {
     },
     schedule: (fn, ms) => void setTimeout(fn, ms),
     sampleKinds: ROOM_SAMPLE_KINDS,
+    tracks: { avatar: createAvatarTrack() },
   });
   private scopeOf(ws: WebSocket): string | null {
     if (this.scopes.has(ws)) return this.scopes.get(ws) ?? null;
@@ -2051,7 +2049,7 @@ export class DocumentRoom extends DurableObject<Env> {
 
 // What the presence relay reads of a session: its tab, the other pane of a split, whether it batches, and whether it
 // reads lean avatar packets.
-function relaySessionOf(session: SessionAttachment | null): RelaySession | null {
+function relaySessionOf(session: SessionAttachment | null): AvatarRelaySession | null {
   const presence = session?.presence;
   if (!presence) return null;
   return {

@@ -12,7 +12,8 @@ import {
 // A Space walked by two people (docs/specs/003-system-architecture/e2e-smoke.md "The smoke"): a Spaces template opens
 // walking as it lands (docs/specs/008-canvas/avatar-mode.md), a second person joins from a share link and walks in
 // too, and each sees the other's character move as they steer with the arrows. The relay between them is the room's
-// avatar fan-out (@liveworkspace/api-kit/room-presence-relay), so this is the one browser check of it end to end.
+// avatar fan-out (apps/api room-avatar-track.ts on the shared presence relay), so this is the one browser check of it
+// end to end.
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const CANVAS = '[data-canvas-a11y-root]';

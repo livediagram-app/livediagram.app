@@ -29,6 +29,10 @@ const GATE_KEEPERS = [
   // (docs/specs/012-collaboration/proximity-audio.md "The mint route").
   'src/calls/**',
   'src/routes/calls.ts',
+  // The walkers' rules on the presence relay (docs/specs/015-api/api.md "A busy room bounds its presence fan-out"),
+  // held at 100% as they were while they were shared in @liveworkspace/api-kit: a gap sends a character to a tab
+  // that cannot see it, or an older editor a lean packet it cannot draw.
+  'src/room-avatar-track.ts',
 ];
 
 export default defineProject({

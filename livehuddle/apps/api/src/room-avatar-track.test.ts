@@ -1,0 +1,218 @@
+import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { PresenceRelay, type RelayedOp } from '@liveworkspace/api-kit/room-presence-relay';
+import {
+  avatarReaches,
+  createAvatarTrack,
+  filledAvatarFrame,
+  REMEMBERED_WALKERS,
+  type AvatarRelaySession,
+} from './room-avatar-track';
+
+// A socket stand-in: what it was sent, and the session the room has for it.
+type Sock = { id: string; sent: string[]; session: AvatarRelaySession | null; scoped?: boolean };
+
+// A room as this product's runs it: the walkers' track on the shared relay.
+function room(
+  count: number,
+  session: (i: number) => AvatarRelaySession | null = () => ({ tabId: 't1', batches: true }),
+) {
+  const sockets: Sock[] = Array.from({ length: count }, (_, i) => ({
+    id: `p${i}`,
+    sent: [],
+    session: session(i),
+  }));
+  const timers: { fn: () => void; ms: number }[] = [];
+  const relay = new PresenceRelay<Sock, AvatarRelaySession>({
+    sockets: () => sockets,
+    sessionOf: (s) => s.session,
+    // A scoped socket is withheld every frame, as a tab-scoped session is withheld another tab's.
+    frameFor: (s, _payload: RelayedOp, serialized) => (s.scoped ? null : serialized),
+    send: (s, frame) => void s.sent.push(frame),
+    schedule: (fn, ms) => void timers.push({ fn, ms }),
+    tracks: { avatar: createAvatarTrack() },
+  });
+  const runTimers = () => {
+    for (const t of timers.splice(0)) t.fn();
+  };
+  return { relay, sockets, timers, runTimers };
+}
+
+const costume = { gender: 'female', clothing: 'hoodie', hair: 'bun', size: 'regular' };
+// A full packet, as every editor sent before lean ones.
+const avatar = (tabId: string, x = 1) => ({
+  kind: 'avatar',
+  tabId,
+  avatar: {
+    x,
+    y: 2,
+    facing: 'down',
+    config: costume,
+    walking: true,
+    stepFrame: 0,
+    lift: 0,
+    wave: null,
+  },
+});
+// A lean packet (docs/specs/008-canvas/avatar-mode.md "The costume rides only when it is needed").
+const lean = (tabId: string, x = 1, withCostume = false) => ({
+  kind: 'avatar',
+  tabId,
+  avatar: { x, y: 2, facing: 'down', walking: true, ...(withCostume ? { config: costume } : null) },
+});
+// What an older editor is sent for a lean packet: filled back out.
+const filled = (x: number, config: unknown = costume) => ({
+  x,
+  y: 2,
+  facing: 'down',
+  walking: true,
+  stepFrame: 0,
+  lift: 0,
+  wave: null,
+  ...(config ? { config } : null),
+});
+const parsed = (raw: string) =>
+  JSON.parse(raw) as { kind: string; frames?: unknown[]; from?: string };
+
+describe('avatarReaches', () => {
+  it('reaches a socket on the op’s tab or its split pane, or of unknown tab', () => {
+    const op = avatar('t1');
+    expect(avatarReaches(op, { tabId: 't1' })).toBe(true);
+    expect(avatarReaches(op, { tabId: 't2', besideTabId: 't1' })).toBe(true);
+    expect(avatarReaches(op, { tabId: 't2' })).toBe(false);
+    expect(avatarReaches(op, {})).toBe(true);
+    expect(avatarReaches(op, null)).toBe(true);
+  });
+
+  it('sends leaving the mode, and a packet with no tab, to everyone', () => {
+    expect(avatarReaches({ kind: 'avatar', tabId: 't1', avatar: null }, { tabId: 't2' })).toBe(
+      true,
+    );
+    expect(avatarReaches({ kind: 'avatar', avatar: {} }, { tabId: 't2' })).toBe(true);
+  });
+});
+
+describe('the walkers on the relay', () => {
+  it('sends a character only to the sockets on its tab, and withholds what the host withholds', () => {
+    const { relay, sockets } = room(3, (i) => ({ tabId: i === 2 ? 't2' : 't1' }));
+    sockets[1]!.scoped = true;
+    expect(relay.relay(sockets[0]!, 'p0', avatar('t1'))).toBe(true);
+    expect(sockets[1]!.sent).toEqual([]);
+    expect(sockets[2]!.sent).toEqual([]);
+    relay.relay(sockets[0]!, 'p0', { kind: 'avatar', tabId: 't1', avatar: null });
+    expect(sockets[2]!.sent).toHaveLength(1);
+  });
+
+  it('coalesces walkers and cursors in a busy room, newest per sender and kind', () => {
+    const { relay, sockets, runTimers } = room(12);
+    relay.relay(sockets[0]!, 'p0', avatar('t1', 1));
+    relay.relay(sockets[0]!, 'p0', avatar('t1', 2));
+    relay.relay(sockets[1]!, 'p1', { kind: 'cursor', tabId: 't1', x: 1, y: 1 });
+    runTimers();
+    expect(parsed(sockets[5]!.sent[0]!).frames).toEqual([
+      { kind: 'op', from: 'p0', op: avatar('t1', 2) },
+      { kind: 'op', from: 'p1', op: { kind: 'cursor', tabId: 't1', x: 1, y: 1 } },
+    ]);
+  });
+});
+
+describe('the walkers’ catch-up on a tab switch', () => {
+  it('shows a socket arriving on a tab where everyone on it stands now', () => {
+    const { relay, sockets } = room(4, (i) => ({ tabId: i === 3 ? 't2' : 't1' }));
+    relay.relay(sockets[0]!, 'p0', avatar('t1', 10));
+    relay.relay(sockets[1]!, 'p1', avatar('t1', 20));
+    relay.relay(sockets[3]!, 'p3', avatar('t2', 30));
+    relay.relay(sockets[3]!, 'p8', avatar('t3', 40));
+    relay.relay(sockets[2]!, 'p2', avatar('t1', 5));
+    relay.relay(sockets[2]!, 'p2', { kind: 'avatar', tabId: 't1', avatar: null });
+    expect(sockets[3]!.sent.filter((f) => f.includes('"t1"'))).toHaveLength(1);
+    relay.noteSession(sockets[3]!, { tabId: 't1' });
+    sockets[3]!.sent.length = 0;
+    relay.catchUp(sockets[3]!, 'p3');
+    expect(sockets[3]!.sent.map((f) => parsed(f).from)).toEqual(['p0', 'p1']);
+    // Withheld frames stay withheld.
+    sockets[3]!.scoped = true;
+    sockets[3]!.sent.length = 0;
+    relay.catchUp(sockets[3]!, 'p3');
+    expect(sockets[3]!.sent).toEqual([]);
+  });
+
+  it('forgets a walker whose socket closed, and keeps no more than a bound of them', () => {
+    const { relay, sockets } = room(2);
+    relay.relay(sockets[0]!, 'p0', avatar('t1'));
+    relay.forget(sockets[0]!, 'p0');
+    relay.forget(sockets[0]!, undefined);
+    relay.catchUp(sockets[1]!, 'p1');
+    expect(sockets[1]!.sent).toHaveLength(1);
+    for (let i = 0; i <= REMEMBERED_WALKERS; i++) relay.relay(sockets[0]!, `w${i}`, avatar('t1'));
+    sockets[1]!.sent.length = 0;
+    relay.catchUp(sockets[1]!, 'p1');
+    expect(sockets[1]!.sent).toHaveLength(REMEMBERED_WALKERS);
+    expect(parsed(sockets[1]!.sent[0]!).from).toBe('w1');
+  });
+});
+
+describe('the walkers’ lean packets', () => {
+  const opOf = (raw: string) => (JSON.parse(raw) as { op: { avatar: unknown } }).op.avatar;
+
+  it('sends a lean packet as it came to an editor that asked, and filled out to one that did not', () => {
+    const { relay, sockets } = room(3, (i) => ({ tabId: 't1', leanAvatars: i === 1 }));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 1, true));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 2));
+    expect(sockets[1]!.sent.map(opOf)).toEqual([lean('t1', 1, true).avatar, lean('t1', 2).avatar]);
+    // The older editor keeps the costume the room last saw, and the resting values.
+    expect(sockets[2]!.sent.map(opOf)).toEqual([filled(1), filled(2)]);
+  });
+
+  it('fills a lean packet without a costume it never saw, and forgets a costume when its walker leaves', () => {
+    const { relay, sockets } = room(2, () => ({ tabId: 't1' }));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 1));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 2, true));
+    relay.relay(sockets[0]!, 'p0', { kind: 'avatar', tabId: 't1', avatar: null });
+    relay.relay(sockets[0]!, 'p0', lean('t1', 3));
+    expect(sockets[1]!.sent.map(opOf)).toEqual([filled(1, null), filled(2), null, filled(3, null)]);
+  });
+
+  it('sends a full packet to everyone as it came, and nothing extra for a malformed one', () => {
+    const { relay, sockets } = room(3, (i) => ({ tabId: 't1', leanAvatars: i === 1 }));
+    const raw = avatar('t1', 7);
+    relay.relay(sockets[0]!, 'p0', raw);
+    expect(sockets[1]!.sent).toEqual(sockets[2]!.sent);
+    relay.relay(sockets[0]!, 'p0', { kind: 'avatar', tabId: 't1', avatar: [1] });
+    relay.relay(sockets[0]!, 'p0', { kind: 'avatar', tabId: 't1', avatar: 'x' });
+    expect(sockets[2]!.sent.map(opOf)).toEqual([raw.avatar, [1], 'x']);
+  });
+
+  it('fills a lean packet out in a catch-up, with the last costume its walker sent', () => {
+    const { relay, sockets } = room(3, (i) => ({
+      tabId: i === 2 ? 't2' : 't1',
+      leanAvatars: true,
+    }));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 1, true));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 4));
+    relay.relay(sockets[1]!, 'p1', avatar('t1', 9));
+    relay.noteSession(sockets[2]!, { tabId: 't1', leanAvatars: true });
+    relay.catchUp(sockets[2]!, 'p2');
+    expect(sockets[2]!.sent.map(opOf)).toEqual([filled(4), avatar('t1', 9).avatar]);
+  });
+
+  it('fills a busy room of older editors out once a packet, inside a CPU budget', () => {
+    // 100 editors from before, every walker lean: a second of a full room's packets (1,500) relayed to each.
+    const { relay, sockets } = room(100, () => ({ tabId: 't1' }));
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 1500; i++) relay.relay(sockets[i % 100]!, `p${i % 100}`, lean('t1', i));
+    });
+    expect(sockets[1]!.sent.length).toBeGreaterThan(0);
+    expect(ms).toBeLessThan(cpuBudgetMs(150));
+  });
+
+  it('builds a filled frame from an op', () => {
+    const out = filledAvatarFrame('p0', lean('t1', 5), costume as never);
+    expect(out.payload).toEqual({
+      kind: 'op',
+      from: 'p0',
+      op: { ...lean('t1', 5), avatar: filled(5) },
+    });
+    expect(JSON.parse(out.serialized)).toEqual(out.payload);
+  });
+});
