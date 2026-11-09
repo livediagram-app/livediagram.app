@@ -11,7 +11,7 @@ import {
   setCallSelf,
 } from './calls-store';
 import type { LocalPreview } from './local-preview';
-import { useProximityCall, type ProximityCallDeps } from './useProximityCall';
+import { resumeOnGesture, useProximityCall, type ProximityCallDeps } from './useProximityCall';
 
 const caps = vi.hoisted(() => ({ apiGetCapabilities: vi.fn() }));
 vi.mock('@/lib/api/capabilities', () => caps);
@@ -309,6 +309,47 @@ describe('useProximityCall', () => {
         window.dispatchEvent(new Event('touchend'));
       });
       expect(context.resume).toHaveBeenCalledTimes(1);
+    });
+
+    // A call that ends before any press (closing the canvas, leaving the mode, a tab change) stops waiting: no
+    // listener is left on the window holding its closed context until some later press.
+    it('stops waiting for a press once the call ends', async () => {
+      audio.state = 'suspended';
+      const removed = vi.spyOn(window, 'removeEventListener');
+      const hook = mount();
+      await waitFor(() => expect(calls.made).toHaveLength(1));
+      hook.rerender({ ...base, inMode: false });
+      expect(
+        removed.mock.calls.filter(([, , capture]) => capture === true).map(([name]) => name),
+      ).toEqual(expect.arrayContaining(['pointerdown', 'keydown', 'touchend']));
+      act(() => {
+        window.dispatchEvent(new Event('pointerdown'));
+      });
+      expect(audio.made[0]!.resume).not.toHaveBeenCalled();
+    });
+
+    it('a join replaces the last one’s wait, so rejoins never pile listeners up', () => {
+      const added: string[] = [];
+      const live = new Set<unknown>();
+      const target = {
+        addEventListener: (name: string, fn: unknown) => {
+          added.push(name);
+          live.add(fn);
+        },
+        removeEventListener: (_name: string, fn: unknown) => live.delete(fn),
+      } as unknown as Window;
+      const context = {
+        state: 'suspended',
+        resume: vi.fn(async () => {}),
+      } as unknown as AudioContext;
+      const stop = resumeOnGesture(context, target);
+      expect(added).toEqual(['pointerdown', 'keydown', 'touchend']);
+      expect(live.size).toBe(1);
+      stop();
+      expect(live.size).toBe(0);
+      expect(context.resume).not.toHaveBeenCalled();
+      expect(resumeOnGesture({ state: 'running' } as AudioContext, target)()).toBeUndefined();
+      expect(added).toHaveLength(3);
     });
 
     it('leaves a running AudioContext alone, and one already resumed by the time of the press', async () => {
