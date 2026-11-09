@@ -83,6 +83,11 @@ large move rides as one layer").
   React. What reads the offset as a fact (whether everything is off screen) subscribes by value; what
   acts on it (a press, a walk's camera, a Walk In) reads it when it runs; what is drawn in screen space
   from it (the speech and call bubbles, a path's toolbar) subscribes where it is drawn.
+- **Someone else panning renders nothing.** Each peer's viewport (sent about ten a second while they
+  pan, for [Follow me](../012-collaboration/follow-me-viewport.md)) is held in a store, not as the
+  editor's render state. A viewport from a peer you are not following renders nothing; one from the
+  peer you follow renders the follow, which moves your view. Before, each one rendered the whole
+  editor, so a room of thirty people scrolling rendered it hundreds of times a second.
 - **A collaborator moving renders what shows them, not the editor.** Peers' cursors and characters
   (Avatar mode) are held in one peer-motion store per editor, not as the editor's render state. A
   frame of their movement (up to 60 a second in a small room) renders the cursor layer (for a cursor)

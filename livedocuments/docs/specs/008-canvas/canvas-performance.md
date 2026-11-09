@@ -66,6 +66,11 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   render for it. Handlers read the view from the store when they run. A touch pinch, whose events can
   outrun the display, changes the view at most once a frame, and measures the canvas once, as it
   starts.
+- **Someone else panning renders nothing.** Each peer's viewport (sent about ten a second while they
+  pan, for [Follow me](../012-collaboration/follow-me-viewport.md)) is held in a store, not as the
+  editor's render state. A viewport from a peer you are not following renders nothing; one from the
+  peer you follow renders the follow, which moves your view. Before, each one rendered the whole
+  editor, so a room of thirty people scrolling rendered it hundreds of times a second.
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry

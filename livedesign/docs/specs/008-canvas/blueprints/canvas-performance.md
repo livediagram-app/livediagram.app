@@ -261,6 +261,14 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - Measured (WebKit, 1180 x 820, 20 A4 pages, 2,000 elements, a 60-move drag of one shape, best of two): frames over
   50 ms 56 to 6, time over 50 ms 3,381 ms to 112 ms; a marquee then group drag 2,740 ms to 408 ms.
 
+### Peers' viewports
+
+- `usePresenceState` holds every peer's last `viewport` op in a `createStateStore` store
+  (`@liveworkspace/workbench/lib/state-store`), and hands the room its `set` in place of a state
+  setter. `useFollowMe` reads the followed peer's entry through `useStoreSlice`, so a viewport from
+  anyone else selects the same value and renders nothing. Held by `useFollowMe.test.tsx` ("renders
+  for the followed peer's viewport alone"): a hundred viewports from a peer not followed, no render.
+
 ### At rest
 
 - The still-canvas rule is held in a real browser by `e2e/canvas-still.spec.ts`: on a seeded board,

@@ -31,6 +31,10 @@ logged, never ordered (no `seq`), never replayed to a reconnecting client.
   For three numbers on an already-throttled channel, the handshake costs more
   than the traffic it saves. The cost is real and accepted: a room where nobody
   follows anybody still carries viewport frames while people scroll.
+- **Kept out of the editor's render.** Each peer's last viewport is held in a store, not as the
+  editor's state, and only the follow reads it, for the peer it follows. A viewport from anyone
+  else renders nothing, so a room of people scrolling (ten a second each) never renders the editor
+  for it ([Canvas performance](../008-canvas/canvas-performance.md)).
 
 ## Who follows whom
 

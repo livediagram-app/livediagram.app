@@ -8,6 +8,7 @@ import { RELATIVE_TICK_MS } from '@/lib/relative-time';
 export type PresenceClock = { now: number; lastSeen: ReadonlyMap<string, number> };
 import type { LaserPoint } from '@/lib/laser-buffer';
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
+import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
 
 // Realtime presence state for the document room: who's connected, each
 // peer's last-seen timestamp, and their tab focus / selection / cursor /
@@ -101,8 +102,10 @@ export function usePresenceState() {
     Map<string, { tabId: string; points: LaserPoint[] }>
   >(new Map());
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking. Unsolicited, so it is
-  // collected for everyone and read only while somebody is being followed.
-  const [remoteViewports, setRemoteViewports] = useState<Map<string, RemoteViewport>>(new Map());
+  // collected for everyone and read only while somebody is being followed: held in a store, not state here, since each
+  // peer who pans sends ten a second and state would render the whole editor for every one; only the follow reads it,
+  // and it renders for the peer it follows (docs/specs/008-canvas/canvas-performance.md).
+  const [remoteViewports] = useState(() => createStateStore<Map<string, RemoteViewport>>(new Map()));
   // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id, as the
   // room tells this socket alone.
   const [followerIds, setFollowerIds] = useState<readonly string[]>([]);
@@ -124,7 +127,7 @@ export function usePresenceState() {
     remoteLaserTrails,
     setRemoteLaserTrails,
     remoteViewports,
-    setRemoteViewports,
+    setRemoteViewports: remoteViewports.set,
     followerIds,
     setFollowerIds,
   };
