@@ -21,8 +21,16 @@ describe('trashOpenDocument', () => {
     const leave = vi.fn();
     expect(await trashOpenDocument('a', 'Roadmap', leave)).toBe(true);
     expect(seen).toEqual([true]);
-    expect(leave).toHaveBeenCalledWith('/explorer');
+    // The shared Explorer reads the Undo from its address, the workbench frame's from sessionStorage.
+    expect(leave).toHaveBeenCalledWith('/explorer?trashed=a&title=Roadmap');
     expect(takeDeleteUndo()).toEqual({ id: 'a', title: 'Roadmap' });
+  });
+
+  it('leaves the title out of the address when the document has no name', async () => {
+    index.deleteItem.mockResolvedValue(undefined);
+    const leave = vi.fn();
+    expect(await trashOpenDocument('b c', null, leave)).toBe(true);
+    expect(leave).toHaveBeenCalledWith('/explorer?trashed=b+c');
   });
 
   it('lifts the tombstone and stays when the index refuses', async () => {
