@@ -111,11 +111,20 @@ function documentNamespace(envOf: () => Env) {
           document.transactions += 1;
           return transaction(fn);
         },
-        get: async (key: string) => store.get(key),
+        // One key, or a batch of them (as the ledger's index fetches entries), as the runtime takes either.
+        get: async (key: string | string[]) =>
+          Array.isArray(key)
+            ? new Map(key.filter((k) => store.has(k)).map((k) => [k, store.get(k)]))
+            : store.get(key),
         put: async (key: string, value: unknown) => void store.set(key, value),
         delete: async (key: string) => store.delete(key),
-        list: async ({ prefix }: { prefix: string }) =>
-          new Map([...store].filter(([key]) => key.startsWith(prefix))),
+        // Sorted, with `startAfter` honoured, as the runtime lists.
+        list: async ({ prefix, startAfter }: { prefix: string; startAfter?: string }) =>
+          new Map(
+            [...store]
+              .filter(([key]) => key.startsWith(prefix) && (!startAfter || key > startAfter))
+              .sort(([a], [b]) => (a < b ? -1 : 1)),
+          ),
         setAlarm: async () => {},
         deleteAlarm: async () => {},
         // The runtime's deleteAll drops the SQLite database with the key-value pairs.

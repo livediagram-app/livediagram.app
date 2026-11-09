@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import {
   LEDGER_FLOOR_KEY,
+  LEDGER_GET_BATCH,
+  LEDGER_INDEXED_KEY,
+  LEDGER_INDEX_PREFIX,
+  LEDGER_MARK_EVERY_MS,
+  LEDGER_MARKS_KEY,
   LEDGER_RECENT_MS,
   LEDGER_RETENTION_MS,
   LEDGER_UPKEEP_PAGE,
@@ -63,9 +69,17 @@ function merge(saved: Record<string, Record<string, string>>, ledger: Ledger, si
 // DO storage as the runtime keeps it: sorted keys, `startAfter` and `limit` honoured. Counts what each call costs.
 function makeStorage(opts: { honoursCursor?: boolean } = {}) {
   const store = new Map<string, unknown>();
-  const counts = { puts: 0, deletes: 0, lists: 0, listed: 0 };
+  // `listed` and `got` are the rows each call read: what DO storage bills, and what the room deserialises.
+  const counts = { puts: 0, deletes: 0, lists: 0, listed: 0, got: 0 };
+  const get = (key: string | string[]) => {
+    if (!Array.isArray(key)) return Promise.resolve(structuredClone(store.get(key)));
+    if (key.length > LEDGER_GET_BATCH) throw new Error('past the runtime batch limit');
+    const found = key.filter((k) => store.has(k));
+    counts.got += found.length;
+    return Promise.resolve(new Map(found.map((k) => [k, structuredClone(store.get(k))])));
+  };
   const storage: LedgerStorage = {
-    get: <T>(key: string) => Promise.resolve(structuredClone(store.get(key)) as T | undefined),
+    get: get as LedgerStorage['get'],
     put: (key, value) => {
       counts.puts++;
       store.set(key, structuredClone(value));
@@ -91,6 +105,12 @@ function makeStorage(opts: { honoursCursor?: boolean } = {}) {
   };
   return { storage, store, counts };
 }
+
+// The ledger's entries and floor, and its index rows, each sorted.
+const entryKeys = (store: Map<string, unknown>) =>
+  [...store.keys()].filter((k) => k.startsWith('ledger:') || k === LEDGER_FLOOR_KEY).sort();
+const indexRows = (store: Map<string, unknown>) =>
+  [...store.keys()].filter((k) => k.startsWith(LEDGER_INDEX_PREFIX)).sort();
 
 const DAY = 24 * 60 * 60 * 1000;
 const note = (elementId: string, id: string, text: string, tabId = 't1'): Op => ({
@@ -144,7 +164,8 @@ describe('RoomLedgerStore: recording', () => {
     ledger.record({ kind: 'boom', tabId: 't1', elementId: 'a' }, 4);
     ledger.record(note('a', 'n2', 'kept'), 5);
     await ledger.settled();
-    expect([...store.keys()]).toEqual(['ledger:t1:el:a']);
+    expect(entryKeys(store)).toEqual(['ledger:t1:el:a']);
+    expect(indexRows(store)).toEqual(['ledger-seq:t1:0000000000000005:ledger:t1:el:a']);
     expect(store.get('ledger:t1:el:a')).toMatchObject({ notes: { n2: { text: 'kept', seq: 5 } } });
   });
 
@@ -226,7 +247,7 @@ describe("RoomLedgerStore: a save's read", () => {
     const get = vi.spyOn(storage, 'get');
     await woken.read('t1', 3);
     await woken.read('t1', 4);
-    expect(get.mock.calls.filter(([k]) => k === LEDGER_FLOOR_KEY)).toHaveLength(1);
+    expect(get.mock.calls.filter(([k]) => (k as unknown) === LEDGER_FLOOR_KEY)).toHaveLength(1);
     expect(warn).toHaveBeenCalledTimes(2);
     expect(counts.lists).toBe(2);
   });
@@ -246,7 +267,9 @@ describe('RoomLedgerStore: upkeep', () => {
       dropped: 2,
       stamped: 0,
     });
-    expect([...store.keys()].sort()).toEqual([LEDGER_FLOOR_KEY, 'ledger:t1:el:fresh']);
+    expect(entryKeys(store)).toEqual([LEDGER_FLOOR_KEY, 'ledger:t1:el:fresh']);
+    // The cut entries' index rows go with them.
+    expect(indexRows(store)).toEqual(['ledger-seq:t1:0000000000000003:ledger:t1:el:fresh']);
     expect(store.get(LEDGER_FLOOR_KEY)).toBe(2);
   });
 
@@ -338,7 +361,8 @@ describe('RoomLedgerStore: upkeep', () => {
         dropped: n,
         stamped: 0,
       });
-      expect([...store.keys()]).toEqual([LEDGER_FLOOR_KEY]);
+      expect(entryKeys(store)).toEqual([LEDGER_FLOOR_KEY]);
+      expect(indexRows(store)).toEqual([]);
       expect(counts.lists).toBe(honoursCursor ? 6 : 4);
     }
   });
@@ -388,10 +412,224 @@ describe('RoomLedgerStore: a long-lived tab', () => {
     });
     expect(listedWhole).toBe(1000);
     expect(forSave.length).toBeLessThan(whole.length / 40);
-    // After the upkeep the room keeps only the last 30 days' elements.
+    // After the upkeep the room keeps only the last 30 days' elements, and has indexed them: a save reads the index
+    // rows from the last day on and the ten entries it ships, not the tab's 372 entries.
     await ledger.upkeep({ now: now(), seq, tabs: new Set(['t1']) });
-    const before = counts.listed;
-    await ledger.read('t1', seq);
-    expect(counts.listed - before).toBeLessThanOrEqual(12 * 31);
+    const before = counts.listed + counts.got;
+    expect(Object.keys((await ledger.read('t1', seq)).elements)).toHaveLength(10);
+    expect(counts.listed + counts.got - before).toBeLessThanOrEqual(12 + 10 + 10);
+  });
+
+  // A busy board: every one of 1,000 elements touched in the last month, so the upkeep cuts nothing. Before the
+  // index a save read all 1,000 entries (1,000 rows, 2.8 ms of CPU here) to ship the 10 touched today.
+  it("reads a save's entries through the index, not the whole tab", async () => {
+    const { ledger, counts, advance, now } = setup();
+    let seq = 0;
+    for (let day = 0; day < 30; day++) {
+      for (let i = 0; i < 60; i++)
+        ledger.record(
+          note(`el${(day * 60 + i * 17) % 1000}`, `c${seq}`, 'a comment of about sixty characters'),
+          ++seq,
+        );
+      await ledger.settled();
+      advance(DAY / 2);
+      await ledger.upkeep({ now: now(), seq, tabs: new Set(['t1']) });
+      advance(DAY / 2);
+    }
+    for (let i = 0; i < 10; i++) ledger.record(note(`el${i}`, `today${i}`, 'posted today'), ++seq);
+    await ledger.settled();
+    const before = counts.listed + counts.got;
+    expect(Object.keys((await ledger.read('t1', seq)).elements)).toHaveLength(10);
+    const rows = counts.listed + counts.got - before;
+    console.info('[ledger] busy board, rows per save', { entries: 1000, rows });
+    expect(rows).toBeLessThanOrEqual(80);
+    const cpu = await cpuMsOfAsync(async () => {
+      for (let i = 0; i < 20; i++) await ledger.read('t1', seq);
+    });
+    expect(cpu / 20).toBeLessThan(cpuBudgetMs(1));
+  });
+});
+
+describe("RoomLedgerStore: the save's index", () => {
+  // A room whose upkeep has run daily, so the index answers every read with a cursor.
+  async function indexedRoom(opts: { honoursCursor?: boolean } = {}) {
+    const room = setup(opts);
+    let seq = 0;
+    for (let day = 0; day < 40; day++) {
+      for (let i = 0; i < 3; i++)
+        room.ledger.record(note(`el${(day * 7 + i) % 25}`, `n${seq}`, `d${day}`), ++seq);
+      room.ledger.record({ kind: 'dot', tabId: 't1', id: `dot${seq}` }, ++seq);
+      room.ledger.record(note('x', `o${seq}`, 'other tab', 't2'), ++seq);
+      await room.ledger.settled();
+      room.advance(DAY / 3);
+      await room.ledger.upkeep({ now: room.now(), seq, tabs: new Set(['t1', 't2']) });
+      room.advance((2 * DAY) / 3);
+    }
+    return { ...room, seq };
+  }
+
+  it('merges a save exactly as the whole ledger would, for every cursor, on a store that honours the cursor or not', async () => {
+    for (const honoursCursor of [true, false]) {
+      const { ledger, storage, counts, seq, now } = await indexedRoom({ honoursCursor });
+      // The same room read the way it was before the index: listing the tab.
+      const get = ((key: string | string[]) =>
+        key === LEDGER_INDEXED_KEY
+          ? Promise.resolve(undefined)
+          : storage.get(key as string)) as LedgerStorage['get'];
+      const listing = new RoomLedgerStore({ ...storage, get }, rules, now);
+      const whole = await ledger.read('t1');
+      const snapshot = { el1: { stale: 'mine' } };
+      for (let since = 0; since <= seq; since++) {
+        const fromIndex = await ledger.read('t1', since);
+        expect(fromIndex).toEqual(await listing.read('t1', since));
+        expect(merge(snapshot, fromIndex, since)).toEqual(merge(snapshot, whole, since));
+      }
+      expect(counts.got).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps one row per entry, at the seq that last changed it', async () => {
+    const { ledger, store } = setup();
+    ledger.record(note('a', 'n1', 'one'), 1);
+    ledger.record(note('a', 'n2', 'two'), 2);
+    ledger.record(note('b', 'n3', 'three'), 3);
+    await ledger.settled();
+    expect(indexRows(store)).toEqual([
+      'ledger-seq:t1:0000000000000002:ledger:t1:el:a',
+      'ledger-seq:t1:0000000000000003:ledger:t1:el:b',
+    ]);
+  });
+
+  it('lists the tab until an upkeep has indexed what came before the index, then indexes it', async () => {
+    const { ledger, store, counts, advance, now } = setup();
+    // An entry written before the index: stamped, with no row, and one from before stamps.
+    store.set('ledger:t1:el:old', {
+      notes: { n0: { text: 'before', seq: 1 } },
+      ledgerStamp: { seq: 1, at: now() },
+    });
+    store.set('ledger:t1:el:older', { notes: { n9: { text: 'unstamped', seq: 0 } } });
+    ledger.record(note('new', 'n1', 'after'), 2);
+    await ledger.settled();
+    advance(2 * DAY);
+    ledger.record(note('newer', 'n2', 'later'), 3);
+    await ledger.settled();
+    expect(Object.keys((await ledger.read('t1', 0)).elements).sort()).toEqual([
+      'new',
+      'newer',
+      'old',
+      'older',
+    ]);
+    expect(counts.got).toBe(0);
+    await ledger.upkeep({ now: now(), seq: 3, tabs: null });
+    expect(store.get(LEDGER_INDEXED_KEY)).toBe(true);
+    expect(indexRows(store)).toEqual([
+      'ledger-seq:t1:0000000000000001:ledger:t1:el:old',
+      'ledger-seq:t1:0000000000000002:ledger:t1:el:new',
+      'ledger-seq:t1:0000000000000003:ledger:t1:el:newer',
+      'ledger-seq:t1:0000000000000003:ledger:t1:el:older',
+    ]);
+    advance(2 * DAY);
+    expect(Object.keys((await ledger.read('t1', 0)).elements).sort()).toEqual([
+      'new',
+      'newer',
+      'old',
+      'older',
+    ]);
+    expect(counts.got).toBe(4);
+    // A later upkeep writes no rows for what is already indexed.
+    const puts = counts.puts;
+    await ledger.upkeep({ now: now(), seq: 3, tabs: null });
+    expect(counts.puts).toBe(puts);
+  });
+
+  it('lists the tab when no mark is a day old, or the index cannot place the tab', async () => {
+    const { ledger, counts, advance, now } = setup();
+    ledger.record(note('a', 'n1', 'one'), 1);
+    ledger.record(note('a', 'n1', 'one', 'odd:tab'), 2);
+    await ledger.settled();
+    await ledger.upkeep({ now: now(), seq: 2, tabs: null });
+    await ledger.read('t1', 1);
+    expect(counts.got).toBe(0);
+    advance(DAY + 1);
+    await ledger.read('odd:tab', 1);
+    expect(counts.got).toBe(0);
+    await ledger.read('t1', 1);
+    expect(counts.got).toBe(0);
+    ledger.record(note('a', 'n2', 'two'), 3);
+    await ledger.read('t1', 1);
+    expect(counts.got).toBe(1);
+
+    // A product whose tab prefix is not `ledger:<tab>:` reads the whole tab.
+    const s = makeStorage();
+    const other = new RoomLedgerStore(s.storage, {
+      ...rules,
+      ledgerPrefix: (tabId) => `ledger:${tabId}:x`,
+    });
+    s.store.set(LEDGER_INDEXED_KEY, true);
+    s.store.set(LEDGER_MARKS_KEY, [{ seq: 0, at: 0 }]);
+    await other.read('t1', 0);
+    expect(s.counts.lists).toBe(1);
+    expect(s.counts.got).toBe(0);
+  });
+
+  it('fetches entries in batches the runtime takes, and skips rows whose entry or time is gone', async () => {
+    const { ledger, store, counts, advance } = setup();
+    const n = LEDGER_GET_BATCH * 2 + 3;
+    for (let i = 0; i < n; i++) ledger.record(note(`e${i}`, 'n', 'x'), i + 1);
+    await ledger.settled();
+    store.set(LEDGER_INDEXED_KEY, true);
+    advance(2 * DAY);
+    // An orphan row, and a row with no time (read as if recent).
+    store.set('ledger-seq:t1:0000000000000001:ledger:t1:el:gone', 0);
+    store.set(`ledger-seq:t1:${String(n).padStart(16, '0')}:ledger:t1:el:e0`, 'junk');
+    const read = await ledger.read('t1', 0);
+    expect(Object.keys(read.elements)).toHaveLength(n);
+    expect(counts.got).toBe(n);
+  });
+
+  it('keeps a mark an hour at most, and only the last day of them plus the one before', async () => {
+    const { ledger, store, advance } = setup();
+    let seq = 0;
+    for (let i = 0; i < 3 * 24 * 4; i++) {
+      ledger.record(note('a', `n${i}`, 'x'), ++seq);
+      advance(LEDGER_MARK_EVERY_MS / 4);
+    }
+    await ledger.settled();
+    const marks = store.get(LEDGER_MARKS_KEY) as { seq: number; at: number }[];
+    expect(marks.length).toBeGreaterThanOrEqual(24);
+    expect(marks.length).toBeLessThanOrEqual(26);
+    expect(marks[0]!.at).toBeLessThanOrEqual(marks.at(-1)!.at - LEDGER_RECENT_MS);
+    expect(marks[1]!.at).toBeGreaterThan(marks.at(-1)!.at - LEDGER_RECENT_MS);
+  });
+
+  it('leaves out of the index a key that names no tab, and still stamps and cuts it', async () => {
+    const s = makeStorage();
+    let now = 0;
+    const ledger = new RoomLedgerStore(
+      s.storage,
+      { ...rules, ledgerKey: () => 'ledger:loose' },
+      () => now,
+    );
+    ledger.record(note('a', 'n', 'x'), 1);
+    ledger.record(note('a', 'n2', 'y'), 2);
+    await ledger.settled();
+    s.store.set('ledger:legacy', { notes: {} });
+    expect(indexRows(s.store)).toEqual([]);
+    expect(await ledger.upkeep({ now, seq: 2, tabs: null })).toEqual({ dropped: 0, stamped: 1 });
+    now = LEDGER_RETENTION_MS + 1;
+    expect(await ledger.upkeep({ now, seq: 2, tabs: null })).toEqual({ dropped: 2, stamped: 0 });
+    expect(indexRows(s.store)).toEqual([]);
+  });
+
+  it('ignores marks a woken room finds malformed', async () => {
+    const { storage, store, counts } = setup();
+    store.set(LEDGER_INDEXED_KEY, true);
+    store.set(LEDGER_MARKS_KEY, [{ seq: 'x', at: 1 }, { seq: 1, at: 'x' }, null]);
+    const woken = new RoomLedgerStore(storage, rules);
+    await woken.read('t1', 0);
+    expect(counts.got).toBe(0);
+    store.set(LEDGER_MARKS_KEY, 'nope');
+    await new RoomLedgerStore(storage, rules).read('t1', 0);
+    expect(counts.lists).toBe(2);
   });
 });
