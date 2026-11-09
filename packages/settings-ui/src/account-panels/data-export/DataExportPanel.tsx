@@ -124,8 +124,8 @@ export function DataExportPanel() {
             Take Everything With You
           </h4>
           <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            One zip of everything you own: each diagram, plan, document and design as its own file
-            with a picture of each tab, boards and sheets as CSV, the comments you wrote, your
+            One zip of everything you own: each diagram, plan, document, design and Space as its own
+            file with a picture of each tab, boards and sheets as CSV, the comments you wrote, your
             profile and the images you uploaded. We build it in the background and email you a link.
           </p>
           <div className="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
