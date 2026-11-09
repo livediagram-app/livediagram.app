@@ -148,12 +148,12 @@ function LaserGlyph() {
     </g>
   );
 }
-/** A little walking character, the Avatar mode glyph. */
-function AvatarGlyph() {
+/** A pool of light inside a dimmed ring, the Spotlight mode glyph. */
+function SpotlightGlyph() {
   return (
     <g {...glyph} strokeLinecap="round">
-      <circle cy={-4.5} r={3} />
-      <path d="M0 -1.5 V4 M-4 7 L0 4 L4 7 M-3.5 1 H3.5" />
+      <circle r={7} strokeDasharray="2 2" />
+      <circle r={3.5} />
     </g>
   );
 }
@@ -297,7 +297,7 @@ export function ModeButtonBar() {
   const buttons: { kicker: string; mode: string; icon: ReactNode }[] = [
     { kicker: 'SWITCH TO', mode: 'Select', icon: <SelectGlyph /> },
     { kicker: 'SWITCH TO', mode: 'Laser', icon: <LaserGlyph /> },
-    { kicker: 'LEAVE', mode: 'Avatar', icon: <AvatarGlyph /> },
+    { kicker: 'LEAVE', mode: 'Spotlight', icon: <SpotlightGlyph /> },
   ];
   return (
     <Scene w={420} h={218}>
@@ -631,7 +631,7 @@ export function ReactionPads() {
         );
       })}
       <Label x={210} y={176} anchor="middle" size={11} tone="muted">
-        Press a pad, or walk a character onto it in Avatar mode.
+        Press a pad to throw a burst over the canvas.
       </Label>
     </Scene>
   );
