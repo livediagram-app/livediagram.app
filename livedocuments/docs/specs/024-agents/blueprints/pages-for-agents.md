@@ -128,7 +128,8 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 - `articleToMarkdown`: front matter from the first `title` / `subtitle` blocks, then each block: paragraph by style
   (`#`, `##`, `###`, `>`, body), list by level (two spaces a level, `-`, `1.`, `- [ ]` / `- [x]`), code fenced,
   divider `---`, page break `\pagebreak`, zone `[zone <id>]`; runs: `**b**`, `*i*`, `~~s~~`, `` `code` ``,
-  `[text](href)`, emphasis kept inside a run's own spaces; Markdown's characters escaped with a backslash, and a
+  `[text](href)` (read with unescaped parentheses balanced one deep in `href`), emphasis kept inside a run's own
+  spaces; Markdown's characters escaped with a backslash, and a
   block's text that would open a heading, quote, list or divider escaped at the line start; a line break inside a
   body paragraph, a quote or a list item prints as a backslash hard break (`brokenMarkdown`: the quote's next line
   led by `> `, the item's by its indent and as many spaces as its marker and space), inside a heading or code as a

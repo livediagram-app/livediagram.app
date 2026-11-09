@@ -14,9 +14,10 @@ import {
 } from './article-flow';
 
 // Something that only Markdown writes: a heading, a list, a quote, a fence, a rule, emphasis or a link. A link's text
-// holds no bracket and its address no parenthesis, so each `[` or `(` scans only to the next: linear on `[[[[`.
+// holds no bracket and its address only balanced parentheses one deep (`…/Mercury_(planet)`), so each `[` or `(`
+// scans only to the next: linear on `[[[[` and `((((`.
 const MARKDOWN_SIGNAL =
-  /^(#{1,6}\s|\s*([-*+]|\d+[.)])\s|>\s|```|(-{3,}|\*{3,}|_{3,})\s*$|\[TOC(?: [12])?\]\s*$)|\*\*[^*]+\*\*|\[[^\][]+\]\([^()]+\)|`[^`]+`/m;
+  /^(#{1,6}\s|\s*([-*+]|\d+[.)])\s|>\s|```|(-{3,}|\*{3,}|_{3,})\s*$|\[TOC(?: [12])?\]\s*$)|\*\*[^*]+\*\*|\[[^\][]+\]\((?:[^()]|\([^()]*\))+\)|`[^`]+`/m;
 
 // A footnote's definition line opens a line: `[^label]: `.
 const FOOTNOTE_SIGNAL = /^\[\^[^\]\s[]{1,64}\]:/m;
@@ -140,7 +141,7 @@ const TOC_LINE = /^\[TOC(?: ([12]))?\]$/;
 // CommonMark has it (`snake_case_name`, `my__private__helper` stay as written): it opens after no letter or digit
 // and closes before none.
 const INLINE =
-  /(\*\*\*([^*]+)\*\*\*|(?<![\p{L}\p{N}_])___([^_]+)___(?![\p{L}\p{N}_])|\*\*([^*]+)\*\*|(?<![\p{L}\p{N}_])__([^_]+)__(?![\p{L}\p{N}_])|~~([^~]+)~~|(?<!`)(`+)(?!`)([\s\S]*?[^`])\7(?!`)|\[([^\][]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|(?<![\p{L}\p{N}_])_([^_\s][^_]*)_(?![\p{L}\p{N}_]))/u;
+  /(\*\*\*([^*]+)\*\*\*|(?<![\p{L}\p{N}_])___([^_]+)___(?![\p{L}\p{N}_])|\*\*([^*]+)\*\*|(?<![\p{L}\p{N}_])__([^_]+)__(?![\p{L}\p{N}_])|~~([^~]+)~~|(?<!`)(`+)(?!`)([\s\S]*?[^`])\7(?!`)|\[([^\][]+)\]\(((?:[^()\s]|\([^()\s]*\))+)\)|\*([^*\s][^*]*)\*|(?<![\p{L}\p{N}_])_([^_\s][^_]*)_(?![\p{L}\p{N}_]))/u;
 
 // Markdown's backslash escapes (`\\*` is a literal `*`): held as private-use characters while the
 // marks are read, so an escaped character never opens or closes one, then put back as the character.
