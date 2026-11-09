@@ -5,7 +5,8 @@ import { sqliteD1 } from '../test-sqlite-d1';
 import { appendItemHistory } from '../db/item-history';
 import { listItems } from '../db/items';
 import { readSheetHead } from '../db/sheets';
-import { anonymisePlan } from './plan-anonymise';
+import { listHomeThreads } from '../db/card-threads';
+import { anonymisePlan, anonymiseReactions } from './plan-anonymise';
 
 // A closed account's name off a plan that outlives them (plan-anonymise.ts): here, the card history they wrote
 // (docs/specs/026-plan/items.md "History"), which names its authors by their hashed id as the cards do.
@@ -106,5 +107,65 @@ describe('anonymisePlan', () => {
     expect(stored).not.toContain('user_gone');
     // Running it again changes nothing.
     expect(await anonymisePlan(db.env, 'P', 'user_gone')).toBe(0);
+  });
+
+  // A card thread names its resolver and its comments' reactors by hashed id beside their names
+  // (comment-reactions.md "On a card's comment threads"); a thread or reaction from before that holds only a name.
+  it('names a closed account Deleted account where it resolved a thread or reacted, and leaves older rows', async () => {
+    const db = sqliteD1();
+    db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
+                 VALUES ('P', 'user_kept', 'Plan', 0, 1, 1)`);
+    const gone = await itemPersonId('user_gone');
+    const kept = await itemPersonId('user_kept');
+    const starter = JSON.stringify({ name: 'Kept Person', color: '#dc2626' });
+    const comments = JSON.stringify([
+      {
+        id: 'c1',
+        authorName: 'Kept Person',
+        text: 'hi',
+        at: 1,
+        reactions: [
+          { emoji: 'heart', by: 'k-gone', name: 'Gone Person', person: gone },
+          { emoji: 'heart', by: 'k-kept', name: 'Kept Person', person: kept },
+          { emoji: 'eyes', by: 'k-gone', name: 'Gone Person' },
+        ],
+      },
+    ]);
+    const plain = JSON.stringify([{ id: 'c2', authorName: 'Kept Person', text: 'yo', at: 1 }]);
+    const insert = db.sql.prepare(
+      `INSERT INTO card_threads (plan_id, id, resolved, resolved_by, resolved_by_id, resolved_at, comments,
+                                 created_at, created_by, updated_at, cards) VALUES ('P', ?, ?, ?, ?, ?, ?, 1, ?, 1, '[]')`,
+    );
+    insert.run('reacted', 0, null, null, null, comments, starter);
+    insert.run('resolved', 1, 'Gone Person', gone, 5, plain, starter);
+    insert.run('older', 1, 'Gone Person', null, 5, plain, starter);
+    insert.run('kept', 1, 'Kept Person', kept, 5, plain, starter);
+
+    await anonymisePlan(db.env, 'P', 'user_gone');
+
+    const threads = Object.fromEntries((await listHomeThreads(db.env, 'P')).map((t) => [t.id, t]));
+    const D = ANONYMISED_NAME;
+    expect(threads.reacted!.comments[0]!.reactions!.map((r) => r.name)).toEqual([
+      D,
+      'Kept Person',
+      'Gone Person',
+    ]);
+    expect(threads.reacted!.comments[0]!.reactions![0]).not.toHaveProperty('person', gone);
+    expect(threads.resolved).toMatchObject({ resolvedBy: D, resolvedById: 'deleted' });
+    expect(threads.older!.resolvedBy).toBe('Gone Person');
+    expect(threads.kept).toMatchObject({ resolvedBy: 'Kept Person', resolvedById: kept });
+    // Running it again changes nothing.
+    expect(await anonymisePlan(db.env, 'P', 'user_gone')).toBe(0);
+  });
+
+  it('leaves comments text it cannot read as reactions as it is', () => {
+    for (const text of [
+      '{not json h1',
+      '{"h1": 1}',
+      '[{"id": "c", "text": "h1"}]',
+      '[null, "h1"]',
+    ]) {
+      expect(anonymiseReactions(text, 'h1')).toEqual({ value: text, changed: false });
+    }
   });
 });

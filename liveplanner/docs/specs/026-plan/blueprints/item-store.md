@@ -342,7 +342,7 @@ on each card it is on by a link row in that card's plan.
 ### Pure core (`packages/project/src/card-threads.ts`, type-only imports of `@liveplanner/items`)
 
 - **Types**: `CardRef = { projectId, itemId, key: number | null, projectName?: string }`; `ThreadPerson = { name,
-color, authorId? }`; `CardThread = { id, title, resolved, resolvedBy?: string, resolvedAt?: number, comments:
+color, authorId? }`; `CardThread = { id, title, resolved, resolvedBy?: string, resolvedById?: string, resolvedAt?: number, comments:
 Comment[], createdAt, createdBy: ThreadPerson, updatedAt, home, cards: CardRef[], field?: string, rev }`. `field`
   is the Comments field it belongs to (item-types.md "Comments and Votes fields"), set at start and never changed;
   absent is the built-in `comments`. `isThreadFieldId(s)` (`comments` or a custom field id) checks it. `Comment` gains
@@ -395,7 +395,8 @@ refuses it, pointing at change_threads) and has no CSV value.
 
 ```sql
 card_threads      (plan_id, id, title, resolved, resolved_by, resolved_at, comments JSON, created_at,
-                   created_by JSON, updated_at, rev, cards JSON, field NULL) PK (plan_id, id)  -- the home's
+                   created_by JSON, updated_at, rev, cards JSON, field NULL, resolved_by_id NULL)
+                                                                            PK (plan_id, id)  -- the home's
 card_thread_links (plan_id, item_id, thread_id, home, added_at, open_comments)
                                                                             PK (plan_id, item_id, thread_id)
                    INDEX (plan_id, thread_id)                                                  -- each card's
@@ -637,6 +638,14 @@ history.retention` with the count.
   `LIKE` on the hash or raw id, so JSON is read only on rows that mention them, and the `CASE` keeps a row whose
   column is not JSON from failing the batch. `parsePerson` (`db/items.ts`) reads a bare `deleted` as that same
   person, so a row an older anonymising wrote reads Deleted account, not Someone.
+- A card thread's resolver and its comments' reactions are found by hashed id too: `resolved_by_id` (schema step
+  V17, null on a thread resolved before it) is `itemPersonId` of whoever resolved it, set and cleared with
+  `resolved_by` (the route's `resolve` change carries `byId`), and a reaction keeps `person` (the route stamps it;
+  `@liveworkspace/model-core/comment-reactions` keeps it through `withReaction` and `cleanReactions`).
+  `anonymisePlan` reads the threads whose `comments` or `created_by` mention the raw id, whose `comments` mention
+  the hash, or whose `resolved_by_id` is the hash; it sets `resolved_by` to Deleted account and `resolved_by_id` to
+  `deleted`, and each reaction whose `person` is the hash to name Deleted account, `person` `deleted`. Older rows
+  without the id are left as they are.
 - Copies (`exportPlanCopy`), project files and offline records carry no history: none of them reads the table.
 
 ### REST

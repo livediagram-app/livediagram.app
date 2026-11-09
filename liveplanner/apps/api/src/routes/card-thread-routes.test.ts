@@ -30,7 +30,7 @@ import type {
   ItemResponse,
 } from '@liveplanner/api-schema';
 import { CARD_THREADS_MAX, type CardThread } from '@liveplanner/project';
-import type { Item } from '@liveplanner/items';
+import { itemPersonId, type Item } from '@liveplanner/items';
 import { sqliteD1, testCopyPlan, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
@@ -364,7 +364,12 @@ describe('the writes on a thread', () => {
         code: 'PART',
       },
     );
-    expect(r.body.thread).toMatchObject({ resolved: true, resolvedBy: 'Vee' });
+    // Who resolved it by hashed id too, so a closed account's anonymising finds them (items.md).
+    expect(r.body.thread).toMatchObject({
+      resolved: true,
+      resolvedBy: 'Vee',
+      resolvedById: await itemPersonId('visitor'),
+    });
     expect((await call('p1', 'POST', `/threads/${t.id}/resolve`)).status).toBe(204);
     const o = await call<CardThreadWriteResponse>('p1', 'POST', `/threads/${t.id}/reopen`);
     expect(o.body.thread?.resolved).toBe(false);
@@ -467,10 +472,13 @@ describe('the writes on a thread', () => {
         { owner: 'visitor', code: 'EDIT' },
       );
       expect(edit.status).toBe(200);
+      // Each stamped with the reactor's hashed person id, for a closed account's anonymising.
+      const owner = await itemPersonId('owner');
+      const visitor = await itemPersonId('visitor');
       expect(edit.body.thread?.comments[0]?.reactions).toEqual([
-        { emoji: 'eyes', by: 'k-owner', name: 'Gentle Falcon' },
-        { emoji: 'eyes', by: 'k-vee', name: 'Vee' },
-        { emoji: 'heart', by: 'k-ed', name: 'Vee' },
+        { emoji: 'eyes', by: 'k-owner', name: 'Gentle Falcon', person: owner },
+        { emoji: 'eyes', by: 'k-vee', name: 'Vee', person: visitor },
+        { emoji: 'heart', by: 'k-ed', name: 'Vee', person: visitor },
       ]);
       // A reaction is not activity: the thread keeps its place.
       expect(edit.body.thread?.updatedAt).toBe(t.updatedAt);
