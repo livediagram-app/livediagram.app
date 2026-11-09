@@ -347,8 +347,10 @@ describe('closer is bolder', () => {
 
 describe('cost', () => {
   // One frame places at most 9 arrows; 1000 frames of 9 arrows past 12 controls stay well under a frame's budget.
+  // Measured 2026-11-09: about 26 ms of CPU on an M-series Mac, 80 under coverage, and 197 on CI's coverage
+  // run, so 120 (360 on CI) leaves headroom everywhere and still fails a quadratic regression.
   const FRAMES = 1000;
-  const BUDGET_MS = 60;
+  const BUDGET_MS = 120;
   it(`places 9 arrows past 12 controls for ${FRAMES} frames inside ${cpuBudgetMs(BUDGET_MS)} ms`, () => {
     const controls: Box[] = Array.from({ length: 12 }, (_, i) => ({
       left: (i % 6) * 200,
