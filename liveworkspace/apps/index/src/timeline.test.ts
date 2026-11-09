@@ -178,12 +178,15 @@ describe('a person in many teams', () => {
   // filter), so a person in two teams filtered to one app already needed six, and their Inbox failed on its new count.
   it('reads the Timeline and its new count across every team, filtered to an app or not', async () => {
     const next = tick();
-    const teams = Array.from({ length: 6 }, (_, i) => ({ id: `team_many${i}` }));
+    // Fifty: the most an account may be in, once past D1's 100 bound parameters from seven on.
+    const teams = Array.from({ length: 50 }, (_, i) => ({ id: `team_many${i}` }));
     const ada = await person('user_many', { teams });
     const cy = await person('user_manyc', { teams });
     await call('/timeline/seen', { method: 'POST', auth: cy.auth });
     next();
-    for (const team of teams) await makeItem(ada.auth, { title: team.id, teamId: team.id });
+    for (const team of teams.slice(0, 6)) {
+      await makeItem(ada.auth, { title: team.id, teamId: team.id });
+    }
     next();
     const inbox = async (query: string) =>
       body<{ timelineNew: number }>(await call(`/inbox${query}`, { auth: cy.auth }));
@@ -191,6 +194,14 @@ describe('a person in many teams', () => {
     expect((await inbox('')).timelineNew).toBe(6);
     expect((await feed(cy.auth, 'app=liveplanner')).events).toHaveLength(6);
     expect((await feed(cy.auth)).events).toHaveLength(6);
+    // A later page carries the cursor in every range too.
+    const first = await feed(cy.auth, 'app=liveplanner&limit=4');
+    expect(first.events).toHaveLength(4);
+    const rest = await feed(
+      cy.auth,
+      `app=liveplanner&limit=4&cursor=${encodeURIComponent(first.nextCursor!)}`,
+    );
+    expect(rest.events).toHaveLength(2);
   });
 });
 
@@ -875,7 +886,7 @@ describe('a team’s activity', () => {
       // whatever else the person is in.
       const scopes = args.filter((a) => typeof a === 'string' && /^[pt]:/.test(a));
       expect(new Set(scopes)).toEqual(new Set(['t:team_3']));
-      expect(scopes).toHaveLength(spec.app ? 2 : 1);
+      expect(scopes).toHaveLength(1);
       const lines = h.db.sql
         .prepare(`EXPLAIN QUERY PLAN ${sql}`)
         .all(...(args as SQLInputValue[]))
