@@ -319,7 +319,8 @@ laid out with it, holding ordinary canvas elements that move with it.
 - **Moving a zone**: dragging the grip carries a dashed ghost of the zone with the pointer, the
   zone itself dimmed in place, and a **drop caret** (a brand line across the column, a ring at each
   end) at the block boundary nearest the pointer. Release moves the zone there, its elements with
-  it, as one edit; Escape, or a release where it already sits, leaves it be. Hovering a zone shows its outline faintly
+  it, as one edit; a paragraph running on onto the next column or page is one block, so the caret
+  beside either part shows where the zone really goes, above the paragraph's start or below its end; Escape, or a release where it already sits, leaves it be. Hovering a zone shows its outline faintly
   for someone who may edit.
 - **Selecting a zone**: a press on a drawing zone's empty area selects the zone (outlined); the
   arrow keys then move the caret off it, Backspace / Delete remove it (its elements with it), ⌘X

@@ -386,7 +386,8 @@ ARTICLE_DRAWING_PAD)` tall), `handle.insertZone(spec, centre)`, `withZoneLanded`
   page index, corner).
 - **`boundaryNear(point, skipId)`**: over the top-level nodes' client rects in the point's column
   (24 screen px slack each side), nearest by vertical distance, before the block when in its upper
-  half; with the caret line across the column.
+  half; with the caret line across the column (`nearestDrop`). A block in several boxes (split over
+  columns) lands before or after all of it, so the caret is drawn at its first box's top or last box's foot.
 - **Settle** (`useArticles.onLayout`; a non-`local` layout goes to `growForAbsentWriter` instead,
   which grows only a flow marked by `markArticleGrow`, see the agents blueprint): one `tickTabs`: `withArticlePageCount(flow,
 pagesNeeded)` (adds pages like the last; removes trailing pages with no elements; never under

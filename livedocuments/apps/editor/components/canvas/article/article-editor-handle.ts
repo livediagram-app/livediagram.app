@@ -71,6 +71,32 @@ export function linkAreas(view: EditorView, p: WritingLayout): ArticleLinkArea[]
  * The writing's frame on the canvas, its box on screen, and screen px per canvas px (read off the
  * box, so it holds mid-zoom; the zoom only when the writing is not laid out).
  */
+// A top-level block of the writing and its boxes on screen (one per column or page it runs across).
+export type DropBox = {
+  pos: number;
+  size: number;
+  rects: readonly Pick<DOMRect, 'left' | 'right' | 'top' | 'bottom' | 'height'>[];
+};
+
+/** The block boundary a drop at a screen point lands on (docs/specs/007-editor/article-pages.md "Zones"):
+ *  the box nearest the point (within `reach` of its column), before its block when the point is in that
+ *  box's upper half. A block split across columns is still one block, so the drop goes before or after all
+ *  of it and its caret `edge` is the block's first box (its top) or last box (its foot), not the box the
+ *  point was over. */
+export function nearestDrop(boxes: readonly DropBox[], left: number, top: number, reach: number) {
+  let best: { box: DropBox; before: boolean; d: number } | null = null;
+  for (const box of boxes)
+    for (const r of box.rects) {
+      if (left < r.left - reach || left > r.right + reach) continue;
+      const d = top < r.top ? r.top - top : top > r.bottom ? top - r.bottom : 0;
+      if (!best || d < best.d) best = { box, before: top < r.top + r.height / 2, d };
+    }
+  if (!best) return null;
+  const { box, before } = best;
+  const edge = before ? box.rects[0]! : box.rects[box.rects.length - 1]!;
+  return { pos: before ? box.pos : box.pos + box.size, before, edge };
+}
+
 export function writingScale(view: EditorView, p: WritingLayout) {
   const frame = flowFrame(p.pages, p.margin, p.topMin);
   const root = view.dom.getBoundingClientRect();
@@ -143,33 +169,31 @@ export function createArticleHandle({
   // the writing covers the point, so a hit test there finds the element): the block whose box (in
   // the point's column) is nearest, before it when the point is in its upper half. With the drop
   // caret for it: a line across the column at the boundary, in canvas px. A block named `skipId`
-  // (the zone being moved) is never a neighbour.
+  // (the zone being moved) is never a neighbour. A block split across columns (or pages) is still
+  // one block: the drop goes before or after all of it, so the caret is drawn where that is, at
+  // the top of its first box or the foot of its last, whichever box the point was nearest.
   const boundaryNear = (near: { x: number; y: number }, skipId: string | null) => {
     const { frame, root, z } = scale();
     const left = root.left + (near.x - frame.x) * z;
     const top = root.top + (near.y - frame.y) * z;
-    let best: { pos: number; size: number; before: boolean; d: number; r: DOMRect } | null = null;
+    const boxes: DropBox[] = [];
     let pos = 0;
     view.state.doc.forEach((node) => {
       const dom = view.nodeDOM(pos) as HTMLElement | null;
-      if (node.attrs.id !== skipId)
-        for (const r of dom ? Array.from(dom.getClientRects()) : []) {
-          if (left < r.left - 24 * z || left > r.right + 24 * z) continue;
-          const d = top < r.top ? r.top - top : top > r.bottom ? top - r.bottom : 0;
-          if (!best || d < best.d)
-            best = { pos, size: node.nodeSize, before: top < r.top + r.height / 2, d, r };
-        }
+      if (node.attrs.id !== skipId && dom)
+        boxes.push({ pos, size: node.nodeSize, rects: Array.from(dom.getClientRects()) });
       pos += node.nodeSize;
     });
-    const found = best as { pos: number; size: number; before: boolean; r: DOMRect } | null;
+    const found = nearestDrop(boxes, left, top, 24 * z);
     if (!found) return null;
-    // The caret spans the column the block sits in.
-    const index = columnAt(frame, (found.r.left - root.left) / z);
+    const { edge } = found;
+    // The caret spans the column that edge sits in.
+    const index = columnAt(frame, (edge.left - root.left) / z);
     return {
-      pos: found.before ? found.pos : found.pos + found.size,
+      pos: found.pos,
       caret: {
         x: frame.x + index * frame.stride,
-        y: frame.y + ((found.before ? found.r.top : found.r.bottom) - root.top) / z,
+        y: frame.y + ((found.before ? edge.top : edge.bottom) - root.top) / z,
         width: frame.columnWidth,
       },
     };
