@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   addRange,
   currentRegion,
@@ -212,10 +213,13 @@ describe('moves land on shown cells', () => {
       active: { r: 0, c: 0 },
       anchor: { r: 0, c: 0 },
     };
-    const t = performance.now();
-    expect(cycleInRange(sel, 'next-row', all).active).toEqual({ r: 0, c: 0 });
-    // Measured at 20 ms on a loaded laptop; a CI runner gets several times that.
-    expect(performance.now() - t).toBeLessThan(1000);
+    let active;
+    const ms = cpuMsOf(() => {
+      active = cycleInRange(sel, 'next-row', all).active;
+    });
+    expect(active).toEqual({ r: 0, c: 0 });
+    // Measured at 20 ms of CPU on a laptop; cpuBudgetMs triples the budget on CI.
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
   });
 });
 

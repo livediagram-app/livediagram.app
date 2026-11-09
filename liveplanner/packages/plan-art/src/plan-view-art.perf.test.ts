@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { ShapeElement } from '@liveplanner/project';
 import { PLAN_VIEW_IDS } from '@liveplanner/items';
 import { planViewArt } from './plan-view-art';
@@ -29,10 +30,10 @@ describe('plan view pictures at the limits', () => {
         planView: { view: PLAN_VIEW_IDS[i % PLAN_VIEW_IDS.length] },
       }),
     ) as ShapeElement[];
-    const t = performance.now();
     let size = 0;
-    for (const v of views) size += planViewArt(v, data, 'light').length;
-    const ms = performance.now() - t;
+    const ms = cpuMsOf(() => {
+      for (const v of views) size += planViewArt(v, data, 'light').length;
+    });
     expect(size).toBeGreaterThan(0);
     // Measured at 67 ms on an M-series laptop; a loaded CI runner gets four times that.
     expect(ms).toBeLessThan(1500);
@@ -61,12 +62,12 @@ describe('plan view pictures at the limits', () => {
         planView: { view: 'gantt', swimlaneBy: i % 2 ? 'status' : 'priority' },
       }),
     ) as ShapeElement[];
-    const t = performance.now();
     let size = 0;
-    for (const v of views) size += planViewArt(v, data, 'light').length;
-    const ms = performance.now() - t;
+    const ms = cpuMsOf(() => {
+      for (const v of views) size += planViewArt(v, data, 'light').length;
+    });
     expect(size).toBeGreaterThan(0);
-    // Measured at 110 ms on a loaded M-series laptop (105 to 137 ms drawn without lanes); CI gets four times that.
-    expect(ms).toBeLessThan(1500);
+    // Measured at 110 ms of CPU on an M-series laptop (105 to 137 ms drawn without lanes); cpuBudgetMs triples it on CI.
+    expect(ms).toBeLessThan(cpuBudgetMs(300));
   });
 });
