@@ -11,6 +11,8 @@
 @import './piece-moments.css';
 @import './piece-moments-office.css';
 @import './workday-motion.css';
+/* The people arrows' nudge and hover (docs/specs/008-canvas/people-arrows.md). */
+@import './people-arrows.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';
 @import './motion-text.css';
