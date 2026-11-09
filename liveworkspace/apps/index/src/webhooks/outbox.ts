@@ -22,15 +22,19 @@ export const queuedCount = () => queued;
 // The item's own live webhooks listening for `type`, under their pending cap. A webhook holds its events comma-wrapped
 // (`,shared,`). One set to Only Me (`who = 'me'`) hears only what its creator did: `actor` is the event's person, and
 // an event without one (a form response) never reaches it. `w`, `i` and the event's columns come from the statement
-// around it; `?4` is WEBHOOK_PENDING_MAX.
+// around it; `?4` is WEBHOOK_PENDING_MAX. The pending count is read once, before any row of the statement is written
+// (SQLite fills an insert that reads its own table from a finished select), so a statement queuing several rows from a
+// JSON list passes `ahead`, the row's place in it, and a batch stops at the cap rather than going past it. A place
+// counts every earlier entry, listened for or not, so a list near the cap may stop a few short of it, never over.
 const listening = (
   type: string,
   actor: string,
+  ahead = '0',
 ) => `JOIN webhooks w ON w.item_id = i.id AND w.paused_at IS NULL
   WHERE instr(w.events, ',' || ${type} || ',') > 0
     AND (w.who = 'anyone' OR w.created_by = ${actor})
     AND (SELECT COUNT(*) FROM (SELECT 1 FROM webhook_deliveries p
-         WHERE p.webhook_id = w.id AND p.state = 'pending' LIMIT ?4)) < ?4`;
+         WHERE p.webhook_id = w.id AND p.state = 'pending' LIMIT ?4)) + ${ahead} < ?4`;
 
 /** The statement queuing these Timeline events for their item's own webhooks; it goes after the events' own. */
 export function webhookOutboxStatement(
@@ -47,7 +51,7 @@ export function webhookOutboxStatement(
        FROM json_each(?2) j
        JOIN timeline_events e ON e.id = j.value
        JOIN items i ON i.id = e.item_id
-       ${listening('e.type', 'e.actor_id')}
+       ${listening('e.type', 'e.actor_id', 'j.key')}
          AND e.occurred_at >= ?1 - ?3`,
     )
     .bind(now, JSON.stringify(eventIds), WEBHOOK_FRESH_MS, WEBHOOK_PENDING_MAX);
@@ -85,7 +89,7 @@ export function cardMovesStatement(
        SELECT w.id, j.value ->> '$.id', 'card_moved', i.app, i.id, i.title, j.value ->> '$.by', j.value ->> '$.name',
               j.value ->> '$.detail', j.value ->> '$.at', ?1
        FROM items i JOIN json_each(?2) j
-       ${listening("'card_moved'", "(j.value ->> '$.by')")}
+       ${listening("'card_moved'", "(j.value ->> '$.by')", 'j.key')}
          AND i.id = ?5 AND (j.value ->> '$.at') >= ?1 - ?3`,
     )
     .bind(now, JSON.stringify(rows), WEBHOOK_FRESH_MS, WEBHOOK_PENDING_MAX, itemId);

@@ -280,6 +280,33 @@ describe('card moves', () => {
     ]);
   });
 
+  it('stops a batch of moves at the pending cap rather than going past it', async () => {
+    const ada = await person('user_wm5');
+    const plan = await makeItem(ada.auth);
+    const { webhook } = await addWebhook(ada.auth, plan.id, { events: ['card_moved'] });
+    // 495 waiting: a batch of 10 moves fills the last five places and no more.
+    h.db.sql
+      .prepare(
+        `WITH RECURSIVE n(v) AS (SELECT 1 UNION ALL SELECT v + 1 FROM n WHERE v < 495)
+         INSERT INTO webhook_deliveries (webhook_id, event_id, type, app, title, occurred_at, next_at)
+         SELECT ?, 'old' || v, 'renamed', 'liveplanner', 't', 0, 0 FROM n`,
+      )
+      .run(webhook.id);
+    const at = Date.now();
+    const moves = Array.from({ length: 10 }, (_, k) => ({
+      cardId: `c${k}`,
+      cardKey: null,
+      card: `Card ${k}`,
+      from: 'A',
+      to: 'B',
+      at: at + k,
+    }));
+    expect((await asApp(`/app/items/${plan.id}/card-moves`, { moves })).status).toBe(204);
+    const pending = deliveries().filter((d) => d.state === 'pending');
+    expect(pending).toHaveLength(500);
+    expect(pending.filter((d) => d.type === 'card_moved').map((d) => d.title)).toHaveLength(5);
+  });
+
   it.each([
     [{}],
     [{ moves: 'no' }],

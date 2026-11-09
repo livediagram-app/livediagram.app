@@ -110,7 +110,8 @@ many new responses and the total, never what anyone answered. A push that doesn'
   from deliveries of webhooks that are not paused, never sooner than a second away.
 - **Recent deliveries**: each webhook keeps its last 20 finished deliveries (app, event, time, tries, the last
   response code or the reason none came), listed in Settings.
-- A webhook holds at most 500 pending deliveries; an event past that is not queued for it.
+- A webhook holds at most 500 pending deliveries; an event past that is not queued for it, and a batch (a plan's card
+  moves, a request's events) stops at the cap, never past it.
 
 ## Security
 
