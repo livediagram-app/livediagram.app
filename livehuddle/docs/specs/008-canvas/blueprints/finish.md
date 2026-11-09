@@ -309,7 +309,7 @@ raster path so PNG matches SVG.
 
 `svgBoxed` wraps `svgBoxedFace`: it sets the element's `exportFontFamily` on its outer `<g>`, and when the element is
 sketched, `finishSplitsFace` holds, passes the group's inner markup to `svgSketchFace`:
-a `data-finish="sketch"` body is lifted out and kept where it was (first for a box, last for a table); the ink copy
+a `data-finish="sketch"` body is lifted out (`markedGroup`, which counts nested `<g>` to find the body's own `</g>`) and kept where it was (first for a box, last for a table); the ink copy
 (every `<text>`, `<image>` and `<foreignObject>` removed) goes in `<g filter="url(#lvd-sketch-face)">`; the words
 copy (every `rect`, `circle`, `ellipse`, `path`, `line`, `polyline`, `polygon` and `use` given
 `visibility="hidden"`, `clipPath`, `mask`, `defs`, `pattern` and `marker` blocks left whole) follows when the face
@@ -337,7 +337,8 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
   `MARKER_FACE_MAX_PARTS` (120) parts; `MARKER_FACE_RULE_MIN_PX` (2.5) admits an SVG `<line>`.
 - Export: `svg-render-face-finish.ts` `svgProfessionalFace(markup)` (rect corners off unless a pill or
   `data-finish-keep`, `stroke-width="2"` to 1) and `svgMarkerFace(markup, id, face)` (clips, definitions,
-  foreignObjects and the marker body held; each part kept with its line removed, its marker after it, in its own
+  foreignObjects and the hand-drawn body (`data-finish="marker"` or `data-finish="sketch"`, `holdFaceBlocks` in
+  `@liveworkspace/model-core/svg-markup-blocks`) held, so the pencil pass never shades a sketched body again; each part kept with its line removed, its marker after it, in its own
   transform), called by `svgBoxed` by `faceFinishOf`.
 - Canvas: the wrapper carries `data-face-finish` and `FaceFinishProvider` (`useFaceFinish`, `useFaceShadow` for
   inline shadows); `app/face-finish.css` squares (`border-radius`, SVG `rect` `rx`/`ry` but `[data-finish-pill]`),

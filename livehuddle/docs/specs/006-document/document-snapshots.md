@@ -155,9 +155,12 @@ Purging a document (routes/internal-items.ts) asks the media service to drop its
   nothing to backfill in bulk. Adding the column alone takes
   under 5 ms on the same 500 MB table.
 
-- Degrades gracefully otherwise: nothing drawn, no access or the service
-  down → the row shows the still, dashed sketch, captioned "Nothing drawn
-  yet" where there is room.
+- Degrades gracefully otherwise: nothing drawn, no access, the service
+  down, or an answer the browser cannot draw as a picture (its `<img>`
+  fails to decode) → the row shows the still, dashed sketch, captioned
+  "Nothing drawn yet" where there is room, never a broken-image glyph. A
+  picture that fails to decode is remembered as broken for that version,
+  so a remount shows the sketch at once.
 
 ### Share dialog
 

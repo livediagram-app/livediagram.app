@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, createTable, renderElementsToSvg, type Element, type Tab } from './index';
 import { SKETCH_FACE_FILTER, svgSketchArtDefs, svgSketchFace } from './svg-render-sketch';
+import { SHAPE_KINDS } from './validate';
+import type { ShapeKind } from './shape-kind';
 
 // docs/specs/008-canvas/finish.md "Every other face is drawn by hand too": a face's ink goes through the wobble, its
 // words stay crisp above it.
@@ -94,7 +96,45 @@ describe('renderElementsToSvg under Sketch', () => {
     expect(inkLayer(svg)).toContain('<rect');
     expect(svg.indexOf(FILTERED)).toBeLessThan(svg.indexOf('data-finish="sketch"'));
   });
+
+  // A coloured box with a face (a timer, a card, a callout) once came out with an unmatched `</g>`: the face's pencil
+  // shading went inside its sketched body, the body was cut at the shading's `</g>`, and the browser drew the whole
+  // preview as a broken image (document-snapshots.md, finish.md "Every other face is drawn by hand too").
+  it('exports every kind with a coloured fill as well-formed SVG, its body drawn once and not shaded again', () => {
+    const bad = [...SHAPE_KINDS].flatMap((kind) => {
+      const el = {
+        ...createShape(kind as ShapeKind, 0, 0),
+        id: `k-${kind}`,
+        fillColor: '#ede5fd',
+        strokeColor: '#8147b5',
+      } as Element;
+      const svg = renderElementsToSvg(tabOf([el], 'sketch'));
+      const problem = tagMismatch(svg) ?? shadedBody(svg);
+      return problem ? [`${kind}: ${problem}`] : [];
+    });
+    expect(bad).toEqual([]);
+  });
 });
+
+// The first tag that does not close what it should (or what is left open), or null: what an XML parser refuses.
+function tagMismatch(svg: string): string | null {
+  const open: string[] = [];
+  const body = svg.replace(/<style[\s\S]*?<\/style>|<!--[\s\S]*?-->/g, '');
+  for (const [tag, close, name, self] of body.matchAll(/<(\/?)([A-Za-z][\w:-]*)\b[^>]*?(\/?)>/g)) {
+    if (self) continue;
+    if (!close) open.push(name!);
+    else if (open.pop() !== name) return `unmatched ${tag}`;
+  }
+  return open.length ? `<${open.join('>, <')}> left open` : null;
+}
+
+// A sketched body with a group inside it: the face's shading drawn over a body already shaded by hand.
+function shadedBody(svg: string): string | null {
+  const at = svg.indexOf('data-finish="sketch"');
+  if (at < 0) return null;
+  const inside = svg.slice(at, svg.indexOf('</g>', at));
+  return inside.includes('<g') ? 'sketched body shaded again' : null;
+}
 
 describe('svgSketchArtDefs', () => {
   const sketch = (el: object) => [{ ...el, finish: 'sketch' }] as unknown as Element[];

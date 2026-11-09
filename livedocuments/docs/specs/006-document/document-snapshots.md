@@ -65,7 +65,8 @@ db/documents.ts, best effort: a preview the purge misses is unreachable, since e
 The editor asks `/api/previews/items/<id>?v=<savedAt>` on its own origin (the router forwards it to liveworkspace),
 through the authenticated client, with the viewer's token (or, for a shared row, its share code), and wraps the bytes
 in a blob URL (a native `<img>` can't send auth headers). A 404 (nothing drawn, no access) shows the still, dashed
-sketch, captioned "Nothing drawn yet" where there is room.
+sketch, captioned "Nothing drawn yet" where there is room. So does an answer the browser cannot draw as a picture (its
+`<img>` fails to decode), never a broken-image glyph; it is remembered as broken for that version.
 
 - The Explorer row fetches **lazily** (IntersectionObserver): only rows
   scrolled into view fetch, so a long list never fires dozens of

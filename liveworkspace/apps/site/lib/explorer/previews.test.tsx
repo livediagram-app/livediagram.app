@@ -141,6 +141,27 @@ describe('previews on liveworkspace.app', () => {
     expect(view.host.querySelectorAll('[data-preview-fallback] svg')).toHaveLength(2);
     view.unmount();
   });
+
+  it('draws the item icon, never a broken image, when the picture fails to decode, and remembers it', async () => {
+    const fetch = vi.fn(async () => new Response('<svg><g></svg>', { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+    const first = mountPreviews([item({ id: 'bad' })]);
+    await until(() => first.images() === 1);
+    const img = first.host.querySelector('img')!;
+    // A second error before the box redraws (another box of the item failing too) gives it up only once.
+    act(() => {
+      img.dispatchEvent(new Event('error'));
+      img.dispatchEvent(new Event('error'));
+    });
+    expect(first.images()).toBe(0);
+    expect(first.fallbacks()).toBe(1);
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1);
+    first.unmount();
+    const again = mountPreviews([item({ id: 'bad' })]);
+    expect(again.fallbacks()).toBe(1);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    again.unmount();
+  });
 });
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

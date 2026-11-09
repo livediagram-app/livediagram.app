@@ -96,7 +96,9 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   into as before. The ink is a still copy of the face, so a hover or press tint on a face's own control is not
   drawn on a Sketch tab. A face's own animations (a quiz's answers fanning out from its disc) play in the copy in
   step with the live face: each new copy picks up each animation where the live one is, never from the start, so a
-  face that keeps changing (a quiz's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled. Exports draw the same two layers.
+  face that keeps changing (a quiz's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled. Exports draw the same two layers. The
+  hand-drawn body under a face is drawn once, as the body is: the face's pencil shading never shades it again, and
+  every export stays well-formed SVG whatever the face holds.
 
 - **In WebKit** (Safari, and every browser on an iPhone or iPad), which runs a live wobble filter again on every
   repaint (a pan at iPhone resolution took 220-400 ms a frame), the canvas draws no live wobble. Icons and stickers

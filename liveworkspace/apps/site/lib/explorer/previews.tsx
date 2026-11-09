@@ -98,6 +98,14 @@ function settle(key: string, entry: Entry) {
   notify(key);
 }
 
+// The browser could not draw a preview it was given (its <img> failed to decode): kept as no picture for that
+// version, so every box of it shows the fallback icon, never a broken-image glyph.
+function brokenPreview(key: string, src: string) {
+  if (entries.get(key)?.status !== 'ready') return;
+  URL.revokeObjectURL(src);
+  settle(key, { status: 'none' });
+}
+
 function mount(key: string): () => void {
   mounted.set(key, (mounted.get(key) ?? 0) + 1);
   return () => {
@@ -244,6 +252,7 @@ function Preview({ item, size }: { item: Item; size: 'row' | 'card' }) {
           src={entry.src}
           alt=""
           draggable={false}
+          onError={() => brokenPreview(key, entry.src)}
           className="h-full w-full object-cover object-top"
         />
       ) : entry?.status === 'none' ? (

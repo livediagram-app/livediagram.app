@@ -105,6 +105,9 @@ the service) and wraps the bytes in a blob URL; `v` is only the browser's cache 
   whole content for a count the next write fills anyway. Adding the column alone takes
   under 5 ms on the same 500 MB table.
 
-- Degrades gracefully otherwise: nothing drawn, no access or the service
-  down → the row shows the still, dashed sketch, captioned "Nothing drawn
-  yet" where there is room.
+- Degrades gracefully otherwise: nothing drawn, no access, the service
+  down, or an answer the browser cannot draw as a picture (its `<img>`
+  fails to decode) → the row shows the still, dashed sketch, captioned
+  "Nothing drawn yet" where there is room, never a broken-image glyph. A
+  picture that fails to decode is remembered as broken for that version,
+  so a remount shows the sketch at once.

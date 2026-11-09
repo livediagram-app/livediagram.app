@@ -86,6 +86,14 @@ function remember(key: string, entry: ThumbnailEntry) {
   }
 }
 
+// The browser could not draw a snapshot it was given (its <img> failed to decode): remembered as broken for that
+// version, so every thumbnail of it, now and on a remount, shows the undrawn sketch instead of a broken image.
+export function markThumbnailBroken(key: string) {
+  const entry = entries.get(key);
+  if (entry?.status === 'ready') URL.revokeObjectURL(entry.src);
+  remember(key, { status: 'broken' });
+}
+
 // Tests only: start each case from an empty cache.
 export function resetThumbnailCache() {
   for (const entry of entries.values()) {
