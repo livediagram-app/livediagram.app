@@ -40,18 +40,22 @@ export function blockerIdsOf(item: Pick<Item, 'id' | 'fields'>, type: ItemTypeDe
 }
 
 // The first Blocks field, of either card's type, whose stored value a write changes (by JSON): what the api's
-// Editor gate asks. A create (no `before`) changes every Blocks field it gives a value. Null when none.
+// Editor gate asks. A create (no `before`) changes every Blocks field it gives a value. A type change that makes a
+// field holding cards a Blocks field (a duplicated type's Several Cards field made Blocked By) changes it too: its
+// cards become blockers although the stored value stays. Null when none.
 export function blocksValueChanged(
   types: readonly ItemTypeDef[],
   before: Pick<Item, 'type' | 'fields'> | undefined,
   next: Pick<Item, 'type' | 'fields'>,
 ): string | null {
-  const fields = [
-    ...blocksFieldsOf(typeIn(types, next.type)),
-    ...(before ? blocksFieldsOf(typeIn(types, before.type)) : []),
-  ];
-  for (const f of fields) {
-    const was = before ? JSON.stringify(before.fields[f.id] ?? null) : 'null';
+  const wasBlocks = before ? blocksFieldsOf(typeIn(types, before.type)) : [];
+  const wasIds = new Set(wasBlocks.map((f) => f.id));
+  for (const f of blocksFieldsOf(typeIn(types, next.type))) {
+    const was = before && wasIds.has(f.id) ? JSON.stringify(before.fields[f.id] ?? null) : 'null';
+    if (JSON.stringify(next.fields[f.id] ?? null) !== was) return f.id;
+  }
+  for (const f of wasBlocks) {
+    const was = JSON.stringify(before!.fields[f.id] ?? null);
     if (JSON.stringify(next.fields[f.id] ?? null) !== was) return f.id;
   }
   return null;
