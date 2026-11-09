@@ -65,6 +65,8 @@ pulled file's path reads its views offline. `--tab` takes a tab name or id prefi
 Elements are [refs and selectors](../024-agents/edit-operations.md#selectors); the comment verbs take the ref of the
 element whose thread they act on. `component set` names a main by its id, its name (case-insensitive) or an id
 prefix; an exact id or name wins over a prefix, and `--archived` with `--restore` is refused as a usage error.
+`page set`'s flags make one change: flags naming two (`--delete` with `--name`, `--add` with `--page`), or flags
+with `--changes`, are refused as a usage error rather than one of them dropped.
 
 **Files.** `-f <file>` holds edit operations or elements, told apart by their content; a file
 that is none of them is refused.
