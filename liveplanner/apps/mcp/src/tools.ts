@@ -49,7 +49,12 @@ import {
   type DashboardInput,
 } from '@liveplanner/agent-verbs';
 import { catalogueWithBoardTypes, typesOf } from '@liveplanner/items';
-import { dashboardTabKind, projectDashboard } from './dashboard-tabs';
+import {
+  dashboardLeftOffNote,
+  dashboardRowsLeftOff,
+  dashboardTabKind,
+  projectDashboard,
+} from './dashboard-tabs';
 import {
   deepLink,
   errorResult,
@@ -205,13 +210,16 @@ export function registerTools(server: McpServer, env: Env): void {
       tabs.push(buildTab(tabId, t.name, candidate.elements, 'preserve', t.theme ?? args.theme));
     }
     // Each Dashboard, showing the call's other tabs by name, in its place among them.
+    const leftOff: { name: string; dropped: number }[] = [];
     if (dashboards.length) {
       const refs = tabs.map((t) => ({ id: t.id, name: t.name, of: dashboardTabKind(t) }));
       const types = typesOf(catalogueWithBoardTypes(null, templateElements));
       for (const [n, d] of dashboards.entries()) {
         const resolved = resolveDashboardInput(d.input, refs, types);
         if (!resolved.ok) return errorResult(`Tab "${d.name}": ${resolved.message}`);
-        tabs.splice(d.at + n, 0, buildDashboardTab(d.tabId, d.name, resolved.spec, d.theme).tab);
+        const built = buildDashboardTab(d.tabId, d.name, resolved.spec, d.theme);
+        tabs.splice(d.at + n, 0, built.tab);
+        leftOff.push({ name: d.name, dropped: built.dropped });
       }
     }
     // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
@@ -246,6 +254,7 @@ export function registerTools(server: McpServer, env: Env): void {
         tabIds,
         folder: await createdFolderLabel(env, token, created),
         url: deepLink(env, id),
+        ...dashboardLeftOffNote(leftOff),
       },
       tabs[0]!,
       { env, token },
@@ -267,10 +276,12 @@ export function registerTools(server: McpServer, env: Env): void {
     }
     // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): the project's tabs and card types by name.
     let dashboard: Record<string, unknown> | undefined;
+    let leftOff = 0;
     if (args.dashboard) {
       const resolved = await projectDashboard(env, token, args.projectId, args.dashboard);
       if (!resolved.ok) return errorResult(resolved.message);
       dashboard = resolved.spec;
+      leftOff = dashboardRowsLeftOff(resolved.spec);
     }
     if (!args.template && !args.elements && !dashboard) {
       return errorResult(
@@ -327,6 +338,7 @@ export function registerTools(server: McpServer, env: Env): void {
         rev: tab.rev,
         text: mcpResultText(answer.text),
         ...templateNote(args.template),
+        ...dashboardLeftOffNote([{ name: tab.name, dropped: leftOff }]),
       },
       tab,
       { env, token },
@@ -346,11 +358,13 @@ export function registerTools(server: McpServer, env: Env): void {
     // relayed by the api, kept through anyone's next save. ops mode is based on what the model
     // read, so nothing a person saved in between is overwritten.
     let body: ChangesetRequest;
+    let leftOff = 0;
     if (args.mode === 'replace') {
       // A Dashboard tab rebuilt whole (docs/specs/026-plan/plan-agents.md "Making a dashboard").
       if (args.dashboard) {
         const resolved = await projectDashboard(env, token, args.projectId, args.dashboard);
         if (!resolved.ok) return errorResult(resolved.message);
+        leftOff = dashboardRowsLeftOff(resolved.spec);
         body = {
           replace: replaceBodyFrom({ dashboard: resolved.spec }),
         };
@@ -392,6 +406,7 @@ export function registerTools(server: McpServer, env: Env): void {
         changesetId: answer.changeset?.id ?? null,
         rev: next.rev,
         text: mcpResultText(answer.text, contentOrigin(tab.elements)),
+        ...dashboardLeftOffNote([{ name: next.name, dropped: leftOff }]),
       },
       next,
       { env, token },

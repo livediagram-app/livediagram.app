@@ -98,6 +98,48 @@ describe('a plan view’s picture', () => {
     );
   });
 
+  // The export drew rows in date order whatever the chart's own order, and an overdue bar without its red edge.
+  it('draws a Gantt in its own row order, an overdue bar edged red', () => {
+    const a = card(
+      { title: 'Alpha', status: 'todo', start: '2026-10-01', due: '2026-10-05' },
+      'project',
+    );
+    const b = card(
+      { title: 'Bravo', status: 'todo', start: '2026-10-11', due: '2026-10-20' },
+      'project',
+    );
+    const svg = planViewArt(view('gantt', { rowOrder: [b.id, a.id] }), artData([a, b]), 'light');
+    expect(svg.indexOf('Bravo')).toBeLessThan(svg.indexOf('Alpha'));
+    expect(svg.match(/<rect [^>]*stroke="#dc2626" stroke-width="2"/g)).toHaveLength(1);
+    const dated = planViewArt(view('gantt'), artData([a, b]), 'light');
+    expect(dated.indexOf('Alpha')).toBeLessThan(dated.indexOf('Bravo'));
+  });
+
+  // A Due Calendar on a picked field left out every type without the built-in Due Date (its settings' fields were
+  // dropped when choosing the types it shows).
+  it('shows the types holding a Due Calendar’s picked field', () => {
+    const deadline = { id: 'f-dl', label: 'Deadline', kind: 'date' as const };
+    const types: ItemTypeDef[] = [
+      ...ITEM_TYPES,
+      {
+        id: 'event',
+        label: 'Event',
+        color: '#2563eb',
+        glyph: 'star',
+        newTitle: 'New Event',
+        fields: ['title', 'status', deadline.id],
+        custom: [deadline],
+      },
+    ];
+    const gig = card({ title: 'Gig night', status: 'todo', [deadline.id]: '2026-10-16' }, 'event');
+    const svg = planViewArt(
+      view('calendar', { dueField: deadline.id }),
+      { ...artData([gig]), types },
+      'light',
+    );
+    expect(svg).toContain('Gig night');
+  });
+
   it('draws a Due Calendar’s month with the cards on their days', () => {
     const svg = planViewArt(view('calendar'), data, 'light');
     expect(svg).toContain(`Due Calendar · October ${NOW.getFullYear()}`);

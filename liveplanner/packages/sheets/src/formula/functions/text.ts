@@ -3,7 +3,7 @@
 import { REGEX_BACKTRACK_MAX, REGEX_WORK_MAX, TEXT_RESULT_MAX } from '../../limits';
 import { regexShape, regexWork } from '../regex-cost';
 import { textFormat } from '../../number-format';
-import { parseLocaleNumber } from '../../input';
+import { readNumberText } from '../../input';
 import { localeDayFirst, parseDateText, parseTimeText } from '../../dates';
 import {
   MANY,
@@ -227,10 +227,15 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
     if (v === null || v === '') return 0;
     if (typeof v !== 'string') return isError(v!) ? v : err('#VALUE!');
     const t = v.trim();
-    const pct = t.endsWith('%') ? parseLocaleNumber(t.slice(0, -1).trim(), f.locale) : null;
-    if (pct !== null) return pct / 100;
-    const n = parseLocaleNumber(t.replace(/^[£$€¥₹]/, ''), f.locale);
-    if (n !== null) return n;
+    // A number as typed in a cell ("-$5", "$-5", "12%", "1,200"), or, as Excel reads it, an accounting negative in
+    // brackets ("(5)", "($1,200)"), signed only by them.
+    if (t.length > 2 && t.startsWith('(') && t.endsWith(')')) {
+      const inner = readNumberText(t.slice(1, -1), f.locale);
+      if (inner !== null && inner >= 0) return -inner;
+    } else {
+      const n = readNumberText(t, f.locale);
+      if (n !== null) return n;
+    }
     const time = parseTimeText(t);
     if (time !== null) return time;
     const date = parseDateText(t, localeDayFirst(f.locale));

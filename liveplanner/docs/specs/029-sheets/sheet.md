@@ -552,7 +552,10 @@ view gets the header and **Copy** alone.
   `[h]:mm:ss`, `@`), then **Cancel** and **Apply** (one change, one undo step). A code takes what
   [`TEXT`](formulas.md#functions) reads: digits (`0`, `#`, `,`, `.`), percent, scientific, literal text in quotes, a
   currency symbol, the date and time parts, elapsed hours, `@` for text, and up to four `;` sections (positive,
-  negative, zero, text; an empty one hides its values, so `;;;` hides everything). Numbers round half away from zero,
+  negative, zero, text; an empty one hides its values, so `;;;` hides everything, text too; a negative drawn by a
+  section of its own shows only the signs that section writes, so `0;0` shows -5 as `5`). Literal text between digit
+  placeholders stays among the digits (`000-000` shows `123-456`, `(000) 000-0000` a phone number), and `General`
+  draws the number beside a colour or a literal (`[Red]General`, `General" kg"`), as in Excel. Numbers round half away from zero,
   as `ROUND` does (`1.005` in `0.00` is `1.01`). A code up to 64 characters (`FORMAT_CODE_MAX`); one that cannot be read is not applied ("That
   format code can't be read"). A custom code is drawn the same in every locale, as `TEXT` writes it.
 - Number formats are drawn in the viewer's locale (separators, date order), so two people may see `1,234.50` and
@@ -929,7 +932,7 @@ Every tab is in Plan, so a Sheet element goes on any tab, as a board does
 ## CSV
 
 - **Import CSV…** (Sheet Settings; on a Sheet tab, the [Import dialog](../026-plan/plan-tabs.md#the-import-dialog)'s **CSV** row, or a CSV dropped on that dialog) opens a file picker for a `.csv` or `.tsv`, read as tab-separated when its first
-  line holds a tab outside quotes, semicolon-separated when its first lines (up to 20) read with semicolons split into the same
+  line holds a tab outside quotes (a quote opens a quoted field only at a field's start, so the inch mark in `5" pipe` is text and the tab after it still separates), semicolon-separated when its first lines (up to 20) read with semicolons split into the same
   number of fields on every line, more than one, and read with commas do not, or into no more (Excel's CSV where
   the decimal mark is a comma, so `Tea;3,50` and a header like `Amount, EUR` stay semicolon lines; a quoted comma,
   semicolon or tab is the field's, never a separator, and a reading that leaves a quote outside RFC 4180's quoting

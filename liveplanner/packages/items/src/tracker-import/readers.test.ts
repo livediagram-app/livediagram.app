@@ -279,6 +279,33 @@ describe('Jira', () => {
     ]);
   });
 
+  // A `;` in an attachment's name cut the link short (it read from the 4th part on), and Jira Server's Major priority
+  // read as none.
+  it("keeps an attachment's own semicolons and reads Jira Server's priorities", () => {
+    const rows = [
+      ['Summary', 'Issue key', 'Priority', 'Attachment', 'Attachment', 'Attachment'],
+      [
+        'A',
+        'K-1',
+        'Major',
+        '01/Jan/26 9:00;abc;notes;v2.txt;https://x.atlassian.net/secure/attachment/1/notes%3Bv2.txt',
+        'https://x.atlassian.net/secure/attachment/2/plain.png',
+        '01/Jan/26 9:00;abc;old.png;',
+      ],
+    ];
+    const read = readJiraRows(rows);
+    const a = read.cards[0]!;
+    expect(a.priority).toBe('high');
+    expect(a.links).toEqual([
+      { name: 'notes;v2.txt', url: 'https://x.atlassian.net/secure/attachment/1/notes%3Bv2.txt' },
+      {
+        name: 'https://x.atlassian.net/secure/attachment/2/plain.png',
+        url: 'https://x.atlassian.net/secure/attachment/2/plain.png',
+      },
+    ]);
+    expect(read.skips).toMatchObject({ attachmentLinks: 2, attachmentsNoLink: 1 });
+  });
+
   it('turns a Choice of more values than a field holds into Text', () => {
     const rows = [
       ['Summary', 'Issue key', 'Issue Type'],

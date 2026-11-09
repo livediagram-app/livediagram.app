@@ -4,6 +4,7 @@
 // tools.ts), and a parity test fails when a registered tool and its verb disagree. The handlers stay in the MCP.
 
 import { TRASH_RETENTION_DAYS } from '@liveplanner/api-schema';
+import { QUESTION_TYPES } from '@liveplanner/forms';
 import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
 import {
   addFormOutput,
@@ -394,7 +395,7 @@ export const mcpAddForm = mcpTool('add_form', {
     'Make a form (like Google Forms): a Form tab of questions, shared as a link anyone can fill in without an ' +
     'account. Each response becomes a card on a board (to work through: bug reports, requests, applications) or a ' +
     'row in a sheet (to count: RSVPs, feedback, surveys). From a starter, or from questions (or sections of ' +
-    'them) of types short, paragraph, number, email, link, date, single, multi, rating and checkbox. On a board, ' +
+    `them) of types ${QUESTION_TYPES.join(', ')}. On a board, ` +
     'each answer can be the card’s title, its description, or a card field (made when the card type lacks it). ' +
     'Without projectId it makes a plan of its own. Answers as read_form does; share_form publishes it.',
   inputSchema: addFormShape,

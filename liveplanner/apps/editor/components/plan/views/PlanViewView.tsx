@@ -72,20 +72,21 @@ export function PlanViewView({
   // The cards of the types the view shows (docs/specs/026-plan/plan-views.md "Card types"); a Gantt chart picks
   // its own, as it also draws a project's children.
   const allItems = plan?.items ?? NO_ITEMS;
-  const settingsTypes = element.planView?.types;
   const types = plan?.types;
-  const shownItems = useMemo(() => {
-    if (view === 'gantt' || !types) return allItems;
-    const shown = new Set(viewShownTypes(view, { types: settingsTypes }, types));
-    if (shown.size === types.length && types.every((t) => shown.has(t.id))) return allItems;
-    return new Map([...allItems].filter(([, it]) => shown.has(it.type)));
-  }, [view, allItems, settingsTypes, types]);
   // A view stored grouping or filtering by the old Parent grouping reads it as the Parent field (legacy-parent).
   const stored = element.planView;
   const settings = useMemo(
     () => (stored ? readPlanViewSettings(stored) : { view }),
     [stored, view],
   );
+  // Read with its picked fields (Due On, Starts On, Count By): a type holding only the picked field is shown, as the
+  // settings panel lists it.
+  const shownItems = useMemo(() => {
+    if (view === 'gantt' || !types) return allItems;
+    const shown = new Set(viewShownTypes(view, settings, types));
+    if (shown.size === types.length && types.every((t) => shown.has(t.id))) return allItems;
+    return new Map([...allItems].filter(([, it]) => shown.has(it.type)));
+  }, [view, allItems, settings, types]);
   const props: PlanViewProps = {
     plan,
     items: shownItems,

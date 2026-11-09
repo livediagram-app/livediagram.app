@@ -5,6 +5,8 @@ import {
   builtInCardsOf,
   builtInReader,
   builtInRetypePatches,
+  ATTACHMENTS_KEEP_TYPE,
+  TITLE_KEEPS_TYPE,
   builtInRetypeRefusal,
   builtInValueOf,
   retypeBuiltInIn,
@@ -33,11 +35,14 @@ describe('a built-in’s shape and refusals', () => {
 
   it('never lets Status change type, and keeps the kept-apart kinds apart', () => {
     expect(builtInRetypeRefusal('status', { kind: 'text' })).toBe(STATUS_KEEPS_TYPE);
-    expect(builtInRetypeRefusal('title', { kind: 'text' })).toBe(STATUS_KEEPS_TYPE);
+    // Title and Attachments said Status's and Image's lines: the reason names the field that keeps its type.
+    expect(builtInRetypeRefusal('title', { kind: 'text' })).toBe(TITLE_KEEPS_TYPE);
     expect(builtInRetypeRefusal('checklist', { kind: 'text' })).toMatch(/Checklist/);
     expect(builtInRetypeRefusal('comments', { kind: 'number' })).toMatch(/Comments/);
     expect(builtInRetypeRefusal('votes', { kind: 'number' })).toMatch(/Votes/);
-    expect(builtInRetypeRefusal('attachments', { kind: 'text' })).toMatch(/Image/);
+    expect(builtInRetypeRefusal('attachments', { kind: 'text' })).toBe(ATTACHMENTS_KEEP_TYPE);
+    expect(builtInRetypeRefusal('attachments', { kind: 'checklist' })).toBe(ATTACHMENTS_KEEP_TYPE);
+    expect(builtInRetypeRefusal('attachments', { kind: 'image' })).toBeNull();
     expect(builtInRetypeRefusal('due', { kind: 'datetime' })).toBeNull();
     expect(builtInRetypeRefusal('priority', { kind: 'multichoice' })).toBeNull();
   });

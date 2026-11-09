@@ -390,8 +390,8 @@ export const updateProjectShape = {
     .min(0)
     .optional()
     .describe(
-      'ops mode: the tab revision read_project returned. An element a person changed since is then a ' +
-        'conflict, never silently overwritten; read again and redo the edit.',
+      'ops mode: the tab revision read_project returned. The edit lands over anything a person changed since, ' +
+        'which is overwritten only on the fields the ops set; their other changes are kept.',
     ),
   elements: elementArray
     .optional()

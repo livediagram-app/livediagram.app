@@ -10,6 +10,7 @@ import {
   ganttMarkEnds,
   ganttAt,
   ganttModel,
+  ganttOrderRows,
   ganttShownTypes,
   viewDatesOf,
   itemColourOf,
@@ -59,7 +60,8 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
     );
   }
   const room = Math.max(0, Math.floor((body.height - AXIS_H) / ROW_H));
-  const shown = model.rows.slice(0, room);
+  // In the chart's own row order (plan-views.md "Row order"), as the live chart draws it.
+  const shown = ganttOrderRows(model.rows, settings.rowOrder).slice(0, room);
   const arrows = ganttArrows(
     shown.map((row, i) => ({ row, top: body.y + AXIS_H + i * ROW_H })),
     blockingIndexOf(items.values(), data.types, donePhase(data.statusPhases)),
@@ -96,7 +98,13 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
       parts.push(
         box(
           { x, y: y + 7, width: w, height: 14 },
-          { fill: colour, rx: 4, opacity: row.isDone ? 0.5 : 1 },
+          // An overdue project's edge is red, over its Colour, as the live bar draws it.
+          {
+            fill: colour,
+            rx: 4,
+            opacity: row.isDone ? 0.5 : 1,
+            ...(row.overdue ? { stroke: OVERDUE_RED, strokeWidth: 2 } : {}),
+          },
         ),
       );
       if (row.total > 0)

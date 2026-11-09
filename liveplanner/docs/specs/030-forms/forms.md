@@ -769,7 +769,9 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
   write it; it is read for this only when the form now asks for a header it did not. `read_form` names each
   question's sheet column (`column`) on a sheet form.
 - **`share_form`** (write): `publish` (makes the form link; on a closed form, opens it again), `close`, or
-  `delete_link`. A form with problems is refused with every problem, as Share Form lists them. The answer is the
+  `delete_link`. A form its own Settings close (past its Close On, or at its Response Limit) stays closed after a
+  publish, so the answer says so and names the setting to change with `change_form` (`closesAt`, `limit`), never
+  "already taking responses". A form with problems is refused with every problem, as Share Form lists them. The answer is the
   state, the link and the count.
 - **`try_form`** (write): the builder's [Preview](#preview) for an agent, to check a form end to end. `answers` by
   question id or prompt, as a respondent gives them (an option for a single choice, a list for several; on a choice

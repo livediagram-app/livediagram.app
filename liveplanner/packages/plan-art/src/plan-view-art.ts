@@ -82,7 +82,8 @@ export function planViewArt(el: ShapeElement, data: PlanArtData, surface: Canvas
   // The cards of the types the view shows (PlanViewView); a Gantt picks its own.
   let items = data.items;
   if (view !== 'gantt') {
-    const shown = new Set(viewShownTypes(view, { types: el.planView?.types }, data.types));
+    // With its picked fields (Due On, Starts On, Count By), as the live view reads them.
+    const shown = new Set(viewShownTypes(view, settings, data.types));
     if (!(shown.size === data.types.length && data.types.every((t) => shown.has(t.id))))
       items = new Map([...items].filter(([, it]) => shown.has(it.type)));
   }

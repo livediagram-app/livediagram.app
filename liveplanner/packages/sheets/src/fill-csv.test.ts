@@ -127,6 +127,23 @@ describe('CSV', () => {
     ]);
   });
 
+  // A quote mid-field toggled the tab check into "quoted", so a tab-separated file whose first line held an inch mark
+  // before its first tab read as one comma column.
+  it('reads a tab-separated file whose first line holds a quote mid-field before its first tab', () => {
+    expect(parseCsv('5" pipe\tqty\nrod\t2').rows).toEqual([
+      ['5" pipe', 'qty'],
+      ['rod', '2'],
+    ]);
+    expect(parseCsv('"say ""hi"""\tb\n1\t2').rows).toEqual([
+      ['say "hi"', 'b'],
+      ['1', '2'],
+    ]);
+    expect(parseCsv('a,"x\ty"\n1,2').rows).toEqual([
+      ['a', 'x\ty'],
+      ['1', '2'],
+    ]);
+  });
+
   // The tie between commas and semicolons went to semicolons even when reading by semicolons broke a quoted field:
   // a one-row download holding a semicolon came back split inside its quotes.
   it("reads a quoted semicolon as a field's, even where both separators split a line alike", () => {

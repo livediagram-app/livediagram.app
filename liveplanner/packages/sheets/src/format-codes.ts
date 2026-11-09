@@ -152,6 +152,13 @@ function formatNumberSection(n: number, toks: Tok[]): string {
   for (let i = lastPh + 1; i < toks.length && toks[i]!.k === 'comma'; i++) trailingCommas++;
   value /= 1000 ** trailingCommas;
 
+  // Literals between the integer placeholders ("000-000", "(000) 000-0000") sit among the digits, as in Excel.
+  const lastIntPh = toks
+    .slice(0, intEnd)
+    .map((t) => t.k)
+    .lastIndexOf('ph');
+  const spliced =
+    !expTok && toks.slice(firstPh, lastIntPh + 1).some((t) => t.k === 'lit' && t.v !== '');
   let body: string;
   if (firstPh < 0) {
     body = '';
@@ -180,6 +187,8 @@ function formatNumberSection(n: number, toks: Tok[]): string {
     if (intPart === '0' && minInt === 0) intPart = '';
     intPart = intPart!.padStart(minInt, '0');
     if (grouping) intPart = group(intPart);
+    if (spliced)
+      intPart = spliceDigits(intPart.replace(/,/g, ''), toks.slice(firstPh, lastIntPh + 1));
     body = dotAt >= 0 && (frac.length > 0 || fracPh.length > 0) ? `${intPart}.${frac}` : intPart;
     if (dotAt >= 0 && frac.length === 0 && fracMin === 0) body = `${intPart}.`;
   }
@@ -188,11 +197,34 @@ function formatNumberSection(n: number, toks: Tok[]): string {
   let suffix = '';
   toks.forEach((t, i) => {
     const text = t.k === 'lit' ? t.v : t.k === 'pct' ? '%' : '';
-    if (!text) return;
+    if (!text || (spliced && i > firstPh && i < lastIntPh)) return;
     if (firstPh < 0 || i < firstPh) prefix += text;
     else suffix += text;
   });
   return `${prefix}${body}${suffix}`;
+}
+
+// `digits` laid into the integer tokens from the right: each placeholder takes one digit (or a 0 for "0", a space for
+// "?", nothing for "#" when the digits have run out), a literal stays where it is, and the first placeholder takes
+// every digit left over.
+function spliceDigits(digits: string, toks: Tok[]): string {
+  let rest = digits;
+  let out = '';
+  for (let i = toks.length - 1; i >= 0; i--) {
+    const t = toks[i]!;
+    if (t.k === 'lit') out = t.v + out;
+    else if (t.k === 'ph') {
+      if (i === 0) {
+        out = rest + out;
+        rest = '';
+      } else if (rest) {
+        out = rest.slice(-1) + out;
+        rest = rest.slice(0, -1);
+      } else if (t.v === '0') out = '0' + out;
+      else if (t.v === '?') out = ' ' + out;
+    }
+  }
+  return out;
 }
 
 function formatDateSection(serial: number, toks: Tok[]): string {
@@ -315,37 +347,51 @@ function decimalFixed(x: number, digits: number): string {
 export function formatCodeText(value: number | string, code: string): string {
   const sections = splitSections(code);
   if (typeof value === 'string') {
-    const textSection = sections[3] ?? sections.find((s) => s.includes('@'));
-    if (!textSection) return value;
+    // A fourth section is the text's, even empty (`;;;` hides text too, as in Excel).
+    const textSection = sections.length >= 4 ? sections[3]! : sections.find((s) => s.includes('@'));
+    if (textSection === undefined) return value;
     return tokenize(textSection, false)
       .map((t) => (t.k === 'at' ? value : t.k === 'lit' ? t.v : ''))
       .join('');
   }
   let section = sections[0]!;
   let n = value;
+  // Whether the first section draws the number: only then does a negative keep its own minus (`0;0` shows -5 as 5,
+  // though both sections read alike).
+  let first = true;
   if (n < 0 && sections.length >= 2) {
     section = sections[1]!;
     n = -n;
+    first = false;
   } else if (n === 0 && sections.length >= 3) {
     section = sections[2]!;
+    first = false;
   }
   // An empty section among several hides its numbers, as in Excel and Google Sheets (`;;;` hides everything).
   if (section === '' && sections.length >= 2) return '';
   if (section.trim() === '' && code.trim() === '') return numberText(value);
-  if (section.trim().toLowerCase() === 'general') return numberText(n);
+  // General among a colour or literals (`[Red]General`, `General" kg"`) is the number as General draws it.
+  const general = /general/i.exec(section.replace(/"[^"]*"/g, (q) => ' '.repeat(q.length)));
+  if (general) {
+    // A first section's negative keeps its minus; another section's shows none of its own.
+    const shown = numberText(n);
+    const around = (s: string) =>
+      tokenize(s, false)
+        .map((t) => (t.k === 'lit' ? t.v : ''))
+        .join('');
+    return `${around(section.slice(0, general.index))}${shown}${around(section.slice(general.index + 7))}`;
+  }
   if (isDateSection(section)) return formatDateSection(n, tokenize(section, true));
   const toks = tokenize(section, false);
   // A text section ("@", `@" kg"`) given a number shows the number as text in its place, as in Excel and Google
   // Sheets: the number placeholders it lacks would otherwise drop it (TEXT(5, "@") read "").
   if (section.includes('@') && toks.some((t) => t.k === 'at'))
     return toks
-      .map((t) =>
-        t.k === 'at' ? numberText(section === sections[0] ? value : n) : t.k === 'lit' ? t.v : '',
-      )
+      .map((t) => (t.k === 'at' ? numberText(first ? value : n) : t.k === 'lit' ? t.v : ''))
       .join('');
   const text = formatNumberSection(n, toks);
   // One section for every number: a negative keeps its minus.
-  return value < 0 && section === sections[0] ? `-${text}` : text;
+  return value < 0 && first ? `-${text}` : text;
 }
 
 // Whether a Custom number format's code reads (sheet.md "Formatting"): 1 to FORMAT_CODE_MAX characters, quotes and

@@ -38,17 +38,25 @@ function separatorOf(body: string): string {
   return semicolons > 0 && semicolons >= width(',') ? ';' : ',';
 }
 
-// Whether the first record holds a tab outside quotes: one inside a quoted field is the field's, not a separator. A
-// quote opens and closes a field, and a doubled one inside it turns twice, so it reads as one record does. Stops at the
-// first line break outside quotes, so it costs one record.
+// Whether the first record holds a tab outside quotes: one inside a quoted field is the field's, not a separator. As
+// RFC 4180 reads (readCsv), a quote opens a field only at its start (the text's, or just after a tab, comma or
+// semicolon, any of which may be the separator), and a doubled one inside it is one quote; a quote anywhere else is
+// text (the inch mark in `5" pipe`). Stops at the first line break outside quotes, so it costs one record.
 function firstRecordHasTab(body: string): boolean {
   let quoted = false;
+  let fieldStart = true;
   for (let i = 0; i < body.length; i++) {
     const ch = body[i];
-    if (ch === '"') quoted = !quoted;
-    else if (quoted) continue;
-    else if (ch === '\t') return true;
-    else if (ch === '\n' || ch === '\r') return false;
+    if (quoted) {
+      if (ch !== '"') continue;
+      if (body[i + 1] === '"') i++;
+      else quoted = false;
+      continue;
+    }
+    if (ch === '\t') return true;
+    if (ch === '\n' || ch === '\r') return false;
+    if (ch === '"' && fieldStart) quoted = true;
+    fieldStart = ch === ',' || ch === ';';
   }
   return false;
 }

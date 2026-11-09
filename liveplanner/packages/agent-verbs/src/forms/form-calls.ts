@@ -521,6 +521,15 @@ export async function changeForm(
 
 type ShareAction = 'publish' | 'close' | 'delete_link';
 
+// What a publish says when the form's own Settings keep it closed, whatever its switch: its link is on, but takes no
+// responses until the setting changes.
+export const SETTINGS_KEEP_CLOSED: Record<'closes_at' | 'limit', string> = {
+  closes_at:
+    'still closed: its Close On has passed. Set a later closesAt (or null) with change_form settings to open it',
+  limit:
+    'still closed: it has reached its Response Limit. Raise limit (or set null) with change_form settings to open it',
+};
+
 export async function shareForm(
   api: ApiClient,
   projectId: string,
@@ -574,6 +583,9 @@ export async function shareForm(
       types: read.world.types,
       link,
     });
+    const kept = reading.closedReason;
+    if (action === 'publish' && (kept === 'closes_at' || kept === 'limit'))
+      lines.splice(0, lines.length, SETTINGS_KEEP_CLOSED[kept]);
     return { ok: true, projectId, reading, lines, made: [] };
   });
 }

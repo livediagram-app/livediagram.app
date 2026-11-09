@@ -226,4 +226,20 @@ describe('lookup', () => {
     );
     expect(calc('=VLOOKUP(5, {"a",1;"b",2}, 2)')).toMatchObject({ e: '#N/A' });
   });
+  // Index 0 was #REF! and any XMATCH mode was taken (3 read as exact, a search of 0 as forwards), where Excel says
+  // #VALUE!; a next-smaller or next-larger search from the end found the first of equal values, not the last.
+  it('reads indexes and match modes as Excel does', () => {
+    expect(calc('=VLOOKUP(1, {1,2}, 0)')).toMatchObject({ e: '#VALUE!' });
+    expect(calc('=HLOOKUP(1, {1;2}, 0)')).toMatchObject({ e: '#VALUE!' });
+    expect(calc('=VLOOKUP(1, {1,2}, 3)')).toMatchObject({ e: '#REF!' });
+    expect(calc('=XMATCH(1, {1,2}, 3)')).toMatchObject({ e: '#VALUE!' });
+    expect(calc('=XMATCH(1, {1,2}, 0, 0)')).toMatchObject({ e: '#VALUE!' });
+    expect(calc('=XLOOKUP(1, {1,2}, {3,4}, , -2)')).toMatchObject({ e: '#VALUE!' });
+    expect(calc('=XLOOKUP(1, {1,2}, {3,4}, , 0, 3)')).toMatchObject({ e: '#VALUE!' });
+    expect(calc('=XMATCH(2, {1,2,3}, 0, 2)')).toBe(2);
+    expect(calc('=XMATCH(2, {3,2,1}, 0, -2)')).toBe(2);
+    expect(calc('=XMATCH(2, {1,3,3}, 1, -1)')).toBe(3);
+    expect(calc('=XMATCH(2, {1,3,3}, 1)')).toBe(2);
+    expect(calc('=XMATCH(4, {5,3,3}, -1, -1)')).toBe(3);
+  });
 });
