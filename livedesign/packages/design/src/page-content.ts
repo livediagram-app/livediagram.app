@@ -27,6 +27,7 @@ import { pageContentBox, pageScreenRect } from './wireframe-page';
 import { TEXT_SCALE_MIN } from './validate';
 import { PAGE_INK_CONTRAST, PAGE_INK_FLOOR } from './page-ink-rules';
 import { isBoxed, type Element, type Endpoint, type ShapeElement, type Tab } from './index';
+import { cutText } from './text-cut';
 
 type Point = { x: number; y: number };
 
@@ -106,7 +107,7 @@ export function withDuplicatedPage<T extends Pick<Tab, 'elements'>>(
     id: newPageId,
     // A copy is unlocked (docs/specs/007-editor/pages-mode.md "Locking a page").
     locked: undefined,
-    ...(source.name ? { name: `${source.name} copy`.slice(0, PAGE_NAME_MAX) } : {}),
+    ...(source.name ? { name: cutText(`${source.name} copy`, PAGE_NAME_MAX) } : {}),
   };
   const next = [...pages.slice(0, index + 1), copy, ...pages.slice(index + 1)];
   const before = layOutPages(pages);

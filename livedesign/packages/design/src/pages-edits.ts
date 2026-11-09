@@ -39,6 +39,7 @@ import {
   type WireframeDeviceId,
   type WireframeFrameLook,
 } from './wireframe-device';
+import { cutText } from './text-cut';
 
 export type PageEditRefusal =
   | 'unknown_page'
@@ -91,7 +92,7 @@ export function pageRenamed<T extends PagesTab>(tab: T, pageId: string, raw: str
   const target = pages.find((p) => p.id === pageId);
   if (!target) return refused('unknown_page');
   if (pageLockRefuses(pages, pageId)) return refused('locked');
-  const name = raw.trim().slice(0, PAGE_NAME_MAX);
+  const name = cutText(raw.trim(), PAGE_NAME_MAX);
   if ((target.name ?? '') === name) return { tab };
   const next = pages.map((p) => {
     if (p.id !== pageId) return p;
