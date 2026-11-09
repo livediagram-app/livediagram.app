@@ -224,16 +224,12 @@ function readEdgeOp(s: string): { op: EdgeOp; rest: string } | null {
     const m = readInlineLabel(s);
     if (m) {
       const label = decodeLabel(m.label);
-      const { trail, line } = m;
-      // The inline forms draw the stroke their opener implies; the closing
-      // run only decides the head.
-      const marker = trail === 'o' || trail === 'x' ? trail : null;
+      // The inline forms draw the stroke their opener implies; the markers either side decide the
+      // heads, as on a plain operator.
+      const body = m.line === 'thick' ? '==' : m.line === 'dashed' ? '-.-' : '--';
       return {
         op: {
-          line,
-          ends: trail ? 'to' : 'none',
-          ...(marker ? { head: marker === 'o' ? ('circle' as const) : ('cross' as const) } : {}),
-          invisible: false,
+          ...opAttrs(m.lead, body, m.trail),
           ...(label ? { label } : {}),
         },
         rest: s.slice(m.length),

@@ -128,6 +128,21 @@ describe('parseMermaid', () => {
     ]);
   });
 
+  it('reads a start marker on an inline-labelled edge as a head at its start', () => {
+    const r = parseMermaid(`flowchart LR
+  A <-- both --> B
+  B o-. ring .-o C
+  C x== cut ==x D`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.nodes.map((n) => n.id)).toEqual(['A', 'B', 'C', 'D']);
+    expect(r.graph.edges).toEqual([
+      { from: 'A', to: 'B', label: 'both', ends: 'both' },
+      { from: 'B', to: 'C', label: 'ring', line: 'dashed', ends: 'both', head: 'circle' },
+      { from: 'C', to: 'D', label: 'cut', line: 'thick', ends: 'both', head: 'cross' },
+    ]);
+  });
+
   it('fans `A & B --> C & D` into the cartesian product', () => {
     const r = parseMermaid('flowchart TD\n  A & B --> C & D');
     expect(r.ok).toBe(true);

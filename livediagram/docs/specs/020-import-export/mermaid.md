@@ -67,7 +67,8 @@ only the sweep direction differs).
     thick (`strokeWidth`: the thick preset);
   - heads: `---` no head (`arrowEnds: 'none'`) · `<-->` both ends
     (`arrowEnds: 'both'`) · trailing/leading `o` → hollow-circle arrowhead ·
-    `x` → open-V arrowhead (closest marker we have to Mermaid's cross);
+    `x` → open-V arrowhead (closest marker we have to Mermaid's cross); the inline-labelled form takes the
+    same markers either side (`A <-- yes --> B`, `A o-. maybe .-o B`);
   - `~~~` (invisible link) is parsed and **dropped**: it exists for Mermaid
     layout spacing and would be an invisible-arrow trap on a real canvas.
 
