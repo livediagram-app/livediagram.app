@@ -217,6 +217,17 @@ describe('the ledger keeps notes', () => {
     expect(ids(written)).toEqual(['today']);
   });
 
+  it("never writes a pin refused on a full board once the board has room, given the last write's position", () => {
+    const full = Array.from({ length: NOTES_MAX }, (_, i) => note(`n${i}`, 'adder-e'));
+    // Refused live at seq 1: the board was full. Written through seq 1, then an Editor unpins at seq 2.
+    let entry = record([pin(note('late', 'adder-p')), 1]);
+    const first = boardIn(mergeLedgerAnswersIntoTab(tabOf(board({ noticeNotes: full })), ledgerOf(entry), 0));
+    expect(ids(first)).not.toContain('late');
+    entry = recordInLedger(entry, op(unpin('n0', 'adder-e')), 2) ?? entry;
+    const roomy = tabOf(board({ noticeNotes: full.slice(1) }));
+    expect(ids(boardIn(mergeLedgerAnswersIntoTab(roomy, ledgerOf(entry), 1)))).not.toContain('late');
+  });
+
   it('stores only the fields a note has', () => {
     const padded = { ...note('a'), junk: 'x'.repeat(1000) } as NoticeNote;
     const entry = record([pin(padded), 1]);

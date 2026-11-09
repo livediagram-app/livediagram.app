@@ -317,8 +317,10 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
 // writes a Participant's comment reactions, notice board notes, Timer presses and arcade scores itself, since a Participant never
 // saves a whole tab (a clock is the latest press, so re-applying it is a no-op). Only those are taken from the ledger, every one the room holds (they are idempotent: a reaction is the latest
 // per person, a pin whose id the board holds is a no-op, and an unpin follows its pin in the room's order, checked
-// against the stored note's signer); the rest of a thread stays with an Editor's save.
-export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
+// against the stored note's signer); the rest of a thread stays with an Editor's save. `since` is the room position
+// the last write went through: only what came after is applied, so a pin refused on a full board is never written
+// later, once the board has room (0, after the room slept: every one, as before).
+export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger, since = 0): Tab {
   const elements: Record<string, ElementLedger> = {};
   for (const [id, entry] of Object.entries(ledger.elements)) {
     const reacts = entry.comments?.reacts;
@@ -333,7 +335,7 @@ export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
       ...(arcade ? { arcade } : {}),
     };
   }
-  return mergeLedgerIntoTab(tab, { elements }, 0);
+  return mergeLedgerIntoTab(tab, { elements }, since);
 }
 
 // The note pins and unpins the saver hadn't seen, in the room's order, each through `applyElementDelta`: a pin on

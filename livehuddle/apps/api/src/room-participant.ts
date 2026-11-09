@@ -62,6 +62,10 @@ function isElFrame(op: unknown): op is ElFrame {
 
 export class RoomParticipantWrites {
   private flushes = new Map<string, { documentId: string; timer: ReturnType<typeof setTimeout> }>();
+  // Per tab, the room position its answers were last written through: a later write applies only what came after,
+  // each answer once, against a board as full as it was then. Forgotten when the room sleeps (the next write then
+  // applies them all, as idempotent as before).
+  private flushedThrough = new Map<string, { epoch: string; seq: number }>();
 
   private readonly hooks: ParticipantRoomHooks;
 
@@ -158,13 +162,15 @@ export class RoomParticipantWrites {
     const env = this.hooks.env;
     if (!env) return;
     try {
-      const result = await this.hooks.enqueue(async () =>
-        writeParticipantAnswers(env, {
-          documentId,
-          tabId,
-          ledger: await this.hooks.readLedger(tabId),
-        }),
-      );
+      const result = await this.hooks.enqueue(async () => {
+        const at = this.hooks.position();
+        const last = this.flushedThrough.get(tabId);
+        const since = last && last.epoch === at.epoch ? last.seq : 0;
+        const ledger = await this.hooks.readLedger(tabId);
+        const written = await writeParticipantAnswers(env, { documentId, tabId, ledger, since });
+        if (written.ok) this.flushedThrough.set(tabId, at);
+        return written;
+      });
       if (result.ok) console.debug('[participant-write] answers', { documentId, tabId, ok: true });
       else
         console.error('[participant-write] failed', { documentId, tabId, status: result.status });
