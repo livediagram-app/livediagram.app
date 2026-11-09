@@ -41,7 +41,7 @@ themes alike. Three faces once in the catalogue did not, and were replaced by a 
 | `permanent-marker` | Permanent Marker | No lowercase, and its 1, 3 and 0 read as l, ʒ and O; letters clogged into blots below 16 px            | Shantell Sans |
 | `abril-fatface`    | Abril Fatface    | A display didone: its hairlines vanished and its counters filled in below 16 px, so Il1 and e/a merged | Bodoni Moda   |
 
-- **Ids are storage keys, not names.** A face is swapped behind its id, so every saved document, template and
+- **Ids are storage keys, not names.** A face is swapped behind its id, so every saved plan, template and
   look that letters text in `caveat`, `permanent-marker` or `abril-fatface` keeps working and simply draws in the
   new face; nothing is rewritten on load and agents keep writing the same ids.
 - **Comparable optical size.** Each face's lowercase is between 0.46 and 0.59 em, so a px reads about the same
