@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { accountCategories } from '../account-model';
 import type { SettingsApiResult, SettingsRequest } from '../request';
-import { renderWithKit } from '../test/kit';
+import { SettingsUiKitProvider } from '../kit';
+import { renderWithKit, TEST_KIT } from '../test/kit';
 import {
   currentSubscription,
   isAppleMobile,
@@ -291,6 +292,18 @@ describe('PhoneNotificationsRow', () => {
     expect(items[1]!.textContent).toContain('Added');
     expect(items[1]!.textContent).toContain('Turned on in liveworkspace');
     expect(screen.getByRole('button', { name: 'Turn On' })).toBeTruthy();
+  });
+
+  it('lists the devices under React’s development double mount too', async () => {
+    const { host } = fakeAccount([PIXEL]);
+    render(
+      <SettingsUiKitProvider kit={TEST_KIT}>
+        <PhoneNotificationsRow phone={host} support="ready" now={NOW} />
+      </SettingsUiKitProvider>,
+      { reactStrictMode: true },
+    );
+    const list = await screen.findByRole('list', { name: 'Devices' });
+    expect(within(list).getAllByRole('listitem')).toHaveLength(1);
   });
 
   it('Turn On subscribes, registers the device with the app it opened in, and marks it This Device', async () => {
