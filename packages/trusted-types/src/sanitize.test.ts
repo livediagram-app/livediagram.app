@@ -21,6 +21,9 @@ afterEach(() => {
   resetSanitizerForTests();
 });
 
+// The heavy cases' budgets are CPU time; a wall-clock timeout this wide only stops a loaded machine failing them.
+const HEAVY_TEST_TIMEOUT_MS = 30_000;
+
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">';
 const svg = (inner: string) => sanitizeMarkup(`${SVG}${inner}</svg>`);
 // The markup as a browser would hold it: parsed and written back, so a test compares what renders, not spelling.
@@ -183,39 +186,49 @@ describe('sanitizedHtml', () => {
     expect(sanitizedHtml(markup, 'svg-content')).toBe(first);
   });
 
-  it('keeps its cache within its entries and characters, least recently used out first', () => {
-    for (let i = 0; i < SANITISE_CACHE_ENTRIES + 10; i++)
-      sanitizedHtml(`<rect x="${i}"/>`, 'svg-content');
-    expect(sanitiseCacheSize().entries).toBe(SANITISE_CACHE_ENTRIES);
-    expect(sanitizedHtml('<rect x="0"/>', 'svg-content')).toBe('<rect x="0"></rect>');
-    expect(sanitizedHtml('<rect x="9"/>', 'svg-content')).toBe('<rect x="9"></rect>');
-    const big = `<text>${'a'.repeat(SANITISE_CACHE_CHARS)}</text>`;
-    expect(String(sanitizedHtml(big, 'svg-content')).length).toBeGreaterThan(SANITISE_CACHE_CHARS);
-    // Too big to hold: answered, not kept.
-    expect(sanitiseCacheSize().entries).toBe(SANITISE_CACHE_ENTRIES);
-    // Two drawings that together pass the character bound: every older result goes, then the first of the two.
-    const sized = (c: string) => `<text>${c.repeat(SANITISE_CACHE_CHARS * 0.3)}</text>`;
-    sanitizedHtml(sized('b'), 'svg-content');
-    sanitizedHtml(sized('c'), 'svg-content');
-    expect(sanitiseCacheSize().entries).toBe(1);
-    expect(sanitiseCacheSize().chars).toBeLessThanOrEqual(SANITISE_CACHE_CHARS);
-  });
+  it(
+    'keeps its cache within its entries and characters, least recently used out first',
+    { timeout: HEAVY_TEST_TIMEOUT_MS },
+    () => {
+      for (let i = 0; i < SANITISE_CACHE_ENTRIES + 10; i++)
+        sanitizedHtml(`<rect x="${i}"/>`, 'svg-content');
+      expect(sanitiseCacheSize().entries).toBe(SANITISE_CACHE_ENTRIES);
+      expect(sanitizedHtml('<rect x="0"/>', 'svg-content')).toBe('<rect x="0"></rect>');
+      expect(sanitizedHtml('<rect x="9"/>', 'svg-content')).toBe('<rect x="9"></rect>');
+      const big = `<text>${'a'.repeat(SANITISE_CACHE_CHARS)}</text>`;
+      expect(String(sanitizedHtml(big, 'svg-content')).length).toBeGreaterThan(
+        SANITISE_CACHE_CHARS,
+      );
+      // Too big to hold: answered, not kept.
+      expect(sanitiseCacheSize().entries).toBe(SANITISE_CACHE_ENTRIES);
+      // Two drawings that together pass the character bound: every older result goes, then the first of the two.
+      const sized = (c: string) => `<text>${c.repeat(SANITISE_CACHE_CHARS * 0.3)}</text>`;
+      sanitizedHtml(sized('b'), 'svg-content');
+      sanitizedHtml(sized('c'), 'svg-content');
+      expect(sanitiseCacheSize().entries).toBe(1);
+      expect(sanitiseCacheSize().chars).toBeLessThanOrEqual(SANITISE_CACHE_CHARS);
+    },
+  );
 
   // A big drawing (a split view of a busy tab, an export preview): 4,000 boxes with labels, about 1 MB of SVG.
-  it('sanitises a 1 MB drawing within its CPU budget, and a repeat in no time', () => {
-    const boxes = Array.from(
-      { length: 4000 },
-      (_, i) =>
-        `<g transform="translate(${i % 80} ${i >> 6})" data-element="e${i}"><rect width="120" height="60" rx="8" fill="#eef" stroke="#335" stroke-width="2"/>` +
-        `<text x="60" y="30" text-anchor="middle" dominant-baseline="middle" font-size="14">Box number ${i} &amp; friends</text></g>`,
-    ).join('');
-    const markup = `${SVG}${boxes}</svg>`;
-    expect(markup.length).toBeGreaterThan(900_000);
-    let out = '';
-    const ms = cpuMsOf(() => (out = String(sanitizedHtml(markup))));
-    if (process.env.SANITISE_TIMING) console.log(`sanitise ${markup.length} chars: ${ms} ms CPU`);
-    expect(ms).toBeLessThan(cpuBudgetMs(3000));
-    expect(out).toContain('Box number 3999 &amp; friends');
-    expect(cpuMsOf(() => sanitizedHtml(markup))).toBeLessThan(cpuBudgetMs(5));
-  });
+  it(
+    'sanitises a 1 MB drawing within its CPU budget, and a repeat in no time',
+    { timeout: HEAVY_TEST_TIMEOUT_MS },
+    () => {
+      const boxes = Array.from(
+        { length: 4000 },
+        (_, i) =>
+          `<g transform="translate(${i % 80} ${i >> 6})" data-element="e${i}"><rect width="120" height="60" rx="8" fill="#eef" stroke="#335" stroke-width="2"/>` +
+          `<text x="60" y="30" text-anchor="middle" dominant-baseline="middle" font-size="14">Box number ${i} &amp; friends</text></g>`,
+      ).join('');
+      const markup = `${SVG}${boxes}</svg>`;
+      expect(markup.length).toBeGreaterThan(900_000);
+      let out = '';
+      const ms = cpuMsOf(() => (out = String(sanitizedHtml(markup))));
+      if (process.env.SANITISE_TIMING) console.log(`sanitise ${markup.length} chars: ${ms} ms CPU`);
+      expect(ms).toBeLessThan(cpuBudgetMs(3000));
+      expect(out).toContain('Box number 3999 &amp; friends');
+      expect(cpuMsOf(() => sanitizedHtml(markup))).toBeLessThan(cpuBudgetMs(5));
+    },
+  );
 });

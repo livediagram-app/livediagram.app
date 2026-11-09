@@ -44,7 +44,12 @@ const htmlExpressions = (source: string) =>
 // What may feed a sink: the escape hatch for builder markup, or the sanitiser.
 const MINTED = /^(?:trustedHtml|sanitizedHtml)\(/;
 // A layout's inline boot scripts are static text of ours, written into a <script>: never sanitised (they are script).
-const LAYOUT = /(^|\/)app\/(.+\/)?layout\.tsx$/;
+// A layout is a layout.tsx under an app/ folder at any depth, checked segment by segment (linear in the path's
+// length; a regex over the path backtracks polynomially on many app/ segments).
+export function isLayoutFile(file: string): boolean {
+  const segments = file.split('/');
+  return segments.pop() === 'layout.tsx' && segments.includes('app');
+}
 
 /** Every markup sink a file feeds by hand (`innerHTML`, `outerHTML`, `srcdoc`, `insertAdjacentHTML`) whose value
  *  neither `trustedHtml` nor `sanitizedHtml` made, as `file: sink` lines. */
@@ -74,7 +79,7 @@ export function escapesUnlisted(
   source: string,
   builders: readonly string[],
 ): boolean {
-  return /\btrustedHtml\(/.test(source) && !LAYOUT.test(file) && !builders.includes(file);
+  return /\btrustedHtml\(/.test(source) && !isLayoutFile(file) && !builders.includes(file);
 }
 
 export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): void {

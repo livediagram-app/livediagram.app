@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { escapesUnlisted, rawDomWrites, rawHtmlProps } from './sinks-suite';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { escapesUnlisted, isLayoutFile, rawDomWrites, rawHtmlProps } from './sinks-suite';
 
 // The rules every app's sinks test applies (livediagram/docs/specs/016-platform/trusted-types.md "The sanitiser"),
 // on sources small enough to read.
@@ -56,5 +57,39 @@ describe('escapesUnlisted', () => {
 
   it('ignores a file that only uses the sanitiser', () => {
     expect(escapesUnlisted('apps/editor/lib/preview.ts', 'sanitizedHtml(markup)', [])).toBe(false);
+  });
+});
+
+describe('isLayoutFile', () => {
+  it('takes a layout.tsx under an app folder at any depth, and nothing else', () => {
+    for (const yes of [
+      'app/layout.tsx',
+      'apps/editor/app/layout.tsx',
+      'apps/editor/app/new/layout.tsx',
+      'apps/editor/app/(site)/docs/layout.tsx',
+    ])
+      expect(isLayoutFile(yes), yes).toBe(true);
+    for (const no of [
+      'layout.tsx',
+      'apps/editor/layout.tsx',
+      'apps/editor/app/page.tsx',
+      'apps/editor/app/layout.ts',
+      'apps/editor/app/my-layout.tsx',
+      'apps/editor/myapp/layout.tsx',
+      'apps/editor/app/layout.tsx/x.tsx',
+    ])
+      expect(isLayoutFile(no), no).toBe(false);
+  });
+
+  // CodeQL js/polynomial-redos: the regex this replaced backtracked on 'app/' followed by many '/app/a'. A 100,000
+  // segment worst case answers in well under 20 ms of CPU time (x10 for CI and coverage).
+  it('stays linear on a long path of app segments', () => {
+    const hostile = 'app/' + '/app/a'.repeat(100_000);
+    let answer = true;
+    const ms = cpuMsOf(() => {
+      answer = isLayoutFile(hostile);
+    });
+    expect(answer).toBe(false);
+    expect(ms).toBeLessThan(cpuBudgetMs(20));
   });
 });
