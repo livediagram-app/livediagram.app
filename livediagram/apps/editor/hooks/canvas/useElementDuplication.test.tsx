@@ -147,3 +147,32 @@ describe('duplicateSelected', () => {
     expect(copy.x).not.toBe(-12);
   });
 });
+
+// docs/specs/009-elements/blueprints/flowchart.md D172: a copied step is a new chart, even copied alone with Cmd+D.
+// It used to keep the original's chart and lane ids, so the next layout raked it beside the original.
+describe('duplicateSelected on one flowchart step', () => {
+  it('makes the copy a chart of its own, in no lane', () => {
+    const elements = [
+      shape('s1', { flowchartId: 's1' }),
+      shape('s2', { flowchartId: 's1', flowLaneId: 'lane', y: 120 }),
+    ];
+    let committed: Element[] = elements;
+    const { result } = renderHook(() =>
+      useElementDuplication({
+        readSelection: () => ({ selectedId: 's2', multiSelectedIds: new Set() }),
+        activeTab: { id: 't', name: 'T', elements },
+        commit: (m) => {
+          committed = m(committed);
+        },
+        setSelectedId: vi.fn(),
+        setMultiSelectedIds: vi.fn(),
+      }),
+    );
+    result.current.duplicateSelected();
+    const [copy] = committed.slice(elements.length) as ShapeElement[];
+    expect(copy!.id).not.toBe('s2');
+    expect(copy!.flowchartId).toBe(copy!.id);
+    expect(copy!.flowLaneId).toBeUndefined();
+    expect(copy).toMatchObject({ x: 24, y: 144 });
+  });
+});
