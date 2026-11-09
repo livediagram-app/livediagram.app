@@ -23,10 +23,12 @@ Derived from [Join and leave sounds](../join-and-leave-sounds.md).
 
 ## Behaviour and state
 
-`createPresenceChimes({ selfKey, play, enabled, clock })`:
+`createPresenceChimes({ selfKey, play, wanted, now, whenAudible })`:
 
 1. `update(participants)`: computes `next = Set(personOf(p))` without `selfKey`.
-2. First call (`seeded === false`): `present = next`, `seeded = true`, nothing plays.
+2. First call (`seeded === false`): `present = next`, `seeded = true`, and your own arrival:
+   `whenAudible(OWN_ARRIVAL_GRACE_MS, () => chime('arrive'))`, which plays now if the context runs, else if it resumes
+   inside the grace, else never. `dispose()` stops that wait.
 3. Later calls: for each person in `next` not in `present`: a pending leave timer for them is cleared (a flap); else
    it is an arrival. For each person in `present` not in `next`: a leave timer of `JOIN_LEAVE_FLAP_MS` is set (once
    per person); when it fires and the person is still not present, it is a leave. `present` becomes `next`.
@@ -42,6 +44,8 @@ nothing again. `unlockAudioOnGesture()` is installed by the same effect and remo
 ## Interfaces and contracts
 
 - `playTones(notes, noteS, peak)` unchanged in shape; `audio()` returns the one context or null.
+- `whenAudible(withinMs, play): () => void` runs `play` once the context is running, now or after a resume that lands
+  inside `withinMs`; a later, refused or stopped resume never runs it.
 - `unlockAudioOnGesture(): () => void` adds capture `pointerdown` and `keydown` listeners on `window` that create and
   resume the context, then remove themselves; the returned function removes them too.
 

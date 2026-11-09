@@ -5,6 +5,7 @@ import {
   createPresenceChimes,
   JOIN_LEAVE_BURST_MS,
   JOIN_LEAVE_FLAP_MS,
+  OWN_ARRIVAL_GRACE_MS,
   presenceChimesWanted,
   type PresenceChime,
 } from './presence-chimes';
@@ -19,12 +20,19 @@ const p = (id: string, key?: string, role?: string) => ({
   ...(role ? { role } : {}),
 });
 
-function watcher(selfKey: string | null = 'me') {
+// Sound never becomes audible unless a test says so, so the own-arrival greeting stays out of the other tests.
+const neverAudible = () => () => {};
+
+function watcher(
+  selfKey: string | null = 'me',
+  whenAudible: (withinMs: number, play: () => void) => () => void = neverAudible,
+) {
   const played: PresenceChime[] = [];
   const chimes = createPresenceChimes({
     selfKey,
     play: (kind) => played.push(kind),
     wanted: () => true,
+    whenAudible,
   });
   return { chimes, played };
 }
@@ -38,6 +46,58 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe('createPresenceChimes', () => {
+  it('greets your own arrival once, on the first roster, when sound can be heard', () => {
+    const asked: number[] = [];
+    const { chimes, played } = watcher('me', (withinMs, play) => {
+      asked.push(withinMs);
+      play();
+      return () => {};
+    });
+    chimes.update([p('s9', 'me')]);
+    expect(played).toEqual(['arrive']);
+    expect(asked).toEqual([OWN_ARRIVAL_GRACE_MS]);
+    // A reconnect of your own socket sends a roster again: no second greeting.
+    vi.advanceTimersByTime(JOIN_LEAVE_BURST_MS + 1);
+    chimes.update([]);
+    chimes.update([p('s10', 'me')]);
+    expect(played).toEqual(['arrive']);
+  });
+
+  it('greets you alone in the Space too, and respects the setting', () => {
+    const played: PresenceChime[] = [];
+    const chimes = createPresenceChimes({
+      selfKey: 'me',
+      play: (kind) => played.push(kind),
+      wanted: () => false,
+      whenAudible: (_ms, play) => {
+        play();
+        return () => {};
+      },
+    });
+    chimes.update([]);
+    expect(played).toEqual([]);
+    const alone = watcher('me', (_ms, play) => {
+      play();
+      return () => {};
+    });
+    alone.chimes.update([]);
+    expect(alone.played).toEqual(['arrive']);
+  });
+
+  it('stops waiting to greet you when the room closes', () => {
+    let later: (() => void) | null = null;
+    const stop = vi.fn();
+    const { chimes, played } = watcher('me', (_ms, play) => {
+      later = play;
+      return stop;
+    });
+    chimes.update([p('s1', 'a')]);
+    chimes.dispose();
+    expect(stop).toHaveBeenCalledOnce();
+    expect(played).toEqual([]);
+    expect(later).not.toBeNull();
+  });
+
   it('learns the first roster in silence, then chimes for a newcomer', () => {
     const { chimes, played } = watcher();
     chimes.update([p('s1', 'a'), p('s2', 'b')]);
@@ -171,7 +231,7 @@ describe('presenceChimesWanted', () => {
 
   it('the default watcher plays through Web Audio only while wanted', async () => {
     const tones = vi.fn();
-    vi.doMock('./audio', () => ({ playTones: tones }));
+    vi.doMock('./audio', () => ({ playTones: tones, whenAudible: () => () => {} }));
     vi.resetModules();
     const mod = await import('./presence-chimes');
     const chimes = mod.createPresenceChimes({ selfKey: 'me' });
