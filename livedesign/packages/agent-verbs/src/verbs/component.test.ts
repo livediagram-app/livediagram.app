@@ -162,6 +162,7 @@ describe('component set', () => {
           { ...nav, id: 'nav-2', name: 'Nav two' },
           { ...nav, id: 'card', name: 'Card' },
           { ...nav, id: 'side', name: 'Nav-' },
+          { ...nav, id: 'dup', name: 'card' },
         ],
       },
       [`${LIBRARY}/side`]: async (request: Request) =>
@@ -215,6 +216,14 @@ describe('component set', () => {
       componentSet.input.parse({ doc: 'Auth flow', component: 'nav-', name: 'Side' }),
     );
     expect(set).toMatchObject({ id: 'side', name: 'Side' });
+    // A unique id prefix names its main.
+    expect(
+      await componentSet.run!(ctx, componentSet.input.parse({ doc: 'Auth flow', component: 'si', name: 'S' })),
+    ).toMatchObject({ id: 'side' });
+    // Two mains of one name are refused as ambiguous, the prefixes aside.
+    expect(
+      await refusal(componentSet.run!(ctx, componentSet.input.parse({ doc: 'Auth flow', component: 'CARD', name: 'x' }))),
+    ).toMatchObject({ code: 'target_ambiguous', lines: ['card "Card"', 'dup "card"'] });
   });
 
   it('refuses --archived with --restore before reading anything', async () => {
@@ -239,7 +248,7 @@ describe('component set', () => {
     expect(await set({ component: 'zz', name: 'x' })).toMatchObject({
       status: 404,
       code: 'target_not_found',
-      lines: ['nav "Nav bar"', 'nav-2 "Nav two"', 'card "Card"', 'side "Nav-"'],
+      lines: ['nav "Nav bar"', 'nav-2 "Nav two"', 'card "Card"', 'side "Nav-"', 'dup "card"'],
     });
     expect(await set({ component: 'na', name: 'x' })).toMatchObject({
       status: 400,
