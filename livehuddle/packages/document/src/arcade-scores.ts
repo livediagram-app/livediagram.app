@@ -7,6 +7,8 @@
 //
 // A LEAF module: element-deltas and collab-ledger import it.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
+
 /** One score on a machine's table. */
 export type ArcadeScore = {
   id: string;
@@ -45,7 +47,7 @@ const BY_MAX = 128;
 
 /** The name a score is posted under: the display name, trimmed and cut, or "Guest". */
 export function arcadeName(displayName: string | undefined): string {
-  const name = (displayName ?? '').trim().slice(0, ARCADE_NAME_MAX).trim();
+  const name = cutText((displayName ?? '').trim(), ARCADE_NAME_MAX).trim();
   return name.length > 0 ? name : 'Guest';
 }
 
