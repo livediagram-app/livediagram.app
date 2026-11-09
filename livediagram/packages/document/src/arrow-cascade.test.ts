@@ -55,8 +55,15 @@ describe('withAttachedArrows', () => {
 // docs/specs/008-canvas/canvas-and-palette.md "Delete / Backspace": a kept arrow's end on a removed element is freed
 // where it was drawn, the other end and every other element untouched.
 describe('removeElements', () => {
-  const box = (id: string, x: number): Element =>
-    ({ id, type: 'shape', shape: 'square', x, y: 0, width: 100, height: 60 }) as Element;
+  const box = (id: string, x: number): Element => ({
+    id,
+    type: 'shape',
+    shape: 'square',
+    x,
+    y: 0,
+    width: 100,
+    height: 60,
+  });
   const arrow = (id: string, extra: Partial<ArrowElement> = {}): ArrowElement => ({
     id,
     type: 'arrow',
@@ -70,7 +77,7 @@ describe('removeElements', () => {
     const out = removeElements(els, new Set(['a', 'x', 'y']), (el) => el.locked === true);
     expect(out.map((e) => e.id)).toEqual(['b', 'x']);
     expect((out[1] as ArrowElement).from).toEqual({ kind: 'free', x: 100, y: 30 });
-    expect((out[1] as ArrowElement).to).toBe(els[2]!.type === 'arrow' ? els[2].to : null);
+    expect((out[1] as ArrowElement).to).toEqual({ kind: 'pinned', elementId: 'b', anchor: 'w' });
   });
 
   it('hands back the same elements when nothing goes', () => {
