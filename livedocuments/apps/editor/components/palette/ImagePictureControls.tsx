@@ -75,14 +75,14 @@ export function ImagePictureControls({
   const current = isImageMask(target.mask) ? target.mask : null;
   const tile = (mask: ImageMask | null) => {
     const label = mask ? MASK_LABEL[mask] : 'No Mask';
-    // Pressing the chosen mask again takes it off.
-    const next = mask === current ? null : mask;
     return (
       <SizeButton
         key={mask ?? 'none'}
         active={mask === current}
         label={label}
-        onClick={() => ops.commit((el) => withImageMask(el, next), 'ImageMask')}
+        // Always the tile's own mask: under a hover preview `target` already shows it, so a toggle would read it as
+        // set and take it off. No Mask removes one.
+        onClick={() => ops.commit((el) => withImageMask(el, mask), 'ImageMask')}
         onPointerEnter={onMouseHover(() => ops.preview((el) => withImageMask(el, mask)))}
         onPointerLeave={onMouseHover(ops.end)}
       >

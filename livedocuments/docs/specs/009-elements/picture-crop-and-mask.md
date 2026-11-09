@@ -87,9 +87,9 @@ image on the canvas:
 
 ## Masks in the editor
 
-The Image section holds **Mask**, a grid of tiles under the crop: **None** then the eight shapes, each tile showing
-its shape. Hovering a tile previews it on the selected pictures; a press sets it (one edit), and pressing the chosen
-one again, or None, removes it. A mask applies to every selected image.
+The Image section holds **Mask**, a grid of tiles under the crop: **No Mask** then the eight shapes, each tile
+showing its shape. Hovering a tile previews it on the selected pictures; a press sets it (one edit), even while its own
+preview shows, and No Mask removes it. A mask applies to every selected image.
 
 ## Greyscale in the editor
 
@@ -108,11 +108,11 @@ The Image section's **Greyscale** toggle ("Draw the picture in shades of grey.")
 
 ## Share roles
 
-| Role        | May                                                                                     |
-| ----------- | --------------------------------------------------------------------------------------- |
-| Editor      | Crop, mask and set greyscale (each changes the element)                                 |
-| Participant | See them; never crops, masks or turns greyscale on or off (none is text it may write)   |
-| Viewer      | See them                                                                                |
+| Role        | May                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------- |
+| Editor      | Crop, mask and set greyscale (each changes the element)                               |
+| Participant | See them; never crops, masks or turns greyscale on or off (none is text it may write) |
+| Viewer      | See them                                                                              |
 
 A Participant's or a Viewer's menu has no Crop Image, Mask or Greyscale, and a locked image (its own lock, a locked
 tab or layer) cannot be cropped: cropping moves and resizes the box, which the lock holds. A locked image's mask and

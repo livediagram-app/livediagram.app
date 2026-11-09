@@ -561,7 +561,8 @@ PAGE_IMAGE_BLUR_MAX (0.04) * min(width, height)` page px. The panel's **Blur** i
   change, one commit on release when changed, `track('Tab', 'Changed', 'PageBackgroundImageBlur')`.
   Sheet paint: `usePageImageSources` hands `CanvasPages` the sharp blob URL; for a fill with blur the
   sheet asks `useBlurredPageImage(src, rect, sigma)` (`apps/editor/hooks/canvas/useBlurredPageImage.ts`)
-  and paints its URL, else nothing (the tone shows) until it is ready; a changed sigma while a copy shows waits
+  and paints its URL through `pageSheetStyle`'s `imageSrc` (an offline document's inline picture included), else
+  nothing (the tone shows) until it is ready; a changed sigma while a copy shows waits
   `BLUR_SETTLE_MS` (150) before asking. `acquireBlurredImage` (held until `release`)
   (`apps/editor/lib/page-image-blur.ts`): decode, draw at a long side of
   `clamp(round(pageLong * 3 / sigma), 96, 1024)` px (`BLUR_COPY_MIN` / `BLUR_COPY_MAX`), blur by

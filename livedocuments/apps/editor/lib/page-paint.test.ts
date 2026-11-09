@@ -76,3 +76,26 @@ describe('page paint', () => {
     expect(new Set(PAGE_GRADIENT_PRESETS.map((p) => p.id)).size).toBe(13);
   });
 });
+
+// docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur: a blurred picture paints from its blurred copy, even
+// an offline document's inline one, and from nothing but its tone while the copy is made.
+describe('pageSheetStyle with a blurred picture', () => {
+  const fill = {
+    kind: 'image' as const,
+    imageId: 'data:image/png;base64,AAAA',
+    tone: '#336699',
+    blur: 0.5,
+  };
+  it('paints the copy given, never the sharp inline picture', () => {
+    const style = pageSheetStyle({ fill }, undefined, undefined, 'blob:http://x/1');
+    expect(style.backgroundImage).toBe('url("blob:http://x/1")');
+  });
+  it('shows only the tone while the copy is made', () => {
+    const style = pageSheetStyle({ fill }, undefined, undefined, null);
+    expect(style.backgroundImage).toBeUndefined();
+    expect(style.backgroundColor).toBe('#336699');
+  });
+  it('paints the picture itself when no copy is asked for', () => {
+    expect(pageSheetStyle({ fill }).backgroundImage).toContain('data:image/png');
+  });
+});

@@ -53,16 +53,19 @@ describe('ImagePictureControls', () => {
     );
   });
 
-  it('sets a mask in one commit, and pressing it again takes it off', () => {
+  it('sets a mask in one commit, even over its own hover preview, and No Mask takes it off', () => {
     const { last } = show(picture());
     fireEvent.click(screen.getByRole('button', { name: 'Star' }));
     const [map, kind] = last();
     expect(kind).toBe('ImageMask');
     expect(map(picture())).toMatchObject({ mask: 'star' });
     cleanup();
-    const again = show(picture({ mask: 'star' }));
+    // The menu shows the previewed star while the pointer rests on it: the press still sets it.
+    const previewed = show(picture({ mask: 'star' }));
     fireEvent.click(screen.getByRole('button', { name: 'Star' }));
-    expect(again.last()[0](picture({ mask: 'star' }))).not.toHaveProperty('mask');
+    expect(previewed.last()[0](picture())).toMatchObject({ mask: 'star' });
+    fireEvent.click(screen.getByRole('button', { name: 'No Mask' }));
+    expect(previewed.last()[0](picture({ mask: 'star' }))).not.toHaveProperty('mask');
   });
 
   it('previews a mask on hover and ends it on leave', () => {

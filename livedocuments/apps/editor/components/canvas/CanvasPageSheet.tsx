@@ -272,7 +272,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
     page.rect,
     blurSigma,
   );
-  const blurredPicture = blurSigma > 0 ? () => blurredSrc ?? undefined : undefined;
   return (
     <div
       data-page={page.orientation}
@@ -294,7 +293,7 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
         boxShadow: letterbox
           ? `0 0 0 ${LETTERBOX_SPREAD}px #000`
           : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
-        ...pageSheetStyle(background, ruling, blurredPicture ?? pictureOf),
+        ...pageSheetStyle(background, ruling, pictureOf, blurSigma > 0 ? blurredSrc : undefined),
       }}
     >
       {/* A slide's animated background, over its gradient and under all on it. */}
