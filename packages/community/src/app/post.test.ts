@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { checkCommunityPost, communityCheckDueAt, type CommunityCheck } from './post';
+import {
+  checkCommunityPost,
+  communityCheckDueAt,
+  communityStateOf,
+  type CommunityCheck,
+  type CommunityIndex,
+  type CommunityPost,
+} from './post';
 
 // A room asks where its Community post stands on its alarm, then re-arms for communityCheckDueAt(post). Without the
 // service (no COMMUNITY_KEY) there is nothing to ask, and the answer must still move the next check on: a stale
@@ -34,5 +41,33 @@ describe('checkCommunityPost without the service', () => {
     } as CommunityCheck);
     expect(post?.checkedAt).toBe(now);
     expect(communityCheckDueAt(post)).toBeGreaterThan(now);
+  });
+});
+
+describe('communityStateOf', () => {
+  const post = { authorId: 'user_a', shareCode: 'CODE2345' } as CommunityPost;
+  const indexWith = (ownerId: string, teamId: string | null = 'team_1') =>
+    ({
+      getItem: async () => ({ item: { trashedAt: null, ownerId, teamId } }),
+      listShareLinks: async () => ({ links: [{ code: 'CODE2345' }], passwordSet: false }),
+    }) as unknown as CommunityIndex;
+
+  it('is gone once the owner’s account closed, as the room or the index knows it', async () => {
+    expect(
+      await communityStateOf(indexWith('deleted'), 'd1', post, { ownerId: 'deleted', teamId: 't' }),
+    ).toBe('gone');
+    // The room still names the author, the index already says the account closed.
+    expect(
+      await communityStateOf(indexWith('deleted'), 'd1', post, { ownerId: 'user_a', teamId: 't' }),
+    ).toBe('gone');
+  });
+
+  it('keeps a team document’s post closed while its author owns it, and away once someone else does', async () => {
+    expect(
+      await communityStateOf(indexWith('user_a'), 'd1', post, { ownerId: 'user_a', teamId: 't' }),
+    ).toBe('closed');
+    expect(
+      await communityStateOf(indexWith('user_b'), 'd1', post, { ownerId: 'user_b', teamId: 't' }),
+    ).toBe('away');
   });
 });
