@@ -59,4 +59,45 @@ describe('rebaseLocalEdits', () => {
     const fetched = tab([el('a', 3)]);
     expect(rebaseLocalEdits(fetched, tab([el('a')]), baseline)).toBe(fetched);
   });
+
+  it("rebases this editor's writing block by block, keeping a peer's blocks in the same article", () => {
+    const para = (id: string, text: string) => ({
+      id,
+      type: 'paragraph' as const,
+      runs: [{ text }],
+    });
+    const flow = (...blocks: ReturnType<typeof para>[]) => ({ blocks });
+    const baseline = tab([el('a')], {
+      articles: { f: flow(para('p1', 'one'), para('p2', 'two')) },
+    });
+    // Typed here, unsaved, in p1.
+    const screen = tab([el('a')], { articles: { f: flow(para('p1', 'one!'), para('p2', 'two')) } });
+    // Meanwhile a peer wrote p2 and added p3, and started another article.
+    const fetched = tab([el('a')], {
+      articles: {
+        f: flow(para('p1', 'one'), para('p2', 'TWO'), para('p3', 'three')),
+        g: flow(para('q1', 'other')),
+      },
+    });
+    const out = rebaseLocalEdits(fetched, screen, baseline);
+    expect(
+      out.articles?.f?.blocks.map((b) => [b.id, (b as ReturnType<typeof para>).runs[0]!.text]),
+    ).toEqual([
+      ['p1', 'one!'],
+      ['p2', 'TWO'],
+      ['p3', 'three'],
+    ]);
+    expect(Object.keys(out.articles ?? {})).toEqual(['f', 'g']);
+  });
+
+  it('removes only the article removed here, and drops the field when none is left', () => {
+    const f = { blocks: [{ id: 'p1', type: 'paragraph' as const, runs: [{ text: 'x' }] }] };
+    const baseline = tab([el('a')], { articles: { f } });
+    const screen = tab([el('a')]);
+    expect(
+      'articles' in rebaseLocalEdits(tab([el('a')], { articles: { f } }), screen, baseline),
+    ).toBe(false);
+    const out = rebaseLocalEdits(tab([el('a')], { articles: { f, g: f } }), screen, baseline);
+    expect(Object.keys(out.articles ?? {})).toEqual(['g']);
+  });
 });

@@ -262,6 +262,40 @@ describe('react', () => {
   });
 });
 
+// A thread at its cap (COMMENTS_MAX) and a resolved thread's reactions (comment-reactions.md "Reacting").
+describe('a full thread and a resolved one', () => {
+  it('answers 409 thread_full to an add or a reply on a full thread, writing and emailing nothing', async () => {
+    const full = Array.from({ length: 500 }, (_, i) => comment(`c${i}`));
+    seed([shape('a', { commentThread: { resolved: false, comments: full } })]);
+    const rev = (await stored()).rev;
+    const add = await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: 'more' } });
+    expect(add.status).toBe(409);
+    expect(await add.json()).toEqual({ error: 'thread_full' });
+    const reply = await call({ path: '/tabs/t1/comments/c0/reply', body: { text: 'more' } });
+    expect(reply.status).toBe(409);
+    expect((await stored()).rev).toBe(rev);
+    expect((await threadOf('a'))!.comments).toHaveLength(500);
+    expect(pending).toEqual([]);
+  });
+
+  it('takes no new reaction on a resolved thread, but lets one be taken back', async () => {
+    const reacted = comment('c1', { reactions: [{ emoji: 'eyes', by: 'k-me', name: 'Webber' }] });
+    seed([shape('a', { commentThread: { resolved: true, comments: [reacted] } })]);
+    const add = await call({
+      path: '/tabs/t1/comments/c1/react',
+      body: { emoji: 'hooray', on: true, key: 'k-me' },
+    });
+    expect(add.status).toBe(409);
+    expect(await add.json()).toEqual({ error: 'thread_resolved' });
+    const off = await call({
+      path: '/tabs/t1/comments/c1/react',
+      body: { emoji: 'eyes', on: false, key: 'k-me' },
+    });
+    expect(off.status).toBe(204);
+    expect((await threadOf('a'))!.comments[0]!.reactions).toBeUndefined();
+  });
+});
+
 describe('delete-own', () => {
   it('deletes the caller’s own comment only', async () => {
     seed([

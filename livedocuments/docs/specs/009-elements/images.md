@@ -64,7 +64,7 @@ Resizing aspect-locks by default (the image's `naturalWidth:naturalHeight` ratio
 | `image/heic` / `image/heif`              | ✗       | iPhone photo default. No native `<img>` support outside Safari. Rejected with a "save as JPEG and re-upload" hint.                                                                                                                                                                                                                                                                                   |
 | `image/bmp` / `image/tiff` / `image/ico` | ✗       | Not canvas-grade; uncompressed BMP can be 50 MB for a screen-sized image. Rejected.                                                                                                                                                                                                                                                                                                                  |
 
-Server-side enforcement: the upload endpoint checks `Content-Type` against the whitelist + sniffs the first ~16 bytes against the expected magic numbers, so a malicious client can't slip an SVG through by lying about its `Content-Type`. Rejected requests return 415 with `{ error: 'unsupported-type', acceptedTypes: [...] }` so the client can rebuild its picker error copy without hardcoding the list.
+Server-side enforcement: the upload endpoint checks `Content-Type` against the whitelist + sniffs the first ~16 bytes against the expected magic numbers, so a malicious client can't slip an SVG through by lying about its `Content-Type`. Rejected requests return 415 with `{ error: 'unsupported_type', acceptedTypes: [...] }` so the client can rebuild its picker error copy without hardcoding the list.
 
 ### Size cap
 
@@ -133,7 +133,7 @@ iPhone was closed while moving between its pages.
 `apps/editor/components/panels/ImagePicker.tsx`, lazy-loaded via `next/dynamic` (matches the other on-demand modals like `ExportTabDialog` and `ShareDialog`). Three-tab modal:
 
 - **Upload tab.** Drag-and-drop zone + file-input fallback. On drop:
-  1. Client checks the file's content type + size against the accepted list / cap.
+  1. Client checks the file's content type + size against the accepted list / cap. A file with no type or a generic one (a Finder copy pastes as `application/octet-stream`) is labelled by its first 16 bytes, with the same magic numbers the server sniffs, so a real PNG, JPEG, GIF or WebP goes through and anything else is refused.
   2. Client reads the file into an `ArrayBuffer`, computes the SHA-256 via `crypto.subtle.digest`, decodes width/height via a transient `<img>` + `URL.createObjectURL`.
   3. POSTs to `/api/images` with the sha + dimensions in headers. If `deduped: true`, the modal flashes "Already in your gallery" and selects the existing image.
   4. The element's `imageId` is set to the returned id; the modal closes.

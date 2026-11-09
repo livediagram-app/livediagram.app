@@ -93,11 +93,11 @@ export function zonePlanFor(
   const bounds = boundsOf(added, all);
   const single = added.length === 1 ? added[0]! : null;
   if (single && isBoxed(single) && !isDrawingElement(single)) {
-    const scale = Math.min(1, textWidth / single.width);
+    const scale = objectZoneScale(single, textWidth);
     return {
       zone: 'object',
-      width: Math.round(single.width * scale),
-      height: Math.round(single.height * scale),
+      width: zoneSide(single.width * scale),
+      height: zoneSide(single.height * scale),
       bounds,
       scale,
     };
@@ -109,6 +109,17 @@ export function zonePlanFor(
   const scale = Math.min(1, (width - 2 * ARTICLE_DRAWING_PAD) / bounds.width);
   return { zone: 'drawing', width, height, bounds, scale };
 }
+
+/** How much an object is scaled to sit in its zone: never past the text width, nor past the tallest a zone is
+ *  (ARTICLE_ZONE_MAX, which a stored zone is read back within), so a tall picture never runs over the writing
+ *  after it. Never grown. */
+function objectZoneScale(obj: { width: number; height: number }, textWidth: number): number {
+  return Math.min(1, textWidth / obj.width, ARTICLE_ZONE_MAX / obj.height);
+}
+
+/** A zone's side as the writing stores it (parseArticleBlock's bounds), so a fitted zone reads back the same. */
+const zoneSide = (v: number): number =>
+  Math.min(ARTICLE_ZONE_MAX, Math.max(ARTICLE_ZONE_MIN, Math.round(v)));
 
 /** The elements moved (and an object scaled) into a zone standing at `rect`: an object filling it,
  *  drawn elements centred in it, keeping their arrangement. */
@@ -222,17 +233,21 @@ export function withZonesFitted<T extends ArticlesTab>(tab: T, flow: string, tex
         changed = true;
         continue;
       }
-      const width = Math.round(Math.min(obj.width, textWidth));
-      const height = Math.round(obj.height * (width / obj.width));
-      const sized = Math.abs(width - b.width) > 0.5 || Math.abs(height - b.height) > 0.5;
+      const scale = objectZoneScale(obj, textWidth);
+      const width = Math.round(obj.width * scale);
+      const height = Math.round(obj.height * scale);
+      // The zone as the writing stores it: never past the bounds a stored zone is read back within.
+      const zoneWidth = zoneSide(width);
+      const zoneHeight = zoneSide(height);
+      const sized = Math.abs(zoneWidth - b.width) > 0.5 || Math.abs(zoneHeight - b.height) > 0.5;
       const placed = Math.abs(obj.x - rect.x) > 0.5 || Math.abs(obj.y - rect.y) > 0.5;
-      const scaled = Math.abs(width - obj.width) > 0.5;
+      const scaled = Math.abs(width - obj.width) > 0.5 || Math.abs(height - obj.height) > 0.5;
       if (placed || scaled)
         elements = elements.map((el) =>
           el.id === obj.id ? ({ ...el, x: rect.x, y: rect.y, width, height } as Element) : el,
         );
       if (sized) {
-        blocks.push({ ...b, width, height });
+        blocks.push({ ...b, width: zoneWidth, height: zoneHeight });
         changed = true;
       } else blocks.push(b);
       if (placed || scaled) changed = true;
