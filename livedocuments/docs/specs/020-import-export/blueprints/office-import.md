@@ -214,10 +214,13 @@ IMPORT_IMAGE_MAX_SOURCE_BYTES)`, an over-cap read is `too-large`, any other read
 
 1. A blank tab whose first page becomes an article (`withPageKindChosen`), as Markdown import builds it; an empty
    document is one empty paragraph.
-2. Text width: the article page's width less twice `articleMarginPx(undefined)`.
+2. Text area: the article page's width and height, each less twice `articleMarginPx(undefined)`.
 3. Each picture block becomes an in-line object zone (`zone: 'object'`) sized to the picture (its extent, else
-   the stored image's size, else 320 x 240) scaled to at most the text width, each side clamped to
-   `ARTICLE_ZONE_MIN..ARTICLE_ZONE_MAX`, and an image element of exactly that box (`imageId` the stored id or
+   the stored image's size, else 320 x 240) scaled as one (`pictureZoneSize`): down to fit the text width, the
+   text height and `ARTICLE_ZONE_MAX`, and up, as far as those allow, until its shorter side reaches
+   `ARTICLE_ZONE_MIN`; only a picture too thin for both has a side clamped to
+   `ARTICLE_ZONE_MIN..ARTICLE_ZONE_MAX`. A zone never splits, so one taller than a page would run off it. An
+   image element of exactly that box (`imageId` the stored id or
    `null`, `naturalWidth/Height` when stored, `alt`, `aspectLocked: true`).
 4. **Parking** (D66): each zone's `at` is set on the article's first page at a slot left of it,
    `x = -(ARTICLE_ZONE_MAX + 400)`, `y = i * (ARTICLE_ZONE_MAX + 200)`, and its image sits exactly there. Slots
