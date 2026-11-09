@@ -267,9 +267,13 @@ holds for that person:
   Timeline event about them (its detail's `personId`), an action given to them on the Timeline (its detail's
   `assigneeId`), and a webhook delivery of an event they did or of an action given to them, keeps its row, naming
   `deleted` (no account or guest) in their place, with no name (an action's `assignee_name` or `assigner_name` too).
-  A Timeline event's own id is left as it is, even where it was made from their id (an edit, `ed:<item>:<person>:<day>`,
-  or an action given to them, `aa:…:<person>`): the id has already gone out to browsers, which dismiss events by it,
+  A Timeline event's own id is left as it is: the id has already gone out to browsers, which dismiss events by it,
   and to webhook receivers, as each delivery's `eventId` and its delivery header, the key they tell repeats apart by.
+  So an id made per person never holds the person's id: an edit's (`ed:<item>:<key>:<day>`) and an action given to
+  someone's (`aa:…:<key>`) carry a one-way key of them (the first 32 hex characters of SHA-256 of
+  `liveworkspace:timeline:v1:<person>`), the same every time, so a person's edits of a day still make one event. Ids
+  made before the key came in (`ed:<item>:<person>:<day>`, `aa:…:<person>`) stay as they are; on the day it came in,
+  a person editing an item on both sides of the deploy has two `edited` events that day, the old and the new.
 
 - **Told to each app**: their name is also in the content of items that outlive them (their comments,
   cards, assignments and edits), which only the item's app holds, and an app may keep something of theirs
