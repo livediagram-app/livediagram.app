@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { parseMermaid } from './mermaid';
 import { layoutClusteredGraph } from './auto-layout-clusters';
 import { isValidTab } from './validate';
@@ -47,10 +48,11 @@ describe('parseMermaid: state diagrams', () => {
 
   it('fails a long hyphenated line that is no transition quickly', () => {
     const hostile = 'stateDiagram-v2\n a' + ':::b-'.repeat(5000) + '- x';
-    const t0 = performance.now();
-    parseMermaid(hostile);
-    parseMermaid('stateDiagram-v2\n ' + 'a-'.repeat(20000) + '>');
-    expect(performance.now() - t0).toBeLessThan(1000);
+    const ms = cpuMsOf(() => {
+      parseMermaid(hostile);
+      parseMermaid('stateDiagram-v2\n ' + 'a-'.repeat(20000) + '>');
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(1000));
   });
 
   it('parses transitions, labels, and [*] start/end pseudo-states', () => {
