@@ -18,13 +18,16 @@ import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
-/** A file name safe on every platform: anything but letters, digits, dots, dashes and spaces becomes a dash. */
+/** A file name safe on every platform (docs/specs/020-import-export/export-fidelity.md "File names"): brackets
+ *  are dropped, anything else but letters, digits, dots, dashes and spaces becomes a dash, and no dash is left at
+ *  either end, so "Plan (v2)?" reads "Plan v2" and never "Plan -v2-". */
 export function sanitizeFilename(name: string): string {
   return name
+    .replace(/[()[\]{}]+/g, '')
     .replace(/[^A-Za-z0-9._\- ]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/^[-\s]+|[-\s]+$/g, '');
 }
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
