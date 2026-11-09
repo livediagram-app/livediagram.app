@@ -110,7 +110,9 @@ The same owner uploading the same bytes, in any app, gets the one image back (`d
 the hash of the file as picked. A JPEG loses its APPn and comment segments (Exif with its GPS and camera serial,
 XMP, maker notes) before it is stored, without re-encoding. Only what changes how it looks stays: its ICC colour
 profile (APP2), its Adobe colour transform (APP14) and its Exif Orientation, written back as an Exif segment of that
-one tag, so a phone's portrait photo still stands up. A malformed JPEG is refused (`415 malformed_jpeg`) rather than
+one tag, so a phone's portrait photo still stands up. The segments between a progressive JPEG's scans go the same
+way, and whatever follows its end of image (a phone's second picture with its own Exif and GPS, a motion photo's
+video) is dropped: only the first picture is shown. A malformed JPEG is refused (`415 malformed_jpeg`) rather than
 stored with what it should have lost. The row's insert repeats both caps inside the statement, so
 uploads racing each other can't together pass one; a refused insert deletes the bytes it just wrote and
 answers `gallery_full`, or `409 upload_conflict` when there is room again by then.
