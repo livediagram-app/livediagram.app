@@ -182,6 +182,10 @@ export type SettingsToggleRowSpec = RowBase & {
   // still meaning what they always did, so the dashboard's history stays
   // continuous across this rework.
   event: { category: TelemetryCategory; on: string; off: string };
+  // A tour's switch over its tracks (a mode's Watch It Built topics, Show Me's kinds): its nested rows stay offered
+  // while it is off, since each one is how a single track is offered again. A panel's Enable switch leaves it unset:
+  // a setting for a panel that is off has nothing to act on.
+  nestedWhileOff?: true;
 };
 
 export type SettingsChoiceRowSpec = RowBase & {
@@ -407,6 +411,7 @@ function tourTracksSwitch(
 ): SettingsToggleRowSpec {
   return {
     ...tourSwitch(key, row, section),
+    nestedWhileOff: true,
     read: owed,
     write: (p, v) => {
       if (!v) return { ...p, [key]: true, [tracksKey]: [...tracks] };
@@ -447,6 +452,7 @@ function watchRows(
     section,
     read: (p) => topicsOwed(p, mode).length > 0,
     write: (p, v) => setModeTopics(p, mode, !v),
+    nestedWhileOff: true,
   };
   return [
     parent,
@@ -1450,7 +1456,9 @@ function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
 
 // A row nested under a switch (`parent`) is offered only while that switch is
 // on, when the live preferences are known. One rule for every nested row, so
-// a new panel's rows follow its Enable switch with no extra wiring.
+// a new panel's rows follow its Enable switch with no extra wiring. A tour's
+// switch (`nestedWhileOff`) keeps its tracks offered when off: each one offers
+// its track again.
 function parentSwitchOn(
   category: SettingsCategorySpec,
   row: SettingsRowSpec,
@@ -1458,7 +1466,7 @@ function parentSwitchOn(
 ): boolean {
   if (!row.parent || !preferences) return true;
   const parent = category.rows.find((r) => r.key === row.parent);
-  return parent?.kind !== 'toggle' || parent.read(preferences);
+  return parent?.kind !== 'toggle' || !!parent.nestedWhileOff || parent.read(preferences);
 }
 
 // A category's name as a path from the top level: "Account › Notifications" for a

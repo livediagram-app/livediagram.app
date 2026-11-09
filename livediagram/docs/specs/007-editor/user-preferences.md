@@ -644,7 +644,9 @@ and the dialog stays as the one complete, browsable index of them.
   "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
   switches in the data model). The panel's other rows nest beneath the
   switch (`parent`) and are offered only while it is on: a setting for a
-  panel you have turned off has nothing to act on. The Map's switch keeps its stored key
+  panel you have turned off has nothing to act on. A tour's switch over its tracks (a mode's Watch It Built topics,
+  Show Me's kinds) is the exception (`nestedWhileOff`): its nested switches stay offered while it is off, since each
+  one offers its track again. The Map's switch keeps its stored key
   (`showMinimap`) and its telemetry tokens, only its label changed. A parent's sub-categories follow it directly in the catalogue. In the
   list the parent is an **accordion**: its sub-categories sit indented beneath
   it only while it is expanded, so they do not take up the list all the time.
