@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react';
+import { Fragment, type ReactElement, type ReactNode } from 'react';
 import type { TemplateKind } from '@livedesign/templates';
 import {
   LOGO_EXPLORATIONS,
@@ -347,9 +347,11 @@ function ScreenGlyph({ b, glyph, at }: { b: Box; glyph: Glyph; at: number }) {
         <g>
           {line(x, y, w * 0.85, t * 1.6, INK)}
           <rect x={x} y={y + t * 3} width={w} height={h * 0.3} rx={t} fill={PIC} {...lit(at)} />
-          {[0, 1, 2, 3].map((i) =>
-            line(x, y + t * 4 + h * 0.3 + i * t * 2, i === 3 ? w * 0.6 : w, t),
-          )}
+          {[0, 1, 2, 3].map((i) => (
+            <Fragment key={i}>
+              {line(x, y + t * 4 + h * 0.3 + i * t * 2, i === 3 ? w * 0.6 : w, t)}
+            </Fragment>
+          ))}
         </g>
       );
     case 'pass':
