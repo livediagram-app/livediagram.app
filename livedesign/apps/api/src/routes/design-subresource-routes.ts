@@ -21,6 +21,7 @@ import { handleTabRender } from './tab-render-route';
 import { handleTabLink } from './tab-link-route';
 import {
   COMMUNITY_CONTENT,
+  deniedEdit,
   deniedOnTab,
   gateEdit,
   gateGrant,
@@ -88,7 +89,7 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
       if (!saving) return missingDesign(ctx, id);
       // Owner or edit-role share visitor only, and a tab-scoped visitor on their own tab only.
       const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
-      if (!allowed) return forbidden();
+      if (!allowed) return deniedEdit(ctx, id, tabId);
       return handleTabPut(ctx, saving, tabId, owner);
     }
     const existing = await getDesign(env, id);
@@ -135,7 +136,7 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
     // Writes below: owner or edit-role share visitor only, and a tab-scoped
     // visitor on their own tab only.
     const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
-    if (!allowed) return forbidden();
+    if (!allowed) return deniedEdit(ctx, id, tabId);
     if (request.method === 'DELETE') {
       // A tab-scoped link can't delete the tab it is scoped to: that would
       // end its own link, and the design's structure isn't the visitor's.

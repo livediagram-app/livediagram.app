@@ -16,7 +16,7 @@ import { redactCommentAuthorIds } from '../comments';
 import { getChangeset, getChangesetPart, getDesign, listChangesets } from '../db';
 import { getParticipant } from '../accounts/profiles';
 import type { ChangesetRecord } from '../db';
-import { forbidden, json, notFound } from '../responses';
+import { json, notFound } from '../responses';
 import { personTagFor } from '../person-tag';
 import { refreshAgentPresence } from '../room-client';
 import { agentPresenceStamps } from '@liveworkspace/api-kit/agent-presence-stamps';
@@ -28,6 +28,7 @@ import { submitChangeset, type SubmitResult } from '../changesets/submit';
 import type { Author } from '../changesets/write';
 import type { DesignDTO } from '../types';
 import {
+  deniedEdit,
   gateEdit,
   gateGrant,
   gateRead,
@@ -77,7 +78,8 @@ async function handleSubmit(
   tabId: string,
   owner: string,
 ): Promise<Response> {
-  if (!(await gateEdit(ctx, design.id, design.ownerId, design.teamId, tabId))) return forbidden();
+  if (!(await gateEdit(ctx, design.id, design.ownerId, design.teamId, tabId)))
+    return deniedEdit(ctx, design.id, tabId);
   // A tab-scoped grant writes its own tab and never makes one (docs/specs/013-workspace/tab-scoped-share-links.md):
   // its tab gone reads as missing, so a `replace` cannot bring it back under a name of the caller's choosing.
   const scoped = (grantOn(ctx, design.id)?.tabScope ?? null) !== null;
@@ -151,7 +153,7 @@ async function handleRevert(
   owner: string,
 ): Promise<Response> {
   if (!(await gateEdit(ctx, design.id, design.ownerId, design.teamId, record.tabId))) {
-    return forbidden();
+    return deniedEdit(ctx, design.id, record.tabId);
   }
   const author = await authorOf(ctx, owner);
   const result = await revertChangeset({
