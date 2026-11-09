@@ -103,15 +103,15 @@ RETURNING`; then expiry, the nonce cookie's hash against `bindHash` (`sameSecret
 
 ## Data and persistence
 
-| Table                | Key         | Indexes                               | Written by                                                | Read by                          |
-| -------------------- | ----------- | ------------------------------------- | --------------------------------------------------------- | -------------------------------- |
-| `user`               | `id`        | `email` unique                        | Better Auth; `withNames`; picture store; bench accounts   | everything                       |
-| `session`            | `id`        | `token` unique; `session_userId_idx`  | Better Auth                                               | every session door; the hand-off |
-| `account`            | `id`        | `account_userId_idx`                  | Better Auth (Google)                                      | the picture hook                 |
-| `verification`       | `id`        | `verification_identifier_idx`         | the email OTP plugin                                      | the email OTP plugin             |
-| `jwks`               | `id`        |                                       | the jwt plugin (keys encrypted with `BETTER_AUTH_SECRET`) | signing; `/api/auth/jwks`        |
-| `sign_in_handoff`    | `tokenHash` | `sign_in_handoff_expires (expiresAt)` | `handoff/start`                                           | `handoff`                        |
-| `sign_in_code_limit` | `emailHash` | `sign_in_code_limit_window`           | the code routes; the hourly sweep                         | the code routes                  |
+| Table                | Key         | Indexes                                                                             | Written by                                                | Read by                                      |
+| -------------------- | ----------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------- |
+| `user`               | `id`        | `email` unique                                                                      | Better Auth; `withNames`; picture store; bench accounts   | everything                                   |
+| `session`            | `id`        | `token` unique; `session_userId_idx`                                                | Better Auth                                               | every session door; the hand-off             |
+| `account`            | `id`        | `account_userId_idx`; `account_provider_account_idx (providerId, accountId)` (0021) | Better Auth (Google)                                      | the picture hook; a Google sign-in's account |
+| `verification`       | `id`        | `verification_identifier_idx`                                                       | the email OTP plugin                                      | the email OTP plugin                         |
+| `jwks`               | `id`        |                                                                                     | the jwt plugin (keys encrypted with `BETTER_AUTH_SECRET`) | signing; `/api/auth/jwks`                    |
+| `sign_in_handoff`    | `tokenHash` | `sign_in_handoff_expires (expiresAt)`                                               | `handoff/start`                                           | `handoff`                                    |
+| `sign_in_code_limit` | `emailHash` | `sign_in_code_limit_window`                                                         | the code routes; the hourly sweep                         | the code routes                              |
 
 `sign_in_handoff.sessionId` references `session (id) ON DELETE CASCADE`; `usedAt` set once. Deleting a user cascades
 its sessions and accounts.
