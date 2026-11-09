@@ -10,7 +10,7 @@ vi.mock('../index-service', async (importOriginal) => ({
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
-// A token may not delete a document's last tab (docs/specs/015-api/mcp-server.md). The count was read before the
+// A token may not delete a document's last tab (docs/specs/006-document/per-tab-storage.md). The count was read before the
 // gates' awaits, so two token deletes sent at once each saw two tabs and together left the document with none.
 
 type Opts = Parameters<typeof makeTestRouteContext>[2];
