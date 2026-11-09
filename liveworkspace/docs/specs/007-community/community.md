@@ -260,7 +260,8 @@ community key as `X-Community-Key`, never an owner id.
 Reads are open to any page (`Access-Control-Allow-Origin: *`). Writes from a browser are answered
 with CORS only for an app's own origins (its site in `@liveworkspace/sites`, with and without `www.`,
 and its staging; and localhost in development), so another site's page can't like or report through a
-visitor's browser. Likes and reports are rate-limited per network (30 a minute; IPv4 /24, IPv6 /56).
+visitor's browser. Likes and reports are rate-limited per network (30 a minute; IPv4 /24, IPv6 /56, an
+IPv4-mapped IPv6 address as its IPv4 /24).
 
 ### App routes
 
@@ -285,7 +286,8 @@ document, signed in, and the document may be published (not empty, not a team li
 password). The service checks the rest: the input, at most 50 posts per owner per app
 (`post_limit`, held inside the insert so publishes at once can't pass it together), one post per document (`already_published`), a hidden post is final (`post_hidden`).
 A post made by a document's previous owner is not the new owner's, and publishing replaces it, unless it was hidden
-after reports: that stays final for whoever owns the document (`post_hidden`).
+after reports: that stays final for whoever owns the document (`post_hidden`). The old post goes in the new one's
+own write, so a publish that fails or is refused leaves it as it was.
 
 `copier` is a one-way hash the app makes of the person (a guest's owner id is its credential, so it
 never leaves the app). `ip` is only ever stored as a hash of its network salted with the post id.

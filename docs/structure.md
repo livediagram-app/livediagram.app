@@ -440,7 +440,7 @@ Each step is its own PR, and both products build and pass their tests after ever
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:
      - `api-kit`: the api Workers' responses and CORS (each product's `responses.ts` binds its
-       extra headers and keeps its own answers), rate-limit keys (an IPv6 caller by its /64), link
+       extra headers and keeps its own answers), rate-limit keys (an IPv6 caller by its /64, an IPv4-mapped one by its IPv4 address), link
        unfurls, the refusal log and the `cloudflare:workers` test shim, plus the protocol helpers
        their `api-schema`s re-export (bearer and loopback reads, base64, the API-token shape, OAuth
        device codes and PKCE).

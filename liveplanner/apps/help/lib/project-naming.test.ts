@@ -52,6 +52,9 @@ const sharedCommunity = (line: string, file: string) =>
 const OTHER_APP_ITEMS =
   /canvas(es)?, plans?,? documents?(?: and designs?|, designs? and spaces?)|livediagram(\.app)? document/;
 
+// Google Docs' own address for a Doc (`docs.google.com/document/…`), which the embed element recognises.
+const GOOGLE_DOCS_PATH = /docs\.google\.com\/(\{[\w,]*)?\bdocument\b/;
+
 // Search words for the page element, so someone typing "document" in the palette still finds it.
 const PAGE_SEARCH_WORDS = /^\s*page: '[^']*\bdocument\b[^']*',$/;
 
@@ -76,6 +79,7 @@ const misnames = (line: string, file = '') =>
   !sharedCommunity(line, file) &&
   !OTHER_APP_ITEMS.test(line) &&
   !OTHER_APP_PATHS.test(line) &&
+  !GOOGLE_DOCS_PATH.test(line) &&
   !RULE.test(line);
 
 function scannedFiles(): string[] {
@@ -110,6 +114,7 @@ describe('a project is never called a document', () => {
     expect(flagged("fireEvent.keyDown(document, { key: 'Escape' });")).toBe(false);
     expect(flagged("  | 'document'")).toBe(false);
     expect(flagged("  page: 'file document paper doc',")).toBe(false);
+    expect(flagged('| `docs.google.com/{document,spreadsheets,presentation}/…` |')).toBe(false);
     expect(flagged('Open the document from Explorer.')).toBe(true);
     expect(flagged('const documents = await listDocuments();')).toBe(true);
     expect(flagged('const id = row.documentId;')).toBe(true);

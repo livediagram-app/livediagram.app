@@ -33,6 +33,8 @@ export function InviteLinkDialog({
   // place (Copy once it's on, Turn On Link once it's off) rather than dropping to the dialog's top.
   const copyRef = useRef<HTMLButtonElement>(null);
   const turnOnRef = useRef<HTMLButtonElement>(null);
+  // Set only while a press here is turning the link on or off: a change that fails, or New Link (which leaves it on),
+  // clears it, so a later change from elsewhere (another admin, a refresh) never moves the keyboard.
   const changed = useRef(false);
   const on = link !== null;
   useEffect(() => {
@@ -41,13 +43,16 @@ export function InviteLinkDialog({
     (on ? copyRef : turnOnRef).current?.focus();
   }, [on]);
 
-  async function change(run: () => Promise<TeamResult<unknown>>) {
-    changed.current = true;
+  async function change(run: () => Promise<TeamResult<unknown>>, turnsOn: boolean) {
+    changed.current = turnsOn !== on;
     setBusy(true);
     setError(null);
     setCopied(false);
     const result = await run();
-    if (!result.ok) setError(teamErrorMessage(result.error));
+    if (!result.ok) {
+      changed.current = false;
+      setError(teamErrorMessage(result.error));
+    }
     setBusy(false);
   }
 
@@ -104,7 +109,7 @@ export function InviteLinkDialog({
             ) : null}
           </>
         ) : (
-          <Button ref={turnOnRef} size="sm" busy={busy} onClick={() => void change(onReset)}>
+          <Button ref={turnOnRef} size="sm" busy={busy} onClick={() => void change(onReset, true)}>
             Turn On Link
           </Button>
         )}
@@ -122,11 +127,16 @@ export function InviteLinkDialog({
               size="sm"
               // Keeps the keyboard while it works (busy-buttons.md): disabled, it dropped to the dialog's top.
               busy={busy}
-              onClick={() => void change(onClear)}
+              onClick={() => void change(onClear, false)}
             >
               Turn Off
             </Button>
-            <Button variant="secondary" size="sm" busy={busy} onClick={() => void change(onReset)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              busy={busy}
+              onClick={() => void change(onReset, true)}
+            >
               New Link
             </Button>
           </>

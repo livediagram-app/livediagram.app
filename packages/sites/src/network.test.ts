@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { addressRange, expandIpv6, trustedClientAddress, visitorAddress } from './network';
+import {
+  addressRange,
+  expandIpv6,
+  trustedClientAddress,
+  unmappedAddress,
+  visitorAddress,
+} from './network';
 import {
   WORKSPACE_CLIENT_IP_HEADER,
   WORKSPACE_PROXY_HEADER,
@@ -94,6 +100,11 @@ describe('addressRange', () => {
     expect(addressRange('unknown')).toBe('unknown');
   });
 
+  it('ranges an IPv4-mapped IPv6 address as its IPv4 address', () => {
+    expect(addressRange('::ffff:203.0.113.7')).toBe('203.0.113.0/24');
+    expect(addressRange('::ffff:198.51.100.7')).toBe('198.51.100.0/24');
+  });
+
   it('reads an IPv4 tail', () => {
     expect(expandIpv6('::ffff:192.0.2.1')).toEqual([
       '0000',
@@ -106,5 +117,21 @@ describe('addressRange', () => {
       '0201',
     ]);
     expect(expandIpv6('1::2::3')).toBeNull();
+  });
+});
+
+describe('unmappedAddress', () => {
+  it('turns an IPv4-mapped IPv6 address back into IPv4, in either notation', () => {
+    expect(unmappedAddress('::ffff:192.0.2.1')).toBe('192.0.2.1');
+    expect(unmappedAddress(' ::FFFF:c000:0201 ')).toBe('192.0.2.1');
+    expect(unmappedAddress('0:0:0:0:0:ffff:ffff:ffff')).toBe('255.255.255.255');
+  });
+
+  it('leaves every other address as it is, trimmed', () => {
+    expect(unmappedAddress(' 192.0.2.1 ')).toBe('192.0.2.1');
+    expect(unmappedAddress('::1')).toBe('::1');
+    expect(unmappedAddress('::ffff:0:0:1')).toBe('::ffff:0:0:1');
+    expect(unmappedAddress('1::ffff:192.0.2.1')).toBe('1::ffff:192.0.2.1');
+    expect(unmappedAddress('unknown')).toBe('unknown');
   });
 });

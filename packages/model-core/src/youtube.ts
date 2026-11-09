@@ -143,7 +143,12 @@ export type EmbedTarget = {
   label: string;
 };
 
-const VIMEO_ID = /^\/(?:video\/)?(\d{6,})/;
+// A Vimeo video's id, wherever its page puts it: `/<id>`, the player's `/video/<id>`, a channel's
+// `/channels/<name>/<id>` or a group's `/groups/<name>/videos/<id>`. An unlisted video's link carries its
+// privacy hash after the id (`/<id>/<hash>`, or the player's `?h=`), and its player refuses to play without it.
+const VIMEO_ID =
+  /^\/(?:video\/|channels\/[^/]+\/|groups\/[^/]+\/videos\/)?(\d{6,})(?:\/([0-9a-f]{6,})(?=\/|$))?/i;
+const VIMEO_HASH = /^[0-9a-f]{6,}$/i;
 const LOOM_ID = /^\/(?:share|embed)\/([A-Za-z0-9]{16,})/;
 
 /**
@@ -188,13 +193,14 @@ function embedTargetOf(url: string | undefined | null, figmaEmbed: string): Embe
 
   if (host === 'vimeo.com' || host === 'player.vimeo.com') {
     const m = VIMEO_ID.exec(path);
-    if (m)
-      return {
-        provider: 'vimeo',
-        embedUrl: `https://player.vimeo.com/video/${m[1]}`,
-        label: 'Vimeo',
-      };
-    return null;
+    if (!m) return null;
+    const query = parsed.searchParams.get('h');
+    const hash = m[2] ?? (query && VIMEO_HASH.test(query) ? query : null);
+    return {
+      provider: 'vimeo',
+      embedUrl: `https://player.vimeo.com/video/${m[1]}${hash ? `?h=${hash}` : ''}`,
+      label: 'Vimeo',
+    };
   }
   if (host === 'loom.com') {
     const m = LOOM_ID.exec(path);
@@ -214,11 +220,16 @@ function embedTargetOf(url: string | undefined | null, figmaEmbed: string): Embe
   }
   if (host === 'docs.google.com') {
     // /edit -> /preview is the documented read-only embed form for Docs,
-    // Sheets and Slides alike.
+    // Sheets and Slides alike. A link to the file itself (`/d/<id>`, with or
+    // without a trailing slash) or to presenting it gets the same: as it is,
+    // Google refuses to be framed and the card comes up blank.
     if (!/^\/(document|spreadsheets|presentation)\//.test(path)) return null;
+    const file = /^(.*\/d\/[A-Za-z0-9_-]+)\/?(?:present\/?)?$/.exec(path);
     return {
       provider: 'gdocs',
-      embedUrl: parsed.toString().replace(/\/(edit|view)(\?|#|$).*$/, '/preview'),
+      embedUrl: file
+        ? `${parsed.origin}${file[1]}/preview`
+        : parsed.toString().replace(/\/(edit|view)(\?|#|$).*$/, '/preview'),
       label: 'Google Docs',
     };
   }

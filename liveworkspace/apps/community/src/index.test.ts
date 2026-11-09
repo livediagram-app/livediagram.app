@@ -231,6 +231,36 @@ describe('the app routes', () => {
     expect(second.post!.id).not.toBe(first.post!.id);
   });
 
+  it("keep a previous owner's post when the publish replacing it fails", async () => {
+    const first = await publish();
+    const d1 = db.env.COMMUNITY_DB;
+    const failing = new Proxy(d1, {
+      get(target, key) {
+        if (key === 'batch') return async () => Promise.reject(new Error('D1_ERROR: network lost'));
+        const value = Reflect.get(target, key) as unknown;
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const failed = await call(
+      '/app/documents/d1',
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: 'Bearer ld-key',
+          'X-Community-App': 'livediagram.app',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(publishing({ owner: 'user_heir', shareCode: 'CODE2' })),
+      },
+      { ...db.env, COMMUNITY_DB: failing },
+    );
+    expect(failed.status).toBeGreaterThanOrEqual(500);
+    expect(db.sql.prepare('SELECT id, owner FROM posts').all()).toEqual([
+      { id: first.post!.id, owner: 'user_author' },
+    ]);
+  });
+
   it('never edit or remove a post hidden after reports', async () => {
     await publish();
     db.sql.prepare("UPDATE posts SET state = 'hidden', hidden_at = 5").run();

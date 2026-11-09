@@ -200,14 +200,10 @@ async function publish(
     return conflict('post_limit');
   }
   // A post its document's previous owner made (the document left a team library for another
-  // member's) is not this owner's: publishing replaces it.
-  if (found) {
-    await deletePost(env, found.id);
-    console.log('[community] replaced a previous owner post', { app, postId: found.id });
-  }
+  // member's) is not this owner's: publishing replaces it, in the insert's own batch, so it stays should that fail.
   let postId: string | null;
   try {
-    postId = await createPost(env, app, document, input);
+    postId = await createPost(env, app, document, input, Date.now(), found?.id);
   } catch (err) {
     // Two first publishes of one document at once: the second meets the one-post-per-document rule.
     if (String(err).includes('UNIQUE')) return conflict('already_published');
@@ -215,6 +211,7 @@ async function publish(
   }
   // Refused at the cap inside the insert: another publish took the last place since the count above.
   if (postId === null) return conflict('post_limit');
+  if (found) console.log('[community] replaced a previous owner post', { app, postId: found.id });
   console.log('[community] published', { app, postId, category: input.input.category });
   const row = await getPostForDocument(env, app, document);
   return json({ post: appPost(row!, input.owner) }, { status: 201 });

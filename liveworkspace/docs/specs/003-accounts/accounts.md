@@ -135,7 +135,7 @@ who opens it sees the team's name and joins as a member with one click.
   off, expired or unknown token is `404 invite_not_found`.
 
 The two doors that need no session, the join preview and the Decline link, are limited per network
-(`TEAM_LINK_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /48).
+(`TEAM_LINK_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /48; an IPv4-mapped IPv6 address counts as its IPv4 /24).
 
 Rows are never deleted. Leaving or being removed makes a row `removed`; deleting a team stamps
 `deletedAt`. Every write takes the next number from one counter (`team_seq`) in the same batch, and
@@ -1287,8 +1287,10 @@ The account is closed whatever the index answers. A request it doesn't take (an 
 `INDEX_URL` or `INDEX_MERGE_KEY` unset) stays in `pending_purges` with its attempts and last error, and
 the Worker's cron sends it again every 15 minutes (`*/15 * * * *`, 25 a run, the longest-waiting first)
 until it lands. The cron sends only a request whose user is gone: one whose closing stopped before step 4 waits for
-the person to try again, and is never sent while they can still sign in. Each failure is logged, as an error from the
-third on. The index's purge is idempotent, so a request sent twice does no harm.
+the person to try again, and is never sent while they can still sign in. Such a request waits 30 days
+(`STALE_PURGE_DAYS`) from its first try; then the cron drops it (logged with how many teams it named), so closings
+nobody finished can't pile up. A later close records a new one, naming only the teams it closes itself. Each failure
+is logged, as an error from the third on. The index's purge is idempotent, so a request sent twice does no harm.
 
 ## Which app a client is
 
