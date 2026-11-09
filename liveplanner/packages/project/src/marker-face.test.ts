@@ -323,3 +323,42 @@ describe('a face’s budget', () => {
     ).toBeNull();
   });
 });
+
+// The face-finish pass writes these parts straight into the DOM through trustedHtml, unsanitised (its hot path; the
+// Trusted Types spec's "The sanitiser"), so every colour it places is escaped: a colour that tries to close its
+// attribute or open an element stays text inside the attribute.
+describe('a hostile colour', () => {
+  const hostile = [
+    'red" onload="alert(1)',
+    "red' onload='alert(1)",
+    '#000"><img src=x onerror=alert(1)>',
+    'rgb(1,2,3)</g><script>alert(1)</script>',
+    'blue&quot; onclick=&quot;alert(1)',
+  ];
+  const band = { kind: 'rect', x: 10, y: 10, width: 300, height: 40, rx: 0 } as const;
+  const disc = { kind: 'ellipse', cx: 200, cy: 150, rx: 120, ry: 90 } as const;
+  const points = [
+    { x: 0, y: 80 },
+    { x: 200, y: 60 },
+  ];
+  const line = { kind: 'polyline', points } as const;
+  // The part with every attribute value emptied: only <g> and <path> tags, and attribute names that are no event
+  // handler, may be left, so
+  // nothing broke out of a value. A value itself holds no raw quote, angle bracket or bare ampersand.
+  const SHAPE = /^(?:<\/?(?:g|path)(?: (?!on)[a-z-]+="")*\/?>)+$/;
+  const RAW_IN_VALUE = /="[^"]*(?:<|>|&(?!amp;|lt;|gt;|quot;|#39;))[^"]*"/;
+
+  it.each(hostile)('stays text in a marker or sketch part: %s', (colour) => {
+    const parts = [
+      markerFacePart(line, paint({ fill: 'none', stroke: colour, strokePx: 2 }), face, 1, 0),
+      markerFacePart(band, paint({ fill: colour }), face, 1, 1),
+      markerFacePart(band, paint({ fill: '#38bdf8', stroke: colour, strokePx: 2 }), face, 1, 2),
+      sketchFacePart(disc, paint({ fill: '#bae6fd', stroke: colour, strokePx: 2 }), face, 1, 3),
+    ].filter((p) => p !== null);
+    expect(parts.length).toBeGreaterThan(0);
+    for (const { svg } of parts) {
+      expect(svg.replace(/="[^"]*"/g, '=""')).toMatch(SHAPE);
+      expect(svg).not.toMatch(RAW_IN_VALUE);
+    }
+  });
+});

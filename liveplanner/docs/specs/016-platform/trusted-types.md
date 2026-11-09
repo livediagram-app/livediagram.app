@@ -66,7 +66,7 @@ sanitised before any sink shows it.
 - **`sanitizedHtml(markup, profile)`** (`@liveworkspace/trusted-types/sanitize`) runs it through DOMPurify, in an
   instance of our own with our rules, and mints the result through `liveworkspace-markup`, so no header names another
   policy. DOMPurify parses through the same policy and creates none of its own.
-- **Every sink of a document's drawing goes through it**: the export preview, the split view's other pane, the Move to Layer thumbnails, and a sequence diagram's face.
+- **Every sink of a plan's drawing goes through it**: the export preview, the split view's other pane, the Move to Layer thumbnails, and a sequence diagram's face.
 - **Profiles**: `svg`, a whole drawing set into an HTML element; `svg-content`, an `<svg>`'s or `<g>`'s children,
   sanitised inside an `<svg>` so they parse as SVG; `document`, a whole page for an iframe's `srcdoc`.
 - **What it removes**: `<script>`, every event handler, `javascript:` and every other scheme but http(s), mailto, tel

@@ -4,7 +4,7 @@ import { buildTemplateTab, TEMPLATES } from '@liveplanner/templates';
 import { sanitizeMarkup } from '@liveworkspace/trusted-types/sanitize';
 import { renderTabToSvg } from './export-tab';
 
-// A document's drawing goes through the sanitiser before any sink shows it (docs/specs/016-platform/trusted-types.md
+// A plan's drawing goes through the sanitiser before any sink shows it (docs/specs/016-platform/trusted-types.md
 // "The sanitiser"), so the sanitiser must leave every real drawing exactly as it was: each template, rendered as the
 // export preview and the split view render it, parses to the same DOM before and after, whole (set into a <div>)
 // and as an <svg>'s children (the thumbnails).

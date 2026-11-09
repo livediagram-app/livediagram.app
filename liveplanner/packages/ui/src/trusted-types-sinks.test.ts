@@ -10,7 +10,7 @@ describeTrustedTypesSinks({
   csp: TRUSTED_TYPES_CSP,
   // Static or builder markup, fed through the trustedHtml escape hatch unsanitised (catalogue icons and stickers,
   // a look's sample preview, the face-finish ink from geometry and stored colours that dropUnsafeColours checked).
-  // Everything else (a document's drawing, a thumbnail, an export preview) goes through sanitizedHtml.
+  // Everything else (a plan's drawing, a thumbnail, an export preview) goes through sanitizedHtml.
   builderMarkup: [
     'apps/editor/components/canvas/marker-grid-rules.ts',
     'apps/editor/components/canvas/useFaceFinishPass.ts',

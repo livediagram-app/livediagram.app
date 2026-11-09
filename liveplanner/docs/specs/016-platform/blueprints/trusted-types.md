@@ -19,17 +19,17 @@ Derived from [Trusted Types](../trusted-types.md).
 
 ## Modules
 
-| File                                                                               | Responsibility                                                                                                                                  |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/ui/src/trusted-types-csp.ts`                                             | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                                     |
-| `packages/ui/src/trusted-types.ts`                                                 | `trustedHtml`, `isAllowedScriptUrl`, `trustedTypesBootScript`; exported from `@liveplanner/ui` and `@liveplanner/ui/trusted-types`              |
-| `apps/*/app/layout.tsx` (all four)                                                 | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix), first in `<head>`; help and telemetry gain a `<head>` for it                       |
-| `apps/editor/src/worker.ts`                                                        | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                                         |
-| `apps/{marketing,help,telemetry}/public/_headers`                                  | The same header on `/*`                                                                                                                         |
-| `scripts/e2e-stack.mjs`                                                            | Sends the header on every HTML response, as production does                                                                                     |
-| `@liveworkspace/trusted-types/sanitize` (`packages/trusted-types/src/sanitize.ts`) | `sanitizedHtml`, `sanitizeMarkup`, the cache; DOMPurify in its own instance                                                                     |
-| Every `dangerouslySetInnerHTML` site                                               | `__html: sanitizedHtml(markup, profile)` for a document's drawing; `__html: trustedHtml(markup)` in a layout and the builder-markup files alone |
-| Every `innerHTML`, `outerHTML` or `insertAdjacentHTML` write                       | `el.innerHTML = trustedHtml(markup) as string` (`useFaceFinishPass.ts`, the Marker and Sketch face ink)                                         |
+| File                                                                               | Responsibility                                                                                                                              |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/ui/src/trusted-types-csp.ts`                                             | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                                 |
+| `packages/ui/src/trusted-types.ts`                                                 | `trustedHtml`, `isAllowedScriptUrl`, `trustedTypesBootScript`; exported from `@liveplanner/ui` and `@liveplanner/ui/trusted-types`          |
+| `apps/*/app/layout.tsx` (all four)                                                 | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix), first in `<head>`; help and telemetry gain a `<head>` for it                   |
+| `apps/editor/src/worker.ts`                                                        | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                                     |
+| `apps/{marketing,help,telemetry}/public/_headers`                                  | The same header on `/*`                                                                                                                     |
+| `scripts/e2e-stack.mjs`                                                            | Sends the header on every HTML response, as production does                                                                                 |
+| `@liveworkspace/trusted-types/sanitize` (`packages/trusted-types/src/sanitize.ts`) | `sanitizedHtml`, `sanitizeMarkup`, the cache; DOMPurify in its own instance                                                                 |
+| Every `dangerouslySetInnerHTML` site                                               | `__html: sanitizedHtml(markup, profile)` for a plan's drawing; `__html: trustedHtml(markup)` in a layout and the builder-markup files alone |
+| Every `innerHTML`, `outerHTML` or `insertAdjacentHTML` write                       | `el.innerHTML = trustedHtml(markup) as string` (`useFaceFinishPass.ts`, the Marker and Sketch face ink)                                     |
 
 ## Behaviour and state
 
@@ -141,7 +141,7 @@ export function trustedTypesBootScript(assetPrefix: string, origins?: readonly s
 ## Security and trust
 
 - `trustedHtml` and `sanitizedHtml` are the only paths to `TrustedHTML` for markup. `trustedHtml`'s callers are the
-  layouts and the escaping builders listed as builder markup; every other sink, and every sink of a document's
+  layouts and the escaping builders listed as builder markup; every other sink, and every sink of a plan's
   drawing, goes through `sanitizedHtml`. The sinks test holds both: a new `trustedHtml` call outside the list fails it,
   and so does a listed file that no longer calls it. No file is parsed with `DOMParser`, which no policy lets through.
 - The default policy allows script URLs only: this app's own `/_next/`, named origins, and same-origin `blob:` for a
