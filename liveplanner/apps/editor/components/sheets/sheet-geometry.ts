@@ -118,8 +118,14 @@ export function cellBox(
   scroll: { top: number; left: number },
   span: GridRange | null = null,
 ): { x: number; y: number; w: number; h: number } {
-  const r2 = span ? span.r2 : r;
-  const c2 = span ? span.c2 : c;
+  // Held to the grid: a selection can name rows a moment before the layout that adds them renders (a paste that
+  // grows the sheet sets it in the same event), and a box past the end has no edges (NaN, refused as a style).
+  const lastR = g.rows.length - 2;
+  const lastC = g.cols.length - 2;
+  r = Math.max(0, Math.min(r, lastR));
+  c = Math.max(0, Math.min(c, lastC));
+  const r2 = Math.max(r, Math.min(span ? span.r2 : r, lastR));
+  const c2 = Math.max(c, Math.min(span ? span.c2 : c, lastC));
   const y0 = g.rows[r]!;
   const x0 = g.cols[c]!;
   const y = r < g.frozenRows ? y0 : y0 - scroll.top;
