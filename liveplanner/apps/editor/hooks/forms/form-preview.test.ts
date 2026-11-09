@@ -5,6 +5,7 @@ import {
   PREVIEW_FAILED,
   PREVIEW_NO_DESTINATION,
   PREVIEW_NO_SHEET,
+  PREVIEW_SHEET_OFFLINE,
   sendPreview,
 } from './form-preview';
 
@@ -120,6 +121,21 @@ describe('sendPreview', () => {
     const { made, result } = send({ form: toSheet });
     expect(await result).toEqual({ kind: 'failed', message: PREVIEW_FAILED });
     expect(made).toEqual([]);
+  });
+
+  // A plan only in this browser: the api has no copy to write the row to, so trying again could never work.
+  it('says a Sheet form’s preview needs the plan synced when it is only in this browser', async () => {
+    const toSheet = { ...form, sheet: { tabId: 'st', sheetId: 'AAAAAAAAAAA1' } };
+    const sendToLink = vi.fn(async () => ({ kind: 'failed' as const }));
+    expect(await send({ form: toSheet, offline: true, sendToLink }).result).toEqual({
+      kind: 'failed',
+      message: PREVIEW_SHEET_OFFLINE,
+    });
+    expect(sendToLink).not.toHaveBeenCalled();
+    // A board form there still makes its card in the editor.
+    const { made, result } = send({ offline: true, sendToLink });
+    expect(await result).toEqual({ kind: 'sent' });
+    expect(made).toHaveLength(1);
   });
 
   // A Sheet tab deleted under the form: the row would land nowhere anyone sees.
