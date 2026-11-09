@@ -10,7 +10,15 @@ import {
   MAX_ARTICLE_CELL_TEXT,
 } from '@livedocuments/document';
 
-export type ArticleCap = 'blocks' | 'text' | 'cell';
+import type { ArticleCap } from './article-caps-notice';
+
+// The notice and its toast live in the light module the editor imports as it mounts.
+export {
+  ARTICLE_CAP_NOTICE,
+  announceArticleCap,
+  setArticleCapsToast,
+  type ArticleCap,
+} from './article-caps-notice';
 
 const isCell = (n: PMNode) => n.type.name === 'table_cell' || n.type.name === 'table_header';
 
@@ -77,12 +85,6 @@ export function capPassed(tr: Transaction): ArticleCap | null {
   return null;
 }
 
-export const ARTICLE_CAP_NOTICE: Record<ArticleCap, string> = {
-  blocks: `An article holds at most ${MAX_ARTICLE_BLOCKS.toLocaleString('en-GB')} blocks.`,
-  text: `A paragraph holds at most ${MAX_ARTICLE_BLOCK_TEXT.toLocaleString('en-GB')} characters.`,
-  cell: `A table cell holds at most ${MAX_ARTICLE_CELL_TEXT.toLocaleString('en-GB')} characters.`,
-};
-
 /** Refuses a local edit past a cap, telling `onRefused`. A peer's writing (`article-remote`) and the
  *  editor's own replacing of the content from the stored form are never refused. */
 export function articleCapsPlugin(onRefused: (cap: ArticleCap, tr: Transaction) => void): Plugin {
@@ -96,21 +98,4 @@ export function articleCapsPlugin(onRefused: (cap: ArticleCap, tr: Transaction) 
       return false;
     },
   });
-}
-
-// One notice per stretch of refused edits, not one per key held down.
-const NOTICE_GAP_MS = 2500;
-let lastNotice = 0;
-let toast: ((message: string) => void) | null = null;
-
-/** Where the notice goes: the editor's toast, set once it mounts. */
-export function setArticleCapsToast(next: ((message: string) => void) | null): void {
-  toast = next;
-}
-
-/** Says which cap an edit met, at most once in NOTICE_GAP_MS. */
-export function announceArticleCap(cap: ArticleCap, now = Date.now()): void {
-  if (now - lastNotice < NOTICE_GAP_MS) return;
-  lastNotice = now;
-  toast?.(ARTICLE_CAP_NOTICE[cap]);
 }
