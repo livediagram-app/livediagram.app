@@ -212,7 +212,7 @@ describe('useCanvasPanAndMarquee gestures', () => {
   });
 });
 
-// A press that never moved is a tap: it runs the pan's own tap when it has one (docs/specs/008-canvas/avatar-mode.md
+// A press that never moved is a tap: it runs the pan's own tap when it has one (docs/specs/002-project-scope/not-in-livediagram.md
 // "Walking"), and otherwise deselects. A pinch is never a tap.
 describe('useCanvasPanAndMarquee tap', () => {
   function tapSetup(pinching = false) {

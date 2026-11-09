@@ -24,7 +24,6 @@ const rows = (cursorsHidden: boolean) =>
       remoteCursors: new Map([['peer', { tabId: 't1', x: 10, y: 20 }]]),
       remoteSelections: new Map(),
       remoteLaserTrails: new Map([['peer', { tabId: 't1', points: [{ x: 1, y: 2, t: 1 }] }]]),
-      remoteAvatars: new Map(),
       localLaserTrail: [{ x: 3, y: 4, t: 1 }],
       cursorsHidden,
     }),

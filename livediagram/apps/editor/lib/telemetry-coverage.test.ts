@@ -107,7 +107,6 @@ const emitted = (() => {
   for (const file of [
     APP_ROOT,
     join(APP_ROOT, '../../../packages/workbench/src'),
-    join(APP_ROOT, '../../../packages/avatar/src'),
   ].flatMap(sourceFiles)) {
     for (const pair of pairsIn(readFileSync(file, 'utf8'))) pairs.add(pair);
   }

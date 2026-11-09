@@ -205,7 +205,7 @@ describe('validation bounds', () => {
   });
 });
 
-describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/chair.md)', () => {
+describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/retired-elements.md)', () => {
   it('is on every Behaviours card except the chair and the ones with their own', () => {
     expect(carriesSharedSettingsMenu('chair')).toBe(false);
     expect(carriesSharedSettingsMenu('done-check')).toBe(false);

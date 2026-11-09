@@ -367,7 +367,7 @@ function panelSwitch(
 function tourSwitch(
   key: TourSeenKey,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
-  section = 'Offer Again',
+  section?: string,
 ): SettingsToggleRowSpec {
   return {
     kind: 'toggle',
@@ -983,9 +983,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       ),
       [ELEMENT_TOURS_SECTION]: {
         note: 'Select a complex element and press Start Tour in the bottom bar to see how it works. A switch is on until you have taken its tour.',
-      },
-      'Offer Again': {
-        note: 'Start a tour from the Start Tour button in the bottom bar, left of Search: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
       },
     },
     rows: [

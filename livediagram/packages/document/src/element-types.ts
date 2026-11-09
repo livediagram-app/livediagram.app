@@ -1476,9 +1476,9 @@ export type VideoElement = {
 // something that isn't theirs to edit.
 const UNTYPED_SHAPES = new Set<string>([
   'sticker',
-  // A fence (docs/specs/009-elements/fence.md) carries no label.
+  // A fence (docs/specs/009-elements/retired-elements.md) carries no label.
   'fence',
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) carries no label.
+  // An Avatar Pad (docs/specs/009-elements/retired-elements.md) carries no label.
   'avatar-pad',
   'session-button',
   'reaction-pad',

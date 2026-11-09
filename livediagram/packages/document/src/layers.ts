@@ -72,7 +72,7 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 // Array order decides within a tier.
 function paintTier(el: Element): number {
   // Frames and boundaries are backdrops (docs/specs/009-elements/boundary.md "A container"), and so are an office's
-  // floors (docs/specs/009-elements/office.md): a room and a rug lie under the furniture however they were added (drawn
+  // floors (docs/specs/009-elements/retired-elements.md): a room and a rug lie under the furniture however they were added (drawn
   // to size, pasted, by an agent), and the larger paints first, so a rug lies on its room's floor.
   if (
     el.type === 'shape' &&

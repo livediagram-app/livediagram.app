@@ -2,7 +2,7 @@ import { defaultFillColor, defaultTextColor } from './colors';
 import { isLegacyModeButtonSkin } from './selection-mode';
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_BUTTON_MODE,
+  NEW_BUTTON_MODE,
   createLinkCard,
   activeCommentCount,
   createAnnotation,
@@ -442,9 +442,10 @@ describe('createShape (mode button, docs/specs/009-elements/mode-button.md)', ()
     expect(button.shadow).toBeTruthy();
     expect(button.borderRadius).toBe('lg');
     expect(button.textBold).toBe(true);
-    // Avatar is the default because walkthroughs are what the element is for.
-    expect(button.mode).toBe(DEFAULT_BUTTON_MODE);
-    expect(button.mode).toBe('avatar');
+    // A new button points the room at one thing (docs/specs/009-elements/mode-button.md): Spotlight, since Avatar
+    // mode moved to livehuddle.
+    expect(button.mode).toBe(NEW_BUTTON_MODE);
+    expect(button.mode).toBe('spotlight');
   });
 
   it('carries no label, so the face can say "Switch to <Mode>" instead', () => {

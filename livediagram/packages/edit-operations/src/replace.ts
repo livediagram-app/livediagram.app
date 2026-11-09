@@ -76,9 +76,10 @@ function fromElements(
     }
     // A piece that moved to livehuddle may stay where the tab already has it, never arrive new
     // (docs/specs/009-elements/retired-elements.md "Nothing new").
-    const id = (el as { id?: unknown }).id;
-    const retired = typeof id === 'string' && kept.has(id) ? null : retiredCreateRefusal(el as Element);
-    if (retired) return retiredRefusal(typeof id === 'string' && id !== '' ? id : 'an element', retired);
+    // Validated above, so the element has its id.
+    const { id } = el as Element;
+    const retired = kept.has(id) ? null : retiredCreateRefusal(el as Element);
+    if (retired) return retiredRefusal(id, retired);
   }
   // A new Selection Mode button with no mode hands out the new default, never the retired Avatar one an absent
   // mode once meant (docs/specs/009-elements/mode-button.md).

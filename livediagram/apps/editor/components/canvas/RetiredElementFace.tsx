@@ -6,7 +6,7 @@
 // the shared plan the export draws from (retiredPlaceholderPlan), so the canvas and an export match.
 
 import { memo } from 'react';
-import { HoverCard } from '@livediagram/ui';
+import { Glyph, HoverCard } from '@livediagram/ui';
 import {
   RETIRED_ELEMENT_HINT,
   RETIRED_GLYPH_PATHS,
@@ -47,22 +47,11 @@ export const RetiredElementFace = memo(function RetiredElementFace({
         aria-label={`${plan.title}. ${name}, moved to livehuddle.`}
       >
         {plan.glyph ? (
-          <svg
-            width={20}
-            height={20}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={tones.caption}
-            strokeWidth={1.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-            className="mb-1 shrink-0"
-          >
+          <Glyph size={20} units={24} className="mb-1 shrink-0" style={{ color: tones.caption }}>
             {RETIRED_GLYPH_PATHS.map((d) => (
               <path key={d} d={d} />
             ))}
-          </svg>
+          </Glyph>
         ) : null}
         <span
           className="block max-w-full truncate text-[13px] font-semibold leading-tight"

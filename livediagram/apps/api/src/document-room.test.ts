@@ -425,8 +425,7 @@ describe('DocumentRoom hello frame role forcing', () => {
     room.acceptSession(asWs(ws), 'edit');
     sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#000' } });
     const sent = ws.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
-    // `leanAvatars`: docs/specs/015-api/api.md "A busy room bounds its presence fan-out".
-    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT, leanAvatars: true });
+    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT });
   });
 
   it('adds the live build id when the deploy set one', () => {
@@ -443,7 +442,6 @@ describe('DocumentRoom hello frame role forcing', () => {
       kind: 'format',
       format: DOCUMENT_FORMAT,
       build: 'abc123',
-      leanAvatars: true,
     });
   });
 
@@ -663,15 +661,9 @@ describe('DocumentRoom op-role enforcement', () => {
     expect(opsReceived(editor.ws)).toHaveLength(0);
   });
 
-  // Presence ops are ephemeral (cursor / selection / tab-focus / laser /
-  // avatar) and must relay from a view-role session too, otherwise a viewer is
-  // invisible to peers — no cursor, no selection highlight, no "which tab
-  // they're on", and no walking character (docs/specs/008-canvas/avatar-mode.md).
-  // Driven off the real set, so a presence kind added to the gate joins this
-  // loop automatically instead of shipping untested. `avatar-push` is the one
-  // exclusion: it is ADDRESSED rather than broadcast (see its own tests just
-  // below), so "a peer received it" is not the right assertion for it.
-  const ADDRESSED_PRESENCE_KINDS = ['avatar-push'];
+  // Presence ops are ephemeral (cursor / selection / tab-focus / laser) and must relay from a view-role session too,
+  // otherwise a viewer is invisible to peers: no cursor, no selection highlight, no "which tab they're on". Driven off
+  // the real set, so a presence kind added to the gate joins this loop automatically instead of shipping untested.
   // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
   // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
   const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'focus-here'];
@@ -680,8 +672,7 @@ describe('DocumentRoom op-role enforcement', () => {
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
   const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow'];
   // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
-  // So is speaking (docs/specs/008-canvas/avatar-mode.md "Who may speak").
-  const PARTICIPANT_PRESENCE_KINDS = ['reaction', 'avatar-say'];
+  const PARTICIPANT_PRESENCE_KINDS = ['reaction'];
   for (const kind of PARTICIPANT_PRESENCE_KINDS) {
     it(`drops a '${kind}' from a Viewer and relays a Participant's`, () => {
       const { room } = newRoom();
@@ -696,22 +687,8 @@ describe('DocumentRoom op-role enforcement', () => {
       expect(opsReceived(editor.ws)).toHaveLength(1);
     });
   }
-  it('drops a malformed avatar-say even from an editor', () => {
-    const { room } = newRoom();
-    const speaker = connect(room, 'speaker', 'edit');
-    const peer = connect(room, 'peer', 'edit');
-    peer.ws.sent.length = 0;
-    for (const bad of [{ text: 'x'.repeat(301) }, { text: '   ' }, { text: 7 }, { x: 'left' }]) {
-      sendFrame(room, speaker.ws, {
-        kind: 'op',
-        op: { kind: 'avatar-say', tabId: 't', id: 'b1', text: 'hi', x: 1, y: 2, ...bad },
-      });
-    }
-    expect(opsReceived(peer.ws)).toHaveLength(0);
-  });
   for (const kind of [...PRESENCE_OP_KINDS].filter(
     (k) =>
-      !ADDRESSED_PRESENCE_KINDS.includes(k) &&
       !EDITOR_ONLY_PRESENCE_KINDS.includes(k) &&
       !ROOM_DECIDED_PRESENCE_KINDS.includes(k) &&
       !PARTICIPANT_PRESENCE_KINDS.includes(k),
@@ -728,50 +705,9 @@ describe('DocumentRoom op-role enforcement', () => {
     });
   }
 
-  // Avatar-mode shove (docs/specs/008-canvas/avatar-mode.md). It is ADDRESSED, not broadcast: the room
-  // delivers it to the named presence and nobody else. That routing has to live
-  // here because presence ids are server-minted (docs/specs/015-api/public-api-and-tokens.md §6) — a client never
-  // learns its own, so it cannot recognise a push aimed at it, and an earlier
-  // build that made the receiver check `targetId` against its local id dropped
-  // every real push on the floor.
-  it('delivers an avatar-push only to the addressed session', () => {
-    const { room } = newRoom();
-    const pusher = connect(room, 'pusher', 'edit');
-    const target = connect(room, 'target', 'edit');
-    const bystander = connect(room, 'bystander', 'edit');
-    for (const c of [pusher, target, bystander]) c.ws.sent.length = 0;
-
-    const targetId = storedPresence(target.ws)?.id;
-    sendFrame(room, pusher.ws, {
-      kind: 'op',
-      op: { kind: 'avatar-push', tabId: 't', targetId, dx: 1, dy: 0 },
-    });
-
-    expect(opsReceived(target.ws)).toHaveLength(1);
-    expect(opsReceived(bystander.ws)).toHaveLength(0);
-    expect(opsReceived(pusher.ws)).toHaveLength(0);
-  });
-
-  it('drops an avatar-push aimed at nobody rather than broadcasting it', () => {
-    const { room } = newRoom();
-    const pusher = connect(room, 'pusher', 'edit');
-    const peer = connect(room, 'peer', 'edit');
-    peer.ws.sent.length = 0;
-
-    sendFrame(room, pusher.ws, {
-      kind: 'op',
-      op: { kind: 'avatar-push', tabId: 't', targetId: 'nobody-here', dx: 1, dy: 0 },
-    });
-
-    expect(opsReceived(peer.ws)).toHaveLength(0);
-  });
-
-  // A shove relays from a view-role session too: an audience member walking a
-  // document someone linked them to can push back.
-  // Keeps the exclusion above honest: if an addressed kind is ever removed from
+  // Keeps the exclusion above honest: if an excluded kind is ever removed from
   // the gate, or renamed, this fails rather than silently excluding nothing.
   it('excludes only kinds that really are in the presence set', () => {
-    expect(ADDRESSED_PRESENCE_KINDS.filter((k) => !isPresenceKind(k))).toEqual([]);
     expect(EDITOR_ONLY_PRESENCE_KINDS.filter((k) => !isPresenceKind(k))).toEqual([]);
   });
 
@@ -785,6 +721,24 @@ describe('DocumentRoom op-role enforcement', () => {
   it('lets no document-mutating op kind into the presence set', () => {
     expect(MUTATION_OP_KINDS.filter(isPresenceKind)).toEqual([]);
   });
+
+  // Avatar mode moved to livehuddle (docs/specs/009-elements/retired-elements.md): an older editor's avatar ops are
+  // dropped unread, never refused, and reach nobody.
+  for (const kind of ['avatar', 'avatar-push', 'avatar-say']) {
+    it(`drops a retired '${kind}' op from an editor without a word`, () => {
+      const { room } = newRoom();
+      const sender = connect(room, 'sender', 'edit');
+      const peer = connect(room, 'peer', 'edit');
+      sender.ws.sent.length = 0;
+      peer.ws.sent.length = 0;
+      sendFrame(room, sender.ws, {
+        kind: 'op',
+        op: { kind, tabId: 't', targetId: storedPresence(peer.ws)?.id, text: 'hi', x: 1, y: 2 },
+      });
+      expect(opsReceived(peer.ws)).toHaveLength(0);
+      expect(sender.ws.sent).toEqual([]);
+    });
+  }
 
   it('lets no system-only op kind into the presence set either', () => {
     // A system op reaching the relay from a client socket is a forgery; being
@@ -910,26 +864,6 @@ describe('DocumentRoom op-role enforcement', () => {
     expect(catchup.resync).toBe(false);
     expect(catchup.seq).toBe(1);
     expect(catchup.ops.map((o) => o.op.kind)).toEqual(['el']);
-  });
-
-  it('relays an avatar-push from a view-role session', () => {
-    const { room } = newRoom();
-    const viewer = connect(room, 'viewer', 'view');
-    const target = connect(room, 'target', 'edit');
-    target.ws.sent.length = 0;
-
-    sendFrame(room, viewer.ws, {
-      kind: 'op',
-      op: {
-        kind: 'avatar-push',
-        tabId: 't',
-        targetId: storedPresence(target.ws)?.id,
-        dx: 0,
-        dy: 1,
-      },
-    });
-
-    expect(opsReceived(target.ws)).toHaveLength(1);
   });
 
   // Live poll (docs/specs/012-collaboration/live-poll.md): a presenter polling an audience is the main use,

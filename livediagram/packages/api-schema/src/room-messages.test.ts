@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { isParticipationOp, isPresenceOpKind, isRoomOpRef } from './room-messages';
+import {
+  isParticipationOp,
+  isPresenceOpKind,
+  isRetiredOpKind,
+  isRoomOpRef,
+  RETIRED_OP_KINDS,
+} from './room-messages';
 
 // docs/specs/012-collaboration/realtime-conflict-resolution.md: the `ref` a client puts on an op frame,
 // which the room echoes on that op's cursor frame.
@@ -39,10 +45,16 @@ describe('isParticipationOp', () => {
   });
 });
 
-// The avatar-say op's shape and parser are @liveworkspace/api-schema's (its avatar-say tests); its class is this
-// product's (docs/specs/008-canvas/blueprints/avatar-speech.md).
-describe('avatar-say', () => {
-  it('is a presence op: never ordered, logged or replayed', () => {
-    expect(isPresenceOpKind('avatar-say')).toBe(true);
+// Avatar mode moved to livehuddle (docs/specs/009-elements/retired-elements.md): its ops are no longer this product's
+// presence ops, and the room drops them unread.
+describe('the retired avatar ops', () => {
+  it.each(RETIRED_OP_KINDS)('reads %s as retired, never as a presence op', (kind) => {
+    expect(isRetiredOpKind(kind)).toBe(true);
+    expect(isPresenceOpKind(kind)).toBe(false);
+  });
+
+  it('retires nothing else', () => {
+    expect(isRetiredOpKind('cursor')).toBe(false);
+    expect(isRetiredOpKind(undefined)).toBe(false);
   });
 });

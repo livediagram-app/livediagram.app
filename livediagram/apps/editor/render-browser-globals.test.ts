@@ -53,7 +53,6 @@ const files = [
   'packages',
   '../packages/ui/src',
   '../packages/workbench/src',
-  '../packages/avatar/src',
 ].flatMap((d) => sources(`${repo}${d}`));
 const rel = (path: string) => path.slice(repo.length);
 

@@ -82,7 +82,6 @@ describe('Start a Workshop', () => {
       'software',
       'strategy',
       'learning',
-      'spaces',
     ]);
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
     // A cross-listed template shows in each of its categories.
@@ -94,12 +93,6 @@ describe('Start a Workshop', () => {
       'two-truths-and-a-lie',
       'would-you-rather',
       'people-bingo',
-    ]);
-    expect(group('spaces')).toEqual([
-      'virtual-office',
-      'coworking-space',
-      'team-pod',
-      'all-hands-hall',
     ]);
     expect(group('strategy')).toEqual(
       expect.arrayContaining(['swot', 'pestle-analysis', 'business-model-canvas']),

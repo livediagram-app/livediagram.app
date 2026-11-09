@@ -12,8 +12,6 @@ import { describe, expect, it } from 'vitest';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 // The editor code every editor shares (@liveworkspace/workbench) is scanned beside this app's own.
 const WORKBENCH = join(ROOT, '../../../packages/workbench/src');
-// And Avatar mode's shared code (@liveworkspace/avatar).
-const AVATAR = join(ROOT, '../../../packages/avatar/src');
 const SKIP_DIRS = new Set([
   'node_modules',
   '.next',
@@ -36,7 +34,7 @@ function sourceFiles(dir: string, acc: string[] = []): string[] {
 
 describe('useIconCatalogs call sites', () => {
   it('each uses the value it returns, so the compiled render re-reads the catalogue when it lands', () => {
-    const bare = [ROOT, WORKBENCH, AVATAR]
+    const bare = [ROOT, WORKBENCH]
       .flatMap((dir) => sourceFiles(dir))
       .filter((file) => /^\s*useIconCatalogs\(\);/m.test(readFileSync(file, 'utf8')))
       .map((file) => relative(ROOT, file));
@@ -44,7 +42,7 @@ describe('useIconCatalogs call sites', () => {
   });
 
   it('finds the call sites it guards', () => {
-    const callers = [ROOT, WORKBENCH, AVATAR]
+    const callers = [ROOT, WORKBENCH]
       .flatMap((dir) => sourceFiles(dir))
       .filter((file) => /\buseIconCatalogs\(\)/.test(readFileSync(file, 'utf8')));
     expect(callers.length).toBeGreaterThan(5);

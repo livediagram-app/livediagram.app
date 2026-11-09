@@ -7,7 +7,7 @@ import { activeTour, setActiveTour, useActiveTour } from './tour-active';
 
 afterEach(() => {
   setActiveTour('welcome', false);
-  setActiveTour('avatar', false);
+  setActiveTour('show-me', false);
   setActiveTour('element', false);
 });
 
@@ -20,7 +20,7 @@ describe('tour-active', () => {
 
   it('is released only by the tour holding it', () => {
     setActiveTour('welcome', true);
-    setActiveTour('avatar', false);
+    setActiveTour('show-me', false);
     expect(activeTour()).toBe('welcome');
     setActiveTour('welcome', false);
     expect(activeTour()).toBeNull();
@@ -35,9 +35,9 @@ describe('tour-active', () => {
   it('re-renders a reader when it changes', () => {
     const { result } = renderHook(() => useActiveTour());
     expect(result.current).toBeNull();
-    act(() => setActiveTour('avatar', true));
-    expect(result.current).toBe('avatar');
-    act(() => setActiveTour('avatar', false));
+    act(() => setActiveTour('show-me', true));
+    expect(result.current).toBe('show-me');
+    act(() => setActiveTour('show-me', false));
     expect(result.current).toBeNull();
   });
 });

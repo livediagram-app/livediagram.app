@@ -15,6 +15,7 @@ import {
   isSelfDrawingShape,
 } from './data-shapes';
 import { isSankeyShape } from './sankey-model';
+import { RETIRED_SHAPE_KINDS } from './retired-elements';
 
 // The self-drawing shape family decides real behaviour: BoxedElementView picks
 // a renderer off it, elementSupportsText uses isSelfDrawingShape to decide
@@ -65,13 +66,8 @@ describe('the self-drawing shape family', () => {
     fromMembers.add('pyramid');
     fromMembers.add('onion');
     fromMembers.add('chevrons');
-    // docs/specs/009-elements/fence.md: a fence is posts and rails, with nothing to write on.
-    fromMembers.add('fence');
-    // docs/specs/009-elements/avatar-pad.md: an Avatar Pad is pixels, with nothing to write on.
-    fromMembers.add('avatar-pad');
-    // docs/specs/009-elements/office.md: the scenery and machines have nothing to write on.
-    for (const k of ['plant', 'bookshelf', 'water-cooler', 'coffee-machine', 'rug'] as const)
-      fromMembers.add(k);
+    // docs/specs/009-elements/retired-elements.md: a retired piece is its placeholder card, nothing to write on.
+    for (const k of RETIRED_SHAPE_KINDS) fromMembers.add(k);
     expect(kindsMatching(isSelfDrawingShape)).toEqual([...fromMembers].sort());
   });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SHAPE_KINDS } from '@livediagram/document';
+import { CREATABLE_SHAPE_KINDS, SHAPE_KINDS } from '@livediagram/document';
 import {
   ALL_PALETTE_TELEMETRY_TYPES,
   PALETTE_TELEMETRY_TYPES,
@@ -40,7 +40,8 @@ const tokenForShapeKind = (kind: string) =>
 
 describe('palette telemetry coverage', () => {
   it('gives every shape kind a bucket in the dashboard catalogue', () => {
-    const missing = [...SHAPE_KINDS]
+    // A retired kind (docs/specs/009-elements/retired-elements.md) is never added, so it needs no bucket.
+    const missing = [...CREATABLE_SHAPE_KINDS]
       .map(tokenForShapeKind)
       .filter((token) => !ALL_PALETTE_TELEMETRY_TYPES.includes(token));
     // A failure here means the editor can emit an Element·Added type the

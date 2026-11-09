@@ -3,9 +3,9 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { presenceStepMs } from '@livediagram/api-schema';
 import { DocumentRoom } from './document-room/document-room';
 
-// The avatar fan-out bound (docs/specs/015-api/api.md "A busy room bounds its presence fan-out", and the measured
-// numbers in docs/specs/008-canvas/avatar-mode.md "A busy room"): walks 10, 32 and 100 characters through the real
-// room for one simulated second, each at the editors' stepped cadence, and holds what the room sends and spends.
+// The presence fan-out bound (docs/specs/015-api/api.md "A busy room bounds its presence fan-out"): moves 10, 32 and
+// 100 cursors through the real room for one simulated second, each at the editors' stepped cadence, and holds what
+// the room sends and spends. (It was measured on Avatar mode's walkers, which moved to livehuddle.)
 
 type Socket = { sent: string[]; attachment: unknown };
 
@@ -27,7 +27,7 @@ function newRoom() {
     waitUntil: () => {},
   };
   const room = new DocumentRoom(state as unknown as DurableObjectState, {} as never);
-  const join = (id: string, tabId: string, batches = true, lean = false) => {
+  const join = (id: string, tabId: string, batches = true) => {
     const s: Socket = {
       sent: [],
       attachment: { presenceId: id, verifiedRole: 'view', presence: null },
@@ -39,7 +39,6 @@ function newRoom() {
         kind: 'hello',
         participant: { name: id, color: '#abc', tabId },
         ...(batches ? { batches: true } : {}),
-        ...(lean ? { leanAvatars: true } : {}),
       }),
     );
     return s;
@@ -62,22 +61,12 @@ function wsOf(s: Socket): WebSocket {
   return ws;
 }
 
-// One walking packet, the size an editor sends.
-const avatarOp = (tabId: string, step: number) => ({
-  kind: 'avatar',
+// One cursor packet, as an editor sends it.
+const cursorOp = (tabId: string, step: number) => ({
+  kind: 'cursor',
   tabId,
-  avatar: {
-    x: 400 + step * 8.7,
-    y: 300,
-    facing: 'right',
-    config: { gender: 'female', clothing: 'hoodie', hair: 'bun', size: 'regular' },
-    walking: true,
-    stepFrame: step % 2,
-    lift: 0,
-    wave: null,
-    seatedOn: null,
-    holding: null,
-  },
+  x: 400 + step * 8.7,
+  y: 300,
 });
 const say = (room: DocumentRoom, s: Socket, op: unknown) =>
   room.webSocketMessage(wsOf(s), JSON.stringify({ kind: 'op', op }));
@@ -89,15 +78,15 @@ const opsIn = (raw: string): Frame[] => {
   return msg.kind === 'op' ? [msg] : [];
 };
 
-// Everyone walking on one tab for one simulated second: what each socket was sent, and the room's CPU time.
-function walkOneSecond(walkers: number) {
+// Everyone moving a cursor on one tab for one simulated second: what each socket was sent, and the room's CPU time.
+function moveOneSecond(walkers: number) {
   const { room, join, sockets } = newRoom();
   for (let i = 0; i < walkers; i++) join(`p${i}`, 't1');
   for (const s of sockets) s.sent.length = 0;
   const every = presenceStepMs(walkers);
   const cpu = cpuMsOf(() => {
     for (let t = 0, step = 0; t < 1000; t += every, step++) {
-      for (const s of sockets) say(room, s, avatarOp('t1', step));
+      for (const s of sockets) say(room, s, cursorOp('t1', step));
       vi.advanceTimersByTime(every);
     }
     vi.advanceTimersByTime(every);
@@ -114,96 +103,44 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('the avatar fan-out bound', () => {
+describe('the presence fan-out bound', () => {
   it('leaves a room of 10 exactly as it was: every packet at once, to everyone else', () => {
-    const { every, frames, delivered } = walkOneSecond(10);
+    const { every, frames, delivered } = moveOneSecond(10);
     expect(every).toBe(33);
     const packets = Math.ceil(1000 / 33);
     expect(delivered).toBe(10 * 9 * packets);
     expect(frames.every((n) => n === 9 * packets)).toBe(true);
   });
 
-  it.each([32, 100])('sends each socket of %i walkers one frame a step', (walkers) => {
-    const { every, frames, delivered } = walkOneSecond(walkers);
+  it.each([32, 100])('sends each socket of %i cursors one frame a step', (walkers) => {
+    const { every, frames, delivered } = moveOneSecond(walkers);
     const steps = Math.ceil(1000 / every) + 1;
-    // Before the bound, each socket of 100 walkers was sent 2,970 frames a second; now one a step.
+    // Before the bound, each socket of 100 movers was sent 2,970 frames a second; now one a step.
     expect(Math.max(...frames)).toBeLessThanOrEqual(steps);
-    // Every walker still reaches every other socket once a step.
+    // Every cursor still reaches every other socket once a step.
     expect(delivered).toBeGreaterThanOrEqual(walkers * (walkers - 1) * (steps - 2));
   });
 
-  it('relays 100 walkers within its CPU budget', () => {
-    walkOneSecond(32);
-    // Measured at about 43 ms of CPU for the simulated second on an M-series Mac; on workerd the same walk once
-    // took the room's whole core (avatar-mode.md "A busy room").
-    const cpu = Math.min(walkOneSecond(100).cpu, walkOneSecond(100).cpu);
+  it('relays 100 cursors within its CPU budget', () => {
+    moveOneSecond(32);
+    // Measured at about 43 ms of CPU for the simulated second (with walkers) on an M-series Mac; on workerd the same
+    // load once took the room's whole core.
+    const cpu = Math.min(moveOneSecond(100).cpu, moveOneSecond(100).cpu);
     expect(cpu).toBeLessThan(cpuBudgetMs(150));
   });
 });
 
-describe('the avatar relay in the room', () => {
-  it('sends a character only to its tab, and catches a session up when it switches', () => {
-    const { room, join } = newRoom();
-    const walker = join('p0', 't1');
-    const sameTab = join('p1', 't1');
-    const otherTab = join('p2', 't2');
-    say(room, walker, avatarOp('t1', 1));
-    expect(sameTab.sent.flatMap(opsIn).map((f) => f.op?.kind)).toContain('avatar');
-    expect(otherTab.sent.flatMap(opsIn).some((f) => f.op?.kind === 'avatar')).toBe(false);
-    say(room, otherTab, { kind: 'tab-focus', tabId: 't1' });
-    const caught = otherTab.sent.flatMap(opsIn).filter((f) => f.op?.kind === 'avatar');
-    expect(caught).toHaveLength(1);
-    // A cursor is relayed as before.
-    say(room, walker, { kind: 'cursor', tabId: 't1', x: 1, y: 2 });
-    expect(otherTab.sent.flatMap(opsIn).some((f) => f.op?.kind === 'cursor')).toBe(true);
-  });
-
-  // docs/specs/015-api/api.md "A busy room bounds its presence fan-out": "A character's costume rides only when it is
-  // needed".
-  it('sends a lean packet as it came to an editor that reads them, and filled out to one from before', () => {
-    const { room, join } = newRoom();
-    const walker = join('p0', 't1', true, true);
-    const reader = join('p1', 't1', true, true);
-    const older = join('p2', 't1');
-    const costume = { gender: 'male', clothing: 'suit', hair: 'afro', size: 'tall' };
-    const first = { x: 1, y: 2, facing: 'right', walking: true, config: costume };
-    const second = { x: 3, y: 2, facing: 'right', walking: true };
-    say(room, walker, { kind: 'avatar', tabId: 't1', avatar: first });
-    say(room, walker, { kind: 'avatar', tabId: 't1', avatar: second });
-    const avatars = (s: Socket) =>
-      s.sent
-        .flatMap(opsIn)
-        .filter((f) => f.op?.kind === 'avatar')
-        .map((f) => (f.op as unknown as { avatar: unknown }).avatar);
-    expect(avatars(reader)).toEqual([first, second]);
-    const resting = { stepFrame: 0, lift: 0, wave: null };
-    expect(avatars(older)).toEqual([
-      { ...first, ...resting },
-      { ...second, ...resting, config: costume },
-    ]);
-  });
-
+describe('the presence relay in the room', () => {
   it('sends an editor that does not take batches every packet on its own, even in a busy room', () => {
     const { room, join, sockets } = newRoom();
     for (let i = 0; i < 11; i++) join(`p${i}`, 't1');
     const old = join('old', 't1', false);
     for (const s of sockets) s.sent.length = 0;
-    say(room, sockets[0]!, avatarOp('t1', 1));
-    say(room, sockets[1]!, avatarOp('t1', 1));
+    say(room, sockets[0]!, cursorOp('t1', 1));
+    say(room, sockets[1]!, cursorOp('t1', 1));
     expect(old.sent.map((raw) => (JSON.parse(raw) as Frame).kind)).toEqual(['op', 'op']);
     expect(sockets[2]!.sent).toEqual([]);
     vi.advanceTimersByTime(presenceStepMs(12));
     expect((JSON.parse(sockets[2]!.sent[0]!) as Frame).kind).toBe('batch');
-  });
-
-  it('forgets a walker whose socket closed', () => {
-    const { room, join } = newRoom();
-    const walker = join('p0', 't1');
-    const later = join('p1', 't2');
-    say(room, walker, avatarOp('t1', 1));
-    room.webSocketClose(wsOf(walker));
-    later.sent.length = 0;
-    say(room, later, { kind: 'tab-focus', tabId: 't1' });
-    expect(later.sent.flatMap(opsIn).some((f) => f.op?.kind === 'avatar')).toBe(false);
   });
 });

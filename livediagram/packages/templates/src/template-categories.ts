@@ -1,4 +1,4 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): fourteen,
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): thirteen,
 // grouped by what a person is using the template for (the use case), never by the shape of artefact it is. Every
 // template but the three blanks has exactly one primary category and may be cross-listed in others where people would
 // genuinely look for it. Read by every template start (Diagram, Draw and Workshop), the marketing gallery and the

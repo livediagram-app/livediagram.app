@@ -412,22 +412,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'DoneCheck',
     // Quiz (docs/specs/012-collaboration/quiz.md): a Behaviour element by its palette home.
     'Quiz',
-    // Chair (docs/specs/009-elements/chair.md): a Behaviour element, so it ranks with them.
-    'Chair',
-    // Desk, sofa and fence (docs/specs/009-elements/chair.md, fence.md): beside the chair in Navigate.
-    'Desk',
-    'Sofa',
-    'Fence',
-    // Avatar Pad (docs/specs/009-elements/avatar-pad.md): beside the fence in Navigate.
-    'Avatar-pad',
-    // The virtual office (docs/specs/009-elements/office.md), in Navigate.
-    'Room',
-    'Meeting-table',
-    'Plant',
-    'Bookshelf',
-    'Water-cooler',
-    'Coffee-machine',
-    'Rug',
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
     // token is what elementTelemetryType actually emits for the kind, which
     // for a hyphenated one is the hyphen kept (see Pie-chart above).
@@ -445,7 +429,7 @@ export const PALETTE_TELEMETRY_TYPES = {
   // The Collaborate category (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) — its own bucket rather
   // than more entries under `tools`, because the palette gave it its own
   // category and the dashboard's cards are the palette's own tabs. The Chair
-  // (docs/specs/009-elements/chair.md) is NOT here: it ships in Behaviour, so it buckets with the
+  // (docs/specs/009-elements/retired-elements.md) is NOT here: it ships in Behaviour, so it buckets with the
   // other behaviour elements under `tools` above.
   collaborate: [
     'Estimate',

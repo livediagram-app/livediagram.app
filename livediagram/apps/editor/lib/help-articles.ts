@@ -109,7 +109,6 @@ export const HELP_ARTICLES = {
   lanes: 'palette/lanes',
   boundaries: 'palette/boundaries',
   diagramKeys: 'palette/diagram-keys',
-  portals: 'palette/tools/portals',
   sequenceDiagram: 'palette/sequence-diagrams',
   conceptGraphics: 'palette/concept-graphics',
   palette: 'palette',
@@ -396,10 +395,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   diagramKeys: {
     title: 'Learn about diagram keys',
     description: 'A legend that lists the line styles and tag colours you use.',
-  },
-  portals: {
-    title: 'Learn about portals',
-    description: 'Linked rings that take you across the canvas or to another tab.',
   },
   conceptGraphics: {
     title: 'Learn about concept graphics',

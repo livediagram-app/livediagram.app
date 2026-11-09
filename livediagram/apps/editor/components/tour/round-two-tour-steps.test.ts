@@ -1,18 +1,15 @@
 // @vitest-environment jsdom
 
-// The round-two element tours (docs/specs/007-editor/element-tours.md): the stack, entity, lane, boundary,
-// diagram key and portal tours, each on its element's own parts, and the menu step they share.
+// The round-two element tours (docs/specs/007-editor/element-tours.md): the stack, entity, lane, boundary
+// and diagram key tours, each on its element's own parts, and the menu step they share.
 
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
 import { boundaryTourSteps } from './boundary-tour-steps';
 import { diagramKeyTourSteps } from './diagram-key-tour-steps';
-import { ELEMENT_TOUR_DEFS } from './element-tour-defs';
 import type { ElementTourApi } from './element-tour-api';
 import { entityTourSteps } from './entity-tour-steps';
 import { laneTourSteps } from './lane-tour-steps';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
-import { portalTourSteps } from './portal-tour-steps';
 import { stackTourSteps } from './stack-tour-steps';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
@@ -98,33 +95,5 @@ describe('diagramKeyTourSteps', () => {
       'title',
       'outro',
     ]);
-  });
-});
-
-describe('portalTourSteps', () => {
-  it('steps through a linked portal, and explains a dim one', () => {
-    expect(ids(portalTourSteps({ ...env, linked: true }))).toEqual([
-      'portal',
-      'travel',
-      'menu',
-      'walk',
-      'outro',
-    ]);
-    const dim = portalTourSteps({ ...env, linked: false, touch: true });
-    expect(ids(dim)).toContain('unlinked');
-    expect(step(dim, 'menu').body).toContain('Create Portal');
-  });
-});
-
-describe('the registry reads what is on screen when Play is pressed', () => {
-  const env2 = (el: Element) => ({ hasMore: true, touch: false, elements: [el] });
-
-  it('steps through a portal only when it is lit', () => {
-    const portal = { ...createShape('portal', 0, 0), id: 'p1' } as Element;
-    expect(ids(ELEMENT_TOUR_DEFS.portal.steps(portal, env2(portal)))).toContain('unlinked');
-    document.body.innerHTML =
-      '<div data-element-id="p1"><button aria-label="Portal 1: go to Portal 2"></button></div>';
-    expect(ids(ELEMENT_TOUR_DEFS.portal.steps(portal, env2(portal)))).toContain('travel');
-    document.body.innerHTML = '';
   });
 });

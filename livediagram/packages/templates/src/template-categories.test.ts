@@ -16,7 +16,7 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the fourteen use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
+  it('are the thirteen use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Brainstorming',
       'Decisions',
@@ -31,7 +31,6 @@ describe('template categories', () => {
       'Software & IT',
       'Strategy',
       'Teaching & Learning',
-      'Virtual Spaces',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));
@@ -72,7 +71,6 @@ describe('template categories', () => {
       software: 11,
       strategy: 8,
       learning: 3,
-      spaces: 4,
     });
   });
 

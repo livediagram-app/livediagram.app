@@ -1,7 +1,7 @@
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): every shape kind whose content arrives at
 // RUNTIME rather than being drawn by the author — the ones that do something
 // when pressed (docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md, docs/specs/009-elements/reaction-pad.md) and the ones that collect what
-// the room thinks (docs/specs/012-collaboration/participant-responses.md to docs/specs/009-elements/chair.md, docs/specs/012-collaboration/comment-pin.md).
+// the room thinks (docs/specs/012-collaboration/participant-responses.md to docs/specs/009-elements/retired-elements.md, docs/specs/012-collaboration/comment-pin.md).
 //
 // A LEAF module (a set and two predicates) for the same reason
 // `collab-shapes.ts` is one.

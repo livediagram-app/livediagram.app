@@ -31,7 +31,6 @@ const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   lane: createShape('lane', 0, 0),
   boundary: createShape('boundary', 0, 0),
   'diagram-key': createShape('diagram-key', 0, 0),
-  portal: createShape('portal', 0, 0),
 };
 
 describe('ELEMENT_TOUR_DEFS', () => {

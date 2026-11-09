@@ -59,25 +59,19 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Avatar and element tours (docs/specs/008-canvas/avatar-tour.md,
-// docs/specs/007-editor/element-tours.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
+// The Draw and element tours (docs/specs/007-editor/element-tours.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     const key = 'livediagram:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (
-        prefs.drawTourSeen !== true ||
-        prefs.avatarTourSeen !== true ||
-        !Array.isArray(prefs.elementTourKinds)
-      )
+      if (prefs.drawTourSeen !== true || !Array.isArray(prefs.elementTourKinds))
         localStorage.setItem(
           key,
           JSON.stringify({
             ...prefs,
             drawTourSeen: true,
-            avatarTourSeen: true,
             // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
             elementTourKinds: [
               'sankey',
@@ -98,7 +92,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
               'lane',
               'boundary',
               'diagram-key',
-              'portal',
             ],
           }),
         );
