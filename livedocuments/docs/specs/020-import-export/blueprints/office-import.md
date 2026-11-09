@@ -177,8 +177,12 @@ Follows the spec's table. Precisely:
   master. A placeholder matches on the layout by `idx`, else by type; on the master by type. Types normalise:
   `ctrTitle` is `title`; `subTitle`, `obj` and no type are `body`. A shape with no box anywhere is left out (D65).
 - A text body: each `a:p` a line; runs' `a:t`, `a:fld`'s text, `a:br` a line break. A paragraph's bullet: its own
-  `a:buNone` none, `a:buChar` "• ", `a:buAutoNum` its number counted along consecutive numbered paragraphs at that
-  level ("1. "); else the level's `a:buNone` / `a:buChar` in the shape's, layout's and master placeholder's
+  `a:buNone` none, `a:buChar` "• ", `a:buAutoNum` its number (`autoNumberMarker`) counted along consecutive
+  numbered paragraphs at that level with the same `type` and `startAt`, from `startAt` (default 1), written by its
+  `type`: `arabic`, `alphaLc` / `alphaUc` (a to z, then aa), `romanLc` / `romanUc`, each `Period` ("1. "),
+  `ParenR` ("1) "), `ParenBoth` ("(1) ") or `Plain` ("1 "), any other scheme as "1. "; a paragraph restarts the
+  count of every deeper level. Else the level's `a:buNone` / `a:buChar` / `a:buAutoNum` in the shape's, layout's
+  and master placeholder's
   `a:lstStyle` (nearest first), then the master's `bodyStyle` for a body placeholder (a subtitle's layout sets
   `buNone`, so a subtitle is not bulleted); else a body placeholder's paragraphs are bulleted and every other
   shape's are not; empty paragraphs never. Two spaces of indent a level (`lvl`). Leading and trailing empty lines are trimmed.

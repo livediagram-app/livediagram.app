@@ -77,8 +77,9 @@ sits on the slide, scaled from the deck's size to the page's.
 
 - **Text boxes and placeholders** (a title, a body, any shape holding text) become **text** elements with the
   box's place and size, a placeholder with no place of its own taking its layout's, then its master's. A
-  paragraph with a bullet starts with "• " (a numbered one with its number), indented two spaces a level; the
-  text size is the first run's (or the placeholder's default: a title 44 pt, a body 28 pt, else 18 pt), as px
+  paragraph with a bullet starts with "• " (a numbered one with its number as the deck writes it: "1.", "b)",
+  "(iii)", "IV.", counted from the list's start, a deeper level starting again after each shallower item), indented
+  two spaces a level; the text size is the first run's (or the placeholder's default: a title 44 pt, a body 28 pt, else 18 pt), as px
   on the page (past the editor's largest size, 48 px, that size scaled up, as a resized headline is); bold or
   italic when every run is; the first paragraph's alignment, else its list style's (the shape's, its layout's,
   its master's), else the master's text style's.
