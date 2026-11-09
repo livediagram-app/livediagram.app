@@ -47,6 +47,7 @@ import { selectAllIds } from '@/lib/select-all-ids';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
+import { useNudges } from '@/hooks/collab/useNudges';
 import { useShowFollowersMyView } from '@liveworkspace/workbench/hooks/collab/useShowFollowersMyView';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
 import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
@@ -1146,6 +1147,25 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
   });
   useAssignRef(followingRef, followMe.followingId);
+
+  // Nudge (docs/specs/012-collaboration/nudge.md): from Collaborators, to one person through the room; an Editor's or
+  // a Participant's. Being nudged plays, toasts and, in a hidden tab, notifies (useNudges).
+  const sendNudgeOp = useCallback(
+    (targetId: string) => roomRef.current?.send({ kind: 'op', op: { kind: 'nudge', targetId } }),
+    [roomRef],
+  );
+  const nudges = useNudges({
+    send: realtime.documentServerStored ? sendNudgeOp : null,
+    canNudge: participant.can.takePart,
+    livePresence,
+    peerMotion,
+    remoteTabFocus,
+    activeId,
+    setActiveId,
+    centreOn,
+    documentName,
+    ownerId: selfParticipant.id,
+  });
 
   // A tab we are about to land on already aimed, so the tab-entry
   // fit-to-screen below leaves it alone (it runs a frame later and would
@@ -2333,6 +2353,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     scrollIntoView,
     livePresence,
     followMe,
+    nudges,
     loadAllTabs,
     loadedTabIds,
     loadingDocument,

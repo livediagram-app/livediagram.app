@@ -147,6 +147,14 @@ export type UserPreferences = {
   // Your hearing ring in a call (docs/specs/012-collaboration/proximity-audio.md "Your hearing ring"): where people can
   // hear you while you talk. Missing / undefined / true === shown, the default; `false` hides it. The call is unchanged.
   hearingRing?: boolean;
+  // Join and Leave Sounds (docs/specs/012-collaboration/join-and-leave-sounds.md): a chime when someone arrives in or
+  // leaves the Space you have open. Missing / undefined / true === on, the default; `false` silences both.
+  joinLeaveSounds?: boolean;
+  // Desktop Notifications (docs/specs/012-collaboration/nudge.md "Desktop Notifications"): a system notification for
+  // a nudge while the tab is hidden. Missing === on, but it only shows once the browser has granted permission.
+  desktopNotifications?: boolean;
+  // Whether the one-time offer to turn Desktop Notifications on has been answered (either way). Missing === not yet.
+  desktopNotificationsOffered?: boolean;
   // Email notifications (docs/specs/014-identity/profile-and-email-notifications.md). Account-level settings flipped from the
   // Settings dialog; the api worker reads them server-side before
   // sending the matching transactional email (docs/specs/014-identity/transactional-email.md). Distinct from

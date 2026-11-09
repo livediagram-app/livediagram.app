@@ -36,6 +36,9 @@ import {
   type CursorPos,
   type PresenceCoalescer,
 } from './presence-coalescer';
+import { createPresenceChimes } from '@/lib/sounds/presence-chimes';
+import { unlockAudioOnGesture } from '@/lib/sounds/audio';
+import { receiveNudgeOp } from '@/lib/nudge/nudge-inbox';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs, remoteRoomOp } from './room-op-apply';
@@ -459,6 +462,10 @@ export function useRoomConnection(opts: {
         // A knock on a room, or the answer to ours (docs/specs/012-collaboration/knock.md): parsed, handed to the
         // canvas, which knows whether we stand inside; never written.
         receiveKnockOp(from, op);
+      } else if (op.kind === 'nudge' || op.kind === 'nudge-refused') {
+        // A nudge for us, or the room refusing ours (docs/specs/012-collaboration/nudge.md "The wire"): addressed to
+        // this socket alone, so being handed one is the addressing; never written.
+        receiveNudgeOp(from, op);
       } else if (op.kind === 'avatar-bell') {
         // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "The wire"): parsed, handed to
         // the canvas, which knows whether we stand in earshot; never written.
@@ -602,12 +609,17 @@ export function useRoomConnection(opts: {
       setRemoteCursors,
       setRemoteAvatars,
     });
+    // Join and leave sounds (docs/specs/012-collaboration/join-and-leave-sounds.md): one watcher per document, so a
+    // reconnect of our own socket keeps who it has met; sound unlocks on the first press in the tab.
+    const chimes = createPresenceChimes({ selfKey: connectAs().self.key });
+    const stopUnlock = unlockAudioOnGesture();
 
     const handlers: RoomHandlers = {
       onPresence: (participants, agents) => {
         // Buffered packets from anyone who has left go before the roster prunes their state, so
         // the next frame's flush cannot bring a departed peer's cursor back.
         presence.prune(new Set(participants.map((p) => p.id)));
+        chimes.update(participants);
         roomPresence(participants, agents);
       },
       // Elements in a former stored shape from a peer loaded before a deploy are migrated
@@ -672,6 +684,8 @@ export function useRoomConnection(opts: {
     return () => {
       stopGrant();
       presence.cancel();
+      chimes.dispose();
+      stopUnlock();
       // Nobody's words outlive the room they were said in.
       resetSpeechBubbles();
       // Nobody's level or microphone outlives the room either.

@@ -189,6 +189,45 @@ describe('WatchItBuiltPlayer', () => {
   });
 });
 
+describe('WatchItBuiltPlayer holds the chrome open (Work Tracker #668)', () => {
+  it("under reduced motion, opens Marker 2's flyout once the dock draws it in hand", () => {
+    reduced = true;
+    editor({ editorMode: { mode: 'draw' } });
+    // Marker 2 on the dock: a press opens its flyout (WhiteboardDock's own, by id).
+    const dock = document.createElement('div');
+    dock.setAttribute('data-whiteboard-dock', '');
+    const marker = document.createElement('button');
+    marker.setAttribute('data-dock-item', 'second');
+    marker.setAttribute('aria-pressed', 'false');
+    marker.addEventListener('click', () => {
+      const flyout = document.createElement('div');
+      flyout.id = 'whiteboard-flyout-second';
+      document.body.append(flyout);
+    });
+    dock.append(marker);
+    document.body.append(dock);
+    const pens = CURRICULUM.draw.find((c) => c.id === 'draw-pens')!;
+    try {
+      render(<WatchItBuiltPlayer card={pens} hasMore={false} onEnded={onEnded} />);
+      // The Open chapter's end state, with no clock running: the pen is in hand in the replay's dock, drawn a render
+      // later.
+      expect(overlay.props).toMatchObject({ index: 0, playing: false, reduced: true });
+      expect(replayStore.get().dock).toMatchObject({
+        tool: 'pen',
+        prefs: { activePenId: 'second' },
+      });
+      expect(document.getElementById('whiteboard-flyout-second')).toBeNull();
+      marker.setAttribute('aria-pressed', 'true');
+      act(() => {
+        vi.advanceTimersByTime(50);
+      });
+      expect(document.getElementById('whiteboard-flyout-second')).not.toBeNull();
+    } finally {
+      document.body.innerHTML = '';
+    }
+  });
+});
+
 describe('WatchItBuiltPlayer reduce motion', () => {
   it("steps instead of playing under the editor's own Reduce Motion setting", () => {
     document.documentElement.classList.add('reduce-motion');

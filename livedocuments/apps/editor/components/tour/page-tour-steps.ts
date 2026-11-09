@@ -6,19 +6,20 @@ import { articleTourSteps } from './article-tour-steps';
 import { flashcardTourSteps } from './flashcard-tour-steps';
 import { infographicTourSteps } from './infographic-tour-steps';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
+import type { TrackOptions } from './page-tour-parts';
 import { slideTourSteps } from './slide-tour-steps';
 import { stepTelemetryType } from '@liveworkspace/workbench/components/tour/tour-step';
 
 // The DOM tidy-up a page's tour needs, loaded with its steps so neither sits in the editor's first load.
 export { resetPageTour, tidyPageTour } from './page-tour-dom';
 
-/** A kind's steps. */
-export function pageTourSteps(kind: PageKind): PageTourStep[] {
+/** A kind's steps; on a phone (`options.phone`), its phone's ways to its controls (pages-tour.md "On a phone"). */
+export function pageTourSteps(kind: PageKind, options: TrackOptions = {}): PageTourStep[] {
   switch (kind) {
     case 'slide':
-      return slideTourSteps();
+      return slideTourSteps(options);
     case 'article':
-      return articleTourSteps();
+      return articleTourSteps(options);
     case 'flashcard':
       return flashcardTourSteps();
     default:
@@ -46,8 +47,9 @@ export function shownPageTourSteps(
   kind: PageKind,
   api: PageTourApi,
   exists: (selector: string) => boolean,
+  options: TrackOptions = {},
 ): PageTourStep[] {
-  return pageTourSteps(kind).filter((step) => stepShown(step, api, exists));
+  return pageTourSteps(kind, options).filter((step) => stepShown(step, api, exists));
 }
 
 /** The telemetry `type` of a step view: ('slide', 'add-page') → 'PagesTourStepSlideAddPage'. */

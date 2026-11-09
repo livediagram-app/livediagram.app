@@ -320,6 +320,18 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'avatar-bell', tabId: 't' }, as('edit'))).toEqual(DROP);
   });
 
+  // docs/specs/012-collaboration/nudge.md "Share roles": an Editor and a Participant nudge, a Viewer is only nudged.
+  it("relays an Editor's and a Participant's nudge, never a Viewer's or a malformed one", () => {
+    const nudge = { kind: 'nudge', targetId: 's1' };
+    for (const role of ['edit', 'participate'])
+      expect(gateClientOp({ ...nudge, extra: 1 }, as(role))).toEqual(relayed(nudge));
+    expect(gateClientOp(nudge, as('view'))).toEqual(DROP);
+    expect(gateClientOp({ kind: 'nudge', targetId: '' }, as('edit'))).toEqual(DROP);
+    expect(
+      gateClientOp({ kind: 'nudge-refused', targetId: 's1', retryInMs: 1 }, as('edit')),
+    ).toEqual(DROP);
+  });
+
   // docs/specs/012-collaboration/follow-me-viewport.md: a camera is presence from every level, and only well formed.
   it('relays a camera from every level, its own fields alone, and drops one a follower could not apply', () => {
     const cam = { kind: 'viewport', tabId: 't', pan: { x: 1, y: 2 }, zoom: 1 };

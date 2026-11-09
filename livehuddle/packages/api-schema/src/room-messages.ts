@@ -10,6 +10,7 @@ import type { AvatarHandOp, AvatarLetSpeakOp } from './call-hand';
 import type { CallSessionOp, CallStopShareOp } from './call-control';
 import type { AvatarKnockAnswerOp, AvatarKnockOp } from './knock';
 import type { AvatarBellOp } from './bell';
+import type { NudgeOp, NudgeRefusedOp } from './nudge';
 import type { GameEventOp, GameInputOp } from './table-game';
 import type { CallsModeOp } from './calls-mode';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
@@ -78,6 +79,9 @@ export const PRESENCE_OP_KINDS = [
   // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "The wire"): a moment, from any level,
   // broadcast like a knock; each receiver checks it stands in earshot.
   'avatar-bell',
+  // A nudge from the Collaborators list (docs/specs/012-collaboration/nudge.md "The wire"): a moment, ADDRESSED to its
+  // target alone as a shove is, from an Editor or a Participant; the room holds each pair to one per 2 minutes.
+  'nudge',
   // A game at a piece (docs/specs/009-elements/social-pieces.md "Ping-Pong Table", "The wire"): a player's paddle, a
   // sample at most 20 a second, and a moment of the game (a serve, a strike, a miss), sent by the player whose moment
   // it is. Neither is worth ordering, logging or replaying: a reconnect misses moments, never the document. The room
@@ -156,6 +160,9 @@ export const SYSTEM_OP_KINDS = [
   'document-trashed',
   'changeset',
   'calls-mode',
+  // The room refusing a nudge sent inside its 2 minutes (docs/specs/012-collaboration/nudge.md "The wire"), to the
+  // sender alone: a client forging one could start someone's countdown, so none is relayed from a client.
+  'nudge-refused',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -496,6 +503,8 @@ export type RoomOp =
   | AvatarKnockOp
   | AvatarKnockAnswerOp
   | AvatarBellOp
+  | NudgeOp
+  | NudgeRefusedOp
   // A game at a piece (docs/specs/009-elements/social-pieces.md "The wire").
   | GameInputOp
   | GameEventOp

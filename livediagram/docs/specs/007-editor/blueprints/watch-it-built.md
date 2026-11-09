@@ -68,7 +68,10 @@ One `requestAnimationFrame` loop, running only while playing. Time is `(chapter,
    preferences and dock shown, all only when their JSON signature changes; a new look eases in through
    `easeNextStyleChange`, as a pick in the dialog does;
 3. holds open what the frame's `open` names and closes the rest it opened, newest first (`syncOpen`): a panel inside a
-   dialog closes before the dialog, or its Back would reopen the dialog's home;
+   dialog closes before the dialog, or its Back would reopen the dialog's home. `holdOpen` presses again on each
+   animation frame (30 at most) until all of it reads open, since a part can need a render first: a marker's flyout
+   opens only once the dock draws the pen in hand, a render after the frame that put it there. Paused or under reduced
+   motion no clock frame follows to press again, and without this Pens and Colours' flyout never opened (#668);
 4. opens the element menu as far as the frame's `menu.path`, pressing only section rows (`data-menu-section`, set by the
    workbench's `MenuFlyoutSection` and `MenuAccordionSection`) that are not yet expanded, so a control inside a
    section with the same words (Colours' "Border") is never pressed;

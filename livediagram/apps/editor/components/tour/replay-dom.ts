@@ -203,6 +203,32 @@ export function syncOpen(want: readonly string[], opened: Set<string>) {
   }
 }
 
+/** How many animation frames `holdOpen` tries again for, at most (about half a second). */
+export const HOLD_OPEN_FRAMES = 30;
+
+/**
+ * `syncOpen` now, then again on each animation frame while something `want` names is not open yet, `frames` times at
+ * most. A part may not open on the first press: a marker's flyout opens only once the dock draws the pen in hand, a
+ * render after the frame that put it there (byDock). While the clock runs its next frame would press again anyway, but
+ * paused, or under reduced motion (a chapter's end state, with no clock), nothing else would, and the flyout never
+ * opened (Work Tracker #668). Returns the stop: the next frame's hold, or the end, cancels this one.
+ */
+export function holdOpen(
+  want: readonly string[],
+  opened: Set<string>,
+  frames = HOLD_OPEN_FRAMES,
+): () => void {
+  let raf = 0;
+  let left = frames;
+  const settled = () => want.every((id) => OPENABLES[id]?.isOpen() ?? true);
+  const step = () => {
+    syncOpen(want, opened);
+    if (left-- > 0 && !settled()) raf = requestAnimationFrame(step);
+  };
+  step();
+  return () => cancelAnimationFrame(raf);
+}
+
 // A section row of the element menu or its flyouts (a flyout, an accordion: data-menu-section, the workbench's
 // MenuFlyoutSection and MenuAccordionSection), so a control with the same words inside a section (Colours' "Border"
 // colour, which opens its own picker) is never taken for the Border section's row.

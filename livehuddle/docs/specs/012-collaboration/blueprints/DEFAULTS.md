@@ -33,3 +33,13 @@ One row per default applied where a spec is silent or qualitative.
 | PA2 | proximity-audio | What starts audio                               | Walking where there is a call (muted, no prompt); sound resumes on the next press or key, the microphone prompt comes on the first unmute |
 | PA4 | proximity-audio | How a late joiner learns a speaker's microphone | The speaker resends its locator when a new walker reaches its tab, at most once a second                                                  |
 | PA6 | proximity-audio | Where the equaliser sits                        | Above the name chip, at reading size, in the speaker's colour                                                                             |
+
+| #   | Blueprint             | Spec silence                                  | Default applied                                                                             |
+| --- | --------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| JL1 | join-and-leave-sounds | Which chime plays first in a burst            | The first (leading edge), so an arrival is heard as it lands, with no timer in a hidden tab |
+| JL2 | join-and-leave-sounds | Where Do Not Disturb is read                  | A module flag the characters layer writes from the walking status, read at play time        |
+| JL3 | join-and-leave-sounds | Where the setting sits                        | Account › Notifications, In the Editor, after In-Editor Notifications                       |
+| N1  | nudge                 | What "notifies me" is when the tab is visible | The toast alone; a system notification only while hidden                                    |
+| N2  | nudge                 | Who may nudge                                 | Editors and Participants (`can.takePart`); a Viewer is nudged, never nudges                 |
+| N3  | nudge                 | Identity for the 2 minutes                    | Person tag, else collaboration key, else presence id, on both sides                         |
+| N4  | nudge                 | Do Not Disturb                                | Toast still shown, silently; no sound, no system notification                               |

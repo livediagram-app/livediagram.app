@@ -58,7 +58,8 @@ page is and offers; this section is the basics.
   and shapes over 200 ms (none under reduced motion).
 - **Centred in the viewport:** opening a tab fits the first page itself (`pageFitBox(page)`), never the whole row of
   pages: the tab's own fit on landing, and the fit after a template or an import
-  lands on it, frame the first page too (only Fit to Screen fits everything), and going to a page
+  lands on it (a blank of a page kind too, though it brings no elements), frame the first page too (only Fit
+  to Screen fits everything), and going to a page
   (its label, the page navigator, a new page) fits that page, so whatever its shape
   (a landscape slide on a wide screen too) it fills the view; turning or resizing a
   page re-fits it. Where the Toolbar strip lies over

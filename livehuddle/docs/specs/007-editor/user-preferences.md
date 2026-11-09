@@ -395,6 +395,12 @@ Missing key === undefined === default behaviour. Concretely:
   breakage. The gate is read fresh on each toast push (a synchronous
   `readUserPreferences()` call in `hooks/ui/useToast.tsx`), so a flip
   applies immediately with no subscription.
+- `joinLeaveSounds` undefined / true → the join and leave chimes play
+  ([Join and leave sounds](../012-collaboration/join-and-leave-sounds.md)); `false` silences them. Read when a
+  chime would play.
+- `desktopNotifications` undefined / true → a nudge in a hidden tab shows a system notification, once the browser
+  has granted permission ([Nudge](../012-collaboration/nudge.md#desktop-notifications)); `false` turns it off.
+  `desktopNotificationsOffered` true once the one-time offer to turn it on was answered either way.
 
 Empty (or missing entirely) localStorage entry, AND no settings kept
 for this owner, is therefore the "everything on" state.
@@ -807,7 +813,9 @@ and the dialog stays as the one complete, browsable index of them.
   a full keyboard and off on a tablet. Below it, the shortcut
   catalogue renders as collapsible groups. The
   Notifications group holds `notificationsEnabled`, whose description
-  notes that errors are always shown regardless. The
+  notes that errors are always shown regardless, then **Join and Leave Sounds** (`joinLeaveSounds`) and
+  **Desktop Notifications** (`desktopNotifications`, drawn against the browser's permission: greyed with a reason
+  when blocked or unsupported). The
   Accessibility group holds `reduceMotion`, noting the OS setting is
   always respected and this only adds a user-forced override.
 

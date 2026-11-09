@@ -2,19 +2,9 @@
 // person's own page, its name, the Layout and Background popovers opened to choose from, its size in the panel, the +
 // and its menu in Contents, where it joins the show. Each control stays live, so a pick made while its step is up is
 // kept.
-import type { PageTourApi, PageTourStep } from './page-tour-api';
-import {
-  addPageAnchor,
-  closeTitlePopover,
-  contentsRow,
-  contentsRowMenu,
-  openTitlePopover,
-  pageButton,
-  pageCog,
-  pageOrPopover,
-  pageSheet,
-} from './page-tour-dom';
-import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
+import type { PageTourStep } from './page-tour-api';
+import { pageCog, pageSheet } from './page-tour-dom';
+import { addPageStep, contentsMenuStep, lookStep } from './page-tour-parts';
 
 export function infographicTourSteps(): PageTourStep[] {
   return [
@@ -24,24 +14,22 @@ export function infographicTourSteps(): PageTourStep[] {
       body: "The page's name sits above it: press it to fit the page to the screen, or drag it to put your pages in another order.",
       selector: (api) => `${pageSheet(api.pageId)} [data-tour-id="page-name"]`,
     },
-    {
-      id: 'layouts',
-      title: 'Start From a Layout',
-      body: 'Hover a layout to preview it on your page. Press it to use it.',
-      selector: (api) => pageOrPopover(api.pageId, 'Layout'),
-      requires: (api) => pageButton(api.pageId, 'Layout'),
-      prepare: (api) => openTitlePopover(api.pageId, 'Layout'),
-      cleanup: (api) => closeTitlePopover(api.pageId, 'Layout'),
-    },
-    {
-      id: 'background',
-      title: 'Change the Background',
-      body: 'Colours, gradients or pictures. Hover to preview, press to keep.',
-      selector: (api) => pageOrPopover(api.pageId, 'Background'),
-      requires: (api) => pageButton(api.pageId, 'Background'),
-      prepare: (api) => openTitlePopover(api.pageId, 'Background'),
-      cleanup: (api) => closeTitlePopover(api.pageId, 'Background'),
-    },
+    lookStep(
+      {
+        id: 'layouts',
+        title: 'Start From a Layout',
+        body: 'Hover a layout to preview it on your page. Press it to use it.',
+      },
+      'Layout',
+    ),
+    lookStep(
+      {
+        id: 'background',
+        title: 'Change the Background',
+        body: 'Colours, gradients or pictures. Hover to preview, press to keep.',
+      },
+      'Background',
+    ),
     {
       id: 'page-size',
       title: 'Page Size',
@@ -51,21 +39,16 @@ export function infographicTourSteps(): PageTourStep[] {
       prepare: (api) => api.openPanel(api.pageId, 'page'),
       cleanup: (api) => api.closePanel(),
     },
-    {
+    addPageStep({
       id: 'add-page',
       title: 'Add a Page',
       body: '+ adds another page like this one. Every page of a tab is one kind.',
-      selector: addPageAnchor,
-    },
-    opensFrom(
-      {
-        id: 'present',
-        title: 'Present It',
-        body: 'Add to Slides puts any page in the show, and Present shows it full screen.',
-        selector: (api) => contentsRow(api.pageId),
-      },
-      (api: PageTourApi) => contentsRowMenu(api.pageId),
-    ),
+    }),
+    contentsMenuStep({
+      id: 'present',
+      title: 'Present It',
+      body: 'Add to Slides puts any page in the show, and Present shows it full screen.',
+    }),
     {
       id: 'outro',
       card: 'outro',
