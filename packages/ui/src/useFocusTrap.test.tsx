@@ -87,6 +87,29 @@ describe('useFocusTrap', () => {
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'First' }));
   });
 
+  // A collapsed AccordionSection keeps its switches laid out under `inert`: Tab skips them, so the trap must too,
+  // or Tab from the real last control leaves the modal.
+  it('wraps past controls inside an inert section', () => {
+    function Collapsed() {
+      const ref = useRef<HTMLDivElement>(null);
+      useFocusTrap(ref);
+      return (
+        <div ref={ref} role="dialog" tabIndex={-1}>
+          <button type="button">First</button>
+          <button type="button">Last</button>
+          <div inert>
+            <button type="button">Hidden</button>
+          </div>
+        </div>
+      );
+    }
+    render(<Collapsed />);
+    screen.getByRole('button', { name: 'Last' }).focus();
+    const e = fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Tab' });
+    expect(e).toBe(false);
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'First' }));
+  });
+
   it('leaves focus where the user has since put it', () => {
     function Closer() {
       const [open, setOpen] = useState(false);

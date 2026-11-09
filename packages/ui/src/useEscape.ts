@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { isComposingKey } from './composing-key';
 
 // Fire `onEscape` when the user presses the Escape key. Sibling to
 // `useClickOutside` (both shared from @liveworkspace/ui, so the editor and the
@@ -66,6 +67,8 @@ export function useEscape(onEscape: () => void, options: UseEscapeOptions = {}):
     const target: EventTarget = capture ? window : document;
     const handler = (e: Event) => {
       if (!(e instanceof KeyboardEvent) || e.key !== 'Escape') return;
+      // Escape drops an input method's word first (composing-key.ts): the surface stays open.
+      if (isComposingKey(e)) return;
       if (stopPropagation) e.stopPropagation();
       if (preventDefault) e.preventDefault();
       cbRef.current();
