@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio } from './colors';
+import { contrastRatio } from './colour-math';
 import { PEN_BOARDS, PEN_INK, isPenColourName, penColourHex, penColourLabel } from './pen-colours';
 import {
   STANDARD_COLOUR_NAMES,

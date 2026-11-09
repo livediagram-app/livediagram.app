@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, hexToRgb } from './colors';
+import { contrastRatio, hexToRgb } from './colour-math';
 import { inkToward, isOpaqueHex, mixHex, worstContrast } from './page-ink-contrast';
 
 // docs/specs/007-editor/pages-mode.md "Re-inking": the least change, keeping the hue.
