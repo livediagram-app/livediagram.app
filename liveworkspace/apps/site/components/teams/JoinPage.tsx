@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { accountApi, errorMessage, type JoinPreview } from '@/lib/account-api';
 import { signInHref, signUpHref } from '@/lib/accounts';
-import { joinTokenFrom, memberCountLabel, teamPath, INVITES_PATH } from '@/lib/teams';
+import { isolatedName, joinTokenFrom, memberCountLabel, teamPath, INVITES_PATH } from '@/lib/teams';
 import { Footer } from '../Footer';
 import { Header } from '../Header';
 import { Button } from '@liveworkspace/ui';
@@ -98,7 +98,7 @@ export function JoinPage() {
             You’re invited to join
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight break-words text-slate-900 dark:text-white">
-            {state.preview.teamName}
+            <bdi>{state.preview.teamName}</bdi>
           </h1>
           {/* The organisation is someone's typing, isolated so its direction never turns the count around. */}
           <p className="mt-2 text-slate-600 dark:text-slate-400">
@@ -121,7 +121,7 @@ export function JoinPage() {
                 className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}
                 onClick={() => void join()}
               >
-                {busy ? 'Joining…' : `Join ${state.preview.teamName}`}
+                {busy ? 'Joining…' : `Join ${isolatedName(state.preview.teamName)}`}
               </Button>
               <a
                 href={INVITES_PATH}
