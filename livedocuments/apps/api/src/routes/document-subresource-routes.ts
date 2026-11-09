@@ -7,7 +7,7 @@ import { redactCommentAuthorIds } from '../comments';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { tellConnectionLeft } from '@liveworkspace/index-app';
 import { indexAppClient } from '../index-service';
-import { conflict, forbidden, json, noContent, notFound } from '../responses';
+import { conflict, forbidden, json, missingAuth, noContent, notFound } from '../responses';
 import { tabEtag } from '@livedocuments/api-schema';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
@@ -23,7 +23,6 @@ import {
   gateEdit,
   gateGrant,
   missingDocument,
-  requireOwner,
   type DocumentRouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
@@ -73,17 +72,19 @@ export async function handleDocumentSubresources(
       const refused = refuseTokenTabPut(ctx, id, tabId);
       if (refused) return refused;
     }
-    const owner = requireOwner(ctx);
-    if (owner instanceof Response) return owner;
+    // A read needs only a grant: a link visitor with no identity (docs/specs/015-api/api.md) reads with its share code
+    // alone, as a guest-only deployment's visitors and anyone whose guest handoff failed do. Every write needs a caller.
+    const caller = ctx.resolveOwner();
+    if (caller === null && request.method !== 'GET') return missingAuth();
     // A save reads only what it needs of the document, in one query (getDocumentForSave): it runs on
     // every autosave.
-    if (request.method === 'PUT') {
+    if (request.method === 'PUT' && caller !== null) {
       const saving = await getDocumentForSave(env, id);
       if (!saving) return missingDocument(ctx, id);
       // Owner or edit-role share visitor only, and a tab-scoped visitor on their own tab only.
       const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
       if (!allowed) return forbidden();
-      return handleTabPut(ctx, saving, tabId, owner);
+      return handleTabPut(ctx, saving, tabId, caller);
     }
     const existing = await getDocument(env, id);
     if (!existing) return missingDocument(ctx, id);
@@ -104,7 +105,7 @@ export async function handleDocumentSubresources(
       const tab = await getTab(env, id, tabId);
       if (!tab) return notFound();
       // An agent's read shows it on this tab (docs/specs/024-agents/agent-presence.md "Presence").
-      refreshAfterRead(ctx, existing, tabId, owner);
+      if (caller !== null) refreshAfterRead(ctx, existing, tabId, caller);
       // Blank other people's comment author ids before handing the tab
       // to a non-owner: a visitor should only ever see their OWN author
       // id (so they can delete-own), never another participant's owner
@@ -114,13 +115,16 @@ export async function handleDocumentSubresources(
       // A Community visitor gets the tab without its conversation or its people
       // (docs/specs/025-community/community.md "Viewing a post's document").
       const safe =
-        owner === existing.ownerId
+        caller === existing.ownerId
           ? tab
           : grant.community
             ? // Nor which other item a connected tab stands for (connected-tabs.md).
               { ...redactTabForCommunity(tab), connection: undefined }
-            : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
-      if (view) return answerTabView(ctx, view, existing, safe, owner);
+            : { ...tab, elements: redactCommentAuthorIds(tab.elements, caller) };
+      // A view may read the caller's own selection, so it needs a caller.
+      if (view) {
+        return caller === null ? missingAuth() : answerTabView(ctx, view, existing, safe, caller);
+      }
       // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
       // revision", CS5): what an agent read, for its changeset base.
       return json({ tab: safe }, { headers: { ETag: tabEtag(tab.rev) } });
