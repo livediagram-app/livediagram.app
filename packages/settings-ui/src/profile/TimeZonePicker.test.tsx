@@ -161,6 +161,26 @@ describe('the Time Zone row', () => {
     expect(heard).not.toHaveBeenCalled();
   });
 
+  // Under Next, React's listener and a Dialog's Escape listener share one node (the document): the list's Escape must
+  // stop that one too, or it closes the whole Settings dialog behind it.
+  it("keeps its Escape from a listener on React's own root node", () => {
+    const root = document.createElement('div');
+    document.body.append(root);
+    render(<TimeZoneRow initial={profile(detected, true)} host={fakeHost()} />, {
+      container: root,
+    });
+    const heard = vi.fn();
+    root.addEventListener('keydown', heard);
+    open();
+    fireEvent.keyDown(screen.getByRole('combobox', { name: 'Search time zones' }), {
+      key: 'Escape',
+    });
+    root.removeEventListener('keydown', heard);
+    root.remove();
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(heard).not.toHaveBeenCalled();
+  });
+
   // design-principles.md: Enter, Escape and the arrows confirm, drop or move through an input method's word first.
   it('leaves Enter, Escape and the arrows to an input method composing a word', () => {
     const host = fakeHost();
