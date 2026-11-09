@@ -23,6 +23,7 @@ export function useEditorTileActions(): PaletteTileActions {
     addLinkCard,
     addVideo,
     addAvatar,
+    addLogoStrip,
     addBanner,
     addHero,
     addHeader,
@@ -32,6 +33,7 @@ export function useEditorTileActions(): PaletteTileActions {
   } = useEditorContext();
   const byComponent = {
     avatar: addAvatar,
+    'logo-strip': addLogoStrip,
     banner: addBanner,
     hero: addHero,
     header: addHeader,

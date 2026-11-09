@@ -6,7 +6,10 @@ import {
   STACK_COLUMNS_MIN,
   STACK_DIRECTIONS,
   STACK_SPACING_MAX,
+  stackPicturesGreyscale,
   stackSettingsOf,
+  withStackPicturesGreyscale,
+  type Element,
   withStackSettings,
   type ShapeElement,
   type StackAlign,
@@ -15,7 +18,7 @@ import {
 import { Glyph } from '@livedocuments/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
-import { BorderGrid } from '@/components/palette/context-menu-rows';
+import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { PreviewSliderRow } from '@liveworkspace/workbench/components/primitives/PreviewSliderRow';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
@@ -59,12 +62,16 @@ export function StackMenuSection({
   target,
   ops,
   sectionProps,
+  elements = [],
 }: {
   target: ShapeElement;
   ops: ElementStyleOps;
+  // The tab's elements, to find the pictures the stack holds (Greyscale Pictures, docs/specs/009-elements/logo-strip.md).
+  elements?: readonly Element[];
   sectionProps: (id: string) => { open: boolean; onToggle: () => void; flush: boolean };
 }) {
   const s = stackSettingsOf(target);
+  const pictures = stackPicturesGreyscale(elements, target);
   return (
     <MenuAccordionSection title="Stack" icon={<DataMenuGlyph />} {...sectionProps('stack')}>
       <div className="px-2 pb-1">
@@ -142,6 +149,20 @@ export function StackMenuSection({
           ))}
         </BorderGrid>
       </div>
+      {/* A logo strip's quiet logos: every picture the stack holds in grey, or back in colour. */}
+      {pictures.hasPictures ? (
+        <MenuToggleRow
+          label="Greyscale Pictures"
+          description="Draw every picture in it in shades of grey."
+          checked={pictures.greyscale}
+          onToggle={() =>
+            ops.commitTab(
+              (els) => withStackPicturesGreyscale(els, target.id, !pictures.greyscale),
+              'ImageGreyscale',
+            )
+          }
+        />
+      ) : null}
     </MenuAccordionSection>
   );
 }

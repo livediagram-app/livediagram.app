@@ -1157,7 +1157,7 @@ export const articles: Article[] = [
     description:
       'Every tab is a row of pages: add, size, paint, reorder, lock and find them, then export or present.',
     keywords:
-      'pages page infographic infographics poster one pager one-pager flyer handout report sheet a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles document page kind first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale split into pages contents sidebar find a page lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
+      'pages page infographic infographics poster one pager one-pager flyer handout report sheet a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles document page kind first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale split into pages contents sidebar find a page lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade blur blurred soft softened frosted upload image title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1808,7 +1808,7 @@ export const articles: Article[] = [
     title: 'Images',
     description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
     keywords:
-      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution',
+      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution crop trim mask shape circle hexagon star greyscale grayscale black white logo strip logos clients',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

@@ -646,7 +646,8 @@ An infographic, slide or article page can be painted with a picture:
   - **On the canvas** the sheet paints a blurred copy of the picture, made once in the browser per picture and
     blur (the picture drawn small, a three-pass box blur with its edges held, saved as a JPEG), never a CSS blur
     filter, so a pan or zoom never re-blurs. The last eight copies are kept; the sheet shows the picture's tone
-    until its copy is ready, never the sharp picture first.
+    until its copy is ready, never the sharp picture first. While Blur is dragged the last copy keeps showing and
+    the next is made once the slider has rested 150 ms, so a drag makes one copy, not one per step.
   - **In an export** (PNG, PDF and SVG, and the previews) the picture is drawn under an SVG `feGaussianBlur` at
     the same strength, its edges held solid.
 - **A picture is readable by default.** A new picture takes **Light 60%** on a light canvas and
@@ -1454,8 +1455,9 @@ be read across a room:
   **Four Ideas** (four cards, two by two, each an icon in a disc, a heading and a line), **Title
   Only** (a title, a lead line and a rule, the rest of the slide left for the author's own content),
   **Sidebar Title** (a panel in the theme's fill down the left edge, full bleed, holding an eyebrow
-  and the title, five bullet points beside it) and **Compare Two** (two cards side by side, each a
-  name, a line and three points, a "vs" disc between them).
+  and the title, five bullet points beside it), **Compare Two** (two cards side by side, each a
+  name, a line and three points, a "vs" disc between them) and **Logo Strip** (an eyebrow, a title and
+  a line over six greyscale logos evenly spaced, [Logo strip](../009-elements/logo-strip.md)).
 - **Pictures**: slides led by a picture, as a slide app lays them out. **Text and Picture** (an
   eyebrow, a two-line title, a rule, a lead and three points on the left half, a picture filling
   the right half to the slide's edges), **Picture and Text** (the same words on the right, a
@@ -1489,7 +1491,7 @@ be read across a room:
   beside a full-height picture) and **Resources** (four links, each an icon in a disc, a title and
   where to find it).
 
-Sixty-one in all, in six categories (Openers, Content, Pictures, Data, Steps and Time, Closers), at
+Sixty-two in all, in six categories (Openers, Content, Pictures, Data, Steps and Time, Closers), at
 least nine to a category; a slide layout reused from the infographics is the same layout (same id,
 same build), filed under the slide category. Every one fits a 16:9 and a 4:3 slide inside its
 margins, every icon is one the catalogue draws, and no two of its text boxes overlap on either

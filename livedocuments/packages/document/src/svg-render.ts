@@ -8,6 +8,7 @@
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
 
+import { isImageMask } from './image-frame';
 import { PAGE_EXPORT_PAPER, type PageExportFrame } from './page-frame';
 import { svgTabWindow, type ResolveTabWindow } from './tab-window';
 import {
@@ -289,7 +290,8 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
           ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
       // Its hand-drawn edge (finish.md "Images"), then a hero's caption card
       // (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
-      (sketch ?? '') +
+      // A masked picture has no rectangle for a hand-drawn edge to follow (picture-crop-and-mask.md).
+      (el.type === 'image' && isImageMask(el.mask) ? '' : (sketch ?? '')) +
       (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
   } else if (sketch && (shape.kind === 'ellipse' || shape.kind === 'diamond')) {
     shapeStr = sketch;

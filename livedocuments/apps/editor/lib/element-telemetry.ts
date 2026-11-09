@@ -146,6 +146,7 @@ export const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
   stat: 'StatRow',
   process: 'ProcessSteps',
   avatar: 'Avatar',
+  'logo-strip': 'LogoStrip',
 };
 
 export function componentTelemetryType(kind: ComponentKind): string {

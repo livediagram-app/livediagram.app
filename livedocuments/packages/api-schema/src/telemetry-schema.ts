@@ -338,6 +338,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Table',
     'Image',
     'Avatar',
+    // The logo strip (docs/specs/009-elements/logo-strip.md): a stack of greyscale logos.
+    'LogoStrip',
     // Pointer note (docs/specs/009-elements/pointer-note.md): a Write element.
     'PointerNote',
     'LinkCard',

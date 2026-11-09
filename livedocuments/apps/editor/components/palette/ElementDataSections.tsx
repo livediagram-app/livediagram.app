@@ -249,6 +249,7 @@ export function ElementDataSections({
             <StackMenuSection
               target={shapeTarget}
               ops={props.elementStyle}
+              elements={props.elements}
               sectionProps={sectionProps}
             />
           ) : null}

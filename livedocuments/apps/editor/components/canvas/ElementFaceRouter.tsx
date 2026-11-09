@@ -143,6 +143,8 @@ export function ElementFaceRouter({
             shareCode={imageContext.shareCode}
             onOpenPicker={imageContext.onOpenPicker}
             fontFamily={fontFamily}
+            isSelected={isSelected}
+            onCommitCrop={readOnly || isLocked ? undefined : imageContext.onCommitImageCrop}
           />
           {/* A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image. */}
           {element.heroCaption ? (

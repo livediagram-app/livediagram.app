@@ -180,6 +180,7 @@ export type CanvasProps = {
   onAddStatRow: () => void;
   onAddProcess: () => void;
   onAddAvatar: () => void;
+  onAddLogoStrip: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Any other file dropped on the canvas, at its canvas point (an image lands there). Absent where files are
@@ -391,6 +392,11 @@ export type CanvasProps = {
     documentId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
+    // Done on a crop (docs/specs/009-elements/picture-crop-and-mask.md); an Editor's only.
+    onCommitImageCrop?: (
+      elementId: string,
+      result: import('@/lib/image-crop-math').CropResult,
+    ) => void;
   };
   // The visitor name prompt (IdentityPrompt).
   showIdentityPrompt: boolean;

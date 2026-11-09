@@ -395,3 +395,39 @@ describe('imagePlaceholderMetrics', () => {
     });
   });
 });
+
+// docs/specs/009-elements/picture-crop-and-mask.md: a mask clips the face to its shape, greyscale greys the picture,
+// and a crop lays the picture out inside a part.
+describe('picture crop, mask and greyscale', () => {
+  const ready = () => {
+    blob.state = { status: 'ready', src: 'data:image/png;base64,AAAA' } as typeof blob.state;
+  };
+
+  it('clips a masked picture to its shape, with no rounded corners', () => {
+    ready();
+    const { container } = draw(image({ imageId: 'x', mask: 'circle', borderRadius: 'lg' }));
+    expect(box(container).style.clipPath).toMatch(/^path\(/);
+    expect(box(container).style.borderRadius).toBe('0px');
+  });
+
+  it('draws a greyscale picture in grey', () => {
+    ready();
+    const { container } = draw(image({ imageId: 'x', greyscale: true }));
+    expect(container.querySelector('img')!.style.filter).toBe('grayscale(1)');
+  });
+
+  it('lays a cropped picture out in a part, at its own size once loaded', () => {
+    ready();
+    const { container } = draw(
+      image({ imageId: 'x', crop: { x: 0.5, y: 0, width: 0.5, height: 1 } }),
+    );
+    const img = container.querySelector('img')!;
+    Object.defineProperty(img, 'naturalWidth', { value: 400 });
+    Object.defineProperty(img, 'naturalHeight', { value: 300 });
+    fireEvent.load(img);
+    const shown = container.querySelector('img')!;
+    // The right half of a 4:3 picture is 2:3; contained in 600 x 300 it is 200 wide, the whole one 400.
+    expect(shown.style.width).toBe('400px');
+    expect(shown.style.left).toBe('-200px');
+  });
+});

@@ -58,6 +58,8 @@ import {
   thanksImageSlide,
 } from './slide-layouts-closers';
 
+import { logoStripSlide } from './slide-layouts-logos';
+
 export { slideType } from './slide-layout-kit';
 import { PAGE_LAYOUTS, type PageLayout, type PageLayoutId } from './page-layouts';
 
@@ -78,6 +80,7 @@ export type SlideLayoutId =
   | 'slide-three-points'
   | 'slide-full-image'
   | 'slide-takeaway'
+  | 'slide-logos'
   | 'slide-four-ideas'
   | 'slide-three-stats'
   | 'slide-big-chart'
@@ -386,6 +389,13 @@ export const SLIDE_LAYOUTS: readonly SlideLayout[] = [
     'Key Takeaway',
     'The one thing to remember on a card, and why',
     takeawaySlide,
+  ),
+  own(
+    'slide-logos',
+    'slide-content',
+    'Logo Strip',
+    'Who trusts you: six logos in grey, evenly spaced',
+    logoStripSlide,
   ),
   own(
     'slide-four-ideas',
