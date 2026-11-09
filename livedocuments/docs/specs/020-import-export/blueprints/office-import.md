@@ -210,7 +210,9 @@ Follows the spec's table. Precisely:
   shape's, layout's and master placeholder's `a:lstStyle`, else the master's `p:txStyles` for its type, else left;
   `a:bodyPr anchor` (`ctr` middle, `b` bottom, else top), inherited like the box.
 - Bold or italic when every run with text has `b="1"` / `i="1"`.
-- `p:pic`: a picture item (`a:srcRect` with any edge set: `cropped`); a picture carrying `a:videoFile` /
+- `p:pic`: a picture item, its box its own `a:xfrm`, else (a picture in a placeholder) its placeholder's on the
+  layout, else on the master, matched as a text placeholder is (`a:srcRect` with any edge set: `cropped`); a
+  picture carrying `a:videoFile` /
   `a:audioFile` / a media extension is `media`, not a picture; `r:link` `linkedImages`.
 - `p:grpSp`: its children mapped through `a:off`, `a:ext`, `a:chOff`, `a:chExt`.
 - `p:graphicFrame`: by `a:graphicData uri`: a table `tables`, a chart `charts`, a diagram `diagrams`, an OLE

@@ -221,6 +221,27 @@ describe('readPptx, the edges', () => {
     });
   });
 
+  it('places a picture put into a placeholder in its layout’s box, else its master’s', async () => {
+    const inPlaceholder = (ph: string) =>
+      `<p:pic><p:nvPicPr><p:cNvPr id="9" name="Picture"/><p:cNvPicPr/><p:nvPr>${ph}</p:nvPr></p:nvPicPr><p:blipFill><a:blip r:embed="rIdImg"/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr/></p:pic>`;
+    const rels = [{ id: 'rIdImg', type: 'image', target: '../media/image1.png' }];
+    const deck = await read({
+      slides: [
+        { layout: 1, tree: inPlaceholder('<p:ph type="pic" idx="1"/>'), rels },
+        { layout: 2, tree: inPlaceholder('<p:ph idx="1"/>'), rels },
+        // Not a placeholder and no box: drawn nowhere, so left out.
+        { layout: 2, tree: inPlaceholder(''), rels },
+      ],
+      media: { 'ppt/media/image1.png': new Uint8Array([1]) },
+    });
+    expect(deck.slides.map((s) => s.items.map((i) => i.kind === 'picture' && i.box))).toEqual([
+      [{ x: 1524000, y: 3602038, cx: 9144000, cy: 1655762 }],
+      [{ x: 838200, y: 1825625, cx: 10515600, cy: 4351338 }],
+      [],
+    ]);
+    expect(deck.pictures[0]).toMatchObject({ widthPx: 960, heightPx: 174 });
+  });
+
   it('numbers by the list’s scheme and start, restarts deeper levels, and takes numbering from a list style', async () => {
     const at = (text: string, lvl: number, bu: string) =>
       `<a:p><a:pPr lvl="${lvl}">${bu}</a:pPr><a:r><a:t>${text}</a:t></a:r></a:p>`;

@@ -130,8 +130,16 @@ function pictureShape(pic: XmlElement, map: GroupMap, ctx: SlideContext): void {
     addSkip(ctx.tally, 'media');
     return;
   }
+  // A picture put into a placeholder has no box of its own: it sits in its layout's, then its master's, as text does.
   const own = boxOf(pic);
-  if (!own) return;
+  const ph = own ? undefined : placeholderOf(pic);
+  const box = own
+    ? map(own)
+    : ph
+      ? (boxOf(inheritedShape(spTreeOf(ctx.inherit.layout), ph, true)) ??
+        boxOf(inheritedShape(spTreeOf(ctx.inherit.master), ph, false)))
+      : undefined;
+  if (!box) return;
   const blipFill = child(pic, 'p:blipFill');
   const blip = child(blipFill, 'a:blip');
   const embed = blip?.attrs['r:embed'];
@@ -140,7 +148,6 @@ function pictureShape(pic: XmlElement, map: GroupMap, ctx: SlideContext): void {
     addSkip(ctx.tally, 'linkedImages');
     return;
   }
-  const box = map(own);
   const crop = child(blipFill, 'a:srcRect');
   const cropped = !!crop && ['l', 't', 'r', 'b'].some((k) => (intAttr(crop, k) ?? 0) !== 0);
   const cNvPr = path(pic, 'p:nvPicPr', 'p:cNvPr');

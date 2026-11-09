@@ -85,7 +85,8 @@ sits on the slide, scaled from the deck's size to the page's.
   on the page (past the editor's largest size, 48 px, that size scaled up, as a resized headline is); bold or
   italic when every run is; the first paragraph's alignment, else its list style's (the shape's, its layout's,
   its master's), else the master's text style's.
-- **Pictures** become **image** elements in the picture's box; a cropped picture fills its box (cover).
+- **Pictures** become **image** elements in the picture's box (a picture put into a placeholder, with no place of
+  its own, in its layout's, then its master's); a cropped picture fills its box (cover).
 - **Groups** are opened: their members are placed through the group's own scaling.
 - **Speaker notes** become the slide's notes in the Slide Deck as **one note card** holding the notes page's text
   (its paragraphs as lines), the same cards the page's **Notes** button and the presenter view show
