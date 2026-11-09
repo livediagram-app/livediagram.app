@@ -119,6 +119,24 @@ describe('settings catalogue', () => {
     expect(basics.write({ tourSeen: true }, true).tourSeen).toBe(false);
   });
 
+  // docs/specs/007-editor/watch-it-built.md "Settings": a topic's switch is how one topic is offered again, so it stays
+  // offered when every topic is taken and the mode's switch reads off. Show Me's kinds likewise
+  // (element-tours.md "Settings"). A panel's rows still follow its Enable switch.
+  it("keeps a tour's nested switches offered while the tour's own switch is off", () => {
+    const all = ['diagram-basics', 'diagram-look', 'diagram-shape', 'diagram-find', 'diagram-tidy'];
+    const rowsOf = (preferences: UserPreferences) =>
+      visibleCategories({ emailEnabled: false, signedIn: false, preferences }).flatMap((c) =>
+        c.rows.map((r) => r.key),
+      );
+    const taken = rowsOf({ watchTopics: all, elementToursSeen: true });
+    for (const id of all) expect(taken).toContain(`watchTopic-${id}`);
+    expect(taken.some((k) => k.startsWith('elementTour-'))).toBe(true);
+    const panel = SWITCHES.find((r) => r.parent && r.parent !== 'elementToursSeen' && !r.key.startsWith('watchTopic-'))!;
+    const parent = SWITCHES.find((r) => r.key === panel.parent)!;
+    const off = parent.write({}, false);
+    expect(rowsOf(off)).not.toContain(panel.key);
+  });
+
   // docs/specs/007-editor/user-preferences.md "Getting Started": a category of its own, one switch per tour in
   // the order the tours come.
   it('gives the tours a category of their own, a switch each with its own article', () => {
