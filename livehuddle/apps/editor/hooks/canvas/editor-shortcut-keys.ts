@@ -277,6 +277,8 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
 // is a canvas chord the browser would act on in its place (duplicate, select-all, z-order, zoom), so it is
 // prevented and does nothing; `ignore` is every other key, left to the browser.
 type CoveredKeyRole = 'run' | 'swallow' | 'ignore';
+// A Set, not `'[]{}'.includes(key)`: an empty key (synthetic events, some IMEs) is a substring of every string.
+const BRACKET_KEYS = new Set(['[', ']', '{', '}']);
 export function coveredKeyRole(
   e: Pick<KeyboardEvent, 'key' | 'code' | 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey'>,
 ): CoveredKeyRole {
@@ -291,7 +293,7 @@ export function coveredKeyRole(
       e.key === '-' ||
       e.key === '0' ||
       (e.shiftKey &&
-        (e.code === 'BracketRight' || e.code === 'BracketLeft' || '[]{}'.includes(e.key)))
+        (e.code === 'BracketRight' || e.code === 'BracketLeft' || BRACKET_KEYS.has(e.key)))
     )
       return 'swallow';
     return 'ignore';
