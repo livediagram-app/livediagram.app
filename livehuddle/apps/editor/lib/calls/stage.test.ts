@@ -451,6 +451,38 @@ describe('raised hands let speak', () => {
     // Measured: about 30 µs a scene (1.8 ms for 60).
     expect(best).toBeLessThan(cpuBudgetMs(30));
   });
+
+  it('follows 100 letters who all left, through a full roster of keys, within the same budget', () => {
+    // The worst case for following the person: every hand's letter is gone, so each scans the roster's keys.
+    const walkers = new Map<string, Point>(
+      Array.from({ length: 100 }, (_, i) => [`p${i}`, { x: 20 + i * 11, y: 600 }] as const),
+    );
+    walkers.set('ed2', onStage);
+    const levels = new Map<string, AccessLevel>([['ed2', 'edit']]);
+    const hands = new Map(
+      Array.from(
+        { length: 100 },
+        (_, i) => [`p${i}`, { letSpeak: `gone${i}`, letSpeakKey: 'K-ed' }] as const,
+      ),
+    );
+    const keys = new Map<string, string>(
+      Array.from({ length: 99 }, (_, i) => [`p${i}`, `K-${i}`] as const),
+    );
+    keys.set('ed2', 'K-ed');
+    let allowed: ReadonlySet<string> = new Set();
+    const best = Math.min(
+      ...Array.from({ length: 5 }, () =>
+        cpuMsOf(() => {
+          for (let i = 0; i < 60; i++)
+            allowed = letSpeakers(hands, walkers, levels, stages, new Set(), false, keys);
+        }),
+      ),
+    );
+    expect(allowed.size).toBe(100);
+    // Measured (best of five, CPU time): 1.6 ms for 60 scenes, about 27 µs each; 4.8 ms before the keys were
+    // turned round once per roster.
+    expect(best).toBeLessThan(cpuBudgetMs(30));
+  });
 });
 
 // docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in" (part 4): the All-Hands Hall template

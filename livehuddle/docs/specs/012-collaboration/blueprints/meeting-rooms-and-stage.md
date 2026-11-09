@@ -266,6 +266,10 @@ refused` and nothing is delivered. The browser's own check stays. The room keeps
   count of the hands up; a hand changing re-runs the scene once. Measured (best of five, CPU time): 100 hands all let
   speak, with the staging, is about 30 µs a scene. The canvas's `RaisedHands` draws nothing and costs one empty
   check while no hand is up; the hands store notifies only on a raise, a lower, a let-speak or a prune.
+- Following a letter as a person (`letterMay`) reads the roster only when the letter's own presence id fails, through
+  the roster's keys turned round once per roster (a `WeakMap` on the store's map). Measured (best of five, CPU time):
+  100 hands whose letters all left, with 100 keys on the roster, is about 27 µs a scene (80 µs scanning the roster
+  per hand). The room's `letterMayNow` scans its sessions' keys only for a hand whose letter left, once per answer.
 - A stage is one speaker to everyone: `listeners` streams per speaker (the spec's Cost), subscribed in batches of 16.
 - A room hears by distance (owner, 2026-11-06): `togetherWith` answers `'open'` for anyone on your side of the walls,
   room or floor, so `nextHeard` measures them as on the open floor; `'room'` is left for fellow speakers on a stage.

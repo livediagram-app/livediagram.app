@@ -53,11 +53,27 @@ export function letterMay(
 ): boolean {
   if (mayLetSpeak(letter.id, walkers, levels, stages)) return true;
   if (letter.key === null) return false;
-  for (const [id, key] of keys) {
-    if (key === letter.key && id !== letter.id && mayLetSpeak(id, walkers, levels, stages))
-      return true;
+  for (const id of idsByKey(keys).get(letter.key) ?? []) {
+    if (id !== letter.id && mayLetSpeak(id, walkers, levels, stages)) return true;
   }
   return false;
+}
+
+// Each roster's keys turned round (key to its presence ids), made once per roster: the store replaces its map when
+// the roster changes, so a scene of many hands whose letters left reads one list each, not the whole roster.
+const byKeyCache = new WeakMap<ReadonlyMap<string, string>, Map<string, string[]>>();
+function idsByKey(keys: ReadonlyMap<string, string>): ReadonlyMap<string, readonly string[]> {
+  let out = byKeyCache.get(keys);
+  if (!out) {
+    out = new Map();
+    for (const [id, key] of keys) {
+      const ids = out.get(key);
+      if (ids) ids.push(id);
+      else out.set(key, [id]);
+    }
+    byKeyCache.set(keys, out);
+  }
+  return out;
 }
 
 /** Whether you yourself may let a raised hand speak: an Editor, or standing on a stage that lets you speak. */
