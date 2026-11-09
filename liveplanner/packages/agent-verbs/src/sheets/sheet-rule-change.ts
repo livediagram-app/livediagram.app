@@ -329,7 +329,8 @@ export function buildRuleChange(
               `"${when.condition}" is not a condition: ${AGENT_CONDITIONS.join(', ')}.`,
             );
           // A value it takes and lacks would match every cell or none: refused, as the form's Done is.
-          const blank = (v: unknown) => v === undefined || v === null || String(v).trim() === '';
+          const blank = (v: number | string | null | undefined) =>
+            v === undefined || v === null || String(v).trim() === '';
           const n = conditionValues(op);
           if ((n >= 1 && blank(when.value)) || (n === 2 && blank(when.value2)))
             return refuse(

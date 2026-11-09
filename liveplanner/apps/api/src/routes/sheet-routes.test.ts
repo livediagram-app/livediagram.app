@@ -757,9 +757,17 @@ describe('writes', () => {
       { r: s.layout.rows[0]!, c: s.layout.cols[0]!, i: { n: 1 } },
       { r: 'gone0000', c: s.layout.cols[0]!, i: { n: 2 } },
     ];
-    const res = await storeSheetWrite(ctx, 'd1', 'sheetA00', { write: { kind: 'cells', cells } }, by, null, {
-      atRev: s.rev,
-    });
+    const res = await storeSheetWrite(
+      ctx,
+      'd1',
+      'sheetA00',
+      { write: { kind: 'cells', cells } },
+      by,
+      null,
+      {
+        atRev: s.rev,
+      },
+    );
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ error: 'write_invalid' });
     expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM sheet_cells').get()).toEqual({ n: 0 });

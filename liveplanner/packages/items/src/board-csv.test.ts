@@ -174,11 +174,19 @@ describe('boardCsvRows', () => {
       items,
       types,
     );
-    expect(sorted.slice(1).map((r) => r[1])).toEqual(['Ship it, "now"', 'Earlier', 'Epic', 'Crash']);
+    expect(sorted.slice(1).map((r) => r[1])).toEqual([
+      'Ship it, "now"',
+      'Earlier',
+      'Epic',
+      'Crash',
+    ]);
     const team: ItemTypeDef = {
       ...task,
       fields: [...task.fields, 'f-who'],
-      custom: [...task.custom, { id: 'f-who', label: 'Who', kind: 'person', several: true }],
+      custom: [
+        ...(task.custom ?? []),
+        { id: 'f-who', label: 'Who', kind: 'person', multiple: true },
+      ],
     };
     const both = item({ title: 'Pair', status: 'todo', 'f-who': [ALI, SAM] });
     const lanes = boardCsvRows(
