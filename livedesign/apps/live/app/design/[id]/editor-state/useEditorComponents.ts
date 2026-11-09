@@ -1,7 +1,7 @@
 import type { Tab } from '@livedesign/design';
 import { useComponentSession } from '../useComponentSession';
 import { useComponentActions } from '../useComponentActions';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorSession } from './useEditorSession';
 import type { EditorPersistence } from './useEditorPersistence';
@@ -15,7 +15,7 @@ import type { EditorPages } from './useEditorPages';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorComponents({
-  documentSlice,
+  designSlice,
   selectionSlice,
   sessionSlice,
   persistenceSlice,
@@ -23,7 +23,7 @@ export function useEditorComponents({
   viewportSlice,
   pagesSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   sessionSlice: EditorSession;
   persistenceSlice: EditorPersistence;
@@ -31,7 +31,7 @@ export function useEditorComponents({
   viewportSlice: EditorViewport;
   pagesSlice: EditorPages;
 }) {
-  const { ownedComponentSessions, commitTabs } = documentSlice;
+  const { ownedComponentSessions, commitTabs } = designSlice;
   const { activeId, setSelectedId, setMultiSelectedIds } = selectionSlice;
   const { selfParticipant, canEdit, participant } = sessionSlice;
   const { tabsRef } = persistenceSlice;

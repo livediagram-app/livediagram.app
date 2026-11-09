@@ -7,7 +7,7 @@ import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { announcePageLocked } from '@/lib/page-lock-guard';
 import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
 import { activeElementsCommit } from '../active-elements-commit';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorSession } from './useEditorSession';
 import type { EditorPersistence } from './useEditorPersistence';
@@ -21,7 +21,7 @@ import type { EditorComments } from './useEditorComments';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorPages({
-  documentSlice,
+  designSlice,
   selectionSlice,
   sessionSlice,
   persistenceSlice,
@@ -29,7 +29,7 @@ export function useEditorPages({
   viewportSlice,
   commentsSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   sessionSlice: EditorSession;
   persistenceSlice: EditorPersistence;
@@ -37,7 +37,7 @@ export function useEditorPages({
   viewportSlice: EditorViewport;
   commentsSlice: EditorComments;
 }) {
-  const { pageLockGuardRef, commitTabs } = documentSlice;
+  const { pageLockGuardRef, commitTabs } = designSlice;
   const { activeId, setSelectedId, setEditingId, setMultiSelectedIds } = selectionSlice;
   const {
     openComments,

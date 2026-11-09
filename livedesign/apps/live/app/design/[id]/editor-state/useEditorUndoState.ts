@@ -1,5 +1,5 @@
 import { useEditorHistory as useUndoRedo } from '../useEditorHistory';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorPages } from './useEditorPages';
 
@@ -8,15 +8,15 @@ import type { EditorPages } from './useEditorPages';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorUndoState({
-  documentSlice,
+  designSlice,
   selectionSlice,
   pagesSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   pagesSlice: EditorPages;
 }) {
-  const { canHistoryUndo, canHistoryRedo, undoHistory, redoHistory, tickTabs } = documentSlice;
+  const { canHistoryUndo, canHistoryRedo, undoHistory, redoHistory, tickTabs } = designSlice;
   const { activeId, setSelectedId, setEditingId, setFormatSourceId } = selectionSlice;
   const { activeTabLocked, editsBlocked } = pagesSlice;
   // Undo / redo handlers. See useEditorHistory.

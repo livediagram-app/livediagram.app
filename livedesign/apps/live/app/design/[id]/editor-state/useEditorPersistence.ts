@@ -11,7 +11,7 @@ import { useAutosave } from '../useAutosave';
 import { createRemoteOpJournal, type RemoteOpJournal } from '../save-baseline';
 import { useIdentityBootstrap } from '../useIdentityBootstrap';
 import { createOwnElementWrites, type OwnElementWrites } from '../own-element-writes';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorSession } from './useEditorSession';
 
@@ -22,11 +22,11 @@ import type { EditorSession } from './useEditorSession';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorPersistence({
-  documentSlice,
+  designSlice,
   selectionSlice,
   sessionSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   sessionSlice: EditorSession;
 }) {
@@ -46,7 +46,7 @@ export function useEditorPersistence({
     loadError,
     setLoadError,
     setLoadingDesign,
-  } = documentSlice;
+  } = designSlice;
   const { setSessionTabScope, activeId, setActiveId, setIdentityPromptOpen } = selectionSlice;
   const {
     selfParticipant,

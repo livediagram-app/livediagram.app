@@ -7,7 +7,7 @@ import {
 } from '@/components/panels/CollaboratePanel';
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { usePresenceRows } from '../usePresenceRows';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorTools } from './useEditorTools';
 import type { EditorSession } from './useEditorSession';
@@ -19,13 +19,13 @@ import type { EditorCollaboration } from './useEditorCollaboration';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorComments({
-  documentSlice,
+  designSlice,
   selectionSlice,
   toolsSlice,
   sessionSlice,
   collaborationSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   toolsSlice: EditorTools;
   sessionSlice: EditorSession;
@@ -40,7 +40,7 @@ export function useEditorComments({
     tickTabs,
     nameConfirmed,
     loadedExistingDesign,
-  } = documentSlice;
+  } = designSlice;
   const { activeId, identityPromptOpen } = selectionSlice;
   const { laserPen } = toolsSlice;
   const {

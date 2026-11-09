@@ -14,7 +14,7 @@ import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
 import { useElementHelpers } from '../useElementHelpers';
 import { useElementCreation } from '../useElementCreation';
 import { useInlineIconMutators } from '../useInlineIconMutators';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorTools } from './useEditorTools';
 import type { EditorSession } from './useEditorSession';
@@ -33,7 +33,7 @@ import type { EditorTabs } from './useEditorTabs';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorElements({
-  documentSlice,
+  designSlice,
   selectionSlice,
   toolsSlice,
   sessionSlice,
@@ -45,7 +45,7 @@ export function useEditorElements({
   historySlice,
   tabsSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   toolsSlice: EditorTools;
   sessionSlice: EditorSession;
@@ -68,7 +68,7 @@ export function useEditorElements({
     commitTabs,
     markCheckpoint,
     cancelToCheckpoint,
-  } = documentSlice;
+  } = designSlice;
   const {
     activeId,
     readSelection,

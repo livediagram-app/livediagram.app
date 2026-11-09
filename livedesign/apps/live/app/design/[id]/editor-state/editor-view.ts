@@ -1,5 +1,5 @@
 import { writeUserPreferences } from '@/lib/user-preferences';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorTools } from './useEditorTools';
 import type { EditorSession } from './useEditorSession';
@@ -20,7 +20,7 @@ import type { EditorInput } from './useEditorInput';
 // order and shape it has always had, so no caller changes. Spreads keep their place, and a field after a spread
 // still overrides it (zenMode while presenting).
 export function editorView({
-  documentSlice,
+  designSlice,
   selectionSlice,
   toolsSlice,
   sessionSlice,
@@ -37,7 +37,7 @@ export function editorView({
   styleSlice,
   inputSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   toolsSlice: EditorTools;
   sessionSlice: EditorSession;
@@ -58,13 +58,13 @@ export function editorView({
     componentLibrary: collaborationSlice.componentLibrary,
     componentActions: componentsSlice.componentActions,
     componentSession: componentsSlice.componentSession,
-    surface: documentSlice.surface,
+    surface: designSlice.surface,
     tourSquare: layersSlice.tourSquare,
     addCustomColour: collaborationSlice.addCustomColour,
     setTagColour: collaborationSlice.setTagColour,
-    workbenchMode: documentSlice.workbenchMode,
-    appChrome: documentSlice.appChrome,
-    workbench: documentSlice.workbench,
+    workbenchMode: designSlice.workbenchMode,
+    appChrome: designSlice.appChrome,
+    workbench: designSlice.workbench,
     // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.
     changesetReveals: collaborationSlice.changesetFeed.reveals,
     // What the agents present name in focus on the active tab, for the focus rings.
@@ -85,7 +85,7 @@ export function editorView({
     syncToCloud: persistenceSlice.syncToCloud,
     takeOfflineInPlace: persistenceSlice.takeOfflineInPlace,
     // Whether sign-in has answered, so the start screen's switch never words a signed-in person as a guest.
-    authLoaded: documentSlice.authLoaded,
+    authLoaded: designSlice.authLoaded,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope: selectionSlice.sessionTabScope,
     isOutOfScope: selectionSlice.isOutOfScope,
@@ -201,8 +201,8 @@ export function editorView({
     beginErase: elementsSlice.beginErase,
     chooseTemplate: tabsSlice.chooseTemplate,
     clearTabContent: tabsSlice.clearTabContent,
-    accountDisplayName: documentSlice.accountDisplayName,
-    accountUserId: documentSlice.accountUserId,
+    accountDisplayName: designSlice.accountDisplayName,
+    accountUserId: designSlice.accountUserId,
     closeComments: sessionSlice.closeComments,
     closeContextMenu: sessionSlice.closeContextMenu,
     closeImagePicker: elementsSlice.closeImagePicker,
@@ -224,8 +224,8 @@ export function editorView({
     deleteSelected: elementsSlice.deleteSelected,
     deleteTab: tabsSlice.deleteTab,
     designId: sessionSlice.designId,
-    designNotFound: documentSlice.designNotFound,
-    loadError: documentSlice.loadError,
+    designNotFound: designSlice.designNotFound,
+    loadError: designSlice.loadError,
     designTrashed: sessionSlice.designTrashed,
     spawnConnectSelected: elementsSlice.spawnConnectSelected,
     duplicateMultiSelected: elementsSlice.duplicateMultiSelected,
@@ -234,7 +234,7 @@ export function editorView({
     stackSelectedFront: elementsSlice.stackSelectedFront,
     stackSelectedBack: elementsSlice.stackSelectedBack,
     duplicateTab: tabsSlice.duplicateTab,
-    embedMode: documentSlice.embedMode,
+    embedMode: designSlice.embedMode,
     fitToScreen: viewportSlice.fitToScreen,
     followLink: inputSlice.followLink,
     handleCanvasDoubleClick: elementsSlice.handleCanvasDoubleClick,
@@ -268,9 +268,9 @@ export function editorView({
     followMe: viewportSlice.followMe,
     loadAllTabs: collaborationSlice.loadAllTabs,
     loadedTabIds: sessionSlice.loadedTabIds,
-    loadingDesign: documentSlice.loadingDesign,
+    loadingDesign: designSlice.loadingDesign,
     makeCopy: tabsSlice.makeCopy,
-    nameConfirmed: documentSlice.nameConfirmed,
+    nameConfirmed: designSlice.nameConfirmed,
     narrowMultiSelection: elementsSlice.narrowMultiSelection,
     newDesign: tabsSlice.newDesign,
     noteOpenId: elementsSlice.noteOpenId,
@@ -452,7 +452,7 @@ export function editorView({
     setContextMenu: sessionSlice.setContextMenu,
     setFillColorSelected: styleSlice.setFillColorSelected,
     setLinkPickerOpenForId: inputSlice.setLinkPickerOpenForId,
-    setLoadingDesign: documentSlice.setLoadingDesign,
+    setLoadingDesign: designSlice.setLoadingDesign,
     setNote: elementsSlice.setNote,
     setOpacitySelected: styleSlice.setOpacitySelected,
     setShadowSelected: styleSlice.setShadowSelected,
@@ -480,8 +480,8 @@ export function editorView({
     shiftDupGhostIds: inputSlice.shiftDupGhostIds,
     snapGuideStore: inputSlice.snapGuideStore,
     tabLoadErrors: sessionSlice.tabLoadErrors,
-    tabs: documentSlice.tabs,
-    tabSummaries: documentSlice.tabSummaries,
+    tabs: designSlice.tabs,
+    tabSummaries: designSlice.tabSummaries,
     designTeamId: sessionSlice.designTeamId,
     setDesignTeamId: sessionSlice.setDesignTeamId,
     emailEnabled: viewportSlice.emailEnabled,

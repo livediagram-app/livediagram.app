@@ -16,7 +16,7 @@ import { getSessionSharePassword } from '@/lib/api/core';
 import { useConnectedTabActions } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
 import { createTab } from '../editor-page-helpers';
 import { useTemplateFlow } from '../useTemplateFlow';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorSession } from './useEditorSession';
 import type { EditorCollaboration } from './useEditorCollaboration';
@@ -29,14 +29,14 @@ import type { EditorPages } from './useEditorPages';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorTabs({
-  documentSlice,
+  designSlice,
   selectionSlice,
   sessionSlice,
   collaborationSlice,
   viewportSlice,
   pagesSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   sessionSlice: EditorSession;
   collaborationSlice: EditorCollaboration;
@@ -44,7 +44,7 @@ export function useEditorTabs({
   pagesSlice: EditorPages;
 }) {
   const { tabs, tickTabs, commitTabs, markCheckpoint, nameConfirmed, setNameConfirmed } =
-    documentSlice;
+    designSlice;
   const {
     activeId,
     setActiveId,

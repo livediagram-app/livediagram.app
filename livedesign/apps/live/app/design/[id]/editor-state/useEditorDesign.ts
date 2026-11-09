@@ -19,7 +19,7 @@ import { guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
 //
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
-export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
+export function useEditorDesign(opts: { surface?: EditorSurface } = {}) {
   // Where the editor runs (editor-surface.ts). The read-only embed view (docs/specs/013-workspace/
   // embeds.md) forces view behaviour regardless of the share role, suppresses the visitor identity
   // screen, and EditorView swaps the chrome for the embed badge + tab switcher. A workbench
@@ -229,4 +229,4 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
   };
 }
 
-export type EditorDocument = ReturnType<typeof useEditorDocument>;
+export type EditorDesignSlice = ReturnType<typeof useEditorDesign>;

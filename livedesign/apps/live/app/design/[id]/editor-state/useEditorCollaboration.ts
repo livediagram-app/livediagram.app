@@ -20,7 +20,7 @@ import { usePresenceBroadcast } from '../usePresenceBroadcast';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useChangesetFeed } from '../useChangesetFeed';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorTools } from './useEditorTools';
 import type { EditorSession } from './useEditorSession';
@@ -41,13 +41,13 @@ const COMPONENT_SAVE_FAILED =
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorCollaboration({
-  documentSlice,
+  designSlice,
   selectionSlice,
   toolsSlice,
   sessionSlice,
   persistenceSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   toolsSlice: EditorTools;
   sessionSlice: EditorSession;
@@ -63,7 +63,7 @@ export function useEditorCollaboration({
     applyRemoteOp,
     tickTabs,
     commitTabs,
-  } = documentSlice;
+  } = designSlice;
   const {
     sessionTabScope,
     activeId,

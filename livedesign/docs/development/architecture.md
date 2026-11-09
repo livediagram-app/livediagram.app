@@ -61,12 +61,12 @@ The editor route (`apps/live/app/design/[id]/`) is split three ways so no file b
 
 `app/design/[id]/editor-state/` holds one hook per concern, `use<Concern>.ts`, named from the vocabulary every product's editor shares
 (document, selection, tools, viewport, collaboration, persistence, comments, history, dialogs) plus this product's own:
-`useEditorDocument`, `useEditorSelection`, `useEditorTools`, `useEditorSession`, `useEditorPersistence`,
+`useEditorDesign`, `useEditorSelection`, `useEditorTools`, `useEditorSession`, `useEditorPersistence`,
 `useEditorCollaboration`, `useEditorViewport`, `useEditorComments`, `useEditorPages`, `useEditorComponents`,
 `useEditorLayers`, `useEditorUndoState`, `useEditorTabs`, `useEditorElements`, `useEditorStyle`, `useEditorInput`,
 `useEditorWorkbench`.
 
-- Each slice takes the slices before it (`{ documentSlice, selectionSlice, ... }`, typed by the `Editor<Concern>` type
+- Each slice takes the slices before it (`{ designSlice, selectionSlice, ... }`, typed by the `Editor<Concern>` type
   its file exports) and returns the values the ones after it read. Dependencies flow one way, down the call order; a
   slice never imports another's hook.
 - The call order is the old single hook's statement order, kept so every effect runs in the order it always did. A

@@ -12,7 +12,7 @@ import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useSelectionEditing } from '../useSelectionEditing';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorTools } from './useEditorTools';
 import type { EditorSession } from './useEditorSession';
@@ -33,7 +33,7 @@ import type { EditorStyle } from './useEditorStyle';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorInput({
-  documentSlice,
+  designSlice,
   selectionSlice,
   toolsSlice,
   sessionSlice,
@@ -48,7 +48,7 @@ export function useEditorInput({
   elementsSlice,
   styleSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   toolsSlice: EditorTools;
   sessionSlice: EditorSession;
@@ -63,7 +63,7 @@ export function useEditorInput({
   elementsSlice: EditorElements;
   styleSlice: EditorStyle;
 }) {
-  const { embedMode, tabs, tickTabs, markCheckpoint, cancelToCheckpoint } = documentSlice;
+  const { embedMode, tabs, tickTabs, markCheckpoint, cancelToCheckpoint } = designSlice;
   const {
     setActiveId,
     readSelection,

@@ -1,6 +1,6 @@
 import { useWorkbenchEnd } from '../useWorkbenchEnd';
 import { useWorkbenchMessages } from '../useWorkbenchMessages';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorSession } from './useEditorSession';
 import type { EditorPersistence } from './useEditorPersistence';
@@ -11,19 +11,19 @@ import type { EditorCollaboration } from './useEditorCollaboration';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorWorkbench({
-  documentSlice,
+  designSlice,
   selectionSlice,
   sessionSlice,
   persistenceSlice,
   collaborationSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   sessionSlice: EditorSession;
   persistenceSlice: EditorPersistence;
   collaborationSlice: EditorCollaboration;
 }) {
-  const { workbench, tabs } = documentSlice;
+  const { workbench, tabs } = designSlice;
   const { activeId, selectionStore } = selectionSlice;
   const { selfParticipant, sessionRole, designName, designId, hydrated, designTrashed } =
     sessionSlice;

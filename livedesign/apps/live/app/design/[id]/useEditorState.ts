@@ -5,7 +5,7 @@ import { editorView } from './editor-state/editor-view';
 import { useEditorCollaboration } from './editor-state/useEditorCollaboration';
 import { useEditorComments } from './editor-state/useEditorComments';
 import { useEditorComponents } from './editor-state/useEditorComponents';
-import { useEditorDocument } from './editor-state/useEditorDocument';
+import { useEditorDesign } from './editor-state/useEditorDesign';
 import { useEditorElements } from './editor-state/useEditorElements';
 import { useEditorUndoState } from './editor-state/useEditorUndoState';
 import { useEditorInput } from './editor-state/useEditorInput';
@@ -35,13 +35,13 @@ import { useEditorWorkbench } from './editor-state/useEditorWorkbench';
 // The React Compiler memoises this composer and every slice, as it did the single hook they were cut from: each
 // slice's values are memoised on the fields of the slices it reads, and the view on the slices.
 export function useEditorState(opts: { surface?: EditorSurface } = {}) {
-  const documentSlice = useEditorDocument(opts);
-  const selectionSlice = useEditorSelection({ documentSlice });
-  const toolsSlice = useEditorTools({ documentSlice, selectionSlice });
-  const sessionSlice = useEditorSession({ documentSlice, selectionSlice, toolsSlice });
-  const persistenceSlice = useEditorPersistence({ documentSlice, selectionSlice, sessionSlice });
+  const designSlice = useEditorDesign(opts);
+  const selectionSlice = useEditorSelection({ designSlice });
+  const toolsSlice = useEditorTools({ designSlice, selectionSlice });
+  const sessionSlice = useEditorSession({ designSlice, selectionSlice, toolsSlice });
+  const persistenceSlice = useEditorPersistence({ designSlice, selectionSlice, sessionSlice });
   const collaborationSlice = useEditorCollaboration({
-    documentSlice,
+    designSlice,
     selectionSlice,
     toolsSlice,
     sessionSlice,
@@ -54,14 +54,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     collaborationSlice,
   });
   const commentsSlice = useEditorComments({
-    documentSlice,
+    designSlice,
     selectionSlice,
     toolsSlice,
     sessionSlice,
     collaborationSlice,
   });
   const pagesSlice = useEditorPages({
-    documentSlice,
+    designSlice,
     selectionSlice,
     sessionSlice,
     persistenceSlice,
@@ -70,7 +70,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commentsSlice,
   });
   const componentsSlice = useEditorComponents({
-    documentSlice,
+    designSlice,
     selectionSlice,
     sessionSlice,
     persistenceSlice,
@@ -79,16 +79,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pagesSlice,
   });
   const layersSlice = useEditorLayers({
-    documentSlice,
+    designSlice,
     selectionSlice,
     sessionSlice,
     persistenceSlice,
     collaborationSlice,
     pagesSlice,
   });
-  const historySlice = useEditorUndoState({ documentSlice, selectionSlice, pagesSlice });
+  const historySlice = useEditorUndoState({ designSlice, selectionSlice, pagesSlice });
   const tabsSlice = useEditorTabs({
-    documentSlice,
+    designSlice,
     selectionSlice,
     sessionSlice,
     collaborationSlice,
@@ -96,7 +96,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pagesSlice,
   });
   const elementsSlice = useEditorElements({
-    documentSlice,
+    designSlice,
     selectionSlice,
     toolsSlice,
     sessionSlice,
@@ -109,7 +109,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tabsSlice,
   });
   const styleSlice = useEditorStyle({
-    documentSlice,
+    designSlice,
     selectionSlice,
     toolsSlice,
     sessionSlice,
@@ -122,7 +122,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     elementsSlice,
   });
   const inputSlice = useEditorInput({
-    documentSlice,
+    designSlice,
     selectionSlice,
     toolsSlice,
     sessionSlice,
@@ -138,14 +138,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     styleSlice,
   });
   useEditorWorkbench({
-    documentSlice,
+    designSlice,
     selectionSlice,
     sessionSlice,
     persistenceSlice,
     collaborationSlice,
   });
   return editorView({
-    documentSlice,
+    designSlice,
     selectionSlice,
     toolsSlice,
     sessionSlice,

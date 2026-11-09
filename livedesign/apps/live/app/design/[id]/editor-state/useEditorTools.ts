@@ -6,7 +6,7 @@ import type { CanvasTool } from '@/components/palette/palette.types';
 import { usePanelLayout } from '../usePanelLayout';
 import { useEditorDialogs } from '../useEditorDialogs';
 import { useFormatTool } from '../useFormatTool';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 
 // The tools and the chrome flags around them: panel layout, dialogs, the laser pen, eraser and format painter
@@ -15,13 +15,13 @@ import type { EditorSelection } from './useEditorSelection';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorTools({
-  documentSlice,
+  designSlice,
   selectionSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
 }) {
-  const { embedMode, tabs } = documentSlice;
+  const { embedMode, tabs } = designSlice;
   const { activeId, setSelectedId, setFormatSourceId, setMultiSelectedIds } = selectionSlice;
   // Drag state lives inside the useEditorDrag hook, lifted out of
   // this component to keep the page focused on orchestration. The

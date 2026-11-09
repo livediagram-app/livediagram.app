@@ -5,7 +5,7 @@ import { getTheme } from '@/lib/themes';
 import { usePruneInertSelection } from '@liveworkspace/workbench/hooks/canvas/usePruneInertSelection';
 import { useLayersState } from '../useLayersState';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorSession } from './useEditorSession';
 import type { EditorPersistence } from './useEditorPersistence';
@@ -19,21 +19,21 @@ import type { EditorPages } from './useEditorPages';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorLayers({
-  documentSlice,
+  designSlice,
   selectionSlice,
   sessionSlice,
   persistenceSlice,
   collaborationSlice,
   pagesSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   sessionSlice: EditorSession;
   persistenceSlice: EditorPersistence;
   collaborationSlice: EditorCollaboration;
   pagesSlice: EditorPages;
 }) {
-  const { activeLayerStampRef, tickTabs } = documentSlice;
+  const { activeLayerStampRef, tickTabs } = designSlice;
   const { activeId, selectionStore } = selectionSlice;
   const { toast, designId, isReadOnly } = sessionSlice;
   const { tabsRef } = persistenceSlice;

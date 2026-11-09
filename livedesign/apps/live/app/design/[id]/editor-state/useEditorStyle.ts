@@ -6,7 +6,7 @@ import { writeUserPreferences } from '@/lib/user-preferences';
 import { useElementStyle } from '@/hooks/canvas/useElementStyle';
 import { useStylePreview } from '@/hooks/canvas/useStylePreview';
 import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorTools } from './useEditorTools';
 import type { EditorSession } from './useEditorSession';
@@ -24,7 +24,7 @@ import type { EditorElements } from './useEditorElements';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorStyle({
-  documentSlice,
+  designSlice,
   selectionSlice,
   toolsSlice,
   sessionSlice,
@@ -36,7 +36,7 @@ export function useEditorStyle({
   tabsSlice,
   elementsSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   toolsSlice: EditorTools;
   sessionSlice: EditorSession;
@@ -48,7 +48,7 @@ export function useEditorStyle({
   tabsSlice: EditorTabs;
   elementsSlice: EditorElements;
 }) {
-  const { tickTabs, commitTabs } = documentSlice;
+  const { tickTabs, commitTabs } = designSlice;
   const { activeId, readSelection } = selectionSlice;
   const { canvasTool } = toolsSlice;
   const { selfParticipant, userPreferences, setUserPreferences, participant } = sessionSlice;

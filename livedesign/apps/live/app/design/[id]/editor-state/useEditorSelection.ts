@@ -1,14 +1,14 @@
 import { useEditorUiState } from '../editor-ui-state';
 import { useTabScope } from '@liveworkspace/workbench/hooks/editor/useTabScope';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 
 // The selection and the active tab: the tab-scoped share session's one tab, and the ephemeral selection / edit
 // state (editor-ui-state) the rest of the editor reads and writes.
 //
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
-export function useEditorSelection({ documentSlice }: { documentSlice: EditorDocument }) {
-  const { initialTabs } = documentSlice;
+export function useEditorSelection({ designSlice }: { designSlice: EditorDesignSlice }) {
+  const { initialTabs } = designSlice;
   // Ephemeral selection / edit UI (active tab, single + multi selection,
   // edit + format-painter source, the two transient picker flags). See
   // editor-ui-state. Destructured here because the body references these

@@ -16,7 +16,7 @@ import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePresenceState } from '../usePresenceState';
 import { useEditorPersistence } from '../editor-persistence';
 import { useEditorRealtime } from '../editor-realtime';
-import type { EditorDocument } from './useEditorDocument';
+import type { EditorDesignSlice } from './useEditorDesign';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorTools } from './useEditorTools';
 
@@ -28,15 +28,15 @@ import type { EditorTools } from './useEditorTools';
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
 // before it.
 export function useEditorSession({
-  documentSlice,
+  designSlice,
   selectionSlice,
   toolsSlice,
 }: {
-  documentSlice: EditorDocument;
+  designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
   toolsSlice: EditorTools;
 }) {
-  const { embedMode, workbenchMode, workbench, tickTabs } = documentSlice;
+  const { embedMode, workbenchMode, workbench, tickTabs } = designSlice;
   const { sessionTabScope, activeId, setSelectedId, setEditingId, setMultiSelectedIds } =
     selectionSlice;
   const { dialogs } = toolsSlice;
