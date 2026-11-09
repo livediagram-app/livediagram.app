@@ -24,7 +24,7 @@ export const findDocumentsOutput = {
         url,
       }),
     )
-    .describe('The matches, most relevant first.'),
+    .describe('The matches, most recently saved first.'),
 };
 
 export const readDocumentOutput = {

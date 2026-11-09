@@ -179,6 +179,12 @@ const changeset = (over: Partial<ChangesetSummary>): ChangesetSummary => ({
 });
 
 describe('changeset ls', () => {
+  // docs/specs/015-api/blueprints/cli.md: --limit is held to the list route's cap (CHANGESET_LIST_MAX).
+  it("refuses a --limit past the api's cap of 100 before asking it", () => {
+    expect(changesetLs.input.parse({ doc: 'x', limit: 100 }).limit).toBe(100);
+    expect(() => changesetLs.input.parse({ doc: 'x', limit: 150 })).toThrow();
+  });
+
   it('lists the changesets of a document, or of one tab', async () => {
     const api = fakeApi({
       ...library,

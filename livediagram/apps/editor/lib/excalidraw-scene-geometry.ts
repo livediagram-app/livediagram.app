@@ -21,12 +21,28 @@ export function absolutePoints(el: ExcalidrawElement, pressures?: number[]): Sce
   const x = num(el.x);
   const y = num(el.y);
   const angle = num(el.angle);
-  const cx = x + num(el.width) / 2;
-  const cy = y + num(el.height) / 2;
+  const raws = Array.isArray(el.points) ? el.points : [];
+  // Excalidraw turns a linear element about the centre of its points' bounds, offset by its position: points drawn
+  // leftwards or upwards run below 0, where `x + width / 2` would miss the centre by their extent.
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  if (angle !== 0) {
+    for (const raw of raws) {
+      if (!isFinitePair(raw)) continue;
+      minX = Math.min(minX, raw[0]);
+      maxX = Math.max(maxX, raw[0]);
+      minY = Math.min(minY, raw[1]);
+      maxY = Math.max(maxY, raw[1]);
+    }
+  }
+  const cx = x + (minX + maxX) / 2;
+  const cy = y + (minY + maxY) / 2;
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
   const out: ScenePoint[] = [];
-  (Array.isArray(el.points) ? el.points : []).forEach((raw, i) => {
+  raws.forEach((raw, i) => {
     if (!isFinitePair(raw)) return;
     let px = x + raw[0];
     let py = y + raw[1];

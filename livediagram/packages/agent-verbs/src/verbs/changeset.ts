@@ -2,11 +2,16 @@
 // its result lines, and the revert of one.
 
 import { z } from 'zod';
-import type { ChangesetDetail, ChangesetSummary, RevertResponse } from '@livediagram/api-schema';
+import {
+  CHANGESET_LIST_MAX,
+  type ChangesetDetail,
+  type ChangesetSummary,
+  type RevertResponse,
+} from '@livediagram/api-schema';
 import { lintFooterPart } from '@livediagram/diagram-lint';
 import { resolveTab } from '../addressing';
 import { defineVerb } from '../define';
-import { documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, minute } from './shared';
+import { documentOf, LIST_DEFAULT_LIMIT, minute } from './shared';
 
 const summaryLine = (c: ChangesetSummary, tabName: string) => {
   const { added, changed, removed } = c.counts;
@@ -35,9 +40,10 @@ export const changesetLs = defineVerb({
       .number()
       .int()
       .min(1)
-      .max(LIST_MAX_LIMIT)
+      // The api's own cap: a larger --limit would pass here and be refused there.
+      .max(CHANGESET_LIST_MAX)
       .default(LIST_DEFAULT_LIMIT)
-      .describe('At most this many'),
+      .describe('At most this many (1 to 100)'),
   }),
   output: z.object({ changesets: z.array(listedChangeset) }),
   listKey: 'changesets',

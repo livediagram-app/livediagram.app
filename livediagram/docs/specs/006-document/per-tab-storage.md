@@ -138,7 +138,9 @@ renders immediately rather than showing a spinner over real content.
 ### New tabs and the tab order
 
 The document's tab order (`PUT /api/documents/<id>`) only places tab rows that exist; a new tab's row is made by its
-own tab save, which places it after the tabs the document had when that save read it. So a save that adds tabs (an
+own tab save, which places it after the tabs the document had when that save read it: one past the highest place
+held, not the count of tabs, which after a tab is deleted from the middle names the last tab's own place. An
+agent's changeset that makes a tab places it the same way. So a save that adds tabs (an
 import, a duplicate) writes the order only once those new tabs' saves have settled. Sent
 beside them, the order could land first and the new tabs, each taking the same place, came back after a reload
 sorted by id rather than as made. A new tab whose save failed
