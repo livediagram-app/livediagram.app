@@ -8,7 +8,7 @@ import {
   themeHalf,
   type Element,
 } from '@livedocuments/document';
-import { createStockColourProjector } from './stock-colour-projector';
+import { createStockColourProjector, plainPaper } from './stock-colour-projector';
 
 const stroke = (over: Partial<Element> = {}): Element =>
   ({
@@ -120,5 +120,77 @@ describe('createStockColourProjector on a page with its own fill', () => {
       maps,
     });
     expect(inkOf(off[0])).not.toBe(inkOf(on[0]));
+  });
+});
+
+// docs/specs/011-theme/light-and-dark.md "A theme never sinks a label into what is behind it": the dark editor draws
+// the plain paper slate, where a template's dark words made for white (the resume's job titles) would vanish.
+describe('createStockColourProjector on the plain paper', () => {
+  const words = (id: string, over: Record<string, unknown> = {}) =>
+    ({
+      id,
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 30,
+      label: 'Lead Product Designer',
+      textColor: '#0f172a',
+      ...over,
+    }) as unknown as Element;
+  const inkOf = (el: Element | undefined) => (el as { textColor?: string }).textColor ?? '';
+  const slate = plainPaper('dark').drawn;
+
+  it('lifts dark words off the slate paper in the dark editor', () => {
+    const project = createStockColourProjector();
+    const out = project([words('w')], 'dark', undefined, undefined, plainPaper('dark'));
+    expect(contrastRatio(inkOf(out[0]), slate)).toBeGreaterThanOrEqual(3);
+  });
+
+  it('leaves them as made in the light editor, where the paper is white', () => {
+    const project = createStockColourProjector();
+    const board = [words('w')];
+    expect(project(board, 'light', undefined, undefined, plainPaper('light'))).toBe(board);
+  });
+
+  it('keeps dark words on a light panel, which is what they are read against', () => {
+    const project = createStockColourProjector();
+    const panel = {
+      id: 'p',
+      type: 'shape',
+      shape: 'square',
+      x: -50,
+      y: -50,
+      width: 400,
+      height: 200,
+      label: '',
+      fillColor: '#eef2ff',
+    } as unknown as Element;
+    const out = project([panel, words('w')], 'dark', undefined, undefined, plainPaper('dark'));
+    expect(inkOf(out[1])).toBe('#0f172a');
+  });
+
+  it('never walks words on a page with a fill of its own against the paper', () => {
+    const project = createStockColourProjector();
+    const pageView = {
+      surfaces: new Map([['w', 'light' as const]]),
+      maps: { light: new Map(), dark: new Map() },
+    };
+    const out = project([words('w')], 'dark', undefined, pageView, plainPaper('dark'));
+    expect(inkOf(out[0])).toBe('#0f172a');
+  });
+
+  it('keeps a lifted label the same object while it is unchanged', () => {
+    const project = createStockColourProjector();
+    const w = words('w');
+    const first = project([w], 'dark', undefined, undefined, plainPaper('dark'))[0];
+    const again = project(
+      [w, words('x', { y: 400 })],
+      'dark',
+      undefined,
+      undefined,
+      plainPaper('dark'),
+    )[0];
+    expect(again).toBe(first);
   });
 });

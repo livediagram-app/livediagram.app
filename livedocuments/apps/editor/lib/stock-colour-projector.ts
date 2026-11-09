@@ -10,18 +10,28 @@
 //
 // An element on a page with a fill of its own (docs/specs/011-theme/light-and-dark.md "A page's own paper") is
 // drawn for that page, not for the viewer's chrome: its theme colours in the half that matches the page's
-// surface, its stock colours for that surface, so a light slide in dark chrome keeps dark words.
+// surface, its stock colours for that surface, so a light slide in dark chrome keeps dark words. The labels re-inked
+// against the canvas (`canvases`) leave those elements be: the canvas given is the plain paper, white as stored and
+// printed, slate as the dark editor draws it.
 import {
   canvasSurface,
   elementPageTones,
   resolveStockColours,
   viewElementInTheme,
+  withReadableLabelInks,
   type CanvasSurface,
   type Element,
   type LaidOutPage,
 } from '@livedocuments/document';
+import { CANVAS_PAPER } from '@/lib/page-paint';
 
 const NO_THEME_MAP: ReadonlyMap<string, string> = new Map();
+
+/** The plain paper as stored (white, as an export prints it) and as the canvas draws it on `surface` (slate in dark
+ *  mode): what a label on a page with no fill of its own is read against. */
+export function plainPaper(surface: CanvasSurface): { stored: string; drawn: string } {
+  return { stored: CANVAS_PAPER.light, drawn: CANVAS_PAPER[surface] };
+}
 
 /** The surface of each element on a page with its own fill (elementPageSurfaces), the theme map
  *  for each surface (themeViewMap in that appearance), and, where known, that page's tone
@@ -67,25 +77,37 @@ export function createStockColourProjector(): (
   surface: CanvasSurface,
   themeMap?: ReadonlyMap<string, string>,
   pageView?: PageView,
+  canvases?: { stored: string; drawn: string },
 ) => Element[] {
   let cacheSurface: CanvasSurface | null = null;
   let cacheMap: ReadonlyMap<string, string> | null = null;
   let cacheMaps: PageView['maps'] | null = null;
+  let cacheCanvases = '';
   // Each element's projection and the page surface and tone it was drawn for ('' off a filled page), so an
   // element moved onto another page is drawn afresh without dropping everyone else's.
   let cache = new WeakMap<Element, { on: string; out: Element }>();
+  // Each projected label's re-inked version (withReadableLabelInks), so an unchanged label keeps its identity.
+  let inkCache = new WeakMap<Element, Element>();
   // The last board in and its projection: a render that changes no element (a pan, a zoom, a marquee
   // frame) gets the same array back, so nothing derived from the board recomputes.
   let lastIn: Element[] | null = null;
   let lastOut: Element[] = [];
   let lastSurfaces: PageView['surfaces'] | null = null;
-  return (elements, surface, themeMap = NO_THEME_MAP, pageView) => {
+  return (elements, surface, themeMap = NO_THEME_MAP, pageView, canvases) => {
+    const canvasKey = canvases ? `${canvases.stored}|${canvases.drawn}` : '';
     const maps = pageView?.maps ?? null;
-    if (surface !== cacheSurface || themeMap !== cacheMap || maps !== cacheMaps) {
+    if (
+      surface !== cacheSurface ||
+      themeMap !== cacheMap ||
+      canvasKey !== cacheCanvases ||
+      maps !== cacheMaps
+    ) {
       cacheSurface = surface;
       cacheMap = themeMap;
+      cacheCanvases = canvasKey;
       cacheMaps = maps;
       cache = new WeakMap();
+      inkCache = new WeakMap();
       lastIn = null;
     }
     const surfaces = pageView?.surfaces ?? null;
@@ -105,6 +127,25 @@ export function createStockColourProjector(): (
     });
     lastIn = elements;
     lastOut = changed ? out : elements;
+    // Labels against what is behind them: only when the redraw changed an element or the canvas, so a tab drawn as
+    // stored is free. A label given the same ink as last time keeps last time's object, so its view stays quiet.
+    if (canvases && (changed || canvases.stored !== canvases.drawn)) {
+      const inked = withReadableLabelInks(elements, canvases.stored, lastOut, canvases.drawn);
+      if (inked !== lastOut)
+        lastOut = inked.map((el, i) => {
+          if (el === lastOut[i]) return el;
+          // A label on a page with a fill of its own is drawn for that page (elementAsSeen), not read against the canvas.
+          if (surfaces?.has(el.id)) return lastOut[i]!;
+          const prior = inkCache.get(lastOut[i]!);
+          if (
+            prior &&
+            (prior as { textColor?: string }).textColor === (el as { textColor?: string }).textColor
+          )
+            return prior;
+          inkCache.set(lastOut[i]!, el);
+          return el;
+        });
+    }
     return lastOut;
   };
 }

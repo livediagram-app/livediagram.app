@@ -8,7 +8,7 @@ import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { dropThenDisarm } from '@liveworkspace/workbench/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
 import { canvasSurface } from '@livedocuments/document';
-import { createStockColourProjector } from '@/lib/stock-colour-projector';
+import { createStockColourProjector, plainPaper } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useEffect, useLayoutEffect, useState } from 'react';
@@ -300,6 +300,10 @@ export function EditorCanvasHost() {
     surface,
     themeViewMap(activeTab.theme, appearance),
     pageView,
+    // Labels are re-inked against the plain paper (docs/specs/011-theme/light-and-dark.md "A theme never sinks a
+    // label into what is behind it"): its words are made on white, the paper as stored and printed, and the dark
+    // editor draws it slate, where a template's dark words (a resume's job titles, a heading) would vanish.
+    plainPaper(surface),
   );
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
