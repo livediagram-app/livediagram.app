@@ -118,11 +118,12 @@ async function exportDesign(
   const tabSlugs = uniqueSlugs(tabs);
   for (const tab of tabs) {
     const base = joinPath(tabDir, tabSlugs.get(tab.id)!);
+    // One render a tab, however many formats are drawn from it: svg,png read it once, not once a format.
+    const { body } = await patiently(ctx, () =>
+      ctx.api.text(`${tabPath(design.id, tab.id)}/render.svg`),
+    );
     for (const format of perTab) {
       const path = `${base}.${TAB_FILES[format]}`;
-      const { body } = await patiently(ctx, () =>
-        ctx.api.text(`${tabPath(design.id, tab.id)}/render.svg`),
-      );
       if (format === 'svg') await write(path, body);
       else {
         const { writePicture } = await import('../render/png');
