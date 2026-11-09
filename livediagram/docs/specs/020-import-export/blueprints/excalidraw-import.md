@@ -8,32 +8,32 @@ and are not restated. The landing is [Board scene](../board-scene.md)'s. Default
 
 Scope, by file:
 
-| File                                                                                     | Role                                                                               |
-| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `apps/editor/lib/excalidraw-types.ts`                                                    | The slice of Excalidraw's format the parser reads (types only)                     |
-| `apps/editor/lib/excalidraw-envelope.ts`                                                 | `looksLikeExcalidraw`, `readExcalidrawEnvelope`: detection, cap, rejections        |
-| `apps/editor/lib/excalidraw-scene.ts`                                                    | `excalidrawToBoardScene`: elements to scene items, order, notes                    |
-| `apps/editor/lib/excalidraw-scene-style.ts`                                              | Colours, opacity, widths, dashes, fonts, text, arrowheads                          |
-| `apps/editor/lib/excalidraw-scene-geometry.ts`                                           | Absolute points, rotation baking, closure                                          |
-| `apps/editor/lib/excalidraw-fixtures.ts`                                                 | Typed builder of synthesised Excalidraw elements and envelopes (tests only)        |
-| `apps/editor/lib/excalidraw-read.ts`                                                     | `sceneFromExcalidrawText`, `readExcalidrawFile`: text or file to a scene (lazy)    |
-| `apps/editor/lib/excalidraw-paste.ts`                                                    | `excalidrawTextFromPaste`, `isExcalidrawFileCandidate`, `DROP_NOT_A_SCENE`         |
-| `apps/editor/lib/excalidraw-board-file.ts`                                               | `excalidrawFileIdentity`, `readExcalidrawBoardFiles`: files to named, dated scenes |
-| `apps/editor/hooks/persistence/useExcalidrawFileImport.ts`                               | The Explorer import flow: read, import, report, telemetry                          |
-| `apps/editor/hooks/persistence/useExcalidrawImportLauncher.tsx`                          | Opens the dialog (loaded on first open)                                            |
-| `apps/editor/components/dialogs/ExcalidrawImportPanel.tsx`, `ExcalidrawImportDialog.tsx` | Pick, progress, report; the dialog host                                            |
-| `apps/editor/app/import/import-sources.tsx`, `useImportDialogs.tsx`                      | The Excalidraw row of "Import from" and its wiring                                 |
-| `packages/explorer/src/library/import-source-icons.tsx` (repo root)                      | `ExcalidrawSourceIcon`                                                             |
-| `apps/editor/scripts/excalidraw-verify.mts`                                              | Real copies through parser and landing, aggregates only (local)                    |
-| `apps/editor/lib/excalidraw-embedded.ts`                                                 | `extractExcalidrawScene`: PNG / SVG / JSON input to scene text                     |
-| `apps/editor/hooks/canvas/useClipboard.ts`                                               | Paste branches and `dropBoardFile`: scenes go to the board-scene insert            |
-| `apps/editor/hooks/canvas/usePaletteDrop.ts`                                             | `onDropFile`: a dropped file with its canvas point                                 |
-| `apps/editor/components/canvas/Canvas.tsx`, `editor-canvas-host/useInsertCanvasProps.ts` | Thread `onDropFile` (`dropBoardFile`, not when read-only)                          |
-| `apps/editor/hooks/persistence/useTabImport.ts`                                          | Extraction, `sceneFromExcalidrawText`, then `importScene` (useBoardSceneImport)    |
-| `apps/editor/components/dialogs/TextImportPanel.tsx`                                     | Progress label; hands the outcome to the dialog                                    |
-| `apps/editor/components/dialogs/ImportTabDialog.tsx`                                     | Shows the report view when the outcome carries one                                 |
-| `apps/editor/components/dialogs/ImportImageReport.tsx`                                   | The report view                                                                    |
-| liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts                  | Explanations for `ExcalidrawPng` / `ExcalidrawSvg` and the paste                   |
+| File                                                                                                                   | Role                                                                               |
+| ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `apps/editor/lib/excalidraw-types.ts`                                                                                  | The slice of Excalidraw's format the parser reads (types only)                     |
+| `apps/editor/lib/excalidraw-envelope.ts`                                                                               | `looksLikeExcalidraw`, `readExcalidrawEnvelope`: detection, cap, rejections        |
+| `apps/editor/lib/excalidraw-scene.ts`                                                                                  | `excalidrawToBoardScene`: elements to scene items, order, notes                    |
+| `apps/editor/lib/excalidraw-scene-style.ts`                                                                            | Colours, opacity, widths, dashes, fonts, text, arrowheads                          |
+| `apps/editor/lib/excalidraw-scene-geometry.ts`                                                                         | Absolute points, rotation baking, closure                                          |
+| `apps/editor/lib/excalidraw-fixtures.ts`                                                                               | Typed builder of synthesised Excalidraw elements and envelopes (tests only)        |
+| `apps/editor/lib/excalidraw-read.ts`                                                                                   | `sceneFromExcalidrawText`, `readExcalidrawFile`: text or file to a scene (lazy)    |
+| `apps/editor/lib/excalidraw-paste.ts`                                                                                  | `excalidrawTextFromPaste`, `isExcalidrawFileCandidate`, `DROP_NOT_A_SCENE`         |
+| `apps/editor/lib/excalidraw-board-file.ts`                                                                             | `excalidrawFileIdentity`, `readExcalidrawBoardFiles`: files to named, dated scenes |
+| `apps/editor/hooks/persistence/useExcalidrawFileImport.ts`                                                             | The Explorer import flow: read, import, report, telemetry                          |
+| `apps/editor/hooks/persistence/useExcalidrawImportLauncher.tsx`                                                        | Opens the dialog (loaded on first open)                                            |
+| `apps/editor/components/dialogs/ExcalidrawImportPanel.tsx`, `ExcalidrawImportDialog.tsx`                               | Pick, progress, report; the dialog host                                            |
+| `apps/editor/app/import/import-sources.tsx`, `useImportDialogs.tsx`                                                    | The Excalidraw row of "Import from" and its wiring                                 |
+| `packages/explorer/src/library/import-source-icons.tsx` (repo root)                                                    | `ExcalidrawSourceIcon`                                                             |
+| `apps/editor/scripts/excalidraw-verify.mts`                                                                            | Real copies through parser and landing, aggregates only (local)                    |
+| `apps/editor/lib/excalidraw-embedded.ts`                                                                               | `extractExcalidrawScene`: PNG / SVG / JSON input to scene text                     |
+| `apps/editor/hooks/canvas/useClipboard.ts`                                                                             | Paste branches and `dropBoardFile`: scenes go to the board-scene insert            |
+| `apps/editor/hooks/canvas/usePaletteDrop.ts`                                                                           | `onDropFile`: a dropped file with its canvas point                                 |
+| `apps/editor/components/canvas/Canvas.tsx`, `apps/editor/components/canvas/editor-canvas-host/useInsertCanvasProps.ts` | Thread `onDropFile` (`dropBoardFile`, not when read-only)                          |
+| `apps/editor/hooks/persistence/useTabImport.ts`                                                                        | Extraction, `sceneFromExcalidrawText`, then `importScene` (useBoardSceneImport)    |
+| `apps/editor/components/dialogs/TextImportPanel.tsx`                                                                   | Progress label; hands the outcome to the dialog                                    |
+| `apps/editor/components/dialogs/ImportTabDialog.tsx`                                                                   | Shows the report view when the outcome carries one                                 |
+| `apps/editor/components/dialogs/ImportImageReport.tsx`                                                                 | The report view                                                                    |
+| liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts                                                | Explanations for `ExcalidrawPng` / `ExcalidrawSvg` and the paste                   |
 
 ## Domain and naming
 
