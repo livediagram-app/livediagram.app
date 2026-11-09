@@ -3,7 +3,7 @@
 // badge, and the same for an item kept only in this browser.
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Folder } from '@liveworkspace/index-client';
+import { IndexError, type Folder } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import {
   isThisBrowserArchived,
@@ -283,6 +283,19 @@ describe('Search', () => {
     expect(document.querySelector('[data-item-card="item-1"] [data-archived]')).toBeNull();
   });
 
+  it('places an archived one in Archived, and its place chip goes there', async () => {
+    const index = createFakeIndex({
+      items: [makeItem(2, { archivedAt: 5_000, folderId: 'f1' })],
+      folders: [folder('f1', 'Plans')],
+    });
+    const { onNavigate } = page(index, { kind: 'search', q: 'Item' });
+    await waitFor(() => expect(document.querySelector('[data-item-card="item-2"]')).toBeTruthy());
+    const card = document.querySelector('[data-item-card="item-2"]') as HTMLElement;
+    expect(within(card).queryByTitle('Plans')).toBeNull();
+    fireEvent.click(within(card).getByTitle('Archived'));
+    expect(onNavigate).toHaveBeenCalledWith({ kind: 'archived' }, '/explorer/archived');
+  });
+
   it('marks an archived link and reads it back', () => {
     expect(archivedIdOf(`${ARCHIVED_HREF}a%2Fb`)).toBe('a/b');
     expect(archivedIdOf('/project/1')).toBeNull();
@@ -344,6 +357,15 @@ describe('This Browser', () => {
     fireEvent.click(within(move).getByRole('button', { name: 'Move Here' }));
     expect(isThisBrowserArchived('liveplanner', 'local-1')).toBe(false);
     expect(await screen.findByText('Moved “⁨Local 1⁩” to This Browser.')).toBeTruthy();
+  });
+
+  it('still lists those archived here when the account’s list can’t load', async () => {
+    writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
+    const index = createFakeIndex();
+    index.fail.set('listItems', new IndexError(500, 'unknown'));
+    page(index, { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
+    expect(await screen.findByText(/Couldn’t load this list/)).toBeTruthy();
+    expect(await screen.findByRole('region', { name: 'This Browser' })).toBeTruthy();
   });
 
   it('syncs one into the account from Change Folder, its mark cleared first', async () => {

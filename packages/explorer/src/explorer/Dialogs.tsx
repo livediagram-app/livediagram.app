@@ -24,6 +24,7 @@ import {
 import { setThisBrowserArchived, thisBrowserDeleteCopy } from '../this-browser';
 import { ArchiveIcon } from '../ui/icons';
 import { canArchive } from './menus';
+import { kindWords } from '../words';
 import { archivedCopy } from './archived-copy';
 import type { ShareTelemetry } from '../dialogs/share/types';
 import type { ExplorerView } from '../views';
@@ -146,7 +147,11 @@ export function ExplorerDialogs() {
       return (
         <ConfirmDialog
           open
-          {...archivedCopy(item.title, ctx.kind.lowerOne)}
+          // The item's own kind: on All Apps an archived canvas isn't a plan.
+          {...archivedCopy(
+            item.title,
+            dialog.kind === 'archived' ? kindWords(dialog.item.app).lowerOne : ctx.kind.lowerOne,
+          )}
           onCancel={close}
           onConfirm={() =>
             openDialog(

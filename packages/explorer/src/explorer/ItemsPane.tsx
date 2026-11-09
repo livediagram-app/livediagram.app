@@ -240,8 +240,9 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
       ) : null}
       {view.kind === 'trash' ? <TrashNote words={words} /> : null}
       {view.kind === 'team' && !view.folderId ? <TeamPage teamId={view.id}>{body}</TeamPage> : body}
-      {archivedView && !state.loading && !state.error ? (
-        <ThisBrowserArchivedGroup first={state.items.length === 0} />
+      {/* Kept in this browser, so it shows even when the account's list can't load (offline). */}
+      {archivedView && !state.loading ? (
+        <ThisBrowserArchivedGroup first={!state.error && state.items.length === 0} />
       ) : null}
       {state.moreFailed && !state.error ? (
         <MoreFailed onRetry={state.retryMore} loading={state.loadingMore} />
