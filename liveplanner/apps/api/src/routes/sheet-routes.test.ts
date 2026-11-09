@@ -547,6 +547,43 @@ describe('writes', () => {
     expect(after.rev).toBe(b.rev + 2);
     expect(JSON.stringify(relayed)).toContain('sheetB00');
   });
+  // sheet.md "Sort": a range over sorted rows keeps its rows, on this sheet and on the tab's others.
+  it('keeps ranges over sorted rows on their rows, here and in other sheets', async () => {
+    const s = await sheet();
+    await make({ id: 'sheetB00', title: 'Sum', layout: layout() });
+    const b = (await call<SheetsResponse>({ method: 'GET', path: '/sheets' })).body.sheets.find(
+      (x) => x.id === 'sheetB00',
+    )!;
+    const [r0, r1, r2, r3] = s.layout.rows;
+    const [c0, c1] = s.layout.cols;
+    const own = { r1: r0!, c1: c0!, r2: r1!, c2: c0! };
+    const other = { s: 'sheetA00', r1: r0!, c1: c0!, r2: r1!, c2: c0! };
+    await write('sheetA00', {
+      kind: 'cells',
+      cells: [{ r: r3!, c: c1!, i: { f: { t: 'SUM(@0)', r: [own] } } }],
+    });
+    await write('sheetB00', {
+      kind: 'cells',
+      cells: [
+        { r: b.layout.rows[0]!, c: b.layout.cols[0]!, i: { f: { t: 'SUM(@0)', r: [other] } } },
+      ],
+    });
+    const sorted = await write('sheetA00', {
+      kind: 'layout',
+      changes: [{ k: 'orderRows', ids: [r2!, r1!, r0!] }],
+    });
+    expect(sorted.status).toBe(200);
+    // Rows 1 to 2 now hold r2 and r1: the range's corners are the ids in its old slots.
+    expect(sorted.body.cells).toEqual([
+      { r: r3, c: c1, i: { f: { t: 'SUM(@0)', r: [{ ...own, r1: r2!, r2: r1! }] } } },
+    ]);
+    const after = (await call<SheetsResponse>({ method: 'GET', path: '/sheets' })).body.sheets.find(
+      (x) => x.id === 'sheetB00',
+    )!;
+    expect(after.cells[0]!.i).toEqual({
+      f: { t: 'SUM(@0)', r: [{ ...other, r1: r2!, r2: r1! }] },
+    });
+  });
   it('renames, refusing a taken title', async () => {
     await sheet();
     await make({ id: 'sheetB00', title: 'Costs' });
