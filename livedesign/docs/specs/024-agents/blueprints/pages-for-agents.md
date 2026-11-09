@@ -54,8 +54,9 @@ Banned synonyms: "slide deck" for a tab of pages (it is a tab of pages),
    - resolve `page` (`resolvePage`: id, then integer place 1..n, then name by `nameKey`) else `page_unknown` listing
      `1 Sign In (wireframe), 2 (wireframe)`;
    - `add`: if the only page is unchosen and empty
-     (`offersPageKindChoice`) → `withPageKindChosen`; else if the only page is of `kind`, unnamed and empty → that
-     page; else `pageAdded(tab, kind, newId(), device)` (`kind_not_offered` when `kind` is not the tab's,
+     (`offersPageKindChoice`) → `withPageKindChosen`; else if the only page is of `kind`, unnamed and empty (no
+     elements; a wireframe of the `device` asked, if any; a photo whose `photoOfPage` has no layers, given
+     `blankPhoto(width, height)` when sized) → that page; else `pageAdded(tab, kind, newId(), device)` (`kind_not_offered` when `kind` is not the tab's,
      `This tab holds logo pages: every page of a tab is one kind. Put wireframe pages in a tab of their own
 (add_tab).`, `blank` for a tab whose first page has no kind); then
      `name`, `size`, `orientation`, `background` through `pageRenamed`, `pageResized`, `pageTurned`,

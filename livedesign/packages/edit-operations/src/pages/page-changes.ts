@@ -32,6 +32,7 @@ import {
   withPageKindChosen,
   withPhoto,
   blankPhoto,
+  photoOfPage,
   type Page,
   type PageBackground,
   type PageEdit,
@@ -249,11 +250,16 @@ export function applyPageChanges(
             !madeHere.has(first.id) &&
             first.kind === change.kind &&
             !first.name?.trim() &&
-            onPage(first.id) === 0
+            onPage(first.id) === 0 &&
+            // Of another device, or a photo page whose picture holds layers, it is not a blank of what is asked.
+            (change.device === undefined || first.device === change.device) &&
+            (change.kind !== 'photo' || photoOfPage(current, first.id).layers.length === 0)
           ) {
             // A blank of that kind (the Blank Logo's one empty artboard) becomes the page asked for, so a design made
-            // from it does not open on an empty page.
-            page = first;
+            // from it does not open on an empty page. A blank photo takes the size asked for.
+            if (change.kind === 'photo' && change.width && change.height)
+              current = withPhoto(current, first.id, blankPhoto(change.width, change.height));
+            page = pages()[0]!;
             tookBlank.set(page.id, i + 1);
           } else {
             const id = newPageId();

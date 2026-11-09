@@ -64,7 +64,8 @@ changes before it would have done.
   the kind (`withPageKindChosen`) instead of adding a second page, so a fresh Pages tab does not keep an empty
   first page. Likewise a blank of the kind asked for (the tab's only page already of that kind, unnamed and holding
   nothing, as Blank Logo makes it) becomes the page added, so a design made from it does not open on an
-  empty page.
+  empty page. A wireframe blank is one only for the `device` asked for (or none asked), and a photo page only while
+  its picture has no layers, taking the `width` and `height` asked for; any other stays and the new page follows it.
 - **A delete of the page an add took**: once an `add` has taken the first page that way, the empty page is gone, so a
   later `delete` in the same call naming that page (by place or id) means the empty page and is done already: it
   deletes nothing and says so (`Page 1 was the empty first page, which change 1 made the page it added; nothing

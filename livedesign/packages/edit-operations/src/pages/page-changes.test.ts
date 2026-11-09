@@ -123,6 +123,39 @@ describe('adding', () => {
     expect(pagesOf(run(named, [{ op: 'add', kind: 'logo' }]).tab)).toHaveLength(2);
   });
 
+  it('takes an unnamed empty screen only for its own device, and a photo page only while its picture is empty', () => {
+    // An unnamed, empty iPhone screen asked for an iPad: it stays and the iPad follows, rather than the add
+    // saying "device ipad" over the iPhone it kept.
+    const iphone = page('p1', { kind: 'wireframe', size: 'device', device: 'iphone' });
+    const ipad = run(tabOf({ pages: [iphone] }), [
+      { op: 'add', kind: 'wireframe', device: 'ipad' },
+    ]);
+    expect(pagesOf(ipad.tab).map((p) => p.device)).toEqual(['iphone', 'ipad']);
+    expect(ipad.lines[0]).toContain('page 2');
+    const same = run(tabOf({ pages: [iphone] }), [
+      { op: 'add', kind: 'wireframe', device: 'iphone' },
+    ]);
+    expect(pagesOf(same.tab)).toHaveLength(1);
+    // A photo page holds its picture in `photos`, not in elements: one with layers is not a blank.
+    const photo = page('p1', { kind: 'photo', size: 'photo', fit: { width: 1920, height: 1080 } });
+    const edited = tabOf({
+      pages: [photo],
+      photos: {
+        p1: { width: 1920, height: 1080, layers: [{ id: 'ly-0000000a', layerKind: 'pixel' }] },
+      },
+    } as Partial<Tab>);
+    expect(pagesOf(run(edited, [{ op: 'add', kind: 'photo' }]).tab)).toHaveLength(2);
+    // An empty one becomes the page asked for, at the size asked for.
+    const empty = run(tabOf({ pages: [photo] }), [
+      { op: 'add', kind: 'photo', width: 800, height: 600 },
+    ]);
+    expect(pagesOf(empty.tab)).toHaveLength(1);
+    expect((empty.tab as Tab & { photos: Record<string, unknown> }).photos.p1).toMatchObject({
+      width: 800,
+      height: 600,
+    });
+  });
+
   it('never takes a page the same call added as a blank', () => {
     const out = run(tabOf(), [
       { op: 'add', kind: 'logo' },
