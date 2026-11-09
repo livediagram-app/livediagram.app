@@ -264,8 +264,12 @@ holds for that person:
   those go too, while anyone else's stay theirs.
 - **Anonymised**: on other people's items, a comment thread they are in or are mentioned in, an action
   assigned to or by them, a Timeline event they did (in a team, or an edit of someone else's item), a team's
-  Timeline event about them (its detail's `personId`), and a webhook delivery of an event they did, keeps its row,
-  naming `deleted` (no account or guest) in their place, with no name.
+  Timeline event about them (its detail's `personId`), an action given to them on the Timeline (its detail's
+  `assigneeId`), and a webhook delivery of an event they did or of an action given to them, keeps its row, naming
+  `deleted` (no account or guest) in their place, with no name (an action's `assignee_name` or `assigner_name` too).
+  A Timeline event's own id is left as it is, even where it was made from their id (an edit, `ed:<item>:<person>:<day>`,
+  or an action given to them, `aa:…:<person>`): the id has already gone out to browsers, which dismiss events by it,
+  and to webhook receivers, as each delivery's `eventId` and its delivery header, the key they tell repeats apart by.
 
 - **Told to each app**: their name is also in the content of items that outlive them (their comments,
   cards, assignments and edits), which only the item's app holds, and an app may keep something of theirs

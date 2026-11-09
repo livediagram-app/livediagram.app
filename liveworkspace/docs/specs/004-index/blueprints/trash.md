@@ -84,7 +84,8 @@ first 25 purged items are drained at once, and person notices sent.
 3. Their own items (including those in teams closed with them): tombstones in, rows out.
 4. Everything else theirs: folders (defaults cascade), favourites, opens, use days, Shared with me, placement defaults,
    form reads, thread people; their id in threads' participants and mentions becomes `deleted`; actions assigned to
-   or by them name `deleted`; Timeline rows only they saw, then their events no one else sees, then `actor_id
+   or by them name `deleted`, their name beside it null; an `action_assigned` event's and delivery's detail naming
+   them as `assigneeId` take `deleted` and `assigneeName` null (the events through the `aa:` id range); Timeline rows only they saw, then their events no one else sees, then `actor_id
 'deleted'` and `actor_name NULL` on the rest; on account events (`item_id` null) whose detail's `personId` is
    them, `personId 'deleted'` and `memberName NULL`; their `drive_people` row; `actor_id 'deleted'`, `actor_name NULL`
    on webhook deliveries they did (`webhookDeliveryPurgeStatement`). Then the team audit log
