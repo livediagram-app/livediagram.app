@@ -1,8 +1,8 @@
 // A closed account's name off a design that outlives them (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an
 // account"): the index tells the app which designs name them (POST /api/internal/people/:id/purge), and each design's
 // Durable Object runs this over what it stores, with @liveworkspace/index-app's anonymiseJsonText: the comments
-// and assignments in each tab, the changesets they wrote, the design's owner when it was their team design, and
-// their right to have images placed here. Only rows that mention them are read and rewritten, in
+// and assignments in each tab, the changesets they wrote, the email claims they sent, the design's owner when it
+// was their team design, and their right to have images placed here. Only rows that mention them are read and rewritten, in
 // one batch; running it again changes nothing.
 
 import { ANONYMISED_NAME, ANONYMISED_PERSON, anonymiseJsonText } from '@liveworkspace/index-app';
@@ -43,6 +43,9 @@ export async function anonymiseDesign(
     db
       .prepare('UPDATE design SET owner_id = ? WHERE id = ? AND owner_id = ?')
       .bind(ANONYMISED_PERSON, designId, personId),
+    // Their once-only email claims (@liveworkspace/index-app notify-claims.ts) name them as the sender: the app
+    // drops what it keeps for them.
+    db.prepare('DELETE FROM notify_claims WHERE sender = ?').bind(personId),
   );
   const results = await db.batch(writes);
   return results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0);

@@ -90,7 +90,8 @@ export function TabPresenceStack({
       {shown.map((slot, i) => (
         <span
           key={slot.p.id}
-          className={`inline-flex ${i === slots - 1 ? '' : '-mr-0.5'} ${
+          // On a touch screen the faces stop overlapping, so each 24px target is its own (touch-targets.md).
+          className={`inline-flex ${i === slots - 1 ? '' : '-mr-0.5 pointer-coarse:mr-0'} ${
             slot.leaving ? 'animate-pop-out' : 'animate-pop-in'
           }`}
           // An agent's mark sits over the person beside it, so the overlap never hides its star
@@ -133,7 +134,9 @@ export function TabPresenceStack({
                 onClick={() => onOpenCollaborators(slot.p.id)}
                 aria-haspopup="dialog"
                 aria-label={`Collaborators, showing ${slot.p.name}`}
-                className={`inline-flex cursor-pointer rounded-full transition ${
+                // A 16px face is too small to tap: on a touch screen the button reaches 4px either side of it
+                // and 44px tall (docs/specs/004-interface-design/touch-targets.md "A tab's presence avatars").
+                className={`relative inline-flex cursor-pointer rounded-full transition touch-target-y pointer-coarse:px-1 ${
                   following ? 'ring-2 ring-brand-400 ring-offset-1 dark:ring-offset-slate-900' : ''
                 }`}
               >
@@ -144,18 +147,23 @@ export function TabPresenceStack({
         </span>
       ))}
       {overflow > 0 ? (
-        <GlyphDisc
-          size={16}
-          as="button"
+        // The button is the tap area (24px wide and padded to 44px tall on a touch screen, as each face is); the
+        // disc inside it is what is drawn.
+        <button
           type="button"
           onClick={onOpenCollaborators ? () => onOpenCollaborators(null) : undefined}
           disabled={!onOpenCollaborators}
           aria-haspopup="dialog"
           aria-label={`${overflow} more participant${overflow === 1 ? '' : 's'} on this tab`}
-          className="animate-pop-in cursor-pointer border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm transition hover:bg-slate-300 disabled:cursor-default disabled:hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+          className="group relative inline-flex animate-pop-in cursor-pointer touch-target-y disabled:cursor-default pointer-coarse:px-1"
         >
-          +{overflow}
-        </GlyphDisc>
+          <GlyphDisc
+            size={16}
+            className="border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm transition group-enabled:group-hover:bg-slate-300 dark:border-slate-800 dark:bg-slate-700 dark:text-slate-200 dark:group-enabled:group-hover:bg-slate-600"
+          >
+            +{overflow}
+          </GlyphDisc>
+        </button>
       ) : null}
     </div>
   );

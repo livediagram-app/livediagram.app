@@ -540,7 +540,7 @@ describe('reverting', () => {
     expect(stored(db, 't2')).toEqual([]);
   });
 
-  it('refuses a viewer, and answers 404 for a changeset swept or of another design', async () => {
+  it('refuses a viewer, answers a link scoped to another tab 404, and 404 for a changeset swept or of another design', async () => {
     quiet();
     const { db } = await setUp();
     const cs = (await (await submit(db, { operations: [{ op: 'rm', target: 'b' }] })).json()) as {
@@ -555,6 +555,16 @@ describe('reverting', () => {
       { owner: 'g', headers: { 'X-Share-Code': 'VIEWCODE' } },
     );
     expect(viewer.status).toBe(403);
+    // An Editor link confined to another tab: 404, as a read of that tab (no existence leak).
+    testShareLink(db, 'D', 'SCOPED23', 'edit', 'never', 't2');
+    const scoped = await call(
+      db,
+      'POST',
+      `/api/designs/D/changesets/${cs.changeset.id}/revert`,
+      undefined,
+      { owner: 'g', headers: { 'X-Share-Code': 'SCOPED23' } },
+    );
+    expect(scoped.status).toBe(404);
     db.sql.exec('DELETE FROM agent_changesets');
     expect(
       (await call(db, 'POST', `/api/designs/D/changesets/${cs.changeset.id}/revert`)).status,

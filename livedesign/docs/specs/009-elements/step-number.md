@@ -56,4 +56,5 @@ A step takes the **Shape** set for its body, along its disc. It adds one option 
 
 ## Agents
 
-The MCP server and the REST API take `step`; an agent sets the number as the label.
+The MCP server and the REST API take `step`; an agent sets the number as the label. A label over 3 characters is
+refused, naming the element and the cap, as a badge's over 24 is ([The badge](badge.md) "The cap holds for agents").

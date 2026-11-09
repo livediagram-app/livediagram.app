@@ -117,7 +117,9 @@ export function rewriteCommentAuthors(
           const claimed = prior.authorId === undefined && c.authorId === writer.id;
           // The words and the time lock the same way for anyone but the comment's author: an
           // edit-role writer may delete someone else's comment, never put words in their mouth.
-          const own = claimed || (prior.authorId !== undefined && prior.authorId === writer.id);
+          // A claim takes the id only: the id on a saved copy is the saver's to write, so any Editor could claim a
+          // comment credited from the room, and its words stay as the room credited them.
+          const own = prior.authorId !== undefined && prior.authorId === writer.id;
           // The token id locks the same way (agent-presence I7): only the server stamps it.
           const { mentions: _sent, tokenId: _token, ...body } = c;
           return {
