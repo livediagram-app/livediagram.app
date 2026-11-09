@@ -535,7 +535,8 @@ is read forgivingly, so a list pasted from elsewhere works:
   directly under the root or a marked item (a bullet, number or heading) lined up with that line's
   text, which is a further line of its text.
 - Headings nest by their `#` count: under a `#` root, `##` lines are its children, `###` lines
-  theirs, and bullets under a heading nest one level below it.
+  theirs, and bullets under a heading nest one level below it. A heading's closing `#`s are dropped,
+  as CommonMark reads them (`## Section ##` reads "Section"), while a `#` that ends a word stays (`## C#`).
 - An indentation deeper than one level below the line above is read as one level below it, so a
   line can never skip a level. A second line at the root's level is read as a child of the root
   (a map has one root); for a heading, the deeper headings after it then read against it, so under a

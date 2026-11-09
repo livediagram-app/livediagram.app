@@ -56,8 +56,18 @@ describe('parseMarkdown — headings', () => {
   });
 
   it('drops optional closing hashes', () => {
-    const { roots } = parseMarkdown('# Title #\n');
+    const { roots } = parseMarkdown('# Title #\n## C#\n## Issue #12 ##\n');
     expect(roots[0]!.label).toBe('Title');
+    expect(roots[0]!.children.map((c) => c.label)).toEqual(['C#', 'Issue #12']);
+  });
+
+  // A heading of a long run of spaces once cost 1.6 s: the closing-hash regex retried every space.
+  it('reads a heading with a long run of spaces in linear time', () => {
+    const fastest = (text: string) =>
+      Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void parseMarkdown(text))));
+    const small = fastest(`# a${' '.repeat(10_000)}b`);
+    const large = fastest(`# a${' '.repeat(40_000)}b`);
+    expect(large).toBeLessThan(small * 8 + 5);
   });
 });
 

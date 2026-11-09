@@ -5,6 +5,7 @@
 // tab's (`Tab.pages`), so everyone lays out on the same ones; the sheets themselves are a view,
 // never elements. A tab from before multiple pages carries one `pageOrientation` instead, read as
 // a single page.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { isBoxed, type Element, type Tab } from './index';
 import {
   parsePageSides,
@@ -244,7 +245,7 @@ function parsePageFields(v: unknown): Page | undefined {
   if (!p || typeof p !== 'object' || typeof p.id !== 'string' || !isPageOrientation(p.orientation))
     return undefined;
   const background = parseBackground(p.background);
-  const name = typeof p.name === 'string' ? p.name.trim().slice(0, PAGE_NAME_MAX) : '';
+  const name = typeof p.name === 'string' ? cutText(p.name.trim(), PAGE_NAME_MAX) : '';
   const lock = p.locked === true ? { locked: true as const } : {};
   // An article page (or a card) without a readable flow is an article of its own.
   const ownFlow =

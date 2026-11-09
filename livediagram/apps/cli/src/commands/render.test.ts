@@ -28,7 +28,10 @@ const host: Route = (_r, url) => {
         tabs: [{ id: 'main', name: 'Main', orderIndex: 0 }],
       },
     });
-  if (path === `/api/documents/${DOC}/tabs/main/render.svg`) return new Response(SVG);
+  if (path === `/api/documents/${DOC}/tabs/main/render.svg`) {
+    renders += 1;
+    return new Response(SVG);
+  }
   if (path === `/api/documents/${DOC}/tabs/main`)
     return new Response(JSON.stringify({ tab: { id: 'main', name: 'Main', elements: [] } }), {
       headers: { ETag: 'W/"2"' },
@@ -43,6 +46,9 @@ async function cli(
   const code = await run(argv, io);
   return { code, io, out: io.out(), err: io.err() };
 }
+
+// How many times a tab's render was fetched.
+let renders = 0;
 
 describe('tab render', () => {
   it('writes the tab as a PNG at scale 1, and as SVG as served', async () => {
@@ -112,6 +118,15 @@ describe('graph render', () => {
 });
 
 describe('export --format png', () => {
+  it('draws svg and png from one render of the tab', async () => {
+    renders = 0;
+    const { code, out } = await cli(['export', '--all', '--to', 'b', '--format', 'svg,png']);
+    expect(code).toBe(0);
+    expect(out).toContain('b/shop/main.svg');
+    expect(out).toContain('b/shop/main.png');
+    expect(renders).toBe(1);
+  });
+
   it('writes each tab as a PNG beside the other formats', async () => {
     const { code, out, io } = await cli(['export', '--all', '--to', 'b', '--format', 'png,md']);
     expect(code).toBe(0);

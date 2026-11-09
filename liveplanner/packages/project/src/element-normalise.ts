@@ -7,6 +7,7 @@
 // tidied. Input is untrusted JSON: anything not shaped like the field it claims
 // to be is left for isValidTab to judge.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { anchorPrimarySide } from './anchors';
 import { asText } from '@liveworkspace/model-core/as-text';
 import { orthogonalBends } from './arrow-orthogonal';
@@ -139,7 +140,7 @@ function normaliseSankey(el: Raw): Raw {
   for (const [field, values] of options)
     if (out[field] !== undefined && !values.includes(out[field] as string)) delete out[field];
   if (out.sankeyUnit !== undefined) {
-    const unit = str(out.sankeyUnit).trim().slice(0, SANKEY_UNIT_MAX);
+    const unit = cutText(str(out.sankeyUnit).trim(), SANKEY_UNIT_MAX);
     if (unit) out.sankeyUnit = unit;
     else delete out.sankeyUnit;
   }

@@ -107,6 +107,16 @@ describe('parseMindOutline', () => {
     expect(tree(parse('# Root\n## A\n# B\n## B1'))).toEqual(['Root', ['A'], ['B', ['B1']]]);
   });
 
+  // docs/specs/009-elements/mind-node.md "Edit Outline": a pasted `## Section ##` once kept its closing `##`.
+  it("drops a heading's closing #s, keeping a # that is part of a word", () => {
+    expect(tree(parse('# Root #\n## A ##\n## C#\n### B1 #  \n## #\n## snake_case_name'))).toEqual([
+      'Root',
+      ['A'],
+      ['C#', ['B1']],
+      ['snake_case_name'],
+    ]);
+  });
+
   it('never skips a level, and reads a second root-level line as a child of the root', () => {
     expect(tree(parse('Root\n      - deep\nOther'))).toEqual(['Root', ['deep'], ['Other']]);
   });

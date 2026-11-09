@@ -5,6 +5,7 @@
 // on every page of the article. Shared by the page panel (apps/editor page-edits) and the
 // agents' page changes (docs/specs/024-agents/pages-for-agents.md), so an agent's edit is the
 // panel's. Each answers the next tab (the same one when nothing changes) or why it was refused.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   pageUnits,
   withArticleAdded,
@@ -102,7 +103,7 @@ export function pageRenamed<T extends PagesTab>(tab: T, pageId: string, raw: str
   const target = pages.find((p) => p.id === pageId);
   if (!target) return refused('unknown_page');
   if (pageLockRefuses(pages, pageId, false)) return refused('locked');
-  const name = raw.trim().slice(0, PAGE_NAME_MAX);
+  const name = cutText(raw.trim(), PAGE_NAME_MAX);
   if ((target.name ?? '') === name) return { tab };
   const next = pages.map((p) => {
     if (p.id !== pageId) return p;

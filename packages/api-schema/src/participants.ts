@@ -1,5 +1,6 @@
 // Participants: the persisted row and what the realtime room broadcasts as presence, every product's.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import type { AccessLevel } from './access-levels';
 
 // A persisted participant row, returned by `POST /api/participants`
@@ -21,6 +22,11 @@ export type ParticipantRecord = {
 // these, and the editor clamps what it reads to them too.
 export const MAX_PARTICIPANT_NAME_LEN = 120;
 export const MAX_COLOR_LEN = 64;
+
+/** A participant's name cut to MAX_PARTICIPANT_NAME_LEN, never through an emoji's surrogate pair. */
+export function cutParticipantName(name: string): string {
+  return cutText(name, MAX_PARTICIPANT_NAME_LEN);
+}
 
 // What the realtime room broadcasts as presence. Identical shape to
 // `ParticipantRecord` minus `createdAt` — presence is concerned with

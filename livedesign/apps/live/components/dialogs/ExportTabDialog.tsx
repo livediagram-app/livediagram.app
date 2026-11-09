@@ -18,9 +18,9 @@ import {
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
 import {
   DEFAULT_PAGE_SCOPE,
-  exportPageLabel,
   exportPages,
-  sanitizeFilename,
+  pageFileLabel,
+  tabExportBaseName,
   type PageScope,
 } from '@/lib/export-pages';
 import { ExportPagePicker } from './ExportPagePicker';
@@ -218,8 +218,7 @@ export function ExportTabDialog({
       CARDS.filter((c) => c.kind !== 'logo-kit' && c.kind !== 'photo');
 
   const isSelection = scope === 'selection';
-  const suffix = isSelection ? ' - selection' : '';
-  const baseName = sanitizeFilename(`${designName || 'design'} - ${tab.name || 'tab'}${suffix}`);
+  const baseName = tabExportBaseName(designName, tab.name, isSelection);
 
   // A new image load (format picked, tab or image context changed) is not ready until it lands;
   // adjusted during render so the panel never shows the previous load as ready.
@@ -323,9 +322,7 @@ export function ExportTabDialog({
           opts: renderOpts,
         });
         const name =
-          pageScope === 'all'
-            ? baseName
-            : `${baseName} - ${sanitizeFilename(exportPageLabel(page, pages.length))}`;
+          pageScope === 'all' ? baseName : `${baseName} - ${pageFileLabel(page, pages.length)}`;
         downloadBlob(blob, `${name}.${ext}`);
         track(
           'Document',

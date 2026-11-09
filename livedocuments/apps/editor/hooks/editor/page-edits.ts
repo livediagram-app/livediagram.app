@@ -4,6 +4,7 @@
 // size, orientation and background, and move, copy and go as one. Each is one tab edit (one undo
 // step, synced to everyone) that moves the content of every page it shifts along with it
 // (withPages), re-reading the tab at commit time so two quick edits compose.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   elementIdsOnPage,
   elementsOnPage,
@@ -284,7 +285,7 @@ export function pageEdits({
   };
   const rename = (pageId: string, raw: string) => {
     if (refusedLocked(pageId, 'name', false)) return;
-    const name = raw.trim().slice(0, PAGE_NAME_MAX);
+    const name = cutText(raw.trim(), PAGE_NAME_MAX);
     if ((page(pageId)?.name ?? '') === name) return;
     track('Tab', 'Changed', 'PageRenamed');
     commitTab((t) => edited(t, pageRenamed(t, pageId, name)));

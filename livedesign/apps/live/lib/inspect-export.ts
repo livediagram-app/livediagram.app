@@ -10,7 +10,7 @@ import {
 } from '@livedesign/design';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { downloadBlob, exportTabAsPng, exportTabAsSvg, loadTabImages } from './export-tab';
-import { sanitizeFilename } from './export-pages';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 
 export type InspectExportFormat = 'png' | 'svg';
 export const INSPECT_EXPORT_SCALES = [1, 2, 3] as const;
@@ -31,7 +31,7 @@ export function inspectExportName(
   scale: InspectExportScale,
   format: InspectExportFormat,
 ): string {
-  return `${sanitizeFilename(`${designName || 'design'} - ${elementName || 'element'}`)}@${scale}x.${format}`;
+  return `${sanitizeFilename(`${designName || 'design'} - ${elementName || 'element'}`, 'design')}@${scale}x.${format}`;
 }
 
 export async function exportInspectedElement(input: {

@@ -164,13 +164,28 @@ describe('rewriteCommentAuthors', () => {
     const next = mkShape('a', [mkComment('c1', 'Me', '#000', 'final', 'writer-id')]);
     const [out] = rewriteCommentAuthors([next], [prev], writer) as [ShapeElement];
     expect(out.commentThread!.comments[0]!.text).toBe('final');
-    // The claim of a room-credited comment is the author's own save too.
+    // A claim of a room-credited comment takes the id only (docs/specs/012-collaboration/collab-race-hardening.md):
+    // the id on a saved copy is the saver's to write, so the words stay as the room credited them.
     const unclaimed = mkShape('a', [mkComment('c2', 'Me', '#000', 'typed')]);
     const claim = mkShape('a', [mkComment('c2', 'Me', '#000', 'typed!', 'writer-id')]);
     const [claimed] = rewriteCommentAuthors([claim], [unclaimed], writer) as [ShapeElement];
     expect(claimed.commentThread!.comments[0]).toMatchObject({
-      text: 'typed!',
+      text: 'typed',
       authorId: 'writer-id',
+    });
+  });
+
+  it("never lets an Editor put words in a room-credited comment's author's mouth by claiming it", () => {
+    const prev = mkShape('a', [mkComment('c1', 'Alice', '#111111', 'ship it')]);
+    const forged = {
+      ...mkComment('c1', 'Alice', '#111111', 'do not ship', 'writer-id'),
+      createdAt: 99,
+    };
+    const [out] = rewriteCommentAuthors([mkShape('a', [forged])], [prev], writer) as [ShapeElement];
+    expect(out.commentThread!.comments[0]).toMatchObject({
+      text: 'ship it',
+      createdAt: 1,
+      authorName: 'Alice',
     });
   });
 });

@@ -4,6 +4,7 @@
 import { pageLabel, type LaidOutPage, type Tab } from '@livedesign/design';
 import { exportTabAsPng, exportTabAsSvg, type ImageExportOpts } from './export-tab';
 import { exportPagesAsPdf } from './export-tab-pdf';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
 
 export type PageScope = 'all' | 'one';
@@ -16,19 +17,16 @@ export const DEFAULT_PAGE_SCOPE: Record<PageExportFormat, PageScope> = {
   svg: 'one',
 };
 
-// Filesystem-safe filename (docs/specs/020-import-export/export-fidelity.md "File names"): brackets are
-// dropped, any other character that isn't alphanumeric, a dot, a dash, an underscore or a space becomes a
-// dash, runs of dashes collapse and dashes at the ends are trimmed, so "(9:16)" reads "9-16" and the name
-// is safe on Windows, macOS and Linux.
-export function sanitizeFilename(name: string): string {
-  return name
-    .replace(/[()[\]{}]+/g, '')
-    .replace(/[^A-Za-z0-9._\- ]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/^-|-$/g, '')
-    .trim();
+/** A tab export's file name before its extension (docs/specs/020-import-export/export-fidelity.md "File names"):
+ *  `<design> - <tab>`, ` - selection` added for a selection, through the shared `sanitizeFilename`, so it is safe
+ *  on every platform, keeps letters in any script, and a name of nothing safe downloads as "design". */
+export function tabExportBaseName(
+  designName: string,
+  tabName: string,
+  isSelection: boolean,
+): string {
+  const suffix = isSelection ? ' - selection' : '';
+  return sanitizeFilename(`${designName || 'design'} - ${tabName || 'tab'}${suffix}`, 'design');
 }
 
 /** A page's label as the export names it (its name, or "Page n", then its size). */
@@ -36,10 +34,15 @@ export function exportPageLabel(page: LaidOutPage, count: number): string {
   return pageLabel(page, page.index, Math.max(2, count));
 }
 
+/** A page's label made safe for a file name; "page" when nothing safe is left. */
+export function pageFileLabel(page: LaidOutPage, count: number): string {
+  return sanitizeFilename(exportPageLabel(page, count), 'page');
+}
+
 /** The files a zip of every page holds: `NN <label>.<ext>`, in order. */
 export function zipEntryName(page: LaidOutPage, count: number, ext: string): string {
   const place = String(page.index + 1).padStart(2, '0');
-  return `${place} ${sanitizeFilename(exportPageLabel(page, count))}.${ext}`;
+  return `${place} ${pageFileLabel(page, count)}.${ext}`;
 }
 
 /** The file for the chosen pages and format, with its extension. */

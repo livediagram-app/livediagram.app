@@ -7,7 +7,7 @@ import {
   AGENT_PRESENCE_FOCUS_MAX,
   AGENT_PRESENCE_STATUS_MAX,
   MAX_COLOR_LEN,
-  MAX_PARTICIPANT_NAME_LEN,
+  cutParticipantName,
   type AgentPresence,
   type ParticipantPresence,
 } from '@liveplanner/api-schema';
@@ -37,7 +37,7 @@ function agentEntryOf(value: unknown): AgentPresence | null {
   if (!focusIds || !joinIds) return null;
   return {
     id: id.slice(0, AGENT_ID_MAX),
-    name: name.slice(0, MAX_PARTICIPANT_NAME_LEN),
+    name: cutParticipantName(name),
     color: color.slice(0, MAX_COLOR_LEN),
     role,
     tabId: tabId.slice(0, AGENT_ID_MAX),

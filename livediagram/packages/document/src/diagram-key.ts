@@ -4,6 +4,7 @@
 //
 // A LEAF module: types only from './index'.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import type { Element, ShapeElement } from './index';
 import type { LayoutRect } from './web-components';
 import { tagKey, type TagColour } from './tag-colours';
@@ -108,7 +109,7 @@ export function meaningOf(el: ShapeElement, row: KeyRow): string {
  *  row the key no longer lists is dropped. */
 export function withKeyMeaning<T extends Element>(el: T, rowId: string, text: string): T {
   if (!isDiagramKey(el)) return el;
-  const clean = text.replace(/\s+/g, ' ').trim().slice(0, KEY_MEANING_MAX);
+  const clean = cutText(text.replace(/\s+/g, ' ').trim(), KEY_MEANING_MAX);
   const next: Record<string, string> = { ...(el.keyMeanings ?? {}) };
   if (clean) next[rowId] = clean;
   else delete next[rowId];
