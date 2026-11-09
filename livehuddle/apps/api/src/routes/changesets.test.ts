@@ -687,6 +687,45 @@ describe('agent presence after a read (docs/specs/024-agents/agent-presence.md "
     expect(presenceCalls(r)).toHaveLength(2);
   });
 
+  // "Token levels": a view token writes nothing, presence included; a Participant's shows.
+  it('shows no presence for a token whose grant is a Viewer’s, and does for a Participant’s', async () => {
+    quiet();
+    const { db, room: r } = await setUp();
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 20 * 3_600_000);
+    const as = (level: 'participate' | 'view', tokenId: string) =>
+      handleDocuments(
+        makeTestRouteContext('GET', '/api/documents/D/tabs/t1', {
+          env: db.env,
+          owner: 'user_v',
+          accountUserId: null,
+          verifiedUserId: 'user_v',
+          token: { id: tokenId },
+          grant: {
+            item: 'D',
+            level,
+            tab: 't1',
+            sub: 'user_v',
+            team: null,
+            exp: 2_000_000_000,
+            shareCode: 'code1',
+            token: 'g',
+          },
+          waitUntil: (p) => void pending.push(p),
+        }),
+      );
+    expect((await as('view', 'tok_view')).status).toBe(200);
+    await settled();
+    expect(presenceCalls(r)).toEqual([]);
+    expect((await as('participate', 'tok_part')).status).toBe(200);
+    await settled();
+    expect(presenceCalls(r)).toEqual([
+      {
+        url: 'https://room/presence',
+        body: expect.objectContaining({ tokenId: 'tok_part', mode: 'refresh' }),
+      },
+    ]);
+  });
+
   it('does nothing without a token or a waitUntil, and logs a stamp that fails', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const waits: Promise<unknown>[] = [];

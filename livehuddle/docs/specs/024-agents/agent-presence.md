@@ -40,7 +40,9 @@ presence as that person's agent, and comments are how people and agents talk on 
   `AGENT_PRESENCE_ACTIVITY_TTL_MS`. A dry run or a refused changeset refreshes nothing.
 - **Every read** of a tab with a token (`GET /api/documents/:id/tabs/:tabId`, any view, as the MCP and the CLI read a
   tab) refreshes it the same way, at most once per agent, document and tab every `AGENT_PRESENCE_STAMP_MS`: a read
-  inside that window, on the tab the agent already shows on, writes nothing. A session's read refreshes nothing.
+  inside that window, on the tab the agent already shows on, writes nothing. A session's read refreshes nothing, nor
+  does a read by a view token or one whose grant is a Viewer's ([Token levels](#token-levels)): before, such a read
+  put "{owner}'s Agent" in front of the room and took one of its places.
 - An agent may set presence explicitly: `PUT /api/documents/:id/tabs/:tabId/presence` with `status` (up to 80
   characters), `focus` (up to 20 element ids, shown with a ring in the owner's colour) and `ttl` (up to
   `AGENT_PRESENCE_MAX_TTL_MS`). `DELETE` on the same path clears it. The agent holds no socket.

@@ -297,9 +297,10 @@ failure. The changeset route calls it in `waitUntil` after a token's changeset o
 gate has passed and the tab exists, for a token caller only. It first asks `agentPresenceStamps.shouldStamp(id, tokenId,
 tabId, now)` (`@liveworkspace/api-kit/agent-presence-stamps`), an in-memory map per isolate keyed by document and
 token, bounded at `AGENT_PRESENCE_STAMPS_MAX` with the oldest let go: it answers no for the tab last stamped inside
-`AGENT_PRESENCE_STAMP_MS`, and yes for any other tab, so the agent follows its reads. Only on a yes does it look up
-the owner's participant record, the person tag and the token's level (`gateEdit`, as an explicit set's, PR27), all
-in `waitUntil`, and call `refreshAgentPresence`. `refreshAfterWrite` notes its tab in the same map. The room keeps
+`AGENT_PRESENCE_STAMP_MS`, and yes for any other tab, so the agent follows its reads. Only on a yes, and in
+`waitUntil`, does it stop for a read-only token or one `gateParticipate` refuses (a Viewer's grant shows nothing, as
+the explicit set's 403), and otherwise look up the owner's participant record, the person tag and the token's
+level (`gateEdit`, as an explicit set's, PR27), and call `refreshAgentPresence`. `refreshAfterWrite` notes its tab in the same map. The room keeps
 its own stamp (PR38), so a second isolate's read costs a room call and no storage write. A failure logs
 `[agent-presence] read stamp failed` and the read stands.
 

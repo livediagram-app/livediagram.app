@@ -31,6 +31,7 @@ import {
   deniedEdit,
   gateEdit,
   gateGrant,
+  gateParticipate,
   gateRead,
   grantOn,
   missingDocument,
@@ -220,13 +221,16 @@ export function refreshAfterRead(
   const documentId = document.id;
   ctx.waitUntil(
     (async () => {
+      // A view token, or one whose grant is a Viewer's, shows nothing to the room ("Token levels"), as an explicit
+      // set answers it 403.
+      if (token.readOnly) return;
+      const { ownerId, teamId } = document;
+      if (!(await gateParticipate(ctx, documentId, ownerId, teamId, tabId))) return;
       const [author, personTag, edits] = await Promise.all([
         authorOf(ctx, owner),
         personTagFor(documentId, owner),
         // The level the gates resolve for the token, as an explicit set's (PR27).
-        token.readOnly
-          ? false
-          : gateEdit(ctx, documentId, document.ownerId, document.teamId, tabId),
+        gateEdit(ctx, documentId, ownerId, teamId, tabId),
       ]);
       await refreshAgentPresence(ctx.env, {
         documentId,
