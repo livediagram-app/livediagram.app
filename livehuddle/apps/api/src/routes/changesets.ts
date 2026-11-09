@@ -77,8 +77,12 @@ async function handleSubmit(
   tabId: string,
   owner: string,
 ): Promise<Response> {
-  if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, tabId)))
-    return forbidden();
+  if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, tabId))) {
+    // A grant confined to another tab reads this one as missing, as the other write doors answer it (no existence
+    // leak; docs/specs/013-workspace/tab-scoped-share-links.md); no grant, or one below Editor, 403.
+    const scope = grantOn(ctx, document.id)?.tabScope;
+    return scope != null && scope !== tabId ? notFound() : forbidden();
+  }
   // A tab-scoped grant writes its own tab and never makes one (docs/specs/013-workspace/tab-scoped-share-links.md):
   // its tab gone reads as missing, so a `replace` cannot bring it back under a name of the caller's choosing.
   if (grantOn(ctx, document.id)?.tabScope != null && !document.tabs.some((t) => t.id === tabId)) {
