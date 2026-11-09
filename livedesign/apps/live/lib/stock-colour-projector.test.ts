@@ -9,7 +9,7 @@ import {
   themeHalf,
   type Element,
 } from '@livedesign/design';
-import { createStockColourProjector } from './stock-colour-projector';
+import { createStockColourProjector, plainPaper } from './stock-colour-projector';
 
 const stroke = (over: Partial<Element> = {}): Element =>
   ({
@@ -162,5 +162,41 @@ describe('createStockColourProjector on a page with its own fill', () => {
       maps,
     });
     expect(inkOf(off[0])).not.toBe(inkOf(on[0]));
+  });
+});
+
+// docs/specs/011-theme/light-and-dark.md "A theme never sinks a label into what is behind it": the plain paper is
+// white as stored and printed and slate in the dark editor, so a template's dark words on it (a wireframe's heading,
+// a logo's wordmark) are re-inked in the view; words on a page with a fill of its own are drawn for that page.
+describe('labels on the plain paper', () => {
+  const words = (id: string, textColor: string): Element =>
+    ({ id, type: 'text', x: 0, y: 0, width: 200, height: 40, label: 'Welcome Back', textColor }) as unknown as Element;
+  const inkOf = (el: Element | undefined) => (el as { textColor?: string }).textColor ?? '';
+
+  it('is white as stored and slate as the dark editor draws it', () => {
+    expect(plainPaper('light')).toEqual({ stored: '#ffffff', drawn: '#ffffff' });
+    expect(plainPaper('dark')).toEqual({ stored: '#ffffff', drawn: '#0f172a' });
+  });
+
+  it('re-inks dark words the dark editor would sink into the paper', () => {
+    const project = createStockColourProjector();
+    const out = project([words('h', '#0f172a')], 'dark', undefined, plainPaper('dark'));
+    expect(contrastRatio(inkOf(out[0]), '#0f172a')).toBeGreaterThanOrEqual(LABEL_BACKDROP_CONTRAST);
+  });
+
+  it('leaves words on a page with a fill of its own as that page draws them', () => {
+    const project = createStockColourProjector();
+    const board = [words('h', '#3b1f14')];
+    const out = project(board, 'dark', undefined, plainPaper('dark'), {
+      surfaces: new Map([['h', 'light' as const]]),
+      maps: { light: new Map(), dark: new Map() },
+    });
+    expect(inkOf(out[0])).toBe('#3b1f14');
+  });
+
+  it('leaves the light editor as stored', () => {
+    const project = createStockColourProjector();
+    const board = [words('h', '#0f172a')];
+    expect(project(board, 'light', undefined, plainPaper('light'))).toBe(board);
   });
 });

@@ -10,7 +10,9 @@
 //
 // An element on a page with a fill of its own (docs/specs/011-theme/light-and-dark.md "A page's own paper") is
 // drawn for that page, not for the viewer's chrome: its theme colours in the half that matches the page's
-// surface, its stock colours for that surface, so a light slide in dark chrome keeps dark words.
+// surface, its stock colours for that surface, so a light slide in dark chrome keeps dark words. The labels re-inked
+// against the canvas (`canvases`) leave those elements be: in livedesign the canvas given is the plain paper, white as
+// stored and printed, slate as the dark editor draws it.
 import {
   canvasSurface,
   elementPageTones,
@@ -21,8 +23,15 @@ import {
   type Element,
   type LaidOutPage,
 } from '@livedesign/design';
+import { CANVAS_PAPER } from '@/lib/page-paint';
 
 const NO_THEME_MAP: ReadonlyMap<string, string> = new Map();
+
+/** The plain paper as stored (white, as an export prints it) and as the canvas draws it on `surface` (slate in dark
+ *  mode): what a label on a page with no fill of its own is read against. */
+export function plainPaper(surface: CanvasSurface): { stored: string; drawn: string } {
+  return { stored: CANVAS_PAPER.light, drawn: CANVAS_PAPER[surface] };
+}
 
 /** The surface of each element on a page with its own fill (elementPageSurfaces), the theme map
  *  for each surface (themeViewMap in that appearance), and, where known, that page's tone
@@ -125,6 +134,8 @@ export function createStockColourProjector(): (
       if (inked !== lastOut)
         lastOut = inked.map((el, i) => {
           if (el === lastOut[i]) return el;
+          // A label on a page with a fill of its own is drawn for that page (elementAsSeen), not read against the canvas.
+          if (surfaces?.has(el.id)) return lastOut[i]!;
           const prior = inkCache.get(lastOut[i]!);
           if (
             prior &&
