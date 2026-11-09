@@ -211,7 +211,11 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
 
 - **Criteria** (`COUNTIF`, `SUMIFS`, ... and the card functions) take a value to equal, or a text starting with a
   comparison (`">=10"`, `"<>Done"`), with `*` and `?` as wildcards and `~` to escape them; text matches ignore
-  case.
+  case. The text after a comparison reads as a number when it is one, a percentage (`">50%"` is above 0.5) or an
+  ISO date (`">=2026-01-01"` compares dates), as in Google Sheets; other date forms stay text, as a criterion has no
+  locale to read them by.
+- A lookup key with wildcards (`VLOOKUP`, `MATCH`, `XLOOKUP`, `XMATCH`) is a wildcard pattern only, never a
+  comparison: `VLOOKUP("<a*", …)` finds text starting `<a`.
 - `TEXT(value, format)` takes the spreadsheet format codes people use (`"0.00"`, `"#,##0"`, `"0%"`, `"dd/mm/yyyy"`,
   `"mmm yyyy"`, `"hh:mm"`, `"[h]:mm"`, `"£#,##0.00"`, `"@"`).
 - `HYPERLINK(url, [label])` shows the label as a link; Ctrl/⌘ and a click opens it in a new tab (http, https and

@@ -17,7 +17,7 @@ import {
   type FnDef,
 } from '../fn';
 import { parseFormula } from '../parse';
-import { makeCriterion } from '../criteria';
+import { wildcardCriterion } from '../criteria';
 import {
   compareScalars,
   dims,
@@ -33,13 +33,9 @@ function sameKind(a: Scalar, b: Scalar): boolean {
   return typeof a === typeof b && a !== null && b !== null;
 }
 
-function hasWildcard(v: Scalar): v is string {
-  return typeof v === 'string' && /(^|[^~])[*?]/.test(v);
-}
-
 // The index of an exact match in `list` (text ignoring case, wildcards when the key has them), or -1.
 function exactIndex(list: Scalar[], key: Scalar, reverse = false, wildcards = true): number {
-  const crit = wildcards && hasWildcard(key) ? makeCriterion(key) : null;
+  const crit = wildcards && typeof key === 'string' ? wildcardCriterion(key) : null;
   const n = list.length;
   for (let k = 0; k < n; k++) {
     const i = reverse ? n - 1 - k : k;
