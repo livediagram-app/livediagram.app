@@ -264,9 +264,7 @@ async function tracks(
     );
     if (paused) return paused;
     // The room says which of them this session may hear now (#483); the rest are answered `not_heard`.
-    const { refused } = await splitByHearing(locators, (asks) =>
-      hearing(session.sessionId, asks),
-    );
+    const { refused } = await splitByHearing(locators, (asks) => hearing(session.sessionId, asks));
     const allowed = locators.filter((_, i) => !refused.has(i) && !forged.has(i));
     if (allowed.length === 0) return json(withRefusals(locators, refused, null, forged));
     const tracks = allowed.map(remoteTrack);

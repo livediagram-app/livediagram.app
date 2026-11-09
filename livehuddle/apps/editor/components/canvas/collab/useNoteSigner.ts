@@ -1,6 +1,11 @@
 'use client';
 
-import { NOTE_AUTHOR_MAX, type ElementDelta, type NoticeNote, type ShapeElement } from '@livehuddle/document';
+import {
+  NOTE_AUTHOR_MAX,
+  type ElementDelta,
+  type NoticeNote,
+  type ShapeElement,
+} from '@livehuddle/document';
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { participantKey } from '@/lib/identity';

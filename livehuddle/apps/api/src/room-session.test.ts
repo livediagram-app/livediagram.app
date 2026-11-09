@@ -65,7 +65,14 @@ describe('a long document id', () => {
   it('is kept whole, so its grant renews and its calls prove themselves', () => {
     const id = 'd'.repeat(128);
     const a = newSessionAttachment(
-      { isOwner: false, tabScope: null, shareCode: null, personTag: null, adderKey: null, documentId: id },
+      {
+        isOwner: false,
+        tabScope: null,
+        shareCode: null,
+        personTag: null,
+        adderKey: null,
+        documentId: id,
+      },
       'presence-1',
     );
     expect(a.documentId).toBe(id);
