@@ -4,6 +4,7 @@ export {
   fetchTeamLibraries,
   listAllDesigns,
   matchDesigns,
+  searchDesigns,
   readLibraries,
   type FoundDesign,
   type Libraries,

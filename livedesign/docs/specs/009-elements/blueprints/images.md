@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/design/src/svg-render-image-icon.ts`       | `svgImageShape`: clipped `<image>` over a white backing rect                 |
 | `../packages/api-schema/src/image-limits.ts`         | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` and their derived copy             |
 | `../packages/api-schema/src/image-sniff.ts`          | `sniffImageType`: magic-number table                                         |
-| `packages/api-schema/src/embed-images.ts`            | `embedTabImages`, `tabImageIds`: server-side data-URL inlining               |
+| `packages/api-schema/src/embed-images.ts`            | `embedTabImages`, `tabImageIds`: the tab's ids for the shared embedder       |
 | `../packages/api-schema/src/sha256.ts`               | `sha256Hex`, shared by editor and worker                                     |
 | `packages/api-schema/src/index.ts`                   | `ImageSummary`                                                               |
 | `apps/api/src/design-room/design-schema.ts`          | `image_owners`; the `outbox` keys that carry references to the media service |
@@ -223,9 +223,11 @@ own and sweeps nothing. A null or `data:` id references nothing.
 'contain'`, `href = resolveImageHref?.(imageId)`; the alt-text label only when `href` is
   absent. SVG: `svgImageShape`; PNG / PDF: `drawImageElement` in `export-tab-canvas-draw.ts`.
 - Server: `loadEmbeddedImages` reads each id with `media.bytes(id)` through `embedTabImages` with
-  `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, one at a time; an image that
-  does not fit is skipped and later smaller ones may still fit (D44). Only ids the design may
-  serve (`servableImageIds`, one query for the tab) are read; none without `MEDIA_KEY`. `[QB7]`
+  `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, `EMBED_IMAGE_CONCURRENCY` (6)
+  reads in flight, each judged in document order once those before it are, so the outcome is
+  reading one at a time's; an image that does not fit is skipped and later smaller ones may still
+  fit (D44). Only ids the design may serve (`servableImageIds`, one query for the tab) are read;
+  none without `MEDIA_KEY`. `[QB7]`
 
 ### Availability
 
@@ -270,11 +272,16 @@ export type ImageSummary = {
   createdAt: number;
 };
 
-// packages/api-schema/src/embed-images.ts
+// packages/api-schema/src/embed-images.ts, over embedImages(ids, load, limits) in @liveworkspace/api-kit/embed-images
 export type EmbedImageSource = (
   imageId: string,
 ) => Promise<{ bytes: ArrayBuffer; contentType: string | null } | null>;
-export type EmbedImageLimits = { maxBytesPerImage?: number; totalBudgetBytes?: number };
+export type EmbedImageLimits = {
+  maxBytesPerImage?: number;
+  totalBudgetBytes?: number;
+  totalBudgetPixels?: number;
+  onOverLimit?: (imageId: string) => void;
+};
 export function embedTabImages(
   tab: Pick<Tab, 'elements'>,
   load: EmbedImageSource,

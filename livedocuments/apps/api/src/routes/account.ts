@@ -7,33 +7,18 @@ import { emailEnabled, sendEmail } from '../email/client';
 import { accountDeletedEmail } from '../email/templates';
 import { json, missingAuth, notFound } from '../responses';
 import { configured, signedOutCookies } from './auth';
+import { purgeOwnItems } from '@liveworkspace/index-app';
 import { indexFor, INDEX_APP } from '../index-service';
 import type { RouteContext } from './context';
 
-// How many of the person's own documents one account deletion purges through the index: 5 pages of 200. A person
-// with more is told to try again (the delete is idempotent), each run taking the next 1,000.
-const PURGE_PAGES = 5;
-const PURGE_PAGE = 200;
-
 // The person's own documents, gone for good through the index (which has each document's Durable Object drop its
-// content). Team documents stay with the team. Answers how many went and whether some are left.
+// content), ROOM_PURGE_CONCURRENCY at a time and at most 1,000 a run (@liveworkspace/index-app `purgeOwnItems`).
+// Team documents stay with the team. Answers how many went and whether some are left.
 async function purgeOwnDocuments(ctx: RouteContext): Promise<{ documents: number; more: boolean }> {
   const client = indexFor(ctx.env, { kind: 'bearer', token: ctx.bearer ?? null });
   if (!client) return { documents: 0, more: false };
-  let documents = 0;
-  for (let page = 0; page < PURGE_PAGES; page++) {
-    const [live, trashed] = await Promise.all([
-      client.listItems({ app: INDEX_APP, team: 'personal', limit: PURGE_PAGE }),
-      client.listTrash({ app: INDEX_APP, team: 'personal', limit: PURGE_PAGE }),
-    ]);
-    const own = [...live.items, ...trashed.items].filter((i) => i.ownerId === ctx.accountUserId);
-    if (own.length === 0) return { documents, more: false };
-    for (const item of own) {
-      await client.deleteItem(item.id, { permanent: true });
-      documents++;
-    }
-  }
-  return { documents, more: true };
+  const { count, more } = await purgeOwnItems(client, INDEX_APP, ctx.accountUserId);
+  return { documents: count, more };
 }
 
 // Deleting the person's account: their livedocuments data, then their liveworkspace account, which

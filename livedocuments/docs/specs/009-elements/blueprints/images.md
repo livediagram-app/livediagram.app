@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/document/src/svg-render-image-icon.ts`       | `svgImageShape`: clipped `<image>` over a white backing rect                                                                                       |
 | `../packages/api-schema/src/image-limits.ts`           | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` for the editor's own gate                                                                                |
 | `../packages/api-schema/src/image-sniff.ts`            | `sniffImageType`: labels embedded bytes whose stored type is missing                                                                               |
-| `packages/api-schema/src/embed-images.ts`              | `embedTabImages`, `tabImageIds`: server-side data-URL inlining                                                                                     |
+| `packages/api-schema/src/embed-images.ts`              | `embedTabImages`, `tabImageIds`: the tab's ids for the shared embedder                                                                             |
 | `../packages/api-schema/src/sha256.ts`                 | `sha256Hex`, shared by editor and worker                                                                                                           |
 | `packages/api-schema/src/index.ts`                     | `ImageSummary`                                                                                                                                     |
 | `packages/media` (`@liveworkspace/media`)              | Limits, sniffing, guest owners, wire shapes, `createMediaClient`                                                                                   |
@@ -201,11 +201,13 @@ This api sweeps no images of its own. A null or `data:` id references nothing
 - `describeBoxedExport`: `radius = BORDER_RADIUS_PX[borderRadius]` or 4, `objectFit ??
 'contain'`, `href = resolveImageHref?.(imageId)`; the alt-text label only when `href` is
   absent. SVG: `svgImageShape`; PNG / PDF: `drawImageElement` in `export-tab-canvas-draw.ts`.
-- Server: `loadEmbeddedImages` reads each id with `media.bytes(id)` through `embedTabImages`
-  with `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, one at a time; an image
-  that does not fit is skipped and later smaller ones may still fit (D44). Only ids
-  `servableImageIds` returns are read (one query over the document's `image_owners` and `image_grants`). The
-  preview is drawn in the document's Durable Object (`drawDocument`, through the export door). No client: no embed. `[QB7]`
+- Server: `loadEmbeddedImages` reads each id with `media.bytes(id)` through `embedTabImages` with
+  `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, `EMBED_IMAGE_CONCURRENCY` (6)
+  reads in flight, each judged in document order once those before it are, so the outcome is
+  reading one at a time's; an image that does not fit is skipped and later smaller ones may still
+  fit (D44). Only ids `servableImageIds` returns are read (one query over the document's
+  `image_owners` and `image_grants`). The preview is drawn in the document's Durable Object
+  (`drawDocument`, through the export door). No client: no embed. `[QB7]`
 
 ### Availability
 
@@ -249,11 +251,16 @@ export type ImageSummary = {
   createdAt: number;
 };
 
-// packages/api-schema/src/embed-images.ts
+// packages/api-schema/src/embed-images.ts, over embedImages(ids, load, limits) in @liveworkspace/api-kit/embed-images
 export type EmbedImageSource = (
   imageId: string,
 ) => Promise<{ bytes: ArrayBuffer; contentType: string | null } | null>;
-export type EmbedImageLimits = { maxBytesPerImage?: number; totalBudgetBytes?: number };
+export type EmbedImageLimits = {
+  maxBytesPerImage?: number;
+  totalBudgetBytes?: number;
+  totalBudgetPixels?: number;
+  onOverLimit?: (imageId: string) => void;
+};
 export function embedTabImages(
   tab: Pick<Tab, 'elements'>,
   load: EmbedImageSource,

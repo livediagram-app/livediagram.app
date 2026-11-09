@@ -12,6 +12,7 @@
     "./csv": "./src/csv.ts",
     "./d1-compound": "./src/d1-compound.ts",
     "./d1-compound-guard": "./src/d1-compound-guard.ts",
+    "./embed-images": "./src/embed-images.ts",
     "./image-refs": "./src/image-refs.ts",
     "./oauth": "./src/oauth.ts",
     "./openapi-types": "./src/openapi-types.ts",

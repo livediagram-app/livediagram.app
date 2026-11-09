@@ -6,11 +6,11 @@
 //
 // The api answers each list under the product's collection (`{ documents }`, `{ designs }`), so the types are keyed
 // by it; each product binds them to its summary and folder types (its find-<collection>.ts).
-import type { ApiClient } from '@liveworkspace/api-client';
+import { ApiError, type ApiClient } from '@liveworkspace/api-client';
 import type { AgentProduct } from './product';
 
 // A file as the api lists it: the fields the sweep reads. Each product's summary type is this, and more.
-export type FileSummary = { id: string; name: string; savedAt: number };
+export type FileSummary = { id: string; name: string; savedAt: number; teamId?: string | null };
 
 type Listed<C extends string, S> = { [K in C]: S[] };
 
@@ -33,6 +33,11 @@ export type FoundFile = {
 };
 
 type TeamsAnswer = { teams: { id: string; name: string }[] };
+
+// A query the index's search can answer as the name match did: any it takes (SEARCH_MAX characters, SEARCH_WORDS_MAX
+// words, @liveworkspace/index-client), but only in ASCII, since the index folds only ASCII letters' case and the name
+// match folds every letter's. Anything else is matched here, over the whole sweep.
+const NOT_ASCII = /[^\p{ASCII}]/u;
 
 export function createFind<S extends FileSummary, F, C extends string>(
   product: Pick<AgentProduct<string, C>, 'collection'>,
@@ -104,11 +109,58 @@ export function createFind<S extends FileSummary, F, C extends string>(
       .slice(0, limit);
   }
 
+  // The joined teams' names by id, for a found file's `library`. Best-effort, as the sweep is: without them, a team's
+  // file names its team by id.
+  async function teamNames(api: ApiClient): Promise<Map<string, string>> {
+    try {
+      const { teams } = await api.json<TeamsAnswer>('/teams');
+      return new Map(teams.map((t) => [t.id, t.name]));
+    } catch {
+      return new Map();
+    }
+  }
+
+  // The MCP's find_<collection>: the caller's files (personal and every joined team's) whose name or folder's name
+  // holds each word of `query`, newest saved first, at most `limit`, searched and capped at the index in one request
+  // (`GET /<collection>?team=all&q=&limit=`), not read whole and matched here. A query the index cannot answer as
+  // the name match did (not ASCII, or one it refuses as too long) falls back to the sweep and `matchFiles`.
+  async function searchFiles(
+    api: ApiClient,
+    query: string | undefined,
+    limit: number,
+  ): Promise<FoundFile[]> {
+    const q = (query ?? '').trim();
+    const sweep = async () => {
+      const [personal, teams] = await Promise.all([readPersonal(api), fetchTeamLibraries(api)]);
+      return matchFiles(listOf(personal), teams, query, limit);
+    };
+    if (NOT_ASCII.test(q)) return sweep();
+    const params = new URLSearchParams({ team: 'all', limit: String(limit) });
+    if (q) params.set('q', q);
+    let found: S[];
+    let names: Map<string, string>;
+    try {
+      [found, names] = await Promise.all([
+        api.json<Listed<C, S>>(`/${collection}?${params}`).then(listOf),
+        teamNames(api),
+      ]);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) return sweep();
+      throw err;
+    }
+    return found.map((d) => ({
+      id: d.id,
+      name: d.name,
+      updatedAt: d.savedAt,
+      library: d.teamId ? (names.get(d.teamId) ?? d.teamId) : 'personal',
+    }));
+  }
+
   // Every file the caller can reach: the personal library and each joined team's, newest first.
   async function listAllFiles(api: ApiClient): Promise<FoundFile[]> {
     const [personal, teams] = await Promise.all([readPersonal(api), fetchTeamLibraries(api)]);
     return matchFiles(listOf(personal), teams, undefined, Number.POSITIVE_INFINITY);
   }
 
-  return { fetchTeamLibraries, readLibraries, matchFiles, listAllFiles };
+  return { fetchTeamLibraries, readLibraries, matchFiles, searchFiles, listAllFiles };
 }

@@ -12,7 +12,14 @@
 // The editor calls the index itself, through `/api/index/*`. Each list is paged at the index (at most 200 a
 // page); these read at most @liveworkspace/index-app's LIST_PAGES pages (1,000 plans), which is what the clients that call them can use.
 
-import { allPages, indexRefusal, listAllFolders, listAllItems } from '@liveworkspace/index-app';
+import {
+  allPages,
+  indexRefusal,
+  listAllFolders,
+  listAllItems,
+  listItemsAsked,
+  type ListAsked,
+} from '@liveworkspace/index-app';
 import {
   type Folder as IndexFolder,
   type IndexClient,
@@ -109,5 +116,9 @@ export function shareLinkOf(link: {
 
 export const listItems = (client: IndexClient, team: string) =>
   listAllItems(client, INDEX_APP, team);
+
+// An API client's list as it asked (@liveworkspace/index-app `listAskedOf`).
+export const listAsked = (client: IndexClient, asked: ListAsked) =>
+  listItemsAsked(client, INDEX_APP, asked);
 
 export const listFolders = listAllFolders;

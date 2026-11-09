@@ -62,16 +62,21 @@ export function createPngRenderer(loaders: PngLoaders): {
       };
       const at = (zoom: number) =>
         new Resvg(svg, zoom === 1 ? options : { ...options, fitTo: { mode: 'zoom', value: zoom } });
-      let resvg: ReturnType<typeof at> | null = at(scale);
+      // The SVG's own size (resvg's width / height, before any zoom), read from its root tag when it says it in
+      // plain numbers, so a drawing past the bound is parsed once, at the zoom that fits; parsing a big drawing is
+      // most of a render. Otherwise it is known once parsed, and a drawing past the bound is parsed again.
+      const stated = maxSide === undefined ? null : statedSize(svg);
+      const fitted = (side: number) =>
+        maxSide !== undefined && side * scale > maxSide ? maxSide / side : null;
+      const first = stated ? (fitted(Math.max(stated.width, stated.height)) ?? scale) : scale;
+      let resvg: ReturnType<typeof at> | null = at(first);
       // Freed whatever happens: the wasm's memory is not the garbage collector's.
       try {
-        // The SVG's own size (resvg's width / height, before any zoom) is known once parsed; drawn past the
-        // bound, it is parsed again at the zoom that fits.
-        const side = Math.max(resvg.width, resvg.height);
-        if (maxSide !== undefined && side * scale > maxSide) {
+        const refit = stated ? null : fitted(Math.max(resvg.width, resvg.height));
+        if (refit !== null) {
           resvg.free();
           resvg = null;
-          resvg = at(maxSide / side);
+          resvg = at(refit);
         }
         const image = resvg.render();
         try {
@@ -84,4 +89,34 @@ export function createPngRenderer(loaders: PngLoaders): {
       }
     },
   };
+}
+
+// The width and height a root `<svg>` tag states as plain numbers (user units, which resvg takes as px), as resvg
+// holds them (32-bit floats); null when either is missing, has a unit or a percentage, or is not above zero, when
+// the tag carries a style (which could size it too), or when anything but an XML declaration, a doctype, comments
+// and space comes before it, so resvg's own reading decides.
+const PLAIN_NUMBER = /^(?:\d+\.?\d*|\.\d+)$/;
+// What may come before the root tag is read only this far.
+const PROLOGUE_MAX = 4096;
+const PROLOGUE =
+  /^\s*(?:<\?xml[^>]*\?>\s*)?(?:<!--[\s\S]*?-->\s*)*(?:<!DOCTYPE[^>[]*>\s*)?(?:<!--[\s\S]*?-->\s*)*$/;
+const ATTRIBUTE = /\s+([^\s=>/]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/y;
+
+export function statedSize(svg: string): { width: number; height: number } | null {
+  const open = /<svg(?=[\s>/])/.exec(svg);
+  if (!open || open.index > PROLOGUE_MAX || !PROLOGUE.test(svg.slice(0, open.index))) return null;
+  const attributes = new Map<string, string>();
+  ATTRIBUTE.lastIndex = open.index + open[0].length;
+  for (let m = ATTRIBUTE.exec(svg); m; m = ATTRIBUTE.exec(svg))
+    attributes.set(m[1]!, m[2] ?? m[3]!);
+  if (attributes.has('style')) return null;
+  const plain = (name: string) => {
+    const value = attributes.get(name);
+    if (value === undefined || !PLAIN_NUMBER.test(value)) return null;
+    const n = Math.fround(Number(value));
+    return n > 0 && Number.isFinite(n) ? n : null;
+  };
+  const width = plain('width');
+  const height = plain('height');
+  return width !== null && height !== null ? { width, height } : null;
 }

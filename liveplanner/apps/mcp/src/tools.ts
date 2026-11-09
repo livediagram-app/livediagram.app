@@ -6,7 +6,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type {
   ChangesetRequest,
-  ProjectListResponse,
   ProjectResponse,
   ShareLinkResponse,
   TabResponse,
@@ -44,9 +43,8 @@ import type { Env } from '@liveworkspace/mcp-kit/env';
 import {
   bringBoardCardTypes,
   deleteRefusal,
-  fetchTeamLibraries,
+  searchProjects,
   imageIdIssue,
-  matchProjects,
   resolveDashboardInput,
   type DashboardInput,
 } from '@liveplanner/agent-verbs';
@@ -101,14 +99,10 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpFindProjects, async (args, extra) => {
     const token = requireToken(extra);
     // Personal + team shared libraries (docs/specs/013-workspace/team-shared-projects.md): a project filed into a
-    // team leaves the personal list, so both must be swept.
-    const [{ projects: liveDocs }, teamLibraries] = await Promise.all([
-      apiJson<ProjectListResponse>(env, token, '/projects'),
-      fetchTeamLibraries(clientFor(env, token)),
-    ]);
-    const matched = matchProjects(liveDocs, teamLibraries, args.query, args.limit ?? 20).map(
-      (d) => ({ ...d, url: deepLink(env, d.id) }),
-    );
+    // team leaves the personal list, so both are searched, at the index in one
+    // request (@liveworkspace/agent-verbs/find `searchFiles`).
+    const found = await searchProjects(clientFor(env, token), args.query, args.limit ?? 20);
+    const matched = found.map((d) => ({ ...d, url: deepLink(env, d.id) }));
     return textResult({ count: matched.length, projects: matched });
   });
 

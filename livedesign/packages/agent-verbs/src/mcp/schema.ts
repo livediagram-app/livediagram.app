@@ -338,7 +338,12 @@ export const searchIconsShape = {
 };
 
 export const findDesignsShape = {
-  query: z.string().optional().describe('Only designs whose name contains this text.'),
+  query: z
+    .string()
+    .optional()
+    .describe(
+      "Only designs whose name, or whose folder's name, contains each word of this text (any case).",
+    ),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
 };
 

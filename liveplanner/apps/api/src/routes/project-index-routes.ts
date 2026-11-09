@@ -8,21 +8,26 @@ import {
 } from '@liveplanner/api-schema';
 import type { ShareLinkExpiry } from '@liveworkspace/index-client';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import { listAskedOf } from '@liveworkspace/index-app';
 import { communityService } from '../community-service';
 import { capStoredName } from '../names';
 import { planRoom } from '../plan-client';
 import { json, noContent } from '../responses';
 import { readOptionalBody, requireOwner, shareAccessOf, type RouteContext } from './context';
-import { clientFor, listItems, refusal, shareLinkOf, summaryOf } from './index-adapters';
+import { clientFor, listAsked, refusal, shareLinkOf, summaryOf } from './index-adapters';
 
 // GET /api/projects.
 export async function handleProjectList(ctx: RouteContext): Promise<Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
+  // `?team=all&q=...&limit=...`: mine and every joined team, searched and capped at the index, in one page (the MCP's
+  // find); without them, the personal library, every page.
+  const asked = listAskedOf(ctx.url.searchParams);
+  if ('error' in asked) return json(asked, { status: 400 });
   const client = clientFor(ctx);
   if (client instanceof Response) return client;
   try {
-    const items = await listItems(client, 'personal');
+    const items = await listAsked(client, asked);
     return json({ projects: items.map(summaryOf) });
   } catch (err) {
     return refusal(err);
