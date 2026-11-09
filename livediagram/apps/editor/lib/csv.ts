@@ -62,15 +62,17 @@ function separatorOf(text: string): Separator {
   return ',';
 }
 
-// A value cell as the number a spreadsheet wrote it as. Spaces, a leading currency sign and a trailing `%` are
-// formatting; a `,` is a thousands separator, or, in a file `;` separates, the decimal point (its `.`s the thousands).
-// Blank or anything else non-numeric reads 0.
+// A value cell as the number a spreadsheet wrote it as. Spaces, a currency sign before or after the number (`$10`,
+// `10 €`) and a trailing `%` are formatting; a `,` is a thousands separator, or, in a file `;` separates, the decimal
+// point (its `.`s the thousands, so `1.234` there is 1234). Blank or anything else non-numeric reads 0.
 function cellNumber(cell: string, decimalComma: boolean): number {
   let s = cell
     .replace(/[\s\u00a0\u202f]/g, '')
     .replace(/^([+-]?)[$€£¥]/, '$1')
-    .replace(/%$/, '');
+    .replace(/%$/, '')
+    .replace(/(\d)[$€£¥]$/, '$1');
   if (decimalComma && s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  else if (decimalComma && /^[+-]?\d{1,3}(?:\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
   else if (/^[+-]?\d{1,3}(?:,\d{3})+(?:\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
   const n = Number(s);
   return Number.isFinite(n) ? n : 0;
