@@ -17,6 +17,7 @@ import {
   duplicateElements,
   sendManyToBack,
   isBoxed,
+  removeElements,
   withAttachedArrows,
   type Element,
   type Tab,
@@ -104,10 +105,10 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     commit((els) => {
       // The arrows attached to what goes, and those hung off them in turn (withAttachedArrows).
       const gone = withAttachedArrows(els, targetIds, isProtected);
-      // Belt-and-suspenders: never drop a locked element, even via the
-      // arrow cascade (a locked arrow survives its endpoint going).
-      // A locked LAYER protects its elements the same way (docs/specs/006-design/layers.md).
-      return els.filter((el) => isProtected(el) || !gone.has(el.id));
+      // Belt-and-suspenders: never drop a locked element, even via the arrow cascade (a locked arrow survives its
+      // endpoint going, that end freed where it was drawn). A locked LAYER protects its elements the same way
+      // (docs/specs/006-design/layers.md).
+      return removeElements(els, gone, isProtected);
     });
     setSelectedId(null);
     setEditingId(null);
@@ -193,7 +194,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     announceDeleted(targetIds);
     commit((els) => {
       const gone = withAttachedArrows(els, targetIds, isProtected);
-      return els.filter((el) => isProtected(el) || !gone.has(el.id));
+      return removeElements(els, gone, isProtected);
     });
     setMultiSelectedIds(new Set());
     setEditingId(null);
