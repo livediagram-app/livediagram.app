@@ -241,7 +241,7 @@ export function MapDialog({
                           style={{ background: accent }}
                         />
                         {nameOf(code)}
-                        <span aria-hidden className="text-slate-400">
+                        <span aria-hidden className="text-slate-500 dark:text-slate-400">
                           ×
                         </span>
                       </button>

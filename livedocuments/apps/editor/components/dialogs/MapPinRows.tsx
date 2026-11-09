@@ -34,7 +34,7 @@ export function MapPinRows({
         <li key={pin.id} className="flex items-center gap-1.5">
           <span
             aria-hidden
-            className="w-5 shrink-0 text-right text-[11px] tabular-nums text-slate-400"
+            className="w-5 shrink-0 text-right text-[11px] tabular-nums text-slate-500 dark:text-slate-400"
           >
             {i + 1}
           </span>
@@ -58,7 +58,7 @@ export function MapPinRows({
               type="button"
               aria-label={`Remove pin ${i + 1}`}
               onClick={() => onChange(pins.filter((p) => p.id !== pin.id))}
-              className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition dark:text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <span aria-hidden>×</span>
             </button>
