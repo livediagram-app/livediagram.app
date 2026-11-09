@@ -204,6 +204,19 @@ describe('moves land on shown cells', () => {
     const hidden = { ...sel, ranges: [{ r1: 3, c1: 0, r2: 3, c2: 5 }], active: { r: 3, c: 1 } };
     expect(cycleInRange(hidden, 'next-col', g).active).toEqual({ r: 3, c: 1 });
   });
+  it('gives up on a whole sheet with nothing shown within budget', () => {
+    // The largest sheet (10,000 rows by 200 columns) selected whole, every row hidden: 2,000,000 steps at most.
+    const all: Grid = { ...g, rows: 10_000, cols: 200, hiddenRow: () => true };
+    const sel = {
+      ranges: [{ r1: 0, c1: 0, r2: 9_999, c2: 199 }],
+      active: { r: 0, c: 0 },
+      anchor: { r: 0, c: 0 },
+    };
+    const t = performance.now();
+    expect(cycleInRange(sel, 'next-row', all).active).toEqual({ r: 0, c: 0 });
+    // Measured at 20 ms on a loaded laptop; a CI runner gets several times that.
+    expect(performance.now() - t).toBeLessThan(1000);
+  });
 });
 
 // docs/specs/029-sheets/sheet.md "Keyboard": a merge is one cell, so Enter and Tab on a clicked merge do not cycle
