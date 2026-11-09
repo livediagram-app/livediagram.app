@@ -258,7 +258,10 @@ describe('TimeSpentField', () => {
     try {
       const now = Date.UTC(2026, 2, 29, 23, 30);
       expect(entryWhen(Date.UTC(2026, 2, 29, 9, 0), now)).toBe('Yesterday, 10:00');
-      expect(entryWhen(Date.UTC(2026, 2, 28, 12, 0), now)).toMatch(/^28 Mar/);
+      // Two days back shows its date, in the viewer's locale ("28 Mar" or "Mar 28"), as the entry above does.
+      const saturday = entryWhen(Date.UTC(2026, 2, 28, 12, 0), now);
+      expect(saturday).not.toMatch(/^(Today|Yesterday)/);
+      expect(saturday).toMatch(/\b28\b.*, 12:00$/);
     } finally {
       if (zone === undefined) delete process.env['TZ'];
       else process.env['TZ'] = zone;
