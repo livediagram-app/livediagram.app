@@ -33,7 +33,9 @@ Input is treated as a hierarchical outline:
   horizontal rules, and blockquote markers (`>` is stripped).
 - **Inline formatting** in labels is flattened to plain text: bold,
   italic, strikethrough, inline code, links (→ link text), images
-  (→ alt text), and raw HTML tags are removed. Long labels are capped.
+  (→ alt text), and raw HTML tags are removed. As CommonMark reads emphasis, an underscore inside a
+  word marks nothing (`snake_case_name`, `my__private__helper` stay as written), and an asterisk with a space
+  inside it marks nothing (`2 * 3 * 4` stays). Long labels are capped.
 
 **Limits.** A list nests at most `MAX_LIST_DEPTH` (24) levels; a deeper item becomes a sibling of
 the deepest, so every item is kept and the layout's recursion stays shallow (12 000 ever-deeper
