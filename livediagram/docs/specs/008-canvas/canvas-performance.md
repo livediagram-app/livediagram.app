@@ -84,6 +84,10 @@ large move rides as one layer").
   editor's render state. A viewport from a peer you are not following renders nothing; one from the
   peer you follow renders the follow, which moves your view. Before, each one rendered the whole
   editor, so a room of thirty people scrolling rendered it hundreds of times a second.
+- **A peer's laser renders the trails, not the editor.** Peers' laser trails (a frame of samples at
+  a time while someone points) are held in a store, not as the editor's render state. A frame of a
+  peer's trail renders the laser overlay alone; the editor root, the canvas layer and the chrome do
+  not render for it. Before, each frame rendered the whole editor while anyone pointed.
 - **Walking renders your character, not the canvas.** Your own character's pose from frame to frame
   (where its feet are, which way it faces, its step, hop, flag wave and reaction pose) is held in one
   pose store per canvas, not as the canvas's render state. A frame of your walk renders your

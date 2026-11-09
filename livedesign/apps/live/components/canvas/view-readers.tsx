@@ -5,7 +5,8 @@
 // view, so a zoom tick renders these and not the layer or the chrome around them. The components they
 // wrap stay pure renderers.
 
-import type { ComponentProps } from 'react';
+import { useSyncExternalStore, type ComponentProps } from 'react';
+import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { Minimap } from '@/components/canvas/Minimap';
@@ -16,8 +17,16 @@ import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 const zoomOf = (v: View) => v.zoom;
 const wholeView = (v: View) => v;
 
-export function ZoomedLaserOverlay(props: Omit<ComponentProps<typeof LaserOverlay>, 'zoom'>) {
-  return <LaserOverlay {...props} zoom={useCanvasZoom()} />;
+// The laser trails, read from their store here: a peer's trail moving renders this overlay alone, never the canvas
+// layer or the editor (docs/specs/008-canvas/canvas-performance.md).
+export function ZoomedLaserOverlay({
+  trails,
+  ...props
+}: Omit<ComponentProps<typeof LaserOverlay>, 'zoom' | 'trails'> & {
+  trails: ReadableStore<ComponentProps<typeof LaserOverlay>['trails']>;
+}) {
+  const shown = useSyncExternalStore(trails.subscribe, trails.get, trails.get);
+  return <LaserOverlay {...props} trails={shown} zoom={useCanvasZoom()} />;
 }
 
 // The corner zoom controls, showing the zoom from the viewport store.

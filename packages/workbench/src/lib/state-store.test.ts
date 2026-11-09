@@ -1,5 +1,31 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createStateStore, joinStores } from './state-store';
+import { createStateStore, joinStores, mapStore } from './state-store';
+
+describe('mapStore', () => {
+  it('selects once per source value and keeps the result until the source changes', () => {
+    const source = createStateStore([1, 2]);
+    const select = vi.fn((xs: number[]) => xs.map((x) => x * 2));
+    const doubled = mapStore(source, select);
+    const first = doubled.get();
+    expect(first).toEqual([2, 4]);
+    expect(doubled.get()).toBe(first);
+    expect(select).toHaveBeenCalledTimes(1);
+    source.set([3]);
+    expect(doubled.get()).toEqual([6]);
+    expect(select).toHaveBeenCalledTimes(2);
+  });
+
+  it("notifies through the source's subscription", () => {
+    const source = createStateStore(1);
+    const listener = vi.fn();
+    const off = mapStore(source, (x) => x + 1).subscribe(listener);
+    source.set(2);
+    expect(listener).toHaveBeenCalledTimes(1);
+    off();
+    source.set(3);
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe('createStateStore', () => {
   it('starts at the initial value', () => {

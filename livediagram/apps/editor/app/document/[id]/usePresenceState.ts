@@ -98,9 +98,11 @@ export function usePresenceState() {
   // bounded both by time (LIFETIME_MS in the overlay) and by a hard
   // cap of 60 points in the receive handler so a flood can't grow the
   // buffer without bound. Scoped per tab in the op itself.
-  const [remoteLaserTrails, setRemoteLaserTrails] = useState<
-    Map<string, { tabId: string; points: LaserPoint[] }>
-  >(new Map());
+  // Held in a store, not state here: a trail moves a frame at a time while a peer points, and state rendered the
+  // whole editor for each frame. Only the laser overlay reads it (docs/specs/008-canvas/canvas-performance.md).
+  const [remoteLaserTrails] = useState(() =>
+    createStateStore<Map<string, { tabId: string; points: LaserPoint[] }>>(new Map()),
+  );
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking. Unsolicited, so it is
   // collected for everyone and read only while somebody is being followed: held in a store, not state here, since each
   // peer who pans sends ten a second and state would render the whole editor for every one; only the follow reads it,
@@ -127,7 +129,7 @@ export function usePresenceState() {
     remoteCursors,
     setRemoteCursors,
     remoteLaserTrails,
-    setRemoteLaserTrails,
+    setRemoteLaserTrails: remoteLaserTrails.set,
     remoteViewports,
     setRemoteViewports: remoteViewports.set,
     followerIds,

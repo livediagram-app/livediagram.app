@@ -71,6 +71,10 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   editor's render state. A viewport from a peer you are not following renders nothing; one from the
   peer you follow renders the follow, which moves your view. Before, each one rendered the whole
   editor, so a room of thirty people scrolling rendered it hundreds of times a second.
+- **A peer's laser renders the trails, not the editor.** Peers' laser trails (a frame of samples at
+  a time while someone points) are held in a store, not as the editor's render state. A frame of a
+  peer's trail renders the laser overlay alone; the editor root, the canvas layer and the chrome do
+  not render for it. Before, each frame rendered the whole editor while anyone pointed.
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry

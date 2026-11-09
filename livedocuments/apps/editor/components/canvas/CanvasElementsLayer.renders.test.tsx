@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
 import { act, render } from '@testing-library/react';
 import { memo } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -103,7 +104,7 @@ const STABLE = {
   settings: {},
   remoteCursors: [],
   remoteSelectionsByElement: new Map(),
-  laserTrails: [],
+  laserTrails: createStateStore([]),
   selectionInput: {
     elements: BOARD,
     editingId: null,

@@ -269,6 +269,16 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   anyone else selects the same value and renders nothing. Held by `useFollowMe.test.tsx` ("renders
   for the followed peer's viewport alone"): a hundred viewports from a peer not followed, no render.
 
+### Peers' laser trails
+
+- `usePresenceState` holds every peer's laser trail in a `createStateStore` store, and hands the
+  presence coalescer its `set`. `usePresenceRows` joins it with the local trail and the presence
+  rows through `mapStore` (`@liveworkspace/workbench/lib/state-store`), made again only when those
+  render inputs change, so `laserTrails` reaches the canvas as a store. `ZoomedLaserOverlay`
+  (`view-readers.tsx`) is the one reader (`useSyncExternalStore`). Held by
+  `usePresenceRows.test.tsx` ("renders nothing for a peer's laser trail"): fifty trail frames, no
+  render of the hook that owns the rows, and every frame reaches a subscriber.
+
 ### At rest
 
 - The still-canvas rule is held in a real browser by `e2e/canvas-still.spec.ts`: on a seeded board,
