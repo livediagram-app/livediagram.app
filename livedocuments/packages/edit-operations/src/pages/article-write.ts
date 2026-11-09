@@ -163,15 +163,25 @@ export function applyArticleWrite(
   const append = write.mode === 'append';
   let blocks: ArticleBlock[];
   let gone: ArticleZoneBlock[] = [];
+  // Front matter an append sets in place: the article's own title or subtitle block.
+  let headsSet = 0;
   if (append) {
     // An empty new article's placeholder Title and paragraph give way to what is appended. A `[zone <id>]` line
     // names a zone the article already holds, which stays where it is: appended again, the article held two blocks
     // of one id.
     const kept = new Set(read.keptZones);
-    blocks = [
-      ...(created ? [] : doc.blocks),
-      ...read.blocks.filter((b) => !(b.type === 'zone' && kept.has(b.id))),
-    ];
+    const added = read.blocks.filter((b) => !(b.type === 'zone' && kept.has(b.id)));
+    // Front matter (the title and subtitle blocks it reads first) sets the article's title and subtitle, never a
+    // title block mid-article.
+    let front = 0;
+    while (front < added.length && frontStyleOf(added[front]!)) front++;
+    blocks = created ? [] : [...doc.blocks];
+    for (const head of added.slice(0, front)) {
+      const set = withHeadingSet(blocks, head);
+      blocks = set.blocks;
+      if (set.replaced) headsSet++;
+    }
+    blocks.push(...added.slice(front));
   } else {
     blocks = read.blocks;
     gone = doc.blocks.filter(
@@ -210,7 +220,7 @@ export function applyArticleWrite(
 
   const title = articleTitleOf(next);
   lines.push(
-    `${created ? 'Started' : append ? 'Appended to' : 'Wrote'} the ${noun} "${title}" (${flow}): ${append ? `${read.blocks.length - read.keptZones.length - leftOut + fromTables} blocks added, ` : ''}${blocks.length} blocks.`,
+    `${created ? 'Started' : append ? 'Appended to' : 'Wrote'} the ${noun} "${title}" (${flow}): ${append ? `${read.blocks.length - read.keptZones.length - headsSet - leftOut + fromTables} blocks added, ` : ''}${blocks.length} blocks.`,
   );
   if (cut.tables)
     lines.push(`Wrote Markdown tables as lists (${cut.tables}): a card holds text only.`);
@@ -221,4 +231,28 @@ export function applyArticleWrite(
   if (markersGone) lines.push(`Removed margin notes whose text is gone (${markersGone}).`);
   // How many pages it takes is said by the caller, which estimates the layout (pages-summary.ts).
   return { tab: current, flow: flow!, created, lines };
+}
+
+// A front-matter block: the title or subtitle paragraph `articleFromMarkdown` reads first (a body never reads as one).
+const frontStyleOf = (b: ArticleBlock): 'title' | 'subtitle' | undefined =>
+  b.type === 'paragraph' && (b.style === 'title' || b.style === 'subtitle') ? b.style : undefined;
+
+// The article's first block of `head`'s style takes its text (keeping its id); with none, `head` goes first, or a
+// subtitle after the title.
+function withHeadingSet(
+  blocks: ArticleBlock[],
+  head: ArticleBlock,
+): { blocks: ArticleBlock[]; replaced: boolean } {
+  const style = frontStyleOf(head);
+  const at = blocks.findIndex((b) => frontStyleOf(b) === style);
+  const old = blocks[at];
+  if (old?.type === 'paragraph' && head.type === 'paragraph') {
+    const next = [...blocks];
+    next[at] = { ...old, runs: head.runs };
+    return { blocks: next, replaced: true };
+  }
+  const title = style === 'subtitle' ? blocks.findIndex((b) => frontStyleOf(b) === 'title') : -1;
+  const next = [...blocks];
+  next.splice(title + 1, 0, head);
+  return { blocks: next, replaced: false };
 }

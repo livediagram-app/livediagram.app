@@ -92,6 +92,19 @@ describe('imagesAsLinks', () => {
     );
   });
 
+  it('reads code spans by CommonMark: a run closes only on one as long, and an unclosed run is text', () => {
+    // A double-backtick span holding a single one: the image after it is still an image.
+    expect(imagesAsLinks('``a`b`` ![i](u) `c`')).toBe('``a`b`` [i](u) `c`');
+    expect(imagesAsLinks('``x ![i](u) `` ![j](v)')).toBe('``x ![i](u) `` [j](v)');
+    // A run with no closer of its length is text, so the image after it is read.
+    expect(imagesAsLinks('a `` b ![i](u)')).toBe('a `` b [i](u)');
+    expect(imagesAsLinks('`a ![i](u)')).toBe('`a [i](u)');
+    expect(imagesAsLinks('`a``![i](u)``')).toBe('`a``![i](u)``');
+    // A code span opening inside the image wins over it.
+    expect(imagesAsLinks('![a`b](u) c`')).toBe('![a`b](u) c`');
+    expect(imagesAsLinks('![a`b](u) ![c](d)')).toBe('[a`b](u) [c](d)');
+  });
+
   it('imports the image as a linked run with no stray "!"', () => {
     const { tab } = built('![Team photo](https://e.com/t.png)');
     const article = Object.values(articlesOf(tab))[0]!;

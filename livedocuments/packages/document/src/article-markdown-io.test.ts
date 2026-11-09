@@ -82,6 +82,30 @@ describe('Markdown into an article', () => {
   });
 });
 
+// CommonMark's closing sequence: `# Title #` is a heading "Title", and a heading ending in ` #` is written escaped.
+describe("a heading's closing #s", () => {
+  it('drops a closing sequence, keeps an escaped or joined one', () => {
+    const texts = (md: string) =>
+      blocksOf(md).map((b) => ('runs' in b ? b.runs.map((r) => r.text).join('') : b.type));
+    expect(texts('# Title #\n\n## Sub ##   \n\n### foo \\###\n\n# C#\n\n# #')).toEqual([
+      'Title',
+      'Sub',
+      'foo ###',
+      'C#',
+      '',
+    ]);
+  });
+
+  it('writes a heading ending in a # run so it reads back whole', () => {
+    for (const text of ['Learn C #', '###', 'Notes ##']) {
+      const block: ArticleBlock = { id: 'h', type: 'paragraph', style: 'h2', runs: [{ text }] };
+      expect(shape(blocksOf(articleToMarkdown({ blocks: [block] })))).toEqual([
+        { type: 'paragraph', style: 'h2', runs: [{ text }] },
+      ]);
+    }
+  });
+});
+
 describe('a line break in a paragraph', () => {
   const roundTrip = (block: ArticleBlock) =>
     shape(blocksOf(articleToMarkdown({ blocks: [block] })));

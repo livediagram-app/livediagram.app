@@ -27,4 +27,12 @@ describe('page export', () => {
     expect(sanitizeFilename('a---b')).toBe('a-b');
     expect(sanitizeFilename('?')).toBe('');
   });
+
+  it('keeps letters and digits in any script, and leaves no dash or space at either end', () => {
+    expect(sanitizeFilename('会議メモ - Проект 2')).toBe('会議メモ - Проект 2');
+    expect(sanitizeFilename('Café/Crème')).toBe('Café-Crème');
+    expect(sanitizeFilename('? - Board')).toBe('Board');
+    expect(sanitizeFilename('Board - ?')).toBe('Board');
+    expect(sanitizeFilename('<>:"|?*')).toBe('');
+  });
 });
