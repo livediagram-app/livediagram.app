@@ -51,7 +51,8 @@ writes (`403 forbidden`) whatever sends them.
 - The source comes from the file: a JSON object with `lists` and `cards` is a Trello board; a CSV whose header names
   `Issue key` and `Summary` is Jira's, `Task ID` and `Section/Column` Asana's, `ID`, `Title`, `Status` and `Team`
   Linear's (case and spacing aside). Anything else: "This file isn't a Trello, Asana, Jira or Linear export." JSON
-  that is not JSON: "That file isn't valid JSON."
+  that is not JSON: "That file isn't valid JSON." A byte order mark before the text (a file saved by a Windows
+  editor, read as it is by the CLI or an agent) is no part of it.
 - CSV is read by the Sheet's CSV reader ([CSV](../029-sheets/sheet.md#csv)): RFC 4180 quoting, a comma, tab or
   semicolon, up to its 10,000 rows.
 - **Every value is untrusted text.** Nothing is run or parsed as markup: HTML, Markdown and wiki markup stay as the
