@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { MAX_PARTICIPANT_NAME_LEN } from '@liveworkspace/api-schema/participants';
 import type { Participant } from '@/lib/identity';
 import { IdentityPrompt } from './IdentityPrompt';
 
@@ -46,6 +47,15 @@ describe('IdentityPrompt', () => {
     fireEvent.change(field, { target: { value: '   ' } });
     fireEvent.click(screen.getByRole('button', { name: 'Join' }));
     expect(onJoin).toHaveBeenLastCalledWith('Ada');
+  });
+
+  // The participant route refuses a longer name (400), so one typed past the cap was never saved.
+  it("caps the name at the participant route's limit", () => {
+    prompt();
+    expect(screen.getByLabelText('Your name')).toHaveProperty(
+      'maxLength',
+      MAX_PARTICIPANT_NAME_LEN,
+    );
   });
 
   it('follows the participant until the visitor types', () => {

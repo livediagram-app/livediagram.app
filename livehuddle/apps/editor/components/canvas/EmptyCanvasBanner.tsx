@@ -17,7 +17,7 @@ const CloseGlyph = lucideGlyph(lucideX, 16);
 // in theirs, saying the tab is empty and offering Help (an Editor's, on a desktop). Only the card takes presses: the
 // canvas around it still pans, and a palette tool still places. It goes once the tab has content (or a draw tool is
 // engaged), and its × closes it for good on that tab, for this person (empty-card-dismissed.ts). A viewer reads a
-// passive line instead; a Participant is pointed at what they may add. An Editor's empty tab shows its mode's start
+// passive line instead, and so does a Participant, who adds nothing (share-roles.md). An Editor's empty tab shows its mode's start
 // instead (start-diagramming.md), where its templates are.
 
 export function EmptyCanvasBanner({
