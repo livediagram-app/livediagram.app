@@ -308,6 +308,15 @@ describe('reading a sheet', () => {
     expect(r.truncated).toBe(true);
     expect(r.note).toMatch(/^Stopped at A\d+/);
   });
+
+  it('after a cut mid-row, reads on from the first column of that row, never leaving earlier columns unread', async () => {
+    const rows = Array.from({ length: 40 }, () => ['a', 'x'.repeat(5_000)]);
+    const { api } = setup([sheetJson({ id: 'sheet_wide01', tabId: ONE, title: 'Wide' }, rows)]);
+    const r = await read(api, 'Wide');
+    const cutAt = /^Stopped at B(\d+)/.exec(r.note ?? '');
+    expect(cutAt).not.toBeNull();
+    expect(r.note).toContain(`read on with the range A${cutAt![1]}:B40.`);
+  });
 });
 
 describe('changing a sheet', () => {
