@@ -27,10 +27,17 @@ export const GOOGLE_USER = 'ada-google';
 export const TOKEN_KEY = bytesToBase64Url(new Uint8Array(32).fill(7));
 export const REDIRECT_URI = `${ORIGIN}/drive/connected`;
 
+// A Durable Object's SQLite, like D1, refuses a statement with more than 100 bound parameters (node:sqlite allows
+// 32,766), so a query that binds per item could pass here and fail in production.
+const DO_BOUND_PARAMETERS_MAX = 100;
+
 export function nodeSql(db = new DatabaseSync(':memory:')): Sql {
   return {
     exec(query, ...bindings) {
       assertD1Compound(query);
+      if (bindings.length > DO_BOUND_PARAMETERS_MAX) {
+        throw new Error('too many SQL variables: SQLITE_ERROR');
+      }
       const statement = db.prepare(query);
       const args = bindings.map((b) => (typeof b === 'boolean' ? Number(b) : b) as SQLInputValue);
       if (statement.columns().length === 0) {
