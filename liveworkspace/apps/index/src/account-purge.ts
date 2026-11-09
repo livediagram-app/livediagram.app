@@ -150,13 +150,26 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
         `DELETE FROM ${table} WHERE rowid IN (SELECT rowid FROM ${table} WHERE person_id = ? LIMIT ?)`,
       )
       .bind(person, CHUNK);
-  const anonymiseAction = (column: 'assignee_id' | 'assigner_id') => () =>
+  // The id and the name kept beside it (`assignee_name`, `assigner_name`).
+  const anonymiseAction = (role: 'assignee' | 'assigner') => () =>
     db
       .prepare(
-        `UPDATE collab_actions SET ${column} = ? WHERE rowid IN (
-           SELECT rowid FROM collab_actions WHERE ${column} = ? LIMIT ?)`,
+        `UPDATE collab_actions SET ${role}_id = ?, ${role}_name = NULL WHERE rowid IN (
+           SELECT rowid FROM collab_actions WHERE ${role}_id = ? LIMIT ?)`,
       )
       .bind(ANONYMISED_PERSON, person, CHUNK);
+  // An action given to them: the event's detail names them (`assigneeId`, `assigneeName`), on the Timeline and in
+  // the webhook deliveries made of it. `action_assigned` events are `aa:` ids, so the primary key's range keeps the
+  // scan to them.
+  const anonymiseAssigned =
+    (table: 'timeline_events' | 'webhook_deliveries', range: string) => () =>
+      db
+        .prepare(
+          `UPDATE ${table} SET detail = json_set(detail, '$.assigneeId', ?, '$.assigneeName', NULL)
+         WHERE rowid IN (SELECT rowid FROM ${table} WHERE ${range} AND type = 'action_assigned'
+           AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.assigneeId') END = ? LIMIT ?)`,
+        )
+        .bind(ANONYMISED_PERSON, person, CHUNK);
   return [
     // Their folders: personal ones, and those in a team that closed with them (their items are gone by
     // now; anyone else's in them move to the root). Placement defaults pointing at them cascade.
@@ -213,8 +226,10 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('collab_form_reads'),
     // Their Drive mirror's flag (liveworkspace/docs/specs/005-drive/drive.md): accounts tells the service itself.
     byPerson('drive_people'),
-    anonymiseAction('assignee_id'),
-    anonymiseAction('assigner_id'),
+    anonymiseAction('assignee'),
+    anonymiseAction('assigner'),
+    anonymiseAssigned('timeline_events', "id >= 'aa:' AND id < 'aa;'"),
+    anonymiseAssigned('webhook_deliveries', 'true'),
     // The deliveries of events they did, on webhooks that outlive them (webhooks/purge.ts).
     webhookDeliveryPurgeStatement(db, person, ANONYMISED_PERSON, CHUNK),
   ];
