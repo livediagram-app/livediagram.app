@@ -293,6 +293,32 @@ describe('readDocx, the edges', () => {
     expect(tally).toEqual({});
   });
 
+  it('keeps every cell in its column past merged cells, and reads rows and cells inside content controls', async () => {
+    const cell = (inner: string, tcPr = '') => `<w:tc>${tcPr}${p(inner)}</w:tc>`;
+    const span = (n: number) => `<w:tcPr><w:gridSpan w:val="${n}"/></w:tcPr>`;
+    const down = '<w:tcPr><w:vMerge/></w:tcPr>';
+    const { blocks, tally } = await read({
+      body: `<w:tbl><w:tr>${cell(r('A'))}${cell(r('B'))}${cell(r('C'))}</w:tr><w:tr>${cell(r('AB'), span(2))}${cell(r('C2'))}</w:tr><w:tr><w:trPr><w:gridBefore w:val="1"/></w:trPr>${cell(r('B3'))}${cell(r('C3'))}</w:tr><w:sdt><w:sdtContent><w:tr>${cell(r('A4'), '<w:tcPr><w:vMerge w:val="restart"/></w:tcPr>')}<w:sdt><w:sdtContent>${cell(r('B4'))}</w:sdtContent></w:sdt>${cell(r('C4'))}</w:tr></w:sdtContent></w:sdt><w:customXml><w:tr>${cell('', down)}${cell(r('B5'))}${cell(r('C5'))}</w:tr></w:customXml></w:tbl>`,
+    });
+    const table = blocks[0] as Extract<ArticleBlock, { type: 'table' }>;
+    expect(table.rows.map((row) => row.cells.map((c) => c.map((x) => x.text).join('')))).toEqual([
+      ['A', 'B', 'C'],
+      ['AB', '', 'C2'],
+      ['', 'B3', 'C3'],
+      ['A4', 'B4', 'C4'],
+      ['', 'B5', 'C5'],
+    ]);
+    expect(tally).toEqual({});
+  });
+
+  it('bounds a merged cell spanning past the column cap', async () => {
+    const { blocks, tally } = await read({
+      body: `<w:tbl><w:tr><w:trPr><w:gridBefore w:val="999999999"/></w:trPr><w:tc><w:tcPr><w:gridSpan w:val="999999999"/></w:tcPr>${p(r('X'))}</w:tc></w:tr></w:tbl>`,
+    });
+    expect((blocks[0] as Extract<ArticleBlock, { type: 'table' }>).cols).toHaveLength(20);
+    expect(tally).toEqual({ tables: 1 });
+  });
+
   it('reads a header flag turned off as no header row', async () => {
     const { blocks } = await read({
       body: `<w:tbl><w:tr><w:trPr><w:tblHeader w:val="false"/></w:trPr><w:tc>${p(r('A'))}</w:tc></w:tr></w:tbl>`,

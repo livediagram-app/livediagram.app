@@ -8,6 +8,7 @@ import {
   ARTICLE_LIST_MAX_LEVEL,
   MAX_ARTICLE_BLOCK_TEXT,
   MAX_ARTICLE_BLOCKS,
+  MAX_ARTICLE_TABLE_COLS,
   cleanFootnoteText,
   isSafeArticleHref,
   nextArticleBlockId,
@@ -477,18 +478,25 @@ class DocxWalker {
     this.inTable += 1;
     const grid: ArticleRun[][][] = [];
     let header = false;
-    for (const tr of kids(tbl)) {
-      if (tr.name !== 'w:tr') continue;
+    for (const tr of tableParts(tbl, 'w:tr')) {
+      const trPr = child(tr, 'w:trPr');
       if (grid.length === 0) {
-        const flag = child(child(tr, 'w:trPr'), 'w:tblHeader')?.attrs['w:val'];
-        header = !!child(child(tr, 'w:trPr'), 'w:tblHeader') && flag !== 'false' && flag !== '0';
+        const flag = child(trPr, 'w:tblHeader')?.attrs['w:val'];
+        header = !!child(trPr, 'w:tblHeader') && flag !== 'false' && flag !== '0';
       }
+      // Grid columns the row skips at its start, and those a merged cell covers past its first, are empty cells,
+      // so every cell stays in its own column (bounded: past the table's cap they are cut anyway).
       const row: ArticleRun[][] = [];
-      for (const tc of kids(tr)) {
-        if (tc.name !== 'w:tc') continue;
+      const pad = (n: number | undefined) => {
+        for (let i = 0; i < (n ?? 0) && row.length <= MAX_ARTICLE_TABLE_COLS; i++) row.push([]);
+      };
+      const cells = tableParts(tr, 'w:tc');
+      if (cells.length > 0) pad(intAttr(child(trPr, 'w:gridBefore'), 'w:val'));
+      for (const tc of cells) {
         this.runs = [];
         this.cell(tc, '\n');
         row.push(trimRuns(this.runs));
+        pad((intAttr(child(child(tc, 'w:tcPr'), 'w:gridSpan'), 'w:val') ?? 1) - 1);
       }
       // A row with no cell at all holds nothing to keep.
       if (row.length > 0) grid.push(row);
@@ -512,11 +520,9 @@ class DocxWalker {
     }
     const saved = { para: this.para, runs: this.runs, allMono: this.allMono };
     this.inTable += 1;
-    for (const tr of kids(tbl)) {
-      if (tr.name !== 'w:tr') continue;
+    for (const tr of tableParts(tbl, 'w:tr')) {
       const row: ArticleRun[] = [];
-      for (const tc of kids(tr)) {
-        if (tc.name !== 'w:tc') continue;
+      for (const tc of tableParts(tr, 'w:tc')) {
         this.runs = [];
         this.cell(tc, ' ');
         const cell = trimRuns(this.runs);
@@ -548,9 +554,25 @@ class DocxWalker {
         this.runs = outer;
       } else if (el.name === 'w:sdt') {
         this.cell({ ...el, children: child(el, 'w:sdtContent')?.children ?? [] }, between);
+      } else if (el.name === 'w:customXml') {
+        this.cell(el, between);
       }
     }
   }
+}
+
+/** A table's rows or a row's cells (`name`), in order, looking inside content controls and custom XML. */
+function tableParts(
+  el: XmlElement | undefined,
+  name: string,
+  out: XmlElement[] = [],
+): XmlElement[] {
+  for (const c of kids(el)) {
+    if (c.name === name) out.push(c);
+    else if (c.name === 'w:sdt') tableParts(child(c, 'w:sdtContent'), name, out);
+    else if (c.name === 'w:customXml') tableParts(c, name, out);
+  }
+  return out;
 }
 
 /** Runs with the paragraph's leading and trailing whitespace removed, line breaks inside kept. */

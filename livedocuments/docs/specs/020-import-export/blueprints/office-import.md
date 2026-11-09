@@ -156,8 +156,13 @@ Follows the spec's table. Precisely:
 - Counted: a `w:footnoteReference` with no note, `w:endnoteReference` (`footnotes`), `w:commentReference` (`comments`),
   `m:oMath` / `m:oMathPara` (`equations`), `w:altChunk` (`embedded`), a header or footer reference in any
   `w:sectPr` (`headersFooters`, once), each `w:tbl` (`tables`).
-- A table: each `w:tr` a bulleted item (level 0) whose runs are its cells' runs, the cells joined by `" · "`;
-  pictures and breaks inside are dropped. Nested tables add their text to the cell.
+- A table: a table block (`tableFromGrid`), each `w:tr` a row and each `w:tc` a cell, its paragraphs joined by
+  `\n`; rows and cells inside `w:sdt` / `w:sdtContent` and `w:customXml` are walked into. A row's
+  `w:trPr/w:gridBefore` adds that many empty cells before its first, and a cell's `w:tcPr/w:gridSpan` that many
+  less one empty cells after it (each bounded by `MAX_ARTICLE_TABLE_COLS`), so cells keep their grid columns; a
+  `w:vMerge` continuation cell is empty in its own right. A first row with `w:tblHeader` (not `false` or `0`) is
+  the header row. Pictures and breaks inside are dropped. Nested tables add their text to the cell, their cells
+  joined by `" · "`.
 - A paragraph whose text is empty after trimming and that holds no picture is left out. Runs pass through
   `normaliseRuns`; text cut by its 20,000-character cap counts `longText`.
 - More than `MAX_ARTICLE_BLOCKS` blocks: `too-many-blocks` (with the count).

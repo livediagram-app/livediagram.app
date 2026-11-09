@@ -60,6 +60,10 @@ document's body, in the order it is written. The article flows onto as many page
 | Tracked insertions; tracked deletions                                       | Kept as written; left out                                                                                                           |
 | Content controls, smart tags, fields                                        | Their content or result                                                                                                             |
 
+A merged cell keeps its text in the first column it covers and leaves the other columns it covers empty (a cell
+merged down leaves the cells below it empty), so every cell after it stays in its own column; columns a row skips
+at its start are empty cells too. Rows and cells inside content controls are read as any others.
+
 What is **not** brought across, and named in the report when the document had it: endnotes,
 comments, headers and footers, text boxes and shapes, charts, diagrams (SmartArt), equations, embedded objects
 and linked pictures. Colours, fonts, highlighting and the document's page setup are not brought across and not
