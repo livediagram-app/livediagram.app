@@ -96,7 +96,9 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
   - the element layer renders each element through a memoised slot
     (`components/canvas/selection-aware-views.tsx`): `SelectableBoxedView` and `SelectableArrowView`
     read `elementSelectionFlags` for their element and hand the unchanged views `isSelected`,
-    `isMultiSelected`, `showHandles` and `showAnchors`; each slot is memoised as the view it wraps
+    `isMultiSelected`, `showHandles` and `showAnchors`, and an arrow `showGrips` = `single` (its end,
+    curve and elbow handles show only on the one selected element, as a box's handles do; a
+    multi-selected arrow keeps its halo, canvas-performance.md "Grips go on the one selection"); each slot is memoised as the view it wraps
     (plain `memo`, `arrowViewPropsEqual`), so a layer render costs what it did;
   - `showHandles` / `showAnchors` come from `elementGrips(element, single, ctx)` in
     `lib/canvas-selection.ts`, which `deriveCanvasSelection` also uses, so the rule lives once;
@@ -104,7 +106,8 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
     `FramedArrow` reads `useCanvasZoom()`, so a zoom renders no other arrow's slot;
   - `LayerSelectionChrome` (the quick-connect pluses and union resize box) and
     `CanvasSelectionToolbars` take `selectionInput` (`CanvasSelectionInput`: the derivation's
-    inputs other than the selection, memoised in `Canvas`) and call `useCanvasSelectionView`;
+    inputs other than the selection, memoised in `Canvas`) and call `useCanvasSelectionView`, which shares one previewed board
+    (`previewedElements`) and one derived selection (`sharedCanvasSelection`) between them per frame;
   - `Canvas` reads the store with `get()` in handlers (`readSelection` for `useCanvasSelectHandlers`) and does not
     subscribe to it;
   - `useQuickRing(store)` closes an open ring on a change of the selected element through a store

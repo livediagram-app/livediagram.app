@@ -153,15 +153,16 @@ function CanvasView(props: CanvasProps) {
   // own pointerdown handlers can drive it, and exposes the
   // spaceHeldRef the pointerdown reads to decide pan vs marquee (and
   // spaceHeld, its state twin, for the cursor).
-  const { pan, setPan, marquee, setMarquee, spaceHeldRef, spaceHeld } = useCanvasPanAndMarquee({
-    viewportZoom,
-    setViewportOffset,
-    elements,
-    wrapperRef,
-    onDeselect,
-    onSelectMarquee,
-    isPinchingRef,
-  });
+  const { pan, setPan, marquee, marqueeStore, setMarquee, spaceHeldRef, spaceHeld } =
+    useCanvasPanAndMarquee({
+      viewportZoom,
+      setViewportOffset,
+      elements,
+      wrapperRef,
+      onDeselect,
+      onSelectMarquee,
+      isPinchingRef,
+    });
 
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
@@ -545,7 +546,7 @@ function CanvasView(props: CanvasProps) {
               onMoveLaserPanel={props.onMoveLaserPanel}
               onResetLaserPanel={props.onResetLaserPanel}
               offscreenContent={offscreenContent}
-              marquee={marquee}
+              marquee={marqueeStore}
               drawDrag={drawDrag}
               drawHover={drawHover}
               polygonVertices={polygonVertices}

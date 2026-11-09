@@ -191,20 +191,21 @@ function CanvasView(props: CanvasProps) {
   // own pointerdown handlers can drive it, and exposes the
   // spaceHeldRef the pointerdown reads to decide pan vs marquee (and
   // spaceHeld, its state twin, for the cursor).
-  const { pan, setPan, marquee, setMarquee, spaceHeldRef, spaceHeld } = useCanvasPanAndMarquee({
-    viewportZoom,
-    setViewportOffset,
-    elements,
-    wrapperRef,
-    onDeselect,
-    onSelectMarquee,
-    onShiftSelect,
-    currentSelection: () => {
-      const { selectedId, multiSelectedIds } = selectionStore.get();
-      return new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]);
-    },
-    isPinchingRef,
-  });
+  const { pan, setPan, marquee, marqueeStore, setMarquee, spaceHeldRef, spaceHeld } =
+    useCanvasPanAndMarquee({
+      viewportZoom,
+      setViewportOffset,
+      elements,
+      wrapperRef,
+      onDeselect,
+      onSelectMarquee,
+      onShiftSelect,
+      currentSelection: () => {
+        const { selectedId, multiSelectedIds } = selectionStore.get();
+        return new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]);
+      },
+      isPinchingRef,
+    });
 
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
@@ -576,6 +577,12 @@ function CanvasView(props: CanvasProps) {
             // the base plane while the camera orbits so they can't z-fight
             // (flicker) with the coplanar contents above them.
             data-iso={canvasTool === 'isometric' ? '' : undefined}
+            // The same modes, said to the element plane's children, which take presses of their own (globals.css).
+            data-elements-inert={
+              canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar'
+                ? ''
+                : undefined
+            }
             // A whiteboard pen draws wherever it presses, so nothing under it swaps
             // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").
             data-pen-in-hand={
@@ -873,7 +880,7 @@ function CanvasView(props: CanvasProps) {
             onAvatarReaction={avatar.playReaction}
             onAvatarBurst={playAvatarBurst}
             offscreenContent={offscreenContent}
-            marquee={marquee}
+            marquee={marqueeStore}
             drawDrag={drawDrag}
             drawHover={drawHover}
             stamp={stamp}

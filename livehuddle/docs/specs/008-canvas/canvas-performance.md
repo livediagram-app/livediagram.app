@@ -155,6 +155,19 @@ large move rides as one layer").
   recomputed. A preview frame renders neither the canvas nor the element layer: each element view
   reads its own part of the preview, so a frame's work follows what moved, not the board, and only
   what follows the moved selection (its chrome) reads the whole preview.
+- **Selection chrome derives a frame once.** Every piece of chrome that follows the selection (the
+  layer's resize box and pluses, the toolbars and popover) reads the same preview frame: the board
+  with the preview laid over it, and the selection derived from it, are built once a frame and
+  shared, never once per reader.
+- **One listener per media query.** Every caller of one media query (each grip asking whether the
+  pointer is coarse) shares one query list and one listener.
+- **A sweep moves one layer.** The marquee's rectangle changes on every frame of a sweep; it is held
+  outside the editor's render state and only the rectangle reads it, so a frame of the sweep renders
+  that one node and never the canvas, the element layer or the chrome. The rectangle sits on a
+  compositor layer of its own and is placed by transform, so a sweep frame moves it without
+  repainting the board beneath it. The selection's resize outline is placed by transform too but is
+  not promoted: it spans the whole selection, so a layer of its own made WebKit split every element
+  over it into layers too (a 4,000-element drag's frame went from 57 ms to 200 ms).
 - **The canvas's cursor stays off the elements.** The cursor the canvas shows (the tool's, a pan's
   grab, a draw tool's intent) changes on a tool switch, at the start and end of a pan and when a
   stroke lands, and a cursor is inherited: set on what holds the elements, each change restyled

@@ -164,10 +164,12 @@ export const CanvasElementList = memo(function CanvasElementList({
 }: CanvasElementListProps) {
   return (
     // The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
-    // elements"): no box of its own, and a cursor of its own (globals.css), so the canvas's cursor
-    // changing restyles this node and not the board beneath it.
+    // elements"): a cursor of its own (globals.css), so the canvas's cursor changing restyles this node and
+    // not the board beneath it. Its box is its parent's, always, and takes no press itself (globals.css):
+    // a very large move carries its offset as one transform, which lays nothing out again
+    // (docs/specs/008-canvas/drag-preview.md "A very large move rides as one layer").
     // Its parent holds every node a riding element's offset is written to (useLayerDragPreview).
-    <div data-element-plane="" data-ride-plane="contents" className="contents" ref={attachPlane}>
+    <div data-element-plane="" data-ride-plane="" className="absolute inset-0" ref={attachPlane}>
       {shownOrder.map(({ element: listed, layerOpacity }, isoDepth) => (
         <PreviewedElement
           key={listed.id}
