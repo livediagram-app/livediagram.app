@@ -169,6 +169,21 @@ describe('tool output schemas', () => {
     });
   }
 
+  it('add_tab declares no field it never sends: only the graph notes are conditional', async () => {
+    const client = await connectTestClient(api);
+    await client.listTools();
+    const result = await client.callTool({
+      name: 'add_tab',
+      arguments: { documentId: 'd1', name: 'Risks', template: 'swot' },
+    });
+    expect(result.isError, JSON.stringify(result.content)).toBeFalsy();
+    const sent = Object.keys(result.structuredContent as object);
+    const declared = Object.keys(
+      outputs.MCP_TOOL_VERBS.find((v) => v.mcp.tool === 'add_tab')!.mcpShapes.output,
+    );
+    expect(declared.filter((k) => !sent.includes(k))).toEqual(['notes']);
+  });
+
   it('sends no structuredContent on an error result', async () => {
     const client = await connectTestClient(api);
     const result = await client.callTool({
