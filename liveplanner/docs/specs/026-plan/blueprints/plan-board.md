@@ -1017,7 +1017,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `CUSTOM_ASSIGNEE_NAME_MAX` | 60                 | Spec; a name on one line of the picker; 30-120                              |
 | `ITEM_TRAIL_MAX`           | 8                  | Spec; bounds the trail's memory; 2–20                                       |
 | `FIT_GLIDE_MS`             | 420                | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`                  |
-| `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `useEditorState.ts`                                            |
+| `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `editor-state/useEditorShortcuts.ts`                           |
 | `PLAN_BUSY_CARDS`          | 100                | Spec "A busy board"; the ease cost ~6 ms a card a pick past it; 50-200      |
 | `PLAN_INK_MEMO_MAX`        | 2048               | Bounds the card ink memo; a board asks for tens; 256-8192                   |
 | `RUN_SPREAD`               | 4                  | `card-runs.ts`: 8 cost 0.3-0.5 s an edge crossing, 2 slowed each gap; 3-6   |
