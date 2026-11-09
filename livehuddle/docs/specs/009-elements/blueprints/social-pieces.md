@@ -330,7 +330,8 @@ Editor's Clear High Scores, copies starting empty, the answers flush's no-op and
   (`useNoteSigner.ts`): a Participant's adder key, an Editor's adder key or participant key. The tab is
   `activeTab.id` as the panel opens, so a score posted as the tab is left reaches the machine's own tab.
 - **Posting** (`arcadeScoreFor(run, table, { key, name, now, id })`): null when the run scored 0, played under 1 ms,
-  there is no key or `arcadePlaceOf` finds no place; else `{ score: { id, name, score, ms, by: key, at: now }, place }`
+  there is no key, `isArcadeScore` refuses it (a run past two hours, say: every screen would drop it, so Game Over
+  never announces a place for it) or `arcadePlaceOf` finds no place; else `{ score: { id, name, score, ms, by: key, at: now }, place }`
   with `name` from `arcadeName(selfParticipant.name)`. Sent once per run as one
   `applyElementDelta(id, { kind: 'arcade-score', score }, tabId)`; `track('Canvas', 'Used', 'Arcade')` once per run
   ended, posted or not. `arcadePlaceLine(place)`: 1 is **New High Score!**, else **You Placed #n**.
