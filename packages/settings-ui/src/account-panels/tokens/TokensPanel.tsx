@@ -32,7 +32,8 @@ export function TokensPanel() {
       />
       {made && (
         <SecretReveal
-          title={`Here’s ${made.name}. Copy it now: it won’t be shown again.`}
+          // Quoted and isolated (FSI … PDI), so a right-to-left name never turns the rest of the sentence around.
+          title={`Here’s “\u2068${made.name}\u2069”. Copy it now: it won’t be shown again.`}
           secret={made.secret}
           onDone={() => {
             setMade(null);
@@ -164,7 +165,7 @@ function TokenRow({ token, onRevoked }: { token: ApiToken; onRevoked: () => Prom
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate font-semibold text-slate-900 dark:text-white">
-              {token.name}
+              <bdi>{token.name}</bdi>
               {token.readOnly && (
                 <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   Read only
