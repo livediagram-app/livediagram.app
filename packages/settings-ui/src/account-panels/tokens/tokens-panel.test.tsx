@@ -114,4 +114,12 @@ describe('API Tokens', () => {
     await press('Done');
     expect(document.activeElement?.getAttribute('aria-label')).toBe('Token name');
   });
+
+  it('quotes and isolates a token’s name, so a right-to-left name keeps the sentence the right way round', async () => {
+    act(() => root.render(withAccountHost(<TokensPanel />)));
+    await settle();
+    expect(container.querySelector('bdi')?.textContent).toBe('Weekly report');
+    await press('Make Token');
+    expect(container.textContent).toContain('Here’s “\u2068New\u2069”. Copy it now');
+  });
 });
