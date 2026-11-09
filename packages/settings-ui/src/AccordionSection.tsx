@@ -57,6 +57,10 @@ export function AccordionSection({
         header
       )}
       <div
+        // Collapsed, the body has no height but its controls are still there: inert keeps them out of the focus
+        // order (Tab no longer lands on a hidden switch), aria-hidden out of the accessibility tree.
+        inert={!open}
+        aria-hidden={!open || undefined}
         className={`grid transition-[grid-template-rows] duration-short ease-out ${
           open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
         }`}
