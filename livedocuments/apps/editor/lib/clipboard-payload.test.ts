@@ -249,9 +249,9 @@ describe('articlePasteIsCanvas', () => {
     expect(articlePasteIsCanvas(data(excel))).toBe(false);
     expect(articlePasteIsCanvas(data({ ...png, html: '<p>Hello</p>', text: 'Hello' }))).toBe(false);
     // A browser's Copy Image: the picture's HTML, no text or only its address.
-    expect(articlePasteIsCanvas(data({ ...png, html: '<img src="https://a.example/x.png">' }))).toBe(
-      true,
-    );
+    expect(
+      articlePasteIsCanvas(data({ ...png, html: '<img src="https://a.example/x.png">' })),
+    ).toBe(true);
     expect(
       articlePasteIsCanvas(
         data({ ...png, html: '<img src="x.png">', text: 'https://a.example/x.png' }),
