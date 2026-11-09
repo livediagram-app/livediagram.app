@@ -82,18 +82,46 @@ never reopens it. Leaving the step closes whatever it opened that is still open.
 
 **A step that opens the page's panel** opens it on the tab it is about (Page, Style or Text) and closes it on leaving.
 
+**A step on a Contents row** (the row, its ⋯ menu, and the Add Page at Contents' foot when the + is out of the window)
+opens Contents first when it is minimised to its cluster button, as a person would (on a phone that is always so, and it
+opens as a bottom sheet), and closes it again on leaving. The docked sidebar is already open and is left as it is.
+
+### On a phone
+
+A phone (the mobile viewport) gathers a page's looks under **Appearance** and has no sidebar, no Present and no page
+label ([Pages mode](pages-mode.md) "On a phone, three buttons at most"), so a step whose desktop control is not there
+rings the phone's own way to it, and every track teaches the same ideas:
+
+- **A look step** (Layout, Background, an article's Style and Text) presses **Appearance**, then that control's row in
+  its sheet, and rings the control's own bottom sheet once it is up (before then, Appearance). Leaving the step closes
+  that sheet (and Appearance's, if a row never opened).
+- **Contents** is the cluster's button, so its steps open its bottom sheet ("A step on a Contents row" above).
+- **Add Slide** (or Add a Page) rings the + after the last page while it is in the window, which it is once the page
+  is framed: a slide fits the phone's width as it opens ([Template start](start-diagramming.md) "The first page").
+  Out of the window it rings Contents' **Add Slide** instead.
+- **Present** is left out: a phone presents nothing ([Presentation mode](../012-collaboration/presentation-mode.md)).
+  The Slides track's closing card says to present from a tablet or computer.
+- **Write on the Page** rings the article's first block on the tour page (its title on a new article): a centred card
+  on a phone covers the very text it asks the person to tap, so it points at where to start and sits clear of it.
+
 ### Slides track
 
 1. **Choose a Layout** (the slide's Layout popover, opened): hover a layout to preview it, press to place it.
 2. **Change the Background** (the Background popover, opened): colours, gradients, animated backgrounds and
    pictures, a pattern on top; hover to preview, press to keep it.
-3. **Add Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
-4. **Your Slides** (the tour page's row in the Contents sidebar): every slide is in the show already, in this
-   order; drag a row to move it, press one to go to that slide.
+3. **Add Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window, else
+   Contents' Add Slide).
+4. **Your Slides** (the tour page's row in Contents, opened first while it is minimised or on a phone): every slide
+   is in the show already, in this order; drag a row to move it, press one to go to that slide.
 5. **Each Slide's Menu** (the row's ⋯ menu, opened): hide a slide from the show, or present from it.
 6. **Present** (the header's Present): full screen, arrow keys to move, Escape to end. Transitions and auto-advance
-   are in Settings, under Presenting.
-7. **You're ready to present** (closing card).
+   are in Settings, under Presenting. Not on a phone.
+7. **You're ready to present** (closing card): "Make your next slide. Present when you are ready."; on a phone,
+   "Make your next slide. Present it from a tablet or computer."
+
+On a phone the track runs: Choose a Layout (Appearance, then its Layout sheet), Change the Background (Appearance, then
+its Background sheet), Add Slide (the + after the slide), Your Slides (the row in the Contents sheet), Each Slide's
+Menu (that row's ⋯ menu), then the closing card (Work Tracker #666: it went straight to the closing card).
 
 ### Infographic track
 
@@ -108,7 +136,8 @@ never reopens it. Leaving the step closes whatever it opened that is still open.
 
 ### Article track
 
-1. **Write on the Page** (a centred card, no ring): click to write, `/` for blocks; full pages flow onto the next.
+1. **Write on the Page** (a centred card, no ring; on a phone, the tour page's first block, ringed, Work Tracker
+   #667): click to write, `/` for blocks; full pages flow onto the next.
 2. **The Page Toolbar** (the article's page toolbar, held up on the tour page through the step: it otherwise shows
    only while a page is hovered or written on).
 3. **Article Style** (the Style popover beside the cog, opened by its button, [Article pages](article-pages.md) "Article style"): looks, accent, margins, page numbers, for every page of
@@ -116,10 +145,14 @@ never reopens it. Leaving the step closes whatever it opened that is still open.
 4. **Fonts and Spacing** (the Text popover beside it).
 5. **You're ready to write** (closing card).
 
+On a phone Article Style and Fonts and Spacing open from Appearance ("On a phone").
+
 ### Filtering
 
-- A step whose control is not on screen when the tour starts (the Contents sidebar while it is minimised, or on a
-  phone; the header's Present while the deck has nothing to show; the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
+- A step whose control is not on screen when the tour starts (Contents with neither its sidebar nor its cluster
+  button, as in zen mode; the header's Present while the deck has nothing to show, or on a phone; a look control with
+  neither its title-bar button nor a phone's Appearance; the + when neither the one after the last page, the Toolbar
+  strip's nor Contents' is to hand) is left out up front, so the count stays honest; one that goes before its
   turn is skipped ("Mechanics").
 - If the tour can no longer run where it started (the person's edit rights go, they open another tab, or the tour page is deleted or locked) it ends as skipped, closing whatever it opened.
 
@@ -208,8 +241,10 @@ tour (`elementToursSeen`). Both stay seen for someone who had it on: `upgradeLeg
 ## Code
 
 - `<kind>-tour-steps.ts` (`slide-`, `infographic-`, `article-`): each track's steps, against one
-  `PageTourApi` (`page-tour-api.ts`); `page-tour-dom.ts` opens and closes a page's title-bar popovers and finds
-  its controls; `page-tour-steps.ts` picks a track's steps for a kind, loaded at the press so the
-  copy stays out of the editor's first load.
+  `PageTourApi` (`page-tour-api.ts`), told whether the screen is a phone (`TrackOptions`); `page-tour-dom.ts` opens
+  and closes a page's title-bar popovers (through a phone's Appearance), Contents, and finds its controls;
+  `page-tour-parts.ts` builds the steps the tracks share (a look control, Add, a Contents row and its menu);
+  `page-tour-steps.ts` picks a track's steps for a kind, loaded at the press so the copy stays out of the editor's
+  first load.
 - `PagesTourHost.tsx`: when the tour is on the Start Tour button, the tour page and the seen record. `PageTour.tsx`: the page panel's Show Me.
 - `apps/editor/lib/page-panel-request.ts`: how a tour opens or closes a page's panel on a tab from outside `CanvasPages`.

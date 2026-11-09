@@ -391,6 +391,25 @@ export const CATALOGUE: AppCatalogue = {
       rows: [
         {
           kind: 'toggle',
+          id: 'joinLeaveSounds',
+          label: 'Join and Leave Sounds',
+          description:
+            'A soft chime when someone arrives in the Space you have open, and a softer one when they leave, even while this tab is in the background.',
+          keywords:
+            'sound chime audio join leave arrive enter knock bell ding quiet mute background tab presence people',
+          section: 'In the Editor',
+          key: 'joinLeaveSounds',
+          on: true,
+          off: false,
+          fallback: true,
+          event: {
+            category: 'UI',
+            on: 'JoinLeaveSoundsOn',
+            off: 'JoinLeaveSoundsOff',
+          },
+        },
+        {
+          kind: 'toggle',
           id: 'notifyDocumentJoin',
           label: 'Someone Joins My Space',
           description: 'A new person opens one of your shared spaces.',

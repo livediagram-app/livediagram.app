@@ -19,6 +19,7 @@ import {
   parseCallTrack,
   parseGameEvent,
   parseGameInput,
+  parseNudge,
   parseStoredLevel,
 } from '@livehuddle/api-schema';
 import { answersAsSelf } from './document-room-rules';
@@ -139,6 +140,9 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "Share roles"): presence from any
   // level, as a knock is, a Viewer at the front desk above all; a malformed one reaches nobody. The room throttles it next.
   if (opKind === 'avatar-bell' && !(parsed = parseAvatarBell(op))) return DROP;
+  // A nudge (docs/specs/012-collaboration/nudge.md "Share roles"): taking part, since it reaches a person's desktop, so
+  // never a Viewer's; a malformed one reaches nobody. The room addresses it and holds each pair to one per 2 minutes.
+  if (opKind === 'nudge' && (level === 'view' || !(parsed = parseNudge(op)))) return DROP;
   // Playing a game at a piece is taking part (docs/specs/009-elements/social-pieces.md "Share roles"): a Viewer
   // watches, so its paddle and its moments reach nobody, and a malformed one from anyone reaches nobody. Each screen
   // then checks the sender sits on the seat it names.

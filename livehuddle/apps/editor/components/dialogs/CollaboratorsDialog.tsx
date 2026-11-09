@@ -17,14 +17,17 @@ import {
 } from '@/lib/collaborator-roster';
 import type { Participant } from '@/lib/identity';
 import { useRelativeNow } from '@/lib/relative-time';
-import { mayHoldBaton } from '@/lib/editor-capabilities';
+import { mayHoldBaton, mayNudge } from '@/lib/editor-capabilities';
+import type { NudgeTarget } from '@/lib/nudge/nudge-inbox';
+import { NudgeButton } from '@/components/dialogs/NudgeButton';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import type { AccessLevel } from '@livehuddle/api-schema';
 
 // The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document, grouped by
 // the tab they are on, opened by clicking any avatar in a tab's presence
 // stack. Each other tab gets a Go to Tab, each other person a Follow
-// (docs/specs/012-collaboration/follow-me-viewport.md moved here from the avatar click). The person whose avatar was
+// (docs/specs/012-collaboration/follow-me-viewport.md moved here from the avatar click) and, for an Editor or a
+// Participant, a Nudge (docs/specs/012-collaboration/nudge.md). The person whose avatar was
 // clicked is highlighted and scrolled into view.
 
 type CollaboratorsDialogProps = {
@@ -39,6 +42,8 @@ type CollaboratorsDialogProps = {
   onGoToTab: (tabId: string) => void;
   onFollow: (participantId: string) => void;
   onStopFollowing: () => void;
+  // Nudge someone (docs/specs/012-collaboration/nudge.md): shown on other people's rows when `mayNudge(selfRole)`.
+  onNudge?: (target: NudgeTarget) => void;
   // The facilitator baton (docs/specs/012-collaboration/facilitator.md). `facilitatorId` is a presence id, which
   // is why our OWN row reads `isFacilitator` instead: a client cannot
   // recognise its own presence id, so the two answers arrive by different
@@ -66,6 +71,7 @@ export function CollaboratorsDialog({
   onGoToTab,
   onFollow,
   onStopFollowing,
+  onNudge,
   facilitatorId,
   isFacilitator,
   isOwner,
@@ -192,6 +198,16 @@ export function CollaboratorsDialog({
                             }
                           }}
                         />
+                        {!isSelf && onNudge && mayNudge(selfRole) ? (
+                          <NudgeButton
+                            target={{
+                              id: p.id,
+                              name: p.name,
+                              ...(p.key ? { key: p.key } : {}),
+                            }}
+                            onNudge={onNudge}
+                          />
+                        ) : null}
                         {isSelf ? null : (
                           <Button
                             variant={following ? 'primary' : 'secondary'}

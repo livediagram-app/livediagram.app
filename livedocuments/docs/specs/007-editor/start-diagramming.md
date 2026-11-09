@@ -146,7 +146,9 @@ flashes an empty page while the panel's code is still loading. A start closed fo
 it back") is not open: the canvas reads `useTemplateStartOpen`, the rule and the tab's closed key together, so the
 explicit blank's one page is drawn at once, asking What Is This Page For? Picking a template lands its pages. A blank of
 a page kind (Blank Slide Deck, Blank Article, Blank Infographic) lands one page of that kind, already
-chosen, so it asks nothing and the start does not come back over it.
+chosen, so it asks nothing and the start does not come back over it. Though it brings no elements, the view frames
+its page as it lands, as any template's first page is framed ([Pages mode](pages-mode.md) "Centred in the viewport"):
+left framed on the A4 page it replaced, a slide on a phone opened wider than the screen (Work Tracker #666).
 
 **The last page can be deleted.** Deleting it (or the last article) clears the tab, its pages, its writing and its
 elements, as one edit that Undo puts back, and brings Start Making Pages back, even on an explicit blank. The agents'

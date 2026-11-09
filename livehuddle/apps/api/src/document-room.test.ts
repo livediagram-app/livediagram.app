@@ -667,6 +667,8 @@ describe('DocumentRoom op-role enforcement', () => {
     'call-session',
     'avatar-knock',
     'avatar-bell',
+    // A nudge is addressed, from an Editor or a Participant, once per 2 minutes per pair (pinned below).
+    'nudge',
   ];
   // Speaking is taking part (docs/specs/008-canvas/avatar-mode.md "Who may speak"): a Participant's, never a
   // Viewer's (docs/specs/013-workspace/share-roles.md).
@@ -834,6 +836,108 @@ describe('DocumentRoom op-role enforcement', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  // A nudge (docs/specs/012-collaboration/nudge.md "The wire", "Share roles"): to its target alone, once per 2 minutes
+  // per pair; a second is refused back to the sender alone with the time left; a Viewer's is dropped.
+  describe('nudge', () => {
+    it("delivers a Participant's nudge to its target alone, and refuses a second inside 2 minutes", () => {
+      vi.useFakeTimers();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      try {
+        vi.setSystemTime(new Date(1_000_000));
+        const { room } = newRoom();
+        const sender = connect(room, 'sender', 'participate');
+        const target = connect(room, 'target', 'view');
+        const bystander = connect(room, 'bystander', 'edit');
+        for (const c of [sender, target, bystander]) c.ws.sent.length = 0;
+        const targetId = storedPresence(target.ws)!.id;
+        const senderId = storedPresence(sender.ws)!.id;
+        sendFrame(room, sender.ws, { kind: 'op', op: { kind: 'nudge', targetId, extra: 'x' } });
+        expect(opsReceived(target.ws)).toEqual([
+          { kind: 'op', from: senderId, op: { kind: 'nudge', targetId } },
+        ]);
+        expect(opsReceived(bystander.ws)).toHaveLength(0);
+        expect(opsReceived(sender.ws)).toHaveLength(0);
+
+        vi.setSystemTime(new Date(1_000_000 + 18_000));
+        sendFrame(room, sender.ws, { kind: 'op', op: { kind: 'nudge', targetId } });
+        expect(opsReceived(target.ws)).toHaveLength(1);
+        expect(opsReceived(sender.ws)).toEqual([
+          {
+            kind: 'op',
+            from: targetId,
+            op: { kind: 'nudge-refused', targetId, retryInMs: 102_000 },
+          },
+        ]);
+        expect(warn).toHaveBeenCalledWith('[nudge] refused', { retryInMs: 102_000 });
+
+        vi.setSystemTime(new Date(1_000_000 + 120_000));
+        sendFrame(room, sender.ws, { kind: 'op', op: { kind: 'nudge', targetId } });
+        expect(opsReceived(target.ws)).toHaveLength(2);
+      } finally {
+        warn.mockRestore();
+        vi.useRealTimers();
+      }
+    });
+
+    it("drops a Viewer's nudge, one to yourself, one to nobody and a malformed one; an Editor's passes", () => {
+      const { room } = newRoom();
+      const viewer = connect(room, 'viewer', 'view');
+      const editor = connect(room, 'editor', 'edit');
+      const target = connect(room, 'target', 'participate');
+      for (const c of [viewer, editor, target]) c.ws.sent.length = 0;
+      const targetId = storedPresence(target.ws)!.id;
+      const editorId = storedPresence(editor.ws)!.id;
+      sendFrame(room, viewer.ws, { kind: 'op', op: { kind: 'nudge', targetId } });
+      expect(opsReceived(target.ws)).toHaveLength(0);
+      sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'nudge', targetId: editorId } });
+      sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'nudge', targetId: 'nobody' } });
+      sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'nudge', targetId: '' } });
+      expect(opsReceived(editor.ws)).toHaveLength(0);
+      expect(opsReceived(viewer.ws)).toHaveLength(0);
+      sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'nudge', targetId } });
+      expect(opsReceived(target.ws)).toHaveLength(1);
+    });
+
+    it('holds the window across a second socket of the same person, and drops a nudge to your own other tab', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      try {
+        const { room } = newRoom();
+        const hello = (id: string, key: string, role: 'edit' | 'participate') => {
+          const ws = makeSocket();
+          room.acceptSession(asWs(ws), role);
+          sendFrame(room, ws, { kind: 'hello', participant: { id, key, name: id, color: '#000' } });
+          ws.sent.length = 0;
+          return ws;
+        };
+        const tabOne = hello('a1', 'key-a', 'edit');
+        const tabTwo = hello('a2', 'key-a', 'edit');
+        const target = hello('b', 'key-b', 'participate');
+        const targetId = storedPresence(target)!.id;
+        sendFrame(room, tabOne, { kind: 'op', op: { kind: 'nudge', targetId } });
+        sendFrame(room, tabTwo, { kind: 'op', op: { kind: 'nudge', targetId } });
+        expect(opsReceived(target)).toHaveLength(1);
+        expect(opsReceived(tabTwo)).toHaveLength(1);
+        sendFrame(room, tabOne, {
+          kind: 'op',
+          op: { kind: 'nudge', targetId: storedPresence(tabTwo)!.id },
+        });
+        expect(opsReceived(tabTwo)).toHaveLength(1);
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it("drops a client's forged nudge-refused", () => {
+      const { room } = newRoom();
+      const editor = connect(room, 'editor', 'edit');
+      const other = connect(room, 'other', 'edit');
+      other.ws.sent.length = 0;
+      const op = { kind: 'nudge-refused', targetId: storedPresence(other.ws)!.id, retryInMs: 5 };
+      sendFrame(room, editor.ws, { kind: 'op', op });
+      expect(opsReceived(other.ws)).toHaveLength(0);
+    });
   });
 
   // Avatar-mode shove (docs/specs/008-canvas/avatar-mode.md). It is ADDRESSED, not broadcast: the room

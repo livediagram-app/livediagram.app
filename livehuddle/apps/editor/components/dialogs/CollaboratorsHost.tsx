@@ -24,6 +24,7 @@ export function CollaboratorsHost() {
     selfParticipant,
     sessionRole,
     followMe,
+    nudges,
     facilitator,
     isOwner,
   } = useEditorContext();
@@ -47,6 +48,7 @@ export function CollaboratorsHost() {
         closeCollaborators();
       }}
       onStopFollowing={followMe.stopFollowing}
+      onNudge={nudges.canNudge ? nudges.nudge : undefined}
       facilitatorId={facilitator.facilitatorId}
       isFacilitator={facilitator.isFacilitator}
       isOwner={isOwner}

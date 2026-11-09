@@ -1,27 +1,30 @@
 // The Article track of the Pages tour (docs/specs/007-editor/pages-tour.md "Article track"): on the person's
-// own article page, where to write, its page toolbar, and its Style and Text beside the cog (PageArticleButtons).
+// own article page, where to write, its page toolbar, and its Style and Text beside the cog (PageArticleButtons), on a
+// phone under Appearance.
 import { pinPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
-import type { PageTourStep } from './page-tour-api';
-import {
-  closeTitlePopover,
-  openTitlePopover,
-  pageButton,
-  pageOrPopover,
-  pageSheet,
-} from './page-tour-dom';
+import type { PageTourApi, PageTourStep } from './page-tour-api';
+import { firstBlockOnPage, pageSheet } from './page-tour-dom';
+import { lookStep, type TrackOptions } from './page-tour-parts';
 
 const ARTICLE_TOOLBAR = '[role="toolbar"][aria-label="Article Formatting"]';
 
 const TOOLBAR_BODY =
   'Headings, bold, colours, lists and alignment. Insert adds images, tables and charts.';
 
-export function articleTourSteps(): PageTourStep[] {
+export function articleTourSteps({ phone = false }: TrackOptions = {}): PageTourStep[] {
   return [
     {
       id: 'write',
       title: 'Write on the Page',
       body: 'Click and type. Type / to add a heading, list, table, image or chart. Full pages flow onto new ones.',
-      // A card on its own, no ring: one round the whole page would light most of the screen.
+      // A card on its own, no ring: one round the whole page would light most of the screen. On a phone a centred
+      // card covers the very text it asks to tap, so it rings the page's first block and sits clear of it (#667).
+      ...(phone
+        ? {
+            selector: (api: PageTourApi) => firstBlockOnPage(api.pageId),
+            requires: (api: PageTourApi) => pageSheet(api.pageId),
+          }
+        : {}),
     },
     {
       id: 'toolbar',
@@ -35,24 +38,22 @@ export function articleTourSteps(): PageTourStep[] {
       prepare: (api) => pinPageToolbar(api.pageId),
       cleanup: () => pinPageToolbar(null),
     },
-    {
-      id: 'style',
-      title: 'Article Style',
-      body: 'Pick a look, an accent colour, margins and page numbers. Every page follows.',
-      selector: (api) => pageOrPopover(api.pageId, 'Style'),
-      requires: (api) => pageButton(api.pageId, 'Style'),
-      prepare: (api) => openTitlePopover(api.pageId, 'Style'),
-      cleanup: (api) => closeTitlePopover(api.pageId, 'Style'),
-    },
-    {
-      id: 'text',
-      title: 'Fonts and Spacing',
-      body: 'Fonts for headings and body, text size, and spacing.',
-      selector: (api) => pageOrPopover(api.pageId, 'Text'),
-      requires: (api) => pageButton(api.pageId, 'Text'),
-      prepare: (api) => openTitlePopover(api.pageId, 'Text'),
-      cleanup: (api) => closeTitlePopover(api.pageId, 'Text'),
-    },
+    lookStep(
+      {
+        id: 'style',
+        title: 'Article Style',
+        body: 'Pick a look, an accent colour, margins and page numbers. Every page follows.',
+      },
+      'Style',
+    ),
+    lookStep(
+      {
+        id: 'text',
+        title: 'Fonts and Spacing',
+        body: 'Fonts for headings and body, text size, and spacing.',
+      },
+      'Text',
+    ),
     {
       id: 'outro',
       card: 'outro',

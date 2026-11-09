@@ -98,8 +98,11 @@ import {
   BELL_THROTTLE_MS,
   CHANGESET_RETENTION_MS,
   createKnockThrottle,
+  createNudgeLedger,
   type CommunityAuthor,
+  type NudgeOp,
 } from '@livehuddle/api-schema';
+import { decideNudge } from '../room-nudge';
 import { deleteOldChangesets } from '../db/changesets';
 import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
@@ -1227,6 +1230,38 @@ export class DocumentRoom extends DurableObject<Env> {
     }
   }
 
+  // Deliver a nudge to its target, refuse it to its sender, or drop it (room-nudge.ts decides).
+  private relayNudge(ws: WebSocket, session: SessionAttachment, op: NudgeOp): void {
+    const sender = session.presence;
+    if (!sender) return;
+    let target: SessionAttachment | null = null;
+    for (const peer of this.state.getWebSockets()) {
+      if (peer === ws) continue;
+      const attachment = peer.deserializeAttachment() as SessionAttachment | null;
+      if (attachment?.presence?.id === op.targetId) {
+        target = attachment;
+        break;
+      }
+    }
+    const decision = decideNudge({
+      op,
+      sender: session,
+      target,
+      ledger: this.nudges,
+      now: Date.now(),
+    });
+    if (decision.kind === 'deliver') {
+      this.sendToPresence(op.targetId, { kind: 'op', from: sender.id, op }, ws);
+    } else if (decision.kind === 'refuse') {
+      console.warn('[nudge] refused', { retryInMs: decision.retryInMs });
+      this.sendTo(ws, {
+        kind: 'op',
+        from: op.targetId,
+        op: { kind: 'nudge-refused', targetId: op.targetId, retryInMs: decision.retryInMs },
+      });
+    }
+  }
+
   broadcast(payload: ServerMessage, except?: WebSocket): void {
     const serialized = JSON.stringify(payload);
     for (const ws of this.state.getWebSockets()) {
@@ -1274,6 +1309,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // Rings of a Reception Desk's bell pass one per sender per 5 seconds (docs/specs/009-elements/workday-pieces.md "The
   // wire"), the knock's throttle with its own window: memory only.
   private readonly bells = createKnockThrottle(BELL_THROTTLE_MS);
+  // Nudges pass once per 2 minutes per sender and target (docs/specs/012-collaboration/nudge.md "The wire"): memory
+  // only, keyed by stable identity so a second tab or a reconnect does not reopen the window.
+  private readonly nudges = createNudgeLedger();
   private readonly calls = new RoomCalls({
     now: () => Date.now(),
     sessions: () => this.callSessions(),
@@ -1638,6 +1676,12 @@ export class DocumentRoom extends DurableObject<Env> {
         if (opKind === 'avatar-knock' && !this.knocks.allow(sender.id, Date.now())) return;
         // A ring of the bell, likewise one per sender per 5 seconds, then broadcast; each receiver checks its earshot.
         if (opKind === 'avatar-bell' && !this.bells.allow(sender.id, Date.now())) return;
+        // A nudge (docs/specs/012-collaboration/nudge.md "The wire"): to its target alone, once per 2 minutes per
+        // pair; inside that the sender alone is told how long is left. Never fanned out.
+        if (opKind === 'nudge') {
+          this.relayNudge(ws, session, msg.op as NudgeOp);
+          return;
+        }
         if (
           opKind === 'avatar-push' ||
           opKind === 'avatar-let-speak' ||

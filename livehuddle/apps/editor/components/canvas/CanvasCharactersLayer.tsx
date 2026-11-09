@@ -21,6 +21,7 @@ import { TalkingBars } from '@/components/calls/TalkingBars';
 import { HearingRing } from '@/components/calls/HearingRing';
 import { RaisedHands } from '@/components/calls/RaisedHands';
 import { useCanvasCall } from '@/components/calls/useCanvasCall';
+import { useQuietForDoNotDisturb } from '@/lib/sounds/quiet';
 import { usePieceMoments } from '@/components/canvas/collab/usePieceMoments';
 import { useSocialPieces } from '@/components/canvas/collab/useSocialPieces';
 import { useWorkdayPieces } from '@/lib/office/useWorkdayPieces';
@@ -153,6 +154,8 @@ export function CanvasCharactersLayer({
     doNotDisturb: avatarStatus === 'dnd',
     coarse: { remoteAvatars: coarseAvatars, pos: coarseFeet },
   });
+  // Do Not Disturb quiets the join and leave chimes and the nudge too (join-and-leave-sounds.md "Settings").
+  useQuietForDoNotDisturb(avatarStatus === 'dnd');
   // Where the camera and screen bubbles were laid out, so speech bubbles rise clear of them.
   const callBubbleRects = useCallBubbleRects();
 

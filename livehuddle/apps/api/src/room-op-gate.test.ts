@@ -320,6 +320,18 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'avatar-bell', tabId: 't' }, as('edit'))).toEqual(DROP);
   });
 
+  // docs/specs/012-collaboration/nudge.md "Share roles": an Editor and a Participant nudge, a Viewer is only nudged.
+  it("relays an Editor's and a Participant's nudge, never a Viewer's or a malformed one", () => {
+    const nudge = { kind: 'nudge', targetId: 's1' };
+    for (const role of ['edit', 'participate'])
+      expect(gateClientOp({ ...nudge, extra: 1 }, as(role))).toEqual(relayed(nudge));
+    expect(gateClientOp(nudge, as('view'))).toEqual(DROP);
+    expect(gateClientOp({ kind: 'nudge', targetId: '' }, as('edit'))).toEqual(DROP);
+    expect(
+      gateClientOp({ kind: 'nudge-refused', targetId: 's1', retryInMs: 1 }, as('edit')),
+    ).toEqual(DROP);
+  });
+
   // docs/specs/009-elements/social-pieces.md "Share roles": an Editor and a Participant play, a Viewer watches.
   it("relays a game's paddle and moments from an Editor or a Participant, never a Viewer's or a malformed one", () => {
     const input = { kind: 'game-input', tabId: 't', pieceId: 'table-1', seat: 0, axis: 0.5 };

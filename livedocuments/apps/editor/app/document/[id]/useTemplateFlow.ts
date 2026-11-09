@@ -143,6 +143,10 @@ export function useTemplateFlow(opts: {
     if (elements.length > 0) {
       requestFit();
       putToolDown();
+    } else if (overrides.pages) {
+      // A blank of a page kind brings no elements but its own page (a 16:9 slide over the unchosen A4 page): framed
+      // as it lands, or a slide on a phone opens wider than the screen (pages-mode.md "Centred in the viewport").
+      requestFit();
     }
     // Auto-select when a template produces a single element so the user can
     // immediately rename or edit it. Multi-element templates — and the now

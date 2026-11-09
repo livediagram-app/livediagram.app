@@ -2,13 +2,8 @@
 // steps"): on the person's own card, where to write, its page toolbar, another card, and its Style.
 import { pinPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import type { PageTourStep } from './page-tour-api';
-import {
-  closeTitlePopover,
-  openTitlePopover,
-  pageButton,
-  pageOrPopover,
-  pageSheet,
-} from './page-tour-dom';
+import { pageSheet } from './page-tour-dom';
+import { lookStep } from './page-tour-parts';
 
 const ARTICLE_TOOLBAR = '[role="toolbar"][aria-label="Article Formatting"]';
 const ADD_CARD = '[data-tour-id="add-page"]';
@@ -35,15 +30,14 @@ export function flashcardTourSteps(): PageTourStep[] {
       body: 'Adds a card to the stack. The arrows under the card, or Contents, flip between them.',
       selector: () => ADD_CARD,
     },
-    {
-      id: 'style',
-      title: 'Card Style',
-      body: 'Pick a look, an accent colour and margins. Every card follows.',
-      selector: (api) => pageOrPopover(api.pageId, 'Style'),
-      requires: (api) => pageButton(api.pageId, 'Style'),
-      prepare: (api) => openTitlePopover(api.pageId, 'Style'),
-      cleanup: (api) => closeTitlePopover(api.pageId, 'Style'),
-    },
+    lookStep(
+      {
+        id: 'style',
+        title: 'Card Style',
+        body: 'Pick a look, an accent colour and margins. Every card follows.',
+      },
+      'Style',
+    ),
     {
       id: 'outro',
       card: 'outro',

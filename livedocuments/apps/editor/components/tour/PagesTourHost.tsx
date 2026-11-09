@@ -14,6 +14,7 @@ import { resetPageTour, tidyPageTour } from './page-tour-dom';
 import { pickTourPage, type TourPage } from './pages-tour-page';
 import { PAGE_PANEL, PAGE_TOUR_HELP } from './PageTour';
 import { isOnScreen } from '@liveworkspace/workbench/components/tour/tour-dom';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { stepTelemetryType } from '@liveworkspace/workbench/components/tour/tour-step';
 import { TourStage } from './TourStage';
 import {
@@ -118,7 +119,11 @@ export function PagesTourHost() {
         debugLog('[pages-tour] start', { kind: page.kind });
         resetPageTour();
         setSubject(page);
-        setSteps(shownPageTourSteps(page.kind, { pageId: page.pageId, ...PAGE_PANEL }, isOnScreen));
+        setSteps(
+          shownPageTourSteps(page.kind, { pageId: page.pageId, ...PAGE_PANEL }, isOnScreen, {
+            phone: isMobileViewportSync(),
+          }),
+        );
         engineRef.current.start();
         // Taken as it starts, so a reload mid-tour does not put it back on the button.
         if (!pagesKindSeen(prefsRef.current, page.kind)) markTaken(page.kind);

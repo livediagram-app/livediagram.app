@@ -126,3 +126,11 @@ export function roleGates(
 export function mayHoldBaton(level: unknown): boolean {
   return levelAtLeast(parseStoredLevel(level), 'edit');
 }
+
+/**
+ * Whether a session at `level` may nudge someone (docs/specs/012-collaboration/nudge.md "Share roles"): an Editor's
+ * or a Participant's, the rule of `can.takePart` and of the room's gate. A Viewer is nudged, never nudges.
+ */
+export function mayNudge(level: unknown): boolean {
+  return levelAtLeast(parseStoredLevel(level), 'participate');
+}
