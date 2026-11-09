@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { layOutPages, newPhotoPage, type Tab } from '@livedesign/design';
 import { PixelsStore } from './pixels-store';
-import { allSizesZip, sizeFileNames } from './photo-export';
+import { allSizesZip, elementsSvg, sizeFileNames } from './photo-export';
 
 // docs/specs/031-photo/photo-pages.md "Exports and other views" All Sizes.
 describe('All Sizes', () => {
@@ -63,5 +63,48 @@ describe('All Sizes', () => {
       scope,
     });
     expect(unnamed.name).toBe('Photo - All Sizes.zip');
+  });
+});
+
+// docs/specs/031-photo/photo-pages.md "Elements on top": exports draw them over the composite.
+describe('elementsSvg', () => {
+  const page = layOutPages([newPhotoPage('a', 400, 300)])[0]!;
+  const r = page.rect;
+  const box = (id: string, x: number, y: number) => ({
+    id,
+    type: 'shape' as const,
+    shape: 'square' as const,
+    x,
+    y,
+    width: 40,
+    height: 40,
+    label: id,
+  });
+  const tab = (elements: Tab['elements']) =>
+    ({
+      id: 't',
+      name: 'T',
+      pages: [page],
+      photos: { a: { width: 400, height: 300, layers: [], preview: 'pv-1' } },
+      elements,
+    }) as unknown as Tab;
+
+  it('draws the elements alone, never the page preview or checkerboard over the photo', () => {
+    const images = new Map([['photo:a', { href: 'data:image/png;base64,AAAA' }]]);
+    const svg = elementsSvg(tab([box('b1', r.x + 10, r.y + 10)]), page, images)!;
+    expect(svg).toContain('b1');
+    expect(svg).not.toContain('data:image/png;base64,AAAA');
+    expect(elementsSvg(tab([box('b1', r.x + 10, r.y + 10)]), page)).not.toContain('checker');
+  });
+
+  it('keeps an arrow with an end on the page, and is null with nothing on it', () => {
+    const arrow = {
+      id: 'link',
+      type: 'arrow' as const,
+      from: { kind: 'free' as const, x: r.x + 20, y: r.y + 20 },
+      to: { kind: 'free' as const, x: r.x + 120, y: r.y + 20 },
+    };
+    expect(elementsSvg(tab([arrow]), page)).toContain('<path');
+    expect(elementsSvg(tab([box('far', r.x + r.width + 500, r.y)]), page)).toBeNull();
   });
 });

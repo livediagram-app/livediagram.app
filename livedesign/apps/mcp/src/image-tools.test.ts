@@ -184,7 +184,12 @@ describe('contactSheetTab', () => {
   it('lays pictures four a row, each above its place and name, at most twelve', () => {
     const many = Array.from({ length: 14 }, (_, i) => ({
       id: `p${i}`,
-      name: i === 0 ? 'A very long screenshot name that goes on and on.png' : `p${i}.png`,
+      name:
+        i === 0
+          ? 'A very long screenshot name that goes on and on.png'
+          : i === 2
+            ? `${'x'.repeat(35)}📷.png`
+            : `p${i}.png`,
       width: 10,
       height: 10,
       size: 1,
@@ -204,6 +209,8 @@ describe('contactSheetTab', () => {
     expect(pictures.every((p) => p.type === 'image' && p.imageId)).toBe(true);
     expect(captions[0]).toBe('1. A very long screenshot name that goe…');
     expect(captions[1]).toBe('2. p1.png');
+    // An emoji across the cut goes whole, never half of it drawn as a box.
+    expect(captions[2]).toBe(`3. ${'x'.repeat(35)}…`);
   });
 
   const drawnIds = (tab: ReturnType<typeof contactSheetTab>) =>

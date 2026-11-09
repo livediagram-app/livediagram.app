@@ -36,6 +36,7 @@ import {
 } from './sankey-model';
 import { readSankeyNumber } from './sankey-text';
 import { CONCEPT_ROWS, isConceptShape, type ConceptShape } from './concept';
+import { cutText } from './text-cut';
 
 type Raw = Record<string, unknown>;
 
@@ -130,7 +131,7 @@ function normaliseSankey(el: Raw): Raw {
   for (const [field, values] of options)
     if (out[field] !== undefined && !values.includes(out[field] as string)) delete out[field];
   if (out.sankeyUnit !== undefined) {
-    const unit = str(out.sankeyUnit).trim().slice(0, SANKEY_UNIT_MAX);
+    const unit = cutText(str(out.sankeyUnit).trim(), SANKEY_UNIT_MAX);
     if (unit) out.sankeyUnit = unit;
     else delete out.sankeyUnit;
   }

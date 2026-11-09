@@ -32,6 +32,29 @@ const tabOf = (pages: Page[], elements: Element[] = []): Tab => ({
 
 const backgrounds = (tab: Tab) => Object.fromEntries(pagesOf(tab).map((p) => [p.id, p.background]));
 
+// docs/specs/031-photo/photo-pages.md "Background": a photo page is never painted, so it takes no background and gives
+// none, from the page panel, the Format tool or an agent alike.
+describe('photo pages', () => {
+  const photo = (id: string): Page => ({
+    id,
+    orientation: 'landscape',
+    kind: 'photo',
+    size: 'photo',
+    fit: { width: 400, height: 300 },
+  });
+  const solid = { kind: 'solid' as const, color: '#0f172a' };
+
+  it('refuses a background set on one, copied onto one, or spread from one', () => {
+    const tab = tabOf([photo('a'), photo('b')]);
+    expect(pageBackgroundSet(tab, 'a', { fill: solid })).toMatchObject({
+      refused: 'background_not_offered',
+    });
+    expect(pageBackgroundSpread(tab, 'a')).toEqual({ refused: 'background_not_offered' });
+    const painted = tabOf([sheet('s', { background: { fill: solid } }), photo('b')]);
+    expect(pageBackgroundCopied(painted, 's', 'b')).toEqual({ refused: 'background_not_offered' });
+  });
+});
+
 describe('pageBackgroundSpread', () => {
   it('gives every other page of its kind the background, animated speed and pattern included', () => {
     const tab = tabOf([

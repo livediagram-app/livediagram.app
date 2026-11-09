@@ -33,6 +33,7 @@ import {
   PHOTO_DEFAULT_WIDTH,
   PHOTO_SHEET_MAX,
 } from '@livedesign/photo-engine';
+import { cutText } from './text-cut';
 
 export type PageOrientation = 'portrait' | 'landscape';
 
@@ -245,7 +246,7 @@ function parsePageFields(v: unknown): Page | undefined {
   if (!p || typeof p !== 'object' || typeof p.id !== 'string' || !isPageOrientation(p.orientation))
     return undefined;
   const background = parseBackground(p.background);
-  const name = typeof p.name === 'string' ? p.name.trim().slice(0, PAGE_NAME_MAX) : '';
+  const name = typeof p.name === 'string' ? cutText(p.name.trim(), PAGE_NAME_MAX) : '';
   const lock = {
     ...(p.locked === true ? { locked: true as const } : {}),
     ...(p.startedBlank === true ? { startedBlank: true as const } : {}),

@@ -15,6 +15,7 @@ import { clamp, type Rect } from '@liveworkspace/model-core/geometry-primitives'
 import type { ShapeKind } from './index';
 import { CARD_TAGS_MAX, clampCardTag } from './card';
 import { CONCEPT_ROWS, boundConceptRows, isConceptShape, type ConceptRow } from './concept';
+import { cutText } from './text-cut';
 
 // --- Vocabulary -------------------------------------------------------------
 
@@ -74,7 +75,7 @@ export const HERO_DEFAULT_CAPTION: HeroCaption = {
 
 // Trim + bound a row string the way every write path should.
 function clampWebText(s: string): string {
-  return s.replace(/\s+/g, ' ').trim().slice(0, WEB_TEXT_MAX);
+  return cutText(s.replace(/\s+/g, ' ').trim(), WEB_TEXT_MAX);
 }
 
 // --- Layout -----------------------------------------------------------------
