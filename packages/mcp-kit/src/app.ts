@@ -12,6 +12,7 @@ import { SERVER_CARD_PATH, serverCard, type McpListing } from './listing';
 import { registerOauthRoutes, type OauthServer } from './oauth';
 import type { OauthEnv } from './oauth-clients';
 import { runInRequest } from './request-scope';
+import { bearerChallenge, watchTokenRefusal } from './token-refusal';
 
 export function createMcpApp<E extends OauthEnv>(options: {
   // A fresh server per request: the caller's token arrives through the transport's authInfo and is read inside
@@ -66,10 +67,13 @@ export function createMcpApp<E extends OauthEnv>(options: {
       // oauth.ts, so a staging or local worker sends clients to ITS metadata.
       const origin = new URL(c.req.url).origin;
       return c.json({ error: 'unauthorized' }, 401, {
-        'WWW-Authenticate': `Bearer resource_metadata="${origin}/.well-known/oauth-protected-resource"`,
+        'WWW-Authenticate': bearerChallenge(origin, false),
       });
     }
-    const server = options.buildServer(c.env);
+    // The api is the one judge of the token: when it refuses it, the whole request answers 401 with the same
+    // challenge, so the client signs in again instead of retrying a dead token (token-refusal.ts).
+    const watch = watchTokenRefusal(c.env);
+    const server = options.buildServer(watch.env);
     const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,
@@ -77,11 +81,16 @@ export function createMcpApp<E extends OauthEnv>(options: {
     await server.connect(transport);
     // Tools post telemetry fire-and-forget; the request's waitUntil keeps those
     // posts alive past the response (request-scope.ts).
-    return runInRequest(requestWaitUntil(c), () =>
+    const response = await runInRequest(requestWaitUntil(c), () =>
       transport.handleRequest(c.req.raw, {
         authInfo: { token, clientId: 'mcp', scopes: [] },
       }),
     );
+    if (!watch.refused()) return response;
+    console.warn('[mcp] token refused by the api: asking the client to sign in again');
+    return c.json({ error: 'invalid_token' }, 401, {
+      'WWW-Authenticate': bearerChallenge(new URL(c.req.url).origin, true),
+    });
   });
 
   return app;
