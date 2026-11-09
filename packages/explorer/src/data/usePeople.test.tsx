@@ -6,7 +6,12 @@ import { act, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PictureDisc } from '@liveworkspace/ui';
 import { createExplorerAccounts, PEOPLE_MAX, type ExplorerAccounts } from './accounts';
-import { createPeopleStore, usePersonPicture, type PeopleStore } from './usePeople';
+import {
+  createPeopleStore,
+  PEOPLE_RETRY_MS,
+  usePersonPicture,
+  type PeopleStore,
+} from './usePeople';
 
 const pictureOf = (id: string) => `https://lh3.googleusercontent.com/a/${id}`;
 
@@ -71,6 +76,68 @@ describe('the people store', () => {
     });
     expect(store.picture('user_bea')).toBeNull();
     expect(store.name('user_bea')).toBe('Bea');
+  });
+});
+
+describe('a failed name lookup', () => {
+  it('is asked again on its own while the row stays mounted, then let go for the next ask', async () => {
+    let fail = 3;
+    const people = vi.fn<ExplorerAccounts['people']>(async (ids) => {
+      if (fail-- > 0) throw new Error('offline');
+      return new Map(ids.map((id) => [id, { name: 'Ada', picture: null }]));
+    });
+    const store = createPeopleStore({ people });
+    // One mounted avatar asks once, and never again on its own.
+    render(<Avatar store={store} id="user_ada" />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+    expect(people).toHaveBeenCalledTimes(1);
+    expect(store.name('user_ada')).toBeUndefined();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(PEOPLE_RETRY_MS[0] + 100);
+    });
+    expect(people).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(PEOPLE_RETRY_MS[1] + 100);
+    });
+    expect(people).toHaveBeenCalledTimes(3);
+    // Out of retries: nothing more on its own, however long the row stays.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60_000);
+    });
+    expect(people).toHaveBeenCalledTimes(3);
+    // The next ask tries again, and the answer lands.
+    store.want(['user_ada']);
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
+    expect(people).toHaveBeenCalledTimes(4);
+    expect(store.name('user_ada')).toBe('Ada');
+  });
+
+  it('retries each id on its own count when a retry gathers with a fresh ask', async () => {
+    let fail = true;
+    const people = vi.fn<ExplorerAccounts['people']>(async (ids) => {
+      if (fail) throw new Error('offline');
+      return new Map(ids.map((id) => [id, { name: id, picture: null }]));
+    });
+    const store = createPeopleStore({ people });
+    store.want(['user_a']);
+    await vi.advanceTimersByTimeAsync(100);
+    // user_a's first retry gathers with user_b's first ask; both fail.
+    await vi.advanceTimersByTimeAsync(PEOPLE_RETRY_MS[0] - 50);
+    store.want(['user_b']);
+    await vi.advanceTimersByTimeAsync(100);
+    expect(people).toHaveBeenCalledTimes(2);
+    expect([...people.mock.calls[1]![0]].sort()).toEqual(['user_a', 'user_b']);
+    fail = false;
+    // user_b is due after the first wait, user_a after the second.
+    await vi.advanceTimersByTimeAsync(PEOPLE_RETRY_MS[0] + 100);
+    expect(store.name('user_b')).toBe('user_b');
+    expect(store.name('user_a')).toBeUndefined();
+    await vi.runAllTimersAsync();
+    expect(store.name('user_a')).toBe('user_a');
   });
 });
 

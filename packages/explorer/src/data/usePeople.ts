@@ -24,10 +24,15 @@ export type PeopleStore = {
 export const PEOPLE_CACHE_MAX = 2000;
 // How long asks are gathered before one request goes.
 const GATHER_MS = 30;
+// A failed request is asked again on its own after these waits (a row that stays on screen never asks twice), then
+// the ids are let go for the next ask.
+export const PEOPLE_RETRY_MS = [2000, 8000] as const;
 
 export function createPeopleStore(accounts: ExplorerAccounts | null): PeopleStore {
   const known = new Map<string, ExplorerPerson | null>();
   const asked = new Set<string>();
+  // Failed tries so far per id, while a retry is due: dropped on an answer or when the retries run out.
+  const failures = new Map<string, number>();
   let queue = new Set<string>();
   let timer: ReturnType<typeof setTimeout> | null = null;
   let version = 0;
@@ -45,6 +50,7 @@ export function createPeopleStore(accounts: ExplorerAccounts | null): PeopleStor
       accounts!.people(batch).then(
         (people) => {
           for (const id of batch) {
+            failures.delete(id);
             known.set(id, people.get(id) ?? null);
             if (known.size > PEOPLE_CACHE_MAX) {
               const oldest = known.keys().next().value as string;
@@ -54,25 +60,47 @@ export function createPeopleStore(accounts: ExplorerAccounts | null): PeopleStor
           }
           notify();
         },
-        // Unknown stays unknown; a later ask may try again.
+        // Unknown stays unknown for now: asked again after a wait, as the row that asked may stay mounted and never
+        // ask again; once the retries run out a later ask may try again.
         () => {
-          for (const id of batch) asked.delete(id);
+          // A batch can mix ids on different tries (a retry gathers with fresh asks): one timer per wait.
+          const due = new Map<number, string[]>();
+          for (const id of batch) {
+            const tries = (failures.get(id) ?? 0) + 1;
+            const wait = PEOPLE_RETRY_MS[tries - 1];
+            if (wait === undefined) {
+              failures.delete(id);
+              asked.delete(id);
+              continue;
+            }
+            failures.set(id, tries);
+            const group = due.get(wait);
+            if (group) group.push(id);
+            else due.set(wait, [id]);
+          }
+          for (const [wait, ids] of due) {
+            setTimeout(() => {
+              for (const id of ids) asked.delete(id);
+              want(ids);
+            }, wait);
+          }
         },
       );
     }
   };
+  const want = (ids: readonly string[]) => {
+    if (!accounts) return;
+    for (const id of ids) {
+      if (asked.has(id)) continue;
+      asked.add(id);
+      queue.add(id);
+    }
+    if (queue.size > 0 && timer === null) timer = setTimeout(flush, GATHER_MS);
+  };
   return {
     name: (id) => (known.has(id) ? (known.get(id)?.name ?? null) : undefined),
     picture: (id) => (known.has(id) ? (known.get(id)?.picture ?? null) : undefined),
-    want: (ids) => {
-      if (!accounts) return;
-      for (const id of ids) {
-        if (asked.has(id)) continue;
-        asked.add(id);
-        queue.add(id);
-      }
-      if (queue.size > 0 && timer === null) timer = setTimeout(flush, GATHER_MS);
-    },
+    want,
     subscribe: (listener) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
