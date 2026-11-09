@@ -9,6 +9,7 @@ import {
   applyLayoutChange,
   applySheetWrite,
   cellKey,
+  changedInputs,
   formatA1,
   layoutIndex,
   rangeOptions,
@@ -781,9 +782,16 @@ export class SheetStore {
     entry.confirmed = merged.sheet;
     if (wid) entry.pending = entry.pending.filter((p) => p.wid !== wid);
     const view = this.rebase(entry.confirmed, entry.pending);
-    const layoutMoved = view.layout !== entry.view.layout || view.title !== entry.view.title;
+    const shown = entry.view;
+    const layoutMoved = view.layout !== shown.layout || view.title !== shown.title;
     entry.view = view;
-    this.workbookUpdate(view.tabId, sheetId, layoutMoved ? undefined : merged.touched);
+    // Only the inputs the view did not already show: our own write's answer changes none, so what reads its cells is
+    // not worked out a second time (blueprint sheet-store.md "Client").
+    this.workbookUpdate(
+      view.tabId,
+      sheetId,
+      layoutMoved ? undefined : changedInputs(shown, view, merged.touched),
+    );
     this.notify();
   }
 
