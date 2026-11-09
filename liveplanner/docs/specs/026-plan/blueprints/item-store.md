@@ -1001,6 +1001,9 @@ undo?: true }` (`store.ts`). `applyMoves(items, moves, ctx)` (`group-moves.ts`) 
   `before` neighbour is already back; cards that had no status are cleared after, in one `patches`.
 - **Offline**: `checkItemWrite` (write-checks.ts) reads each move as a single move is read and checks each status,
   so an offline project refuses what the api would.
+- **Blockers**: a move's lane fields can change a Blocked By field (a lane by it, or by type), so the route runs
+  `blockersRefused` over the batch as `/items/patches` does: 403 for a Participant, 400 `blocks_cycle` for a loop
+  (`item-blocks.test.ts`).
 - **Limits**: at most `ITEM_BULK_MAX` (200) moves a request; the editor splits a larger write in order (each
   chunk's first move names the last card of the one before, which has landed). The pool is copied once per attempt;
   each move sorts one column (`columnItems`), so 200 moves over a 2,000-card store stay well under a Worker's CPU

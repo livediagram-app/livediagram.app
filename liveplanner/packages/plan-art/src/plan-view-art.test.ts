@@ -115,6 +115,33 @@ describe('a plan view’s picture', () => {
     expect(dated.indexOf('Alpha')).toBeLessThan(dated.indexOf('Bravo'));
   });
 
+  // plan-views.md "Swimlanes" and "Gantt Chart": the export drew every row in one list whatever the chart's lanes,
+  // and a start-only diamond filled like a due date's.
+  it('draws a Gantt’s swimlanes and a start-only diamond hollow, as the live chart does', () => {
+    const a = card(
+      { title: 'Alpha', status: 'todo', start: '2026-10-01', due: '2026-10-05' },
+      'project',
+    );
+    const b = card({ title: 'Bravo', status: 'doing', start: '2026-10-11' }, 'project');
+    const c = card({ title: 'Charlie', status: 'todo', due: '2026-10-12' }, 'project');
+    const svg = planViewArt(view('gantt', { swimlaneBy: 'status' }), artData([a, b, c]), 'light');
+    expect(svg).toContain('To Do');
+    expect(svg).toContain('Doing');
+    // Each lane's header sits above its rows, top down.
+    const yOf = (text: string) => Number(new RegExp(`y="([\\d.]+)"[^>]*>${text}<`).exec(svg)?.[1]);
+    const order = ['To Do', 'Alpha', 'Charlie', 'Doing', 'Bravo'].map(yOf);
+    expect(order.every((y, i) => i === 0 || y > order[i - 1]!)).toBe(true);
+    expect(planViewArt(view('gantt'), artData([a, b, c]), 'light')).not.toContain('To Do');
+    const diamonds = [
+      ...svg.matchAll(/<path d="M[^"]*l7 8l-7 8l-7 -8z" fill="([^"]*)" stroke="([^"]*)"/g),
+    ];
+    expect(diamonds).toHaveLength(2);
+    // The start's (Bravo) is hollow, the due date's (Charlie) filled in its edge's colour.
+    const [due, start] = diamonds;
+    expect(due![1]).toBe(due![2]);
+    expect(start![1]).not.toBe(start![2]);
+  });
+
   // A Due Calendar on a picked field left out every type without the built-in Due Date (its settings' fields were
   // dropped when choosing the types it shows).
   it('shows the types holding a Due Calendar’s picked field', () => {

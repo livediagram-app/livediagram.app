@@ -134,6 +134,17 @@ describe('the formula input', () => {
     expect(draft(h)).toBe('=C3');
     key('ArrowDown', { shiftKey: true });
     expect(draft(h)).toBe('=C3:C4');
+    // Each Shift press grows the range from its first corner, never slides a two-cell one along.
+    key('ArrowDown', { shiftKey: true });
+    expect(draft(h)).toBe('=C3:C5');
+    key('ArrowLeft', { shiftKey: true });
+    expect(draft(h)).toBe('=B3:C5');
+    key('ArrowUp', { shiftKey: true });
+    expect(draft(h)).toBe('=B3:C4');
+    key('ArrowUp', { shiftKey: true });
+    key('ArrowDown', { shiftKey: true });
+    expect(draft(h)).toBe('=B3:C4');
+    fireEvent.change(editor(), { target: { value: '=C3:C4' } });
     // Typing ends pointing: the next arrow starts again from the cell being edited.
     fireEvent.change(editor(), { target: { value: '=C3:C4+' } });
     key('ArrowUp');
