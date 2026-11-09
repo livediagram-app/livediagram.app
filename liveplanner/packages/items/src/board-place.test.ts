@@ -38,6 +38,8 @@ describe('placeBoard', () => {
     for (const columns of [
       ['Waiting for customer feedback A', 'Waiting for customer feedback B'],
       ['Готово', 'Сделано', 'В работе'],
+      // The third slugs to "phase", taken, and "phase-3" is taken too.
+      ['Phase 3', 'Phase', 'Phase Ж'],
     ]) {
       const r = placeBoard({ columns }, [], [], 'b', fixed);
       if (!r.ok) throw new Error(r.message);
