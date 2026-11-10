@@ -83,8 +83,7 @@ export function QuickStyleBar({
       },
     });
     return () => setQuickStylePhoneRows(pageId, null);
-    // `sections` follows `view`.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- `sections` follows `view`, so it is keyed on `view`
   }, [phone, pageId, view]);
 
   // The room it takes beside the title bar, so the page's label truncates to what is left; given back as it goes.
