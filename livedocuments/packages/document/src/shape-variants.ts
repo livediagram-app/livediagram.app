@@ -133,6 +133,27 @@ export function applyShapeVariant(el: ShapeElement, variant: string | undefined)
   }
   if (el.shape === 'badge' && Object.hasOwn(BADGE_PRESETS, variant))
     return { ...el, ...BADGE_PRESETS[variant] };
+  // The Big Number (docs/specs/009-elements/stat-row.md): a stat row holding one large stat with its change.
+  if (el.shape === 'stat-row' && variant === 'big-number')
+    return {
+      ...el,
+      width: 320,
+      height: 220,
+      borderRadius: 'lg',
+      stats: [{ value: '86k', caption: 'Active teams', change: '▲ 24% on last year' }],
+    };
+  // The Pull Quote (docs/specs/009-elements/quote.md "Palette"): the Plain look, signed by a name alone.
+  if (el.shape === 'quote' && variant === 'pull') {
+    const { pageSubtitle: _role, cardMedia: _media, ...rest } = el;
+    return {
+      ...rest,
+      width: 520,
+      height: 180,
+      quoteLook: 'plain',
+      label: 'The best decks say one thing per slide, and say it big.',
+      pageTitle: 'Alex Morgan',
+    };
+  }
   // The pyramid's variants (docs/specs/009-elements/concept-graphics.md): a Funnel starts from a conversion story.
   if (el.shape === 'pyramid' && variant === 'funnel')
     return {

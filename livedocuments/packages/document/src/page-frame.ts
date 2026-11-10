@@ -8,7 +8,7 @@ import type { CanvasSurface } from './colors';
 import type { Element } from './index';
 import { endpointPosition } from './geometry';
 import { pageIsDark, pageSurface } from './page-content';
-import { pageImageOverlayColor, pageImageTone } from './page-image';
+import { pageImageBlurSigma, pageImageOverlayColor, pageImageTone } from './page-image';
 import type { LaidOutPage, PageBackground, PageFill } from './page';
 import type { PageImageFill } from './page-image';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -38,7 +38,18 @@ export function pageImageSvg(
   if (href) {
     const align =
       fill.position === 'top' ? 'xMidYMin' : fill.position === 'bottom' ? 'xMidYMax' : 'xMidYMid';
-    parts.push(`<image ${box} href="${xmlEscape(href)}" preserveAspectRatio="${align} slice"/>`);
+    const img = `<image ${box} href="${xmlEscape(href)}" preserveAspectRatio="${align} slice"/>`;
+    // A blurred picture (pages-mode.md "Image backgrounds", Blur): a Gaussian blur, its edges held solid by
+    // lifting the alpha the blur thinned back to opaque, inside the page's own rect.
+    const sigma = pageImageBlurSigma(fill, rect);
+    parts.push(
+      sigma > 0
+        ? `<defs><filter id="${id}-blur" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">` +
+            `<feGaussianBlur stdDeviation="${r2(sigma)}"/>` +
+            `<feComponentTransfer><feFuncA type="table" tableValues="1 1"/></feComponentTransfer></filter></defs>` +
+            `<g filter="url(#${id}-blur)">${img}</g>`
+        : img,
+    );
   }
   const o = fill.overlay;
   if (o) {

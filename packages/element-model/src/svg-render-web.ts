@@ -13,7 +13,8 @@ import type { BoxedElement, ImageElement } from './element';
 import { svgWrappedLabel } from './svg-render-labels';
 import { svgCard } from './svg-render-card';
 import type { TagColour } from './tag-colours';
-import type { ResolveIconArt } from './export-shape';
+import type { ResolveIconArt, ResolveImageHref } from './export-shape';
+import type { CanvasSurface } from './colour-math';
 import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
 import {
   ACCENT_BAR_TEXT,
@@ -22,6 +23,8 @@ import {
   heroCaptionLayout,
   processLayout,
   statRowLayout,
+  statsHaveChange,
+  type StatWithChange,
   type LayoutRect,
 } from './web-components';
 
@@ -114,8 +117,21 @@ export type WebFaceOptions = {
   label: string;
   fontFamily?: string;
   resolveIconArt?: ResolveIconArt;
+  // A quote's photo's bytes (livedocuments, docs/specs/009-elements/quote.md).
+  resolveImageHref?: ResolveImageHref;
   // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
   tagColours?: readonly TagColour[];
+  // The paper under the element, for a stat's change colour.
+  surface?: CanvasSurface;
+  // A stat row's stacked lines and change pill (livedocuments, docs/specs/009-elements/stat-row.md): the value's
+  // largest size and the ink and wash of a change on a card's fill. Absent, a stat row draws its banded value and
+  // caption, as the other products do.
+  statChange?: StatChangeLook;
+};
+
+export type StatChangeLook = {
+  valueMaxPx: number;
+  colours: (change: string, ground: string, ink: string) => { ink: string; wash: string };
 };
 
 /** The body of a web component shape, or '' for any other kind. */
@@ -142,14 +158,30 @@ export function svgWebComponent(el: Shape, o: WebFaceOptions): string {
     case 'card':
       return svgCard(el, o);
     case 'stat-row': {
-      const stats = el.stats ?? [];
-      const l = statRowLayout(el.width, el.height, stats.length);
+      const stats: readonly StatWithChange[] = el.stats ?? [];
+      const look = o.statChange;
+      // Stacked, each card's value, caption and change pill sit in the rects the canvas face places them with.
+      const l = statRowLayout(
+        el.width,
+        el.height,
+        stats.length,
+        look ? { hasChange: statsHaveChange(stats), valueMaxPx: look.valueMaxPx } : {},
+      );
+      const at = (c: LayoutRect, r: LayoutRect): LayoutRect => ({
+        ...r,
+        x: c.x + r.x,
+        y: c.y + r.y,
+      });
       return stats
         .map((st, i) => {
           const c = l.cards[i]!;
           const rx = radiusOf(el, BORDER_RADIUS_PX.md, c);
-          const valueBand = { ...c, y: c.height * 0.12, height: c.height * 0.5 };
-          const captionBand = { ...c, y: c.height * 0.58, height: c.height * 0.3 };
+          const valueBand = look
+            ? at(c, l.value)
+            : { ...c, y: c.height * 0.12, height: c.height * 0.5 };
+          const captionBand = look
+            ? at(c, l.caption)
+            : { ...c, y: c.height * 0.58, height: c.height * 0.3 };
           return (
             rect(
               el,
@@ -158,7 +190,13 @@ export function svgWebComponent(el: Shape, o: WebFaceOptions): string {
               `fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1"`,
             ) +
             line(el, st.value, valueBand, l.valuePx, stroke, { bold: true, fontFamily }) +
-            line(el, st.caption, captionBand, l.captionPx, ink, { opacity: 0.7, fontFamily })
+            line(el, st.caption, captionBand, l.captionPx, ink, { opacity: 0.7, fontFamily }) +
+            (look && l.change && st.change
+              ? statChangePill(el, st.change, at(c, l.change), l.changePx, {
+                  colours: look.colours(st.change, fill, ink),
+                  fontFamily,
+                })
+              : '')
           );
         })
         .join('');
@@ -223,6 +261,26 @@ export function svgWebComponent(el: Shape, o: WebFaceOptions): string {
     default:
       return '';
   }
+}
+
+/** A stat's change line as a pill (docs/specs/009-elements/stat-row.md "How it looks"): the trend's colour over a
+ *  soft wash of it, sized to its text and centred in `r`. */
+function statChangePill(
+  el: Shape,
+  change: string,
+  r: LayoutRect,
+  px: number,
+  o: { colours: { ink: string; wash: string }; fontFamily?: string },
+): string {
+  const maxChars = lineChars(r.width, px);
+  const shown =
+    change.length > maxChars ? `${change.slice(0, Math.max(1, maxChars - 1))}…` : change;
+  const w = Math.min(r.width, shown.length * px * 0.56 + px * 1.4);
+  const pill = { x: r.x + (r.width - w) / 2, y: r.y, width: w, height: r.height };
+  return (
+    rect(el, pill, r.height / 2, `fill="${xmlEscape(o.colours.wash)}"`) +
+    line(el, shown, pill, px, o.colours.ink, { bold: true, fontFamily: o.fontFamily })
+  );
 }
 
 /** An image's hero caption card (docs/specs/009-elements/web-components-and-no-groups.md), drawn over the image. */

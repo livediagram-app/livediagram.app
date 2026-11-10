@@ -30,6 +30,9 @@ export function stateAttributeOf(el: Element): ViewAttribute[] {
   switch (shapeKindOf(el)) {
     case 'stat-row':
       return [countAttribute('stats', countOf(el, 'stats'))];
+    // The quote (docs/specs/009-elements/quote.md): who said it.
+    case 'quote':
+      return textState('by', textField(el, 'pageTitle'), (t) => jsonString(t, NOTE_CUT_CHARS));
     case 'process':
       return [countAttribute('steps', countOf(el, 'processSteps'))];
     case 'site-header':

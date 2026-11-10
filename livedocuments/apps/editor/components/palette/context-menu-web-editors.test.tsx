@@ -7,6 +7,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createShape,
+  type Element,
+  type ShapeElement,
   NAV_LINKS_MAX,
   PROCESS_MIN_STEPS,
   STATS_MIN,
@@ -94,6 +96,50 @@ describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-grou
         { value: '4.7', caption: 'Rating' },
       ],
     });
+  });
+
+  // docs/specs/009-elements/stat-row.md: the change line and the count-up switch.
+  it('types a change into a stat', () => {
+    const onSetRows = renderSection('stat-row');
+    const input = screen.getByRole('textbox', { name: 'Stat 2 change' });
+    fireEvent.change(input, { target: { value: '▲ 0.4 pts' } });
+    fireEvent.blur(input);
+    expect(onSetRows.mock.calls.at(-1)![0].stats![1]).toEqual({
+      value: '98%',
+      caption: 'Uptime',
+      change: '▲ 0.4 pts',
+    });
+  });
+
+  it('switches Count Up When Presented off, stored as false, and back on as nothing', () => {
+    type ElementMap = (el: Element) => Element;
+    const commit = vi.fn<(map: ElementMap, type: string) => void>();
+    const ops = { preview: vi.fn(), end: vi.fn(), commit, burst: vi.fn(), commitTab: vi.fn() };
+    const target = createShape('stat-row', 0, 0);
+    render(
+      <WebRowsMenuSection target={target} sectionProps={open} onSetRows={vi.fn()} ops={ops} />,
+    );
+    const toggle = screen.getByRole('button', { name: /Count Up When Presented/ });
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(toggle);
+    expect(commit).toHaveBeenCalledWith(expect.any(Function), 'StatCountUp');
+    const off = commit.mock.calls[0]![0](target) as ShapeElement;
+    expect(off.statCountUp).toBe(false);
+    cleanup();
+    const commitOn = vi.fn<(map: ElementMap, type: string) => void>();
+    render(
+      <WebRowsMenuSection
+        target={off}
+        sectionProps={open}
+        onSetRows={vi.fn()}
+        ops={{ ...ops, commit: commitOn }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Count Up When Presented/ }));
+    expect('statCountUp' in commitOn.mock.calls[0]![0](off)).toBe(false);
+    // Not a stat row: left alone.
+    const card = createShape('card', 0, 0);
+    expect(commitOn.mock.calls[0]![0](card)).toBe(card);
   });
 });
 

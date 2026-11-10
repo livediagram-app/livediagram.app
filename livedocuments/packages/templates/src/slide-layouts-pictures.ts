@@ -238,15 +238,18 @@ export function quoteImageSlide(k: Kit): Element[] {
   const imageW = W * 0.38;
   const w = W - imageW - u * 10;
   const top = H * 0.14;
+  // One Plain quote (docs/specs/009-elements/quote.md): its mark, its words and who said it, which move and restyle as
+  // one element.
   return [
-    k.title(0, top, u * 14, u * 18, '“'),
-    k.text(0, top + u * 18, w, u * 36, 'It changed how the whole team plans its week.', {
+    eyebrow(k, 0, top - u * 8, w, 'CUSTOMER STORY'),
+    k.shape('quote', 0, top, w, H - top * 2, {
+      quoteLook: 'plain',
+      label: 'It changed how the whole team plans its week.',
+      pageTitle: 'Sam Rivera',
+      pageSubtitle: 'Operations Lead, Example Co',
       ...slideType(k, 6.4),
       textBold: true,
     }),
-    rule(k, 0, top + u * 57),
-    k.text(0, top + u * 61, w, u * 7, 'Sam Rivera', { ...slideType(k, 4.2), textBold: true }),
-    k.text(0, top + u * 69, w, u * 6, 'Operations Lead, Example Co', slideType(k, 3.4)),
     bleedImage(k, W - imageW, -b, imageW + b, H + 2 * b),
   ];
 }

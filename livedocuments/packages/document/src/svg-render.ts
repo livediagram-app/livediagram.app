@@ -8,6 +8,7 @@
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
 
+import { isImageMask } from './image-frame';
 import { PAGE_EXPORT_PAPER, type PageExportFrame } from './page-frame';
 import { svgTabWindow, type ResolveTabWindow } from './tab-window';
 import {
@@ -54,6 +55,7 @@ export {
   xmlEscape,
 } from './svg-render-primitives';
 import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
+import { hasTextEffects, textEffectIdPrefix } from './svg-render-text-effects';
 import { svgWordmarkLabel } from './svg-render-wordmark';
 import { hasWordmarkType } from './wordmark';
 
@@ -289,7 +291,8 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
           ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
       // Its hand-drawn edge (finish.md "Images"), then a hero's caption card
       // (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
-      (sketch ?? '') +
+      // A masked picture has no rectangle for a hand-drawn edge to follow (picture-crop-and-mask.md).
+      (el.type === 'image' && isImageMask(el.mask) ? '' : (sketch ?? '')) +
       (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
   } else if (sketch && (shape.kind === 'ellipse' || shape.kind === 'diamond')) {
     shapeStr = sketch;
@@ -338,6 +341,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       label: label?.text ?? el.label ?? '',
       surface,
       resolveIconArt: opts.resolveIconArt,
+      resolveImageHref: opts.resolveImageHref,
       tagColours: opts.tagColours,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
@@ -434,6 +438,8 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
               label.maxWidth,
               label.valign,
               label.fontFamily,
+              undefined,
+              textEffectIdPrefix(el.id),
             )
           : svgWrappedLabel(
               // Wrapped in the face it paints in, or a wide face breaks at the
@@ -508,6 +514,9 @@ export function boxedNeedsSvgRaster(
   // An accent edge (docs/specs/008-canvas/accent-edge.md) is a clipped bar only the SVG draws.
   if (resolvedAccentEdge(el)) return true;
   if (el.type === 'table' || el.type === 'freehand') return true;
+  // A highlighted or gradient word (docs/specs/008-canvas/text-effects.md) is a band rect or a gradient fill only
+  // the SVG draws.
+  if (hasTextEffects(el)) return true;
   // Wordmark type (tracking, weight, case, an arc) is drawn by the SVG alone.
   if (el.type === 'text' && hasWordmarkType(el)) return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;

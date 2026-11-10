@@ -12,6 +12,7 @@ import { iconWeightPx } from '@liveworkspace/model-core/icon-weight';
 import type { BoxedElement } from './index';
 import type { ExportIconArt } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { imageIsShaped, imageLayout, imageMaskPath, isImageMask } from './image-frame';
 
 // Inline a bitmap as a clipped <image>. The data URL is embedded so the SVG
 // stays self-contained when downloaded; preserveAspectRatio maps objectFit
@@ -30,20 +31,60 @@ export function svgImageShape(
   const w = r2(el.width);
   const h = r2(el.height);
   const rr = r2(Math.min(radius, el.width / 2, el.height / 2));
-  const par = objectFit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet';
   // Unique, XML-id-safe clip id per element (element ids are unique per tab).
   const clipId = `lvd-img-${String(el.id).replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const image = el.type === 'image' ? el : undefined;
+  // A mask cuts the box to its shape (docs/specs/009-elements/picture-crop-and-mask.md); else the rounded box.
+  const mask = image && isImageMask(image.mask) ? image.mask : undefined;
+  const clipShape = mask
+    ? `<path d="${imageMaskPath(mask, el.width, el.height, el.x, el.y)}"/>`
+    : `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rr}" ry="${rr}"/>`;
+  const grey = image?.greyscale === true;
+  const filterId = `${clipId}-grey`;
+  const defs =
+    `<clipPath id="${clipId}">${clipShape}</clipPath>` +
+    (grey
+      ? `<filter id="${filterId}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${GREY_MATRIX}"/></filter>`
+      : '');
+  const filterAttr = grey ? ` filter="url(#${filterId})"` : '';
+  let picture: string;
+  if (image && imageIsShaped(image)) {
+    // The kept part laid into the box, the whole picture around it at the same scale (imageLayout).
+    const natural =
+      image.naturalWidth && image.naturalHeight
+        ? { width: image.naturalWidth, height: image.naturalHeight }
+        : null;
+    const l = imageLayout(el, natural, image.crop, objectFit);
+    const pic = imageTag(
+      `x="${r2(el.x + l.picture.x)}" y="${r2(el.y + l.picture.y)}" width="${r2(l.picture.width)}" height="${r2(l.picture.height)}" preserveAspectRatio="none" href="${xmlEscape(href)}"${filterAttr}`,
+      el,
+    );
+    // A letterboxed crop keeps its own edges: the picture past the part is cut off.
+    const partClip = `${clipId}-part`;
+    const letterboxed = l.part.x > 0.01 || l.part.y > 0.01;
+    picture = letterboxed
+      ? `<clipPath id="${partClip}"><rect x="${r2(el.x + l.part.x)}" y="${r2(el.y + l.part.y)}" width="${r2(l.part.width)}" height="${r2(l.part.height)}"/></clipPath>` +
+        `<g clip-path="url(#${partClip})">${pic}</g>`
+      : pic;
+  } else {
+    const par = objectFit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet';
+    picture = imageTag(
+      `x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="${par}" href="${xmlEscape(href)}"${filterAttr}`,
+      el,
+    );
+  }
   return (
-    `<clipPath id="${clipId}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rr}" ry="${rr}"/></clipPath>` +
+    defs +
     `<g clip-path="url(#${clipId})">` +
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#ffffff"/>` +
-    imageTag(
-      `x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="${par}" href="${xmlEscape(href)}"`,
-      el,
-    ) +
+    picture +
     `</g>`
   );
 }
+
+// Greyscale by luminance (Rec. 709 weights), the canvas's `grayscale(1)`.
+const GREY_MATRIX =
+  '0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0';
 
 // The <image>, with the picture's alt text as its <title> (docs/specs/009-elements/images.md "Alt text"): what a
 // screen reader names it by, and the tooltip a viewer shows.

@@ -54,14 +54,16 @@ export const SHADOW_PRESETS: { id: ShadowPresetId; label: string; shadow: Elemen
 // visible shadow instead of a degenerate all-zero one.
 export const DEFAULT_SHADOW: ElementShadow = SHADOW_PRESETS[1]!.shadow;
 
-// The boxed types that draw a visible body a shadow can sit under
-// (docs/specs/008-canvas/element-shadows.md). Text / freehand / margin notes / table / arrows are out: a
-// bounding-box shadow under a text run or a grid reads as a bug.
+// The boxed types a shadow can sit under (docs/specs/008-canvas/element-shadows.md): those that draw a
+// visible body, and text, whose shadow follows its letters (`shadowTextCss`), never its box.
+// Freehand / margin notes / table / arrows are out: a bounding-box shadow under a stroke or a grid
+// reads as a bug.
 export function supportsShadow(
   el: Pick<Element, 'type'>,
 ): el is Extract<Element, { shadow?: ElementShadow }> {
   return (
     el.type === 'shape' ||
+    el.type === 'text' ||
     el.type === 'sticky' ||
     el.type === 'image' ||
     el.type === 'link-card' ||
@@ -83,6 +85,13 @@ export function shadowBoxCss(s: ElementShadow): string {
 export function shadowFilterCss(s: ElementShadow): string {
   const c = clampShadow(s);
   return `drop-shadow(${c.offsetX}px ${c.offsetY}px ${c.blur}px ${rgba(c)})`;
+}
+
+// CSS text-shadow value: text's shadow on the canvas (docs/specs/008-canvas/element-shadows.md
+// "Rendering"). It follows the glyphs like drop-shadow() but costs no filter layer.
+export function shadowTextCss(s: ElementShadow): string {
+  const c = clampShadow(s);
+  return `${c.offsetX}px ${c.offsetY}px ${c.blur}px ${rgba(c)}`;
 }
 
 // Deterministic def id for the export filter: elements sharing a shadow

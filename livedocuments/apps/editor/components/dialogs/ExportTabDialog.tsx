@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { ensureMapGeometryFor } from '@/lib/map-geometry-loader';
 import { DialogCloseButton, DialogHeader } from '@livedocuments/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
@@ -290,6 +291,8 @@ export function ExportTabDialog({
     let cancelled = false;
     void (async () => {
       await ensureIconCatalogs();
+      // A map's land (docs/specs/009-elements/map.md), so the preview shows it rather than the placeholder.
+      await ensureMapGeometryFor(tab.elements);
       const images = imageContext ? await loadTabImages(tab, imageContext) : undefined;
       if (cancelled) return;
       setPreviewImages(images);

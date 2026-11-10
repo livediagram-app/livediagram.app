@@ -146,9 +146,9 @@ livedesign/packages/design/src/svg-render-charts.ts	livedocuments/packages/docum
 livedesign/packages/design/src/svg-render-image-icon.ts	livediagram/packages/document/src/svg-render-image-icon.ts	livehuddle/packages/document/src/svg-render-image-icon.ts	liveplanner/packages/project/src/svg-render-image-icon.ts
 livedesign/packages/design/src/svg-render-inline-icon.ts	livedocuments/packages/document/src/svg-render-inline-icon.ts
 livedesign/packages/design/src/svg-render-sankey.ts	livedocuments/packages/document/src/svg-render-sankey.ts
-livedesign/packages/design/src/svg-render-table.ts	livediagram/packages/document/src/svg-render-table.ts	livedocuments/packages/document/src/svg-render-table.ts
+livedesign/packages/design/src/svg-render-table.ts	livediagram/packages/document/src/svg-render-table.ts
 livedesign/packages/design/src/table-header-colours.ts	livedocuments/packages/document/src/table-header-colours.ts
-livedesign/packages/design/src/table.ts	livediagram/packages/document/src/table.ts	livedocuments/packages/document/src/table.ts	liveplanner/packages/project/src/table.ts
+livedesign/packages/design/src/table.ts	livediagram/packages/document/src/table.ts	liveplanner/packages/project/src/table.ts
 livedesign/packages/design/src/theme-graph.ts	livediagram/packages/document/src/theme-graph.ts	livedocuments/packages/document/src/theme-graph.ts
 livedesign/packages/design/src/theme-halves.ts	livedocuments/packages/document/src/theme-halves.ts
 livedesign/packages/design/src/theme-presets.ts	livedocuments/packages/document/src/theme-presets.ts

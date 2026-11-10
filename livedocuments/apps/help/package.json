@@ -13,6 +13,7 @@
     "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo"
   },
   "dependencies": {
+    "@livedocuments/document": "workspace:^",
     "@livedocuments/help-registry": "workspace:*",
     "@livedocuments/telemetry-client": "workspace:*",
     "@livedocuments/ui": "workspace:*",

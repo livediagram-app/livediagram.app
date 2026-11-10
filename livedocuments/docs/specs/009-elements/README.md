@@ -3,6 +3,8 @@
 Follow the references below only as needed; never upfront.
 
 - ./images.md - when working on Image element + per-owner gallery: Image element + per-owner gallery in liveworkspace's media service, with dedupe, the `image_refs` reference index and unused-image retention
+- ./picture-crop-and-mask.md - when working on Picture crop, mask and greyscale: keep part of an image, cut it to a shape, draw it in grey; the crop overlay on the canvas
+- ./logo-strip.md - when working on The logo strip: a row stack of greyscale logo pictures for a Trusted by slide, its palette tile and slide layout
 - ./blueprints/README.md - when implementing or changing an element from its blueprint
 - ./image-search.md - when working on Image search: the image picker's Search tab, openly licensed pictures from Openverse that land in the gallery like an upload
 - ./link-cards.md - when working on Link cards: Bookmark element: URL via the element link, server-side unfurl for title/favicon/OG image
@@ -10,6 +12,7 @@ Follow the references below only as needed; never upfront.
 - ./shape-markers.md - when working on Shape markers: Status glyph inside a shape (traffic-light dots + checkbox), left of the label; Markers context-menu band
 - ./timeline-rail.md - when reading a stored Timeline rail, or the composite-component pattern self-drawing elements follow
 - ./rating.md - when working on Rating: 1–5 star rating element with a Rating context-menu category (score picker + star-specific animations)
+- ./map.md - when working on the Map: a world, region or one-country map (Natural Earth 1:110m, public domain, lazy-loaded) with highlighted countries and labelled pins, edited in the Map dialog; Editor-only edits; drawn from one layout on canvas and in every export
 - ./pie-chart.md - when working on Data charts (pie + bar + line): Data palette category + pie chart element: editable label/value rows + chart-specific slice animations
 - ./code-block.md - when working on Code block: Monospace syntax-highlighted snippet as a `code-block` data shape (`code` + `codeLanguage` fields): fixed dark editor-card identity, lazy hand-rolled tokenizer chunk (10 languages), double-click Edit code dialog + context-menu Code section; headless render is plain mono
 - ./checklist.md - when working on Checklist: Checkable to-do rows as a `checklist` data shape (`checklistItems`): themed card, on-canvas box toggling (rating-style, edit-role gated, undoable), row editing via a context-menu Checklist section, done-count footer
@@ -29,3 +32,6 @@ Follow the references below only as needed; never upfront.
 - ./stack.md - when working on The stack: A container that arranges what is dropped into it in a row, column or grid with an even gap, reflows on every change and hugs its contents
 - ./concept-graphics.md - when working on Concept graphics: Layer stack, Pyramid (pyramid / inverted / funnel) and Cycle as single elements laying out `conceptRows`, an accent ramp, in-place row editing, and the Concept animation set (build / pulse / flow)
 - ./tab-window.md - when working on The tab window (retired 2026-11-04): what is gone, and how a stored `tab-window` still loads, draws as a still frame named for its tab and exports
+- ./stat-row.md - when working on the Stat row's change line, its count-up when presented, or the Big Number preset
+- ./quote.md - when working on The quote: a pull quote or testimonial as one `quote` web component (the quote as its label, a name, a role and a photo or initial portrait), laid out by a pure `quoteLayout`, in a Card or Plain look
+- ./comparison-tables.md - when working on Comparison and pricing tables: tick and cross mark cells and the table's highlighted (recommended) column

@@ -98,10 +98,10 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   icons: 0,
   stickers: 0,
   technology: 0,
-  media: 9,
-  components: 11,
+  media: 10,
+  components: 13,
   concepts: 8,
-  data: 7,
+  data: 8,
 };
 
 describe('PALETTE_CATEGORIES', () => {

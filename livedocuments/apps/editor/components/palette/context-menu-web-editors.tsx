@@ -13,6 +13,7 @@ import {
   NAV_LINKS_MAX,
   PROCESS_MAX_STEPS,
   PROCESS_MIN_STEPS,
+  STAT_CHANGE_MAX,
   STATS_MAX,
   STATS_MIN,
   WEB_TEXT_MAX,
@@ -27,6 +28,8 @@ import {
   MENU_CELL_INPUT,
 } from '@liveworkspace/workbench/components/palette/menu-editor-classes';
 import { moveRow } from '@liveworkspace/workbench/lib/move-row';
+import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
+import type { ElementStyleOps } from '@/lib/element-style-ops';
 
 // The web components' row editors (docs/specs/009-elements/web-components-and-no-groups.md), in the Tools flyout beside the
 // checklist's and the entity's: a stat row's cards, a process's steps and a
@@ -160,7 +163,7 @@ function StatsEditor({
       max={STATS_MAX}
       noun="stat"
       addLabel="Add Stat"
-      newRow={() => ({ value: '0', caption: 'Metric' })}
+      newRow={(): StatItem => ({ value: '0', caption: 'Metric' })}
       onChange={onChange}
       cells={(st, i, { update, commit }) => (
         <>
@@ -182,10 +185,29 @@ function StatsEditor({
             onChange={(e) => update((s) => ({ ...s, caption: e.target.value }))}
             onBlur={commit}
           />
+          {/* The change line (docs/specs/009-elements/stat-row.md): "▲ 12%" goes up, "-3 pts" down. */}
+          <input
+            className={`${MENU_CELL_INPUT} w-[4.5rem]`}
+            value={st.change ?? ''}
+            placeholder="change"
+            aria-label={`Stat ${i + 1} change`}
+            maxLength={STAT_CHANGE_MAX}
+            onChange={(e) => update((s) => ({ ...s, change: e.target.value }))}
+            onBlur={commit}
+          />
         </>
       )}
     />
   );
+}
+
+/** A stat row's count-up switch: on is stored as nothing. */
+function withStatCountUp<T extends { type: string; shape?: string }>(el: T, on: boolean): T {
+  if (el.type !== 'shape' || el.shape !== 'stat-row') return el;
+  const next = { ...el } as T & { statCountUp?: boolean };
+  if (on) delete next.statCountUp;
+  else next.statCountUp = false;
+  return next;
 }
 
 export function TextRowsEditor({
@@ -292,14 +314,26 @@ export function WebRowsMenuSection({
   target,
   sectionProps,
   onSetRows,
+  ops,
 }: {
   target: ShapeElement;
   sectionProps: (id: string) => { open: boolean; onToggle: () => void; flush: boolean };
   onSetRows: (rows: WebRows) => void;
+  // The menu's generic writer, for a stat row's Count Up When Presented switch.
+  ops?: ElementStyleOps;
 }) {
   if (target.shape === 'stat-row') {
+    const countUp = target.statCountUp !== false;
     return (
       <MenuAccordionSection title="Stats" icon={<DataMenuGlyph />} {...sectionProps('stats')}>
+        {ops ? (
+          <MenuToggleRow
+            label="Count Up When Presented"
+            description="Numbers count up from zero as the slide comes on"
+            checked={countUp}
+            onToggle={() => ops.commit((el) => withStatCountUp(el, !countUp), 'StatCountUp')}
+          />
+        ) : null}
         {/* Keyed on the rows so a change from elsewhere (an inline edit, the
             ring's Add) resets the local draft rather than being shadowed by it. */}
         <StatsEditor

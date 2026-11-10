@@ -163,6 +163,24 @@ export function ComponentsCategory() {
           <path key="sr" d="M-6 -3h3.4v6h-3.4zM-1.7 -3h3.4v6h-3.4zM2.6 -3h3.4v6h-3.4z" {...g} />,
         ],
         [
+          'Big Number',
+          'One headline number, its label and its change',
+          <path
+            key="bn"
+            d="M-6 -5h12v10h-12zM-3 -2.5l1.2 -.8v4.3M1 -2.4a1.2 1.2 0 0 1 2.2 .6c0 1-2.2 1.8-2.2 3.4h2.2M-3 3.2h6"
+            {...g}
+          />,
+        ],
+        [
+          'Quote',
+          'Words with their source: name, role and portrait',
+          <path
+            key="q"
+            d="M-6 -5h12v10h-12zM-4 -2.5c0-.8.4-1.2 1.2-1.2M-1.6 -2.5c0-.8.4-1.2 1.2-1.2M-4 0h8M-3.5 3a.9.9 0 1 0 .01 0M-1.5 3h5"
+            {...g}
+          />,
+        ],
+        [
           'Process',
           'Numbered steps joined by arrows',
           <path key="p" d="M-6 0h12M-4 0a1.6 1.6 0 1 0 0.01 0M4 0a1.6 1.6 0 1 0 0.01 0" {...g} />,

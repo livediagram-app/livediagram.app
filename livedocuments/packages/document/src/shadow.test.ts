@@ -7,6 +7,7 @@ import {
   shadowBoxCss,
   shadowFilterCss,
   shadowFilterId,
+  shadowTextCss,
   supportsShadow,
   svgShadowFilterDef,
   type ElementShadow,
@@ -104,11 +105,22 @@ describe('shadowFilterId + svgShadowFilterDef', () => {
 
 describe('supportsShadow', () => {
   it('accepts the body-drawing boxed types and rejects the rest (docs/specs/008-canvas/element-shadows.md)', () => {
-    for (const type of ['shape', 'sticky', 'image', 'link-card'] as const) {
+    for (const type of ['shape', 'text', 'sticky', 'image', 'link-card', 'video'] as const) {
       expect(supportsShadow({ type }), type).toBe(true);
     }
-    for (const type of ['text', 'freehand', 'article-note', 'table', 'arrow'] as const) {
+    for (const type of ['freehand', 'article-note', 'table', 'arrow'] as const) {
       expect(supportsShadow({ type }), type).toBe(false);
     }
+  });
+});
+
+describe('shadowTextCss', () => {
+  it('writes a text-shadow that follows the glyphs, clamped like the others', () => {
+    expect(shadowTextCss({ offsetX: 0, offsetY: 2, blur: 8, opacity: 0.18 })).toBe(
+      '0px 2px 8px rgba(15, 23, 42, 0.18)',
+    );
+    expect(shadowTextCss({ offsetX: 99, offsetY: 0, blur: 99, opacity: 2 })).toBe(
+      '24px 0px 48px rgba(15, 23, 42, 1)',
+    );
   });
 });

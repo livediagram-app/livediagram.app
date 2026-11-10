@@ -14,7 +14,14 @@ import {
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
 } from './data-shapes';
-import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
+import {
+  NAV_LINKS_MAX,
+  PROCESS_MAX_STEPS,
+  STAT_CHANGE_MAX,
+  STATS_MAX,
+  WEB_TEXT_MAX,
+} from './web-components';
+import { QUOTE_LOOKS } from './quote';
 import { isCodeThemeId } from '@liveworkspace/model-core/code-themes';
 import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
 import { isChipLook } from './chip';
@@ -48,6 +55,15 @@ import {
   SANKEY_VALUE_LABELS,
   SANKEY_VALUE_MAX,
 } from './sankey-model';
+import {
+  isMapCode,
+  isMapPin,
+  MAP_HIGHLIGHTS_MAX,
+  MAP_LAT_MAX,
+  MAP_PIN_LABEL_MAX,
+  MAP_PINS_MAX,
+  MAP_REGIONS,
+} from './map-model';
 
 // railLabels / lineCategories / pieSlices / lineSeries.
 const MAX_DATA_ARRAY = 5_000;
@@ -236,10 +252,22 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     field: 'stats',
     valid: rowsOf(
       STATS_MAX,
-      (s) => isRecord(s) && isBoundedStr(s.value) && isBoundedStr(s.caption),
+      (s) =>
+        isRecord(s) &&
+        isBoundedStr(s.value) &&
+        isBoundedStr(s.caption) &&
+        isOptionalStrUpTo(s.change, STAT_CHANGE_MAX),
     ),
-    rule: arrayRule(STATS_MAX, `{ value, caption } rows of ${WEB_TEXT_MAX} characters`),
+    rule: arrayRule(
+      STATS_MAX,
+      `{ value, caption, change? } rows of ${WEB_TEXT_MAX} characters (a change ${STAT_CHANGE_MAX})`,
+    ),
   },
+  // A stat row's count-up switch (docs/specs/009-elements/stat-row.md).
+  flag('statCountUp'),
+  // The quote (docs/specs/009-elements/quote.md): its look and its portrait's photo.
+  oneOf('quoteLook', QUOTE_LOOKS),
+  { field: 'imageId', valid: isNonEmptyStr, rule: 'an image id' },
   {
     field: 'processSteps',
     valid: rowsOf(PROCESS_MAX_STEPS, isBoundedStr),
@@ -285,6 +313,22 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: stringRule(SANKEY_NAME_MAX),
   },
   flag('sankeyAnimRepeat'),
+  // Map (docs/specs/009-elements/map.md "Model").
+  oneOf('mapRegion', MAP_REGIONS),
+  { field: 'mapCountry', valid: isMapCode, rule: 'a country code of 2 or 3 capital letters' },
+  {
+    field: 'mapHighlights',
+    valid: rowsOf(MAP_HIGHLIGHTS_MAX, isMapCode),
+    rule: arrayRule(MAP_HIGHLIGHTS_MAX, 'country codes of 2 or 3 capital letters'),
+  },
+  {
+    field: 'mapPins',
+    valid: rowsOf(MAP_PINS_MAX, isMapPin),
+    rule: arrayRule(
+      MAP_PINS_MAX,
+      `{ id, lat (-${MAP_LAT_MAX} to ${MAP_LAT_MAX}), lon (-180 to 180), label? (${MAP_PIN_LABEL_MAX} characters) } rows`,
+    ),
+  },
 ];
 
 // A shape's own issue, its box already checked: the kind is required, the rest optional.

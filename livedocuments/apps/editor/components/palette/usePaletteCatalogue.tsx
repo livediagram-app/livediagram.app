@@ -50,6 +50,7 @@ export function usePaletteCatalogue({
   onAddStatRow,
   onAddProcess,
   onAddAvatar,
+  onAddLogoStrip,
   onAddImage,
   onAddArrow,
   onCancelDraw,
@@ -104,6 +105,7 @@ export function usePaletteCatalogue({
   const addComponent = (kind: import('@livedocuments/document').ComponentKind) => {
     const byKind = {
       avatar: onAddAvatar,
+      'logo-strip': onAddLogoStrip,
       banner: onAddBanner,
       hero: onAddHero,
       header: onAddHeader,

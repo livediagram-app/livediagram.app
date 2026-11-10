@@ -44,6 +44,7 @@ const CATEGORY_ROWS: Record<string, Row[]> = {
     { caption: 'Progress', blurb: 'How far along something is' },
     { caption: 'Donut', blurb: 'The same, as a donut meter' },
     { caption: 'Rating', blurb: 'A score out of five stars' },
+    { caption: 'Map', blurb: 'A world or region map with pins' },
   ],
   Media: [
     { caption: 'Image', blurb: 'Place an uploaded picture', key: '9' },

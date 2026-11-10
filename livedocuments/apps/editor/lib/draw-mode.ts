@@ -82,6 +82,7 @@ const COMPONENT_LABELS: Record<ComponentKind, string> = {
   stat: 'Stat row',
   process: 'Process steps',
   avatar: 'Avatar',
+  'logo-strip': 'Logo Strip',
 };
 
 // Whether a freshly drawn element drops straight into typing: a text box is

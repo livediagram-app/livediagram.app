@@ -57,6 +57,8 @@ export type PaletteProps = {
   onAddStatRow: () => void;
   onAddProcess: () => void;
   onAddAvatar: () => void;
+  // The logo strip (docs/specs/009-elements/logo-strip.md).
+  onAddLogoStrip: () => void;
   // Spawn an image placeholder + open the picker. Optional so
   // deployments without R2 (or view-role visitors) can omit it; the
   // Image palette entry hides when the handler is missing. See

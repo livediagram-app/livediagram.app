@@ -614,7 +614,7 @@ An infographic, slide or article page can be painted with a picture:
   document embeds the picture as the picker's Gallery does) and **Upload an Image** (a file, as
   the picker's Upload takes one: the same types and size limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
   one edit), its **Credit** line when it came from a search (the image element's Credit row: the
-  text, **Source** and **Licence**), then **Overlay**, **Strength** and **Position**, then the
+  text, **Source** and **Licence**), then **Overlay**, **Strength**, **Blur** and **Position**, then the
   search, Choose From My Images and Upload again under **Replace Image**.
 - **The search suits a page.** It asks Openverse only for pictures of the page's shape
   (`aspect_ratio`: `tall` for a portrait page, `wide` for a landscape one and every slide,
@@ -637,6 +637,20 @@ An infographic, slide or article page can be painted with a picture:
   clear at the top and at its strength at the bottom). **Strength** is a slider, 0% to 90% in
   steps of 5, previewed while dragged and one edit on release; it is hidden for None. An overlay
   tile previews on hover and commits on a press.
+- **Blur**: a slider, 0% (the default, sharp) to 100% in steps of 5, previewed while dragged and one edit on
+  release, that softens the picture into a wash of its colours, so a photo becomes a backdrop words sit on. Stored
+  on the fill as `blur` (0 to 1, absent for none; a value outside is clamped, a non-number dropped). Its strength is
+  the page's: a Gaussian blur whose standard deviation is `blur` times 4% of the page's shorter side
+  (`PAGE_IMAGE_BLUR_MAX`), so a 1920 x 1080 slide at 100% blurs by 43 px. The edges stay solid (no fade to the
+  paper at the sheet's sides). The overlay, the pattern and the ink are worked out as for a sharp picture (the tone
+  is the same). Replacing the picture keeps the blur, as it keeps the overlay.
+  - **On the canvas** the sheet paints a blurred copy of the picture, made once in the browser per picture and
+    blur (the picture drawn small, a three-pass box blur with its edges held, saved as a JPEG), never a CSS blur
+    filter, so a pan or zoom never re-blurs. The last eight copies are kept; the sheet shows the picture's tone
+    until its copy is ready, never the sharp picture first. While Blur is dragged the last copy keeps showing and
+    the next is made once the slider has rested 150 ms, so a drag makes one copy, not one per step.
+  - **In an export** (PNG, PDF and SVG, and the previews) the picture is drawn under an SVG `feGaussianBlur` at
+    the same strength, its edges held solid.
 - **A picture is readable by default.** A new picture takes **Light 60%** on a light canvas and
   **Dark 60%** on a dark one; replacing a picture keeps the overlay in force.
 - **Tone and ink.** `tone` is the picture's average colour, sampled once when it is picked (drawn
@@ -661,17 +675,18 @@ An infographic, slide or article page can be painted with a picture:
   replaces or drops it. Exports do not print it, as for image elements.
 - **Share roles**: an Editor sets, changes and removes it, as every background; a Participant or a
   Viewer sees the picture and no controls.
-- **Agents** read it on `change_pages` as `image` with its overlay ("image, light 60%") and can
+- **Agents** read it on `change_pages` as `image` with its overlay and blur ("image, light 60%, blur 40%") and can
   replace it with a colour, a gradient or the paper; they cannot set one (they have no way to put a
   picture in the gallery).
-- **Telemetry**: `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
+- **Telemetry**: `Tab · Changed · PageBackgroundImageBlur` when a blur is let go at a new value;
+  `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
   (beside the background's own `PageBackground`); a search counts as the picker's
   `Element · Searched · Image`, and a failed search or pick as its `ImageSearch.*` warnings.
 
 ### Copying a background
 
 A page's **format** is its background: its fill (a colour, a gradient, an animated background with
-its speed, or a picture with its overlay and position) and its pattern. Its size, orientation,
+its speed, or a picture with its overlay, blur and position) and its pattern. Its size, orientation,
 content, name and lock stay its own. A deck or a set of pages often wears one background, so it is
 given in one go rather than page by page.
 
@@ -1445,8 +1460,11 @@ be read across a room:
   **Four Ideas** (four cards, two by two, each an icon in a disc, a heading and a line), **Title
   Only** (a title, a lead line and a rule, the rest of the slide left for the author's own content),
   **Sidebar Title** (a panel in the theme's fill down the left edge, full bleed, holding an eyebrow
-  and the title, five bullet points beside it) and **Compare Two** (two cards side by side, each a
-  name, a line and three points, a "vs" disc between them).
+  and the title, five bullet points beside it), **Compare Two** (two cards side by side, each a
+  name, a line and three points, a "vs" disc between them), **Logo Strip** (an eyebrow, a title and
+  a line over six greyscale logos evenly spaced, [Logo strip](../009-elements/logo-strip.md)) and
+  **Testimonials** (two quote cards side by side, each a customer's words, their initial in a disc, their name and
+  role; see [quote.md](../009-elements/quote.md)).
 - **Pictures**: slides led by a picture, as a slide app lays them out. **Text and Picture** (an
   eyebrow, a two-line title, a rule, a lead and three points on the left half, a picture filling
   the right half to the slide's edges), **Picture and Text** (the same words on the right, a
@@ -1454,8 +1472,8 @@ be read across a room:
   scrim, an eyebrow, a large title and a line centred over it in white), **Picture Band** (a
   picture across the top half, edge to edge, an eyebrow and title beside a paragraph under it),
   **Picture and Card** (a picture filling the slide, a full-height card on its right holding an
-  eyebrow, a title, a rule and three points), **Quote and Picture** (a quotation mark, the quote, a
-  rule, the name and role on the left, a picture filling the right to the edges), **Two
+  eyebrow, a title, a rule and three points), **Quote and Picture** (an eyebrow over a Plain quote on the left, its
+  mark, its words, the speaker's initial, name and role, a picture filling the right to the edges), **Two
   Pictures** and **Three Pictures** (a title over pictures side by side, a name and a caption under
   each) and **Picture Mosaic** (an eyebrow, a title, a rule and a line beside one large picture and
   two small ones stacked).
@@ -1465,8 +1483,11 @@ be read across a room:
   across, fitted as the longest so all stand the same size, a rule, a caption and a note under
   each), **Big Chart** (a full-height bar chart and its headline figure on a card beside it),
   **Chart and Insights** (an area chart beside three numbered insights) and **Goals Progress**
-  (three progress rings, never wider than their column, each a goal and its target). Each of the
-  slide's own cites its source at the foot.
+  (three progress rings, never wider than their column, each a goal and its target) and **Pricing
+  Table** (a title and a lead over one table: features down the side, three plans across in ticks,
+  crosses and prices, the middle plan's column highlighted; see
+  [comparison-tables.md](../009-elements/comparison-tables.md)). Each of the slide's own figures
+  cites its source at the foot.
 - **Steps and Time**: **Process**, **Timeline**, **Roadmap**, **Funnel**, **Cycle** and **Project
   Plan** (the infographic ones), **Process Flow** (four steps as pills joined by arrows, a note under
   each), **Milestones** (five years along a rail, a dot on it for each, what happened under it) and
@@ -1480,7 +1501,7 @@ be read across a room:
   beside a full-height picture) and **Resources** (four links, each an icon in a disc, a title and
   where to find it).
 
-Sixty-one in all, in six categories (Openers, Content, Pictures, Data, Steps and Time, Closers), at
+Sixty-four in all, in six categories (Openers, Content, Pictures, Data, Steps and Time, Closers), at
 least nine to a category; a slide layout reused from the infographics is the same layout (same id,
 same build), filed under the slide category. Every one fits a 16:9 and a 4:3 slide inside its
 margins, every icon is one the catalogue draws, and no two of its text boxes overlap on either

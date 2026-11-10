@@ -171,7 +171,7 @@ describe('the Image category', () => {
 
   it('previews the strength while dragged and commits it on release', () => {
     const { onBackground, onPreview } = show({ fill: picture });
-    const slider = screen.getByRole('slider');
+    const slider = screen.getByRole('slider', { name: /Strength/ });
     fireEvent.change(slider, { target: { value: '30' } });
     expect(onPreview).toHaveBeenLastCalledWith({
       fill: { ...picture, overlay: { kind: 'light', strength: 0.3 } },
@@ -190,5 +190,26 @@ describe('the Image category', () => {
     expect(screen.getByText('"Sea" by Ada')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     expect(onBackground).toHaveBeenCalledWith({ fill: undefined });
+  });
+});
+
+// docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur: previewed while dragged, one commit on release, Off
+// stored as none.
+describe('the Image category’s Blur', () => {
+  it('previews the blur while dragged, commits it on release, and Off drops it', () => {
+    const { onBackground, onPreview } = show({ fill: picture });
+    const slider = screen.getByRole('slider', { name: /Blur/ });
+    fireEvent.change(slider, { target: { value: '40' } });
+    expect(onPreview).toHaveBeenLastCalledWith({ fill: { ...picture, blur: 0.4 } });
+    expect(onBackground).not.toHaveBeenCalled();
+    fireEvent.pointerUp(slider);
+    fireEvent.keyUp(slider);
+    expect(onBackground).toHaveBeenCalledWith({ fill: { ...picture, blur: 0.4 } });
+    cleanup();
+    const second = show({ fill: { ...picture, blur: 0.4 } });
+    const again = screen.getByRole('slider', { name: /Blur/ });
+    fireEvent.change(again, { target: { value: '0' } });
+    fireEvent.pointerUp(again);
+    expect(second.onBackground).toHaveBeenCalledWith({ fill: picture });
   });
 });
