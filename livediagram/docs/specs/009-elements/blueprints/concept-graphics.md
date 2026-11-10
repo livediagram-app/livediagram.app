@@ -221,17 +221,17 @@ In-place edits commit on blur (INP); animations are compositor-only except Flow'
 
 ## Testing
 
-| Rule                                             | Test file                                                                            |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| Bounds (I1), ramp, layouts per kind (I2)         | `packages/document/src/concept.test.ts`                                              |
-| Writes, anims offered (I3), validation           | same                                                                                 |
-| Export draws rows, notes, arcs                   | same                                                                                 |
-| Face, in-place commit                            | `apps/editor/components/canvas/ConceptFace.test.tsx`                                 |
-| Menu section                                     | `apps/editor/components/palette/ConceptMenuSection.test.tsx`                         |
-| Chevron stage bars (hover, phone, roles, writes) | `apps/editor/components/canvas/ConceptRowBar.test.tsx`                               |
+| Rule                                             | Test file                                                                                    |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| Bounds (I1), ramp, layouts per kind (I2)         | `packages/document/src/concept.test.ts`                                                      |
+| Writes, anims offered (I3), validation           | same                                                                                         |
+| Export draws rows, notes, arcs                   | same                                                                                         |
+| Face, in-place commit                            | `apps/editor/components/canvas/ConceptFace.test.tsx`                                         |
+| Menu section                                     | `apps/editor/components/palette/ConceptMenuSection.test.tsx`                                 |
+| Chevron stage bars (hover, phone, roles, writes) | `apps/editor/components/canvas/ConceptRowBar.test.tsx`                                       |
 | Timeline layout, export, rail migration          | `../packages/element-model/src/concept-timeline.test.ts`, `concept-timeline-element.test.ts` |
-| No Rows section for chevrons                     | `apps/editor/components/palette/context-menu-web-editors.test.tsx`                   |
-| Motion budget (loops infinite, reduced motion)   | existing CSS motion-budget test                                                      |
+| No Rows section for chevrons                     | `apps/editor/components/palette/context-menu-web-editors.test.tsx`                           |
+| Motion budget (loops infinite, reduced motion)   | existing CSS motion-budget test                                                              |
 
 ## Constants and configuration
 
