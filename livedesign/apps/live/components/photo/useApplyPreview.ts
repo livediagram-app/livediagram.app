@@ -73,8 +73,7 @@ export function useApplyPreview(photo: PhotoEditorView, work: ApplyWork, preview
       }
     }, PREVIEW_DEBOUNCE_MS);
     return () => clearTimeout(t);
-    // The settings, by value.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the settings, by value
   }, [key, previewOn, a]);
 
   // Closed without OK: the layer as it was.
@@ -83,7 +82,7 @@ export function useApplyPreview(photo: PhotoEditorView, work: ApplyWork, preview
       handle.current?.cancel();
       if (!done.current && a && photo.session) cancelApplying(photo.session, a);
     },
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- a cleanup on close only, reading the latest run through refs
     [],
   );
 

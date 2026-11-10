@@ -64,7 +64,7 @@ export const ACCOUNT_COLOUR_MAX_LENGTH = 64;
 // loads something (the accounts Worker's and the apps' check, profiles.ts "What no colour contains"). Every colour CSS
 // has (hex, a name, rgb(), hsl(), oklch(), color-mix(), var()) passes.
 const NOT_A_COLOUR = /[\\;{}<>"'`]|url|image|src\s*\(|element\s*\(|cross-fade|paint\s*\(/i;
-// oxlint-disable-next-line no-control-regex
+// oxlint-disable-next-line no-control-regex -- matching control characters is the point
 const CONTROL = /[\u0000-\u001f\u007f]/;
 
 /** Whether a colour is safe to paint into CSS: a non-empty string of at most 64 characters that can neither load

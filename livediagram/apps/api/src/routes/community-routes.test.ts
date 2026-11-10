@@ -291,7 +291,7 @@ beforeEach(() => {
   accounts.profiles.set(AUTHOR, { name: 'Ada', color: '#f97316', createdAt: 1 });
   testDocument(db, 'd1', AUTHOR, { name: 'Doc d1' });
   setFirstTab('d1', 1);
-  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });

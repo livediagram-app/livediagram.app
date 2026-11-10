@@ -74,8 +74,7 @@ export function FilterPreviewSquare({
       clearTimeout(t);
       cancel?.();
     };
-    // The square's place and the settings are its inputs, in `key`.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the square's place and the settings are its inputs, in `key`
   }, [key, s, applying, id]);
   const down = (e: ReactPointerEvent<HTMLCanvasElement>) => {
     drag.current = { x: e.clientX, y: e.clientY };

@@ -347,7 +347,7 @@ beforeEach(() => {
     )
     .run(AUTHOR);
   setFirstTab('d1', 1);
-  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });

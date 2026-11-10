@@ -83,7 +83,7 @@ export async function pollCallsBudget(env: Env, now: Date = new Date()): Promise
   if (!kv || !canMeasure) {
     if (!warnedInert) {
       warnedInert = true;
-      console.log(
+      console.info(
         '[calls] budget poll is off: it needs CALLS_SWITCH, CALLS_ANALYTICS_TOKEN and CALLS_USAGE_ACCOUNT_ID',
       );
     }
@@ -124,7 +124,7 @@ export async function pollCallsBudget(env: Env, now: Date = new Date()): Promise
     if (after !== before) await writeCallsMode(kv, after, now.getTime());
     const record: TripRecord = { month, level, costUsd, at: now.toISOString() };
     await kv.put(CALLS_BUDGET_KEY, JSON.stringify(record));
-    console.log(
+    console.info(
       `[calls] budget tripped ${level} at $${costUsd} this month; the switch is ${after}`,
     );
 

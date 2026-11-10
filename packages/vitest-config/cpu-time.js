@@ -48,23 +48,29 @@ function onCi() {
 }
 
 /**
- * The variable the shared Vitest config hands its workers when the run collects coverage (`--coverage`):
- * instrumented code runs the same work slower, wherever it runs.
+ * The variable the shared Vitest config hands its workers when the run collects coverage (`--coverage`).
+ * Instrumented code runs the same work several times slower, so a budget read there says nothing about the
+ * code: `cpuBudgetMs` is unbounded under it, and `vitest-budgets` checks the budgets again without coverage.
  */
 export const UNDER_COVERAGE_ENV = 'LIVEWORKSPACE_COVERAGE';
 
 /**
- * A speed test's CPU budget: `ms` as written on a developer's machine, `ms x CI_CPU_HEADROOM` on
- * CI (`CI` is `true` or `1`, as GitHub Actions sets it; `CI=false` or `CI=0`, which some shells and
- * images export to turn CI behaviour off, is a developer's machine). The written number stays the
- * product's own budget and holds wherever it is meaningful; CI still fails a slide past three times
- * it. Three is enough beside a 4x slower runner because a budget is written with its own room over
- * the local timing (Tidy Up: 100 ms against 24 measured). The same headroom applies under coverage
- * (`UNDER_COVERAGE_ENV`, the pre-push hook's run): the instrumentation is what slows the work.
+ * A speed test's CPU budget: `ms` as written on a developer's machine, `ms x CI_CPU_HEADROOM` on CI (`CI` is
+ * `true` or `1`, as GitHub Actions sets it; `CI=false` or `CI=0`, which some shells and images export to turn
+ * CI behaviour off, is a developer's machine). The written number stays the product's own budget and holds
+ * wherever it is meaningful; CI still fails a slide past three times it. Three is enough beside a 4x slower
+ * runner because a budget is written with its own room over the local timing (Tidy Up: 100 ms against 24
+ * measured).
+ *
+ * Under coverage (`UNDER_COVERAGE_ENV`) it is `Infinity`: the test runs and counts its lines but cannot fail
+ * on time, because instrumentation, not the code, sets the pace there. The same files then run without
+ * coverage through `vitest-budgets` (budgets.js), where the budget holds. So a budget is always an upper
+ * bound (`toBeLessThan(cpuBudgetMs(ms))`), never a timeout.
  *
  * @param {number} ms
  * @returns {number}
  */
 export function cpuBudgetMs(ms) {
-  return onCi() || process.env[UNDER_COVERAGE_ENV] ? ms * CI_CPU_HEADROOM : ms;
+  if (process.env[UNDER_COVERAGE_ENV]) return Number.POSITIVE_INFINITY;
+  return onCi() ? ms * CI_CPU_HEADROOM : ms;
 }

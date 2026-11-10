@@ -272,6 +272,14 @@ describe('writes', () => {
     });
   });
 
+  it('keeps who resolved it by hashed id too, and clears it on reopen and on a reply', () => {
+    const change = { kind: 'resolve', resolved: true, by: 'Bo', byId: 'b0b0' } as const;
+    const r = applyThreadChange(thread(), change, 9);
+    expect(r.ok && r.thread).toMatchObject({ resolvedBy: 'Bo', resolvedById: 'b0b0' });
+    const o = applyThreadChange(r.ok ? r.thread! : thread(), { ...change, resolved: false }, 10);
+    expect(o.ok && o.thread?.resolvedById).toBeUndefined();
+  });
+
   it('renames, goes back to the automatic title when cleared, and refuses too long', () => {
     const r = applyThreadChange(thread(), { kind: 'rename', title: 'Basket bug' }, 5);
     expect(r.ok && r.thread?.title).toBe('Basket bug');

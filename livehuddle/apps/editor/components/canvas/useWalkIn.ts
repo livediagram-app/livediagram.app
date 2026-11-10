@@ -95,7 +95,6 @@ export function useWalkIn({
     };
     handle = requestAnimationFrame(watch);
     return () => cancelAnimationFrame(handle);
-    // Once per opening: the sequence number is the request.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- once per opening: the sequence number is the request
   }, [seq]);
 }

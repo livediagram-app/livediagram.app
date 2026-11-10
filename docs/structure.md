@@ -29,6 +29,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ document-views           the agent views of a document that read no element union (budgets, elision, fields), for livediagram and livedocuments
 │  ├─ drive                    the Drive mirror's contract: cadence, formats, the plan, wire shapes, backoff
 │  ├─ edit-operations          the edit engine's parts that read no element union: element text, equality, result lines
+│  ├─ element-model            the element code products share over any product's union (structural types, generic where it hands elements back): grid, guides, layer order, anchors, the auto-layout graph, stored-data repairs
 │  ├─ email                    the one caller of Cloudflare Email Service's `send_email` binding, for accounts and every app
 │  ├─ fake-google              an in-memory Google (Drive v3 and OAuth) for the Drive mirror's tests
 │  ├─ model-core               what every product's model shares and needs nothing of its element union (the Reaction Pad's five bursts among it); each re-exports it
@@ -276,6 +277,18 @@ Each step is its own PR, and both products build and pass their tests after ever
      `createEmbedTargetFor` takes it and each product binds `embedTargetFor` in its own `youtube.ts`.
      Each module is a subpath (`@liveworkspace/model-core/<module>`), so a product's
      `export * from './x'` became `export * from '@liveworkspace/model-core/x'` and no caller changed.
+   - `document`, second slice: `@liveworkspace/element-model` (`packages/element-model`) holds the element code that read
+     the same in two or more model packages and imported only each other, model-core and the product's element types:
+     28 modules and 8 tests (the element grid, alignment and distribution guides, layer order, anchors, the label
+     body, shadows, tag colours, hierarchy branches, the tidy layout's graph, routes, ranks, trees and mind maps,
+     reciprocal bows, free-arrow scaling, display labels, folders, the Sankey model, path geometry, the nearest box,
+     and the stored-data repairs for bends, chart rows, ids, legacy groups and stroke points), and `entity-geometry`
+     went to model-core, as it reads no element. The modules are written against a structural model
+     (`element-model/element`) that every product's union is assignable to; functions that hand elements back are
+     generic over the caller's own type, so no caller changed ([architecture.md](../liveworkspace/docs/specs/002-architecture/architecture.md#the-shared-element-model)).
+     Each product keeps a one-line binding at the old path, and its index binds `ElementGrid` to its own `Element`.
+     Where livedocuments' and livedesign's copies differed only by entries for shape kinds they do not have (`actor`,
+     `final-state`, the Action and Comment panels) they took the entries; nothing drawn or stored changed.
    - Still in each product's model package: everything typed on its element union (`Element`, `ShapeElement`,
      `ArrowElement`, `BoxedElement`, `Tab`), which differs per product. That is most of the identical code
      (about 130 more files that read the same in all four, from arrow paths to the SVG renderer), because they

@@ -77,8 +77,7 @@ export function PagedCarousel<T>({
   useLayoutEffect(() => {
     const el = strip.current;
     if (el) el.scrollLeft = page * el.clientWidth;
-    // The opening page only: later moves scroll the strip themselves.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the opening page only: later moves scroll the strip themselves
   }, []);
   // A dots move's span, until the strip arrives; the page holding focus.
   const [slide, setSlide] = useState<Slide | null>(null);

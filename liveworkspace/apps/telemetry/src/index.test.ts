@@ -133,7 +133,7 @@ describe('telemetry worker', () => {
 
   it('sweeps rows older than 60 days, and counts yesterday again', async () => {
     const env = testEnv();
-    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {});
     env.seed([
       {
         app: 'livediagram.app',

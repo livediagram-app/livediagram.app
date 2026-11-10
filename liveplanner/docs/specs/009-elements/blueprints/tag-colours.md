@@ -4,7 +4,7 @@ Derived from [Tag colours](../tag-colours.md). Defaults in [DEFAULTS.md](DEFAULT
 
 | File                                                  | Role                                                                   |
 | ----------------------------------------------------- | ---------------------------------------------------------------------- |
-| `packages/project/src/tag-colours.ts`                 | Type, bounds, lookup, write, the card's tag colour, the render overlay |
+| `../packages/element-model/src/tag-colours.ts`        | Type, bounds, lookup, write, the card's tag colour, the render overlay |
 | `packages/project/src/validate.ts` (tab checks)       | `tagColours` validation                                                |
 | `packages/project/src/accent-edge.ts`                 | `resolvedAccentEdge` takes the tab's map                               |
 | `packages/project/src/svg-render-card.ts`             | Tinted tag chips in export                                             |

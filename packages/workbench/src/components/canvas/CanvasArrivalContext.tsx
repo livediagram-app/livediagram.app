@@ -55,7 +55,7 @@ export function CanvasArrivalProvider({
   // prop and a count written in an effect, so a render React discards and redoes writes the same
   // value. A ref rather than state or a context value: a burst must change nothing that every element
   // view reads, or each one would render for it; only the views it mounts read it, once.
-  /* oxlint-disable react/refs */
+  /* oxlint-disable react/refs -- a ref written in render on purpose, as above */
   burst.current =
     count !== undefined &&
     committedCount.current !== null &&

@@ -23,6 +23,7 @@ import {
 import {
   commentsFieldsOf,
   customFieldOf,
+  itemPersonId,
   typeIn,
   typesOf,
   type Item,
@@ -363,7 +364,15 @@ async function react(
   const name = (await getParticipant(ctx.env, r.caller.owner))?.name ?? 'Someone';
   const out = await throughHome(ctx, r, threadId, {
     kind: 'change',
-    change: { kind: 'react', commentId, emoji, by: key, name, on },
+    change: {
+      kind: 'react',
+      commentId,
+      emoji,
+      by: key,
+      name,
+      person: await itemPersonId(r.caller.owner),
+      on,
+    },
     actor,
   });
   if (!out.ok) return refusal(out.error);
@@ -381,7 +390,7 @@ async function setResolved(
   const by = (await getParticipant(ctx.env, r.caller.owner))?.name ?? 'Someone';
   const out = await throughHome(ctx, r, threadId, {
     kind: 'change',
-    change: { kind: 'resolve', resolved, by },
+    change: { kind: 'resolve', resolved, by, byId: await itemPersonId(r.caller.owner) },
     actor,
   });
   if (!out.ok) return refusal(out.error);

@@ -221,8 +221,7 @@ export function Minimap({
     }
     // One image over the padded content box (MinimapMap's minimapPicture).
     return minimapPicture(boundsOfPoints(corners), `${svgShadowDefs(elements)}${parts.join('')}`);
-    // `writing` changes with the documents' text, which the bars read off the editors.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- `writing` changes with the documents' text, which the bars read off the editors
   }, [elements, pages, tabFont, tabFinish, iconsLoaded, surface, chartPalette, writing, laidOut]);
 
   if (!bounds) return null; // Nothing to map.

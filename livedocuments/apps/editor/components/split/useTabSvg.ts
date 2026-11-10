@@ -34,7 +34,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
   // names it. Keyed on the tabs' names, not the
   // tabs, so an edit anywhere in the document does not redraw this one.
   const nameKey = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
-  // oxlint-disable-next-line react/exhaustive-deps
+  // oxlint-disable-next-line react/exhaustive-deps -- keyed on the tabs' names, not the tabs
   const windowNames = useMemo(() => tabWindowNames(tabs), [nameKey]);
   const { appearance } = useAppearance();
   const deferredTab = useDeferredValue(tab);
@@ -59,8 +59,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
     return () => {
       live = false;
     };
-    // Keyed on the ids, not the tab: the bitmaps only change when the set of photos does.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- keyed on the ids, not the tab: the bitmaps only change when the set of photos does
   }, [wantedImages, imageContext]);
 
   return useMemo(() => {

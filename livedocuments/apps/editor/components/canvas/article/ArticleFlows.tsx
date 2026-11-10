@@ -148,8 +148,7 @@ export function ArticleFlows({
   const readPage = view.readPage;
   useEffect(() => {
     if (mobile && focusedPage) readPage(focusedPage);
-    // Framed when the focus arrives, not as the caret moves between pages.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- framed when the focus arrives, not as the caret moves between pages
   }, [mobile, !!focusedPage]);
   // A finger on the writing or its paper pans the view when it travels; a tap is the writing's.
   const touchPress = useTouchPagePan(view.panFrom);

@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/design/src/index.ts`                                                   | `isBoxed` includes `video`                                                       |
 | `packages/design/src/colors.ts`                                                  | Default fill / stroke / text, `supportsColours`, paper-independent ink           |
 | `packages/design/src/themes.ts`                                                  | `THEME_COLOUR_FIELDS.video` is empty                                             |
-| `packages/design/src/shadow.ts`                                                  | `supportsShadow` includes `video`                                                |
+| `../packages/element-model/src/shadow.ts`                                        | `supportsShadow` includes `video`                                                |
 | `packages/design/src/validate.ts`                                                | `ELEMENT_TYPES` has `video`; `embedProvider` must be in `EMBED_PROVIDERS`        |
 | `packages/design/src/element-kind-label.ts`                                      | `elementKindLabel`: `video` reads "Embed"                                        |
 | `packages/design/src/svg-render-describe.ts`                                     | Headless export: the generic rect branch [QC2]                                   |

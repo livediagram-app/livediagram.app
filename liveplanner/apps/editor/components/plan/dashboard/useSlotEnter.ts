@@ -28,7 +28,6 @@ export function useSlotEnter(ref: RefObject<HTMLElement | null>, index: number) 
       easing: SLOT_ENTER_EASING,
       fill: 'backwards',
     });
-    // Mount only: a slot that stays put never animates again.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- mount only: a slot that stays put never animates again
   }, []);
 }
