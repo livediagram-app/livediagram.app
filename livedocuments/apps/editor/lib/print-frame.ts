@@ -1,6 +1,7 @@
 // The print frame (docs/specs/020-import-export/print.md "How it prints"): the print document in an off-screen,
 // sandboxed iframe (no script runs in it), printed from its own window, so the editor's chrome never prints and the
 // page's own @page rules size each sheet. One at a time: a second print replaces the first.
+import { setSrcdoc } from '@livedocuments/ui';
 import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 
 export const PRINT_FRAME_ATTR = 'data-print-frame';
@@ -75,7 +76,7 @@ export function printInFrame(html: string, doc: Document = document): Promise<vo
       { once: true },
     );
     // The document before the frame goes in: appended empty, it would load about:blank first and print that.
-    frame.srcdoc = sanitizedHtml(html, 'document') as string;
+    setSrcdoc(frame, sanitizedHtml(html, 'document'));
     doc.body.appendChild(frame);
   });
 }

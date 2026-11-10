@@ -130,6 +130,7 @@
     "./components/palette/ReadOnlyElementMenu": "./src/components/palette/ReadOnlyElementMenu.tsx",
     "./components/palette/ToolbarStripPopover": "./src/components/palette/ToolbarStripPopover.tsx",
     "./components/palette/context-menu-icons": "./src/components/palette/context-menu-icons.tsx",
+    "./components/palette/embed-tile-art": "./src/components/palette/embed-tile-art.tsx",
     "./components/palette/menu-editor-classes": "./src/components/palette/menu-editor-classes.ts",
     "./components/palette/menu-icon-base": "./src/components/palette/menu-icon-base.tsx",
     "./components/palette/palette-group-state": "./src/components/palette/palette-group-state.tsx",

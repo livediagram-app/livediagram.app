@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { MARKUP_POLICY } from './csp';
-import { resetTrustedTypesForTests } from './index';
+import { htmlProps, resetTrustedTypesForTests } from './index';
 import {
   SANITISE_CACHE_CHARS,
   SANITISE_CACHE_ENTRIES,
@@ -148,8 +148,9 @@ describe('sanitizedHtml', () => {
     );
   });
 
-  // DOMPurify parses and answers through our markup policy (every header names it), never a policy of its own.
-  it('mints through the markup policy under Trusted Types, and makes no policy of its own', () => {
+  // DOMPurify parses through our markup policy (every header names it), never a policy of its own, and the result
+  // goes into the page by html.ts's sinks, which mint it through the same policy.
+  it('parses through the markup policy, and its sink mints through it, with no policy of its own', () => {
     const names: string[] = [];
     vi.stubGlobal('trustedTypes', {
       createPolicy: vi.fn((name: string, rules: { createHTML: (s: string) => string }) => {
@@ -158,11 +159,11 @@ describe('sanitizedHtml', () => {
         return { createHTML: make, createScriptURL: make };
       }),
     });
-    const out = sanitizedHtml(`${SVG}<script>x</script><rect/></svg>`) as unknown as {
-      trusted: string;
-    };
+    const clean = sanitizedHtml(`${SVG}<script>x</script><rect/></svg>`);
+    const out = htmlProps(clean).dangerouslySetInnerHTML.__html as unknown as { trusted: string };
     expect(out.trusted).toBe(MARKUP_POLICY);
-    expect(String(out)).toBe(
+    expect(String(out)).toBe(clean);
+    expect(clean).toBe(
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect></rect></svg>',
     );
     expect(names).toEqual([MARKUP_POLICY]);

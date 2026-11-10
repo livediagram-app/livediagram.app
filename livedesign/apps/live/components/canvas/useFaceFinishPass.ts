@@ -15,7 +15,7 @@ import {
   type FacePartShape,
   type Finish,
 } from '@livedesign/design';
-import { trustedHtml } from '@livedesign/ui';
+import { builtMarkup, setHtml } from '@livedesign/ui';
 import {
   scheduleFaceTake,
   type FaceTake,
@@ -352,7 +352,7 @@ function gridRules(
     svg.setAttribute('width', String(face.width));
     svg.setAttribute('height', String(face.height));
     svg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;pointer-events:none';
-    svg.innerHTML = trustedHtml(ink.join('')) as string;
+    setHtml(svg, builtMarkup(ink.join('')));
     root.appendChild(svg);
   });
   return drawn;
@@ -472,7 +472,7 @@ function frameInk(
         el.setAttribute(ISOLATED_ATTR, '');
       }
       svg.style.cssText = `position:absolute;left:${left}px;top:${top}px;overflow:visible;pointer-events:none${under ? ';z-index:-1' : ''}`;
-      svg.innerHTML = trustedHtml(part.svg) as string;
+      setHtml(svg, builtMarkup(part.svg));
       if (drawnAs) el.setAttribute(DRAWN_ATTR, drawnAs);
       el.appendChild(svg);
     },
@@ -507,7 +507,7 @@ function shapeInk(
       g.setAttribute(INK_ATTR, '');
       const transform = el.getAttribute('transform');
       if (transform) g.setAttribute('transform', transform);
-      g.innerHTML = trustedHtml(part.svg) as string;
+      setHtml(g, builtMarkup(part.svg));
       if (pen === 'marker') el.setAttribute(DRAWN_ATTR, part.role);
       el.after(g);
     },

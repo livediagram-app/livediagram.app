@@ -6,7 +6,7 @@
 // the canvas and every export draw the same frame. What is drawn over the screen's content (the
 // camera in it, the system bars) is WireframeDeviceOverlays, above the elements.
 import { memo, useMemo, type CSSProperties, type ReactNode } from 'react';
-import { trustedHtml } from '@livedesign/ui';
+import { builtMarkup, htmlProps } from '@livedesign/ui';
 import {
   deviceScreenPath,
   pageDeviceGeometry,
@@ -63,7 +63,7 @@ export const WireframeDeviceSheet = memo(function WireframeDeviceSheet({
         height={page.rect.height}
         viewBox={`0 0 ${page.rect.width} ${page.rect.height}`}
         // The frame is this app's own markup (packages/design wireframe-device-svg), never content.
-        dangerouslySetInnerHTML={{ __html: trustedHtml(under) }}
+        {...htmlProps(builtMarkup(under))}
       />
       <div
         data-wireframe-screen=""

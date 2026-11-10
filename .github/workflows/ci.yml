@@ -145,6 +145,11 @@ jobs:
       - name: No new copies across products
         run: node .github/scripts/duplicate-guard.mjs
 
+      # Every raw HTML sink goes through @liveworkspace/trusted-types's html.ts (docs/ci.md "One path for
+      # markup"). Repo-wide and quick, so every group runs it.
+      - name: One path for markup
+        run: node .github/scripts/raw-html-guard.mjs
+
       - name: Save turbo cache
         uses: ./.github/actions/turbo-cache-save
 

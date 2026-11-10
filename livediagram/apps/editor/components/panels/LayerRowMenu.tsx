@@ -23,7 +23,13 @@ import {
   MenuGroupSeparator,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
-import { MenuTreeContext, useClickOutside, useControlMenu, Portal } from '@livediagram/ui';
+import {
+  MenuTreeContext,
+  useClickOutside,
+  useControlMenu,
+  Portal,
+  htmlProps,
+} from '@livediagram/ui';
 
 // The menu's width (w-64) and its gap from the panel and the viewport edges, in px.
 const MENU_WIDTH = 256;
@@ -170,7 +176,7 @@ export function LayerRowMenu({
                   preserveAspectRatio="xMidYMid meet"
                   className="h-full w-full"
                   aria-hidden
-                  dangerouslySetInnerHTML={{ __html: sanitizedHtml(thumbMarkup, 'svg-content') }}
+                  {...htmlProps(sanitizedHtml(thumbMarkup, 'svg-content'))}
                 />
               ) : null}
             </span>

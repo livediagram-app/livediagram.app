@@ -1,5 +1,6 @@
 // Our named HTML policies, made once per page (livediagram/docs/specs/016-platform/trusted-types.md "Our policies").
-// Shared by the markup helpers (index.ts) and the sanitiser (sanitize.ts), so both mint through the same policy.
+// Shared by the one path for markup (html.ts) and the sanitiser (sanitize.ts), so DOMPurify parses through the same
+// policy html.ts's sinks mint with.
 
 export type HtmlPolicy = {
   createHTML(input: string): TrustedHTML;
