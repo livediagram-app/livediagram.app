@@ -11,6 +11,7 @@ import {
 import { createPortal } from 'react-dom';
 import { POPOVER_VIEWPORT_MARGIN } from '../popover';
 import {
+  HINT_CARD_SURFACE,
   HOVER_CARD_ARROW_PX,
   HOVER_CARD_GAP_PX,
   TOOLTIP_ARROW_PX,
@@ -37,8 +38,7 @@ const LOOK: Record<HintKind, { surface: string; arrow: string; gap: number; arro
     arrowPx: TOOLTIP_ARROW_PX,
   },
   'hover-card': {
-    surface:
-      'w-56 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-slate-950/40',
+    surface: `w-56 px-3 py-2 ${HINT_CARD_SURFACE}`,
     arrow: 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800',
     gap: HOVER_CARD_GAP_PX,
     arrowPx: HOVER_CARD_ARROW_PX,

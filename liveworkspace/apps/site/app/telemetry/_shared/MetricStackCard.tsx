@@ -13,6 +13,7 @@ import { useTelemetryApp } from './app';
 import { stackAccent } from './stack-colours';
 import { StackDeck } from './StackDeck';
 import { StackTrendChart, type StackSeries } from './StackTrendChart';
+import { emphasisProps, useEmphasisStore } from './chart-hover/emphasis';
 import { TrendBadge } from './TrendBadge';
 
 // The head card of a chart stack (docs/specs/017-telemetry/telemetry.md): the members' combined count and
@@ -49,6 +50,8 @@ export function MetricStackCard({
   const { categoryColors } = useTelemetryApp();
   const accent = stackAccent(stack.members, categoryColors, appearance);
   const { chart, legend, hidden } = headView(stack.title, series, counts, inHeadline, accent);
+  // A legend entry with a line emphasises it while hovered (telemetry.md "Tooltips").
+  const emphasis = useEmphasisStore();
 
   return (
     <StackDeck
@@ -78,7 +81,11 @@ export function MetricStackCard({
           members instead, uncoloured since no line matches them. */}
       <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
         {legend.map((entry) => (
-          <li key={entry.label} className="flex items-center gap-1.5">
+          <li
+            key={entry.label}
+            className="flex items-center gap-1.5"
+            {...(entry.color ? emphasisProps(emphasis, entry.label) : {})}
+          >
             {entry.color ? (
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
             ) : null}
@@ -92,7 +99,13 @@ export function MetricStackCard({
       </ul>
       {days ? (
         <div className="mt-auto pt-4">
-          <StackTrendChart days={days} series={chart} highlightFromIndex={highlightFromIndex} />
+          <StackTrendChart
+            days={days}
+            series={chart}
+            highlightFromIndex={highlightFromIndex}
+            label={`${stack.title} per day, last 30 days`}
+            emphasis={emphasis}
+          />
           <div className="mt-2 flex justify-between text-[10px] text-slate-500 dark:text-slate-400">
             <span>{fmtDay(days[0] ?? 0)}</span>
             <span>{fmtDay(days[days.length - 1] ?? 0)}</span>

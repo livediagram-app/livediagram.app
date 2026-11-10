@@ -235,9 +235,10 @@ window above and compares it with the same number of days just before it.
    Visitors, New, Returning, Returning Share, Signed In of Returning, Sign-Ups, Sign-Ins and Sign-Ups per New, with
    the Total. A "What These Count" note under it says what each number is, as below.
 
-Every chart hides its drawing from a screen reader and carries the same numbers as a table of its days; each day's
-hover card lists every line's count. With nothing counted in the 30 days, a block says so instead of drawing flat
-lines. On a phone the tiles go two to a row and the tables scroll sideways inside their card.
+Every chart hides its drawing from a screen reader and carries the same numbers as a table of its days; its tooltip
+(Tooltips, below) lists every line's count for a day. With nothing counted in the 30 days, a block says so instead of drawing flat
+lines. On a phone the tiles go two to a row and the tables scroll sideways inside their card; the page itself never
+does, so a screen reader's table and caption are clipped inside their card, never by the page.
 
 What the numbers are, all from events every app already sends, per app:
 
@@ -262,6 +263,49 @@ two days' visits from the same browser apart from two browsers would need an id 
 across days, and events carry no identity (What an event is). Returning Share stands in for stickiness: how much
 of the traffic is browsers coming back. Nothing new is collected for this section, and no table is added: the
 summary reads these five events from the day counts it already reads.
+
+### Tooltips
+
+Every chart on the dashboard (the window panel's trend line, a metric card's line, a chart stack's lines, Search's
+charted metric, Apps Compared's three charts, and a timing card's bucket bars and daily p75 line) answers hover,
+touch and the keyboard the same way, through one shared hover model and one tooltip. The events table's
+sparklines stay plain: dozens of them sit in a table, and the row already carries its numbers.
+
+Until November 2026 each day was its own hover card: 30 invisible columns per chart, each a separate trigger, so
+crossing the chart closed one card and opened the next (a flash at every day), the card hung off the whole column
+above or below the chart rather than beside the data, nothing marked which day or point it was about, a
+multi-line day was one run-on sentence ("livediagram.app 120 · liveplanner.app 45 · ..."), the columns took no
+keyboard focus, and a phone needed a long press on a sliver of the chart.
+
+- **Snapping.** Anywhere over the plot snaps to the nearest day (or, on a bar chart, the column whose band holds
+  the pointer); there is no dot to aim at. A thin vertical crosshair runs through the day, and every line shown
+  gets a filled dot at that day's value, ringed in the card's background so it reads on any line. On a bar chart
+  the hovered column's band is tinted and the others dim slightly.
+- **One tooltip per day.** Its heading is the day ("Tue 10 Nov", in the reader's locale, UTC like the axis) or
+  the bucket ("100 to 250 ms"). Each line is a row: its colour swatch (dashed for a dashed line), its name, its
+  count with thousands separators, and its change against the day before ("+12%", "−5%", "New" from nothing,
+  "Flat"), smallest-print grey so the counts lead. Rows are sorted by count, largest first. A chart whose lines
+  add up shows a **Total** row under a rule (Events by App's Total line is that row; New and Returning add to
+  Visits); a chart whose lines don't (sign-ups and sign-ins, a stack's members) has none. A day without a reading
+  (a p75 day with too few timings) says "No Reading".
+- **Placement.** The tooltip sits beside the crosshair, to its right, and flips to its left when it would leave
+  the viewport, so it never covers the day's points; where neither side has room (a phone) it sits above the
+  chart, or below when the chart is at the top of the screen. It is portalled to the page so no card clips it,
+  wears the chart's app accent, and moves by transform only, gliding between days (none under reduced motion).
+  Moving within one day changes nothing on screen.
+- **Pinning.** A click pins the tooltip on its day, so the pointer can move onto it; a second click, a click
+  elsewhere or Escape lets it go. A chart inside a card that opens on a click (a chart stack's head) doesn't pin,
+  so the click still opens the card.
+- **Series emphasis.** Hovering or focusing a legend entry, or hovering a row of a pinned tooltip, emphasises
+  that line: its dot grows, its row is bold, and the other lines fade.
+- **Touch.** A tap shows the day under the finger; dragging along the chart scrubs day by day while the page
+  still scrolls vertically; the tooltip stays after the finger lifts until a tap elsewhere.
+- **Keyboard.** Each chart is one tab stop. Focus shows the latest day; Left and Right step a day, Home and End
+  go to the first and last, Up and Down move the emphasis through the rows, Escape closes. A screen reader hears
+  the focused day read out once per step (a polite live region: "Tue 10 Nov. livediagram.app 120, up 12%. ...
+  Total 165."); a chart that carries a table of its days keeps it.
+- **Look.** The tooltip is the design system's hover-card surface (white with a slate border, the dark chrome's
+  slate 800 in dark mode), the crosshair a slate hairline, every label in Title Case, the counts tabular figures.
 
 ## Retention
 
@@ -363,6 +407,11 @@ out livehuddle's `apps/mcp`, `apps/cli` and `packages/agent-verbs`: livehuddle d
   the All apps answer: six senders (the five apps and liveworkspace.app, whose stay 0), five numbers, 30 days,
   plus three windows twice. The page works them out once per window or scope pick (memoised), and draws three
   charts of at most six 30-point lines.
+- **Tooltips**: a pointer move costs one read of the chart's box and one division per animation frame, at most (the
+  moves are coalesced on `requestAnimationFrame`; the day is a binary search over the days' centres), and nothing
+  re-renders unless the day changes; then only the overlay does (crosshair,
+  dots, tooltip), never the chart's lines. Each chart is one overlay instead of 30 hover cards. Numbers measured
+  in the blueprint ("Performance and limits"), with a test budget at 365 days by six lines.
 - **Index**: `events` keeps `(ts)` for the sweep and for counting a day again; the day counts' key starts
   with the app, so one app's read is a range of it.
 - **The counts' first fill**: the migration that adds them counts every event already stored, in one

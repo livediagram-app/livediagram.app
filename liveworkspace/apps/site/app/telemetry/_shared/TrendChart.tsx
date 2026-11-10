@@ -1,16 +1,18 @@
 'use client';
 
-import { HoverCard } from '@liveworkspace/ui';
+import { useCallback } from 'react';
 import { fmtDay } from './chart-utils';
+import { ChartHover } from './chart-hover/ChartHover';
+import { dayHeading, type HoverSeries } from './chart-hover/hover-model';
 
 // A standalone inline-SVG line chart for a 30-day daily series, shared by
 // the timeframe panel, the metric cards and the Search view's per-metric trend.
 // No charting library: the path is plotted into a 0..100 viewBox and
 // stretched to the container with `preserveAspectRatio="none"`, while
 // `vector-effect="non-scaling-stroke"` keeps the stroke an even width
-// despite the non-uniform scale. A transparent row of hover columns
-// overlaid on top gives a per-day hover card (date + count) without per-point
-// hit-testing maths.
+// despite the non-uniform scale. The shared hover overlay (chart-hover/,
+// liveworkspace/docs/specs/008-telemetry/telemetry.md "Tooltips") snaps to the
+// nearest day and shows its count and change.
 //
 // `highlightFromIndex` marks where the selected window begins: everything
 // from that index to the end is drawn in the accent colour (and its span
@@ -50,15 +52,21 @@ export function TrendChart({
   color,
   highlightFromIndex = null,
   heightClassName = 'h-40',
+  label = 'Events',
 }: {
   days: number[];
   values: number[];
   color: string;
   highlightFromIndex?: number | null;
   heightClassName?: string;
+  // What the line counts: the tooltip row's name and the chart's accessible name.
+  label?: string;
 }) {
   const max = Math.max(...values, 1);
   const points = plot(values, max);
+  // Made per render: the chart renders only when its numbers change, never on a pointer move.
+  const hover: HoverSeries[] = [{ key: 'value', label, values, color, y: points.map((p) => p.y) }];
+  const heading = useCallback((i: number) => dayHeading(days[i] ?? 0), [days]);
   const from =
     highlightFromIndex == null ? 0 : Math.max(0, Math.min(highlightFromIndex, points.length - 1));
   const activePoints = points.slice(from);
@@ -143,19 +151,12 @@ export function TrendChart({
             }}
           />
         ) : null}
-        {/* Transparent per-day hover columns for the hover card. */}
-        <div className="absolute inset-0 flex">
-          {values.map((v, i) => (
-            <HoverCard
-              key={days[i] ?? i}
-              title={fmtDay(days[i] ?? 0)}
-              description={`${v.toLocaleString()} ${v === 1 ? 'event' : 'events'}`}
-              className="h-full flex-1"
-            >
-              <div className="h-full w-full" />
-            </HoverCard>
-          ))}
-        </div>
+        <ChartHover
+          n={values.length}
+          series={hover}
+          heading={heading}
+          label={`${label} per day, last 30 days`}
+        />
       </div>
       <div className="mt-2 flex justify-between text-[10px] text-slate-500 dark:text-slate-400">
         <span>{fmtDay(days[0] ?? 0)}</span>
