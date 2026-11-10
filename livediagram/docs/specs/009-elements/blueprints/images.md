@@ -529,7 +529,7 @@ O6 to O9 exist; the cap, R2 and retention logs are the service's own ([media.md]
 | Client gate: type, size, empty, error mapping        | `uploadImageFile` suites                                  | `apps/editor/lib/upload-image.test.ts`           |
 | Upload headers, 503 → null                           | `apiUploadImage`, `apiListImages` suites                  | `apps/editor/lib/api-client.test.ts`             |
 | Placeholder factory, aspect lock on                  | `createImage drops a 200x150 placeholder…`                | `packages/document/src/factories.test.ts`        |
-| No colour controls                                   | `supportsColours covers … freehand; not image`            | `packages/document/src/geometry.test.ts`         |
+| No colour controls                                   | `supportsColours covers … freehand; not image`            | `../packages/element-model/src/geometry.test.ts` |
 | Offline data-URI rewrite                             | `offline-images` suites                                   | `apps/editor/lib/offline/offline-images.test.ts` |
 | Palette hides without the service `[QB1]`            | none                                                      |                                                  |
 | Set / Cleared image log `[QB4]` (retired)            | n/a                                                       |                                                  |

@@ -188,7 +188,7 @@ Telemetry: `Element·Added·Badge` / `Step`; `Element·Changed·ChipLook`, `Chip
 
 | Rule                                                | Test file                                                                                                    |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Points, rotation, snap, attach, detach, follow (I1) | `packages/document/src/attachment.test.ts`                                                                   |
+| Points, rotation, snap, attach, detach, follow (I1) | `../packages/element-model/src/attachment.test.ts`                                                           |
 | Host deleted removes, unknown host detaches (I2)    | same                                                                                                         |
 | Badge fit (I3), next number, renumber, looks        | `packages/document/src/chip.test.ts`                                                                         |
 | Duplicate remap / detach                            | `packages/document/src/duplicate.test.ts`                                                                    |

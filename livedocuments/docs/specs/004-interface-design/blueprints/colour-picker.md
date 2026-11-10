@@ -175,7 +175,7 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 | Rule                                                      | Test                                                                                                                             |
 | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | ten standard colours, both tones, readable                | `../packages/element-model/src/standard-colours.test.ts`                                                                         |
-| Grey is a stock colour, not hued                          | `packages/document/src/pen-colours.test.ts`                                                                                      |
+| Grey is a stock colour, not hued                          | `../packages/element-model/src/pen-colours.test.ts`                                                                              |
 | one Tab stop, arrows wrap, Home/End                       | `apps/editor/components/colour/ColourPicker.test.tsx`                                                                            |
 | pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                                                          |
 | preview and revert                                        | `ColourPicker.test.tsx`                                                                                                          |

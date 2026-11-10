@@ -270,7 +270,7 @@ LinkUnfurled` exist.
 | Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/editor/lib/draw-commit.test.ts`            |
 | Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/editor/lib/draw-mode.test.ts`              |
 | Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/editor/lib/element-telemetry.test.ts`      |
-| Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/document/src/geometry.test.ts`         |
+| Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `../packages/element-model/src/geometry.test.ts` |
 | No inline text                                          | `is false for label-less kinds…`                            | `packages/document/src/element-has-text.test.ts` |
 | Shadow supported                                        | `supportsShadow` suite                                      | `../packages/element-model/src/shadow.test.ts`   |
 | Theme leaves cards alone                                | none                                                        |                                                  |

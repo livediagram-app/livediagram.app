@@ -1,4 +1,4 @@
-import type { BoxedElement, OtherBoxedElement } from './element';
+import type { BoxedElement } from './element';
 
 // The one-line name a boxed element goes by in a LIST of elements: the
 // Collaborate Panel's rows (docs/specs/012-collaboration/assigned-actions.md §5) and the Inbox's rows
@@ -13,9 +13,7 @@ import type { BoxedElement, OtherBoxedElement } from './element';
 export function elementDisplayLabel(el: BoxedElement): string {
   if (el.type === 'table') {
     // Every product's table holds its text in `cells`.
-    const firstCell = (el as OtherBoxedElement & { cells: string[][] }).cells
-      .flat()
-      .find((c) => c.trim().length > 0);
+    const firstCell = (el.cells ?? []).flat().find((c) => c.trim().length > 0);
     return firstCell ? `Table: ${firstCell.trim()}` : 'Table';
   }
   const label = (el as { label?: string }).label;
