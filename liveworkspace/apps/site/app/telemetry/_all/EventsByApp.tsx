@@ -125,7 +125,9 @@ export function EventsByApp({
         </>
       )}
 
-      <div className="mt-5 overflow-x-auto">
+      {/* Positioned, so the table's sr-only caption (absolute) is clipped here, not by the page: it was as wide as
+          the table and scrolled a phone's page sideways. */}
+      <div className="mt-5 relative overflow-x-auto">
         <table className="w-full min-w-[32rem] text-sm">
           <caption className="sr-only">
             Events each app sent in the {windowLabel(active).toLowerCase()}

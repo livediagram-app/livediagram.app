@@ -237,7 +237,8 @@ window above and compares it with the same number of days just before it.
 
 Every chart hides its drawing from a screen reader and carries the same numbers as a table of its days; its tooltip
 (Tooltips, below) lists every line's count for a day. With nothing counted in the 30 days, a block says so instead of drawing flat
-lines. On a phone the tiles go two to a row and the tables scroll sideways inside their card.
+lines. On a phone the tiles go two to a row and the tables scroll sideways inside their card; the page itself never
+does, so a screen reader's table and caption are clipped inside their card, never by the page.
 
 What the numbers are, all from events every app already sends, per app:
 

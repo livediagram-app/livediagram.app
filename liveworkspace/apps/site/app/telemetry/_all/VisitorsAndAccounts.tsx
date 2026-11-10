@@ -347,8 +347,10 @@ function AudienceTable({
     'Sign-Ins',
     'Sign-Ups per New',
   ];
+  // Positioned, so the table's sr-only caption (absolute) is clipped here, not by the page: it was as wide as the
+  // table and scrolled a phone's page sideways.
   return (
-    <div className="mt-6 overflow-x-auto">
+    <div className="mt-6 relative overflow-x-auto">
       <table className="w-full min-w-[44rem] text-sm">
         <caption className="sr-only">
           Visitors and accounts by app in the {windowLabel(active).toLowerCase()}

@@ -43,29 +43,33 @@ export function SeriesChart({
         <span>{fmtDay(days[0] ?? 0)}</span>
         <span>{fmtDay(days[days.length - 1] ?? 0)}</span>
       </div>
-      <table className="sr-only">
-        <caption>{caption}</caption>
-        <thead>
-          <tr>
-            <th scope="col">Day (UTC)</th>
-            {series.map((s) => (
-              <th key={s.label} scope="col">
-                {s.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {days.map((day, i) => (
-            <tr key={day}>
-              <th scope="row">{fmtDay(day)}</th>
+      {/* The clip is a div's: a table ignores its own 1px width and overflow, so as the sr-only element it still
+          widened a phone's page to its full width and the page scrolled sideways. */}
+      <div className="sr-only">
+        <table>
+          <caption>{caption}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Day (UTC)</th>
               {series.map((s) => (
-                <td key={s.label}>{(s.values[i] ?? 0).toLocaleString('en-GB')}</td>
+                <th key={s.label} scope="col">
+                  {s.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {days.map((day, i) => (
+              <tr key={day}>
+                <th scope="row">{fmtDay(day)}</th>
+                {series.map((s) => (
+                  <td key={s.label}>{(s.values[i] ?? 0).toLocaleString('en-GB')}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }
