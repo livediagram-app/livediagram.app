@@ -7983,6 +7983,9 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../brand
+      '@liveworkspace/element-model':
+        specifier: workspace:*
+        version: link:../element-model
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../explorer
