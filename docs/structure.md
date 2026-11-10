@@ -57,6 +57,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
+├─ scripts/                    the root's own scripts: git-hooks, and e2e-stack (the e2e stacks' shared parts: the accounts stand-in, processes, proxies, static serving)
 ├─ liveworkspace/              the platform's own apps, and the packages only they use
 │  ├─ apps/site                www.liveworkspace.app, one static site: the front door, /explorer, /community, /telemetry, /status, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth and /api/account: sign-in, teams and tokens for every product

@@ -13,16 +13,13 @@ import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/use
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { cornerRadiusPx, planOwnColoursOf, type ShapeElement } from '@liveplanner/project';
 import {
-  CARD_FIELDS,
   ITEM_TYPES,
   cardIsFaceDown,
   normaliseBoardSetup,
-  isQuickFilterEmpty,
-  projectBoard,
   type Item,
   type LaneHead,
   type QuickFilter,
@@ -33,46 +30,33 @@ import { useCanvasBranchColours, useCanvasSurface } from '@/components/canvas/Ca
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
 import { useBoardCsv } from '@/hooks/plan/useBoardCsv';
 import { cellStatus, laneMove } from './plan-board-moves';
-import type { CellCardsBase } from './PlanBoardCellCards';
-import { pickableStatuses } from './column-status-picks';
-import { boardItems } from '@liveplanner/plan-art';
-import { COLLAPSED_COLUMN_PX, boardColumnTemplate } from './plan-board-columns';
+import { boardColumnTemplate } from './plan-board-columns';
 import { useBoardCollapsed } from '@/hooks/plan/useBoardCollapsed';
-import { COLUMN_TOGGLE_ATTR } from './CollapsedColumn';
-import { boardLook, shownQuick } from './phone-board';
-import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
-import { usePhoneColumnSwipe } from '@/hooks/plan/usePhoneColumnSwipe';
+import { shownQuick } from './phone-board';
 import { useRegisterConfigurableBoard } from '@/hooks/plan/board-configure-store';
-import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
-import { RunRevealContext, focusPlanCard, useCardRunReveal } from '@/hooks/plan/useCardRunReveal';
-import { useColumnMoveFlip } from './column-move-flip';
-import { useColumnReorder } from './useColumnReorder';
-import { useColumnHover } from './useColumnHover';
+import { RunRevealContext } from '@/hooks/plan/useCardRunReveal';
 import { usePlan } from './PlanContext';
 import { slotCardSize, slotColumnTemplate, slotColumnUnit, slotSetup } from './slot-board';
 import type { NewCard } from './AddCardPopover';
-import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useBoardSelection } from '@/hooks/plan/useBoardSelection';
 import { planBandTint, planPalette } from './plan-palette';
 import { columnTones } from './column-tones';
-import { useCardSpotlight } from './useCardSpotlight';
-import { useCardFanIn } from './useCardFanIn';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { MaximisableSlot } from './MaximisedPlanLayer';
 import { practiceShipColumn } from './PracticeMarks';
 import {
-  NONE_SHUT,
   NO_COLUMNS,
   NO_ITEMS,
-  NO_STATUSES,
   PLAN_BOARD_RADIUS_PX,
-  PLAN_BUSY_CARDS,
   boardSurface,
   stop,
 } from './plan-board-view-consts';
 import { boardCardKey } from './plan-board-card-key';
 import { PlanBoardFrame } from './PlanBoardFrame';
 import type { PlanBoardViewValues } from './plan-board-view-values';
+import { usePlanBoardProjection } from './usePlanBoardProjection';
+import { usePlanBoardMotion } from './usePlanBoardMotion';
+import { usePlanCellBase } from './usePlanCellBase';
 
 export function PlanBoardView({
   element,
@@ -153,30 +137,12 @@ export function PlanBoardView({
   const focusNextRef = useRef<string | null>(null);
   const items = plan?.items ?? NO_ITEMS;
   const statusNames = plan?.statusNames;
-  const projection = useMemo(
-    () => (setup ? projectBoard(setup, items, applied, types, statusNames) : null),
-    [setup, items, applied, types, statusNames],
-  );
-  const busy = (projection?.total ?? 0) > PLAN_BUSY_CARDS;
-  // The statuses a column can be made for: the boards', any a card is in and the card types' Default States
-  // (docs/specs/026-plan/plan-board.md "The column picker").
-  const pickable = useMemo(
-    () => pickableStatuses(statusNames ?? NO_STATUSES, items.values(), types),
-    [statusNames, items, types],
-  );
-  // What the header's widgets count: the items the board shows, before the quick filter.
-  // With no quick filter on (the usual case) the board's own projection already holds them: no second projection.
-  const quickOn = !isQuickFilterEmpty(applied);
-  const shownItems = useMemo(
-    () =>
-      !setup
-        ? []
-        : boardItems(
-            quickOn || !projection
-              ? projectBoard(setup, items, undefined, types, statusNames)
-              : projection,
-          ),
-    [setup, items, types, statusNames, quickOn, projection],
+  const { projection, busy, pickable, shownItems } = usePlanBoardProjection(
+    setup,
+    items,
+    applied,
+    types,
+    statusNames,
   );
   // Selected (alone or with others): the header shows its move handle.
   const selected = useSelectionOf(
@@ -260,118 +226,38 @@ export function PlanBoardView({
     }
   };
 
-  // The column's wheel scrolls the board, not the canvas, while there is room to scroll.
-  useEffect(() => {
-    const body = bodyRef.current;
-    if (!body) return;
-    const onWheel = (e: WheelEvent) => {
-      if (e.ctrlKey || e.metaKey) return;
-      const canY = body.scrollHeight > body.clientHeight;
-      const canX = body.scrollWidth > body.clientWidth;
-      if ((canY && Math.abs(e.deltaY) >= Math.abs(e.deltaX)) || (canX && e.deltaX !== 0)) {
-        e.stopPropagation();
-      }
-    };
-    body.addEventListener('wheel', onWheel, { passive: true });
-    return () => body.removeEventListener('wheel', onWheel);
-  }, []);
-
-  useEffect(() => {
-    const id = focusNextRef.current;
-    if (!id) return;
-    focusNextRef.current = null;
-    // A far run's card is built first (useCardRunReveal).
-    focusPlanCard(boardRef.current, id);
-  });
-  useEffect(() => {
-    const id = focusToggleRef.current;
-    if (!id) return;
-    focusToggleRef.current = null;
-    boardRef.current
-      ?.querySelector<HTMLElement>(`[${COLUMN_TOGGLE_ATTR}="${CSS.escape(id)}"]`)
-      ?.focus({ preventScroll: true });
-  });
-  // Columns collapse for this person on a board they work in Plan mode, but not on a phone nor in a Dashboard slot's
-  // compact board, which draw every column open.
-  const canCollapse = interactive && !phone && !simplified;
-  const shutColumns = canCollapse ? collapse.columns : NONE_SHUT;
-  const shutKey = [...shutColumns].join(',');
-
-  // Cards glide to where they now sit when the board's arrangement changes (usePlanCardFlip): the signature is each
-  // cell's cards in order, so a move, a reorder or a collaborator's change re-measures, and nothing else does.
-  const flipSignature = useMemo(
-    () =>
-      projection
-        ? projection.columns
-            .map((c) =>
-              c.lanes.map((l) => `${l.laneKey}:${l.items.map((i) => i.id).join(',')}`).join(';'),
-            )
-            .join('|') + `|${[...collapsed].join(',')}|${shutKey}`
-        : '',
-    [projection, collapsed, shutKey],
-  );
-  // A column moved left or right glides there (column-move-flip.ts), its cards riding along rather than gliding too.
-  const gridRef = useRef<HTMLDivElement>(null);
-  // Its order and which columns are strips: a column collapsed or expanded glides too.
-  const columnMove = useColumnMoveFlip(
+  const {
+    canCollapse,
+    shutColumns,
     gridRef,
-    `${setup?.columns.map((c) => c.id).join('|') ?? ''}/${shutKey}`,
-    COLLAPSED_COLUMN_PX,
-  );
-  const rememberCards = usePlanCardFlip(
-    bodyRef,
-    flipSignature,
-    drag.drag?.itemId ?? null,
-    columnMove.isMoving,
-  );
-  // A busy board builds only its runs near the view (useCardRunReveal, PlanCardRun): it built all 2,000 cards.
-  const runReveal = useCardRunReveal(busy, rememberCards);
-  // An Editor reorders the columns by dragging a head, or Alt+Shift+Arrows on one, on a desktop (plan-board.md "Drag a
-  // column"); never on a phone nor a slot board (setUpHere is false there).
-  const reorder = useColumnReorder({
+    columnMove,
+    runReveal,
+    reorder,
+    dragging,
+    carried,
+    look,
+    bodySize,
+  } = usePlanBoardMotion({
+    element,
+    plan,
     setup,
-    write: (next) => plan?.updateBoard(element.id, next),
-    announce: (message) => plan?.announce(message),
-    enabled: setUpHere && interactive && !phone,
-    grid: gridRef,
-    scroller: bodyRef,
-    board: boardRef,
-    glide: columnMove,
+    projection,
+    collapse,
+    busy,
+    interactive,
+    phone,
+    simplified,
+    maximised,
+    filled,
+    slot,
+    setUpHere,
+    drag,
+    incoming,
+    bodyRef,
+    boardRef,
+    focusNextRef,
+    focusToggleRef,
   });
-  // Maximised (or filling its tab, or in a Dashboard slot, whose columns scroll sideways when it is narrow), a card
-  // dragged near the columns' left or right edge scrolls them sideways.
-  useEdgeAutoScroll(bodyRef, (maximised || filled || simplified) && (!!drag.drag || !!incoming));
-  const dragging = drag.drag;
-  // The cards a group drag carries, for a look-up per card drawn (one Set per drag, not a scan per card).
-  const carried = useMemo(() => new Set(dragging?.group ?? []), [dragging?.group]);
-  // A slot per column, two or three for a wider one (docs/specs/026-plan/plan-board.md "The board set-up"); five
-  // slots across while it covers the canvas, then it scrolls sideways.
-  const look = boardLook(
-    {
-      phone,
-      covering: maximised || filled,
-      inSlot: !!slot,
-      interactive,
-      dragging: !!dragging || !!incoming,
-      simple: simplified,
-    },
-    setup?.cardSize,
-  );
-  // On a phone board that shows one column a screen, a column changes only on a swipe meant for it (phone-swipe.ts).
-  usePhoneColumnSwipe(bodyRef, look.swipe, !!dragging || !!incoming);
-  // A slot board's width, read only there (and not on a phone, whose cards are Minimal anyway): its cards turn Minimal
-  // when its columns are narrow (slot-board.ts slotCardSize).
-  const bodySize = useObservedSize(bodyRef, simplified && !phone);
-
-  // The column under the pointer shifts its colour slightly (plan-board.md "Column hover").
-  useColumnHover(gridRef, interactive && !simplified, setup?.columns.length ?? 0);
-  useCardSpotlight(gridRef, interactive);
-  // Cards fan in once the board first has them (plan-board.md "Cards fan in").
-  useCardFanIn(
-    gridRef,
-    !!setup && !!projection && plan?.status !== 'loading',
-    projection?.columns.reduce((n, c) => n + c.count, 0) ?? 0,
-  );
   const columnName = (s: string) => setup?.columns.find((c) => c.status === s)?.name ?? s;
 
   const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) =>
@@ -412,7 +298,8 @@ export function PlanBoardView({
         setMenu({ itemId: it.id, at });
       },
     }),
-    [latest],
+    // setMenu is a state setter, the same every render: named so the React Compiler keeps this memo.
+    [latest, setMenu],
   );
 
   // A slot board sizes its columns from its measured width (slot-board.ts), its cards Minimal when they are narrow.
@@ -421,48 +308,23 @@ export function PlanBoardView({
     ? slotColumnUnit(bodySize?.width ?? null, setup?.columns ?? NO_COLUMNS)
     : null;
   const cardSize = slotBoard ? slotCardSize(look.cardSize, slotUnit) : look.cardSize;
-  // What every card draws with (PlanBoardCellCards), one identity while none of it changes, so a cell whose own
-  // cards and gap are as they were is skipped.
-  const cellBase = useMemo<CellCardsBase>(
-    () => ({
-      palette,
-      // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
-      setupFields: CARD_FIELDS,
-      cardSize,
-      stacked: slotBoard,
-      touch: look.cardTouch,
-      interactive,
-      canMove: canEditCards,
-      onPress: cardHandlers.onPress,
-      onOpen: cardHandlers.onOpen,
-      onKey: cardHandlers.onKey,
-      onMenu: cardHandlers.onMenu,
-      ...(interactive && canEditCards ? { onLongPress: cardHandlers.onLongPress } : {}),
-      cardVote,
-      setup,
-      selfId: plan?.self?.id ?? '',
-      presence: plan?.presence,
-      selected: selection.ids,
-      liftedId: dragging?.itemId,
-      carried,
-    }),
-    [
-      palette,
-      cardSize,
-      slotBoard,
-      look.cardTouch,
-      interactive,
-      canEditCards,
-      cardHandlers,
-      cardVote,
-      setup,
-      plan?.self?.id,
-      plan?.presence,
-      selection.ids,
-      dragging?.itemId,
-      carried,
-    ],
-  );
+  // What every card draws with (PlanBoardCellCards), one identity while none of it changes (usePlanCellBase).
+  const cellBase = usePlanCellBase({
+    palette,
+    cardSize,
+    slotBoard,
+    cardTouch: look.cardTouch,
+    interactive,
+    canEditCards,
+    cardHandlers,
+    cardVote,
+    setup,
+    selfId: plan?.self?.id ?? '',
+    presence: plan?.presence,
+    selected: selection.ids,
+    liftedId: dragging?.itemId,
+    carried,
+  });
 
   if (!setup || !projection) {
     return (

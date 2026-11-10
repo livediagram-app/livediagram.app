@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CI_CPU_HEADROOM, cpuBudgetMs } from './cpu-time.js';
+import { CI_CPU_HEADROOM, cpuBudgetMs, cpuGrowthLimitMs, cpuRatioCeiling } from './cpu-time.js';
 
 // docs/specs/003-system-architecture/testing.md "A tight budget is written for a developer's machine, widened on CI,
 // and checked without coverage" and "Coverage never judges a budget".
@@ -36,5 +36,36 @@ describe('cpuBudgetMs', () => {
     expect(cpuBudgetMs(16)).toBe(Number.POSITIVE_INFINITY);
     vi.stubEnv('CI', 'true');
     expect(cpuBudgetMs(16)).toBe(Number.POSITIVE_INFINITY);
+  });
+});
+
+// docs/ci.md "Speed budgets": a growth check's ratio holds in a plain run and on CI, and coverage never judges it.
+describe('cpuRatioCeiling', () => {
+  it('is the written ratio in a plain run and on CI alike', () => {
+    vi.stubEnv('LIVEWORKSPACE_COVERAGE', '');
+    vi.stubEnv('CI', '');
+    expect(cpuRatioCeiling(8)).toBe(8);
+    vi.stubEnv('CI', 'true');
+    expect(cpuRatioCeiling(8)).toBe(8);
+  });
+
+  it('is unbounded under coverage', () => {
+    vi.stubEnv('LIVEWORKSPACE_COVERAGE', '1');
+    expect(cpuRatioCeiling(8)).toBe(Number.POSITIVE_INFINITY);
+  });
+});
+
+describe('cpuGrowthLimitMs', () => {
+  it('is the smaller time times the ratio, plus the slack', () => {
+    vi.stubEnv('LIVEWORKSPACE_COVERAGE', '');
+    vi.stubEnv('CI', 'true');
+    expect(cpuGrowthLimitMs(3, 8, 5)).toBe(29);
+    expect(cpuGrowthLimitMs(3, 8)).toBe(24);
+  });
+
+  // A small time of 0 ms times Infinity would be NaN, which no time is less than.
+  it('is unbounded under coverage, even on a 0 ms small time', () => {
+    vi.stubEnv('LIVEWORKSPACE_COVERAGE', '1');
+    expect(cpuGrowthLimitMs(0, 8, 5)).toBe(Number.POSITIVE_INFINITY);
   });
 });

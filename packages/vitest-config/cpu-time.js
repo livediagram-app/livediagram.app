@@ -74,3 +74,35 @@ export function cpuBudgetMs(ms) {
   if (process.env[UNDER_COVERAGE_ENV]) return Number.POSITIVE_INFINITY;
   return onCi() ? ms * CI_CPU_HEADROOM : ms;
 }
+
+/**
+ * A growth check's ceiling: the ratio of two CPU times, a larger input's over a smaller one's, that a test
+ * holds work under (four times the input under eight times the CPU, where a quadratic scan reads sixteen).
+ * The same ratio in a plain run and on CI, since a ratio already cancels a slower runner.
+ *
+ * Under coverage (`UNDER_COVERAGE_ENV`) it is `Infinity`, as `cpuBudgetMs` is: instrumentation slows a large
+ * input's allocation and collection more than a small one's, so a ratio read there measures the collector, not
+ * the code (livehuddle's stored-arrow bounds read 8.68 against 8 on CI). Importing it puts the file in
+ * `vitest-budgets`' plain rerun, where the ratio holds (docs/ci.md "Speed budgets").
+ *
+ * @param {number} ratio
+ * @returns {number}
+ */
+export function cpuRatioCeiling(ratio) {
+  return process.env[UNDER_COVERAGE_ENV] ? Number.POSITIVE_INFINITY : ratio;
+}
+
+/**
+ * A growth check written on the smaller time: the larger input's CPU limit, `ms x ratio + slackMs` (the slack
+ * keeps a sub-millisecond small time from reading timer noise as growth). Unbounded under coverage, as
+ * `cpuRatioCeiling` is, and so never `0 x Infinity`.
+ *
+ * @param {number} ms
+ * @param {number} ratio
+ * @param {number} [slackMs]
+ * @returns {number}
+ */
+export function cpuGrowthLimitMs(ms, ratio, slackMs = 0) {
+  if (process.env[UNDER_COVERAGE_ENV]) return Number.POSITIVE_INFINITY;
+  return ms * ratio + slackMs;
+}

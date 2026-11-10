@@ -1,11 +1,11 @@
 // The views' cost grows with the tab, not faster (docs/specs/024-agents/blueprints/design-views.md
-// "Performance and limits"). Timed as growth, not as a ceiling: an absolute time depends on the machine
-// and on coverage instrumentation, a ratio does not. Four times the elements in the same containers
+// "Performance and limits"). Timed as growth, not as a ceiling: an absolute time depends on the machine,
+// a ratio barely, and coverage judges neither (docs/ci.md "Speed budgets"). Four times the elements in the same containers
 // should cost about four to five times as much (n log n); a quadratic step would cost sixteen.
 // Timed in CPU time (cpuMsOf), not wall-clock: under turbo's parallel suites a wall-clock run also
 // counts the time spent waiting for a core, which pushed the ratio past its ceiling.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livedesign/design';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
@@ -14,7 +14,7 @@ import { showSelectedView } from './show-selected';
 
 const FRAMES = 10;
 const GROWTH = 8;
-const RATIO_CEILING = 24;
+const RATIO_CEILING = cpuRatioCeiling(24);
 const RUNS = 5;
 // Sized to time tens of milliseconds a render; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;

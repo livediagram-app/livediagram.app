@@ -333,6 +333,9 @@ tests where it's cheap.
   `dismissQuickTour`).
 - `apps/editor/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, community, marketing).
+- The root's `scripts/e2e-stack/` (shared with the other product stacks): `accounts-stand-in.mjs`, `processes.mjs`,
+  `proxies.mjs` (the router's forwards and the WebSocket upgrade) and `static-serving.mjs` (caching, the Trusted Types
+  header, the 404 page, the simulated deploy).
 - The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/editor/package.json`; `build:signed-in`
