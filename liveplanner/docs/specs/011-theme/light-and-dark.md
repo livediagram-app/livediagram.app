@@ -27,7 +27,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   of every theme, and every table preset's header title on its band. Bold stays white text, so its fill darkens until
   white reads on it; any other short label (Solid's white on a mid accent, the Border tier's accent on white) is walked
   away from its fill. A preset that already read is unchanged. The shared walk lives in
-  `packages/project/src/readable-colour.ts`; `packages/project/src/theme-presets.test.ts` checks every preset.
+  `../packages/element-model/src/readable-colour.ts`; `packages/project/src/theme-presets.test.ts` checks every preset.
 
 ## Colours an agent writes
 

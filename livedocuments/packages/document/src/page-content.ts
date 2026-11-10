@@ -27,7 +27,14 @@ import {
 import { pageImageTone } from './page-image';
 import { TEXT_SCALE_MIN } from './validate';
 import { PAGE_INK_CONTRAST, PAGE_INK_FLOOR } from './page-ink-rules';
-import { isBoxed, type Element, type Endpoint, type ShapeElement, type Tab, type ElementIndex } from './index';
+import {
+  isBoxed,
+  type Element,
+  type Endpoint,
+  type ShapeElement,
+  type Tab,
+  type ElementIndex,
+} from './index';
 
 type Point = { x: number; y: number };
 

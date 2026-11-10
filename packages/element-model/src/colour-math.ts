@@ -3,7 +3,10 @@
 // and the paper a canvas colour amounts to. No element kind in it: each product's colors.ts keeps its element defaults
 // and re-exports these.
 import { parseCssColour, parseCssColourAlpha } from '@liveworkspace/model-core/css-colour';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@liveworkspace/model-core/canvas-colors';
+import {
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_PATTERN_COLOR,
+} from '@liveworkspace/model-core/canvas-colors';
 
 // Standard hex → rgb / rgb → hex / brightness math used to derive colours
 // for new elements when the tab background or pattern colour has been

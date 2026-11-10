@@ -18,7 +18,7 @@ Scope, by file:
 | `packages/document/src/entity-fields.ts`                                 | Keys, legacy reading, clean / fit / remap, relationship heads, presets  |
 | `packages/document/src/entity-related.ts`                                | `buildRelatedEntity`: Add Related Entity's entity and relationship      |
 | `packages/document/src/entity-look.ts`                                   | Tints, type face, key glyph paths and inks                              |
-| `packages/document/src/geometry.ts`                                      | `endpointPosition` / `fieldEndPosition`: a field end's point            |
+| `../packages/element-model/src/geometry.ts`                              | `endpointPosition` / `fieldEndPosition`: a field end's point            |
 | `packages/document/src/arrow-rebind.ts`, `arrow-rebind-swap.ts`          | A field end keeps its field on a move                                   |
 | `packages/document/src/svg-render-entity.ts`                             | `svgEntityRows`: the export body                                        |
 | `../packages/model-core/src/label-font.ts`                               | `LABEL_FONT_PX`, `labelFontPx`: the title's px table                    |

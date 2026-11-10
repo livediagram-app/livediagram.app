@@ -22,7 +22,12 @@ import { defaultFillColor } from './colors';
 import { rotatePoint, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, ShapeElement } from './index';
 import { SHAPE_GEOMETRY_KINDS } from './shape-kind';
-import { BROWSER_CHROME, shapeGeometry, type ShapePart, type ShapePartRole } from './shape-geometry';
+import {
+  BROWSER_CHROME,
+  shapeGeometry,
+  type ShapePart,
+  type ShapePartRole,
+} from './shape-geometry';
 import type { ShapeKind } from './shape-kind';
 import { boxFit } from './svg-shape-fit';
 import {

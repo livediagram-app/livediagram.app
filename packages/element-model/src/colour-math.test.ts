@@ -49,7 +49,10 @@ describe('contrast', () => {
   it('is the WCAG ratio, order-independent, NaN on anything unread', () => {
     expect(contrastRatio('#fff', '#000000')).toBeCloseTo(21, 5);
     expect(contrastRatio('black', 'white')).toBeCloseTo(21, 5);
-    expect(contrastRatio('#777777', '#ffffff')).toBeCloseTo(contrastRatio('#ffffff', '#777777'), 10);
+    expect(contrastRatio('#777777', '#ffffff')).toBeCloseTo(
+      contrastRatio('#ffffff', '#777777'),
+      10,
+    );
     expect(contrastRatio('nope', '#ffffff')).toBeNaN();
   });
 

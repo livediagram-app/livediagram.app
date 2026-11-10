@@ -44,7 +44,6 @@ export function defaultPadding(element: BoxedElement): Padding {
   }
 }
 
-
 // The green that means FINISHED on the Collaborate cards: a resolved comment
 // thread, a done action (docs/specs/012-collaboration/comment-pin.md, action-panel.md). One value, so the
 // canvas and the export agree on what done looks like.

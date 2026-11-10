@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
 import { SHAPE_GEOMETRY_KINDS } from './shape-kind';
-import { BROWSER_CHROME, browserChromeLayout, DIAMOND_POINTS, shapeGeometry, type ShapePart } from './shape-geometry';
+import {
+  BROWSER_CHROME,
+  browserChromeLayout,
+  DIAMOND_POINTS,
+  shapeGeometry,
+  type ShapePart,
+} from './shape-geometry';
 import { scaledPolygonPoints } from './svg-render-shapes';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 import { SHAPE_KINDS } from './validate';

@@ -38,7 +38,14 @@ import {
   eachRectMeeting,
   type RectGrid,
 } from '@liveworkspace/model-core/rect-grid';
-import { isBoxed, type ArrowElement, type BoxedElement, type Element, type ElementId, type ElementIndex } from './index';
+import {
+  isBoxed,
+  type ArrowElement,
+  type BoxedElement,
+  type Element,
+  type ElementId,
+  type ElementIndex,
+} from './index';
 import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';
 
 type Pt = { x: number; y: number };

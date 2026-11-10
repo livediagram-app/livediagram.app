@@ -76,7 +76,12 @@ describe('the measuring helpers', () => {
 describe('svgIconGlyph', () => {
   const r = { x: 4, y: 6, width: 24, height: 24 };
   it('strokes a line icon in the colour given', () => {
-    const svg = svgIconGlyph({ x: 10, y: 20 }, { markup: '<path d="M0 0"/>', colored: false }, r, '#123456');
+    const svg = svgIconGlyph(
+      { x: 10, y: 20 },
+      { markup: '<path d="M0 0"/>', colored: false },
+      r,
+      '#123456',
+    );
     expect(svg).toContain('x="14" y="26"');
     expect(svg).toContain('stroke="#123456"');
   });

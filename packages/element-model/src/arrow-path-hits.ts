@@ -2,7 +2,13 @@
 // (docs/specs/008-canvas/arrow-anchors.md "The trigger", "Crossings on one
 // side"): does it run through a shape, and do two paths cross.
 
-import { isBoxed, type ArrowElement, type BoxedElement, type Element, type Endpoint } from './element';
+import {
+  isBoxed,
+  type ArrowElement,
+  type BoxedElement,
+  type Element,
+  type Endpoint,
+} from './element';
 import { arrowStyleOf } from './arrow-style';
 import type { ElementIndex } from './geometry';
 import { arrowPathPolyline } from './arrow-path';

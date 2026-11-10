@@ -8,7 +8,7 @@
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/model-core/border-style';
 import { actorFigureRect } from './actor-figure';
 import { finishBorderStroke, type Finish } from './finish';
-import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
+import type { BoxedElement, FreehandElement, PathElement } from './index';
 import { isCompoundPath, pathElementD } from './path-element';
 import { graphemes, r2, xmlEscape } from './svg-render-primitives';
 import { shapeRoleAttrs as roleAttrs } from '@liveworkspace/element-model/svg-shape-role';
@@ -36,7 +36,7 @@ import {
 // self-drawing data shapes (progress / rail / rating / charts) and icons are
 // handled elsewhere.
 export function hasShapeSilhouette(kind: string): boolean {
-  return kind !== 'diamond' && shapeGeometry(kind as ShapeKind) !== null;
+  return kind !== 'diamond' && shapeGeometry(kind) !== null;
 }
 
 // One table part as markup, in its viewBox space.

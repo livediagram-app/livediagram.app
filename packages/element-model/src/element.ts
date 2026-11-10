@@ -7,7 +7,13 @@
 // these. Functions that only read take these types; functions that hand elements back are generic
 // (`<E extends Element>(el: E) => E`), so a caller keeps its product's precise type.
 
-import type { ElementId, Padding, TextAlignX, TextAlignY, TextSize } from '@liveworkspace/model-core/basics';
+import type {
+  ElementId,
+  Padding,
+  TextAlignX,
+  TextAlignY,
+  TextSize,
+} from '@liveworkspace/model-core/basics';
 import type { BorderStyle } from '@liveworkspace/model-core/border-style';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 
