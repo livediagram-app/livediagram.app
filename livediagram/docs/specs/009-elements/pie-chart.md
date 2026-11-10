@@ -54,7 +54,7 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   names each column under its baseline, so its legend can be turned off; a name wider than its column's share is cut
   with an ellipsis, and dropped when not one letter fits, so neighbours never overprint. Numbers read short from
   10,000 up: 120000 as 120k, 1500000 as 1.5M, at most one decimal, in the unit the rounded number reads in (999,960 is
-  1M, not 1000k); under that in full (1,080). A wedge's number takes the ink that reads on its colour; the rest take the chart's text
+  1M, not 1000k); under that in full (1,080). A small value that rounds to nothing reads 0, never -0. A wedge's number takes the ink that reads on its colour; the rest take the chart's text
   colour, at the key's size. The editor's toggle fires `Element·Changed·ChartValues`. It is a display option of the
   chart, so it follows the Chart category's gating: an Editor changes it; a Participant or Viewer sees the numbers.
 - Under Show Values, **Show Axis** (`chartAxis`, off by default, so a chart made before it draws as it did) draws the
@@ -62,7 +62,8 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   times a power of ten, four or five of them, the range widened to the next round value past the largest and
   smallest, zero always in it) and a faint gridline across the plot at each, the plot drawn in from the side the
   labels take. A column or line chart labels its left side; a bar chart its bottom. Numbers read as Show Values'
-  do (120k, 1.5M). The toggle fires `Element·Changed·ChartAxis`; the gating is Show Values'.
+  do (120k, 1.5M), with as many decimals as a step under one needs, so no two ticks read the same (0.02, 0.04). The
+  toggle fires `Element·Changed·ChartAxis`; the gating is Show Values'.
 - **A second axis**: a line, area or scatter series marked `axis: "right"` is drawn against a scale of its own,
   worked out from the right-hand series alone, so a series in the thousands and one in the tens both read (signups
   against paid). With Show Axis on, the right side carries that scale's tick labels in the chart's text colour,
@@ -111,7 +112,7 @@ Chart" and a screen reader hears "Column chart", as the palette's tile says, nev
   bar's), and a column's name stays under the whole plot, never in among the hanging columns. Show Axis covers the
   negatives too: its ticks run from a round value under the smallest to one over the largest, zero always a tick.
   A chart with no negative value draws exactly as before (the baseline at the plot's foot). Only a pie reads below
-  zero as zero. The Data section takes a negative value on a column or bar chart, the minus typed first or last; on
+  zero as zero. A value that is not a number draws as zero. The Data section takes a negative value on a column or bar chart, the minus typed first or last; on
   a pie its values stop at zero.
 - **Scatter's x**: when every category reads as a number (`12`, `-3.5`, `1,200`), each point sits at its number on
   an x-axis running from the least to the greatest (widened by 1 when they are all equal), labelled at five evenly
