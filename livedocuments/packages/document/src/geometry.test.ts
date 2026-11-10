@@ -301,7 +301,7 @@ describe('type predicates', () => {
     // Image elements don't show the Colours accordion; the negative case
     // stops a future refactor that "simplifies" the predicate to
     // `isBoxed || arrow` and silently changes the surfaced fields.
-    expect(supportsColours({ ...shape('e'), type: 'image', imageId: null })).toBe(false);
+    expect(supportsColours({ ...shape('e'), type: 'image', imageId: null } as Element)).toBe(false);
   });
 
   it('supportsBorder is true for shape and freehand only', () => {
