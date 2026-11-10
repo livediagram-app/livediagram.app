@@ -4,13 +4,8 @@ import { anchorAimPoint, exitSideTowards, facingSideTowards } from './anchor-cho
 import { arrowPolyline, pathPassesThrough, pinnedBoxedElement } from './arrow-path-hits';
 import { freeEndsAttachedTo } from './arrow-free-ends';
 import { swapCrossingEnds } from './arrow-rebind-swap';
-import {
-  anchorPosition,
-  buildElementIndex,
-  centreOf,
-  endpointPosition,
-  type ElementIndex,
-} from './geometry';
+import { type ElementIndex } from './index';
+import { anchorPosition, buildElementIndex, centreOf, endpointPosition } from './geometry';
 import { pointDistance, type Point } from '@liveworkspace/model-core/geometry-primitives';
 
 // THE AUTO-REBIND (docs/specs/008-canvas/arrow-anchors.md "Auto-rebind").

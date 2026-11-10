@@ -6,8 +6,9 @@
 // without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/model-core/border-style';
 import { finishBorderStroke, type Finish } from './finish';
-import type { BoxedElement, FreehandElement, ShapeKind } from './index';
+import type { BoxedElement, FreehandElement } from './index';
 import { graphemes, r2, xmlEscape } from './svg-render-primitives';
+import { shapeRoleAttrs as roleAttrs } from '@liveworkspace/element-model/svg-shape-role';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
@@ -19,10 +20,8 @@ import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import {
   BROWSER_CHROME,
   browserChromeLayout,
-  SHAPE_DETAIL_STROKE_PX,
   shapeGeometry,
   type ShapePart,
-  type ShapePartRole,
 } from './shape-geometry';
 
 // The kinds this module draws: every kind in the geometry table except the
@@ -32,28 +31,7 @@ import {
 // self-drawing data shapes (progress / rail / rating / charts) and icons are
 // handled elsewhere.
 export function hasShapeSilhouette(kind: string): boolean {
-  return kind !== 'diamond' && shapeGeometry(kind as ShapeKind) !== null;
-}
-
-// Each role's paint, matching the overlay's props for the same role.
-// vector-effect keeps the stroke weight even under the stretched viewBox,
-// supported by browsers and resvg alike.
-function roleAttrs(
-  role: ShapePartRole,
-  fill: string,
-  stroke: string,
-  strokeWidth: number,
-  dash?: string,
-): string {
-  const f = xmlEscape(fill);
-  const s = xmlEscape(stroke);
-  const d = dash ? ` stroke-dasharray="${dash}"` : '';
-  switch (role) {
-    case 'main':
-      return ` fill="${f}" stroke="${s}" stroke-width="${strokeWidth}"${d} stroke-linejoin="round" vector-effect="non-scaling-stroke"`;
-    case 'detail':
-      return ` fill="none" stroke="${s}" stroke-width="${SHAPE_DETAIL_STROKE_PX}" stroke-linejoin="round" vector-effect="non-scaling-stroke"`;
-  }
+  return kind !== 'diamond' && shapeGeometry(kind) !== null;
 }
 
 // One table part as markup, in its viewBox space.

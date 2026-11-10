@@ -16,10 +16,12 @@
 // BASE_DIR set it reads the base artifacts from there instead of from main's runs.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { mkdtempSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { coverageIn } from './lcov.mjs';
 
 /** Bound the section of the description this script owns, so a later run replaces only that. */
 export const REPORT_START = '<!-- liveworkspace:coverage-report:start -->';
@@ -29,46 +31,15 @@ export const REPORT_END = '<!-- liveworkspace:coverage-report:end -->';
 const BASE_RUNS_SCANNED = 50;
 
 const ARTIFACT =
-  /^coverage-(livediagram|liveplanner|livedesign|livedocuments|platform)-(tests|editor-\d+)$/;
+  /^coverage-(livediagram|liveplanner|livedesign|livedocuments|livehuddle|platform)-(tests|editor-\d+)$/;
 
 /** @typedef {{ files: number, lines: number, hits: number, misses: number, partials: number }} Totals */
-/** Per file: line → hit count, and `line,block,branch` → whether any report took that branch. */
-/** @typedef {Map<string, { lines: Map<number, number>, branchKeys: Map<string, boolean> }>} Coverage */
+/** @typedef {import('./lcov.mjs').Coverage} Coverage */
 
 /** An artifact's group and kind from its name, or null for any other artifact. */
 export function parseArtifact(/** @type {string} */ name) {
   const m = ARTIFACT.exec(name);
   return m ? { group: m[1], kind: m[2] } : null;
-}
-
-/**
- * Folds an lcov file into `into`. Shards and workspaces overlap on shared files, so a line counts as
- * hit when any report hit it, and a branch as taken when any report took it.
- * @param {string} text
- * @param {Coverage} into
- */
-export function mergeLcov(text, into) {
-  let file = null;
-  for (const raw of text.split('\n')) {
-    const line = raw.trim();
-    if (line.startsWith('SF:')) {
-      const sf = line.slice(3).replace(/\\/g, '/');
-      if (!into.has(sf)) into.set(sf, { lines: new Map(), branchKeys: new Map() });
-      file = into.get(sf);
-    } else if (!file) continue;
-    else if (line.startsWith('DA:')) {
-      const [ln, hits] = line.slice(3).split(',').map(Number);
-      file.lines.set(ln, Math.max(file.lines.get(ln) ?? 0, hits));
-    } else if (line.startsWith('BRDA:')) {
-      const [ln, block, branch, taken] = line.slice(5).split(',');
-      const key = `${ln},${block},${branch}`;
-      const was = file.branchKeys.get(key) ?? false;
-      file.branchKeys.set(key, was || (taken !== '-' && Number(taken) > 0));
-    } else if (line === 'end_of_record') {
-      file = null;
-    }
-  }
-  return into;
 }
 
 /** Per line: [taken, total] branches, from the merged branch keys. */
@@ -206,28 +177,6 @@ export function withReport(/** @type {string | null} */ body, /** @type {string}
   return `${text.slice(0, start)}${section}${after}`;
 }
 
-/** Every lcov.info under `dir`. */
-function lcovFiles(/** @type {string} */ dir) {
-  /** @type {string[]} */
-  const out = [];
-  for (const entry of readdirSync(dir)) {
-    if (entry === 'node_modules') continue;
-    const p = path.join(dir, entry);
-    if (statSync(p).isDirectory()) out.push(...lcovFiles(p));
-    else if (entry === 'lcov.info') out.push(p);
-  }
-  return out;
-}
-
-/** The coverage in artifact folders `dirs`, merged. */
-function coverageIn(/** @type {string[]} */ dirs) {
-  /** @type {Coverage} */
-  const coverage = new Map();
-  for (const dir of dirs)
-    for (const f of lcovFiles(dir)) mergeLcov(readFileSync(f, 'utf8'), coverage);
-  return coverage;
-}
-
 function gh(/** @type {string[]} */ args) {
   return execFileSync('gh', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
 }
@@ -275,6 +224,7 @@ const PRODUCT_NAMES = {
   liveplanner: 'liveplanner',
   livedesign: 'livedesign',
   livedocuments: 'livedocuments',
+  livehuddle: 'livehuddle',
   platform: 'Platform (packages, liveworkspace)',
 };
 

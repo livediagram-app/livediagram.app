@@ -9,6 +9,7 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/model-core": "workspace:*"
   },
   "scripts": {

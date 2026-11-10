@@ -10,7 +10,7 @@ Scope, by file:
 | `packages/design/src/sankey-model.ts`                                                 | Types, option lists, bounds, `SANKEY_DEFAULT_FLOWS`, `sankeyGraph`, name/number formatting, node-style edits    |
 | `packages/design/src/sankey-layout.ts`                                                | `sankeyLayout`: columns, scale, relaxation, band stacking, `sankeyBandPath`, `sankeyCentrePath`                 |
 | `packages/design/src/sankey-frame.ts`                                                 | `sankeyFrame`: colours, band paint, labels and their collisions, summary, readouts                              |
-| `packages/design/src/sankey-text.ts`                                                  | `parseSankeyText`, `sankeyFlowsToText`, `readSankeyNumber`                                                      |
+| `../packages/element-model/src/sankey-text.ts`                                        | `parseSankeyText`, `sankeyFlowsToText`, `readSankeyNumber`                                                      |
 | `packages/design/src/svg-render-sankey.ts`                                            | `svgSankey`: the export                                                                                         |
 | `packages/design/src/shape-kind.ts`, `validate.ts`                                    | `'sankey'` in `ShapeKind` and `SHAPE_KINDS`                                                                     |
 | `packages/design/src/validate-shape.ts`                                               | Field checks                                                                                                    |

@@ -37,7 +37,7 @@ Scope, by file:
 | `../livediagram/apps/editor/components/canvas/BoardSceneNotice.tsx`       | The paste notice                                                                                  |
 | `../livediagram/apps/editor/components/dialogs/BoardSceneReportList.tsx`  | The report's rows, shared by the notice and the Import dialog                                     |
 | `packages/document/src/element-types.ts`, `arrow-types.ts`, `validate.ts` | `penTextColour` on text, shape, sticky and arrow; `penColour` on path                             |
-| `packages/document/src/pen-colours.ts`                                    | `hexOklch` for the colour rules                                                                   |
+| `../packages/element-model/src/pen-colours.ts`                            | `hexOklch` for the colour rules                                                                   |
 | `packages/document/src/stock-colours.ts`                                  | `resolveStockColours` draws `penTextColour`                                                       |
 | `packages/document/src/snap-colours.ts`                                   | `snappableCustomColours` reads text, path and arrow colours too                                   |
 
@@ -150,7 +150,7 @@ medium, else thick; text `<= 16` sm, `<= 22` md, else lg.
    `penColourHex`) → `{ kind: 'stock', name }`: dark-board Yellow is lighter than
    `STOCK_LIGHTNESS_RANGE`, and a board exported and imported again keeps its names.
 4. `C >= max(STOCK_MIN_CHROMA, PEN_NEUTRAL_CHROMA)` and `L` inside `STOCK_LIGHTNESS_RANGE`: the
-   nearest stock colour `penColourAtHue(h)` (the snap's own, `packages/document/src/pen-colours.ts`;
+   nearest stock colour `penColourAtHue(h)` (the snap's own, `../packages/element-model/src/pen-colours.ts`;
    ties to the earlier); when `penColourHueDistance(h, it) <= STOCK_HUE_TOLERANCE_DEG` →
    `{ kind: 'stock', name }`. No colour maths of its own: `hexOklch` (via `sceneOklch`, which first
    expands `#rgb`), `penColourAtHue` and `penColourHueDistance` are the document package's.
