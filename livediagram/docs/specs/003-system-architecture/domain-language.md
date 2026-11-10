@@ -184,12 +184,15 @@ menu's item for putting a tab into another canvas is **Add to Another Canvas**, 
 canvas**, which puts an element on the drawing surface. The flowchart **Document** shape is a shape, not an item, and
 keeps its name.
 
-## This Browser
+## Browser Storage and This Browser
 
-**This Browser** is the one name for a canvas saved only in this browser ([Offline Mode](../006-document/offline-mode.md)):
-the place it lives (the Explorer's This Browser section, beside My Work and the teams), the pill and badge that
-mark it, and where a new guest's documents start. A document is **in This Browser**; it is never "Local Only",
-"Local Browser" or "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline`.
+**Browser Storage** is the Explorer's name for the place a canvas saved only in this browser lives
+([Offline Mode](../006-document/offline-mode.md)): its Space in the sidebar, beside My Work and the teams, its view and folders, its tile on
+Home, and the pill on its Explorer rows and cards (Archived, the Trash, Jump Back In, the Inbox, the editor's
+Explorer panel). The owner renamed it from "This Browser" on 2026-11-10, for clarity. **This Browser** stays the
+editor's badge on such a canvas (the pill at the top of an open canvas, and the editor's own copy). In the
+Explorer a canvas is **in Browser Storage**, never "This Browser", "Local Only" or "Local Browser", and never
+"offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline` and `thisBrowser`.
 
 ## Names in a sentence
 

@@ -6,6 +6,12 @@ The Explorer page is liveworkspace's, served at livedocuments' own `/explorer` b
 
 Other addresses lead somewhere too, so links out there keep working. `/explorer/profile` and `/explorer?settings=notifications` open Settings on Notifications in place, and any other `?settings=` opens livedocuments' own settings there: every notification email ever sent carries one as its unsubscribe link ([profile-and-email-notifications.md](../014-identity/profile-and-email-notifications.md)). `/explorer/activity` replaces itself with the Inbox, `/explorer/unsorted` and `/explorer/dynamic` with My Work, `/explorer/generated` with the Made by AI filter (documents the index records with source `ai`), and `/explorer/offline` is the Explorer's own This Browser view. Signed in, the Explorer's bottom bar has a **Settings** button beside Appearance that opens livedocuments' settings in place.
 
+**Browser Storage.** The owner renamed This Browser to **Browser Storage** in the Explorer on 2026-11-10, for clarity
+([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser, a Space"): its Space
+row and view title, Home's tile, the pill on Explorer rows and cards, the Trash's and Archived's groups, and the
+Explorer's menus, toasts and labels. The editor keeps **This Browser** for its badge on an open item kept only in this
+browser. This spec, like the code and the `/explorer/offline` address, still says This Browser for the place itself.
+
 ## This Browser
 
 Documents kept only in this browser ([Offline Mode](../006-document/offline-mode.md)) never reach the index. livedocuments keeps a small list of them (id, title and dates, never their content) where the Explorer on its address can read it (`@liveworkspace/explorer/this-browser`), and they are the Explorer's **This Browser** view, in the page (`/explorer/offline`) and the editor's panel alike: every one, newest first, read from this browser alone, each opening in the editor. For a signed-in person each row has **Sync Document**, which moves it to the account and so into the Explorer. With none, the view says so. The editor offers the move prompt after signing in ([auth-and-guest-access.md](../014-identity/auth-and-guest-access.md)). `/offline`, the old This Browser page, only redirects to `/explorer/offline`, its query kept (`@liveworkspace/explorer/offline-redirect`). On liveworkspace.app, which can't read this browser's storage for livedocuments, This Browser is never a Space: a quiet row after the Library links to `/explorer/offline` here.

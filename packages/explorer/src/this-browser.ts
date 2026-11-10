@@ -51,10 +51,19 @@ export type ThisBrowserStore = {
   folders: ThisBrowserFolder[];
 };
 
-/** The This Browser pill's words: its label, and the sentence it gives on hover and to assistive technology. */
+/** The editor's This Browser pill's words (the title bar's badge, the editors' search): its label, and the sentence it
+ *  gives on hover and to assistive technology. The Explorer names the same place Browser Storage
+ *  (BROWSER_STORAGE_COPY, owner's rename 2026-11-10). */
 export const THIS_BROWSER_COPY = {
   label: 'This Browser',
   sentence: 'Lives only in this browser. Clearing this browser’s site data deletes it.',
+} as const;
+
+/** The Explorer's name for what is kept only in this browser (one-explorer.md "This Browser, a Space": the owner's
+ *  rename, 2026-11-10): its Space, its view, its tile, its pill on Explorer rows and its Trash and Archived groups. */
+export const BROWSER_STORAGE_COPY = {
+  label: 'Browser Storage',
+  sentence: THIS_BROWSER_COPY.sentence,
 } as const;
 
 /**

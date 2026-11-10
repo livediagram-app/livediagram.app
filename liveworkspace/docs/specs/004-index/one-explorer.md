@@ -298,13 +298,22 @@ What an app keeps only in this browser is a **Space** of its own (owner, 2026-11
 instead, so it isn't hidden in the Library, but only show it when it contains at least 1 item. Also let me create
 folders in it."). It used to be a row under More, after the Library.
 
+**Its name in the Explorer is Browser Storage** (the owner's rename, 2026-11-10, for clarity): the Space's sidebar row
+and view title, Home's tile, the pill on Explorer rows and cards (Archived, the Trash, Jump Back In, the Inbox, the
+editor's Explorer panel), the Trash's and Archived's groups, menus, toasts and labels for assistive technology
+("Moved “X” to Browser Storage.", "Nothing is kept in Browser Storage.", "3 in Browser Storage"). The editor keeps
+**This Browser** for its own badge on such an item (the pill at the top of an open item) and its other copy. These
+specs, like the code (`thisBrowser`, `ThisBrowserItem`, `/explorer/offline`, which keep their names), say This
+Browser for the place itself; every Explorer label they quote reads Browser Storage. Old links keep working: the
+address never changed.
+
 - **Where.** The sidebar's Spaces group, after My Work and the teams and before Invites and New Team, with the
-  browser glyph (`BrowserIcon`) on the teal tile, its count of live items as its badge ("3 in this browser" to a
+  browser glyph (`BrowserIcon`) on the teal tile, its count of live items as its badge ("3 in Browser Storage" to a
   screen reader). It folds and opens like My Work: its children are its folders, nested as My Work's are.
 - **Only while it holds something.** It shows while this browser keeps at least one live item (out of the app's
   Trash and out of Archived) or at least one local folder, and goes when the last goes. It is read from this
   browser's storage once and heard as it changes (no request, no polling, `useThisBrowserSpace`). When it empties
-  under a person on its view, the view stays, saying "Nothing is kept only in this browser." with **Go to My Work**,
+  under a person on its view, the view stays, saying "Nothing is kept in Browser Storage." with **Go to My Work**,
   and the row stays while that view is open, so the highlight never vanishes, as Invites' does.
 - **Folders.** **New Folder** (the view's header, the row's ⋯ and right-click) makes one, in This Browser's root
   or inside the open local folder; each folder's menu (as My Work's folders') has **Open**, **Rename** (in place),
@@ -477,7 +486,7 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   and so the same origin, deletes the record itself (`removeThisBrowserRecord`, @liveworkspace/explorer/this-browser,
   below). Each row says when it last changed in relative words ("Changed 3 hours ago"), its full date
   and time in the browser's locale on hover (`title`), as the panel's rows do; with none, the page and the panel both
-  say "Nothing is kept only in this browser." The view takes the filter lens like My Work (the field and chip
+  say "Nothing is kept in Browser Storage." The view takes the filter lens like My Work (the field and chip
   row), matched in the browser over the list, since the index never sees these items.
 - **This Browser in the Inbox.** The Inbox's rows from those offline items (actions, cards and threads, which the
   index never holds) are worked out by the app's own code. The editor's panel reads them from the offline store

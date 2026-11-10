@@ -184,7 +184,8 @@ export const SIDEBAR_LABELS = {
   invites: 'Invites',
   gallery: 'Image Gallery',
   shapeLibraries: 'Shape Libraries',
-  thisBrowser: 'This Browser',
+  // The owner's rename (2026-11-10): the Explorer's place for items kept only in this browser.
+  thisBrowser: 'Browser Storage',
 } as const;
 
 export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, string> = {

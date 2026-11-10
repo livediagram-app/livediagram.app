@@ -735,7 +735,7 @@ describe('reading', () => {
     });
     const { unmount } = renderInbox(index, { inbox: { localRows } });
     const local = await screen.findByRole('option', { name: /Offline plan/ });
-    expect(local.querySelector('[data-this-browser]')!.textContent).toContain('This Browser');
+    expect(local.querySelector('[data-this-browser]')!.textContent).toContain('Browser Storage');
     // Newest first, whichever side it came from.
     expect(options()[0]).toBe(local);
     expect(options()[1]!.querySelector('[data-this-browser]')).toBeNull();

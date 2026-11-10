@@ -308,14 +308,14 @@ describe("the panel's This Browser", () => {
 
   it('is on the rail with its count while this browser keeps any, and not otherwise', () => {
     renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host() });
-    const entry = within(rail()).getByRole('button', { name: 'This Browser (2)' });
+    const entry = within(rail()).getByRole('button', { name: 'Browser Storage (2)' });
     expect(entry.textContent).toContain('2');
     cleanup();
     renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host({ items: [] }) });
-    expect(within(rail()).queryByRole('button', { name: /This Browser/ })).toBeNull();
+    expect(within(rail()).queryByRole('button', { name: /Browser Storage/ })).toBeNull();
     cleanup();
     renderPanel(createFakeIndex({ items: [] }));
-    expect(within(rail()).queryByRole('button', { name: /This Browser/ })).toBeNull();
+    expect(within(rail()).queryByRole('button', { name: /Browser Storage/ })).toBeNull();
   });
 
   it('opens its pane in place, listing the live ones, each opening in the editor', () => {
@@ -323,9 +323,9 @@ describe("the panel's This Browser", () => {
     const { onOpenExplorer } = renderPanel(createFakeIndex({ items: [] }), {
       thisBrowser: host({ open }),
     });
-    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (2)' }));
-    expect(screen.getByRole('heading', { level: 3, name: 'This Browser' })).toBeTruthy();
-    const list = screen.getByRole('list', { name: 'This Browser' });
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (2)' }));
+    expect(screen.getByRole('heading', { level: 3, name: 'Browser Storage' })).toBeTruthy();
+    const list = screen.getByRole('list', { name: 'Browser Storage' });
     expect(within(list).getAllByRole('listitem')).toHaveLength(2);
     expect(within(list).queryByText('Gone')).toBeNull();
     fireEvent.click(within(list).getByRole('button', { name: 'Kept here' }));
@@ -340,7 +340,7 @@ describe("the panel's This Browser", () => {
     const sync = vi.fn();
     const remove = vi.fn();
     renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host({ sync, remove }) });
-    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (2)' }));
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (2)' }));
     fireEvent.click(screen.getByRole('button', { name: 'Sync Plan: Kept here' }));
     expect(sync).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
     fireEvent.click(screen.getByRole('button', { name: 'Delete Also here' }));
@@ -352,7 +352,7 @@ describe("the panel's This Browser", () => {
 
   it('offers neither Sync nor Delete where the host gives none (a guest)', () => {
     renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host() });
-    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (2)' }));
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (2)' }));
     expect(screen.queryByRole('button', { name: /^Sync/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /^Delete/ })).toBeNull();
   });
@@ -363,7 +363,7 @@ describe("the panel's This Browser", () => {
     const card = screen.getByRole('region', { name: 'Current plan' });
     expect(card.getAttribute('data-current-item')).toBe('this-browser');
     expect(within(card).getByText('Kept here')).toBeTruthy();
-    expect(within(card).getByText('This Browser')).toBeTruthy();
+    expect(within(card).getByText('Browser Storage')).toBeTruthy();
     expect(within(card).getByText(/^Updated /)).toBeTruthy();
   });
 
@@ -421,7 +421,7 @@ describe("the panel's This Browser", () => {
     renderPanel(createFakeIndex({ items: [] }), {
       thisBrowser: host({ items: [local('l1', 'Kept here', { updatedAt: now - 3 * 3_600_000 })] }),
     });
-    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (1)' }));
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (1)' }));
     const when = screen.getByText('Changed 3 hours ago');
     expect(when.tagName).toBe('TIME');
     expect(when.getAttribute('title')).toBe(
@@ -434,7 +434,7 @@ describe("the panel's This Browser", () => {
     renderPanel(createFakeIndex({ items: [] }), {
       thisBrowser: host({ items: [local('l1', 'Kept here', { updatedAt: 9e15 })] }),
     });
-    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (1)' }));
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (1)' }));
     expect(screen.getByText('Changed').tagName).toBe('SPAN');
   });
 
@@ -460,7 +460,7 @@ describe("the panel's This Browser", () => {
       expect.stringContaining('Kept here'),
       expect.stringContaining(indexed.title),
     ]);
-    expect(within(cards[0]!).getByText('This Browser')).toBeTruthy();
+    expect(within(cards[0]!).getByText('Browser Storage')).toBeTruthy();
     expect(cards[0]!.hasAttribute('data-this-browser-card')).toBe(true);
     fireEvent.click(within(cards[0]!).getByRole('button', { name: 'Kept here' }));
     expect(open).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));

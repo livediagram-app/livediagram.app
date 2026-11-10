@@ -99,7 +99,7 @@ function page(
 
 const sections = () => within(screen.getByRole('navigation', { name: 'Sections' }));
 const spaces = () => within(sections().getByRole('tree', { name: 'Spaces' }));
-const browserRow = () => spaces().queryByRole('treeitem', { name: /^This Browser/ });
+const browserRow = () => spaces().queryByRole('treeitem', { name: /^Browser Storage/ });
 
 /** The element once it is there (waitFor retries only on a throw). */
 async function found(selector: string): Promise<HTMLElement> {
@@ -149,15 +149,15 @@ describe('the Space in the sidebar', () => {
       expect(found).toBeTruthy();
       return found!;
     });
-    expect(row.getAttribute('aria-label')).toBe('This Browser (1 in this browser)');
+    expect(row.getAttribute('aria-label')).toBe('Browser Storage (1 in Browser Storage)');
     // After My Work, in the Spaces group, not under More.
     const labels = [...spaces().getAllByRole('treeitem')].map((r) =>
       r.getAttribute('data-tree-label'),
     );
-    expect(labels.indexOf('This Browser')).toBeGreaterThan(labels.indexOf('My Work'));
+    expect(labels.indexOf('Browser Storage')).toBeGreaterThan(labels.indexOf('My Work'));
     expect(
       within(screen.getByRole('tree', { name: 'More' })).queryByRole('treeitem', {
-        name: /This Browser/,
+        name: /Browser Storage/,
       }),
     ).toBeNull();
     act(() => writeThisBrowserStore(APP, { items: [], folders: [] }));
@@ -167,7 +167,7 @@ describe('the Space in the sidebar', () => {
   it('shows for a folder alone, with no count, and never without a host (liveworkspace.app)', async () => {
     writeThisBrowserStore(APP, { items: [], folders: [lf('a', 'Trips')] });
     page({ kind: 'all' });
-    await waitFor(() => expect(browserRow()?.getAttribute('aria-label')).toBe('This Browser'));
+    await waitFor(() => expect(browserRow()?.getAttribute('aria-label')).toBe('Browser Storage'));
     cleanup();
     page({ kind: 'all' }, { bits: null });
     await screen.findByRole('navigation', { name: 'Sections' });
@@ -176,7 +176,7 @@ describe('the Space in the sidebar', () => {
 
   it('stays while its view is open and empty, saying so with the way back', async () => {
     const { onNavigate } = page({ kind: 'offline' });
-    expect(await screen.findByText('Nothing is kept only in this browser.')).toBeTruthy();
+    expect(await screen.findByText('Nothing is kept in Browser Storage.')).toBeTruthy();
     expect(browserRow()).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Go to My Work' }));
     expect(onNavigate).toHaveBeenCalledWith({ kind: 'all' }, expect.anything());
@@ -199,7 +199,7 @@ describe('the Space in the sidebar', () => {
     writeThisBrowserStore(APP, { items: [local(1)], folders: [] });
     page({ kind: 'all' });
     const row = await waitFor(() => browserRow()!);
-    fireEvent.click(within(row).getByRole('button', { name: 'Menu for This Browser' }));
+    fireEvent.click(within(row).getByRole('button', { name: 'Menu for Browser Storage' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'New Folder' }));
     const field = await screen.findByRole('textbox', { name: 'Rename New Folder' });
     fireEvent.change(field, { target: { value: 'Ideas' } });
@@ -248,7 +248,7 @@ describe('the view', () => {
   it('shows the root for a folder that is not there', async () => {
     writeThisBrowserStore(APP, { items: [local(1)], folders: [] });
     page({ kind: 'offline', folder: 'gone' });
-    expect(await screen.findByRole('heading', { level: 1, name: 'This Browser' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Browser Storage' })).toBeTruthy();
     expect(screen.getByText('Local 1')).toBeTruthy();
   });
 
@@ -329,7 +329,7 @@ describe('the view', () => {
     page({ kind: 'offline' });
     fireEvent.click(await screen.findByRole('button', { name: 'Move to Folder: Local 1' }));
     const move = await screen.findByRole('dialog', { name: 'Move to folder' });
-    expect(within(move).getByText('Pick a folder in this browser.')).toBeTruthy();
+    expect(within(move).getByText('Pick a folder in Browser Storage.')).toBeTruthy();
     fireEvent.click(within(move).getByRole('button', { name: /Trips/ }));
     fireEvent.click(within(move).getByRole('button', { name: 'Move Here' }));
     await waitFor(() => expect(readThisBrowserStore(APP).items[0]?.folderId).toBe('a'));
@@ -442,7 +442,7 @@ describe('Home and the phone', () => {
     });
     const { onNavigate } = page({ kind: 'home' });
     const tile = await found('[data-space-tile="this-browser"]');
-    expect(tile.getAttribute('aria-label')).toBe('This Browser');
+    expect(tile.getAttribute('aria-label')).toBe('Browser Storage');
     expect(tile.textContent).toContain('5 plans');
     expect(tile.textContent).toContain('+2');
     fireEvent.click(tile);
@@ -462,7 +462,7 @@ describe('Home and the phone', () => {
     fireEvent.click(bar);
     const drawer = await screen.findByRole('dialog', { name: 'Menu' });
     expect(
-      within(drawer).getAllByRole('treeitem', { name: /^This Browser/ }).length,
+      within(drawer).getAllByRole('treeitem', { name: /^Browser Storage/ }).length,
     ).toBeGreaterThan(0);
   });
 
