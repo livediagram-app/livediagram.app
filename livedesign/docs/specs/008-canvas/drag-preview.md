@@ -31,6 +31,30 @@ a drag's cost to what it moves, whatever the size of the board
 - **A cancelled gesture leaves the design untouched**: Escape, the browser cancelling the
   pointer, or the canvas going away drops the preview, and nothing is written.
 
+## A dragged element keeps its look
+
+An element looks exactly the same while it is dragged as at rest: the same fill, outline, words, header band and
+opacity, in every theme, finish and appearance. Only the selection's own chrome (its outline and grips) shows that it is
+in hand.
+
+- **The canvas draws each element as seen**, not as stored: a theme's colours in the viewer's light or dark half
+  ([Light and dark](../011-theme/light-and-dark.md)), stock colours for the canvas, a label re-inked against what is
+  behind it. A gesture works on the stored elements, so the preview carries the stored colours.
+- **So the preview is drawn as the canvas draws the element at rest**: each element the gesture changes takes its look
+  from the element as drawn, and only what the gesture changed (its place, its size, its ends, or a colour the gesture
+  itself set) from the preview. One rule, in the shared preview the element layer, the selection chrome and every other
+  reader draw from (`@liveworkspace/workbench/lib/drag-look`), so no reader can draw a dragged element another way.
+- **An element the gesture adds** (a Shift-drag copy, a quick-connect arrow) has no look at rest yet: it is drawn
+  through the canvas's own projection, as it will be once dropped. A Shift-drag copy is still translucent while in hand
+  ([Shift-drag duplicate](shift-drag-duplicate.md)): that is the copy, not the element dragged.
+- **A move that only shifts elements then differs from the drawn board in position alone**, so it rides its offset
+  ("Moves ride an offset") in every theme, instead of redrawing each themed element on every frame.
+- **The document is unchanged by it**: what the release writes is the stored elements the gesture made, never the
+  colours a viewer's half drew them in.
+- **Before:** a light theme on a dark screen (or a dark theme on a light one) drew every dragged element in its stored,
+  other-half colours until it was dropped: an indigo entity on a dark canvas turned pale indigo, and back, on every
+  drag. Elements drawn as stored (the Default theme, stickies) never showed it, which is why it looked fixed.
+
 ## Moves ride an offset
 
 A move only shifts elements, so drawing it needs no element drawn again: a moved element looks as

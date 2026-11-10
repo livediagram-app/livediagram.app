@@ -27,7 +27,18 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   of every theme, and every table preset's header title on its band. Bold stays white text, so its fill darkens until
   white reads on it; any other short label (Solid's white on a mid accent, the Border tier's accent on white) is walked
   away from its fill. A preset that already read is unchanged. The shared walk lives in
-  `packages/document/src/readable-colour.ts`; `packages/document/src/theme-presets.test.ts` checks every preset.
+  `../packages/element-model/src/readable-colour.ts`; `packages/document/src/theme-presets.test.ts` checks every preset.
+
+## Colours an agent writes
+
+The editor's pickers store `#rrggbb`, but agents and imports write colours the way CSS does: `#fff`, `#fff8`,
+`#0ea5e980`, `red`, `SlateGray`. Every readability rule above reads all of them as the colour they name
+(`hexToRgb` in the shared element model, `../packages/element-model/src/colour-math.ts`, over the parser every
+product's model shares, `@liveworkspace/model-core/css-colour`): the shorthand `#rgb` and `#rgba`, `#rrggbbaa` (the
+`#` optional throughout, surrounding spaces ignored), and the CSS named colours (any case, trimmed). An alpha digit is
+set aside when an ink is judged. `transparent`, `rgb()` strings and anything else stay unread, and an unread colour is
+drawn as written with its label left alone. So a box an agent fills `#fff` gets the deep label a `#ffffff` box gets,
+and one filled `navy` gets white. The stored value is never rewritten.
 
 ## What a viewer sees
 

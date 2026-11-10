@@ -214,7 +214,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // The palette arrives as a fresh array each render (themeChartPalette): keyed by its colours, so the views
   // re-render only when the colours change.
   const paletteKey = chartPalette?.join('|') ?? '';
-  // oxlint-disable-next-line react/exhaustive-deps
+  // oxlint-disable-next-line react/exhaustive-deps -- keyed on the palette's colours, not the fresh array
   const stablePalette = useMemo(() => chartPalette, [paletteKey]);
   // What every boxed element view takes from this layer, the same for each element.
   const boxedShared = useMemo<BoxedShared>(
@@ -286,6 +286,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     gridFor: (els) => gridTracker.gridFor(els),
     arrowLabels,
     stackedIds,
+    project: props.projectElement,
   });
   const shownOrder = useMemo(
     () => (previewStructure ? shownWithOverlay(ordered, previewStructure) : ordered),

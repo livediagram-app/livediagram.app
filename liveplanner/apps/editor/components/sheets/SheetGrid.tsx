@@ -97,7 +97,7 @@ export function SheetGrid({ elementId, actions, input, pointRef, peers, zoom = 1
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [c.gridEl, c.setView]); // oxlint-disable-line react/exhaustive-deps
+  }, [c.gridEl, c.setView]); // oxlint-disable-line react/exhaustive-deps -- the grid element and the setter; the controller object changes every render
 
   // The wheel scrolls the grid, not the canvas, while the grid can scroll that way (as a board's body).
   useEffect(() => {
@@ -124,7 +124,7 @@ export function SheetGrid({ elementId, actions, input, pointRef, peers, zoom = 1
       height: c.view.height - c.geometry.headH,
     });
     if (next) el.scrollTo({ top: next.top, left: next.left });
-  }, [ar, ac]); // oxlint-disable-line react/exhaustive-deps
+  }, [ar, ac]); // oxlint-disable-line react/exhaustive-deps -- only as the active cell moves, never on a scroll
 
   // This person's selection, said to the room (useSheetPresence's store throttles it).
   useEffect(() => {
@@ -203,8 +203,7 @@ export function SheetGrid({ elementId, actions, input, pointRef, peers, zoom = 1
           highlight: true,
         });
     return out;
-    // `presence` is the store itself (stable); `presenceVersion` says when it moved.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- `presence` is the store itself (stable); `presenceVersion` says when it moved
   }, [
     c.editing?.draft,
     peers,

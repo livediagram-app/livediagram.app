@@ -247,6 +247,48 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
 | A Durable Object marked retryable or overloaded | `503 storage_unavailable`, `Retry-After: 5`           |
 | Anything else a request throws                  | `500 internal_error`; the body never echoes the error |
 
+## The shared element model (`packages/element-model`)
+
+`@liveworkspace/element-model` has no barrel: `package.json` exports `./*` only, one subpath per module. It depends on
+`@liveworkspace/model-core` alone.
+
+- `src/element.ts`: the structural types (`Element`, `BoxedElement`, `ShapeElement`, `TextElement`,
+  `FreehandElement`, `OtherBoxedElement`, `ArrowElement`, `Anchor`, `Endpoint`, `PathHandleMode`) and `isBoxed`, which
+  is true for the eleven boxed kinds any product has (`shape`, `text`, `freehand`, `sticky`, `image`, `path`, `table`,
+  `annotation`, `link-card`, `video`, `article-note`). A field joins a type only when a shared module reads it.
+- The modules, each from the products whose copies were byte-identical (D livediagram, O livedocuments, H livehuddle,
+  S livedesign, P liveplanner): `anchors` (DOSP), `arrow-reciprocal` (DS), `arrow-scale` (DOSP), the auto-layout
+  graph (`auto-layout-crossings`, `-long-edges`, `-shared`, `-tidy-graph` DOSP; `-mindmap`, `-route` DOP;
+  `-tidy-rank` DOS; `-tree` DSP), `element-display-label` (DOSP), `element-grid`, `geometry-guides`, `label-body` and
+  `layer-order` (all five), `hierarchy` (DOS), `legacy-groups` (DS), `legacy-stroke-points` (DO), `malformed-bends`
+  (DOSP), `malformed-chart-rows` (OSP), `malformed-ids` (OHS; livediagram's and liveplanner's also check
+  `flowchartId`, so they keep their own), `nearest-towards` (DSP), `path-geometry` (DS), `sankey-model` (DO),
+  `shadow` (DHSP), `tab-folders` (DOH) and `tag-colours` (DOSP). `entity-geometry` (DP) reads no element, so it is
+  `@liveworkspace/model-core/entity-geometry`.
+- Each of those products keeps `src/<module>.ts` as the binding `export * from '@liveworkspace/element-model/<module>'`
+  (the copies guard leaves such a file out).
+- Generic over the caller's own type: `bringToFront`, `sendToBack`, `bringManyToFront`, `sendManyToBack`,
+  `bowReciprocalEdges`, `reanchorArrow`, `routeTidyArrows` (and `RouteInput`, `RouteRequest`), `nearestElementTowards`,
+  the element grid (`ElementGrid<E>`, `buildElementGrid`, `updateElementGrid`, `queryElementGrid`, `elementGridFor`,
+  `createElementGridTracker`), `dropMalformedBends`, `settleChartRows`, `dropMalformedIds`, `migrateLegacyGroups`,
+  `migrateLegacyStrokePoints` and `withTagAccent`.
+- The tests that were identical beside a moved module moved with it; a product's own test of a moved module stays in
+  the product and runs through its binding.
+- Settled, then moved (part 2; the version every product took is named, and each behaviour a product gained is in its
+  own specs): `svg-render-primitives` (D's, with S's plain-text fast path; P gains emoji-safe word breaking),
+  `svg-render-labels` (D's; P gains the mid-word run glue), `arrow-style` (D's `arrowheadLengthPx`), `colour-math`
+  (split out of each `colors.ts`, D's: O, S and P gain shorthand, alpha and named colours in contrast, P in every
+  read), `readable-colour` (D's: O, S and P gain the shorthand label pick, P the walk back past a mid grey),
+  `pen-colours` (D's), `shape-geometry` (D's table, every product's kinds; `DRAWN_GEOMETRY_KINDS`, each product's
+  `SHAPE_GEOMETRY_KINDS` the ones it holds), `shape-outline`, `geometry` (D's: the entity field ends, never reached
+  where a product has no entity) and `svg-shape-role` (each `svg-render-shapes.ts`'s role paint). With them, the
+  groups they held back: `actor-figure` (DHP), `anchor-choice`, `anchor-layouts`, `arrow-dash`, `arrow-path`,
+  `arrow-path-hits`, `arrow-snapping`, `auto-layout-placement`, `er-heads`, `sankey-text` (DOSP), `concept-ramp`
+  (DOSP), `page-ink-contrast` (OS) and `standard-colours` (all five). livehuddle keeps its own `geometry`,
+  `shape-geometry` and `shape-outline` (its furniture and retired kinds).
+- `ElementIndex<E>`, `buildElementIndex`, `elementIndexFor`, `isElementIndex` and `pinnedBoxedElement` are generic;
+  each product's index binds `ElementIndex` to its `Element`.
+
 ## Testing
 
 | Test                                                                                         | Pins                                                                                                                                                                                                                                                                                                |

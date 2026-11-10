@@ -20,8 +20,14 @@ export type CommentReactionDef = (typeof COMMENT_REACTIONS)[number];
 
 // One person's reaction. `by` is their public collab key (the id a done check or an estimate is recorded under,
 // never an owner id, which for a guest is their credential); `name` is the name they had when they reacted, kept
-// so the list of who reacted reads without the roster.
-export type CommentReaction = { emoji: CommentReactionId; by: string; name: string };
+// so the list of who reacted reads without the roster. `person`, where a server stamps it (liveplanner's card threads),
+// is their hashed person id, the public id a closed account's anonymising finds them by; older reactions lack it.
+export type CommentReaction = {
+  emoji: CommentReactionId;
+  by: string;
+  name: string;
+  person?: string;
+};
 
 // Bounds on what a comment may hold, so a hand-crafted frame cannot bloat a peer: every person once per emoji is
 // far more than a real conversation reaches.
@@ -47,7 +53,10 @@ export function isCommentReaction(value: unknown): value is CommentReaction {
   if (!value || typeof value !== 'object') return false;
   const r = value as Record<string, unknown>;
   return (
-    isReactionId(r.emoji) && isText(r.by, REACTION_BY_MAX) && isText(r.name, REACTION_NAME_MAX)
+    isReactionId(r.emoji) &&
+    isText(r.by, REACTION_BY_MAX) &&
+    isText(r.name, REACTION_NAME_MAX) &&
+    (r.person === undefined || isText(r.person, REACTION_BY_MAX))
   );
 }
 
@@ -67,12 +76,26 @@ export function isCommentReactions(value: unknown): value is CommentReaction[] |
 }
 
 // A reaction change as it travels: `on` adds `by`'s `emoji`, off takes it away.
-export type ReactionChange = { emoji: CommentReactionId; by: string; name: string; on: boolean };
+export type ReactionChange = {
+  emoji: CommentReactionId;
+  by: string;
+  name: string;
+  person?: string;
+  on: boolean;
+};
 
 export function isReactionChange(value: unknown): value is ReactionChange {
   if (!value || typeof value !== 'object') return false;
   return typeof (value as { on?: unknown }).on === 'boolean' && isCommentReaction(value);
 }
+
+// A reaction as stored: its person only when it has one.
+const reactionOf = (r: CommentReaction): CommentReaction => ({
+  emoji: r.emoji,
+  by: r.by,
+  name: r.name,
+  ...(r.person !== undefined ? { person: r.person } : {}),
+});
 
 // The one toggle. Returns the SAME list when nothing changes (already on, already off, full), so callers keep
 // identity; undefined once the last reaction goes, so a comment with none carries no field at all.
@@ -84,7 +107,7 @@ export function withReaction(
   const at = list.findIndex((r) => r.emoji === change.emoji && r.by === change.by);
   if (change.on) {
     if (at >= 0 || list.length >= REACTIONS_PER_COMMENT_MAX) return reactions as CommentReaction[];
-    return [...list, { emoji: change.emoji, by: change.by, name: change.name }];
+    return [...list, reactionOf(change)];
   }
   if (at < 0) return reactions as CommentReaction[];
   const next = list.filter((_, i) => i !== at);
@@ -188,7 +211,7 @@ export function cleanReactions(value: unknown): CommentReaction[] | undefined {
     const key = `${r.emoji}\u0000${r.by}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ emoji: r.emoji, by: r.by, name: r.name });
+    out.push(reactionOf(r));
   }
   return out.length ? out : undefined;
 }

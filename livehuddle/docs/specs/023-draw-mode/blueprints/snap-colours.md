@@ -13,7 +13,7 @@ Scope, by file:
 
 | File                                                                                                                  | Role                                                                          |
 | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/document/src/pen-colours.ts`                                                                                | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
+| `../packages/element-model/src/pen-colours.ts`                                                                        | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
 | `packages/document/src/snap-colours.ts`                                                                               | `SNAP_COLOUR_FIELDS`, `snappableCustomColours`, `snapTabColours` (pure)       |
 | `packages/api-schema/src/telemetry-schema.ts`, liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts | The `SnapColours` token's comment and its dashboard sentence                  |
 

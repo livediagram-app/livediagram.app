@@ -62,6 +62,17 @@ describe('checks', () => {
     expect(isCommentReactions(full)).toBe(false);
   });
 
+  // A server-stamped person (liveplanner's card threads): kept when it is a bounded string, refused otherwise.
+  it('keeps a reaction’s person through the toggle and the clean, and refuses a malformed one', () => {
+    const stamped: CommentReaction = { ...ana, person: 'a1b2c3' };
+    expect(isCommentReaction(stamped)).toBe(true);
+    expect(isCommentReaction({ ...ana, person: 7 })).toBe(false);
+    expect(isCommentReaction({ ...ana, person: '' })).toBe(false);
+    expect(withReaction(undefined, { ...stamped, on: true })).toEqual([stamped]);
+    expect(withReaction(undefined, { ...ana, on: true })![0]).not.toHaveProperty('person');
+    expect(cleanReactions([stamped, sam])).toEqual([stamped, sam]);
+  });
+
   it('takes a change only with its on flag', () => {
     expect(isReactionChange({ ...ana, on: true })).toBe(true);
     expect(isReactionChange(ana)).toBe(false);

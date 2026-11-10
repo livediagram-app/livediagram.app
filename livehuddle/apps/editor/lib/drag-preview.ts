@@ -8,6 +8,7 @@
 import { useSyncExternalStore } from 'react';
 import { elementIndexFor, type Element } from '@livehuddle/document';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
+import { overlayAsDrawn } from '@liveworkspace/workbench/lib/drag-look';
 
 export type DragOverlay = {
   tabId: string;
@@ -162,8 +163,14 @@ export function applyOverlay(elements: readonly Element[], overlay: DragOverlay)
 }
 
 // Every preview for a tab, merged: collaborators' patches resolved against `elements` (ids it lacks are
-// skipped), then ours over them.
-function mergedFor(tabId: string, elements: readonly Element[]): DragOverlay | null {
+// skipped), then ours over them. Ours is laid over the stored board, so each element it changes takes the look
+// `elements` draws it with, and each it adds goes through `project`, the canvas's own projection
+// ("A dragged element keeps its look"; workbench drag-look).
+function mergedFor(
+  tabId: string,
+  elements: readonly Element[],
+  project?: (el: Element) => Element,
+): DragOverlay | null {
   let forTab = merged.get(tabId);
   if (!forTab) {
     forTab = new WeakMap();
@@ -173,7 +180,10 @@ function mergedFor(tabId: string, elements: readonly Element[]): DragOverlay | n
   const theirs = [...peers.values()].filter(
     (p) => p.tabId === tabId && (p.patches.length > 0 || p.ride !== null),
   );
-  const ours = local && local.tabId === tabId ? local : null;
+  const ours =
+    local && local.tabId === tabId && localBase
+      ? overlayAsDrawn(local, elementIndexFor(localBase), elementIndexFor(elements), project)
+      : null;
   let overlay: DragOverlay | null = ours;
   if (theirs.length > 0) {
     const byId = new Map(elements.map((el) => [el.id, el] as const));
@@ -203,9 +213,14 @@ function mergedFor(tabId: string, elements: readonly Element[]): DragOverlay | n
 export const subscribeDragPreview = listeners.subscribe;
 
 // The tab's merged preview for drawing `elements`, read outside React (a store deriving from it on each
-// change); null when nobody is dragging there. The same object until something changes.
-export function dragPreviewFor(tabId: string, elements: readonly Element[]): DragOverlay | null {
-  return mergedFor(tabId, elements);
+// change); null when nobody is dragging there. The same object until something changes. `project` draws an
+// element the preview adds as the canvas would (the stock-colour projector's `one`).
+export function dragPreviewFor(
+  tabId: string,
+  elements: readonly Element[],
+  project?: (el: Element) => Element,
+): DragOverlay | null {
+  return mergedFor(tabId, elements, project);
 }
 
 // The tab's merged preview, for drawing `elements`; null when nobody is dragging there.

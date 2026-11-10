@@ -1345,7 +1345,6 @@ function PlaceSection({
   const view = paneView(section, folderId);
   const list = useMemo(
     () => viewList(client, view, app, filter, sharedMeta.current),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [client, app, filter, view.kind, 'id' in view ? view.id : null, folderId],
   );
   const state = useItemList({

@@ -11,7 +11,7 @@ import { removeJob, runChunk, startJob, type ExportBucket, type RunContext } fro
 import { JobStore, viewOf, type Sql } from './store';
 
 const log = (event: string, fields: Record<string, unknown>) =>
-  console.log(`[export] ${event}`, JSON.stringify(fields));
+  console.info(`[export] ${event}`, JSON.stringify(fields));
 
 const newExportId = () => {
   const bytes = crypto.getRandomValues(new Uint8Array(12));

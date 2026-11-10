@@ -96,7 +96,7 @@ beforeEach(() => {
     }
     return new Response(null, { status: 404 });
   });
-  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
   env = {
     BASE_URL: BASE,

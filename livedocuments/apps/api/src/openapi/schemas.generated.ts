@@ -1686,6 +1686,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "person": {
+        "type": "string"
       }
     },
     "required": [
@@ -3377,7 +3380,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "HuedPenColourName": {
-    "description": "The eight hued stock colours, each tuned per backdrop.",
+    "description": "The eight hued stock colours, each tuned per board.",
     "enum": [
       "blue",
       "red",

@@ -323,7 +323,7 @@ describe('the answer shape the provider is held to', () => {
 
 describe('what leaves this worker', () => {
   it('sends the crops labelled by id, and writes none of them down', async () => {
-    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {});
     globalThis.fetch = providerSays({ texts: [{ id: 7, text: 'Order placed', legible: true }] });
     await handleAiReadNotes(makeCtx({ body: { crops: [{ id: 7, image: TINY_JPEG }] } }));
     const sent: unknown = JSON.parse(

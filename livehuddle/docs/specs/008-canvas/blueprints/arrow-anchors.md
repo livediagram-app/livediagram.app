@@ -12,7 +12,7 @@ Scope, by file:
 | File                                                             | Role                                                                                               |
 | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `livediagram/packages/document/src/arrow-types.ts`               | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
-| `livediagram/packages/document/src/anchors.ts`                   | The anchor table: side, position class, box fraction, outward vector                               |
+| `../packages/element-model/src/anchors.ts`                       | The anchor table: side, position class, box fraction, outward vector                               |
 | `packages/document/src/shape-outline.ts`                         | Anchoring outlines, outline projection, point-inside test                                          |
 | `../packages/model-core/src/svg-path-outline.ts`                 | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
 | `livediagram/packages/document/src/anchor-layouts.ts`            | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |

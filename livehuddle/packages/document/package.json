@@ -12,6 +12,7 @@
   "dependencies": {
     "@livehuddle/avatar": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/element-model": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },
@@ -19,7 +20,7 @@
     "lint": "oxlint",
     "test": "vitest run",
     "stroke-points": "node --import ../../scripts/ts-source-hooks.mjs scripts/expand-stroke-points.ts",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage && vitest-budgets",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo coverage"
   },

@@ -26,12 +26,19 @@ export function elementAsSeen(
   return resolveStockColours(viewElementInTheme(el, themeMap), surface);
 }
 
-export function createStockColourProjector(): (
+export type StockColourProjector = ((
   elements: Element[],
   surface: CanvasSurface,
   themeMap?: ReadonlyMap<string, string>,
   canvases?: { stored: string; drawn: string },
-) => Element[] {
+) => Element[]) & {
+  // One element as the last board was drawn (its surface and theme map): what a drag preview adds (a Shift or Alt
+  // copy, a quick-connect arrow) is drawn through it (docs/specs/008-canvas/drag-preview.md "A dragged element keeps
+  // its look"). Cached per element, as the board is; the element itself before any board was drawn.
+  one: (el: Element) => Element;
+};
+
+export function createStockColourProjector(): StockColourProjector {
   let cacheSurface: CanvasSurface | null = null;
   let cacheMap: ReadonlyMap<string, string> | null = null;
   let cacheCanvases = '';
@@ -43,7 +50,7 @@ export function createStockColourProjector(): (
   // frame) gets the same array back, so nothing derived from the board recomputes.
   let lastIn: Element[] | null = null;
   let lastOut: Element[] = [];
-  return (elements, surface, themeMap = NO_THEME_MAP, canvases) => {
+  const project: StockColourProjector = (elements, surface, themeMap = NO_THEME_MAP, canvases) => {
     const canvasKey = canvases ? `${canvases.stored}|${canvases.drawn}` : '';
     if (surface !== cacheSurface || themeMap !== cacheMap || canvasKey !== cacheCanvases) {
       cacheSurface = surface;
@@ -85,4 +92,14 @@ export function createStockColourProjector(): (
     }
     return lastOut;
   };
+  project.one = (el) => {
+    if (cacheSurface === null || !cacheMap) return el;
+    let projected = cache.get(el);
+    if (!projected) {
+      projected = elementAsSeen(el, cacheSurface, cacheMap);
+      cache.set(el, projected);
+    }
+    return projected;
+  };
+  return project;
 }

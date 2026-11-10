@@ -118,7 +118,7 @@ export async function archiveItem(ctx: RouteContext, id: string): Promise<Respon
   }
   // Its owner's mirror (a team item's leaves no personal mirror behind).
   touchItem(ctx.drive, { owner_id: row.owner_id, team_id: null });
-  console.log('[index] archived', {
+  console.info('[index] archived', {
     app: row.app,
     team: row.team_id !== null,
     links: codes.length,

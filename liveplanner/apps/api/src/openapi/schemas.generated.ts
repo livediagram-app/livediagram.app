@@ -1589,6 +1589,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "resolvedBy": {
         "type": "string"
       },
+      "resolvedById": {
+        "type": "string"
+      },
       "rev": {
         "type": "number"
       },
@@ -2417,6 +2420,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/CommentReactionId"
       },
       "name": {
+        "type": "string"
+      },
+      "person": {
         "type": "string"
       }
     },

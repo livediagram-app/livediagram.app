@@ -10,7 +10,7 @@ import {
   STALE_PURGE_DAYS,
   type IndexPurgeConfig,
 } from './index-purge.ts';
-import { createTeam, teamsClaim } from './teams.ts';
+import { answerInvitation, createTeam, inviteMember, teamsClaim } from './teams.ts';
 import { addUser, testD1 } from './test-d1.ts';
 
 const INDEX_URL = 'https://liveworkspace.app/api/index';
@@ -276,6 +276,65 @@ describe('deleteAccount', () => {
       expect.objectContaining({ body: { personId: 'user_ada', teamIds: [solo.value.id] } }),
     ]);
     expect(pending()).toEqual([]);
+  });
+
+  it('leaves no accounts row holding the closed account’s id', async () => {
+    const ada = { id: 'user_ada', email: 'ada@example.com' };
+    const bea = { id: 'user_bea', email: 'bea@example.com' };
+    // A team Ada made and invited Bea to (Bea joined, so it outlives her), an invitation of hers still waiting,
+    // and old livediagram guests: one she claimed, one she was claiming when she closed, one Bea claimed.
+    const team = (await createTeam(db, ada, 'Shared')) as { ok: true; value: { id: string } };
+    const invited = await inviteMember(db, ada, team.value.id, bea.email, 'member');
+    if (!invited.ok) throw new Error(invited.error);
+    await answerInvitation(db, bea, invited.value.member.id, true);
+    await inviteMember(db, ada, team.value.id, 'cy@example.com', 'member');
+    const guest = sql.prepare(
+      `INSERT INTO legacy_guest (id, firstSeenAt, claimedAt, claimedBy, claimingBy, claimingUntil)
+       VALUES (?, 1, ?, ?, ?, ?)`,
+    );
+    guest.run('guest_a', 5, 'user_ada', null, null);
+    guest.run('guest_b', null, null, 'user_ada', Date.now() + 60_000);
+    guest.run('guest_c', 5, 'user_bea', null, null);
+
+    expect((await close()).status).toBe(200);
+
+    // Every column of every table, searched for the id. The Timeline outbox holds the team events it has yet to
+    // hand the index (which anonymises them there): it is a queue, emptied as the index takes them.
+    const tables = sql
+      .prepare(
+        `SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
+           AND name NOT IN ('d1_migrations', 'index_timeline_outbox')`,
+      )
+      .all() as { name: string }[];
+    const holding: string[] = [];
+    for (const { name } of tables) {
+      const columns = sql.prepare(`SELECT name FROM pragma_table_info(?)`).all(name) as {
+        name: string;
+      }[];
+      for (const column of columns) {
+        const { n } = sql
+          .prepare(
+            `SELECT COUNT(*) AS n FROM "${name}" WHERE CAST("${column.name}" AS TEXT) LIKE '%user_ada%'`,
+          )
+          .get() as { n: number };
+        if (n > 0) holding.push(`${name}.${column.name}`);
+      }
+    }
+    expect(holding).toEqual([]);
+    expect(tables.length).toBeGreaterThan(20);
+    // What she touched now names `deleted`, and Bea's stay hers.
+    expect(
+      sql
+        .prepare('SELECT id, claimedBy, claimingBy, claimingUntil FROM legacy_guest ORDER BY id')
+        .all(),
+    ).toEqual([
+      { id: 'guest_a', claimedBy: 'deleted', claimingBy: null, claimingUntil: null },
+      { id: 'guest_b', claimedBy: null, claimingBy: null, claimingUntil: null },
+      { id: 'guest_c', claimedBy: 'user_bea', claimingBy: null, claimingUntil: null },
+    ]);
+    expect(
+      sql.prepare('SELECT DISTINCT invitedBy FROM team_member WHERE invitedBy IS NOT NULL').all(),
+    ).toEqual([{ invitedBy: 'deleted' }]);
   });
 
   it('keeps the teams an earlier request named and adds new ones', async () => {

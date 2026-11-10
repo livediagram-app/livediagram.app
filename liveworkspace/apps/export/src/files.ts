@@ -10,8 +10,7 @@ export { toCsv };
 
 export const NAME_MAX = 80;
 
-// Characters no file system takes in a name, and control characters.
-// oxlint-disable-next-line no-control-regex
+// oxlint-disable-next-line no-control-regex -- characters no file system takes in a name, and control characters
 const UNSAFE = /[\\/:*?"<>|\u0000-\u001f\u007f]+/g;
 
 /** A name made safe for a file or folder: unsafe characters become spaces, trimmed, at most NAME_MAX characters. */

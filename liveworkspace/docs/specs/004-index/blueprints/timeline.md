@@ -9,6 +9,7 @@ Scope, by file:
 | File                                           | Role                                                                                                                                                                                                      |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/index/src/timeline.ts`     | `eventStatements`, `moveScopeStatements`, `bulkEventStatements`, `buildTimelineQuery`, `listTimeline`, `timelineNewQuery`, `handleTimeline`, `pushAppEvents`, `pushPersonEvents`, `handleAccountTimeline` |
+| `liveworkspace/apps/index/src/event-key.ts`    | `timelinePersonKey(s)`: the one-way key of a person in `ed:` and `aa:` event ids                                                                                                                          |
 | `liveworkspace/apps/index/src/collab-push.ts`  | `collabEvents`, `retractedComments`: collaboration events from a tab's push                                                                                                                               |
 | `liveworkspace/apps/index/src/visitors.ts`     | Opened and Copied by a Visitor                                                                                                                                                                            |
 | `liveworkspace/apps/index/src/share-expiry.ts` | Share Link Expiring ([sharing.md](sharing.md))                                                                                                                                                            |
@@ -27,11 +28,11 @@ Scope, by file:
 | `shared { level, public? }`, `unshared`                         | link routes                         | a UUID                                           | the item's scope                      |
 | `favourited`                                                    | `PUT /favourites/:id`               | a UUID                                           | the person only                       |
 | `taken_offline`                                                 | `DELETE ?reason=offline`            | `off:<item>:<now>`, no item                      | the person only                       |
-| `edited`                                                        | `PUT /app/items/:id/events`         | `ed:<item>:<person>:<day>`                       | the item's scope                      |
+| `edited`                                                        | `PUT /app/items/:id/events`         | `ed:<item>:<key>:<day>`                          | the item's scope                      |
 | `image_uploaded { count }`                                      | `PUT /app/people/events`            | `im:<app>:<person>:<day>`, no item               | the person only                       |
 | `commented { reply? }`                                          | collab push                         | `cm:<item>:<tab>:<element>:<count>`              | the item's scope                      |
 | `comment_resolved`                                              | collab push                         | `cr:<item>:<tab>:<element>:<count>`              | the item's scope                      |
-| `action_assigned`                                               | collab push                         | `aa:<item>:<tab>:<element>:<action>:<assignee>`  | the item's scope and the assignee     |
+| `action_assigned`                                               | collab push                         | `aa:<item>:<tab>:<element>:<action>:<key>`       | the item's scope and the assignee     |
 | `action_done`                                                   | collab push                         | `ad:<item>:<tab>:<element>:<action>:<updatedAt>` | the item's scope                      |
 | `opened_by_visitor`                                             | a grant through a link              | `vo:<item>:<visitor>:<day>`                      | the owner only                        |
 | `copied_by_visitor`                                             | a copy through a link               | `vc:<item>:<visitor>`                            | the owner only                        |
@@ -112,13 +113,15 @@ account closes. Events about no item that no scope sees any more are swept daily
 | Test                                                    | Pins                                                                                                                                                                                                                                                                                    |
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/index/src/timeline.test.ts` (25)    | what the index records; Remove from Timeline and the new count; a person in many teams; who sees what; what apps report; collaboration from the collab push; events about no item; the bound; one item's history; a team's activity (members only, newcomers included, one index range) |
+| `liveworkspace/apps/index/src/event-key.test.ts` (2)    | the key: stable per person, different between people, fixed-length hex; each person keyed once                                                                                                                                                                                          |
 | `liveworkspace/apps/index/src/visitors.test.ts` (2)     | visitors on the Timeline                                                                                                                                                                                                                                                                |
 | `liveworkspace/apps/index/src/share-expiry.test.ts` (7) | share link expiring                                                                                                                                                                                                                                                                     |
 | `packages/index-app/src/person-events.test.ts`          | the images report                                                                                                                                                                                                                                                                       |
 
 ## Constants and configuration
 
-`TIMELINE_PAGE` 30, `TIMELINE_LIMIT_MAX` 100, `TIMELINE_DISMISS_MAX` 100, `TIMELINE_NEW_CAP` 99, `APP_EVENTS_MAX`
+`TIMELINE_PERSON_KEY_LENGTH` 32 (`event-key.ts`: `<key>` in `ed:` and `aa:` ids, the first 32 hex of
+SHA-256(`liveworkspace:timeline:v1:<person>`); ids from before it keep the person's id), `TIMELINE_PAGE` 30, `TIMELINE_LIMIT_MAX` 100, `TIMELINE_DISMISS_MAX` 100, `TIMELINE_NEW_CAP` 99, `APP_EVENTS_MAX`
 100, `COLLAB_EVENTS_MAX` 100, `ACCOUNT_EVENT_SCOPES_MAX` 250, `ACCOUNT_EVENT_AHEAD_MS` 8 d, `TIMELINE_PLATFORM`
 `'liveworkspace'` (`packages/index-client`); `FUTURE_SLACK_MS` 5 min, `ACTOR_NAME_MAX` 200, `COUNT_MAX` 1000,
 `EVENT_ID_MAX` 300, `TITLE_MAX` 200, `DETAIL_KEYS_MAX` 12, `DETAIL_VALUE_MAX` 500 (`timeline.ts`); `D1_COMPOUND_MAX`

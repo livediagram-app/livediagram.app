@@ -1,7 +1,5 @@
 'use client';
 
-import { trustedHtml } from '@livedocuments/ui';
-
 // A layout previewed on its page while its tile is hovered (docs/specs/007-editor/
 // pages-mode.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
 // page's own background so it covers what is there now, through the same renderer the exports
@@ -9,6 +7,7 @@ import { trustedHtml } from '@livedocuments/ui';
 // does. The page's own words and pictures are carried into it as placing it would carry them
 // (buildPageLayoutOver), so the preview shows exactly what a press lands. Above the element
 // layer, taking no presses.
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { useEffect, useMemo, useState } from 'react';
 import {
   arrowLabelFontStack,
@@ -64,8 +63,7 @@ function LayoutLayer({
         page,
         elements && pages ? elementsOnPage(elements, pages, page.id) : [],
       ),
-    // The page's shape, not its identity, decides the layout; its content, what carries over.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the page's shape, not its identity, decides the layout; its content, what carries over
     [layout, rect.x, rect.y, rect.width, rect.height, elements, pages],
   );
   // The carried pictures, fetched while the preview shows them (inline bytes paint as they are).
@@ -105,7 +103,7 @@ function LayoutLayer({
       height={rect.height}
       viewBox={`${rect.x} ${rect.y} ${rect.width} ${rect.height}`}
       // Our own renderer's output (every label is xmlEscaped inside it).
-      dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+      dangerouslySetInnerHTML={{ __html: sanitizedHtml(markup, 'svg-content') }}
     />
   );
 }

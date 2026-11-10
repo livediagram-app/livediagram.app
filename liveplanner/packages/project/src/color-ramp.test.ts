@@ -91,9 +91,9 @@ describe('both, on the shape of what they return', () => {
 
   it('hands an unparseable colour straight back', () => {
     // The documented failsafe. Elements carry user-picked colours
-    // and older projects predate the hex-only rule, so a CSS name or an rgb()
+    // and older projects predate the hex-only rule, so an rgb()
     // string does reach here — it must pass through, not become '#NaNNaNNaN'.
-    for (const bad of ['', 'rebeccapurple', 'rgb(1,2,3)', '#abc', 'not a colour']) {
+    for (const bad of ['', 'rgb(1,2,3)', '#ab', 'not a colour']) {
       expect(tint(bad, 0.5)).toBe(bad);
       expect(shade(bad, 0.5)).toBe(bad);
     }

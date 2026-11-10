@@ -58,6 +58,8 @@ export type LayerPreviewInputs = {
   tabFinish: unknown;
   // A stack's children, which glide when it reflows and so never ride an offset.
   stackedIds: ReadonlySet<string>;
+  // An element the preview adds, as the canvas draws it (CanvasProps.projectElement).
+  project?: (el: Element) => Element;
 };
 
 export type LayerPreviewStore = {
@@ -118,7 +120,8 @@ function sameInputs(a: LayerPreviewInputs | null, b: LayerPreviewInputs): boolea
     a.arrowLinks === b.arrowLinks &&
     a.arrowLabels === b.arrowLabels &&
     a.tabFinish === b.tabFinish &&
-    a.stackedIds === b.stackedIds
+    a.stackedIds === b.stackedIds &&
+    a.project === b.project
   );
 }
 
@@ -277,7 +280,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       rideWriter.setRoot(plane?.parentElement ?? null);
     },
     update(inputs) {
-      const overlay = dragPreviewFor(inputs.tabId, inputs.drawnElements);
+      const overlay = dragPreviewFor(inputs.tabId, inputs.drawnElements, inputs.project);
       // The preview ended and the layer now draws another board (the release landed): the offsets go, in this
       // commit, before it paints.
       if (!overlay && rodeOver && inputs.drawnElements !== rodeOver) dropRides();

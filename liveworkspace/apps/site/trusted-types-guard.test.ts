@@ -6,6 +6,11 @@ import {
   NEXTJS_POLICY,
   trustedTypesCsp,
 } from '@liveworkspace/trusted-types/csp';
+import {
+  escapesUnlisted,
+  rawDomWrites,
+  rawHtmlProps,
+} from '@liveworkspace/trusted-types/sinks-suite';
 import { SITE_ASSET_PREFIX } from '@liveworkspace/sites/workspace-proxy';
 import { describe, expect, it } from 'vitest';
 
@@ -45,28 +50,31 @@ const htmlExpressions = (source: string) =>
     source.slice(m.index + m[0].length, m.index + m[0].length + 40),
   );
 
+// Static or builder markup, fed through the trustedHtml escape hatch unsanitised: the Explorer's silent sign-in
+// script and the JSON-LD block (JSON with < escaped, in a <script>). Everything else goes through sanitizedHtml.
+const BUILDER_MARKUP = [
+  'liveworkspace/apps/site/components/explorer/SilentSignInScript.tsx',
+  'packages/ui/src/JsonLd.tsx',
+];
+
 describe('Trusted Types sinks', () => {
-  it('hand dangerouslySetInnerHTML only what trustedHtml made', () => {
-    const raw = files.flatMap((f) =>
-      htmlExpressions(text(f))
-        .filter((expr) => !expr.startsWith('trustedHtml('))
-        .map((expr) => `${f}: ${expr.split('\n')[0]}`),
-    );
-    expect(raw).toEqual([]);
+  it('hand dangerouslySetInnerHTML only what trustedHtml or sanitizedHtml made', () => {
+    expect(files.flatMap((f) => rawHtmlProps(f, text(f)))).toEqual([]);
   });
 
-  it('write markup straight into the DOM only through trustedHtml', () => {
-    const raw = files.flatMap((f) =>
-      [...text(f).matchAll(/\.(?:innerHTML|outerHTML)\s*=(?!=)\s*|\binsertAdjacentHTML\(/g)]
-        .filter((m) => {
-          const rest = text(f).slice(m.index + m[0].length);
-          return m[0].startsWith('insertAdjacentHTML')
-            ? !/^[^,]*,\s*trustedHtml\(/.test(rest)
-            : !rest.startsWith('trustedHtml(');
-        })
-        .map((m) => `${f}: ${m[0]}`),
-    );
-    expect(raw).toEqual([]);
+  it('write markup straight into the DOM only through trustedHtml or sanitizedHtml', () => {
+    expect(files.flatMap((f) => rawDomWrites(f, text(f)))).toEqual([]);
+  });
+
+  // The policy only proves markup went through it; the sanitiser makes people's markup safe. The trusted-types
+  // package itself defines the helpers, so it is the one place outside the list that names the escape hatch.
+  it('call the trustedHtml escape hatch only in the layout or a listed builder file', () => {
+    expect(
+      files.filter(
+        (f) =>
+          !f.startsWith('packages/trusted-types/') && escapesUnlisted(f, text(f), BUILDER_MARKUP),
+      ),
+    ).toEqual([]);
   });
 
   // A server component's trustedHtml runs in the prerender, where there are no Trusted Types, so a client render

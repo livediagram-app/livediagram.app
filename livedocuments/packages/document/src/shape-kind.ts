@@ -1,3 +1,4 @@
+import { DRAWN_GEOMETRY_KINDS } from '@liveworkspace/element-model/shape-geometry';
 // The shape vocabulary: every kind a shape element can be, from the basic
 // geometry through the device frames and the self-drawing data shapes.
 //
@@ -113,3 +114,10 @@ export type ShapeKind =
   // is never tinted by the theme, carries no caption, and never folds into
   // another shape as an inline glyph.
   | 'sticker';
+
+// The kinds the shared geometry table draws that this product holds: all but frame, actor, final-state, which are other
+// products' (the table is every product's, @liveworkspace/element-model/shape-geometry).
+const NOT_HELD: ReadonlySet<string> = new Set(['frame', 'actor', 'final-state']);
+export const SHAPE_GEOMETRY_KINDS = DRAWN_GEOMETRY_KINDS.filter(
+  (kind) => !NOT_HELD.has(kind),
+) as readonly ShapeKind[];

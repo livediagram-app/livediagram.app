@@ -8,7 +8,7 @@ Scope, by file:
 
 | File                                                                                                                   | Role                                                                          |
 | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/document/src/pen-colours.ts`                                                                                 | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
+| `../packages/element-model/src/pen-colours.ts`                                                                         | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
 | `packages/document/src/snap-colours.ts`                                                                                | `SNAP_COLOUR_FIELDS`, `snappableCustomColours`, `snapTabColours` (pure)       |
 | `apps/editor/hooks/canvas/useSnapColours.ts`                                                                           | The board's snappable colours and the one-commit `snap()`                     |
 | `apps/editor/components/canvas/whiteboard/SnapColoursSection.tsx`                                                      | The Settings flyout's Colours section                                         |

@@ -49,7 +49,7 @@ const worker = {
     if (!mediaEnabled(env)) return;
     const cutoff = Date.now() - UNUSED_IMAGE_AGE_MS;
     const deleted = await sweepUnusedImages(env, cutoff);
-    console.log(
+    console.info(
       `[media] sweep: deleted ${deleted} images older than ${new Date(cutoff).toISOString()}`,
     );
   },

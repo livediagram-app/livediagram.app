@@ -8,7 +8,7 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | colour picker        | `ColourPicker` (`apps/live/components/colour/ColourPicker.tsx`)                                                                                                                         |
 | swatch               | `ColourSwatch`, `SwatchChip` (`apps/live/components/colour/ColourSwatch.tsx`)                                                                                                           |
-| standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`packages/design/src/standard-colours.ts`)                                                                                |
+| standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`../packages/element-model/src/standard-colours.ts`)                                                                      |
 | tone                 | `StandardTone = 'strong' \| 'soft'`                                                                                                                                                     |
 | theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/design/src/quick-swatches.ts`)                                                                         |
 | Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/design`), `designColours(...)` (`apps/live/lib/design-colours.ts`), `useDesignColours()` (`apps/live/hooks/ui/`) |
@@ -172,7 +172,7 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 
 | Rule                                                      | Test                                                                                              |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| ten standard colours, both tones, readable                | `packages/design/src/standard-colours.test.ts`                                                    |
+| ten standard colours, both tones, readable                | `../packages/element-model/src/standard-colours.test.ts`                                          |
 | Grey is a stock colour, not hued                          | `packages/design/src/pen-colours.test.ts`                                                         |
 | one Tab stop, arrows wrap, Home/End                       | `apps/live/components/colour/ColourPicker.test.tsx`                                               |
 | pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                           |

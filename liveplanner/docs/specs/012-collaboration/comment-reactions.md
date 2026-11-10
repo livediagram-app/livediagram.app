@@ -55,7 +55,7 @@ are not drawn.
 
 ## How it is stored and travels
 
-- A comment gains `reactions?: { emoji, by, name }[]`, in the order they were left. `by` is the reactor's public
+- A comment gains `reactions?: { emoji, by, name, person? }[]` (`person` only on a card's threads, below), in the order they were left. `by` is the reactor's public
   **collab key** (the id a done check or an estimate is recorded under, docs/specs/012-collaboration/participant-responses.md),
   never an owner id, which for a guest is a credential. `name` is the name they reacted under, so the card reads
   without the roster. Absent when there are none, so comments written before this read as they always did, and
@@ -82,7 +82,11 @@ so a reaction there is a **thread write** like a reply:
 - `POST /api/projects/:id/threads/:threadId/comments/:commentId/reactions` `{ emoji, on, key }`, gated as a reply
   (participate: an Editor or a Participant; a Viewer is refused). `key` is the caller's collab key (bounded as a
   delta's `by`); the name is the server's, from their profile. Nothing changing answers 204.
-- The home applies `react { commentId, emoji, by, name, on }` through `applyThreadChange`: the thread's `rev`
+- The server also stamps the reaction's `person`, the reactor's hashed person id (`itemPersonId`, the public id a
+  card names its makers by, never an owner id), so a closed account's reactions can be found and read **Deleted
+  account** ([Items](../026-plan/items.md) "Created and Last Edited"). A reaction stored before this has no `person`
+  and reads as it always did, under the name it was left with.
+- The home applies `react { commentId, emoji, by, name, person?, on }` through `applyThreadChange`: the thread's `rev`
   rises so every copy converges, but `updatedAt` does not move (a reaction is not activity, so the thread keeps its
   place in the list). Adding one past the thread's byte budget is refused `comments_full`; an agent token is
   refused `403 forbidden`.

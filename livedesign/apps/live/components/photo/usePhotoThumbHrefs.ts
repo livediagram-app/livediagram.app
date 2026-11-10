@@ -26,8 +26,7 @@ export function usePhotoThumbHrefs(
             return preview ? [[id, preview] as const] : [];
           })
         : [],
-    // On the rows drawn, not the array's identity.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- on the rows drawn, not the array's identity
     [photos, key],
   );
   const [hrefs, setHrefs] = useState<ReadonlyMap<string, string>>(NONE);
@@ -58,8 +57,7 @@ export function usePhotoThumbHrefs(
     return () => {
       live = false;
     };
-    // The scope's identity changes with each render; its values do not here.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the scope's identity changes with each render; its values do not here
   }, [wanted, tabId, scope?.designId]);
   return hrefs;
 }
