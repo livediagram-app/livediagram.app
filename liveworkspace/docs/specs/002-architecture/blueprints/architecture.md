@@ -250,7 +250,7 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
 ## The shared element model (`packages/element-model`)
 
 `@liveworkspace/element-model` has no barrel: `package.json` exports `./*` only, one subpath per module. It depends on
-`@liveworkspace/model-core` alone.
+`@liveworkspace/model-core`, `@liveworkspace/icons` and `perfect-freehand` (the pen strokes).
 
 - `src/element.ts`: the structural types (`Element`, `BoxedElement`, `ShapeElement`, `TextElement`,
   `FreehandElement`, `OtherBoxedElement`, `ArrowElement`, `Anchor`, `Endpoint`, `PathHandleMode`) and `isBoxed`, which
@@ -288,6 +288,26 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   `shape-geometry` and `shape-outline` (its furniture and retired kinds).
 - `ElementIndex<E>`, `buildElementIndex`, `elementIndexFor`, `isElementIndex` and `pinnedBoxedElement` are generic;
   each product's index binds `ElementIndex` to its `Element`.
+- Settled, then moved (part 3, each behaviour a product gained in its own specs): the finish and its drawing
+  (`finish` D's with every product's finish kinds, `self-painting` the union of every `SELF_PAINTING_SHAPES`, `sketch`,
+  `sketch-element`, `sketch-backdrop`, `marker`, `marker-element`, `marker-face` P's with its optional frame budget,
+  `svg-render-face-finish`, `svg-render-border`, `svg-render-page`, `svg-shape-fit`); strokes and paths
+  (`freehand-points`, `pen-stroke` D's, `stroke-fit`, `stroke-loop-fill`, `path-element` S's, `drawn-outline-finish`,
+  `hand-drawn`, `svg-render-sketch`, and `export-shape`, the export's shape and resolver types out of each
+  `svg-render-describe.ts`); the web components (`web-components`, `card`, `concept`, `concept-timeline`, their
+  `svg-render-*`, O's funnel split; `diagram-key`, `boundary`, `person-node` DP); containment and the arrow layout
+  family (`containment` D's, `arrow-endpoint-spread` O's, `arrow-orthogonal`, `arrow-label-layout`, `arrow-bend`,
+  `arrow-behind`, `arrow-rebind-swap` D's, `arrow-body-drop`, `chip`); attachment and layout (`attachment` S's, pointer
+  notes settling first; `pointer-note`, `svg-render-pointer-note`, `svg-render-chip`, `geometry-snapping`, `stack`
+  D's, `rotation` and `unturnable-rotation` OSP, livediagram keeping its own for its retired furniture;
+  `auto-layout` D's, `auto-layout-tidy` S's, `auto-layout-tidy-flow`); and `data-shapes` with `chart-palettes`, every
+  product's self-drawing kinds, livediagram wrapping `isSelfDrawingShape` for its retired pieces. livehuddle keeps its
+  own `finish`, `sketch-element`, `sketch-backdrop`, `svg-render-sketch` and `colors` (its furniture and placeholder
+  kinds). New generics: `settleChips`, `settleStacks`, `dropUnturnableRotation`, `autoLayoutElements`,
+  `tidyLayoutElements`, `withOrthogonalBends`, `withFacingBends`, `settleDiagramKeys`, `migrateLegacyCallouts`,
+  `isChip`, `renumberSteps`, `withStepSequence`, `fillStrokeLoop` and the path reshapers.
+- `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of livediagram,
+  livedocuments, livedesign and livehuddle; liveplanner keeps its own (its Plan boards spend a frame budget).
 
 ## Testing
 

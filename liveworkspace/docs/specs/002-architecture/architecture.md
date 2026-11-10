@@ -177,6 +177,12 @@ shape kinds, its fields. Code that reads elements the same way in two or more pr
   cohesion (the colour maths is shared, each product's element defaults stay in its `colors.ts`).
 - A generic shared type a product reads under its own union is bound in that product's index
   (`ElementGrid = ElementGrid<Element>`, `ElementIndex = ElementIndex<Element>`), and its modules import it from there.
+- A product's own extra on a shared module sits beside its binding, in the same file: the binding re-exports the
+  shared module and the product adds or wraps what is its own (livediagram's retired pieces in `isSelfDrawingShape`,
+  liveplanner's Sheet charts beside `containment`). The shared module never asks which product it is in.
+- Editor code the same in three or more editors, and naming no product, lives once in `@liveworkspace/workbench`,
+  which reads the shared element model where it needs element code; each editor keeps a one-line binding at the old
+  path.
 - `@liveworkspace/model-core` stays the vocabulary below it, with nothing of an element union.
 
 ## Adding an app
