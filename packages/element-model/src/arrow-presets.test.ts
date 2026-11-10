@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { type ArrowElement } from './element';
-import { arrowheadShapeOf, arrowheadStartShapeOf, arrowheadSizeOf, arrowStyleOf, arrowThicknessOf } from './arrow-style';
+import {
+  arrowheadShapeOf,
+  arrowheadStartShapeOf,
+  arrowheadSizeOf,
+  arrowStyleOf,
+  arrowThicknessOf,
+} from './arrow-style';
 
 const arrow = (overrides: Partial<ArrowElement> = {}): ArrowElement => ({
   id: 'a',
