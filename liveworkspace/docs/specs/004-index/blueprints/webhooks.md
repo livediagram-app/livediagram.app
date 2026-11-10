@@ -152,7 +152,8 @@ the clear. `webhook_deliveries` cascades from `webhooks`, and `webhooks` from `i
 `0014_document_webhooks.sql` dropped both tables and made them again, empty: every account and team webhook before
 it is gone, with its deliveries. A closed account (`webhookPurgeStatements`, in the purge's first batch): the webhooks
 on its personal items and on the items of the teams closed with it are deleted, its others' pending rows failed
-(`paused`), and they paused `creator_left` with `created_by` `deleted`.
+(`paused`), and they paused `creator_left` with `created_by` `deleted`. Then, in the purge's chunked steps
+(`webhookDeliveryPurgeStatement`), every delivery of an event they did has `actor_id` `deleted` and `actor_name` null.
 
 ## Security and trust
 

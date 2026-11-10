@@ -9,11 +9,12 @@ Scope, by file:
 | File                                                                                 | Role                                                                                                                   |
 | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | `packages/model-core/src/rich-text.ts` (shared)                                      | `TextRun.highlight`, `TextRun.gradient`, `RunPatch`, `ATTR_KEYS`                                                       |
-| `livedocuments/packages/document/src/text-effects.ts`                                | `TEXT_GRADIENTS`, `TextGradientId`, `textGradientOf`, `isHighlightColour`, `highlightBandCss`, band geometry constants |
+| `packages/element-model/src/text-effects.ts` (shared)                                | `TEXT_GRADIENTS`, `TextGradientId`, `textGradientOf`, `isHighlightColour`, `highlightBandCss`, band geometry constants |
 | `livedocuments/packages/document/src/shadow.ts`                                      | `supportsShadow` takes `text`; `shadowTextCss`                                                                         |
 | `livedocuments/packages/document/src/element-types.ts`                               | `TextElement.shadow`                                                                                                   |
 | `livedocuments/packages/document/src/svg-render-describe.ts`                         | `ExportRun.highlight` / `.gradient` resolved from runs                                                                 |
-| `livedocuments/packages/document/src/svg-render-labels.ts`                           | Band rects and gradient defs in `svgRichWrappedLabel`; `wrapExportRuns` keeps fragments apart by effect                |
+| `packages/element-model/src/svg-render-labels.ts` (shared)                           | Band rects and gradient defs in `svgRichWrappedLabel`; `wrapExportRuns` keeps fragments apart by effect                |
+| `packages/element-model/src/svg-render-text-effects.ts` (shared)                     | `svgLineEffects`, `highlightBandRect`, `sameEffects`, `exportRunEffects`, `hasTextEffects`                             |
 | `apps/editor/components/canvas/label-style.ts`                                       | `effectiveRunStyle` paints both effects                                                                                |
 | `apps/editor/components/canvas/element-variant.ts`                                   | Text `textShadow`                                                                                                      |
 | `apps/editor/components/rich-text/rich-text-dom.ts`                                  | `data-rt-highlight`, `data-rt-gradient` round trip                                                                     |

@@ -1,3 +1,4 @@
+import { DRAWN_GEOMETRY_KINDS } from '@liveworkspace/element-model/shape-geometry';
 // The shape vocabulary: every kind a shape element can be, from the basic
 // geometry through the flowchart set, the UML set, the device frames and the
 // self-drawing data shapes.
@@ -215,3 +216,7 @@ export type ShapeKind =
   // is never tinted by the theme, carries no caption, and never folds into
   // another shape as an inline glyph.
   | 'sticker';
+
+// The kinds the shared geometry table draws (@liveworkspace/element-model/shape-geometry): this product holds every
+// one.
+export const SHAPE_GEOMETRY_KINDS = DRAWN_GEOMETRY_KINDS as readonly ShapeKind[];

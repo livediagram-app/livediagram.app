@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
+import { SHAPE_GEOMETRY_KINDS } from './shape-kind';
 import {
   BROWSER_CHROME,
   browserChromeLayout,
   DIAMOND_POINTS,
-  SHAPE_GEOMETRY_KINDS,
   shapeGeometry,
   type ShapePart,
 } from './shape-geometry';

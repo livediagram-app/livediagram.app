@@ -223,7 +223,7 @@ instead of over a full-size glyph.
 be much larger than the visible chip, arrow anchors on a Technology icon are
 computed on the mark's rectangle (`techIconMarkBounds`, the same geometry the
 renderers use): pinned endpoints touch the chip's edge, and the side choice
-(`exitSideTowards` / `anchorAimPoint` in `packages/document/src/anchor-choice.ts`,
+(`exitSideTowards` / `anchorAimPoint` in `../packages/element-model/src/anchor-choice.ts`,
 [Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)) answers for the chip, so an arrow to an
 element below leaves the mark's bottom centre instead of a box edge floating
 in whitespace. **Exception: the caption's side.** The caption sits between

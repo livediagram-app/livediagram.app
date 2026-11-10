@@ -55,10 +55,11 @@ describe('hexToRgb / rgbToHex', () => {
     expect(hexToRgb('0ea5e9')).toEqual({ r: 14, g: 165, b: 233 });
   });
 
-  it('is null for anything that is not six hex digits', () => {
-    expect(hexToRgb('#fff')).toBeNull();
-    expect(hexToRgb('#0ea5e980')).toBeNull();
-    expect(hexToRgb('red')).toBeNull();
+  // Agents write `#fff` and `red` (docs/specs/011-theme/light-and-dark.md "Colours an agent writes").
+  it('reads shorthand hex, hex with alpha and CSS named colours, alpha set aside', () => {
+    expect(hexToRgb('#fff')).toEqual({ r: 255, g: 255, b: 255 });
+    expect(hexToRgb('#0ea5e980')).toEqual({ r: 14, g: 165, b: 233 });
+    expect(hexToRgb('red')).toEqual({ r: 255, g: 0, b: 0 });
   });
 
   it('writes channels back rounded and clamped into 0-255', () => {
@@ -68,7 +69,8 @@ describe('hexToRgb / rgbToHex', () => {
 
   it('shade mixes toward black and leaves unparseable input alone', () => {
     expect(shade('#0ea5e9', 0.22)).toBe('#0b81b6');
-    expect(shade('red', 0.5)).toBe('red');
+    expect(shade('nope', 0.5)).toBe('nope');
+    expect(shade('red', 0.5)).toBe('#800000');
   });
 });
 
@@ -321,9 +323,10 @@ describe('contrastRatio', () => {
     expect(contrastRatio('#767676', '#ffffff')).toBeCloseTo(4.54, 2);
   });
 
-  it('is NaN for anything but #rrggbb, so no threshold check can pass', () => {
-    expect(contrastRatio('red', '#ffffff')).toBeNaN();
-    expect(contrastRatio('#fff', '#000000')).toBeNaN();
+  it('reads shorthand and named colours, and is NaN for anything else, so no threshold check can pass', () => {
+    expect(contrastRatio('#fff', '#000000')).toBeCloseTo(21, 5);
+    expect(contrastRatio('white', 'black')).toBeCloseTo(21, 5);
+    expect(contrastRatio('nope', '#ffffff')).toBeNaN();
   });
 
   it('names the AA threshold for normal text', () => {

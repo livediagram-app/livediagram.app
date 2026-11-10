@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   },
   "devDependencies": {

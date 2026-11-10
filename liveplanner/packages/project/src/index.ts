@@ -32,6 +32,7 @@ import type { ArrowElement } from './arrow-types';
 import type { Finish } from './finish';
 export type { Anchor, ArrowEnds, ArrowElement, Endpoint } from './arrow-types';
 export type { ShapeKind } from './shape-kind';
+export { SHAPE_GEOMETRY_KINDS } from './shape-kind';
 export { ALL_ANCHORS } from './arrow-types';
 
 import type {
@@ -557,6 +558,8 @@ export * from './arrow-behind';
 export * from './element-grid';
 // The grid over this product's own elements (the shared grid is generic over any element union).
 export type ElementGrid = SharedElementGrid<Element>;
+export type ElementIndex = SharedElementIndex<Element>;
+import type { ElementIndex as SharedElementIndex } from '@liveworkspace/element-model/geometry';
 import type { ElementGrid as SharedElementGrid } from '@liveworkspace/element-model/element-grid';
 // Tab + project name length cap (docs/specs/006-project/name-length.md).
 export * from '@liveworkspace/model-core/names';

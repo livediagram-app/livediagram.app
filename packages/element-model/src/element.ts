@@ -7,7 +7,15 @@
 // these. Functions that only read take these types; functions that hand elements back are generic
 // (`<E extends Element>(el: E) => E`), so a caller keeps its product's precise type.
 
-import type { ElementId, TextSize } from '@liveworkspace/model-core/basics';
+import type {
+  ElementId,
+  Padding,
+  TextAlignX,
+  TextAlignY,
+  TextSize,
+} from '@liveworkspace/model-core/basics';
+import type { BorderStyle } from '@liveworkspace/model-core/border-style';
+import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 
 export type { ElementId };
 
@@ -51,12 +59,18 @@ export type BoxBase = {
   label?: string;
   locked?: boolean;
   layerId?: string;
+  textSize?: TextSize;
+  textAlignX?: TextAlignX;
+  textAlignY?: TextAlignY;
+  padding?: Padding;
 };
 
 export type ShapeElement = BoxBase & {
   type: 'shape';
   shape: string;
-  textSize?: TextSize;
+  iconId?: string;
+  /** An entity's fields (livediagram, liveplanner): only how many is read here. */
+  entityFields?: readonly unknown[];
   tags?: string[];
   accentEdge?: 'left' | 'top' | 'bottom';
   accentEdgeColor?: string;
@@ -81,12 +95,24 @@ export type ArrowElement = {
   label?: string;
   locked?: boolean;
   layerId?: string;
-  arrowStyle?: 'straight' | 'curved' | 'angled';
+  arrowStyle?: ArrowStyle;
+  strokeColor?: string;
+  arrowheadColor?: string;
+  opacity?: number;
+  strokeWidth?: number;
+  arrowheadSize?: ArrowheadSize;
+  arrowheadShape?: ArrowheadShape;
+  arrowheadStartShape?: ArrowheadShape;
+  routeBehind?: boolean;
+  exactStart?: boolean;
+  exactEnd?: boolean;
+  labelMaxWidth?: number;
+  textSize?: TextSize;
   curveOffset?: { dx: number; dy: number };
   curvePoints?: { dx: number; dy: number }[];
   elbowOffset?: { dx: number; dy: number };
   labelOffset?: { t: number; offset: number };
-  strokeStyle?: string;
+  strokeStyle?: BorderStyle;
 };
 
 export type Element = BoxedElement | ArrowElement;

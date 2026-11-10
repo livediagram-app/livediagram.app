@@ -17,9 +17,10 @@ import {
   type Element,
   type ElementId,
   type Endpoint,
+  type ElementIndex,
 } from './index';
 import { anchorClass, anchorPrimarySide } from './anchors';
-import { endpointPosition, isElementIndex, type ElementIndex, type Point } from './geometry';
+import { endpointPosition, isElementIndex, type Point } from './geometry';
 import { connectorBox } from './shape-outline';
 
 // Gap between adjacent fanned heads, in canvas px. Clamped down when the
