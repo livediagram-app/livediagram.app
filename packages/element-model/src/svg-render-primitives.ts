@@ -83,8 +83,15 @@ export function wrapLabel(
         let first = 0;
         let from = 0;
         while (ends.length - first > 1 && measure(cur.slice(from)) > maxWidth) {
-          let n = ends.length - 1;
-          while (n > first + 1 && measure(cur.slice(from, ends[n - 1])) > maxWidth) n--;
+          // The most characters that fit (at least one), found by halving: a prefix only grows wider, and walking
+          // back from the end one character at a time was quadratic in a long word (minutes for 20,000 characters).
+          let n = first + 1;
+          let hi = ends.length - 1;
+          while (n < hi) {
+            const mid = (n + hi + 1) >> 1;
+            if (measure(cur.slice(from, ends[mid - 1])) <= maxWidth) n = mid;
+            else hi = mid - 1;
+          }
           const to = ends[n - 1]!;
           out.push(cur.slice(from, to));
           from = to;

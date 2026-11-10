@@ -5,7 +5,8 @@
 import { cornerRadiusPx } from '@liveworkspace/model-core/border-style';
 import type { Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { ShapeElement } from './index';
-import { SHAPE_GEOMETRY_KINDS, shapeGeometry } from './shape-geometry';
+import { SHAPE_GEOMETRY_KINDS } from './shape-kind';
+import { shapeGeometry } from './shape-geometry';
 import {
   CSS_DEFAULT_RADIUS_PX,
   ellipseRing,

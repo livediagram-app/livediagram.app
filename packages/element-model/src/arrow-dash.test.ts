@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { arrowDashOffset } from './arrow-dash';
-import type { ArrowElement } from './index';
+import type { ArrowElement } from './element';
 
 // docs/specs/008-canvas/arrow-anchors.md "End at exact anchor": a shared end's dashes are anchored there.
 

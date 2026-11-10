@@ -29,7 +29,7 @@ import {
 } from './arrow-style';
 import { isErShape } from './er-heads';
 import { arrowPolyline } from './arrow-path-hits';
-import { elementIndexFor, endpointPosition, type ElementIndex } from './geometry';
+import { elementIndexFor, endpointPosition } from './geometry';
 import { rectsIntersect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import {
   addToRectGrid,
@@ -38,13 +38,7 @@ import {
   eachRectMeeting,
   type RectGrid,
 } from '@liveworkspace/model-core/rect-grid';
-import {
-  isBoxed,
-  type ArrowElement,
-  type BoxedElement,
-  type Element,
-  type ElementId,
-} from './index';
+import { isBoxed, type ArrowElement, type BoxedElement, type Element, type ElementId, type ElementIndex } from './index';
 import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';
 
 type Pt = { x: number; y: number };

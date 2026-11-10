@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-  arrowPolyline,
-  buildElementIndex,
-  pathPassesThrough,
-  pathsCross,
-  type ArrowElement,
-  type ShapeElement,
-} from './index';
+import { type ArrowElement, type ShapeElement } from './element';
+import { arrowPolyline, pathPassesThrough, pathsCross } from './arrow-path-hits';
+import { buildElementIndex } from './geometry';
 
 const box = (id: string, x = 0, y = 0, extra: Partial<ShapeElement> = {}): ShapeElement => ({
   id,

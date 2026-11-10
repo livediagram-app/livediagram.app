@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  catmullRomPathD,
-  angledElbow,
-  arrowPathD,
-  arrowPathMidpoint,
-  curveControlPoint,
-  type Endpoint,
-} from './index';
+import { type Endpoint } from './element';
+import { catmullRomPathD, angledElbow, arrowPathD, arrowPathMidpoint, curveControlPoint } from './arrow-path';
 
 // Free endpoints just carry coordinates — used everywhere a pinned
 // anchor would otherwise dictate direction.

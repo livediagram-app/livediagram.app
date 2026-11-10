@@ -10,16 +10,9 @@
 // the SVG export's svgArrow), which is why it lives here rather than in
 // the app.
 
-import {
-  isBoxed,
-  type Anchor,
-  type ArrowElement,
-  type Element,
-  type ElementId,
-  type Endpoint,
-} from './index';
+import { isBoxed, type Anchor, type ArrowElement, type Element, type ElementId, type Endpoint, type ElementIndex } from './index';
 import { anchorClass, anchorPrimarySide } from './anchors';
-import { endpointPosition, isElementIndex, type ElementIndex, type Point } from './geometry';
+import { endpointPosition, isElementIndex, type Point } from './geometry';
 import { connectorBox } from './shape-outline';
 
 // Gap between adjacent fanned heads, in canvas px. Clamped down when the

@@ -11,7 +11,7 @@ import {
   type CanvasSurface,
 } from './colors';
 import { duplicateElements } from './duplicate';
-import { buildElementIndex, endpointPosition, type ElementIndex } from './geometry';
+import { buildElementIndex, endpointPosition } from './geometry';
 import {
   rowPageAt,
   pagesOf,
@@ -26,7 +26,7 @@ import { pageImageTone } from './page-image';
 import { pageContentBox, pageScreenRect } from './wireframe-page';
 import { TEXT_SCALE_MIN } from './validate';
 import { PAGE_INK_CONTRAST, PAGE_INK_FLOOR } from './page-ink-rules';
-import { isBoxed, type Element, type Endpoint, type ShapeElement, type Tab } from './index';
+import { isBoxed, type Element, type Endpoint, type ShapeElement, type Tab, type ElementIndex } from './index';
 import { cutText } from './text-cut';
 
 type Point = { x: number; y: number };

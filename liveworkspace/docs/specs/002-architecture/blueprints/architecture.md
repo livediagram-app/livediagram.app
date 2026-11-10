@@ -274,6 +274,20 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   `migrateLegacyStrokePoints` and `withTagAccent`.
 - The tests that were identical beside a moved module moved with it; a product's own test of a moved module stays in
   the product and runs through its binding.
+- Settled, then moved (part 2; the version every product took is named, and each behaviour a product gained is in its
+  own specs): `svg-render-primitives` (D's, with S's plain-text fast path; P gains emoji-safe word breaking),
+  `svg-render-labels` (D's; P gains the mid-word run glue), `arrow-style` (D's `arrowheadLengthPx`), `colour-math`
+  (split out of each `colors.ts`, D's: O, S and P gain shorthand, alpha and named colours in contrast, P in every
+  read), `readable-colour` (D's: O, S and P gain the shorthand label pick, P the walk back past a mid grey),
+  `pen-colours` (D's), `shape-geometry` (D's table, every product's kinds; `DRAWN_GEOMETRY_KINDS`, each product's
+  `SHAPE_GEOMETRY_KINDS` the ones it holds), `shape-outline`, `geometry` (D's: the entity field ends, never reached
+  where a product has no entity) and `svg-shape-role` (each `svg-render-shapes.ts`'s role paint). With them, the
+  groups they held back: `actor-figure` (DHP), `anchor-choice`, `anchor-layouts`, `arrow-dash`, `arrow-path`,
+  `arrow-path-hits`, `arrow-snapping`, `auto-layout-placement`, `er-heads`, `sankey-text` (DOSP), `concept-ramp`
+  (DOSP), `page-ink-contrast` (OS) and `standard-colours` (all five). livehuddle keeps its own `geometry`,
+  `shape-geometry` and `shape-outline` (its furniture and retired kinds).
+- `ElementIndex<E>`, `buildElementIndex`, `elementIndexFor`, `isElementIndex` and `pinnedBoxedElement` are generic;
+  each product's index binds `ElementIndex` to its `Element`.
 
 ## Testing
 
