@@ -194,9 +194,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore slide decks',
     title: 'Build the deck, then present it',
     description:
-      'Start a slide from one of 61 ready-made layouts and fill it in, then present the deck full screen on your screen alone, your notes behind a button, with a laser and a spotlight to point the room at what you mean.',
+      'Start a slide from one of 64 ready-made layouts and fill it in, then present the deck full screen on your screen alone, your notes behind a button, with a laser and a spotlight to point the room at what you mean.',
     metaDescription:
-      'Slide decks from 61 ready-made layouts, presented full screen with private notes, a timer, a laser pointer and a spotlight.',
+      'Slide decks from 64 ready-made layouts, presented full screen with private notes, a timer, a laser pointer and a spotlight.',
     highlights: [
       'Slide pages, ready-made layouts',
       'Notes only you open',
@@ -210,7 +210,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Build',
         title: 'Slide pages, ready-made layouts',
         description:
-          'Add a 16:9 or classic 4:3 slide page and start it from one of 61 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
+          'Add a 16:9 or classic 4:3 slide page and start it from one of 64 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
       },
       {
         art: <FlashcardStackArt />,

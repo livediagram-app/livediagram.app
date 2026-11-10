@@ -13,7 +13,7 @@ const LIST: Alternative[] = [
     highlights: ['Slide layouts', 'Present any page', 'No account'],
     title: 'Google Slides alternative · livedocuments',
     description:
-      'A free, open-source Google Slides alternative: slide pages from 61 ready-made layouts, presenter notes and timing, and the write-up in the same document.',
+      'A free, open-source Google Slides alternative: slide pages from 64 ready-made layouts, presenter notes and timing, and the write-up in the same document.',
     h1: 'A free, open-source Google Slides alternative',
     lede: 'Google Slides is the presentation tool most people already have open. livedocuments makes decks a little differently: start each slide from a ready-made layout, keep the article, the one-pager and the deck as tabs of one document, and present any page of them, with your team editing alongside you.',
     rows: [
@@ -27,7 +27,7 @@ const LIST: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes, live cursors and comments', them: 'Yes' },
       {
         label: 'Designed slides',
-        us: '16:9 or 4:3 slide pages from 61 layouts, painted from your theme',
+        us: '16:9 or 4:3 slide pages from 64 layouts, painted from your theme',
         them: 'Themes, layouts and a large template gallery',
       },
       {
@@ -53,7 +53,7 @@ const LIST: Alternative[] = [
       'Gemini in Slides drafts a whole, editable deck from a prompt, styled from your files, on eligible Workspace and Google AI plans.',
     ],
     usBest: [
-      'Slide pages for a designed deck: 16:9 or 4:3, started from 61 layouts (title, agenda, big numbers, roadmap and more).',
+      'Slide pages for a designed deck: 16:9 or 4:3, started from 64 layouts (title, agenda, big numbers, roadmap and more).',
       'One document for the whole story: the write-up as an article, the one-pager as an infographic, and the deck that presents them, side by side as tabs.',
       'Any page can be a slide, from any tab, ordered in one deck that is saved with the document.',
       'Present with presenter notes, a time budget per slide, transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
@@ -68,7 +68,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Slides from ready-made layouts',
         paragraphs: [
-          'In Google Slides a deck is its own file, built slide by slide. In livedocuments a slide is a page: add a 16:9 or 4:3 slide page and start it from one of 61 layouts (a title, an agenda, two columns, image and text, a timeline and more), painted from your theme. Change the theme and every slide follows.',
+          'In Google Slides a deck is its own file, built slide by slide. In livedocuments a slide is a page: add a 16:9 or 4:3 slide page and start it from one of 64 layouts (a title, an agenda, two columns, image and text, a timeline and more), painted from your theme. Change the theme and every slide follows.',
           'A slide sits in a deck you order in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week. Any other page can join the deck too, so a poster or a page of an article can be presented as it is.',
         ],
       },
