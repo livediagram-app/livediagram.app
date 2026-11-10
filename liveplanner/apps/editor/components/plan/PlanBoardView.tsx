@@ -4,8 +4,6 @@
 // its set-up projected over the project's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
-import { planBoardBodyCursor } from './board-cursors';
-import { planBoardFontStyle } from '@/lib/plan-font';
 import { usePlanTextScale } from './PlanTextScaleContext';
 import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { useInDashboard } from '@/components/plan/dashboard/dashboard-context';
@@ -14,7 +12,6 @@ import { useCardVote } from './CardVoteContext';
 import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
-import { markPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -22,7 +19,6 @@ import { cornerRadiusPx, planOwnColoursOf, type ShapeElement } from '@liveplanne
 import {
   CARD_FIELDS,
   ITEM_TYPES,
-  itemStatus,
   cardIsFaceDown,
   normaliseBoardSetup,
   isQuickFilterEmpty,
@@ -32,100 +28,51 @@ import {
   type QuickFilter,
   boardAddTypes,
   newItemId,
-  isTrashed,
-  boardSortFieldOf,
-  isDoneColumn,
 } from '@liveplanner/items';
 import { useCanvasBranchColours, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { track } from '@/lib/telemetry';
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
 import { useBoardCsv } from '@/hooks/plan/useBoardCsv';
 import { cellStatus, laneMove } from './plan-board-moves';
-import { DropGap, LaneRow, PlanDragGhost } from './PlanBoardCells';
-import { PlanBoardCellCards, type CellCardsBase } from './PlanBoardCellCards';
-import {
-  cardsMovingRefused,
-  columnCardMoves,
-  cardsStayedMessage,
-  moveStatusRefusal,
-  typeStatusRefusal,
-} from '@/hooks/plan/status-refusal';
-import { PlanColumnHeader } from './PlanColumnHeader';
-import { boardRowTemplate } from './plan-board-rows';
-import { SetupBoardHost } from './SetupBoardHost';
+import type { CellCardsBase } from './PlanBoardCellCards';
 import { pickableStatuses } from './column-status-picks';
 import { boardItems } from '@liveplanner/plan-art';
-import { trackSetup } from './track-board-setup';
-import { COLLAPSED_COLUMN_PX, PHONE_COLUMN_WIDTH, boardColumnTemplate } from './plan-board-columns';
+import { COLLAPSED_COLUMN_PX, boardColumnTemplate } from './plan-board-columns';
 import { useBoardCollapsed } from '@/hooks/plan/useBoardCollapsed';
-import { COLUMN_TOGGLE_ATTR, CollapsedColumnCell, CollapsedColumnHead } from './CollapsedColumn';
-import { boardLook, centreTappedColumn, shownQuick } from './phone-board';
+import { COLUMN_TOGGLE_ATTR } from './CollapsedColumn';
+import { boardLook, shownQuick } from './phone-board';
 import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { usePhoneColumnSwipe } from '@/hooks/plan/usePhoneColumnSwipe';
-import { PlanCardMenuHost } from './PlanCardMenu';
-import { BoardSettingsButton } from './BoardSettingsButton';
 import { useRegisterConfigurableBoard } from '@/hooks/plan/board-configure-store';
-import { SlotBoardCog } from './SlotBoardCog';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { RunRevealContext, focusPlanCard, useCardRunReveal } from '@/hooks/plan/useCardRunReveal';
-import { COLUMN_ATTR, useColumnMoveFlip } from './column-move-flip';
-import { COLUMN_REORDERED, useColumnReorder } from './useColumnReorder';
-import { columnBackgroundMenu } from './column-settings-request';
-import { CellAddRow } from './CellAddRow';
+import { useColumnMoveFlip } from './column-move-flip';
+import { useColumnReorder } from './useColumnReorder';
 import { useColumnHover } from './useColumnHover';
 import { usePlan } from './PlanContext';
-import { PlanBoardHeader } from './PlanBoardHeader';
-import { SLOT_BOARD_GROUP, SlotBoardHeader } from './SlotBoardHeader';
-import { SlotColumnHeader } from './SlotColumnHeader';
 import { slotCardSize, slotColumnTemplate, slotColumnUnit, slotSetup } from './slot-board';
 import type { NewCard } from './AddCardPopover';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
-import { ExampleCardsNotice } from './ExampleCardsNotice';
-import { AddCardButton } from './AddCardButton';
-import { BoardCardTypeChips } from './BoardCardTypeChips';
-import { chipsShown } from './card-type-chips';
-import { planBoardKey } from './plan-board-keys';
-import { groupColumnMoves } from './board-selection';
-import { BoardSelectionBar } from './BoardSelectionBar';
 import { useBoardSelection } from '@/hooks/plan/useBoardSelection';
 import { planBandTint, planPalette } from './plan-palette';
-import { columnPartStyle } from './column-part';
 import { columnTones } from './column-tones';
 import { useCardSpotlight } from './useCardSpotlight';
 import { useCardFanIn } from './useCardFanIn';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
-import { MaximisePlanButton, MaximisableSlot } from './MaximisedPlanLayer';
-import { FocusElementButton } from './FocusElementButton';
+import { MaximisableSlot } from './MaximisedPlanLayer';
 import { practiceShipColumn } from './PracticeMarks';
-
-// A board's corner radius when it has none of its own (Quick Style's Corners sets one).
-const PLAN_BOARD_RADIUS_PX = 12;
-// A board showing more cards than this is busy (docs/specs/026-plan/plan-board.md "A busy board"): a Tab Style change
-// snaps its parts rather than easing them, and its cards out of view skip their styling and layout until they come
-// into view (globals.css `data-plan-busy`).
-const PLAN_BUSY_CARDS = 100;
-// A board's surface, 80% solid so the tab's canvas shows faintly through it.
-const boardSurface = (surface: string) => `color-mix(in srgb, ${surface} 80%, transparent)`;
-
-const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
-
-// The board body keeps its presses (cards, cells, buttons) from the canvas, except a finger on empty board,
-// which pans the canvas as it would anywhere else, never moving the board: only its header does that
-// (docs/specs/026-plan/plan-board.md "On a phone").
-function keepBoardPress(e: React.PointerEvent<HTMLElement>): void {
-  if (e.pointerType === 'touch') {
-    const t = e.target as HTMLElement;
-    if (!t.closest('[data-plan-card], button, input, select, textarea, [role="button"]')) {
-      markPanThrough(e);
-      return;
-    }
-  }
-  e.stopPropagation();
-}
-const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
-const NO_COLUMNS: never[] = [];
-const NO_STATUSES: ReadonlyMap<string, string> = new Map();
-const NONE_SHUT: ReadonlySet<string> = new Set();
+import {
+  NONE_SHUT,
+  NO_COLUMNS,
+  NO_ITEMS,
+  NO_STATUSES,
+  PLAN_BOARD_RADIUS_PX,
+  PLAN_BUSY_CARDS,
+  boardSurface,
+  stop,
+} from './plan-board-view-consts';
+import { boardCardKey } from './plan-board-card-key';
+import { PlanBoardFrame } from './PlanBoardFrame';
+import type { PlanBoardViewValues } from './plan-board-view-values';
 
 export function PlanBoardView({
   element,
@@ -427,71 +374,26 @@ export function PlanBoardView({
   );
   const columnName = (s: string) => setup?.columns.find((c) => c.status === s)?.name ?? s;
 
-  const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) => {
-    if (!plan || !setup || !projection) return;
-    // A sorted board's first field, named when Shift+Up/Down cannot reorder.
-    const first = setup.sortBy?.[0]?.field;
-    const sortedBy = first ? (boardSortFieldOf(first, plan.types)?.label ?? first) : undefined;
-    // Arrows pass over a collapsed column, whose cards are not drawn; Shift+Arrows still move a card into one.
-    const drawn =
-      shutColumns.size && !e.shiftKey
-        ? {
-            ...projection,
-            columns: projection.columns.map((c) =>
-              shutColumns.has(c.column.id)
-                ? { ...c, lanes: c.lanes.map((l) => ({ ...l, items: [] })) }
-                : c,
-            ),
-          }
-        : projection;
-    const action = planBoardKey(drawn, item.id, e.key, e.shiftKey, canEditCards, sortedBy, {
-      canSelect: canEditCards && !simplified,
-      grouped: selection.ids.has(item.id) && selection.ids.size > 1,
-      canRetire: canEdit,
-    });
-    if (!action) return;
-    e.preventDefault();
-    e.stopPropagation();
-    if (action.kind === 'select') selection.toggle(item.id);
-    else if (action.kind === 'moveGroup') {
-      // Each selected card one column on from its own, as one write; a card whose type leaves that column out stays.
-      const moves = groupColumnMoves(projection, selection.ordered, action.step).filter((m) => {
-        const it = items.get(m.id);
-        return !!it && !moveStatusRefusal(plan.types, it, m.move, columnName);
-      });
-      if (moves.length === 0) plan.announce('The selected cards can’t move that way');
-      else {
-        focusNextRef.current = item.id;
-        plan.moveItems?.(moves);
-        track('Plan', 'Moved', 'Cards');
-        plan.announce(`${moves.length === 1 ? '1 card' : `${moves.length} cards`} moved`);
-      }
-    } else if (action.kind === 'trashGroup') {
-      const went = plan.trashItems(selection.ordered);
-      if (went) plan.announce(`${went === 1 ? '1 card' : `${went} cards`} moved to the Trash`);
-      selection.clear();
-    } else if (action.kind === 'focus') {
-      focusPlanCard(boardRef.current, action.itemId);
-    } else if (action.kind === 'open') plan.openItem(item.id);
-    else if (action.kind === 'trash') {
-      // Focus goes on to a neighbour rather than falling to the page with the card.
-      focusNextRef.current = action.focusAfter;
-      plan.trashItem(item.id);
-      plan.announce(`#${item.key} moved to the Trash`);
-    } else if (action.kind === 'add') setAdding({ status: action.status, laneKey: action.laneKey });
-    else if (action.kind === 'refuse') plan.announce(action.announce);
-    else {
-      // A column whose status the card's type leaves out (docs/specs/026-plan/item-types.md "An item type").
-      const refused = moveStatusRefusal(plan.types, item, action.move, columnName);
-      if (refused) {
-        plan.announce(refused);
-        return;
-      }
-      focusNextRef.current = item.id;
-      plan.moveItem(item.id, action.move);
-      plan.announce(action.announce);
-    }
-  };
+  const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) =>
+    boardCardKey(
+      {
+        plan,
+        setup,
+        projection,
+        items,
+        shutColumns,
+        canEdit,
+        canEditCards,
+        simplified,
+        selection,
+        columnName,
+        focusNextRef,
+        boardRef,
+        setAdding,
+      },
+      item,
+      e,
+    );
 
   // The card handlers behind callbacks that keep their identity across renders, each reading this render's: a card
   // (PlanBoardCard, memoised) redraws only when what it shows changes, never because its board drew again, so a Tab
@@ -630,450 +532,76 @@ export function PlanBoardView({
         }
       : incoming;
 
-  const board = (
-    <div
-      ref={boardRef}
-      data-plan-board={element.id}
-      data-plan-busy={busy ? (cardSize ?? 'detailed') : undefined}
-      role="region"
-      aria-label={setup.title}
-      // `isolate`: the sticky column heads stack inside the board, never over another element.
-      className={`absolute inset-0 isolate flex flex-col overflow-hidden border ${simplified ? SLOT_BOARD_GROUP : ''}`}
-      style={{
-        // Its surface lets the tab's canvas show faintly through (plan-board.md "See-through surface"); its columns
-        // and cards stay solid, so every word reads as before. A slot board stays solid on its Dashboard.
-        backgroundColor: simplified ? palette.surface : boardSurface(palette.surface),
-        borderColor: palette.border,
-        color: palette.text,
-        borderRadius: radius,
-        ...cornerVars,
-        ...planBoardFontStyle(fontFamily, textScale),
-      }}
-    >
-      {simplified ? (
-        <SlotBoardHeader
-          title={setup.title}
-          count={shownItems.length}
-          palette={palette}
-          loadFailed={plan?.status === 'error'}
-          onRetry={() => plan?.retry()}
-          controls={
-            interactive ? (
-              <>
-                <MaximisePlanButton id={element.id} maximised={false} palette={palette} />
-                {/* The slot's own cog (slot-menu.ts): the board is set up on its tab. */}
-                {slot ? slot.cog : null}
-              </>
-            ) : null
-          }
-        />
-      ) : (
-        <PlanBoardHeader
-          setup={setup}
-          projection={projection}
-          items={shownItems}
-          types={types}
-          palette={palette}
-          selected={selected}
-          movable={!maximised && !filled}
-          canRename={setUpHere && interactive}
-          onOpenItem={(id) => plan?.openItem(id)}
-          onSetup={(next, part) => {
-            plan?.updateBoard(element.id, next);
-            trackSetup(part);
-          }}
-          showWidgets={look.widgets}
-          onWidgets={(next) => {
-            plan?.updateBoard(element.id, { ...setup, widgets: next });
-            trackSetup('Widgets');
-          }}
-          quick={quick}
-          onQuick={setQuick}
-          canFilterMine={self?.id ?? null}
-          planItems={items}
-          {...(statusNames ? { statusNames } : {})}
-          canEdit={setUpHere}
-          loadFailed={plan?.status === 'error'}
-          onRetry={() => plan?.retry()}
-          onReveal={() => {
-            plan?.updateBoard(element.id, { ...setup, hideWriting: false });
-            plan?.announce('Every card turned face up');
-            track('Plan', 'Revealed', 'Board');
-          }}
-          chips={
-            chipsShown({ interactive, canEditCards, phone, simplified, setup, types: addTypes }) ? (
-              <BoardCardTypeChips
-                setup={setup}
-                projection={projection}
-                types={addTypes}
-                palette={palette}
-              />
-            ) : undefined
-          }
-          onMoveUnplaced={(item, status) => {
-            if (!plan) return;
-            const refused = typeStatusRefusal(plan.types, item.type, status, columnName);
-            if (refused) plan.announce(refused);
-            else plan.moveItem(item.id, { status, before: null });
-          }}
-          end={
-            // Nothing at the header's end on a Board tab an Editor configures from the cluster: no Focus or
-            // Maximise (it fills its tab) and no cog (Configure), so no hairline is left standing before it.
-            interactive && !(filled && configuredFromCluster) ? (
-              <>
-                {/* Focus glides the view to fit the board; not while it fills the view. */}
-                {maximised || filled ? null : (
-                  <FocusElementButton bounds={element} kind="Board" palette={palette} />
-                )}
-                {filled ? null : (
-                  <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
-                )}
-                {/* The cog last, at the header's far right: the board's one menu (its element menu). In a Dashboard
-                  slot, the slot's own cog (slot-menu.ts), the board set up on its tab; maximised from the slot, an
-                  Editor's Board Settings with the slot's section after the board's. */}
-                {slot ? (
-                  setUpHere ? (
-                    <SlotBoardCog element={element} palette={palette} slot={slot} />
-                  ) : (
-                    slot.cog
-                  )
-                ) : canEdit && !configuredFromCluster ? (
-                  <BoardSettingsButton element={element} palette={palette} />
-                ) : null}
-              </>
-            ) : null
-          }
-        />
-      )}
-      {/* A template's example cards: Clear Example Cards or Keep Them, for an Editor (ExampleCardsNotice); left on the
-          board's tab by a slot board. */}
-      {plan && selection.ids.size ? (
-        <BoardSelectionBar
-          plan={plan}
-          setup={setup}
-          ordered={selection.ordered}
-          palette={palette}
-          onClear={selection.clear}
-        />
-      ) : null}
-      {interactive && plan && !simplified ? (
-        <ExampleCardsNotice shown={shownItems} plan={plan} palette={palette} />
-      ) : null}
-      <div
-        ref={bodyRef}
-        // The runs' observer root (useCardRunReveal RUN_BODY_ATTR).
-        data-plan-body=""
-        // A scroll container resets touch-action, so without touch-none a finger on a card starts a native
-        // scroll and the browser cancels the drag; the canvas pans across empty board instead. Maximised, filling
-        // its tab or in a Dashboard slot, nothing under the board pans, so a finger on empty board scrolls the board
-        // (and past its end, the Dashboard's page); each card is touch-none on its own, so a finger on one still
-        // picks it up. On a phone its columns snap
-        // centred, one at a time (phone-board.ts), change only on a sideways swipe meant for it (phone-swipe.ts; the
-        // body is pan-y there), and a tap on a column's empty space glides it to the centre.
-        // No top padding here: a scroll box's padding insets where its sticky column heads stick, which left a strip
-        // of cards showing above them; the grid carries the heads' 12 px rest gap instead (plan-board.md "Column heads
-        // stick flush"). plan-scroll: a scrollbar in the theme's colours and finish (globals.css).
-        className={`plan-scroll min-h-0 flex-1 overflow-auto px-3 ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${look.overscroll} ${
-          look.snap ? 'snap-x snap-mandatory' : ''
-        } ${slotBoard ? 'scroll-edge-fade' : ''}`}
-        // A press here never pans or moves the board, so no hand (board-cursors.ts).
-        style={
-          {
-            cursor: planBoardBodyCursor(interactive),
-            '--plan-scroll-ink': palette.text,
-            '--plan-scroll-line': palette.border,
-            '--plan-scroll-track': palette.column,
-            '--plan-scroll-focus': palette.focus,
-          } as React.CSSProperties
-        }
-        onPointerDown={interactive ? keepBoardPress : undefined}
-        onClick={
-          interactive && look.columns === 'phone'
-            ? (e) => {
-                if (bodyRef.current)
-                  centreTappedColumn(e.target as Element, bodyRef.current, COLUMN_ATTR);
-              }
-            : undefined
-        }
-      >
-        {/* Not set up yet: the placeholder; and Setup Board's dialog, for this person only, when open (new, or Board
-            Setup's Setup Board run again over a set-up board). */}
-        <SetupBoardHost
-          elementId={element.id}
-          setup={fullSetup ?? setup}
-          palette={palette}
-          canEdit={canEdit}
-          pickable={pickable}
-        />
-        {setup.columns.length === 0 ? null : (
-          <div
-            ref={gridRef}
-            // pt-3: the column heads rest 12 px clear of the board's header (plan-board.md "Column heads stand
-            // clear"), a gap that scrolls away so a stuck head sits flush at the top ("Column heads stick flush").
-            className={`relative grid min-h-full ${slotBoard ? 'gap-2' : 'gap-3 pt-3'}`}
-            style={{
-              gridTemplateColumns: columnTemplate,
-              gridTemplateRows: boardRowTemplate(
-                lanes.map((l) => l.key),
-                withLanes,
-                collapsed,
-              ),
-            }}
-          >
-            {projection.columns.map((col, position) =>
-              simplified ? (
-                <SlotColumnHeader
-                  key={col.column.id}
-                  col={col}
-                  palette={palette}
-                  onFrame={frameColumn ?? undefined}
-                  add={
-                    addInHead && mayAdd ? (
-                      <AddCardButton
-                        compact
-                        palette={palette}
-                        types={addTypes}
-                        label={`Add a card to ${col.column.name}`}
-                        open={
-                          adding?.status === col.column.status && adding.laneKey === lanes[0]?.key
-                        }
-                        onClosed={closeAdding}
-                        onAdd={addInto(
-                          col.column.status,
-                          lanes[0],
-                          col.lanes.find((l) => l.laneKey === lanes[0]?.key)?.items ?? [],
-                        )}
-                      />
-                    ) : null
-                  }
-                />
-              ) : shutColumns.has(col.column.id) ? (
-                <CollapsedColumnHead
-                  key={`${col.column.id}-strip`}
-                  column={col.column}
-                  palette={toneOf(col.column.id).palette}
-                  bar={toneOf(col.column.id).bar}
-                  onExpand={() => toggleColumn(col.column.id)}
-                />
-              ) : (
-                <PlanColumnHeader
-                  key={col.column.id}
-                  onCollapse={canCollapse ? () => toggleColumn(col.column.id) : undefined}
-                  col={col}
-                  setup={setup}
-                  palette={toneOf(col.column.id).palette}
-                  bar={toneOf(col.column.id).bar}
-                  canEdit={setUpHere}
-                  reorder={reorder.reorderFor(col.column.id, position)}
-                  onChange={(next, part) => {
-                    if (part === COLUMN_REORDERED) return reorder.reordered(next, col.column.id);
-                    plan?.updateBoard(element.id, next);
-                    trackSetup(part);
-                  }}
-                  onMoveCards={(from, to) => {
-                    if (!plan) return;
-                    const moving = [...items.values()].filter((it) => itemStatus(it) === from);
-                    const stay = cardsMovingRefused(moving, plan.types, to);
-                    // One write, one undo step and one room op for the whole column, never one per card.
-                    const moves = columnCardMoves(moving, stay, to);
-                    if (plan.moveItems && moves.length) {
-                      plan.moveItems(moves);
-                      track('Plan', 'Moved', 'Board');
-                    } else for (const m of moves) plan.moveItem(m.id, m.move);
-                    // One announcement for the cards whose type leaves the status out, never one each.
-                    if (stay.size) plan.announce(cardsStayedMessage(stay.size, columnName(to)));
-                  }}
-                  onFrame={frameColumn ?? undefined}
-                  onDeleteStatus={(status) => plan?.removeStatusColumns(status, element.id)}
-                  onTrashCards={(status) => {
-                    if (!plan) return;
-                    // Every card in the state, whatever board shows it (the column's removal moves them all).
-                    const went = plan.trashItems(
-                      [...plan.items.values()]
-                        .filter((it) => itemStatus(it) === status && !isTrashed(it))
-                        .map((it) => it.id),
-                    );
-                    if (went)
-                      plan.announce(`${went === 1 ? 'Card' : `${went} cards`} moved to the Trash`);
-                  }}
-                />
-              ),
-            )}
-            {/* One column a screen, each column's snap point: a marker over its full height, out of the grid's
-                flow, rather than its sticky header, so scrolling down moves no snap point and nothing re-snaps
-                mid-scroll (docs/specs/026-plan/plan-board.md "On a phone"). */}
-            {look.columns === 'phone'
-              ? projection.columns.map((col, i) => (
-                  <div
-                    key={`snap-${col.column.id}`}
-                    aria-hidden
-                    data-plan-snap
-                    className="pointer-events-none absolute inset-y-0 left-0 snap-center snap-always"
-                    // Its own width: an absolute item's right edge would reach only the grid's own box, not its
-                    // column's, since the columns run past it.
-                    style={{ gridColumn: i + 1, gridRow: '1 / -1', width: PHONE_COLUMN_WIDTH }}
-                  />
-                ))
-              : null}
-            {lanes.map((lane, laneIndex) => {
-              const shut = collapsed.has(lane.key);
-              return (
-                <LaneRow
-                  key={lane.key || `none-${laneIndex}`}
-                  lane={lane}
-                  withLanes={withLanes}
-                  span={setup.columns.length}
-                  palette={palette}
-                  shut={shut}
-                  onToggle={() => collapse.toggleLane(lane.key)}
-                >
-                  {shut
-                    ? null
-                    : projection.columns.map((col) => {
-                        const cell = col.lanes.find((l) => l.laneKey === lane.key)?.items ?? [];
-                        if (shutColumns.has(col.column.id)) {
-                          const over =
-                            held &&
-                            held.slot.status === col.column.status &&
-                            held.slot.laneKey === lane.key;
-                          return (
-                            <CollapsedColumnCell
-                              key={`${col.column.id}-strip`}
-                              column={col.column}
-                              status={col.column.status}
-                              laneKey={lane.key}
-                              laneLabel={withLanes ? lane.label : undefined}
-                              count={withLanes ? cell.length : col.count}
-                              limit={withLanes ? undefined : col.column.wipLimit}
-                              overLimit={!withLanes && col.overLimit}
-                              named={!withLanes || laneIndex === firstOpenLane}
-                              palette={toneOf(col.column.id).palette}
-                              held={over ? (held.refused ? 'refused' : 'over') : null}
-                              onExpand={() => toggleColumn(col.column.id)}
-                            />
-                          );
-                        }
-                        const slotHere =
-                          held &&
-                          held.slot.status === col.column.status &&
-                          held.slot.laneKey === lane.key
-                            ? held.slot
-                            : null;
-                        const isAdding =
-                          adding?.status === col.column.status && adding.laneKey === lane.key;
-                        const firstEmpty =
-                          empty && canEditCards && laneIndex === 0 && col === projection.columns[0];
-                        const done = isDoneColumn(setup, col.column);
-                        // Where the Practice Sprint's cards ship (plan-tour.md "Boards: Practice Sprint").
-                        const ships = col.column.id === shipColumnId;
-                        // Every type the board takes may be added in any cell: a type's left-out statuses only
-                        // stop a card moving there (docs/specs/026-plan/item-types.md "An item type").
-                        const cellTypes = addTypes;
-                        return (
-                          <div
-                            key={col.column.id}
-                            {...{ [COLUMN_ATTR]: col.column.id }}
-                            data-plan-status={col.column.status}
-                            data-plan-lane={lane.key}
-                            className={`plan-col flex flex-col rounded-[var(--plan-col-r,8px)] ${
-                              simplified
-                                ? 'min-h-12 gap-1.5 px-1.5 pb-1.5'
-                                : 'min-h-16 gap-2 px-2 pb-2 pt-1'
-                            }`}
-                            style={columnPartStyle(toneOf(col.column.id).palette)}
-                            // An Editor's right-click on the column's background opens its settings (plan-board.md
-                            // "A column's own settings"); anyone else's does what it always did.
-                            onContextMenu={
-                              setUpHere ? columnBackgroundMenu(col.column.id) : undefined
-                            }
-                          >
-                            {/* The cards are the list; the column's Add card button follows it rather than sitting in it,
-                                since a list holds only its items. Empty, it takes no room, so the button sits where it
-                                always did. */}
-                            <div
-                              role="list"
-                              aria-label={`${col.column.name}${withLanes && lane.label ? `, ${lane.label}` : ''}, ${cell.length} ${cell.length === 1 ? 'item' : 'items'}`}
-                              className={`flex flex-col ${simplified ? 'gap-1.5' : 'gap-2'} empty:hidden`}
-                            >
-                              {loading
-                                ? [0, 1].map((k) => (
-                                    <div
-                                      key={k}
-                                      className="h-16 animate-pulse rounded-[var(--plan-card-r,12px)] motion-reduce:animate-none"
-                                      style={{ backgroundColor: palette.card, opacity: 0.6 }}
-                                    />
-                                  ))
-                                : null}
-                              <PlanBoardCellCards
-                                cards={cell}
-                                base={cellBase}
-                                done={done}
-                                ships={ships}
-                                busy={busy}
-                                simplified={simplified}
-                                gapBefore={
-                                  slotHere && slotHere.beforeId !== held?.itemId
-                                    ? slotHere.beforeId
-                                    : null
-                                }
-                                gapHeight={held?.height}
-                              />
-                              {slotHere && slotHere.beforeId === null ? (
-                                <DropGap
-                                  height={held!.height}
-                                  palette={palette}
-                                  refused={held?.refused}
-                                />
-                              ) : null}
-                            </div>
-                            {mayAdd && !addInHead ? (
-                              // It folds away while a drop gap shows here (plan-board.md "Add card steps aside").
-                              <CellAddRow folded={!!slotHere} gap={simplified ? 6 : 8}>
-                                <AddCardButton
-                                  palette={palette}
-                                  types={cellTypes}
-                                  label={firstEmpty ? 'Add your first card' : 'Add card'}
-                                  open={isAdding}
-                                  onClosed={closeAdding}
-                                  onAdd={addInto(col.column.status, lane, cell)}
-                                />
-                              </CellAddRow>
-                            ) : null}
-                          </div>
-                        );
-                      })}
-                </LaneRow>
-              );
-            })}
-          </div>
-        )}
-      </div>
-      {menu && plan ? (
-        <PlanCardMenuHost
-          menu={menu}
-          plan={plan}
-          setup={setup}
-          // A Participant works on cards (duplicates, moves, flags) and never retires them, as in the item panel.
-          canEdit={canEditCards}
-          canRetire={canEdit}
-          onClose={() => setMenu(null)}
-          {...(canEditCards && !simplified ? { onSelect: selection.start } : {})}
-        />
-      ) : null}
-      {dragging && items.get(dragging.itemId) ? (
-        <PlanDragGhost
-          drag={dragging}
-          pointer={drag.pointer}
-          size={cardSize}
-          stacked={slotBoard}
-          item={items.get(dragging.itemId)!}
-          palette={palette}
-          fields={CARD_FIELDS}
-          count={dragging.group?.length ?? 1}
-        />
-      ) : null}
-    </div>
-  );
+  // What the board's parts draw with (plan-board-view-values.ts): this render's values.
+  const v: PlanBoardViewValues = {
+    element,
+    plan,
+    setup,
+    projection,
+    palette,
+    types,
+    items,
+    statusNames,
+    shownItems,
+    addTypes,
+    self,
+    slot,
+    look,
+    interactive,
+    simplified,
+    selected,
+    maximised,
+    filled,
+    phone,
+    canEdit,
+    canEditCards,
+    setUpHere,
+    configuredFromCluster,
+    quick,
+    setQuick,
+    columnName,
+    gridRef,
+    slotBoard,
+    columnTemplate,
+    lanes,
+    withLanes,
+    collapse,
+    collapsed,
+    shutColumns,
+    canCollapse,
+    firstOpenLane,
+    frameColumn,
+    addInHead,
+    mayAdd,
+    adding,
+    closeAdding,
+    addInto,
+    toneOf,
+    toggleColumn,
+    reorder,
+    held,
+    empty,
+    loading,
+    shipColumnId,
+    cellBase,
+    busy,
+    boardRef,
+    bodyRef,
+    cardSize,
+    radius,
+    cornerVars,
+    fontFamily,
+    textScale,
+    selection,
+    menu,
+    setMenu,
+    drag,
+    dragging,
+    fullSetup,
+    pickable,
+  };
+
+  const board = <PlanBoardFrame v={v} />;
   // One stable tree whether maximised or not (MaximisableSlot), so the board keeps its state both ways; while it
   // fills the canvas area (maximised or filling its tab), the canvas keeps its place, empty.
   return (

@@ -314,7 +314,7 @@ selfId)` names to ids by token spans, `shownFormula` ids to names (`nameAsWritte
     by result. `board-sort.ts` offers a Formula with a Number, Currency, Percent (as number) or Date result and
     reads it through `formulaValue`; `boardSortComparator(sortBy, types, items?)`. `board-csv.ts` writes a
     Formula's column (`cellOf(formulaValue)`); Import skips it. `card-source.ts` answers a Formula by name.
-    `type-changes.ts` takes `formula` (names) and `result` on `custom`, `addCustom` and `editCustom`
+    `type-change-fields.ts` takes `formula` (names) and `result` on `custom`, `addCustom` and `editCustom`
     (`withFormula`, resolved after the change's fields with `resolveFormulas`; "The formula for "Left" doesn't
     work: ..."). `plan-listing.ts` lists `formula` (shown), `result` and `formulaError`; the api answers the
     widened `calculated`; the SVG export draws a Formula with or without the cards.
@@ -369,14 +369,14 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
   `clampPercent` moves to model-core; every product's `data-shapes.ts` re-exports it, so the canvas's progress
   elements and the Percent field round the same way.
   - `item-types.ts`: `percent` in `CUSTOM_FIELD_KINDS` after `currency`; `showAs?: 'percent'` on `CustomFieldDef`.
-    `readCustom` keeps `showAs` only as `'percent'` on a field `canShowAsPercent` allows; `type-changes.ts` takes
+    `readCustom` keeps `showAs` only as `'percent'` on a field `canShowAsPercent` allows; `type-change-fields.ts` takes
     `showAs` on `add` and `editCustom` (`'percent'` or `'number'`, `'number'` deleting it; a field that can't show as
     a Percent is refused: "{Field} can't show as a percent: only a share, like Children Done or a Percent formula, can."), and a
     calculation edited to `childCount` drops it.
   - Values: `plan-names.ts` reads a Percent by `parsePercent`, refusing `value_invalid` "{Field} is a percent: give a
     number from 0 to 100."; `board-csv.ts` writes the number and imports by `parsePercent` (a cell it can't read is
     skipped); `card-text.ts` `customFieldText` gives `percentText(percentValue(v))`; `board-sort.ts` sorts it as a
-    number; `board.ts` lanes it as a Number (`LaneFieldKind` `'percent'`, its row named "40%"); `required-fields.ts`
+    number; `board-lane-fields.ts` lanes it as a Number (`LaneFieldKind` `'percent'`, its row named "40%"); `required-fields.ts`
     lets it be required (0 is a value). `plan-view-charts.ts` leaves it out of Cards by Field's sums. Forms'
     `MAPPABLE_KINDS` never name it.
   - Editor: `PercentBar.tsx` is the shared drawing: `PercentBar` (`value`, optional `inks` `{ fill, track }`, else the
@@ -428,7 +428,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
     `/^\+?[\d ()-]+$/` with at least `PHONE_DIGITS_MIN` digits), `phoneHref(v)` (`tel:` and the `+` and digits), and
     `PHONE_HINT`.
   - `readCustom` keeps `withTime` only as `true` on a `daterange` field (dropped elsewhere, never refused);
-    `type-changes.ts` takes `withTime` only on an added `daterange` field (refused on another kind); `editCustom`
+    `type-change-fields.ts` takes `withTime` only on an added `daterange` field (refused on another kind); `editCustom`
     takes no `withTime`, since Include Time is chosen when the field is made. `canBeRequired` allows all three; `isEmptyFieldValue` reads an empty
     list as empty.
   - Readers: `customFieldText` (a Date and Time `dateTimeText` short, a Date Range `dateRangeText` short, a Phone as
@@ -464,7 +464,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
   `durationSpoken(m)`; `DURATION_HINT`; `isTimeSpent(field)`; `durationMinutes(field, raw)` (whole minutes, a Time
   Spent field its entries' total) and `runningOnCard(item, type)` (the card face's runners, earliest first).
   - `item-types.ts`: `duration` in `CUSTOM_FIELD_KINDS` after `percent`; `timeSpent?: true` on `CustomFieldDef`,
-    kept by `readCustom` only on a Duration; `type-changes.ts` takes `timeSpent` on `add` only (a field of another
+    kept by `readCustom` only on a Duration; `type-change-fields.ts` takes `timeSpent` on `add` only (a field of another
     kind is refused), and a Time Spent field can't be required (`required-fields.ts` and `requirable` skip it).
   - Values: `plan-names.ts` parses by `parseDuration` ("{Field} is a duration: write a duration like 2h 30m, 90m or
     1.5h.") and refuses writing a Time Spent field ("{Field} is tracked: people add time in the card panel.");

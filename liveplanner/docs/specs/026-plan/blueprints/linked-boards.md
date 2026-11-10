@@ -24,7 +24,7 @@ packages/project/src/element-action.ts       ElementActionStatus ('open' | 'done
                                               ACTION_STATUS_LABELS
 packages/project/src/plan-board-patch.ts      'collects' among SETUP_KEYS
 packages/project/src/svg-render-panel-faces.ts the export's Won't Do row (slashed ring, muted, "Won’t Do · name")
-packages/items/src/board.ts                   PlanBoardSetup.collects, LINKED_RECORD_KINDS; normaliseBoardSetup keeps it
+packages/items/src/board-setup.ts             PlanBoardSetup.collects, LINKED_RECORD_KINDS; normaliseBoardSetup keeps it
 packages/items/src/presets.ts                 freshSetup (freshBoardSetup's column naming, for any set-up)
 packages/items/src/linked-cards.ts            ids, links, status mapping, linkedCardCreate, healLinkedCards,
                                               linkedCardLeftPatch, linkedCardsTrashedBy, unlinkedFields (pure)

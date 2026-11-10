@@ -14,7 +14,7 @@ Derived from [Office amenities](../office-amenities.md).
 | `packages/document/src/room-builder.ts`                                            | `withDoorPiece(el, variant?)`: the Door, then the preset's companions                              |
 | `packages/document/src/office.ts`                                                  | The kinds join `OfficeKind`, `OFFICE_KINDS` and `OFFICE_ART`                                       |
 | `packages/avatar/src/office-geometry.ts`                                           | Footprints (`OFFICE_FOOTPRINT`), `isWallPieceShape` (hand dryer, microwave, kettle)                |
-| `apps/editor/components/palette/palette-tile-defs.tsx`                             | The tiles; `tools:umbrella-stand` and `tools:kettle` end their groups (`dividerAfter`)             |
+| `apps/editor/components/palette/tile-defs/amenity-tiles.tsx`                       | The tiles; `tools:umbrella-stand` and `tools:kettle` end their groups (`dividerAfter`)             |
 | `apps/editor/components/palette/palette-icons-amenities.tsx`                       | The tiles' glyphs                                                                                  |
 | `apps/editor/components/palette/category-flyout-groups.ts`                         | `GROUP_NAMES`: Office (`tools:plant`), Kitchen (`tools:water-cooler`), Restroom (`tools:restroom`) |
 | `apps/editor/app/document/[id]/useElementHelpers.ts`                               | `addBoxedAt`'s `variant` option, handed to `withDoorPiece`                                         |

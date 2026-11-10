@@ -4,20 +4,20 @@ Derived from [Nudge](../nudge.md).
 
 ## Files
 
-| File                                                                          | Role                                                                                                  |
-| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/nudge.ts`                                            | `NudgeOp`, `NudgeRefusedOp`, `parseNudge`, `NUDGE_COOLDOWN_MS`, `createNudgeLedger`, `nudgeCountdown` |
-| `packages/api-schema/src/room-messages.ts`                                    | `nudge` in `PRESENCE_OP_KINDS`, `nudge-refused` in `SYSTEM_OP_KINDS`, both in `RoomOp`                |
-| `apps/api/src/room-op-gate.ts`                                                | Parses `nudge`; drops a Viewer's and a malformed one                                                  |
-| `apps/api/src/room-nudge.ts`                                                  | `nudgeIdentity`, `decideNudge`: self, absent target, cooldown                                         |
-| `apps/api/src/document-room/document-room.ts`                                 | Holds the ledger, addresses the nudge (`sendToPresence`) or answers `nudge-refused` to the sender     |
-| `apps/editor/lib/nudge/nudge-inbox.ts`                                        | Received ops fanned out; the sender (`setNudgeSender`); the per-person cooldown store and its hook    |
-| `apps/editor/lib/nudge/desktop-notify.ts`                                     | `notificationPermission`, `askNotificationPermission`, `showNudgeNotification`                        |
-| `apps/editor/hooks/collab/useNudges.ts`                                       | Sends, hears (sound, toast, notification), Go to, the one-time offer                                  |
-| `apps/editor/components/dialogs/NudgeButton.tsx`                              | The row's button with its countdown tooltip                                                           |
-| `apps/editor/components/dialogs/CollaboratorsDialog.tsx`                      | Renders `NudgeButton` beside Follow for other people when `mayNudge(selfRole)`                        |
-| `apps/editor/components/dialogs/settings/SettingsDesktopNotificationsRow.tsx` | The Desktop Notifications switch over preference and permission                                       |
-| `apps/editor/lib/sounds/audio.ts`                                             | The nudge chime plays through the one context ([Join and leave sounds](join-and-leave-sounds.md))     |
+| File                                                                                              | Role                                                                                                  |
+| ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/nudge.ts`                                                                | `NudgeOp`, `NudgeRefusedOp`, `parseNudge`, `NUDGE_COOLDOWN_MS`, `createNudgeLedger`, `nudgeCountdown` |
+| `packages/api-schema/src/room-messages.ts`                                                        | `nudge` in `PRESENCE_OP_KINDS`, `nudge-refused` in `SYSTEM_OP_KINDS`, both in `RoomOp`                |
+| `apps/api/src/room-op-gate.ts`                                                                    | Parses `nudge`; drops a Viewer's and a malformed one                                                  |
+| `apps/api/src/room-nudge.ts`                                                                      | `nudgeIdentity`, `decideNudge`: self, absent target, cooldown                                         |
+| `apps/api/src/document-room/document-room.ts`, `apps/api/src/document-room/room-call-sessions.ts` | Holds the ledger, addresses the nudge (`sendToPresence`) or answers `nudge-refused` to the sender     |
+| `apps/editor/lib/nudge/nudge-inbox.ts`                                                            | Received ops fanned out; the sender (`setNudgeSender`); the per-person cooldown store and its hook    |
+| `apps/editor/lib/nudge/desktop-notify.ts`                                                         | `notificationPermission`, `askNotificationPermission`, `showNudgeNotification`                        |
+| `apps/editor/hooks/collab/useNudges.ts`                                                           | Sends, hears (sound, toast, notification), Go to, the one-time offer                                  |
+| `apps/editor/components/dialogs/NudgeButton.tsx`                                                  | The row's button with its countdown tooltip                                                           |
+| `apps/editor/components/dialogs/CollaboratorsDialog.tsx`                                          | Renders `NudgeButton` beside Follow for other people when `mayNudge(selfRole)`                        |
+| `apps/editor/components/dialogs/settings/SettingsDesktopNotificationsRow.tsx`                     | The Desktop Notifications switch over preference and permission                                       |
+| `apps/editor/lib/sounds/audio.ts`                                                                 | The nudge chime plays through the one context ([Join and leave sounds](join-and-leave-sounds.md))     |
 
 ## Domain and naming
 

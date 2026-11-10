@@ -5,16 +5,19 @@ the code. Defaults are cited as `WBn`. Paths are relative to the repository root
 
 Scope, by file:
 
-| File                                                          | Role                                                                                       |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `liveworkspace/apps/accounts/src/workbench/routes.ts`         | `/api/account/workbench/*`: tickets, sessions, pairing requests, pairings                  |
-| `liveworkspace/apps/accounts/src/workbench/store.ts`          | `WorkbenchCore`: one person's SQLite tables, secrets, the alarm, ending access, allowances |
-| `liveworkspace/apps/accounts/src/workbench/durable-object.ts` | `WorkbenchStore`, the Durable Object over `WorkbenchCore` (binding `WORKBENCH`)            |
-| `liveworkspace/apps/accounts/src/workbench/internal.ts`       | The apps' servers' doors: `workbench/session`, `workbench/rooms`, `allowance`              |
-| `liveworkspace/apps/accounts/src/workbench/index-access.ts`   | The owner's access to an item or folder, asked of the index; `closeRooms`                  |
-| `liveworkspace/apps/accounts/src/workbench/revoke.ts`         | A revoked token's pairings end; a closed account's store goes                              |
-| `liveworkspace/apps/accounts/src/workbench/apps.ts`           | Each app's dialect: its item word, `<word>Id`, its base address                            |
-| `packages/workbench`                                          | The frame's side in each app (bindings, hooks, components)                                 |
+| File                                                          | Role                                                                                                |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/accounts/src/workbench/routes.ts`         | `/api/account/workbench/*`: tickets, sessions, pairing requests, pairings                           |
+| `liveworkspace/apps/accounts/src/workbench/store.ts`          | `WorkbenchCore`: one person's store, the alarm, ending access, allowances                           |
+| `liveworkspace/apps/accounts/src/workbench/store-types.ts`    | The store's limits, secrets (`randomBase64Url`, `sha256Hex`, `storeIdOfSecret`) and shapes          |
+| `liveworkspace/apps/accounts/src/workbench/store-schema.ts`   | The store's SQLite tables (`SCHEMA`) and its row readers, `pairingCovers`                           |
+| `liveworkspace/apps/accounts/src/workbench/store-stub.ts`     | `WorkbenchStoreApi`, `workbenchStoreOf`, `workbenchStoreOfSecret`: reaching a store from the routes |
+| `liveworkspace/apps/accounts/src/workbench/durable-object.ts` | `WorkbenchStore`, the Durable Object over `WorkbenchCore` (binding `WORKBENCH`)                     |
+| `liveworkspace/apps/accounts/src/workbench/internal.ts`       | The apps' servers' doors: `workbench/session`, `workbench/rooms`, `allowance`                       |
+| `liveworkspace/apps/accounts/src/workbench/index-access.ts`   | The owner's access to an item or folder, asked of the index; `closeRooms`                           |
+| `liveworkspace/apps/accounts/src/workbench/revoke.ts`         | A revoked token's pairings end; a closed account's store goes                                       |
+| `liveworkspace/apps/accounts/src/workbench/apps.ts`           | Each app's dialect: its item word, `<word>Id`, its base address                                     |
+| `packages/workbench`                                          | The frame's side in each app (bindings, hooks, components)                                          |
 
 ## Domain and naming
 
@@ -210,17 +213,17 @@ person costs nothing. Figures are in [workbench.md "Performance"](../workbench.m
 | `WORKBENCH_ORIGIN_MAX_LENGTH`    | 255                                       | `routes.ts`                |
 | `WORKBENCH_POLL_INTERVAL_S`      | 5                                         | `routes.ts`                |
 | `ID_MAX`                         | 64                                        | `routes.ts`, `internal.ts` |
-| `WORKBENCH_SESSION_PREFIX`       | `'lvw_'`                                  | `store.ts`                 |
-| `WORKBENCH_TICKET_BYTES`         | 16                                        | `store.ts`                 |
-| `WORKBENCH_PAIRING_CODE_BYTES`   | 16                                        | `store.ts`                 |
-| `WORKBENCH_SESSION_SECRET_BYTES` | 32                                        | `store.ts`                 |
-| `WORKBENCH_PAIRING_TTL_MS`       | 10 min                                    | `store.ts`                 |
-| `WORKBENCH_SESSION_GRACE_MS`     | 24 h                                      | `store.ts`                 |
-| `WORKBENCH_QUOTA_MAX`            | 1,000                                     | `store.ts`                 |
-| `WORKBENCH_SESSION_ROOMS_MAX`    | 500                                       | `store.ts`                 |
-| `WORKBENCH_TICKET_PATTERN`       | `/^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/`     | `store.ts`                 |
-| `WORKBENCH_SESSION_PATTERN`      | `/^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/` | `store.ts`                 |
-| `WORKBENCH_CODE_PATTERN`         | `/^[A-Za-z0-9_-]{22}$/`                   | `store.ts`                 |
+| `WORKBENCH_SESSION_PREFIX`       | `'lvw_'`                                  | `store-types.ts`           |
+| `WORKBENCH_TICKET_BYTES`         | 16                                        | `store-types.ts`           |
+| `WORKBENCH_PAIRING_CODE_BYTES`   | 16                                        | `store-types.ts`           |
+| `WORKBENCH_SESSION_SECRET_BYTES` | 32                                        | `store-types.ts`           |
+| `WORKBENCH_PAIRING_TTL_MS`       | 10 min                                    | `store-types.ts`           |
+| `WORKBENCH_SESSION_GRACE_MS`     | 24 h                                      | `store-types.ts`           |
+| `WORKBENCH_QUOTA_MAX`            | 1,000                                     | `store-types.ts`           |
+| `WORKBENCH_SESSION_ROOMS_MAX`    | 500                                       | `store-types.ts`           |
+| `WORKBENCH_TICKET_PATTERN`       | `/^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/`     | `store-types.ts`           |
+| `WORKBENCH_SESSION_PATTERN`      | `/^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/` | `store-types.ts`           |
+| `WORKBENCH_CODE_PATTERN`         | `/^[A-Za-z0-9_-]{22}$/`                   | `store-types.ts`           |
 | `KIND`                           | `/^[a-z][a-z0-9-]{0,39}$/`                | `internal.ts`              |
 
 Config: `WORKBENCH` (Durable Object `WorkbenchStore`), `WORKBENCH_LIMITER` namespace `1103` (staging `2103`), 30 per

@@ -8,21 +8,21 @@ repository root.
 
 Scope, by file:
 
-| File                                                            | Role                                                                                                                              |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/items.ts`                         | Filters and list specs; create, read, update, copy, open, grant; `insertItem`, use days, `sharedWithUpsert`                       |
-| `liveworkspace/apps/index/src/lists.ts`                         | `buildListQuery` (`buildSearchQuery`), `filterClauses`, `buildMostUsedQuery`, `buildMineCountQuery`, `buildAnyQuery`, `listItems` |
-| `liveworkspace/apps/index/src/rows.ts`                          | `ItemRow`, `ITEM_COLUMNS`, `directAccess`, `toItem`, `LIVE_LINK`, `decorate`                                                      |
-| `liveworkspace/apps/index/src/folders.ts`                       | Folder routes, `reachableFolder`, `teamFilter`, `readName`                                                                        |
-| `liveworkspace/apps/index/src/folder-previews.ts`               | `GET /folders/previews`                                                                                                           |
-| `liveworkspace/apps/index/src/lookup.ts`                        | `POST /items/lookup`                                                                                                              |
-| `liveworkspace/apps/index/src/personal.ts`                      | Favourites, Hide from Recent (placement defaults: [default-folders.md](default-folders.md))                                       |
-| `liveworkspace/apps/index/src/visitors.ts`                      | Opened and Copied by a Visitor                                                                                                    |
-| `liveworkspace/apps/index/src/notices.ts`                       | `tellApp`, the first-visit check, `GET /app/people/:id/count`                                                                     |
-| `packages/index-client/src/client.ts`                           | `listItems`, `createItem`, `getItem`, `updateItem`, `copyItem`, `recordOpen`, `grant`, folder and favourite calls                 |
-| `liveworkspace/apps/index/migrations/0009_items_livehuddle.sql` | The items rebuild that let in livehuddle's Spaces ([Rebuilding items](#rebuilding-items))                                         |
-| `liveworkspace/apps/index/scripts/items-rebuild-check.ts`       | `snapshot`, `compare`, `foreignKeyProblems`, `itemsDescendants`: what a rebuild must leave unchanged                              |
-| `liveworkspace/apps/index/scripts/items-rebuild-counts.ts`      | The rehearsal CLI: `rehearse <export.sql>`, `snapshot`, `compare`                                                                 |
+| File                                                            | Role                                                                                                                                                                                                            |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/items.ts`                         | Re-exports `items/`: filters, list specs and the Trash (`list-routes.ts`); create and `insertItem` (`create.ts`); read, update, copy, grant (`item-routes.ts`); open, use days, `sharedWithUpsert` (`opens.ts`) |
+| `liveworkspace/apps/index/src/lists.ts`                         | `buildListQuery` (`buildSearchQuery`), `filterClauses`, `buildMostUsedQuery`, `buildMineCountQuery`, `buildAnyQuery`, `listItems`                                                                               |
+| `liveworkspace/apps/index/src/rows.ts`                          | `ItemRow`, `ITEM_COLUMNS`, `directAccess`, `toItem`, `LIVE_LINK`, `decorate`                                                                                                                                    |
+| `liveworkspace/apps/index/src/folders.ts`                       | Folder routes, `reachableFolder`, `teamFilter`, `readName`                                                                                                                                                      |
+| `liveworkspace/apps/index/src/folder-previews.ts`               | `GET /folders/previews`                                                                                                                                                                                         |
+| `liveworkspace/apps/index/src/lookup.ts`                        | `POST /items/lookup`                                                                                                                                                                                            |
+| `liveworkspace/apps/index/src/personal.ts`                      | Favourites, Hide from Recent (placement defaults: [default-folders.md](default-folders.md))                                                                                                                     |
+| `liveworkspace/apps/index/src/visitors.ts`                      | Opened and Copied by a Visitor                                                                                                                                                                                  |
+| `liveworkspace/apps/index/src/notices.ts`                       | `tellApp`, the first-visit check, `GET /app/people/:id/count`                                                                                                                                                   |
+| `packages/index-client/src/client.ts`                           | `listItems`, `createItem`, `getItem`, `updateItem`, `copyItem`, `recordOpen`, `grant`, folder and favourite calls                                                                                               |
+| `liveworkspace/apps/index/migrations/0009_items_livehuddle.sql` | The items rebuild that let in livehuddle's Spaces ([Rebuilding items](#rebuilding-items))                                                                                                                       |
+| `liveworkspace/apps/index/scripts/items-rebuild-check.ts`       | `snapshot`, `compare`, `foreignKeyProblems`, `itemsDescendants`: what a rebuild must leave unchanged                                                                                                            |
+| `liveworkspace/apps/index/scripts/items-rebuild-counts.ts`      | The rehearsal CLI: `rehearse <export.sql>`, `snapshot`, `compare`                                                                                                                                               |
 
 ## Domain and naming
 
@@ -220,7 +220,7 @@ A folder preview is two statements for up to 60 folders; a lookup is one read an
 `SEARCH_WORDS_MAX` 16, `FILTER_VALUES_MAX` 8, `INTENT_WORD` `/^[a-z0-9-]{1,32}$/`, `OPEN_DEBOUNCE_MS` 60 s,
 `USE_WINDOW_DAYS` 14, `MOST_USED_MAX` 8, `FOLDER_PREVIEW_IDS_MAX` 60, `FOLDER_PREVIEW_ITEMS` 4,
 `FOLDER_PREVIEW_COUNT_CAP` 1000 (`packages/index-client/src/constants.ts`); `INTENT_MAX` 100, `ID_MAX` 128,
-`OPEN_MEMORY_MAX` 5,000 (`liveworkspace/apps/index/src/config.ts`); `DEFAULT_TITLE` `'Untitled'` (`items.ts`).
+`OPEN_MEMORY_MAX` 5,000 (`liveworkspace/apps/index/src/config.ts`); `DEFAULT_TITLE` `'Untitled'` (`items/shared.ts`).
 
 ## Defaults ledger
 

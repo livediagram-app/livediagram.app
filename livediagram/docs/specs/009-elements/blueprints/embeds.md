@@ -31,7 +31,7 @@ Scope, by file:
 | `apps/editor/components/dialogs/EditorElementDialogs.tsx`                        | Builds the `urlOnly` config for a `video` target                                  |
 | `apps/editor/components/dialogs/LinkPickerDialog.tsx`                            | `UrlOnlyConfig`: URL mode only, validate as you type and at commit                |
 | `../packages/workbench/src/lib/url-safety.ts`                                    | `normaliseUrl`, `isSafeFollowUrl`                                                 |
-| `apps/editor/components/palette/palette-tile-defs.tsx`                           | Six `media:embed-*` tiles, `tileGroup: 'embed'`                                   |
+| `apps/editor/components/palette/tile-defs/element-tiles.tsx`                     | Six `media:embed-*` tiles, `tileGroup: 'embed'`                                   |
 | `packages/workbench/src/components/palette/embed-tile-art.tsx` (repository root) | `YouTubeTileArt`, `VimeoTileArt`, `LoomTileArt`, `FigmaTileArt`                   |
 | `apps/editor/components/palette/palette-create-tabs.tsx`                         | `PaletteMediaTab`: the Embed group under Image and Avatar                         |
 | `apps/editor/components/palette/PaletteTileGroup.tsx`                            | The collapsible group row                                                         |

@@ -1,41 +1,9 @@
-import {
-  createItemHeadSync,
-  earliestRoomGrantDue,
-  openRoomSockets,
-  FLUSH_IDLE_MS,
-  FLUSH_RETRY_MS,
-  flushAfterWrite,
-  type ItemHeadSync,
-  nextOutboxFlushAt,
-  outboxDueAt,
-  recordItemEditor,
-  renewRoomGrant,
-  roomGrantStep,
-  sharesDueAt,
-  ShareSchedule,
-} from '@liveworkspace/index-app';
+import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
-import {
-  ACCESS_CHANGED_CLOSE,
-  GRANT_LAPSED_CLOSE,
-  ROOM_GRANT_ASK_BEFORE_MS,
-  WORKBENCH_ENDED_CLOSE,
-  DOCUMENT_FORMAT,
-  DOCUMENT_TRASHED_CLOSE,
-  isRoomOpRef,
-  parseBuildId,
-  ROOM_FULL_CLOSE,
-  ROOM_FULL_REASON,
-  ROOM_PING,
-  ROOM_PONG,
-  roomIsFull,
-  type AccessLevel,
-} from '@livediagram/api-schema';
+import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livediagram/api-schema';
 import { RoomParticipantWrites } from '../room-participant';
 import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
 import {
-  opForTheWire,
-  stampCommentAuthor,
   ledgerKey,
   ledgerPrefix,
   recordInLedger,
@@ -44,92 +12,39 @@ import {
   type TabLedger,
 } from '@livediagram/document';
 import { RoomLivePoll } from '../room-live-poll';
-import { RoomSelectionStore, selectionFromOp, type LiveSession } from '../room-selections';
-import {
-  agentPresenceLog,
-  answerAgentPresence,
-  clearAgentsForOp,
-  RoomAgentPresence,
-} from '@liveworkspace/api-kit/room-agent-presence';
-import { armRoomAlarm, disarmRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
-import type { ClientMessage, DocumentEnv, Env, ParticipantPresence, ServerMessage } from '../types';
-import { reportServerEvent } from '../server-telemetry';
-import { multiplayerDecision } from '@liveworkspace/api-kit/room-multiplayer';
-import {
-  type LoggedOp,
-  MAX_TAB_ID_LEN,
-  admitFrame,
-  helloPresence,
-  resolveCatchup,
-} from '../document-room-rules';
-import { followerIdsOf, followTargetOf } from '@liveworkspace/api-kit/room-follows';
-import { opForScope, scopedTabOp } from '../room-scope';
-import { gateClientOp } from '../room-op-gate';
+import { RoomSelectionStore } from '../room-selections';
+import { agentPresenceLog, RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
+import type { DocumentEnv, Env, ServerMessage } from '../types';
+import type { LoggedOp } from '../document-room-rules';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
-import { answerInternal, type InternalRoom } from '../room-internal';
-import {
-  helloChangesRoster,
-  rosterFrames,
-  type RosterEntry,
-} from '@liveworkspace/api-kit/room-roster';
-import {
-  sessionMatchesAccessClose,
-  type AccessCloseMatch,
-} from '@liveworkspace/api-kit/room-access';
+import type { InternalRoom } from '../room-internal';
 import type { FacilitatorState } from '../facilitator';
 import { RoomFacilitator } from '../room-facilitator';
-
-import { writeQaAction, type QaWriteRequest } from '../qa-board-write';
 import {
   newSessionAttachment,
   readSessionAttachment,
-  verifiedSessionOf,
   type SessionAttachment,
 } from '../room-session';
-
-import { CHANGESET_RETENTION_MS, type CommunityAuthor } from '@livediagram/api-schema';
-import { deleteOldChangesets } from '../db/changesets';
+import type { CommunityAuthor } from '@livediagram/api-schema';
 import { documentHasTab } from '../db/tabs';
-import { documentPlacesImage } from '../db/image-refs';
-import { documentMayServeImage, grantOwnImages } from '../db/image-grants';
-import { indexService } from '../index-service';
-import { notifyDocumentJoin, notifyMentioned } from '../email/notifications';
-import { actionNotices, type NoticeDocument } from '../liveworkspace/action-notices';
+import { grantOwnImages } from '../db/image-grants';
 import type { ActionNotice, MentionNotice } from '../document-client';
-import {
-  checkCommunityPost,
-  COMMUNITY_CHECK_MS as COMMUNITY_CHECK_EVERY_MS,
-  communityCheckDueAt,
-  communityPostAuthor,
-  openCommunityCode,
-  readCommunityPost,
-  type CommunityPost,
-} from './community-post';
-import { communityService, communityServiceConfigured } from '../community-service';
-import { anonymiseDocument } from './document-anonymise';
-import { drawDocument } from '../thumbnail';
 import {
   ItemDb,
   type ExportCommentsResult,
   type ExportQuery,
   type ExportResult,
 } from '@liveworkspace/index-app';
-import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
+import { hasDocumentSchema } from './document-schema';
 import {
-  exportDocumentCopy,
   importDocumentCopy,
-  readDocumentHead,
-  readDocumentMeta,
   readDocumentOutline,
   type DocumentCopy,
-  type DocumentMeta,
   type DocumentOutline,
 } from './document-content';
-import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
-import { PresenceRelay, type RelaySession } from '@liveworkspace/api-kit/room-presence-relay';
+import { PresenceRelay } from '@liveworkspace/api-kit/room-presence-relay';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
-import { addConnectedDocumentTab, connectedTabArrival } from './connected-tab';
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportDocumentComments } from './document-comments';
@@ -141,8 +56,44 @@ import {
   type ShareMessage,
   type SharedTabCopy,
 } from './tab-shares';
-import { documentRoom } from '../document-client';
-import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
+import type { RouteIdentity } from './document-route';
+import {
+  drainIndex,
+  drainShares,
+  ensureSchema,
+  localNamespace,
+  MAINTENANCE_KEY,
+  noteWrite,
+  restoreContentState,
+  roomHeadSync,
+} from './room-content-state';
+import * as rpc from './room-rpc';
+import { community, communityListing, communityPostTitle } from './room-community';
+import { renewGrant, roomFetch } from './room-grants';
+import {
+  broadcast,
+  closeAllIfTrashed,
+  closeSessionsForAccessChange,
+  closeSessionsOfChangedLink,
+  closeSockets,
+  frameFor,
+  relaySessionOf,
+  sendToPresence,
+  turnAwayIfFull,
+} from './room-sockets';
+import { alarm, armAlarm, purge } from './room-lifecycle';
+import { roomMessage } from './room-message';
+import { handleQaWrite } from './room-qa-poll';
+import {
+  broadcastPresence,
+  clearAgentsFor,
+  dropSession,
+  handleAgentPresence,
+  liveSessions,
+  noteMultiplayer,
+  roomPeople,
+  socketByPresence,
+} from './room-roster';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
 // is two things at once:
@@ -158,6 +109,12 @@ import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './d
 //     authors, and keeps collaboration state (the ledger, the live poll, the facilitator baton). Payloads stay
 //     `op: unknown` so the editor can evolve its vocabulary without changing the room. Two edits to the same
 //     element are last-writer-wins in room order.
+//
+// The class holds the room's state and its doors; what each door does lives beside it, in functions that take the
+// room: room-content-state.ts (schema, outbox, upkeep), room-rpc.ts and room-community.ts (the worker's calls),
+// room-grants.ts (the upgrade and grants), room-sockets.ts (fan-out and closes), room-message.ts (inbound frames),
+// room-qa-poll.ts (Q&A writes, poll answers), room-roster.ts (presence) and room-lifecycle.ts (alarm, purge). So
+// the members those functions read are not `private`.
 //
 // Duration cost: the object is billed while it runs a request or an alarm, not while sockets idle (hibernation,
 // below). Content requests and thumbnail renders now run here rather than in the worker, so a document with heavy
@@ -184,24 +141,6 @@ import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './d
 //     died silently, a laptop asleep or a NAT that dropped the connection)
 //     without costing the room a wake per ping.
 
-// Max ops a single session may broadcast per 1s window. Far above any
-// legit client (cursor / laser broadcasts are throttled to a few dozen
-// per second), so this only ever bites a flood.
-const OP_RATE_CAP = 240;
-// What the export door answers a drawing as.
-const SVG_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
-
-// Max size (chars) of a single inbound WebSocket frame. A cursor / select /
-// op frame is well under this; the cap stops a socket from broadcasting a
-// huge payload to every peer in the room.
-const MAX_MESSAGE_CHARS = 256 * 1024;
-
-// Length clamp on the tab id we persist into the attachment from hello /
-// tab-focus frames. Real tab ids are UUIDs (36 chars); the clamp only
-// exists so a hostile frame can't balloon the attachment (see the size
-// note on SessionAttachment). MAX_TAB_ID_LEN comes from ./document-room-rules,
-// which owns the clamp it applies to a hello frame's tabId.
-
 // How many recent mutation ops the room keeps for reconnect catch-up
 // (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). A reconnecting client within this many ops of the
 // live tail replays the delta; further behind, it re-hydrates from the document's stored tabs.
@@ -214,19 +153,11 @@ const OP_LOG_LIMIT = 256;
 // identity across a hibernation wake (docs/specs/012-collaboration/resync-without-reload.md).
 const ORDER_STATE_KEY = 'order-state';
 
-// Share-link ops that end the sessions their code admitted.
-const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);
-// Close code for a socket whose share link was revoked or rescoped. In the
-// 4000-4999 application range; the client reloads or leaves on the op itself.
-const SHARE_LINK_CHANGED_CLOSE = 4003;
-
 // How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
 // failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
 export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
-// The document's own daily upkeep: old changesets go. An empty canvas is moved to the Trash by the index's daily
-// empty clean-up, from the summary's `hasContent` (docs/specs/013-workspace/empty-document-cleanup.md).
-export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
-const MAINTENANCE_KEY = 'maintenance-at';
+// The document's own daily upkeep (room-content-state.ts).
+export { MAINTENANCE_EVERY_MS } from './room-content-state';
 
 // The collaboration ledger: this product's pure module (collab-ledger.ts) on the shared store
 // (liveworkspace/docs/specs/002-architecture/architecture.md "A room's collaboration ledger").
@@ -282,7 +213,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // it saw to know whether the room restarted (seq reset) versus advanced.
   epoch: string = crypto.randomUUID();
   // Who is running the session (docs/specs/012-collaboration/facilitator.md), restored in the constructor.
-  private baton: RoomFacilitator;
+  baton: RoomFacilitator;
   get facilitator(): FacilitatorState {
     return this.baton.state;
   }
@@ -304,28 +235,28 @@ export class DocumentRoom extends DurableObject<Env> {
   // The document's SQLite behind the D1-shaped surface the content modules use (@liveworkspace/index-app item-db.ts).
   readonly db: ItemDb;
   // The document this object is, from the first call that names it (every RPC and room join does).
-  private documentId: string | null = null;
-  private schemaReady = false;
-  private documentRowReady = false;
+  documentId: string | null = null;
+  schemaReady = false;
+  documentRowReady = false;
   // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
-  private flushAt: number | null = null;
-  private lastFlushAt = 0;
-  private draining = false;
+  flushAt: number | null = null;
+  lastFlushAt = 0;
+  draining = false;
   // The next send to the other holders of its shared tabs (tab-shares.ts): on idle, not held to the outbox's
   // once a minute, since it is a call to another document rather than a push.
-  private readonly shares = new ShareSchedule(() =>
+  readonly shares = new ShareSchedule(() =>
     this.schemaReady ? sharesDueAt(this.state.storage.sql) : null,
   );
   // The next daily upkeep (persisted, so a wake keeps the day).
-  private maintenanceAt: number | null = null;
+  maintenanceAt: number | null = null;
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
-  private writes = 0;
+  writes = 0;
   // The canvas's Community post as last read (null: none), and when it next asks where it stands.
-  private communityAt: number | null = null;
+  communityAt: number | null = null;
   // The canvas's owner and team, kept from every grant the room is handed (a socket's ticket, a renewal, an API
   // request's grant), so a guest's merge into an account or a move to another team reaches the canvas's emails,
-  // pushes and alarm (@liveworkspace/index-app item-head.ts).
-  private readonly head: ItemHeadSync;
+  // pushes and alarm (@liveworkspace/index-app item-head.ts). Made by room-content-state.ts roomHeadSync.
+  readonly head: ItemHeadSync;
 
   // The Q&A board write queue (docs/specs/012-collaboration/qa-board.md). Every board write for this document
   // runs through here ONE AT A TIME. A Durable Object only serialises the
@@ -337,9 +268,35 @@ export class DocumentRoom extends DurableObject<Env> {
   // The tab write queue (blueprint SR2): Q&A board writes and a Participant's writes, one at a time per document.
   private tabWriteQueue: Promise<unknown> = Promise.resolve();
   // The surface the api worker's internal endpoints act on (room-internal.ts).
-  private readonly internal: InternalRoom;
+  readonly internal: InternalRoom;
   // A Participant's content and answers (docs/specs/013-workspace/share-roles.md), see room-participant.ts.
-  private participantWrites: RoomParticipantWrites;
+  participantWrites: RoomParticipantWrites;
+
+  // A socket's tab scope. Read from the attachment, so it survives
+  // hibernation; fixed for the life of the session (a rescoped link closes
+  // its sessions), so it is read once per socket and kept here: every op
+  // frame asks it of every recipient, and a cursor stream in a full room
+  // made that a structured-clone read per peer per packet. Lost with the
+  // object when the room hibernates, and read again on the next frame.
+  readonly scopes = new WeakMap<WebSocket, string | null>();
+  // The sample stream, the cursors (docs/specs/015-api/api.md "A busy room bounds its presence fan-out"):
+  // coalesced per socket in a busy room.
+  readonly presenceRelay = new PresenceRelay<WebSocket>({
+    sockets: () => this.state.getWebSockets(),
+    sessionOf: (ws) => relaySessionOf(this.readSession(ws)),
+    frameFor: (ws, payload, serialized) => frameFor(this, ws, payload, serialized),
+    send: (ws, frame) => {
+      try {
+        ws.send(frame);
+      } catch {
+        this.opRates.delete(ws);
+      }
+    },
+    schedule: (fn, ms) => void setTimeout(fn, ms),
+  });
+  // The element gate (@liveworkspace/api-kit/room-element-ops, docs/specs/015-api/blueprints/room-element-ops.md):
+  // one per room instance, so its bounded log is per room. Answers a refused op to its sender alone.
+  readonly elementGate = createRoomElementGate(ROOM_ELEMENT_RULES);
 
   constructor(state: DurableObjectState, env?: Env) {
     super(state, env as Env);
@@ -353,40 +310,12 @@ export class DocumentRoom extends DurableObject<Env> {
       ? {
           ...env,
           DOCUMENT_DB: this.db.asD1(),
-          DOCUMENT_ROOM: this.localNamespace(env.DOCUMENT_ROOM),
-          ROOM_PEOPLE: () => this.roomPeople(),
+          DOCUMENT_ROOM: localNamespace(this, env.DOCUMENT_ROOM),
+          ROOM_PEOPLE: () => roomPeople(this),
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
-    this.head = createItemHeadSync({
-      read: async () => {
-        if (this.documentId === null || !this.hasSchema()) return null;
-        this.ensureSchema();
-        const row = state.storage.sql
-          .exec<{ owner_id: string; team_id: string | null }>(
-            'SELECT owner_id, team_id FROM document WHERE id = ? AND created_at > 0',
-            this.documentId,
-          )
-          .toArray()[0];
-        return row ? { ownerId: row.owner_id, teamId: row.team_id ?? null } : null;
-      },
-      write: async (h) => {
-        state.storage.sql.exec(
-          'UPDATE document SET owner_id = ?, team_id = ? WHERE id = ?',
-          h.ownerId,
-          h.teamId,
-          this.documentId,
-        );
-        console.info('[room] owner or team taken from the grant', { team: h.teamId !== null });
-        // The summary push names the owner; a team change can open or close a Community post.
-        state.storage.sql.exec(
-          "INSERT OR IGNORE INTO outbox (document_id, kind, key) VALUES (?, 'summary', '')",
-          this.documentId,
-        );
-        this.noteWrite();
-        if (this.communityAt !== null) this.communityAt = Date.now();
-      },
-    });
+    this.head = roomHeadSync(this);
     this.participantWrites = new RoomParticipantWrites({
       env: this.roomEnv,
       enqueue: (step) => this.queueTabWrite(step),
@@ -400,14 +329,14 @@ export class DocumentRoom extends DurableObject<Env> {
       broadcastSystemOp: (op) => this.broadcastSystemOp(op),
       broadcastOrderedSystemOp: (op) => this.broadcastOrderedSystemOp(op),
       closeSessionsOfChangedLink: (op) => this.closeSessionsOfChangedLink(op),
-      closeAllIfTrashed: (op) => this.closeAllIfTrashed(op),
+      closeAllIfTrashed: (op) => closeAllIfTrashed(this, op),
       clearAgentsFor: (op) => this.clearAgentsFor(op),
-      closeSessionsForAccessChange: (close) => this.closeSessionsForAccessChange(close),
+      closeSessionsForAccessChange: (close) => closeSessionsForAccessChange(this, close),
       purge: () => this.purge(),
-      handleAgentPresence: (req, u) => this.handleAgentPresence(req, u),
+      handleAgentPresence: (req, u) => handleAgentPresence(this, req, u),
       handleQaWrite: (req) => this.handleQaWrite(req),
       sequenceMutation: (from, op) => this.sequenceMutation(from, op),
-      readSelections: (tabId, person) => this.selections.read(tabId, this.liveSessions(), person),
+      readSelections: (tabId, person) => this.selections.read(tabId, liveSessions(this), person),
       readLedger: (tabId, since) => this.ledger.read(tabId, since),
       epoch: () => this.epoch,
     };
@@ -416,7 +345,7 @@ export class DocumentRoom extends DurableObject<Env> {
       broadcast: (payload, except) => this.broadcast(payload, except),
       sendTo: (ws, payload) => this.sendTo(ws, payload),
       sendToPresence: (presenceId, payload) => this.sendToPresence(presenceId, payload),
-      socketByPresence: (presenceId) => this.socketByPresence(presenceId),
+      socketByPresence: (presenceId) => socketByPresence(this, presenceId),
       readSession: (ws) => this.readSession(ws),
       armAlarm: () => this.armAlarm(),
     });
@@ -446,342 +375,73 @@ export class DocumentRoom extends DurableObject<Env> {
       await this.baton.restore();
       await this.poll.restore();
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
-      this.restoreContentState(await state.storage.get<number>(MAINTENANCE_KEY));
+      restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
       this.armAlarm();
     });
   }
 
-  // ---------- The document's content ----------------------------------------------------------------------
+  // ---------- The document's content (room-content-state.ts) ----------------------------------------------------
 
-  // After a wake: the document id, anything the outbox still owes, and its Community post's next check. Reads only;
-  // a document with no schema yet (an id nothing has written) stays without one.
-  private restoreContentState(maintenanceAt: number | undefined): void {
-    this.maintenanceAt = maintenanceAt ?? null;
-    const sql = this.state.storage.sql;
-    if (!sql || !hasDocumentSchema((q) => sql.exec(q))) return;
-    this.ensureSchema();
-    const row = sql.exec('SELECT id FROM document LIMIT 1').toArray()[0];
-    if (typeof row?.id === 'string' && this.documentId === null) this.documentId = row.id;
-    // Anything owed goes now, or when its wait after a failure is over (index-app outbox.ts).
-    const due = outboxDueAt(sql);
-    if (due !== null) this.flushAt = Math.max(Date.now(), due);
-    this.shares.restore();
-    const post = sql
-      .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
-      .toArray()[0];
-    this.communityAt = post ? post.checked_at + COMMUNITY_CHECK_EVERY_MS : null;
-  }
-
-  // A tab's stored name, or null when the store holds no such tab (or no document yet). One primary-key read.
-  private storedTabName(tabId: string): string | null {
-    const sql = this.state.storage.sql;
-    if (!sql || !this.hasSchema()) return null;
-    const row = sql
-      .exec<{ name: string }>('SELECT name FROM tabs WHERE id = ?', tabId)
-      .toArray()[0];
-    return typeof row?.name === 'string' ? row.name : null;
-  }
-
-  private hasSchema(): boolean {
+  hasSchema(): boolean {
     const sql = this.state.storage.sql;
     return this.schemaReady || (!!sql && hasDocumentSchema((q) => sql.exec(q)));
   }
 
   // Every call names its document; an object answers for one document only.
-  private bindDocument(documentId: string): void {
+  bindDocument(documentId: string): void {
     if (this.documentId === null) this.documentId = documentId;
     else if (this.documentId !== documentId)
       throw new Error('document id does not match this object');
   }
 
-  // The schema on first use (document-schema.ts), and the document's row once its id is known, so the content's
-  // foreign keys always find it. A row made here has no dates (0): a create or a copy sets them, and the
-  // summary push never moves saved_at back.
-  private ensureSchema(): void {
-    if (this.schemaReady && (this.documentRowReady || this.documentId === null)) return;
-    const sql = this.state.storage.sql;
-    if (!this.schemaReady) {
-      migrateDocumentSchema((q) => sql.exec(q));
-      this.schemaReady = true;
-    }
-    if (this.documentId !== null && !this.documentRowReady) {
-      sql.exec(
-        'INSERT OR IGNORE INTO document (id, saved_at, created_at) VALUES (?, 0, 0)',
-        this.documentId,
-      );
-      this.documentRowReady = true;
-    }
+  ensureSchema(): void {
+    ensureSchema(this);
   }
 
-  // A content write happened: push to the index and the media service on idle, at most once a minute
-  // (document-outbox.ts), and send a shared tab's holders their copy on idle. Writes the drain itself makes (its
-  // outbox delete) schedule nothing.
-  private noteWrite(): void {
-    if (this.draining) return;
-    this.writes++;
-    if (this.maintenanceAt === null) {
-      this.maintenanceAt = Date.now() + MAINTENANCE_EVERY_MS;
-      void this.state.storage.put(MAINTENANCE_KEY, this.maintenanceAt);
-      this.armAlarm();
-    }
-    const now = Date.now();
-    if (this.shares.noteWrite()) this.armAlarm();
-    // A drain set far off, for a key in backoff, gives way to the key just written.
-    const at = flushAfterWrite(this.state.storage.sql, this.flushAt, now, this.lastFlushAt);
-    if (at === null) return;
-    this.flushAt = at;
-    this.armAlarm();
+  noteWrite(): void {
+    noteWrite(this);
   }
 
   // Push what the outbox holds to the index and the media service, and send what the shared tabs' holders are owed,
   // now. A failure keeps it and retries later.
   async drain(): Promise<void> {
-    await this.drainIndex();
-    await this.drainShares();
+    await drainIndex(this);
+    await drainShares(this);
   }
 
-  private async drainIndex(): Promise<void> {
-    const env = this.roomEnv;
-    const documentId = this.documentId;
-    this.flushAt = null;
-    if (!env || !documentId || !this.schemaReady) return;
-    this.draining = true;
-    try {
-      const { keys, pushes, more } = await drainOutbox(env, documentId);
-      this.lastFlushAt = Date.now();
-      if (keys > 0) console.debug('[document-outbox] pushed', { documentId, keys, pushes });
-      // A big import's tabs go a batch at a time, back to back, not a minute apart.
-      if (more) this.flushAt = Date.now() + FLUSH_IDLE_MS;
-    } catch (error) {
-      // The drain itself failed (a read, say): a push that fails is counted on its keys instead.
-      console.warn('[document-outbox] push failed', { documentId, error: String(error) });
-      this.flushAt = Date.now() + FLUSH_RETRY_MS;
-    } finally {
-      this.draining = false;
-    }
-    // Anything written while the push was in flight goes next time; a key that failed, when its wait is over.
-    if (this.flushAt === null) this.flushAt = this.indexFlushAt();
-  }
-
-  // Send the other holders of its shared tabs what they are owed (tab-shares.ts). A failure keeps it for later.
-  private async drainShares(): Promise<void> {
-    const env = this.roomEnv;
-    const documentId = this.documentId;
-    if (!env || !documentId || !this.schemaReady) {
-      this.shares.clear();
-      return;
-    }
-    this.draining = true;
-    try {
-      const done = await this.shares.send(() =>
-        documentShares.drain(env, documentId, (to, messages) =>
-          documentRoom(env, to).receiveShares(documentId, messages),
-        ),
-      );
-      if (done && done.sent > 0)
-        console.debug('[tab-shares] sent', { documentId, sent: done.sent });
-    } finally {
-      this.draining = false;
-    }
-    if (this.flushAt === null) this.flushAt = this.indexFlushAt();
-  }
-
-  // When the outbox next drains, or null when it owes nothing (index-app outbox.ts nextOutboxFlushAt).
-  private indexFlushAt(): number | null {
-    return nextOutboxFlushAt(this.state.storage.sql, Date.now(), this.lastFlushAt);
-  }
-
-  // The document's daily upkeep, once a day per document with content: changesets past their retention go (CS28).
-  private async maintain(now: number): Promise<void> {
-    const env = this.roomEnv;
-    const documentId = this.documentId;
-    this.maintenanceAt = now + MAINTENANCE_EVERY_MS;
-    await this.state.storage.put(MAINTENANCE_KEY, this.maintenanceAt);
-    await this.keepLedger(now);
-    if (!env || !documentId || !this.schemaReady) return;
-    try {
-      const gone = await deleteOldChangesets(env, now - CHANGESET_RETENTION_MS);
-      if (gone > 0) console.info('[changeset] retention', { documentId, deleted: gone });
-    } catch (error) {
-      console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
-    }
-  }
-
-  // The ledger's share of the upkeep: an entry nobody has touched for 30 days goes (room-ledger-store.ts). It never
-  // stops the rest of the upkeep.
-  private async keepLedger(now: number): Promise<void> {
-    try {
-      const kept = await this.ledger.upkeep({ now, seq: this.seq, tabs: this.storedTabIds() });
-      if (kept.dropped > 0 || kept.stamped > 0) console.info('[ledger] upkeep', kept);
-    } catch (error) {
-      console.warn('[ledger] upkeep failed', { error: String(error) });
-    }
-  }
-
-  // The ids of the tabs this room stores, or null when it can't say (no schema yet, or no tabs).
-  private storedTabIds(): ReadonlySet<string> | null {
-    const sql = this.state.storage.sql;
-    if (!sql || !(this.schemaReady || hasDocumentSchema((q) => sql.exec(q)))) return null;
-    const ids = new Set(
-      sql
-        .exec<{ id: string }>('SELECT id FROM tabs')
-        .toArray()
-        .map((r) => r.id),
-    );
-    return ids.size > 0 ? ids : null;
-  }
-
-  // This env's DOCUMENT_ROOM, answering this document's own id with this object: the code shared with the worker (a
-  // document read's outline, the room relays) then calls straight in rather than through a stub.
-  private localNamespace(
-    real: DurableObjectNamespace<DocumentRoom> | undefined,
-  ): DurableObjectNamespace<DocumentRoom> {
-    const ns = (real ?? {}) as DurableObjectNamespace<DocumentRoom>;
-    return new Proxy(ns, {
-      get: (target, prop, receiver) => {
-        if (prop === 'get') {
-          return (id: DurableObjectId, opts?: DurableObjectNamespaceGetDurableObjectOptions) =>
-            id.equals(this.state.id) ? this : target.get(id, opts);
-        }
-        const value: unknown = Reflect.get(target, prop, receiver);
-        return typeof value === 'function'
-          ? (value as (...a: unknown[]) => unknown).bind(target)
-          : value;
-      },
-    });
-  }
-
-  // ---------- RPC: what the worker asks of a document (document-client.ts) ---------------------------------------
+  // ---------- RPC: what the worker asks of a document (document-client.ts, room-rpc.ts) ---------------------------
 
   async outline(documentId: string): Promise<DocumentOutline> {
     this.bindDocument(documentId);
     return readDocumentOutline(this.requireEnv(), documentId);
   }
 
-  async route(documentId: string, request: Request, identity: RouteIdentity): Promise<Response> {
-    this.bindDocument(documentId);
-    const env = this.requireEnv();
-    if (identity.grant?.item === documentId) await this.takeHead(identity.grant);
-    const community = await this.communityOf(documentId);
-    const writesBefore = this.writes;
-    const response = await answerDocumentRequest(
-      env,
-      request,
-      identity,
-      (p) => this.state.waitUntil(p),
-      community,
-    );
-    // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not, nor is
-    // the create, the canvas's making (isDocumentCreate).
-    if (response.ok && identity.owner && this.writes > writesBefore) {
-      if (!isDocumentCreate(request)) {
-        const sql = this.state.storage.sql;
-        recordItemEditor(
-          (q, ...b) => sql.exec(q, ...b),
-          DOCUMENT_OUTBOX,
-          documentId,
-          identity.owner,
-          Date.now(),
-        );
-      }
-      this.noteWrite();
-    }
-    // A post published or removed by this request starts or stops its checks.
-    if (request.method !== 'GET' && new URL(request.url).pathname.endsWith('/community'))
-      this.communityAt = communityCheckDueAt(await readCommunityPost(env));
-    this.armAlarm();
-    return response;
+  route(documentId: string, request: Request, identity: RouteIdentity): Promise<Response> {
+    return rpc.route(this, documentId, request, identity);
   }
 
-  // The canvas's Community post's link as the doors read it: its code, and whether it opens the canvas now
-  // (community-post.ts openCommunityCode). Null for a canvas with no post.
-  async community(documentId?: string): Promise<{ code: string; open: boolean } | null> {
-    if (documentId !== undefined) this.bindDocument(documentId);
-    if (this.documentId === null || !this.hasSchema()) return null;
-    return this.communityOf(this.documentId);
+  // The canvas's Community post (room-community.ts).
+  community(documentId?: string): Promise<{ code: string; open: boolean } | null> {
+    return community(this, documentId);
   }
 
-  private async communityOf(documentId: string): Promise<{ code: string; open: boolean } | null> {
-    if (!this.hasSchema()) return null;
-    const env = this.requireEnv();
-    const post = await readCommunityPost(env);
-    if (!post) return null;
-    const meta = await readDocumentMeta(env, documentId);
-    return { code: post.shareCode, open: openCommunityCode(env, post, meta) === post.shareCode };
-  }
-
-  // What a visitor through the canvas's Community post's open link is told of the post (docs/specs/025-community/
-  // community.md "Viewing a post's document"): its id at the service and who it shows as author. Null when `code`
-  // is not the post's link or the post does not open the canvas now.
-  async communityListing(
+  communityListing(
     documentId: string,
     code: string,
   ): Promise<{ postId: string; author: CommunityAuthor } | null> {
-    this.bindDocument(documentId);
-    if (!this.hasSchema()) return null;
-    const env = this.requireEnv();
-    const post = await readCommunityPost(env);
-    if (!post || post.shareCode !== code) return null;
-    const meta = await readDocumentMeta(env, documentId);
-    if (openCommunityCode(env, post, meta) !== code) return null;
-    return { postId: post.postId, author: await communityPostAuthor(env, post) };
+    return communityListing(this, documentId, code);
   }
 
-  // A copy through the canvas's Community post's link is named after the post (docs/specs/025-community/
-  // community.md "Making a copy"): its title, when `code` is the post's link and the post is open. Null otherwise.
-  async communityPostTitle(documentId: string, code: string): Promise<string | null> {
-    this.bindDocument(documentId);
-    if (!this.hasSchema()) return null;
-    const env = this.requireEnv();
-    const post = await readCommunityPost(env);
-    if (!post || post.shareCode !== code) return null;
-    const meta = await readDocumentMeta(env, documentId);
-    return openCommunityCode(env, post, meta) ? post.title : null;
+  communityPostTitle(documentId: string, code: string): Promise<string | null> {
+    return communityPostTitle(this, documentId, code);
   }
 
-  // Take the owner and team a grant names as the canvas's own copy. A failure is logged, never the caller's: the
-  // next grant tries again.
-  private async takeHead(grant: { owner?: string | null; team: string | null }): Promise<void> {
-    if (!this.roomEnv) return;
-    try {
-      await this.head.sync(grant);
-    } catch (err) {
-      console.warn('[room] owner and team not taken from the grant', { error: String(err) });
-    }
+  takeHead(grant: { owner?: string | null; team: string | null }): Promise<void> {
+    return rpc.takeHead(this, grant);
   }
 
-  // The export door (liveworkspace/docs/specs/006-media/previews.md, routes/internal-items.ts): the canvas drawn as an SVG, the first
-  // tab or one, with its last save as the version. Through the canvas's Community post's link it is the redacted
-  // drawing, and nothing while the post does not open the canvas. Unchanged since `ifVersion`, it is not drawn.
-  async exportImage(documentId: string, query: ExportQuery): Promise<ExportResult> {
-    this.bindDocument(documentId);
-    if (!this.hasSchema()) return { status: 'not_found' };
-    const env = this.requireEnv();
-    const { meta, savedAt } = await readDocumentHead(env, documentId);
-    if (!meta) return { status: 'not_found' };
-    let community = false;
-    if (query.code !== null) {
-      const post = await readCommunityPost(env);
-      if (post?.shareCode === query.code) {
-        if (openCommunityCode(env, post, meta) !== query.code) return { status: 'not_found' };
-        community = true;
-      }
-    }
-    if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
-    if (query.tabId !== null && !(await documentHasTab(env, documentId, query.tabId))) {
-      return { status: 'not_found' };
-    }
-    const svg = await drawDocument(
-      env,
-      { id: documentId, name: meta.name },
-      query.tabId,
-      { defer: (p) => this.state.waitUntil(p), appearance: query.appearance },
-      community,
-    );
-    return svg === null
-      ? { status: 'empty', version: savedAt }
-      : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
+  exportImage(documentId: string, query: ExportQuery): Promise<ExportResult> {
+    return rpc.exportImage(this, documentId, query);
   }
 
   // The export door's `file` format (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", document-file.ts): the
@@ -808,21 +468,8 @@ export class DocumentRoom extends DurableObject<Env> {
     await importDocumentFile(this.requireEnv(), documentId, file);
   }
 
-  // The index's reverse write of a connected tab (connected-tab.ts): appended at the end of the tab bar, and everyone
-  // with the canvas open sees it arrive, as an ordered system op a blipped socket replays.
-  async addConnectedTab(
-    documentId: string,
-    write: ConnectedTabWrite,
-  ): Promise<ConnectedTabOutcome> {
-    this.bindDocument(documentId);
-    if (!this.hasSchema()) return 'not_found';
-    const env = this.requireEnv();
-    const outcome = await addConnectedDocumentTab(env, documentId, write);
-    if (typeof outcome === 'object' && outcome.made) {
-      const op = await connectedTabArrival(env, documentId);
-      if (op) this.broadcastOrderedSystemOp(op);
-    }
-    return outcome;
+  addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome> {
+    return rpc.addConnectedTab(this, documentId, write);
   }
 
   async hasTab(documentId: string, tabId: string): Promise<boolean> {
@@ -830,17 +477,8 @@ export class DocumentRoom extends DurableObject<Env> {
     return documentHasTab(this.requireEnv(), documentId, tabId);
   }
 
-  // Whether the canvas places this image (on one tab, for a tab-scoped visitor) and may serve it
-  // (db/image-grants.ts): the byte endpoint's share check, answered where both live.
-  async servesImage(
-    documentId: string,
-    imageId: string,
-    onlyTabId: string | null,
-  ): Promise<boolean> {
-    this.bindDocument(documentId);
-    const env = this.requireEnv();
-    if (!(await documentPlacesImage(env, documentId, imageId, onlyTabId))) return false;
-    return documentMayServeImage(env, documentId, imageId);
+  servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean> {
+    return rpc.servesImage(this, documentId, imageId, onlyTabId);
   }
 
   // A Participant's placement claim (routes/images.ts checked the caller may add to the canvas): the images of `ids`
@@ -850,31 +488,12 @@ export class DocumentRoom extends DurableObject<Env> {
     return grantOwnImages(this.requireEnv(), ids, personId, Date.now());
   }
 
-  // The source side of a copy, for whoever copies (the index names them and the link they came through): anyone
-  // but the owner takes the comments as the tab read serves them to them; a copy through the canvas's open
-  // Community post's link takes it without its comments or the people on its actions (docs/specs/025-community/
-  // community.md "Making a copy"). `community` says which, so the copy is counted toward the post.
-  async exportCopy(
+  exportCopy(
     documentId: string,
     onlyTabId: string | null,
     copier: { by: string | null; code: string | null } | null,
   ): Promise<{ copy: DocumentCopy; community: boolean } | null> {
-    this.bindDocument(documentId);
-    if (!this.hasSchema()) return null;
-    const env = this.requireEnv();
-    const meta = await readDocumentMeta(env, documentId);
-    if (!meta) return null;
-    const post = copier?.code ? await this.communityOf(documentId) : null;
-    const community = post !== null && post.open && post.code === copier?.code;
-    const by = copier?.by ?? null;
-    const copy = await exportDocumentCopy(
-      env,
-      documentId,
-      onlyTabId,
-      by !== null && by !== meta.ownerId ? by : null,
-      community,
-    );
-    return copy ? { copy, community } : null;
+    return rpc.exportCopy(this, documentId, onlyTabId, copier);
   }
 
   async importCopy(documentId: string, copy: DocumentCopy): Promise<void> {
@@ -893,87 +512,28 @@ export class DocumentRoom extends DurableObject<Env> {
     return importMigratedDocument(this.db, payload);
   }
 
-  // Share links the index revoked or rescoped: each one's sessions hear it and end now. `rescoped`: they reload
-  // into what the link opens now.
-  async revokeCodes(
+  revokeCodes(
     documentId: string,
     codes: string[],
     reason: 'revoked' | 'rescoped' = 'revoked',
   ): Promise<number> {
-    this.bindDocument(documentId);
-    let closed = 0;
-    for (const code of codes) {
-      const op = { kind: reason === 'rescoped' ? 'share-rescoped' : 'share-revoked', code };
-      const before = openRoomSockets(this.state.getWebSockets()).length;
-      this.broadcastSystemOp(op);
-      this.closeSessionsOfChangedLink(op);
-      await this.clearAgentsFor(op);
-      closed += before - openRoomSockets(this.state.getWebSockets()).length;
-    }
-    return closed;
+    return rpc.revokeCodes(this, documentId, codes, reason);
   }
 
-  // Someone opened the canvas through a share link for the first time: the owner hears of it
-  // (email/notifications.ts notifyDocumentJoin), off the caller's path. A canvas never started has no owner to tell.
-  async joined(documentId: string, personId: string): Promise<void> {
-    this.bindDocument(documentId);
-    if (!this.hasSchema()) return;
-    const env = this.requireEnv();
-    const meta = await readDocumentMeta(env, documentId);
-    if (!meta) return;
-    this.state.waitUntil(
-      notifyDocumentJoin(env, { id: documentId, ownerId: meta.ownerId, name: meta.name }, personId),
-    );
+  joined(documentId: string, personId: string): Promise<void> {
+    return rpc.joined(this, documentId, personId);
   }
 
-  // An action assigned or a comment's mentions (routes/team-notify-routes.ts checked the people and the canvas): the
-  // emails go from here, off the caller's path, where their once-only claims are kept. A canvas never started has
-  // nothing to name.
-  async notifyAction(documentId: string, input: ActionNotice): Promise<boolean> {
-    const document = await this.noticeDocument(documentId);
-    if (!document) return false;
-    for (const work of actionNotices(this.requireEnv(), document, input))
-      this.state.waitUntil(work);
-    return true;
+  notifyAction(documentId: string, input: ActionNotice): Promise<boolean> {
+    return rpc.notifyAction(this, documentId, input);
   }
 
-  async notifyMention(documentId: string, input: MentionNotice): Promise<boolean> {
-    const document = await this.noticeDocument(documentId);
-    if (!document) return false;
-    this.state.waitUntil(
-      notifyMentioned(this.requireEnv(), {
-        ...input,
-        document: { id: document.id, name: document.name },
-      }).catch(() => {}),
-    );
-    return true;
+  notifyMention(documentId: string, input: MentionNotice): Promise<boolean> {
+    return rpc.notifyMention(this, documentId, input);
   }
 
-  private async noticeDocument(documentId: string): Promise<NoticeDocument | null> {
-    this.bindDocument(documentId);
-    if (!this.hasSchema()) return null;
-    const meta = await readDocumentMeta(this.requireEnv(), documentId);
-    return meta
-      ? { id: documentId, name: meta.name, ownerId: meta.ownerId, teamId: meta.teamId }
-      : null;
-  }
-
-  // A closed account's name off this canvas (document-anonymise.ts): the index's person purge, through the api.
-  async anonymise(documentId: string, personId: string): Promise<number> {
-    this.bindDocument(documentId);
-    // A canvas never started (or purged) holds nothing of anyone: read its storage as it is, without making the
-    // schema and document row a first query would.
-    const sql = this.state.storage.sql;
-    const started =
-      this.hasSchema() &&
-      sql.exec('SELECT 1 FROM document WHERE id = ? AND created_at > 0', documentId).toArray()
-        .length > 0;
-    if (!started) return 0;
-    const changed = await anonymiseDocument(this.requireEnv(), documentId, personId);
-    // The owner may have been the one anonymised: the next grant reads the stored copy again.
-    this.head.forget();
-    if (changed > 0) console.info('[room] anonymised a closed account', { rows: changed });
-    return changed;
+  anonymise(documentId: string, personId: string): Promise<number> {
+    return rpc.anonymise(this, documentId, personId);
   }
 
   // ---------- RPC: a tab shared with other documents (tab-shares.ts) ----------------------------------------------
@@ -995,22 +555,15 @@ export class DocumentRoom extends DurableObject<Env> {
     return documentShares.recordJoin(this.requireEnv(), documentId, tabId, member, seenUpdatedAt);
   }
 
-  // What another holder of a shared tab sent. A document with nothing stored holds no tab, and makes no schema
-  // to say so.
-  async receiveShares(
+  receiveShares(
     documentId: string,
     from: string,
     messages: ShareMessage[],
   ): Promise<ShareAnswer[]> {
-    const sql = this.state.storage.sql;
-    if (this.documentId === null && !hasDocumentSchema((q) => sql.exec(q))) {
-      return messages.map(() => 'gone');
-    }
-    this.bindDocument(documentId);
-    return documentShares.receive(this.requireEnv(), documentId, from, messages);
+    return rpc.receiveShares(this, documentId, from, messages);
   }
 
-  private requireEnv(): DocumentEnv {
+  requireEnv(): DocumentEnv {
     if (!this.roomEnv) throw new Error('document room has no env');
     return this.roomEnv;
   }
@@ -1022,139 +575,18 @@ export class DocumentRoom extends DurableObject<Env> {
     void this.state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
   }
 
-  // The room's own doors: its internal endpoints (room-internal.ts) and the WebSocket upgrade. Takes what a
-  // stub's fetch takes, so the worker's relays (room-client.ts) call it the same way here as through a stub.
-  override async fetch(input: Request | string, init?: RequestInit): Promise<Response> {
-    const request = typeof input === 'string' || init ? new Request(input, init) : input;
-    const url = new URL(request.url);
-    const internal = await answerInternal(this.internal, request, url);
-    if (internal) return internal;
-    if (request.headers.get('Upgrade') !== 'websocket') {
-      return new Response('Expected WebSocket', { status: 426 });
-    }
-    const pair = new WebSocketPair();
-    // WebSocketPair is a 2-property record keyed `0`/`1`. The "client"
-    // side is returned to the connecting peer; the "server" side is
-    // owned by this Durable Object.
-    const client = pair[0];
-    const server = pair[1];
-    // A full room answers the upgrade and closes it at once (docs/specs/015-api/api.md "A room holds at most
-    // 100 connections"): the close code is the only thing a browser can read, an HTTP refusal reads as 1006.
-    if (this.turnAwayIfFull(server)) return new Response(null, { status: 101, webSocket: client });
-    // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
-    const v = verifiedSessionOf(request);
-    this.acceptSession(
-      server,
-      v.verifiedRole,
-      v.isOwner,
-      v.tabScope,
-      v.shareCode,
-      v.personTag,
-      v.networkTag,
-      v.workbenchPairing,
-      v.adderKey,
-      v.documentId,
-      v.grantExp ?? null,
-    );
-    if (v.documentId) {
-      this.bindDocument(v.documentId);
-      if (v.head) await this.takeHead(v.head);
-    }
-    this.armAlarm();
-    return new Response(null, { status: 101, webSocket: client });
+  // ---------- Sessions: the upgrade, grants and fan-out (room-grants.ts, room-sockets.ts) --------------------------
+
+  override fetch(input: Request | string, init?: RequestInit): Promise<Response> {
+    return roomFetch(this, input, init);
   }
 
-  // ---------- Grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants") ---------------------------------
-  //
-  // Every session joined with the index's grant, which lapses after ten minutes. ROOM_GRANT_ASK_BEFORE_MS before
-  // it does, the room asks the session for a fresh one (`grant-renew`); the session answers with a `grant` frame
-  // (its editor renews a minute early anyway, and sends each new grant unasked). A session still holding a
-  // lapsed grant is closed with GRANT_LAPSED_CLOSE, and its editor rejoins with a fresh one, or not at all. The
-  // decisions are @liveworkspace/index-app's (room-ticket.ts).
-
-  private nextGrantDue(): number | null {
-    return earliestRoomGrantDue(
-      openRoomSockets(this.state.getWebSockets()).map((ws) => this.readSession(ws)),
-      ROOM_GRANT_ASK_BEFORE_MS,
-    );
+  renewGrant(ws: WebSocket, ticket: unknown): Promise<void> {
+    return renewGrant(this, ws, ticket);
   }
 
-  // Ask the sessions whose grant is about to lapse, and close those whose grant has.
-  private checkGrants(now: number): void {
-    let lapsed = 0;
-    for (const ws of openRoomSockets(this.state.getWebSockets())) {
-      const s = this.readSession(ws);
-      const step = roomGrantStep(s, now, ROOM_GRANT_ASK_BEFORE_MS);
-      if (step === 'lapsed') {
-        this.closeSockets((each) => (each === ws ? [GRANT_LAPSED_CLOSE, 'grant-lapsed'] : null));
-        lapsed++;
-      } else if (step === 'ask' && s?.grantExp) {
-        this.sendTo(ws, { kind: 'grant-renew', expiresAt: s.grantExp });
-        try {
-          ws.serializeAttachment({ ...s, renewAsked: true } satisfies SessionAttachment);
-        } catch {
-          // The socket is going; its lapse closes it.
-        }
-      }
-    }
-    if (lapsed > 0) console.info('[grant] sessions lapsed', { closed: lapsed });
-  }
-
-  // A session's fresh grant (the `grant` frame): the same canvas, level and tab move its lapse on. One that says
-  // something else (a level changed, a tab rescoped) ends the session, and the editor rejoins with what it holds
-  // now. A grant that does not check is ignored; the old one still lapses.
-  async renewGrant(ws: WebSocket, ticket: unknown): Promise<void> {
-    const env = this.roomEnv;
-    const session = this.readSession(ws);
-    if (!env || !session?.documentId) return;
-    const renewal = await renewRoomGrant(indexService, env, ticket, session.documentId, {
-      level: session.verifiedRole,
-      tab: session.tabScope,
-      pairing: session.workbenchPairing ?? null,
-    });
-    if (renewal.kind === 'invalid') {
-      console.warn('[grant] renewal refused', { reason: 'invalid' });
-      return;
-    }
-    if (renewal.kind === 'changed') {
-      console.info('[grant] renewal changed access', {
-        from: session.verifiedRole,
-        to: renewal.level,
-      });
-      this.closeSockets((each) => (each === ws ? [ACCESS_CHANGED_CLOSE, 'access-changed'] : null));
-      return;
-    }
-    // A fresh grant on a canvas since moved to the Trash ends the session, as the trashing itself does.
-    if (renewal.claims.trashed) {
-      this.closeSockets((each) =>
-        each === ws ? [DOCUMENT_TRASHED_CLOSE, 'document-trashed'] : null,
-      );
-      return;
-    }
-    await this.takeHead(renewal.claims);
-    const current = this.readSession(ws);
-    if (!current) return;
-    try {
-      ws.serializeAttachment({
-        ...current,
-        grantExp: renewal.grantExp,
-        renewAsked: false,
-      } satisfies SessionAttachment);
-    } catch {
-      return;
-    }
-    this.armAlarm();
-  }
-
-  // Turn an upgrade away when the room already holds ROOM_MAX_CONNECTIONS sockets: accepted only to be closed
-  // with ROOM_FULL_CLOSE, never handed to the hibernation runtime, so it holds no session and receives nothing.
   turnAwayIfFull(server: WebSocket): boolean {
-    const connections = this.state.getWebSockets().length;
-    if (!roomIsFull(connections)) return false;
-    console.warn('[room] full', { documentId: this.documentId, connections });
-    server.accept();
-    server.close(ROOM_FULL_CLOSE, ROOM_FULL_REASON);
-    return true;
+    return turnAwayIfFull(this, server);
   }
 
   // Admit one server-side socket into the room: pin its hibernation-proof
@@ -1198,224 +630,34 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 
   // Read a socket's session attachment (room-session.ts); frames from a null one are dropped.
-  private readSession(ws: WebSocket): SessionAttachment | null {
+  readSession(ws: WebSocket): SessionAttachment | null {
     return readSessionAttachment(ws);
   }
 
-  // Fan an op out to every connected client without a sender. Used
-  // for server-originated events (share-link revoked, owner-side
-  // forced disconnects). Senders aren't excluded because the
-  // originator is the worker itself, not any of the connected peers.
-  // Serialize once and send to every connected session (optionally excluding
-  // one, e.g. the op's originator). The connected set is the runtime's
-  // hibernation-managed list (`state.getWebSockets()`), which drops closed
-  // sockets on its own; a send that still throws means a socket that died
-  // without the runtime noticing yet, so we just shed its rate entry — the
-  // runtime reaps the socket itself.
-  // Deliver to the ONE session holding `presenceId`, skipping the sender.
-  // Used by the addressed messages (the facilitator's, docs/specs/012-collaboration/facilitator.md):
-  // everyone else has no use for the packet, and fanning it out would leak who
-  // it is for to the whole room.
   sendToPresence(presenceId: string, payload: ServerMessage, except?: WebSocket): void {
-    const serialized = JSON.stringify(payload);
-    for (const ws of this.state.getWebSockets()) {
-      if (ws === except) continue;
-      const attachment = ws.deserializeAttachment() as SessionAttachment | null;
-      if (attachment?.presence?.id !== presenceId) continue;
-      const out = this.frameFor(ws, payload, serialized);
-      if (out === null) return;
-      try {
-        ws.send(out);
-      } catch {
-        this.opRates.delete(ws);
-      }
-      return;
-    }
+    sendToPresence(this, presenceId, payload, except);
   }
 
   broadcast(payload: ServerMessage, except?: WebSocket): void {
-    const serialized = JSON.stringify(payload);
-    for (const ws of this.state.getWebSockets()) {
-      if (ws === except) continue;
-      const out = this.frameFor(ws, payload, serialized);
-      if (out === null) continue;
-      try {
-        ws.send(out);
-      } catch {
-        this.opRates.delete(ws);
-      }
-    }
+    broadcast(this, payload, except);
   }
 
-  // The frame one socket should receive for `payload`: as serialised for an
-  // unscoped session, redacted or withheld (null) for a tab-scoped one
-  // (docs/specs/013-workspace/tab-scoped-share-links.md). Only op frames carry tab content.
-  private frameFor(ws: WebSocket, payload: ServerMessage, serialized: string): string | null {
-    if (payload.kind !== 'op') return serialized;
-    const scope = this.scopeOf(ws);
-    if (scope === null) return serialized;
-    const op = opForScope(payload.op, scope);
-    if (op === null) return null;
-    return op === payload.op ? serialized : JSON.stringify({ ...payload, op });
+  closeSessionsOfChangedLink(op: unknown): void {
+    closeSessionsOfChangedLink(this, op);
   }
 
-  // A socket's tab scope. Read from the attachment, so it survives
-  // hibernation; fixed for the life of the session (a rescoped link closes
-  // its sessions), so it is read once per socket and kept here: every op
-  // frame asks it of every recipient, and a cursor stream in a full room
-  // made that a structured-clone read per peer per packet. Lost with the
-  // object when the room hibernates, and read again on the next frame.
-  private readonly scopes = new WeakMap<WebSocket, string | null>();
-  // The sample stream, the cursors (docs/specs/015-api/api.md "A busy room bounds its presence fan-out"):
-  // coalesced per socket in a busy room.
-  private readonly presenceRelay = new PresenceRelay<WebSocket>({
-    sockets: () => this.state.getWebSockets(),
-    sessionOf: (ws) => relaySessionOf(this.readSession(ws)),
-    frameFor: (ws, payload, serialized) => this.frameFor(ws, payload, serialized),
-    send: (ws, frame) => {
-      try {
-        ws.send(frame);
-      } catch {
-        this.opRates.delete(ws);
-      }
-    },
-    schedule: (fn, ms) => void setTimeout(fn, ms),
-  });
-  private scopeOf(ws: WebSocket): string | null {
-    if (this.scopes.has(ws)) return this.scopes.get(ws) ?? null;
-    const scope = this.readSession(ws)?.tabScope ?? null;
-    this.scopes.set(ws, scope);
-    return scope;
+  closeSockets(pick: (ws: WebSocket) => [code: number, reason: string] | null): number {
+    return closeSockets(this, pick);
   }
 
-  // After a share-revoked / share-rescoped op has gone out, close every socket
-  // its code admitted: its holders must stop receiving ops whether or not
-  // their client honours the op (docs/specs/013-workspace/tab-scoped-share-links.md).
-  private closeSessionsOfChangedLink(op: unknown): void {
-    const { kind, code } = (op ?? {}) as { kind?: unknown; code?: unknown };
-    if (typeof kind !== 'string' || !SHARE_LINK_OPS.has(kind) || typeof code !== 'string') return;
-    this.closeSockets((ws) =>
-      this.readSession(ws)?.shareCode === code ? [SHARE_LINK_CHANGED_CLOSE, kind] : null,
-    );
-  }
-
-  // Close every socket `pick` gives a close code and reason, shedding each one's rate window.
-  // Returns how many it closed.
-  private closeSockets(pick: (ws: WebSocket) => [code: number, reason: string] | null): number {
-    let closed = 0;
-    for (const ws of this.state.getWebSockets()) {
-      const close = pick(ws);
-      if (!close) continue;
-      try {
-        ws.close(...close);
-      } catch {
-        // Already gone.
-      }
-      this.opRates.delete(ws);
-      closed++;
-    }
-    return closed;
-  }
-
-  // Close every session an access change affects (room-access.ts). The editor reloads on the
-  // close code, so the next join meets the gates again.
-  private closeSessionsForAccessChange(close: AccessCloseMatch): void {
-    const code: [number, string] =
-      close.match === 'workbench'
-        ? [WORKBENCH_ENDED_CLOSE, 'workbench-ended']
-        : [ACCESS_CHANGED_CLOSE, 'access-changed'];
-    const closed = this.closeSockets((ws) =>
-      sessionMatchesAccessClose(this.readSession(ws), close) ? code : null,
-    );
-    console.info('[room-access] closed', { match: close.match, closed });
-  }
-
-  // The document is gone for good: end every session, then drop everything stored here, which includes the
-  // collaboration ledger's comment, idea and answer text, the order state, the poll, the baton and the alarm.
-  // The ledger's queued writes land first, so none of them can re-create a key after the wipe.
-  // That includes the document's content: its SQLite goes with everything else.
-  async purge(documentId?: string): Promise<void> {
-    if (documentId !== undefined) this.bindDocument(documentId);
-    this.closeSockets(() => [DOCUMENT_TRASHED_CLOSE, 'document-purged']);
-    this.opLog = [];
-    await this.leaveShares();
-    await this.leaveCommunity();
-    await this.ledger.settled();
-    await disarmRoomAlarm(this.state.storage);
-    await this.state.storage.deleteAll();
-    this.schemaReady = false;
-    this.documentRowReady = false;
-    this.flushAt = null;
-    this.shares.clear();
-    this.maintenanceAt = null;
-    this.communityAt = null;
-    this.head.forget();
-    console.info('[room] purged');
-  }
-
-  // A canvas going for good takes its Community post with it: the service hears it is gone. Best effort.
-  private async leaveCommunity(): Promise<void> {
-    const env = this.roomEnv;
-    const documentId = this.documentId;
-    if (!env || !documentId || !this.hasSchema() || !communityServiceConfigured(env)) return;
-    this.ensureSchema();
-    if (!(await readCommunityPost(env))) return;
-    try {
-      await communityService(env, '/sync', {
-        method: 'POST',
-        body: { documents: [], gone: [documentId] },
-      });
-    } catch (error) {
-      console.warn('[community] gone not sent', { error: String(error) });
-    }
-  }
-
-  // Ask the index where the Community post's canvas stands, and send the service what changed (community-post.ts).
-  private async checkCommunity(now: number): Promise<void> {
-    const env = this.roomEnv;
-    const documentId = this.documentId;
-    this.communityAt = null;
-    if (!env || !documentId || !this.hasSchema()) return;
-    let post: CommunityPost | null;
-    try {
-      const meta: DocumentMeta | null = await readDocumentMeta(env, documentId);
-      post = await checkCommunityPost(env, documentId, meta, now);
-    } catch (error) {
-      console.warn('[community] check failed', { error: String(error) });
-      post = await readCommunityPost(env);
-      if (post) {
-        this.communityAt = now + COMMUNITY_CHECK_EVERY_MS;
-        return;
-      }
-    }
-    this.communityAt = communityCheckDueAt(post);
-  }
-
-  // A document going for good tells the other holders of its shared tabs it left, so their copies stop counting
-  // it. Best effort: a holder that misses this hears `gone` the next time it sends here, and drops it then.
-  private async leaveShares(): Promise<void> {
-    const env = this.roomEnv;
-    const documentId = this.documentId;
-    const sql = this.state.storage.sql;
-    if (!env || !documentId || !sql || !hasDocumentSchema((q) => sql.exec(q))) return;
-    this.ensureSchema();
-    await documentShares.leaveAll(env, documentId, (to, messages) =>
-      documentRoom(env, to).receiveShares(documentId, messages),
-    );
-  }
-
-  // After a document-trashed op has gone out, close every socket
-  // (docs/specs/013-workspace/trash.md): the document is in the Trash, and its
-  // admission refuses every new join until it is restored.
-  private closeAllIfTrashed(op: unknown): void {
-    if ((op as { kind?: unknown } | null)?.kind !== 'document-trashed') return;
-    this.closeSockets(() => [DOCUMENT_TRASHED_CLOSE, 'document-trashed']);
+  purge(documentId?: string): Promise<void> {
+    return purge(this, documentId);
   }
 
   // Put a mutation into the ordered stream: a seq, the catch-up log, every
   // socket but the sender's, and the ledger. One path for a peer's op and for
   // one the worker made (docs/specs/012-collaboration/collab-race-hardening.md), so the two can't drift. Returns the seq.
-  private sequenceMutation(from: string, op: unknown, except?: WebSocket): number {
+  sequenceMutation(from: string, op: unknown, except?: WebSocket): number {
     const seq = ++this.seq;
     this.persistOrder();
     this.opLog.push({ seq, from, op });
@@ -1433,43 +675,14 @@ export class DocumentRoom extends DurableObject<Env> {
 
   // One step on the tab write queue (blueprint SR2), after every step before it. A failed step must not wedge
   // every write after it.
-  private queueTabWrite<T>(step: () => Promise<T>): Promise<T> {
+  queueTabWrite<T>(step: () => Promise<T>): Promise<T> {
     const run = this.tabWriteQueue.then(step);
     this.tabWriteQueue = run.catch(() => undefined);
     return run;
   }
 
-  // One Q&A board write, queued behind every other one for this document
-  // (docs/specs/012-collaboration/qa-board.md). Reached only from the api worker's qa route, which has already
-  // checked access and derived the actor, so the body is trusted the same way
-  // /broadcast's is. The broadcast happens INSIDE the queued step, so peers
-  // receive board states in rev order.
-  async handleQaWrite(request: Request): Promise<Response> {
-    const env = this.roomEnv;
-    if (!env) return new Response('no env', { status: 503 });
-    let req: QaWriteRequest;
-    try {
-      req = (await request.json()) as QaWriteRequest;
-    } catch {
-      return new Response('bad json', { status: 400 });
-    }
-    const step = this.queueTabWrite(async () => {
-      const result = await writeQaAction(env, req);
-      if (result.ok && result.changed) {
-        this.broadcastOrderedSystemOp({
-          kind: 'qa',
-          tabId: req.tabId,
-          elementId: req.elementId,
-          notes: result.notes,
-          rev: result.rev,
-        });
-      }
-      return result;
-    });
-    const result = await step;
-    return result.ok
-      ? Response.json({ notes: result.notes, rev: result.rev })
-      : Response.json({ error: 'qa_write_failed' }, { status: result.status });
+  handleQaWrite(request: Request): Promise<Response> {
+    return handleQaWrite(this, request);
   }
 
   // A system op that changes the document (docs/specs/012-collaboration/qa-board.md): sequenced and logged
@@ -1480,248 +693,14 @@ export class DocumentRoom extends DurableObject<Env> {
     this.sequenceMutation('system', op);
   }
 
-  // Hibernation event handler: one inbound frame from one socket. The DO
-  // may have just been re-materialized from cold — everything this needs
-  // beyond flood control comes from the socket's attachment.
+  // ---------- Hibernation events, the alarm and presence (room-message.ts, room-lifecycle.ts, room-roster.ts) -----
+
   override webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
-    // Drop an oversized frame before parsing / broadcasting it: ops are
-    // re-broadcast opaquely to every peer, so without a cap one socket
-    // could fan a multi-MB payload out to the whole room. Far above any
-    // real cursor / select / op frame. Binary frames aren't part of the
-    // protocol and parse to nothing.
-    const raw = typeof message === 'string' ? message : '';
-    if (raw.length > MAX_MESSAGE_CHARS) return;
-    let msg: ClientMessage;
-    try {
-      msg = JSON.parse(raw) as ClientMessage;
-    } catch {
-      return;
-    }
-    // Per-session frame-rate cap (sliding 1s window). The decision is
-    // admitFrame in document-room-rules; this is the socket plumbing.
-    const decision = admitFrame(this.opRates.get(ws), Date.now(), OP_RATE_CAP);
-    this.opRates.set(ws, decision.rate);
-    if (!decision.admit) return;
-    const session = this.readSession(ws);
-    if (!session) return;
-    if (msg.kind === 'grant') {
-      this.state.waitUntil(this.renewGrant(ws, (msg as { grant?: unknown }).grant));
-      return;
-    }
-    if (msg.kind === 'hello') {
-      // Force the server-resolved role AND the server-assigned ephemeral id
-      // onto the stored presence: the hello frame's own `role` / `id` are
-      // not trusted. The id override hides the real owner id (docs/specs/015-api/public-api-and-tokens.md §6)
-      // and stops a joiner impersonating another peer; the role override is
-      // the Viewer / Editor lie-defence. Both come from the attachment, the
-      // only per-session store that survives hibernation. Fields are built
-      // explicitly (not spread) and length-clamped so a hostile hello can't
-      // smuggle arbitrary keys or oversize strings into the attachment —
-      // see the size note on SessionAttachment.
-      const presence = helloPresence(msg.participant, session);
-      const batches = (msg as { batches?: unknown }).batches === true;
-      const hello = { ...session, presence, batches } satisfies SessionAttachment;
-      ws.serializeAttachment(hello);
-      this.presenceRelay.noteSession(ws, relaySessionOf(hello));
-      // Where the ordered stream stands as this session joins, so a later
-      // reconnect asks for what came after it, not for the whole log.
-      this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });
-      // The server's document format number (docs/specs/016-platform/new-version-prompt.md): an editor
-      // older than it offers a reload. With the live build id (docs/specs/016-platform/stale-builds.md).
-      const build = parseBuildId(this.roomEnv?.BUILD_ID);
-      this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT, ...(build ? { build } : {}) });
-      // The running poll, and every answer so far (docs/specs/012-collaboration/collab-race-hardening.md).
-      for (const op of this.poll.replayOps()) this.sendTo(ws, { kind: 'op', from: 'system', op });
-      // A repeat hello that changes nothing on the roster sends nobody a new one, so one socket cannot make the
-      // room rebuild every roster at the frame-rate cap. Nobody new is present either, so no multiplayer note.
-      if (helloChangesRoster(session.presence, presence)) {
-        this.broadcastPresence();
-        this.noteMultiplayer();
-      }
-      this.baton.welcome(ws, session, presence.id, msg.facilitatorToken);
-      return;
-    }
-    if (msg.kind === 'facilitator') {
-      this.baton.handle(msg, session);
-      return;
-    }
-    if (msg.kind === 'sync') {
-      // A (re)connecting client asks what it missed (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
-      // Answer from the in-memory op log or tell it to re-hydrate. Costs
-      // no state change, so it's allowed from any connected session
-      // (a view-only peer needs to catch up too).
-      this.sendCatchup(ws, msg.epoch, typeof msg.lastSeq === 'number' ? msg.lastSeq : 0);
-      return;
-    }
-    if (msg.kind === 'op') {
-      const sender = session.presence;
-      if (!sender) return;
-      // The role gate (room-op-gate.ts): what this session may relay, by its server-verified role.
-      const gate = gateClientOp(msg.op, {
-        role: sender.role,
-        tabScope: session.tabScope ?? null,
-        key: sender.key,
-      });
-      if (gate.kind === 'drop') return;
-      if (gate.kind === 'participant-content') {
-        void this.participantWrites.applyContentOp(
-          {
-            ws,
-            presenceId: sender.id,
-            documentId: session.documentId ?? null,
-            adderKey: session.adderKey ?? null,
-          },
-          msg.op,
-          msg.ref,
-        );
-        return;
-      }
-      // An Editor's element op the validator refuses goes nowhere; its sender alone hears why
-      // (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
-      if (!gate.presence && this.refusesElementOp(ws, msg)) return;
-      if (gate.participantAnswers) {
-        this.participantWrites.scheduleAnswers(
-          session.documentId ?? null,
-          (msg.op as { tabId?: unknown }).tabId,
-        );
-      }
-      const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
-      const isPresenceOp = gate.presence;
-      // Running the session belongs to whoever holds the baton (docs/specs/012-collaboration/facilitator.md).
-      // Only these two ops can be enforced here: a poll start / end is its own
-      // kind, while the timer and the dot vote ride the same `tab` /
-      // `tab-meta` ops as every shape move, so telling them apart would mean
-      // inspecting payloads for no gain against somebody who can already save
-      // the whole document over REST. Those stay a client-side rule, which is
-      // what docs/specs/012-collaboration/facilitator.md says out loud: who is driving, not who is allowed.
-      if (opKind === 'poll-start' || opKind === 'poll-end') {
-        if (!this.baton.mayRun(sender.id)) return;
-      }
-      // Remember the sender's current tab so a future joiner learns it
-      // from the presence list (tab-focus ops only fire on a switch, so
-      // they're invisible to anyone who joins afterwards). Persisted to
-      // the attachment — in-memory-only would forget everyone's tab on
-      // the next hibernation and mis-place peers for every later joiner.
-      // The live relay below still drives real-time updates for peers
-      // already connected.
-      // Every selection is noted for the api's held check, whatever the role
-      // (docs/specs/024-agents/agent-changesets.md "Held elements"). The DO's output gate holds
-      // what follows until the write lands.
-      if (opKind === 'select') {
-        void this.selections.note(sender.id, selectionFromOp(msg.op)).catch(() => {});
-      }
-      if (opKind === 'tab-focus') {
-        const { tabId, besideTabId } = msg.op as { tabId?: unknown; besideTabId?: unknown };
-        if (typeof tabId === 'string') {
-          sender.tabId = tabId.slice(0, MAX_TAB_ID_LEN);
-          // The other pane of a side by side split (docs/specs/007-editor/split-view.md "Presence"),
-          // clamped like tabId; anything but a string clears it. A tab-scoped session has one tab
-          // and no split, so it never holds one.
-          if (typeof besideTabId === 'string' && !session.tabScope)
-            sender.besideTabId = besideTabId.slice(0, MAX_TAB_ID_LEN);
-          else delete sender.besideTabId;
-          const moved = { ...session, presence: sender } satisfies SessionAttachment;
-          ws.serializeAttachment(moved);
-          this.presenceRelay.noteSession(ws, relaySessionOf(moved));
-          this.presenceRelay.catchUp(ws, sender.id);
-        }
-      }
-      // A follow is the room's to keep, never relayed: it tells the people followed, on their own sockets.
-      if (opKind === 'follow') {
-        this.noteFollow(ws, session, sender, msg.op);
-        return;
-      }
-      // Presence ops relay unordered (ephemeral, no catch-up). Mutation
-      // ops get a monotonic seq within the epoch and land in the catch-up
-      // log so a reconnecting peer can replay the delta (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
-      if (isPresenceOp) {
-        // The room decides who an answer belongs to, and relays only what it accepted, under the key it chose
-        // (docs/specs/012-collaboration/vote-integrity.md): the sender's proof never leaves the room.
-        // Chained, so answers apply in the order they arrived even though each one is hashed first: a quick change
-        // of mind must not lose to the answer it replaced.
-        if (opKind === 'poll-answer') {
-          const op = msg.op;
-          this.pollAnswers = this.pollAnswers
-            .then(() => this.relayPollAnswer(ws, op))
-            .catch(() => {});
-          return;
-        }
-        if (this.presenceRelay.relay(ws, sender.id, msg.op)) return;
-        this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
-      } else {
-        // No comment author id leaves the room, whatever a client sent: it is
-        // the author's owner id, a guest's credential. And a posted comment
-        // carries the name of the session that sent it, the one on its
-        // cursor, not whatever the frame claimed (docs/specs/012-collaboration/collab-race-hardening.md).
-        // A scoped session's whole-tab op goes out under the stored name: it may not rename its tab
-        // (docs/specs/013-workspace/tab-scoped-share-links.md "No rename from a scoped session").
-        const scoped = scopedTabOp(msg.op, session.tabScope ?? null, (tabId) =>
-          this.storedTabName(tabId),
-        );
-        const op = stampCommentAuthor(opForTheWire(scoped), sender);
-        const seq = this.sequenceMutation(sender.id, op, ws);
-        // The relay skips the sender, so tell it the seq its op took: its own
-        // ops are already applied, and a reconnect must not replay them. The
-        // op's `ref` comes back with it, so a save waiting on this op knows the
-        // ledger has it (docs/specs/012-collaboration/collab-race-hardening.md phase 6).
-        const ref = isRoomOpRef(msg.ref) ? { ref: msg.ref } : {};
-        this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq, ...ref });
-        if (opKind === 'poll-start' || opKind === 'poll-end') this.poll.noteLifecycle(op);
-      }
-    }
-  }
-
-  // Answer a client's `sync` (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): given the last epoch+seq it
-  // applied, either replay the ops it missed or tell it to re-hydrate.
-  //
-  //   - Same epoch, caught up (lastSeq >= seq) → empty delta.
-  //   - Same epoch, within the log window → replay ops after lastSeq.
-  //   - Same epoch but behind the trimmed log floor → resync (we no longer
-  //     hold the ops it missed).
-  //   - Fresh client (no epoch, lastSeq 0) → replay the whole current log;
-  //     element ops apply idempotently by id, so re-applying ops the client
-  //     already has from its D1 hydrate is harmless.
-  //   - Any other epoch mismatch with prior progress → resync: the client
-  //     saw a previous room instance and we can't map its seq onto ours.
-  private sendCatchup(ws: WebSocket, epoch: string | null, lastSeq: number): void {
-    const { ops, resync } = resolveCatchup(
-      { epoch, lastSeq },
-      { epoch: this.epoch, seq: this.seq, opLog: this.opLog },
-    );
-    // A tab-scoped session replays its own tab only, like the live relay.
-    const scope = this.scopeOf(ws);
-    const visible =
-      scope === null
-        ? ops
-        : ops.flatMap((o) => {
-            const op = opForScope(o.op, scope);
-            return op === null ? [] : [{ ...o, op }];
-          });
-    const payload: ServerMessage = {
-      kind: 'catchup',
-      epoch: this.epoch,
-      seq: this.seq,
-      ops: visible,
-      resync,
-    };
-    try {
-      ws.send(JSON.stringify(payload));
-    } catch {
-      this.opRates.delete(ws);
-    }
-  }
-
-  // The element gate (@liveworkspace/api-kit/room-element-ops, docs/specs/015-api/blueprints/room-element-ops.md):
-  // one per room instance, so its bounded log is per room. Answers a refused op to its sender alone.
-  private readonly elementGate = createRoomElementGate(ROOM_ELEMENT_RULES);
-  private refusesElementOp(ws: WebSocket, msg: { op: unknown; ref?: unknown }): boolean {
-    const refused = this.elementGate(msg.op, msg.ref);
-    if (refused) this.sendTo(ws, refused);
-    return refused !== null;
+    roomMessage(this, ws, message);
   }
 
   /** Deliver one frame to one socket. */
-  private sendTo(ws: WebSocket, payload: ServerMessage): void {
+  sendTo(ws: WebSocket, payload: ServerMessage): void {
     try {
       ws.send(JSON.stringify(payload));
     } catch {
@@ -1729,245 +708,34 @@ export class DocumentRoom extends DurableObject<Env> {
     }
   }
 
-  // One live poll answer (docs/specs/012-collaboration/vote-integrity.md). The poll decides the key from what the
-  // room holds about this session, and the room relays only an accepted answer, as the poll rewrote it.
-  private async relayPollAnswer(ws: WebSocket, op: unknown): Promise<void> {
-    const session = this.readSession(ws);
-    const sender = session?.presence;
-    if (!session || !sender) return;
-    const outcome = await this.poll.noteAnswer(op, {
-      presenceId: sender.id,
-      personTag: session.personTag ?? null,
-      networkTag: session.networkTag ?? null,
-      answeredAs: () => this.readSession(ws)?.pollAnsweredAs ?? null,
-      rememberAnswer: (answeredAs) => {
-        const latest = this.readSession(ws);
-        if (latest) ws.serializeAttachment({ ...latest, pollAnsweredAs: answeredAs });
-      },
-    });
-    if (!outcome.accepted) {
-      // A stale or malformed answer is routine; a refusal is the interesting one. Never the key or the proof.
-      if (outcome.reason !== 'no_poll' && outcome.reason !== 'bad_value') {
-        console.warn('[live-poll] answer refused', { reason: outcome.reason });
-      }
-      return;
-    }
-    this.broadcast({ kind: 'op', from: sender.id, op: outcome.op }, ws);
+  armAlarm(): void {
+    armAlarm(this);
   }
 
-  // Who this session follows (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): kept on the
-  // session, then the person it stopped following and the one it now follows each hear their new list.
-  private noteFollow(
-    ws: WebSocket,
-    session: SessionAttachment,
-    sender: ParticipantPresence,
-    op: unknown,
-  ): void {
-    const target = followTargetOf(op, sender.id);
-    const before = session.following ?? null;
-    if (before === target) return;
-    const { following: _drop, ...rest } = session;
-    ws.serializeAttachment({
-      ...rest,
-      presence: sender,
-      ...(target ? { following: target } : {}),
-    } satisfies SessionAttachment);
-    if (before) this.sendFollowers(before);
-    if (target) this.sendFollowers(target);
+  override alarm(): Promise<void> {
+    return alarm(this);
   }
 
-  // Tell `target` who follows them, on their socket alone; `except` is a socket on its way out.
-  private sendFollowers(target: string, except?: WebSocket): void {
-    const sessions = this.state
-      .getWebSockets()
-      .filter((s) => s !== except)
-      .map((s) => this.readSession(s))
-      .map((s) => ({ presenceId: s?.presence?.id, following: s?.following }));
-    this.sendToPresence(
-      target,
-      { kind: 'followers', ids: followerIdsOf(sessions, target) },
-      except,
-    );
-  }
-
-  /** The one connected socket wearing this presence id. */
-  private socketByPresence(presenceId: string): WebSocket | null {
-    for (const ws of this.state.getWebSockets()) {
-      if (this.readSession(ws)?.presence?.id === presenceId) return ws;
-    }
-    return null;
-  }
-
-  // The room's one alarm, at the earliest of: the facilitator grace deadline, an agent presence expiry
-  // (agent-presence I5, PR29), a session's grant to ask for or lapse, the outbox's next push, the next send to a
-  // shared tab's holders, the Community post's next check, the document's next upkeep. None when nothing is due.
-  private armAlarm(): void {
-    const due = [
-      this.baton.deadline() ?? null,
-      this.agents.nextExpiry(),
-      this.nextGrantDue(),
-      this.flushAt,
-      this.shares.at,
-      this.communityAt,
-      this.maintenanceAt,
-    ];
-    // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
-    armRoomAlarm(this.state.storage, due, Date.now());
-  }
-
-  /**
-   * Agent entries past their expiry go; then the grace clock ran out (or did not, if they came back); the outbox
-   * pushes and the upkeep runs when due. Safe to call early.
-   */
-  override async alarm(): Promise<void> {
-    const expired = await this.agents.sweep();
-    for (const r of expired) agentPresenceLog('expired', r);
-    if (expired.length > 0) this.broadcastPresence();
-    this.baton.alarm();
-    const now = Date.now();
-    this.checkGrants(now);
-    if (this.flushAt !== null && this.flushAt <= now) await this.drainIndex();
-    // A shared tab written while the push was in flight (its write armed nothing then).
-    this.shares.noteWrite();
-    if (this.shares.due(now)) await this.drainShares();
-    if (this.communityAt !== null && this.communityAt <= now) await this.checkCommunity(now);
-    if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);
-    this.armAlarm();
-  }
-
-  // Internal: an agent presence write from the worker (room-agent-presence.ts). Same trust argument as /broadcast.
-  private async handleAgentPresence(request: Request, url: URL): Promise<Response> {
-    const res = await answerAgentPresence(this.agents, request, url, () =>
-      this.broadcastPresence(),
-    );
-    this.armAlarm();
-    return res;
-  }
-
-  // A trashed document or a changed link clears agent entries (room-agent-presence.ts, PR15).
-  private async clearAgentsFor(op: unknown): Promise<void> {
-    await clearAgentsForOp(this.agents, op, () => this.broadcastPresence(), 'document-trashed');
-    this.armAlarm();
+  clearAgentsFor(op: unknown): Promise<void> {
+    return clearAgentsFor(this, op);
   }
 
   // Hibernation event handlers for a session ending. The runtime removes
   // the socket from getWebSockets() itself; our job is only to shed the
   // rate window (so the map can't leak) and re-announce the roster.
   override webSocketClose(ws: WebSocket): void {
-    this.dropSession(ws);
+    dropSession(this, ws);
   }
 
   override webSocketError(ws: WebSocket): void {
-    this.dropSession(ws);
+    dropSession(this, ws);
   }
 
-  private dropSession(ws: WebSocket): void {
-    this.opRates.delete(ws);
-    const leaving = this.readSession(ws);
-    // A follower leaving is one fewer for the person they followed.
-    if (leaving?.following) this.sendFollowers(leaving.following, ws);
-    const presenceId = leaving?.presence?.id;
-    this.presenceRelay.forget(ws, presenceId);
-    if (presenceId) {
-      this.baton.startGrace(presenceId);
-      void this.selections.drop(presenceId).catch(() => {});
-    }
-    // Exclude the departing socket explicitly: depending on when the
-    // runtime prunes it from getWebSockets(), it could otherwise still
-    // appear in the roster of this very broadcast.
-    this.broadcastPresence(ws);
+  noteMultiplayer(): void {
+    noteMultiplayer(this);
   }
 
-  // The person tags of the hello'd sessions: who is looking at the canvas now, whom a phone notification skips
-  // (docs/specs/014-identity/phone-notifications.md).
-  private roomPeople(): Set<string> {
-    const tags = new Set<string>();
-    for (const session of this.liveSessions().values())
-      if (session.personTag) tags.add(session.personTag);
-    return tags;
-  }
-
-  // Every hello'd session with a live socket, by presence id: what the selection store answers
-  // against, so an entry whose socket is gone never holds anything.
-  private liveSessions(): Map<string, LiveSession> {
-    const live = new Map<string, LiveSession>();
-    for (const ws of this.state.getWebSockets()) {
-      const session = this.readSession(ws);
-      const p = session?.presence;
-      if (!p) continue;
-      live.set(p.id, { name: p.name, color: p.color, personTag: session.personTag ?? null });
-    }
-    return live;
-  }
-
-  // Count the room's multiplayer session once, from the one place that sees
-  // every participant (docs/specs/017-telemetry/telemetry.md). Runs after each hello, the only moment the
-  // hello'd roster can grow; the decision and its session rule live in
-  // room-multiplayer.ts.
-  private noteMultiplayer(): void {
-    const sockets = this.state.getWebSockets();
-    const sessions = sockets.map((ws) => this.readSession(ws));
-    const decision = multiplayerDecision(
-      sessions.map((s) => ({ present: Boolean(s?.presence), multiplayer: s?.multiplayer })),
-    );
-    for (const i of decision.mark) {
-      const session = sessions[i];
-      if (!session) continue;
-      try {
-        sockets[i]!.serializeAttachment({
-          ...session,
-          multiplayer: true,
-        } satisfies SessionAttachment);
-      } catch {
-        // A socket that died mid-loop: the runtime reaps it, nothing to mark.
-      }
-    }
-    const env = this.roomEnv;
-    if (decision.report && env) {
-      const write = reportServerEvent(env, 'Document', 'Used', 'Multiplayer');
-      // Keep the DO alive until the row lands; the write swallows its own error.
-      this.state.waitUntil(write);
-    }
-  }
-
-  // Send each client the roster minus its own entry (@liveworkspace/api-kit/room-roster): the
-  // `{ kind: 'presence', participants, agents }` ServerMessage, serialised there.
   broadcastPresence(except?: WebSocket): void {
-    const entries: RosterEntry[] = [];
-    for (const ws of this.state.getWebSockets()) {
-      if (ws === except) continue;
-      const session = this.readSession(ws);
-      entries.push({
-        ws,
-        presence: session?.presence ?? null,
-        personTag: session?.personTag ?? null,
-        account: session?.account === true,
-      });
-    }
-    // Agent entries past their expiry never reach a frame; the store drops them on its next sweep (PR30).
-    const now = Date.now();
-    const agentEntries = this.agents.live().filter((r) => r.expiresAt > now);
-    if (agentEntries.length < this.agents.live().length)
-      void this.agents.sweep().then(() => this.armAlarm());
-    for (const { ws, frame } of rosterFrames(entries, agentEntries)) {
-      try {
-        ws.send(frame);
-      } catch {
-        // Dead socket: the runtime reaps it from getWebSockets(); we only
-        // shed the in-memory rate entry so the map can't leak.
-        this.opRates.delete(ws);
-      }
-    }
+    broadcastPresence(this, except);
   }
-}
-
-// What the presence relay reads of a session: its tab, the other pane of a split, and whether it batches.
-function relaySessionOf(session: SessionAttachment | null): RelaySession | null {
-  const presence = session?.presence;
-  if (!presence) return null;
-  return {
-    ...(presence.tabId ? { tabId: presence.tabId } : {}),
-    ...(presence.besideTabId ? { besideTabId: presence.besideTabId } : {}),
-    batches: session.batches === true,
-  };
 }

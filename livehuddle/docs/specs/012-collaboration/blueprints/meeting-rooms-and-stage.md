@@ -91,7 +91,7 @@ only when a level changed. The room already stamps `role` from the grant in `hel
 
 ## Behaviour and state (part 4)
 
-**The tile** (`apps/editor/components/palette/palette-tile-defs.tsx`, `tools:stage`): `tileGroup: 'move'`, `section: 'tools'`,
+**The tile** (`apps/editor/components/palette/tile-defs/room-tiles.tsx`, `tools:stage`): `tileGroup: 'move'`, `section: 'tools'`,
 `toolGroup: 'behaviour'`, label "Add Stage", caption "Stage", blurb "A platform the whole tab hears", action
 `{ type: 'shape', kind: 'stage' }`, glyph `StageIcon` (`palette-icons.tsx`: the platform's top and front face, a
 microphone on a stand). Its `tileGroup: 'rooms'` puts it in the Rooms category, after `tools:room` in catalogue order, so

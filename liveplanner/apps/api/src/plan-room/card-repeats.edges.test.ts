@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ITEMS_MAX, type Item, type RepeatRule } from '@liveplanner/items';
-import type { RepeatSchedule } from './card-repeats';
 import { createPlan, endRepeatWorld, repeatWorld, type RepeatWorld } from './test-repeat-world';
 
 // Repeating cards when the store pushes back (docs/specs/026-plan/items.md "Repeating cards", blueprint
@@ -73,7 +72,7 @@ afterEach(() => {
 });
 
 const plan = () => w.plans.get('A')!;
-const schedule = () => Reflect.get(plan().room, 'repeats') as RepeatSchedule;
+const schedule = () => plan().room.repeats;
 const wakeAt = async (iso: string) => {
   vi.setSystemTime(at(iso));
   await plan().room.alarm();

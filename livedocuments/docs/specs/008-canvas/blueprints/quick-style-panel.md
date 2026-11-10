@@ -261,7 +261,7 @@ Capture points (the panel **or** the context menu):
 Apply points (user-drawn only), each passing the built element through `styleNewElement`:
 `useShapeDrawing.commitDraw` (arrow and boxed intents), `useElementCreation.dropPaletteItem`, `useArrowConnect.connectArrowTo`,
 `useBoxedDragHandlers` (quick-connect arrow, both the drag and `placeOutPx`), `useEditorDrag`'s
-`chainNextArrow`. Nothing else calls it.
+`chainNextArrow` (in `editor-drag-release.ts`). Nothing else calls it.
 
 ## Where the bar sits
 

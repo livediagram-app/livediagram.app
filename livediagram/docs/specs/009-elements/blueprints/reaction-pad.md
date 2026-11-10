@@ -22,8 +22,8 @@ Scope, by file:
 | `apps/editor/app/document/[id]/editor-state/useEditorViewport.ts` | `fireReaction`: play, broadcast, track                            |
 | `apps/editor/hooks/collab/useEditorBroadcast.ts`                  | `broadcastReaction` and its gate                                  |
 | `apps/editor/app/document/[id]/useRoomConnection.ts`              | Receives the op                                                   |
-| `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts `ReactionBurst` beside the label stack                     |
-| `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`              |
+| `apps/editor/components/canvas/boxed-element-chrome.tsx`          | Mounts `ReactionBurst` beside the label stack                     |
+| `apps/editor/components/palette/tile-defs/behaviour-tiles.tsx`    | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`              |
 | `apps/editor/components/palette/BehaviourMenuSections.tsx`        | `ReactionMenuSection`                                             |
 | `apps/editor/hooks/canvas/usePortalSetters.ts`                    | `setReactionSelected`                                             |
 

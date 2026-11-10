@@ -25,7 +25,7 @@ Scope, by file:
 | `packages/avatar/src/collision.ts`                          | `fenceSegments`, `fenceRefuses`, `fenceStep`, `FENCE_REACH`           |
 | `packages/avatar/src/walk.ts`                               | `elementUnderFeet` skips fences                                       |
 | `packages/avatar/src/hooks/useAvatarWalk.ts`                | Memoised segments; every walk step goes through `fenceStep`           |
-| `apps/editor/components/palette/palette-tile-defs.tsx`      | `tools:fence` in **Rooms** (`tileGroup: 'rooms'`)                     |
+| `apps/editor/components/palette/tile-defs/room-tiles.tsx`   | `tools:fence` in **Rooms** (`tileGroup: 'rooms'`)                     |
 | `apps/editor/components/palette/palette-icons.tsx`          | `FenceIcon`                                                           |
 | `packages/api-schema/src/telemetry-schema.ts`               | `Fence` element type token                                            |
 

@@ -145,6 +145,11 @@ jobs:
       - name: No new copies across products
         run: node .github/scripts/duplicate-guard.mjs
 
+      # No source file grows past 800 lines (docs/ci.md "File size"), outside the shrink-only baseline.
+      # Repo-wide and about a second of CPU, so every group runs it.
+      - name: No new files over 800 lines
+        run: node .github/scripts/file-size-guard.mjs
+
       # Every raw HTML sink goes through @liveworkspace/trusted-types's html.ts (docs/ci.md "One path for
       # markup"). Repo-wide and quick, so every group runs it.
       - name: One path for markup

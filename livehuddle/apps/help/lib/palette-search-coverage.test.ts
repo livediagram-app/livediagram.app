@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { searchArticles } from './articles';
@@ -40,7 +40,13 @@ const read = (file: string) =>
 
 function paletteNames(): string[] {
   const layouts = read('palette-layouts.ts');
-  const defs = read('palette-tile-defs.tsx');
+  // The catalogue's entry spreads its sections from tile-defs/, one module per palette section.
+  const defs = [
+    read('palette-tile-defs.tsx'),
+    ...readdirSync(fileURLToPath(new URL(`${PALETTE_DIR}tile-defs/`, import.meta.url)))
+      .sort()
+      .map((f) => read(`tile-defs/${f}`)),
+  ].join('\n');
   const offered = new Set(
     [...layouts.matchAll(/'((?:tools|shapes):[a-z0-9-]+)'/g)].map((m) => m[1]!),
   );
