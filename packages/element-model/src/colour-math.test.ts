@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_BACKGROUND_COLOR,
@@ -99,8 +100,9 @@ describe('deriveShapeColours', () => {
 // It runs for every label drawn, so a named colour is a map read, not a scan.
 it('reads 100k mixed colours in well under a second', () => {
   const inputs = ['#0ea5e9', '#fff', 'red', 'cornflowerblue', '#0ea5e980', 'nope'];
-  const start = performance.now();
-  for (let i = 0; i < 100_000; i++) hexToRgb(inputs[i % inputs.length]!);
-  // Measured about 15 ms; the budget leaves room for a busy CI machine.
-  expect(performance.now() - start).toBeLessThan(500);
+  const spent = cpuMsOf(() => {
+    for (let i = 0; i < 100_000; i++) hexToRgb(inputs[i % inputs.length]!);
+  });
+  // Measured about 15 ms of CPU; cpuBudgetMs scales the budget for a CI runner.
+  expect(spent).toBeLessThan(cpuBudgetMs(150));
 });

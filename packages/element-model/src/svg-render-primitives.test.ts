@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   estimatedLabelMeasure,
@@ -45,11 +46,13 @@ describe('wrapLabel', () => {
 
   it('wraps a long too-wide word quickly', () => {
     const word = 'x'.repeat(20_000);
-    const start = performance.now();
-    const lines = wrapLabel(word, 100, chars, true);
+    let lines: string[] = [];
+    const spent = cpuMsOf(() => {
+      lines = wrapLabel(word, 100, chars, true);
+    });
     expect(lines).toHaveLength(200);
-    // Measured about 20 ms (it took 83 s before the fit was halved); the budget leaves room for a busy CI machine.
-    expect(performance.now() - start).toBeLessThan(1_000);
+    // Measured about 20 ms of CPU (it took 83 s before the fit was halved); cpuBudgetMs scales it for a CI runner.
+    expect(spent).toBeLessThan(cpuBudgetMs(200));
   });
 });
 
