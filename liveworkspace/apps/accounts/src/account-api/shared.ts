@@ -9,9 +9,6 @@ import { type SettingsApp, writeSettings } from '../settings.ts';
 import { inviteResponseRecipients, type Actor } from '../teams.ts';
 import { answer, error, json, readBody } from './http.ts';
 
-// Team·Removed's type for who went (removeMember), as the apps have always named it.
-export const REMOVED_TYPES = { self: 'Self', invite: 'Invite', member: 'Member' } as const;
-
 // Per network (an IPv4 /24 or an IPv6 /48), so one machine can't dodge the limit by changing address.
 export async function overLinkLimit(
   request: Request,

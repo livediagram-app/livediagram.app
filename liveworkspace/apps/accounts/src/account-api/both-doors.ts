@@ -27,7 +27,11 @@ import { parseTimeZone } from '../send-window.ts';
 import { reportServerEvent } from '../telemetry.ts';
 import { endTokenWorkbench } from '../workbench/revoke.ts';
 import { answer, error, json, readBody, type WaitUntil } from './http.ts';
-import { type Reader, REMOVED_TYPES, tellAdmins } from './shared.ts';
+import { type Reader, tellAdmins } from './shared.ts';
+
+// Team·Removed's type for who went (removeMember), as the apps have always named it. Kept beside its one emit
+// site: the telemetry scan (liveworkspace/apps/site emitter-scan.ts) reads a lookup table only from the same file.
+const REMOVED_TYPES = { self: 'Self', invite: 'Invite', member: 'Member' } as const;
 
 // --- API tokens, on both doors: the session's on liveworkspace.app, the bearer's in an app's Settings
 // (liveworkspace/docs/specs/003-accounts/accounts.md "Every account setting in every app") ---
