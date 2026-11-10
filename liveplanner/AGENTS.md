@@ -238,7 +238,7 @@ liveplanner is one product folder in the liveworkspace monorepo: its workspaces 
 
 See [Business model + licence](docs/specs/002-project-scope/business-model-and-licence.md).
 
-- The codebase is **MIT licensed** (`LICENSE`, every `package.json` declares `"license": "MIT"`), and its source is **not public**. Never add contributing, forking or self-hosting wording, or links to the repository, to anything users see.
+- The codebase is **MIT licensed** (`LICENSE`, every `package.json` declares `"license": "MIT"`), and **open source**: the source is public in the liveworkspace monorepo (owner, 2026-11-10), and the site footer links it as every app's does.
 - liveplanner is free to use. **No paid tier and no plan to introduce one.** No trackers, no ads.
 - The Cloudflare ids in the wrangler configs are the live liveworkspace account's. Production deploys are a manual gate in CI; the CLI's npm publish and the MCP Registry listing are manual steps outside CI ([Deployment](docs/specs/016-platform/deployment.md)).
 - Optional integrations degrade, never break: the editor always offers sign-in (the liveworkspace accounts Worker), and when the api has no accounts settings every visitor settles as a guest.

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
+import { REPO_URL } from './site';
 import { SiteFooter } from './SiteFooter';
 
 const html = renderToStaticMarkup(<SiteFooter />);
@@ -23,6 +24,7 @@ describe('SiteFooter', () => {
       'Report a Vulnerability',
       'Licences',
       'Contact',
+      'GitHub',
     ]);
     expect(footerNav).toContain('href="https://www.liveworkspace.app/terms"');
     expect(footerNav).toContain('href="https://www.liveworkspace.app/privacy"');
@@ -53,8 +55,9 @@ describe('SiteFooter', () => {
 });
 
 describe('SiteFooter source link', () => {
-  it('links no source repository and makes no third-party image request', () => {
-    expect(html).not.toContain('github.com');
+  // business-model-and-licence.md: the source is public (owner, 2026-11-10), linked as every app's is.
+  it('links the source repository and makes no third-party image request', () => {
+    expect(html).toContain(REPO_URL);
     expect(html).not.toContain('<img');
   });
 });

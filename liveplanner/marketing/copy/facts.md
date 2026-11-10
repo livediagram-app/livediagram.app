@@ -70,7 +70,7 @@ team, not the individual.
 
 ## Licence and price
 
-- MIT licensed. The source is not public.
+- MIT licensed and open source, in the liveworkspace monorepo.
 - Free at liveplanner.app. No paid tier and no plan to introduce one.
 - No ads and no third-party trackers. Boards and sheets export (CSV, image,
   PDF, Markdown outline), so work is never locked in.

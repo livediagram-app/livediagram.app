@@ -90,12 +90,12 @@ Scope, by file:
 
 ## Testing
 
-- `element-model/src/text-presets.test.ts`: fields, split, box for words, restyle, read-back.
-- `design/src/text-presets.test.ts`: the table's order, sizes on the slider, distinct looks, factory, restyle.
-- `apps/live/lib/draw-commit.test.ts`: tap, drag, `presetTextAt`; `lib/text-style.test.ts`: restyle and re-hug.
+- `../packages/element-model/src/text-presets.test.ts`: fields, split, box for words, restyle, read-back.
+- `packages/design/src/text-presets.test.ts`: the table's order, sizes on the slider, distinct looks, factory, restyle.
+- `apps/live/lib/draw-commit.test.ts`: tap, drag, `presetTextAt`; `apps/live/lib/text-style.test.ts`: restyle and re-hug.
 - `palette-layouts.test.ts`, `palette-tile-defs.test.tsx` (Write holds 11), `toolbar-strip-tiles.test.ts`,
   `palette-tile-search.test.ts`, `palette-search.test.ts`, `TextStyleSection.test.tsx`; agent-verbs
-  `mcp/schema.test.ts`.
+  `packages/agent-verbs/src/mcp/schema.test.ts`.
 
 ## Constants and configuration
 

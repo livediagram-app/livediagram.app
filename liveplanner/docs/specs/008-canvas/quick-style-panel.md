@@ -93,7 +93,7 @@ touched (`forgetStyleKinds`), so the next element of those kinds is the default 
 
 - `apps/editor/lib/style-memory.test.ts` and `apps/editor/hooks/canvas/useStyleMemory.test.tsx`: per-kind recording,
   theme defaults forgotten, the storage key and the debounce.
-- `packages/project/src/quick-swatches.test.ts` and `quick-swatch-rederive.test.ts`: the derivation and the re-read on
+- `../packages/element-model/src/quick-swatches.test.ts` and `quick-swatch-rederive.test.ts`: the derivation and the re-read on
   a theme change; `validate.test.ts`: the slot bounds.
 - `apps/editor/lib/style-presets.test.ts`: any other colour edit drops a binding.
 - `apps/editor/components/primitives/MovablePanel.presence.test.tsx`: a panel announces its arrival and departure.

@@ -177,6 +177,15 @@ shape kinds, its fields. Code that reads elements the same way in two or more pr
   anchors) holds every product's kinds, each product naming the kinds it holds where it lists them
   (`SHAPE_GEOMETRY_KINDS` in its `shape-kind.ts`); a module that mixes shared rules with a product's own is split on
   cohesion (the colour maths is shared, each product's element defaults stay in its `colors.ts`).
+- The element defaults are one table too (`element-model/element-colours`: the colours, padding and alignment an
+  element has when it stores none, and which colour, border and icon controls it offers, for every product's kinds).
+  Each product's `colors.ts` binds the colour maths and the defaults; a product with a look of its own wraps them in
+  the same file (livediagram's retired pieces paint as placeholders first), and the kinds that draw a face of their
+  own reach the inline-icon rules as a passed-in predicate (`ownFace`). livehuddle keeps its own `colors.ts`.
+- The shared model's own tests build their elements with product-neutral builders
+  (`element-model/testing/elements`: a shape at its kind's usual size, a text, a table, arrows), so a product's test
+  of a moved module moves with it. A product's test that reads that product's validator, renderer or factories with
+  their own extras stays in the product and runs through its binding.
 - A generic shared type a product reads under its own union is bound in that product's index
   (`ElementGrid = ElementGrid<Element>`, `ElementIndex = ElementIndex<Element>`), and its modules import it from there.
 - A product's own extra on a shared module sits beside its binding, in the same file: the binding re-exports the
