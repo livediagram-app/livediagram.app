@@ -2,12 +2,12 @@
 // and its undo over 10,000 rows once each scanned the layout per id. Timed as growth in CPU time (cpuMsOf), not as a
 // ceiling: four times the rows should cost about four times as much; a scan per id would cost sixteen.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import { makeSheets } from './testing/book';
 import { applySheetWrite, inverseSheetWrite, type SheetWrite } from './store';
 
 const ctx = { now: 1, by: { id: '', name: '', color: '#000000' } };
-const RATIO_CEILING = 8;
+const RATIO_CEILING = cpuRatioCeiling(8);
 
 function costOf(rows: number): number {
   const sheet = makeSheets({ S: { A1: '1' } }, { rows, cols: 3 })[0]!;

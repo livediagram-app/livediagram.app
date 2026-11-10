@@ -2,22 +2,24 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
-import {
-  contrastRatio,
-  editorModeLabel,
-  hexToRgb,
-  type CanvasSurface,
-} from '@livediagram/document';
-import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
+import { contrastRatio, editorModeLabel, hexToRgb } from '@livediagram/document';
 import { startPalette } from './start-palette';
 import { StartFromTemplates } from './StartFromTemplates';
 import { OTHER_MODE_CARDS_MAX } from './other-mode-matches';
+
+// The start's colours follow the app's Appearance (start spec "Look"), never the tab's surface.
+const appearance = vi.hoisted(() => ({ value: 'light' as 'light' | 'dark' }));
+vi.mock('@livediagram/ui', async (actual) => ({
+  ...(await actual<typeof import('@livediagram/ui')>()),
+  useAppearance: () => ({ appearance: appearance.value }),
+}));
 
 // docs/specs/007-editor/start-diagramming.md "Found in other modes": a start's search also finds every other mode's
 // templates, under In Other Modes, and choosing one switches the tab to that mode.
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  appearance.value = 'light';
 });
 
 const switchable = (mode: 'diagram', canSwitch = true) =>
@@ -170,20 +172,19 @@ describe('the chosen rail count', () => {
     return `#${mix(p.r, c.r)}${mix(p.g, c.g)}${mix(p.b, c.b)}`;
   };
 
-  it.each<CanvasSurface>(['dark', 'light'])('reads at AA in %s', (surface) => {
+  it.each(['dark', 'light'] as const)('reads at AA in %s', (mode) => {
+    appearance.value = mode;
     render(
-      <CanvasSurfaceProvider surface={surface}>
-        <EditorModeProvider value={switchable('diagram')}>
-          <StartFromTemplates
-            mode="diagram"
-            tabId="t1"
-            onTemplate={vi.fn()}
-            onOtherModeTemplate={vi.fn()}
-          />
-        </EditorModeProvider>
-      </CanvasSurfaceProvider>,
+      <EditorModeProvider value={switchable('diagram')}>
+        <StartFromTemplates
+          mode="diagram"
+          tabId="t1"
+          onTemplate={vi.fn()}
+          onOtherModeTemplate={vi.fn()}
+        />
+      </EditorModeProvider>,
     );
-    const palette = startPalette(surface, {});
+    const palette = startPalette(mode, {});
     const chosen = document.querySelector<HTMLElement>('[data-rail][aria-current="true"]')!;
     const badge = chosen.lastElementChild as HTMLElement;
     const { r, g, b } = hexToRgb(palette.text)!;

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { PUBLIC_REPO_URL } from '@liveworkspace/sites/security';
 
 // The site-wide constants every public frontend shares. Before this each app
 // kept its own copy (marketing and help had a `lib/site.ts` apiece, telemetry
@@ -27,6 +28,11 @@ export const SITE_DESCRIPTION =
 // Lower case: it follows "liveplanner: " or starts a sentence through sentencePitch.
 export const SITE_PITCH = 'boards, sheets, dashboards and forms, planned together in real time';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
+
+// The open-source repository (docs/specs/002-project-scope/business-model-and-licence.md: the codebase is public and
+// MIT, owner 2026-11-10), linked from the footer. The one public repository, the monorepo every product lives in: its
+// address lives in @liveworkspace/sites/security, so a rename is one line there.
+export const REPO_URL = PUBLIC_REPO_URL;
 
 // The public contact form (a liveplanner Form, docs/specs/030-forms/forms.md), the one way to reach the
 // team; no email address is published. Linked from the help centre's contact page, the FAQ, the status

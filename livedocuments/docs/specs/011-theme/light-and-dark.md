@@ -27,7 +27,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   of every theme, and every table preset's header title on its band. Bold stays white text, so its fill darkens until
   white reads on it; any other short label (Solid's white on a mid accent, the Border tier's accent on white) is walked
   away from its fill. A preset that already read is unchanged. The shared walk lives in
-  `../packages/element-model/src/readable-colour.ts`; `packages/document/src/theme-presets.test.ts` checks every preset.
+  `../packages/element-model/src/readable-colour.ts`; `../packages/element-model/src/theme-presets.test.ts` checks every preset.
 
 ## Colours an agent writes
 
@@ -38,7 +38,10 @@ product's model shares, `@liveworkspace/model-core/css-colour`): the shorthand `
 `#` optional throughout, surrounding spaces ignored), and the CSS named colours (any case, trimmed). An alpha digit is
 set aside when an ink is judged. `transparent`, `rgb()` strings and anything else stay unread, and an unread colour is
 drawn as written with its label left alone. So a box an agent fills `#fff` gets the deep label a `#ffffff` box gets,
-and one filled `navy` gets white. The stored value is never rewritten.
+and one filled `navy` gets white. The stored value is never rewritten. A table's header band and a progress readout read
+them too: a shorthand or named grid colour tints the header band as its `#rrggbb` would, the header's and the
+readout's ink is lifted to AA over it the same way, and a translucent cell fill is not taken for the surface under
+the header (`colourIsOpaque`).
 
 ## What a viewer sees
 

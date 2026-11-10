@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthLimitMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { capLabel, GRAPH_LABEL_MAX } from './label-box';
 
 // A label is a heading (docs/specs/024-agents/blueprints/edit-operations.md "Fields and values"):
@@ -108,7 +108,7 @@ function expectLinear(all: Case[], run: (text: string) => unknown): void {
   for (const { c } of slowest) {
     const ms = timeOf(c.build(RUN * 2), run);
     const grown = timeOf(c.build(RUN * 8), run);
-    expect(grown, c.build(8)).toBeLessThan(ms * 8 + 5);
+    expect(grown, c.build(8)).toBeLessThan(cpuGrowthLimitMs(ms, 8, 5));
   }
 }
 

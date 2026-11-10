@@ -50,7 +50,11 @@ const APP_ORIGIN = {
 
 // Where the app answers the sweep's door, without a trailing slash, or undefined when it is not set.
 export function appOrigin(env: Env, app: CommunityApp): string | undefined {
-  const origin = env[APP_ORIGIN[app]]?.trim().replace(/\/+$/, '');
+  const raw = env[APP_ORIGIN[app]]?.trim() ?? '';
+  // A backwards scan rather than /\/+$/, which backtracks on a long run of slashes.
+  let end = raw.length;
+  while (end > 0 && raw[end - 1] === '/') end--;
+  const origin = raw.slice(0, end);
   return origin ? origin : undefined;
 }
 

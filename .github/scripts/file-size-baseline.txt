@@ -19,7 +19,6 @@ livediagram/packages/template-previews/src/template-preview-3.tsx
 livediagram/packages/template-previews/src/template-preview-4.tsx
 livediagram/packages/template-previews/src/template-preview-6.tsx
 livediagram/packages/templates/src/templates.ts
-livediagram/scripts/e2e-stack.mjs
 livedocuments/apps/api/src/openapi/manifest.ts
 livedocuments/apps/editor/components/dialogs/settings/settings-catalogue.ts
 livedocuments/apps/help/lib/featureIcons.tsx
@@ -31,7 +30,6 @@ livehuddle/apps/help/lib/featureIcons.tsx
 livehuddle/packages/avatar/src/furniture-art.ts
 livehuddle/packages/document/src/office-social.ts
 livehuddle/packages/help-registry/src/index.ts
-livehuddle/scripts/e2e-stack.mjs
 liveplanner/apps/api/src/openapi/manifest.ts
 liveplanner/apps/editor/components/dialogs/settings/settings-catalogue.ts
 liveplanner/packages/agent-verbs/src/mcp/plan-schema.ts

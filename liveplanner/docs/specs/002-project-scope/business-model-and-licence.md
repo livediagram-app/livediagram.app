@@ -1,6 +1,6 @@
 # Business model + licence
 
-liveplanner is **MIT-licensed software** run as one hosted service at [liveplanner.app](https://www.liveplanner.app) It is **free to use**: there is no paid tier and no plan to introduce one. Its source is not public.
+liveplanner is **MIT-licensed software** run as one hosted service at [liveplanner.app](https://www.liveplanner.app) It is **free to use**: there is no paid tier and no plan to introduce one. It is **open source**, like every liveworkspace app (owner, 2026-11-10): the source is public in the liveworkspace monorepo, and the site footer links it.
 
 ## Licence
 

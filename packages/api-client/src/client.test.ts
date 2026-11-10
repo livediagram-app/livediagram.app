@@ -17,6 +17,19 @@ const base = 'https://product-api/api';
 // be collected first, and its abort never arrives (the test hung, now and then, under coverage).
 const inFlight = new Set<Request>();
 
+// A fetch that never answers: it holds its request until the request's signal aborts, then rejects with the
+// signal's reason, as fetch does. Every hanging double goes through it, so none can drop its request.
+function hang(request: Request): Promise<Response> {
+  return new Promise((_, reject) => {
+    inFlight.add(request);
+    request.signal.addEventListener('abort', () => {
+      inFlight.delete(request);
+      const reason: unknown = request.signal.reason;
+      reject(reason);
+    });
+  });
+}
+
 describe('createApiClient', () => {
   it('sends the caller headers, JSON content type for a body, and parses JSON', async () => {
     const { seen, fetch } = recorder(() => Response.json({ ok: 1 }));
@@ -111,10 +124,6 @@ describe('createApiClient', () => {
 
   it('doesn’t report a request the caller cancelled, but does report a timeout', async () => {
     const failures: string[] = [];
-    const hang = (request: Request) =>
-      new Promise<Response>((_, reject) => {
-        request.signal.addEventListener('abort', () => reject(request.signal.reason as Error));
-      });
     const api = createApiClient({
       baseUrl: base,
       fetch: hang,
@@ -140,16 +149,7 @@ describe('createApiClient', () => {
   it('times out a slow answer', async () => {
     const api = createApiClient({
       baseUrl: base,
-      fetch: (request) =>
-        new Promise((_, reject) => {
-          inFlight.add(request);
-          // As fetch does, it rejects with the signal's reason: whatever the abort was given.
-          request.signal.addEventListener('abort', () => {
-            inFlight.delete(request);
-            const reason: unknown = request.signal.reason;
-            reject(reason);
-          });
-        }),
+      fetch: hang,
       headers: () => ({}),
       timeoutMs: 5,
     });

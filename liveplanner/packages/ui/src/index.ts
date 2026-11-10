@@ -55,6 +55,7 @@ export {
   BRAND_ICONS,
   PUBLIC_VIEWPORT,
   DARK_READER_LOCK,
+  REPO_URL,
 } from './site';
 export { pageMetadata, BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE, type PageMetadataInput } from './seo';
 // This product's Appearance key, boot script, store, hook and toggle; the cycle, icon and types are

@@ -38,7 +38,10 @@ product's model shares, `@liveworkspace/model-core/css-colour`): the shorthand `
 `#` optional throughout, surrounding spaces ignored), and the CSS named colours (any case, trimmed). An alpha digit is
 set aside when an ink is judged. `transparent`, `rgb()` strings and anything else stay unread, and an unread colour is
 drawn as written with its label left alone. So a box an agent fills `#fff` gets the deep label a `#ffffff` box gets,
-and one filled `navy` gets white. The stored value is never rewritten.
+and one filled `navy` gets white. The stored value is never rewritten. A table's header band and a progress readout read
+them too: a shorthand or named grid colour tints the header band as its `#rrggbb` would, the header's and the
+readout's ink is lifted to AA over it the same way, and a translucent cell fill is not taken for the surface under
+the header (`colourIsOpaque`).
 
 ## What a viewer sees
 
@@ -48,7 +51,7 @@ and one filled `navy` gets white. The stored value is never rewritten.
 - **A box's text and fill are drawn as a pair.** Each colour is redrawn on its own, so a box whose fill is one of the
   theme's colours but whose text is someone's choice (a template's white box with slate text) would get the half's
   fill under the stored text. Where that would put the text on its fill below 4.5:1, and read worse than the stored
-  pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/project/src/theme-halves.test.ts` covers the rule, and
+  pair does, the box keeps its stored fill and text instead (its outline still follows the half). `../packages/element-model/src/theme-halves.test.ts` covers the rule, and
   `apps/editor/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
   viewer.
 - **A label reads against what is drawn behind it.** A template opened on the Default scheme keeps every label at

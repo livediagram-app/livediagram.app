@@ -1,10 +1,14 @@
 // The workbench store's tables, and its rows as the store reads them (store.ts).
 
 import type {
+  ConsumedTicket,
+  PairingRequestRead,
   PairingStatus,
+  WorkbenchLevel,
   WorkbenchPairingRow,
   WorkbenchReach,
   WorkbenchScope,
+  WorkbenchSessionRead,
 } from './store-types.ts';
 
 // ---------- Schema ---------------------------------------------------------------------------------------------
@@ -120,3 +124,41 @@ export const effectiveStatus = (status: string, expiresAt: number, now: number):
 // A workspace pairing also covers the item scope; an item pairing never covers the workspace.
 export const pairingCovers = (pairing: WorkbenchScope, asked: WorkbenchScope) =>
   pairing === 'workspace' || asked === 'item';
+
+// A pairing request's row as `readPairingRequest` answers it, its status as of `now`.
+export const toPairingRequest = (row: Row, now: number): PairingRequestRead => ({
+  app: row.app as string,
+  tokenId: row.token_id as string,
+  origin: row.origin as string,
+  name: (row.name as string | null) ?? null,
+  scope: row.scope as WorkbenchScope,
+  expiresAt: row.expires_at as number,
+  status: effectiveStatus(row.status as string, row.expires_at as number, now),
+});
+
+// A spent ticket's row, in the store `ownerId` owns.
+export const toConsumedTicket = (row: Row, ownerId: string): ConsumedTicket => ({
+  ownerId,
+  app: row.app as string,
+  tokenId: row.token_id as string,
+  pairingId: row.pairing_id as string,
+  ...reachOf(row as ReachColumns),
+  tabId: (row.tab_id as string | null) ?? null,
+  origin: row.origin as string,
+  role: row.role as WorkbenchLevel,
+});
+
+// A session's row, in the store `ownerId` owns.
+export const toSessionRead = (row: Row, ownerId: string): WorkbenchSessionRead => ({
+  id: row.id as string,
+  ownerId,
+  app: row.app as string,
+  tokenId: row.token_id as string,
+  pairingId: row.pairing_id as string,
+  ...reachOf(row as ReachColumns),
+  tabId: (row.tab_id as string | null) ?? null,
+  origin: row.origin as string,
+  role: row.role as WorkbenchLevel,
+  createdAt: row.created_at as number,
+  expiresAt: row.expires_at as number,
+});

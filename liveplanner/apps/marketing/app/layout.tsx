@@ -14,6 +14,7 @@ import {
   htmlProps,
   trustedConstant,
   trustedTypesBootScript,
+  REPO_URL,
 } from '@liveplanner/ui';
 import { NON_MARKETING_SEGMENTS, SIGNED_IN_HINT_COOKIE } from '@liveplanner/api-schema';
 import { viewTransitionGuardScript } from '@liveworkspace/marketing-site/lib/view-transition-guard';
@@ -107,6 +108,8 @@ const JSON_LD = {
       name: SITE_NAME,
       url: SITE_URL,
       logo: LOGO_URL,
+      // The open-source repository (business-model-and-licence.md), so Google ties the brand to its source.
+      sameAs: [REPO_URL],
     },
     {
       '@type': 'WebSite',
@@ -129,6 +132,7 @@ const JSON_LD = {
       inLanguage: 'en-GB',
       image: OG_IMAGE,
       publisher: { '@id': `${SITE_URL}/#org` },
+      sameAs: [REPO_URL],
       offers: {
         '@type': 'Offer',
         price: '0',
