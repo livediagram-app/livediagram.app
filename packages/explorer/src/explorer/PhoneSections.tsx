@@ -13,7 +13,7 @@ import {
   useEscape,
   useFocusTrap,
 } from '@liveworkspace/ui';
-import { ChevronDownIcon, HamburgerIcon } from '../ui/icons';
+import { ChevronRightIcon, HamburgerIcon } from '../ui/icons';
 import { FOCUS_RING_INSET } from '../ui/classes';
 import { useExplorer } from './context';
 import { Sidebar } from './Sidebar';
@@ -21,8 +21,8 @@ import { viewTitle } from './view-title';
 
 export const SECTIONS_COPY = {
   // The drawer's name, and the word the bar's name opens with.
-  sidebar: 'Sidebar',
-  open: (current: string) => `Open Sidebar, Current: ${current}`,
+  sidebar: 'Menu',
+  open: (current: string) => `Open Menu, Current: ${current}`,
 } as const;
 
 // Marks the bar, for whatever hands focus back to it (TeamPane's landOnMyWork).
@@ -66,7 +66,7 @@ export function SectionsBar({
           {current}
         </span>
         <span aria-hidden className="flex shrink-0 text-slate-400 dark:text-slate-500">
-          <ChevronDownIcon size={14} />
+          <ChevronRightIcon size={14} />
         </span>
       </button>
     </div>

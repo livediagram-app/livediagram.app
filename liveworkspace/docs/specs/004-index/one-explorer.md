@@ -273,10 +273,10 @@ the menu button beside the page title was "too hidden"). The **sections bar** ru
 header and stays stuck under it as the page scrolls: the header and the bar share one sticky block, so they never
 overlap or jump, with no scroll listener (`explorer/PhoneSections.tsx`). It shows the menu glyph, the current view's
 name (the title its heading shows: Home, Inbox, Shared With Me, Timeline, a folder's or a team's name, Search
-results, Archived, the Trash; cut with an ellipsis when long) and a chevron. The whole row is one button, 48 px tall,
-named "Open Sidebar, Current: Inbox", with `aria-expanded` and `aria-controls`; the page title and Home's hero carry
+results, Archived, the Trash; cut with an ellipsis when long) and a chevron pointing right, the way the sidebar slides in from the left. The whole row is one button, 48 px tall,
+named "Open Menu, Current: Inbox", with `aria-expanded` and `aria-controls`; the page title and Home's hero carry
 no menu button of their own. It opens the sidebar as a drawer the full width of the screen (over the header too),
-sliding in from the left (under reduced motion it appears): a top row naming it, **Sidebar**, with its close, then
+sliding in from the left (under reduced motion it appears): a top row naming it, **Menu**, with its close, then
 the sidebar's groups. The drawer traps focus, locks the page's scroll behind it, closes on Escape, its close, a pick
 or any change of view (Back included), and gives focus back to the bar. The editor's panel has no such bar: its rail
 is its way round.

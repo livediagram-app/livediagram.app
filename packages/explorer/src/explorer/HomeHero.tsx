@@ -169,7 +169,7 @@ export function HomeHero({
       className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800"
     >
       <HeroBackdrop kind={backdrop} />
-      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-10 gap-y-8 px-4 pb-12 pt-6 sm:px-6 lg:pb-14">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-10 gap-y-8 px-4 pb-16 pt-9 sm:px-6 lg:pb-[5.75rem] lg:pt-12">
         <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5">
           {/* A phone: the corner has its own row, so the pills never push Help onto a line of its own (the
               sections bar above the hero opens the sidebar). */}

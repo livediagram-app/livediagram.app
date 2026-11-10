@@ -38,8 +38,8 @@ function page(view: ExplorerView = { kind: 'all' }, folders: Folder[] = []) {
   return { onNavigate, rerender: (v: ExplorerView = view) => rerender(at(v)) };
 }
 
-const bar = () => screen.getByRole('button', { name: /^Open Sidebar, Current: / });
-const drawer = () => screen.queryByRole('dialog', { name: 'Sidebar' });
+const bar = () => screen.getByRole('button', { name: /^Open Menu, Current: / });
+const drawer = () => screen.queryByRole('dialog', { name: 'Menu' });
 
 describe('the sections bar', () => {
   it.each<[ExplorerView, string]>([
@@ -50,14 +50,14 @@ describe('the sections bar', () => {
     [{ kind: 'archived' }, 'Archived'],
   ])('names the view on screen (%o)', async (view, name) => {
     page(view);
-    const button = await screen.findByRole('button', { name: `Open Sidebar, Current: ${name}` });
+    const button = await screen.findByRole('button', { name: `Open Menu, Current: ${name}` });
     expect(button.textContent).toBe(name);
   });
 
   it('names a folder by its own name once the folders are in', async () => {
     page({ kind: 'folder', id: 'f1' }, [folder('f1', 'Quarterly Planning')]);
     expect(
-      await screen.findByRole('button', { name: 'Open Sidebar, Current: Quarterly Planning' }),
+      await screen.findByRole('button', { name: 'Open Menu, Current: Quarterly Planning' }),
     ).toBeTruthy();
   });
 
@@ -80,9 +80,7 @@ describe('the sections bar', () => {
 
   it('is the only menu button: the pane heading has none', () => {
     page();
-    expect(screen.getAllByRole('button', { name: /Open Sidebar|Browse sections/i })).toHaveLength(
-      1,
-    );
+    expect(screen.getAllByRole('button', { name: /Open Menu|Browse sections/i })).toHaveLength(1);
   });
 });
 
@@ -137,6 +135,6 @@ describe('the Sidebar drawer', () => {
     expect(drawer()).toBeTruthy();
     rerender({ kind: 'trash' });
     expect(drawer()).toBeNull();
-    expect(bar().getAttribute('aria-label')).toBe('Open Sidebar, Current: Trash');
+    expect(bar().getAttribute('aria-label')).toBe('Open Menu, Current: Trash');
   });
 });
