@@ -14,8 +14,9 @@ import type {
   TextAlignY,
   TextSize,
 } from '@liveworkspace/model-core/basics';
-import type { BorderStyle } from '@liveworkspace/model-core/border-style';
+import type { BorderRadius, BorderStroke, BorderStyle } from '@liveworkspace/model-core/border-style';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
+import type { Finish } from './finish';
 
 export type { ElementId };
 
@@ -63,6 +64,15 @@ export type BoxBase = {
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;
   padding?: Padding;
+  // Its look, where a product's kind stores one.
+  fillColor?: string;
+  strokeColor?: string;
+  textColor?: string;
+  font?: string;
+  strokeWidth?: BorderStroke;
+  strokeStyle?: BorderStyle;
+  borderRadius?: BorderRadius;
+  finish?: Finish;
 };
 
 export type ShapeElement = BoxBase & {
@@ -74,6 +84,9 @@ export type ShapeElement = BoxBase & {
   tags?: string[];
   accentEdge?: 'left' | 'top' | 'bottom';
   accentEdgeColor?: string;
+  /** A page's title and subtitle (livediagram, livedesign, liveplanner). */
+  pageTitle?: string;
+  pageSubtitle?: string;
 };
 
 export type TextElement = BoxBase & { type: 'text' };
