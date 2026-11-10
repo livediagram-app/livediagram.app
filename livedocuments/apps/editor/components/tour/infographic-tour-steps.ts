@@ -11,7 +11,7 @@ export function infographicTourSteps(): PageTourStep[] {
     {
       id: 'page-name',
       title: 'Your Page',
-      body: "The page's name sits above it: press it to fit the page to the screen, or drag it to put your pages in another order.",
+      body: "The page's name sits above it: press it to fit the page to the screen. To put your pages in another order, drag a row in Contents.",
       selector: (api) => `${pageSheet(api.pageId)} [data-tour-id="page-name"]`,
     },
     lookStep(

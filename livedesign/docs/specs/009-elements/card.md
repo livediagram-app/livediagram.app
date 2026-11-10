@@ -46,7 +46,7 @@ rule as the web components: the first click selects, the next one edits, Enter c
 - **Tile**: a rounded square in a soft tint of the accent with the glyph in the accent.
 - **Initial**: a soft accent disc carrying the first letter of the title (a "?" with no title). It ignores `iconId`.
 
-Dropping an icon on a card sets `iconId` and, when the card has no media, turns on Tile. The media slot places the icon, so a card offers no Icon position (the quick style panel's Icon alignment
+Dropping an icon on a card sets `iconId` and, when the card has no media, turns on Tile. The media slot places the icon, so a card offers no Icon position (the Quick Style bar's Icon button
 and the Icon section's position grid are left out; `positionsInlineIcon`), only Remove Icon.
 
 **The header band** carries the title and the meta line (title left, meta right) in the band's text colour, so a

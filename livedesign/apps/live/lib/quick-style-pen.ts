@@ -1,5 +1,5 @@
-// The quick style panel's marker rows on a whiteboard (docs/specs/023-draw-mode/drawing-tools.md "The
-// quick style panel stays"): the colour and width of the selected marker strokes, or, with nothing
+// The Quick Style bar's marker rows (docs/specs/023-draw-mode/drawing-tools.md "The
+// Quick Style bar"): the colour and width of the selected marker strokes, or, with nothing
 // selected, of the marker in hand. Quick choices only, one row each: Marker colour is the nine stock
 // colours (Ink first), adaptive per board, with custom colours one press deeper in the colour
 // picker; Marker width is the pens' named widths.
@@ -33,7 +33,7 @@ export type { PenWidthId };
 export type PenColourOption = { value: PenColourChoice; name: string; swatch: string };
 export type QuickPenStyle = {
   // What the rows style: the selected strokes, or the pen in hand.
-  // `name` captions the rows, so the panel says whose style it is.
+  // `name`: a pen's names it under the popovers' titles ("In hand: Marker 2").
   subject:
     | { kind: 'strokes'; ids: string[]; name: string }
     | { kind: 'pen'; id: WhiteboardPenId; name: string };
@@ -47,7 +47,7 @@ export type QuickPenStyle = {
   width: { value: PenWidthId | null };
 };
 
-// Where the panel's colours come from: the viewer's board and its ink.
+// Where the rows' colours come from: the viewer's board and its ink.
 export type PenPalette = { board: Appearance; ink: string };
 
 export function isPenStroke(el: Element): el is FreehandElement {

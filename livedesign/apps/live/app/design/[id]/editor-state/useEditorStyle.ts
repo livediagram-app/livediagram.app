@@ -54,7 +54,7 @@ export function useEditorStyle({
   const { selfParticipant, userPreferences, setUserPreferences, participant } = sessionSlice;
   const { previewingRef, tabsRef } = persistenceSlice;
   const { activeTab } = collaborationSlice;
-  const { editsBlocked, structureBlocked, commit } = pagesSlice;
+  const { pagesMode, editsBlocked, structureBlocked, commit } = pagesSlice;
   const { commitActiveTab } = componentsSlice;
   const { activeTheme, styleMemory, liveActiveElements, rememberingCommit, rememberingTickTabs } =
     layersSlice;
@@ -164,8 +164,8 @@ export function useEditorStyle({
     checkpointBurst,
   });
 
-  // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
-  // action per choice. The panel itself decides where and whether it shows.
+  // The Quick Style bar (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
+  // action per choice. The bar itself decides where and whether it shows.
   const swatchOverrides = useSwatchOverrides({
     themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
     userPreferences,
@@ -190,6 +190,7 @@ export function useEditorStyle({
     },
     highlighter,
     toolIntent: pendingDraw,
+    pages: pagesMode.pages,
   };
 
   // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on

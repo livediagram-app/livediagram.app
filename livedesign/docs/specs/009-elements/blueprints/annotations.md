@@ -86,7 +86,7 @@ States per marker: `hovering` (local `useState`), `isSelected`, `isEditing`.
 
 Move, recolour (Colours accordion), layer, lock, link, comment, assign an action and delete follow
 the generic boxed paths. No quick-connect plus appears (`showPlus` excludes annotations, D90) [QD11].
-The quick style panel does not open for an annotation: `isQuickStyleTarget` takes shapes, arrows
+The Quick Style bar does not open for an annotation: `isQuickStyleTarget` takes shapes, arrows
 and text only.
 
 Invariants:

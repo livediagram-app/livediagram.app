@@ -7,9 +7,11 @@ import {
   openBlankPage,
   pageOwnerHeaders,
   pagePoint,
+  paletteTile,
 } from './fixtures';
+import { quickBar, quickChoose, quickPopover, quickRow } from './quick-style-bar';
 
-// The quick style panel and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
+// The Quick Style bar and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
 // tests prove the rules; only the editor proves a choice lands, is remembered
 // for the next element the user draws, and is forgotten by Clear Styles.
 
@@ -52,12 +54,19 @@ async function saved(page: Page, ok: (els: El[]) => boolean): Promise<El[]> {
   return last;
 }
 
-// Points are fractions of the page's width and height (pagePoint), right of the panel on the canvas's left.
+// Points are fractions of the page's width and height (pagePoint).
 type At = readonly [number, number];
+
+// A popover stays open after a pick, and Escape closes it first (the top layer); the next Escape clears the
+// selection, so a letter picks a tool rather than typing into the selected shape.
+async function clearSelection(page: Page) {
+  if (await page.locator('[data-quick-style-popover]').count()) await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+}
 
 async function drawShape(page: Page, key: 'o' | 'r', [fx, fy]: At) {
   const at = await pagePoint(page, fx, fy);
-  await page.keyboard.press('Escape');
+  await clearSelection(page);
   await page.keyboard.press(key);
   await page.mouse.click(at.x, at.y);
 }
@@ -65,7 +74,7 @@ async function drawShape(page: Page, key: 'o' | 'r', [fx, fy]: At) {
 async function drawArrow(page: Page, [fx, fy]: At, [tx, ty]: At) {
   const from = await pagePoint(page, fx, fy);
   const to = await pagePoint(page, tx, ty);
-  await page.keyboard.press('Escape');
+  await clearSelection(page);
   await page.keyboard.press('a');
   await page.mouse.move(from.x, from.y);
   await page.mouse.down();
@@ -73,19 +82,9 @@ async function drawArrow(page: Page, [fx, fy]: At, [tx, ty]: At) {
   await page.mouse.up();
 }
 
-const panel = (page: Page) => page.getByRole('region', { name: 'Quick style' });
-// A row of glyph buttons is a radio group; a colour row is a group of toggle buttons
-// (docs/specs/004-interface-design/colour-picker.md).
-const row = (page: Page, name: string) =>
-  panel(page).locator(
-    `[role="radiogroup"][aria-label="${name}"], [role="group"][aria-label="${name}"]`,
-  );
-const choose = (page: Page, name: string, option: string) =>
-  row(page, name).getByLabel(option, { exact: true }).click();
-
 const shapesOf = (els: El[], kind: string) => els.filter((e) => e.shape === kind);
 
-test.describe('quick style panel', () => {
+test.describe('quick style bar', () => {
   test('one click on Flowing makes the selected arrow dashed and animated', async ({
     page,
     pageErrors,
@@ -93,7 +92,7 @@ test.describe('quick style panel', () => {
     await openBoard(page);
     await drawArrow(page, [0.15, 0.25], [0.6, 0.25]);
     await expect(page.locator('path.lvd-arrow-flow')).toHaveCount(0);
-    await choose(page, 'Stroke style', 'Flowing');
+    await quickChoose(page, 'Stroke style', 'Flowing');
     // The line marches on the canvas at once, and one click saved both halves.
     await expect(page.locator('path.lvd-arrow-flow')).toHaveCount(1);
     const [arrow] = (await saved(page, (e) => e.some((x) => x.flow === 'dashes'))).filter(
@@ -101,24 +100,19 @@ test.describe('quick style panel', () => {
     );
     expect(arrow).toMatchObject({ strokeStyle: 'dashed', flow: 'dashes' });
     await expect(
-      panel(page)
-        .getByRole('radiogroup', { name: 'Stroke style' })
-        .getByRole('radio', { name: 'Flowing' }),
+      (await quickRow(page, 'Stroke style')).getByRole('radio', { name: 'Flowing' }),
     ).toHaveAttribute('aria-checked', 'true');
     expectNoPageErrors(pageErrors);
   });
 
-  test('narrow, ten 24 px swatch targets wide, a theme row nine (its seven, Ink and More colours)', async ({
+  test('colour targets are 24 px, a theme row nine (its seven, Ink and More colours)', async ({
     page,
     pageErrors,
   }) => {
     await openBoard(page);
     await drawShape(page, 'o', [0.4, 0.45]);
-    await expect(panel(page)).toBeVisible();
-    expect((await panel(page).boundingBox())!.width).toBeCloseTo(258, 0);
-    const swatches = panel(page)
-      .getByRole('group', { name: 'Stroke', exact: true })
-      .getByRole('button');
+    await expect(quickBar(page)).toBeVisible();
+    const swatches = (await quickRow(page, 'Stroke')).getByRole('button');
     await expect(swatches).toHaveCount(9);
     await expect(swatches.nth(7)).toHaveAccessibleName('Ink');
     await expect(swatches.last()).toHaveAccessibleName('More colours, stroke');
@@ -126,6 +120,10 @@ test.describe('quick style panel', () => {
       expect(box!.width).toBeGreaterThanOrEqual(24);
       expect(box!.height).toBeGreaterThanOrEqual(24);
     }
+    // The Fill row's More colours is named for it.
+    await expect(
+      (await quickRow(page, 'Fill')).getByRole('button', { name: 'More colours, fill' }),
+    ).toBeVisible();
     expectNoPageErrors(pageErrors);
   });
 
@@ -135,7 +133,7 @@ test.describe('quick style panel', () => {
   }) => {
     await openBoard(page);
     await drawShape(page, 'o', [0.4, 0.25]);
-    const stroke = panel(page).getByRole('group', { name: 'Stroke', exact: true });
+    const stroke = await quickRow(page, 'Stroke');
     await stroke.getByRole('button', { name: 'Green' }).click({ button: 'right' });
     const dialog = page.getByRole('dialog', { name: 'Custom colour for Green, Stroke' });
     await expect(dialog).toBeVisible();
@@ -168,23 +166,61 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  // On the left, vertically centred; the left edge holds the Contents sidebar, docked from the first page, so it
-  // stands directly right of it (docs/specs/008-canvas/quick-style-panel.md "Where it sits", candidate 4).
-  test('sits on the left, beside the Contents sidebar, vertically centred', async ({
+  // Left of its page's title bar (docs/specs/008-canvas/quick-style-panel.md "Where it sits").
+  test("sits left of the page's title bar, in its row", async ({ page, pageErrors }) => {
+    await openBoard(page);
+    await drawShape(page, 'o', [0.4, 0.45]);
+    const bar = quickBar(page);
+    await expect(bar).toBeVisible();
+    await expect(bar.getByText('Quick style', { exact: true })).toHaveCount(0);
+    await expect(bar.getByRole('button', { name: 'Clear Styles' })).toHaveCount(0);
+    await expect(async () => {
+      const q = (await bar.boundingBox())!;
+      const t = (await page.locator('[data-page-title-bar]').first().boundingBox())!;
+      expect(q.x + q.width).toBeLessThanOrEqual(t.x + 1);
+      expect(Math.abs(q.y + q.height / 2 - (t.y + t.height / 2))).toBeLessThan(2);
+    }).toPass();
+    expectNoPageErrors(pageErrors);
+  });
+
+  test('a popover stays open after a pick; another button, Escape or an outside press closes it', async ({
     page,
     pageErrors,
   }) => {
     await openBoard(page);
     await drawShape(page, 'o', [0.4, 0.45]);
-    await expect(panel(page)).toBeVisible();
-    await expect(panel(page).getByText('Quick style', { exact: true })).toHaveCount(0);
-    await expect(async () => {
-      const canvas = (await page.locator(CANVAS).boundingBox())!;
-      const contents = (await page.locator('[data-contents-sidebar]').boundingBox())!;
-      const q = (await panel(page).boundingBox())!;
-      expect(Math.abs(q.x - (contents.x + contents.width + 12))).toBeLessThan(1);
-      expect(Math.abs(q.y + q.height / 2 - (canvas.y + canvas.height / 2))).toBeLessThan(1);
-    }).toPass();
+    await quickChoose(page, 'Stroke', 'Green');
+    await expect(quickPopover(page, 'Stroke')).toBeVisible();
+    await quickRow(page, 'Fill');
+    await expect(quickPopover(page, 'Fill')).toBeVisible();
+    await expect(quickPopover(page, 'Stroke')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(quickPopover(page, 'Fill')).toHaveCount(0);
+    await quickRow(page, 'Stroke width');
+    await page.mouse.click(5, 5);
+    await expect(quickPopover(page, 'Stroke width')).toHaveCount(0);
+    expectNoPageErrors(pageErrors);
+  });
+
+  // docs/specs/023-draw-mode/drawing-tools.md "The Quick Style bar": a marker in hand, nothing selected.
+  test('a marker in hand shows its buttons on the page, and its width changes the marker', async ({
+    page,
+    pageErrors,
+  }) => {
+    await openBoard(page);
+    // A logo page's Draw holds the markers (docs/specs/007-editor/logo-pages.md "The Logo palette").
+    await (await paletteTile(page, 'Marker 2', 'Draw')).click();
+    const bar = quickBar(page);
+    await expect(bar).toBeVisible();
+    await expect(bar.getByRole('button')).toHaveCount(2);
+    await expect(bar.getByRole('button', { name: 'Marker', exact: true })).toBeVisible();
+    const widths = await quickRow(page, 'Marker width');
+    await expect(quickPopover(page, 'Marker width').getByText('In hand: Marker 2')).toBeVisible();
+    await widths.getByRole('radio', { name: 'Bold' }).click();
+    await expect(widths.getByRole('radio', { name: 'Bold' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
     expectNoPageErrors(pageErrors);
   });
 
@@ -194,12 +230,11 @@ test.describe('quick style panel', () => {
   }) => {
     await openBoard(page);
     await drawShape(page, 'o', [0.4, 0.25]);
-    await expect(panel(page)).toBeVisible();
-    await choose(page, 'Stroke', 'Green');
-    await expect(row(page, 'Stroke').getByRole('button', { name: 'Green' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    await expect(quickBar(page)).toBeVisible();
+    await quickChoose(page, 'Stroke', 'Green');
+    await expect(
+      (await quickRow(page, 'Stroke')).getByRole('button', { name: 'Green' }),
+    ).toHaveAttribute('aria-pressed', 'true');
 
     await drawShape(page, 'o', [0.4, 0.75]);
     await drawShape(page, 'r', [0.15, 0.75]);
@@ -221,8 +256,8 @@ test.describe('quick style panel', () => {
   }) => {
     await openBoard(page);
     await drawArrow(page, [0.15, 0.25], [0.6, 0.25]);
-    await expect(panel(page)).toBeVisible();
-    await choose(page, 'Stroke style', 'Flowing');
+    await expect(quickBar(page)).toBeVisible();
+    await quickChoose(page, 'Stroke style', 'Flowing');
     await drawArrow(page, [0.15, 0.6], [0.6, 0.6]);
     await drawShape(page, 'o', [0.85, 0.45]);
     const els = await saved(
@@ -236,13 +271,25 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Clear Styles resets the selection and forgets its kind', async ({ page, pageErrors }) => {
+  test("the element menu's Clear Styles resets the selection and forgets its kind", async ({
+    page,
+    pageErrors,
+  }) => {
     await openBoard(page);
-    await drawShape(page, 'o', [0.4, 0.25]);
-    await choose(page, 'Background', 'Violet');
-    await choose(page, 'Stroke width', 'Thick');
-    await panel(page).getByRole('button', { name: 'Clear Styles' }).click();
-    await drawShape(page, 'o', [0.4, 0.75]);
+    // Right of the bar, so the selection's own strip above the circle leaves the bar's buttons clear.
+    await drawShape(page, 'o', [0.8, 0.25]);
+    await quickChoose(page, 'Fill', 'Violet');
+    await quickChoose(page, 'Stroke width', 'Thick');
+    // Clear Styles lives in the element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md).
+    await page
+      .locator(CANVAS)
+      .getByRole('img', { name: 'Circle', exact: true })
+      .click({ button: 'right' });
+    await page
+      .getByRole('dialog', { name: 'Element menu' })
+      .getByRole('button', { name: 'Clear Styles' })
+      .click();
+    await drawShape(page, 'o', [0.8, 0.75]);
     const els = await saved(page, (e) => shapesOf(e, 'circle').length === 2);
     for (const circle of shapesOf(els, 'circle')) {
       expect(circle.fillSwatch).toBeUndefined();
@@ -251,15 +298,13 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the panel keys like a radio group and stands down for the context menu', async ({
+  test('a popover keys like a radio group and the bar stands down for the context menu', async ({
     page,
     pageErrors,
   }) => {
     await openBoard(page);
-    // Clear of the panel, which sits on the canvas's left (docs/specs/008-canvas/quick-style-panel.md
-    // "Where it sits"), so the right-click below lands on the circle.
     await drawShape(page, 'o', [0.8, 0.25]);
-    const widths = panel(page).getByRole('radiogroup', { name: 'Stroke width' });
+    const widths = await quickRow(page, 'Stroke width');
     await widths.getByRole('radio', { name: 'Medium' }).focus();
     await page.keyboard.press('ArrowRight');
     await expect(widths.getByRole('radio', { name: 'Thick' })).toBeFocused();
@@ -267,13 +312,13 @@ test.describe('quick style panel', () => {
       'aria-checked',
       'true',
     );
-    // On the circle itself: a click the panel or any other chrome would take opens no element menu.
+    // On the circle itself: a click the bar or any other chrome would take opens no element menu.
     await page
       .locator(CANVAS)
       .getByRole('img', { name: 'Circle', exact: true })
       .click({ button: 'right' });
     await expect(page.getByRole('dialog', { name: 'Element menu' })).toBeVisible();
-    await expect(panel(page)).toBeHidden();
+    await expect(quickBar(page)).toBeHidden();
     expectNoPageErrors(pageErrors);
   });
 });

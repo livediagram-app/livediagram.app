@@ -159,8 +159,8 @@ type UserPreferences = {
   // property (usePanelOpacity), read by every surface tagged
   // `data-panel-translucent`: MovablePanel in both its docked and its
   // popover branch (so the Explorer and Collaborate
-  // popovers follow it too), the Map, the Quick style panel and the
-  // Toolbar strip. Buttons are not panels: the
+  // popovers follow it too), the Map and the Toolbar strip. (The Quick
+  // Style bar is page chrome beside the title bar, not a panel.) Buttons are not panels: the
   // bottom-right cluster buttons and the zoom controls stay opaque.
   // Defaults to 1 (fully opaque).
   panelOpacity?: number;
@@ -190,8 +190,8 @@ type UserPreferences = {
   // actions (the only time either shows when on). Comments and actions
   // keep working from the elements themselves.
   collaboratePanelEnabled?: boolean;
-  // `quickStylePanelEnabled` false: the Quick style panel never appears
-  // beside a selection. Style memory (../008-canvas/quick-style-panel.md)
+  // `quickStylePanelEnabled` false: the Quick Style bar never appears
+  // beside a selection's page title bar (the key keeps its old name). Style memory (../008-canvas/quick-style-panel.md)
   // still remembers what you pick in the context menu.
   quickStylePanelEnabled?: boolean;
 
@@ -245,10 +245,10 @@ type UserPreferences = {
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the design's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
-  // The quick style panel's custom swatches (../008-canvas/quick-style-panel.md
+  // The Quick Style bar's custom swatches (../008-canvas/quick-style-panel.md
   // "Custom swatches"): per theme, newest-edited first, which of a row's six
   // slots you replaced with your own colour. `t` is the theme id, `s` the
-  // Stroke row and `f` the Background row, slot (1-6) to lower-case #rrggbb.
+  // Stroke row and `f` the Fill row, slot (1-6) to lower-case #rrggbb.
   // Short keys because the blob shares the 4 KB cap; at most 8 themes and
   // 800 bytes, oldest-edited dropped first. Validated on read in the client
   // (lib/swatch-overrides), like every field here.
@@ -576,7 +576,7 @@ and the dialog stays as the one complete, browsable index of them.
   Panels holds Panel Opacity, then a section per panel,
   Quick Style, Map, then Collaborate. Each section opens with that panel's **Enable
   switch** ("Enable Map",
-  "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
+  "Enable Collaborate Panel", "Enable Quick Style Bar"; see the panel
   switches in the data model). The panel's other rows nest beneath the
   switch (`parent`) and are offered only while it is on: a setting for a
   panel you have turned off has nothing to act on. The Map's switch keeps its stored key

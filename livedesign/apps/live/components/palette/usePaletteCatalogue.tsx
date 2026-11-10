@@ -1,5 +1,5 @@
 import type { PaletteTileDef } from './palette-tile-defs';
-import { usePaletteKind } from '@/lib/palette-kind';
+import type { PaletteKind } from '@/lib/palette-kind';
 import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livedesign/design';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -76,7 +76,8 @@ export function usePaletteCatalogue({
   pendingDraw,
   onTileUsed,
   participant = false,
-}: Deps) {
+  paletteKind,
+}: Deps & { paletteKind: PaletteKind }) {
   // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
   // cursor and on left/right-click to resize the light, none of which map to
   // touch — so drop it from the tool picker on mobile viewports. Reactive
@@ -205,9 +206,8 @@ export function usePaletteCatalogue({
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
   // The mode's palette layout (palette-layouts): its categories, in order, with their tiles.
-  // In Pages mode, the palette's kind (lib/palette-kind.ts): the page someone is on's. Each kind is its own layout
+  // In Pages mode, the palette's kind (lib/palette-kind.ts): the tab's. Each kind is its own layout
   // (palette-layouts.ts).
-  const paletteKind = usePaletteKind();
   const pages = editorMode === 'pages';
   // Logo's Draw takes this person's markers, as tiles in their colours and widths (useLogoMarkerTiles).
   const markers = useLogoMarkerTiles(pages && paletteKind === 'logo');

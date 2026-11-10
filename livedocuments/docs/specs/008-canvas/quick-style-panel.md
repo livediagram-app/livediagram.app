@@ -1,10 +1,13 @@
-# Quick style panel
+# Quick Style bar
 
-While one or more shapes, arrows and / or text elements are selected, a small panel on the right
-edge of the canvas offers the handful of style choices people reach for most: stroke colour,
-background, text colour (for text elements), stroke width, stroke style, text alignment and icon
-alignment, plus a Clear Styles action. What you choose there
-(or in the context menu) is remembered for the next shape of the same kind you draw.
+While one or more shapes, arrows and / or text elements are selected, a small toolbar beside the
+page's title bar offers the handful of style choices people reach for most: stroke colour, fill,
+text colour (for text elements), stroke width, stroke style, text alignment and icon alignment. Each
+is one button that opens a popover with its choices. What you choose there (or in the context menu)
+is remembered for the next shape of the same kind you draw.
+
+(It was a floating panel on the canvas's right edge, the Quick style panel. The file keeps its name
+so links to it still work.)
 
 ## Why
 
@@ -25,84 +28,85 @@ context menu, grow with every feature, and cover the canvas it is meant to serve
 formatting lives in the right-click context menus ([Editor app](../007-editor/editor-app.md),
 [Canvas and palette](canvas-and-palette.md)).
 
-The quick style panel is deliberately not that panel coming back:
+The Quick Style bar is deliberately not that panel coming back:
 
-- **The context menu stays the complete home of every setting.** Everything the panel offers is also
-  in the menu. The panel never gets a setting the menu does not have.
-- **The panel holds only the most-used choices, in their most-used values.** A row offers three
+- **The context menu stays the complete home of every setting.** Everything the bar offers is also
+  in the menu. The bar never gets a setting the menu does not have.
+- **The bar holds only the most-used choices, in their most-used values.** A row offers three
   options (seven for colours), not the full set; the rest stay one right-click away.
 - **A new row must earn its place** by being among the most-used style choices across kinds, and
   must fit the row rhythm below. A setting that is used on one kind, or rarely, belongs in the menu.
 
-The boundary keeps the panel small enough to leave open without covering the diagram, which is the
-only reason it can be always-there rather than on-demand.
+The boundary keeps the bar to a handful of buttons, small enough to sit beside the title bar
+whenever something is selected.
 
 ## Where it sits
 
-The panel sits **on the right edge of the canvas, vertically centred**, always: one gap (12 px) in
-from the canvas's right, out of the way of the strip across the top. The left holds the Contents
-sidebar, and the right is where the eye goes for what a selection can change, so it never moves
-across. (livediagram and livedesign keep it on the left: the shared placement takes the side,
-`placeQuickStylePanel` `side`, `../packages/workbench/src/lib/quick-style-placement.ts`.)
+The bar is **its own toolbar card, just left of the page's title bar** (the Style, Layout, Background,
+Notes, lock and cog card above the page's top-right corner, [Pages mode](../007-editor/pages-mode.md)
+"Beside the cog"), on one line with it and a 6 px gap between the two. It wears the title bar's
+card and button look (`PageTitleBar`), held at one screen size whatever the zoom, so the two read as
+one row of page chrome: what the selection looks like, then what the page looks like.
 
-It is **compact** (no header, 258 px wide), not draggable and with no collapse button of its own;
-it leaves when the selection does. The colour swatches are the colour picker's one swatch
-([Colour picker](../004-interface-design/colour-picker.md)): a 20 px chip in a **24 × 24 px target**
-(WCAG 2.2, 2.5.8 target size), ten to a row with the targets touching. **The width is fixed, never
-the content's**, so the panel never resizes as its rows change:
-every colour row lays out on the same ten columns (the theme's seven, Ink and **More colours**, a
-Background row's seven and More colours), a row of swatches never wraps and is never clipped (the
-width counts the targets, their gaps, 8 px of padding a side and a 1 px border a side, exactly). The panel-opacity preference
-([User preferences](../007-editor/user-preferences.md)) fades it.
+- **On the selection's page.** It sits on the page under the centre of most of the styled elements;
+  a selection off every page puts it on the nearest page. Only one page shows it at a time.
+- **One button per row**, in the row order below, each shown only while its row applies to the
+  selection (a text element alone shows Text and nothing else). Short names: **Stroke**, **Fill**,
+  **Text**, **Width**, **Line**, **Align** and **Icon**.
+- **Each button shows its value**: a colour button draws the colour in force as a small chip (the
+  no-colour chip for a transparent fill, a split chip when the selection disagrees); the others draw
+  the glyph of the option in force (the line weight, the dash, the alignment), or their first option's
+  glyph, muted, when mixed.
+- **Named while the title bar is.** The bar names its buttons beside their icons exactly when the
+  title bar does (a desktop with the page wide enough on screen), and drops to icons when it does, so
+  the row never mixes named and bare buttons.
+- **A popover per button**, anchored under it: the row's own choices as the panel had them (the
+  colour rows' seven swatches, Ink or Transparent, and More colours; the three glyph options), with
+  the row's full name as its heading ("Stroke colour", "Fill", "Text colour", "Stroke width",
+  "Stroke style", "Text alignment", "Icon alignment"). A pick applies at once and the popover stays
+  open for another; an outside press, Escape or the button closes it, and Escape returns focus to
+  the button. One popover at a time.
+- **The page's label makes room.** The label above the page's top-left corner truncates to what the
+  title bar and the bar leave it, and hides under 40 px, as it does for the title bar alone.
+- It never moves while you work: the bar follows its page through a pan or a zoom, and only changes
+  page with the selection.
+- **No Clear Styles button** (see "No Clear Styles").
 
-### Collisions
-
-Never over the other chrome (panels, the Contents panel, popovers, the Toolbar strip and
-the popovers hanging from it, the bottom-right cluster). The placement tries fixed candidate spots in order and
-takes the first that overlaps none of them. The bottom-right cluster counts by its strips, not its row: beside a
-docked Contents sidebar the row reaches left to the sidebar (so it can wrap upward short of it) while its strips sit at
-the right, and the empty row is no obstacle:
-
-1. the right edge, centred;
-2. the right edge, just below an obstacle on that edge (the Explorer, a panel), the highest spot first;
-3. the right edge, just above an obstacle on that edge (the bottom-right cluster), the lowest spot first;
-4. directly left of the obstacles on the right edge, centred.
-
-It never crosses to the left edge.
-
-If none is clear, the first is used. The order is fixed so the panel always lands in the same place
-for the same chrome. Placement is recomputed when the chrome moves or resizes, and when a panel appears or goes
-with no gesture of its own (the Map arriving with the canvas's first content, Collaborate when someone joins), never on
-a timer, and never while the chrome is still. A paste into a blank canvas showed the panel and the Map in the same
-moment; placed before the Map existed, the panel sat over its header.
-
-- **Not on phones.** A phone's canvas has no spare edge, and the context menu covers the same
-  choices. The panel shows from the `sm` breakpoint up.
+- **On a phone, in Appearance.** A phone's title bar holds three buttons at most, so there is no bar:
+  the selection's rows join the page's **Appearance** sheet instead ([Pages mode](../007-editor/pages-mode.md)
+  "On a phone, three buttons at most"), under a hairline and a **Selected Element** heading after the page's own
+  rows. Each row is its button: its short name, a line saying what it changes, and its value as its icon. A press
+  closes Appearance and opens the row's choices in a bottom sheet named by the row's full name ("Stroke width"),
+  the same row the desktop popover holds; a pick applies and the sheet stays for another, a swipe down or an outside
+  press closes it. The long-press menu still has every choice too.
 - **It stands down** while an element or multi-selection context menu is open (two style surfaces at
-  once repeat each other, and the menu may open at the right edge), in zen mode, in embeds, while
-  presenting, and when edits are blocked (a view-only visitor or a locked tab).
+  once repeat each other), in split view, in zen mode, in embeds, while presenting, and when edits
+  are blocked (a view-only visitor, a locked page or tab). A popover open on it closes as it goes.
 
 ### Turning it off
 
-**Settings › Panels › Quick Style › Enable Quick Style Panel** (`quickStylePanelEnabled`,
-[User preferences](../007-editor/user-preferences.md)) stops the panel appearing. Style memory keeps
+**Settings › Panels › Quick Style › Enable Quick Style Bar** (`quickStylePanelEnabled`, its stored
+name kept, [User preferences](../007-editor/user-preferences.md)) stops the bar appearing. Style memory keeps
 working from the context menu.
 
 ## Sections
 
-Top to bottom, each a small title over one row of option buttons:
+Left to right on the bar, each a button whose popover holds one row of options (the spec calls
+each a section, the bar a button):
 
-| Section        | Applies to                                            | Options                            |
-| -------------- | ----------------------------------------------------- | ---------------------------------- |
-| Stroke         | Shapes + arrows                                       | 7 colours, then Ink                |
-| Background     | Shapes                                                | 7 colours, then Transparent        |
-| Text colour    | Text elements                                         | 7 colours, then Ink                |
-| Stroke width   | Shapes + arrows                                       | Thin / Medium / Thick              |
-| Stroke style   | Shapes                                                | Solid / Dashed / Dotted            |
-|                | Arrows                                                | Solid / Dashed / Flowing           |
-| Text alignment | Shapes with a label it moves (`supportsQuickSection`) | Left / Centre / Right (horizontal) |
-| Icon alignment | Shapes with icon                                      | Before / Above / After the label   |
-| Actions        | Shapes + arrows + text elements                       | Clear Styles                       |
+| Section (button)       | Applies to                                            | Options                            |
+| ---------------------- | ----------------------------------------------------- | ---------------------------------- |
+| Stroke (Stroke)        | Shapes + arrows                                       | 7 colours, then Ink                |
+| Background (Fill)      | Shapes                                                | 7 colours, then Transparent        |
+| Text colour (Text)     | Text elements                                         | 7 colours, then Ink                |
+| Stroke width (Width)   | Shapes + arrows                                       | Thin / Medium / Thick              |
+| Stroke style (Line)    | Shapes                                                | Solid / Dashed / Dotted            |
+|                        | Arrows                                                | Solid / Dashed / Flowing           |
+| Text alignment (Align) | Shapes with a label it moves (`supportsQuickSection`) | Left / Centre / Right (horizontal) |
+| Icon alignment (Icon)  | Shapes with icon                                      | Before / Above / After the label   |
+
+The Background row's button is **Fill** on the bar: the page's own **Background** sits a few
+buttons along, and two buttons of one name would read as one.
 
 **Transparent** ends the Background row, after its seven colours: the shared no-colour chip (white
 crossed by a diagonal), named "Transparent". A press clears the shape's fill to `transparent`
@@ -119,26 +123,26 @@ opens nothing.
 - **Text alignment** is the horizontal axis only. Vertical alignment is the less-used half and stays
   in the menu's 3×3 grid. It shows only where it moves something: not on self-drawing kinds (no
   label) and not on kinds with their own face, whose label is a fixed
-  title, and not on icons or stickers (a glyph, at most a short caption). The panel's gate is `supportsQuickSection(el, 'textAlign')` (`apps/editor/lib/quick-style.ts`); the
-  context menu's Text Alignment section follows the same rule (no self-drawing kind, words to align). The panel also waits for words:
+  title, and not on icons or stickers (a glyph, at most a short caption). The bar's gate is `supportsQuickSection(el, 'textAlign')` (`apps/editor/lib/quick-style.ts`); the
+  context menu's Text Alignment section follows the same rule (no self-drawing kind, words to align). The bar also waits for words:
   a shape whose label is empty (or only whitespace) shows no Text alignment row, since there is
   nothing to align yet, and the row appears as soon as the shape is given text.
 - **Text colour** is the colour row a text element gets. A text element is its words, with no
   border or fill, so its colour is the one choice it has in common with the other rows, and without
-  it a text element was the one kind the panel could not dress. The row is for text elements only:
+  it a text element was the one kind the bar could not dress. The row is for text elements only:
   a shape's label colour travels with its background (see Style memory) and stays in the context
   menu, and offering both would put two rows of colour on every shape.
 - A section shows when at least one selected element supports it (a background for a shape that has
   one, a border for a shape that draws one, a label slot for alignment, text colour for a text
   element). Sticky notes, tables, images and the other non-shape elements are not styled by the
-  panel; a selection holding only those shows no panel, and a selection mixing them with styled
+  bar; a selection holding only those shows no bar, and a selection mixing them with styled
   elements styles the rest (see Multi-selection).
 
 ### Option counts and rhythm
 
-Colours offer seven; every other row offers three. Rows pair calmly, 7 and 7 (and 7), then 3, 3, 3, 3, so the
-panel reads as two blocks of equal rows rather than an irregular 3-4-5-3-4 sequence the eye has to
-re-measure at every line. Three is the natural size of each row:
+Colours offer seven; every other row offers three. So every popover is one of two sizes (a colour
+row, a row of three) rather than an irregular 3-4-5-3-4 set the eye has to re-measure each time.
+Three is the natural size of each row:
 
 - **Width** drops "none" (removing the border is a different decision from how heavy it is) and
   "extra thick" (rare).
@@ -208,7 +212,7 @@ colour of your own.
   colour keep it; the override only ever changed what the swatch offers.
 - **Keyboard**: on a focused swatch, **Shift+F10** or the **context-menu key** opens the same
   popover, focus moves into it, and Escape closes it and returns focus to the swatch. (Touch
-  long-press does not apply: the panel is desktop only.)
+  long-press does the same where the browser raises a context menu for it.)
 - **Slot 0, the theme default, cannot be overridden.** It is the one-click way back to the theme;
   replacing it would remove that.
 - **An overridden swatch is marked**: a small dot in its corner, drawn to contrast with the colour
@@ -236,7 +240,7 @@ identity otherwise, and into this browser's cache either way.
   opens it come from its [theme](../011-theme/README.md). Keeping overrides per document and per user
   would fragment them further, so the same person would rebuild the same palette in every document.
 - **Multi-colour themes** work the same way: their six slots are the branch colours, and an
-  override replaces one of them in the panel only. The theme's branch colouring of the diagram is
+  override replaces one of them in the bar only. The theme's branch colouring of the diagram is
   untouched.
 - **Clear override** removes the entry for that slot in that theme; the swatch shows the colour
   the theme derives for the slot again, and a theme left with no overrides is removed from the
@@ -251,7 +255,7 @@ identity otherwise, and into this browser's cache either way.
 
 ## Multi-selection
 
-The panel styles every selected shape, arrow, polygon and text element at once, including mixed
+The bar styles every selected shape, arrow, polygon and text element at once, including mixed
 kinds: select three arrows, two rectangles and a circle, press green, and all six turn green. Add a
 text element to that selection and a Text colour row appears beside the others, styling only it.
 
@@ -259,7 +263,7 @@ text element to that selection and a Text colour row appears beside the others, 
 shapes, lines, arrows, polygons, text boxes, stickies, images, stacks). Each row
 styles the selected elements it is meaningful for and leaves the rest exactly as they are; the
 elements no row fits (stickies, images, tables and the other non-shape kinds) are passed
-over, never refused, so they never hide the panel from the rest.
+over, never refused, so they never hide the bar from the rest.
 
 - A section shows when **at least one** selected element supports it, and a choice applies only to
   the elements that do.
@@ -272,11 +276,11 @@ over, never refused, so they never hide the panel from the rest.
   Flowing means nothing for a shape. Flowing is offered when every style-supporting element is an
   arrow.
 - **One undo step** per choice, however many elements it touched.
-- Locked elements are left alone; a selection of only locked elements shows no panel.
+- Locked elements are left alone; a selection of only locked elements shows no bar.
 
 ## Style memory
 
-Changing a quick-style field, through the panel **or** the context menu, remembers it for the next
+Changing a quick-style field, through the bar **or** the context menu, remembers it for the next
 element of the same kind you draw.
 
 - **Per kind.** Colours, width, style, text alignment and icon alignment are remembered per element
@@ -304,25 +308,21 @@ element of the same kind you draw.
   is not synced, not in the document, and not part of [User preferences](../007-editor/user-preferences.md):
   it is a working habit for one document's notation, like the panel placements are a habit for one screen.
 
-## Clear Styles
+## No Clear Styles
 
-The Actions section's first button. It resets the selected elements' quick-style fields to the
-tab theme's default (stroke, background and label colour, width, style, text alignment, icon
-alignment; on an arrow its stroke colour, width, style and flow; on a text element its text colour; any stock colour stored by name, too) **and** forgets the memory of every
-kind it touched, so the next shape of those kinds is the default again. A one-off style stays a
-one-off: without the second half, clearing a shape would leave its style waiting in memory for the
-next one. One undo step.
-
-## The Actions section
-
-Actions is the home for **quick actions** that prove, through telemetry or strong feedback, to be used
-a lot and to fit better here than in the context menu because the panel is faster to reach. It grows
-slowly and deliberately: an action joins only with that evidence, and only if it acts on the style of
-the selection. Clear Styles is the first action, because every restyle needs a way back.
+livedocuments has no Clear Styles (owner, 2026-11-09: none on the bar; the element menu retired it on 2026-11-04,
+[Element menu quick bar](element-menu-quick-bar.md)). Picking the theme's own choice in a row (its first colour,
+Medium, Solid) puts that style back, and the next shape of the kind looks plain again (a theme colour is forgotten,
+"Theme defaults are not memories").
 
 ## Accessibility
 
 WCAG 2.2 AA.
+
+- The bar is a `toolbar` named "Quick Style"; each button is named by its short name ("Fill"), has a
+  Tooltip with the same name, says it opens a dialog (`aria-haspopup`, `aria-expanded`) and is
+  28 px tall. Its popover is a dialog named by the row's full name ("Fill colour" reads as "Fill"),
+  focus moving into its row as it opens.
 
 - A row of glyph options (width, style, alignment) is a **radio group** named by its
   section title; each option is a radio with its own accessible name. The arrow keys move between
@@ -341,23 +341,23 @@ WCAG 2.2 AA.
   reached by right-click, Shift+F10 or the context-menu key, and Escape returns focus to the swatch.
 - **Section titles are separate from the names**: a row's accessible name does not depend on its
   visible title.
-- **Section titles always show**: they name what each row changes. Two rows of seven coloured
-  squares (Stroke, Background) look alike without them.
+- **Each popover shows its row's title** above it, naming what it changes.
 - **Scrolling is in-theme**: when the docked body scrolls, its scrollbar is the app's slim themed
   one (`scrollbar-slim`), light and dark, not the operating system's.
-- **No layout shift.** Showing, hiding or re-placing the panel moves nothing else; it floats above
-  the canvas.
-- **Reduced motion**: the panel fades in within the `micro` budget ([Motion](../004-interface-design/motion.md)),
-  and not at all under reduce motion.
+- **No layout shift.** Showing or hiding the bar moves nothing on the canvas; only the page's label
+  truncates to make room.
+- **Reduced motion**: the bar and its popovers fade in within the `micro` budget
+  ([Motion](../004-interface-design/motion.md)), and not at all under reduce motion.
 - **Dark and light** both render correctly. The light look of every existing surface is unchanged.
 
 ## Telemetry
 
-Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), each panel choice emits
-`Element·Changed` with its own token, distinct from the context menu's, so panel use can be read
-against menu use (which is the evidence the Actions section asks for): `QuickStroke`,
-`QuickBackground`, `QuickTextColour`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`, `QuickCorners`, and
-`QuickClearStyles`. Editing the palette is a setting, not a style change: `UI·Changed·QuickSwatchCustom`
+Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), each bar choice emits
+`Element·Changed` with its own token, distinct from the context menu's, so bar use can be read
+against menu use: `QuickStroke`,
+`QuickBackground`, `QuickTextColour`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, and `QuickIconAlign` (`QuickCorners` and `QuickClearStyles` are retired with their controls). Opening a button's popover, or its row in a phone's Appearance sheet, emits
+`UI·Opened·QuickStyle<Button>` (`QuickStyleStroke`, `QuickStyleFill`, ...), so the buttons people
+reach for can be read too. Editing the palette is a setting, not a style change: `UI·Changed·QuickSwatchCustom`
 when a swatch is overridden, `UI·Changed·QuickSwatchReset` when an override is cleared, both
 counted as Custom Swatches in the dashboard's Look & Feel stack.
 
@@ -368,10 +368,11 @@ counted as Custom Swatches in the dashboard's Look & Feel stack.
   outline (circle, diamond, hexagon, cloud) so the icon stays inside the silhouette, which is real
   geometry work per kind. Today the icon and label form one group that text alignment moves together
   (`shape-inline-icon-layout.tsx`); pinning waits until that geometry exists.
-- **Phones.** See above.
+- **A selection off every page with no pages on the tab.** Every tab has a page, so there is always
+  one to sit on.
 - **Styling other non-shape elements** (stickies, tables). They have their own looks and their own menus.
 - **A shape's label colour.** It stays in the context menu's Colours category (see Text colour above).
 
 ## Help
 
-[Quick Style Panel](/help/canvas/quick-style-panel/) (Canvas).
+[Quick Style Bar](/help/canvas/quick-style-panel/) (Canvas).

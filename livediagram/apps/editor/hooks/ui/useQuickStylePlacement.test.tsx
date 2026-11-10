@@ -2,7 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { announcePanelPresence } from '../../lib/panel-presence';
+import { announcePanelPresence } from '@liveworkspace/workbench/lib/panel-presence';
 import { useQuickStylePlacement } from './useQuickStylePlacement';
 
 // A ResizeObserver that behaves like the browser's: every observe() of an

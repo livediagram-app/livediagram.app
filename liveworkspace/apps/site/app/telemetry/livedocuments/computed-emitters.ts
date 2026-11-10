@@ -64,6 +64,15 @@ const CLI_VERBS = countedVerbs().map((v) => pascalToken(v.id));
 // Each tool the MCP server registers, from its verb (packages/agent-verbs mcp-tools.ts), as pascalToken(name).
 const MCP_TOOLS = MCP_TOOL_VERBS.map((v) => pascalToken(v.mcp.tool));
 
+// The Quick Style bar's buttons (apps/editor/components/canvas/quick-style-sections.tsx QUICK_BAR_SECTIONS), the
+// `UI·Opened·QuickStyle<name>` type as a button's popover, or its row in a phone's Appearance sheet, opens.
+const QUICK_BAR_BUTTONS = (() => {
+  const source = read('editor/components/canvas/quick-style-sections.tsx');
+  const start = source.indexOf('export const QUICK_BAR_SECTIONS');
+  const block = source.slice(start, source.indexOf('];', start));
+  return [...block.matchAll(/\bname: '([A-Za-z]+)'/g)].map((m) => `QuickStyle${m[1]!}`);
+})();
+
 // The Appearance settings' labels (@liveworkspace/ui appearance-cycle.ts), the
 // editor's `UI·Toggled` type on an explicit pick.
 const APPEARANCE_LABELS = tokensAfter(
@@ -376,6 +385,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     ],
     open: 'the Appearance sheet, or the row it opened',
   },
+  'apps/editor/components/canvas/QuickStyleBar.tsx UI·Opened': { values: QUICK_BAR_BUTTONS },
   'apps/editor/components/dialogs/SettingsDialog.tsx UI·Opened': {
     values: ['SettingsAppearance', 'SettingsEditor', 'SettingsAccount', 'SettingsPrivacy'],
     open: 'Settings<Category>, one per Settings category',

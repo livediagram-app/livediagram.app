@@ -79,7 +79,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // drag's bounding box for the element's size. Escape clears it.
   const [pendingDraw, setPendingDraw] = useState<PendingDraw | null>(null);
   // The highlighter's colour and width (docs/specs/008-canvas/highlighter.md "Settings"): what the
-  // next stroke lands in, set from the Quick style panel while the tile is armed. Session-local by
+  // next stroke lands in, set from the Quick Style bar while the tile is armed. Session-local by
   // design: Yellow / Medium again on a fresh load, like a real pen cup.
   const [highlighterColour, setHighlighterColourState] = useState(HIGHLIGHTER_COLOR);
   const [highlighterWidth, setHighlighterWidthState] = useState(HIGHLIGHTER_WIDTH);

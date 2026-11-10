@@ -3,10 +3,11 @@
 // A page's title bar on a phone (docs/specs/007-editor/pages-mode.md "Beside the cog", "On a phone"): a wireframe
 // page's Device, Layout and Background gather under Appearance, whose rows open each control's own sheet; no lock and
 // no page label. A desktop keeps the full bar; a Participant or Viewer sees no controls.
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { layOutPages, type Page } from '@livedesign/design';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
+import { setQuickStylePhoneRows } from '@/lib/quick-style-bar-slots';
 import { track } from '@/lib/telemetry';
 import { CanvasPages } from './CanvasPages';
 import { appearanceRows } from './PageAppearanceButton';
@@ -75,6 +76,32 @@ describe("a wireframe page's title bar on a phone", () => {
   it('shows a Participant or Viewer no controls', () => {
     render(<CanvasPages view={view(false)} zoom={1} />);
     expect(screen.queryByRole('button', { name: 'Appearance' })).toBeNull();
+  });
+});
+
+// docs/specs/008-canvas/quick-style-panel.md "On a phone, in Appearance".
+describe("a phone's Appearance for a selection", () => {
+  const logoPages = layOutPages([{ id: 'l', orientation: 'portrait', kind: 'logo' }]);
+  const logoView: PagesModeView = { ...view(true), pages: logoPages };
+  afterEach(() => setQuickStylePhoneRows('l', null));
+
+  it('shows on any page while something on it is styled, its rows under Selected Element', () => {
+    render(<CanvasPages view={logoView} zoom={1} />);
+    expect(screen.queryByRole('button', { name: 'Appearance' })).toBeNull();
+    const open = vi.fn();
+    act(() =>
+      setQuickStylePhoneRows('l', {
+        pageId: 'l',
+        rows: [{ id: 'stroke', name: 'Stroke', line: 'The outline colour', icon: null }],
+        open,
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
+    const sheet = screen.getByRole('dialog', { name: 'Appearance' });
+    expect(within(sheet).getByText('Selected Element')).toBeTruthy();
+    fireEvent.click(sheet.querySelector('[data-appearance-row="stroke"]')!);
+    expect(screen.queryByRole('dialog', { name: 'Appearance' })).toBeNull();
+    expect(open).toHaveBeenCalledWith('stroke');
   });
 });
 

@@ -4,7 +4,7 @@ A wide, semi-transparent freehand marker, picked from the palette's **Draw** cat
 
 ## History
 
-It started as a draw tile in the Draw category, then became a held **canvas tool** (a selection mode in the tool dropdown, with its own Highlighter Panel). It is a **Draw tile again**: what it makes is an element, a marker stroke, so it sits beside the other things that make strokes, and the selection modes go back to being ways of working on the canvas rather than ways of adding to it. The held behaviour, the Mode Button and the Highlighter Panel went with the mode; its Colour and Strength moved into the [Quick style panel](quick-style-panel.md), the way a marker's do.
+It started as a draw tile in the Draw category, then became a held **canvas tool** (a selection mode in the tool dropdown, with its own Highlighter Panel). It is a **Draw tile again**: what it makes is an element, a marker stroke, so it sits beside the other things that make strokes, and the selection modes go back to being ways of working on the canvas rather than ways of adding to it. The held behaviour, the Mode Button and the Highlighter Panel went with the mode; its Colour and Strength moved into the [Quick Style bar](quick-style-panel.md), the way a marker's do.
 
 ## Model
 
@@ -23,7 +23,7 @@ Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` use
 - **Stroke width**: a wide round stroke (`penWidth ?? 14` px, `vector-effect: non-scaling-stroke`), ignoring the `strokeWidth` border presets (they only reach hairline widths).
 - **Round caps + joins**, never dashed, never filled.
 - **Translucency**: `stroke-opacity: 0.45` plus `mix-blend-mode: multiply`, so text and shapes underneath stay legible and overlapping strokes darken like a real marker. This is part of the pen recipe, independent of the user-facing `opacity` field, which still composes on top.
-- **Colour**: created in the highlighter's current colour (default **marker yellow**, `#fde047`) regardless of theme; recolourable afterwards from the Quick style panel or the context menu's Colours category like any element. The theme's `elementStroke` is deliberately not used: highlighters are yellow until the user says otherwise.
+- **Colour**: created in the highlighter's current colour (default **marker yellow**, `#fde047`) regardless of theme; recolourable afterwards from the Quick Style bar or the context menu's Colours category like any element. The theme's `elementStroke` is deliberately not used: highlighters are yellow until the user says otherwise.
 
 ## The tile
 
@@ -36,21 +36,21 @@ Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` use
 - `PendingDraw` carries `{ type: 'freehand'; variant: 'highlighter' }`. Commit path is the same sampling + simplification as the pencil, then always `createFreehand(points, false)` + `pen: 'highlighter'` + the current colour (and `penWidth` when the width is not Medium): no recognition branch, no auto-close. Recognition is the Shape Pen's job (Two pens instead of a pen and a mode); the highlighter is a third variant of the same gesture.
 - Cursor: a highlighter-nib glyph, distinct from the pencil nib. The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with the marker recipe in the current colour and width, so what you see while dragging is what commits.
 
-## Settings: the Quick style panel
+## Settings: the Quick Style bar
 
-The highlighter's settings live in the [Quick style panel](quick-style-panel.md), as a marker's do ([Drawing tools](../023-draw-mode/drawing-tools.md)). Two rows:
+The highlighter's settings live in the [Quick Style bar](quick-style-panel.md), as a marker's do ([Drawing tools](../023-draw-mode/drawing-tools.md)): two buttons, **Highlighter** (its colour, the button a chip of the colour in force) and **Thickness** (its width, the button a line of the width in force), each opening its row in a popover. Two rows:
 
 - **Highlighter colour**: five marker swatches, **Yellow** (`#fde047`, the default), **Green** (`#86efac`), **Pink** (`#f9a8d4`), **Blue** (`#93c5fd`), **Orange** (`#fdba74`). Fixed hexes, not theme colours: a highlight that changed colour with the theme would stop reading as one. The row ends with **More colours**, opening the [colour picker](../004-interface-design/colour-picker.md) with the soft standard colours, Custom colours and **Add a custom colour** (four coloured dots).
 - **Highlighter width**: **Thin** (8 px), **Medium** (14 px, the default), **Bold** (22 px), each drawn as a preview of its band.
 
-What the rows style, in the order the panel looks:
+What the rows style, in the order the bar looks:
 
-1. **Selected highlights.** With one or more unlocked highlight strokes selected, the rows restyle them (`strokeColor`, `penWidth`; Medium clears `penWidth`), one undo step per choice. A choice is marked only when every selected highlight shares it. In a mixed selection the rows sit above the rows for everything else and touch only the highlights; the caption counts what is styled. A stroke whose colour or width matches no option (recoloured from the context menu, imported) marks none.
-2. **The armed tile, nothing selected.** Picking the tile clears the selection, so the panel shows the rows for the **next stroke**, captioned **Highlighter**: the highlighter's current colour and width, which every stroke then lands in. This is the only way to set them before drawing.
+1. **Selected highlights.** With one or more unlocked highlight strokes selected, the rows restyle them (`strokeColor`, `penWidth`; Medium clears `penWidth`), one undo step per choice. A choice is marked only when every selected highlight shares it. In a mixed selection its buttons sit before the buttons for everything else and touch only the highlights; nothing else is counted. A stroke whose colour or width matches no option (recoloured from the context menu, imported) marks none.
+2. **The armed tile, nothing selected.** Picking the tile clears the selection, so the bar shows the buttons for the **next stroke**, on the page you are on, its popovers naming it (**In hand: Highlighter**): the highlighter's current colour and width, which every stroke then lands in. This is the only way to set them before drawing.
 
 The current colour and width are **session-local editor state**, not a persisted preference: the highlighter resets to Yellow / Medium on a fresh load, like a real pen cup. Restyling a selected highlight does not change them; only choosing with the tile armed does. Nothing here is stored except on the strokes themselves.
 
-**Width is a panel-only setting.** The context menu offers a highlight's colour (Colours) but not its width; the panel holds both, as it holds a marker's width. This is a deliberate exception to the panel's "the menu stays complete" rule, scoped to the highlighter's two rows.
+**Width is a bar-only setting.** The context menu offers a highlight's colour (Colours) but not its width; the bar holds both, as it holds a marker's width. This is a deliberate exception to the bar's "the menu stays complete" rule, scoped to the highlighter's two rows.
 
 ## Not a selection mode
 

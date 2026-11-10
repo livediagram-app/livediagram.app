@@ -57,7 +57,7 @@ const AREA_LABEL: Record<ErrorArea, string> = {
   TabDialogs: 'a tab dialog',
   Collaborators: 'the collaborators panel',
   Search: 'search',
-  QuickStyle: 'the quick style panel',
+  QuickStyle: 'the Quick Style bar',
   Modals: 'a dialog',
   Popovers: 'a popover',
   ContextMenu: 'the menu',

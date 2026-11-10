@@ -77,7 +77,7 @@ export type PageEdits = BackgroundCopyEdits & {
   // -1 left, 1 right (past one neighbouring page or document); a no-op at the row's end.
   movePage: (pageId: string, by: -1 | 1) => void;
   // A page's unit (the page, or its whole document) to a place among the units (0 first), its
-  // content with it: a page's label dragged.
+  // content with it: a Contents row dragged.
   movePageTo: (pageId: string, unitIndex: number) => void;
   // Absent at the page limit. Right after the page someone is on (pages-mode.md "Adding a page"), else last.
   addPage?: (kind: PageKind) => void;

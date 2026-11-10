@@ -39,9 +39,6 @@ livedesign/apps/live/components/canvas/ElementIndicatorStyleContext.tsx	livediag
 livedesign/apps/live/components/canvas/InsetContent.tsx	livediagram/apps/editor/components/canvas/InsetContent.tsx	livedocuments/apps/editor/components/canvas/InsetContent.tsx	livehuddle/apps/editor/components/canvas/InsetContent.tsx	liveplanner/apps/editor/components/canvas/InsetContent.tsx
 livedesign/apps/live/components/canvas/LaserOverlay.tsx	livediagram/apps/editor/components/canvas/LaserOverlay.tsx	livedocuments/apps/editor/components/canvas/LaserOverlay.tsx
 livedesign/apps/live/components/canvas/PaletteDragGhost.tsx	livedocuments/apps/editor/components/canvas/PaletteDragGhost.tsx
-livedesign/apps/live/components/canvas/QuickHighlighterRows.tsx	livediagram/apps/editor/components/canvas/QuickHighlighterRows.tsx
-livedesign/apps/live/components/canvas/QuickStyleHost.tsx	livediagram/apps/editor/components/canvas/QuickStyleHost.tsx	livedocuments/apps/editor/components/canvas/QuickStyleHost.tsx
-livedesign/apps/live/components/canvas/SwatchOverridePopover.tsx	livediagram/apps/editor/components/canvas/SwatchOverridePopover.tsx	livedocuments/apps/editor/components/canvas/SwatchOverridePopover.tsx
 livedesign/apps/live/components/canvas/boxed-shared.ts	livedocuments/apps/editor/components/canvas/boxed-shared.ts
 livedesign/apps/live/components/canvas/canvas-pattern-context.ts	liveplanner/apps/editor/components/canvas/canvas-pattern-context.ts
 livedesign/apps/live/components/canvas/useCanvasPointer.tsx	livediagram/apps/editor/components/canvas/useCanvasPointer.tsx

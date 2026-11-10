@@ -136,13 +136,6 @@ export function applyStyleMemory<T extends Element>(
   return dressed as T;
 }
 
-export function forgetStyleKinds(memory: StyleMemory, kinds: readonly StyleKindKey[]): StyleMemory {
-  if (!kinds.some((k) => k in memory)) return memory;
-  const next = { ...memory };
-  for (const k of kinds) delete next[k];
-  return next;
-}
-
 // Stored memory is untrusted: keep known kinds and fields of the right type.
 export function parseStyleMemory(raw: string | null): StyleMemory {
   const data = raw === null ? null : safeJson(raw);

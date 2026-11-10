@@ -65,34 +65,19 @@ describe('PageLabelCard', () => {
     ).toBeTruthy();
   });
 
-  it('calls its press and passes the drag handlers on, a double press staying its own', () => {
+  it('calls its press once, a double press staying its own, and shows no grab cursor', () => {
     const onClick = vi.fn();
-    const onPointerDown = vi.fn();
     const onDoubleClickAbove = vi.fn();
     render(
       <div onDoubleClick={onDoubleClickAbove}>
-        <PageLabelCard
-          label="Title"
-          name="Title"
-          rest=""
-          grab
-          onClick={onClick}
-          onPointerDown={onPointerDown}
-        />
+        <PageLabelCard label="Title" name="Title" rest="" onClick={onClick} />
       </div>,
     );
     const button = screen.getByRole('button');
-    fireEvent.pointerDown(button);
     fireEvent.click(button);
     fireEvent.doubleClick(button);
-    expect(onPointerDown).toHaveBeenCalledOnce();
     expect(onClick).toHaveBeenCalledOnce();
     expect(onDoubleClickAbove).not.toHaveBeenCalled();
-    expect(button.className).toMatch(/cursor-grab/);
-  });
-
-  it('shows no grab cursor when it cannot drag', () => {
-    render(<PageLabelCard label="Title" name="Title" rest="" onClick={() => {}} />);
-    expect(screen.getByRole('button').className).not.toMatch(/cursor-grab/);
+    expect(button.className).not.toMatch(/cursor-grab/);
   });
 });

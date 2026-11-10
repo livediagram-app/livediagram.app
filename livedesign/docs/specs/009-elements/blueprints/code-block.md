@@ -99,7 +99,7 @@ A failed load renders plain text and retries on the next mount (D105).
    for [GE7].
 5. Style band: Colours and Border are absent (`supportsColours` false); **Presets** holds the
    eight schemes with hover preview and click commit (`'CodeTheme'`). For the same reason the
-   quick style panel has no section for a code block (`supportsQuickSection`), so a code block
+   Quick Style bar has no section for a code block (`supportsQuickSection`), so a code block
    alone raises no panel.
 
 ## Interfaces and contracts

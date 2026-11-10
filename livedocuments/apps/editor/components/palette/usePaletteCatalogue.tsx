@@ -1,4 +1,4 @@
-import { usePaletteKind } from '@/lib/palette-kind';
+import type { PaletteKind } from '@/lib/palette-kind';
 import type { EmbedProvider } from '@livedocuments/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -56,7 +56,8 @@ export function usePaletteCatalogue({
   onBeginPolygon,
   pendingDraw,
   onTileUsed,
-}: Deps) {
+  paletteKind,
+}: Deps & { paletteKind: PaletteKind }) {
   // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
   // cursor and on left/right-click to resize the light, none of which map to
   // touch — so drop it from the tool picker on mobile viewports. Reactive
@@ -163,9 +164,8 @@ export function usePaletteCatalogue({
 
   // Ordered by band (docs/specs/010-palette/palette-top-level-categories.md): the category bar draws a divider
   // where the band changes, so the array IS the bar's order.
-  // In Pages mode, the palette's kind (lib/palette-kind.ts): the page someone is on's. Each kind is its own layout
+  // In Pages mode, the palette's kind (lib/palette-kind.ts): the tab's. Each kind is its own layout
   // (palette-layouts.ts).
-  const paletteKind = usePaletteKind();
   const categories = paletteCategoriesFor({ pagesKind: paletteKind });
   const tabs = paletteCategoryTabs({
     categories,

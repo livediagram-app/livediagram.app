@@ -354,7 +354,7 @@ export function useEditorElements({
   });
 
   // The three markers' colours and widths (docs/specs/023-draw-mode/drawing-tools.md "Markers"),
-  // device-local, for a logo page's Draw and the quick style panel's pen rows.
+  // device-local, for a logo page's Draw and the Quick Style bar's marker rows.
   const markerPens = useMarkerPens();
 
   // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
