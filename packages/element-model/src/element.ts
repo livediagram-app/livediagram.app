@@ -17,6 +17,7 @@ import type {
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { BorderRadius, BorderStroke, BorderStyle } from '@liveworkspace/model-core/border-style';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
+import type { AttachPoint } from './attachment';
 import type { BoundaryStyle } from './boundary';
 import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
@@ -24,6 +25,7 @@ import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { KeyRow } from './diagram-key';
 import type { Finish } from './finish';
 import type { MindLook } from './person-node';
+import type { StackAlign, StackDirection } from './stack';
 import type { HeroCaption, StatItem } from './web-components';
 
 export type { ElementId, TextSize };
@@ -121,6 +123,16 @@ export type ShapeElement = BoxBase & {
   stepSequence?: boolean;
   /** A mind node's parent (livediagram, liveplanner). */
   mindParentId?: ElementId;
+  // A badge, step or pointer note's host point (attachment.ts), and a pointer note's tip.
+  attachedTo?: ElementId;
+  attachAt?: AttachPoint;
+  pointerTip?: { x: number; y: number };
+  // A stack's layout (stack.ts).
+  stackDirection?: StackDirection;
+  stackAlign?: StackAlign;
+  stackPadding?: number;
+  stackGap?: number;
+  stackColumns?: number;
 };
 
 export type TextElement = BoxBase & { type: 'text' };

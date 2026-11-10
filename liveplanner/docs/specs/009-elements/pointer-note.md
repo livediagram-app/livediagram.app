@@ -41,6 +41,8 @@ and letting go anywhere else leaves it free.
 - **Deleted, copied, duplicated** with its host, as an attached badge is; copying or deleting the note on its own does
   just that, and a pasted lone note is detached.
 - A host that no longer exists (a peer deleted it) leaves the note where it is, its tip free.
+- A badge attached to a note follows the note where it lands: the notes settle first, so a note carried by its
+  host never leaves its badge on the note's old point.
 
 The settling is the badge's: one pure step at the editor's commit point keeps the stored geometry true, so an export
 or an API reader that knows nothing of attachment draws the note and its leader in the right place.

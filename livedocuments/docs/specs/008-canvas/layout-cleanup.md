@@ -193,6 +193,8 @@ drawing apart:
   inner layout; the arrows into it, or into the shapes it holds, are its edges, and an arrow
   inside it moves with it as drawn. Only the outermost such box is a unit, and one holding a
   locked element is not one.
+- **A box whose arrows all stay inside it** (a panel wired only within itself) is no node: it and what it holds
+  stay put and are in the way of the rest like anything else, rather than being carried by a node they overlap.
 - **A rider** goes with a free node: a smaller unwired box overlapping it (an icon badge, a "Usually
   1 day" chip, a caption laid over it), moved exactly as the node moved.
 - **A dashed or dotted arrow** is a secondary link by convention (a dotted-line report, an async
