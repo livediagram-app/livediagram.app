@@ -18,6 +18,8 @@ import { FOCUS_RING_INSET } from '../ui/classes';
 import { useExplorer } from './context';
 import { Sidebar } from './Sidebar';
 import { viewTitle } from './view-title';
+import { useHostExtras } from './host';
+import { useThisBrowserFolders } from './ThisBrowser';
 
 export const SECTIONS_COPY = {
   // The drawer's name, and the word the bar's name opens with.
@@ -41,8 +43,10 @@ export function SectionsBar({
   drawerId: string;
   onOpen: () => void;
 }) {
-  const { view, folders, teamName } = useExplorer();
-  const current = viewTitle(view, folders, teamName);
+  const { view, folders, teamName, app } = useExplorer();
+  const { thisBrowser } = useHostExtras();
+  const localFolders = useThisBrowserFolders(thisBrowser && view.kind === 'offline' ? app : null);
+  const current = viewTitle(view, folders, teamName, localFolders);
   return (
     <div className="border-b border-slate-200/70 bg-white/85 backdrop-blur sm:hidden dark:border-slate-800/70 dark:bg-slate-950/85">
       <button

@@ -1,8 +1,9 @@
 'use client';
 
 // The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Shared With Me), Spaces (My Work
-// and its folders, each team and its folders), and More (the Library: Recent, Timeline, Favourites, the host's
-// Gallery and Shape Libraries, Archived and the Trash; then This Browser and the host's own rows). Rows carry toned
+// and its folders, each team and its folders, This Browser and its folders while it holds anything), and More (the
+// Library: Recent, Timeline, Favourites, the host's Gallery and Shape Libraries, Archived and the Trash; then the
+// host's own rows). Rows carry toned
 // tiles and the current row is a raised pill, in the host app's brand colour. The tree reads the folder store, so it
 // costs no request of its own. The current view's rows are always open: its space and folders, or the Library.
 //
@@ -29,6 +30,7 @@ import {
   useFolderDrag,
   useTrashTarget,
   type DropPlace,
+  type LocalDropPlace,
 } from '../drag/drag';
 import { CountBadge } from '@liveworkspace/ui';
 import { DROP_TARGET_RING } from '../ui/classes';
@@ -53,7 +55,7 @@ import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { explorerPath, sameView, SIDEBAR_LABELS, withLens, type ExplorerView } from '../views';
 import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
-import { useThisBrowserItems } from './ThisBrowser';
+import { ThisBrowserSpaceRow } from './this-browser-space/ThisBrowserSpaceRow';
 import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
 import { LIBRARY, MY_WORK, rowsAbove, teamKey, type Expansion } from './sidebar/expansion';
 import { useDragHoverOpen } from './sidebar/useDragHoverOpen';
@@ -137,6 +139,10 @@ function useExpanded(view: ExplorerView) {
   return { expanded, toggle: expansion.toggle, expand: expansion.expand };
 }
 
+/** A sidebar row's rename field, in place of its name: an account folder's and a local one's. */
+export const SIDEBAR_RENAME_FIELD =
+  'min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0 text-sm dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100';
+
 /** Which sidebar row is being renamed in place (only one, and only here: the pane's rows rename their own). */
 type SidebarRename = { renamingId: string | null; setRenamingId: (id: string | null) => void };
 
@@ -180,7 +186,7 @@ export function SidebarRow({
   onToggleExpand?: () => void;
   // The place a dragged item dropped here lands in (a folder, My Work, a team); a closed row opens under a resting
   // drag.
-  dropTo?: DropPlace | null;
+  dropTo?: DropPlace | LocalDropPlace | null;
   // The folder this row is, which drags to the Trash.
   dragFolder?: Folder | null;
   // What the row says, when it says more than its name (the Trash mid-drag); the name stays its accessible name.
@@ -376,7 +382,7 @@ function FolderSubtree({
               if (next && next !== folder.name) void folders.rename(folder.id, next);
             }}
             onCancel={() => rename.setRenamingId(null)}
-            className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0 text-sm dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
+            className={SIDEBAR_RENAME_FIELD}
           />
         ) : null
       }
@@ -588,6 +594,8 @@ export function Sidebar() {
             </SidebarRow>
           );
         })}
+        {/* While this browser holds anything (one-explorer.md "This Browser, a Space"). */}
+        <ThisBrowserSpaceRow expanded={expanded} toggle={toggle} rename={rename} />
         {/* Shown while an invitation waits, or while its view is open, so the highlight never vanishes. */}
         {signedIn && (invites > 0 || view.kind === 'invites') ? (
           <SidebarRow
@@ -683,8 +691,7 @@ export function Sidebar() {
           />
           <TrashRow depth={1} />
         </SidebarRow>
-        <ThisBrowserRow />
-        {/* The host's own rows (This Browser on liveworkspace.app): each leaves for its page. */}
+        {/* The host's own rows (This Browser's hand-off on liveworkspace.app): each leaves for its page. */}
         {sidebarLinks.map((link) => (
           <SidebarRow
             key={link.id}
@@ -698,25 +705,5 @@ export function Sidebar() {
         ))}
       </SidebarGroup>
     </nav>
-  );
-}
-
-/** This Browser, where the host can read the app's items kept only here: shown while there is one, or while its view
- *  is open, with their count. */
-function ThisBrowserRow() {
-  const { view, navigate } = useExplorer();
-  const { host, live } = useThisBrowserItems();
-  if (!host || (live.length === 0 && view.kind !== 'offline')) return null;
-  return (
-    <SidebarRow
-      icon={<BrowserIcon />}
-      tone="teal"
-      label={SIDEBAR_LABELS.thisBrowser}
-      selected={view.kind === 'offline'}
-      onActivate={() => navigate({ kind: 'offline' })}
-      depth={0}
-      badge={live.length || undefined}
-      badgeLabel={`${live.length} in this browser`}
-    />
   );
 }

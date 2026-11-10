@@ -53,8 +53,8 @@ export function sectionFromKey(key: string | null | undefined): PanelSection | n
   return (SIMPLE as readonly string[]).includes(key) ? ({ kind: key } as PanelSection) : null;
 }
 
-/** The rail's entries: the sidebar's three groups, each team under Spaces, This Browser while this browser keeps
- *  any of the app's items, and the Library while the host keeps one. */
+/** The rail's entries: the sidebar's three groups, each team under Spaces and This Browser after them while this
+ *  browser keeps any of the app's items or a local folder, and the Library while the host keeps one. */
 export function panelSectionGroups(
   teams: readonly TeamRef[],
   { library = false, thisBrowser = false }: { library?: boolean; thisBrowser?: boolean } = {},
@@ -66,18 +66,22 @@ export function panelSectionGroups(
     },
     {
       id: 'spaces',
-      sections: [{ kind: 'mine' }, ...teams.map((t) => ({ kind: 'team' as const, id: t.id }))],
+      // This Browser last among the spaces, as the sidebar's (one-explorer.md "This Browser, a Space").
+      sections: [
+        { kind: 'mine' },
+        ...teams.map((t) => ({ kind: 'team' as const, id: t.id })),
+        ...(thisBrowser ? [{ kind: 'offline' as const }] : []),
+      ],
     },
     {
       id: 'more',
-      // The sidebar's Library, in its order (Recent is Home's Jump Back In here), then This Browser.
+      // The sidebar's Library, in its order (Recent is Home's Jump Back In here).
       sections: [
         { kind: 'timeline' },
         { kind: 'favourites' },
         ...(library ? [{ kind: 'library' as const }] : []),
         { kind: 'archived' },
         { kind: 'trash' },
-        ...(thisBrowser ? [{ kind: 'offline' as const }] : []),
       ],
     },
   ];

@@ -510,7 +510,7 @@ export const articles: Article[] = [
     title: 'Offline Mode',
     description: 'Plans kept only in this browser, and moving them to your account.',
     keywords:
-      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload project',
+      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload local folders new folder move to folder project',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',

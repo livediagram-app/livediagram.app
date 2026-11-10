@@ -14,6 +14,8 @@ Follow the references below only as needed; never upfront.
 - ./webhooks.md - when working on webhooks: the tables, the outbox statement, the dispatcher, the address check, the messages
 - ./archive.md - when working on Archived: the archive, the archive scope, the move out, the refusals and the
   Explorer's Archived view
+- ./this-browser.md - when working on This Browser as a Space: its folders, its store, Sync keeping its place, its
+  sidebar row and Home tile
 - ./trash.md - when working on the Trash, purges, the daily sweep or closing an account
 - ./default-folders.md - when working on where a new item lands by default
 - ./guest-merge.md - when a guest becomes an account, or on the migration's handoff

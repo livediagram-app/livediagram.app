@@ -66,18 +66,21 @@ the index's lists holds them. They are the Explorer's **This Browser** view, in 
 editor's panel alike: every one, newest first, read from this browser alone, each opening in the editor. For a
 signed-in person each row has **Sync Space**, which moves it to the account and so into the Explorer; in the panel
 each row has **Delete**, which removes it for good after a confirmation, since nothing else holds it. With none, the
-view says so.
+view says so. Its local folders show first, as folder cards, then the canvases.
 
 - **The Explorer on livehuddle's address** reads them too: the editor's offline store keeps a small list of them
   (id, title and dates, never content) in the shared `localStorage` key the Explorer reads
-  (`apps/editor/lib/offline/this-browser.ts`, `@liveworkspace/explorer/this-browser`). Its sidebar has a **This
-  Browser** row with their count, shown while there are some, opening the Explorer's own This Browser view
-  (`/explorer/offline`), each canvas opening in the editor; Home's Jump Back In shows the ones opened, each a card
+  (`apps/editor/lib/offline/this-browser.ts`, `@liveworkspace/explorer/this-browser`). **This Browser** is a
+  Space in its sidebar ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#this-browser-a-space) "This Browser, a Space"): in the Spaces group after My Work and the
+  teams, with their count, shown while it holds a canvas or a local folder, opening the Explorer's own This Browser
+  view (`/explorer/offline`, a local folder at `/explorer/offline?folder=<id>`), each canvas opening in the editor.
+  It has local folders of its own (New Folder, and on each folder Rename, New Subfolder, Move Folder and Delete Folder), and Sync of a canvas in one
+  offers the My Work folder of the same name; Home's Jump Back In shows the ones opened, each a card
   like the rest with the This Browser badge, its menu (Open, Sync Space) and its drag (the Trash or a folder,
   [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser in Jump Back In"). On
-  liveworkspace.app, which cannot read this browser's storage for livehuddle, the row links to `/explorer/offline` here.
-- **The editor's Explorer panel** has This Browser as a view of its own: a rail entry under More with the count,
-  shown only while there are some, opening its pane in place (`apps/editor/hooks/persistence/useThisBrowserHost.ts`,
+  liveworkspace.app, which cannot read this browser's storage for livehuddle, This Browser is never a Space: a quiet row after the Library links to `/explorer/offline` here.
+- **The editor's Explorer panel** has This Browser as a view of its own: a rail entry, last among the spaces, with
+  the count, shown only while it holds something, opening its pane in place (`apps/editor/hooks/persistence/useThisBrowserHost.ts`,
   the panel's `thisBrowser`). Each canvas opens in the editor; signed in, each row has **Sync Space**; each row has
   **Delete**, which asks first.
 - **`/offline`**, the old This Browser page, only redirects to `/explorer/offline`, its query kept

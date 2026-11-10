@@ -37,8 +37,8 @@ export type ExplorerView =
   // The person's shape libraries, from the host's store (only where the host has one).
   | { kind: 'shape-libraries' }
   // What the host app keeps only in this browser (only where the host can read it: the app's own address), narrowed
-  // by the lens in this browser, since the index never sees them.
-  | ({ kind: 'offline' } & Lensed);
+  // by the lens in this browser, since the index never sees them. At its root, or in one of its own folders.
+  | ({ kind: 'offline'; folder?: string } & Lensed);
 
 /** How a view takes the lens: `scoped` (its breadcrumb is the place), `aggregate` (it lists every place), or
  *  null for a view that lists no items of its own (typing there opens Search results). */
@@ -103,6 +103,10 @@ export function explorerPath(view: ExplorerView, base = DEFAULT_BASE_PATH): stri
     // livediagram's address for its gallery, kept so its links still land.
     case 'gallery':
       return `${b}/images`;
+    case 'offline':
+      return view.folder
+        ? `${b}/offline?folder=${enc(view.folder)}${lens('&')}`
+        : `${b}/offline${lens('?')}`;
     default:
       return `${b}/${view.kind}${lens('?')}`;
   }
@@ -135,8 +139,10 @@ export function viewFromLocation(
     case 'invites':
     case 'shape-libraries':
       return { kind: section };
-    case 'offline':
-      return lensed({ kind: 'offline' });
+    case 'offline': {
+      const folder = params.get('folder');
+      return lensed(folder ? { kind: 'offline', folder } : { kind: 'offline' });
+    }
     case 'images':
       return { kind: 'gallery' };
     case 'search':

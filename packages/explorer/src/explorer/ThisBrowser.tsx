@@ -20,7 +20,7 @@ import {
 } from 'react';
 import type { App } from '@liveworkspace/index-client';
 import {
-  readThisBrowser,
+  parseThisBrowserStore,
   readThisBrowserConversion,
   setThisBrowserArchived,
   subscribeThisBrowser,
@@ -30,24 +30,36 @@ import {
   THIS_BROWSER_HOVER,
   THIS_BROWSER_TONE,
   type ThisBrowserConversion,
+  type ThisBrowserFolder,
   type ThisBrowserItem,
 } from '../this-browser';
 import { DAY_MONTH, MEDIUM_DATE_TIME } from '@liveworkspace/ui/date-format';
 import { relativeSince, useNow } from '../time';
 import { LIST_CARD, MUTED } from '../ui/classes';
-import { ArchiveIcon, OpenIcon, SyncIcon, TrashIcon } from '../ui/icons';
+import { ArchiveIcon, FolderOutlineIcon, OpenIcon, SyncIcon, TrashIcon } from '../ui/icons';
 import { quoted } from '../quoted';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader, PortalMenu } from '../ui/Menu';
 import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
 import { PaneIconButton } from '../panel/pane-parts';
 import { LocalPreview } from './LocalPreview';
-import { PaneHeader } from './PaneHeader';
+import { PaneHeader, type Crumb } from './PaneHeader';
 import { parseLens } from '../lens';
-import { viewLens, withLens } from '../views';
+import { SIDEBAR_LABELS, viewLens, withLens } from '../views';
+import { Button } from '@liveworkspace/ui';
+import { useThisBrowserDrag } from '../drag/drag';
+import { localChildren, localPath } from '../this-browser';
+import { CARD_GRID } from '../ui/classes';
+import { LocalFolderCard } from './this-browser-space/LocalFolderCard';
+import { LOCAL_FOLDER_COPY, useCreateLocalFolder, useSyncLocal } from './this-browser-space/space';
 import { FilteredEmpty, LensAnnouncer, LensBar } from './Lens';
 import { useLensContext } from './SearchField';
-import { narrowThisBrowser, thisBrowserSubjects } from './this-browser-lens';
+import {
+  itemsByFolder,
+  narrowLocalFolders,
+  narrowThisBrowser,
+  thisBrowserSubjects,
+} from './this-browser-lens';
 import { daysLeftLabel } from './TrashPane';
 
 /** What a host hands the Explorer for This Browser. */
@@ -111,20 +123,34 @@ export function openThisBrowserItem(host: ThisBrowserHost, item: ThisBrowserItem
 // The list as the app last wrote it, per app, parsed again only when its stored text changes: one stable array per
 // change, so a reader re-renders only when the list does.
 const NO_ITEMS: readonly ThisBrowserItem[] = [];
-const reads = new Map<App, { raw: string | null; items: readonly ThisBrowserItem[] }>();
-function snapshot(app: App): readonly ThisBrowserItem[] {
+const NO_FOLDERS: readonly ThisBrowserFolder[] = [];
+type Snapshot = {
+  raw: string | null;
+  items: readonly ThisBrowserItem[];
+  folders: readonly ThisBrowserFolder[];
+};
+const EMPTY_SNAPSHOT: Snapshot = { raw: null, items: NO_ITEMS, folders: NO_FOLDERS };
+const reads = new Map<App, Snapshot>();
+function snapshotOf(app: App): Snapshot {
   let raw: string | null;
   try {
     raw = window.localStorage.getItem(thisBrowserKey(app));
   } catch {
-    return NO_ITEMS;
+    return EMPTY_SNAPSHOT;
   }
   const kept = reads.get(app);
-  if (kept?.raw === raw) return kept.items;
-  const items = raw ? readThisBrowser(app) : NO_ITEMS;
-  reads.set(app, { raw, items });
-  return items;
+  if (kept?.raw === raw) return kept;
+  const parsed = raw ? parseThisBrowserStore(raw) : null;
+  const next: Snapshot = {
+    raw,
+    items: parsed?.items.length ? parsed.items : NO_ITEMS,
+    folders: parsed?.folders.length ? parsed.folders : NO_FOLDERS,
+  };
+  reads.set(app, next);
+  return next;
 }
+const snapshot = (app: App) => snapshotOf(app).items;
+const folderSnapshot = (app: App) => snapshotOf(app).folders;
 
 /** The app's This Browser list on its own origin (every item, live and trashed, newest change first), heard as it
  *  changes in this tab or another. Empty for no app, and while prerendered. */
@@ -137,6 +163,20 @@ export function useThisBrowserList(app: App | null): readonly ThisBrowserItem[] 
     subscribe,
     () => (app ? snapshot(app) : NO_ITEMS),
     () => NO_ITEMS,
+  );
+}
+
+/** This Browser's folders on the app's own origin, heard as they change: one parse per change of the stored list,
+ *  shared with useThisBrowserList. Empty for no app, and while prerendered. */
+export function useThisBrowserFolders(app: App | null): readonly ThisBrowserFolder[] {
+  const subscribe = useCallback(
+    (onChange: () => void) => (app ? subscribeThisBrowser(app, onChange) : () => {}),
+    [app],
+  );
+  return useSyncExternalStore(
+    subscribe,
+    () => (app ? folderSnapshot(app) : NO_FOLDERS),
+    () => NO_FOLDERS,
   );
 }
 
@@ -231,20 +271,29 @@ function LocalRow({
   sync?: boolean;
 }) {
   const { thisBrowser } = useHostExtras();
-  const { app, kind, reloadLists, openDialog } = useExplorer();
+  const { app, kind, openDialog } = useExplorer();
   const archive = useArchiveLocal();
+  const syncLocal = useSyncLocal();
+  const drag = useThisBrowserDrag(item);
   const name = item.title || 'Untitled';
-  const syncHref = sync ? thisBrowser?.syncHref?.(item) : undefined;
+  // A row in a local folder syncs through the dialog that keeps its place; one at the root as it always did.
+  const syncHref = sync && !item.folderId ? thisBrowser?.syncHref?.(item) : undefined;
   return (
-    <li data-this-browser-row={item.id} className="flex items-center">
+    // On a phone the actions take a line of their own under the title: beside it they left the title no room.
+    <li
+      data-this-browser-row={item.id}
+      className="flex flex-wrap items-center justify-end pb-2 sm:flex-nowrap sm:pb-0"
+      {...(sync ? drag : {})}
+    >
       <a
         href={thisBrowser?.itemHref(item)}
-        className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:hover:bg-slate-800/60"
+        className="flex min-w-0 flex-1 basis-full items-center sm:basis-auto gap-3 px-4 py-3 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:hover:bg-slate-800/60"
       >
         <LocalPreview app={app} iconSize={14} className="h-8 w-8 shrink-0 rounded-lg" />
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
+          {/* On a phone a long title takes its line and the pill goes under it; wider, the title truncates beside it. */}
+          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 sm:flex-nowrap">
+            <span className="max-w-full truncate text-sm font-medium text-slate-800 dark:text-slate-100">
               {name}
             </span>
             <ThisBrowserPill inLink />
@@ -256,15 +305,25 @@ function LocalRow({
         <a href={syncHref} aria-label={`Sync ${kind.one}: ${name}`} className={SYNC_LINK}>
           Sync {kind.one}
         </a>
-      ) : sync && thisBrowser?.sync ? (
+      ) : sync && syncLocal ? (
         <button
           type="button"
           aria-label={`Sync ${kind.one}: ${name}`}
-          onClick={() => thenReload(thisBrowser.sync?.(item), reloadLists)}
+          onClick={() => syncLocal(item)}
           className={`${SYNC_LINK} cursor-pointer`}
         >
           Sync {kind.one}
         </button>
+      ) : null}
+      {sync ? (
+        <span className="mr-1 shrink-0">
+          <PaneIconButton
+            label={`Move to Folder: ${name}`}
+            onClick={() => openDialog({ kind: 'move-local-item', item })}
+          >
+            <FolderOutlineIcon />
+          </PaneIconButton>
+        </span>
       ) : null}
       {sync ? (
         <span className="mr-1 shrink-0">
@@ -289,34 +348,65 @@ function LocalRow({
   );
 }
 
-/** `/explorer/offline`: every live item kept only in this browser, newest change first, narrowed by the lens. */
+/** `/explorer/offline`: This Browser's Space (one-explorer.md "This Browser, a Space"), at its root or one of its
+ *  folders (`?folder=`): the back bar to the level above, New Folder, the folders here as cards by name, then the live
+ *  items here as rows, newest change first, both narrowed by the lens. */
 export function ThisBrowserPane() {
-  const { words, view, app, navigate, lensSubjects } = useExplorer();
+  const { words, view, app, navigate, lensSubjects, setRenamingId } = useExplorer();
   const { host, live } = useThisBrowserItems();
+  const folders = useThisBrowserFolders(host ? app : null);
   useHandOver(host);
+  const create = useCreateLocalFolder();
+  const asked = view.kind === 'offline' ? (view.folder ?? null) : null;
+  // An unknown folder (deleted, or another browser's link) shows the root.
+  const path = useMemo(() => localPath(folders, asked), [folders, asked]);
+  const open = path.length > 0 ? path[path.length - 1]! : null;
+  const here = open?.id ?? null;
   // The lens the address carries, matched here: the index never sees these items.
   const lensContext = useLensContext();
   const q = viewLens(view);
   const parsed = useMemo(() => parseLens(q, lensContext), [q, lensContext]);
+  const atLevel = useMemo(() => live.filter((i) => (i.folderId ?? null) === here), [live, here]);
   const items = useMemo(
-    () => narrowThisBrowser(live, parsed.lens, app, Date.now()),
-    [live, parsed, app],
+    () => narrowThisBrowser(atLevel, parsed.lens, app, Date.now()),
+    [atLevel, parsed, app],
   );
+  const kids = useMemo(() => localChildren(folders, here), [folders, here]);
+  const shownFolders = useMemo(() => narrowLocalFolders(kids, parsed.lens), [kids, parsed]);
+  // Each folder's live items (newest first), for its card: one pass over the list.
+  const inside = useMemo(() => itemsByFolder(live), [live]);
   // The list is always whole, so the field can mark a value that matches nothing.
   useEffect(() => {
-    lensSubjects.current = thisBrowserSubjects(live, app);
+    lensSubjects.current = thisBrowserSubjects(atLevel, app);
     return () => void (lensSubjects.current = null);
-  }, [lensSubjects, live, app]);
+  }, [lensSubjects, atLevel, app]);
+  const holdsHere = atLevel.length > 0 || kids.length > 0;
   // Something is kept here, but the lens leaves nothing: only a set lens can.
-  const filteredEmpty = Boolean(host) && live.length > 0 && items.length === 0;
+  const filteredEmpty =
+    Boolean(host) && holdsHere && items.length === 0 && shownFolders.length === 0;
+  const spaceEmpty = !host || (live.length === 0 && folders.length === 0);
+  const crumbs: Crumb[] = [
+    { name: THIS_BROWSER_COPY.label, onClick: () => navigate({ kind: 'offline' }) },
+    ...path.map((f) => ({
+      name: f.name,
+      onClick: () => navigate({ kind: 'offline', folder: f.id }),
+    })),
+  ];
   return (
     <div data-explorer-view="offline">
-      <PaneHeader title={THIS_BROWSER_COPY.label} showFilter={false} />
-      <p className={`mb-5 text-sm ${MUTED}`}>
-        {words.many} kept only in this browser. They aren’t in your account and don’t sync to other
-        devices.
-      </p>
-      {host && live.length > 0 ? <LensBar parsed={parsed} showIssues={!filteredEmpty} /> : null}
+      <PaneHeader
+        title={open?.name ?? THIS_BROWSER_COPY.label}
+        crumbs={crumbs}
+        showFilter={false}
+        onCreateFolder={host ? () => create(here, setRenamingId) : undefined}
+      />
+      {open ? null : (
+        <p className={`mb-5 text-sm ${MUTED}`}>
+          {words.many} kept only in this browser. They aren’t in your account and don’t sync to
+          other devices.
+        </p>
+      )}
+      {host && holdsHere ? <LensBar parsed={parsed} showIssues={!filteredEmpty} /> : null}
       <LensAnnouncer lens={q} loading={false} shown={items.length} more={false} words={words} />
       {filteredEmpty ? (
         <FilteredEmpty
@@ -324,15 +414,69 @@ export function ThisBrowserPane() {
           words={words}
           onClear={() => navigate(withLens(view, ''), { replace: true })}
         />
-      ) : !host || items.length === 0 ? (
-        <p className={`text-sm ${MUTED}`}>{THIS_BROWSER_EMPTY}</p>
+      ) : spaceEmpty ? (
+        <SpaceEmpty />
+      ) : !holdsHere && open ? (
+        <EmptyFolder folderId={open.id} />
       ) : (
-        <ul className={`${LIST_CARD} divide-y divide-slate-100 dark:divide-slate-700/60`}>
-          {items.map((item) => (
-            <LocalRow key={item.id} item={item} sync detail={<ChangedAgo at={item.updatedAt} />} />
-          ))}
-        </ul>
+        <div className="flex flex-col gap-6">
+          {shownFolders.length > 0 ? (
+            <div className={CARD_GRID} data-local-folders="">
+              {shownFolders.map((f) => (
+                <LocalFolderCard
+                  key={f.id}
+                  folder={f}
+                  subfolders={localChildren(folders, f.id).length}
+                  items={inside.get(f.id) ?? NO_ITEMS}
+                />
+              ))}
+            </div>
+          ) : null}
+          {items.length > 0 ? (
+            <ul className={`${LIST_CARD} divide-y divide-slate-100 dark:divide-slate-700/60`}>
+              {items.map((item) => (
+                <LocalRow
+                  key={item.id}
+                  item={item}
+                  sync
+                  detail={<ChangedAgo at={item.updatedAt} />}
+                />
+              ))}
+            </ul>
+          ) : null}
+        </div>
       )}
+    </div>
+  );
+}
+
+/** This Browser with nothing left in it (its last item synced, deleted or archived while the view was open): it says
+ *  so, with the way back. */
+function SpaceEmpty() {
+  const { navigate } = useExplorer();
+  return (
+    <div className="flex flex-col items-start gap-3" data-this-browser-empty="">
+      <p className={`text-sm ${MUTED}`}>{THIS_BROWSER_EMPTY}</p>
+      <Button size="xs" variant="secondary" onClick={() => navigate({ kind: 'all' })}>
+        {`Go to ${SIDEBAR_LABELS.myWork}`}
+      </Button>
+    </div>
+  );
+}
+
+/** A local folder holding nothing: it says so, with Delete Folder. */
+function EmptyFolder({ folderId }: { folderId: string }) {
+  const { openDialog } = useExplorer();
+  return (
+    <div className="flex flex-col items-start gap-3" data-local-folder-empty="">
+      <p className={`text-sm ${MUTED}`}>{LOCAL_FOLDER_COPY.empty}</p>
+      <Button
+        size="xs"
+        variant="secondary"
+        onClick={() => openDialog({ kind: 'delete-local-folder', folderId })}
+      >
+        Delete Folder
+      </Button>
     </div>
   );
 }
@@ -401,20 +545,16 @@ export function ThisBrowserItemMenu({
   onClose: () => void;
 }) {
   const { thisBrowser: host } = useHostExtras();
-  const { kind, reloadLists, openDialog } = useExplorer();
+  const { kind, openDialog } = useExplorer();
   const archive = useArchiveLocal();
+  const syncLocal = useSyncLocal();
   const title = item.title || 'Untitled';
   const run = (fn: () => void) => () => {
     onClose();
     fn();
   };
   if (!host) return null;
-  const syncHref = host.syncHref?.(item);
-  const sync = host.sync
-    ? () => thenReload(host.sync?.(item), reloadLists)
-    : syncHref
-      ? () => window.location.assign(syncHref)
-      : null;
+  const sync = syncLocal ? () => syncLocal(item) : null;
   return (
     <PortalMenu anchor={anchor} onClose={onClose} label={`Actions for ${title}`}>
       <MenuHeader title={title} aside={<ThisBrowserPill inLink />} />
@@ -426,6 +566,11 @@ export function ThisBrowserItemMenu({
       {sync ? (
         <MenuActionRow label={`Sync ${kind.one}`} icon={<SyncIcon />} onClick={run(sync)} />
       ) : null}
+      <MenuActionRow
+        label="Move to Folder"
+        icon={<FolderOutlineIcon />}
+        onClick={run(() => openDialog({ kind: 'move-local-item', item }))}
+      />
       <MenuActionRow
         label="Move to Archived"
         icon={<ArchiveIcon />}

@@ -15,7 +15,11 @@ import { ExplorerDialogs } from '../explorer/Dialogs';
 import { HostExtrasProvider, type ExplorerHostExtras } from '../explorer/host';
 import { PeopleProvider } from '../explorer/extras';
 import type { ExplorerAccounts } from '../data/accounts';
-import { useThisBrowserItems, type ThisBrowserHost } from '../explorer/ThisBrowser';
+import {
+  useThisBrowserFolders,
+  useThisBrowserItems,
+  type ThisBrowserHost,
+} from '../explorer/ThisBrowser';
 import { ToastProvider } from '../ui/Toasts';
 import { LibraryHostProvider, useLibraryHost } from '../library/context';
 import type { LibraryHostProps } from '../library/types';
@@ -217,14 +221,16 @@ function PanelInner({
   const stacked = layout !== 'side';
   const { gallery, shapeLibraries } = useLibraryHost();
   const library = Boolean(gallery || shapeLibraries);
-  const thisBrowserLive = useThisBrowserItems().live;
+  const { host: localHost, live: thisBrowserLive } = useThisBrowserItems();
   const offlineCount = thisBrowserLive.length;
+  // The rail shows This Browser while it holds a live item or a local folder, as the sidebar does.
+  const localFolders = useThisBrowserFolders(localHost ? app : null).length;
   // The open item when the index has none for it (kept only in this browser): its card comes from This Browser.
   const localCurrent =
     !current && currentId ? (thisBrowserLive.find((i) => i.id === currentId) ?? null) : null;
   const groups = useMemo(
-    () => panelSectionGroups(teams, { library, thisBrowser: offlineCount > 0 }),
-    [teams, library, offlineCount],
+    () => panelSectionGroups(teams, { library, thisBrowser: offlineCount > 0 || localFolders > 0 }),
+    [teams, library, offlineCount, localFolders],
   );
   // The Library's tab, held here so a menu's Shape Libraries opens on it.
   const [libraryTab, setLibraryTab] = useState<LibraryTab>('gallery');

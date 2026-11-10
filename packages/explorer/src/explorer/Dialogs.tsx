@@ -21,7 +21,8 @@ import {
   ShareDialog,
   UseAsDefaultDialog,
 } from './lazy-dialogs';
-import { setThisBrowserArchived, thisBrowserDeleteCopy } from '../this-browser';
+import { noteSyncPlace, setThisBrowserArchived, thisBrowserDeleteCopy } from '../this-browser';
+import { LocalSpaceDialog } from './this-browser-space/LocalDialogs';
 import { ArchiveIcon } from '../ui/icons';
 import { canArchive } from './menus';
 import { kindWords } from '../words';
@@ -117,6 +118,17 @@ export function ExplorerDialogs() {
 
   if (!dialog) return null;
   switch (dialog.kind) {
+    case 'move-local-item':
+    case 'move-local-folder':
+    case 'delete-local-folder':
+      return (
+        <LocalSpaceDialog
+          dialog={dialog}
+          personal={personal}
+          teams={teamDests}
+          createFolder={createFolder}
+        />
+      );
     case 'move-item': {
       const item = ctx.overlay.apply(dialog.item);
       // Archived is a space of its own, where Move to Archived would be offered, and where the item is now.
@@ -336,7 +348,9 @@ export function ExplorerDialogs() {
           message={
             sync
               ? `It’s kept only in this browser. To go into ${place} it moves to your account first, and then it’s on every device you sign in on.`
-              : `It’s kept only in this browser. To go into ${place} it moves to your account first: it opens in the editor to sync, and then you can move it there.`
+              : to.folderId || to.teamId
+                ? `It’s kept only in this browser. To go into ${place} it moves to your account first: it opens in the editor to sync, and it goes into ${place} the next time you’re here.`
+                : `It’s kept only in this browser. It opens in the editor to sync, and goes into ${place} in your account.`
           }
           confirmLabel={sync ? 'Sync and Move' : `Sync ${ctx.kind.one}`}
           onCancel={close}
@@ -345,6 +359,8 @@ export function ExplorerDialogs() {
             // Out of Archived first: the editor opens it to sync, and it opens no archived one.
             if (dialog.archived) setThisBrowserArchived(ctx.app, item.id, null);
             if (!sync) {
+              // Where it should land, for the next Explorer here to move it once the index has it (useSyncPlaces).
+              noteSyncPlace(ctx.app, item.id, to);
               window.location.assign(syncHref!);
               return;
             }

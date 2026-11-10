@@ -21,7 +21,15 @@ import {
 } from '../ui/icons';
 
 export type PickerFolder = { id: string; name: string; parentId: string | null };
-export type PickerTeam = { id: string; name: string; folders: PickerFolder[] };
+export type PickerTeam = {
+  id: string;
+  name: string;
+  folders: PickerFolder[];
+  // A space drawn as a team is (This Browser, with its local folders): its own glyph, line and root's name.
+  icon?: ReactNode;
+  sub?: string;
+  rootLabel?: string;
+};
 export type Destination = { teamId: string | null; folderId: string | null };
 /** A place that is a space of its own, holding no folders (Archived, This Browser): listed under the spaces, after a
  *  divider, its `value` the placement chosen. */
@@ -143,8 +151,8 @@ export function PlacementBrowser({
           <PlacementCard
             key={t.id}
             label={t.name}
-            sub="Team"
-            icon={<TeamPlaceIcon />}
+            sub={t.sub ?? 'Team'}
+            icon={t.icon ?? <TeamPlaceIcon />}
             selected={!special && chosen.teamId === t.id}
             drills
             onSelect={() => {
@@ -211,7 +219,8 @@ export function PlacementBrowser({
   }
 
   const teamId = space === PERSONAL ? null : space;
-  const spaceName = teamId ? (teams.find((t) => t.id === teamId)?.name ?? 'Team') : 'My Work';
+  const shownTeam = teamId ? teams.find((t) => t.id === teamId) : undefined;
+  const spaceName = teamId ? (shownTeam?.name ?? 'Team') : 'My Work';
   const open = openId ? byId.get(openId) : undefined;
   const children = spaceFolders
     .filter((f) => f.parentId === (open?.id ?? null))
@@ -242,9 +251,17 @@ export function PlacementBrowser({
         gap="tight"
       />
       <PlacementCard
-        label={open ? open.name : teamId ? 'Team Library' : 'My Work'}
+        label={open ? open.name : teamId ? (shownTeam?.rootLabel ?? 'Team Library') : 'My Work'}
         sub={open ? 'This folder' : teamId ? spaceName : 'Top level'}
-        icon={open ? <FolderPlaceIcon /> : teamId ? <TeamPlaceIcon /> : <PersonalSpaceIcon />}
+        icon={
+          open ? (
+            <FolderPlaceIcon />
+          ) : teamId ? (
+            (shownTeam?.icon ?? <TeamPlaceIcon />)
+          ) : (
+            <PersonalSpaceIcon />
+          )
+        }
         selected={placement === valueFor(open?.id ?? null)}
         onSelect={() => onPlacement(valueFor(open?.id ?? null))}
         onCommit={() => onCommitPlacement?.(valueFor(open?.id ?? null))}

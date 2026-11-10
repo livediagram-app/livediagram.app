@@ -12,7 +12,13 @@ import { CountBadge } from '@liveworkspace/ui';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { RelativeTimeChip } from '../ui/RelativeTimeChip';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
-import { CARD_PREVIEW, CARD_SHELL, DROP_TARGET_RING, RENAME_INPUT } from '../ui/classes';
+import {
+  CARD_PREVIEW,
+  CARD_SHELL,
+  CARD_TITLE_BUTTON,
+  DROP_TARGET_RING,
+  RENAME_INPUT,
+} from '../ui/classes';
 import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import {
@@ -233,7 +239,7 @@ export function useFolderBits(folder: Folder) {
  * A folder's count pill: its subfolders and items together, as liveplanner's rows and cards counted them, read out
  * (and shown on hover) as "2 folders · 5 plans". Until the previews answer it counts the subfolders alone.
  */
-function FolderCount({
+export function FolderCount({
   subfolders,
   items,
   elsewhere,
@@ -508,11 +514,7 @@ export const FolderCard = memo(function FolderCard({
             className={`min-w-0 flex-1 ${RENAME_INPUT}`}
           />
         ) : (
-          <button
-            type="button"
-            onClick={bits.open}
-            className="min-w-0 flex-1 truncate text-left text-sm font-medium text-slate-900 hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
-          >
+          <button type="button" onClick={bits.open} className={CARD_TITLE_BUTTON}>
             {folder.name}
           </button>
         )}

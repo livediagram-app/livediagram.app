@@ -40,6 +40,10 @@ export const SKELETON = 'rounded-md bg-slate-200/70 motion-safe:animate-pulse da
 export const SECTION_LINK =
   'relative touch-target inline-flex min-h-6 items-center rounded-sm text-sm font-semibold text-brand-700 hover:underline dark:text-brand-300';
 
+/** A card's name under its picture, a button that opens it (a folder card's, account or local). */
+export const CARD_TITLE_BUTTON =
+  'min-w-0 flex-1 truncate text-left text-sm font-medium text-slate-900 hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300';
+
 export const RENAME_INPUT =
   'rounded border border-brand-300 bg-white px-1 py-0 text-sm font-medium text-slate-900 dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100';
 

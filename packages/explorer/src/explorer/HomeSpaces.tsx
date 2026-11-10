@@ -17,12 +17,18 @@ import { NewTeamDialog } from '../teams/NewTeamDialog';
 import { useNow } from '../time';
 import { FOCUS_RING, MUTED, SKELETON } from '../ui/classes';
 import { ChevronDownIcon, MyWorkIcon, PlusIcon, TeamIcon } from '../ui/icons';
-import type { ExplorerView } from '../views';
+import { SIDEBAR_LABELS, type ExplorerView } from '../views';
+import type { ThisBrowserItem } from '../this-browser';
+import { BrowserIcon } from './host';
+import { LocalPreview } from './LocalPreview';
+import { useThisBrowserSpace } from './this-browser-space/space';
 import type { Words } from '../words';
 import { useExplorer } from './context';
 import { useExtras } from './extras';
 import { FolderMosaic } from './FolderMosaic';
 import {
+  LOCAL_SPACE_TONE,
+  localSpaceLine,
   orderSpaces,
   showAllLabel,
   spaceFaces,
@@ -70,8 +76,14 @@ export function HomeSpaces() {
   );
   const title =
     APP_KINDS[app] === 'space' ? SPACES_COPY.titleWhereItemsAreSpaces : SPACES_COPY.title;
-  const overflow = spaces.length > SPACES_SHOWN;
-  const shown = overflow && !all ? spaces.slice(0, SPACES_SHOWN - 1) : spaces;
+  // This Browser after the teams, while it holds anything (one-explorer.md "This Browser, a Space"): read from this
+  // browser, so it costs no request.
+  const local = useThisBrowserSpace();
+  const total = spaces.length + (local.holds ? 1 : 0);
+  const overflow = total > SPACES_SHOWN;
+  const room = overflow && !all ? SPACES_SHOWN - 1 : total;
+  const shown = spaces.slice(0, room);
+  const showLocal = local.holds && room > spaces.length;
   // With no team yet: where one is made, or where signing in is.
   const guest = !signedIn && Boolean(signInHref);
   const invite = teams.length === 0 ? (canRun ? 'create' : guest ? 'sign-in' : null) : null;
@@ -79,7 +91,7 @@ export function HomeSpaces() {
   return (
     <HomeSection id="spaces" title={title} busy={previews.loading}>
       {previews.loading ? (
-        <SpacesSkeleton count={Math.min(SPACES_SHOWN, spaces.length + (invite ? 1 : 0))} />
+        <SpacesSkeleton count={Math.min(SPACES_SHOWN, total + (invite ? 1 : 0))} />
       ) : (
         <div className="flex flex-col gap-3">
           <ul className={LIST} data-home-spaces="">
@@ -94,6 +106,11 @@ export function HomeSpaces() {
                 />
               </li>
             ))}
+            {showLocal ? (
+              <li className={ITEM}>
+                <ThisBrowserTile live={local.live} />
+              </li>
+            ) : null}
             {invite === 'create' ? (
               <li className={ITEM}>
                 <button type="button" className={DASHED} onClick={() => setNewTeam(true)}>
@@ -129,8 +146,8 @@ export function HomeSpaces() {
                         <ChevronDownIcon size={16} />
                       </span>
                     }
-                    title={all ? SPACES_COPY.showFewer : showAllLabel(spaces.length, title)}
-                    lead={all ? undefined : `${spaces.length - shown.length} more after these.`}
+                    title={all ? SPACES_COPY.showFewer : showAllLabel(total, title)}
+                    lead={all ? undefined : `${total - room} more after these.`}
                   />
                 </button>
               </li>
@@ -233,7 +250,9 @@ function SpaceTile({
         ) : null}
       </span>
       <span className="flex min-w-0 items-center gap-2.5 px-1">
-        <SpaceDisc space={space} className={tone.disc} />
+        <SpaceDisc className={tone.disc}>
+          {space.teamId === null ? <MyWorkIcon /> : initialsOf(space.name)}
+        </SpaceDisc>
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className={`${CARD_NAME} text-[15px] leading-5`}>{space.name}</span>
           <span
@@ -250,14 +269,84 @@ function SpaceTile({
   );
 }
 
-/** My Work's glyph, or a team's initials, on the space's tone. */
-function SpaceDisc({ space, className }: { space: SpaceEntry; className: string }) {
+/** This Browser's tile: up to four of its newest items, each the app's picture of a local item, over the teal disc,
+ *  its name and a line from the list itself. A link to its view, as the others are. */
+function ThisBrowserTile({ live }: { live: readonly ThisBrowserItem[] }) {
+  const { viewHref, navigate, kind, app } = useExplorer();
+  const now = useNow();
+  const lineId = useId();
+  const view: ExplorerView = { kind: 'offline' };
+  const newest = live.reduce<number | null>(
+    (at, i) => (at === null || i.updatedAt > at ? i.updatedAt : at),
+    null,
+  );
+  const line = localSpaceLine(live.length, newest, kind, now || null);
+  const shown = live.slice(0, live.length > 4 ? 3 : 4);
+  const more = live.length - shown.length;
+  return (
+    <a
+      href={viewHref(view)}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        e.preventDefault();
+        navigate(view);
+      }}
+      aria-label={SIDEBAR_LABELS.thisBrowser}
+      aria-describedby={lineId}
+      data-space-tile="this-browser"
+      className={TILE}
+    >
+      <span aria-hidden className={`${MOSAIC} ${LOCAL_SPACE_TONE.wash}`}>
+        {shown.length > 0 ? (
+          <span className="grid h-full w-full grid-cols-2 gap-1.5 p-2">
+            {shown.map((item) => (
+              <LocalPreview
+                key={item.id}
+                app={app}
+                iconSize={16}
+                className={`h-full w-full rounded-lg ${shown.length === 1 ? 'col-span-2' : ''}`}
+              />
+            ))}
+            {more > 0 ? (
+              <span
+                className={`flex items-center justify-center rounded-lg bg-white/70 text-[13px] font-semibold dark:bg-slate-900/50 ${MUTED}`}
+              >
+                +{more}
+              </span>
+            ) : null}
+          </span>
+        ) : (
+          <span className={`[&_svg]:size-7 ${MUTED} opacity-60`}>
+            <BrowserIcon />
+          </span>
+        )}
+      </span>
+      <span className="flex min-w-0 items-center gap-2.5 px-1">
+        <SpaceDisc className={LOCAL_SPACE_TONE.disc}>
+          <BrowserIcon />
+        </SpaceDisc>
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className={`${CARD_NAME} text-[15px] leading-5`}>{SIDEBAR_LABELS.thisBrowser}</span>
+          <span
+            id={lineId}
+            className={`block h-[18px] truncate text-[12.5px] leading-[18px] ${MUTED}`}
+          >
+            {line}
+          </span>
+        </span>
+      </span>
+    </a>
+  );
+}
+
+/** A space's glyph (My Work's, This Browser's) or a team's initials, on the space's tone. */
+function SpaceDisc({ className, children }: { className: string; children: ReactNode }) {
   return (
     <span
       aria-hidden
       className={`grid size-9 shrink-0 place-items-center rounded-xl text-[13px] font-bold tracking-tight ${className} [&_svg]:size-4`}
     >
-      {space.teamId === null ? <MyWorkIcon /> : initialsOf(space.name)}
+      {children}
     </span>
   );
 }

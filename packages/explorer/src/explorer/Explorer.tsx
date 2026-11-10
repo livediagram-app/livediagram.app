@@ -42,6 +42,7 @@ import {
   type NavigateOptions,
 } from './context';
 import { ExplorerDialogs } from './Dialogs';
+import { useSyncPlaces } from './this-browser-space/useSyncPlaces';
 import { HomeHero } from './HomeHero';
 import { HomePane } from './HomePane';
 import {
@@ -167,10 +168,11 @@ export type ExplorerProps = {
   /** Home's first run: for a person with nothing yet, the app's starting points in place of empty lists, and the
    *  hero's welcome. Without it Home shows its empty sections. */
   welcome?: WelcomeOptions;
-  /** The host's own rows in the sidebar's More group, before the Trash (This Browser, say). */
+  /** The host's own rows in the sidebar's More group, after the Library (liveworkspace.app's This Browser link). */
   sidebarLinks?: readonly SidebarLink[];
   /** The host app's items kept only in this browser, where the host can read them (the Explorer on the app's own
-   *  address): a sidebar row with their count, `/explorer/offline`, a Trash group and Jump Back In. */
+   *  address): This Browser's Space in the sidebar (with its local folders), `/explorer/offline`, Home's tile, a
+   *  Trash group and Jump Back In. */
   thisBrowser?: ThisBrowserHost | null;
   /** The filter's every-app choice, "All" by default ("All apps" where the Explorer is no one app's). */
   allLabel?: string;
@@ -464,12 +466,19 @@ function ExplorerInner({
           </WelcomeProvider>
           {/* Inside the host's extras: This Browser's dialogs run its verbs. */}
           <ExplorerDialogs />
+          <SyncPlaces />
         </HostExtrasProvider>
         {trashedOnArrival ? <ArrivalUndo trashed={trashedOnArrival} /> : null}
         {arrivalNotice ? <ArrivalNotice text={arrivalNotice} /> : null}
       </ExtrasProvider>
     </ExplorerProvider>
   );
+}
+
+/** Moves a handed-over Sync to the place it was asked for, once the index has it (useSyncPlaces). */
+function SyncPlaces() {
+  useSyncPlaces();
+  return null;
 }
 
 /** The Trash toast for an item trashed before the page opened, with its Undo; offered once per item. */

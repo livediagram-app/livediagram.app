@@ -44,8 +44,9 @@ folder drops the defaults that point at it.
   opens in (`templateEditorMode`), else the mode the tab says it opens in (`seedIntentOf`,
   `apps/api/src/routes/document-seed.ts`).
 - Duplicate and the server copy land beside their source and are never filed by a default.
-- This Browser's canvases have no folder: an offline canvas is kept where it is made
-  ([Offline Mode](../006-document/offline-mode.md)).
+- This Browser's canvases are never filed by a default: an offline canvas is kept where it is made
+  ([Offline Mode](../006-document/offline-mode.md)), at This Browser's root, and only the person moves it into one of
+  its local folders ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#this-browser-a-space) "This Browser, a Space").
 
 ### Defaults from before
 

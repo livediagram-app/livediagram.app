@@ -221,10 +221,17 @@ panel keeps its own Home without it, and a first run shows its starting points i
   order are the same as everywhere else.
 - **The read.** One `GET /spaces/previews` ([contracts](one-explorer-contracts.md#folders-favourites-defaults)) per
   filter, asked with Home's other reads and again whenever they are (an epoch), never per space.
+- **This Browser.** Where the Explorer reads this browser's store (an app's own address), This Browser's tile
+  follows the teams while it holds anything ([This Browser, a Space](#this-browser-a-space)): the browser glyph on
+  the teal disc, a mosaic of up to four of its newest items, each the app's picture of a local item
+  (`LocalPreview`, drawn in the browser with nothing fetched), "+N" past four, and the line "3 plans · Edited 2 hours
+  ago" from the list itself. It needs no request: it shows when the index's previews fail, and while they load it
+  waits with the other tiles, so the grid never jumps. It counts among the eight before Show All.
 
 What a browser keeps offline belongs to its app's origin. On the app's address it is a view of the Explorer, This
 Browser, in the page and in the editor's panel alike; on liveworkspace.app, which can't read it, the sidebar links to
-that view on the app's own address.
+that view on the app's own address. On a phone (below `sm`) each of its rows puts Sync and its buttons on a line under
+the title, so the title and its pill keep the row's width rather than being squeezed to nothing beside them.
 
 #### A place that is empty here but not elsewhere
 
@@ -249,17 +256,18 @@ misleading, not about loss.
 Three groups, the same in every app's Explorer and on liveworkspace.app (`explorer/Sidebar.tsx`):
 
 - **Overview**: Home, Inbox and Shared With Me.
-- **Spaces**: My Work and its folders, each team and its folders, Invites while one waits, and New Team.
+- **Spaces**: My Work and its folders, each team and its folders, **This Browser** and its folders (while this
+  browser holds anything, [below](#this-browser-a-space)), Invites while one waits, and New Team.
 - **More**: the **Library**, an accordion folded by default, whose rows are, in order, Recent, **Timeline**,
   Favourites, the host's Image Gallery and Shape Libraries (where it has them), **Archived** and the **Trash**; then
-  This Browser and the host's own rows. The Trash keeps everything it does: its drop target (an item, a folder or a
+  the host's own rows (liveworkspace.app's This Browser link, below). The Trash keeps everything it does: its drop target (an item, a folder or a
   This Browser item dragged there), its waiting and over states, and the Trash view's This Browser group. Folded, the
   Library row carries the Timeline's "new since you last looked" count (`timelineBadge`), so it is never hidden;
   open, only the Timeline row does.
 
 **The current view's rows are open.** Opening a view unfolds the rows that hold its own row, however it is reached
 (a sidebar click, a breadcrumb, an address, Back): My Work for My Work, a team's row for its page, a space and every
-folder down to it for a folder (that folder too, so its subfolders show), and the Library for any of its pages
+folder down to it for a folder (that folder too, so its subfolders show), This Browser and its folders down to a local one, and the Library for any of its pages
 (Recent, Timeline, Favourites, the Gallery, Shape Libraries, Archived, the Trash). It only ever adds to what is open,
 and once per change of the rows a view needs, so a row the person folds stays folded until the view (or its place)
 changes (`rowsForView`, `useOpenCurrentRows`).
@@ -281,9 +289,70 @@ the sidebar's groups. The drawer traps focus, locks the page's scroll behind it,
 or any change of view (Back included), and gives focus back to the bar. The editor's panel has no such bar: its rail
 is its way round.
 
-**The editor's panel** has no accordion: its rail lists Home, Inbox and Shared With Me under Overview, the spaces,
-then under More the Library's order (Timeline, Favourites, the Library's pages, Archived, the Trash) and This
-Browser. Picking a view from a shared menu shows its section.
+**The editor's panel** has no accordion: its rail lists Home, Inbox and Shared With Me under Overview, the spaces
+(This Browser last among them, by the same rule as the sidebar's), then under More the Library's order (Timeline,
+Favourites, the Library's pages, Archived, the Trash). Picking a view from a shared menu shows its section.
+
+#### This Browser, a Space
+
+What an app keeps only in this browser is a **Space** of its own (owner, 2026-11-10: "Make This Browser a Space
+instead, so it isn't hidden in the Library, but only show it when it contains at least 1 item. Also let me create
+folders in it."). It used to be a row under More, after the Library.
+
+- **Where.** The sidebar's Spaces group, after My Work and the teams and before Invites and New Team, with the
+  browser glyph (`BrowserIcon`) on the teal tile, its count of live items as its badge ("3 in this browser" to a
+  screen reader). It folds and opens like My Work: its children are its folders, nested as My Work's are.
+- **Only while it holds something.** It shows while this browser keeps at least one live item (out of the app's
+  Trash and out of Archived) or at least one local folder, and goes when the last goes. It is read from this
+  browser's storage once and heard as it changes (no request, no polling, `useThisBrowserSpace`). When it empties
+  under a person on its view, the view stays, saying "Nothing is kept only in this browser." with **Go to My Work**,
+  and the row stays while that view is open, so the highlight never vanishes, as Invites' does.
+- **Folders.** **New Folder** (the view's header, the row's ⋯ and right-click) makes one, in This Browser's root
+  or inside the open local folder; each folder's menu (as My Work's folders') has **Open**, **Rename** (in place),
+  **New Subfolder**, **Move Folder** (within This Browser, never into itself or below it) and **Delete Folder**, which asks first and says
+  its folders and items move up a level, to its parent, as an account folder's delete does; nothing is deleted with
+  it. They nest as deep as My Work's. Names are trimmed, at most 120 characters, and need not be unique (as My
+  Work's). At most 200 folders are kept; New Folder past that says so.
+- **Moving items.** A live item has **Move to Folder** (a folder button on its row, beside Move to Archived, and on
+  its Jump Back In card's menu), which picks among This Browser's root and its folders (the placement browser's tree, This Browser's
+  own); signed in, the account's places are offered too, and choosing one goes through Sync (below). A drag of a
+  This Browser item onto a local folder (its sidebar row, its card) or onto This Browser's own row moves it there,
+  with "Moved “X” to Y." and an Undo; onto an account folder, My Work or a team it asks to Sync, as before. Folders
+  are not moved by dragging, as in My Work.
+- **The view.** `/explorer/offline` is This Browser's root, `/explorer/offline?folder=<id>` one of its folders (an
+  unknown id shows the root). The header names it (This Browser, or the folder's name) with the back bar to the
+  level above (This Browser > Folder > Subfolder, as My Work's), **New Folder**, and the help. The folders show
+  first, as folder cards (My Work's card: up to four of its items' local pictures, or the folder glyph while it
+  holds none, its name, its count of folders and items, its ⋯), sorted by name; then
+  the items as rows, newest change first. The lens narrows both at that level (a folder by its name, an item as
+  before), matched in the browser, as My Work's lens narrows its own place. An empty folder says "This folder is
+  empty." with **Delete Folder**.
+- **Sync keeps its place.** Syncing an item that sits in a local folder offers the account folder of the same name
+  in My Work (matched ignoring case, the shallowest first), or My Work's root when there is none: the Sync dialog
+  names where it will go. In the editor's panel it syncs and then moves there in place (the `sync-local` path, as a
+  drop does). On the page, where Sync hands over to the editor, the Explorer notes the place in this browser
+  (`liveworkspace:this-browser-sync-place:<app>`, the item's id and the folder's, for a day) and moves the item there
+  the next time an Explorer on this address loads and finds it in the account; a note it can't use (the folder gone,
+  the item not synced within the day) is dropped and the item stays in My Work's root. **A folder whose last item
+  syncs is kept**, empty: folders are the person's own structure, and one that vanished on its own would surprise
+  them. They delete it when they are done with it (an empty folder's view offers Delete Folder).
+- **The store.** The folders live in the same localStorage list as the items (`liveworkspace:this-browser:<app>`),
+  now version 2: `{ v: 2, items, folders }`, each folder `{ id, name, parentId, createdAt, updatedAt }` and each item
+  its `folderId` (absent or null at the root). Never content. A version-1 list reads as version 2 with no folders
+  and every item at the root, and is written as version 2 at its next write. The app's offline store republishes its
+  records, which know nothing of folders, so every write keeps the folders and each item's `folderId` the list
+  already held, as it keeps the archive marks; an item whose folder is gone reads at the root, and a folder whose
+  parent is gone reads at the root too.
+  A tab still running the version-1 code (opened before the deploy and never reloaded) reads a version-2 list as
+  empty, and its next write stores version 1 again, so the folders and placements go (never an item: the app's next
+  page load lists every record again). Known and accepted: it lasts only while such a tab stays open.
+- **On Home.** Home's Spaces lists This Browser after the teams, by the same rule (below).
+- **liveworkspace.app** can't read an app's origin storage, so it can't know whether This Browser holds anything
+  and never shows it as a Space (an always-shown Space would break the rule above, and one that guesses would lie).
+  It keeps its hand-off instead: a quiet row after the Library, "This Browser", that leaves for the app's own
+  `/explorer/offline`, where the Space and its folders are; `/explorer/offline` there goes to the same place. The
+  editors' panel and the Explorer on each app's address read the store and follow the rule. The panel's pane
+  lists every live item, whichever folder holds it (its rows are compact; the folders are the page's).
 
 #### Archived
 
@@ -393,8 +462,9 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   search opens Profile and API Tokens here too.
 - **This Browser.** The app keeps a small list of its offline items (id, title and dates, never content) in
   localStorage under `liveworkspace:this-browser:<app>` (`@liveworkspace/explorer/this-browser`), written by its
-  offline store as it writes. The Explorer reads it: a sidebar row with the count, `/explorer/offline`, a This
-  Browser group in the Trash, and the opened ones in Home's Jump Back In. Each opens in the app's editor.
+  offline store as it writes. The Explorer reads it: This Browser's Space in the sidebar with the count and its
+  folders ([This Browser, a Space](#this-browser-a-space)), `/explorer/offline`, its tile on Home, a This Browser
+  group in the Trash, and the opened ones in Home's Jump Back In. Each opens in the app's editor.
   liveworkspace.app can't read another origin's list, so its This Browser row (and `/explorer/offline` there) goes
   to the app's own `/explorer/offline` (the registry's `offlinePath`). That view is the only This Browser page: the
   apps' old `/offline` pages only redirect to it, their query kept. Each of its rows has **Sync** (signed in) and

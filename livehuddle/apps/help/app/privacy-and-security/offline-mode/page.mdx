@@ -19,7 +19,7 @@ Offline Mode is chosen per space, so you can keep normal spaces and ones in This
 - **If you haven't signed in**, your new spaces start in This Browser. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from the [New Space](/new) screen, and from the links that create a space straight away (a template from the home page, **Start Blank**), starts in This Browser. Use **Sync Space** on one if you would rather it went to the server now.
 - **Once you've signed in**, new spaces go to your account. To keep one only in this browser, choose **Take Offline** from its menu in the editor's Explorer panel (see below).
 - A [new Space](/new) opens on its start screen, **Start a Space**, whose **Sync Space to Server** switch shows where it went: off for a guest ("Saved in this browser only"), on once you're signed in. Flip it while the space is still empty to move it to the server or back into This Browser.
-- The space is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which spaces live only in this browser; hover or focus it to read that clearing this browser's site data deletes it. They are not in your account's lists: the Explorer sidebar's **This Browser** row, with how many there are, lists them all, and so does their own page, [This Browser](/offline), where each has **Sync Space** and **Delete**.
+- The space is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which spaces live only in this browser; hover or focus it to read that clearing this browser's site data deletes it. They are not in your account's lists: **This Browser**, a space of its own in the Explorer sidebar's **Spaces** group, lists them all with how many there are, and so does their own page, [This Browser](/offline), where each has **Sync Space** and **Delete**.
 
 <Note>
   A space in This Browser is **not synced and not backed up**. It lives only in this browser:
@@ -36,6 +36,10 @@ A space in This Browser is a normal space: every editor feature works, including
 - Images you add are stored **inside the space**, so it stays fully local.
 - **Add a Tab to Another Space** is unavailable for a space in This Browser in either direction, and **Duplicate** makes another copy in This Browser rather than uploading one.
 
+## Folders in This Browser
+
+**New Folder** on the This Browser page, or the **⋯** menu on its row in the sidebar, makes a folder that lives in this browser too, and folders can hold folders, as in My Work. **Move to Folder** on a space's menu, or a drag onto a folder, files it. A folder's menu has **Rename**, **New Subfolder**, **Move Folder** and **Delete Folder**; deleting a folder never deletes what is in it, which moves up a level. The folders are kept in this browser alone, like the spaces in them.
+
 ## Archiving a space in This Browser
 
 **Move to Archived** works on a space in This Browser too. It never leaves this browser: it moves out of the This Browser list into **Archived**, and it won't open until you move it out. Opening it shows a **Space Archived** card with **Change Folder**, which puts it back in This Browser (or, when you are signed in, moves it into your account). Clearing this browser's data removes it like any other space kept here.
@@ -47,6 +51,7 @@ You can change your mind at any time, from the space's **⋯** menu in the edito
 - **When you sign in** with spaces in This Browser, we offer to move them to your account. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
 
 - **Sync Space** uploads a space in This Browser to the cloud. It becomes a normal space, shareable and (when you're signed in) reachable from your other devices, and the copy in this browser is removed.
+- **A space in a folder keeps its place.** Sync Space offers the My Work folder with the same name (or My Work itself when there is none) and says where it will go. The folder in this browser stays, empty, until you delete it.
 - **Take Offline** does the reverse: it downloads a cloud space into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.
 
 <Note>

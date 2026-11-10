@@ -223,7 +223,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
   any default.
 - **Where to change it.** Settings > Explorer > Default Folders ([Settings](#settings)), the folder menus' **Use as
   Default for** and My Work's own menu. `/new` itself sets nothing.
-- None of this applies to **This Browser**: an offline design has no folder ([Non-goals](#non-goals)).
+- None of this applies to **This Browser**: an offline design lands at its root, and only the person moves it into one of its local folders ([Non-goals](#non-goals)).
 
 ### Settings
 

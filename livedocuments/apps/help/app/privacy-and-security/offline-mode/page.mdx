@@ -19,7 +19,7 @@ Offline Mode is chosen per document, so you can keep normal documents and ones i
 - **If you haven't signed in**, your new documents start in This Browser. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from [New Document](/new), and from the links that create a document straight away (a template from the home page, say), starts in This Browser. Use **Sync Document** from its Share dialog if you would rather it went to livedocuments now.
 - **Once you've signed in**, new documents go to your account. To keep one only in this browser, choose **Take Offline** from its menu (see below).
 - **A document made inside a folder or a team** goes to livedocuments, whoever makes it, because that is where the folder or team lives.
-- The document is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which documents live only in this browser. Hover or focus the badge to read that clearing this browser's site data deletes the document. The rest of the Explorer lists only documents on the server, so **This Browser**, in the **More** group of the Explorer sidebar, is where you find them all.
+- The document is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which documents live only in this browser. Hover or focus the badge to read that clearing this browser's site data deletes the document. The rest of the Explorer lists only documents on the server, so **This Browser**, a space of its own in the Explorer sidebar's **Spaces** group, is where you find them all.
 
 <Note>
   A document in This Browser is **not synced and not backed up**. It lives only in this browser:
@@ -35,7 +35,11 @@ A document in This Browser is a normal document: every editor feature works, inc
 - **Live collaboration** and **teams** don't apply; a document in This Browser is yours alone. Comments still work, but only you see them.
 - Images you add are stored **inside the document**, so it stays fully local.
 - **Add a Tab to Another Document** is unavailable for a document in This Browser in either direction, and **Duplicate** makes another copy in This Browser rather than uploading one.
-- It is listed under **This Browser** in the Explorer's sidebar, in Home's Jump Back In once you have opened it, and on the **This Browser** page ([/offline](/offline), also reached from the Explorer panel), not in My Work, Recent or search, because those list what is on the server.
+- It is listed under **This Browser** in the Explorer sidebar's Spaces, in Home's Jump Back In once you have opened it, and on the **This Browser** page ([/offline](/offline), also reached from the Explorer panel), not in My Work, Recent or search, because those list what is on the server.
+
+## Folders in This Browser
+
+**New Folder** on the This Browser page, or the **⋯** menu on its row in the sidebar, makes a folder that lives in this browser too, and folders can hold folders, as in My Work. **Move to Folder** on a document's menu, or a drag onto a folder, files it. A folder's menu has **Rename**, **New Subfolder**, **Move Folder** and **Delete Folder**; deleting a folder never deletes what is in it, which moves up a level. The folders are kept in this browser alone, like the documents in them.
 
 ## Archiving a document in This Browser
 
@@ -48,6 +52,7 @@ You can change your mind at any time, from the document's **⋯** menu.
 - **When you sign in** with documents in This Browser, we offer to move them to your account. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
 
 - **Sync Document** (in a document's Share dialog, signed in or not, and on each document under **This Browser**, in the Explorer and on the This Browser page, when you're signed in) uploads a document in This Browser to the cloud. From the Explorer, the This Browser page opens and asks you to confirm. It becomes a normal document, shareable and (when you're signed in) reachable from your other devices, and the copy in this browser is removed.
+- **A document in a folder keeps its place.** Sync Document offers the My Work folder with the same name (or My Work itself when there is none) and says where it will go. The folder in this browser stays, empty, until you delete it.
 - **Take Offline** (on a document's menu in the Explorer and the Explorer panel) does the reverse: it downloads a cloud document into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.
 - **A tab it shares with other documents** (see [Add a Tab to Another Document](/help/tabs/add-to-document/)) stays in those documents, and this browser keeps its own copy. From then on the two are separate: edits on one side no longer reach the other, and syncing the document back brings your copy in as a new tab beside the original.
 
