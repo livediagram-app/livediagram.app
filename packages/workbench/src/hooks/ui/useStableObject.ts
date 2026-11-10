@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { useLatest } from './useLatest';
 
-// oxlint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any -- any function signature must fit; the forwarders call it with its own arguments
 type AnyFn = (...args: any[]) => unknown;
 
 // The hook's render-time memo: the forwarders it has handed out and the object it returned last.

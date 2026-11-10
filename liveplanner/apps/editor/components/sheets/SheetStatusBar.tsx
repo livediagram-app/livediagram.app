@@ -73,7 +73,7 @@ export function SheetStatusBar() {
   const { selection, workbook, sheet, geometry, version } = c;
   const stats = useMemo(
     () => selectionStats({ selection, workbook, sheet, geometry }),
-    [selection, workbook, sheet, geometry, version], // oxlint-disable-line react/exhaustive-deps
+    [selection, workbook, sheet, geometry, version], // oxlint-disable-line react/exhaustive-deps -- version says when a value may have changed in place
   );
   if (!stats) return null;
   const n = (v: number) =>

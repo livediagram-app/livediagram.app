@@ -34,7 +34,6 @@ export function useCloseVanishedDialogs(
       debugLog('[element-dialog] closed: cannot show', { id, gone: !el });
       close();
     }
-    // `open` is rebuilt every render; `key` names what it holds.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- `open` is rebuilt every render; `key` names what it holds
   }, [elements, key]);
 }

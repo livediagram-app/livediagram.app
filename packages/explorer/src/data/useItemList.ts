@@ -193,7 +193,6 @@ export function useItemList({
     }
     return out;
     // `version` re-runs the overlay when a patch lands.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [raw, version, belongs, overlay, cap]);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);

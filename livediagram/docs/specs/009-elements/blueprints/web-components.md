@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/document/src/colors.ts`                                | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
 | `packages/document/src/data-shapes.ts`                           | `isSelfDrawingShape`: stat row and process carry no label                        |
 | `packages/document/src/validate.ts`                              | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
-| `packages/document/src/legacy-groups.ts`                         | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
+| `../packages/element-model/src/legacy-groups.ts`                 | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
 | `packages/document/src/stored-elements.ts`                       | `migrateStoredElements`: legacy groups, then legacy docks                        |
 | `packages/document/src/stored-tab.ts`                            | `migrateStoredTab`: every stored-tab entry point runs it                         |
 | `apps/api/src/tab-row.ts`                                        | `rowToTab` runs the migration                                                    |
@@ -162,7 +162,7 @@ export function createComponent(
   colors: ComponentColors,
 ): Element;
 
-// packages/document/src/legacy-groups.ts / stored-elements.ts / stored-tab.ts
+// ../packages/element-model/src/legacy-groups.ts / stored-elements.ts / stored-tab.ts
 export function hasLegacyGroups(elements: readonly Element[]): boolean;
 export function migrateLegacyGroups(elements: Element[]): Element[];
 export function migrateStoredElements(elements: Element[]): Element[];

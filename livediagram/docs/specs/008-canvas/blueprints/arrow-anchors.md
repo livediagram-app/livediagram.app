@@ -10,7 +10,7 @@ Scope, by file:
 | File                                                            | Role                                                                                               |
 | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `packages/document/src/arrow-types.ts`                          | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
-| `packages/document/src/anchors.ts`                              | The anchor table: side, position class, box fraction, outward vector                               |
+| `../packages/element-model/src/anchors.ts`                      | The anchor table: side, position class, box fraction, outward vector                               |
 | `packages/document/src/shape-outline.ts`                        | Anchoring outlines, outline projection, point-inside test                                          |
 | `../packages/model-core/src/svg-path-outline.ts`                | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
 | `packages/document/src/anchor-layouts.ts`                       | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
@@ -23,7 +23,7 @@ Scope, by file:
 | `packages/document/src/arrow-rebind-swap.ts`                    | `swapCrossingEnds`                                                                                 |
 | `packages/document/src/arrow-endpoint-spread.ts`                | Quarter fans                                                                                       |
 | `packages/document/src/validate.ts`                             | `ANCHORS` derived from `ALL_ANCHORS`                                                               |
-| `packages/document/src/legacy-groups.ts`                        | Legacy group anchors resolved through the table                                                    |
+| `../packages/element-model/src/legacy-groups.ts`                | Legacy group anchors resolved through the table                                                    |
 | `packages/document/src/duplicate.ts`                            | Endpoint copy without `manual`                                                                     |
 | `apps/editor/lib/user-preferences.ts`                           | `autoRebindArrowsEnabled`: on unless `false`                                                       |
 | `apps/editor/hooks/canvas/useEditorDrag.ts`                     | Live rebind per drag frame                                                                         |

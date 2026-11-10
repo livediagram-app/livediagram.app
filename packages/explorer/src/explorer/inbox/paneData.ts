@@ -68,7 +68,6 @@ export function useSettledRead<T>(
       controller.abort();
     };
     // `read` is the caller's closure over the same row as `key`; the key says when it changed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, cached, cache, bump]);
   if (key === null) return undefined;
   if (cache.has(key)) return cache.get(key);

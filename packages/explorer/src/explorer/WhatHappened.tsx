@@ -97,7 +97,7 @@ export function useWhatHappenedGroups(state: WhatHappenedState): WhatHappenedGro
           .filter((e) => !(e.item as { gone?: boolean }).gone),
         viewerId,
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- version is what changes overlay.apply
+    // version is what changes overlay.apply
     [events, viewerId, overlay, version],
   );
 }

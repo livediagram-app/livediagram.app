@@ -21,15 +21,15 @@ spec.
 
 ## Modules
 
-| File                                                | Responsibility                                                                                                                                           |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/model-core/src/stroke-points.ts`       | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
-| `../packages/model-core/src/stroke-points-cache.ts` | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
-| `../packages/model-core/src/stroke-points-debug.ts` | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
-| `packages/document/src/freehand-points.ts`          | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
-| `packages/document/src/legacy-stroke-points.ts`     | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
-| `packages/document/scripts/expand-stroke-points.ts` | The debug script: a tab or document JSON file with every block expanded                                                                                  |
-| `scripts/ts-source-hooks.mjs`                       | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
+| File                                                    | Responsibility                                                                                                                                           |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/model-core/src/stroke-points.ts`           | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
+| `../packages/model-core/src/stroke-points-cache.ts`     | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
+| `../packages/model-core/src/stroke-points-debug.ts`     | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
+| `packages/document/src/freehand-points.ts`              | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
+| `../packages/element-model/src/legacy-stroke-points.ts` | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
+| `packages/document/scripts/expand-stroke-points.ts`     | The debug script: a tab or document JSON file with every block expanded                                                                                  |
+| `scripts/ts-source-hooks.mjs`                           | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
 
 ## Interfaces and contracts
 

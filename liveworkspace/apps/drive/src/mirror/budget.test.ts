@@ -15,7 +15,7 @@ import { GOOGLE_USER, harness, PERSON, type Harness } from '../test-support';
 const UNCOUNTED = 1;
 
 beforeEach(() => {
-  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 

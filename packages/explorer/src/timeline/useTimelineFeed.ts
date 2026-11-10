@@ -123,7 +123,6 @@ export function useTimelineFeed(
     );
     return () => abort.abort();
     // Only a return reads again; the first-page effect covers a change of app, team or epoch.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [returned]);
 
   useEffect(() => () => more.current?.abort(), []);

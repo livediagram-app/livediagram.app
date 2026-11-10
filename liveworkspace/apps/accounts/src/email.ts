@@ -32,7 +32,7 @@ type Email = {
 export async function sendEmail(env: Env, email: Email): Promise<void> {
   if (!env.EMAIL) {
     if (env.ENVIRONMENT !== 'development') throw new Error('the EMAIL binding is not set');
-    console.log(`[email] To: ${email.to} Subject: ${email.subject}`);
+    console.info(`[email] To: ${email.to} Subject: ${email.subject}`);
     return;
   }
   await send(env.EMAIL, { from: `liveworkspace <${env.EMAIL_FROM}>`, ...email });

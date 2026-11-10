@@ -54,8 +54,7 @@ export function LabelsEditor({
   // One pass over the plan's labels per keystroke: no card is read here.
   const { matches, creatable } = useMemo(
     () => matchLabels(suggestions, draft, labels),
-    // `labels` is a fresh array each render; its text is what matters.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- `labels` is a fresh array each render; its text is what matters
     [suggestions, draft, labels.join('\n')],
   );
   const query = draft.trim().replace(/^#/, '');

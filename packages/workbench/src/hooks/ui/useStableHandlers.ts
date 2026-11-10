@@ -17,7 +17,7 @@
 import { useMemo, useState } from 'react';
 import { useLatest } from './useLatest';
 
-// oxlint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any -- any handler signature must fit; the forwarders call it with its own arguments
 type AnyFn = (...args: any[]) => unknown;
 
 export function useStableHandlers<T extends Record<string, AnyFn | undefined>>(handlers: T): T {

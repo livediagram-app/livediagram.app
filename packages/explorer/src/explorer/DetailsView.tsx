@@ -330,7 +330,6 @@ const DetailsRow = memo(function DetailsRow({
     prefetched.current = true;
     prefetchThumbnail(item);
     // Once per row.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefetchThumbnail]);
   const card = preview.spot ? renderThumbnail?.(item, 'card') : null;
   const kind = typeLabel(item, kindWords(item.app).one);

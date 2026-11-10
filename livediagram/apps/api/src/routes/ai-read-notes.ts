@@ -145,7 +145,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
     crops.map((c) => c.id),
   );
   const legible = answer.texts.filter((t) => t.legible).length;
-  console.log(`[ai/read-notes] ok model=${model} crops=${crops.length} legible=${legible}`);
+  console.info(`[ai/read-notes] ok model=${model} crops=${crops.length} legible=${legible}`);
   return json(answer, { headers: CORS_HEADERS });
 }
 

@@ -148,7 +148,7 @@ export async function handleMerge(
       console.warn('[index] person merges failed', { error: String(err) });
     }),
   );
-  console.log('[index] merged a guest', {
+  console.info('[index] merged a guest', {
     items,
     legacy,
     into: user.startsWith('guest_') ? 'guest' : 'account',

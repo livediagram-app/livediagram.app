@@ -13,7 +13,7 @@ Scope, by file:
 | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/document/src/element-types.ts`                               | `PathElement`, `PathNode`, `PathHandleMode`, `PathPoint`                                                                          |
 | `packages/document/src/index.ts`                                       | `PathElement` joins `BoxedElement`; re-exports                                                                                    |
-| `livediagram/packages/document/src/path-geometry.ts`                   | Pure curve maths: segments, `d`, bounds, split, bend, smooth, nearest                                                             |
+| `../packages/element-model/src/path-geometry.ts`                       | Pure curve maths: segments, `d`, bounds, split, bend, smooth, nearest                                                             |
 | `livediagram/packages/document/src/path-element.ts`                    | Element ⇄ anchors: `pathAnchors`, `pathWorldAnchors`, `pathGeometry`, `createPath`, `reshapePath`, `continuedPath`, `reversePath` |
 | `packages/document/src/validate.ts`                                    | `'path'` in `ELEMENT_TYPES`; node, handle, mode and count checks                                                                  |
 | `packages/document/src/colors.ts`                                      | Padding, default stroke and fill, border support for `path`                                                                       |
@@ -494,9 +494,9 @@ numbers only).
 
 | Rule                                                                                            | Test                                                                                                                |
 | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Segments, `d`, bounds from extremes, box of 1                                                   | `livediagram/packages/document/src/path-geometry.test.ts`                                                           |
-| Split keeps the curve, bend passes through the point                                            | `livediagram/packages/document/src/path-geometry.test.ts`                                                           |
-| Smooth handles, 45°, partner by mode, nearest, sample                                           | `livediagram/packages/document/src/path-geometry.test.ts`                                                           |
+| Segments, `d`, bounds from extremes, box of 1                                                   | `../packages/element-model/src/path-geometry.test.ts`                                                               |
+| Split keeps the curve, bend passes through the point                                            | `../packages/element-model/src/path-geometry.test.ts`                                                               |
+| Smooth handles, 45°, partner by mode, nearest, sample                                           | `../packages/element-model/src/path-geometry.test.ts`                                                               |
 | Anchors ⇄ element, rotation kept by `reshapePath`                                               | `livediagram/packages/document/src/path-element.test.ts`                                                            |
 | Validation                                                                                      | `packages/document/src/validate.test.ts`                                                                            |
 | Export twin                                                                                     | `livediagram/packages/document/src/svg-render-shapes.test.ts`                                                       |

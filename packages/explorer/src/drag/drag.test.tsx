@@ -350,7 +350,6 @@ describe('cost of a drag', () => {
       fireEvent.dragStart(row, { dataTransfer: dt });
       fireEvent.dragEnd(row, { dataTransfer: dt });
     });
-    // eslint-disable-next-line no-console
     console.log(`[drag] start+end: ${commits} commits, ${cpu.toFixed(1)}ms CPU`);
     expect(commits).toBeLessThanOrEqual(2);
     expect(cpu).toBeLessThan(cpuBudgetMs(50));

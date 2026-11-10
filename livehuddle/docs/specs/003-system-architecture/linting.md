@@ -72,7 +72,13 @@ is the whole of what the repo enforces.
   - `liveworkspace/no-native-title`: no native `title` outside `iframe` and `abbr`
     ([Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md));
   - `liveworkspace/no-raw-icon-svg`: no icon-sized raw `<svg>` outside the art allow-list
-    ([Iconography](../004-interface-design/iconography.md)).
+    ([Iconography](../004-interface-design/iconography.md));
+  - `liveworkspace/disable-reason`: every disable directive names its rule and says why (see
+    [Disable directives](#disable-directives)).
+- **No `console.log` in shipped code** (`eslint/no-console`, `info`, `warn`, `error` and `debug` allowed): a trace
+  line goes through `debugLog` ([Console logging](console-logging.md)), a Worker's event is `console.info`.
+  Tests (`*.test.*`, `*.spec.*`, `e2e/`) and scripts (`scripts/`, `eval/`) print to the terminal freely
+  (the monorepo's `docs/ci.md` "Lint disables and console.log").
 - **No formatting rules.** Prettier owns formatting.
 
 ## Type-aware rules
@@ -114,6 +120,10 @@ is the whole of what the repo enforces.
 - Only `oxlint-disable` directives count. An `eslint-disable` comment suppresses nothing, so one
   pasted from elsewhere never hides a finding.
 - A directive that suppresses nothing is itself an error, so a stale one cannot linger.
+- Every directive names the rule it turns off and ends in its reason:
+  `// oxlint-disable-next-line react/exhaustive-deps -- keyed on the rows, not the array`
+  (`liveworkspace/disable-reason`). One with no rule or no reason is an error, and so is any `eslint-disable`,
+  since it suppresses nothing.
 
 ## Files
 
@@ -126,4 +136,5 @@ is the whole of what the repo enforces.
 
 `packages/oxlint-config` lints scratch files with the real config in its tests: one deliberate
 violation per rule family (hooks, React Compiler, `any`, a type-aware rule, the repo's own rules), an
-unused directive, an ignored `eslint-disable`, and the JavaScript-only and TypeScript-only splits.
+unused directive, an ignored `eslint-disable`, a directive with no reason, `console.log` outside tests and
+scripts, and the JavaScript-only and TypeScript-only splits.

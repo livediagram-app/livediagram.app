@@ -132,6 +132,6 @@ export function useGapMotion(ref: RefObject<HTMLElement | null>, height: number)
       };
       shut.finished.then(drop, drop);
     }
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- opens once as it mounts; a later height change needs no animation
   }, []);
 }

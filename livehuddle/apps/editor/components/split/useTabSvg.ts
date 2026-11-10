@@ -53,8 +53,7 @@ export function useTabSvg(tab: Tab | undefined): TabSvg | null {
     return () => {
       live = false;
     };
-    // Keyed on the ids, not the tab: the bitmaps only change when the set of photos does.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- keyed on the ids, not the tab: the bitmaps only change when the set of photos does
   }, [wantedImages, imageContext]);
 
   return useMemo(() => {

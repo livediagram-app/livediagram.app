@@ -66,8 +66,7 @@ export function usePageThumbnails(
   // What a picture shows, as one value, so a rest can hold the last one drawn.
   const live = useMemo(
     () => ({ tab, pageIds }),
-    // On the inputs a picture shows, not on the tab object's identity.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- on the inputs a picture shows, not on the tab object's identity
     [tab.elements, tab.pages, tab.layers, tab.font, tab.finish, tab.articles, key],
   );
   const drawn = useSettled(live, settleMs);

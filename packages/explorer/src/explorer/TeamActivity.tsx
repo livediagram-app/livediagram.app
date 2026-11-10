@@ -67,7 +67,7 @@ function TeamFeed({ teamId }: { teamId: string }) {
   const named = useNamedEvents(feed.events);
   const events = useMemo(
     () => named.filter((e) => !e.item || !overlay.apply(e.item).gone),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- overlayVersion is what changes overlay.apply
+    // overlayVersion is what changes overlay.apply
     [named, overlay, overlayVersion],
   );
   const controls = useTimelineControls(events, { viewerId });
@@ -85,7 +85,7 @@ function TeamFeed({ teamId }: { teamId: string }) {
     };
     return (event: Parameters<typeof renderTimelineEvent>[0]) =>
       renderTimelineEvent({ ...event, item: event.item ? overlay.apply(event.item) : null }, ctx);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- overlayVersion is what changes overlay.apply
+    // overlayVersion is what changes overlay.apply
   }, [
     viewerId,
     renderThumbnail,
