@@ -4,6 +4,12 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
+import type {
+  ExportShape,
+  ResolveImageHref,
+  ResolveIconArt,
+  ResolveStickerArt,
+} from '@liveworkspace/element-model/export-shape';
 import type { ResolveTabWindow } from './tab-window';
 import type { TagColour } from './tag-colours';
 import { imageCornerPx } from './drawn-outline-finish';
@@ -39,53 +45,17 @@ export const EXPORT_IMAGE_FILL = '#f1f5f9'; // slate-100 placeholder body
 export const EXPORT_IMAGE_STROKE = '#94a3b8'; // slate-400 placeholder dashes
 const EXPORT_IMAGE_LABEL = '#64748b'; // slate-500 alt-text label
 
-// `image` carries the resolved bitmap render info: `href` is a data URL when a
-// caller has supplied the bytes (the bitmap is embedded), else undefined (a
-// dashed placeholder is drawn — e.g. a headless thumbnail with no bytes on
-// hand). `objectFit` / `radius` mirror the on-screen ImageElementView so cover
-// crops, contain letterboxes, and avatars clip to a circle. `none` is a
-// label-only element (text); the rest carry resolved fill + stroke. `icon` is
-// a shape==='icon' element whose glyph a caller resolved (see ResolveIconArt);
-// it keeps fill/stroke like any other box.
-export type ExportShape =
-  | { kind: 'image'; href?: string; objectFit: 'cover' | 'contain'; radius: number }
-  | { kind: 'ellipse'; fill: string; stroke: string }
-  | { kind: 'diamond'; fill: string; stroke: string }
-  | { kind: 'rect'; fill: string; stroke: string }
-  | { kind: 'icon'; art: ExportIconArt; fill: string; stroke: string }
-  // A sticker (docs/specs/010-palette/stickers.md): fully self-coloured art (plate, shadow, content)
-  // that fills the element box. No fill / stroke, because a sticker has
-  // neither — its colours are its own.
-  | { kind: 'sticker'; art: ExportStickerArt }
-  | { kind: 'none' };
-
-// Resolves an image element's `imageId` to a data URL to embed, or undefined
-// to fall back to the placeholder. The bytes are fetched / read by the caller
-// (the browser export prefetches via the authenticated image API; a future
-// worker path could read R2), keeping this renderer free of any IO.
-export type ResolveImageHref = (imageId: string) => string | undefined;
-
-// Resolved glyph art for a shape==='icon' element, in a 0..24 art box.
-// `colored: false` is line art: the markup carries no colours and the
-// renderer wraps it with the element's stroke colour (icons tint + theme
-// like line drawings on the canvas). `colored: true` is a Technology brand
-// mark: the markup is self-coloured (brand tile + white glyph) and is never
-// recoloured. Matches @liveworkspace/icons' IconExportArt structurally — kept
-// structural so this package doesn't depend on the catalogue package; each
-// caller supplies a resolver (the editor from its async icon registry, the
-// Workers from @liveworkspace/icons/resolve). No resolver, or an unknown id,
-// falls back to the pre-icon output: a plain box with the centred label.
-export type ExportIconArt = { markup: string; colored: boolean };
-export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
-
-// Resolved artwork for a shape==='sticker' element (docs/specs/010-palette/stickers.md): self-coloured
-// markup plus the viewBox it was drawn in. Structural, for the same reason
-// ExportIconArt is — this package never imports the catalogue; each caller
-// passes a resolver (the editor from its async registry, the Workers from
-// @liveworkspace/icons/resolve). No resolver, or an unknown id, falls back to
-// the plain box-with-label output.
-export type ExportStickerArt = { viewBox: string; markup: string };
-export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefined;
+// What a boxed element exports as, and the resolvers a caller hands the renderer: one copy for every product,
+// @liveworkspace/element-model/export-shape.
+export type {
+  ExportShape,
+  ResolveImageHref,
+  ExportIconArt,
+  ResolveIconArt,
+  ExportStickerArt,
+  ResolveStickerArt,
+  ResolveEmojiArt,
+} from '@liveworkspace/element-model/export-shape';
 
 type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
 

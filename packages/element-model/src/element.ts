@@ -47,7 +47,7 @@ export type Endpoint =
 
 /** The kinds with a box other than those typed below, across every product (each holds a subset). */
 export type OtherBoxedKind =
-  'sticky' | 'image' | 'path' | 'table' | 'annotation' | 'link-card' | 'video' | 'article-note';
+  'sticky' | 'path' | 'table' | 'annotation' | 'link-card' | 'video' | 'article-note';
 
 /** What every boxed element has: an id, a kind and a box on the canvas. */
 export type BoxBase = {
@@ -91,14 +91,60 @@ export type ShapeElement = BoxBase & {
 
 export type TextElement = BoxBase & { type: 'text' };
 
-export type FreehandElement = BoxBase & { type: 'freehand'; packedPoints?: string };
+export type FreehandElement = BoxBase & {
+  type: 'freehand';
+  packedPoints?: string;
+  closed?: boolean;
+  pen?: 'highlighter';
+  penWidth?: number;
+  streamline?: number;
+  straightEdges?: boolean;
+};
+
+/** A freehand stroke as the products that draw one store it (livehuddle keeps only a placeholder): its packed
+ *  points and whether it closes. */
+export type StrokeElement = FreehandElement & { packedPoints: string; closed: boolean };
+
+/** Whether a freehand carries its stroke (true for every product's freehand but livehuddle's placeholder). */
+export function isStroke(el: FreehandElement): el is StrokeElement {
+  return typeof el.packedPoints === 'string';
+}
 
 /** How a path node's two handles move together. */
 export type PathHandleMode = 'corner' | 'mirrored' | 'aligned';
 
+/** A point in a path's box, normalised (0..1 across its width and height). */
+export type PathPoint = { nx: number; ny: number };
+
+/** An anchor point and its optional handles, stored as absolute normalised positions so a resize scales the whole
+ *  path, handles included. */
+export type PathNode = PathPoint & {
+  mode: PathHandleMode;
+  handleIn?: PathPoint;
+  handleOut?: PathPoint;
+};
+
+/** A Path-tool curve (livediagram, livedesign): nodes joined by cubic Beziers, open or closed, and a combined
+ *  shape's further contours. Not in `Element`: a product without the Path tool stores `path` as a placeholder. */
+export type PathElement = BoxBase & {
+  type: 'path';
+  nodes: PathNode[];
+  closed: boolean;
+  subpaths?: PathNode[][];
+};
+
+/** Whether a `path` is a Path-tool curve (true wherever the Path tool exists; a product without it never stores
+ *  one). */
+export function isDrawnPath(el: { type: string }): el is PathElement {
+  return el.type === 'path' && Array.isArray((el as { nodes?: unknown }).nodes);
+}
+
 export type OtherBoxedElement = BoxBase & { type: OtherBoxedKind };
 
-export type BoxedElement = ShapeElement | TextElement | FreehandElement | OtherBoxedElement;
+export type ImageElement = BoxBase & { type: 'image' };
+
+export type BoxedElement =
+  ShapeElement | TextElement | FreehandElement | ImageElement | OtherBoxedElement;
 
 export type ArrowElement = {
   id: ElementId;

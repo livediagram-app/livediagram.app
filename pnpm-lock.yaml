@@ -7045,6 +7045,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../model-core
+      perfect-freehand:
+        specifier: ^1.2.3
+        version: 1.2.3
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
