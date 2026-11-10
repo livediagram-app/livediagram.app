@@ -201,12 +201,28 @@ coverage run `cpuBudgetMs` is unbounded: the test still runs and its lines still
 (`vitest-budgets --shard=n/3`). A budget used as a test timeout is a wall-clock limit, not a CPU budget, and
 never goes through `cpuBudgetMs`.
 
-A growth check (a scan held linear by comparing the CPU time of two input sizes, not by a budget) keeps its
-larger input under about a million characters. Past that, V8's memory handling alone grows faster than the
-text: the label-cap ReDoS checks in the four document packages compared 320,000 and 1.28 million characters,
+A growth check holds work linear by comparing the CPU time of two input sizes a fixed multiple apart, not by a
+budget: four times the input under eight times the CPU, where a quadratic scan reads sixteen. Its ceiling comes
+from `cpuRatioCeiling(ratio)` in `@liveworkspace/vitest-config/cpu-time` (or, for a limit written on the smaller
+time, `cpuGrowthLimitMs(ms, ratio, slackMs)`, which is `ms x ratio + slackMs`): the ratio as written in a plain
+run and on CI alike, since a ratio already cancels a slower runner, and unbounded under coverage, as
+`cpuBudgetMs` is. Instrumentation slows a large input's allocation and collection more than a small one's, so a
+ratio read under coverage measures the collector, not the code: livehuddle's stored-arrow bounds read 8.68
+against a ceiling of 8 on CI (2026-11-10) and 3 to 6.4 locally. The import puts the file in `vitest-budgets`'
+plain rerun, where the ratio holds. Every growth check in the repository goes through one of the two.
+
+A growth check also keeps its larger input small enough that garbage collection stays out of it: under about a
+million characters, and a few thousand elements. Past that, V8's memory handling alone grows faster than the
+input. The label-cap ReDoS checks in the four document packages compared 320,000 and 1.28 million characters,
 read a median 6.9 for four times the text against a ceiling of 8, and failed `main` at 8.4 under coverage
 (2026-11-09). At two and eight times their sweep's length they read 4.1 (worst 4.7 of 20 runs), and a
 quadratic scan still reads 16.
+
+A growth check whose smaller input takes about a millisecond times several runs a sample, and times its two sizes
+in turns after one warm-up run of each, the best sample of each kept: timed one size after the other, the smaller
+pays the first compile and the larger whatever collection lands on it. livehuddle's lint growth (75 to 300 boxes
+and arrows) read 0.66 to 7.06 against 8 that way, and 3.8 to 4.1 in turns; the container order (1,200 to 4,800
+elements) read 1.3 to 8.3, and 4.3 to 5.9 in turns.
 
 The Checks job's **Speed budgets use CPU time** step (`.github/scripts/cpu-budget-guard.mjs`, also in
 the pre-push hook) fails a change that adds `performance.now()` to a test file. Older budgets are left

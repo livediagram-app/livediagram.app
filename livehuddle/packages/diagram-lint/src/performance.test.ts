@@ -1,11 +1,13 @@
 // The lint's cost (docs/specs/024-agents/blueprints/diagram-lint.md "Performance and limits", LN35). Timed as
-// growth, not as a ceiling: coverage instrumentation on a CI runner makes an absolute CPU budget flake, a ratio
-// does not. A tab of 300 boxes and 300 stored arrows costs about 2 ms here, under LINT_BUDGET_CPU_MS; four times the
-// tab costs under eight times as much. A stored arrow is a retired element no check reads (part 4 of the element
-// engine), but its line still counts toward the extent, which once indexed the tab per arrow (quadratic). A run is
-// now well under a millisecond on the small tab, so each sample times several runs to rise above the timer's noise.
+// growth, not as a ceiling, and judged without coverage (docs/ci.md "Speed budgets"). A tab of 300 boxes and 300
+// stored arrows costs about 2 ms here, under LINT_BUDGET_CPU_MS; four times the tab costs under eight times as much.
+// A stored arrow is a retired element no check reads (part 4 of the element engine), but its line still counts toward
+// the extent, which once indexed the tab per arrow (quadratic). A run is now well under a millisecond on the small
+// tab, so each sample times several runs to rise above the timer's noise, and the two sizes are warmed and timed in
+// turns, so neither pays for the first compile or a collection alone (the growth read 0.66 to 7.06 timed one after
+// the other).
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livehuddle/document';
 import { arrow, box, lint, tabOf } from './fixtures/build';
 
@@ -31,25 +33,33 @@ function grid(n: number): Element[] {
 }
 
 // Four times the elements, under eight times the CPU.
-const RATIO_CEILING = 8;
+const RATIO_CEILING = cpuRatioCeiling(8);
 
 const RUNS_PER_SAMPLE = 10;
 
-const fastest = (els: Element[]) => {
-  const tab = tabOf(...els);
-  return Math.min(
-    ...[0, 1, 2, 3, 4].map(() =>
-      cpuMsOf(() => {
-        for (let run = 0; run < RUNS_PER_SAMPLE; run++) lint(tab);
-      }),
-    ),
-  );
+const sample = (tab: ReturnType<typeof tabOf>) =>
+  cpuMsOf(() => {
+    for (let run = 0; run < RUNS_PER_SAMPLE; run++) lint(tab);
+  });
+
+// The fastest sample of each tab, warmed first and timed in turns.
+const fastestOfBoth = (smallEls: Element[], largeEls: Element[]) => {
+  const smallTab = tabOf(...smallEls);
+  const largeTab = tabOf(...largeEls);
+  sample(smallTab);
+  sample(largeTab);
+  let small = Infinity;
+  let large = Infinity;
+  for (let i = 0; i < 7; i++) {
+    small = Math.min(small, sample(smallTab));
+    large = Math.min(large, sample(largeTab));
+  }
+  return { small, large };
 };
 
 describe('performance', () => {
   it('grows with the tab, not faster: 75 to 300 boxes and arrows', { timeout: 30_000 }, () => {
-    const small = fastest(grid(75));
-    const large = fastest(grid(300));
+    const { small, large } = fastestOfBoth(grid(75), grid(300));
     expect(grid(300).filter((el) => el.type === 'arrow')).toHaveLength(300);
     expect(large / small).toBeLessThan(RATIO_CEILING);
   });

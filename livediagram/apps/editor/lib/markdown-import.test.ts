@@ -1,4 +1,4 @@
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuGrowthLimitMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   glyphWidth,
@@ -67,7 +67,7 @@ describe('parseMarkdown — headings', () => {
       Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void parseMarkdown(text))));
     const small = fastest(`# a${' '.repeat(10_000)}b`);
     const large = fastest(`# a${' '.repeat(40_000)}b`);
-    expect(large).toBeLessThan(small * 8 + 5);
+    expect(large).toBeLessThan(cpuGrowthLimitMs(small, 8, 5));
   });
 });
 
@@ -308,7 +308,7 @@ describe('cleanInline on hostile input', () => {
     for (const run of ['[', '![', '<', '[a](', '_a ', 'a_b ', '* a ', 'a__b ']) {
       const small = fastest(run.repeat(5_000));
       const large = fastest(run.repeat(20_000));
-      expect(large, run).toBeLessThan(small * 8 + 5);
+      expect(large, run).toBeLessThan(cpuGrowthLimitMs(small, 8, 5));
     }
   });
 
@@ -418,6 +418,6 @@ describe('markdown import node cap', () => {
     fastest(smallMd); // warm the JIT so the first sample is not the slow one
     const small = fastest(smallMd);
     const large = fastest(largeMd);
-    expect(large).toBeLessThan(small * 8 + 5);
+    expect(large).toBeLessThan(cpuGrowthLimitMs(small, 8, 5));
   });
 });

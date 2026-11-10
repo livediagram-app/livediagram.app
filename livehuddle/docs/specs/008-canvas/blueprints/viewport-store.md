@@ -60,7 +60,7 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
   `scale(zoom) translate(offset)` and the floor pattern's `background-position` from a store
   subscription, outside React, and sets them again on every render from the store's current value.
   The press handlers (`useCanvasSurfaceGestures`), the walk's camera (`useAvatarWalk`'s
-  `readViewportOffset`) and the Walk In read the offset when they run; `useOffscreenContent` subscribes
+  `readViewportOffset`, read in `useAvatarWalkCamera`) and the Walk In read the offset when they run; `useOffscreenContent` subscribes
   to whether the content is off screen, by value; the characters layer, which follows every step, and
   the path toolbar subscribe to the view where they draw it. What it renders takes the view only where
   it shows it:

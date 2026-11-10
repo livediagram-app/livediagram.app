@@ -21,13 +21,10 @@ import {
   type PairingStatus,
   randomBase64Url,
   type RoomsToClose,
-  sessionPrefixOf,
   sha256Hex,
   type SqlExec,
   WORKBENCH_PAIRING_CODE_BYTES,
   WORKBENCH_PAIRING_TTL_MS,
-  WORKBENCH_QUOTA_MAX,
-  WORKBENCH_SESSION_GRACE_MS,
   WORKBENCH_SESSION_PREFIX,
   WORKBENCH_SESSION_ROOMS_MAX,
   WORKBENCH_SESSION_SECRET_BYTES,
@@ -44,12 +41,26 @@ import {
 import {
   effectiveStatus,
   PAIRING_COLUMNS,
-  type ReachColumns,
-  reachOf,
   type Row,
   SCHEMA,
+  toConsumedTicket,
   toPairing,
+  toPairingRequest,
+  toSessionRead,
 } from './store-schema.ts';
+import { roomsOfEndedAccess } from './store-ended-access.ts';
+import {
+  checkQuotaInput,
+  hasRows,
+  insertPairingRequest,
+  insertSession,
+  insertTicket,
+  livePairingRequest,
+  nextLapseOf,
+  recordApprovedPairing,
+  sweepLapsed,
+  takeQuotaUses,
+} from './store-statements.ts';
 
 // ---------- The store ------------------------------------------------------------------------------------------
 
@@ -113,23 +124,9 @@ export class WorkbenchCore {
     return this.#person;
   }
 
-  // The next moment something here lapses (a ticket, a request, a session past its grace, an allowance use), or null
-  // when nothing will. Pairings never lapse on their own.
-  #nextLapse(): number | null {
-    const row = this.#first(
-      `SELECT MIN(at) AS at FROM (
-         SELECT MIN(expires_at) AS at FROM wb_tickets
-         UNION ALL SELECT MIN(expires_at) FROM wb_pairing_requests
-         UNION ALL SELECT MIN(expires_at) + ? FROM wb_sessions
-         UNION ALL SELECT MIN(until) FROM wb_quota)`,
-      WORKBENCH_SESSION_GRACE_MS,
-    );
-    return typeof row?.at === 'number' ? row.at : null;
-  }
-
-  // Sets the alarm for the next lapse, or clears it when nothing will lapse.
+  // Sets the alarm for the next lapse (store-statements.ts), or clears it when nothing will lapse.
   async #schedule(): Promise<void> {
-    const at = this.#nextLapse();
+    const at = nextLapseOf(this.#sql);
     const current = await this.#storage.getAlarm();
     if (at === null) {
       if (current !== null) await this.#storage.deleteAlarm();
@@ -152,25 +149,9 @@ export class WorkbenchCore {
     now: number;
     ttlMs?: number;
   }): Promise<{ code: string; expiresAt: number; reused: boolean }> {
-    const { app, tokenId, origin, scope, name, now } = input;
+    const { name, now } = input;
     this.#ensure(input.personId);
-    this.#sql.exec(
-      `DELETE FROM wb_pairing_requests
-        WHERE app = ? AND token_id = ? AND origin = ? AND scope = ? AND status = 'pending' AND expires_at <= ?`,
-      app,
-      tokenId,
-      origin,
-      scope,
-      now,
-    );
-    const live = this.#first(
-      `SELECT code, name, expires_at FROM wb_pairing_requests
-        WHERE app = ? AND token_id = ? AND origin = ? AND scope = ? AND status = 'pending'`,
-      app,
-      tokenId,
-      origin,
-      scope,
-    );
+    const live = livePairingRequest(this.#sql, input);
     if (live) {
       if (name !== null && name !== live.name)
         this.#sql.exec('UPDATE wb_pairing_requests SET name = ? WHERE code = ?', name, live.code);
@@ -178,18 +159,7 @@ export class WorkbenchCore {
     }
     const code = randomBase64Url(WORKBENCH_PAIRING_CODE_BYTES);
     const expiresAt = now + (input.ttlMs ?? WORKBENCH_PAIRING_TTL_MS);
-    this.#sql.exec(
-      `INSERT INTO wb_pairing_requests (code, app, token_id, origin, name, scope, status, created_at, expires_at)
-       VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
-      code,
-      app,
-      tokenId,
-      origin,
-      name,
-      scope,
-      now,
-      expiresAt,
-    );
+    insertPairingRequest(this.#sql, code, input, expiresAt);
     await this.#schedule();
     return { code, expiresAt, reused: false };
   }
@@ -200,16 +170,7 @@ export class WorkbenchCore {
       `SELECT app, token_id, origin, name, scope, status, expires_at FROM wb_pairing_requests WHERE code = ?`,
       code,
     );
-    if (!row) return null;
-    return {
-      app: row.app as string,
-      tokenId: row.token_id as string,
-      origin: row.origin as string,
-      name: (row.name as string | null) ?? null,
-      scope: row.scope as WorkbenchScope,
-      expiresAt: row.expires_at as number,
-      status: effectiveStatus(row.status as string, row.expires_at as number, now),
-    };
+    return row ? toPairingRequest(row, now) : null;
   }
 
   // Answered once, by the person. A workspace approval on an origin already paired for the item scope widens that
@@ -233,19 +194,7 @@ export class WorkbenchCore {
     );
     if (answer === 'decline')
       return { outcome: 'declined', tokenId: request.tokenId, asked: request.scope };
-    this.#sql.exec(
-      `INSERT INTO wb_pairings (id, app, token_id, origin, name, scope, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT (app, token_id, origin) DO UPDATE
-         SET scope = 'workspace', name = COALESCE(excluded.name, wb_pairings.name)
-         WHERE excluded.scope = 'workspace'`,
-      crypto.randomUUID(),
-      request.app,
-      request.tokenId,
-      request.origin,
-      request.name,
-      request.scope,
-      now,
-    );
+    recordApprovedPairing(this.#sql, request, now);
     const pairing = await this.findPairing(request.app, request.tokenId, request.origin);
     if (!pairing) throw new Error('workbench: approved request recorded no pairing');
     return { outcome: 'approved', pairing, asked: request.scope };
@@ -314,31 +263,13 @@ export class WorkbenchCore {
     now: number;
     expiresAt: number;
   }): Promise<{ ticket: string; expiresAt: number } | null> {
-    const { pairingId, reach, tabId, role, now, expiresAt } = input;
     this.#ensure(input.personId);
-    const pairing = await this.readPairing(pairingId);
+    const pairing = await this.readPairing(input.pairingId);
     if (!pairing) return null;
     const ticket = `${randomBase64Url(WORKBENCH_TICKET_BYTES)}.${this.#id}`;
-    this.#sql.exec(
-      `INSERT INTO wb_tickets
-         (ticket_hash, app, token_id, pairing_id, scope, item_id, folder_id, tab_id, origin, role, created_at,
-          expires_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      await sha256Hex(ticket),
-      pairing.app,
-      pairing.tokenId,
-      pairingId,
-      reach.scope,
-      reach.itemId,
-      reach.folderId,
-      tabId,
-      pairing.origin,
-      role,
-      now,
-      expiresAt,
-    );
+    insertTicket(this.#sql, await sha256Hex(ticket), pairing, input);
     await this.#schedule();
-    return { ticket, expiresAt };
+    return { ticket, expiresAt: input.expiresAt };
   }
 
   // Single use, and only on the app it was minted for: a ticket another app's address presents is unknown there
@@ -368,19 +299,7 @@ export class WorkbenchCore {
       if (!seen) return { ok: false, reason: 'unknown' };
       return { ok: false, reason: seen.used_at !== null ? 'used' : 'expired' };
     }
-    return {
-      ok: true,
-      ticket: {
-        ownerId: this.#owner(),
-        app: row.app as string,
-        tokenId: row.token_id as string,
-        pairingId: row.pairing_id as string,
-        ...reachOf(row as ReachColumns),
-        tabId: (row.tab_id as string | null) ?? null,
-        origin: row.origin as string,
-        role: row.role as WorkbenchLevel,
-      },
-    };
+    return { ok: true, ticket: toConsumedTicket(row, this.#owner()) };
   }
 
   // ----- Sessions -----
@@ -395,31 +314,12 @@ export class WorkbenchCore {
     now: number;
     expiresAt: number;
   }): Promise<{ id: string; secret: string } | null> {
-    const { pairingId, reach, tabId, role, now, expiresAt } = input;
     this.#ensure(input.personId);
-    const pairing = await this.readPairing(pairingId);
+    const pairing = await this.readPairing(input.pairingId);
     if (!pairing) return null;
     const id = crypto.randomUUID();
     const secret = `${WORKBENCH_SESSION_PREFIX}${randomBase64Url(WORKBENCH_SESSION_SECRET_BYTES)}.${this.#id}`;
-    this.#sql.exec(
-      `INSERT INTO wb_sessions
-         (id, secret_hash, app, token_id, pairing_id, scope, item_id, folder_id, tab_id, origin, role, created_at,
-          expires_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      id,
-      await sha256Hex(secret),
-      pairing.app,
-      pairing.tokenId,
-      pairingId,
-      reach.scope,
-      reach.itemId,
-      reach.folderId,
-      tabId,
-      pairing.origin,
-      role,
-      now,
-      expiresAt,
-    );
+    insertSession(this.#sql, id, await sha256Hex(secret), pairing, input);
     await this.#schedule();
     return { id, secret };
   }
@@ -433,20 +333,7 @@ export class WorkbenchCore {
          FROM wb_sessions WHERE secret_hash = ?`,
       hash,
     );
-    if (!row) return null;
-    return {
-      id: row.id as string,
-      ownerId: this.#owner(),
-      app: row.app as string,
-      tokenId: row.token_id as string,
-      pairingId: row.pairing_id as string,
-      ...reachOf(row as ReachColumns),
-      tabId: (row.tab_id as string | null) ?? null,
-      origin: row.origin as string,
-      role: row.role as WorkbenchLevel,
-      createdAt: row.created_at as number,
-      expiresAt: row.expires_at as number,
-    };
+    return row ? toSessionRead(row, this.#owner()) : null;
   }
 
   async endSession(id: string): Promise<void> {
@@ -503,37 +390,7 @@ export class WorkbenchCore {
     this.#sql.exec(`DELETE FROM wb_pairings WHERE ${column} = ?`, key);
     if (byToken) this.#sql.exec('DELETE FROM wb_pairing_requests WHERE token_id = ?', key);
 
-    for (const session of sessions) {
-      console.info('[workbench] session-ended', {
-        reason,
-        scope: session.scope,
-        itemId: session.item_id,
-        tokenId: session.token_id,
-        sessionPrefix: sessionPrefixOf(session.id as string),
-      });
-    }
-    const rooms: RoomsToClose[] = [];
-    for (const pairing of pairings) {
-      const itemIds = [
-        ...new Set([
-          ...sessions.flatMap((s) =>
-            s.pairing_id === pairing.id && s.item_id !== null ? [s.item_id as string] : [],
-          ),
-          ...joined.filter((r) => r.pairing_id === pairing.id).map((r) => r.item_id as string),
-        ]),
-      ];
-      if (itemIds.length > 0) {
-        rooms.push({ app: pairing.app as string, pairingId: pairing.id as string, itemIds });
-      }
-      console.info('[workbench] unpaired', {
-        app: pairing.app,
-        tokenId: pairing.token_id,
-        pairingId: pairing.id,
-        scope: pairing.scope,
-        reason,
-        rooms: itemIds.length,
-      });
-    }
+    const rooms = roomsOfEndedAccess(pairings, sessions, joined, reason);
     await this.#settle();
     return { pairings: pairings.length, sessions: sessions.length, rooms };
   }
@@ -563,40 +420,15 @@ export class WorkbenchCore {
     count?: number;
   }): Promise<number> {
     const { personId, kind, max, windowMs, now, count = 1 } = input;
-    if (!Number.isInteger(max) || max < 1 || max > WORKBENCH_QUOTA_MAX || !(windowMs > 0)) {
-      throw new Error('workbench: an allowance needs a cap of 1 to 1,000 and a window');
-    }
-    if (!Number.isInteger(count) || count < 1) throw new Error('workbench: take at least one use');
+    checkQuotaInput(max, windowMs, count);
     this.#ensure(personId);
-    this.#sql.exec('DELETE FROM wb_quota WHERE kind = ? AND at <= ?', kind, now - windowMs);
-    const used = Number(
-      this.#first('SELECT COUNT(*) AS n FROM wb_quota WHERE kind = ?', kind)?.n ?? 0,
-    );
-    const taken = Math.max(0, Math.min(count, max - used));
+    const taken = takeQuotaUses(this.#sql, { kind, max, windowMs, now, count });
     if (taken === 0) return 0;
-    this.#sql.exec(
-      `INSERT INTO wb_quota (kind, at, until)
-       WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < ?)
-       SELECT ?, ?, ? FROM n`,
-      taken,
-      kind,
-      now,
-      now + windowMs,
-    );
     await this.#schedule();
     return taken;
   }
 
   // ----- Upkeep -----
-
-  #hasRows(): boolean {
-    return (
-      this.#first(
-        `SELECT 1 FROM wb_pairings UNION ALL SELECT 1 FROM wb_pairing_requests UNION ALL SELECT 1 FROM wb_tickets
-         UNION ALL SELECT 1 FROM wb_sessions UNION ALL SELECT 1 FROM wb_quota LIMIT 1`,
-      ) !== null
-    );
-  }
 
   async #drop(): Promise<void> {
     await this.#storage.deleteAlarm();
@@ -607,22 +439,8 @@ export class WorkbenchCore {
 
   // After rows went: a store left with nothing deletes itself, any other sets its alarm for what is left to lapse.
   async #settle(): Promise<void> {
-    if (!this.#hasRows()) await this.#drop();
+    if (!hasRows(this.#sql)) await this.#drop();
     else await this.#schedule();
-  }
-
-  // What has lapsed: tickets and requests past their expiry, sessions past their grace, allowance uses past their
-  // window. Answers how many rows went.
-  #sweep(now: number): number {
-    let deleted = 0;
-    const run = (query: string, ...bindings: unknown[]) => {
-      deleted += this.#rows(`${query} RETURNING 1`, ...bindings).length;
-    };
-    run('DELETE FROM wb_tickets WHERE expires_at <= ?', now);
-    run('DELETE FROM wb_pairing_requests WHERE expires_at <= ?', now);
-    run('DELETE FROM wb_sessions WHERE expires_at <= ?', now - WORKBENCH_SESSION_GRACE_MS);
-    run('DELETE FROM wb_quota WHERE until <= ?', now);
-    return deleted;
   }
 
   // The alarm: what has lapsed goes, then the alarm is set for the next lapse, or cleared.
@@ -630,7 +448,7 @@ export class WorkbenchCore {
     // This alarm has fired: whatever is set next is for what is left.
     await this.#storage.deleteAlarm();
     if (!this.#started()) return { swept: 0 };
-    const swept = this.#sweep(now);
+    const swept = sweepLapsed(this.#sql, now);
     await this.#settle();
     return { swept };
   }

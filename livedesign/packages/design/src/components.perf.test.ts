@@ -2,7 +2,7 @@
 // 30-screen design with a component on every screen expands well inside its budget, and doubling the screens
 // roughly doubles the work rather than squaring it.
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuGrowthLimitMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { expandInstances } from './component-resolve';
 import { libraryLookup, libraryOf, type DesignComponent } from './components';
 import { box, instanceOf, text } from './components.test.fixtures';
@@ -58,6 +58,6 @@ describe('expandInstances, 30 screens', () => {
     const a = time(small);
     const b = time(large);
     // Four times the screens: well under sixteen times the work (quadratic) even on a noisy machine.
-    expect(b).toBeLessThan(Math.max(a, 1) * 10);
+    expect(b).toBeLessThan(cpuGrowthLimitMs(Math.max(a, 1), 10));
   });
 });

@@ -3,21 +3,14 @@
 // they see), one workbook per tab, writes sent one at a time per sheet in order, undo steps, and the room's ops
 // merged by rev. Writes land on ids, so pending writes rebase cleanly over anyone else's.
 import { isOfflineIdSync, subscribeOfflineIds } from '@/lib/offline/offline-store';
-import type { SheetCreateRequest, SheetsRoomOp, SheetWriteResponse } from '@liveplanner/api-schema';
+import type { SheetCreateRequest, SheetWriteResponse } from '@liveplanner/api-schema';
 import {
-  Workbook,
   applySheetWrite,
-  changedInputs,
   inverseSheetWrite,
-  mergeSheetChange,
-  sheetFromJson,
   sheetToJson,
   undoReadsNow,
   uniqueSheetTitle,
-  type CardSource,
-  type Sheet,
   type SheetJson,
-  type SheetPerson,
   type SheetRejection,
   type SheetWrite,
 } from '@liveplanner/sheets';
@@ -25,27 +18,22 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { ApiError } from '@/lib/api/core';
 import { errorStatus, isTransientWriteError } from './sheet-write-retry';
-import { createSheet, deleteSheet, fetchSheets, writeSheet } from '@/lib/api/sheets';
 import {
   PLAN_QUEUE_FULL_MESSAGE,
   nextSeq,
   planQueue,
   type SheetWriteFlags,
 } from '@/lib/offline-queue/plan-queue';
-import { SheetQueueKeeper, type SheetChange } from './sheet-store-queue';
-import { sheetRefusalMessage } from './sheet-store-messages';
+import { type SheetChange } from './sheet-store-queue';
+import { SheetStoreBase } from './sheet-store-base';
 import { keysOf, plannedWrites, undoWrites, withReaders } from './sheet-store-writes';
-import type {
-  Entry,
-  Inverse,
-  Pending,
-  SheetStoreDeps,
-  TabStatus,
-  WriteOpts,
-} from './sheet-store-types';
+import type { Inverse, Pending, SheetStoreDeps, WriteOpts } from './sheet-store-types';
 
-// The store's shapes, refusal messages and write planning live in their own modules; this entry keeps every export.
+// The store's shapes, refusal messages, write planning and its confirmed state (reading, loading, the workbooks and
+// what lands from the server or the room, sheet-store-base.ts) live in their own modules; this entry keeps every
+// export.
 export { sheetRefusalMessage, writeRefusalMessage } from './sheet-store-messages';
+export { SHEET_REFETCH_DEBOUNCE_MS } from './sheet-store-base';
 export type { TabStatus } from './sheet-store-types';
 
 // A new tab's sheet waiting for the tab to be saved: retried this many times, this much longer each time
@@ -53,36 +41,9 @@ export type { TabStatus } from './sheet-store-types';
 const CREATE_TAB_RETRIES = 4;
 const CREATE_TAB_RETRY_MS = 800;
 
-const NOBODY: SheetPerson = { id: '', name: 'Someone', color: '#94a3b8' };
-export const SHEET_REFETCH_DEBOUNCE_MS = 400;
-
-export class SheetStore {
-  private deps: SheetStoreDeps;
-  private readonly api: NonNullable<SheetStoreDeps['api']>;
-  private readonly wait: (ms: number) => Promise<void>;
-  private readonly waiting: SheetQueueKeeper;
-  private readonly entries = new Map<string, Entry>();
-  private readonly tabStatus = new Map<string, TabStatus>();
-  private readonly workbooks = new Map<string, Workbook>();
-  private readonly queues = new Map<string, Promise<void>>();
-  // Each tab's load in flight (loadTab).
-  private readonly loads = new Map<string, Promise<void>>();
-  private readonly listeners = new Set<() => void>();
-  private readonly refetchTimers = new Map<string, ReturnType<typeof setTimeout>>();
-  // Sheets this person deleted with their elements, as they were: Undo puts the element back and its sheet with it
-  // (sheet-store.md "Deleting a sheet"). Kept for the session, as undo is.
-  private readonly released = new Map<string, SheetJson>();
-  // Writes a reload kept waiting (offline-changes.md "Kept across a reload") for sheets not loaded yet: laid over the
-  // sheet when it loads, as its pending writes.
-  private readonly restored = new Map<string, Pending[]>();
-  private cards: CardSource | null = null;
-  version = 0;
-
+export class SheetStore extends SheetStoreBase {
   constructor(deps: SheetStoreDeps) {
-    this.deps = deps;
-    this.api = deps.api ?? { fetchSheets, createSheet, writeSheet, deleteSheet };
-    this.wait = deps.wait ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
-    this.waiting = new SheetQueueKeeper(() => this.deps, this.wait);
+    super(deps);
     // The project synced to the server in place (docs/specs/006-project/offline-mode.md "Syncing in
     // place"): every loaded tab is read again from the server, so the confirmed revisions are its own.
     // The store lives for the session, as does this subscription.
@@ -93,168 +54,6 @@ export class SheetStore {
     // cannot leave a sheet behind (offline-changes.md "Then a refresh"). Waiting sends are cut short on their own.
     if (typeof window !== 'undefined') window.addEventListener('online', () => this.resync());
     this.restore();
-  }
-
-  // The editor's latest identity, toasts and undo (they change across renders; the store lives for the session).
-  update(deps: SheetStoreDeps): void {
-    this.deps = { ...deps, api: this.api, wait: this.wait };
-  }
-
-  // ---- Reading -----------------------------------------------------------------------------------------
-
-  subscribe = (listener: () => void): (() => void) => {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
-  };
-
-  getVersion = (): number => this.version;
-
-  sheet(id: string): Sheet | undefined {
-    return this.entries.get(id)?.view;
-  }
-
-  status(tabId: string): TabStatus | undefined {
-    return this.tabStatus.get(tabId);
-  }
-
-  workbook(tabId: string): Workbook {
-    let wb = this.workbooks.get(tabId);
-    if (!wb) {
-      wb = new Workbook({
-        sheets: [...this.entries.values()].map((e) => e.view).filter((s) => s.tabId === tabId),
-        locale: this.deps.locale,
-        cards: this.cards,
-      });
-      this.workbooks.set(tabId, wb);
-    }
-    return wb;
-  }
-
-  titlesOn(tabId: string): string[] {
-    return [...this.entries.values()]
-      .filter((e) => e.view.tabId === tabId)
-      .map((e) => e.view.title);
-  }
-
-  setCards(cards: CardSource | null): void {
-    if (cards === this.cards) return;
-    this.cards = cards;
-    for (const wb of this.workbooks.values()) wb.setCards(cards);
-    this.notify();
-  }
-
-  usesCards(): boolean {
-    for (const wb of this.workbooks.values()) if (wb.usesCards()) return true;
-    return false;
-  }
-
-  private notify(): void {
-    this.version++;
-    for (const l of this.listeners) l();
-  }
-
-  // ---- Loading -----------------------------------------------------------------------------------------
-
-  // Settles once the tab's sheets are in (or the load failed, never rejecting): a second caller while a load is in
-  // flight waits for that same load, so what it reads next is the loaded tab, never the empty one.
-  loadTab(tabId: string, force = false): Promise<void> {
-    const inFlight = this.loads.get(tabId);
-    if (!force && inFlight) return inFlight;
-    if (!force && this.tabStatus.get(tabId) === 'ready') return Promise.resolve();
-    const load = this.fetchTab(tabId);
-    this.loads.set(tabId, load);
-    void load.finally(() => {
-      if (this.loads.get(tabId) === load) this.loads.delete(tabId);
-    });
-    return load;
-  }
-
-  private async fetchTab(tabId: string): Promise<void> {
-    this.tabStatus.set(tabId, 'loading');
-    this.notify();
-    try {
-      const sheets = await this.api.fetchSheets(this.deps.scope, { tabId });
-      for (const json of sheets) this.adopt(json);
-      this.tabStatus.set(tabId, 'ready');
-    } catch (e) {
-      debugLog('[sheets] sheets.load.failed', { status: e instanceof ApiError ? e.status : 0 });
-      this.tabStatus.set(tabId, 'error');
-    }
-    this.notify();
-  }
-
-  // A sheet from the server: it becomes the confirmed state, pending writes laid back over it.
-  private adopt(json: SheetJson): void {
-    const confirmed = sheetFromJson(json);
-    const entry = this.entries.get(json.id);
-    const pending = entry?.pending ?? this.restored.get(json.id) ?? [];
-    this.restored.delete(json.id);
-    this.entries.set(json.id, { confirmed, pending, view: this.rebase(confirmed, pending) });
-    this.workbookUpdate(confirmed.tabId, json.id);
-  }
-
-  private async refetchSheet(sheetId: string): Promise<void> {
-    const entry = this.entries.get(sheetId);
-    try {
-      const [json] = await this.api.fetchSheets(this.deps.scope, { ids: [sheetId] });
-      if (json) this.adopt(json);
-      else if (entry) this.drop(sheetId);
-      this.notify();
-    } catch {
-      debugLog('[sheets] sheets.load.failed', { sheet: true });
-    }
-  }
-
-  private scheduleRefetch(sheetId: string): void {
-    debugLog('[sheets] sheets.refetch.gap', {});
-    clearTimeout(this.refetchTimers.get(sheetId));
-    this.refetchTimers.set(
-      sheetId,
-      setTimeout(() => {
-        this.refetchTimers.delete(sheetId);
-        void this.refetchSheet(sheetId);
-      }, SHEET_REFETCH_DEBOUNCE_MS),
-    );
-  }
-
-  // After a reconnect, every loaded tab is fetched again (what was missed is not replayed).
-  resync(): void {
-    for (const [tabId, status] of this.tabStatus)
-      if (status !== 'loading') void this.loadTab(tabId, true);
-  }
-
-  private drop(sheetId: string): void {
-    const entry = this.entries.get(sheetId);
-    if (!entry) return;
-    this.entries.delete(sheetId);
-    this.workbooks.get(entry.view.tabId)?.removeSheet(sheetId);
-  }
-
-  // ---- The workbooks -----------------------------------------------------------------------------------
-
-  private rebase(confirmed: Sheet, pending: readonly Pending[]): Sheet {
-    let sheet = confirmed;
-    for (const p of pending) {
-      try {
-        sheet = {
-          ...applySheetWrite(sheet, p.write, { now: Date.now(), by: this.by() }).sheet,
-          rev: confirmed.rev,
-        };
-      } catch {
-        // A write that no longer applies is left out of the view; its answer or a refetch settles it.
-      }
-    }
-    return sheet;
-  }
-
-  private workbookUpdate(tabId: string, sheetId: string, keys?: string[]): void {
-    const wb = this.workbooks.get(tabId);
-    const view = this.entries.get(sheetId)?.view;
-    if (wb && view) wb.updateSheet(view, keys);
-  }
-
-  private by(): SheetPerson {
-    return this.deps.self() ?? NOBODY;
   }
 
   // ---- Writing -----------------------------------------------------------------------------------------
@@ -500,23 +299,6 @@ export class SheetStore {
     if (kept.length > 0) debugLog('[offline-queue] sheets.restored', { count: kept.length });
   }
 
-  // Whether a write is still this person's to send: pending on its sheet, or kept by a reload for a sheet not loaded.
-  private isPending(sheetId: string, wid: string): boolean {
-    const has = (list: readonly Pending[] | undefined) => !!list?.some((p) => p.wid === wid);
-    return has(this.entries.get(sheetId)?.pending) || has(this.restored.get(sheetId));
-  }
-
-  private dropPending(sheetId: string, wid: string | undefined): void {
-    const entry = this.entries.get(sheetId);
-    if (entry) entry.pending = entry.pending.filter((p) => p.wid !== wid);
-    const kept = this.restored.get(sheetId);
-    if (kept)
-      this.restored.set(
-        sheetId,
-        kept.filter((p) => p.wid !== wid),
-      );
-  }
-
   // A Sheet whose sheet this person deleted with it is back (Undo): make the sheet again as it was, under the next
   // free title if its own is taken now. False when there is nothing to put back.
   restoreReleased(sheetId: string): boolean {
@@ -588,86 +370,6 @@ export class SheetStore {
     }
     this.waiting.forget(wid);
     this.landed(sheetId, wid, answer.rev, answer.applied);
-  }
-
-  // Our write as the server stored it, from the answer or the room, whichever comes first.
-  private landed(
-    sheetId: string,
-    wid: string | undefined,
-    rev: number,
-    applied: SheetWrite,
-    by?: SheetPerson,
-    at?: number,
-  ): void {
-    const entry = this.entries.get(sheetId);
-    if (!entry) {
-      this.dropPending(sheetId, wid);
-      return;
-    }
-    if (rev <= entry.confirmed.rev) {
-      if (wid) entry.pending = entry.pending.filter((p) => p.wid !== wid);
-      return;
-    }
-    const merged = mergeSheetChange(entry.confirmed, {
-      rev,
-      applied,
-      at: at ?? Date.now(),
-      by: by ?? this.by(),
-    });
-    if (merged.kind !== 'applied') {
-      // A gap: someone else's writes came in between and their ops have not arrived; fetch the sheet.
-      if (wid) entry.pending = entry.pending.filter((p) => p.wid !== wid);
-      this.scheduleRefetch(sheetId);
-      return;
-    }
-    entry.confirmed = merged.sheet;
-    if (wid) entry.pending = entry.pending.filter((p) => p.wid !== wid);
-    const view = this.rebase(entry.confirmed, entry.pending);
-    const shown = entry.view;
-    const layoutMoved = view.layout !== shown.layout || view.title !== shown.title;
-    entry.view = view;
-    // Only the inputs the view did not already show: our own write's answer changes none, so what reads its cells is
-    // not worked out a second time (blueprint sheet-store.md "Client").
-    this.workbookUpdate(
-      view.tabId,
-      sheetId,
-      layoutMoved ? undefined : changedInputs(shown, view, merged.touched),
-    );
-    this.notify();
-  }
-
-  private refused(e: unknown, sheetId: string): void {
-    const code = e instanceof ApiError ? e.code : null;
-    debugLog('[sheets] sheets.write.failed', { error: code });
-    this.deps.toast(sheetRefusalMessage(code));
-    if (code === 'sheet_not_found') {
-      this.drop(sheetId);
-      this.notify();
-    }
-  }
-
-  // ---- The room ----------------------------------------------------------------------------------------
-
-  receive(op: SheetsRoomOp): void {
-    const entry = this.entries.get(op.sheetId);
-    if (op.deleted) {
-      if (entry) {
-        this.drop(op.sheetId);
-        this.notify();
-      }
-      return;
-    }
-    if (op.created) {
-      if (!entry && this.tabStatus.get(op.tabId) === 'ready') void this.refetchSheet(op.sheetId);
-      return;
-    }
-    if (!entry) return;
-    if (op.refetch || !op.applied) {
-      if (op.wid) entry.pending = entry.pending.filter((p) => p.wid !== op.wid);
-      this.scheduleRefetch(op.sheetId);
-      return;
-    }
-    this.landed(op.sheetId, op.wid, op.rev, op.applied, op.by, op.at);
   }
 }
 

@@ -1,12 +1,12 @@
 // The engine's cost grows with the tab and the changeset, not faster
 // (docs/specs/024-agents/blueprints/edit-operations.md "Performance and limits"). Timed as growth, not as
-// a ceiling: an absolute time depends on the machine and on coverage instrumentation, a ratio does not.
+// a ceiling: an absolute time depends on the machine, a ratio barely, and coverage judges neither (docs/ci.md "Speed budgets").
 // Timed in CPU time (cpuMsOf), not wall-clock: under turbo's parallel suites a wall-clock run also
 // counts the time spent waiting for a core, which pushed the ratio past its ceiling.
 // Four times the elements, or four times the operations, should cost about four times as much; a
 // quadratic step would cost sixteen.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element, Tab } from '@livehuddle/document';
 import { applyEditOperations } from './apply';
 import { createState, noteTarget } from './state';
@@ -15,7 +15,10 @@ import type { EditOperation } from './types';
 
 const FRAMES = 10;
 const GROWTH = 4;
-const RATIO_CEILING = 8;
+const RATIO_CEILING = cpuRatioCeiling(8);
+// The smaller tab of the per-element growth checks: 1,200 against 4,800, not 2,400 against 9,600, so the larger keeps
+// the collector out of the timing (docs/ci.md "Speed budgets"); measured at 4.3 to 5.1 for four times the tab.
+const SMALL_TAB = 1200;
 // Fastest of five: a run takes a few milliseconds now, so one garbage collection in three runs moved a ratio.
 const RUNS = 5;
 // Sized to time tens of milliseconds an apply; coverage on a CI runner makes that seconds.
@@ -138,8 +141,8 @@ describe('performance', () => {
       }
       return best;
     };
-    const small = fastest(boxesOf(2400));
-    const large = fastest(boxesOf(2400 * GROWTH));
+    const small = fastest(boxesOf(SMALL_TAB));
+    const large = fastest(boxesOf(SMALL_TAB * GROWTH));
     expect(large / small).toBeLessThan(RATIO_CEILING);
   });
 
