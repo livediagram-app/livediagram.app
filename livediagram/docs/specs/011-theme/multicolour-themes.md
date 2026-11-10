@@ -25,7 +25,7 @@ The catalogue ships three multi-colour themes, all extra:
 
 ## How a branch is decided
 
-The document model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Document structure](../006-document/document-structure.md), `Endpoint.kind === 'pinned'`). `packages/document/src/hierarchy.ts` derives branches from them:
+The document model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Document structure](../006-document/document-structure.md), `Endpoint.kind === 'pinned'`). `../packages/element-model/src/hierarchy.ts` derives branches from them:
 
 1. Each arrow whose **both** endpoints pin to **boxed** elements defines a directed edge `from → to` (parent → child). Free-floating arrows, arrows pinned to another arrow or to an element no longer on the tab, and self-loops contribute nothing.
 2. **Roots** are boxed elements with no incoming pinned edge but at least one outgoing one (the centre of a mind map, the CEO of an org chart). Roots get the sentinel `ROOT_BRANCH`.
