@@ -24,10 +24,13 @@ import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 import type { AttachPoint } from './attachment';
 import type { BoundaryStyle } from './boundary';
 import type { CardMedia } from './card';
+import type { ChartPaletteId } from './chart-palettes';
 import type { ChipLook } from './chip';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
+import type { LineSeries, PieSlice } from './data-shapes';
 import type { KeyRow } from './diagram-key';
 import type { Finish } from './finish';
+import type { MindFlow } from './mind-flow';
 import type { MindLook } from './person-node';
 import type { StackAlign, StackDirection } from './stack';
 import type { HeroCaption, StatItem } from './web-components';
@@ -64,7 +67,7 @@ export type Endpoint =
 
 /** The kinds with a box other than those typed below, across every product (each holds a subset). */
 export type OtherBoxedKind =
-  'sticky' | 'path' | 'table' | 'annotation' | 'link-card' | 'video' | 'article-note';
+  'sticky' | 'path' | 'annotation' | 'link-card' | 'video' | 'article-note';
 
 /** What every boxed element has: an id, a kind and a box on the canvas. */
 export type BoxBase = {
@@ -125,8 +128,23 @@ export type ShapeElement = BoxBase & {
   navLinks?: string[];
   chipLook?: ChipLook;
   stepSequence?: boolean;
-  /** A mind node's parent (livediagram, liveplanner). */
+  // A chart's data and look (chart-frame.ts, chart-marks.ts), where a product holds charts.
+  pieSlices?: readonly PieSlice[];
+  lineCategories?: readonly string[];
+  lineSeries?: readonly LineSeries[];
+  chartLegend?: boolean;
+  chartValues?: boolean;
+  chartAxis?: boolean;
+  chartLegendPosition?: 'top' | 'right' | 'bottom' | 'left';
+  chartPalette?: ChartPaletteId;
+  /** A chart's type within its kind (chart-types.ts). */
+  chartVariant?: string;
+  /** A progress bar or ring's percentage, a rating's stars (data-shapes.ts). */
+  progress?: number;
+  rating?: number;
+  /** A mind node's parent and its map's flow (livediagram, liveplanner). */
   mindParentId?: ElementId;
+  mindFlow?: MindFlow;
   // A badge, step or pointer note's host point (attachment.ts), and a pointer note's tip.
   attachedTo?: ElementId;
   attachAt?: AttachPoint;
@@ -189,12 +207,46 @@ export function isDrawnPath(el: { type: string }): el is PathElement {
   return el.type === 'path' && Array.isArray((el as { nodes?: unknown }).nodes);
 }
 
-export type OtherBoxedElement = BoxBase & { type: OtherBoxedKind };
+export type OtherBoxedElement = BoxBase & {
+  type: OtherBoxedKind;
+  /** A path closed into a loop (livediagram, livedesign). */
+  closed?: boolean;
+};
 
-export type ImageElement = BoxBase & { type: 'image'; heroCaption?: HeroCaption };
+export type ImageElement = BoxBase & {
+  type: 'image';
+  imageId?: string | null;
+  heroCaption?: HeroCaption;
+};
+
+/** A table cell's own look, each falling back to the table's (null: none of its own). */
+export type TableCellLook = {
+  bg?: string;
+  textColor?: string;
+  bold?: boolean;
+  italic?: boolean;
+  textSize?: TextSize;
+  alignX?: TextAlignX;
+};
+
+/** A table: row-major cell text, its header row and column, banding, and its pinned tracks. */
+export type TableElement = BoxBase & {
+  type: 'table';
+  /** Absent only on a stored table a product keeps but no longer draws (livehuddle's retired ones). */
+  cells?: readonly (readonly string[])[];
+  headerRow?: boolean;
+  headerColumn?: boolean;
+  zebra?: boolean;
+  headerTextColor?: string;
+  /** The table look it was painted with (theme-presets.ts). */
+  tablePreset?: string;
+  cellStyles?: readonly (readonly (TableCellLook | null)[])[];
+  colWidths?: readonly (number | null)[];
+  rowHeights?: readonly (number | null)[];
+};
 
 export type BoxedElement =
-  ShapeElement | TextElement | FreehandElement | ImageElement | OtherBoxedElement;
+  ShapeElement | TextElement | FreehandElement | ImageElement | TableElement | OtherBoxedElement;
 
 export type ArrowElement = {
   id: ElementId;
@@ -225,6 +277,11 @@ export type ArrowElement = {
   arrowEnds?: ArrowEnds;
   textBold?: boolean;
   textItalic?: boolean;
+  textColor?: string;
+  font?: string;
+  finish?: Finish;
+  /** The caption's backdrop, where a product's arrow stores one. */
+  labelFill?: string;
 };
 
 export type Element = BoxedElement | ArrowElement;
