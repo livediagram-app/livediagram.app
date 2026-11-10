@@ -13,32 +13,31 @@ types of [Telemetry](../../017-telemetry/telemetry.md). The code sites it answer
 `docs/research/access-levels/current-abilities.md`. The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `SRn`.
 
-The spec's [Later](../share-roles.md#later) items (token levels, ownership powers, collaboration keys pinned per
-socket, the answers route) are planned and not derived here; their earlier draft is in git history
+The spec's [Later](../share-roles.md#later) items (token levels, ownership powers, the answers route) are planned and not derived here; their earlier draft is in git history
 (`70a6f843f`).
 
 ## Scope, by file
 
-| File                                                                                                          | Role                                                                                          |
-| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/access-levels.ts`                                                                 | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`        |
-| `packages/api-schema/src/index.ts`                                                                            | `ShareRole` becomes an alias of `AccessLevel`                                                 |
-| `packages/api-schema/src/room-messages.ts`                                                                    | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                    |
-| `packages/project/src/participant-content.ts`                                                                 | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets   |
-| `packages/project/src/element-types.ts`, `validate.ts`                                                        | `addedBy?: string` on `StickyElement` and `TextElement`; validated                            |
-| `packages/project/src/collab-ledger.ts`                                                                       | `mergeLedgerAnswersIntoTab`: votes and responses only                                         |
-| `apps/api/src/plan-room/plan-schema.ts`                                                                       | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                   |
-| `apps/api/src/routes/context.ts`                                                                              | `gateParticipate` is the Participant check                                                    |
-| `apps/api/src/adder-key.ts`                                                                                   | `adderKeyFor(projectId, ownerId)`                                                             |
-| `apps/api/src/routes/project-room-routes.ts`                                                                  | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`      |
-| `apps/api/src/plan-room/plan-room.ts`, `room-op-gate.ts`, `project-room-rules.ts`                             | Level on the session; op gate by class; participant `el` ops through the tab write queue      |
-| `apps/api/src/participant-write.ts`                                                                           | `writeParticipantOp`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
-| `apps/api/src/routes/item-routes.ts`, `item-patches-route.ts`                                                 | Create, patch, move and patches at participate                                                |
-| `apps/api/src/routes/sheet-route-kit.ts`, `sheet-write-route.ts`                                              | `cells` writes at participate                                                                 |
-| `packages/agent-verbs/src/mcp/*`                                                                              | `share_project.role` takes three levels, default `participate`                                |
-| `apps/editor/lib/editor-capabilities.ts`                                                                      | `resolveEditorCapabilities`, `EditorCapabilities`                                             |
-| `apps/editor/app/project/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
-| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/project/[id]/useRoleIndicator.ts`                     | Participating pill                                                                            |
+| File                                                                                                                            | Role                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `../packages/api-schema/src/access-levels.ts`                                                                                   | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`        |
+| `packages/api-schema/src/index.ts`                                                                                              | `ShareRole` becomes an alias of `AccessLevel`                                                 |
+| `packages/api-schema/src/room-messages.ts`                                                                                      | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                    |
+| `packages/project/src/participant-content.ts`                                                                                   | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets   |
+| `packages/project/src/element-types.ts`, `validate.ts`                                                                          | `addedBy?: string` on `StickyElement` and `TextElement`; validated                            |
+| `packages/project/src/collab-ledger.ts`                                                                                         | `mergeLedgerAnswersIntoTab`: votes and responses only                                         |
+| `apps/api/src/plan-room/plan-schema.ts`                                                                                         | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                   |
+| `apps/api/src/routes/context.ts`                                                                                                | `gateParticipate` is the Participant check                                                    |
+| `apps/api/src/adder-key.ts`                                                                                                     | `adderKeyFor(projectId, ownerId)`                                                             |
+| `apps/api/src/routes/project-room-routes.ts`                                                                                    | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`      |
+| `apps/api/src/plan-room/plan-room.ts`, `apps/api/src/plan-room/plan-room-frames.ts`, `room-op-gate.ts`, `project-room-rules.ts` | Level on the session; op gate by class; participant `el` ops through the tab write queue      |
+| `apps/api/src/participant-write.ts`                                                                                             | `writeParticipantOp`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
+| `apps/api/src/routes/item-routes.ts`, `item-patches-route.ts`                                                                   | Create, patch, move and patches at participate                                                |
+| `apps/api/src/routes/sheet-route-kit.ts`, `sheet-write-route.ts`                                                                | `cells` writes at participate                                                                 |
+| `packages/agent-verbs/src/mcp/*`                                                                                                | `share_project.role` takes three levels, default `participate`                                |
+| `apps/editor/lib/editor-capabilities.ts`                                                                                        | `resolveEditorCapabilities`, `EditorCapabilities`                                             |
+| `apps/editor/app/project/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`)                   | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
+| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/project/[id]/useRoleIndicator.ts`                                       | Participating pill                                                                            |
 
 ## Domain and naming
 
@@ -198,6 +197,19 @@ Invariants:
   keeps whatever the stored element carries.
 - **I6** The server enforces every level; `can` only decides what renders.
 
+Collab key ([spec](../share-roles.md#the-collab-key)): `collabKeyFor(person)` (`../packages/api-kit/src/collab-key.ts`)
+is the first `COLLAB_KEY_LENGTH` (32) hex characters of SHA-256(`liveworkspace:collab:v1:<person>`). The upgrade sets
+`COLLAB_KEY_HEADER` (`X-Verified-Collab-Key`) on every path, empty when no person resolves (a link code).
+`newSessionAttachment` keeps `sessionCollabKey(header)`: the header when it `isCollabKey`, else `mintCollabKey()` (32
+hex from `crypto.getRandomValues`). `helloPresence` sets `presence.key` from `session.collabKey`, never from the
+`hello`. After each `hello` the room (`apps/api/src/plan-room/plan-room-frames.ts`) sends `{ kind: 'collab-key', key }` (`CollabKeyMessage`,
+`../packages/api-schema/src/collab-key.ts`) to that socket alone; the connector hands a key that `isCollabKey` to
+`onCollabKey`, and `useRoomConnection` sets `selfParticipant.key` to it. `gateClientOp` (`apps/api/src/room-op-gate.ts`) drops, at
+every level and before the ladder, an op that `namesAnotherPerson(op, sender.key)`: a `vote` whose `voter`, or an
+`el-delta` `response` whose `participantId`, is not the sender's key (no key: dropped). `stampCommentAuthor` sets a
+reaction's `by` from `presence.key`. The card-thread reaction route (`routes/card-thread-routes.ts` `react`) records `by` as
+`collabKeyFor(caller.owner)` and ignores a `key` in the body.
+
 ## Interfaces and contracts
 
 `../packages/api-schema/src/access-levels.ts`:
@@ -339,7 +351,8 @@ lands in a new project, where no adder key matches it.
 - `addedBy` is derived from the caller's identity on the project and the project id, so it cannot be turned back
   into an owner id and differs per project; a Participant cannot claim another's element by writing `addedBy`
   (the rule keeps the stored value).
-- A Participant's dots and answers carry a client-chosen key, as an Editor's do today ([Later](../share-roles.md#later)).
+- The collab key is the server's (`X-Verified-Collab-Key`, set on every path): no session can publish, answer or react
+  under another's key, at any level. An Editor's whole-tab save can still write any key into the stored tab.
 - Rate: room frames ride `OP_RATE_CAP`; each drain of a tab's waiting ops is one read and one compare-and-swap.
 
 ## Performance and limits
@@ -401,20 +414,23 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 
 ## Testing
 
-| Rule                                                            | Test                                                               |
-| --------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Ladder, `parseStoredLevel`, telemetry types                     | `packages/api-schema/src/access-levels.test.ts`                    |
-| Op classes                                                      | `packages/api-schema/src/room-messages.test.ts`                    |
-| Every row of the participant rule, every refusal and correction | `packages/project/src/participant-content.test.ts`                 |
-| `addedBy` validation                                            | `packages/project/src/validate.test.ts`                            |
-| `mergeLedgerAnswersIntoTab`                                     | `packages/project/src/collab-ledger.test.ts`                       |
-| Write: applied, unchanged, refused, CAS retry, 404, 409, 413    | `apps/api/src/participant-write.test.ts`                           |
-| Room: op gate per level; participant path; adder header         | `apps/api/src/project-room.test.ts`, `project-room-routes.test.ts` |
-| Items and Sheets doors at participate                           | `apps/api/src/routes/item-routes.test.ts`, `sheet-routes.test.ts`  |
-| Capabilities per level                                          | `apps/editor/lib/editor-capabilities.test.ts`                      |
-| Participant save branch                                         | `apps/editor/app/project/[id]/tab-save-flow.test.ts`               |
-| Pill per level                                                  | `apps/editor/components/chrome/RoleIndicator.test.tsx`             |
-| MCP default and enum                                            | `packages/agent-verbs` MCP schema tests                            |
+| Rule                                                                             | Test                                                                        |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Collab key: derivation, shape, mint, `namesAnotherPerson`, CPU budget            | `../packages/api-kit/src/collab-key.test.ts`                                |
+| Collab key: pinned at upgrade, stamped at hello, sent alone, gate at every level | `apps/api/src/room-session.test.ts`, the room rules, op gate and room tests |
+| Collab key adopted from the room                                                 | `apps/editor/lib/api/room.test.ts`                                          |
+| Ladder, `parseStoredLevel`, telemetry types                                      | `packages/api-schema/src/access-levels.test.ts`                             |
+| Op classes                                                                       | `packages/api-schema/src/room-messages.test.ts`                             |
+| Every row of the participant rule, every refusal and correction                  | `packages/project/src/participant-content.test.ts`                          |
+| `addedBy` validation                                                             | `packages/project/src/validate.test.ts`                                     |
+| `mergeLedgerAnswersIntoTab`                                                      | `packages/project/src/collab-ledger.test.ts`                                |
+| Write: applied, unchanged, refused, CAS retry, 404, 409, 413                     | `apps/api/src/participant-write.test.ts`                                    |
+| Room: op gate per level; participant path; adder header                          | `apps/api/src/project-room.test.ts`, `project-room-routes.test.ts`          |
+| Items and Sheets doors at participate                                            | `apps/api/src/routes/item-routes.test.ts`, `sheet-routes.test.ts`           |
+| Capabilities per level                                                           | `apps/editor/lib/editor-capabilities.test.ts`                               |
+| Participant save branch                                                          | `apps/editor/app/project/[id]/tab-save-flow.test.ts`                        |
+| Pill per level                                                                   | `apps/editor/components/chrome/RoleIndicator.test.tsx`                      |
+| MCP default and enum                                                             | `packages/agent-verbs` MCP schema tests                                     |
 
 ## Constants and configuration
 

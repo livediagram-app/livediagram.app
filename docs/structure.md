@@ -467,6 +467,27 @@ Each step is its own PR, and both products build and pass their tests after ever
      `TrashedCard` differ only by the product's noun, so they take `noun` and each editor keeps a thin door at the old
      path that binds its word, leaving routes and copy unchanged. The menu icons' size steps sit in `menu-icon-base`,
      so an editor with its own context-menu icons pulls in none of the workbench's.
+   - Fifth slice: the byte-identical editor files that waited on one product import, 12 of the copies guard's
+     groups (about 3,500 of the 19,700 redundant non-test lines across the five editors), each at its editor path
+     as its own subpath, with their tests: about 1,800 lines in `packages/workbench` (1,200 of code, 600 of tests)
+     and about 7,200 fewer across the editors. The panel drag, measure and corner-inset code
+     (`useMovablePanelDrag`, `useMovablePanelMeasure`, `movable-panel-scale`) reads the props it needs from
+     `components/primitives/movable-panel-geometry`, the part every editor's `MovablePanelProps` agrees on, and
+     `PanelDragGeometry` lives there (each `lib/panel-layout.ts` re-exports it). The split divider reads the pane
+     floor and key steps from `lib/split-sizes`, the Size section its bounds from `lib/element-size-bounds` and its
+     row from `components/palette/MenuToggleRow` (each product's module re-exports what it held). The Collaborate
+     rules (`collaborate-model`), the context-menu scaffold, the chart legend and surface and the element
+     indicator style take the structural part of the product's rows, props or preferences they read, so each
+     product's own types pass in as they are. `useToast` reads Show Notifications through `readPreferences`,
+     and livediagram, livedocuments and livehuddle keep a one-line door at `hooks/ui/useToast.tsx` for their many
+     importers. `useMovablePanelMeasure` is livediagram's copy in every editor: its extra selector, the Draw dock,
+     matches nothing where there is no dock. Left, and why: tests, e2e harness files and scripts (as in the first
+     sweep); route files; the hooks that send telemetry (the Format and Spotlight config hooks, the debounced canvas
+     telemetry, `trackOrganise`), since the telemetry dashboard's emitter scan reads each product's own folders and
+     would need to read the workbench first; the groups only livediagram and livehuddle share (Work Tracker #650); and copies that
+     import a module typed on the product's element union or vocabulary (looks and seasonal looks, the laser
+     config, the panel layout's ids, themes, the settings catalogue, the image import types), or a component that
+     differs per product (`ModePanel`, `TopCenter`, `ShowMe`, `AreaErrorBoundary`, the palette controls).
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:

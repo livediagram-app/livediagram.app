@@ -20,6 +20,7 @@ import {
   type RoomOp,
   type RoomOutgoing,
 } from '@liveplanner/api-schema';
+import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import { opForTheWire } from '@liveplanner/project';
 import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerProjectFormat } from '../server-release';
@@ -31,6 +32,9 @@ export type RoomHandlers = {
   // The room's agents arrive apart from the sessions (docs/specs/024-agents/agent-presence.md "In the editor").
   onPresence: (participants: ParticipantPresence[], agents: AgentPresence[]) => void;
   onOp: (from: string, op: RoomOp) => void;
+  // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"),
+  // sent to this socket alone after each hello: our answers and reactions are recorded under it.
+  onCollabKey?: (key: string) => void;
   onClose?: () => void;
   // The project went to the Trash (docs/specs/013-workspace/trash.md): the room
   // closed this socket with PROJECT_TRASHED_CLOSE and will refuse every
@@ -66,6 +70,8 @@ type RoomConnectOptions = {
   ticket?: string | null;
   // A ticket is spent by the upgrade it admits (ws-tickets.ts deletes it), so a reconnect that sent the
   // first one again was refused, and the session lost the room for good. Called before every reconnect.
+  // Null when the api refused the mint (that upgrade is then refused, and the refusal path runs); throws when the
+  // mint never got an answer, which opens no socket and waits out the backoff.
   mintTicket?: () => Promise<string | null>;
   // A fresh grant for the room when it asks (GrantRenewMessage, liveworkspace/docs/specs/004-index/one-explorer-contracts.md
   // "Carrying a grant to the app"): without one before the old lapses, the room drops the socket and the
@@ -303,6 +309,9 @@ export function connectRoom(
             if (msg.seq > lastSeq) lastSeq = msg.seq;
           }
           if (msg.ref !== undefined) awaitingRef.get(msg.ref)?.(true);
+        } else if (msg.kind === 'collab-key') {
+          // A key of the wrong shape is no key of ours: the one we hold stays.
+          if (isCollabKey(msg.key)) handlers.onCollabKey?.(msg.key);
         } else if (msg.kind === 'op-refused') {
           // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An
           // invalid element"): it reached nobody, so a save waiting on it stops waiting.
@@ -368,23 +377,36 @@ export function connectRoom(
       // A live session dropped by itself: time the outage until the roster is back.
       if (socketOpened && connectTiming === null)
         reconnectTiming ??= startEditorTiming('RoomReconnect');
-      if (attempts >= MAX_RECONNECT_ATTEMPTS) {
-        settleTimings(false);
-        parked = true;
-        debugLog('[room] reconnect attempts used up; waiting for the network or the tab');
-        return;
-      }
-      const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
-      attempts++;
-      reconnectTimer = setTimeout(() => void reopen(), delay);
+      backOff();
     };
     socket.addEventListener('close', onClose);
   };
-  // A reconnect, with a fresh ticket: the room spends each one it admits.
+  // The next attempt after the backoff's wait, or, out of attempts, parked until the network or the tab is back.
+  const backOff = () => {
+    if (attempts >= MAX_RECONNECT_ATTEMPTS) {
+      settleTimings(false);
+      parked = true;
+      debugLog('[room] reconnect attempts used up; waiting for the network or the tab');
+      return;
+    }
+    const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
+    attempts++;
+    reconnectTimer = setTimeout(() => void reopen(), delay);
+  };
+  // A reconnect, with a fresh ticket: the room spends each one it admits. A mint that throws never reached the api
+  // (see mintTicket), so no socket opens: one without a ticket is always refused, and a refusal sends the editor
+  // off to ask whether the plan was trashed. The attempt waits out the backoff instead.
   const reopen = async () => {
     reconnectTimer = null;
     if (options.mintTicket) {
-      ticket = await options.mintTicket();
+      try {
+        ticket = await options.mintTicket();
+      } catch {
+        if (closed) return;
+        debugLog('[room] ticket mint unreachable; backing off');
+        backOff();
+        return;
+      }
       if (closed) return;
     }
     open();

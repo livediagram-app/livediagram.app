@@ -126,6 +126,34 @@ once a document is open.
 - **Placing images is an Editor's.** An image someone else owns is granted to a document only when its owner is a
   team member or an Editor there; a Participant's access places no image.
 
+### The collab key
+
+A person's **collab key** is the public id their [comment reactions](../012-collaboration/comment-reactions.md) are recorded under. The server derives it; the browser never
+chooses it.
+
+- **From who you are.** `collabKeyFor(person)` (`@liveworkspace/api-kit/collab-key`) is the first 32 hex characters
+  of SHA-256(`liveworkspace:collab:v1:<person>`), the person being the account or guest id the grant names. It is
+  the same on every device and every document, so a signed-in person's own reactions read as theirs everywhere, and
+  their two devices count as one person. It gives nothing away: the hash cannot be turned back into the id.
+- **Pinned on the session.** The upgrade forwards it as `X-Verified-Collab-Key`, the session keeps it, and the
+  roster's `key` is that value whatever the `hello` claimed. The room then tells the session its own key in a
+  `collab-key` frame sent to that socket alone, and the editor records its reactions under it from then on. Before
+  that (a document only in This Browser, or the moment before the room answers) the editor uses this browser's own
+  key, as it always did.
+- **A session with no identity** (a link visitor whose guest handoff could not run) gets a random key the room mints
+  for that socket. Nobody else can be handed it, so nobody can act under it; it lasts as long as the socket.
+- **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, an
+  Editor's included, so a reaction can only ever be the sender's own. A Participant's reaction, sent over REST, is recorded under the caller's derived key; the key the request names
+  is ignored.
+- **What stays open.** An Editor's whole-tab save can still write any reaction into the stored tab, as it can change
+  anything on the canvas; the room's ledger keeps each person's latest live reaction, so a save made before one
+  arrived cannot erase it. Locking each entry the saver does not own to the stored tab is not done yet, because the stored tab alone cannot tell another person's live entry (in the room's ledger, not yet saved) from one the saver made up: locking to it would drop the first or keep a removed one. A correct lock reads the ledger's per-person on and off beside the stored tab, in every path that writes a whole tab (the tab save, agent changesets, the REST and MCP document updates, a version restore and an offline sync), so it is its own change.
+- **Reactions left before this** were filed under each browser's own key. They still show and count, but no longer
+  as yours; reacting again records yours under the new key.
+- **An editor from before this**, still open when it ships, keeps its browser's key. The room stamps its reactions
+  with the server's key, so peers see them as its person's; a reload, which the new-version prompt offers, brings it
+  in line.
+
 ## Reading a level
 
 - **An edit link is Editor; a view link is Viewer, which only looks.** An owner who wants an audience to chime in
@@ -140,11 +168,10 @@ once a document is open.
 ## Later
 
 **Status: Planned.** Not built yet; today an API token carries only the read-only flag, ownership powers stay
-implicit in owning the document, and each browser mints its own collaboration key.
+implicit in owning the document.
 
 - **Token levels**: API tokens carry view, participate or edit instead of the read-only flag.
 - **Ownership powers** as a named set every door asks beside the level.
-- **Server-derived collaboration keys**, pinned per socket, so nobody can act as someone else's session.
 
 ## Domain language
 

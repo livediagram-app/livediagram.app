@@ -50,6 +50,7 @@ export async function relayPollAnswer(
     presenceId: sender.id,
     personTag: session.personTag ?? null,
     networkTag: session.networkTag ?? null,
+    collabKey: session.collabKey ?? null,
     answeredAs: () => room.readSession(ws)?.pollAnsweredAs ?? null,
     rememberAnswer: (answeredAs) => {
       const latest = room.readSession(ws);

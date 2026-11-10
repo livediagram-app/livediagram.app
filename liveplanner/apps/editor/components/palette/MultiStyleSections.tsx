@@ -36,7 +36,7 @@ import { AnimationSections } from '@/components/palette/AnimationSections';
 import { ShadowSection } from '@/components/palette/ShadowSection';
 import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import type { useContextMenuScaffold } from './useContextMenuScaffold';
+import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { BorderControls } from '@/components/palette/BorderControls';
 import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

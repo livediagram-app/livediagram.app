@@ -24,6 +24,7 @@ vi.mock('./plan-grant', async () => {
 });
 import { clearTestProfiles, setSlowProfileReads, setTestProfile } from '../test-profiles';
 import { sentJson } from '@liveworkspace/vitest-config/sent-request';
+import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import type {
   CardThreadWriteResponse,
   CardThreadsResponse,
@@ -459,7 +460,9 @@ describe('the writes on a thread', () => {
         who,
       );
 
-    it('lets an Editor and a Participant react under their own name, and relays it', async () => {
+    // docs/specs/013-workspace/share-roles.md "The collab key": `by` is the server's key for the caller, whatever
+    // the body names, so the same person reads as one on every device and a copied key buys nothing.
+    it('lets an Editor and a Participant react under their own name and key, and relays it', async () => {
       const mine = await react({ emoji: 'eyes', on: true, key: 'k-owner' });
       expect(mine.status).toBe(200);
       const theirs = await react(
@@ -472,13 +475,16 @@ describe('the writes on a thread', () => {
         { owner: 'visitor', code: 'EDIT' },
       );
       expect(edit.status).toBe(200);
-      // Each stamped with the reactor's hashed person id, for a closed account's anonymising.
+      // `by` the server's collab key for each caller, and each stamped with the reactor's hashed person id, for a
+      // closed account's anonymising.
       const owner = await itemPersonId('owner');
       const visitor = await itemPersonId('visitor');
+      const ownerKey = await collabKeyFor('owner');
+      const vee = await collabKeyFor('visitor');
       expect(edit.body.thread?.comments[0]?.reactions).toEqual([
-        { emoji: 'eyes', by: 'k-owner', name: 'Gentle Falcon', person: owner },
-        { emoji: 'eyes', by: 'k-vee', name: 'Vee', person: visitor },
-        { emoji: 'heart', by: 'k-ed', name: 'Vee', person: visitor },
+        { emoji: 'eyes', by: ownerKey, name: 'Gentle Falcon', person: owner },
+        { emoji: 'eyes', by: vee, name: 'Vee', person: visitor },
+        { emoji: 'heart', by: vee, name: 'Vee', person: visitor },
       ]);
       // A reaction is not activity: the thread keeps its place.
       expect(edit.body.thread?.updatedAt).toBe(t.updatedAt);
@@ -501,8 +507,6 @@ describe('the writes on a thread', () => {
       expect((await react(body, { agent: true })).status).toBe(403);
       expect((await react({ ...body, emoji: 'rocket' })).status).toBe(400);
       expect((await react({ ...body, on: 'yes' })).status).toBe(400);
-      expect((await react({ ...body, key: '' })).status).toBe(400);
-      expect((await react({ ...body, key: 'k'.repeat(201) })).status).toBe(400);
       expect((await react(body, {}, 'nope')).status).toBe(404);
       expect((await call('p1', 'GET', `/threads/${t.id}/comments/x/reactions`)).status).toBe(405);
       expect((await threads('p1'))[0]!.comments[0]!.reactions).toBeUndefined();

@@ -79,11 +79,6 @@ export const MAX_DECK_LEN = 256 * 1024;
 // held to it) be saved again once it is shortened. Safe range: 1x to 8x MAX_DECK_LEN, under MAX_BODY_BYTES.
 export const MAX_DECK_BASE_LEN = 4 * MAX_DECK_LEN;
 
-// The client-claimed document-write key relayed on presence. Real
-// ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
-// string into the socket attachment, which has a small hard budget.
-export const MAX_PARTICIPANT_KEY_LEN = 64;
-
 // UTF-8 byte length of a string, for size-gating JSON payloads (a char count
 // would under-count multi-byte content).
 export function byteLength(s: string): number {

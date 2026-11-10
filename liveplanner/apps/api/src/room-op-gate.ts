@@ -6,6 +6,7 @@ import {
   isSystemOpKind,
   parseStoredLevel,
 } from '@liveplanner/api-schema';
+import { namesAnotherPerson } from '@liveworkspace/api-kit/collab-key';
 import { answersAsSelf } from './project-room-rules';
 import { scopedSenderMayRelay } from './room-scope';
 
@@ -65,6 +66,9 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // could forge `share-revoked` with the code from their own URL
   // and force-redirect every collaborator out of the session.
   if (isSystemOpKind(opKind)) return DROP;
+  // Nobody answers as someone else, at any level (docs/specs/013-workspace/share-roles.md "The collab key"): a dot
+  // or a response must name the key the server pinned on the sender's session, an Editor's included.
+  if (namesAnotherPerson(op, sender.key)) return DROP;
   // A tab-scoped session acts on its own tab only, and never on the
   // project's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
   if (!scopedSenderMayRelay(op, sender.tabScope, sender.tabShowsAll ?? false)) return DROP;

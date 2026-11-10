@@ -1755,9 +1755,26 @@ describe('DocumentRoom freeing a selection lock (docs/specs/007-editor/editor-ap
 });
 
 describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
-  function editor(room: DocumentRoom) {
+  // An editor answers only under the collab key pinned on its session (docs/specs/013-workspace/share-roles.md
+  // "The collab key"), so each answering person is an editor of their own.
+  const A = 'a'.repeat(32);
+  const B = 'b'.repeat(32);
+  function editor(room: DocumentRoom, key = A) {
     const ws = makeSocket();
-    room.acceptSession(asWs(ws), 'edit');
+    room.acceptSession(
+      asWs(ws),
+      'edit',
+      false,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      key,
+    );
     sendFrame(room, ws, { kind: 'hello', participant: { id: 'e', name: 'E', color: '#000' } });
     return ws;
   }
@@ -1775,19 +1792,30 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
 
   it('records each answer with the seq it took, and serves the tab ledger', async () => {
     const { room } = newRoom();
-    const ws = editor(room);
-    sendFrame(room, ws, answer('a'));
-    sendFrame(room, ws, answer('b'));
+    sendFrame(room, editor(room, A), answer(A));
+    sendFrame(room, editor(room, B), answer(B));
     const body = (await ledger(room)) as {
       elements: Record<string, { responses: Record<string, { seq: number }> }>;
     };
-    expect(body.elements.card!.responses.a!.seq).toBe(1);
-    expect(body.elements.card!.responses.b!.seq).toBe(2);
+    expect(body.elements.card!.responses[A]!.seq).toBe(1);
+    expect(body.elements.card!.responses[B]!.seq).toBe(2);
+  });
+
+  // A copied key buys nothing (docs/specs/013-workspace/share-roles.md "The collab key"): an editor's answer in
+  // another's name is dropped before the ledger or any peer hears it.
+  it("drops an editor's answer under someone else's key", async () => {
+    const { room } = newRoom();
+    const peer = editor(room, B);
+    peer.sent.length = 0;
+    sendFrame(room, editor(room, A), answer(B));
+    expect(room.seq).toBe(0);
+    expect(receivedOf(peer, 'op')).toHaveLength(0);
+    expect(await ledger(room)).toEqual({ elements: {} });
   });
 
   it('serves nothing to a cursor from another epoch', async () => {
     const { room } = newRoom();
-    sendFrame(room, editor(room), answer('a'));
+    sendFrame(room, editor(room), answer(A));
     expect(await ledger(room, 'some-other-epoch')).toEqual({ elements: {} });
   });
 
@@ -1813,7 +1841,7 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
     vi.useFakeTimers({ toFake: ['Date'] });
     try {
       const { room } = newRoom();
-      sendFrame(room, editor(room), answer('a'));
+      sendFrame(room, editor(room), answer(A));
       expect(elementIds(await since(room, 0))).toEqual(['card']);
       // Seen, but changed today: still handed over.
       expect(elementIds(await since(room, 1))).toEqual(['card']);
@@ -1836,7 +1864,7 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
     try {
       const { room, state } = newRoom();
       const ws = editor(room);
-      sendFrame(room, ws, answer('a'));
+      sendFrame(room, ws, answer(A));
       await room.ledger.settled();
       const woken = await upkeepAfter(state, 40);
       expect(await ledger(woken)).toEqual({ elements: {} });
@@ -1963,7 +1991,7 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
     function joinAs(
       room: DocumentRoom,
       id: string,
-      opts: { personTag?: string; networkTag?: string } = {},
+      opts: { personTag?: string; networkTag?: string; collabKey?: string } = {},
     ) {
       const ws = makeSocket();
       room.acceptSession(
@@ -1974,6 +2002,11 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
         null,
         opts.personTag ?? null,
         opts.networkTag ?? 'net-a',
+        null,
+        null,
+        null,
+        null,
+        opts.collabKey ?? null,
       );
       sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#000' } });
       return ws;
@@ -2058,27 +2091,28 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
       expect(answers['k0']).toBe('sushi');
     });
 
-    it('gives an account one answer per poll, from any of its sessions', async () => {
+    // Under the session's collab key, never the one the frame claims (docs/specs/013-workspace/share-roles.md
+    // "The collab key"), so the answer reads as the person's own on every device.
+    it('gives an account one answer per poll under its collab key, from any of its sessions', async () => {
+      const ACCT = 'c'.repeat(32);
       const { room } = newRoom();
       const host = join(room, 'h');
       sendFrame(room, host, pollOp('p1'));
       sendFrame(
         room,
-        joinAs(room, 'laptop', { personTag: 'acct' }),
+        joinAs(room, 'laptop', { personTag: 'acct', collabKey: ACCT }),
         answer('pizza', 'laptop-key', 'l'),
       );
       await room.pollAnswers;
       host.sent.length = 0;
       sendFrame(
         room,
-        joinAs(room, 'phone', { personTag: 'acct' }),
+        joinAs(room, 'phone', { personTag: 'acct', collabKey: ACCT }),
         answer('sushi', 'phone-key', 'p'),
       );
       await room.pollAnswers;
-      expect(room.poll.state?.answers).toEqual({ 'laptop-key': 'sushi' });
-      expect(ops(host)).toEqual([
-        { kind: 'poll-answer', pollId: 'p1', value: 'sushi', key: 'laptop-key' },
-      ]);
+      expect(room.poll.state?.answers).toEqual({ [ACCT]: 'sushi' });
+      expect(ops(host)).toEqual([{ kind: 'poll-answer', pollId: 'p1', value: 'sushi', key: ACCT }]);
     });
 
     it("does not let an account take a guest's key", async () => {
@@ -2086,11 +2120,23 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
       const host = join(room, 'h');
       sendFrame(room, host, pollOp('p1'));
       sendFrame(room, joinAs(room, 'guest'), answer('pizza', 'guest-key', 'g'));
-      const account = joinAs(room, 'acct', { personTag: 'acct' });
+      const ACCT = 'c'.repeat(32);
+      const account = joinAs(room, 'acct', { personTag: 'acct', collabKey: ACCT });
       sendFrame(room, account, answer('sushi', 'guest-key', 'x'));
       await room.pollAnswers;
       expect(room.poll.state?.answers['guest-key']).toBe('pizza');
-      expect(room.poll.state?.answers[presenceOf(account)]).toBe('sushi');
+      expect(room.poll.state?.answers[ACCT]).toBe('sushi');
+    });
+
+    // A session with no identity is told a new collab key on every socket, so the proof is what keeps its answer one.
+    it("keeps a browser's one answer under the key its proof first claimed, across a reconnect's new key", async () => {
+      const { room } = newRoom();
+      const host = join(room, 'h');
+      sendFrame(room, host, pollOp('p1'));
+      sendFrame(room, joinAs(room, 'first-socket'), answer('pizza', 'minted-1', 'secret'));
+      sendFrame(room, joinAs(room, 'second-socket'), answer('sushi', 'minted-2', 'secret'));
+      await room.pollAnswers;
+      expect(room.poll.state?.answers).toEqual({ 'minted-1': 'sushi' });
     });
 
     it('keys an old client with no proof on its own presence id, which nobody else can claim', async () => {
@@ -2821,5 +2867,101 @@ describe('DocumentRoom follow', () => {
     state.sockets = state.sockets.filter((s) => s !== asWs(c));
     room.webSocketClose(asWs(c));
     expect(followers(b).at(-1)).toEqual([]);
+  });
+});
+
+describe('the collab key (docs/specs/013-workspace/share-roles.md "The collab key")', () => {
+  const MINE = '1'.repeat(32);
+  const THEIRS = '2'.repeat(32);
+  const PERSON = '3'.repeat(24);
+  // A session the upgrade gave `key` (null: none), whose hello claims THEIRS.
+  function join(room: DocumentRoom, key: string | null, name: string): FakeSocket {
+    const ws = makeSocket();
+    room.acceptSession(
+      asWs(ws),
+      'edit',
+      false,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      key,
+      key ? PERSON : null,
+    );
+    sendFrame(room, ws, {
+      kind: 'hello',
+      participant: { id: name, name, color: '#000', key: THEIRS },
+    });
+    return ws;
+  }
+
+  it('tells the session alone the key the upgrade pinned, whatever its hello claims', () => {
+    const { room } = newRoom();
+    const peer = join(room, THEIRS, 'peer');
+    peer.sent.length = 0;
+    const me = join(room, MINE, 'me');
+    expect(receivedOf(me, 'collab-key')).toEqual([{ kind: 'collab-key', key: MINE }]);
+    expect(receivedOf(peer, 'collab-key')).toEqual([]);
+  });
+
+  it('mints a key for a session the upgrade gave none', () => {
+    const { room } = newRoom();
+    const [frame] = receivedOf(join(room, null, 'visitor'), 'collab-key');
+    expect(frame?.key).toMatch(/^[0-9a-f]{32}$/);
+    expect(frame?.key).not.toBe(THEIRS);
+  });
+
+  it("stamps an editor's reaction with its own key and person, never the ones it names", () => {
+    const { room } = newRoom();
+    const peer = join(room, THEIRS, 'peer');
+    const me = join(room, MINE, 'me');
+    peer.sent.length = 0;
+    const delta = {
+      kind: 'comment-react',
+      commentId: 'c',
+      emoji: 'heart',
+      by: THEIRS,
+      name: 'x',
+      on: true,
+    };
+    sendFrame(room, me, {
+      kind: 'op',
+      op: { kind: 'el-delta', tabId: 't', elementId: 'e', delta },
+    });
+    const op = receivedOf(peer, 'op')[0]?.op as
+      { delta: { by: string; person?: string } } | undefined;
+    expect(op?.delta.by).toBe(MINE);
+    expect(op?.delta.person).toBe(PERSON);
+  });
+
+  // docs/specs/012-collaboration/realtime-conflict-resolution.md "A patch is the room's alone".
+  it("refuses an editor's patch op, which only the room makes", () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { room } = newRoom();
+      const peer = join(room, THEIRS, 'peer');
+      const me = join(room, MINE, 'me');
+      peer.sent.length = 0;
+      const patch = { kind: 'patch', id: 'e', set: { type: 'nonsense', x: 'far' } };
+      sendFrame(room, me, { kind: 'op', op: { kind: 'el', tabId: 't', op: patch }, ref: 3 });
+      expect(receivedOf(peer, 'op')).toHaveLength(0);
+      expect(receivedOf(me, 'op-refused')).toEqual([
+        {
+          kind: 'op-refused',
+          op: 'el',
+          reason: 'room-made-op',
+          tabId: 't',
+          elementId: 'e',
+          field: 'kind',
+          ref: 3,
+        },
+      ]);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });

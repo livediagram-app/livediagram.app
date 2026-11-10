@@ -7,6 +7,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
+import { collabKeyFor, reactionPersonFor } from '@liveworkspace/api-kit/collab-key';
 
 // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments", blueprint "REST"): add, delete-own,
 // reply, resolve and reopen through the tab's revision, relayed without author or token ids; the listing across
@@ -222,16 +223,22 @@ describe('react', () => {
   const react = (body: unknown, extra: Partial<Call> = {}) =>
     call({ path: '/tabs/t1/comments/c1/react', body, ...extra });
 
-  it("adds and takes back a reaction under the caller's key and profile name, relayed once", async () => {
+  // docs/specs/013-workspace/share-roles.md "The collab key": the server's key for the caller, never the body's.
+  it("adds and takes back a reaction under the caller's derived key and profile name, relayed once", async () => {
     seed([shape('a', { commentThread: { resolved: false, comments: [comment('c1')] } })]);
-    expect((await react({ emoji: 'eyes', on: true, key: 'k-me' })).status).toBe(204);
+    expect((await react({ emoji: 'eyes', on: true, key: 'k-someone-else' })).status).toBe(204);
     expect((await threadOf('a'))!.comments[0]!.reactions).toEqual([
-      { emoji: 'eyes', by: 'k-me', name: 'Webber' },
+      {
+        emoji: 'eyes',
+        by: await collabKeyFor('owner'),
+        name: 'Webber',
+        person: await reactionPersonFor('owner'),
+      },
     ]);
     const rev = (await stored()).rev;
     expect((await react({ emoji: 'eyes', on: true, key: 'k-me' })).status).toBe(204);
     expect((await stored()).rev).toBe(rev);
-    expect((await react({ emoji: 'eyes', on: false, key: 'k-me' })).status).toBe(204);
+    expect((await react({ emoji: 'eyes', on: false })).status).toBe(204);
     expect((await threadOf('a'))!.comments[0]!.reactions).toBeUndefined();
   });
 
@@ -239,8 +246,6 @@ describe('react', () => {
     seed([shape('a', { commentThread: { resolved: false, comments: [comment('c1')] } })]);
     expect((await react({ emoji: 'rocket', on: true, key: 'k' })).status).toBe(400);
     expect((await react({ emoji: 'eyes', key: 'k' })).status).toBe(400);
-    expect((await react({ emoji: 'eyes', on: true })).status).toBe(400);
-    expect((await react({ emoji: 'eyes', on: true, key: 'k'.repeat(201) })).status).toBe(400);
     expect((await react([1])).status).toBe(400);
     expect(
       (
@@ -279,7 +284,8 @@ describe('a full thread and a resolved one', () => {
   });
 
   it('takes no new reaction on a resolved thread, but lets one be taken back', async () => {
-    const reacted = comment('c1', { reactions: [{ emoji: 'eyes', by: 'k-me', name: 'Webber' }] });
+    const me = await collabKeyFor('owner');
+    const reacted = comment('c1', { reactions: [{ emoji: 'eyes', by: me, name: 'Webber' }] });
     seed([shape('a', { commentThread: { resolved: true, comments: [reacted] } })]);
     const add = await call({
       path: '/tabs/t1/comments/c1/react',

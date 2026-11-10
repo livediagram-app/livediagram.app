@@ -55,15 +55,22 @@ are not drawn.
 ## How it is stored and travels
 
 - A comment gains `reactions?: { emoji, by, name }[]`, in the order they were left. `by` is the reactor's public
-  **collab key** (the per-browser key its hello publishes to the room, `ensureCollabKey`), never an owner id, which for a guest is a credential. `name` is the name they reacted under, so the card reads
+  **collab key**, which the server derives from who they are ([The collab key](../013-workspace/share-roles.md#the-collab-key)), never an owner id, which for a guest is a credential. `name` is the name they reacted under, so the card reads
   without the roster. Absent when there are none, so comments written before this read as they always did, and
   nothing needs migrating. At most 300 per comment.
 - A change travels as one element delta, `comment-react` (`commentId`, `emoji`, `by`, `name`, `on`), applied by
   the sender and every receiver through `applyElementDelta`, like every comment change
   ([Collaboration race hardening](collab-race-hardening.md)). Two people reacting at once both land.
+- The room also stamps the delta's `person`: the reactor's hashed person id (`reactionPersonFor` in
+  `@liveworkspace/api-kit/collab-key`, the same id liveplanner's `itemPersonId` gives, so one anonymising pass finds
+  a person's reactions in every product), forwarded at the upgrade as `X-Verified-Reaction-Person` and pinned on the
+  session. It is never the frame's: a claimed `person` is taken out, and a session with no identity stamps none. It
+  is what lets a closed account's reactions read **Deleted account**, and the reaction stores it as
+  `CommentReaction.person`.
 - The room stamps the delta's `name` and `by` from the sender's presence, as it stamps a posted comment's author,
-  so nobody reacts in someone else's name. A Participant never saves a whole tab, so its reaction is the one
-  `el-delta` it may send: the room relays it only when `by` is the key its own hello published, and writes it to
+  so nobody reacts in someone else's name: the key is the one the server pinned on the session, whatever the
+  frame or its `hello` claimed. A Participant never saves a whole tab, so its reaction is the one
+  `el-delta` it may send: the room relays it only when `by` is the key the server pinned on its session, and writes it to
   the stored tab itself on its tab write queue, as it writes a Participant's content (`writeParticipantReaction`).
   A Viewer's is dropped.
 - The room's ledger keeps each person's latest on or off per comment and emoji, so an Editor's save made before a

@@ -145,6 +145,25 @@ describe('comments in the ledger (docs/specs/012-collaboration/collab-race-harde
     expect(stamped.delta.comment).toMatchObject({ authorName: 'Bea', authorColor: '#0f0' });
     expect('authorId' in stamped.delta.comment).toBe(false);
   });
+
+  // docs/specs/012-collaboration/comment-reactions.md: a reaction carries the session's name, key and person,
+  // whatever the frame named; a session with no person stamps none, and a claimed one is taken out.
+  it("stamps a reaction with its session's name, key and person, never the frame's", () => {
+    const react = delta({
+      kind: 'comment-react',
+      commentId: 'c1',
+      emoji: 'heart',
+      by: 'someone-else',
+      name: 'Boss',
+      person: 'claimed',
+      on: true,
+    });
+    const me = { name: 'Bea', color: '#0f0', key: 'k-bea' };
+    const stamped = stampCommentAuthor(react, me, 'p-bea') as { delta: Record<string, unknown> };
+    expect(stamped.delta).toMatchObject({ name: 'Bea', by: 'k-bea', person: 'p-bea' });
+    const anonymous = stampCommentAuthor(react, me) as { delta: Record<string, unknown> };
+    expect('person' in anonymous.delta).toBe(false);
+  });
 });
 
 describe('reactions in the ledger (docs/specs/012-collaboration/comment-reactions.md)', () => {

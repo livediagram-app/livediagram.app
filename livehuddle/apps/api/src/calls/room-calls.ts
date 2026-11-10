@@ -36,7 +36,7 @@ export const ROOM_WAKE_GRACE_MS = 60_000;
 
 /**
  * A connected session as the calls read it: its presence, its stamped role, its call's session once proven, and the
- * roster key its hello claimed (the same person across a reconnect).
+ * collab key pinned on its session (the same person across a reconnect).
  */
 export type CallSessionHolder = {
   readonly presenceId: string;

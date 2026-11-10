@@ -10,6 +10,7 @@
 // the editor reacts to its own write, plus the browser's native
 // `storage` event for cross-tab), but there is no network step.
 
+import type { PanelDragGeometry } from '@liveworkspace/workbench/components/primitives/movable-panel-geometry';
 import {
   readLocalStorageSafe,
   writeLocalStorageSafe,
@@ -253,17 +254,10 @@ export function cornerBottomInset(corner: PanelCorner, scale = 1): number {
     : CORNER_INSET_PX;
 }
 
-// A dragged panel's geometry in positioning-container (i.e. <main>)
-// coordinates, plus the container's own size — everything
-// nearestSnapCorner needs, with no DOM access.
-export type PanelDragGeometry = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  parentWidth: number;
-  parentHeight: number;
-};
+// A dragged panel's geometry in positioning-container (i.e. <main>) coordinates, plus the
+// container's own size: everything nearestSnapCorner needs, with no DOM access. Shared with the
+// workbench's panel drag.
+export type { PanelDragGeometry };
 
 // The anchor point (container coords) the dragged panel's relevant corner
 // should reach to dock here. With an empty corner that's the inset corner;

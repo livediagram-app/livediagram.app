@@ -4,14 +4,14 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement, type ShapeKind } from '@livedocuments/document';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
+import { ElementIndicatorStyleProvider } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import {
   buildIndicatorItems,
   type IndicatorItem,
 } from '@liveworkspace/workbench/components/canvas/indicator-items';
 import { placeCluster, useIndicatorLayout } from '@/components/canvas/useIndicatorLayout';
-import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
+import type { ElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 
 // docs/specs/008-canvas/element-indicators.md: the element's link / note / action / comments drawn
 // inside it in the person's style, and the pip when the element has no room.

@@ -101,8 +101,8 @@ export function mayLetSpeakNow(world: HearingWorld, id: string): boolean {
 
 /**
  * Whether whoever let a hand speak still may, following the person: their presence id passes `mayLetSpeakNow`, or
- * (once it does not, as after their reconnect) another session with their key does. A key is claimed, but this adds
- * no reach: the session it finds must itself be one the room would take a let-speak from.
+ * (once it does not, as after their reconnect) another session with their key does. The key is the server's (the
+ * session's collab key), and the session it finds must itself be one the room would take a let-speak from.
  */
 export function letterMayNow(world: HearingWorld, letter: Letter): boolean {
   if (mayLetSpeakNow(world, letter.id)) return true;

@@ -117,6 +117,12 @@ viewport op would slip through.
   online or the tab to be shown again and starts a fresh round then, so an
   outage longer than the attempts (a laptop asleep, wifi gone a while) does not
   end live collaboration for the rest of the session.
+- **A ticket mint that gets no answer opens no socket.** Each reconnect mints a fresh room ticket first. When
+  that mint never reaches the api (no response after its own retries, or a 5xx or 429 each time), the client
+  spends one reconnect attempt and waits out the backoff, without opening a socket. A socket with no ticket
+  is always refused, and the editor reads a refused join as a reason to ask whether the plan was trashed,
+  so a laptop waking before its wifi used to send the mint three times, a doomed upgrade and a trash check
+  on every attempt. A mint the api refuses (a 4xx) still opens the socket, so the refusal path runs as before.
 - **The cursor must include the client's own ops.** The relay skips the
   sender, so a client learning seqs only from other people's ops would ask for its
   own ops back on a reconnect, and a session that had heard nothing would ask for the
@@ -175,7 +181,7 @@ same migrations.
   judged and a newer build's new field on a known kind relays unchanged. A named field that breaks its rule is
   refused: the tab save refuses it too, so the room drops exactly what would make each peer's next save fail.
 - **A refused op goes nowhere.** It is not relayed, sequenced or kept for catch-up. The sender gets an `op-refused`
-  frame naming the op's kind, the reason (`invalid-element`, `duplicate-element` or `too-many-elements`), the
+  frame naming the op's kind, the reason (`invalid-element`, `duplicate-element`, `too-many-elements` or `room-made-op`), the
   element and the field, and echoing the op's `ref`, so a save waiting on that op stops waiting. The editor logs
   `[room] op refused`.
 - **The log is bounded.** The room logs `[room] element op refused` with the op's kind, the reason and the field,
@@ -183,6 +189,14 @@ same migrations.
   back (`suppressed`), so a client sending bad ops in a loop cannot flood the logs.
 - A Participant's `el` op is unchanged: it goes through the participant content rule and never relays as sent.
   `tab-meta`, `el-delta`, a `remove` and a `reorder` carry no element and are not judged.
+- **A patch is the room's alone.** An `el` op of kind `patch` (some fields of one element) is what the room relays
+  for a Participant's change, made from the stored element it has just written. No editor sends one, so a patch that
+  arrives on a socket, an Editor's included, is refused (`room-made-op`, field `kind`) and goes nowhere. The room
+  needs no element state to judge it: there is nothing a client's patch may say.
+- **What the room still cannot judge.** It keeps no copy of the elements, so it judges each element op on its own:
+  an `update` is checked as a whole element, never against the one it replaces (a change of `type` under the same
+  id passes when the new element is valid), and a `remove` or `reorder` naming an id the tab does not hold is relayed
+  and is a no-op on every peer. Each peer's next save and the tab save's own checks still apply.
 
 One case is accepted. A newer build that widens a named field's rule (a new value in a closed list) is refused by
 an older room. Each product's api deploys before its editor (docs/ci.md "Order"), so the room learns the wider rule

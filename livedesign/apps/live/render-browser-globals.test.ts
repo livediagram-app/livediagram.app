@@ -25,7 +25,7 @@ const OUTSIDE_RENDER: Record<string, string> = {
   'apps/live/hooks/canvas/useDesignActions.ts': 'inside a handler',
   'apps/live/hooks/canvas/useAutoCopyParam.ts': 'inside an effect',
   'apps/live/hooks/canvas/useClipboard.ts': 'inside a handler',
-  'apps/live/components/primitives/useMovablePanelMeasure.ts': 'inside an effect',
+  '../packages/workbench/src/components/primitives/useMovablePanelMeasure.ts': 'inside an effect',
 };
 
 function sources(dir: string, out: string[] = []): string[] {

@@ -6,7 +6,7 @@ import {
   type ElementAction,
 } from '@livedocuments/document';
 import { actionRowsFromElements } from './CollaboratePanel';
-import { rowsFor } from './collaborate/collaborate-model';
+import { rowsFor } from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
 
 // Every action on the tab is a row (docs/specs/012-collaboration/assigned-actions.md §5), read through
 // elementActions. The bug this pins: an action completed then reopened never came back.

@@ -312,8 +312,8 @@ export async function apiFetchDocumentThumbnailSvg(
 // Mint a one-time WebSocket room ticket (docs/specs/015-api/api.md "Realtime model"). The WS upgrade
 // can't carry headers, so every session proves access here over normal REST (the Bearer token, the
 // share code and its password) and rides the returned ticket on the upgrade URL as
-// `?t=`, the only thing that URL carries. Returns null on any failure: that upgrade is refused and the
-// connector mints again on its next reconnect.
+// `?t=`, the only thing that URL carries. Returns null when the api refuses (a 4xx other than 429): that upgrade
+// is refused and the connector mints again on its next reconnect. Throws when no try got an answer.
 export async function apiCreateRoomTicket(
   ownerId: string,
   documentId: string,
@@ -341,5 +341,7 @@ export async function apiCreateRoomTicket(
       // Network error — retry.
     }
   }
-  return null;
+  // No answer after every try (no response, or a 5xx or 429 each time): thrown, not null, so the connector waits
+  // out its backoff instead of opening a socket that is sure to be refused (realtime-conflict-resolution.md).
+  throw new Error('room ticket mint unreachable');
 }

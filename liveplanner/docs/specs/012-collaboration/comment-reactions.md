@@ -55,17 +55,23 @@ are not drawn.
 
 ## How it is stored and travels
 
-- A comment gains `reactions?: { emoji, by, name, person? }[]` (`person` only on a card's threads, below), in the order they were left. `by` is the reactor's public
-  **collab key** (the id a done check or an estimate is recorded under, docs/specs/012-collaboration/participant-responses.md),
-  never an owner id, which for a guest is a credential. `name` is the name they reacted under, so the card reads
+- A comment gains `reactions?: { emoji, by, name, person? }[]`, in the order they were left. `by` is the reactor's public
+  **collab key**, which the server derives from who they are ([The collab key](../013-workspace/share-roles.md#the-collab-key)), never an owner id, which for a guest is a credential. `person`, where the server stamps it, is their hashed person id (below). `name` is the name they reacted under, so the card reads
   without the roster. Absent when there are none, so comments written before this read as they always did, and
   nothing needs migrating. At most 300 per comment.
 - A change travels as one element delta, `comment-react` (`commentId`, `emoji`, `by`, `name`, `on`), applied by
   the sender and every receiver through `applyElementDelta`, like every comment change
   ([Collaboration race hardening](collab-race-hardening.md)). Two people reacting at once both land.
+- The room also stamps the delta's `person`: the reactor's hashed person id (`reactionPersonFor` in
+  `@liveworkspace/api-kit/collab-key`, the same id liveplanner's `itemPersonId` gives, so one anonymising pass finds
+  a person's reactions in every product), forwarded at the upgrade as `X-Verified-Reaction-Person` and pinned on the
+  session. It is never the frame's: a claimed `person` is taken out, and a session with no identity stamps none. It
+  is what lets a closed account's reactions read **Deleted account**, and the reaction stores it as
+  `CommentReaction.person`. A closed account's anonymising (`anonymisePlan`) finds it on the canvas comments of every tab of the plan as well as on its cards' threads.
 - The room stamps the delta's `name` and `by` from the sender's presence, as it stamps a posted comment's author,
-  so nobody reacts in someone else's name. A Participant's reaction is a participation delta: the room relays it
-  only when `by` is the key its own hello published, and writes it to the stored tab itself, as it writes a
+  so nobody reacts in someone else's name: the key is the one the server pinned on the session, whatever the
+  frame or its `hello` claimed. A Participant's reaction is a participation delta: the room relays it
+  only when `by` is the key the server pinned on its session, and writes it to the stored tab itself, as it writes a
   Participant's answers. A Viewer's is dropped.
 - The room's ledger keeps each person's latest on or off per comment and emoji, so an Editor's save made before a
   reaction arrived cannot erase it.
@@ -79,9 +85,10 @@ are not drawn.
 A card's threads ([Items](../026-plan/items.md) "Comments") are stored once in their home plan, not on an element,
 so a reaction there is a **thread write** like a reply:
 
-- `POST /api/projects/:id/threads/:threadId/comments/:commentId/reactions` `{ emoji, on, key }`, gated as a reply
-  (participate: an Editor or a Participant; a Viewer is refused). `key` is the caller's collab key (bounded as a
-  delta's `by`); the name is the server's, from their profile. Nothing changing answers 204.
+- `POST /api/projects/:id/threads/:threadId/comments/:commentId/reactions` `{ emoji, on }`, gated as a reply
+  (participate: an Editor or a Participant; a Viewer is refused). `by` is the caller's collab key, derived from their
+  identity (`collabKeyFor`); a `key` an older editor still sends is ignored. The name is the server's, from their
+  profile. Nothing changing answers 204.
 - The server also stamps the reaction's `person`, the reactor's hashed person id (`itemPersonId`, the public id a
   card names its makers by, never an owner id), so a closed account's reactions can be found and read **Deleted
   account** ([Items](../026-plan/items.md) "Created and Last Edited"). A reaction stored before this has no `person`

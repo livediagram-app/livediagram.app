@@ -50,6 +50,9 @@ type PollAnswerer = {
   presenceId: string;
   personTag: string | null;
   networkTag: string | null;
+  // The session's collab key, pinned at the upgrade (docs/specs/013-workspace/share-roles.md "The collab key"): a
+  // person's answer goes under it, the same key their dots and responses use. Absent on an older attachment.
+  collabKey?: string | null;
   // The key this session already answered this poll under, and the way to record it. Read and written inside the
   // same synchronous stretch as the checks, so two answers from one socket cannot both pass as its first.
   answeredAs(): { pollId: string; key: string } | null;
@@ -138,12 +141,13 @@ export class RoomLivePoll {
     const personTag = who.personTag?.slice(0, TAG_LEN) ?? null;
     let chosen: { key: string; claim: Claim };
     if (personTag) {
-      // One answer per account per poll: its first key stays its key, from any of its sessions.
+      // One answer per account per poll: its first key stays its key, from any of its sessions. That key is the
+      // session's collab key, never one the frame claims, so a person's answer reads as theirs on every device.
       const accountClaim = `a:${personTag}`;
       const established = accountKeys[personTag];
       if (established) chosen = { key: established, claim: accountClaim };
       else {
-        const candidate = claimedKey ?? who.presenceId;
+        const candidate = who.collabKey ?? claimedKey ?? who.presenceId;
         // A key somebody else holds is not the account's to take; it answers under its own presence id instead,
         // still as the account, so its other sessions find it.
         chosen = claimOk(claims[candidate], accountClaim)
@@ -151,11 +155,17 @@ export class RoomLivePoll {
           : { key: who.presenceId, claim: accountClaim };
       }
     } else if (claimedKey && proofClaim) {
-      // The browser holding the secret, and nobody else. A key somebody else already holds falls back to the
-      // session's own presence id: the answer still counts, and the other person's stays theirs.
-      chosen = claimOk(claims[claimedKey], proofClaim)
-        ? { key: claimedKey, claim: proofClaim }
-        : ownKey;
+      // The browser holding the secret, and nobody else. The key it already answered this poll under stays its key:
+      // a session with no identity is told a fresh collab key for every socket, so a reconnect must replace its one
+      // answer, not add a second. A scan of at most POLL_ANSWERS_MAX claims. Otherwise a key somebody else already
+      // holds falls back to the session's own presence id: the answer still counts, and the other person's stays
+      // theirs.
+      const proven = provenKey(claims, proofClaim);
+      if (proven) chosen = { key: proven, claim: proofClaim };
+      else
+        chosen = claimOk(claims[claimedKey], proofClaim)
+          ? { key: claimedKey, claim: proofClaim }
+          : ownKey;
     } else {
       // An old client with no proof: its own presence id, which only it can present.
       chosen = ownKey;
@@ -216,4 +226,10 @@ export class RoomLivePoll {
       })),
     ];
   }
+}
+
+// The key a proof already claimed in this poll, if any.
+function provenKey(claims: Record<string, Claim>, proofClaim: Claim): string | null {
+  for (const key in claims) if (claims[key] === proofClaim) return key;
+  return null;
 }

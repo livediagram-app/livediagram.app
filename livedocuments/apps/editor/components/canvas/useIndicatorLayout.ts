@@ -14,8 +14,8 @@ import {
   type BoxedElement,
   type IndicatorBox,
 } from '@livedocuments/document';
-import { useElementIndicatorStyle } from '@/components/canvas/ElementIndicatorStyleContext';
-import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
+import { useElementIndicatorStyle } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
+import type { ElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 import {
   clusterSize,
   type IndicatorForm,

@@ -12,14 +12,14 @@ import { announcePanelPresence } from '@liveworkspace/workbench/lib/panel-presen
 // one optional prop. Empty / absent => the panel stays on the legacy
 // (non-docking) drag path.
 import type { MovablePanelDockProps, MovablePanelProps } from './MovablePanel.types';
-import { useMovablePanelDrag } from './useMovablePanelDrag';
-import { useMovablePanelMeasure } from './useMovablePanelMeasure';
+import { useMovablePanelDrag } from '@liveworkspace/workbench/components/primitives/useMovablePanelDrag';
+import { useMovablePanelMeasure } from '@liveworkspace/workbench/components/primitives/useMovablePanelMeasure';
 import { useDockPopoverKeys } from '@liveworkspace/workbench/components/primitives/useDockPopoverKeys';
 import { usePopoverTopClearance } from './usePopoverTopClearance';
 import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
-import { cornerInsetStyle } from './movable-panel-scale';
+import { cornerInsetStyle } from '@liveworkspace/workbench/components/primitives/movable-panel-scale';
 import { PopoverScrim } from '@liveworkspace/workbench/components/primitives/PopoverScrim';
 
 export type { MovablePanelDockProps };

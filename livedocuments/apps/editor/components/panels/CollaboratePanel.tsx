@@ -23,7 +23,7 @@ import {
   showKindChips,
   type CollaborateKind,
   type CollaborateSide,
-} from '@/components/panels/collaborate/collaborate-model';
+} from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
 
 // The floating COLLABORATE panel (docs/specs/012-collaboration/assigned-actions.md §5): the Comments and Actions
 // panels merged into one surface, in the refreshed Collaborate look. An Open /

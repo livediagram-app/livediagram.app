@@ -412,6 +412,31 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     expect(FakeSocket.all[0]!.url).toContain('t=first');
   });
 
+  // realtime-conflict-resolution.md "A ticket mint that gets no answer opens no socket": a laptop waking before its
+  // wifi used to open a ticketless socket on every attempt, which the room refused and the editor then probed.
+  it('opens no socket while the mint gets no answer, and parks once the attempts are used up', async () => {
+    const mintTicket = vi.fn(async (): Promise<string | null> => {
+      throw new Error('room ticket mint unreachable');
+    });
+    const onRefused = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onRefused },
+      { mintTicket },
+    );
+    for (let i = 0; i < 10; i++) await vi.runOnlyPendingTimersAsync();
+    expect(FakeSocket.all).toHaveLength(0);
+    expect(onRefused).not.toHaveBeenCalled();
+    // The first mint and the backoff's six attempts, then nothing until the network is back.
+    expect(mintTicket).toHaveBeenCalledTimes(7);
+    mintTicket.mockResolvedValue('first');
+    window.dispatchEvent(new Event('online'));
+    await vi.runOnlyPendingTimersAsync();
+    expect(mintTicket).toHaveBeenCalledTimes(8);
+    expect(FakeSocket.all[0]!.url).toContain('t=first');
+  });
+
   it('mints again on reconnect after a mint that failed', async () => {
     // A failed mint leaves no ticket: that upgrade is refused, and the next attempt must not give up on tickets.
     const mintTicket = vi.fn(async () => 'second');
@@ -1071,5 +1096,44 @@ describe('connectRoom: a reconnect says the call again', () => {
     expect(heard).toEqual([{ kind: 'call-track', tabId: 't', track: null }]);
     a.close();
     b.close();
+  });
+});
+
+// docs/specs/013-workspace/share-roles.md "The collab key": the room tells this session the key it pinned on it.
+describe('connectRoom collab key', () => {
+  const KEY = '0123456789abcdef0123456789abcdef';
+  class KeySocket {
+    static OPEN = 1;
+    static last: KeySocket | null = null;
+    readyState = 1;
+    private listeners: Record<string, ((e: { data?: unknown }) => void)[]> = {};
+    constructor() {
+      KeySocket.last = this;
+    }
+    addEventListener(type: string, fn: (e: { data?: unknown }) => void) {
+      (this.listeners[type] ??= []).push(fn);
+    }
+    send() {}
+    close() {}
+    fire(type: string, data?: unknown) {
+      for (const fn of this.listeners[type] ?? []) fn({ data });
+    }
+  }
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('hands on the key the room pinned, and ignores one of the wrong shape', () => {
+    vi.stubGlobal('WebSocket', KeySocket);
+    const keys: string[] = [];
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onCollabKey: (key) => keys.push(key) },
+    );
+    const socket = KeySocket.last!;
+    socket.fire('open');
+    socket.fire('message', JSON.stringify({ kind: 'collab-key', key: 'not-a-key' }));
+    socket.fire('message', JSON.stringify({ kind: 'collab-key', key: KEY }));
+    expect(keys).toEqual([KEY]);
+    room.close();
   });
 });
