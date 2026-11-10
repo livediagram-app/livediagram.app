@@ -8,6 +8,7 @@
 // asks it as the post's author (checkCommunityPost), from its own alarm, every COMMUNITY_CHECK_MS while it has a
 // post, and sends the service what changed. The same check hears whether the service hid the post after reports.
 
+import { ANONYMISED_PERSON } from '@liveworkspace/index-client';
 import {
   COMMUNITY_ANONYMOUS_AUTHOR,
   COMMUNITY_UNKNOWN_AUTHOR,
@@ -196,7 +197,8 @@ function isGone(err: unknown): boolean {
 }
 
 // Where the post's document stands, as the listing knows it ("document_state"): 'gone' once the document or its link
-// is gone; 'away' in the Trash or no longer the author's; 'closed' in a team or behind a share password (a public post
+// is gone, or its owner's account closed (the index's ANONYMISED_PERSON: a team keeps the document, and the post, which
+// no one could list again, goes with the author's id on it); 'away' in the Trash or no longer the author's; 'closed' in a team or behind a share password (a public post
 // cannot ask for one); else 'public'. `index` is the index as the post's author, null when there is none.
 export async function communityStateOf(
   index: CommunityIndex | null,
@@ -204,7 +206,7 @@ export async function communityStateOf(
   post: CommunityPost,
   meta: CommunityDocumentMeta | null,
 ): Promise<CommunityDocumentState | 'gone'> {
-  if (!meta) return 'gone';
+  if (!meta || meta.ownerId === ANONYMISED_PERSON) return 'gone';
   if (meta.ownerId !== post.authorId) return 'away';
   if (!index) throw new Error('no index');
   try {
@@ -213,6 +215,7 @@ export async function communityStateOf(
       index.listShareLinks(documentId),
     ]);
     if (!share.links.some((l) => l.code === post.shareCode)) return 'gone';
+    if (item.ownerId === ANONYMISED_PERSON) return 'gone';
     if (item.trashedAt !== null || item.ownerId !== post.authorId) return 'away';
     if (item.teamId !== null || share.passwordSet) return 'closed';
     return 'public';

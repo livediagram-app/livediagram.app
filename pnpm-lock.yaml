@@ -6754,6 +6754,9 @@ importers:
 
   packages/community:
     dependencies:
+      '@liveworkspace/index-client':
+        specifier: workspace:*
+        version: link:../index-client
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
