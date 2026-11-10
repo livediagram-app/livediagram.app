@@ -73,7 +73,12 @@ export function pictureElement(
     ...box,
     imageId: stored?.imageId ?? null,
     ...(stored ? { naturalWidth: stored.width, naturalHeight: stored.height } : {}),
-    ...(picture.cropped ? { objectFit: 'cover' as const } : {}),
+    // A PowerPoint crop is kept as it was cut; any other crop covers its box about the centre.
+    ...(picture.crop
+      ? { crop: picture.crop }
+      : picture.cropped
+        ? { objectFit: 'cover' as const }
+        : {}),
     ...(picture.alt ? { alt: picture.alt } : {}),
     aspectLocked: true,
   };

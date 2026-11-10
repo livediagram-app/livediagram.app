@@ -28,20 +28,20 @@ drilling into the group. The better answer is to make it one element.
 
 The Callout is no kind of its own: it is a preset of the Card ([The card](card.md) "The Callout is a Card preset").
 The palette's Callout places a `card` with `cardMedia: 'badge'`, a heading (`pageTitle`) and a body (`label`), so it
-lays out, colours and edits as a card. The web component kinds are `banner`, `card`, `stat-row`, `process` and
-`site-header` (`WebComponentShape`); the card has its own spec, and the table below covers the rest.
+lays out, colours and edits as a card. The web component kinds are `banner`, `card`, `stat-row`, `process`,
+`site-header` and `quote` (`WebComponentShape`); the card and the quote ([The quote](quote.md)) have their own specs, and the table below covers the rest.
 
 Each is a `ShapeElement` kind except the Hero, which is an image (see below). All of them keep
 the ordinary element behaviours for free: move, resize, rotate, lock, layers, colours, font,
 shadow, comments, links, copy / paste, undo.
 
-| Kind          | Text                                                    | Rows (bounded)                        |
-| ------------- | ------------------------------------------------------- | ------------------------------------- |
-| `banner`      | `label` = title, `pageSubtitle` = subtitle              | none                                  |
-| `stat-row`    | none                                                    | `stats: { value, caption }[]`, 1 to 6 |
-| `process`     | none                                                    | `processSteps: string[]`, 2 to 8      |
-| `site-header` | `label` = brand                                         | `navLinks: string[]`, 0 to 6          |
-| image hero    | `heroCaption: { title, subtitle }` on an `ImageElement` | none                                  |
+| Kind          | Text                                                    | Rows (bounded)                                                           |
+| ------------- | ------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `banner`      | `label` = title, `pageSubtitle` = subtitle              | none                                                                     |
+| `stat-row`    | none                                                    | `stats: { value, caption, change? }[]`, 1 to 6 ([Stat row](stat-row.md)) |
+| `process`     | none                                                    | `processSteps: string[]`, 2 to 8                                         |
+| `site-header` | `label` = brand                                         | `navLinks: string[]`, 0 to 6                                             |
+| image hero    | `heroCaption: { title, subtitle }` on an `ImageElement` | none                                                                     |
 
 **The label is the main text wherever there is one**, so double-click edits it with the normal
 label editor (rich text, alignment, size, bold) exactly like any shape. The masthead lines

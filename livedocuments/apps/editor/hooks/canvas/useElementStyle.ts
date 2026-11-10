@@ -18,6 +18,7 @@
 // Keeping that policy in one file makes it auditable.
 
 import { useSankeySetters } from '@/hooks/canvas/useSankeySetters';
+import { useMapSetters } from '@/hooks/canvas/useMapSetters';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
   bringElementsToFrontLayer,
@@ -112,6 +113,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
 
   // The Sankey diagram's writes (docs/specs/009-elements/sankey.md), kept together as one object.
   const sankey = useSankeySetters({ currentSelectionIds, commit });
+  // The map's writes (docs/specs/009-elements/map.md).
+  const mapEdits = useMapSetters({ currentSelectionIds, commit });
 
   const textStyle = useTextStyleSetters({
     currentSelectionIds,
@@ -287,6 +290,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     ...textStyle,
     ...colorStyle,
     sankey,
+    mapEdits,
     toggleLockSelected,
     toggleAspectLockSelected,
     bringSelectedToFront,

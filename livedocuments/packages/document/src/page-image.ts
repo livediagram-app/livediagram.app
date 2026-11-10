@@ -24,11 +24,33 @@ export type PageImageFill = {
   // Absent is no overlay.
   overlay?: PageImageOverlay;
   position?: PageImagePosition;
+  // How soft the picture is drawn, 0 to 1 of PAGE_IMAGE_BLUR_MAX; absent is sharp.
+  blur?: number;
   // The search pick's credit (docs/specs/009-elements/image-search.md "Credit on the element").
   credit?: ImageCredit;
   // A hover preview's picture (an Openverse thumbnail, https): never stored, dropped on read.
   preview?: string;
 };
+
+// A Blur of 100%: a Gaussian blur of this share of the page's shorter side (docs/specs/007-editor/pages-mode.md
+// "Image backgrounds").
+export const PAGE_IMAGE_BLUR_MAX = 0.04;
+
+/** A stored blur, clamped to 0..1 in steps of 0.05; undefined for none or a non-number. */
+export function parsePageImageBlur(v: unknown): number | undefined {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return undefined;
+  const b = Math.round(Math.min(1, Math.max(0, v)) * 20) / 20;
+  return b > 0 ? b : undefined;
+}
+
+/** The blur's standard deviation in page px for a page of `rect`'s size; 0 for a sharp picture. */
+export function pageImageBlurSigma(
+  fill: Pick<PageImageFill, 'blur'>,
+  rect: { width: number; height: number },
+): number {
+  const b = parsePageImageBlur(fill.blur);
+  return b ? b * PAGE_IMAGE_BLUR_MAX * Math.min(rect.width, rect.height) : 0;
+}
 
 // The most an overlay covers: always some picture shows through.
 export const PAGE_IMAGE_OVERLAY_MAX = 0.9;
@@ -81,12 +103,14 @@ export function parsePageImageFill(f: Record<string, unknown>): PageImageFill | 
   const position = PAGE_IMAGE_POSITIONS.includes(f.position as PageImagePosition)
     ? (f.position as PageImagePosition)
     : undefined;
+  const blur = parsePageImageBlur(f.blur);
   return {
     kind: 'image',
     imageId: f.imageId,
     ...(typeof f.tone === 'string' && HEX.test(f.tone) ? { tone: f.tone } : {}),
     ...(overlay ? { overlay } : {}),
     ...(position ? { position } : {}),
+    ...(blur ? { blur } : {}),
     ...(isImageCredit(f.credit) ? { credit: f.credit } : {}),
   };
 }
@@ -97,6 +121,7 @@ export function samePageImage(a: PageImageFill, b: PageImageFill): boolean {
     a.imageId === b.imageId &&
     a.preview === b.preview &&
     a.position === b.position &&
+    (a.blur ?? 0) === (b.blur ?? 0) &&
     a.overlay?.kind === b.overlay?.kind &&
     a.overlay?.strength === b.overlay?.strength &&
     a.overlay?.color === b.overlay?.color

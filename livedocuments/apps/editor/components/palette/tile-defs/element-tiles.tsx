@@ -151,6 +151,27 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // The logo strip (docs/specs/009-elements/logo-strip.md): a row stack of grey logo pictures.
+    id: 'media:logo-strip',
+    blurb: 'A row of customer or partner logos',
+    caption: 'Logo Strip',
+    section: 'media',
+    label: 'Add Logo Strip',
+    description:
+      'Logo strip. A row of customer or partner logos, evenly spaced and in grey, for a "Trusted by" slide. Click to drop or drag to size; pick a picture for each logo.',
+    noTint: true,
+    needsImage: true,
+    action: { type: 'component', kind: 'logo-strip' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <rect x="1.5" y="9.5" width="5" height="5" rx="1.2" />
+        <rect x="8.5" y="10" width="7" height="4" rx="1.2" />
+        <rect x="17.5" y="9.5" width="5" height="5" rx="2.5" />
+        <path d="M2 18.5h20" strokeOpacity={0.35} />
+      </Glyph>
+    ),
+  },
+  {
     // The card (docs/specs/009-elements/card.md): a diagram node with slots, placed like any shape so the theme
     // paints it. The Callout below is its preset.
     id: 'components:card',

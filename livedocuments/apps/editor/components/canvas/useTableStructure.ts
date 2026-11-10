@@ -7,8 +7,10 @@ import {
   removeTableColumn,
   removeTableRow,
   setCellStyle,
+  withHighlightColumn,
   type TableCellStyle,
   type TableElement,
+  type TablePatch,
 } from '@livedocuments/document';
 import { track } from '@/lib/telemetry';
 
@@ -16,10 +18,7 @@ type TableMenu = { axis: 'col' | 'row'; index: number; x: number; y: number } | 
 
 type TableStructureDeps = {
   element: TableElement;
-  onCommitTable: (
-    id: string,
-    patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
-  ) => void;
+  onCommitTable: (id: string, patch: TablePatch) => void;
   setMenu: Dispatch<SetStateAction<TableMenu>>;
 };
 
@@ -37,9 +36,7 @@ export function useTableStructure({ element, onCommitTable, setMenu }: TableStru
   const moveCol = (from: number, to: number) => {
     track('Element', 'Reordered', 'TableColumn');
     const m = moveTableColumn(element, from, to);
-    const patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'cellStyles'>> = {
-      cells: m.cells,
-    };
+    const patch: TablePatch = { cells: m.cells, highlightColumn: m.highlightColumn };
     if (m.colWidths) patch.colWidths = m.colWidths;
     if (m.cellStyles) patch.cellStyles = m.cellStyles;
     onCommitTable(element.id, patch);
@@ -67,9 +64,12 @@ export function useTableStructure({ element, onCommitTable, setMenu }: TableStru
     colWidths?: (number | null)[];
     rowHeights?: (number | null)[];
     cellStyles?: (TableCellStyle | null)[][];
+    highlightColumn?: number;
   }) => {
-    const patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>> =
-      { cells: next.cells };
+    const patch: TablePatch = { cells: next.cells };
+    // The highlighted column follows a column insert or delete (comparison-tables.md "Highlight a column").
+    if ('highlightColumn' in next || element.highlightColumn !== undefined)
+      patch.highlightColumn = next.highlightColumn;
     if (next.colWidths) patch.colWidths = next.colWidths;
     if (next.rowHeights) patch.rowHeights = next.rowHeights;
     if (next.cellStyles) patch.cellStyles = next.cellStyles;
@@ -97,5 +97,15 @@ export function useTableStructure({ element, onCommitTable, setMenu }: TableStru
     apply(removeTableRow(element, r));
   };
 
-  return { applyCellStyle, moveCol, moveRow, addCol, delCol, addRow, delRow };
+  // Highlight a column as the recommended one, or take the highlight off (comparison-tables.md).
+  const toggleHighlight = (c: number) => {
+    const on = element.highlightColumn !== c;
+    track('Element', on ? 'Added' : 'Deleted', 'TableHighlight');
+    onCommitTable(element.id, {
+      highlightColumn: withHighlightColumn(element, on ? c : null).highlightColumn,
+    });
+    setMenu(null);
+  };
+
+  return { applyCellStyle, moveCol, moveRow, addCol, delCol, addRow, delRow, toggleHighlight };
 }

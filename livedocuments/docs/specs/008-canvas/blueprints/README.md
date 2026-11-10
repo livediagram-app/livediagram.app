@@ -19,3 +19,4 @@ Follow the references below only as needed; never upfront.
 - ./accent-edge.md - when implementing or changing the accent edge: kinds, geometry, colour, the Border row or its export
 - ./DEFAULTS.md - when a canvas blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a canvas blueprint covers
+- ./text-effects.md - when implementing or changing run highlights and gradients, or the text shadow

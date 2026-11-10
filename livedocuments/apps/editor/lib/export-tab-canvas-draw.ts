@@ -13,6 +13,8 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
+import { imageIsShaped, imageLayout, imageMaskPath, isImageMask } from '@livedocuments/document';
+import { canvasFilters, greyCopy } from './image-greyscale';
 import { type CanvasSurface, type BoxedElement } from '@livedocuments/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
 // MCP worker reuses the same element drawing. The canvas / backdrop
@@ -67,7 +69,8 @@ function boxedSilhouettePath(
 // Draw a loaded bitmap into the element's rounded box, honouring objectFit
 // (cover crops, contain letterboxes) and the corner radius (avatars clip to a
 // circle). A white backing fill matches the on-screen white background behind
-// the image so a 'contain' letterbox doesn't expose the page colour.
+// the image so a 'contain' letterbox doesn't expose the page colour. A crop, a
+// mask and greyscale draw as the canvas does (docs/specs/009-elements/picture-crop-and-mask.md).
 function drawImageElement(
   ctx: CanvasRenderingContext2D,
   el: BoxedElement,
@@ -75,21 +78,47 @@ function drawImageElement(
   objectFit: 'cover' | 'contain',
   radius: number,
 ): void {
+  const image = el.type === 'image' ? el : undefined;
+  const mask = image && isImageMask(image.mask) ? image.mask : undefined;
   ctx.save();
-  roundedRect(ctx, el.x, el.y, el.width, el.height, radius);
-  ctx.clip();
+  if (mask) {
+    ctx.clip(new Path2D(imageMaskPath(mask, el.width, el.height, el.x, el.y)));
+  } else {
+    roundedRect(ctx, el.x, el.y, el.width, el.height, radius);
+    ctx.clip();
+  }
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(el.x, el.y, el.width, el.height);
   const iw = img.naturalWidth || img.width || 0;
   const ih = img.naturalHeight || img.height || 0;
+  // Greyscale: the canvas filter where there is one, else a grey copy of the picture.
+  let source: CanvasImageSource = img;
+  if (image?.greyscale === true) {
+    if (canvasFilters(ctx)) ctx.filter = 'grayscale(1)';
+    else source = greyCopy(img) ?? img;
+  }
   if (iw > 0 && ih > 0) {
-    const scale =
-      objectFit === 'cover'
-        ? Math.max(el.width / iw, el.height / ih)
-        : Math.min(el.width / iw, el.height / ih);
-    const dw = iw * scale;
-    const dh = ih * scale;
-    ctx.drawImage(img, el.x + (el.width - dw) / 2, el.y + (el.height - dh) / 2, dw, dh);
+    if (image && imageIsShaped(image)) {
+      const l = imageLayout(el, { width: iw, height: ih }, image.crop, objectFit);
+      ctx.beginPath();
+      ctx.rect(el.x + l.part.x, el.y + l.part.y, l.part.width, l.part.height);
+      ctx.clip();
+      ctx.drawImage(
+        source,
+        el.x + l.picture.x,
+        el.y + l.picture.y,
+        l.picture.width,
+        l.picture.height,
+      );
+    } else {
+      const scale =
+        objectFit === 'cover'
+          ? Math.max(el.width / iw, el.height / ih)
+          : Math.min(el.width / iw, el.height / ih);
+      const dw = iw * scale;
+      const dh = ih * scale;
+      ctx.drawImage(source, el.x + (el.width - dw) / 2, el.y + (el.height - dh) / 2, dw, dh);
+    }
   }
   ctx.restore();
 }

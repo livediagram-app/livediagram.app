@@ -25,7 +25,7 @@ export const TEMPLATE_COUNT = 35;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 10;
 // The slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
-export const SLIDE_LAYOUT_COUNT = 61;
+export const SLIDE_LAYOUT_COUNT = 64;
 // The infographic page layouts, pinned the same way.
 export const PAGE_LAYOUT_COUNT = 92;
 

@@ -19,6 +19,8 @@ import {
 import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
 import { svgSankey } from './svg-render-sankey';
 import { isSankeyShape } from './sankey-model';
+import { isMapShape, mapLandColour, mapPaperColour } from './map-model';
+import { svgMap } from './svg-render-map';
 import { svgProgressBar, svgProgressRing, svgRating } from './svg-render-data';
 import { progressTrackColour } from './progress-colours';
 import { svgWebComponent } from './svg-render-web';
@@ -31,7 +33,7 @@ import { svgPointerNote } from './svg-render-pointer-note';
 import { isConceptShape } from './concept';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
-import type { ResolveIconArt } from './svg-render-describe';
+import type { ResolveIconArt, ResolveImageHref } from './svg-render-describe';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
  *  label. See the module comment: the PNG path reads this. */
@@ -72,6 +74,8 @@ export function svgElementBody(
     surface?: CanvasSurface;
     /** Resolves an icon id to its art, for a card's media glyph. */
     resolveIconArt?: ResolveIconArt;
+    /** Resolves a gallery picture to its bytes, for a quote's photo (docs/specs/009-elements/quote.md). */
+    resolveImageHref?: ResolveImageHref;
     // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
     tagColours?: readonly TagColour[];
   },
@@ -86,6 +90,18 @@ export function svgElementBody(
     return svgLineChart(el, labelColor, chartPalette, fontFamily, chartGround);
   if (isSankeyShape(el.shape))
     return svgSankey(el, labelColor, chartPalette, fontFamily, chartGround);
+  // Map (docs/specs/009-elements/map.md): land in its own fill or the paper's soft default.
+  if (isMapShape(el.shape))
+    return svgMap(
+      el,
+      {
+        land: mapLandColour(el.fillColor, o.surface),
+        accent: stroke,
+        paper: mapPaperColour(o.surface),
+        text: labelColor,
+      },
+      fontFamily,
+    );
   // The empty track is the element's OWN fill, else the paper's default track,
   // the one the canvas's ProgressView draws (docs/specs/009-elements/progress.md).
   const track = progressTrackColour(el, o.surface);
@@ -110,7 +126,9 @@ export function svgElementBody(
       label,
       fontFamily,
       resolveIconArt: o.resolveIconArt,
+      resolveImageHref: o.resolveImageHref,
       tagColours: o.tagColours,
+      surface: o.surface,
     });
   return '';
 }

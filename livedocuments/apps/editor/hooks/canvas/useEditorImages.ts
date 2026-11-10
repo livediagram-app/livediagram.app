@@ -30,6 +30,7 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { cleanImageAlt, createImage, isBoxed, type Element } from '@livedocuments/document';
 import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
+import type { CropResult } from '@/lib/image-crop-math';
 import { isDataImageId } from '@/lib/offline/offline-images';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
@@ -140,6 +141,29 @@ export function useEditorImages(deps: EditorImagesDeps) {
 
   const closeImagePicker = useCallback(() => setImagePickerOpenFor(null), []);
 
+  // Done on a crop (docs/specs/009-elements/picture-crop-and-mask.md): the box moves to the frame and keeps the part
+  // of the picture under it, one undo step. A locked image keeps its place, so it is never cropped.
+  const commitImageCrop = useCallback(
+    (elementId: string, result: CropResult) => {
+      commit((els) =>
+        els.map((el) => {
+          if (el.id !== elementId || el.type !== 'image' || el.locked) return el;
+          const { crop: _old, ...rest } = el;
+          void _old;
+          return {
+            ...rest,
+            x: result.x,
+            y: result.y,
+            width: result.width,
+            height: result.height,
+            ...(result.crop ? { crop: result.crop } : {}),
+          };
+        }),
+      );
+    },
+    [commit],
+  );
+
   // Memoised so BoxedElementView's React.memo (commit e8e34f9)
   // doesn't see a fresh object identity every editor-page render.
   // Without this the parent passed a new object literal each time,
@@ -156,6 +180,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
             // place, not its picture, so a locked image keeps its Select Image button.
             onOpenPicker:
               isReadOnly || embedMode || pictureBlocked ? undefined : openImagePickerFor,
+            // A crop moves and resizes the box (picture-crop-and-mask.md "Share roles"): an Editor's, outside a
+            // locked tab.
+            onCommitImageCrop: isReadOnly || editsBlocked ? undefined : commitImageCrop,
           }
         : undefined,
     [
@@ -163,9 +190,11 @@ export function useEditorImages(deps: EditorImagesDeps) {
       ownerId,
       sessionShareCode,
       isReadOnly,
+      editsBlocked,
       embedMode,
       pictureBlocked,
       openImagePickerFor,
+      commitImageCrop,
     ],
   );
 
@@ -181,6 +210,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
   const applyImageToElement = (elementId: string, image: ImageDescriptor) => {
     commitPicture((els) =>
       els.map((el) => {
+        // A quote's portrait photo (docs/specs/009-elements/quote.md): the picture alone, kept as an image's is.
+        if (el.id === elementId && el.type === 'shape' && el.shape === 'quote')
+          return { ...el, imageId: image.id };
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
         const { credit: _old, ...rest } = el;
         void _old;
@@ -206,6 +238,11 @@ export function useEditorImages(deps: EditorImagesDeps) {
   const removeImageFromElement = (elementId: string) => {
     commitPicture((els) =>
       els.map((el) => {
+        if (el.id === elementId && el.type === 'shape' && el.shape === 'quote') {
+          const { imageId: _photo, ...rest } = el;
+          void _photo;
+          return rest;
+        }
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
         const { naturalWidth: _w, naturalHeight: _h, credit: _c, ...rest } = el;
         void _w;

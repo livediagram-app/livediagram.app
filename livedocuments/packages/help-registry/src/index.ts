@@ -927,9 +927,10 @@ export const articles: Article[] = [
   {
     slug: 'components',
     title: 'Components',
-    description: 'Cards, badges, step numbers and web components: banners, callouts and more.',
+    description:
+      'Cards, badges, step numbers and web components: banners, callouts, big numbers, quotes and more.',
     keywords:
-      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages',
+      'banner callout stat row stat rows kpi big number count up change quote quotes testimonial pull quote badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1157,7 +1158,7 @@ export const articles: Article[] = [
     description:
       'Every tab is a row of pages: add, size, paint, reorder, lock and find them, then export or present.',
     keywords:
-      'pages page infographic infographics poster one pager one-pager flyer handout report sheet a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles document page kind first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale split into pages contents sidebar find a page lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
+      'pages page infographic infographics poster one pager one-pager flyer handout report sheet a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles document page kind first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale split into pages contents sidebar find a page lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade blur blurred soft softened frosted upload image title bar layout button background button tidy up tidy align straighten even spacing widescreen carry over',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1808,7 +1809,7 @@ export const articles: Article[] = [
     title: 'Images',
     description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
     keywords:
-      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution',
+      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution crop trim mask shape circle hexagon star greyscale grayscale black white logo strip logos clients',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -1818,7 +1819,7 @@ export const articles: Article[] = [
     title: 'Tables',
     description: 'An editable grid of cells for tabular content on the canvas.',
     keywords:
-      'grid cells rows columns spreadsheet matrix data preset presets look looks style banded zebra striped header band recolour recolor',
+      'grid cells rows columns spreadsheet matrix data preset presets look looks style banded zebra striped header band recolour recolor comparison pricing table tick ticks cross crosses yes no highlight recommended column plans',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -1838,6 +1839,16 @@ export const articles: Article[] = [
     description: 'A monospace card with syntax-highlighted code snippets, in eight colour schemes.',
     keywords:
       'code snippet syntax highlight monospace programming source developer json sql python javascript typescript',
+    category: 'Palette',
+    categorySlug: 'palette/tools',
+    parentSlug: 'tools',
+  },
+  {
+    slug: 'maps',
+    title: 'Maps',
+    description: 'A world, region or country map with highlighted countries and pinned places.',
+    keywords:
+      'map world globe country countries region geography atlas pin pins marker location city cities office offices markets europe',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

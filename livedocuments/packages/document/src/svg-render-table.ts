@@ -8,7 +8,14 @@ import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/model-core/b
 import { defaultStrokeColor, defaultTextColor, type CanvasSurface } from './colors';
 import { PADDING_PX, type TableElement } from './index';
 import { tableCellFontPx } from '@liveworkspace/model-core/table-cell-font';
-import { tableHeaderColours } from './table-header-colours';
+import { TABLE_HEADER_BASE, tableHeaderColours } from './table-header-colours';
+import {
+  tableCellMark,
+  tableHighlightColours,
+  tableMarkColours,
+  tableMarkPath,
+  tableMarkSize,
+} from './table-marks';
 import { LABEL_LINE_HEIGHT, labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
 import { bidiLine } from '@liveworkspace/model-core/svg-bidi';
 
@@ -55,6 +62,12 @@ export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'
   const alignX = el.textAlignX ?? 'center';
   const alignY = el.textAlignY ?? 'middle';
 
+  // The recommended column (docs/specs/009-elements/comparison-tables.md), drawn from the table's accent.
+  const hc =
+    el.highlightColumn !== undefined && el.highlightColumn < cols ? el.highlightColumn : -1;
+  const highlight = hc >= 0 ? tableHighlightColours(stroke) : null;
+  const paper = TABLE_HEADER_BASE[surface];
+
   const parts: string[] = [];
   // Table body fill (when set — the editor default is transparent).
   if (el.fillColor && el.fillColor !== 'transparent') {
@@ -82,25 +95,75 @@ export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'
         parts.push(
           `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(cs.bg)}"/>`,
         );
+      } else if (highlight && c === hc && el.headerRow && r === 0) {
+        // The highlighted column's header cell is the accent itself.
+        parts.push(
+          `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(highlight.header)}"/>`,
+        );
       } else if (isHeader) {
         if (header.fill !== 'transparent') {
           parts.push(
             `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(header.fill)}"/>`,
           );
         }
-      } else if (zebra) {
-        parts.push(
-          `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(stroke)}" opacity="0.07"/>`,
-        );
+      } else {
+        // A highlighted body cell takes the accent's wash, under any zebra stripe.
+        if (highlight && c === hc) {
+          parts.push(
+            `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(highlight.wash)}"/>`,
+          );
+        }
+        if (zebra) {
+          parts.push(
+            `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(stroke)}" opacity="0.07"/>`,
+          );
+        }
       }
 
       const text = el.cells[r]?.[c] ?? '';
       if (!text) continue;
+      const hlHeader =
+        highlight && c === hc && el.headerRow && r === 0 && !cs?.bg ? highlight : null;
+      // A tick or a cross (docs/specs/009-elements/comparison-tables.md "Marks"): a coloured glyph on a soft disc.
+      const mark = tableCellMark(text);
+      if (mark) {
+        const markFontPx = tableCellFontPx(cs?.textSize, rowH, baseFontPx);
+        const d = tableMarkSize(markFontPx, ch, pad);
+        const markAlignX = cs?.alignX ?? alignX;
+        const mx =
+          markAlignX === 'left'
+            ? cx0 + pad + d / 2
+            : markAlignX === 'right'
+              ? cx0 + cw - pad - d / 2
+              : cx0 + cw / 2;
+        const my =
+          alignY === 'top'
+            ? cy0 + pad + d / 2
+            : alignY === 'bottom'
+              ? cy0 + ch - pad - d / 2
+              : cy0 + ch / 2;
+        const ground =
+          cs?.bg ?? hlHeader?.header ?? (isHeader ? header.fill : el.fillColor) ?? paper;
+        const colours = tableMarkColours(
+          mark,
+          surface,
+          ground === 'transparent' ? paper : ground,
+          cs?.textColor ?? hlHeader?.headerInk,
+        );
+        const k = d / 24;
+        parts.push(
+          `<circle cx="${r2(mx)}" cy="${r2(my)}" r="${r2(d / 2)}" fill="${xmlEscape(colours.wash)}"/>` +
+            `<path d="${tableMarkPath(mark)}" transform="translate(${r2(mx - 12 * k)} ${r2(my - 12 * k)}) scale(${r2(k)})"` +
+            ` fill="none" stroke="${xmlEscape(colours.stroke)}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`,
+        );
+        continue;
+      }
       const fontPx = tableCellFontPx(cs?.textSize, rowH, baseFontPx);
       const bold = isHeader || (cs?.bold ?? el.textBold) === true;
       const weight = isHeader ? 700 : bold ? 600 : 400;
       const italic = (cs?.italic ?? el.textItalic) === true;
-      const colour = cs?.textColor ?? (isHeader ? headerTextColor : textColor);
+      const colour =
+        cs?.textColor ?? hlHeader?.headerInk ?? (isHeader ? headerTextColor : textColor);
       const cellAlignX = cs?.alignX ?? alignX;
       const anchor = cellAlignX === 'left' ? 'start' : cellAlignX === 'right' ? 'end' : 'middle';
       const tx =
@@ -151,6 +214,15 @@ export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'
     }
     parts.push(
       `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" fill="none"${lineAttrs}/>`,
+    );
+  }
+  // The highlighted column's frame, over the grid lines.
+  if (highlight) {
+    const x0 = xs[hc]!;
+    const w = xs[hc + 1]! - x0;
+    parts.push(
+      `<rect x="${r2(x0 + 1)}" y="${r2(el.y + 1)}" width="${r2(Math.max(0, w - 2))}" height="${r2(Math.max(0, el.height - 2))}"` +
+        ` fill="none" stroke="${xmlEscape(highlight.frame)}" stroke-width="2"/>`,
     );
   }
   return parts.join('');

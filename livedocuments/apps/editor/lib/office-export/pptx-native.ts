@@ -20,15 +20,25 @@ import {
   rotationOf,
   shapePathData,
   shapePolygonVertices,
+  clampShadow,
   supportsShadow,
   type BoxedElement,
   type CanvasSurface,
   type Element,
+  type ElementShadow,
   type Finish,
   type ShapeKind,
 } from '@livedocuments/document';
 import { fontFaceName, NO_PAINT, ooxmlColour, type OoxmlColour } from './ooxml-colour';
-import type { EmuRect, PptxAlign, PptxLine, PptxParagraph, PptxRun, PptxShape } from './pptx-types';
+import type {
+  EmuRect,
+  PptxAlign,
+  PptxLine,
+  PptxParagraph,
+  PptxRun,
+  PptxShape,
+  PptxTextShadow,
+} from './pptx-types';
 
 /** Where a page's px land on its slide: an offset and one scale, EMU per px (and so points per px). */
 export type SlidePlacement = { ox: number; oy: number; emuPerPx: number };
@@ -108,6 +118,38 @@ function paint(css: string, opacity: number): OoxmlColour | typeof NO_PAINT | nu
 
 type Label = NonNullable<ReturnType<typeof describeBoxedExport>['label']>;
 
+/** A run's highlight and gradient in the file's colours; null when one cannot be named (the shape goes to a picture). */
+function runEffectsOf(
+  r: { highlight?: string; gradient?: { from: string; to: string } },
+  opacity: number,
+): Pick<PptxRun, 'highlight' | 'gradient'> | null {
+  const out: Pick<PptxRun, 'highlight' | 'gradient'> = {};
+  if (r.highlight !== undefined) {
+    const c = paint(r.highlight, opacity);
+    if (c === null) return null;
+    if (c !== NO_PAINT) out.highlight = c;
+  }
+  if (r.gradient) {
+    const from = paint(r.gradient.from, opacity);
+    const to = paint(r.gradient.to, opacity);
+    if (from === null || to === null || from === NO_PAINT || to === NO_PAINT) return null;
+    out.gradient = { from, to };
+  }
+  return out;
+}
+
+/** A text shadow as DrawingML measures it: its offset as a distance and a direction clockwise from east. */
+export function textShadowOf(s: ElementShadow, emuPerPx: number): PptxTextShadow {
+  const c = clampShadow(s);
+  const dir = ((Math.atan2(c.offsetY, c.offsetX) * 180) / Math.PI + 360) % 360;
+  return {
+    blurEmu: c.blur * emuPerPx,
+    distEmu: Math.hypot(c.offsetX, c.offsetY) * emuPerPx,
+    dir,
+    alpha: c.opacity,
+  };
+}
+
 /** A label as a text body: its runs split into paragraphs at each line break, in the box less its padding.
  *  Null when one of its colours cannot be named. */
 function textBodyOf(el: BoxedElement, label: Label, opacity: number, ctx: NativeContext) {
@@ -125,6 +167,8 @@ function textBodyOf(el: BoxedElement, label: Label, opacity: number, ctx: Native
   const paragraphs: PptxParagraph[] = [];
   let current: PptxRun[] = [];
   const align = alignOf(label.anchor);
+  const shadow =
+    el.type === 'text' && el.shadow ? textShadowOf(el.shadow, ctx.place.emuPerPx) : undefined;
   let tallest = 0;
   const close = () => {
     paragraphs.push({ align, runs: current, lineHeightPt: 0 });
@@ -133,6 +177,8 @@ function textBodyOf(el: BoxedElement, label: Label, opacity: number, ctx: Native
   for (const r of source) {
     const colour = paint(r.color, opacity * ('muted' in r && r.muted ? MUTED_RUN_OPACITY : 1));
     if (colour === null) return null;
+    const effects = runEffectsOf(r, opacity);
+    if (effects === null) return null;
     tallest = Math.max(tallest, r.size);
     const lines = r.text.split(/\r\n|\r|\n/);
     lines.forEach((line, i) => {
@@ -146,6 +192,8 @@ function textBodyOf(el: BoxedElement, label: Label, opacity: number, ctx: Native
         underline: !!el.textUnderline,
         strike: !!el.textStrikethrough,
         ...(font ? { font } : {}),
+        ...effects,
+        ...(shadow ? { shadow } : {}),
       });
     });
   }
@@ -190,7 +238,9 @@ export function nativeSlideItem(
 ): PptxShape | 'empty' | null {
   if (el.type !== 'text' && el.type !== 'shape') return null;
   const finish = resolveFinish(finishOf(el), ctx.tabFinish);
-  if (supportsShadow(el) && el.shadow) return null;
+  // A text element's shadow sits behind its letters, which a run says natively (outerShdw); another element's is
+  // behind its box, which only a picture shows as the page does.
+  if (supportsShadow(el) && el.shadow && el.type !== 'text') return null;
   if (resolvedAccentEdge(el)) return null;
   const d = describeBoxedExport(el, {
     tabFont: ctx.tabFont,

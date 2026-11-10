@@ -341,7 +341,9 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
     element.shape !== 'stack' &&
     element.shape !== 'banner' &&
     element.shape !== 'stat-row' &&
-    element.shape !== 'process'
+    element.shape !== 'process' &&
+    // A quote's portrait is its media; an icon dropped on it stands alone.
+    element.shape !== 'quote'
   );
 }
 
@@ -367,6 +369,7 @@ const RADIUS_SHAPES = new Set<string>([
   'card',
   'site-header',
   'stat-row',
+  'quote',
 ]);
 
 // The corner preset the Radius control highlights: the element's own, else the preset nearest

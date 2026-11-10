@@ -8,9 +8,11 @@ stacks, and hero shapes depth without faking it with offset duplicate shapes.
 
 `shadow?: ElementShadow` on the boxed element types that draw a visible body:
 **shape** (every kind, including icons and the self-drawing data shapes),
-**sticky**, **image**, and **link-card**. Text, freehand, margin notes, table,
+**sticky**, **image**, **link-card** and **video**, and on **text**, where it is a
+soft shadow behind the letters themselves (a headline over a photo, a title that
+needs lifting off a busy background), never a box. Freehand, margin notes, table,
 and arrows don't carry one (arrows are a possible follow-up; a rectangular
-shadow under a line or a text run reads as a rendering bug, not a style).
+shadow under a line or a grid reads as a rendering bug, not a style).
 `supportsShadow(el)` in `@livedocuments/document` is the single gate the UI and
 renderers share.
 
@@ -51,7 +53,10 @@ like Border does). Contents:
 
 ## Rendering
 
-Canvas (`describeVariant`): CSS-native shapes with an opaque fill, stickies,
+Canvas (`describeVariant`): text uses `text-shadow`, which follows the
+glyphs and costs no filter (a run filled with a gradient,
+[Text effects](text-effects.md), takes a `drop-shadow()` filter on its own span
+instead, since a text shadow would paint over its clipped fill). CSS-native shapes with an opaque fill, stickies,
 and link cards use `box-shadow` (cheap, follows the border radius).
 Everything else that renders through a transparent wrapper (SVG silhouettes,
 icons, data shapes, images, transparent-fill shapes) uses
@@ -64,7 +69,9 @@ Headless SVG export (`renderElementsToSvg` + the in-app export): one
 block (deterministic id via `shadowFilterId`, so elements sharing a shadow
 share a def), referenced from the element's `<g filter="url(#…)">`.
 `feDropShadow.stdDeviation` is `blur / 2` (the CSS blur radius ≈ 2σ
-equivalence), so exports match the canvas. Snapshots ([Document previews](../006-document/document-snapshots.md)), embeds
+equivalence), so exports match the canvas. Text takes the same filter, which follows its glyphs. In a PowerPoint export a
+shadowed text box stays a native text box, its runs carrying an `outerShdw`
+effect; other shadowed elements are drawn as pictures. Snapshots ([Document previews](../006-document/document-snapshots.md)), embeds
 ([Read-only embeds (`/embed`)](../013-workspace/embeds.md)), and MCP renders inherit parity for free.
 
 ## Interactions with existing style machinery

@@ -6,7 +6,7 @@ import { ComponentsCategory } from '@/components/illustrations/palette-pages-cat
 export const metadata = helpMetadata({
   title: 'Components',
   description:
-    'Add cards, badges, step numbers and web components (banners, callouts, stat rows, heroes, headers) that re-flow as you resize, with every line of text editable.',
+    'Add cards, badges, banners, callouts, stat rows, big numbers, quotes, heroes and headers that re-flow as you resize, with every line of text editable.',
   path: '/help/palette/components/',
 });
 
@@ -22,7 +22,7 @@ The **Components** category holds ready-made web components. Instead of building
 
 ## Finding them
 
-Rest on **Components** on the palette strip, or click it, to see its three groups. **Layout** comes first, with the **Hero**, **Header** and **Banner** a page is laid out with and the **Stack** that lines blocks up. **Page Blocks** holds the **Card**, **Badge** and **Step Number** ([Cards and Callouts](/help/palette/cards-and-callouts/), [Badges and Step Numbers](/help/palette/badges-and-step-numbers/)), the **Callout**, the **Stat Row** and **Process**. **Code and Lists** holds **Code** (a syntax-highlighted code card) and the **Checklist** (tickable to-do rows). Tap one to add it, or drag it to where you want it.
+Rest on **Components** on the palette strip, or click it, to see its three groups. **Layout** comes first, with the **Hero**, **Header** and **Banner** a page is laid out with and the **Stack** that lines blocks up. **Page Blocks** holds the **Card**, **Badge** and **Step Number** ([Cards and Callouts](/help/palette/cards-and-callouts/), [Badges and Step Numbers](/help/palette/badges-and-step-numbers/)), the **Callout**, the **Stat Row**, the **Big Number**, the **Quote** and **Process**. **Code and Lists** holds **Code** (a syntax-highlighted code card) and the **Checklist** (tickable to-do rows). Tap one to add it, or drag it to where you want it.
 
 A slide's Components leaves out the Header.
 
@@ -34,7 +34,9 @@ A slide's Components leaves out the Header.
 
 - **Banner** is a themed title block: an accent bar with a title and a subtitle.
 - **Callout** is a soft note box with an icon badge, a heading, and a body. It is a [card](/help/palette/cards-and-callouts/) underneath, so it can take tags and a meta line too.
-- **Stat Row** is a row of KPI cards, each a big number over a caption.
+- **Stat Row** is a row of KPI cards, each a big number over a caption, with an optional change line.
+- **Big Number** is a stat row of one: a large figure, its label and a change such as "▲ 24% on last year".
+- **Quote** is a large quote with its source: a name, a role and a portrait. Its opener offers the **Testimonial** (in a card, with a portrait) and the **Pull Quote** (large words on the page, signed by a name).
 - **Process** is a row of numbered circles joined by arrows, with a caption under each.
 - **Hero** is a large image with a caption card over it.
 - **Header** is a website-style bar with a logo, a brand name, and navigation links.
@@ -61,6 +63,24 @@ The main text (a banner's title, a callout's body, a header's brand name) is the
 A Stat row, a Process and a Header carry rows: stats, steps and links. To add one, select the component, open any of the quick-add **+** buttons around it and choose **Add Stat**, **Add Step** or **Add Link**. To remove, reorder or retype rows in one place, right-click the component and open **Tools**, then the **Stats**, **Steps** or **Links** section.
 
 Each has limits, so the layout stays readable: a stat row holds 1 to 6 stats, a process 2 to 8 steps, and a header up to 6 links.
+
+## Changes and counting up
+
+A stat can carry a change line under its caption. Type it in the **Stats** section's third box, or click under the caption of a row that already has one. The first character sets its colour: **▲**, **↑** or **+** reads as up and turns green, **▼**, **↓** or **-** reads as down and turns rose, and anything else keeps the caption's colour. Both colours stay readable on light and dark slides.
+
+When you present a slide, its stat numbers count up from zero, keeping their prefix, decimals and commas ("$1,250.5" counts as money with one decimal place). A value that isn't one number, such as "24/7", simply shows. Turn **Count Up When Presented** off in the **Stats** section to keep a row still. If your system asks for reduced motion, or you turn motion down in the editor, the numbers show at once.
+
+## Quotes and testimonials
+
+A quote is one element: its words are its label, so double-click to edit them. Once it is selected, click the name or role under it to change them.
+
+Right-click a quote and open **Tools**, then **Quote**, to change it:
+
+- **Look**: **Card** draws the quote in its own rounded box. **Plain** sets the words straight on the page, for a pull quote.
+- **Name** and **Role** turn the lines under the words on or off.
+- **Portrait**: none, the name's **Initial** in a disc, or a **Photo**. Picking Photo opens your pictures; **Change Photo** and **Remove Photo** follow.
+
+A small quote drops its role first, then its portrait, then its quote mark, so the words always have room.
 
 ## Resizing
 

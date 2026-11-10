@@ -1,7 +1,15 @@
 'use client';
 
-import { memo, useMemo, useState } from 'react';
-import { imageCornerPx, type ImageElement } from '@livedocuments/document';
+import { memo, useEffect, useMemo, useState } from 'react';
+import {
+  imageCornerPx,
+  imageDrawsCover,
+  imageIsShaped,
+  imageLayout,
+  imageMaskPath,
+  isImageMask,
+  type ImageElement,
+} from '@livedocuments/document';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { useCanvasTheme, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
@@ -15,6 +23,9 @@ import {
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { bodySetClass } from '@/lib/animation-classes';
 import { Glyph } from '@livedocuments/ui';
+import { ImageCropOverlay } from '@/components/canvas/ImageCropOverlay';
+import { endImageCrop, useIsImageCropping } from '@/lib/image-crop-store';
+import type { CropResult } from '@/lib/image-crop-math';
 
 // Renders the bitmap (or upload placeholder) for an ImageElement.
 // Mounted inside BoxedElementView's transformed wrapper so it picks
@@ -52,6 +63,10 @@ type ImageElementViewProps = {
   // The element's resolved font stack (its own, else the tab's theme font): the placeholder's
   // words are set in it, as its page's text is. Undefined falls back to the app's sans.
   fontFamily?: string;
+  // Cropping (docs/specs/009-elements/picture-crop-and-mask.md): whether the element is selected, and the commit a
+  // finished crop lands through, present only for an Editor who may change this image.
+  isSelected?: boolean;
+  onCommitCrop?: (elementId: string, result: CropResult) => void;
 };
 
 function ImageElementViewImpl({
@@ -61,6 +76,8 @@ function ImageElementViewImpl({
   shareCode,
   onOpenPicker,
   fontFamily,
+  isSelected = false,
+  onCommitCrop,
 }: ImageElementViewProps) {
   const { imageId } = element;
   const state = useImageBlobUrl(ownerId, imageId, { documentId, shareCode });
@@ -77,9 +94,37 @@ function ImageElementViewImpl({
   // the hero + avatar set 'cover' so a photo fills the box / circle.
   // Never more than a quarter of the shorter side (docs/specs/008-canvas/corner-radius.md).
   // Square by default under Professional (docs/specs/008-canvas/finish.md "Images").
-  const radius = imageCornerPx(element, useElementFinish(undefined));
+  const cornerPx = imageCornerPx(element, useElementFinish(undefined));
+  // A mask cuts the box to its shape (docs/specs/009-elements/picture-crop-and-mask.md): it replaces the corner
+  // radius, and a masked picture always covers its shape. The path is the box's px, worked out per size.
+  const mask = isImageMask(element.mask) ? element.mask : undefined;
+  const maskPath = useMemo(
+    () => (mask ? `path('${imageMaskPath(mask, element.width, element.height)}')` : undefined),
+    [mask, element.width, element.height],
+  );
+  const radius = mask ? 0 : cornerPx;
   const radiusStyle = { borderRadius: radius };
-  const fit = element.objectFit ?? 'contain';
+  const fit = imageDrawsCover(element) ? 'cover' : 'contain';
+  // The picture's own size, for laying out a crop: the element's, else the bitmap's once it loads.
+  const [loadedSize, setLoadedSize] = useState<{ width: number; height: number } | null>(null);
+  const natural =
+    element.naturalWidth && element.naturalHeight
+      ? { width: element.naturalWidth, height: element.naturalHeight }
+      : loadedSize;
+  // Cropping this image: only while it is selected, has a picture to crop and may be changed; anything else ends it.
+  const cropping = useIsImageCropping(element.id);
+  const canCrop = isSelected && !!onCommitCrop && !!imageId && !element.locked;
+  useEffect(() => {
+    if (cropping && !canCrop) endImageCrop();
+  }, [cropping, canCrop]);
+  useEffect(() => () => (cropping ? endImageCrop() : undefined), [cropping]);
+  const shaped = imageIsShaped(element);
+  const grey = element.greyscale === true ? 'grayscale(1)' : undefined;
+  const noteSize = (img: HTMLImageElement) => {
+    if (natural || !img.naturalWidth || !img.naturalHeight) return;
+    setLoadedSize({ width: img.naturalWidth, height: img.naturalHeight });
+  };
+  const layout = shaped ? imageLayout(element, natural, element.crop, fit) : null;
 
   // The paper under the element (its page's fill, else the canvas), never the app's chrome: a
   // light page in dark chrome keeps dark ink (docs/specs/009-elements/images.md "Placeholder rendering").
@@ -100,10 +145,10 @@ function ImageElementViewImpl({
         elementId={element.id}
         width={element.width}
         height={element.height}
-        round={element.borderRadius === 'full'}
+        round={element.borderRadius === 'full' || mask === 'circle'}
         tone={tone}
         surface={surface}
-        radius={radius}
+        radius={cornerPx}
         fontFamily={fontFamily}
         onOpenPicker={onOpenPicker}
       />
@@ -118,6 +163,7 @@ function ImageElementViewImpl({
         className="flex h-full w-full flex-col items-center justify-center overflow-hidden rounded border px-2 text-center font-sans"
         style={{
           ...radiusStyle,
+          clipPath: maskPath,
           gap: metrics.gapPx,
           background: tone.body,
           borderColor: tone.border,
@@ -145,7 +191,7 @@ function ImageElementViewImpl({
     return (
       <div
         className="h-full w-full animate-pulse rounded"
-        style={{ ...radiusStyle, background: IMAGE_SKELETON_BODY[surface] }}
+        style={{ ...radiusStyle, clipPath: maskPath, background: IMAGE_SKELETON_BODY[surface] }}
       />
     );
   }
@@ -166,19 +212,58 @@ function ImageElementViewImpl({
     // A Media animation (docs/specs/028-animation/element-animations.md) sits on this frame, so the
     // picture moves inside its crop and never past it.
     <div
-      className={`h-full w-full overflow-hidden rounded bg-white ${bodySetClass(element, 'media') ?? ''}`}
-      style={radiusStyle}
+      className={`relative h-full w-full overflow-hidden rounded bg-white ${bodySetClass(element, 'media') ?? ''}`}
+      style={{ ...radiusStyle, clipPath: maskPath }}
     >
-      <img
-        src={state.src}
-        alt={element.alt ?? ''}
-        // Decoded off the main thread, so a picture coming into view never stalls a pan.
-        decoding="async"
-        onError={() => setUndecodable(state.src)}
-        draggable={false}
-        className="block h-full w-full select-none"
-        style={{ objectFit: fit }}
-      />
+      {layout ? (
+        // A crop or a mask: the kept part laid into the box and the picture placed around it (imageLayout). A
+        // letterboxed crop keeps its own edges inside the part's box.
+        <div
+          className="absolute overflow-hidden"
+          style={{
+            left: layout.part.x,
+            top: layout.part.y,
+            width: layout.part.width,
+            height: layout.part.height,
+          }}
+        >
+          <img
+            src={state.src}
+            alt={element.alt ?? ''}
+            decoding="async"
+            onError={() => setUndecodable(state.src)}
+            onLoad={(e) => noteSize(e.currentTarget)}
+            draggable={false}
+            className="absolute block max-w-none select-none"
+            style={{
+              left: layout.picture.x - layout.part.x,
+              top: layout.picture.y - layout.part.y,
+              width: layout.picture.width,
+              height: layout.picture.height,
+              filter: grey,
+            }}
+          />
+        </div>
+      ) : (
+        <img
+          src={state.src}
+          alt={element.alt ?? ''}
+          // Decoded off the main thread, so a picture coming into view never stalls a pan.
+          decoding="async"
+          onError={() => setUndecodable(state.src)}
+          draggable={false}
+          className="block h-full w-full select-none"
+          style={{ objectFit: fit, filter: grey }}
+        />
+      )}
+      {cropping && canCrop ? (
+        <ImageCropOverlay
+          element={element}
+          src={state.src}
+          natural={natural}
+          onApply={(result) => onCommitCrop?.(element.id, result)}
+        />
+      ) : null}
     </div>
   );
 }

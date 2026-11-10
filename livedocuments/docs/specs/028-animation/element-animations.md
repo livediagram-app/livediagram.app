@@ -280,6 +280,7 @@ their existing types.
 ## Non-goals
 
 - Animations triggered by presentation steps, clicks or scrolling. Every animation runs from the stored fields
-  alone.
+  alone. The one exception is the stat row's count-up, which plays as its slide is presented and only then
+  ([Stat row](../009-elements/stat-row.md) "Count-up when presented"); it is the stat row's own, not a set.
 - Choosing a different animation per letter, word, row or cell.
 - Sequencing animations across elements (one after another).

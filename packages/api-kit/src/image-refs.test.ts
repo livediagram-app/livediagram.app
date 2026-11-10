@@ -32,14 +32,20 @@ describe('imageRefIds', () => {
     expect(imageRefIds([image('b'), image('a'), image('b')])).toEqual(['b', 'a']);
   });
 
-  it('skips placeholders, data URIs and non-image elements carrying an imageId', () => {
+  it('skips placeholders, data URIs and elements that place no picture', () => {
     const elements = [
       image(null),
       image('data:image/png;base64,AAAA'),
-      { id: 's', type: 'shape', imageId: 'x' },
+      { id: 's', type: 'sticky', imageId: 'x' },
       image('kept'),
     ];
     expect(imageRefIds(elements)).toEqual(['kept']);
+  });
+
+  it("counts a shape's photo (a quote's portrait) as an image's", () => {
+    const quote = { id: 'q', type: 'shape', shape: 'quote', imageId: 'photo' };
+    expect(imageRefIds([quote, image('a')])).toEqual(['photo', 'a']);
+    expect(imageRefIds([{ ...quote, imageId: 'data:image/png;base64,AA' }])).toEqual([]);
   });
 
   it('counts a page background picture after the elements, once', () => {

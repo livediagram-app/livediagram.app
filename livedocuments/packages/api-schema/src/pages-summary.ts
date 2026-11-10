@@ -24,7 +24,7 @@ export type PagesTab = Pick<Tab, 'elements' | 'pages' | 'articles'> & { pageOrie
 const overlayWords = (o: { kind: string; strength: number } | undefined) =>
   o ? `${o.kind} ${Math.round(o.strength * 100)}%` : 'no overlay';
 
-/** A background in words: `#0f172a`, `gradient #fde68a → #fca5a5`, `image, light 60%`, `dots`, or
+/** A background in words: `#0f172a`, `gradient #fde68a → #fca5a5`, `image, light 60%, blur 40%`, `dots`, or
  *  null for the paper. */
 export function describeBackground(b: PageBackground | undefined): string | null {
   if (!b) return null;
@@ -34,7 +34,7 @@ export function describeBackground(b: PageBackground | undefined): string | null
       : b.fill?.kind === 'gradient'
         ? `gradient ${b.fill.from} → ${b.fill.to}`
         : b.fill?.kind === 'image'
-          ? `image, ${overlayWords(b.fill.overlay)}`
+          ? `image, ${overlayWords(b.fill.overlay)}${b.fill.blur ? `, blur ${Math.round(b.fill.blur * 100)}%` : ''}`
           : null;
   return [fill, b.pattern ? `${b.pattern} pattern` : null].filter(Boolean).join(', ') || null;
 }

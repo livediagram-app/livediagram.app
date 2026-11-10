@@ -220,6 +220,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isProgressShape(kind) ||
     isRailShape(kind) ||
     isRatingShape(kind) ||
+    // A map (docs/specs/009-elements/map.md) shows its pins' labels, not one of its own.
+    kind === 'map' ||
     isChartShape(kind) ||
     isCodeBlockShape(kind) ||
     isChecklistShape(kind) ||

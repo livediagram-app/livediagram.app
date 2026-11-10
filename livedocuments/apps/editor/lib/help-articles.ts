@@ -80,6 +80,7 @@ export const HELP_ARTICLES = {
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
+  maps: 'palette/tools/maps',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
   conceptGraphics: 'palette/concept-graphics',
@@ -281,6 +282,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sankeyDiagram: {
     title: 'Learn about Sankey diagrams',
     description: 'Writing flows, reading the bands, and styling nodes and labels.',
+  },
+  maps: {
+    title: 'Learn about maps',
+    description: 'Regions and countries, highlighting places and pinning cities.',
   },
   stacks: {
     title: 'Learn about stacks',

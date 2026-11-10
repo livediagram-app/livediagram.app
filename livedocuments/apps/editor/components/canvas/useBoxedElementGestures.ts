@@ -167,7 +167,7 @@ export function useBoxedElementGestures({
     // card opens the link picker.
     if (
       element.type === 'shape' &&
-      (element.shape === 'code-block' || element.shape === 'sankey')
+      (element.shape === 'code-block' || element.shape === 'sankey' || element.shape === 'map')
     ) {
       onOpenEditDialog?.(element.id);
       return;

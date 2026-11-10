@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   BORDER_STROKE_PX,
+  TABLE_HEADER_BASE,
   tableHeaderColours,
+  tableHighlightColours,
   tableTrackSizes,
   defaultStrokeColor,
   defaultTextColor,
@@ -11,6 +13,7 @@ import {
   type TableCellStyle,
   type TableElement,
   plural,
+  type TablePatch,
 } from '@livedocuments/document';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { nearestCssBorderStyle } from '@/components/canvas/border-css';
@@ -75,10 +78,7 @@ export function TableView({
   // `cells` plus the parallel colWidths / rowHeights / cellStyles arrays;
   // committing them together (not as separate commits off a stale base)
   // keeps the side arrays aligned and avoids clobbering.
-  onCommitTable: (
-    id: string,
-    patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
-  ) => void;
+  onCommitTable: (id: string, patch: TablePatch) => void;
   // Open the shared link picker for a cell (docs/specs/008-canvas/canvas-and-palette.md). Undefined for
   // read-only viewers (no editing).
   onLinkCell?: (tableId: string, r: number, c: number) => void;
@@ -135,6 +135,7 @@ export function TableView({
     cellLongPress,
     applyStyleToSelection,
     clearSelectionCells,
+    setSelectionText,
   } = useTableCellSelection({
     element,
     rows,
@@ -246,6 +247,12 @@ export function TableView({
   // AA. Shared with the export, so a dark page gets a dark band under light
   // ink on screen and in every export (docs/specs/008-canvas/canvas-and-palette.md Table).
   const { fill: headerFill, ink: headerTextColor } = tableHeaderColours(element, surface);
+  // The recommended column (docs/specs/009-elements/comparison-tables.md "Highlight a column").
+  const highlightColumn =
+    element.highlightColumn !== undefined && element.highlightColumn < cols
+      ? element.highlightColumn
+      : -1;
+  const highlight = highlightColumn >= 0 ? tableHighlightColours(stroke) : null;
   const alignX = element.textAlignX ?? 'center';
   const alignY = element.textAlignY ?? 'middle';
   const alignItems = alignY === 'top' ? 'flex-start' : alignY === 'bottom' ? 'flex-end' : 'center';
@@ -271,7 +278,7 @@ export function TableView({
     setSelectedCell,
   });
 
-  const { moveCol, moveRow, addCol, delCol, addRow, delRow } = useTableStructure({
+  const { moveCol, moveRow, addCol, delCol, addRow, delRow, toggleHighlight } = useTableStructure({
     element,
     onCommitTable,
     setMenu,
@@ -341,6 +348,10 @@ export function TableView({
     fontPx,
     rowH,
     stroke,
+    highlightColumn,
+    highlight,
+    surface,
+    paper: TABLE_HEADER_BASE[surface],
     tabSummaries,
     onFollowLink,
     beginEdit,
@@ -395,6 +406,23 @@ export function TableView({
         ))}
       </div>
 
+      {highlight ? (
+        // The highlighted column's frame, over the grid lines, on a grid laid out like the table's.
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 grid"
+          style={{ gridTemplateColumns: colTemplate }}
+        >
+          <div
+            data-table-highlight=""
+            style={{
+              gridColumn: highlightColumn + 1,
+              border: `2px solid ${highlight.frame}`,
+              borderRadius: 2,
+            }}
+          />
+        </div>
+      ) : null}
       {/* Control layer: a non-clipped sibling so menus can spill past the
           box. Triggers live inside the top / left edge; column-resize
           dividers ride a grid that mirrors the table's column template so
@@ -457,6 +485,8 @@ export function TableView({
           moveRow={moveRow}
           delRow={delRow}
           onClose={() => setMenu(null)}
+          highlightColumn={element.highlightColumn}
+          onToggleHighlight={toggleHighlight}
         />
       ) : null}
       {cellMenuPos && selectedCell && showControls && !editing ? (
@@ -469,6 +499,7 @@ export function TableView({
           applyStyle={applyStyleToSelection}
           onPreviewStyle={setCellPreview}
           onClear={clearSelectionCells}
+          onSetText={setSelectionText}
           onLinkCell={onLinkCell}
           textColor={textColor}
         />

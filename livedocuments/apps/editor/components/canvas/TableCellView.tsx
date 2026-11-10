@@ -3,9 +3,15 @@ import { renderUnits } from './animated-words';
 import type { TextAnimView } from './useTextAnimation';
 import {
   tableCellFontPx,
+  tableCellMark,
+  tableMarkColours,
+  tableMarkPath,
+  tableMarkSize,
+  type CanvasSurface,
   type ElementLink,
   type TableCellStyle,
   type TableElement,
+  type TablePatch,
 } from '@livedocuments/document';
 import { CellLinkIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { TableCellEditor } from '@/components/canvas/TableCellEditor';
@@ -45,6 +51,12 @@ export type TableCellCtx = {
   fontPx: number;
   rowH: number;
   stroke: string;
+  // The recommended column (docs/specs/009-elements/comparison-tables.md "Highlight a column"), -1 for none, and its
+  // colours; `surface` and `paper` resolve a mark's colour on a cell with no fill of its own.
+  highlightColumn: number;
+  highlight: { wash: string; header: string; headerInk: string } | null;
+  surface: CanvasSurface;
+  paper: string;
   tabSummaries: { id: string; name: string }[];
   onFollowLink?: (link: ElementLink) => void;
   beginEdit: (r: number, c: number) => void;
@@ -69,10 +81,7 @@ export type TableCellCtx = {
     lastLine: boolean;
   };
   setEditing: (v: { r: number; c: number } | null) => void;
-  onCommitTable: (
-    id: string,
-    patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
-  ) => void;
+  onCommitTable: (id: string, patch: TablePatch) => void;
 };
 
 // One table cell (docs/specs/008-canvas/canvas-and-palette.md Table), lifted out of TableView's render
@@ -113,6 +122,10 @@ export function TableCellView({
     fontPx,
     rowH,
     stroke,
+    highlightColumn,
+    highlight,
+    surface,
+    paper,
     tabSummaries,
     onFollowLink,
     beginEdit,
@@ -149,6 +162,14 @@ export function TableCellView({
     cellAlignX === 'left' ? 'flex-start' : cellAlignX === 'right' ? 'flex-end' : 'center';
   const cellFontPx = tableCellFontPx(cs?.textSize, rowH, fontPx);
   const isEditingCell = editing?.r === r && editing?.c === c;
+  // The highlighted column's colours on its cells, its accent header on the header row's.
+  const hl = highlight !== null && c === highlightColumn ? highlight : null;
+  const hlHeader = hl !== null && !!element.headerRow && r === 0 ? hl : null;
+  const baseBg = isHeader ? headerFill : (zebraBg ?? element.fillColor ?? 'transparent');
+  const cellBg = cs?.bg ?? hlHeader?.header ?? baseBg;
+  const cellInk = cs?.textColor ?? hlHeader?.headerInk ?? (isHeader ? headerTextColor : undefined);
+  // A tick or a cross alone in the cell draws as a mark (comparison-tables.md "Ticks and crosses").
+  const mark = isEditingCell ? null : tableCellMark(cell);
   return (
     <div
       key={`${r}-${c}`}
@@ -232,12 +253,14 @@ export function TableCellView({
         padding: cellPad,
         borderRight: c < cols - 1 ? gridBorder : undefined,
         borderBottom: r < rows - 1 ? gridBorder : undefined,
-        backgroundColor:
-          cs?.bg ?? (isHeader ? headerFill : (zebraBg ?? element.fillColor ?? 'transparent')),
+        backgroundColor: cellBg,
+        // A highlighted body cell takes the accent's wash under its own fill (a zebra stripe shows through).
+        backgroundImage:
+          hl && !hlHeader && !cs?.bg ? `linear-gradient(${hl.wash}, ${hl.wash})` : undefined,
         display: 'flex',
         justifyContent: cellJustify,
         alignItems,
-        color: cs?.textColor ?? (isHeader ? headerTextColor : undefined),
+        color: cellInk,
         // Selection outline in the table's own accent (its
         // stroke, which tracks the theme) rather than a fixed
         // light blue that clashes on non-default themes. Thin +
@@ -276,6 +299,17 @@ export function TableCellView({
           caretInfo={caretInfo}
           setEditing={setEditing}
         />
+      ) : mark ? (
+        <TableMarkFace
+          mark={mark}
+          size={tableMarkSize(cellFontPx, rowH, cellPad)}
+          colours={tableMarkColours(
+            mark,
+            surface,
+            cellBg === 'transparent' ? paper : cellBg,
+            cs?.textColor ?? hlHeader?.headerInk,
+          )}
+        />
       ) : (
         <span
           key={textAnim?.className}
@@ -310,5 +344,39 @@ export function TableCellView({
         </HoverCard>
       ) : null}
     </div>
+  );
+}
+
+// A tick or a cross as the mark it stands for: a soft disc with the glyph drawn over it, read as "Yes" or "No"
+// (docs/specs/009-elements/comparison-tables.md). The export draws the same shapes from the same helpers.
+function TableMarkFace({
+  mark,
+  size,
+  colours,
+}: {
+  mark: 'tick' | 'cross';
+  size: number;
+  colours: { stroke: string; wash: string };
+}) {
+  return (
+    <svg
+      role="img"
+      aria-label={mark === 'tick' ? 'Yes' : 'No'}
+      data-table-mark={mark}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      className="shrink-0"
+    >
+      <circle cx="12" cy="12" r="12" fill={colours.wash} />
+      <path
+        d={tableMarkPath(mark)}
+        fill="none"
+        stroke={colours.stroke}
+        strokeWidth={2.4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

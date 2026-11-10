@@ -31,8 +31,9 @@ describe('buildPaletteSearchItems', () => {
           mode?: string;
           estimateScale?: string;
           plan?: string;
+          variant?: string;
         };
-        const choice = a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan;
+        const choice = a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan ?? a.variant;
         return choice ? `shape:${a.kind}:${choice}` : `shape:${a.kind}`;
       })
       .filter((id) => !ids.has(id));
