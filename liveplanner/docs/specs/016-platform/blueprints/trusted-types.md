@@ -26,7 +26,7 @@ Derived from [Trusted Types](../trusted-types.md).
 | `apps/{marketing,help,telemetry}/public/_headers`      | The same header on `/*`                                                                                                            |
 | `scripts/e2e-stack.mjs`                                | Sends the header on every HTML response, as production does                                                                        |
 | Every React element given markup                       | `{...htmlProps(markup)}`, the markup a `SafeHtml` (fixed SVG pictures are JSX instead)                                             |
-| Every DOM element given markup                         | `setHtml(el, markup)` (`useFaceFinishPass.ts`, the Marker and Sketch face ink); an iframe's document `setSrcdoc(frame, markup)`    |
+| Every DOM element given markup                         | `setHtml(el, markup)` (`useFaceFinishPass.ts`, the Marker and Sketch face ink); an iframe's srcdoc `setSrcdoc(frame, markup)`      |
 | `.github/scripts/raw-html-guard.mjs` (repository root) | Fails CI and the pre-push hook on a raw HTML sink anywhere outside `html.ts`                                                       |
 
 ## Behaviour and state

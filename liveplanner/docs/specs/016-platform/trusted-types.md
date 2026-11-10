@@ -62,7 +62,7 @@ Every raw HTML sink in our code goes through one small module, `@liveworkspace/t
 nothing else of ours writes one:
 
 - **A React element** takes markup as `{...htmlProps(markup)}`; no other file spells `dangerouslySetInnerHTML`.
-- **A DOM element** takes it through `setHtml(element, markup)`, and an iframe's document through
+- **A DOM element** takes it through `setHtml(element, markup)`, and an iframe's srcdoc through
   `setSrcdoc(frame, markup)`; no other file assigns `innerHTML`, `outerHTML` or `srcdoc`, or calls
   `insertAdjacentHTML`, `createContextualFragment`, `setHTMLUnsafe` or `document.write`.
 - **The markup is a `SafeHtml`**, a branded string, so the type system shows where each one was vetted. A plain
@@ -72,7 +72,7 @@ nothing else of ours writes one:
     constants.
   - `builtMarkup(markup)`: what one of our builders produced, a builder that escapes every piece of content it
     places (the icon, sticker and template SVG builders, the headless tab renderer and its thumbnails and previews).
-    Content from a document reaches a sink only this way.
+    Content from a project reaches a sink only this way.
   - `jsonScript(data)`: a JSON payload for an inline `<script>` (the JSON-LD block), with every `<` escaped so
     nothing in it can close the script.
 - **Markup that needs no injection is JSX.** A fixed SVG picture is written as elements, not as a string.
