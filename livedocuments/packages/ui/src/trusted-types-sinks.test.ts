@@ -16,7 +16,6 @@ describeTrustedTypesSinks({
     'apps/editor/app/pre-hydration-scripts.ts',
     'apps/editor/components/canvas/StickerView.tsx',
     'apps/editor/components/canvas/layout-render-thumb.tsx',
-    'apps/editor/components/canvas/useFaceFinishPass.ts',
     'apps/editor/components/dialogs/LooksCarousel.tsx',
     'apps/editor/components/dialogs/TabStylePreview.tsx',
     'apps/editor/components/primitives/tech-icon-glyph.tsx',

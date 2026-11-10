@@ -18,7 +18,6 @@ describeTrustedTypesSinks({
     'apps/live/components/canvas/WireframeDeviceOverlays.tsx',
     'apps/live/components/canvas/WireframeDeviceSheet.tsx',
     'apps/live/components/canvas/layout-render-thumb.tsx',
-    'apps/live/components/canvas/useFaceFinishPass.ts',
     'apps/live/components/canvas/wireframe/DeviceMiniature.tsx',
     'apps/live/components/dialogs/LooksCarousel.tsx',
     'apps/live/components/dialogs/TabStylePreview.tsx',
