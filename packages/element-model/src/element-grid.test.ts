@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape } from './testing/elements';
 import { createArrow } from './testing/elements';
@@ -72,9 +73,11 @@ describe('element grid', () => {
     const grid = buildElementGrid([inside, corner, outside]);
     // 2.5 million px each way: billions of cells to walk one by one.
     const rect = { x: -2_000_000, y: -2_000_000, width: 2_500_000, height: 2_500_000 };
-    const start = performance.now();
-    const hits = queryElementGrid(grid, rect);
-    expect(performance.now() - start).toBeLessThan(50);
+    let hits: Element[] = [];
+    const spent = cpuMsOf(() => {
+      hits = queryElementGrid(grid, rect);
+    });
+    expect(spent).toBeLessThan(cpuBudgetMs(50));
     expect(ids(hits)).toEqual([inside.id, corner.id]);
   });
 
