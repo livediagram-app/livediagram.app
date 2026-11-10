@@ -14,17 +14,22 @@ import type {
   TextAlignY,
   TextSize,
 } from '@liveworkspace/model-core/basics';
+import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { BorderRadius, BorderStroke, BorderStyle } from '@liveworkspace/model-core/border-style';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 import type { BoundaryStyle } from './boundary';
 import type { CardMedia } from './card';
+import type { ChipLook } from './chip';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { KeyRow } from './diagram-key';
 import type { Finish } from './finish';
 import type { MindLook } from './person-node';
 import type { HeroCaption, StatItem } from './web-components';
 
-export type { ElementId };
+export type { ElementId, TextSize };
+
+/** Which ends of an arrow carry a head. */
+export type ArrowEnds = 'from' | 'to' | 'both' | 'none';
 
 /** The sixteen anchors on a box's connector outline, clockwise from the top. */
 export type Anchor =
@@ -82,6 +87,7 @@ export type BoxBase = {
   headerFill?: string;
   textBold?: boolean;
   textItalic?: boolean;
+  richText?: TextRun[];
 };
 
 export type ShapeElement = BoxBase & {
@@ -111,6 +117,10 @@ export type ShapeElement = BoxBase & {
   stats?: StatItem[];
   processSteps?: string[];
   navLinks?: string[];
+  chipLook?: ChipLook;
+  stepSequence?: boolean;
+  /** A mind node's parent (livediagram, liveplanner). */
+  mindParentId?: ElementId;
 };
 
 export type TextElement = BoxBase & { type: 'text' };
@@ -196,6 +206,9 @@ export type ArrowElement = {
   elbowOffset?: { dx: number; dy: number };
   labelOffset?: { t: number; offset: number };
   strokeStyle?: BorderStyle;
+  arrowEnds?: ArrowEnds;
+  textBold?: boolean;
+  textItalic?: boolean;
 };
 
 export type Element = BoxedElement | ArrowElement;
