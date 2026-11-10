@@ -214,7 +214,6 @@ livediagram/apps/editor/components/primitives/MovablePanel.types.ts	livehuddle/a
 livediagram/apps/editor/components/start/StartCard.tsx	livehuddle/apps/editor/components/start/StartCard.tsx
 livediagram/apps/editor/components/start/StartViewTransition.tsx	livehuddle/apps/editor/components/start/StartViewTransition.tsx
 livediagram/apps/editor/components/start/start-closed-key.ts	livehuddle/apps/editor/components/start/start-closed-key.ts
-livediagram/apps/editor/components/start/useStartPalette.ts	livedocuments/apps/editor/components/start/useStartPalette.ts	livehuddle/apps/editor/components/start/useStartPalette.ts
 livediagram/apps/editor/components/tour/TourStage.tsx	livehuddle/apps/editor/components/tour/TourStage.tsx	liveplanner/apps/editor/components/tour/TourStage.tsx
 livediagram/apps/editor/e2e/optical-discover.ts	liveplanner/apps/editor/e2e/optical-discover.ts
 livediagram/apps/editor/e2e/optical.ts	livedocuments/apps/editor/e2e/optical.ts	livehuddle/apps/editor/e2e/optical.ts
