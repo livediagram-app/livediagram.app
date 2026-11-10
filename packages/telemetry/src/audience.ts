@@ -10,7 +10,7 @@
 //
 // The summary folds them in the same pass as everything else (summary.ts), so they cost no query.
 
-import type { TelemetrySender } from './apps';
+import { isTelemetrySender, type TelemetrySender } from './apps';
 
 export const TELEMETRY_AUDIENCE_KEYS = [
   'newVisitors',
@@ -91,6 +91,8 @@ export function addAudienceCount(
   key: TelemetryAudienceKey,
   n: number,
 ): void {
+  // Rows come from the database, so a name that is not a sender (say `__proto__`) is skipped, never used as a key.
+  if (!isTelemetrySender(app)) return;
   const counts = (bucket[app] ??= emptyAudienceCounts());
   counts[key] += n;
 }
@@ -104,6 +106,7 @@ export function addAudienceDay(
   n: number,
   seriesDays: number,
 ): void {
+  if (!isTelemetrySender(app)) return;
   const series = (audience.daily[app] ??= Object.fromEntries(
     TELEMETRY_AUDIENCE_KEYS.map((k) => [k, Array.from({ length: seriesDays }, () => 0)]),
   ) as TelemetryAudienceSeries);

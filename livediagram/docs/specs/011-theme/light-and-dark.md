@@ -27,7 +27,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   of every theme, and every table preset's header title on its band. Bold stays white text, so its fill darkens until
   white reads on it; any other short label (Solid's white on a mid accent, the Border tier's accent on white) is walked
   away from its fill. A preset that already read is unchanged. The shared walk lives in
-  `../packages/element-model/src/readable-colour.ts`; `packages/document/src/theme-presets.test.ts` checks every preset.
+  `../packages/element-model/src/readable-colour.ts`; `../packages/element-model/src/theme-presets.test.ts` checks every preset.
 
 ## Colours an agent writes
 
@@ -49,7 +49,7 @@ never rewritten. Named colours are a map read built once, since the parse runs f
 - **A box's text and fill are drawn as a pair.** Each colour is redrawn on its own, so a box whose fill is one of the
   theme's colours but whose text is someone's choice (a template's white box with slate text) would get the half's
   fill under the stored text. Where that would put the text on its fill below 4.5:1, and read worse than the stored
-  pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/document/src/theme-halves.test.ts` covers the rule, and
+  pair does, the box keeps its stored fill and text instead (its outline still follows the half). `../packages/element-model/src/theme-halves.test.ts` covers the rule, and
   `apps/editor/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
   viewer.
 - **A label reads against what is drawn behind it.** A template opened on the Default scheme keeps every label at

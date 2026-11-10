@@ -258,24 +258,24 @@ LinkUnfurled` exist.
 
 ## Testing
 
-| Rule                                                    | Test                                                        | File                                           |
-| ------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------- |
-| Blocked hosts and ranges                                | `blocks loopback / localhost / .local / metadata + private` | `../packages/api-kit/src/unfurl.test.ts`       |
-| Public hosts allowed                                    | `allows public hosts + public IPs`                          | `../packages/api-kit/src/unfurl.test.ts`       |
-| Domains starting `fc` / `fd` allowed `[QB12]`           | none                                                        |                                                |
-| http(s) only                                            | `parsePublicHttpUrl` suite                                  | `../packages/api-kit/src/unfurl.test.ts`       |
-| og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `../packages/api-kit/src/unfurl.test.ts`       |
-| Rate limit, redirect re-check, non-HTML, timeout, cap   | none (GB16)                                                 |                                                |
-| 280×120 factory, no link or meta                        | `createLinkCard is a 280x120 boxed bookmark…`               | `packages/design/src/factories.test.ts`        |
-| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/live/lib/draw-commit.test.ts`            |
-| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/live/lib/draw-mode.test.ts`              |
-| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/live/lib/element-telemetry.test.ts`      |
-| Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/design/src/geometry.test.ts`         |
-| No inline text                                          | `is false for label-less kinds…`                            | `packages/design/src/element-has-text.test.ts` |
-| Shadow supported                                        | `supportsShadow` suite                                      | `../packages/element-model/src/shadow.test.ts` |
-| Theme leaves cards alone                                | none                                                        |                                                |
-| Stale-meta guard, unfurl only for cards, meta commit    | none (GB9, GB11, GB16)                                      |                                                |
-| Contrast                                                | none (GB14)                                                 |                                                |
+| Rule                                                    | Test                                                        | File                                             |
+| ------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------ |
+| Blocked hosts and ranges                                | `blocks loopback / localhost / .local / metadata + private` | `../packages/api-kit/src/unfurl.test.ts`         |
+| Public hosts allowed                                    | `allows public hosts + public IPs`                          | `../packages/api-kit/src/unfurl.test.ts`         |
+| Domains starting `fc` / `fd` allowed `[QB12]`           | none                                                        |                                                  |
+| http(s) only                                            | `parsePublicHttpUrl` suite                                  | `../packages/api-kit/src/unfurl.test.ts`         |
+| og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `../packages/api-kit/src/unfurl.test.ts`         |
+| Rate limit, redirect re-check, non-HTML, timeout, cap   | none (GB16)                                                 |                                                  |
+| 280×120 factory, no link or meta                        | `createLinkCard is a 280x120 boxed bookmark…`               | `packages/design/src/factories.test.ts`          |
+| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/live/lib/draw-commit.test.ts`              |
+| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/live/lib/draw-mode.test.ts`                |
+| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/live/lib/element-telemetry.test.ts`        |
+| Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `../packages/element-model/src/geometry.test.ts` |
+| No inline text                                          | `is false for label-less kinds…`                            | `packages/design/src/element-has-text.test.ts`   |
+| Shadow supported                                        | `supportsShadow` suite                                      | `../packages/element-model/src/shadow.test.ts`   |
+| Theme leaves cards alone                                | none                                                        |                                                  |
+| Stale-meta guard, unfurl only for cards, meta commit    | none (GB9, GB11, GB16)                                      |                                                  |
+| Contrast                                                | none (GB14)                                                 |                                                  |
 
 ## Constants and configuration
 

@@ -128,7 +128,7 @@ Portal is its bloom, mouth and lit rim (dim when unpaired); a Picker shows its
 reel window. A Page draws its masthead inside the border, starts
 its body label under the rule, and turns back its bottom-right corner over the
 paper. A box label breaks a word wider than its line between characters, as
-the canvas's `break-words` does; an icon caption keeps the word whole. A break falls between
+the canvas's `break-words` does, and so does a table cell's text; an icon caption keeps the word whole. A break falls between
 characters as a reader sees them, so an emoji is never cut in half. A run that starts mid-word (part of a word
 made bold) carries on that word: no space is put in and no line breaks there.
 
