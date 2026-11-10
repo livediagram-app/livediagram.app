@@ -51,11 +51,33 @@ marketing/      off-site copy + media for listings and promotion (see docs/specs
 
 The editor route (`apps/editor/app/document/[id]/`) is split three ways so no file becomes a god component:
 
-- `useEditorState.ts` is the orchestration hook: it calls each domain sub-hook, threads their dependencies, and assembles the return view-model.
+- `useEditorState.ts` is the orchestration hook: it calls each concern's slice in `app/document/[id]/editor-state/` in one fixed order, passes each the slices before it, and returns the view-model `app/document/[id]/editor-state/editor-view.ts` picks out of them.
 - `EditorContext.tsx` carries that view-model as `EditorContextValue = ReturnType<typeof useEditorState>`.
 - `EditorView.tsx` renders the JSX, leaving `editor-page.tsx` a thin page shell.
 
-`useEditorState.ts` is large by design: what remains in it is wiring, not logic, so it is exempt from the ~400-line soft target ([AGENTS.md](../../AGENTS.md#core-principle-no-god-files-plan-placement-first)). New behaviour goes into its own sub-hook, not into it.
+### Editor state
+
+`app/document/[id]/editor-state/` holds one hook per concern, `use<Concern>.ts`, named from the vocabulary every product's editor shares
+(document, selection, tools, viewport, collaboration, persistence, comments, history, dialogs) plus this product's own:
+`useEditorDocument`, `useEditorSelection`, `useEditorTools`, `useEditorSession`, `useEditorPersistence`,
+`useEditorCollaboration`, `useEditorViewport`, `useEditorComments`, `useEditorPages`, `useEditorLayers`,
+`useEditorUndoState`, `useEditorArticles`, `useEditorTabs`, `useEditorElements`, `useEditorStyle`, `useEditorInput`,
+`useEditorWorkbench`.
+
+- Each slice takes the slices before it (`{ documentSlice, selectionSlice, ... }`, typed by the `Editor<Concern>` type
+  its file exports) and returns the values the ones after it read. Dependencies flow one way, down the call order; a
+  slice never imports another's hook.
+- The call order is the old single hook's statement order, kept so every effect runs in the order it always did. A
+  value a slice needs from one further down reaches it through a ref declared earlier and filled there with
+  `useAssignRef` (the active layer's stamp, the changeset reveal).
+- `editor-view.ts` builds the returned object in the order and shape `EditorContextValue` has always had, so
+  `ReturnType<typeof useEditorState>` and every caller are unchanged.
+- The values pass through untouched: every `useMemo`, `useCallback` and ref is as stable as it was in one hook, and
+  none of it is memoised by the React Compiler: the compiler bailed out on the single hook, so each slice and the
+  composer say `'use no memo'`. Letting the compiler in is a change of its own, measured before it lands.
+
+New behaviour goes into its own hook beside the slice it belongs to, wired in by that slice; a new concern becomes a
+new slice, called in its place in the order. `useEditorState.ts` stays a composer.
 
 ## The shared packages
 

@@ -14,7 +14,7 @@ Scope, by file:
 | `apps/editor/components/canvas/whiteboard/SnapColoursSection.tsx`                                                      | The Settings flyout's Colours section                                         |
 | `apps/editor/components/canvas/whiteboard/dock-flyouts.tsx`                                                            | Renders the section last in `SettingsFlyoutBody`                              |
 | `apps/editor/hooks/canvas/useWhiteboard.ts`                                                                            | Carries `snapColours` on the dock model                                       |
-| `apps/editor/app/document/[id]/useEditorState.ts`                                                                      | Builds `useSnapColours` and hands it to `useWhiteboard`                       |
+| `apps/editor/app/document/[id]/editor-state/useEditorCreation.ts`                                                      | Builds `useSnapColours` and hands it to `useWhiteboard`                       |
 | `packages/api-schema/src/telemetry-schema.ts`, liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts | The `SnapColours` token's comment and its dashboard sentence                  |
 
 ## Domain and naming

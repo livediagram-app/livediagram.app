@@ -20,7 +20,7 @@ Scope, by file:
 | `apps/editor/hooks/ui/usePressWithoutDrag.ts`                               | Click presses, drag stays silent                                    |
 | `../packages/workbench/src/lib/press-gestures.ts`                           | `isDragTravel`, `PRESS_DRAG_SLOP_PX`                                |
 | `packages/document/src/retired-elements.ts`                                 | `isRetiredElement`: an Avatar button (mode `avatar` or none)        |
-| `apps/editor/app/document/[id]/useEditorState.ts`                           | `pressModeButton`: Leave, else `pickCanvasTool`                     |
+| `apps/editor/app/document/[id]/editor-state/useEditorTools.ts`              | `pressModeButton`: Leave, else `pickCanvasTool`                     |
 | `apps/editor/hooks/canvas/useCanvasTool.ts`                                 | `selectCanvasTool` telemetry, `toolBeforeCurrent`                   |
 | `apps/editor/components/canvas/editor-canvas-host/useSessionCanvasProps.ts` | Threads the press; ignores a mode `isButtonMode` refuses            |
 | `apps/editor/components/palette/tile-defs/behaviour-tiles.tsx`              | Seven `tools:mode-<mode>` tiles, `tileGroup: 'mode'` [QF6]          |

@@ -31,7 +31,7 @@ Scope, by file:
 | `apps/editor/components/canvas/CanvasChrome.tsx`                                                                       | Passes the segment to the strip, renders the popover beside the corner layer               |
 | `apps/editor/components/canvas/Canvas.types.ts`                                                                        | `tidyUp?: TidyUpActions`: present only when the session offers the button                  |
 | `apps/editor/components/canvas/editor-canvas-host/usePanelCanvasProps.ts`                                              | Builds `tidyUp` from the editor state                                                      |
-| `apps/editor/app/document/[id]/useEditorState.ts`                                                                      | Mounts `useCleanupPreview` and returns its two functions                                   |
+| `apps/editor/app/document/[id]/editor-state/useEditorStyle.ts`                                                         | Mounts `useCleanupPreview` and returns its two functions                                   |
 | `apps/editor/lib/help-articles.ts`                                                                                     | `layoutCleanup` → `tools/layout-cleanup`, the popover's help link                          |
 | The features and content catalogues and the event explanations in `liveworkspace/apps/site/app/telemetry/livediagram/` | `TIDY_UP_OPENED` in Tab Actions, and its sentence                                          |
 

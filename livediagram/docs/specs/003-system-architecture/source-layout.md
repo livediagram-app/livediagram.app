@@ -1,4 +1,4 @@
-# Source layout: `apps/editor` components and hooks by domain
+# Source layout: `apps/editor` components, hooks and the editor's state by domain
 
 `apps/editor/components/` and `apps/editor/hooks/` are grouped by domain, not by type: each file sits in the folder
 that owns its concern, so a file is found by what it is about rather than by scrolling a flat list that mixes
@@ -45,3 +45,23 @@ three-line leaves with thousand-line screens.
   are for app-local code.
 - A move between folders moves a whole directory's files in one change, with every import rewritten, so no folder is
   ever half-organised.
+
+## The editor's state
+
+`apps/editor/app/document/[id]/useEditorState.ts` is the editor's one state hook, and it holds no logic of its own:
+it composes the slices in the folder beside it, `app/document/[id]/editor-state/`, one hook per file named `use<Concern>.ts`, and
+returns their view-models spread into the one object `EditorContext` carries. Its return is the editor's contract
+with every component that reads the context; splitting or regrouping slices never changes it.
+
+- A slice is named for its concern from the vocabulary every product's editor shares: `useEditorDocument` (load,
+  tabs, document meta), `useEditorSelection`, `useEditorUndoState` (undo, redo and the commit), `useEditorTools`,
+  `useEditorViewport`, `useEditorCollaboration` (room state, presence, peers), `useEditorPersistence` (save, sync,
+  offline), `useEditorComments` and `useEditorDialogs`. A concern only this product has gets a `useEditor<Name>` of
+  its own.
+- Dependencies flow one way: the composer calls the slices in order and hands each the slices before it; a slice
+  never reaches a later one, and slices import each other's types only.
+- The order is the order the editor's effects run in, so a new slice goes where its effects belong, and a value a
+  slice needs from a later one reaches it through a ref the earlier slice owns.
+- A test of a slice's own logic sits beside it as `use<Concern>.test.ts(x)`.
+
+The [editor-state blueprint](blueprints/editor-state.md) lists the slices, what each owns and the order they run in.
