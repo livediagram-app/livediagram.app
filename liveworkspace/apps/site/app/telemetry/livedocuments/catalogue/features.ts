@@ -123,6 +123,7 @@ export const PAGE_SETUP = chart(
       'PageRenamed',
       'PageBackground',
       'PageBackgroundImage',
+      'PageBackgroundImageBlur',
       'PageBackgroundAnimated',
       'PageBackgroundAnimatedSpeed',
       'PageBackgroundAppliedToAll',
