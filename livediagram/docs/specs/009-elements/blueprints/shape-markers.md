@@ -13,7 +13,7 @@ Scope, by file:
 | `packages/document/src/collab-shapes.ts`                       | `supportsMarkers`: the menu gate, beside `hasOwnFace`                      |
 | `apps/editor/components/canvas/ShapeMarker.tsx`                | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
 | `apps/editor/components/canvas/shape-inline-icon-layout.tsx`   | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
-| `apps/editor/components/canvas/BoxedElementView.tsx`           | Resolves `marker` (none for self-drawing shapes)                           |
+| `apps/editor/components/canvas/boxed-element-label.tsx`        | Resolves `marker` (none for self-drawing shapes) for BoxedElementView      |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`          | Inline layout for an icon or a marker, after the face branches             |
 | `apps/editor/components/palette/context-menu-rows.tsx`         | `MarkerTiles`: None + five tiles, the Size row                             |
 | `apps/editor/components/palette/ElementAppearanceSections.tsx` | Single-element gate `showMarkers`, Text flyout placement                   |

@@ -2,6 +2,7 @@
 // arrow's label, or another arrow's line crossing it (a label struck through, which a reader cannot read).
 
 import {
+  buildElementGrid,
   pathPassesThrough,
   queryElementGrid,
   type BoxedElement,
@@ -92,8 +93,32 @@ const plateOf = (layout: { center: { x: number; y: number }; width: number; heig
   height: layout.height,
 });
 
-export const labelCollision: Check = (ctx) =>
-  ctx.drawable.flatMap((d, i) => {
+// A rect as a square element, so a grid of routes or plates can be asked what sits near a plate.
+const cellOf = (id: string, r: Rect): BoxedElement => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: r.x,
+  y: r.y,
+  width: r.width,
+  height: r.height,
+});
+
+export const labelCollision: Check = (ctx) => {
+  // Two grids over the drawable arrows, in their order (blueprint "Performance and limits"): each route's bounds, and
+  // each label's plate. A plate asks them for the routes that may strike it and the plates that may cover it, so
+  // the check costs each label its neighbourhood, not the tab; scanning every arrow per label was quadratic.
+  const at = new Map(ctx.drawable.map((d, i) => [d.arrow.id, i]));
+  const routes = buildElementGrid(ctx.drawable.map((d) => cellOf(d.arrow.id, d.bounds)));
+  const plates = buildElementGrid(
+    ctx.drawable.flatMap((d) => {
+      const l = ctx.labels.layouts.get(d.arrow.id);
+      return l ? [cellOf(d.arrow.id, plateOf(l))] : [];
+    }),
+  );
+  const near = (grid: typeof routes, r: Rect) =>
+    queryElementGrid(grid, r).map((cell) => ({ cell, d: ctx.drawable[at.get(cell.id)!]! }));
+  return ctx.drawable.flatMap((d, i) => {
     const layout = ctx.labels.layouts.get(d.arrow.id);
     if (!layout) return [];
     const plate = plateOf(layout);
@@ -101,41 +126,36 @@ export const labelCollision: Check = (ctx) =>
       .filter(isLintBox)
       .filter((box) => overlaps(plate, boxBounds(box)));
     // Another arrow's label over this one (two exits' "Yes" and "No" stacked on one point): each pair once.
-    const labels = ctx.drawable.slice(i + 1).filter((o) => {
-      const other = ctx.labels.layouts.get(o.arrow.id);
-      return !!other && overlaps(plate, plateOf(other));
-    });
+    const labels = near(plates, plate)
+      .filter(({ cell }) => at.get(cell.id)! > i && overlaps(plate, cell))
+      .map(({ d: o }) => o);
     // Another arrow's line crossing the plate, its runs along the label's own track aside.
     const strikesOf = (r: Rect, centre: Point) => {
       const axis = axisAt(d.polyline, centre);
-      return ctx.drawable.filter(
-        (o) =>
-          o.arrow.id !== d.arrow.id &&
-          o.polyline.some(
-            (p, k) =>
-              k > 0 &&
-              !onTrack(o.polyline[k - 1]!, p, centre, axis) &&
-              pathPassesThrough([o.polyline[k - 1]!, p], asBox(r)),
-          ),
-      );
+      return near(routes, r)
+        .map(({ d: o }) => o)
+        .filter(
+          (o) =>
+            o.arrow.id !== d.arrow.id &&
+            o.polyline.some(
+              (p, k) =>
+                k > 0 &&
+                !onTrack(o.polyline[k - 1]!, p, centre, axis) &&
+                pathPassesThrough([o.polyline[k - 1]!, p], asBox(r)),
+            ),
+        );
     };
     const struck = strikesOf(plate, layout.center);
     if (hit.length === 0 && labels.length === 0 && struck.length === 0) return [];
     // No box in the way: another label or a line. The label moves along its own line to a spot clear of boxes, lines
     // and every other label; shortening a 7-character label to "at most 51" fixed nothing.
     if (hit.length === 0) {
-      const others = ctx.drawable
-        .filter((o) => o.arrow.id !== d.arrow.id)
-        .flatMap((o) => {
-          const l = ctx.labels.layouts.get(o.arrow.id);
-          return l ? [plateOf(l)] : [];
-        });
       const clear = CLEAR_SPOTS.find((t) => {
         const c = pointAt(d.polyline, t);
         const r = { ...plate, x: c.x - plate.width / 2, y: c.y - plate.height / 2 };
         return (
           strikesOf(r, c).length === 0 &&
-          !others.some((o) => overlaps(r, o)) &&
+          !near(plates, r).some(({ cell }) => cell.id !== d.arrow.id && overlaps(r, cell)) &&
           !queryElementGrid(ctx.grid, padded(ctx, r))
             .filter(isLintBox)
             .some((box) => overlaps(r, boxBounds(box)))
@@ -192,3 +212,4 @@ export const labelCollision: Check = (ctx) =>
       },
     ];
   });
+};

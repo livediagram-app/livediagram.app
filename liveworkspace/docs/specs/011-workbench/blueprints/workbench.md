@@ -5,19 +5,21 @@ the code. Defaults are cited as `WBn`. Paths are relative to the repository root
 
 Scope, by file:
 
-| File                                                          | Role                                                                                                |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/accounts/src/workbench/routes.ts`         | `/api/account/workbench/*`: tickets, sessions, pairing requests, pairings                           |
-| `liveworkspace/apps/accounts/src/workbench/store.ts`          | `WorkbenchCore`: one person's store, the alarm, ending access, allowances                           |
-| `liveworkspace/apps/accounts/src/workbench/store-types.ts`    | The store's limits, secrets (`randomBase64Url`, `sha256Hex`, `storeIdOfSecret`) and shapes          |
-| `liveworkspace/apps/accounts/src/workbench/store-schema.ts`   | The store's SQLite tables (`SCHEMA`) and its row readers, `pairingCovers`                           |
-| `liveworkspace/apps/accounts/src/workbench/store-stub.ts`     | `WorkbenchStoreApi`, `workbenchStoreOf`, `workbenchStoreOfSecret`: reaching a store from the routes |
-| `liveworkspace/apps/accounts/src/workbench/durable-object.ts` | `WorkbenchStore`, the Durable Object over `WorkbenchCore` (binding `WORKBENCH`)                     |
-| `liveworkspace/apps/accounts/src/workbench/internal.ts`       | The apps' servers' doors: `workbench/session`, `workbench/rooms`, `allowance`                       |
-| `liveworkspace/apps/accounts/src/workbench/index-access.ts`   | The owner's access to an item or folder, asked of the index; `closeRooms`                           |
-| `liveworkspace/apps/accounts/src/workbench/revoke.ts`         | A revoked token's pairings end; a closed account's store goes                                       |
-| `liveworkspace/apps/accounts/src/workbench/apps.ts`           | Each app's dialect: its item word, `<word>Id`, its base address                                     |
-| `packages/workbench`                                          | The frame's side in each app (bindings, hooks, components)                                          |
+| File                                                              | Role                                                                                                                                          |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/accounts/src/workbench/routes.ts`             | `/api/account/workbench/*`: tickets, sessions, pairing requests, pairings                                                                     |
+| `liveworkspace/apps/accounts/src/workbench/store.ts`              | `WorkbenchCore`: one person's store, the alarm, ending access, allowances                                                                     |
+| `liveworkspace/apps/accounts/src/workbench/store-types.ts`        | The store's limits, secrets (`randomBase64Url`, `sha256Hex`, `storeIdOfSecret`) and shapes                                                    |
+| `liveworkspace/apps/accounts/src/workbench/store-schema.ts`       | The store's SQLite tables (`SCHEMA`) and its row readers, `pairingCovers`                                                                     |
+| `liveworkspace/apps/accounts/src/workbench/store-statements.ts`   | The store's larger statements: a pairing request, an approved pairing, a ticket, a session, an allowance's uses, the next lapse and the sweep |
+| `liveworkspace/apps/accounts/src/workbench/store-ended-access.ts` | `roomsOfEndedAccess`: ending access's log lines and the rooms to close                                                                        |
+| `liveworkspace/apps/accounts/src/workbench/store-stub.ts`         | `WorkbenchStoreApi`, `workbenchStoreOf`, `workbenchStoreOfSecret`: reaching a store from the routes                                           |
+| `liveworkspace/apps/accounts/src/workbench/durable-object.ts`     | `WorkbenchStore`, the Durable Object over `WorkbenchCore` (binding `WORKBENCH`)                                                               |
+| `liveworkspace/apps/accounts/src/workbench/internal.ts`           | The apps' servers' doors: `workbench/session`, `workbench/rooms`, `allowance`                                                                 |
+| `liveworkspace/apps/accounts/src/workbench/index-access.ts`       | The owner's access to an item or folder, asked of the index; `closeRooms`                                                                     |
+| `liveworkspace/apps/accounts/src/workbench/revoke.ts`             | A revoked token's pairings end; a closed account's store goes                                                                                 |
+| `liveworkspace/apps/accounts/src/workbench/apps.ts`               | Each app's dialect: its item word, `<word>Id`, its base address                                                                               |
+| `packages/workbench`                                              | The frame's side in each app (bindings, hooks, components)                                                                                    |
 
 ## Domain and naming
 

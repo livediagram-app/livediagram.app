@@ -1,7 +1,7 @@
 // Format rules (docs/specs/029-sheets/conditional-formatting.md): conditions, custom formulas, colour scales, list
 // order, the layout changes and their undo, validation, the static render, and the drawing budget.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import { applySheetWrite, inverseSheetWrite, type SheetWrite } from '../store';
 import { validateWrite, validateSheetCreate } from '../validate';
 import { compileFormula } from '../formula/stored';
@@ -416,7 +416,7 @@ describe('the drawing budget', () => {
   // (cpuMsOf), so a busy CI runner waiting for a core does not count. Four times the rules should cost about four
   // times as much; a quadratic step would cost sixteen.
   const GROWTH = 4;
-  const RATIO_CEILING = 8;
+  const RATIO_CEILING = cpuRatioCeiling(8);
   const RUNS = 3;
   // The window drawn this many times a pass, so even the small pass measures several ms, well clear of the CPU timer's
   // microseconds. Kept low: under coverage on a busy CI runner 5 runs of 10 overran the test's 5 s timeout (6.8 s).

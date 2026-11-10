@@ -179,7 +179,8 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
   handlers, and before it has, every op is dropped (the first load reads the sheets fresh). A rejoin resyncs. A
   store may hold tabs loaded while nothing was attached (a sheet form's builder reads its sheet; a Sheet's tab left and
   shown again detaches), so when an op or a rejoin was dropped since the last attach, attaching resyncs every loaded tab.
-- **Store client** (`apps/editor/components/sheets/sheet-store-client.ts`, in the lazy sheet chunk): a module store
+- **Store client** (`apps/editor/components/sheets/sheet-store-client.ts`, in the lazy sheet chunk, over `SheetStoreBase` in
+  `sheet-store-base.ts`: reading, loading, the workbooks and what lands from the server or the room): a module store
   per project (`sheetStoreFor(deps)`), `useSyncExternalStore`-subscribed. State per sheet: the confirmed sheet, the
   pending writes (by write id) and the view (confirmed with the pending laid over it, `rebase`); per-tab load status
   (`idle | loading | ready | error`); one `Workbook` per tab. Actions: `loadTab(tabId)`, `create(create, seed?,

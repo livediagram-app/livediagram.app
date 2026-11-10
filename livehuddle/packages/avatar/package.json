@@ -39,6 +39,7 @@
     "./hooks/useAvatarStatus": "./src/hooks/useAvatarStatus.ts",
     "./hooks/useAvatarWalk": "./src/hooks/useAvatarWalk.ts",
     "./hooks/useAvatarWalkArrivals": "./src/hooks/useAvatarWalkArrivals.ts",
+    "./hooks/useAvatarWalkCamera": "./src/hooks/useAvatarWalkCamera.ts",
     "./hooks/useAvatarWalkEntry": "./src/hooks/useAvatarWalkEntry.ts",
     "./hooks/useAvatarWalkLoop": "./src/hooks/useAvatarWalkLoop.ts",
     "./hooks/useAvatarWalkPresence": "./src/hooks/useAvatarWalkPresence.ts",

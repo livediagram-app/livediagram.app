@@ -369,15 +369,21 @@ Worst cases, per run:
 | `edge-crossings`               | `n(n−1)/2` bounds tests, then `pathsCross` (segments × segments) | `n ≤ 300`: 44,850 pairs; about 2 ms on one core  |
 | `box-overlap`                  | One grid query per box, separating-axes test per candidate       | Linear in boxes times neighbourhood              |
 | `arrow-behind-box`             | One grid query per arrow, `pathPassesThrough` per candidate      | `PATH_MAX_SAMPLES_PER_SEGMENT` (512) per segment |
-| `label-collision`              | `arrowLabelPass`: what every render of the tab already pays      | Labelled arrows × obstacles                      |
+| `label-collision`              | `arrowLabelPass`, then grid queries over the routes and plates   | Linear in labels times neighbourhood             |
 | `label-overflow`               | One `wrapLabel` per labelled box                                 | Linear in label characters                       |
 | `node-isolated`                | Bounding-box and grid pre-test per isolated shape                | Near-linear; a hub candidate pays `m` distances  |
 | Group, flow, duplicate, colour | One pass over arrows or boxes; `deriveContainers` once           | Linear, containment `O(n × containers)`          |
 
-- Budget: a tab of 300 boxes and 300 arrows lints within `LINT_BUDGET_CPU_MS` of CPU, the spec's "a few
-  milliseconds" for the pair checks with room for the label pass (LN35): measured at about 10 ms (16 ms under
-  coverage). The gate is growth: four times the tab costs under eight times as much, since coverage on a CI runner
-  pushed the absolute figure past 50 ms.
+- `label-collision` asks two grids it builds from the drawable arrows (`buildElementGrid` over a square of each
+  route's bounds, and one of each label plate): the later plates over a plate, and the routes that may strike it
+  (a plate or a clear spot), come from a query, then the exact test, in paint order. Scanning every arrow per label
+  made it quadratic: 1,600 boxes and arrows took 17 times what 400 did.
+- Budget: a tab of 300 boxes and 300 arrows, at `LINT_MAX_ARROWS`, lints within `LINT_BUDGET_CPU_MS` of CPU, the
+  spec's "a few milliseconds" for the pair checks with room for the label pass (LN35), judged by `cpuBudgetMs`
+  (unbounded under coverage, widened on CI). Growth is timed past the cap, where the pair check is skipped (N2) and
+  every check left is linear: 400 to 1,600 boxes and arrows costs under eight times as much. Inside the cap the
+  pair check is quadratic by design, so growth there is no gate: from 75 to 300 the lint read 8 to 11 for four
+  times the tab against that ceiling, and failed at random.
 - `node-isolated`'s ring test is `createRingTest` in `@liveworkspace/diagram-lint/ring`, shared with the other
   product's lint. It rejects a shape that cannot be a hub (outside the connected centres' bounding box, or whose
   farthest connected centre is too far beyond its nearest for every distance to sit within `LINT_RING_SPREAD` of their

@@ -44,7 +44,7 @@ Add the scripts:
 ```
 
 `vitest-budgets` reruns, without coverage, the test files that import
-`@liveworkspace/vitest-config/cpu-time`: under coverage `cpuBudgetMs` is
+`@liveworkspace/vitest-config/cpu-time`: under coverage `cpuBudgetMs` (and a growth check's `cpuRatioCeiling` or `cpuGrowthLimitMs`) is
 unbounded, so a speed budget is only judged there ([docs/ci.md](../../docs/ci.md),
 "Speed budgets"). Extra arguments pass through to `vitest run` (a CI editor
 shard adds `--shard=n/3`).
@@ -55,7 +55,7 @@ shard adds `--shard=n/3`).
 - `defineProject(overrides?)`: `baseConfig` merged with per-workspace overrides.
 - `@liveworkspace/vitest-config/react-cleanup`: a setup file that unmounts every tree React Testing
   Library rendered after each test.
-- `@liveworkspace/vitest-config/cpu-time`: CPU-time measures and budgets for speed tests.
+- `@liveworkspace/vitest-config/cpu-time`: CPU-time measures, budgets and growth-ratio ceilings for speed tests.
 - `vitest-budgets` (bin): the speed-budget run above.
 - `@liveworkspace/vitest-config/inline-script`: `runInlineScript(source, globals)`, which runs an
   inline `<script>`'s source as a browser would, against stub globals.

@@ -1,9 +1,9 @@
 // The lint's cost (docs/specs/024-agents/blueprints/page-lint.md "Performance and limits", LN35). Timed as growth,
-// not as a ceiling: coverage instrumentation on a CI runner makes an absolute CPU budget flake, a ratio does not.
-// The overprint sweep compares only texts sharing rows, so a page of texts in rows grows about linearly; four times
-// the texts cost under eight times as much.
+// not as a ceiling, and judged without coverage (docs/ci.md "Speed budgets"). The overprint sweep compares only texts
+// sharing rows, so a page of texts in rows grows about linearly; four times the texts cost under eight times as much.
+// The page is built outside the timing and each sample times several runs, so a sample rises above the timer's noise.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livedesign/design';
 import { box, lint, tabOf, text } from './fixtures/build';
 
@@ -19,10 +19,20 @@ function page(n: number): Element[] {
 }
 
 // Four times the elements, under eight times the CPU.
-const RATIO_CEILING = 8;
+const RATIO_CEILING = cpuRatioCeiling(8);
 
-const fastest = (els: Element[]) =>
-  Math.min(...[0, 1, 2].map(() => cpuMsOf(() => lint(tabOf(...els)))));
+const RUNS_PER_SAMPLE = 5;
+
+const fastest = (els: Element[]) => {
+  const tab = tabOf(...els);
+  return Math.min(
+    ...[0, 1, 2, 3, 4].map(() =>
+      cpuMsOf(() => {
+        for (let run = 0; run < RUNS_PER_SAMPLE; run++) lint(tab);
+      }),
+    ),
+  );
+};
 
 describe('performance', () => {
   it('grows with the tab, not faster: 250 to 1,000 boxes and texts', { timeout: 30_000 }, () => {

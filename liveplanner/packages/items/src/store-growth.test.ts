@@ -3,7 +3,7 @@
 // which made a 2000-card seed quadratic. Timed as growth in CPU time (cpuMsOf), not against a wall clock: eight times
 // the creates cost about five to six times as much here, and the old per-create sort about fifty.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import { EMPTY_ITEM_STORE, applyItemWrite } from './store';
 import type { ItemCreate } from './item';
 
@@ -11,7 +11,7 @@ const BY = { id: 'p', name: 'P', color: '#000000' };
 const RUNS = 5;
 // Each timing makes the batch this many times, so the small batch takes milliseconds, not timer noise.
 const REPS = 10;
-const RATIO_CEILING = 20;
+const RATIO_CEILING = cpuRatioCeiling(20);
 const TIMEOUT_MS = 30_000;
 
 function creates(n: number): ItemCreate[] {
