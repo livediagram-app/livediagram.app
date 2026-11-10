@@ -177,8 +177,8 @@ describe('SERVER_INSTRUCTIONS template examples', () => {
       .filter((s) => s && s !== '...');
     expect(examples.length).toBeGreaterThan(3);
     for (const kind of examples) expect(resolveTemplate(kind), kind).not.toBeNull();
-    // The blank templates it starts each kind of design from.
-    const blanks = [...SERVER_INSTRUCTIONS.matchAll(/"(blank-[a-z-]+)"/g)].map((m) => m[1]!);
+    // The blank templates it starts each kind of design from, the plain "blank" tab among them.
+    const blanks = [...SERVER_INSTRUCTIONS.matchAll(/"(blank(?:-[a-z-]+)?)"/g)].map((m) => m[1]!);
     expect(blanks.length).toBeGreaterThan(3);
     for (const kind of blanks) expect(resolveTemplate(kind), kind).not.toBeNull();
   });
