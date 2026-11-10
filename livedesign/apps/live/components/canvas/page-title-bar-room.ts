@@ -30,6 +30,8 @@ type TitleBarButtons = {
   page: boolean;
   // A wireframe page's Device.
   device?: boolean;
+  // On a phone, something on the page the Quick Style bar styles: Appearance shows for its rows, on any page.
+  selected?: boolean;
 };
 
 /** The fixed buttons' room, each named beside its icon or not, with the bar's card round them
@@ -39,7 +41,7 @@ export function titleBarFixedRoom(b: TitleBarButtons, named: boolean, phone = fa
   // A phone's bar ("Beside the cog", "On a phone"): a wireframe page's looks under Appearance (named when `named`), a
   // logo page's Mirror and Guides with no Tidy, a photo page's menus, the cog; no lock, the rest their icons alone.
   if (phone) {
-    const appearance = appearanceRows(b).length > 0 ? 1 : 0;
+    const appearance = appearanceRows(b).length > 0 || b.selected ? 1 : 0;
     const tools = appearance + (b.logo ? 2 : 0) + (b.photo ? 3 : 0);
     const buttons =
       COG_ROOM +

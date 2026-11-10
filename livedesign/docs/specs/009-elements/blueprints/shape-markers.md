@@ -69,7 +69,7 @@ hasText`, `hasText` = trimmed label non-empty or the element is being edited. It
    `commitMarkerSize`) as one history step with telemetry `Marker` / `MarkerSize`.
 5. Multi-selection: shown when any member is a shape that is not self-drawing (`!isSelfDrawingShape`) with a trimmed
    label (`markerSrc`, which also seeds the tiles), writing to every selected shape.
-6. The quick style panel has no marker section.
+6. The Quick Style bar has no marker section.
 7. Command palette, any single shape selected (`singleIsShape`, no kind or text gate): "Clear
    marker" when one is set, and "Add <name> marker" for each other marker, calling
    `setMarkerSelected` [QE12].

@@ -119,7 +119,7 @@ export function makeCommitFreehand({
     // Highlighter variant (docs/specs/008-canvas/highlighter.md): commit the marker recipe and
     // skip both recognition and close-to-fill — a highlight is an
     // annotation gesture, not a sketch-a-shape one. Colour and width are
-    // the ones the arm carries (the Quick style panel's Highlighter rows);
+    // the ones the arm carries (the Quick Style bar's Highlighter rows);
     // translucency lives in the renderers' pen recipe. One-shot, like the
     // pencil: the stroke is selected and the tile puts itself down.
     if (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'highlighter') {

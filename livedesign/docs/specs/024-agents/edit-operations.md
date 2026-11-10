@@ -38,7 +38,7 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   checklist ticks) are not changed by edit operations; comments have their own endpoints. A named `x`, `y`,
   `width` or `height` is a stored, absolute coordinate.
 - **Values** use the design's vocabulary: `shape=stadium` (off-vocabulary shapes coerced as the MCP does),
-  `fill=green` (a theme slot: `theme`, the theme's own colour, or one of the six hues the quick style panel offers
+  `fill=green` (a theme slot: `theme`, the theme's own colour, or one of the six hues the Quick Style bar offers
   for that theme, which follow a theme change; a hex value is accepted with the warning `colour_overrides_theme`,
   a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `note="…"`, `line=angled`. A shape's
   label over 40 characters keeps the heading and moves the full text into the note; an arrow's

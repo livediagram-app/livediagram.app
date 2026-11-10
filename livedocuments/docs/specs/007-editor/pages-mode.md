@@ -103,8 +103,9 @@ mode.
 
 ## The palette's kind
 
-The palette has a **kind**, which is always the kind of the page someone is on: it
-is never shown and never chosen. Each kind is its own palette layout (`palette-layouts.ts`),
+The palette has a **kind**, which is the tab's: a tab holds pages of one kind ("Page kinds"), so
+its palette is known from the tab itself on the first paint, before any page is measured, and it
+never changes as someone moves from page to page. It is never shown and never chosen. Each kind is its own palette layout (`palette-layouts.ts`),
 offering what that page is made of and nothing it has no use for; within a kind every tile sits in
 one category.
 
@@ -121,14 +122,14 @@ one category.
 - **Flashcard** (flashcards): the strip holds the card's page toolbar, docked, as Article does, and
   nothing else: no Search, whose tiles would place elements on a card ([Flashcards](flashcards.md) "Text only").
 
-The kind changes by itself as someone moves (see "Selecting on a page" for which page they are
-on): pressing on a page, going to one (its label, the page navigator, Contents), adding one, or a
-pan, scroll or zoom that comes to rest with another page under the canvas's centre (250 ms after
-the view settles; resting between pages keeps the last). Moving onto a page of another kind keeps
-the bar as it is. A change of kind
+The kind changes with the tab: opening a document or going to a tab of another kind, or an empty
+first page taking its kind. A tab stored before the one-kind rule, holding pages of more than one
+kind, is the exception: its palette follows the page someone is on (see "Selecting on a page" for
+which page that is), as it did before. A change of kind
 moves: the new categories (or the docked formatting) come in as a quick cascade, each rising and
 fading in a moment after the one before (160 ms each, the whole within the 250 ms chrome budget);
-nothing moves under reduced motion.
+nothing moves under reduced motion. Opening a document plays nothing: the palette arrives in its
+kind.
 
 ## Page kinds
 
@@ -751,13 +752,18 @@ touch target:
   button opens (one body, one place to change it). A locked page's Appearance holds Style alone (the tab's look, as
   its desktop bar keeps Style); a page with no look controls at all shows no Appearance. Telemetry `UI / Opened / PageAppearance` as it opens; the control it then opens tracks as its own
   button does (`PageAppearanceRows`, `apps/editor/components/canvas/PageAppearanceButton.tsx`).
+  While something on the page is selected that the Quick Style bar styles, the sheet goes on under a hairline and a
+  **Selected Element** heading with one row per Quick Style button that applies (Stroke, Fill, Text, Width, Line,
+  Align, Icon), each showing its value as its icon; a press closes Appearance and opens that row's choices in their
+  own bottom sheet, named by the row's full name ([Quick Style bar](../008-canvas/quick-style-panel.md) "On a
+  phone").
 - **No Tidy** on a phone: it straightens a page by a few pixels, which is a desktop's precision job.
 - **No lock button** on a phone. A lock is still honoured (a locked page's Appearance offers only Style, and its panel says it
   is locked), and the page's cog sheet holds **Lock** or **Unlock** in its actions row, so a phone can still lock
   and unlock a page.
 - **No page label** above a page's top-left corner on a phone: its name is read in Contents, renamed in the cog
-  sheet's name field, and a page moves with the cog sheet's Move left and Move right (or in Contents), so the
-  label's rename and drag are never the only way.
+  sheet's name field, and a page moves with the cog sheet's Move Left and Move Right (or in Contents), so the
+  label's rename is never the only way.
 - A Participant or a Viewer sees no title-bar controls, on a phone as on a desktop.
 
 **Named while there is room.** On a desktop the title bar's buttons (Layout, Background, Add
@@ -1400,8 +1406,7 @@ Both show the same list:
   zoom, the pages row's arrows), read once the view has rested 150 ms, and scrolls its row into view.
   The page in view is the one holding the middle of what shows beside the sidebar, else the nearest.
 - **Reordering**: an Editor drags a row to move its page: a caret shows where it will land and
-  the move commits on release, one edit (one undo), the page's content with it, exactly as
-  dragging its label along the pages row does. A page moves with its unit, so an article's pages
+  the move commits on release, one edit (one undo), the page's content with it, as the cog panel's Move Left and Move Right do. A page moves with its unit, so an article's pages
   move together, and a drop beside any of an article's pages is a drop beside the whole article.
   A mouse or pen drags the whole row; a finger drags the row's grip (shown on a phone and on hover
   on a desktop), so the list still scrolls by touch. The release is not a press of the row: it
@@ -1614,8 +1619,7 @@ dimmer the further back) and pages before it not drawn. One stage serves both (`
 - **The wheel** pans up and down only on a stack ([Flashcards](flashcards.md) "The stack").
 - The **title bar** and the **page label** are the page in front's alone; the **+ (Add Page)** sits beside the page
   in front, adds a page as Add Page does, and the new page comes to the front. **Zoom to fit** frames the page in
-  front. **Alignment** keeps to the page anyway ("Snapping on a page"). Dragging a page's label to reorder has no
-  neighbours to drop between on a stack: Contents reorders.
+  front. **Alignment** keeps to the page anyway ("Snapping on a page"). Contents reorders a stack.
 - **Exports** and **presenting** are unchanged: every page exports, and presenting shows each page in turn.
 - Infographic pages and slides keep their row by default; an article always does.
 
@@ -1642,13 +1646,9 @@ whether the tab stands as a stack, not its kind. **Stack Pages** in Contents Opt
 - **The Map shows the pages**: each page's sheet in its own background (a picture as its tone) with a crisp outline,
   under the content, counted in the Map's bounds (so a tab of empty pages still has a Map), and
   each element inked for its page.
-- **Drag a page's label to reorder**: once the press travels 6 screen px sideways it is a drag (an
-  editor with two or more units, a page or a whole article; only then the label shows a grab
-  cursor). A marker bar in the gap shows
-  where the page will land (after every other page whose centre is left of the dragged page's) and
-  the dragged sheet dims; release moves it there with its content, one edit. Escape cancels. An
-  article page's label drags its whole article, every sheet dimming; no slot falls inside an
-  article.
+- **A page's label does not drag**: pressing it fits the page to the screen (a double press stays the
+  rename), and that is all. Pages reorder in Contents (drag a row) or with the cog panel's Move left and
+  Move right.
 - **The label fits its page**: it truncates to the page's width on screen less the title bar's
   buttons, and hides when under 40 px.
 - **Snapping to the pages**: while a move or a resize is in hand, an element
@@ -1829,7 +1829,7 @@ separate pages. It is explicit: never run on opening a tab.
   its stored deck have loaded, so the pass builds on the stored deck. An Editor's pass is saved; a
   Viewer or Participant sees the same deck without writing it. A slide page's slide is named by
   its tab and page (`pageSlideIdFor`), so two editors adding it at once write the same slide.
-  - The order is Contents': dragging a row there (or a page's label along the row) moves the page,
+  - The order is Contents': dragging a row there (or the cog panel's Move Left and Move Right) moves the page,
     and its slide follows. There is no other order to keep in step.
   - A slide page's slide is never deleted by hand (it would come straight back); **Hide in Slides**
     leaves it out of the show.

@@ -1,6 +1,6 @@
 'use client';
 
-// The quick style panel's rows (docs/specs/008-canvas/quick-style-panel.md "Accessibility"), each
+// The Quick Style bar's rows (docs/specs/008-canvas/quick-style-panel.md "Accessibility"), each
 // with its own accessible name and one Tab stop. A row of glyph buttons is a radio group whose
 // arrows move and choose. A colour row is the colour picker's (docs/specs/004-interface-design/
 // colour-picker.md): the one swatch, toggle buttons, arrows that move focus without picking, Enter
@@ -30,6 +30,7 @@ export type QuickOption<V> = {
 export function QuickRadioRow<V extends string | number>({
   title,
   showTitle,
+  note,
   options,
   value,
   onChoose,
@@ -40,6 +41,8 @@ export function QuickRadioRow<V extends string | number>({
 }: {
   title: string;
   showTitle: boolean;
+  // A line under the title (a tool in hand, "In hand: Marker 2"); not part of the row's name.
+  note?: string;
   options: readonly QuickOption<V>[];
   value: V | null;
   onChoose: (value: V) => void;
@@ -111,6 +114,14 @@ export function QuickRadioRow<V extends string | number>({
           className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
         >
           {title}
+        </span>
+      ) : null}
+      {note ? (
+        <span
+          data-quick-row-note=""
+          className="select-none px-0.5 text-xs text-slate-600 dark:text-slate-300"
+        >
+          {note}
         </span>
       ) : null}
       <div

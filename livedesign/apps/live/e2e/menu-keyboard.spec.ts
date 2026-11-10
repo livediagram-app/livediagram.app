@@ -71,11 +71,9 @@ test.describe('menus by keyboard', () => {
     await expect(square).toHaveCount(1);
     await expect(more).toBeFocused();
 
-    // By pointer it opens beside the canvas without taking focus. (The Quick style panel covers
-    // the square's left half, so the press lands on its right edge, once the panel has settled.)
-    await page.waitForTimeout(400);
+    // By pointer it opens beside the canvas without taking focus.
     const box = (await square.boundingBox())!;
-    await page.mouse.click(box.x + box.width - 12, box.y + box.height / 2, { button: 'right' });
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: 'right' });
     await expect(elementMenu).toBeVisible();
     await expect(elementMenu.getByRole('menuitem')).toHaveCount(0);
     await expect(elementMenu.getByRole('button', { name: 'Layer' })).toBeVisible();

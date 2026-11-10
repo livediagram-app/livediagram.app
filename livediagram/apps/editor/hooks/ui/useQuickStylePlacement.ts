@@ -7,14 +7,10 @@
 // never on a timer, and never while the chrome is still.
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
-import {
-  placeQuickStylePanel,
-  type QuickStyleSide,
-  type Rect,
-} from '../../lib/quick-style-placement';
-import { debugLog } from '../../lib/debug-log';
-import { CANVAS_ROOT_SELECTOR } from '../../lib/canvas-selectors';
-import { workbench } from '../../bindings';
+import { placeQuickStylePanel, type QuickStyleSide, type Rect } from '@/lib/quick-style-placement';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
+import { workbench } from '@liveworkspace/workbench/bindings';
 
 const AREA_SELECTOR = `main${CANVAS_ROOT_SELECTOR}`;
 // The palette strip, every panel or dock popover, the strip's More popover, the bottom-right cluster, and the

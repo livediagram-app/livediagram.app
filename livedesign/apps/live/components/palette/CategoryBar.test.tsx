@@ -310,7 +310,7 @@ describe('the Fill tool on a logo page', () => {
   });
 
   function showLogo() {
-    setCurrentPageKind('logo');
+    // The palette's kind is the tab's (lib/palette-kind.ts): a logo tab.
     const ctx = {
       beginDraw: vi.fn(),
       markerPens: { prefs: { pens: [{ id: 'main', colour: null, width: 4 }] }, updatePen: vi.fn() },
@@ -326,6 +326,7 @@ describe('the Fill tool on a logo page', () => {
             onSetCanvasTool={vi.fn()}
             canvasEmpty={false}
             pendingDraw={null}
+            tabPages={[{ kind: 'logo' }]}
             {...h}
           />
         </EditorModeProvider>

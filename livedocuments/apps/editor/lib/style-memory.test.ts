@@ -11,7 +11,6 @@ import { describe, expect, it } from 'vitest';
 import type { ThemeDefinition } from '@livedocuments/document';
 import {
   applyStyleMemory,
-  forgetStyleKinds,
   parseStyleMemory,
   recordStyleEdit,
   styleKindOf,
@@ -159,13 +158,6 @@ describe('applyStyleMemory', () => {
       colorPreset: 'bold',
       fillColor: presetOf(ocean, 'bold').fill,
     });
-  });
-});
-
-describe('forgetStyleKinds', () => {
-  it('drops the named kinds only', () => {
-    const m: StyleMemory = { arrow: { flow: 'dashes' }, 'shape:circle': { strokeWidth: 'thin' } };
-    expect(forgetStyleKinds(m, ['arrow'])).toEqual({ 'shape:circle': { strokeWidth: 'thin' } });
   });
 });
 

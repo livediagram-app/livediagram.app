@@ -158,7 +158,7 @@ independent of the key (D106).
 4. Animation section: `PieAnimTiles` replaces the boxed set.
 5. Style band: Colours and Border are hidden; **Presets** shows `ChartPalettePresets` (eight
    tiles, hover previews, click commits `'ChartPalette'`) and a Reset that clears `chartPalette`
-   [GE1]. The quick style panel offers no colour row on a chart [GE18].
+   [GE1]. The Quick Style bar offers no colour row on a chart [GE18].
 6. Legend element, Tools flyout, **Legend** section: `LegendDataEditor` (rows),
    `LegendTextSize`, then a **Palette** caption over `ChartPalettePresets`, whose reset commits
    `applyChartPaletteToEl(el, null)` (back to the theme's ramp).

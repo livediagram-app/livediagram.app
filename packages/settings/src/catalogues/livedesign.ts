@@ -316,11 +316,11 @@ export const CATALOGUE: AppCatalogue = {
         {
           kind: 'toggle',
           id: 'quickStylePanelEnabled',
-          label: 'Enable Quick Style Panel',
+          label: 'Enable Quick Style Bar',
           description:
-            "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
+            "The most-used colours, widths and alignments beside the page of a selected shape or arrow. Off, they are all in the element's menu.",
           keywords:
-            'quick style colour color stroke fill width panel selection enable hide show turn off',
+            'quick style bar colour color stroke fill width marker highlighter panel toolbar selection enable hide show turn off',
           section: 'Quick Style',
           key: 'quickStylePanelEnabled',
           on: true,

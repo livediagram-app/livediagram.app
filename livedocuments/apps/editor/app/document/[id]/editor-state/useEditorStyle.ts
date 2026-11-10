@@ -48,7 +48,7 @@ export function useEditorStyle({
   const { selfParticipant, userPreferences, setUserPreferences } = sessionSlice;
   const { previewingRef, tabsRef } = persistenceSlice;
   const { activeTab } = collaborationSlice;
-  const { structureBlocked, commit, commitActiveTab } = pagesSlice;
+  const { pagesMode, structureBlocked, commit, commitActiveTab } = pagesSlice;
   const { activeTheme, styleMemory, liveActiveElements, rememberingCommit, rememberingTickTabs } =
     layersSlice;
   const { checkpointBurst } = tabsSlice;
@@ -175,6 +175,7 @@ export function useEditorStyle({
     commit,
     memory: styleMemory,
     swatchOverrides,
+    pages: pagesMode.pages,
   };
 
   // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on

@@ -53,7 +53,7 @@ fill animation).
 2. Both kinds seed `progress: 50` and `progressAnim: 'fill'`; the ring also seeds
    `aspectLocked: true`.
 3. Default size from `SHAPE_DEFAULT_SIZE`: bar 220 × 44, ring 130 × 130.
-4. Style memory ([Quick style panel](../../008-canvas/quick-style-panel.md)) then dresses it with
+4. Style memory ([Quick Style bar](../../008-canvas/quick-style-panel.md)) then dresses it with
    the colours last picked for its kind (`applyStyleMemory`).
 
 ### Render (canvas)
@@ -199,7 +199,7 @@ is CSS only and compositor-friendly (`transform`, `opacity`, `stroke-dashoffset`
 ## Presentation and UX
 
 - Colours: fill colour is the track, stroke colour the filled portion, text colour the label.
-  The quick style panel's Background and Stroke rows set the track and the filled portion.
+  The Quick Style bar's Fill and Stroke rows set the track and the filled portion.
 - The label reads `{pct}%`; there is no empty, loading or error state.
 - Palette: Data category, captions "Progress" and "Donut", blurbs "How far along something is" and
   "The same, as a donut meter".

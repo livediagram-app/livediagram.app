@@ -454,6 +454,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           leading={menuInStrip ? explorerMenuButton : undefined}
           {...(menuJoin.joinedWidth === undefined ? {} : { besideWidth: menuJoin.joinedWidth })}
           tabElements={elements}
+          tabPages={props.pagesMode?.pages}
         />
       ) : null}
 

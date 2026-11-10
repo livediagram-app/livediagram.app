@@ -181,8 +181,8 @@ Tidy cannot take (a highlighter, a rotated stroke) offers no Edit Points.
 
 - A path lands as plain ink: an **Ink** outline stored by name, at the default border width, **no
   fill**, so it looks the same to every collaborator and in both appearances.
-- The **quick style panel** styles it as it does a shape: **Stroke**, **Background** (a fill, shown
-  for a closed path only), **Stroke width** and **Stroke style**. A restyle is remembered for the
+- The **Quick Style bar** styles it as it does a shape: **Stroke**, **Fill** (shown
+  for a closed path only), **Width** and **Line**. A restyle is remembered for the
   next path in the style memory, under its own kind (`path`).
 - Markers never colour it.
 

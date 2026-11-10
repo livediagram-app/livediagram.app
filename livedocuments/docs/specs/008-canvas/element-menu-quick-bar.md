@@ -25,7 +25,7 @@ Nothing else sits in the bar (owner, 2026-11-04: one row, not two). What it used
 elsewhere: editing text is a double-click; Duplicate is Cmd/Ctrl+D; Stack Front and Stack Back are the **Layer**
 category's; Lock is Cmd/Ctrl+Shift+L (and a multi-selection's toolbar). **Add Link**, **Add Note** and **Clear Styles** are retired from the menu: an element's
 existing link and note still work (a click on a linked element follows it, and a note still shows), and Clear Styles
-stays in the Quick Style panel ([Quick style panel](quick-style-panel.md)).
+is gone from livedocuments altogether ([Quick Style bar](quick-style-panel.md) "No Clear Styles").
 
 There are no **Collaborate** or **Resources** categories: the quick bar is the menu's one place for Assign Action and
 Add Comment.
@@ -70,10 +70,6 @@ Every editor (livediagram, liveplanner, livedocuments, livedesign) opens the sam
 
 - `apps/editor/components/palette/ElementMenuQuickBar.tsx`: `ElementMenuQuickBar` (`role="toolbar"`, "Quick actions",
   `data-element-quick-bar`), `quickBarItems(target, handlers)`; rendered first in `EditorContextMenu`.
-- Clear Styles: `QuickStyleHost` publishes the Quick Style view's targets and its `clearStyles` to
-  `../packages/workbench/src/lib/clear-styles-store.ts` (`publishClearStyles`, `useClearStyles`) whenever the targets change, the
-  press running the latest; the bar shows it when the store's targets include the element. Its telemetry is the
-  panel's (`Element` / `Changed` / `QuickClearStyles`).
 - The Element actions row: `ElementMenuActionsRow` in `ElementMenuQuickBar.tsx`, wired from the selection
   handlers in `EditorContextMenuHost`.
 - The menu for Participants and Viewers: `readOnlyElementMenuItems` (`../packages/workbench/src/lib/read-only-element-menu.ts`)

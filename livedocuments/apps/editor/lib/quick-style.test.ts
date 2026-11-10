@@ -18,7 +18,6 @@ import {
   applyQuickTextAlign,
   applyQuickTextColour,
   applyQuickWidth,
-  clearQuickStyle,
   quickStyleView,
 } from './quick-style';
 
@@ -152,6 +151,25 @@ describe('quickStyleView: the highlighted value', () => {
     ).toBeNull();
   });
 
+  // docs/specs/008-canvas/quick-style-panel.md "Where it sits": a colour button shows the colour in force.
+  it('gives the colour every element paints, a hand-picked one too, for the bar’s chips', () => {
+    const view = (els: Parameters<typeof quickStyleView>[0]) =>
+      quickStyleView(els, forest, {}, '#1c1917')!.sections;
+    expect(view([shape('a', { strokeColor: '#123456' })]).stroke?.paint).toBe('#123456');
+    expect(
+      view([shape('a', { strokeColor: '#ABCDEF' }), shape('b', { strokeColor: '#abcdef' })]).stroke
+        ?.paint,
+    ).toBe('#abcdef');
+    expect(
+      view([shape('a', { strokeColor: '#123456' }), shape('b', { strokeColor: '#654321' })]).stroke
+        ?.paint,
+    ).toBeNull();
+    expect(view([shape('a')]).stroke?.paint).toBe(
+      view([shape('a')]).stroke!.swatches[0]!.color.toLowerCase(),
+    );
+    expect(view([shape('a', { fillColor: 'transparent' })]).background?.paint).toBe('transparent');
+  });
+
   it('reads an arrow’s dashed flow as Flowing, and any other flow as nothing', () => {
     const flowing = arrow('a', { strokeStyle: 'dashed', flow: 'dashes' });
     expect(quickStyleView([flowing], forest)!.sections.style?.value).toBe('flowing');
@@ -228,56 +246,6 @@ describe('apply transforms', () => {
     });
     const bare = shape('b');
     expect(applyQuickIconAlign(bare, 'above')).toBe(bare);
-  });
-});
-
-describe('clearQuickStyle', () => {
-  it('returns a shape’s quick-style fields to the theme default', () => {
-    const styled = shape('a', {
-      strokeColor: '#111111',
-      strokeSwatch: 1,
-      fillColor: '#222222',
-      fillSwatch: 2,
-      textColor: '#ffffff',
-      colorPreset: 'bold',
-      strokeWidth: 'thick',
-      strokeStyle: 'dashed',
-      textAlignX: 'left',
-      iconPosition: 'above',
-      borderRadius: 'lg',
-    });
-    const cleared = clearQuickStyle(styled, forest) as ShapeElement;
-    expect(cleared).toMatchObject({
-      strokeColor: forest.elementStroke,
-      fillColor: forest.elementFill,
-      textColor: forest.elementText,
-      borderRadius: 'lg',
-    });
-    for (const f of [
-      'strokeSwatch',
-      'fillSwatch',
-      'colorPreset',
-      'strokeWidth',
-      'strokeStyle',
-      'textAlignX',
-      'iconPosition',
-    ])
-      expect(cleared).not.toHaveProperty(f);
-  });
-
-  it('returns an arrow to a plain theme line', () => {
-    const styled = arrow('a', {
-      strokeColor: '#111111',
-      strokeSwatch: 1,
-      strokeWidth: 7,
-      strokeStyle: 'dashed',
-      flow: 'dashes',
-      flowSpeed: 'fast',
-    });
-    const cleared = clearQuickStyle(styled, forest) as ArrowElement;
-    expect(cleared.strokeColor).toBe(forest.elementStroke);
-    for (const f of ['strokeSwatch', 'strokeWidth', 'strokeStyle', 'flow', 'flowSpeed'])
-      expect(cleared).not.toHaveProperty(f);
   });
 });
 
@@ -383,15 +351,6 @@ describe('Text colour: text elements', () => {
     expect(applyQuickWidth(t, 'thick')).toBe(t);
     expect(applyQuickStrokeStyle(t, 'dashed')).toBe(t);
   });
-
-  it('Clear Styles returns the text colour to the theme and drops the binding', () => {
-    const next = clearQuickStyle(
-      text('t', { textColor: '#aa0000', textSwatch: 1 }),
-      forest,
-    ) as TextElement;
-    expect(next.textSwatch).toBeUndefined();
-    expect(next.textColor).toBe(forest.elementText ?? undefined);
-  });
 });
 
 // docs/specs/008-canvas/quick-style-panel.md "Multi-selection": a whiteboard stock colour stored by
@@ -430,28 +389,6 @@ describe('named stock colours', () => {
       penTextColour: 'red',
     } as TextElement;
     expect((applyQuickTextColour(text, theme, 2) as TextElement).penTextColour).toBeUndefined();
-  });
-
-  it('clears names with Clear Styles', () => {
-    const out = clearQuickStyle(
-      shape('s', { penColour: 'blue', penTextColour: 'red' }),
-      theme,
-    ) as ShapeElement;
-    expect(out.penColour).toBeUndefined();
-    expect(out.penTextColour).toBeUndefined();
-    expect(
-      (clearQuickStyle(arrow('a', { penColour: 'teal' }), theme) as ArrowElement).penColour,
-    ).toBeUndefined();
-    const text = {
-      id: 't',
-      type: 'text',
-      x: 0,
-      y: 0,
-      width: 9,
-      height: 9,
-      penTextColour: 'red',
-    } as TextElement;
-    expect((clearQuickStyle(text, theme) as TextElement).penTextColour).toBeUndefined();
   });
 });
 

@@ -9,7 +9,7 @@ import {
   test,
 } from './fixtures';
 
-// The quick style panel on a mixed selection (docs/specs/008-canvas/quick-style-panel.md
+// The Quick Style bar on a mixed selection (docs/specs/008-canvas/quick-style-panel.md
 // "Multi-selection"), as a pasted or imported board selects: named stock colours draw in the canvas's version
 // (docs/specs/008-canvas/canvas-and-palette.md). Dark mode throughout.
 
@@ -99,7 +99,7 @@ async function openBoard(page: Page) {
   await seedTab(page, BOARD);
 }
 
-test.describe('the quick style panel on a mixed selection', () => {
+test.describe('the Quick Style bar on a mixed selection', () => {
   test('draws named colours in the dark board’s versions', async ({ page, pageErrors }) => {
     await openBoard(page);
     await expect(page.locator('[data-element-id="text"]')).toBeVisible();

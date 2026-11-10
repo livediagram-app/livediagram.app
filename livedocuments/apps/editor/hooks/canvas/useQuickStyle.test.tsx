@@ -2,7 +2,13 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetAppearanceForTests, setAppearance } from '@livedocuments/ui';
-import { createShape, defaultScheme, PEN_INK, type Element, type Tab } from '@livedocuments/document';
+import {
+  createShape,
+  defaultScheme,
+  PEN_INK,
+  type Element,
+  type Tab,
+} from '@livedocuments/document';
 import { useQuickStyle } from './useQuickStyle';
 
 function setup(tab: Tab, selection: string[]) {
@@ -10,7 +16,7 @@ function setup(tab: Tab, selection: string[]) {
   const commit = vi.fn((map: (els: Element[]) => Element[]) => {
     elements = map(elements);
   });
-  const memory = { recordEdit: vi.fn(), forget: vi.fn(), styleNewElement: <T,>(el: T) => el };
+  const memory = { recordEdit: vi.fn(), styleNewElement: <T,>(el: T) => el };
   const { result } = renderHook(() =>
     useQuickStyle({
       activeTab: tab,

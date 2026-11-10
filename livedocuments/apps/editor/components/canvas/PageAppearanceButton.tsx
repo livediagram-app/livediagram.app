@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { lucideGlyph } from '@livedocuments/ui';
 import { AppearanceRowList } from '@liveworkspace/workbench/components/canvas/AppearanceRowList';
 import { track } from '@/lib/telemetry';
+import { useQuickStylePhoneRows } from '@/lib/quick-style-bar-slots';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 
 const AppearanceIcon = lucideGlyph(lucideSparkles, 14);
@@ -76,11 +77,15 @@ function rowEvent(row: AppearanceRow, article: boolean): string {
 }
 
 export function PageAppearanceButton({
+  pageId,
   rows,
   article = false,
   labelled = false,
   onPick,
 }: {
+  // Its page: while something on it is selected, the Quick Style rows follow the page's own
+  // (docs/specs/008-canvas/quick-style-panel.md "On a phone, in Appearance").
+  pageId: string;
   rows: readonly AppearanceRow[];
   // Named beside its icon: a phone's bar while the page on screen has the room.
   labelled?: boolean;
@@ -91,6 +96,7 @@ export function PageAppearanceButton({
 }) {
   // Held in state, not a ref: the sheet's rows read it as they press.
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
+  const selected = useQuickStylePhoneRows(pageId);
   if (rows.length === 0) return null;
   return (
     <div
@@ -112,18 +118,30 @@ export function PageAppearanceButton({
         onOpen={() => track('UI', 'Opened', 'PageAppearance')}
       >
         {(close) => (
-          <AppearanceRowList
-            rows={rows.map((row) => {
-              const { name, line, icon: Icon } = ROWS[row];
-              return { id: row, name, line, icon: <Icon /> };
-            })}
-            onPick={(row) => {
-              const from = root?.querySelector('button') ?? null;
-              close();
-              track('UI', 'Opened', rowEvent(row, article));
-              onPick(row, from);
-            }}
-          />
+          <>
+            <AppearanceRowList
+              rows={rows.map((row) => {
+                const { name, line, icon: Icon } = ROWS[row];
+                return { id: row, name, line, icon: <Icon /> };
+              })}
+              onPick={(row) => {
+                const from = root?.querySelector('button') ?? null;
+                close();
+                track('UI', 'Opened', rowEvent(row, article));
+                onPick(row, from);
+              }}
+            />
+            {selected && selected.rows.length > 0 ? (
+              <AppearanceRowList
+                heading="Selected Element"
+                rows={selected.rows}
+                onPick={(id) => {
+                  close();
+                  selected.open(id);
+                }}
+              />
+            ) : null}
+          </>
         )}
       </TitlePopoverButton>
     </div>

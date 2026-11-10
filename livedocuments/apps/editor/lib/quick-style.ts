@@ -1,4 +1,4 @@
-// The quick style panel's model (docs/specs/008-canvas/quick-style-panel.md): which sections a selection
+// The Quick Style bar's model (docs/specs/008-canvas/quick-style-panel.md): which sections a selection
 // gets, the value each shows, and the pure transform behind each choice. The
 // hook (useQuickStyle) commits these; nothing here touches state.
 import {
@@ -54,9 +54,21 @@ export type QuickStyleView = {
   targetIds: string[];
   sections: {
     // `ink`: the Ink swatch's colour for the canvas, after the theme's.
-    stroke?: { value: QuickColourValue | null; swatches: ShownSwatch[]; ink: string };
-    background?: { value: QuickFillValue | null; swatches: ShownSwatch[] };
-    textColour?: { value: QuickColourValue | null; swatches: ShownSwatch[]; ink: string };
+    // `paint`: the colour every styled element paints (a hand-picked one too), lower-case, for the Quick Style bar's
+    // button chip; null when they differ or one is a stock colour stored by name other than Ink.
+    stroke?: {
+      value: QuickColourValue | null;
+      swatches: ShownSwatch[];
+      ink: string;
+      paint: string | null;
+    };
+    background?: { value: QuickFillValue | null; swatches: ShownSwatch[]; paint: string | null };
+    textColour?: {
+      value: QuickColourValue | null;
+      swatches: ShownSwatch[];
+      ink: string;
+      paint: string | null;
+    };
     width?: { value: QuickWidth | null };
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
     textAlign?: { value: TextAlignX | null };
@@ -156,6 +168,22 @@ function swatchValue(
   return shown && shown.slot !== 0 ? shown.slot : null;
 }
 
+// The colour an element paints for a row: its own colour, Ink by name, else the row's theme default.
+function paintOf(
+  el: QuickStyleTarget,
+  role: QuickSwatchRole,
+  swatches: ShownSwatch[],
+  ink: string,
+): string | null {
+  const colour = (el as RoleValues)[ROLE_FIELDS[role].colour];
+  if (typeof colour === 'string') return colour.toLowerCase();
+  const named = NAMED_FIELD[role];
+  const name = named ? (el as Record<string, unknown>)[named] : undefined;
+  if (name === QUICK_INK) return ink.toLowerCase();
+  if (name !== undefined) return null;
+  return swatches[0]!.color.toLowerCase();
+}
+
 function widthOf(el: ShapeElement | ArrowElement): QuickWidth | null {
   const w = el.type === 'arrow' ? arrowThicknessOf(el) : (el.strokeWidth ?? 'medium');
   return (QUICK_WIDTHS as readonly string[]).includes(w) ? (w as QuickWidth) : null;
@@ -201,6 +229,7 @@ export function quickStyleView(
       swatches,
       ink,
       value: shared(stroke.map((el) => swatchValue(el, theme, 'stroke', swatches))),
+      paint: shared(stroke.map((el) => paintOf(el, 'stroke', swatches, ink))),
     };
   }
   const background = supporting('background');
@@ -217,6 +246,7 @@ export function quickStyleView(
           return v === QUICK_INK ? null : v;
         }),
       ),
+      paint: shared(background.map((el) => paintOf(el, 'fill', swatches, ink))),
     };
   }
   const textColour = supporting('textColour');
@@ -226,6 +256,7 @@ export function quickStyleView(
       swatches,
       ink,
       value: shared(textColour.map((el) => swatchValue(el, theme, 'text', swatches))),
+      paint: shared(textColour.map((el) => paintOf(el, 'text', swatches, ink))),
     };
   }
   const width = lined('width');
@@ -357,48 +388,4 @@ export function applyQuickIconAlign(el: Element, align: QuickIconAlign): Element
   if (el.type !== 'shape' || !isQuickStyleTarget(el) || !supportsQuickSection(el, 'iconAlign'))
     return el;
   return { ...el, iconPosition: align };
-}
-
-// Clear Styles: the quick-style fields back to the theme's default.
-export function clearQuickStyle(el: Element, theme: ThemeDefinition): Element {
-  if (!isQuickStyleTarget(el)) return el;
-  if (el.type === 'text') {
-    const { textSwatch: _ts, textColor: _tc, penTextColour: _ptc, ...rest } = el;
-    return theme.elementText ? { ...rest, textColor: theme.elementText } : rest;
-  }
-  if (el.type === 'arrow') {
-    const {
-      strokeSwatch: _sw,
-      strokeWidth: _w,
-      strokeStyle: _st,
-      flow: _f,
-      flowSpeed: _fs,
-      strokeColor: _c,
-      penColour: _pc,
-      penTextColour: _ptc,
-      ...rest
-    } = el;
-    return theme.elementStroke ? { ...rest, strokeColor: theme.elementStroke } : rest;
-  }
-  const {
-    strokeSwatch: _sw,
-    fillSwatch: _fw,
-    colorPreset: _p,
-    strokeWidth: _w,
-    strokeStyle: _st,
-    textAlignX: _ta,
-    iconPosition: _ip,
-    strokeColor: _sc,
-    fillColor: _fc,
-    textColor: _tc,
-    penColour: _pc,
-    penTextColour: _ptc,
-    ...rest
-  } = el;
-  return {
-    ...rest,
-    ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
-    ...(theme.elementFill ? { fillColor: theme.elementFill } : {}),
-    ...(theme.elementText ? { textColor: theme.elementText } : {}),
-  };
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import type { Element } from '@livedocuments/document';
+import type { Element, Page } from '@livedocuments/document';
 import { useEffect, useEffectEvent, useMemo, useRef, type ReactNode } from 'react';
 import { onToolbarSearchRequest } from '@liveworkspace/workbench/lib/toolbar-search-request';
 import { atLeastInset, safeInlinePadding } from '@livedocuments/ui';
@@ -61,6 +61,8 @@ type Props = Pick<
     besideWidth?: number;
     // The active tab's elements: Search lists their element types before anything is typed.
     tabElements?: readonly Element[];
+    // The tab's pages in Pages mode, whose kind is the palette's (lib/palette-kind.ts).
+    tabPages?: readonly Pick<Page, 'kind'>[] | null;
   };
 // The strip's card, and the leading card beside it on a phone.
 const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
@@ -121,8 +123,11 @@ export function ToolbarPalette(props: Props) {
     setPalettePopoverOpen(popoverOpen);
     return () => setPalettePopoverOpen(false);
   }, [popoverOpen]);
+  // The palette's kind: the tab's (lib/palette-kind.ts), right on the first paint.
+  const paletteKind = usePaletteKind(props.tabPages);
   const { tabs, tileActions, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue({
     ...props,
+    paletteKind,
     // A tile used from a flyout or Search closes it, so the canvas is clear to draw on.
     onTileUsed: () => {
       search.setOpen(false);
@@ -132,7 +137,6 @@ export function ToolbarPalette(props: Props) {
   // With the palette's kind Article or Flashcard, the strip holds the page's formatting in place of
   // the bar; a card's strip has no Search either, whose tiles would place elements on a card
   // (docs/specs/007-editor/flashcards.md "Text only").
-  const paletteKind = usePaletteKind();
   const articleDock = docksPageToolbar(paletteKind);
   const textOnly = paletteKind === 'flashcard';
   // A change of kind cascades its categories in (usePaletteKindMotion).

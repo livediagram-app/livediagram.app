@@ -12,9 +12,9 @@ inside a category that has to be opened first.
   - **Add Link**, reading **Edit Link** once it has one. Not on a link card or a video, whose link is their own
     **Link** category's.
   - **Add Note**, reading **Edit Note** once it has one.
-- At the right, apart from them, **Clear Styles**: the Quick Style panel's own Clear Styles
-  ([Quick style panel](quick-style-panel.md)), the element's quick-style colours, width and line style back to the
-  theme's. It shows while the element takes a quick style, whether or not the panel is on screen.
+- At the right, apart from them, **Clear Styles**: the one Clear Styles, which the Quick Style bar leaves to the menu
+  ([Quick Style bar](quick-style-panel.md) "Clear Styles"), the element's quick-style colours, width and line style
+  back to the theme's. It shows while the element takes a quick style, whether or not the bar is on screen.
 - A button the element already uses (it has an action, a thread, a link or a note) is tinted in the brand colour and
   pressed (`aria-pressed`), so the bar also says what the element carries.
 - Each button has a Tooltip naming it, runs its action and closes the menu, as the tiles it replaced did.
