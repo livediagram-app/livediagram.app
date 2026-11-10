@@ -57,9 +57,16 @@ async function saved(page: Page, ok: (els: El[]) => boolean): Promise<El[]> {
 // Points are fractions of the page's width and height (pagePoint).
 type At = readonly [number, number];
 
+// A popover stays open after a pick, and Escape closes it first (the top layer); the next Escape clears the
+// selection, so a letter picks a tool rather than typing into the selected shape.
+async function clearSelection(page: Page) {
+  if (await page.locator('[data-quick-style-popover]').count()) await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+}
+
 async function drawShape(page: Page, key: 'o' | 'r', [fx, fy]: At) {
   const at = await pagePoint(page, fx, fy);
-  await page.keyboard.press('Escape');
+  await clearSelection(page);
   await page.keyboard.press(key);
   await page.mouse.click(at.x, at.y);
 }
@@ -67,7 +74,7 @@ async function drawShape(page: Page, key: 'o' | 'r', [fx, fy]: At) {
 async function drawArrow(page: Page, [fx, fy]: At, [tx, ty]: At) {
   const from = await pagePoint(page, fx, fy);
   const to = await pagePoint(page, tx, ty);
-  await page.keyboard.press('Escape');
+  await clearSelection(page);
   await page.keyboard.press('a');
   await page.mouse.move(from.x, from.y);
   await page.mouse.down();
@@ -269,7 +276,8 @@ test.describe('quick style bar', () => {
     pageErrors,
   }) => {
     await openBoard(page);
-    await drawShape(page, 'o', [0.4, 0.25]);
+    // Right of the bar, so the selection's own strip above the circle leaves the bar's buttons clear.
+    await drawShape(page, 'o', [0.8, 0.25]);
     await quickChoose(page, 'Fill', 'Violet');
     await quickChoose(page, 'Stroke width', 'Thick');
     // Clear Styles lives in the element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md).
@@ -281,7 +289,7 @@ test.describe('quick style bar', () => {
       .getByRole('dialog', { name: 'Element menu' })
       .getByRole('button', { name: 'Clear Styles' })
       .click();
-    await drawShape(page, 'o', [0.4, 0.75]);
+    await drawShape(page, 'o', [0.8, 0.75]);
     const els = await saved(page, (e) => shapesOf(e, 'circle').length === 2);
     for (const circle of shapesOf(els, 'circle')) {
       expect(circle.fillSwatch).toBeUndefined();
