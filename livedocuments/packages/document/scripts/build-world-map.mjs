@@ -83,8 +83,7 @@ for (const f of countries.features) {
   const p = f.properties;
   const code = codeOf(p);
   if (code === 'AQ') continue;
-  const polys =
-    f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+  const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
   let d = '';
   let first = true;
   let cx = 0;
@@ -167,4 +166,6 @@ const out =
 
 const target = fileURLToPath(new URL('../src/map-geometry.generated.ts', import.meta.url));
 writeFileSync(target, out);
-console.log(`${rows.length} countries, ${placeRows.length} places, ${out.length} bytes -> ${target}`);
+console.log(
+  `${rows.length} countries, ${placeRows.length} places, ${out.length} bytes -> ${target}`,
+);
