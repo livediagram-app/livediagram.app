@@ -16,7 +16,13 @@ import type {
 } from '@liveworkspace/model-core/basics';
 import type { BorderRadius, BorderStroke, BorderStyle } from '@liveworkspace/model-core/border-style';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
+import type { BoundaryStyle } from './boundary';
+import type { CardMedia } from './card';
+import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
+import type { KeyRow } from './diagram-key';
 import type { Finish } from './finish';
+import type { MindLook } from './person-node';
+import type { HeroCaption, StatItem } from './web-components';
 
 export type { ElementId };
 
@@ -73,6 +79,9 @@ export type BoxBase = {
   strokeStyle?: BorderStyle;
   borderRadius?: BorderRadius;
   finish?: Finish;
+  headerFill?: string;
+  textBold?: boolean;
+  textItalic?: boolean;
 };
 
 export type ShapeElement = BoxBase & {
@@ -87,6 +96,21 @@ export type ShapeElement = BoxBase & {
   /** A page's title and subtitle (livediagram, livedesign, liveplanner). */
   pageTitle?: string;
   pageSubtitle?: string;
+  // The web components' own fields (web-components.ts and the kinds it lays out), where a product holds the kind.
+  cardMedia?: CardMedia;
+  cardHeader?: boolean;
+  conceptRows?: ConceptRow[];
+  conceptAnim?: ConceptAnim;
+  conceptAnimRepeat?: boolean;
+  pyramidVariant?: PyramidVariant;
+  hubSpokes?: boolean;
+  keyRows?: KeyRow[];
+  keyMeanings?: Record<string, string>;
+  boundaryStyle?: BoundaryStyle;
+  mindLook?: MindLook;
+  stats?: StatItem[];
+  processSteps?: string[];
+  navLinks?: string[];
 };
 
 export type TextElement = BoxBase & { type: 'text' };
@@ -141,7 +165,7 @@ export function isDrawnPath(el: { type: string }): el is PathElement {
 
 export type OtherBoxedElement = BoxBase & { type: OtherBoxedKind };
 
-export type ImageElement = BoxBase & { type: 'image' };
+export type ImageElement = BoxBase & { type: 'image'; heroCaption?: HeroCaption };
 
 export type BoxedElement =
   ShapeElement | TextElement | FreehandElement | ImageElement | OtherBoxedElement;
