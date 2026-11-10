@@ -9,8 +9,8 @@ import {
 } from './fixtures';
 
 // What livehuddle owns of the shared Explorer (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md): the
-// editor's Explorer panel around the open canvas, This Browser in it for the canvases the index never sees (the old
-// /offline page only redirects to the Explorer's This Browser view), and a canvas opened from the Explorer at /explorer (liveworkspace's page, from its site build, listing what the
+// editor's Explorer panel around the open canvas, Browser Storage in it for the canvases the index never sees (the old
+// /offline page only redirects to the Explorer's Browser Storage view), and a canvas opened from the Explorer at /explorer (liveworkspace's page, from its site build, listing what the
 // index holds through /api/index on this origin).
 
 const CANVAS = '[data-canvas-a11y-root]';
@@ -129,7 +129,7 @@ async function keepInThisBrowser(page: Page, name: string): Promise<void> {
   );
 }
 
-test('This Browser lists the canvases kept here, opens one, and deletes one after asking', async ({
+test('Browser Storage lists the canvases kept here, opens one, and deletes one after asking', async ({
   page,
   pageErrors,
 }) => {
@@ -138,12 +138,12 @@ test('This Browser lists the canvases kept here, opens one, and deletes one afte
   await startBlankDocument(page);
   await dismissQuickTour(page);
 
-  // The panel's rail has This Browser with their count, and its pane lists them in place: the editor stays.
+  // The panel's rail has Browser Storage with their count, and its pane lists them in place: the editor stays.
   await openExplorerPanel(page);
   const rail = page.getByRole('navigation', { name: 'Explorer sections' });
-  const thisBrowser = rail.getByRole('button', { name: 'This Browser (1)' });
+  const thisBrowser = rail.getByRole('button', { name: 'Browser Storage (1)' });
   await thisBrowser.click();
-  await expect(page.getByRole('list', { name: 'This Browser' })).toBeVisible();
+  await expect(page.getByRole('list', { name: 'Browser Storage' })).toBeVisible();
   expect(page.url()).not.toMatch(/\/offline/);
 
   // Each opens in the editor.
@@ -155,17 +155,19 @@ test('This Browser lists the canvases kept here, opens one, and deletes one afte
   // Nothing else holds it, so Delete asks first, then removes it for good, and the section goes with it. The index
   // never holds a canvas kept here, but the panel still shows its Current space card, read from This Browser.
   await page.getByRole('button', { name: 'Explorer', exact: true }).click();
-  await rail.getByRole('button', { name: 'This Browser (1)' }).click();
+  await rail.getByRole('button', { name: 'Browser Storage (1)' }).click();
   await expect(page.getByRole('region', { name: 'Current space' })).toHaveCount(1);
   await page.getByRole('button', { name: 'Delete Kept on this laptop' }).click();
   const confirm = page.getByRole('dialog', { name: 'Delete this space from this browser?' });
   await expect(confirm).toBeVisible();
   await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
-  await expect(rail.getByRole('button', { name: /^This Browser/ })).toHaveCount(0);
+  await expect(rail.getByRole('button', { name: /^Browser Storage/ })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 
-test('the old This Browser page sends people to the Explorer, its query kept', async ({ page }) => {
+test('the old Browser Storage page sends people to the Explorer, its query kept', async ({
+  page,
+}) => {
   await page.goto('/offline?convert=sync&item=x');
   await page.waitForURL(/\/explorer\/offline\?convert=sync&item=x$/);
 });
