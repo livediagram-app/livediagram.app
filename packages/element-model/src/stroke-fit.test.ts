@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { STROKE_FIT_START_TOLERANCE_PX, fitStrokeToLimit } from './stroke-fit';
 import { MAX_FREEHAND_POINTS } from '@liveworkspace/model-core/stroke-points';
@@ -73,11 +74,12 @@ describe('fitStrokeToLimit', () => {
       x: (i % 400) + Math.sin(i) * 3,
       y: Math.floor(i / 400) * 2 + Math.cos(i * 1.7) * 3,
     }));
-    const t0 = performance.now();
-    const out = fitStrokeToLimit(points);
-    const ms = performance.now() - t0;
+    let out = fitStrokeToLimit([]);
+    const cpu = cpuMsOf(() => {
+      out = fitStrokeToLimit(points);
+    });
     expect(out.points.length).toBeLessThanOrEqual(MAX_FREEHAND_POINTS);
-    // Generous for a loaded CI machine; measured locally in the blueprint.
-    expect(ms).toBeLessThan(1_000);
+    // Generous; measured locally in the blueprint.
+    expect(cpu).toBeLessThan(cpuBudgetMs(1_000));
   });
 });
