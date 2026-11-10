@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { contrastRatio } from './colors';
 import {
   countFrame,
@@ -79,16 +80,20 @@ describe('parseCountable and countFrame', () => {
 
   it('is cheap enough to print every frame', () => {
     const c = parseCountable('1,234,567.89')!;
-    const t = performance.now();
-    for (let i = 0; i < 10_000; i += 1) countFrame(c, i / 10_000);
-    expect(performance.now() - t).toBeLessThan(200);
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 10_000; i += 1) countFrame(c, i / 10_000);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
     expect(STAT_COUNT_MS).toBe(1200);
     expect(STAT_COUNT_DELAY_MS).toBeLessThan(STAT_COUNT_MS);
   });
 
   it('parses a long hostile value in linear time', () => {
-    const t = performance.now();
-    expect(parseCountable('9'.repeat(5000) + 'x' + '9'.repeat(5000))).toBeNull();
-    expect(performance.now() - t).toBeLessThan(100);
+    let parsed: unknown;
+    const ms = cpuMsOf(() => {
+      parsed = parseCountable('9'.repeat(5000) + 'x' + '9'.repeat(5000));
+    });
+    expect(parsed).toBeNull();
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
   });
 });
