@@ -312,3 +312,29 @@ describe('trimLabel', () => {
     expect(trimLabel('A\n').runs).toBeUndefined();
   });
 });
+
+describe('text effect run attributes (livedocuments docs/specs/008-canvas/text-effects.md)', () => {
+  it('sets, merges and clears a highlight and a gradient over a range', () => {
+    const runs = [{ text: 'We grew 40%' }];
+    const hl = applyFormatToRange(runs, 8, 11, { highlight: '#fde68a' });
+    expect(hl).toEqual([{ text: 'We grew ' }, { text: '40%', highlight: '#fde68a' }]);
+    const both = applyFormatToRange(hl, 8, 11, { gradient: 'sunset' });
+    expect(both[1]).toEqual({ text: '40%', highlight: '#fde68a', gradient: 'sunset' });
+    expect(hasRichFormatting([{ text: 'x', gradient: 'ocean' }])).toBe(true);
+    const cleared = applyFormatToRange(both, 0, 11, { highlight: undefined, gradient: undefined });
+    expect(cleared).toEqual([{ text: 'We grew 40%' }]);
+  });
+
+  it('merges neighbours only when their effects match', () => {
+    expect(
+      normalizeRuns([
+        { text: 'a', highlight: '#fde68a' },
+        { text: 'b', highlight: '#fde68a' },
+        { text: 'c', highlight: '#bbf7d0' },
+      ]),
+    ).toEqual([
+      { text: 'ab', highlight: '#fde68a' },
+      { text: 'c', highlight: '#bbf7d0' },
+    ]);
+  });
+});

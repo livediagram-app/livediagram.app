@@ -118,6 +118,12 @@ export function acceptSession(
   grantExp: number | null = null,
   account = false,
   tabShowsAll = false,
+  // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
+  // none mints one for this socket.
+  collabKey: string | null = null,
+  // The person stamped on its reactions (X-Verified-Reaction-Person,
+  // docs/specs/012-collaboration/comment-reactions.md).
+  reactionPerson: string | null = null,
 ): void {
   // A full room (ROOM_MAX_CONNECTIONS, docs/specs/015-api/api.md "A room holds 100 connections") turns the
   // newcomer away with a close the browser can read: accepted, closed at once, never a session.
@@ -131,6 +137,8 @@ export function acceptSession(
     newSessionAttachment(
       {
         verifiedRole,
+        collabKey,
+        reactionPerson,
         tabScope,
         shareCode,
         personTag,

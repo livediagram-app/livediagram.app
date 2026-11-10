@@ -12,6 +12,7 @@ Follow the references below only as needed; never upfront.
 - ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard
 - ./progress.md - when implementing or changing the progress bar / ring, its fill animation or its menu
 - ./rating.md - when implementing or changing the star rating, its animations or its picker
+- ./map.md - when implementing or changing the map, its geometry, layout, dialog, menu or export
 - ./rich-text-notes.md - (retired 2026-11-04 in livedocuments) when implementing or changing rich-text notes, the note popover or the block-type picker
 - ./sankey.md - when implementing or changing the Sankey diagram, its layout, labels, Flows dialog, menu or export
 - ./shape-markers.md - when implementing or changing shape status markers, their menu or render
@@ -24,3 +25,8 @@ Follow the references below only as needed; never upfront.
 - ./tag-colours.md - when implementing or changing tag colours, the tab map or how cards render it
 - ./stack.md - when implementing or changing the stack, its layout or how it settles
 - ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations
+- ./picture-crop-and-mask.md - when implementing or changing an image's crop, mask or greyscale, the crop overlay or their export
+- ./logo-strip.md - when implementing or changing the logo strip, its palette tile, its slide layout or the stack's Greyscale Pictures
+- ./stat-row.md - when implementing or changing the stat row's change line, its layout, the count-up or the Big Number preset
+- ./quote.md - when implementing or changing the quote, its layout, portrait, looks, menu or its photo's image paths
+- ./comparison-tables.md - when implementing or changing table mark cells or the highlighted column

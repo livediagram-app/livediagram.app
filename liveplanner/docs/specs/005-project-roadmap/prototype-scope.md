@@ -104,7 +104,7 @@ These are the meaningful gaps between launch and "full product":
 - **Plan, next steps**: a text `board` view for agents, item history, and connectors that fill items from GitHub
   Issues, Jira or Linear (deliberately not in the first cut).
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): token levels, ownership as
-  separate powers, server-derived collaboration keys and a look-only Viewer.
+  separate powers and a look-only Viewer.
 - **Finer-grained team permissions**: every member of a team can edit every project in its shared library
   ([Team shared projects](../013-workspace/team-shared-projects.md)).
 - **Per-person grants beyond teams and share links**: a project is private, shared via a link with a role, or part of a

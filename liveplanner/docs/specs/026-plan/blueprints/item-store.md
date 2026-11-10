@@ -471,8 +471,9 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
 - A start counts the card's threads (`threads_full` at `CARD_THREADS_MAX`) after `newComment` has read the author's
   profile, with no other await between the count and the insert: the profile read is a call out of the room, and two
   starts counted before it would both pass the cap.
-- **React**: `emoji` one of the six (`isReactionId`), `on` a boolean and `key` the caller's collab key (1 to
-  `REACTION_BY_MAX` characters), else `400` (`unknown emoji`, `missing on`, `missing key`); the name is the caller's profile name
+- **React**: `emoji` one of the six (`isReactionId`) and `on` a boolean, else `400` (`unknown emoji`, `missing on`);
+  `by` is `collabKeyFor(caller.owner)` (`@liveworkspace/api-kit/collab-key`), and a `key` in the body, which an older
+  client still sends, is ignored ([The collab key](../../013-workspace/share-roles.md)); the name is the caller's profile name
   (`getParticipant`, else "Someone"). Not activity: no timeline entry, email or Inbox change.
 - **Add to card**: the target is always a card of `:id`; a body naming another plan (`projectId` other than `:id`)
   is refused `400 thread_other_plan` before anything is read. Then the card is linked here (`linkThread`) and the

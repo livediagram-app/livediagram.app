@@ -25,9 +25,10 @@ export type CardThreadStartRequest = {
 export type CardThreadCommentRequest = { text: string; mentions?: CommentMention[] };
 
 // POST /api/projects/:id/threads/:threadId/comments/:commentId/reactions: the caller's own reaction on one comment,
-// on or off (docs/specs/012-collaboration/comment-reactions.md). `key` is the caller's public collab key, which
-// their reactions are kept under; the name is the server's. Nothing changing answers 204.
-export type CardThreadReactionRequest = { emoji: CommentReactionId; on: boolean; key: string };
+// on or off (docs/specs/012-collaboration/comment-reactions.md). The reaction is kept under the caller's collab key,
+// which the server derives from who they are (docs/specs/013-workspace/share-roles.md "The collab key"); `key`, which
+// older editors send, is read by nobody. The name is the server's. Nothing changing answers 204.
+export type CardThreadReactionRequest = { emoji: CommentReactionId; on: boolean; key?: string };
 
 // PUT /api/projects/:id/threads/:threadId/title: '' goes back to the automatic title.
 export type CardThreadRenameRequest = { title: string };

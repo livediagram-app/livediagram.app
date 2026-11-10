@@ -66,7 +66,7 @@ export function DashboardTabPreview({
     const own = tab.elements.find((e) => e.type === 'shape' && e.shape === shape) as
       ShapeElement | undefined;
     const el = own
-      ? (switchThemeElement(own, getTheme(tab.theme, appearance), dashboardTheme) as ShapeElement)
+      ? switchThemeElement(own, getTheme(tab.theme, appearance), dashboardTheme)
       : undefined;
     return (
       <>

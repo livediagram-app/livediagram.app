@@ -180,6 +180,7 @@ export type CanvasProps = {
   onAddStatRow: () => void;
   onAddProcess: () => void;
   onAddAvatar: () => void;
+  onAddLogoStrip: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Any other file dropped on the canvas, at its canvas point (an image lands there). Absent where files are
@@ -312,15 +313,7 @@ export type CanvasProps = {
   // Single combined table commit (cells + the parallel colWidths /
   // rowHeights / cellStyles arrays) applied in ONE commit, so structural
   // ops can't drop a side array or clobber each other off a stale base.
-  onCommitTable: (
-    id: string,
-    patch: Partial<
-      Pick<
-        import('@livedocuments/document').TableElement,
-        'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
-      >
-    >,
-  ) => void;
+  onCommitTable: (id: string, patch: import('@livedocuments/document').TablePatch) => void;
   onCancelEdit: () => void;
   // Table quick-connect ring (docs/specs/008-canvas/canvas-and-palette.md): append a row / column to the
   // selected table from the bottom / right plus.
@@ -391,6 +384,11 @@ export type CanvasProps = {
     documentId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
+    // Done on a crop (docs/specs/009-elements/picture-crop-and-mask.md); an Editor's only.
+    onCommitImageCrop?: (
+      elementId: string,
+      result: import('@/lib/image-crop-math').CropResult,
+    ) => void;
   };
   // The visitor name prompt (IdentityPrompt).
   showIdentityPrompt: boolean;

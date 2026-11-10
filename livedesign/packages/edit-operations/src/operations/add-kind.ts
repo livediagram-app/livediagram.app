@@ -99,7 +99,7 @@ function peerLook(
 
 // The theme's colours on an element; recolouring keeps its type.
 function paint<T extends Element>(el: T, theme: ThemeDefinition): T {
-  return recolourElementForTheme(el, theme) as T;
+  return recolourElementForTheme(el, theme);
 }
 
 // A new element of `kind` with its fields, sized for its label, painted and placed; shared by

@@ -76,7 +76,7 @@ For longer listing bodies and "about this project" sections.
 > Articles are for writing. Type with Markdown shortcuts or paste from web
 > pages, Google Docs and Word, and the writing flows onto new pages as it grows,
 > with pictures, charts and tables sitting in the text. Slide decks start from
-> 61 slide layouts and present full screen, with presenter notes, a time
+> 64 slide layouts and present full screen, with presenter notes, a time
 > budget, a laser pointer and a spotlight. Infographics and posters come in
 > print and social sizes, from 92 layouts.
 >
@@ -121,7 +121,7 @@ detailed GitHub / Product Hunt write-up.
 >
 > #### Slide decks you present
 >
-> Add 16:9 or 4:3 slides, each started from one of 61 layouts, and present the
+> Add 16:9 or 4:3 slides, each started from one of 64 layouts, and present the
 > deck full screen. Each slide can carry presenter notes and a time budget, and
 > a laser pointer and spotlight help you guide the room. Presenting happens on
 > your screen only, so collaborators carry on working.

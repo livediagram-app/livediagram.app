@@ -32,6 +32,9 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   star: 'favourite highlight rating',
   'speech-bubble': 'comment callout chat note',
   card: 'node service component box tile persona tag title',
+  // docs/specs/009-elements/stat-row.md and quote.md.
+  'stat-row': 'big number kpi metric stat figure count up headline change growth',
+  quote: 'testimonial pull quote quotation customer review said endorsement citation',
   badge: 'tag pill label chip status version beta new count',
   step: 'number numbered sequence order walkthrough marker 1 2 3',
   stack: 'stack row column grid auto layout flex align distribute even gap spacing container list',
@@ -53,6 +56,8 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'progress-ring': 'donut ring percent gauge dial',
   'timeline-rail': 'timeline roadmap milestones track history plan dates schedule',
   rating: 'stars score review out of five',
+  // Map (docs/specs/009-elements/map.md): what people search for when they want one.
+  map: 'world globe country countries region geography atlas pins locations offices markets',
   legend: 'key colour code swatch label caption guide colour key',
   'pie-chart': 'donut doughnut ring share split proportion chart',
   'bar-chart': 'column bar horizontal histogram chart graph',

@@ -9,9 +9,10 @@ import {
   trimLabel,
   truncateName,
   type Element,
-  type TableElement,
   type Tab,
   type TextRun,
+  type TablePatch,
+  withTablePatch,
 } from '@livedocuments/document';
 import { hugCommittedText, hugsText } from '@/lib/text-hug';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
@@ -145,12 +146,11 @@ export function useSelectionEditing(opts: {
   // as separate commits each read the same stale `activeTab.elements` base
   // and clobbered one another (only the last landed), losing the reorder
   // and dropping pinned widths / styles. One patch, one commit, no drift.
-  const commitTable = (
-    elementId: string,
-    patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
-  ) => {
+  const commitTable = (elementId: string, patch: TablePatch) => {
     commit((els) =>
-      els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, ...patch } : el)),
+      els.map((el) =>
+        el.id === elementId && el.type === 'table' ? withTablePatch(el, patch) : el,
+      ),
     );
   };
 

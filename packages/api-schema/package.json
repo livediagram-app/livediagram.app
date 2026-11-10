@@ -11,6 +11,7 @@
     "./api-tokens": "./src/api-tokens.ts",
     "./build-id": "./src/build-id.ts",
     "./catalogues": "./src/catalogues.ts",
+    "./collab-key": "./src/collab-key.ts",
     "./comment-threads": "./src/comment-threads.ts",
     "./creation-use": "./src/creation-use.ts",
     "./document-conversion": "./src/document-conversion.ts",

@@ -16,7 +16,15 @@ export type PptxRun = {
   underline: boolean;
   strike: boolean;
   font?: string;
+  // Text effects (docs/specs/008-canvas/text-effects.md "Rendering"): a marker highlight behind the run, a
+  // gradient across its letters (in place of its colour), and a text shadow (element-shadows.md).
+  highlight?: OoxmlColour;
+  gradient?: { from: OoxmlColour; to: OoxmlColour };
+  shadow?: PptxTextShadow;
 };
+
+/** An outer shadow behind a run's letters, as DrawingML measures one. */
+export type PptxTextShadow = { blurEmu: number; distEmu: number; dir: number; alpha: number };
 
 export type PptxAlign = 'l' | 'ctr' | 'r';
 

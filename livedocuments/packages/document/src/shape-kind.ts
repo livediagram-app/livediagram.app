@@ -51,6 +51,9 @@ export type ShapeKind =
   | 'process'
   // Header: a website header bar, logo + brand (the label) + `navLinks`.
   | 'site-header'
+  // Quote (docs/specs/009-elements/quote.md): a pull quote or testimonial, the words its label, a name, a role and a
+  // portrait.
+  | 'quote'
   // Tab window (docs/specs/009-elements/tab-window.md, retired): stored ones load as a frame named for the tab in
   // `windowTabId`; nothing makes one.
   | 'tab-window'
@@ -100,6 +103,9 @@ export type ShapeKind =
   // Sankey diagram (docs/specs/009-elements/sankey.md): flows between named nodes, each band as wide as
   // the amount it carries. Carries `sankeyFlows` (below); lays itself out in columns.
   | 'sankey'
+  // Map (docs/specs/009-elements/map.md): a world, region or country outline with highlighted
+  // countries and labelled pins (`mapRegion`, `mapCountry`, `mapHighlights`, `mapPins`).
+  | 'map'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the editor app's
   // icon catalogue, NOT a closed enum here, so adding icons is a

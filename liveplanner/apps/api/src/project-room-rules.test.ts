@@ -8,9 +8,9 @@ import {
   answersAsSelf,
 } from './project-room-rules';
 import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@liveplanner/api-schema';
-import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 
 const SESSION = { presenceId: 'p-server', verifiedRole: 'view' as const };
+const SERVER_KEY = '0123456789abcdef0123456789abcdef';
 
 describe('helloPresence', () => {
   it('overrides the id and role the client claimed', () => {
@@ -29,21 +29,25 @@ describe('helloPresence', () => {
     expect(p).toMatchObject({ name: 'Ada', color: '#f00', tabId: 't1' });
   });
 
-  it('relays the project-write key instead of overriding it', () => {
-    // The one claimed field on the roster (docs/specs/012-collaboration/participant-responses.md). It has to survive a
-    // reconnect to join a saved answer back to the person who gave it, so the
-    // server cannot mint it the way it mints `id` — and it grants nothing, so
-    // it does not need to.
-    const p = helloPresence({ name: 'Ada', color: '#f00', key: 'k-ada' }, SESSION);
-    expect(p.key).toBe('k-ada');
+  it("stamps the session's collab key, never the one the hello claims", () => {
+    // docs/specs/013-workspace/share-roles.md "The collab key": the key a person's answers and reactions are recorded
+    // under is the server's, pinned at the upgrade, so a key copied off the roster buys nothing.
+    const p = helloPresence(
+      { name: 'Ada', color: '#f00', key: 'k-someone-else' },
+      { ...SESSION, collabKey: SERVER_KEY },
+    );
+    expect(p.key).toBe(SERVER_KEY);
     expect(p.id).toBe('p-server');
   });
 
-  it('omits an empty or missing key rather than storing a blank one', () => {
-    // A blank key would MATCH other blank keys, quietly merging two people's
-    // answers into one. Absent is the honest value.
+  it('omits the key when the session holds none, whatever the hello claims', () => {
+    // A blank key would MATCH other blank keys, quietly merging two people's answers into one, and a claimed one is
+    // anybody's. Absent is the honest value: such a session records no answer until it reconnects.
     expect('key' in helloPresence({ name: 'Ada', color: '#f00' }, SESSION)).toBe(false);
     expect('key' in helloPresence({ name: 'Ada', color: '#f00', key: '' }, SESSION)).toBe(false);
+    expect('key' in helloPresence({ name: 'Ada', color: '#f00', key: 'k-ada' }, SESSION)).toBe(
+      false,
+    );
   });
 
   it('clamps every string it accepts', () => {
@@ -52,14 +56,12 @@ describe('helloPresence', () => {
         name: 'n'.repeat(999),
         color: 'c'.repeat(999),
         tabId: 't'.repeat(999),
-        key: 'k'.repeat(999),
       },
       SESSION,
     );
     expect(p.name).toHaveLength(MAX_PARTICIPANT_NAME_LEN);
     expect(p.color).toHaveLength(MAX_COLOR_LEN);
     expect(p.tabId).toHaveLength(MAX_TAB_ID_LEN);
-    expect(p.key).toHaveLength(MAX_PARTICIPANT_KEY_LEN);
   });
 
   it('drops non-string and absent fields rather than trusting them', () => {

@@ -115,7 +115,7 @@ Tiles named "Tab Style", "Inset Style", "C4 Style"; the meta line is `role="text
 | Rule                                   | Test file                                                     |
 | -------------------------------------- | ------------------------------------------------------------- |
 | Layout per style, tint, writes         | `packages/document/src/boundary.test.ts`                      |
-| Containment and carry include boundary | `packages/document/src/containment.test.ts`                   |
+| Containment and carry include boundary | `../packages/element-model/src/containment.test.ts`           |
 | Paint order larger-first               | `packages/document/src/layers.test.ts`                        |
 | Export draws tab, title, stacked tint  | `packages/document/src/boundary.test.ts`                      |
 | Face                                   | `apps/editor/components/canvas/BoundaryFace.test.tsx`         |

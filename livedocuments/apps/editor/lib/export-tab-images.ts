@@ -6,7 +6,7 @@
 // onto the export canvas without tainting it — then decode it to an
 // HTMLImageElement for the canvas path. Browser-only (uses Image / FileReader);
 // never reached in the no-DOM test runs.
-import { pageImageIds, type Tab } from '@livedocuments/document';
+import { elementsImageIds, pageImageIds, type Tab } from '@livedocuments/document';
 import { apiFetchImageDataUrl } from './api/images';
 
 type ExportImageEntry = {
@@ -29,7 +29,8 @@ const SAFE_INLINE_IMAGE = /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=
 export function tabImageIds(tab: Pick<Tab, 'elements' | 'pages'>): string[] {
   return Array.from(
     new Set([
-      ...tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
+      // An image's picture and a quote's photo (elementsImageIds, docs/specs/009-elements/quote.md).
+      ...elementsImageIds(tab.elements),
       ...pageImageIds(tab.pages),
     ]),
   );

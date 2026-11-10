@@ -53,6 +53,11 @@ export type TextRun = {
   // A secondary run, drawn at 0.65 of its colour's opacity (docs/specs/009-elements/block-type-picker.md "Title and
   // Caption"), so a caption reads as secondary in any theme without baking a grey.
   muted?: boolean;
+  // Text effects (livedocuments docs/specs/008-canvas/text-effects.md): a marker band behind the run in
+  // this hex colour, and a gradient preset filling its glyphs, by id. A renderer that does not know a
+  // value draws no effect.
+  highlight?: string;
+  gradient?: string;
 };
 
 // The attributes to write over a range. A key present with `undefined`
@@ -68,6 +73,8 @@ export type RunPatch = Partial<{
   link: string | undefined;
   heading: RunHeading | undefined;
   muted: boolean | undefined;
+  highlight: string | undefined;
+  gradient: string | undefined;
 }>;
 
 // The attribute keys, used to compare/copy run formatting without touching
@@ -83,6 +90,8 @@ const ATTR_KEYS = [
   'link',
   'heading',
   'muted',
+  'highlight',
+  'gradient',
 ] as const;
 
 /** Concatenated plain text of the runs. `element.label` is kept === this. */

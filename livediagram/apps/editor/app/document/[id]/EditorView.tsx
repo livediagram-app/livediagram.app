@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
-import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
+import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { truncateName } from '@livediagram/document';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';

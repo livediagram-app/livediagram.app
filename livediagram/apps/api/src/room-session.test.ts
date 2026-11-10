@@ -13,6 +13,8 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Tab-Scope': 't1',
         'X-Verified-Share-Code': '',
         'X-Verified-Person': 'p',
+        'X-Verified-Collab-Key': '0123456789abcdef0123456789abcdef',
+        'X-Verified-Reaction-Person': '0123456789abcdef01234567',
         'X-Verified-Network': 'n',
         'X-Verified-Workbench-Pairing': 'w',
         'X-Verified-Adder': 'a',
@@ -28,6 +30,8 @@ describe('verifiedSessionOf', () => {
       tabScope: 't1',
       shareCode: null,
       personTag: 'p',
+      collabKey: '0123456789abcdef0123456789abcdef',
+      reactionPerson: '0123456789abcdef01234567',
       account: false,
       networkTag: 'n',
       workbenchPairing: 'w',
@@ -40,6 +44,37 @@ describe('verifiedSessionOf', () => {
 
   it('ignores a role it does not know', () => {
     expect(verifiedSessionOf(upgrade({ 'X-Verified-Role': 'admin' })).verifiedRole).toBeUndefined();
+  });
+});
+
+describe('the collab key (docs/specs/013-workspace/share-roles.md "The collab key")', () => {
+  // A session as an upgrade with no identity headers reads.
+  const base = verifiedSessionOf(upgrade({}));
+
+  it('keeps the key the upgrade forwarded', () => {
+    expect(
+      newSessionAttachment({ ...base, collabKey: '0123456789abcdef0123456789abcdef' }, 'p1')
+        .collabKey,
+    ).toBe('0123456789abcdef0123456789abcdef');
+  });
+
+  it('mints a fresh key for a session with none, or a malformed one, different for every socket', () => {
+    const a = newSessionAttachment({ ...base, collabKey: null }, 'p1').collabKey;
+    const b = newSessionAttachment({ ...base, collabKey: 'x'.repeat(500) }, 'p2').collabKey;
+    expect(a).toMatch(/^[0-9a-f]{32}$/);
+    expect(b).toMatch(/^[0-9a-f]{32}$/);
+    expect(a).not.toBe(b);
+  });
+
+  // docs/specs/012-collaboration/comment-reactions.md: the person the room stamps on this session's reactions.
+  it('keeps the reaction person the upgrade forwarded, and none of the wrong shape', () => {
+    const read = verifiedSessionOf(
+      upgrade({ 'X-Verified-Reaction-Person': '0123456789abcdef01234567' }),
+    );
+    expect(newSessionAttachment(read, 'p1').reactionPerson).toBe('0123456789abcdef01234567');
+    expect('reactionPerson' in newSessionAttachment(base, 'p1')).toBe(false);
+    const odd = { ...base, reactionPerson: 'x'.repeat(500) };
+    expect('reactionPerson' in newSessionAttachment(odd, 'p1')).toBe(false);
   });
 });
 

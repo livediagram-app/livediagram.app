@@ -148,6 +148,7 @@ export const FACTORY_CORNERS: Readonly<Record<string, string>> = {
   agenda: 'lg',
   decision: 'lg',
   'roll-call': 'lg',
+  quote: 'lg',
 };
 
 /** An element's own corner as its finish reads it: a corner picked on it wins, but under Professional the corner

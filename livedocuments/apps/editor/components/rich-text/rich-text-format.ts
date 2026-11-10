@@ -45,6 +45,9 @@ export type ActiveFormat = {
   color: string | null;
   heading: RunHeading | null;
   link: string | null;
+  // Text effects (docs/specs/008-canvas/text-effects.md): the selection's, when uniform across it.
+  highlight: string | null;
+  gradient: string | null;
 };
 
 // Whether two toolbar states show the same thing (every field is a primitive).
@@ -56,7 +59,9 @@ export function sameActiveFormat(a: ActiveFormat, b: ActiveFormat): boolean {
     a.strikethrough === b.strikethrough &&
     a.color === b.color &&
     a.heading === b.heading &&
-    a.link === b.link
+    a.link === b.link &&
+    a.highlight === b.highlight &&
+    a.gradient === b.gradient
   );
 }
 
@@ -94,7 +99,13 @@ export function computeActiveFormat(
   range: { start: number; end: number } | null,
   defaults: RunDefaults,
 ): ActiveFormat {
-  const empty: ActiveFormat = { ...defaults, heading: null, link: null };
+  const empty: ActiveFormat = {
+    ...defaults,
+    heading: null,
+    link: null,
+    highlight: null,
+    gradient: null,
+  };
   if (!range) return empty;
   let { start, end } = range;
   if (start === end) {
@@ -125,6 +136,8 @@ export function computeActiveFormat(
     color: uniform((r) => r.color, defaults.color),
     heading: uniform((r) => r.heading, null),
     link: uniform((r) => r.link, null),
+    highlight: uniform((r) => r.highlight, null),
+    gradient: uniform((r) => r.gradient, null),
   };
 }
 

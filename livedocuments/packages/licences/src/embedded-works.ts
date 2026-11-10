@@ -91,4 +91,16 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     },
     texts: text('feather-4.29.2-LICENSE.txt'),
   },
+  // The map element's country outlines and places (docs/specs/009-elements/map.md "Geometry"), generated from
+  // Natural Earth 1:110m into the document package's own source.
+  {
+    id: 'natural-earth',
+    name: 'Natural Earth',
+    version: '5.1.2',
+    licence: 'LicenseRef-Public-Domain',
+    carrier: 'livedocuments source (map geometry)',
+    homepage: 'https://www.naturalearthdata.com',
+    trigger: { sources: ['packages/document/src/map-geometry.generated.ts'] },
+    texts: text('natural-earth-5.1.2-LICENSE.txt'),
+  },
 ];

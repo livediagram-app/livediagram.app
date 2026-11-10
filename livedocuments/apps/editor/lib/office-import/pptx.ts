@@ -3,6 +3,7 @@
 // pictures, groups opened, each slide's notes and hidden flag. Everything left out is counted for the report. Pure
 // over an opened package.
 
+import { cleanImageCrop } from '@livedocuments/document';
 import type { TextAlignX, TextAlignY } from '@liveworkspace/model-core/basics';
 import { MAX_ELEMENTS_PER_TAB, MAX_PAGES } from '@livedocuments/document';
 import type { OfficePicture } from './docx';
@@ -150,6 +151,17 @@ function pictureShape(pic: XmlElement, map: GroupMap, ctx: SlideContext): void {
   }
   const crop = child(blipFill, 'a:srcRect');
   const cropped = !!crop && ['l', 't', 'r', 'b'].some((k) => (intAttr(crop, k) ?? 0) !== 0);
+  // Its edges are thousandths of a percent of the picture, cut off each side (a negative one pads, which a crop
+  // cannot hold, so it is read as none).
+  const cut = (k: string) => Math.max(0, intAttr(crop, k) ?? 0) / 100000;
+  const imageCrop = cropped
+    ? cleanImageCrop({
+        x: cut('l'),
+        y: cut('t'),
+        width: 1 - cut('l') - cut('r'),
+        height: 1 - cut('t') - cut('b'),
+      })
+    : undefined;
   const cNvPr = path(pic, 'p:nvPicPr', 'p:cNvPr');
   const alt = (cNvPr?.attrs.descr || '').trim();
   add(ctx, {
@@ -161,6 +173,7 @@ function pictureShape(pic: XmlElement, map: GroupMap, ctx: SlideContext): void {
       heightPx: Math.round(box.cy / EMU_PER_PX),
       ...(alt ? { alt } : {}),
       ...(cropped ? { cropped: true as const } : {}),
+      ...(imageCrop ? { crop: imageCrop } : {}),
     },
   });
 }

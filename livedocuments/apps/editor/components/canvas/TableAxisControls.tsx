@@ -211,6 +211,8 @@ export function TableAxisMenuPortal({
   moveRow,
   delRow,
   onClose,
+  highlightColumn,
+  onToggleHighlight,
 }: {
   menu: NonNullable<AxisMenu>;
   cols: number;
@@ -222,6 +224,9 @@ export function TableAxisMenuPortal({
   moveRow: (index: number, delta: number) => void;
   delRow: (index: number) => void;
   onClose: () => void;
+  // The recommended column (docs/specs/009-elements/comparison-tables.md "Highlight a column").
+  highlightColumn?: number;
+  onToggleHighlight?: (index: number) => void;
 }) {
   // A command menu (docs/specs/004-interface-design/menus.md): role menu with its rows as items, focus on the first
   // row, the arrow keys between rows, Escape to close and focus back to the ⋯. It had none of these, so Escape left
@@ -237,7 +242,7 @@ export function TableAxisMenuPortal({
         ref={attach}
         {...surfaceProps}
         data-table-ui
-        className={`pointer-events-auto fixed z-[var(--z-overlay)] w-36 animate-pop-in rounded-lg border border-slate-200 bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/90 ${
+        className={`pointer-events-auto fixed z-[var(--z-overlay)] w-40 animate-pop-in rounded-lg border border-slate-200 bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/90 ${
           menu.axis === 'col' ? '-translate-x-1/2' : '-translate-y-1/2'
         }`}
         style={{ left: menu.x, top: menu.y }}
@@ -250,6 +255,14 @@ export function TableAxisMenuPortal({
             onAdd={addCol}
             onMove={moveCol}
             onDelete={delCol}
+            highlight={
+              onToggleHighlight
+                ? {
+                    on: highlightColumn === menu.index,
+                    onToggle: () => onToggleHighlight(menu.index),
+                  }
+                : undefined
+            }
           />
         ) : (
           <TableHeaderMenu

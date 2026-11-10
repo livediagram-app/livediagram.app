@@ -43,8 +43,8 @@ import {
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
-import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
-import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
+import { ElementIndicatorStyleProvider } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
+import { readElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
 import { SpotlightOverlay } from '@liveworkspace/workbench/components/canvas/SpotlightOverlay';

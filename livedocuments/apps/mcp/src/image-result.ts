@@ -6,6 +6,7 @@
 
 import { embedTabImages } from '@livedocuments/api-schema';
 import {
+  ensureMapGeometry,
   articlesOf,
   exportFontIds,
   resolveArticleStyle,
@@ -94,6 +95,8 @@ export async function tabPreview(
     auth ? buildImageResolver(auth.env, auth.token, tab) : NO_IMAGES,
     previewFonts(tabFontIds(tab)),
     previewEmoji(emojiGlyphsOf(tab.elements)),
+    // A map's land (docs/specs/009-elements/map.md), loaded only when the tab has one.
+    ensureMapGeometry(tab.elements),
   ]);
   const drawWith = { resolveImageHref, ...previewResolvers(emoji) };
   // Every tab has at least one page, so the pages always draw.

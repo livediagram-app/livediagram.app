@@ -557,6 +557,8 @@ export class PlanRoom extends DurableObject<Env> {
       v.grantExp ?? null,
       v.account,
       tabShowsAll,
+      v.collabKey ?? null,
+      v.reactionPerson ?? null,
     );
     this.armAlarm();
     return new Response(null, { status: 101, webSocket: client });
@@ -578,6 +580,12 @@ export class PlanRoom extends DurableObject<Env> {
     grantExp: number | null = null,
     account = false,
     tabShowsAll = false,
+    // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
+    // none mints one for this socket.
+    collabKey: string | null = null,
+    // The person stamped on its reactions (X-Verified-Reaction-Person,
+    // docs/specs/012-collaboration/comment-reactions.md).
+    reactionPerson: string | null = null,
   ): void {
     acceptSession(
       this,
@@ -592,6 +600,8 @@ export class PlanRoom extends DurableObject<Env> {
       grantExp,
       account,
       tabShowsAll,
+      collabKey,
+      reactionPerson,
     );
   }
 

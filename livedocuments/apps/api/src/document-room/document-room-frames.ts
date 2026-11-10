@@ -86,6 +86,9 @@ export function webSocketMessage(
     // see the size note on SessionAttachment.
     const presence = helloPresence(msg.participant, session);
     ws.serializeAttachment({ ...session, presence } satisfies SessionAttachment);
+    // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab
+    // key"): its editor records its answers and reactions under it from now on.
+    if (presence.key) sendTo(room, ws, { kind: 'collab-key', key: presence.key });
     // Where the ordered stream stands as this session joins, so a later
     // reconnect asks for what came after it, not for the whole log.
     sendTo(room, ws, { kind: 'cursor', epoch: room.epoch, seq: room.seq });
@@ -181,6 +184,7 @@ export function webSocketMessage(
       const op = stampCommentAuthor(
         opForTheWire(opFromScopedSender(msg.op, session.tabScope ?? null)),
         sender,
+        session.reactionPerson ?? null,
       );
       const seq = sequenceMutation(room, sender.id, op, ws);
       // The relay skips the sender, so tell it the seq its op took: its own

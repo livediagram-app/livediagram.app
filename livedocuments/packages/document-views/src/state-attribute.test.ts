@@ -36,6 +36,11 @@ describe('stateAttributeOf (R14, VW22)', () => {
     expect(state('card', { pageTitle: ' ' })).toBe('');
   });
 
+  it('names who a quote is by', () => {
+    expect(state('quote', { pageTitle: 'Sam Rivera' })).toBe('by="Sam Rivera"');
+    expect(state('quote', { pageTitle: undefined })).toBe('');
+  });
+
   it('titles a card, and flags a badge or step that is attached to a node', () => {
     expect(state('card', { pageTitle: 'Orders service' })).toBe('title="Orders service"');
     expect(state('card', { pageTitle: undefined })).toBe('');

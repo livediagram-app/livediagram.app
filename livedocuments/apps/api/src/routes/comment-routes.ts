@@ -3,6 +3,7 @@
 // endpoints, gated by participation; every write goes through the tab's revision (I8), retried once on a lost
 // race, and reaches the room as an `el-delta` without author or token ids.
 
+import { collabKeyFor, reactionPersonFor } from '@liveworkspace/api-kit/collab-key';
 import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
 import {
   COMMENT_TEXT_MAX,
@@ -11,7 +12,6 @@ import {
   type DocumentCommentsResponse,
 } from '@livedocuments/api-schema';
 import {
-  REACTION_BY_MAX,
   applyElementDelta,
   isReactionId,
   sanitizeMentions,
@@ -293,10 +293,11 @@ async function threadVerb(
   return noContent();
 }
 
-// POST .../comments/:commentId/react { emoji, on, key }: a Participant's reaction on a comment
+// POST .../comments/:commentId/react { emoji, on }: a Participant's reaction on a comment
 // (docs/specs/012-collaboration/comment-reactions.md "How it is stored and travels"). The room relays element deltas
 // from an Editor only, so a session that may comment but not edit reacts here, as it comments. The name is the
-// caller's profile's; `key` is their public collab key, the id their reactions are recorded under. People react,
+// caller's profile's; `by` is their collab key, derived from who they are (docs/specs/013-workspace/share-roles.md
+// "The collab key"), never a `key` the body names (an older editor still sends one, unread). People react,
 // agents only read: a token is refused.
 async function reactTo(
   ctx: DocumentRouteContext,
@@ -309,18 +310,19 @@ async function reactTo(
   if (ctx.token) return forbidden();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const { emoji, on, key } = body;
+  const { emoji, on } = body;
   if (!isReactionId(emoji)) return badRequest('unknown emoji');
   if (typeof on !== 'boolean') return badRequest('missing on');
-  if (typeof key !== 'string' || !key || key.length > REACTION_BY_MAX)
-    return badRequest('missing key');
   const writer = await getParticipant(ctx.env, caller.owner);
+  // `person` is the reactor's hashed person id, so a closed account's reactions can be found and anonymised
+  // (comment-reactions.md).
   const delta: ElementDelta = {
     kind: 'comment-react',
     commentId,
     emoji,
-    by: key,
+    by: await collabKeyFor(caller.owner),
     name: writer?.name ?? 'Anonymous',
+    person: await reactionPersonFor(caller.owner),
     on,
   };
   const written = await writeTab(ctx, id, tabId, (tab) => {

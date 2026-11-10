@@ -11,6 +11,8 @@ const BASE: ActiveFormat = {
   color: null,
   heading: null,
   link: null,
+  highlight: null,
+  gradient: null,
 };
 const CHANGED: { [K in keyof ActiveFormat]-?: ActiveFormat[K] } = {
   bold: true,
@@ -20,6 +22,8 @@ const CHANGED: { [K in keyof ActiveFormat]-?: ActiveFormat[K] } = {
   color: '#ff0000',
   heading: 1,
   link: 'https://example.com',
+  highlight: '#fde68a',
+  gradient: 'sunset',
 };
 
 describe('sameActiveFormat', () => {

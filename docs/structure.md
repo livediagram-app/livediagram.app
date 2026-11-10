@@ -29,7 +29,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ document-views           the agent views of a document that read no element union (budgets, elision, fields), for livediagram and livedocuments
 │  ├─ drive                    the Drive mirror's contract: cadence, formats, the plan, wire shapes, backoff
 │  ├─ edit-operations          the edit engine's parts that read no element union: element text, equality, result lines
-│  ├─ element-model            the element code products share over any product's union (structural types, generic where it hands elements back): grid, guides, layer order, anchors, auto-layout, finishes, strokes, web components, stored-data repairs
+│  ├─ element-model            the element code products share over any product's union (structural types, generic where it hands elements back): grid, guides, layer order, anchors, auto-layout, finishes, strokes, web components, element defaults, themes, tables, charts, arrows in the export, stored-data repairs
 │  ├─ email                    the one caller of Cloudflare Email Service's `send_email` binding, for accounts and every app
 │  ├─ fake-google              an in-memory Google (Drive v3 and OAuth) for the Drive mirror's tests
 │  ├─ model-core               what every product's model shares and needs nothing of its element union (the Reaction Pad's five bursts among it); each re-exports it
@@ -468,6 +468,27 @@ Each step is its own PR, and both products build and pass their tests after ever
      `TrashedCard` differ only by the product's noun, so they take `noun` and each editor keeps a thin door at the old
      path that binds its word, leaving routes and copy unchanged. The menu icons' size steps sit in `menu-icon-base`,
      so an editor with its own context-menu icons pulls in none of the workbench's.
+   - Fifth slice: the byte-identical editor files that waited on one product import, 12 of the copies guard's
+     groups (about 3,500 of the 19,700 redundant non-test lines across the five editors), each at its editor path
+     as its own subpath, with their tests: about 1,800 lines in `packages/workbench` (1,200 of code, 600 of tests)
+     and about 7,200 fewer across the editors. The panel drag, measure and corner-inset code
+     (`useMovablePanelDrag`, `useMovablePanelMeasure`, `movable-panel-scale`) reads the props it needs from
+     `components/primitives/movable-panel-geometry`, the part every editor's `MovablePanelProps` agrees on, and
+     `PanelDragGeometry` lives there (each `lib/panel-layout.ts` re-exports it). The split divider reads the pane
+     floor and key steps from `lib/split-sizes`, the Size section its bounds from `lib/element-size-bounds` and its
+     row from `components/palette/MenuToggleRow` (each product's module re-exports what it held). The Collaborate
+     rules (`collaborate-model`), the context-menu scaffold, the chart legend and surface and the element
+     indicator style take the structural part of the product's rows, props or preferences they read, so each
+     product's own types pass in as they are. `useToast` reads Show Notifications through `readPreferences`,
+     and livediagram, livedocuments and livehuddle keep a one-line door at `hooks/ui/useToast.tsx` for their many
+     importers. `useMovablePanelMeasure` is livediagram's copy in every editor: its extra selector, the Draw dock,
+     matches nothing where there is no dock. Left, and why: tests, e2e harness files and scripts (as in the first
+     sweep); route files; the hooks that send telemetry (the Format and Spotlight config hooks, the debounced canvas
+     telemetry, `trackOrganise`), since the telemetry dashboard's emitter scan reads each product's own folders and
+     would need to read the workbench first; the groups only livediagram and livehuddle share (Work Tracker #650); and copies that
+     import a module typed on the product's element union or vocabulary (looks and seasonal looks, the laser
+     config, the panel layout's ids, themes, the settings catalogue, the image import types), or a component that
+     differs per product (`ModePanel`, `TopCenter`, `ShowMe`, `AreaErrorBoundary`, the palette controls).
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:

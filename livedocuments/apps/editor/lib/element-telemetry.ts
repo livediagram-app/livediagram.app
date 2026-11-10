@@ -78,6 +78,8 @@ const SHAPE_TOKENS: Record<string, string> = {
   onion: 'Onion',
   chevrons: 'Chevrons',
   'stat-row': 'StatRow',
+  // The quote (docs/specs/009-elements/quote.md).
+  quote: 'Quote',
   process: 'ProcessSteps',
   'site-header': 'Header',
   // Plan board and Plan card.
@@ -146,6 +148,7 @@ export const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
   stat: 'StatRow',
   process: 'ProcessSteps',
   avatar: 'Avatar',
+  'logo-strip': 'LogoStrip',
 };
 
 export function componentTelemetryType(kind: ComponentKind): string {

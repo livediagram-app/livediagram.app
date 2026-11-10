@@ -21,6 +21,8 @@ export type WorkbenchTrack = (
 /** The person's preferences, as far as workbench code reads them: a subset of every product's. */
 export type WorkbenchPreferences = {
   reduceMotion?: boolean;
+  // Show Notifications off quiets info and success toasts (hooks/ui/useToast).
+  notificationsEnabled?: boolean;
 };
 
 /** The product's api transport (its lib/api/core.ts), as far as workbench code calls it. */

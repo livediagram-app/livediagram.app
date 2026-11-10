@@ -34,9 +34,15 @@ The answer key is decided by the room, never taken from the sender as given ([Li
 relays an answer only once it has accepted it, and relays it under the key it decided, so a refused answer reaches
 nobody's tally.
 
-- **Account sessions** (a ticket with a person tag): one answer per account per poll. The first key the account
-  answers under becomes its key; a later answer from any of its sessions replaces that one answer.
-- **Other sessions** answer under their collab key with a **proof**: a per-browser secret
+- **Account sessions** (a ticket with a person tag, a guest's included): one answer per account per poll, under
+  the session's collab key, the one the server pinned at the upgrade
+  ([The collab key](../013-workspace/share-roles.md#the-collab-key)), never a key the frame claims. So it is the
+  same key on every device, the answer reads as the person's own everywhere, and a later answer from any of its
+  sessions replaces that one answer. (A session from before the key was pinned falls back to the key it claims.)
+- **Other sessions** (no identity, whose collab key the room minted for that socket alone) keep the proof below: a
+  minted key lasts only as long as the socket, and the proof is what stops a reconnect answering twice: the key a
+  proof first claimed in a poll stays its key, so a later answer with that proof, under any key, replaces it.
+- They answer under their browser's collab key with a **proof**: a per-browser secret
   (`livediagram:v2:collab-secret`, `ensureCollabSecret`) that is never relayed, never stored raw (the room keeps its
   SHA-256) and never shown. The first proof to answer under a key claims it for the poll; an answer under a claimed key
   with a different proof is refused. The collab key is public (it rides the roster), the secret is not, so nobody can

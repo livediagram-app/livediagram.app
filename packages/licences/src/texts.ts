@@ -119,6 +119,11 @@ export const TEXT_SOURCES: readonly TextSource[] = [
     sha256: '4d7d9c95e7d7f2f0ebf76d5e0b344826b74e903a34028ee18ab54bb639e45906',
   },
   {
+    file: 'natural-earth-5.1.2-LICENSE.txt',
+    sources: ['https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/LICENSE.md'],
+    sha256: '2631b5b39b6d1acc56de75235109b5af2dbb4b0ac5a127b6f06185977247fd4b',
+  },
+  {
     file: 'lucide-1.52.0-LICENSE.txt',
     sources: ['https://unpkg.com/lucide-static@1.52.0/LICENSE'],
     sha256: 'b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57',

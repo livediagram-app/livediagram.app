@@ -57,6 +57,7 @@ describe('readPptx, a PowerPoint deck', () => {
       picture: {
         path: 'ppt/media/image1.png',
         cropped: true,
+        crop: { x: 0.1, y: 0, width: 0.85, height: 1 },
         alt: 'Sales chart',
         widthPx: 420,
         heightPx: 315,

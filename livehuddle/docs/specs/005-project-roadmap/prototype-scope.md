@@ -81,7 +81,7 @@ The editor is real:
 **Status: Planned.** Not built yet; each item's spec marks what exists today.
 
 - **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), and presence built.
-- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md), and livediagram's [Later](../../../../livediagram/docs/specs/013-workspace/share-roles.md#later), which both products share): Participant links and the look-only Viewer are built; token levels, ownership as separate powers, server-derived collaboration keys and an answers route are next.
+- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md), and livediagram's [Later](../../../../livediagram/docs/specs/013-workspace/share-roles.md#later), which both products share): Participant links and the look-only Viewer are built; token levels, ownership as separate powers and an answers route are next.
 
 ## Later
 

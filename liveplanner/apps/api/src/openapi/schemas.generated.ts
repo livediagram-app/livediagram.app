@@ -1664,8 +1664,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "emoji",
-      "on",
-      "key"
+      "on"
     ],
     "type": "object"
   },
@@ -12439,8 +12438,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color": {
         "type": "string"
       },
+      "gradient": {
+        "type": "string"
+      },
       "heading": {
         "$ref": "#/components/schemas/RunHeading"
+      },
+      "highlight": {
+        "type": "string"
       },
       "italic": {
         "type": "boolean"

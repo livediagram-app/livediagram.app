@@ -11,11 +11,14 @@ import {
   safeJson,
   writeLocalStorageSafe,
 } from '@liveworkspace/workbench/lib/local-storage-safe';
+import {
+  SPLIT_KEY_STEP_LARGE_PX,
+  SPLIT_KEY_STEP_PX,
+  SPLIT_MIN_PANE_PX,
+} from '@liveworkspace/workbench/lib/split-sizes';
 
-// The narrowest either pane may get. Either can hold the editor, so both keep the editor's floor:
-// Tailwind's `sm` (640 px), the width its palette, Explorer and canvas are laid out for. Under it
-// the floating panels cover most of the canvas.
-export const SPLIT_MIN_PANE_PX = 640;
+// The pane floor and the divider's keyboard steps, shared by every editor.
+export { SPLIT_KEY_STEP_LARGE_PX, SPLIT_KEY_STEP_PX, SPLIT_MIN_PANE_PX };
 
 // The smallest window the split is offered on (its inner size, so a browser's own toolbars count
 // against it). Wider than two minimum panes, so the even split it opens at gives each pane room to
@@ -41,10 +44,6 @@ export const SPLIT_DROP_ZONE_MIN_PX = 160;
 // The bottom band the tab bar owns. A drag there is a reorder, never a split, so the zone stops
 // above it and a drop near the last pill still lands as a reorder.
 export const SPLIT_TAB_BAR_CLEARANCE_PX = 64;
-
-// Arrow-key nudge on the divider, and the bigger Shift step (a11y: the separator is a slider).
-export const SPLIT_KEY_STEP_PX = 24;
-export const SPLIT_KEY_STEP_LARGE_PX = 96;
 
 export function splitAvailable(viewportWidth: number, viewportHeight = Infinity): boolean {
   return viewportWidth >= SPLIT_MIN_VIEWPORT_PX && viewportHeight >= SPLIT_MIN_VIEWPORT_HEIGHT_PX;

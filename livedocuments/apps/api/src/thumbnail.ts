@@ -7,6 +7,7 @@
 import { embedTabImages } from '@livedocuments/api-schema';
 import {
   elementsOnPage,
+  ensureMapGeometry,
   laidOutPagesOf,
   migrateStoredTab,
   pagesOf,
@@ -86,7 +87,11 @@ export async function renderTabSvg(
   }
   if (!stored) return null;
   const tab = migrateStoredTab({ ...stored, elements: stored.elements ?? [] });
-  const images = await loadEmbeddedImages(env, documentId, tab);
+  const [images] = await Promise.all([
+    loadEmbeddedImages(env, documentId, tab),
+    // A map's land (docs/specs/009-elements/map.md), loaded only when the tab has one.
+    ensureMapGeometry(tab.elements),
+  ]);
   return renderElementsToSvg(tab, {
     resolveImageHref: (id) => images.get(id),
     resolveIconArt: resolveIconExportArt,
@@ -138,6 +143,7 @@ async function renderTabBodyToSvg(
         }
       : tab,
   );
+  await ensureMapGeometry(tab.elements);
   const drawWith = {
     resolveImageHref: (id: string) => images.get(id),
     resolveIconArt: resolveIconExportArt,

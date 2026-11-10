@@ -8,7 +8,7 @@
 // The reading, the limits and their order are @liveworkspace/api-kit/embed-images, shared by every product; this
 // file adds only which ids a tab references, which reads the product's element union.
 
-import { pageImageIds, type Tab } from '@livedocuments/document';
+import { elementsImageIds, pageImageIds, type Tab } from '@livedocuments/document';
 import {
   embedImages,
   type EmbedImageLimits,
@@ -21,7 +21,8 @@ export type { EmbedImageSource };
 export function tabImageIds(tab: Pick<Tab, 'elements'> & Partial<Pick<Tab, 'pages'>>): string[] {
   return [
     ...new Set([
-      ...tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
+      // An image's picture and a quote's photo (docs/specs/009-elements/quote.md).
+      ...elementsImageIds(tab.elements),
       // A page's picture background (docs/specs/007-editor/pages-mode.md "Image backgrounds").
       ...pageImageIds(tab.pages),
     ]),

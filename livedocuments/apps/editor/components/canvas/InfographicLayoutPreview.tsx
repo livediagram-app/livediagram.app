@@ -15,6 +15,7 @@ import {
   arrowLabelFontStack,
   arrowLabelPass,
   elementsOnPage,
+  elementsImageIds,
   isBoxed,
   pageSurface,
   svgArrow,
@@ -69,7 +70,7 @@ function LayoutLayer({
     [layout, rect.x, rect.y, rect.width, rect.height, elements, pages],
   );
   // The carried pictures, fetched while the preview shows them (inline bytes paint as they are).
-  const imageIds = els.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : []));
+  const imageIds = elementsImageIds(els);
   const imageSource = useImageSources(imageIds);
   const markup = useMemo(() => {
     const labels = arrowLabelPass(els, { fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont) });
