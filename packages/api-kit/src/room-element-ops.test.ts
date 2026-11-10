@@ -132,6 +132,39 @@ describe('judgeRoomElementOp', () => {
       expect(judgeRoomElementOp(op, rules)).toBeNull();
     }
   });
+
+  // Only the room makes a patch (from a Participant's change), so one from a socket is refused whatever it holds.
+  it('refuses an el patch from a socket, valid-looking or malformed', () => {
+    const patch = (inner: Record<string, unknown>) => ({ kind: 'el', tabId: 't', op: inner });
+    expect(judgeRoomElementOp(patch({ kind: 'patch', id: 'a', set: { w: 2 } }), rules)).toEqual({
+      reason: 'room-made-op',
+      elementId: 'a',
+      field: 'kind',
+    });
+    expect(
+      judgeRoomElementOp(patch({ kind: 'patch', id: 'a', set: { type: 'x' } }), rules),
+    ).toEqual({ reason: 'room-made-op', elementId: 'a', field: 'kind' });
+    for (const id of [undefined, '', 7]) {
+      expect(judgeRoomElementOp(patch({ kind: 'patch', id, set: null }), rules)).toEqual({
+        reason: 'room-made-op',
+        field: 'kind',
+      });
+    }
+  });
+
+  it('answers a refused patch to its sender with the op kind, the reason and its ref', () => {
+    const gate = createRoomElementGate(rules, { warn: vi.fn(), now: () => 0 });
+    const op = { kind: 'el', tabId: 't', op: { kind: 'patch', id: 'a', set: { w: 'x' } } };
+    expect(gate(op, 4)).toEqual({
+      kind: 'op-refused',
+      op: 'el',
+      reason: 'room-made-op',
+      tabId: 't',
+      elementId: 'a',
+      field: 'kind',
+      ref: 4,
+    });
+  });
 });
 
 describe('createRefusalLog', () => {

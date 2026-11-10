@@ -74,11 +74,6 @@ export const MAX_NAME_LEN = 500;
 // bound a hostile payload, not to constrain any real deck.
 export const MAX_DECK_LEN = 256 * 1024;
 
-// The client-claimed document-write key relayed on presence (docs/specs/013-workspace/share-roles.md "Integrity"). Real
-// ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
-// string into the socket attachment, which has a small hard budget.
-export const MAX_PARTICIPANT_KEY_LEN = 64;
-
 // UTF-8 byte length of a string, for size-gating JSON payloads (a char count
 // would under-count multi-byte content).
 export function byteLength(s: string): number {

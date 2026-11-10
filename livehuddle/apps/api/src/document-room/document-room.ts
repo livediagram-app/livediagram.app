@@ -620,11 +620,19 @@ export class DocumentRoom extends DurableObject<Env> {
     adderKey: string | null = null,
     documentId: string | null = null,
     grantExp: number | null = null,
+    // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
+    // none mints one for this socket.
+    collabKey: string | null = null,
+    // The person stamped on its reactions (X-Verified-Reaction-Person,
+    // docs/specs/012-collaboration/comment-reactions.md).
+    reactionPerson: string | null = null,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
         {
           verifiedRole,
+          collabKey,
+          reactionPerson,
           isOwner,
           tabScope,
           shareCode,

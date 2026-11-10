@@ -495,6 +495,8 @@ export class DocumentRoom extends DurableObject<Env> {
       v.documentId,
       v.grantExp ?? null,
       v.account === true,
+      v.collabKey ?? null,
+      v.reactionPerson ?? null,
     );
     if (v.documentId) {
       this.bindDocument(v.documentId);
@@ -519,6 +521,12 @@ export class DocumentRoom extends DurableObject<Env> {
     grantExp: number | null = null,
     // A signed-in account's session (room-session.ts `account`): it may show a Google picture and see others'.
     account = false,
+    // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
+    // none mints one for this socket.
+    collabKey: string | null = null,
+    // The person stamped on its reactions (X-Verified-Reaction-Person,
+    // docs/specs/012-collaboration/comment-reactions.md).
+    reactionPerson: string | null = null,
   ): void {
     acceptSession(
       this,
@@ -531,6 +539,8 @@ export class DocumentRoom extends DurableObject<Env> {
       documentId,
       grantExp,
       account,
+      collabKey,
+      reactionPerson,
     );
   }
 

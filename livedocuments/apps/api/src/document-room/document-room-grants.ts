@@ -119,6 +119,12 @@ export function acceptSession(
   grantExp: number | null = null,
   // A signed-in account's session (room-session.ts `account`): it may show a Google picture and see others'.
   account = false,
+  // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
+  // none mints one for this socket.
+  collabKey: string | null = null,
+  // The person stamped on its reactions (X-Verified-Reaction-Person,
+  // docs/specs/012-collaboration/comment-reactions.md).
+  reactionPerson: string | null = null,
 ): void {
   // The room's size (docs/specs/015-api/api.md "Room size"): past ROOM_MAX_CONNECTIONS the socket is accepted
   // only to be closed with ROOM_FULL_CLOSE, which a browser can read where a refused upgrade says nothing. A
@@ -134,6 +140,8 @@ export function acceptSession(
     newSessionAttachment(
       {
         verifiedRole,
+        collabKey,
+        reactionPerson,
         tabScope,
         shareCode,
         personTag,

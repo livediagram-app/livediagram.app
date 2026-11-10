@@ -8,7 +8,7 @@ type NudgeLedger = ReturnType<typeof createNudgeLedger>;
 
 /**
  * A session's identity for the ledger, steadiest first: a verified account's person tag (it cannot be rotated), else
- * the collaboration key its hello claimed (stable per browser), else its presence id (per socket).
+ * the collab key pinned on its session (stable per person), else its presence id (per socket).
  */
 export function nudgeIdentity(
   session: Pick<SessionAttachment, 'personTag' | 'presence'>,

@@ -20,6 +20,26 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'share-revoked', code: 'x' }, as('edit'))).toEqual(DROP);
   });
 
+  // docs/specs/013-workspace/share-roles.md "The collab key": a dot or a response names the key pinned on the
+  // sender's session, an Editor's included, so a copied key buys nothing.
+  it("drops a dot or a response in another's name at every level, an Editor's too", () => {
+    const vote = (voter: string) => ({ kind: 'vote', tabId: 't', elementId: 'e', voter, delta: 1 });
+    const response = (participantId: string) => ({
+      kind: 'el-delta',
+      tabId: 't',
+      elementId: 'e',
+      delta: { kind: 'response', participantId, value: 'done', at: 1 },
+    });
+    for (const role of ['edit', 'participate', 'view']) {
+      expect(gateClientOp(vote('someone-else'), as(role))).toEqual(DROP);
+      expect(gateClientOp(response('someone-else'), as(role))).toEqual(DROP);
+    }
+    expect(gateClientOp(response('me'), as('edit', { key: undefined }))).toEqual(DROP);
+    expect(gateClientOp(vote('me'), as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(response('me'), as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(response('me'), as('participate'))).toEqual(relay(false, true));
+  });
+
   it('relays presence from anyone, mutations from an editor only', () => {
     expect(gateClientOp({ kind: 'cursor' }, as('view'))).toEqual(relay(true));
     const tab = { kind: 'tab', tabId: 't', tab: { id: 't', elements: [] } };

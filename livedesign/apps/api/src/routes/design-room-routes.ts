@@ -15,6 +15,12 @@ import { designTrashed, forbidden, json, notFound } from '../responses';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { type RouteContext } from './context';
 import { resolveDesignGrant } from './design-grant';
+import {
+  COLLAB_KEY_HEADER,
+  collabKeyFor,
+  REACTION_PERSON_HEADER,
+  reactionPersonFor,
+} from '@liveworkspace/api-kit/collab-key';
 import { personTagFor } from '../person-tag';
 import { isAccountOwner } from '../accounts/client';
 import { designRoom } from '../design-client';
@@ -84,6 +90,11 @@ export async function handleDesignRoomRoutes(ctx: RouteContext): Promise<Respons
     forwarded.headers.set('X-Verified-Tab-Scope', claims.tab ?? '');
     forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
     forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
+    // The session's collab key (docs/specs/013-workspace/share-roles.md "The collab key"): derived from the person,
+    // never read from the request. Empty for a link visitor: the room mints one for that socket.
+    forwarded.headers.set(COLLAB_KEY_HEADER, person ? await collabKeyFor(person) : '');
+    // And the person the room stamps on this session's reactions (docs/specs/012-collaboration/comment-reactions.md).
+    forwarded.headers.set(REACTION_PERSON_HEADER, person ? await reactionPersonFor(person) : '');
     // Whether an account holds this session (not a guest, not a link visitor): only such a session may put a
     // Google picture on the roster, and only such a session is sent the pictures on it
     // (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"). Stamped on every leg, like the headers above.

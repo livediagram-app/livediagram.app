@@ -7,6 +7,7 @@ import {
   isSystemOpKind,
   parseStoredLevel,
 } from '@livediagram/api-schema';
+import { namesAnotherPerson } from '@liveworkspace/api-kit/collab-key';
 import { answersAsSelf } from './document-room-rules';
 import { scopedRenames, scopedSenderMayRelay } from './room-scope';
 
@@ -65,6 +66,9 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // could forge `share-revoked` with the code from their own URL
   // and force-redirect every collaborator out of the session.
   if (isSystemOpKind(opKind)) return DROP;
+  // Nobody answers as someone else, at any level (docs/specs/013-workspace/share-roles.md "The collab key"): a dot
+  // or a response must name the key the server pinned on the sender's session, an Editor's included.
+  if (namesAnotherPerson(op, sender.key)) return DROP;
   // Avatar mode's ops went to livehuddle (docs/specs/015-api/api.md "Retired ops are ignored"): an older editor's
   // are dropped without a word, never refused, so it keeps working. Ahead of the classification, whose mutation
   // branch is the fall-through.

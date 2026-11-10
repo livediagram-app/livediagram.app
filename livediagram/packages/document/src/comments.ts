@@ -143,20 +143,25 @@ function elementOpForTheWire(op: unknown): unknown {
 //
 // A reaction (docs/specs/012-collaboration/comment-reactions.md) is stamped the same way: the name the session
 // shows, and the collab key its hello published, so nobody reacts in somebody else's name.
+//
+// And the reactor's `person` (their hashed person id, so a closed account's reactions can be found and anonymised) is
+// the one the server knows for the session, never the frame's: a claimed one is taken out, and none is stamped for a
+// session with no identity.
 export function stampCommentAuthor(
   op: unknown,
   presence: { name: string; color: string; key?: string },
+  person: string | null = null,
 ): unknown {
   const o = op as { kind?: unknown; delta?: { kind?: unknown; comment?: unknown } };
   if (o?.kind === 'el-delta' && o.delta?.kind === 'comment-react') {
-    return {
-      ...o,
-      delta: {
-        ...o.delta,
-        name: presence.name,
-        ...(presence.key ? { by: presence.key } : {}),
-      },
+    const delta: Record<string, unknown> = {
+      ...o.delta,
+      name: presence.name,
+      ...(presence.key ? { by: presence.key } : {}),
     };
+    if (person) delta.person = person;
+    else delete delta.person;
+    return { ...o, delta };
   }
   if (o?.kind !== 'el-delta' || o.delta?.kind !== 'comment-add') return op;
   if (!isComment(o.delta.comment)) return op;

@@ -1,6 +1,7 @@
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
+import type { CollabKeyMessage } from '@liveworkspace/api-schema/collab-key';
 import type { DashboardPatch, ElementDelta, RoomElementOp, Tab } from '@liveplanner/project';
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
@@ -178,6 +179,8 @@ export type ServerMessage =
   | FormatMessage
   | GrantRenewMessage
   // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+  // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab key").
+  | CollabKeyMessage
   | OpRefusedMessage;
 
 // `ref`: the `ref` the sender put on the op this frame answers, echoed so the sender knows that op is
@@ -420,6 +423,7 @@ export type RoomIncoming =
   | FormatMessage
   | GrantRenewMessage
   // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+  | CollabKeyMessage
   | OpRefusedMessage;
 
 // The WebSocket close code the realtime room ends a session with when an access

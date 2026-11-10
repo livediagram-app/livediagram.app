@@ -57,13 +57,16 @@ co-viewer. The presence id is deliberately a fresh server-minted random per
 socket, so peers never read an owner id off a roster, which also means it
 matches nothing that was ever saved, and changes on every reconnect.
 
-So the project gets a third id: **`liveplanner:v2:collab-key`**, a per-browser
-random the client mints and keeps (`ensureCollabKey`). Stable like the owner
-id, worthless like the presence id. It rides the roster as
-`ParticipantPresence.key`, the **one claimed field** on it, relayed verbatim
-rather than server-stamped, because it has to survive a reconnect to do its
-job, and because it grants nothing (any edit-role peer can already write any id
-straight into the project, so leaving it claimable adds no reach).
+So the project gets a third id: the **collab key**, which the server derives from
+who the person is and pins on their session ([The collab key](../013-workspace/share-roles.md#the-collab-key)). Stable
+like the owner id, worthless like the presence id: it is a one-way hash of the
+account or guest id, the same on every device. It rides the roster as
+`ParticipantPresence.key`, which the room stamps from the session, never from
+the `hello`, and the room tells each session its own key (`collab-key`). A
+response naming any key but its sender's is dropped, from an Editor too. Before
+the room answers, and in a project only in This Browser, the editor records answers
+under this browser's own key (`liveplanner:v2:collab-key`, `ensureCollabKey`), as it
+did before keys were derived.
 
 Both sides of the join go through **`participantKey(participant)`**, which
 falls back to `id` for a peer on a client too old to publish a key: they render
@@ -72,9 +75,12 @@ existed rather than a crash.
 
 Two consequences worth stating:
 
-- **Per browser, not per account.** The same person signed in on a laptop and a
-  phone is two answers, and two presence entries, so the card stays
-  self-consistent.
+- **Per person, not per browser.** The same person signed in on a laptop and a
+  phone is one answer and one person on the card: both devices hold the same
+  key, so an answer given on one reads as theirs on the other.
+- **Answers given under a browser's own key** (before keys were derived, or in a
+  session the room had not answered yet) keep that key: they still show and
+  count, but no longer as yours.
 - **Answers written before this shipped don't match anybody.** They were keyed
   on owner ids, so they show with no avatar beside them, the same as an answer from
   somebody who has left.

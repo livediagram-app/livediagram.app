@@ -1,5 +1,6 @@
 // The room's check on an Editor's element ops (each product's docs/specs/012-collaboration/
-// realtime-conflict-resolution.md "An invalid element", blueprint docs/specs/015-api/blueprints/room-element-ops.md).
+// realtime-conflict-resolution.md "An invalid element" and "A patch is the room's alone", blueprint
+// docs/specs/015-api/blueprints/room-element-ops.md).
 // The room relays an Editor's op to every peer and keeps it for catch-up, and each peer's next whole-tab save carries
 // whatever it applied, so an element the tab save would refuse stops every peer saving. The room runs the newest
 // build, so it judges each element the way its own tab save does (migrated, then validated) and drops the op that
@@ -69,15 +70,28 @@ function judgeTab(tab: Rec, rules: RoomElementRules): RoomOpRefusal | null {
   return null;
 }
 
+// A patch (some fields of one element) is the room's alone: it makes one from a Participant's change, out of the
+// stored element it has just written, and no editor sends one. So one from a socket is refused whatever it holds,
+// and judging it needs no element state.
+function roomMadeOp(inner: Rec): RoomOpRefusal {
+  const id = typeof inner.id === 'string' && inner.id.length > 0 ? inner.id : undefined;
+  return id === undefined
+    ? { reason: 'room-made-op', field: 'kind' }
+    : { reason: 'room-made-op', elementId: id, field: 'kind' };
+}
+
 /**
  * Why the room must drop this op, or null to relay it. Judges a `tab` op's elements and an `el` add or update's
- * element; every other op passes, its envelope the receivers' to check.
+ * element, and refuses an `el` patch, which only the room makes; every other op passes, its envelope the receivers'
+ * to check.
  */
 export function judgeRoomElementOp(op: unknown, rules: RoomElementRules): RoomOpRefusal | null {
   if (!isRecord(op)) return null;
   if (op.kind === 'el') {
     const inner = op.op;
-    if (!isRecord(inner) || (inner.kind !== 'add' && inner.kind !== 'update')) return null;
+    if (!isRecord(inner)) return null;
+    if (inner.kind === 'patch') return roomMadeOp(inner);
+    if (inner.kind !== 'add' && inner.kind !== 'update') return null;
     return judgeElement(inner.element, rules, false);
   }
   if (op.kind === 'tab' && isRecord(op.tab) && Array.isArray(op.tab.elements)) {

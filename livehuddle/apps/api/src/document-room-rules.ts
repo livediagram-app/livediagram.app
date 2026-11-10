@@ -14,7 +14,6 @@
 
 import { isSafeColourValue } from '@livehuddle/document';
 import { isProfilePictureUrl } from '@liveworkspace/sites/picture';
-import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 import {
   MAX_COLOR_LEN,
   cutParticipantName,
@@ -46,7 +45,12 @@ export function helloPresence(
   // verifiedRole is optional on the attachment (it is absent for a session
   // that upgraded before the role was stamped), and ParticipantPresence.role
   // is optional for the same reason. Passed straight through, as before.
-  session: { presenceId: string; verifiedRole?: AccessLevel; account?: boolean },
+  session: {
+    presenceId: string;
+    verifiedRole?: AccessLevel;
+    account?: boolean;
+    collabKey?: string;
+  },
 ): ParticipantPresence {
   const c = claimed ?? {};
   const presence: ParticipantPresence = {
@@ -60,15 +64,11 @@ export function helloPresence(
     role: session.verifiedRole,
   };
   if (typeof c.tabId === 'string') presence.tabId = c.tabId.slice(0, MAX_TAB_ID_LEN);
-  // The document-write key (docs/specs/013-workspace/share-roles.md "Integrity") is RELAYED, not overridden: the one
-  // claimed field on the roster. It has to survive a reconnect to be any use
-  // (it is what joins a saved answer to the person who gave it), so the server
-  // cannot mint it the way it mints `id`. Nothing is granted by holding it and
-  // any edit-role peer can already write any id into the document, so leaving
-  // it claimable adds no reach; it is clamped like every other string here.
-  if (typeof c.key === 'string' && c.key.length > 0) {
-    presence.key = c.key.slice(0, MAX_PARTICIPANT_KEY_LEN);
-  }
+  // The collab key (docs/specs/013-workspace/share-roles.md "The collab key") is the SESSION's, pinned at the
+  // upgrade from the caller's identity (or minted for a session with none), never the one the hello claims: it is
+  // what a person's dots, responses and reactions are recorded under, so a claimable key let anyone answer or react
+  // in another's name. A session from before the field has no key, and so records no answer until it reconnects.
+  if (session.collabKey) presence.key = session.collabKey;
   // The Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): kept only from a session a verified
   // account holds, and only when it is a Google picture URL. Refused whole, never clamped: a cut URL is a broken
   // image.
@@ -145,10 +145,8 @@ export function admitFrame(
 }
 
 // A Participant answers only as itself (docs/specs/013-workspace/share-roles.md "Integrity"): a comment reaction
-// names its reactor, and it must be the key its own hello published. The key is still the one
-// the session claimed at hello (server-derived keys are Later), so
-// this stops a Participant reacting in someone else's name in the same room, not one that claimed another's key from
-// the start.
+// names its reactor, and it must be the collab key the server pinned on its session
+// (docs/specs/013-workspace/share-roles.md "The collab key"), so nobody reacts in another's name.
 //
 // A notice board note is signed with the server-verified adder key instead (docs/specs/009-elements/social-pieces.md
 // "Notice Board"): a pin's note and an unpin must both name it. Every screen, and the room's write into the stored
