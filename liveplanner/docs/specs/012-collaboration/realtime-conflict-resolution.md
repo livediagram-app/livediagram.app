@@ -117,6 +117,12 @@ viewport op would slip through.
   online or the tab to be shown again and starts a fresh round then, so an
   outage longer than the attempts (a laptop asleep, wifi gone a while) does not
   end live collaboration for the rest of the session.
+- **A ticket mint that gets no answer opens no socket.** Each reconnect mints a fresh room ticket first. When
+  that mint never reaches the api (no response after its own retries, or a 5xx or 429 each time), the client
+  spends one reconnect attempt and waits out the backoff, without opening a socket. A socket with no ticket
+  is always refused, and the editor reads a refused join as a reason to ask whether the plan was trashed,
+  so a laptop waking before its wifi used to send the mint three times, a doomed upgrade and a trash check
+  on every attempt. A mint the api refuses (a 4xx) still opens the socket, so the refusal path runs as before.
 - **The cursor must include the client's own ops.** The relay skips the
   sender, so a client learning seqs only from other people's ops would ask for its
   own ops back on a reconnect, and a session that had heard nothing would ask for the

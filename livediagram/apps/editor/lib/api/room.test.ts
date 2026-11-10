@@ -336,6 +336,31 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     expect(FakeSocket.all[0]!.url).toContain('t=first');
   });
 
+  // realtime-conflict-resolution.md "A ticket mint that gets no answer opens no socket": a laptop waking before its
+  // wifi used to open a ticketless socket on every attempt, which the room refused and the editor then probed.
+  it('opens no socket while the mint gets no answer, and parks once the attempts are used up', async () => {
+    const mintTicket = vi.fn(async (): Promise<string | null> => {
+      throw new Error('room ticket mint unreachable');
+    });
+    const onRefused = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onRefused },
+      { mintTicket },
+    );
+    for (let i = 0; i < 10; i++) await vi.runOnlyPendingTimersAsync();
+    expect(FakeSocket.all).toHaveLength(0);
+    expect(onRefused).not.toHaveBeenCalled();
+    // The first mint and the backoff's six attempts, then nothing until the network is back.
+    expect(mintTicket).toHaveBeenCalledTimes(7);
+    mintTicket.mockResolvedValue('first');
+    window.dispatchEvent(new Event('online'));
+    await vi.runOnlyPendingTimersAsync();
+    expect(mintTicket).toHaveBeenCalledTimes(8);
+    expect(FakeSocket.all[0]!.url).toContain('t=first');
+  });
+
   it('mints again on reconnect after a mint that failed', async () => {
     // A failed mint leaves no ticket: that upgrade is refused, and the next attempt must not give up on tickets.
     const mintTicket = vi.fn(async () => 'second');
