@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from './index';
 import { contentBounds } from './svg-render';
 import {
@@ -205,7 +205,7 @@ describe('retiredArrowBounds', () => {
 
 // A tab's bounds read every stored arrow's ends: one index for the tab, not one per arrow, which made them quadratic
 // in the arrows (a 300-arrow tab's lint ran 15 times slower than a 75-arrow one's). Timed as growth, not as a
-// ceiling, so coverage on a CI runner cannot flake it: four times the arrows, under eight times the CPU.
+// budget: four times the arrows, under eight times the CPU, judged without coverage (docs/ci.md "Speed budgets").
 describe('a tab of stored arrows', () => {
   const tabOf = (n: number): Element[] => {
     const els: Element[] = [];
@@ -220,12 +220,14 @@ describe('a tab of stored arrows', () => {
     Math.min(...Array.from({ length: 7 }, () => cpuMsOf(() => void run(els))));
 
   it('measures its bounds in time that grows with the arrows, not faster', () => {
-    // Four times the arrows: linear work costs about four times as much, a quadratic sixteen.
-    const small = tabOf(1000);
-    const large = tabOf(4000);
+    // Four times the arrows: linear work costs about four times as much, a quadratic sixteen. 500 and 2,000, not
+    // 1,000 and 4,000: the larger tab's 8,000 elements brought the collector in, which read up to 6.4 here and 8.68
+    // on CI; these read 4.5 to 4.9 (30 runs, plain and beside another suite). Unbounded under coverage.
+    const small = tabOf(500);
+    const large = tabOf(2000);
     const bounds = (els: Element[]) => {
       for (let i = 0; i < 5; i++) contentBounds(els);
     };
-    expect(fastest(large, bounds) / fastest(small, bounds)).toBeLessThan(8);
+    expect(fastest(large, bounds) / fastest(small, bounds)).toBeLessThan(cpuRatioCeiling(8));
   });
 });

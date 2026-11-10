@@ -1,12 +1,12 @@
 // The engine's cost grows with the tab and the changeset, not faster
 // (docs/specs/024-agents/blueprints/edit-operations.md "Performance and limits"). Timed as growth, not as
-// a ceiling: an absolute time depends on the machine and on coverage instrumentation, a ratio does not.
+// a ceiling: an absolute time depends on the machine, a ratio barely, and coverage judges neither (docs/ci.md "Speed budgets").
 // Timed in CPU time (cpuMsOf), not wall-clock: under turbo's parallel suites a wall-clock run also
 // counts the time spent waiting for a core, which pushed the ratio past its ceiling.
 // Four times the elements, or four times the operations, should cost about four times as much; a
 // quadratic step would cost sixteen.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element, Tab } from '@livediagram/document';
 import { applyEditOperations } from './apply';
 import { containersBehindMembers } from './finalise';
@@ -16,7 +16,10 @@ import type { EditOperation } from './types';
 
 const FRAMES = 10;
 const GROWTH = 4;
-const RATIO_CEILING = 8;
+const RATIO_CEILING = cpuRatioCeiling(8);
+// The smaller tab of the per-element growth checks: 1,200 against 4,800, not 2,400 against 9,600, so the larger keeps
+// the collector out of the timing (docs/ci.md "Speed budgets"); measured at 4.3 to 5.1 for four times the tab.
+const SMALL_TAB = 1200;
 const RUNS = 3;
 // Sized to time tens of milliseconds an apply; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
@@ -138,17 +141,22 @@ describe('performance', () => {
     'orders containers behind their members in time linear in the tab',
     { timeout: TIMEOUT_MS },
     () => {
-      const fastest = (tab: Tab) => {
-        let best = Infinity;
-        for (let run = 0; run < RUNS; run++)
-          best = Math.min(
-            best,
-            cpuMsOf(() => containersBehindMembers(tab.elements)),
-          );
-        return best;
-      };
-      const small = fastest(frameOf(2400));
-      const large = fastest(frameOf(2400 * GROWTH));
+      // Five orderings a sample, both tabs warmed and then timed in turns, best of five each: one ordering of the
+      // smaller tab takes under a millisecond, and timed one tab after the other the growth read 1.3 to 8.3.
+      const sample = (tab: Tab) =>
+        cpuMsOf(() => {
+          for (let k = 0; k < 5; k++) containersBehindMembers(tab.elements);
+        });
+      const smallTab = frameOf(SMALL_TAB);
+      const largeTab = frameOf(SMALL_TAB * GROWTH);
+      sample(smallTab);
+      sample(largeTab);
+      let small = Infinity;
+      let large = Infinity;
+      for (let run = 0; run < 5; run++) {
+        small = Math.min(small, sample(smallTab));
+        large = Math.min(large, sample(largeTab));
+      }
       expect(large / small).toBeLessThan(RATIO_CEILING);
     },
   );
@@ -168,8 +176,8 @@ describe('performance', () => {
       }
       return best;
     };
-    const small = fastest(frameOf(2400));
-    const large = fastest(frameOf(2400 * GROWTH));
+    const small = fastest(frameOf(SMALL_TAB));
+    const large = fastest(frameOf(SMALL_TAB * GROWTH));
     expect(large / small).toBeLessThan(RATIO_CEILING);
   });
 

@@ -25,6 +25,9 @@ then be a call to accounts, and revocation would need a feed from accounts to th
 apps/accounts/src/workbench/
   store.ts            the per-person store (WorkbenchCore): pairing requests, pairings, tickets, sessions, rooms,
                       the notification allowance, the sweep
+  store-statements.ts its larger statements: recording a pairing, a ticket, a session and an allowance's uses,
+                      what lapses next and the sweep
+  store-ended-access.ts  the log lines and the rooms to close when access ends
   durable-object.ts   the Durable Object class (WorkbenchStore), bound as WORKBENCH
   routes.ts           /api/account/workbench/*: the CLI's, the frame's, the pairing page's and Settings' doors
   internal.ts         /api/account/internal/workbench/* and /allowance: the apps' servers' doors

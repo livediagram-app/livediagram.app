@@ -60,6 +60,10 @@ PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, the
                          has no top padding (a scroll box's padding insets where `sticky top-0` sticks); the grid
                          carries the heads' 12 px rest gap as `pt-3` (not in a slot), so it scrolls away and a stuck
                          head sits flush (spec "Column heads stick flush"); pure CSS, no scroll listener
+usePlanBoardProjection.ts  (beside PlanBoardView) the projection, busy, the pickable statuses, the widgets' items
+usePlanBoardMotion.ts    (beside PlanBoardView) wheel, focus, shut columns, card and column glides, run reveal, column
+                         reorder, edge scroll, the look, phone swipe, slot width, hover, spotlight, fan-in, in order
+usePlanCellBase.ts       (beside PlanBoardView) what every card draws with, one identity while none of it changes
 column-part.ts           `columnPartStyle` (`--plan-col-bg`, `--plan-col-ink`) for a cell; `columnHeadStyle` adds
                          `--plan-col-under: palette.surface`, so `.plan-col` (globals.css) mixes the 85% colour onto
                          the board's solid paper rather than `transparent`: PlanColumnHeader and CollapsedColumnHead

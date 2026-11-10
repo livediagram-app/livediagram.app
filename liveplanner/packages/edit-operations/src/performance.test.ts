@@ -1,12 +1,12 @@
 // The engine's cost grows with the tab and the changeset, not faster
 // (docs/specs/024-agents/blueprints/edit-operations.md "Performance and limits"). Timed as growth, not as
-// a ceiling: an absolute time depends on the machine and on coverage instrumentation, a ratio does not.
+// a ceiling: an absolute time depends on the machine, a ratio barely, and coverage judges neither (docs/ci.md "Speed budgets").
 // Timed in CPU time (cpuMsOf), not wall-clock: under turbo's parallel suites a wall-clock run also
 // counts the time spent waiting for a core, which pushed the ratio past its ceiling.
 // Four times the elements, or four times the operations, should cost about four times as much; a
 // quadratic step would cost sixteen.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuMsOf, cpuRatioCeiling } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element, Tab } from '@liveplanner/project';
 import { applyEditOperations } from './apply';
 import { newView } from './fixtures/sprint-dashboard';
@@ -15,12 +15,15 @@ import { parseEditOperations } from './parse';
 import type { EditOperation } from './types';
 
 const GROWTH = 4;
-const RATIO_CEILING = 8;
+const RATIO_CEILING = cpuRatioCeiling(8);
+// The smaller tab of the per-element growth checks: 1,200 against 4,800, not 2,400 against 9,600, so the larger keeps
+// the collector out of the timing (docs/ci.md "Speed budgets"); measured at 4.3 to 5.1 for four times the tab.
+const SMALL_TAB = 1200;
 const RUNS = 3;
 // Sized to time tens of milliseconds an apply; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
-// A Dashboard of `count` views, each labelled, in rows of four.
+// A Dashboard of `count` views, each labelled, in rows of four, and in one of ten groups by its label.
 function tabOf(count: number): Tab {
   const elements = Array.from(
     { length: count },
@@ -29,7 +32,7 @@ function tabOf(count: number): Tab {
         ...newView(`v${i}`, i % 2 ? 'workload' : 'calendar'),
         x: (i % 4) * 520,
         y: Math.floor(i / 4) * 380,
-        label: `View ${i}`,
+        label: `View ${i} in group ${i % 10}`,
       }) as unknown as Element,
   );
   return { id: 'growth', name: 'Growth', kind: 'dashboard', elements };
@@ -43,7 +46,9 @@ function changesetOf(rounds: number): EditOperation[] {
       `set v${r} label="Renamed ${r}" textSize=lg`,
       JSON.stringify({ op: 'add', element: newView(`n${r}`, 'gantt') }),
       `test v${r} label="Renamed ${r}"`,
-      `set label~"View 1" textSize=sm all`,
+      // A tenth of the views, whatever the tab's size. `View 1` matched 11 of 100 views and 111 of 400, so four
+      // times the tab did ten times this work and the growth read up to 8.9 against 8.
+      `set label~"group 1" textSize=sm all`,
       `rm n${r}`,
     );
   }
@@ -81,8 +86,8 @@ describe('performance', () => {
       }
       return best;
     };
-    const small = fastest(tabOf(2400));
-    const large = fastest(tabOf(2400 * GROWTH));
+    const small = fastest(tabOf(SMALL_TAB));
+    const large = fastest(tabOf(SMALL_TAB * GROWTH));
     expect(large / small).toBeLessThan(RATIO_CEILING);
   });
 

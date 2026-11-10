@@ -86,13 +86,23 @@ export default defineProject({ test: { environment: 'jsdom' } });
   coverage, where the budget holds: each workspace's `test:coverage` runs it after its coverage run,
   and CI's editor shards run it beside theirs. A budget used as a test timeout is not a CPU budget and
   never goes through `cpuBudgetMs`.
-- **A growth check keeps its larger input under a million characters.** A test that holds a scan linear
-  compares the CPU time of two input sizes four times apart, against a ceiling of 8 where a quadratic
-  scan reads 16. Past about a million characters V8's memory handling alone grows faster than the text
+- **A growth check's ceiling is unbounded under coverage too.** A test that holds work linear compares the
+  CPU time of two input sizes a fixed multiple apart against a ceiling, through `cpuRatioCeiling(ratio)` (or
+  `cpuGrowthLimitMs(ms, ratio, slackMs)` for a limit on the smaller time) from
+  `@liveworkspace/vitest-config/cpu-time`: the ratio as written in a plain run and on CI, unbounded under
+  coverage, where instrumentation slows a large input's allocation and collection more than a small one's
+  (livehuddle's stored-arrow bounds read 8.68 against 8 on CI, 3 to 6.4 locally). `vitest-budgets` checks it
+  again without coverage. No growth check writes its ceiling as a bare number.
+- **A growth check keeps its larger input small enough to keep garbage collection out.** Four times the
+  input is held under 8 times the CPU, where a quadratic scan reads 16. Past about a million characters, or
+  a few thousand elements, V8's memory handling alone grows faster than the input
   (the same linear label scan took 3.2 times the CPU for twice the text), so the label-cap ReDoS checks,
   whose larger input was 1.28 million characters, read a median 6.9 for four times the text and failed
   CI at 8.4 (livedesign, 2026-11-09). They compare two and eight times their sweep's length now: 4.1,
   worst 4.7 of 20 runs.
+- **A growth check times its two sizes in turns.** One warm-up run of each, then samples of each in turn,
+  the best kept, several runs to a sample when the smaller takes about a millisecond: timed one after the
+  other, the smaller pays the first compile and the larger any collection (docs/ci.md "Speed budgets").
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it
   statically, so its transform happens at collection, outside every test's
