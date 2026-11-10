@@ -1,5 +1,6 @@
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { useMemo, useState } from 'react';
-import { Button, trustedHtml, Switch, BackBar } from '@livediagram/ui';
+import { Button, Switch, BackBar } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
 
@@ -71,7 +72,7 @@ export function ImageExportPanel({
             role="img"
             aria-label="The tab as it will download"
             className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
-            dangerouslySetInnerHTML={{ __html: trustedHtml(previewSvg) }}
+            dangerouslySetInnerHTML={{ __html: sanitizedHtml(previewSvg) }}
           />
         ) : (
           <span className="text-xs text-slate-500 dark:text-slate-400">Preparing preview…</span>
