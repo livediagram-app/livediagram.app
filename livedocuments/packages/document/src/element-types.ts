@@ -3,6 +3,7 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livedocuments/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
+import type { MapPin, MapRegion } from './map-model';
 import type { Finish } from './finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
@@ -13,9 +14,11 @@ import type {
   BorderRadius,
 } from '@liveworkspace/model-core/border-style';
 import type { ElementShadow } from './shadow';
+import type { ImageCrop, ImageMask } from './image-frame';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
+import type { QuoteLook } from './quote';
 import type { ChipLook } from './chip';
 import type { AttachPoint } from './attachment';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
@@ -260,6 +263,13 @@ export type ShapeElement = {
   // recoloured, and how the diagram draws. Only meaningful on the 'sankey' kind; bounded in validate.ts.
   // Absent options read as their defaults: bands blended, end nodes to the right, amounts shown, no unit.
   sankeyFlows?: SankeyFlow[];
+  // Map (docs/specs/009-elements/map.md): the region it shows (absent: the world), or one country it
+  // frames (outranks the region); the countries filled in the accent; the pins. Only meaningful on the
+  // 'map' kind; bounded in validate-shape.ts.
+  mapRegion?: MapRegion;
+  mapCountry?: string;
+  mapHighlights?: string[];
+  mapPins?: MapPin[];
   sankeyNodes?: SankeyNodeStyle[];
   sankeyLinkColor?: SankeyLinkColor;
   sankeyAlign?: SankeyAlign;
@@ -329,8 +339,14 @@ export type ShapeElement = {
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.
   stats?: StatItem[];
+  // A stat row's count-up while its slide is presented (docs/specs/009-elements/stat-row.md); absent = on.
+  statCountUp?: boolean;
   processSteps?: string[];
   navLinks?: string[];
+  // The quote (docs/specs/009-elements/quote.md): its look (absent = card) and its portrait's photo, a gallery id (or a
+  // data: URI in a This Browser document) placed like an image element's (elementImageId).
+  quoteLook?: QuoteLook;
+  imageId?: string;
   // Checklist (docs/specs/009-elements/checklist.md): the checkable rows. Only meaningful on the
   // 'checklist' kind; bounded in validate.ts.
   checklistItems?: ChecklistItem[];
@@ -497,6 +513,8 @@ export type TextElement = {
   // Bends the text along a circle, -360 to 360 degrees: positive bows up, negative down. Absent is
   // flat. Arched text is one line.
   textArc?: number;
+  // A soft shadow behind the letters (docs/specs/008-canvas/element-shadows.md); see shadow.ts.
+  shadow?: ElementShadow;
 };
 
 // --- Tables ----------------------------------------------------------------
@@ -543,6 +561,9 @@ export type TableElement = {
   headerColumn?: boolean;
   // Alternating body-row background tint (a 'zebra' table).
   zebra?: boolean;
+  // The recommended column of a comparison or pricing table (docs/specs/009-elements/comparison-tables.md): its index,
+  // absent for none. Kept in step by the column helpers in table.ts.
+  highlightColumn?: number;
   // The table look this was painted with (docs/specs/010-palette/style-presets.md), if any: the id of a
   // `tableColorPresets` entry. Stored for the same reason a shape stores
   // `colorPreset` — the colours below are resolved values, so without the id a
@@ -760,6 +781,11 @@ export type ImageElement = {
   // `textColor` (white by default). Present = shown; the palette's Hero is an
   // image created with one, and any image can gain or lose it from the menu.
   heroCaption?: HeroCaption;
+  // The part of the picture kept, the shape the box is cut to, and drawing it in grey
+  // (docs/specs/009-elements/picture-crop-and-mask.md). Absent = the whole picture, the box, in colour.
+  crop?: ImageCrop;
+  mask?: ImageMask;
+  greyscale?: true;
   // Creator + licence credit of a picture picked from Image search
   // (docs/specs/009-elements/image-search.md). Absent for uploads.
   credit?: ImageCredit;

@@ -1,4 +1,10 @@
-import { isFixedSizeShape, layOutPages, pageAt, pagesOf } from '@livedocuments/document';
+import {
+  createLogoStrip,
+  isFixedSizeShape,
+  layOutPages,
+  pageAt,
+  pagesOf,
+} from '@livedocuments/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -176,6 +182,20 @@ export function buildDrawnComponent(
     x: box.x + (box.width - size.width) / 2,
     y: box.y + (box.height - size.height) / 2,
   };
+}
+
+// The logo strip (docs/specs/009-elements/logo-strip.md): its stack and logos together. A tap centres the natural
+// strip on the tap; a drag shares the dragged box among the logos.
+export function buildDrawnLogoStrip(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+): Element[] {
+  if (isDrawTap(startX, startY, endX, endY)) return createLogoStrip({ cx: startX, cy: startY });
+  return createLogoStrip(
+    drawnDragBox({ type: 'component', kind: 'logo-strip' }, startX, startY, endX, endY),
+  );
 }
 
 // A text style on a slide spans this share of the slide's width, centred (canvas-and-palette.md "On a slide, a style

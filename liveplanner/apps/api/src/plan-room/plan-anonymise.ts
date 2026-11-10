@@ -1,7 +1,7 @@
 // A closed account's name off a plan that outlives them (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an
 // account"): the index tells the app which plans name them (POST /api/internal/people/:id/purge), and each plan's
 // Durable Object runs this over what it stores, with @liveworkspace/index-app's anonymiseJsonText: the comments,
-// cards and assignments in each tab, the cards' own fields, comment threads and history and who made or changed them, the changesets they
+// cards, assignments and reactions in each tab, the cards' own fields, comment threads and history and who made or changed them, the changesets they
 // wrote, the sheets they last edited, and the plan's owner when it was their team plan. Only rows that mention them are read and rewritten, in
 // one batch; running it again changes nothing.
 
@@ -50,6 +50,37 @@ export function anonymiseReactions(text: string, hashed: string): Anonymised<str
   return changed ? { value: JSON.stringify(out), changed } : { value: text, changed: false };
 }
 
+// A tab's canvas comments with every reaction the person left named Deleted account, wherever a comment thread sits
+// in it: the room stamps each reaction's `person` (docs/specs/012-collaboration/comment-reactions.md). Cheap when the
+// text never mentions them; one walk of the tab otherwise.
+export function anonymiseTabReactions(text: string, hashed: string): Anonymised<string> {
+  if (!text.includes(hashed)) return { value: text, changed: false };
+  let tab: unknown;
+  try {
+    tab = JSON.parse(text);
+  } catch {
+    return { value: text, changed: false };
+  }
+  let changed = false;
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (!node || typeof node !== 'object') return node;
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(node)) {
+      if (k === 'reactions' && Array.isArray(v)) {
+        out[k] = v.map((r: unknown) => {
+          if ((r as { person?: unknown } | null)?.person !== hashed) return r;
+          changed = true;
+          return { ...(r as object), name: ANONYMISED_NAME, person: ANONYMISED_PERSON };
+        });
+      } else out[k] = walk(v);
+    }
+    return out;
+  };
+  const next = walk(tab);
+  return changed ? { value: JSON.stringify(next), changed } : { value: text, changed: false };
+}
+
 export async function anonymisePlan(
   env: PlanEnv,
   planId: string,
@@ -64,9 +95,9 @@ export async function anonymisePlan(
     db
       .prepare(
         `SELECT t.id, t.data, t.rev FROM tabs t JOIN plan_tabs pt ON pt.tab_id = t.id
-          WHERE pt.plan_id = ? AND t.data LIKE ?`,
+          WHERE pt.plan_id = ?1 AND (t.data LIKE ?2 OR t.data LIKE ?3)`,
       )
-      .bind(planId, like),
+      .bind(planId, like, hashLike),
     db
       .prepare('SELECT id, fields FROM items WHERE plan_id = ? AND fields LIKE ?')
       .bind(planId, like),
@@ -82,8 +113,11 @@ export async function anonymisePlan(
   ]);
   const writes: D1PreparedStatement[] = [];
   for (const tab of (tabs?.results ?? []) as { id: string; data: string; rev: number }[]) {
-    const { value, changed } = anonymiseJsonText(tab.data, personId);
-    if (changed) {
+    // Their raw id where the tab names them, then the reactions they left on its comments, by hashed id.
+    const named = anonymiseJsonText(tab.data, personId);
+    const reacted = anonymiseTabReactions(named.value, hashed);
+    const { value } = reacted;
+    if (named.changed || reacted.changed) {
       writes.push(
         db
           .prepare('UPDATE tabs SET data = ?, rev = ?, updated_at = ? WHERE id = ? AND rev = ?')

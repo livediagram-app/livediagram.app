@@ -55,4 +55,16 @@ describe('rich-text-dom run attributes', () => {
       { text: '\nCaption', muted: true, size: 'sm' },
     ]);
   });
+
+  it('round-trips a highlight and a gradient (docs/specs/008-canvas/text-effects.md)', () => {
+    const root = document.createElement('div');
+    root.append(
+      spanFor({ text: 'We grew ' }),
+      spanFor({ text: '40%', highlight: '#fde68a', gradient: 'sunset' }),
+    );
+    expect(readRunsFromDom(root)).toEqual([
+      { text: 'We grew ' },
+      { text: '40%', highlight: '#fde68a', gradient: 'sunset' },
+    ]);
+  });
 });

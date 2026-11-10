@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Glyph, Switch } from '@livedesign/ui';
+import { Glyph } from '@livedesign/ui';
 import { DirArrow } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { type IconPosition, type StandardTone } from '@livedesign/design';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
@@ -7,6 +7,9 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { noColour, standardGroup, themeOptions } from '@/components/colour/colour-options';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
+
+// Shared by every editor; re-exported for the rows that import it from here.
+export { MenuToggleRow } from '@liveworkspace/workbench/components/palette/MenuToggleRow';
 
 // "No colour". A real value, not an absence: it is what a frame defaults to,
 // and what you want when a shape should show the canvas through it.
@@ -174,38 +177,6 @@ export function IconPositionGrid({
 
 // One labelled button grid in the Border section. Literal column classes so
 // Tailwind keeps them.
-
-// A full-width row whose whole surface toggles an iOS-style switch (the
-// switch is presentational so we don't nest a button in a button). Shared by
-// the Layer aspect-lock row + the Table header/zebra toggles.
-export function MenuToggleRow({
-  label,
-  description,
-  checked,
-  onToggle,
-}: {
-  label: string;
-  description?: string;
-  checked: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-pressed={checked}
-      className="flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
-    >
-      <span className="flex flex-col">
-        <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{label}</span>
-        {description ? (
-          <span className="text-[10px] text-slate-600 dark:text-slate-400">{description}</span>
-        ) : null}
-      </span>
-      <Switch presentational size="sm" checked={checked} />
-    </button>
-  );
-}
 
 // A pipette: the tool that lifts a colour off something already there.
 export function PipetteIcon() {

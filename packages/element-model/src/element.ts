@@ -123,6 +123,8 @@ export type ShapeElement = BoxBase & {
   keyMeanings?: Record<string, string>;
   boundaryStyle?: BoundaryStyle;
   mindLook?: MindLook;
+  /** A quote's look (livedocuments, docs/specs/009-elements/quote.md): 'plain' sets it straight on the page. */
+  quoteLook?: string;
   stats?: StatItem[];
   processSteps?: string[];
   navLinks?: string[];
@@ -243,6 +245,8 @@ export type TableElement = BoxBase & {
   cellStyles?: readonly (readonly (TableCellLook | null)[])[];
   colWidths?: readonly (number | null)[];
   rowHeights?: readonly (number | null)[];
+  /** The recommended column of a comparison table (livedocuments, docs/specs/009-elements/comparison-tables.md). */
+  highlightColumn?: number;
 };
 
 export type BoxedElement =

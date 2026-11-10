@@ -66,7 +66,7 @@ import {
   MarkerTiles,
 } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import { useContextMenuScaffold } from './useContextMenuScaffold';
+import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { ElementDataSections } from './ElementDataSections';
 import { ElementColourBorderSections } from './ElementColourBorderSections';
 

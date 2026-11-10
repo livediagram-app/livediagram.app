@@ -55,6 +55,8 @@ export type ElementDelta =
       emoji: CommentReactionId;
       by: string;
       name: string;
+      // The reactor's hashed person id, which only the room or the server stamps (comment-reactions.md).
+      person?: string;
       on: boolean;
     }
   // A Notice Board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"), and a Calendar Wall's, each

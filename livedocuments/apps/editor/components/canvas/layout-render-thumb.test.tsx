@@ -69,7 +69,7 @@ describe('slide layout tiles', () => {
     expect(dark).toContain(PAGE_PAPER_DARK);
   });
 
-  it('render all sixty-one quickly enough for the whole gallery', () => {
+  it('render all sixty-four quickly enough for the whole gallery', () => {
     const t = performance.now();
     for (const l of SLIDE_LAYOUTS) layoutRenderSvg(deck, slide!, l.id);
     expect(performance.now() - t).toBeLessThan(1000);

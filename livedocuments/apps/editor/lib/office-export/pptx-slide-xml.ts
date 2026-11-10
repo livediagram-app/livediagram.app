@@ -3,7 +3,7 @@
 // `p:pic`. Pure string building over a slide already in the file's units.
 
 import { xmlText, XML_DECL } from './ooxml';
-import { solidFillXml } from './ooxml-colour';
+import { solidFillXml, type OoxmlColour } from './ooxml-colour';
 import type {
   EmuRect,
   PptxBackground,
@@ -13,6 +13,7 @@ import type {
   PptxShape,
   PptxSlide,
   PptxTextBody,
+  PptxTextShadow,
 } from './pptx-types';
 
 export const PML_NS =
@@ -44,11 +45,36 @@ function runXml(run: PptxRun): string {
     (run.underline ? ' u="sng"' : '') +
     (run.strike ? ' strike="sngStrike"' : '') +
     ' dirty="0"';
-  const fill = run.colour ? solidFillXml(run.colour) : '';
+  // A gradient run's letters take the gradient in place of their colour (docs/specs/008-canvas/text-effects.md).
+  const fill = run.gradient
+    ? gradFillXml(run.gradient.from, run.gradient.to)
+    : run.colour
+      ? solidFillXml(run.colour)
+      : '';
+  const effects = run.shadow ? outerShadowXml(run.shadow) : '';
+  const highlight = run.highlight
+    ? `<a:highlight><a:srgbClr val="${run.highlight.hex}"/></a:highlight>`
+    : '';
   const font = run.font
     ? `<a:latin typeface="${xmlText(run.font)}"/><a:cs typeface="${xmlText(run.font)}"/>`
     : '';
-  return `<a:r><a:rPr${attrs}>${fill}${font}</a:rPr><a:t>${xmlText(run.text)}</a:t></a:r>`;
+  // The schema's order inside rPr: fill, effectLst, highlight, then the faces.
+  return `<a:r><a:rPr${attrs}>${fill}${effects}${highlight}${font}</a:rPr><a:t>${xmlText(run.text)}</a:t></a:r>`;
+}
+
+/** A left-to-right two-stop gradient, as a text effect's letters show it. */
+function gradFillXml(from: OoxmlColour, to: OoxmlColour): string {
+  const stop = (pos: number, c: OoxmlColour) =>
+    `<a:gs pos="${pos}"><a:srgbClr val="${c.hex}"/></a:gs>`;
+  return `<a:gradFill rotWithShape="1"><a:gsLst>${stop(0, from)}${stop(100_000, to)}</a:gsLst><a:lin ang="0" scaled="0"/></a:gradFill>`;
+}
+
+/** A shadow behind the letters, in the fixed shadow ink (docs/specs/008-canvas/element-shadows.md). */
+function outerShadowXml(s: PptxTextShadow): string {
+  return (
+    `<a:effectLst><a:outerShdw blurRad="${int(s.blurEmu)}" dist="${int(s.distEmu)}" dir="${int(s.dir * ROT_UNIT)}" algn="ctr" rotWithShape="0">` +
+    `<a:srgbClr val="0F172A"><a:alpha val="${Math.round(s.alpha * 100_000)}"/></a:srgbClr></a:outerShdw></a:effectLst>`
+  );
 }
 
 function paragraphXml(p: PptxParagraph): string {

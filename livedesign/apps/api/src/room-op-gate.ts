@@ -36,7 +36,7 @@ function keepsToItsTab(op: unknown): boolean {
   return true;
 }
 
-/** The sender as the gate needs it: its server-verified role, tab scope and the collab key its hello published. */
+/** The sender as the gate needs it: its server-verified role, tab scope and the collab key pinned on its session. */
 export type GateSender = {
   role: unknown;
   tabScope: string | null;
@@ -44,8 +44,8 @@ export type GateSender = {
 };
 
 // A comment reaction (docs/specs/012-collaboration/comment-reactions.md) naming its own sender: the one `el-delta`
-// a Participant may send, since reacting is taking part. The key is the one its hello claimed, so this stops a
-// Participant reacting in someone else's name in the same room.
+// a Participant may send, since reacting is taking part. The key is the one the server pinned on its session
+// (docs/specs/013-workspace/share-roles.md "The collab key"), so nobody reacts in another's name.
 export function reactsAsSelf(op: unknown, key: string | undefined): boolean {
   const o = op as { kind?: unknown; delta?: { kind?: unknown; by?: unknown } } | null;
   if (o?.kind !== 'el-delta' || typeof o.delta !== 'object' || o.delta === null) return false;

@@ -148,6 +148,43 @@ describe('PowerPoint export', () => {
     });
   });
 
+  // docs/specs/008-canvas/text-effects.md "Rendering" and element-shadows.md: effects stay native text.
+  it('writes a highlight, a gradient and a text shadow on native runs, in the schema’s order', async () => {
+    const { tab, pages } = slideTab((r) => [
+      {
+        ...createText(0, 0),
+        id: 'headline',
+        x: r.x + 100,
+        y: r.y + 100,
+        width: 800,
+        height: 120,
+        label: 'Grow faster',
+        richText: [
+          { text: 'Grow ', highlight: '#fde68a' },
+          { text: 'faster', gradient: 'sunset' },
+        ],
+        shadow: { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 },
+      },
+    ]);
+    const built = await buildDeck({ tab, pages, title: 'T' }, fakeDrawer(), {});
+    const shape = built.slides[0]!.items[0]!;
+    if (shape.kind !== 'shape') throw new Error('a shadowed text box went to a picture');
+    const runs = shape.body!.paragraphs[0]!.runs;
+    expect(runs[0]!.highlight).toEqual({ hex: 'FDE68A', alpha: 1 });
+    expect(runs[1]!.gradient).toEqual({
+      from: { hex: 'F97316', alpha: 1 },
+      to: { hex: 'DB2777', alpha: 1 },
+    });
+    expect(runs[0]!.shadow).toMatchObject({ dir: 90, alpha: 0.25 });
+    const parts = await everyPart(writePptx(built));
+    const slide = [...parts].find(([n]) => /slides\/slide1\.xml$/.test(n))![1];
+    expect(slide).toMatch(
+      /<a:solidFill>.*<a:effectLst><a:outerShdw[^>]*dir="5400000".*<a:highlight><a:srgbClr val="FDE68A"\/>/,
+    );
+    expect(slide).toContain('<a:gsLst><a:gs pos="0"><a:srgbClr val="F97316"/></a:gs>');
+    for (const xml of parts.values()) parseXml(xml);
+  });
+
   it('draws a shape natively with its fill, border and corner, or as a picture when it cannot', async () => {
     const { tab, pages } = slideTab((r) => [
       {

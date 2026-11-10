@@ -248,6 +248,12 @@ export function useRoomConnection(opts: {
 
   // Whether this connection has had its first presence list: reset by every (re)open below.
   const joinedRef = useRef(false);
+  // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"): our
+  // answers and reactions are recorded under it from now on, the same on every device we sign in on. Unchanged, it
+  // changes nothing, so the hello a new key sets off ends there.
+  const roomCollabKey = useEffectEvent((key: string) =>
+    setSelfParticipant((prev) => (prev.key === key ? prev : { ...prev, key })),
+  );
   const roomJoined = useEffectEvent(() => onRoomJoined());
   // The room's handlers, as effect events: the socket opens once per document (the effect below), and each
   // message still runs against the current props, which is what a handler must see.
@@ -615,6 +621,7 @@ export function useRoomConnection(opts: {
     const stopUnlock = unlockAudioOnGesture();
 
     const handlers: RoomHandlers = {
+      onCollabKey: (key) => roomCollabKey(key),
       onPresence: (participants, agents) => {
         // Buffered packets from anyone who has left go before the roster prunes their state, so
         // the next frame's flush cannot bring a departed peer's cursor back.

@@ -142,6 +142,7 @@ export function editorView({
     addStatRow: elementsSlice.addStatRow,
     addProcess: elementsSlice.addProcess,
     addAvatar: elementsSlice.addAvatar,
+    addLogoStrip: elementsSlice.addLogoStrip,
     dropPaletteItem: elementsSlice.dropPaletteItem,
     // The empty Plan tab's board picker places its board in the middle of the view.
     getViewportCenter: viewportSlice.getViewportCenter,
@@ -422,6 +423,7 @@ export function editorView({
     setChartTypeSelected: styleSlice.setChartTypeSelected,
     setLineDataSelected: styleSlice.setLineDataSelected,
     sankey: styleSlice.sankey,
+    mapEdits: styleSlice.mapEdits,
     resetShapeStyleSelected: styleSlice.resetShapeStyleSelected,
     resetArrowStyleSelected: styleSlice.resetArrowStyleSelected,
     clearAnimationsSelected: styleSlice.clearAnimationsSelected,

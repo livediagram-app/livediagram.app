@@ -1,5 +1,6 @@
 // What a reference to a gallery image is, in every product's api (each product's docs/specs/009-elements/images.md,
-// "Reference index"): a top-level `type: 'image'` element whose `imageId` names a gallery row, or a top-level
+// "Reference index"): a top-level `type: 'image'` element whose `imageId` names a gallery row (or a `type: 'shape'`
+// one carrying a photo in `imageId`, livedocuments' quote portrait, docs/specs/009-elements/quote.md), or a top-level
 // Page whose `background.fill` is a picture (`kind: 'image'`) naming one
 // (docs/specs/007-editor/pages-mode.md "Image backgrounds"). A product without pages hands in none.
 // The SQL twin of this extractor lives in each api's db/image-refs.ts; a parity test
@@ -31,7 +32,7 @@ export function imageRefIds(elements: unknown, pages?: unknown): string[] {
     for (const el of elements) {
       if (typeof el !== 'object' || el === null) continue;
       const { type, imageId } = el as { type?: unknown; imageId?: unknown };
-      if (type === 'image' && isGalleryImageId(imageId)) ids.add(imageId);
+      if ((type === 'image' || type === 'shape') && isGalleryImageId(imageId)) ids.add(imageId);
     }
   }
   if (Array.isArray(pages)) {

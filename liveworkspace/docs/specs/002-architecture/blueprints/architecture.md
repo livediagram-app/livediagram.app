@@ -313,7 +313,9 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   `themes-data`, `theme-halves`, `theme-presets`, `quick-swatches`; O's `themedForTab` and page-paper read,
   `ThemedElement`, `switchThemeBackdrop` generic over a product's patterns; livehuddle binds `themes-data` only, its
   retired tables keep its own); tables and readouts (`cell-colours` with D's shorthand-safe `readableInk`,
-  `table-header-colours` D's, `svg-render-table` D's, `progress-colours`, `page-ink-rules` S's, OS); arrows in the
+  `table-header-colours` D's, `svg-render-table` D's with O's comparison tables behind `{ comparison: true }`, which
+  only O's `svg-render-table.ts` passes, and their `table-marks`; `progress-colours`, `page-ink-rules` S's with O's
+  quote, OS); arrows in the
   export (`svg-render-arrows` with O's line motion and D's `finishArrowEnds`, `stock-colours` D's, `mind-flow`,
   `mind-connector-route` DP); and the charts (`chart-types`, `chart-marks` D's below-zero layout with O's
   not-a-number guard, `chart-values` D's with O's decimals, `chart-axis` O's tick decimals, `chart-frame` and

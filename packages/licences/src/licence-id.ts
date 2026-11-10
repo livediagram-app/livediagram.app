@@ -74,6 +74,8 @@ const LICENCE_ALLOWLIST: ReadonlySet<string> = new Set([
   'Python-2.0',
   'Unlicense',
   'Zlib',
+  // A work its authors put in the public domain, with no licence to name (Natural Earth's map data).
+  'LicenseRef-Public-Domain',
 ]);
 
 const ALLOWED_LOWER = new Set([...LICENCE_ALLOWLIST].map((id) => id.toLowerCase()));

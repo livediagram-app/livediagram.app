@@ -16,6 +16,7 @@ import {
   defaultStrokeColor,
   shadowBoxCss,
   shadowFilterCss,
+  shadowTextCss,
   supportsShadow,
   type BoxedElement,
   type CanvasSurface,
@@ -161,14 +162,21 @@ export function describeVariant(
       const ring = isMultiSelected
         ? multiRing
         : singleRing('ring-2 ring-brand-300 ring-offset-2 ring-offset-white');
+      // A shadow behind the letters (docs/specs/008-canvas/element-shadows.md): text-shadow follows the
+      // glyphs with no filter layer; it inherits into every run span.
+      const textShadow: CSSProperties = shadow ? { textShadow: shadowTextCss(shadow) } : {};
       return {
         className: `text-slate-800 rounded-sm ${ring}`,
         // Text elements have no real border; render the remote-selector
         // halo as an outline so it shows up regardless of the element
         // having transparent fill.
         style: remoteBorderColor
-          ? { outline: `${remoteBorderWidth}px solid ${remoteBorderColor}`, outlineOffset: 2 }
-          : {},
+          ? {
+              outline: `${remoteBorderWidth}px solid ${remoteBorderColor}`,
+              outlineOffset: 2,
+              ...textShadow,
+            }
+          : textShadow,
       };
     }
     case 'sticky': {

@@ -2747,6 +2747,9 @@ importers:
 
   livedocuments/apps/help:
     dependencies:
+      '@livedocuments/document':
+        specifier: workspace:^
+        version: link:../../packages/document
       '@livedocuments/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry

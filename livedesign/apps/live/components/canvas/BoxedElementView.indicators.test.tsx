@@ -7,8 +7,8 @@ import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import {
   ElementIndicatorStyleProvider,
   SuppressElementIndicators,
-} from '@/components/canvas/ElementIndicatorStyleContext';
-import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
+} from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
+import type { ElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 
 // docs/specs/008-canvas/element-indicators.md, through the real element view: the indicators draw
 // inside the element, the content moves out of their way, selection fades them, Off hides them.

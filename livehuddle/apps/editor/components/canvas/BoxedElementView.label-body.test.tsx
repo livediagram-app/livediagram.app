@@ -6,7 +6,7 @@ import { createShape, type BoxedElement } from '@livehuddle/document';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { clearingInset } from '@/components/canvas/InsetContent';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
-import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
+import type { ElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Shape primitives", through the real element view: a
 // cylinder's label (and its editor) sits on the front of its body, under the lid and over the base,

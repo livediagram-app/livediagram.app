@@ -1,5 +1,8 @@
 'use client';
 
+import { pageImageBlurSigma } from '@livedocuments/document';
+import { useBlurredPageImage } from '@/hooks/canvas/useBlurredPageImage';
+import { pageImageSrc } from '@/lib/page-image-paint';
 import { memo, type CSSProperties } from 'react';
 import { FirstPageChoice } from './FirstPageChoice';
 import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
@@ -256,6 +259,15 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
         onPreview={(style) => act.previewArticleStyle(page.flow!, style)}
       />
     ) : null;
+  // A blurred picture paints from its blurred copy, the tone showing until it is ready (pages-mode.md "Image
+  // backgrounds", Blur); a hover preview (an Openverse thumbnail) shows sharp.
+  const imageFill = background?.fill?.kind === 'image' ? background.fill : undefined;
+  const blurSigma = imageFill && !imageFill.preview ? pageImageBlurSigma(imageFill, page.rect) : 0;
+  const blurredSrc = useBlurredPageImage(
+    blurSigma > 0 && imageFill ? pageImageSrc(imageFill, pictureOf) : undefined,
+    page.rect,
+    blurSigma,
+  );
   return (
     <div
       data-page={page.orientation}
@@ -275,7 +287,7 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
         boxShadow: letterbox
           ? `0 0 0 ${LETTERBOX_SPREAD}px #000`
           : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
-        ...pageSheetStyle(background, ruling, pictureOf),
+        ...pageSheetStyle(background, ruling, pictureOf, blurSigma > 0 ? blurredSrc : undefined),
       }}
     >
       {/* A slide's animated background, over its gradient and under all on it. */}

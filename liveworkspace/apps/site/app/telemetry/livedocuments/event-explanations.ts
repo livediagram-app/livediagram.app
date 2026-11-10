@@ -623,6 +623,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone changed how fast a slide's animated background moves.",
   'Tab|Changed|PageBackgroundImage':
     'Someone put a picture behind a page, searched or uploaded, under an overlay.',
+  'Tab|Changed|PageBackgroundImageBlur':
+    "Someone changed how much a page's background picture is blurred.",
   'Tab|Changed|PagePattern': "Someone changed a page's background pattern.",
   'Tab|Changed|PageBackgroundAppliedToAll':
     "Someone gave every other page of a kind (every slide, say) one page's background at once.",

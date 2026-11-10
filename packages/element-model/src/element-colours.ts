@@ -455,7 +455,9 @@ export function acceptsInlineIcon<E extends Element>(
     element.shape !== 'stack' &&
     element.shape !== 'banner' &&
     element.shape !== 'stat-row' &&
-    element.shape !== 'process'
+    element.shape !== 'process' &&
+    // A quote's portrait (livedocuments) is its media; an icon dropped on it stands alone.
+    element.shape !== 'quote'
   );
 }
 
@@ -487,6 +489,8 @@ const RADIUS_SHAPES = new Set<string>([
   'site-header',
   'stat-row',
   'mind-node',
+  // livedocuments' quote card (docs/specs/009-elements/quote.md).
+  'quote',
 ]);
 
 // The corner preset the Radius control highlights: the element's own, else the preset nearest

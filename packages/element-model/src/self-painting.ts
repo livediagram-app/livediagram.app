@@ -44,6 +44,8 @@ export const SELF_PAINTING_SHAPES: ReadonlySet<string> = new Set<string>([
   'legend',
   // Sankey (docs/specs/009-elements/sankey.md): nodes and bands, coloured per node; no box to stroke.
   'sankey',
+  // Map (docs/specs/009-elements/map.md): its land, countries and pins; no box to stroke.
+  'map',
   // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
   'portal',
   'reveal',
@@ -79,4 +81,7 @@ export const SELF_PAINTING_SHAPES: ReadonlySet<string> = new Set<string>([
   'site-header',
   'stat-row',
   'process',
+  // The quote (docs/specs/009-elements/quote.md) paints its own card, or nothing in the Plain look, so a theme
+  // change's fill never undoes a Plain look.
+  'quote',
 ]);

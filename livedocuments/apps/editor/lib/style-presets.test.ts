@@ -364,8 +364,13 @@ describe('applyShadowToEl', () => {
     expect(out.shadow).toBeUndefined();
   });
 
+  it("sets a text element's shadow, which sits behind its letters", () => {
+    const out = applyShadowToEl(el('text'), shadow) as { shadow?: unknown };
+    expect(out.shadow).toEqual(shadow);
+  });
+
   it('no-ops (same reference) on unsupported types', () => {
-    for (const type of ['text', 'freehand', 'article-note', 'table', 'arrow']) {
+    for (const type of ['freehand', 'article-note', 'table', 'arrow']) {
       const source = el(type);
       expect(applyShadowToEl(source, shadow), type).toBe(source);
     }

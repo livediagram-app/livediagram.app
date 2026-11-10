@@ -1,0 +1,71 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { MapOffices, MapEditDialog } from '@/components/illustrations/maps-and-text-effects';
+
+export const metadata = helpMetadata({
+  title: 'Maps',
+  description:
+    'Add a world, region or country map to a slide, highlight the countries you sell in and pin your offices, all drawn on the page with no map service.',
+  path: '/help/palette/tools/maps/',
+});
+
+<ArticleLayout
+  title="Maps"
+  description="A world, region or country map with highlighted countries and pinned places."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Tools', slug: 'tools' }}
+  subArticles={getSubArticles('tools').filter((a) => a.slug !== 'maps')}
+>
+
+A **Map** shows the world, one region or a single country as clean flat outlines: the picture a slide wants for where you sell, where your offices are, or where your customers come from. Pick out countries in an accent colour and drop pins with labels on cities. It is drawn on the page itself, so it looks the same on every screen, in every export, and offline.
+
+<Figure caption="A map of Europe with five markets highlighted and four offices pinned.">
+  <MapOffices />
+</Figure>
+
+## Adding one
+
+<Step n={1}>
+  Open the **Data** category on the palette strip, or open the [search
+  panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) and type
+  "map".
+</Step>
+<Step n={2}>
+  Pick **Map**, then tap the page to drop one, or drag to draw it at a size. It starts as the whole
+  world, wide and short, ready for a slide.
+</Step>
+<Step n={3}>Double-click it to open **Edit Map**.</Step>
+
+## Edit Map
+
+**Edit Map** holds a large preview of the map and, beside it, everything the map shows. Nothing changes on the page until you press **Done**, and then it is one step to undo. **Cancel**, or Escape, leaves the map as it was.
+
+<Figure caption="Edit Map: the preview with its mode switch, the highlighted countries as chips, and the pins with their labels.">
+  <MapEditDialog />
+</Figure>
+
+- **View** picks what the map frames: the **World**, a region (**Europe**, **Africa**, **Asia**, the **Middle East**, **North America**, **South America** or **Oceania**), or **one country**, which frames that country with its neighbours drawn faintly around it.
+- **Highlight Countries**: with this mode on, click a country on the preview to fill it in the accent, and click again to clear it. You can also type a name into **Add Country**. Each one shows as a chip; press its **×** to take it off. A map holds up to 60.
+- **Place Pins**: with this mode on, click anywhere on the preview to drop a pin there, then type its label. **Find a Place** finds a city by name and pins it with its name already written. A map holds up to 40 pins, each label up to 40 characters; leave a label empty for a bare dot.
+
+## Its colours
+
+The highlights take the map's **accent**, which is its line colour: change it from **Style**, then **Colours**, like any shape. The **fill** colour is the land; left alone it is a soft grey that suits light and dark pages. Pins and their labels use the map's text colour and font, with a ring and a halo in the page colour, so a pin reads on a highlighted country as well as on plain land.
+
+From the map's right-click menu, open **Tools** and then **Map** for **Edit Map** and a quick **View** switch between the regions.
+
+## Good to know
+
+- **No map service**: the outlines come with the editor, so a map never fetches tiles, never needs a key, and works offline. They load the first time a map is drawn, so a document without one never downloads them.
+- **Exports match the page**: PNG, SVG, PDF and PowerPoint (as a picture) draw the same map, and so do [snapshots and embeds](/help/collaboration/sharing/live-image/).
+- **Simple on purpose**: the outlines are Natural Earth's 1:110m set, made for a page-sized picture, so very small islands are left out and borders are simplified. Where a border is disputed it is drawn as Natural Earth draws it.
+- **Who can edit it**: anyone who can edit the document can change a map, unless it is [locked](/help/canvas/locking/). People taking part, or viewing, see it but cannot change it.
+
+<Tip>
+  Put a short title above the map as a **Text** element: the map draws no title of its own, so the
+  heading keeps the slide's own font and size.
+</Tip>
+
+</ArticleLayout>

@@ -1,7 +1,8 @@
 // The floating WYSIWYG toolbar shown above an element while its label is
 // being edited (docs/specs/008-canvas/canvas-and-palette.md). Per-range bold / italic / underline /
 // strikethrough + list controls as plain icon buttons, whole-element
-// alignment as a dropdown, and the selection colour swatch. Everything
+// alignment as a dropdown, the selection colour swatch and Text Effects
+// (docs/specs/008-canvas/text-effects.md). Everything
 // else the old ⋯ overflow menu carried (Font / Size / Padding) lives in
 // the element context menu's Text flyout now, so the toolbar holds only
 // the live-selection verbs. Rendered by RichTextEditor (which owns the
@@ -30,6 +31,7 @@ import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { TextEffectsButton, type TextEffectPatch } from '@/components/rich-text/TextEffectsPanel';
 
 // What the swatch shows while the selection has no colour of its own.
 const DEFAULT_TEXT_COLOUR = '#0f172a';
@@ -46,6 +48,7 @@ export function RichTextToolbar({
   onApplyTitleCaption,
   listStyle,
   onColor,
+  onEffect,
   onSetAlign,
 }: {
   active: ActiveFormat;
@@ -59,6 +62,8 @@ export function RichTextToolbar({
   // What the current lines already are, so the picker can show it.
   listStyle: ListStyle;
   onColor: (color: string) => void;
+  // Highlight and gradient (docs/specs/008-canvas/text-effects.md); absent hides the control.
+  onEffect?: (patch: TextEffectPatch) => void;
   onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
 }) {
   const toggles = runToggles('bold', 'italic', 'underline', 'strikethrough');
@@ -123,6 +128,13 @@ export function RichTextToolbar({
           onPick={onColor}
         />
       </HoverCard>
+      {onEffect ? (
+        <TextEffectsButton
+          highlight={active.highlight}
+          gradient={active.gradient}
+          onApply={onEffect}
+        />
+      ) : null}
     </div>
   );
 }

@@ -785,3 +785,42 @@ describe('connectRoom keepalive', () => {
     room.close();
   });
 });
+
+// docs/specs/013-workspace/share-roles.md "The collab key": the room tells this session the key it pinned on it.
+describe('connectRoom collab key', () => {
+  const KEY = '0123456789abcdef0123456789abcdef';
+  class KeySocket {
+    static OPEN = 1;
+    static last: KeySocket | null = null;
+    readyState = 1;
+    private listeners: Record<string, ((e: { data?: unknown }) => void)[]> = {};
+    constructor() {
+      KeySocket.last = this;
+    }
+    addEventListener(type: string, fn: (e: { data?: unknown }) => void) {
+      (this.listeners[type] ??= []).push(fn);
+    }
+    send() {}
+    close() {}
+    fire(type: string, data?: unknown) {
+      for (const fn of this.listeners[type] ?? []) fn({ data });
+    }
+  }
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('hands on the key the room pinned, and ignores one of the wrong shape', () => {
+    vi.stubGlobal('WebSocket', KeySocket);
+    const keys: string[] = [];
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onCollabKey: (key) => keys.push(key) },
+    );
+    const socket = KeySocket.last!;
+    socket.fire('open');
+    socket.fire('message', JSON.stringify({ kind: 'collab-key', key: 'not-a-key' }));
+    socket.fire('message', JSON.stringify({ kind: 'collab-key', key: KEY }));
+    expect(keys).toEqual([KEY]);
+    room.close();
+  });
+});

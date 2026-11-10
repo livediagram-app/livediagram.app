@@ -495,6 +495,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // Ticked rows, with one still to do — a checklist is only interesting part
   // done.
+  // Palette → Maps: a folded map with a pin standing on it.
+  maps: (
+    <Glyph>
+      <path d="M3 7l5-2 6 2.5 7-2.5v12l-7 2.5-6-2.5-5 2z" />
+      <path d="M8 5v12M14 7.5V12" />
+      <path d="M17.5 13.5c0 1.7-2.5 4-2.5 4s-2.5-2.3-2.5-4a2.5 2.5 0 015 0z" />
+    </Glyph>
+  ),
   checklists: (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />

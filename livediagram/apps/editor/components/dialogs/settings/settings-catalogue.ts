@@ -46,7 +46,7 @@ import {
   readElementIndicatorStyle,
   withElementIndicatorStyle,
   type ElementIndicatorStyle,
-} from '@/lib/element-indicator-style';
+} from '@liveworkspace/workbench/lib/element-indicator-style';
 import {
   UI_SCALE_MAX,
   UI_SCALE_MIN,

@@ -676,9 +676,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           enum: ['thumbs-up', 'thumbs-down', 'laugh', 'hooray', 'heart', 'eyes'],
         },
         on: { type: 'boolean' },
+        // Read by nobody: the reaction is kept under the caller's server-derived collab key. Older editors send it.
         key: { type: 'string' },
       },
-      required: ['emoji', 'on', 'key'],
+      required: ['emoji', 'on'],
     },
     statuses: [204, 400, 401, 403, 404, 405, 409, 410, 413],
   },

@@ -58,7 +58,10 @@ import {
   thanksImageSlide,
 } from './slide-layouts-closers';
 
+import { logoStripSlide } from './slide-layouts-logos';
+
 export { slideType } from './slide-layout-kit';
+import { pricingTableSlide, testimonialSlide } from './slide-layouts-proof';
 import { PAGE_LAYOUTS, type PageLayout, type PageLayoutId } from './page-layouts';
 
 export type SlideLayoutId =
@@ -78,6 +81,7 @@ export type SlideLayoutId =
   | 'slide-three-points'
   | 'slide-full-image'
   | 'slide-takeaway'
+  | 'slide-logos'
   | 'slide-four-ideas'
   | 'slide-three-stats'
   | 'slide-big-chart'
@@ -107,7 +111,9 @@ export type SlideLayoutId =
   | 'slide-compare-cards'
   | 'slide-title-only'
   | 'slide-stat-image'
-  | 'slide-team-three';
+  | 'slide-team-three'
+  | 'slide-testimonial'
+  | 'slide-pricing-table';
 
 type SlideLayoutCategoryId =
   | 'slide-openers'
@@ -365,6 +371,13 @@ export const SLIDE_LAYOUTS: readonly SlideLayout[] = [
     'One sentence set very large, and a line under it',
     statementSlide,
   ),
+  own(
+    'slide-testimonial',
+    'slide-content',
+    'Testimonials',
+    'Two customers in their own words, each with a portrait, name and role',
+    testimonialSlide,
+  ),
   reused('quote', 'slide-content'),
   own(
     'slide-three-points',
@@ -386,6 +399,13 @@ export const SLIDE_LAYOUTS: readonly SlideLayout[] = [
     'Key Takeaway',
     'The one thing to remember on a card, and why',
     takeawaySlide,
+  ),
+  own(
+    'slide-logos',
+    'slide-content',
+    'Logo Strip',
+    'Who trusts you: six logos in grey, evenly spaced',
+    logoStripSlide,
   ),
   own(
     'slide-four-ideas',
@@ -479,6 +499,13 @@ export const SLIDE_LAYOUTS: readonly SlideLayout[] = [
     imageMosaicSlide,
   ),
   reused('big-number', 'slide-data'),
+  own(
+    'slide-pricing-table',
+    'slide-data',
+    'Pricing Table',
+    'Plans compared feature by feature in ticks and crosses, the recommended one highlighted',
+    pricingTableSlide,
+  ),
   own(
     'slide-stat-image',
     'slide-data',

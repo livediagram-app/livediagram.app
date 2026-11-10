@@ -5,7 +5,10 @@
 
 import { ACTIVE_SEGMENT, SEGMENT_TRACK, ActionIcon, CommentIcon, Tooltip } from '@livedocuments/ui';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
-import type { CollaborateKind, CollaborateSide } from './collaborate-model';
+import type {
+  CollaborateKind,
+  CollaborateSide,
+} from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
 
 const SIDES: { id: CollaborateSide; label: string }[] = [
   { id: 'open', label: 'Open' },

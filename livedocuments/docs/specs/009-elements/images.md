@@ -29,6 +29,11 @@ type ImageElement = {
   // Optional alt text: the picture's description, its accessible name and its
   // exports' description (see "Alt text" below).
   alt?: string;
+  // The part of the picture kept, the box's shape and whether it draws in grey
+  // (picture-crop-and-mask.md).
+  crop?: ImageCrop;
+  mask?: ImageMask;
+  greyscale?: true;
   // Creator + licence credit of a picture picked from Image search
   // (image-search.md); absent for uploads.
   credit?: ImageCredit;
@@ -321,7 +326,9 @@ your image gallery: list_images lists the pictures you can place`). That keeps t
 ## Out of scope
 
 - **EXIF on non-JPEG formats.** PNG / WebP / GIF can technically embed XMP / EXIF chunks too. The media service strips only JPEG metadata, because that's where ~all real-world leaks come from (phone-camera output). Stripping the other formats would require per-format chunk parsers; revisit if a leak case surfaces.
-- **Image cropping / rotation.** The picker accepts the file as-is. Resize works via the existing canvas handles.
+- **Editing the file.** The picker accepts the file as-is and the gallery keeps it whole. An image element crops, masks
+  and greys its picture on the element alone ([Picture crop, mask and greyscale](picture-crop-and-mask.md)), and rotates
+  as any element does.
 - **Per-image share links.** The same image can be referenced by multiple documents of the same owner; the document-scoped `GET /api/images/:id?d=<documentId>` read endpoint covers cross-document sharing for visitors holding a share code, without any per-image plumbing.
 - **CDN / image-optimisation.** Cloudflare's edge cache (via the `immutable` Cache-Control) is the only transform layer. No on-the-fly resize / format conversion. Future: Cloudflare Image Resizing or a custom transform Worker.
 - **External-source image clipboard via `navigator.clipboard.read()`.** The Cmd+V image-paste path listens to the browser's native `paste` event and reads `clipboardData.items`, which is permissionless. The picker modal + drag-drop + the `paste` shortcut (Cmd/Ctrl+V on the canvas, image MIME on the clipboard data routes through `uploadImageFile` and lands as a new image element) are the entry paths today; `navigator.clipboard.read()` (which would let us probe the clipboard on a button click without requiring an actual paste gesture) needs the browser's clipboard-read permission prompt and is not used.

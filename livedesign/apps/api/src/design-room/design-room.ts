@@ -485,6 +485,8 @@ export class DesignRoom extends DurableObject<Env> {
       v.adderKey,
       v.designId,
       v.grantExp ?? null,
+      v.collabKey ?? null,
+      v.reactionPerson ?? null,
     );
     if (v.designId) {
       this.bindDesign(v.designId);
@@ -508,6 +510,12 @@ export class DesignRoom extends DurableObject<Env> {
     adderKey: string | null = null,
     designId: string | null = null,
     grantExp: number | null = null,
+    // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
+    // none mints one for this socket.
+    collabKey: string | null = null,
+    // The person stamped on its reactions (X-Verified-Reaction-Person,
+    // docs/specs/012-collaboration/comment-reactions.md).
+    reactionPerson: string | null = null,
   ): void {
     acceptSession(
       this,
@@ -520,6 +528,8 @@ export class DesignRoom extends DurableObject<Env> {
       adderKey,
       designId,
       grantExp,
+      collabKey,
+      reactionPerson,
     );
   }
 

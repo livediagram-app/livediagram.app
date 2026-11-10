@@ -29,7 +29,7 @@ value is the team, not the individual.
 - Articles: writing that flows onto pages, with headings, lists, quotes, code,
   pictures and charts. Paste from web pages, Google Docs or Word and the
   formatting comes with it; import Markdown into a tab.
-- Slide decks: 16:9 or 4:3 slides from 61 slide layouts, presented full screen
+- Slide decks: 16:9 or 4:3 slides from 64 slide layouts, presented full screen
   with presenter notes, a time budget, a laser pointer and a spotlight.
 - Infographics and posters in print sizes (A4, US Letter, A3) and social sizes,
   from 92 infographic layouts.

@@ -79,6 +79,9 @@ export function roomMessage(
     const hello = { ...session, presence, batches } satisfies SessionAttachment;
     ws.serializeAttachment(hello);
     room.presenceRelay.noteSession(ws, relaySessionOf(hello));
+    // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab
+    // key"): its editor records its answers and reactions under it from now on.
+    if (presence.key) room.sendTo(ws, { kind: 'collab-key', key: presence.key });
     // Where the ordered stream stands as this session joins, so a later
     // reconnect asks for what came after it, not for the whole log.
     room.sendTo(ws, { kind: 'cursor', epoch: room.epoch, seq: room.seq });
@@ -214,7 +217,7 @@ export function roomMessage(
       const scoped = scopedTabOp(msg.op, session.tabScope ?? null, (tabId) =>
         storedTabName(room, tabId),
       );
-      const op = stampCommentAuthor(opForTheWire(scoped), sender);
+      const op = stampCommentAuthor(opForTheWire(scoped), sender, session.reactionPerson ?? null);
       const seq = room.sequenceMutation(sender.id, op, ws);
       // The relay skips the sender, so tell it the seq its op took: its own
       // ops are already applied, and a reconnect must not replay them. The

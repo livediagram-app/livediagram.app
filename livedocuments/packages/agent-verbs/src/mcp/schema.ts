@@ -37,12 +37,18 @@ import {
   SANKEY_NAME_MAX,
   SANKEY_UNIT_MAX,
   SANKEY_VALUE_LABELS,
+  MAP_HIGHLIGHTS_MAX,
+  MAP_LAT_MAX,
+  MAP_PIN_LABEL_MAX,
+  MAP_PINS_MAX,
+  MAP_REGIONS,
   RETIRED_SHAPE_KINDS,
   SHAPE_KINDS,
   STEP_LABEL_MAX,
   STICKY_PRESETS,
   THEMES,
   truncateName,
+  IMAGE_MASKS,
 } from '@livedocuments/document';
 
 export const SCHEMA_RESOURCE_URI = 'livedocuments://schema/elements';
@@ -68,8 +74,14 @@ const CONTENT_KINDS =
   'gallery is refused); without it the element is a placeholder the user fills in the editor. "objectFit" ' +
   'contain (default, the whole picture) or cover (fills the box, cropping); "alt" describes it. A box in the ' +
   "picture's own proportions (its width and height from list_images, scaled) shows it uncropped. " +
+  '"crop" {x, y, width, height} is the part of the picture shown, as fractions of it (0 to 1; each side at least ' +
+  '0.02); the box should share that part\'s proportions. "mask" clips it to a shape: ' +
+  `${IMAGE_MASKS.join(', ')}. "greyscale" true draws it in grey (a logo strip: a row stack holding greyscale ` +
+  'images, evenly spaced). ' +
   'type "table": "cells" is rows of strings (ragged rows are padded), "headerRow" / ' +
-  '"headerColumn" style the first row / column, "zebra" tints alternate rows. ' +
+  '"headerColumn" style the first row / column, "zebra" tints alternate rows; a cell holding only a tick (\u2713) ' +
+  'or a cross (\u2717) draws as a green yes or a rose no, for a comparison or pricing table, and ' +
+  '"highlightColumn" (a column index from 0) marks the recommended column. ' +
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
   `${CODE_LANGUAGES.join(', ')}), "codeTheme" (${CODE_THEMES.map((t) => t.id).join(', ')}; ` +
   'default midnight, dark), "codeWrap"; the block draws itself and shows no label. ' +
@@ -98,6 +110,13 @@ const CONTENT_KINDS =
   'the difference to a "Leftover" end node; hide: it does not), "sankeyLeftoverName" (that ' +
   "node's name; do not write leftover flows yourself). Make it " +
   'wide (about 2:1); it draws no title. ' +
+  // Map (docs/specs/009-elements/map.md).
+  `shape "map": a world map drawn in one flat colour, no tiles. "mapRegion" (${MAP_REGIONS.join(', ')}; ` +
+  'default world) picks the view, or "mapCountry" (an ISO 3166 alpha-2 code such as "FR", "JP") frames one ' +
+  'country with its neighbours faint. "mapHighlights" lists country codes filled in the accent ' +
+  `(the shape's "strokeColor"; up to ${MAP_HIGHLIGHTS_MAX}), "mapPins" [{ "id", "lat", "lon", "label"? }] ` +
+  `drops a dot in the text colour with a haloed label (up to ${MAP_PINS_MAX} pins, latitude within ${MAP_LAT_MAX}, labels up to ` +
+  `${MAP_PIN_LABEL_MAX} chars); "fillColor" is the land. Make it wide (about 2:1); it draws no title. ` +
   // The diagram-building kinds (docs/specs/015-api/mcp-server.md §4.7a).
   'shape "card": a node with a title, meta line and body; "pageTitle" is the title, "pageSubtitle" ' +
   'the meta (a product or runtime), "label" the body, "cardMedia" + "iconId" the glyph (a badge disc, a ' +
@@ -140,7 +159,11 @@ const STYLE_FIELDS =
   'other). A field a type ' +
   'does not have, or a value off its list, is refused naming what it takes. ' +
   'Kinds and what they hold: "checklist" its "checklistItems" ' +
-  '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout its "pageTitle" over its "label" ' +
+  '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption", "change"}], change optional: "\u25b2 12%" ' +
+  'goes up in green, "-3%" down in rose; one stat is a big-number tile; its values count up when presented unless ' +
+  '"statCountUp" is false); a "quote" its words as its "label", the speaker\u2019s "pageTitle" (name) and ' +
+  '"pageSubtitle" (role), a portrait ("cardMedia": "initial", or "imageId" from list_images for a photo) and ' +
+  '"quoteLook" (card, the default, or plain); a callout its "pageTitle" over its "label" ' +
   '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). ';
 
 // Self-contained element schema, attached to each tool's element argument so the

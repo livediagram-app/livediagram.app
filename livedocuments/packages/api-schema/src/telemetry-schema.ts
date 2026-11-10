@@ -338,6 +338,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Table',
     'Image',
     'Avatar',
+    // The logo strip (docs/specs/009-elements/logo-strip.md): a stack of greyscale logos.
+    'LogoStrip',
     // Pointer note (docs/specs/009-elements/pointer-note.md): a Write element.
     'PointerNote',
     'LinkCard',
@@ -363,6 +365,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Legend',
     // Sankey diagram (docs/specs/009-elements/sankey.md): a Build element; its kind has no hyphen to keep.
     'Sankey',
+    // Map (docs/specs/009-elements/map.md).
+    'Map',
   ],
   components: [
     'Banner',
@@ -370,6 +374,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Header',
     'Callout',
     'StatRow',
+    'Quote',
     'ProcessSteps',
     'Card',
     'Badge',

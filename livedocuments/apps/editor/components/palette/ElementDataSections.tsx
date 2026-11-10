@@ -15,6 +15,7 @@
 
 import dynamic from 'next/dynamic';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
+import { QuoteMenuSection } from '@/components/palette/QuoteMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
@@ -65,7 +66,7 @@ import {
   RatingPickerRow,
 } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import { useContextMenuScaffold } from './useContextMenuScaffold';
+import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { ChartPalettePresets } from './StylePresets';
 
 // A Sankey's sections (docs/specs/009-elements/sankey.md "The menu") load only when a Sankey's menu opens.
@@ -73,6 +74,11 @@ const SankeyMenuSections = dynamic(
   () => import('./SankeyMenuSection').then((m) => m.SankeyMenuSections),
   { ssr: false },
 );
+
+// So do a map's (docs/specs/009-elements/map.md "The menu").
+const MapMenuSections = dynamic(() => import('./MapMenuSection').then((m) => m.MapMenuSections), {
+  ssr: false,
+});
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
@@ -129,6 +135,7 @@ export function ElementDataSections({
   const isChip = shapeTarget ? isChipShape(shapeTarget.shape) : false;
   const showTools =
     hasWebRowsSection(target) ||
+    shapeTarget?.shape === 'quote' ||
     isChip ||
     shapeTarget?.shape === 'pointer-note' ||
     shapeTarget?.shape === 'stack' ||
@@ -139,7 +146,8 @@ export function ElementDataSections({
     isCodeBlock ||
     isChecklist ||
     isLegend ||
-    isSankey;
+    isSankey ||
+    shapeTarget?.shape === 'map';
   return (
     <>
       {showTools ? (
@@ -249,6 +257,7 @@ export function ElementDataSections({
             <StackMenuSection
               target={shapeTarget}
               ops={props.elementStyle}
+              elements={props.elements}
               sectionProps={sectionProps}
             />
           ) : null}
@@ -278,11 +287,22 @@ export function ElementDataSections({
               }
             />
           ) : null}
+          {/* The quote's look, lines and portrait (docs/specs/009-elements/quote.md). */}
+          {shapeTarget?.shape === 'quote' ? (
+            <QuoteMenuSection
+              target={shapeTarget}
+              ops={props.elementStyle}
+              sectionProps={sectionProps}
+              onOpenPicker={props.onOpenImagePicker}
+              onRemovePhoto={props.onRemoveImage}
+            />
+          ) : null}
           {shapeTarget && hasWebRowsSection(shapeTarget) ? (
             <WebRowsMenuSection
               target={shapeTarget}
               sectionProps={sectionProps}
               onSetRows={props.onSetWebRows}
+              ops={props.elementStyle}
             />
           ) : null}
           {/* Checklist (docs/specs/009-elements/checklist.md) — the rows: done toggles, text, add / remove. */}
@@ -345,6 +365,15 @@ export function ElementDataSections({
               flyoutProps={flyoutProps('sankey')}
               onPreviewTextSize={props.onPreviewTextSize}
               onPreviewEnd={props.onPreviewStyleEnd}
+            />
+          ) : null}
+          {/* Map (docs/specs/009-elements/map.md "The menu"): Edit Map and the View, for an Editor only. */}
+          {shapeTarget?.shape === 'map' && props.map ? (
+            <MapMenuSections
+              target={shapeTarget}
+              handlers={props.map}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps('map')}
             />
           ) : null}
           {/* Chart (docs/specs/009-elements/pie-chart.md) — display options. Legend placement: Off + 4 sides. */}

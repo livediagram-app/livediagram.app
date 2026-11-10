@@ -21,8 +21,10 @@ import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/conte
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import { ImageAltTextField } from '@/components/palette/ImageAltTextField';
+import { CropGlyph, ImagePictureControls } from '@/components/palette/ImagePictureControls';
+import { startImageCrop } from '@/lib/image-crop-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import type { useContextMenuScaffold } from './useContextMenuScaffold';
+import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
@@ -141,7 +143,7 @@ export function ElementContentSections({
       {target.type === 'image' ? (
         <MenuAccordionSection title="Image" icon={<ImageGlyph />} {...sectionProps('image')}>
           {hasImage ? (
-            <MenuTileGrid cols={2}>
+            <MenuTileGrid cols={target.locked ? 2 : 3}>
               <MenuTile
                 icon={<ImageGlyph />}
                 label="Change Image"
@@ -150,6 +152,17 @@ export function ElementContentSections({
                   onClose();
                 }}
               />
+              {/* Cropping moves and resizes the box, which a lock holds (picture-crop-and-mask.md). */}
+              {target.locked ? null : (
+                <MenuTile
+                  icon={<CropGlyph />}
+                  label="Crop Image"
+                  onClick={() => {
+                    startImageCrop(target.id);
+                    onClose();
+                  }}
+                />
+              )}
               <MenuTile
                 icon={<RemoveIconGlyph />}
                 label="Remove Image"
@@ -189,6 +202,9 @@ export function ElementContentSections({
               <ImageCreditRow credit={target.credit} />
             </>
           ) : null}
+          {/* Mask and Greyscale (docs/specs/009-elements/picture-crop-and-mask.md). */}
+          <ContextMenuDivider />
+          <ImagePictureControls target={target} ops={props.elementStyle} />
           {/* The hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md): any image can carry one. */}
           <ContextMenuDivider />
           <MenuToggleRow

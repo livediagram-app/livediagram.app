@@ -9,6 +9,7 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
+import { ensureMapGeometryFor } from './map-geometry-loader';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
@@ -215,6 +216,8 @@ export async function renderTabToCanvas(
   tab: Tab,
   opts: CanvasRenderOpts = {},
 ): Promise<HTMLCanvasElement> {
+  // A map's land (docs/specs/009-elements/map.md "Exports and other surfaces"), loaded only when the tab has one.
+  await ensureMapGeometryFor(tab.elements);
   const frame = opts.page
     ? pageExportFrame(opts.page, {
         ruling: pageRulingOf(tab, opts.page),
@@ -609,6 +612,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
 // A downloaded SVG carries its own typefaces: the reader hasn't got
 // Shantell Sans installed, and an @import is dead in an offline viewer.
 export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
+  await ensureMapGeometryFor(tab.elements);
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
   // The writing's faces only: the writing itself is measured once, by renderTabToSvg.
   const writing = opts.page ? { fonts: pageWritingFonts(tab, opts.page) } : null;

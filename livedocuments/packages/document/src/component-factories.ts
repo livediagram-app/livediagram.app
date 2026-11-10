@@ -14,6 +14,8 @@ import { createImage } from './factories';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { applyShapeVariant } from './shape-variants';
 import { ACCENT_BAR_TEXT, HERO_DEFAULT_CAPTION } from './web-components';
+import { createLogoStrip } from './logo-strip';
+import { logoStripSize } from './logo-strip-size';
 
 // Theme colours a component is built from. `accent` is the theme accent
 // (elementStroke); `surface` is the light element fill; `ink` is the element
@@ -33,7 +35,10 @@ export type ComponentKind =
   | 'callout'
   | 'stat'
   | 'process'
-  | 'avatar';
+  | 'avatar'
+  // The logo strip (docs/specs/009-elements/logo-strip.md): a stack and its logos, placed together by the draw
+  // path (createLogoStrip); createComponent gives its stack alone.
+  | 'logo-strip';
 
 const COMPONENT_SHAPE: Partial<Record<ComponentKind, ShapeKind>> = {
   banner: 'banner',
@@ -62,6 +67,7 @@ export const COMPONENT_SIZE: Record<ComponentKind, { width: number; height: numb
   process: SHAPE_DEFAULT_SIZE.process,
   hero: { width: HERO_WIDTH, height: HERO_HEIGHT },
   avatar: { width: AVATAR_SIZE, height: AVATAR_SIZE },
+  'logo-strip': logoStripSize(),
 };
 
 // Avatar (docs/specs/008-canvas/canvas-and-palette.md): a circular image. Square + aspect-locked with a 'full'
@@ -121,6 +127,7 @@ export function createComponent(
 ): Element {
   if (kind === 'avatar') return createAvatar(cx, cy);
   if (kind === 'hero') return createHero(cx, cy, colors.accent);
+  if (kind === 'logo-strip') return createLogoStrip({ cx, cy })[0]!;
   // The Callout is a Card preset (docs/specs/009-elements/card.md): the callout's own size and copy, as a card with
   // badge media.
   if (kind === 'callout') {
