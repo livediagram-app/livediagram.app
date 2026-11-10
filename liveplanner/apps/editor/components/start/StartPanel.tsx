@@ -301,7 +301,8 @@ export function StartPanel<C extends string>({
         <header
           // Room on the right for the help and × pinned in the corner. On a phone only the title's row needs it: the
           // search below runs the full width, so a long placeholder ("Find a board, sheet, form or layout") fits.
-          className="relative isolate flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:pl-6 max-sm:pr-5 max-sm:pt-1"
+          // From `sm` it stands 100px tall, its row centred, so the band shows (start-panel.md "Its height").
+          className="relative isolate flex flex-wrap content-center items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:min-h-[100px] sm:pl-6 max-sm:pr-5 max-sm:pt-1"
           style={{ borderColor: palette.border }}
         >
           <StartHeaderBand kind={header.kind} band={header.band} underHandle />

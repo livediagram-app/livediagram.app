@@ -80,6 +80,8 @@ are the hero's own theme (`@liveworkspace/explorer/hero-theme`), so the start an
 - **The title.** A title mark leads it: a 36px tile (32px on a phone) in the band's deeper shade, holding the motif as
   one glyph in the accent (`StartTitleMark`). The title is set in the hero's face at 20px (18px on a phone): the heavy
   face, tracked in (`startHeadingFace`).
+- **Its height.** From `sm` the header stands 100px tall (owner, 2026-11-10), its row centred in it, so the band has
+  room to show its texture and pieces; on a phone it stays compact (below).
 - **Where the pieces show.** The texture and the corner pieces at every size; the gap piece only from `xl`, where the
   panel is at its widest and the gap between the line and the search is wide enough that it never meets the words.
 - **The search** keeps its own paper and border over the band, lifted by a small shadow, so it still reads as the
