@@ -1,5 +1,7 @@
 'use client';
 
+import { htmlProps } from '@livedesign/ui';
+
 // A tab window's drawing (docs/specs/009-elements/tab-window.md "The element"): the tab drawn as the editor shows it
 // (useTabSvg: the export renderer, in this person's appearance, with its photos), zoomed to fit and centred on the
 // tab's own canvas: its paper and its pattern (dots, grid, lines) at the drawing's fit, lined up with it, as the editor
@@ -60,7 +62,7 @@ export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: stri
         className="[&>svg>rect:first-of-type]:hidden"
         style={{ display: 'block' }}
         // Our own renderer's output (every label is xmlEscaped inside it).
-        dangerouslySetInnerHTML={{ __html: sanitizedHtml(inner, 'svg-content') }}
+        {...htmlProps(sanitizedHtml(inner, 'svg-content'))}
       />
     </div>
   );

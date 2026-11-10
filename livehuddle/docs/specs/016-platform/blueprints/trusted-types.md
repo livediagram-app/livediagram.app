@@ -4,19 +4,20 @@ Derived from [Trusted Types](../trusted-types.md).
 
 ## Domain and naming
 
-| Term               | Identifier                                           | Meaning                                                                                                                                |
-| ------------------ | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| The header value   | `TRUSTED_TYPES_CSP`                                  | `require-trusted-types-for 'script'; trusted-types liveworkspace-markup liveworkspace-inert-parse nextjs ProseMirrorClipboard default` |
-| Markup policy      | `MARKUP_POLICY` (`'liveworkspace-markup'`)           | Makes `TrustedHTML` from livehuddle's own builders' markup                                                                             |
-| Inert-parse policy | `INERT_PARSE_POLICY` (`'liveworkspace-inert-parse'`) | Lets `DOMParser` read a file a person opened                                                                                           |
-| Default policy     | `'default'`                                          | The browser's fallback for a plain string at a sink                                                                                    |
-| Boot script        | `trustedTypesBootScript(assetPrefix, origins)`       | Inline, first in each layout's `<head>`: the default policy and the violation log                                                      |
-| Asset prefix       | `''`, `/live`, `/help`, `/community`, `/telemetry`   | Where an app's own build is served from (`assetPrefix` or `basePath`)                                                                  |
-| Markup helper      | `trustedHtml(markup)`                                | `TrustedHTML` in a browser with Trusted Types, else the string itself                                                                  |
-| Sanitiser          | `sanitizedHtml(markup, profile)`                     | DOMPurify over people's markup, minted through the markup policy                                                                       |
-| Profile            | `MarkupProfile`: `svg`, `svg-content`, `document`    | Where the markup goes: into an HTML element, into an `<svg>`, an iframe                                                                |
-| Builder markup     | `builderMarkup` (each product's sinks test)          | The files that may call `trustedHtml` besides a layout                                                                                 |
-| Inert parse        | `parseInert(source, type)`                           | `DOMParser` through the inert-parse policy                                                                                             |
+| Term               | Identifier                                                                                                         | Meaning                                                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| The header value   | `TRUSTED_TYPES_CSP`                                                                                                | `require-trusted-types-for 'script'; trusted-types liveworkspace-markup liveworkspace-inert-parse nextjs ProseMirrorClipboard default`   |
+| Markup policy      | `MARKUP_POLICY` (`'liveworkspace-markup'`)                                                                         | Makes `TrustedHTML` from livehuddle's own builders' markup                                                                               |
+| Inert-parse policy | `INERT_PARSE_POLICY` (`'liveworkspace-inert-parse'`)                                                               | Lets `DOMParser` read a file a person opened                                                                                             |
+| Default policy     | `'default'`                                                                                                        | The browser's fallback for a plain string at a sink                                                                                      |
+| Boot script        | `trustedTypesBootScript(assetPrefix, origins)`                                                                     | Inline, first in each layout's `<head>`: the default policy and the violation log                                                        |
+| Asset prefix       | `''`, `/live`, `/help`, `/community`, `/telemetry`                                                                 | Where an app's own build is served from (`assetPrefix` or `basePath`)                                                                    |
+| Markup sinks       | `htmlProps(markup)`, `setHtml(el, markup)`, `setSrcdoc(frame, markup)`                                             | The one path to a sink (`@liveworkspace/trusted-types` `html.ts`): `TrustedHTML` in a browser with Trusted Types, else the string itself |
+| Vetted markup      | `SafeHtml`: `trustedConstant(source)`, `builtMarkup(markup)`, `jsonScript(data)`, `sanitizedHtml(markup, profile)` | A branded string, the only thing a sink takes: our own constant, our escaping builders' output, inline JSON, or the sanitiser's output   |
+| Inert parse        | `parseInert(source, type)`                                                                                         | `DOMParser` through the inert-parse policy                                                                                               |
+| Sanitiser          | `sanitizedHtml(markup, profile)`                                                                                   | DOMPurify over people's markup, answering a `SafeHtml` for html.ts's sinks                                                               |
+| Profile            | `MarkupProfile`: `svg`, `svg-content`, `document`                                                                  | Where the markup goes: into an HTML element, into an `<svg>`, an iframe                                                                  |
+| Builder markup     | `builderMarkup` (each product's sinks test)                                                                        | The files that may use the escape hatch (`trustedConstant`, `builtMarkup`) besides a layout                                              |
 
 ## Modules
 
@@ -29,8 +30,9 @@ Derived from [Trusted Types](../trusted-types.md).
 | `apps/{marketing,help,community,telemetry}/public/_headers`                        | The same header on `/*`                                                                                                                                                                                                   |
 | `scripts/e2e-stack.mjs`                                                            | Sends the header on every HTML response, as production does                                                                                                                                                               |
 | `@liveworkspace/trusted-types/sanitize` (`packages/trusted-types/src/sanitize.ts`) | `sanitizedHtml`, `sanitizeMarkup`, the cache; DOMPurify in its own instance                                                                                                                                               |
-| Every `dangerouslySetInnerHTML` site                                               | `__html: sanitizedHtml(markup, profile)` for a document's drawing; `__html: trustedHtml(markup)` in a layout and the builder-markup files alone                                                                           |
-| Every `innerHTML`, `outerHTML` or `insertAdjacentHTML` write                       | `el.innerHTML = trustedHtml(markup) as string` (`useFaceFinishPass.ts`, the Marker and Sketch face ink)                                                                                                                   |
+| Every React element given markup                                                   | `{...htmlProps(sanitizedHtml(markup, profile))}` for a document's drawing; `{...htmlProps(markup)}` with escape-hatch markup in a layout and the builder-markup files alone (fixed SVG pictures are JSX instead)          |
+| Every DOM element given markup                                                     | `setHtml(el, markup)` (`useFaceFinishPass.ts`, the Marker and Sketch face ink); an iframe's document `setSrcdoc(frame, markup)`                                                                                           |
+| `.github/scripts/raw-html-guard.mjs` (repository root)                             | Fails CI and the pre-push hook on a raw HTML sink anywhere outside `html.ts`                                                                                                                                              |
 
 ## Behaviour and state
 
@@ -96,7 +98,7 @@ own named policy. The boot script contains no `</script` anywhere (a test holds 
 3. `svg`: `USE_PROFILES { svg, svgFilters }`, `ADD_ATTR [role, target]`, DOMPurify's URL rule plus `blob:`.
    `svg-content`: the same over `<svg xmlns>…</svg>`, as a fragment, answering the `<svg>`'s `innerHTML`.
    `document`: `USE_PROFILES { html, svg, svgFilters }`, `WHOLE_DOCUMENT`.
-4. The text is minted through the markup policy (or answered as text without Trusted Types) and cached, unless it
+4. The text is answered as a `SafeHtml` (html.ts's sink mints it through the markup policy) and cached, unless it
    is empty or the markup and text together pass `SANITISE_CACHE_CHARS`; then the oldest results go until the cache
    is within `SANITISE_CACHE_ENTRIES` and `SANITISE_CACHE_CHARS`.
 5. No `window` (or DOMPurify unsupported): `''`, never cached.
@@ -112,13 +114,23 @@ script runs on our pages.
 ```ts
 // @liveworkspace/trusted-types/sanitize
 export type MarkupProfile = 'svg' | 'svg-content' | 'document';
-export function sanitizedHtml(markup: string, profile?: MarkupProfile): TrustedHTML | string;
+export function sanitizedHtml(markup: string, profile?: MarkupProfile): SafeHtml;
 export function sanitizeMarkup(markup: string, profile?: MarkupProfile): string;
 
 export const TRUSTED_TYPES_CSP: string;
 export const MARKUP_POLICY: 'liveworkspace-markup';
 export const INERT_PARSE_POLICY: 'liveworkspace-inert-parse';
-export function trustedHtml(markup: string): TrustedHTML | string;
+// html.ts, the one path to a sink
+export type SafeHtml = string & { readonly [vetted]: true };
+export function trustedConstant(source: string): SafeHtml;
+export function builtMarkup(markup: string): SafeHtml;
+export function jsonScript(data: unknown): SafeHtml;
+export function htmlProps(markup: SafeHtml): {
+  dangerouslySetInnerHTML: { __html: TrustedHTML | string };
+};
+export function setHtml(element: Element, markup: SafeHtml): void;
+export function setSrcdoc(frame: HTMLIFrameElement, markup: SafeHtml): void;
+export function trustedHtml(markup: SafeHtml): TrustedHTML | string;
 export function parseInert(source: string, type: DOMParserSupportedType): Document;
 export function isAllowedScriptUrl(
   url: string,
@@ -127,7 +139,7 @@ export function isAllowedScriptUrl(
   origins: readonly string[],
   sink?: string,
 ): boolean;
-export function trustedTypesBootScript(assetPrefix: string, origins?: readonly string[]): string;
+export function trustedTypesBootScript(assetPrefix: string, origins?: readonly string[]): SafeHtml;
 ```
 
 ## Errors and edge cases
@@ -142,18 +154,19 @@ export function trustedTypesBootScript(assetPrefix: string, origins?: readonly s
 
 ## Security and trust
 
-- `trustedHtml` and `sanitizedHtml` are the only paths to `TrustedHTML` for markup. `trustedHtml`'s callers are the
-  layouts and the escaping builders listed as builder markup; every other sink, and every sink of a document's
-  drawing, goes through `sanitizedHtml`. The sinks test holds both: a new `trustedHtml` call outside the list fails it,
-  and so does a listed file that no longer calls it. `parseInert` only parses: nothing from the document is inserted as markup.
+- html.ts's sinks (`htmlProps`, `setHtml`, `setSrcdoc`) are the only paths to a sink, and each takes a `SafeHtml`;
+  the raw HTML guard fails a sink anywhere else. The escape hatch (`trustedConstant`, `builtMarkup`) is for the
+  layouts and the files listed as builder markup; every other sink, and every sink of a document's drawing, takes
+  `sanitizedHtml`'s output. The sinks test holds the list: a new escape-hatch call outside it fails, and so does a
+  listed file that no longer uses it. `parseInert` only parses: nothing from the document is inserted as markup.
 - The default policy allows script URLs only: this app's own `/_next/`, named origins, and same-origin `blob:` for a
   worker. `trusted-types` names every policy, so no other code can create one.
 
 ## Performance and limits
 
 `createHTML` is an identity: one call per markup render, no parsing. `sanitizedHtml` parses: a 1 MB drawing (4,000
-labelled boxes) takes about 0.9 s of CPU in jsdom, far less in a browser, and a repeat is a cache lookup; the
-face-finish ink, the hot path, stays on `trustedHtml`.
+labelled boxes) takes about 0.9 s of CPU in jsdom, far less in a browser, and a repeat is a cache lookup; the face-finish ink, the hot path, stays on
+`builtMarkup`. `htmlProps` adds one small props object per render.
 
 ## Observability
 
@@ -171,7 +184,8 @@ face-finish ink, the hot path, stays on `trustedHtml`.
 | `trustedHtml` and `parseInert`                                                                        | `trusted-types.test.ts`                                                      |
 | The boot script runs the rule and logs                                                                | `trusted-types.test.ts`: `trustedTypesBootScript`                            |
 | Every sink uses a policy, direct DOM writes included                                                  | `packages/ui/src/trusted-types-sinks.test.ts` (every app and package)        |
-| `trustedHtml` only in a layout or a builder-markup file                                               | `trusted-types-sinks.test.ts` (`builderMarkup`)                              |
+| No raw HTML sink outside html.ts                                                                      | `.github/scripts/raw-html-guard.mjs` (repository root), with its tests       |
+| The escape hatch (`trustedConstant`, `builtMarkup`) only in a layout or a builder-markup file         | `trusted-types-sinks.test.ts` (`builderMarkup`)                              |
 | The sanitiser strips script, handlers, `javascript:`, `<foreignObject>`, `<use>`, `<style>` breakouts | `packages/trusted-types/src/sanitize.test.ts`                                |
 | Every template's drawing parses the same through it                                                   | `apps/*/lib/sanitised-drawings.test.ts`                                      |
 | A 1 MB drawing within its CPU budget; the cache bounded                                               | `sanitize.test.ts` (`cpuMsOf`)                                               |

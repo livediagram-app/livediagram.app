@@ -8,7 +8,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { FINISHES, type Finish } from '@livedesign/design';
-import { Select, lucideGlyph, trustedHtml } from '@livedesign/ui';
+import { Select, lucideGlyph, builtMarkup, htmlProps } from '@livedesign/ui';
 import { lucideDices } from '@liveworkspace/icons/lucide';
 import { FINISH_LABELS } from '@/components/palette/FinishSection';
 import { track } from '@/lib/telemetry';
@@ -215,7 +215,7 @@ function LookCard({
         aria-hidden
         className="block h-20 w-full overflow-hidden [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
         style={{ backgroundColor: paper }}
-        dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+        {...htmlProps(builtMarkup(markup))}
       />
       {badge ? (
         <span

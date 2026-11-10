@@ -4,6 +4,7 @@ import { SIGNED_IN_HINT_COOKIE } from '@liveplanner/api-schema';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
 import { thisBrowserKey } from '@liveworkspace/explorer/this-browser';
+import { trustedConstant } from '@liveplanner/ui/trusted-types';
 
 // The editor-only snippet the root layout inlines into a `<script>` that runs
 // BEFORE first paint (the appearance one is shared by every app and lives in
@@ -25,7 +26,9 @@ import { thisBrowserKey } from '@liveworkspace/explorer/this-browser';
 // fly-up-in animations have already fired before a React effect could add it.
 // The OS prefers-reduced-motion query in globals.css needs no JS; this only
 // covers the user's own override.
-export const REDUCE_MOTION_BOOT_SCRIPT = `try{var p=JSON.parse(localStorage.getItem('${USER_PREFERENCES_STORAGE_KEY}')||'{}');if(p&&p.reduceMotion===true)document.documentElement.classList.add('reduce-motion')}catch(e){}`;
+export const REDUCE_MOTION_BOOT_SCRIPT = trustedConstant(
+  `try{var p=JSON.parse(localStorage.getItem('${USER_PREFERENCES_STORAGE_KEY}')||'{}');if(p&&p.reduceMotion===true)document.documentElement.classList.add('reduce-motion')}catch(e){}`,
+);
 
 // Webfonts without holding up first paint (docs/specs/004-interface-design/fonts.md "Loading"). The
 // Google Fonts stylesheet is linked as `media="print"`, which the browser fetches at low priority
@@ -33,7 +36,9 @@ export const REDUCE_MOTION_BOOT_SCRIPT = `try{var p=JSON.parse(localStorage.getI
 // once it has loaded. Text paints in the fallback face until then, exactly as `display=swap`
 // already paints it while a face downloads, and useFontEpoch re-measures as the faces land.
 export const WEBFONTS_STYLESHEET_ID = 'liveplanner-webfonts';
-export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFONTS_STYLESHEET_ID}');if(l){var on=function(){l.media='all'};if(l.sheet)on();else l.addEventListener('load',on)}}catch(e){}`;
+export const WEBFONTS_SWAP_SCRIPT = trustedConstant(
+  `try{var l=document.getElementById('${WEBFONTS_STYLESHEET_ID}');if(l){var on=function(){l.media='all'};if(l.sheet)on();else l.addEventListener('load',on)}}catch(e){}`,
+);
 
 // The plan's grant, asked for while the editor's code loads (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"):
 // on /project/<id>, a guest's token (or a link's code from `?s=`, with its remembered password) is all the request
@@ -44,7 +49,9 @@ export const SHARE_PASSWORD_STORAGE_PREFIX = 'liveplanner:share-password:';
 // Where this browser lists what it keeps only here (@liveworkspace/explorer/this-browser): the index has never heard
 // of those, so their grant is not asked for.
 const THIS_BROWSER_KEY = thisBrowserKey('liveplanner');
-export const PLAN_GRANT_BOOT_SCRIPT = `try{var m=location.pathname.match(/^\\/project\\/([^/]+)\\/?$/);if(m&&m[1]!=='placeholder'&&m[1]!=='shared'&&!/(?:^|; )${SIGNED_IN_HINT_COOKIE}=1/.test(document.cookie)){var t=localStorage.getItem('${GUEST_TOKEN_STORAGE_KEY}');var s=new URLSearchParams(location.search).get('s');if(t||s){var h={};if(t)h.Authorization='Bearer '+t;if(s){h['X-Share-Code']=s;var pw=localStorage.getItem('${SHARE_PASSWORD_STORAGE_PREFIX}'+s);if(pw)h['X-Share-Password']=pw}var id=decodeURIComponent(m[1]);var k=localStorage.getItem('${THIS_BROWSER_KEY}');if(!(k&&(JSON.parse(k).items||[]).some(function(i){return i&&i.id===id})))window.__lpGrant={id:id,share:s||'',p:fetch('${API_BASE}/index/items/'+encodeURIComponent(id)+'/grant',{method:'POST',headers:h}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}}}}catch(e){}`;
+export const PLAN_GRANT_BOOT_SCRIPT = trustedConstant(
+  `try{var m=location.pathname.match(/^\\/project\\/([^/]+)\\/?$/);if(m&&m[1]!=='placeholder'&&m[1]!=='shared'&&!/(?:^|; )${SIGNED_IN_HINT_COOKIE}=1/.test(document.cookie)){var t=localStorage.getItem('${GUEST_TOKEN_STORAGE_KEY}');var s=new URLSearchParams(location.search).get('s');if(t||s){var h={};if(t)h.Authorization='Bearer '+t;if(s){h['X-Share-Code']=s;var pw=localStorage.getItem('${SHARE_PASSWORD_STORAGE_PREFIX}'+s);if(pw)h['X-Share-Password']=pw}var id=decodeURIComponent(m[1]);var k=localStorage.getItem('${THIS_BROWSER_KEY}');if(!(k&&(JSON.parse(k).items||[]).some(function(i){return i&&i.id===id})))window.__lpGrant={id:id,share:s||'',p:fetch('${API_BASE}/index/items/'+encodeURIComponent(id)+'/grant',{method:'POST',headers:h}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}}}}catch(e){}`,
+);
 
 // Signing in without a click (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in without a click"): once per browser
 // session, a browser with no session here is bounced through the accounts site and straight back, signed in when
@@ -63,8 +70,10 @@ export const SILENT_SIGN_IN_SKIP_PATHS = [
   '/workbench',
   '/form',
 ];
-export const SILENT_SIGN_IN_BOOT_SCRIPT = silentSignInBootScript({
-  apiBase: API_BASE,
-  cookies: silentCookiesForHint(SIGNED_IN_HINT_COOKIE),
-  skipPaths: SILENT_SIGN_IN_SKIP_PATHS,
-});
+export const SILENT_SIGN_IN_BOOT_SCRIPT = trustedConstant(
+  silentSignInBootScript({
+    apiBase: API_BASE,
+    cookies: silentCookiesForHint(SIGNED_IN_HINT_COOKIE),
+    skipPaths: SILENT_SIGN_IN_SKIP_PATHS,
+  }),
+);

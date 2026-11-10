@@ -6,13 +6,13 @@ import {
   REPORT_END,
   REPORT_START,
   addedLines,
-  mergeLcov,
   parseArtifact,
   patchLine,
   renderReport,
   totalsOf,
   withReport,
 } from './coverage-report.mjs';
+import { mergeLcov } from './lcov.mjs';
 
 const lcov = (/** @type {string} */ file, /** @type {string[]} */ rows) =>
   [`SF:${file}`, ...rows, 'end_of_record'].join('\n');

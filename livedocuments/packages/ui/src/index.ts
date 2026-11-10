@@ -31,7 +31,13 @@ export { EDITOR_MODE_ICONS } from './icons';
 export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,
-  trustedHtml,
+  builtMarkup,
+  htmlProps,
+  jsonScript,
+  setHtml,
+  setSrcdoc,
+  trustedConstant,
+  type SafeHtml,
   trustedTypesBootScript,
 } from './trusted-types';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';

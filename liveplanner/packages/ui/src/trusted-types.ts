@@ -5,7 +5,13 @@
 export {
   isAllowedScriptUrl,
   resetTrustedTypesForTests,
-  trustedHtml,
+  builtMarkup,
+  htmlProps,
+  jsonScript,
+  setHtml,
+  setSrcdoc,
+  trustedConstant,
+  type SafeHtml,
   trustedTypesBootScript,
 } from '@liveworkspace/trusted-types';
 export { MARKUP_POLICY, TRUSTED_TYPES_CSP } from './trusted-types-csp';

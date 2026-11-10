@@ -31,7 +31,7 @@ import {
   LoomTileArt,
   VimeoTileArt,
   YouTubeTileArt,
-} from '@/components/palette/palette-tile-art';
+} from '@liveworkspace/workbench/components/palette/embed-tile-art';
 
 // Every palette tile glyph is drawn at this size (docs/specs/004-interface-design/iconography.md), so a strip of
 // tiles reads as one set.

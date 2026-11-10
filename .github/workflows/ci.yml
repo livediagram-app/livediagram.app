@@ -145,6 +145,11 @@ jobs:
       - name: No new copies across products
         run: node .github/scripts/duplicate-guard.mjs
 
+      # Every raw HTML sink goes through @liveworkspace/trusted-types's html.ts (docs/ci.md "One path for
+      # markup"). Repo-wide and quick, so every group runs it.
+      - name: One path for markup
+        run: node .github/scripts/raw-html-guard.mjs
+
       - name: Save turbo cache
         uses: ./.github/actions/turbo-cache-save
 
@@ -283,6 +288,51 @@ jobs:
         if: failure() && github.event_name == 'pull_request'
         uses: ./.github/actions/cancel-on-failure
 
+  # Each reached editor's coverage, all its shards merged, against its floor (docs/ci.md "Editor coverage
+  # floors"). A per-shard threshold would judge a slice, so the floor is checked here, after the shards.
+  # Skipped when a shard failed: the CI check already fails on that.
+  editor-coverage:
+    name: Editor coverage floors
+    needs: [plan, editor-tests]
+    if: >-
+      always() && needs.plan.outputs.editors != '[]' && needs.plan.outputs.editors != '' &&
+      needs.editor-tests.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      # The scripts alone: the check reads only lcov files and the floors.
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Download the editors' coverage
+        uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-*-editor-*
+          path: coverage-editors
+
+      - name: Check the floors
+        env:
+          EDITORS: ${{ needs.plan.outputs.editors }}
+        run: |
+          mkdir -p coverage-editors
+          node .github/scripts/coverage-floors.mjs coverage-editors
+
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
+
   build:
     name: Build (${{ matrix.group }})
     needs: plan
@@ -378,7 +428,7 @@ jobs:
   # and passes when the change reached nothing.
   ci:
     name: CI
-    needs: [plan, checks, tests, editor-tests, build]
+    needs: [plan, checks, tests, editor-tests, editor-coverage, build]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2

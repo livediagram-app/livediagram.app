@@ -1,5 +1,7 @@
 'use client';
 
+import { htmlProps } from '@livedocuments/ui';
+
 // A layout previewed on its page while its tile is hovered (docs/specs/007-editor/
 // pages-mode.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
 // page's own background so it covers what is there now, through the same renderer the exports
@@ -104,7 +106,7 @@ function LayoutLayer({
       height={rect.height}
       viewBox={`${rect.x} ${rect.y} ${rect.width} ${rect.height}`}
       // Our own renderer's output (every label is xmlEscaped inside it).
-      dangerouslySetInnerHTML={{ __html: sanitizedHtml(markup, 'svg-content') }}
+      {...htmlProps(sanitizedHtml(markup, 'svg-content'))}
     />
   );
 }

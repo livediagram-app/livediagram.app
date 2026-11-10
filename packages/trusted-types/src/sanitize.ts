@@ -1,10 +1,12 @@
 // The one HTML sanitiser for every app and liveworkspace.app (livediagram/docs/specs/016-platform/trusted-types.md
 // "The sanitiser"): DOMPurify, in its own instance with our rules, minting its result through the markup policy.
 // Every sink whose markup carries people's content (a document's drawing, an import, a paste, the network) goes
-// through `sanitizedHtml`; `trustedHtml` stays the escape hatch for static and builder markup. A module of its own,
-// so DOMPurify reaches only the chunks that render such markup, never a page's first load that has none.
+// through `sanitizedHtml`, whose `SafeHtml` goes into the page by html.ts's sinks like any other (`htmlProps`,
+// `setSrcdoc`); `trustedConstant` and `builtMarkup` stay the escape hatch for our own and builder markup. A module of
+// its own, so DOMPurify reaches only the chunks that render such markup, never a page's first load that has none.
 import createDOMPurify, { type Config, type DOMPurify } from 'dompurify';
 import { MARKUP_POLICY } from './csp';
+import type { SafeHtml } from './html';
 import { htmlPolicy } from './policies';
 
 /**
@@ -96,7 +98,7 @@ export function sanitizeMarkup(markup: string, profile: MarkupProfile = 'svg'): 
 // and by the characters held (inputs and results), least recently used first out.
 export const SANITISE_CACHE_ENTRIES = 256;
 export const SANITISE_CACHE_CHARS = 4_000_000;
-type Cached = { profile: MarkupProfile; out: TrustedHTML | string; chars: number };
+type Cached = { profile: MarkupProfile; out: SafeHtml; chars: number };
 const cache = new Map<string, Cached>();
 let cachedChars = 0;
 
@@ -119,14 +121,12 @@ export function sanitiseCacheSize(): { entries: number; chars: number } {
 
 /**
  * Markup carrying people's content, sanitised (DOMPurify: no script, no event handler, no `javascript:` URL, no
- * `<foreignObject>`, no `<use>`, no href that loads from outside the drawing but a link's or a picture's), as
- * `TrustedHTML` for `dangerouslySetInnerHTML` (or `srcdoc`, profile `document`). Outside the browser it answers an
- * empty string: there is no DOM to sanitise with, and a server render of people's markup is never wanted.
+ * `<foreignObject>`, no `<use>`, no href that loads from outside the drawing but a link's or a picture's), as the
+ * `SafeHtml` html.ts's sinks take: `htmlProps` for a React element, `setSrcdoc` for an iframe (profile `document`).
+ * The sink mints it through the markup policy, so nothing is minted twice. Outside the browser it answers an empty
+ * string: there is no DOM to sanitise with, and a server render of people's markup is never wanted.
  */
-export function sanitizedHtml(
-  markup: string,
-  profile: MarkupProfile = 'svg',
-): TrustedHTML | string {
+export function sanitizedHtml(markup: string, profile: MarkupProfile = 'svg'): SafeHtml {
   const hit = cache.get(markup);
   if (hit?.profile === profile) {
     // Most recently used goes last, so the oldest key is the least recently used.
@@ -135,10 +135,9 @@ export function sanitizedHtml(
     return hit.out;
   }
   if (hit) forget(markup);
-  const text = clean(markup, profile);
-  const out = htmlPolicy(MARKUP_POLICY)?.createHTML(text) ?? text;
-  const chars = markup.length + text.length;
-  if (text !== '' && chars <= SANITISE_CACHE_CHARS) {
+  const out = clean(markup, profile) as SafeHtml;
+  const chars = markup.length + out.length;
+  if (out !== '' && chars <= SANITISE_CACHE_CHARS) {
     cache.set(markup, { profile, out, chars });
     cachedChars += chars;
     while (cache.size > SANITISE_CACHE_ENTRIES || cachedChars > SANITISE_CACHE_CHARS)
