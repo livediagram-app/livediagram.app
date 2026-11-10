@@ -288,7 +288,7 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Re-encoding a decoded block is stable                                               | `stroke-points.test.ts`                                                           |
 | Every named rejection                                                               | `stroke-points.test.ts`                                                           |
 | Encoder throws on non-finite, length mismatch, too many                             | `stroke-points.test.ts`                                                           |
-| A stroke past the cap is fitted, never refused; pressures follow; worst-case budget | `packages/design/src/stroke-fit.test.ts`                                          |
+| A stroke past the cap is fitted, never refused; pressures follow; worst-case budget | `../packages/element-model/src/stroke-fit.test.ts`                                |
 | Memoised decode: same arrays, bounded, LRU, oversize                                | `../packages/model-core/src/stroke-points-cache.test.ts`                          |
 | Corrupt block draws nothing and logs once                                           | `stroke-points-cache.test.ts`                                                     |
 | Debug decoder and expansion                                                         | `../packages/model-core/src/stroke-points-debug.test.ts`                          |

@@ -195,6 +195,8 @@ drawing apart:
   inner layout; the arrows into it, or into the shapes it holds, are its edges, and an arrow
   inside it moves with it as drawn. Only the outermost such box is a unit, and one holding a
   locked element is not one.
+- **A box whose arrows all stay inside it** (a panel wired only within itself) is no node: it and what it holds
+  stay put and are in the way of the rest like anything else, rather than being carried by a node they overlap.
 - **A rider** goes with a free node: a smaller unwired box overlapping it (an icon badge, a "Usually
   1 day" chip, a caption laid over it), moved exactly as the node moved.
 - **A dashed or dotted arrow** is a secondary link by convention (a dotted-line report, an async
@@ -257,6 +259,10 @@ a component's nodes are positioned:
 - Every style is the same single undoable op (`autoLayoutTab(choice)`); no surface in liveplanner offers a choice.
 - **Mindmap order** is measured clockwise from 12 o'clock, where its first branch is placed, so a
   second tidy keeps the map still (measured from 9 o'clock, every tidy turned it a little).
+  The first branch's wedge is centred on 12 o'clock, so a map drawn with one branch up and one down stays
+  that way, and a branch a hair left of 12 (a grid snap off straight up) counts as at 12, first not last.
+- **A box of no height** (a rule drawn as a box) is routed like any other: its band is the last one starting at or
+  above its top.
 - Tree and Mindmap consume the same directed edge set as the layered layout; on a
   graph that isn't a tree (extra in-edges, cycles) they lay out a BFS/longest-path
   spanning tree and let the extra arrows re-anchor across it (deterministic, never

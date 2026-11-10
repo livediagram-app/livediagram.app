@@ -1,6 +1,7 @@
 // The colour maths (a written colour to channels, contrast, tint and shade, the paper a colour amounts to): one
 // copy for every product, @liveworkspace/element-model/colour-math.
 export * from '@liveworkspace/element-model/colour-math';
+import { SELF_PAINTING_SHAPES } from '@liveworkspace/element-model/self-painting';
 import type { CanvasSurface } from '@liveworkspace/element-model/colour-math';
 import {
   type BoxedElement,
@@ -285,59 +286,9 @@ export function supportsBorder(element: Element): element is ShapeElement | Free
 // stroke-field writes + type narrowing. A boolean visibility gate: it adds
 // tables (which carry borders) and drops the `actor`, a stick figure with no
 // enclosing outline for which a border is meaningless.
-// Shape kinds that DRAW THEIR OWN BODY, so the wrapper carries no border or
-// background and every border control is dead for them. One list, exported,
-// because the renderer and the menu were each keeping their own and drifted:
-// the menu still offered Border on a code block and a checklist long after the
-// renderer stopped painting one.
-//
-// Icons and stickers are here for a different reason — a glyph and a die-cut
-// plate have no enclosing outline to stroke — but the outcome is the same, so
-// they share the predicate rather than a second condition.
-export const SELF_PAINTING_SHAPES = new Set<string>([
-  // Badge and Step number (docs/specs/009-elements/badge.md): the face paints the pill / disc in its look.
-  'badge',
-  'step',
-  // Concept graphics (docs/specs/009-elements/concept-graphics.md): rows, tiers and discs, no box.
-  'layer-stack',
-  'pyramid',
-  'cycle',
-  'hub',
-  'onion',
-  'chevrons',
-  'icon',
-  // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
-  'sticker',
-  // Progress bar / ring: ProgressView draws the track and the fill itself with
-  // its own hardcoded arc stroke, and never reads the element's strokeWidth or
-  // strokeStyle. They were the drift this list was created to stop, recurring:
-  // added to isSelfDrawingShape and not here, so the Border accordion kept
-  // offering Strength and Pattern on them. Not merely inert — the pick was
-  // committed, so it wrote to the element, autosaved and broadcast an op to every peer in the room, for no visual change
-  // at any zoom.
-  'progress-bar',
-  'progress-ring',
-  'timeline-rail',
-  'rating',
-  'pie-chart',
-  'bar-chart',
-  'line-chart',
-  'code-block',
-  'checklist',
-  // Legend (docs/specs/009-elements/pie-chart.md): LegendView paints its own card and rows.
-  'legend',
-  // Sankey (docs/specs/009-elements/sankey.md): nodes and bands, coloured per node; no box to stroke.
-  'sankey',
-  // A tab window (docs/specs/009-elements/tab-window.md) draws its own rounded frame round the tab it shows.
-  'tab-window',
-  // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
-  // (banner, header), a row of cards, circles and connectors. A callout is
-  // NOT here: its card is an ordinary bordered box with content inside.
-  'banner',
-  'site-header',
-  'stat-row',
-  'process',
-]);
+// The shape kinds that draw their own body (no border, no background, no border controls): one table for every
+// product, @liveworkspace/element-model/self-painting.
+export { SELF_PAINTING_SHAPES };
 
 export function supportsBorderControls(element: Element): boolean {
   if (element.type === 'table') return true;

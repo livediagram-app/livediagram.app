@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@liveworkspace/icons": "workspace:*",
-    "@liveworkspace/model-core": "workspace:*"
+    "@liveworkspace/model-core": "workspace:*",
+    "perfect-freehand": "^1.2.3"
   },
   "scripts": {
     "lint": "oxlint",

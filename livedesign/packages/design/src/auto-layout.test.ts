@@ -117,7 +117,7 @@ describe('autoLayoutElements', () => {
       arrow('a', 'b'),
       arrow('b', 'c'),
     ];
-    const out = autoLayoutElements(els, { originX: 50, originY: 80 });
+    const out: Element[] = autoLayoutElements(els, { originX: 50, originY: 80 });
     const boxes = out.filter(isBoxedLike);
     expect(Math.min(...boxes.map((b) => b.x))).toBe(50);
     expect(Math.min(...boxes.map((b) => b.y))).toBe(80);
