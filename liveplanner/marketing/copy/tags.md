@@ -32,7 +32,7 @@ conflict-free editing, native apps): that means no `crdt`, `offline-first`,
   developer and AI-tool directories.
 - **Skip** `crdt`, `offline-first`, `ios`, `android`. They imply features that
   liveplanner lacks.
-- **Skip** any tag about the source code or running your own copy: the source is not public.
+- **Open source** tags are fine: the source is public in the liveworkspace monorepo.
 - **Skip** tech-stack tags (`nextjs`, `cloudflare`, `typescript`): they mean
   nothing to a general audience.
 

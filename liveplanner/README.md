@@ -49,6 +49,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## Licence
 
-[MIT](LICENSE). The source is not public. liveplanner is free to use; there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/business-model-and-licence.md`](docs/specs/002-project-scope/business-model-and-licence.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in and Cloudflare Email Service for transactional email, each gated on its own key or binding), and the planner runs fully without either of them.
+[MIT](LICENSE), open source in the liveworkspace monorepo. liveplanner is free to use; there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/business-model-and-licence.md`](docs/specs/002-project-scope/business-model-and-licence.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in and Cloudflare Email Service for transactional email, each gated on its own key or binding), and the planner runs fully without either of them.
 
 Third-party components keep their own licences. Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the apps ship is credited, with its licence and notices, on the generated `/licences` page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).
