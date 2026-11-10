@@ -238,7 +238,7 @@ export function withCardHeader<T extends Element>(el: T, on: boolean): T {
 export function migrateLegacyCallouts<E extends Element>(elements: E[]): E[] {
   if (!elements.some(isLegacyCallout)) return elements;
   return elements.map((el) =>
-    isLegacyCallout(el) ? ({ ...el, shape: 'card', cardMedia: 'badge' } as E) : el,
+    isLegacyCallout(el) ? { ...el, shape: 'card', cardMedia: 'badge' } : el,
   );
 }
 

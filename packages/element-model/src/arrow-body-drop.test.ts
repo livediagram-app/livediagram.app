@@ -53,9 +53,7 @@ describe('bodyDropAnchor', () => {
     expect(bodyDropAnchor(point, [frame, inner], { x: 0, y: 430 }, 'inner')).toBeNull();
     const at = (el: Element) => bodyDropAnchor({ x: 50, y: 30 }, [el], { x: -200, y: 30 }, null);
     expect(at(box('badge', 0, 0, { shape: 'badge' }))).toBeNull();
-    expect(
-      at({ id: 'img', type: 'image', x: 0, y: 0, width: 100, height: 60 } as Element),
-    ).toBeNull();
+    expect(at({ id: 'img', type: 'image', x: 0, y: 0, width: 100, height: 60 })).toBeNull();
     expect(at(box('sticky', 0, 0, { type: 'sticky' }))).toEqual({
       elementId: 'sticky',
       anchor: 'w',
