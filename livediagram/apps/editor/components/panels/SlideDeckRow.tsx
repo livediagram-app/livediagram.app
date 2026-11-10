@@ -7,7 +7,7 @@ import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { slideName, type Slide } from '@livediagram/document';
 import { lucideFileText } from '@liveworkspace/icons/lucide';
-import { HoverCard, lucideGlyph, Tooltip } from '@livediagram/ui';
+import { HoverCard, lucideGlyph, Tooltip, htmlProps } from '@livediagram/ui';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
 
 const NotesIcon = lucideGlyph(lucideFileText, 11);
@@ -96,7 +96,7 @@ export function SlideDeckRow({
           className="h-full w-full"
           aria-hidden
           // Our own renderer's output (every label is xmlEscaped inside it).
-          dangerouslySetInnerHTML={{ __html: sanitizedHtml(thumb.markup, 'svg-content') }}
+          {...htmlProps(sanitizedHtml(thumb.markup, 'svg-content'))}
         />
       ) : null}
     </span>

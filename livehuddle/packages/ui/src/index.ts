@@ -49,7 +49,13 @@ export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,
   parseInert,
-  trustedHtml,
+  builtMarkup,
+  htmlProps,
+  jsonScript,
+  setHtml,
+  setSrcdoc,
+  trustedConstant,
+  type SafeHtml,
   trustedTypesBootScript,
 } from './trusted-types';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
 import { APPEARANCE_BOOT_SCRIPT, DARK_READER_LOCK, PUBLIC_VIEWPORT } from '@livediagram/ui';
-import { trustedHtml, trustedTypesBootScript } from '@liveworkspace/trusted-types';
+import { htmlProps, trustedConstant, trustedTypesBootScript } from '@liveworkspace/trusted-types';
 import { SITE_ASSET_PREFIX } from '@liveworkspace/sites/workspace-proxy';
 import { openExplorerBootScript } from '@liveworkspace/sites/open-explorer';
 import { TURNSTILE_ORIGIN } from '@/lib/turnstile';
@@ -15,7 +15,7 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(SITE_ASSET_PREFIX, [TURNSTILE_
 // Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer"): this is a
 // static site with no router in front of its homepage, so the homepage's first script opens the Explorer instead,
 // before anything paints, when the person's switch is on. Any other page returns at its first test.
-const OPEN_EXPLORER_BOOT = openExplorerBootScript();
+const OPEN_EXPLORER_BOOT = trustedConstant(openExplorerBootScript());
 
 const TITLE = 'liveworkspace: Live apps for every kind of work';
 const DESCRIPTION =
@@ -51,12 +51,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       data-scroll-behavior="smooth"
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(OPEN_EXPLORER_BOOT) }} />
+        <script {...htmlProps(TRUSTED_TYPES_BOOT)} />
+        <script {...htmlProps(OPEN_EXPLORER_BOOT)} />
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
         {/* Appearance before first paint. */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(APPEARANCE_BOOT_SCRIPT) }} />
+        <script {...htmlProps(APPEARANCE_BOOT_SCRIPT)} />
         {children}
       </body>
     </html>

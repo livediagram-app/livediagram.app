@@ -48,6 +48,11 @@ export function prePushSteps({ groups, editors }) {
         cmd: 'node',
         args: ['.github/scripts/file-size-guard.mjs'],
       },
+      {
+        label: 'one path for markup',
+        cmd: 'node',
+        args: ['.github/scripts/raw-html-guard.mjs'],
+      },
     );
   const turbo = (/** @type {string[]} */ ...args) => [
     'exec',

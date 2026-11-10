@@ -8,7 +8,7 @@ import {
   PageViewBoot,
   PUBLIC_VIEWPORT,
   WebVitalsBoot,
-  trustedHtml,
+  htmlProps,
   trustedTypesBootScript,
 } from '@livediagram/ui';
 import { Footer } from '@/components/Footer';
@@ -43,11 +43,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en-GB" suppressHydrationWarning>
       <head>
         {/* Trusted Types first (docs/specs/016-platform/trusted-types.md). */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
+        <script {...htmlProps(TRUSTED_TYPES_BOOT)} />
       </head>
       <body className="flex min-h-screen flex-col bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
         {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(APPEARANCE_BOOT_SCRIPT) }} />
+        <script {...htmlProps(APPEARANCE_BOOT_SCRIPT)} />
         <JsonLd data={site.webSiteJsonLd()} />
         {/* The product's telemetry, search and facts for the help centre's client components; it also installs
             client error tracking (lib/help-client.tsx). */}

@@ -6,7 +6,7 @@ import {
   lucideType,
 } from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
-import { CodeBlockTileArt } from '@/components/palette/palette-tile-art';
+import { CodeBlockTileArt } from '@liveworkspace/workbench/components/palette/embed-tile-art';
 import { TILE_GLYPH_PX, type PaletteTileDef } from './types';
 
 // The Tools tiles (Write, Draw and the Build elements filed beside them): one section of the palette tile catalogue,

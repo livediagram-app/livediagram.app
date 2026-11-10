@@ -17,7 +17,7 @@ import {
   type Finish,
   type MarkerFaceBudget,
 } from '@liveplanner/project';
-import { trustedHtml } from '@liveplanner/ui';
+import { builtMarkup, setHtml } from '@liveplanner/ui';
 import {
   scheduleFaceTake,
   type FaceTake,
@@ -426,7 +426,7 @@ function frameInk(
       svg.style.cssText = `position:absolute;left:${left}px;top:${top}px;overflow:visible;pointer-events:none${
         under ? ';z-index:-1' : ''
       }`;
-      svg.innerHTML = trustedHtml(part.svg) as string;
+      setHtml(svg, builtMarkup(part.svg));
       if (drawnAs) el.setAttribute(DRAWN_ATTR, drawnAs);
       el.appendChild(svg);
       return drawnAs ? el : null;
@@ -463,7 +463,7 @@ function shapeInk(
       g.setAttribute(INK_ATTR, '');
       const transform = el.getAttribute('transform');
       if (transform) g.setAttribute('transform', transform);
-      g.innerHTML = trustedHtml(part.svg) as string;
+      setHtml(g, builtMarkup(part.svg));
       if (pen === 'marker') el.setAttribute(DRAWN_ATTR, part.role);
       el.after(g);
       return pen === 'marker' ? el : null;

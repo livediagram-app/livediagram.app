@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livediagram/ui';
+import { builtMarkup, htmlProps } from '@livediagram/ui';
 
 // The sample diagram the Tab Style panels preview their setting on (docs/specs/011-theme/canvas-and-theme-dialog.md
 // "Finish panel", "Text panel"): a step, a decision, the arrow between and a sticky, drawn by the export renderer
@@ -60,7 +60,7 @@ export function TabStylePreview({
       aria-label={label}
       data-finish-preview={finish}
       className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full"
-      dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+      {...htmlProps(builtMarkup(markup))}
     />
   );
 }

@@ -24,7 +24,7 @@ const LAYOUT = read('./layout.tsx');
 
 describe('the reduce-motion pre-hydration script', () => {
   it('is inlined by the layout', () => {
-    expect(LAYOUT).toContain('__html: trustedHtml(REDUCE_MOTION_BOOT_SCRIPT)');
+    expect(LAYOUT).toContain('{...htmlProps(REDUCE_MOTION_BOOT_SCRIPT)}');
   });
 
   it('carries a key that survives being quoted', () => {
@@ -63,7 +63,7 @@ describe('the webfonts stylesheet', () => {
   it('is linked so it never blocks first paint, with the swap script right after it', () => {
     expect(LAYOUT).toMatch(/id=\{WEBFONTS_STYLESHEET_ID\}[\s\S]*?media="print"/);
     expect(LAYOUT).toMatch(
-      /media="print"[\s\S]*?\/>\s*<script dangerouslySetInnerHTML=\{\{ __html: trustedHtml\(WEBFONTS_SWAP_SCRIPT\) \}\} \/>/,
+      /media="print"[\s\S]*?\/>\s*<script \{\.\.\.htmlProps\(WEBFONTS_SWAP_SCRIPT\)\} \/>/,
     );
   });
 
@@ -102,8 +102,8 @@ describe('the webfonts stylesheet', () => {
 
 describe('the randomUUID pre-hydration script', () => {
   it('is inlined by the layout right after Trusted Types, before any app code', () => {
-    const tt = LAYOUT.indexOf('trustedHtml(TRUSTED_TYPES_BOOT)');
-    const uuid = LAYOUT.indexOf('trustedHtml(RANDOM_UUID_BOOT_SCRIPT)');
+    const tt = LAYOUT.indexOf('htmlProps(TRUSTED_TYPES_BOOT)');
+    const uuid = LAYOUT.indexOf('htmlProps(RANDOM_UUID_BOOT_SCRIPT)');
     expect(tt).toBeGreaterThan(-1);
     expect(uuid).toBeGreaterThan(tt);
     expect(uuid).toBeLessThan(LAYOUT.indexOf('<StaleBuildBoot'));

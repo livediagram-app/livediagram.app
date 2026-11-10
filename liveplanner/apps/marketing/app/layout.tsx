@@ -11,7 +11,8 @@ import {
   SITE_NAME,
   SITE_URL,
   WebVitalsBoot,
-  trustedHtml,
+  htmlProps,
+  trustedConstant,
   trustedTypesBootScript,
 } from '@liveplanner/ui';
 import { NON_MARKETING_SEGMENTS, SIGNED_IN_HINT_COOKIE } from '@liveplanner/api-schema';
@@ -21,7 +22,9 @@ import { marketingSilentSignInScript } from '@liveworkspace/marketing-site/lib/s
 import { MARKETING_DESCRIPTION, MARKETING_TITLE } from '@/lib/site-copy';
 
 // Skips a view transition into this product's other apps (viewTransitionGuardScript).
-const VIEW_TRANSITION_GUARD_SCRIPT = viewTransitionGuardScript(NON_MARKETING_SEGMENTS);
+const VIEW_TRANSITION_GUARD_SCRIPT = trustedConstant(
+  viewTransitionGuardScript(NON_MARKETING_SEGMENTS),
+);
 
 // SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and
@@ -39,7 +42,7 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript('');
 
 // Signing in without a click (@liveworkspace/marketing-site/lib/silent-sign-in): someone signed in to liveworkspace
 // is signed in here too, by a bounce that waits until the page has painted and gone idle.
-const SILENT_SIGN_IN_SCRIPT = marketingSilentSignInScript(SIGNED_IN_HINT_COOKIE);
+const SILENT_SIGN_IN_SCRIPT = trustedConstant(marketingSilentSignInScript(SIGNED_IN_HINT_COOKIE));
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -150,16 +153,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en-GB" suppressHydrationWarning>
       <head>
         {/* Trusted Types before anything else (docs/specs/016-platform/trusted-types.md). */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(SILENT_SIGN_IN_SCRIPT) }} />
+        <script {...htmlProps(TRUSTED_TYPES_BOOT)} />
+        <script {...htmlProps(SILENT_SIGN_IN_SCRIPT)} />
         <style>{VIEW_TRANSITION_OPT_IN}</style>
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(VIEW_TRANSITION_GUARD_SCRIPT) }} />
+        <script {...htmlProps(VIEW_TRANSITION_GUARD_SCRIPT)} />
         {/* The hero fan deals a shuffled hand once script runs (components/HeroFan.tsx). */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(HERO_FAN_BOOT_SCRIPT) }} />
+        <script {...htmlProps(trustedConstant(HERO_FAN_BOOT_SCRIPT))} />
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
         {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(APPEARANCE_BOOT_SCRIPT) }} />
+        <script {...htmlProps(APPEARANCE_BOOT_SCRIPT)} />
         <JsonLd data={JSON_LD} />
         <PageViewBoot />
         <WebVitalsBoot />

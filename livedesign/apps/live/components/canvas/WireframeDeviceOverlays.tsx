@@ -7,7 +7,7 @@
 // A screen with no fill of its own is the plain paper, which the dark editor shows as its dark
 // sheet: its bars are inked for that, so the 9:41 reads there too.
 import { memo, useMemo } from 'react';
-import { trustedHtml } from '@livedesign/ui';
+import { builtMarkup, htmlProps } from '@livedesign/ui';
 import {
   pageIsDark,
   wireframeFrameSvg,
@@ -72,7 +72,7 @@ const DeviceOver = memo(function DeviceOver({
       height={page.rect.height}
       viewBox={`0 0 ${page.rect.width} ${page.rect.height}`}
       // This app's own markup (packages/design wireframe-device-svg), never content.
-      dangerouslySetInnerHTML={{ __html: trustedHtml(over) }}
+      {...htmlProps(builtMarkup(over))}
     />
   );
 });

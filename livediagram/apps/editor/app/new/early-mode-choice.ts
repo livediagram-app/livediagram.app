@@ -6,6 +6,7 @@
 // script off and creates the remembered mode, so the choice is kept and nothing is created twice.
 
 import { EDITOR_MODES, type EditorMode } from '@livediagram/document';
+import { trustedConstant } from '@livediagram/ui/trusted-types';
 
 // The window property the script and the wizard share: undefined before the script runs, null while it listens with
 // nothing chosen, a mode once one was chosen, and false once the wizard took over.
@@ -15,19 +16,20 @@ export const EARLY_MODE_ATTRIBUTE = 'data-early-mode';
 
 type EarlyWindow = { [EARLY_MODE_KEY]?: string | null | false };
 
-export const EARLY_MODE_SCRIPT =
+export const EARLY_MODE_SCRIPT = trustedConstant(
   '(function(){var w=window;if(w.' +
-  EARLY_MODE_KEY +
-  '!==undefined)return;w.' +
-  EARLY_MODE_KEY +
-  "=null;w.addEventListener('click',function(e){if(w." +
-  EARLY_MODE_KEY +
-  "===false)return;var t=e.target,c=t&&t.closest?t.closest('[data-new-mode]'):null;if(!c)return;" +
-  'e.preventDefault();e.stopPropagation();w.' +
-  EARLY_MODE_KEY +
-  "=c.getAttribute('data-new-mode');document.documentElement.setAttribute('" +
-  EARLY_MODE_ATTRIBUTE +
-  "','')},true)})();";
+    EARLY_MODE_KEY +
+    '!==undefined)return;w.' +
+    EARLY_MODE_KEY +
+    "=null;w.addEventListener('click',function(e){if(w." +
+    EARLY_MODE_KEY +
+    "===false)return;var t=e.target,c=t&&t.closest?t.closest('[data-new-mode]'):null;if(!c)return;" +
+    'e.preventDefault();e.stopPropagation();w.' +
+    EARLY_MODE_KEY +
+    "=c.getAttribute('data-new-mode');document.documentElement.setAttribute('" +
+    EARLY_MODE_ATTRIBUTE +
+    "','')},true)})();",
+);
 
 // While a choice waits: the page says it is working.
 export const EARLY_MODE_STYLE = `html[${EARLY_MODE_ATTRIBUTE}],html[${EARLY_MODE_ATTRIBUTE}] *{cursor:progress}`;
@@ -48,7 +50,8 @@ export function takeEarlyModeChoice(): EditorMode | null {
 // the wizard, and React only learns about ?blank=1 / ?template= at hydration. The script runs as the HTML parses,
 // before the wizard markup paints, and flags the root element; the style hides the wizard-only content under that flag
 // until React swaps in the opening screen.
-export const BYPASS_GUARD_SCRIPT =
-  "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('mode')||p.has('q'))document.documentElement.setAttribute('data-wizard-preset','')}catch(e){}";
+export const BYPASS_GUARD_SCRIPT = trustedConstant(
+  "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('mode')||p.has('q'))document.documentElement.setAttribute('data-wizard-preset','')}catch(e){}",
+);
 export const BYPASS_GUARD_STYLE =
   'html[data-just-draw] [data-wizard-only],html[data-wizard-preset] [data-wizard-only]{visibility:hidden}';

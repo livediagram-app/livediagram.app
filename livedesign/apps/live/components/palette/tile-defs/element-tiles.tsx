@@ -14,7 +14,7 @@ import {
   LoomTileArt,
   VimeoTileArt,
   YouTubeTileArt,
-} from '@/components/palette/palette-tile-art';
+} from '@liveworkspace/workbench/components/palette/embed-tile-art';
 import { TILE_GLYPH_PX, type PaletteTileDef } from './types';
 
 // The media, card and layout element tiles: one section of the palette tile catalogue,

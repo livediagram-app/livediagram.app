@@ -127,6 +127,8 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   - **Copies across products:** a change may not add a source file byte-identical in two or more products
     (see [Copies across products](#copies-across-products)).
   - **File size:** a change may not take a source file past 800 lines (see [File size](#file-size)).
+  - **One path for markup:** a change may not add a raw HTML sink outside the shared markup module
+    (see [One path for markup](#one-path-for-markup)).
   - **Tests:** every affected workspace's suite once. Those with `test:coverage` run that, so their
     per-file thresholds are enforced in CI; the rest run `test`. Coverage goes to Codecov, one flag
     per group, carried forward when a run doesn't reach that group (`codecov.yml`).
@@ -283,6 +285,18 @@ split.
   tests run with
   `node --test .github/scripts/*.test.mjs`.
 
+## One path for markup
+
+Every raw HTML sink goes through `packages/trusted-types/src/html.ts` (livediagram/docs/specs/016-platform/trusted-types.md,
+"One path for markup"): `htmlProps` for a React element, `setHtml` and `setSrcdoc` for the DOM, each taking a
+`SafeHtml`. The Checks job's **One path for markup** step (`.github/scripts/raw-html-guard.mjs`, also in the
+pre-push hook) reads every tracked non-test source file in the repository and fails on a raw sink anywhere else:
+`dangerouslySetInnerHTML`, an assignment to `innerHTML`, `outerHTML` or `srcdoc`, `insertAdjacentHTML`,
+`createContextualFragment`, `setHTMLUnsafe`, `parseHTMLUnsafe` or `document.write`. It names each file and line.
+There is no baseline: none is left. Tests, e2e specs and CI's own scripts are left out, since they never ship.
+It reads about 14,400 files in about 1.5 seconds of CPU time (measured 2026-11-09), and its tests run with
+`node --test .github/scripts/*.test.mjs`.
+
 ## Drift report
 
 livehuddle was forked in-tree from livediagram and both carry the meeting kit (Avatar mode, the Spaces,
@@ -361,7 +375,7 @@ deterministic failure shows up on the machine in minutes rather than on CI later
   saying so, when `CI` is set or outside a git work tree.
 - `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`. It takes the merge base with
   `origin/main`, asks CI's planner (`ci-plan.mjs`) which groups the change reaches, and runs each
-  group's steps as `ci.yml` does: the copies guard and the file size guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
+  group's steps as `ci.yml` does: the copies guard, the file size guard and the markup guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
   each reached editor's suite once (unsharded, without coverage, so no floor is checked). It stops at the first failing step.
 - It checks only a push of the checked-out `HEAD`; a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.

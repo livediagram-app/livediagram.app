@@ -4,7 +4,7 @@
 // export's own frame markup around a plain screen, fitted to a box, so a device tile shows the
 // frame a page will wear.
 import { memo, useMemo } from 'react';
-import { trustedHtml } from '@livedesign/ui';
+import { builtMarkup, htmlProps } from '@livedesign/ui';
 import {
   deviceGeometry,
   deviceScreenPath,
@@ -53,7 +53,7 @@ export const DeviceMiniature = memo(function DeviceMiniature({
       preserveAspectRatio="xMidYMid meet"
       className="drop-shadow-sm"
       // This app's own markup (packages/design wireframe-device-svg), never content.
-      dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+      {...htmlProps(builtMarkup(markup))}
     />
   );
 });
