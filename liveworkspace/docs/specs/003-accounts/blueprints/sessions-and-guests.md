@@ -179,6 +179,9 @@ invalid_into`).
 5. `mergeGuestInto(…, { legacy: true })`; failing releases the hold, `502 merge_failed`.
 6. Stamped `claimedAt`, `claimedBy`; a race lost answers `claimed`. Logged `[accounts] legacy guest claimed { into }`.
 
+Closing the account that claimed (`legacyGuestCloseStatements`, in `leaveAllTeams`' batch): `claimedBy` naming it
+becomes `deleted`; a hold it has (`claimingBy`) goes, `claimingUntil` with it.
+
 ### Guests who never come back
 
 `noteGuestSeen` upserts `seen_at` at most once a day per guest (the hand-off, the workspace token, and an app reading

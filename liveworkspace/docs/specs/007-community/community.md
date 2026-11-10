@@ -234,7 +234,9 @@ document stands, one of three states:
 - **away**: in the Trash, or now someone else's. Not listed, and not in My Shares.
 
 A document deleted for good, or whose link went with its author's account, is **gone**: its post is
-deleted with everything on it.
+deleted with everything on it. So is a document whose owner's account closed and that a team keeps (the index names
+its owner `deleted`, [one-explorer-contracts.md](../004-index/one-explorer-contracts.md#closing-an-account)): no one
+could list that post again, and it would keep the closed account's id.
 
 The service never sees a document, and never shows an owner id or an app document id to the public.
 

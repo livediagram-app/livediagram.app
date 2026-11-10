@@ -145,7 +145,7 @@ function crossLevel(
   from: { x: number; y: number },
   to: { x: number; y: number },
   arrow: ArrowElement,
-  grid: ElementGrid,
+  grid: ElementGrid<Element>,
   runs: readonly CrossRun[] = [],
 ): number {
   const tb = axis === 'TB';

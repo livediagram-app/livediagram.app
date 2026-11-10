@@ -30,6 +30,7 @@ import {
 } from './reads.ts';
 import { newDeclineToken } from './tokens.ts';
 import { deleteTeamRows, deleteTeamStatements } from './manage.ts';
+import { ANONYMISED_PERSON } from '@liveworkspace/index-client';
 
 export async function inviteMember(
   db: D1Database,
@@ -408,7 +409,8 @@ export const DELETED_MEMBER_EMAIL = 'Deleted account';
 // was the only admin passes to the longest-standing member. Then its address comes off every team row
 // it had (those it joined, was removed from or left, and invitations to it it turned down), each row
 // moved on in the change feed so the apps' copies lose it too. An invitation still waiting is the
-// inviter's, to an address rather than to the account, and stays.
+// inviter's, to an address rather than to the account, and stays. Every row it invited names
+// ANONYMISED_PERSON as its inviter (invitedBy has no foreign key; the change feed doesn't carry it).
 // Answers the teams that closed with the account (those it ran alone).
 export async function leaveAllTeams(
   db: D1Database,
@@ -475,6 +477,9 @@ export async function leaveAllTeams(
         user?.email.toLowerCase() ?? '',
         DELETED_MEMBER_EMAIL,
       ),
+    db
+      .prepare('UPDATE team_member SET invitedBy = ? WHERE invitedBy = ?')
+      .bind(ANONYMISED_PERSON, userId),
   );
   await db.batch([...statements, ...alongside(closed)]);
   return closed;

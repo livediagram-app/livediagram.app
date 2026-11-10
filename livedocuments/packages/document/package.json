@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/element-model": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/page-background": "workspace:*",

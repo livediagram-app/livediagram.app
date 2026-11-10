@@ -293,6 +293,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/index/src/share-expiry.ts`      | Share Link Expiring (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): a warning on an item owner's Timeline before its share links stop working                        |
 | `liveworkspace/apps/index/src/share-guesses.ts`     | Share-password guesses (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): each try at an item's password that this isolate hasn't already found right is…     |
 | `liveworkspace/apps/index/src/sharing.ts`           | Sharing (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): share links, the share password, what a link opens, and Shared with me                             |
+| `liveworkspace/apps/index/src/event-key.ts`         | The person part of a Timeline event id made per person: a one-way key, never their id                                                                                                           |
 | `liveworkspace/apps/index/src/timeline.ts`          | The Timeline (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): what happened to the items a person reaches as owner or team member, newest first, in every app or…     |
 | `liveworkspace/apps/index/src/visitors.ts`          | Opened by a Visitor and Copied by a Visitor (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): who came in to an item through one of its share links, on its owner…     |
 | `liveworkspace/apps/index/src/workbench-close.ts`   | Accounts' workbench service ending a pairing's access (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access"): it asks here, with its merge key, to tell an app to close the roo… |
@@ -433,7 +434,7 @@ Migrations, in order:
 
 | Constant                        | Value                                                                                  | File                                  |
 | ------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------- |
-| `ANONYMISED_PERSON`             | `'deleted'`                                                                            | `account-purge.ts`                    |
+| `ANONYMISED_PERSON`             | `'deleted'`                                                                            | `constants.ts` (index-client)         |
 | `CHUNK`                         | `500`                                                                                  | `account-purge.ts`                    |
 | `LINGER_MS`                     | `2 * 60 * 60 * 1000`                                                                   | `account-purge.ts`                    |
 | `FREQUENT_CRON`                 | `'*/15 * * * *'`                                                                       | `account-purge.ts`                    |
@@ -544,7 +545,7 @@ Migrations, in order:
 | `ITEM_VIEWS`                    | `(object or list, see file)`                                                           | `constants.ts`                        |
 | `INDEX_ERRORS`                  | `(object or list, see file)`                                                           | `constants.ts`                        |
 | `OWNED_COUNT_MAX`               | `1000`                                                                                 | `notices.ts`                          |
-| `ANONYMISED_PERSON`             | `'deleted'`                                                                            | `anonymise.ts`                        |
+| `ANONYMISED_PERSON`             | `'deleted'`                                                                            | `constants.ts` (index-client)         |
 | `ANONYMISED_NAME`               | `'Deleted account'`                                                                    | `anonymise.ts`                        |
 | `FORM_PLACE_TTL_MS`             | `60_000`                                                                               | `forms.ts`                            |
 | `FORM_PLACE_CACHE_MAX`          | `1_000`                                                                                | `forms.ts`                            |

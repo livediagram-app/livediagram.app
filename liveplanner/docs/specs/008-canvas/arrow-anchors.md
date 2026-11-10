@@ -226,7 +226,7 @@ After the re-evaluation, two pinned ends on the **same side of the same shape** 
 
 ## Implementation
 
-- Vocabulary, anchors per shape and geometry: `packages/project/src/anchors.ts`, `shape-outline.ts`,
+- Vocabulary, anchors per shape and geometry: `../packages/element-model/src/anchors.ts`, `shape-outline.ts`,
   `svg-path-outline.ts`, `geometry.ts`.
 - Creation choice: `bestAnchorTowards` in `anchor-choice.ts`.
 - Fan: `arrow-endpoint-spread.ts`.

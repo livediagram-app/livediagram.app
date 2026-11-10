@@ -210,23 +210,23 @@ Telemetry: `Element` / `Added` / `Annotation`; opening reuses `Note` / `Opened`.
 
 ## Testing
 
-| Rule                                           | Test                                           | File                                                         |
-| ---------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------ |
-| New marker is 44 × 44, no note                 | `createAnnotation is a 44x44 boxed marker`     | `packages/design/src/factories.test.ts`                      |
-| Keeps marker size regardless of selection (I2) | `keeps an annotation at its fixed marker size` | `apps/live/lib/canvas.test.ts`                               |
-| No quick-connect plus                          | `showPlus` false for an annotation             | `apps/live/lib/canvas-selection.test.ts`                     |
-| Telemetry token `Annotation`                   | `elementTelemetryType`                         | `apps/live/lib/element-telemetry.test.ts`                    |
-| Tile routes to an action                       | palette telemetry coverage                     | `apps/live/lib/palette-telemetry-coverage.test.ts`           |
-| No inline text (I1)                            | `elementHasText` false for annotation          | `packages/design/src/element-has-text.test.ts`               |
-| No shadow; arrows do not hide behind it        | shadow / arrow-behind exclusions               | `packages/design/src/shadow.test.ts`, `arrow-behind.test.ts` |
-| Dark fill a shade above the shape fill (D89)   | lifts an annotation marker a shade above ...   | `packages/design/src/canvas-ink.test.ts`                     |
-| Themes fill + stroke, not text                 | none                                           | (GD7)                                                        |
-| Glyph and ring at 3:1 in both appearances      | none                                           | (GD16) [QD18]                                                |
-| `supportsColours` true                         | none                                           | (GD7)                                                        |
-| Hover preview gate (I3), flip, Escape [QD10]   | none                                           | (GD7)                                                        |
-| Double-click opens, read-only opens read-only  | none                                           | (GD7)                                                        |
-| Export draws an ellipse                        | none                                           | (GD7)                                                        |
-| Rotation hidden, aspect kept on resize [QD8]   | none                                           | (GD7)                                                        |
+| Rule                                           | Test                                           | File                                                                   |
+| ---------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------- |
+| New marker is 44 × 44, no note                 | `createAnnotation is a 44x44 boxed marker`     | `packages/design/src/factories.test.ts`                                |
+| Keeps marker size regardless of selection (I2) | `keeps an annotation at its fixed marker size` | `apps/live/lib/canvas.test.ts`                                         |
+| No quick-connect plus                          | `showPlus` false for an annotation             | `apps/live/lib/canvas-selection.test.ts`                               |
+| Telemetry token `Annotation`                   | `elementTelemetryType`                         | `apps/live/lib/element-telemetry.test.ts`                              |
+| Tile routes to an action                       | palette telemetry coverage                     | `apps/live/lib/palette-telemetry-coverage.test.ts`                     |
+| No inline text (I1)                            | `elementHasText` false for annotation          | `packages/design/src/element-has-text.test.ts`                         |
+| No shadow; arrows do not hide behind it        | shadow / arrow-behind exclusions               | `../packages/element-model/src/shadow.test.ts`, `arrow-behind.test.ts` |
+| Dark fill a shade above the shape fill (D89)   | lifts an annotation marker a shade above ...   | `packages/design/src/canvas-ink.test.ts`                               |
+| Themes fill + stroke, not text                 | none                                           | (GD7)                                                                  |
+| Glyph and ring at 3:1 in both appearances      | none                                           | (GD16) [QD18]                                                          |
+| `supportsColours` true                         | none                                           | (GD7)                                                                  |
+| Hover preview gate (I3), flip, Escape [QD10]   | none                                           | (GD7)                                                                  |
+| Double-click opens, read-only opens read-only  | none                                           | (GD7)                                                                  |
+| Export draws an ellipse                        | none                                           | (GD7)                                                                  |
+| Rotation hidden, aspect kept on resize [QD8]   | none                                           | (GD7)                                                                  |
 
 ## Constants and configuration
 

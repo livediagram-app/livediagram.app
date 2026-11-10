@@ -116,7 +116,9 @@ still holds what this check wrote, else `invalid_code` (two closes can't share o
 
 1. The door and the code, above.
 2. `leaveAllTeams` ([teams.md](teams.md)): teams run alone close; a sole admin's role passes to the longest-standing
-   member; their address comes off every row.
+   member; their address comes off every row. In its batch: `team_member.invitedBy` and `legacy_guest.claimedBy`
+   naming them become `deleted` (`ANONYMISED_PERSON`, `@liveworkspace/index-client`); `claimingBy`/`claimingUntil`
+   held by them go null (`legacyGuestCloseStatements`, `legacy-guests.ts`).
 3. Settings, then the profile, deleted.
 4. `recordPendingPurge(userId, closedTeams)`, before the user goes.
 5. Better Auth deletes the user: sessions, linked accounts, OAuth tokens, consents, API tokens, `account_app`,

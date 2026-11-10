@@ -272,7 +272,7 @@ LinkUnfurled` exist.
 | Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/live/lib/element-telemetry.test.ts`      |
 | Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/design/src/geometry.test.ts`         |
 | No inline text                                          | `is false for label-less kinds…`                            | `packages/design/src/element-has-text.test.ts` |
-| Shadow supported                                        | `supportsShadow` suite                                      | `packages/design/src/shadow.test.ts`           |
+| Shadow supported                                        | `supportsShadow` suite                                      | `../packages/element-model/src/shadow.test.ts` |
 | Theme leaves cards alone                                | none                                                        |                                                |
 | Stale-meta guard, unfurl only for cards, meta commit    | none (GB9, GB11, GB16)                                      |                                                |
 | Contrast                                                | none (GB14)                                                 |                                                |

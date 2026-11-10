@@ -8,9 +8,10 @@
 // keys read ANONYMISED_NAME, its `*Email` / `*Avatar` keys null (a plain `name` is the thing's own, kept).
 // Anything else is left as it is.
 
-// What a reference to a closed account becomes: the index's own word, shaped like neither an account (`user_…`)
-// nor a guest (`guest_…`), so it can never match anyone.
-export const ANONYMISED_PERSON = 'deleted';
+import { ANONYMISED_PERSON } from '@liveworkspace/index-client';
+
+// What a reference to a closed account becomes: the index's own word (@liveworkspace/index-client).
+export { ANONYMISED_PERSON };
 
 // Keys whose value is a display copy of a person, cleared in an object that named the closed account.
 const PERSON_COPY = /^(?:[a-z]+)?(?:Name|Email|Avatar)$/;
