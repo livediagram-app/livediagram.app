@@ -30,8 +30,7 @@ export function TourOfferButton({ labelled = true }: { labelled?: boolean }) {
     if (!id || counted.has(id)) return;
     counted.add(id);
     offer?.onShown?.();
-    // Once per offer: a new name on the same host (another element kind) is a fresh id from its host.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- once per offer: a new name on the same host (another element kind) is a fresh id from its host
   }, [id]);
   if (!offer) return null;
   const label = offer.label ?? startTourLabel(offer.name);

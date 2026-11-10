@@ -76,8 +76,7 @@ export function useArticleLinkHover(
       dom.removeEventListener('click', press);
       stay();
     };
-    // The view is made once, before this runs.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the view is made once, before this runs
   }, []);
 
   if (!hover) return null;

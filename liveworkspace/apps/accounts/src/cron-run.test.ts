@@ -67,7 +67,7 @@ describe('the hourly run', () => {
     ({ db, sql } = testD1());
     sent = [];
     vi.useFakeTimers({ toFake: ['Date'], now: WEDNESDAY });
-    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     // Owed week 1 (and the activation nudge): Ada in London, Cy in Tokyo.
     for (const [id, zone] of [
       ['user_ada', 'Europe/London'],

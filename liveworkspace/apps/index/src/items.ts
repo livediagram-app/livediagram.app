@@ -240,7 +240,7 @@ export async function handleTrash(ctx: PersonContext): Promise<Response> {
     const ids = results.slice(0, PURGE_NOW_MAX).map((r) => r.id);
     ctx.waitUntil(drainTombstonesSoon(env, ids));
   }
-  console.log('[index] emptied trash', {
+  console.info('[index] emptied trash', {
     scope: team ? 'team' : 'personal',
     app: appParam ?? 'all',
     purged: results.length,
@@ -336,7 +336,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     ownerId: row.owner_id,
     teamId,
   });
-  console.log('[index] created', {
+  console.info('[index] created', {
     app: row.app,
     team: teamId !== null,
     filed: !('folderId' in body) && folderId !== null ? 'default' : 'given',
@@ -570,7 +570,7 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
     });
     touchItem(ctx.drive, row);
     ctx.waitUntil(drainTombstonesSoon(env, [row.id]));
-    console.log('[index] purged', { app: row.app });
+    console.info('[index] purged', { app: row.app });
     return noContent();
   }
   const reason = url.searchParams.get('reason') === 'empty' ? 'empty' : 'deleted';

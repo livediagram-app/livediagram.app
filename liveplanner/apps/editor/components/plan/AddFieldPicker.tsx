@@ -146,8 +146,7 @@ export function AddFieldPicker({
     if (focusKind)
       listRef.current?.querySelector<HTMLElement>(`[data-kind="${focusKind}"]`)?.focus();
     onArrive?.();
-    // Arriving only.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- arriving only
   }, []);
 
   return (

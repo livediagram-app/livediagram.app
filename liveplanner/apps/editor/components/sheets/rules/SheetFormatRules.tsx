@@ -257,7 +257,7 @@ export function SheetFormatRules({
     if (!d) return setFormatPreview(null);
     const made = ruleOf(c, d, actions);
     setFormatPreview(made.ok ? made.rule : null);
-  }, [d]); // oxlint-disable-line react/exhaustive-deps
+  }, [d]); // oxlint-disable-line react/exhaustive-deps -- redrawn as the draft changes; the controller object changes every render
   useEffect(() => () => setFormatPreview(null), [setFormatPreview]);
   const set = (patch: Partial<Draft>) => {
     setWhy(null);

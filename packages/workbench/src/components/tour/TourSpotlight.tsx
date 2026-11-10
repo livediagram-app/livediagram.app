@@ -1,11 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef } from 'react';
-import {
-  glideEase,
-  TOUR_DIM,
-  TOUR_GLIDE_MS,
-} from './tour-motion';
+import { glideEase, TOUR_DIM, TOUR_GLIDE_MS } from './tour-motion';
 import type { TourTargetRect } from './useTourEngine';
 
 // The hole's corner: a soft rectangle, never rounder than half its height (a slim toolbar reads as a pill).
@@ -96,8 +92,7 @@ export function TourSpotlight({
     };
     frame.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame.current);
-    // `key` stands for the target box.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- `key` stands for the target box
   }, [key, gliding]);
 
   if (!target) return null;

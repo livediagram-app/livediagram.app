@@ -320,8 +320,7 @@ export function usePagesMode(deps: {
   if (!canEdit || activeTab.locked === true) return shared;
   return {
     ...shared,
-    // mayEdit reads a ref, but only when an edit commits (in a handler), never during render.
-    // oxlint-disable-next-line react/refs
+    // oxlint-disable-next-line react/refs -- mayEdit reads a ref, but only when an edit commits (in a handler), never during render
     edit: pageEdits({
       tabId,
       tab: activeTab,

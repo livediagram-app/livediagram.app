@@ -263,7 +263,7 @@ async function mintTicket(ctx: WorkbenchContext): Promise<Response> {
       name: null,
       now,
     });
-    console.log('[workbench] pairing-requested', {
+    console.info('[workbench] pairing-requested', {
       app,
       tokenId: token.tokenId,
       originHost: new URL(origin).hostname,
@@ -325,7 +325,7 @@ async function mintTicket(ctx: WorkbenchContext): Promise<Response> {
   });
   // Unpaired between the two reads: ask again.
   if (!minted) return refused('unpaired', asked.scope, fail(409, 'pairing_changed'));
-  console.log('[workbench] ticket-minted', {
+  console.info('[workbench] ticket-minted', {
     app,
     scope: reach.scope,
     itemId: reach.itemId,
@@ -423,7 +423,7 @@ async function redeemTicket(ctx: WorkbenchContext): Promise<Response> {
   });
   if (!opened) return invalidTicket('unknown');
   const [profile] = await readProfiles(env.AUTH_DB, [t.ownerId]);
-  console.log('[workbench] session-opened', {
+  console.info('[workbench] session-opened', {
     app,
     scope: t.scope,
     itemId: t.itemId,
@@ -457,7 +457,7 @@ async function endCurrentSession(ctx: WorkbenchContext): Promise<Response> {
   const session = store ? await store.readSession(secret) : null;
   if (!store || !session) return fail(401, 'invalid_session', { reason: 'unknown' });
   await store.endSession(session.id);
-  console.log('[workbench] session-ended', {
+  console.info('[workbench] session-ended', {
     reason: 'ended',
     app: session.app,
     scope: session.scope,
@@ -499,7 +499,7 @@ async function openPairing(ctx: WorkbenchContext): Promise<Response> {
     name: normaliseWorkbenchName(body.name),
     now: ctx.now,
   });
-  console.log('[workbench] pairing-requested', {
+  console.info('[workbench] pairing-requested', {
     app,
     tokenId: token.tokenId,
     originHost: new URL(origin).hostname,
@@ -581,10 +581,13 @@ async function answerPairing(
     case 'expired':
       return fail(410, 'pairing_expired');
     case 'declined':
-      console.log('[workbench] pairing-declined', { tokenId: result.tokenId, scope: result.asked });
+      console.info('[workbench] pairing-declined', {
+        tokenId: result.tokenId,
+        scope: result.asked,
+      });
       return noContent();
     case 'approved': {
-      console.log('[workbench] paired', {
+      console.info('[workbench] paired', {
         app: result.pairing.app,
         tokenId: result.pairing.tokenId,
         pairingId: result.pairing.id,

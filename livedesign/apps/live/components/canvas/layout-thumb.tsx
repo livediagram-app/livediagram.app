@@ -172,8 +172,7 @@ function Wireframe({
   const { rect } = page;
   const els = useMemo(
     () => buildPageLayout(layout, page),
-    // Rebuilt only when the page's shape changes (it mints fresh ids each time).
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- rebuilt only when the page's shape changes (it mints fresh ids each time)
     [layout, rect.x, rect.y, rect.width, rect.height],
   );
   const h = (width * rect.height) / rect.width;

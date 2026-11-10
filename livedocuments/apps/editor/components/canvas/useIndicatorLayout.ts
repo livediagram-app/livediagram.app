@@ -99,8 +99,7 @@ export function useIndicatorLayout(
       items.length === 0 || style === 'off'
         ? null
         : placeCluster(element, cornerPx, items, style, content),
-    // The outline's inputs, the content's and what the cluster holds; not the handlers.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the outline's inputs, the content's and what the cluster holds; not the handlers
     [
       shape,
       element.width,

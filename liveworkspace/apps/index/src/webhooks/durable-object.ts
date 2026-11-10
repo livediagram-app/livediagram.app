@@ -32,7 +32,7 @@ export class WebhookDispatcher extends DurableObject<Env> {
   override async alarm(): Promise<void> {
     const result = await dispatch(this.env, this.deps);
     if (result.delivered + result.failed + result.retrying > 0) {
-      console.log('[webhooks] dispatched', JSON.stringify(result));
+      console.info('[webhooks] dispatched', JSON.stringify(result));
     }
     if (result.nextAt !== null) {
       // Never sooner than a second from now: a row stuck due must not fire the alarm back to back.

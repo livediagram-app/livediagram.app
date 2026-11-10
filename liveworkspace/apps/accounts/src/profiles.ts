@@ -20,8 +20,7 @@ export const PROFILE_COLOR_MAX = 64;
 // color-mix(), var()) passes. The apps' isSafeColourValue, since a colour is painted into every
 // peer's CSS.
 const NOT_A_COLOUR = /[\\;{}<>"'`]|url|image|src\s*\(|element\s*\(|cross-fade|paint\s*\(/i;
-// Control characters, which a name shown in every peer's layout has no use for.
-// oxlint-disable-next-line no-control-regex
+// oxlint-disable-next-line no-control-regex -- control characters, which a name shown in every peer's layout has no use for
 const CONTROL = /[\u0000-\u001f\u007f]/;
 
 export interface Profile {

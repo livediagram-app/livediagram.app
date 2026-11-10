@@ -12,7 +12,7 @@ export function Conditional({ on }: { on: boolean }) {
 }
 export function MissingDep({ id }: { id: string }) {
   useEffect(() => {
-    console.log(id);
+    console.info(id);
   }, []);
   return null;
 }
@@ -36,13 +36,13 @@ const FIXTURES = {
   'hooks.tsx': HOOKS,
   'any.ts': 'export const x: any = 1;\n',
   'unused-directive.ts':
-    '// oxlint-disable-next-line typescript/no-explicit-any\nexport const x = 1;\n',
+    '// oxlint-disable-next-line typescript/no-explicit-any -- a stale reason\nexport const x = 1;\n',
   'eslint-directive.ts':
     '// eslint-disable-next-line @typescript-eslint/no-explicit-any\nexport const x: any = 1;\n',
   'script.mjs': 'let a = 1;\nexport default a + undefinedGlobal;\n',
   'module.ts': 'let a = 1;\nexport default a;\n',
-  'typed.ts': 'const xs = [1, 2];\nfor (const i in xs) console.log(i);\n',
-  'typed.mjs': 'const xs = [1, 2];\nfor (const i in xs) console.log(i);\n',
+  'typed.ts': 'const xs = [1, 2];\nfor (const i in xs) console.info(i);\n',
+  'typed.mjs': 'const xs = [1, 2];\nfor (const i in xs) console.info(i);\n',
 };
 
 let findings: Finding[];
@@ -109,8 +109,11 @@ describe('rule families', () => {
     expect(reported[0]?.message).toMatch(/Unused oxlint-disable directive/);
   });
 
-  it('ignores eslint-disable directives', () => {
-    expect(rulesIn('eslint-directive.ts')).toEqual(['typescript(no-explicit-any)']);
+  it('ignores eslint-disable directives, and refuses them for it', () => {
+    expect(rulesIn('eslint-directive.ts').sort()).toEqual([
+      'liveworkspace(disable-reason)',
+      'typescript(no-explicit-any)',
+    ]);
   });
 
   it('runs the type-aware rules, which need the type of an expression', () => {

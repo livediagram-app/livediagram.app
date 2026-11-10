@@ -240,17 +240,17 @@ const worker = {
     if (!indexEnabled(env)) return;
     if (event.cron === FREQUENT_CRON) {
       await step('purges', async () => {
-        console.log('[index] purges', JSON.stringify(await continuePurges(env)));
+        console.info('[index] purges', JSON.stringify(await continuePurges(env)));
       });
       // Connected tabs whose tab never reached their host (connection-doors.ts).
       await step('connections', async () => {
-        console.log(
+        console.info(
           '[index] unconfirmed connections swept',
           await sweepUnconfirmedConnections(env),
         );
       });
       await step('person merges', async () => {
-        console.log('[index] person merges', await drainPersonMerges(env));
+        console.info('[index] person merges', await drainPersonMerges(env));
       });
       // A wake a request lost (its isolate gone before waitUntil ran) is made up here.
       await step('webhooks', async () => {
@@ -260,12 +260,12 @@ const worker = {
     }
     await step('sweep', async () => {
       const { emptied, purged, confirmed } = await sweep(env);
-      console.log(
+      console.info(
         `[index] sweep: ${emptied} empty items to the Trash, purged ${purged} items, apps confirmed ${confirmed}`,
       );
     });
     await step('expiring links', async () => {
-      console.log(`[index] ${await sweepExpiringLinks(env)} items with links expiring`);
+      console.info(`[index] ${await sweepExpiringLinks(env)} items with links expiring`);
     });
   },
 };
