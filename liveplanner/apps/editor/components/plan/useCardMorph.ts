@@ -82,7 +82,7 @@ export function useCardMorph(itemId: string, onClose: () => void) {
       cancelAnimationFrame(frame);
       if (first) first.style.opacity = '';
     };
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- opens once per mount, from the card it grew from
   }, []);
 
   const close = useCallback(() => {

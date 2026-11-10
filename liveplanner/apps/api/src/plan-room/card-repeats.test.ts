@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { repeatCopyId, type Item, type RepeatRule } from '@liveplanner/items';
-import { REPEAT_COPIES_PER_WAKE, REPEAT_MORE_MS, type RepeatSchedule } from './card-repeats';
+import { REPEAT_COPIES_PER_WAKE, REPEAT_MORE_MS } from './card-repeats';
 import { createPlan, endRepeatWorld, repeatWorld, type RepeatWorld } from './test-repeat-world';
 
 // Repeating cards from the plan's own alarm (docs/specs/026-plan/items.md "Repeating cards"), end to end: the real
@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 const plan = () => w.plans.get('A')!;
-const schedule = () => Reflect.get(plan().room, 'repeats') as RepeatSchedule;
+const schedule = () => plan().room.repeats;
 const wakeAt = async (iso: string) => {
   vi.setSystemTime(at(iso));
   await plan().room.alarm();

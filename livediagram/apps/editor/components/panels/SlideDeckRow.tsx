@@ -3,10 +3,11 @@
 // One slide in the Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md "The Slide
 // Deck panel"): its picture, its name and what it carries. A press opens the slide; every verb but
 // one lives in its `…` menu: a small picture beside its number.
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { slideName, type Slide } from '@livediagram/document';
 import { lucideFileText } from '@liveworkspace/icons/lucide';
-import { HoverCard, lucideGlyph, Tooltip, trustedHtml } from '@livediagram/ui';
+import { HoverCard, lucideGlyph, Tooltip, htmlProps } from '@livediagram/ui';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
 
 const NotesIcon = lucideGlyph(lucideFileText, 11);
@@ -95,7 +96,7 @@ export function SlideDeckRow({
           className="h-full w-full"
           aria-hidden
           // Our own renderer's output (every label is xmlEscaped inside it).
-          dangerouslySetInnerHTML={{ __html: trustedHtml(thumb.markup) }}
+          {...htmlProps(sanitizedHtml(thumb.markup, 'svg-content'))}
         />
       ) : null}
     </span>

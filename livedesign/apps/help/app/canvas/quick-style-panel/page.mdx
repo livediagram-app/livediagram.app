@@ -1,43 +1,44 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { QuickStylePanelScene } from '@liveworkspace/help-site/art/illustrations/style-panels';
 
 export const metadata = helpMetadata({
-  title: 'Quick Style Panel',
+  title: 'Quick Style Bar',
   description:
-    'Restyle selected shapes, arrows and text in one click from the Quick Style panel: colours, width, line style, corners and alignment, remembered.',
+    'Restyle selected shapes, arrows, marker strokes and text from the Quick Style bar beside the page: colours, width, line style and alignment, remembered.',
   path: '/help/canvas/quick-style-panel/',
 });
 
 <ArticleLayout
-  title="Quick Style Panel"
-  description="The most-used style choices, one click away whenever shapes, arrows or text are selected, and remembered for the next one you draw."
+  title="Quick Style Bar"
+  description="The most-used style choices, beside the page whenever shapes, arrows or text are selected or a marker is in hand, and remembered for the next one you draw."
   categoryTitle="Canvas"
   categorySlug="canvas"
 >
 
-Select one or more shapes, arrows or text elements and a small **Quick style** panel appears on the left edge of the canvas, halfway down, clear of the Palette strip across the top. It holds the handful of style choices people make most often, so restyling is one click rather than a trip through the right-click menu. The right-click menu is still the home of every setting; the panel only repeats the favourites.
+Select one or more shapes, arrows, paths or text elements and a small **Quick Style** bar appears above the page, just left of the page's own buttons (Layout, Background, the lock and the cog). It holds the handful of style choices people make most often, so restyling is a click or two rather than a trip through the right-click menu. The right-click menu is still the home of every setting; the bar only repeats the favourites.
 
-<Figure caption="The Quick style panel on the left edge, styling the selected shape beside it.">
-  <QuickStylePanelScene />
-</Figure>
+## What's on it
 
-## What's in it
+Each button shows its current value (a colour chip, or the line, width or alignment in use) and opens its choices just below it. Pick one and it applies straight away; the choices stay open so you can try another. Press outside, press **Esc** or press the button again to close them.
 
-From top to bottom:
-
-- **Highlighter colour** and **Highlighter width**, for highlighter strokes: the marker's five colours and three widths.
+- **Marker** and **Size**, for marker strokes: the marker colours (Ink and eight more, then **More colours**) and the six marker widths.
+- **Highlighter** and **Thickness**, for highlighter strokes: the highlighter's five colours and three widths.
 - **Stroke**: seven colours for the outline or line, then **Ink**. The first is the theme's own default.
-- **Background**: seven colours for a shape's fill.
-- **Text colour**, for text elements: seven colours for the words, then **Ink**. The first is the theme's own text colour.
+- **Fill**: seven colours for a shape's inside, then **Transparent**.
+- **Text**, for text elements: seven colours for the words, then **Ink**. The first is the theme's own text colour.
 - Every colour row ends with **More colours**, which opens the full colour picker: the row's theme colours, the same ten colours every picker offers, the colours already used in this design, and **Add a custom colour** (four coloured dots) for any colour of your own. (A shape's label colour is in the right-click menu's Colours section.)
-- **Stroke width**: thin, medium or thick.
-- **Stroke style**: solid, dashed or dotted for shapes. For arrows it is solid, dashed or **flowing**, a dashed line that marches along its direction, so an animated connector is a single click. A selection mixing shapes and arrows gets the shape set.
-- **Text alignment**: left, centre or right. It shows once a shape has a label to align.
-- **Icon alignment**, when a shape carries an icon: before, above or after its label.
-- **Clear Styles**, at the bottom.
+- **Width**: thin, medium or thick.
+- **Line**: solid, dashed or dotted for shapes. For arrows it is solid, dashed or **flowing**, a dashed line that marches along its direction, so an animated connector is a single click. A selection mixing shapes and arrows gets the shape set.
+- **Align**: left, centre or right. It shows once a shape has a label to align.
+- **Icon**, when a shape carries an icon: before, above or after its label.
 
-A section only shows when something in the selection can use it, so an arrow on its own shows stroke, width and style, a text element on its own shows text colour, and a shape with an icon gains icon alignment. Sticky notes, tables, images and other non-shape elements are not styled here; select only those and the panel stays away.
+The buttons name themselves while the page has room on screen, and drop to their icons when you zoom out, just as the page's own buttons do. When the selected elements don't agree on a value, its button shows a split chip or a faded glyph.
+
+A button only shows when something in the selection can use it, so an arrow on its own shows stroke, width and line, a text element on its own shows text colour, and a shape with an icon gains icon alignment. Sticky notes, tables, images and other non-shape elements are not styled here; select only those and the bar stays away. The bar sits on the page holding most of the selection.
+
+## With a marker in hand
+
+Pick up a marker, or arm the Highlighter, with nothing selected and the bar shows that tool's buttons on the page you are on: **Marker** and **Size**, or **Highlighter** and **Thickness**. Their choices say **In hand** and the tool's name, and what you pick there is the tool's next stroke.
 
 ## Colours that follow the theme
 
@@ -59,13 +60,13 @@ Select several shapes and arrows, even of different kinds, and a choice applies 
 
 ## The next shape remembers
 
-When you change a shape's colours, width, style or alignment, from this panel or from the right-click menu, the next shape **of the same kind** you draw arrives the same way. Make a circle green and the next circle is green; the next square is not. Arrows remember their own style, separately from shapes, and text elements remember their colour. Picking the theme default again forgets that choice.
+When you change a shape's colours, width, style or alignment, from this bar or from the right-click menu, the next shape **of the same kind** you draw arrives the same way. Make a circle green and the next circle is green; the next square is not. Arrows remember their own style, separately from shapes, and text elements remember their colour. Picking the theme default again forgets that choice.
 
 This only applies to shapes and arrows you draw yourself, from the palette, a tool or a quick-connect plus. Pasted, duplicated and templated elements keep their own looks. The memory belongs to the design and stays in this browser.
 
 ## Clear Styles
 
-**Clear Styles** returns the selection to the theme's defaults and forgets the remembered style for those kinds, so the next shape is plain again. Use it when a style was meant as a one-off. It is one undo step.
+**Clear Styles**, in the element's right-click menu, returns the selection to the theme's defaults and forgets the remembered style for those kinds, so the next shape is plain again. Use it when a style was meant as a one-off. It is one undo step.
 
 <Tip>
   Building a flowchart? Style the first decision diamond, the first step box and the first arrow the
@@ -74,14 +75,15 @@ This only applies to shapes and arrows you draw yourself, from the palette, a to
 
 ## Turning it off
 
-Open **Settings**, then **Panels**, **Quick Style**, and switch off **Enable Quick Style Panel**. Every style is still in the element's right-click menu, and the next shape still remembers its style. See [Settings](/help/user-interface/settings/).
+Open **Settings**, then **Panels**, **Quick Style**, and switch off **Enable Quick Style Bar**. Every style is still in the element's right-click menu, and the next shape still remembers its style. See [Settings](/help/user-interface/settings/).
+
+## On a phone
+
+There is no room for the bar on a phone, so its choices join the page's **Appearance** button above the page: select something (or pick up a marker), tap **Appearance**, and under **Selected Element** there is a row for each choice that applies (Stroke, Fill, Width and so on), each showing its current value. Tap one to open its choices in a sheet of their own. On a page with no looks of its own, such as a logo page, Appearance shows just for these. The long-press menu has every option too.
 
 ## Good to know
 
-- The panel is not shown on phones. On a phone the long-press menu has the same options.
-- It never covers the [palette](/help/palette/) or other panels: with a panel already on the left edge it moves below, above or beside it. It hides while a right-click menu is open.
-- It also stands aside in zen mode, for Viewers and Participants, and on a locked tab.
-- It is a compact strip, without a panel header.
-- Every option has a name for screen readers and a tooltip; each row is a group you move through with the arrow keys.
+- It hides while a right-click menu is open, and stands aside in zen mode, in split view, for Viewers and Participants, and on a locked tab.
+- Every button and option has a name for screen readers and a tooltip; each row of choices is a group you move through with the arrow keys.
 
 </ArticleLayout>

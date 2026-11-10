@@ -12,9 +12,9 @@
 import { anchorPrimarySide } from './anchors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { buildElementGrid, queryElementGrid, type ElementGrid } from './element-grid';
-import { buildElementIndex, endpointPosition, type ElementIndex } from './geometry';
+import { buildElementIndex, endpointPosition } from './geometry';
 import { isContainer } from './containment';
-import { isBoxed, type Anchor, type ArrowElement, type Element } from './index';
+import { isBoxed, type Anchor, type ArrowElement, type Element, type ElementIndex } from './index';
 
 // An arrow's end where the renderers draw it: its anchor, fanned (arrowEndpointSpread).
 function spreadEnd(
@@ -145,7 +145,7 @@ function crossLevel(
   from: { x: number; y: number },
   to: { x: number; y: number },
   arrow: ArrowElement,
-  grid: ElementGrid,
+  grid: ElementGrid<Element>,
   runs: readonly CrossRun[] = [],
 ): number {
   const tb = axis === 'TB';

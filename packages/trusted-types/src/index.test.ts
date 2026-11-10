@@ -9,6 +9,7 @@ import {
   isAllowedScriptUrl,
   parseInert,
   resetTrustedTypesForTests,
+  trustedConstant,
   trustedHtml,
   trustedTypesBootScript,
   trustedTypesCsp,
@@ -135,13 +136,16 @@ describe('isAllowedScriptUrl', () => {
 
 describe('trustedHtml', () => {
   it('passes the markup through where there are no Trusted Types (the prerender)', () => {
-    expect(trustedHtml('<svg/>')).toBe('<svg/>');
+    expect(trustedHtml(trustedConstant('<svg/>'))).toBe('<svg/>');
   });
 
   it('wraps it through liveworkspace-markup, created once', () => {
     const { tt } = stubTrustedTypes();
-    expect(trustedHtml('<svg/>')).toEqual({ trusted: MARKUP_POLICY, html: '<svg/>' });
-    trustedHtml('<g/>');
+    expect(trustedHtml(trustedConstant('<svg/>'))).toEqual({
+      trusted: MARKUP_POLICY,
+      html: '<svg/>',
+    });
+    trustedHtml(trustedConstant('<g/>'));
     expect(tt.createPolicy).toHaveBeenCalledOnce();
   });
 });

@@ -1,4 +1,4 @@
-// The quick style panel's model (docs/specs/008-canvas/quick-style-panel.md): which sections a selection
+// The Quick Style bar's model (docs/specs/008-canvas/quick-style-panel.md): which sections a selection
 // gets, the value each shows, and the pure transform behind each choice. The
 // hook (useQuickStyle) commits these; nothing here touches state.
 import {
@@ -56,9 +56,21 @@ export type QuickStyleView = {
   targetIds: string[];
   sections: {
     // `ink`: the Ink swatch's colour for the canvas, after the theme's.
-    stroke?: { value: QuickColourValue | null; swatches: ShownSwatch[]; ink: string };
-    background?: { value: QuickFillValue | null; swatches: ShownSwatch[] };
-    textColour?: { value: QuickColourValue | null; swatches: ShownSwatch[]; ink: string };
+    // `paint`: the colour every styled element paints (a hand-picked one too), lower-case, for the Quick Style bar's
+    // button chip; null when they differ or one is a stock colour stored by name other than Ink.
+    stroke?: {
+      value: QuickColourValue | null;
+      swatches: ShownSwatch[];
+      ink: string;
+      paint: string | null;
+    };
+    background?: { value: QuickFillValue | null; swatches: ShownSwatch[]; paint: string | null };
+    textColour?: {
+      value: QuickColourValue | null;
+      swatches: ShownSwatch[];
+      ink: string;
+      paint: string | null;
+    };
     width?: { value: QuickWidth | null };
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
     textAlign?: { value: TextAlignX | null };
@@ -69,8 +81,6 @@ export type QuickStyleView = {
   // The Highlighter rows (lib/quick-style-highlighter): the selected highlights, or the armed
   // Highlighter tile's next stroke (docs/specs/008-canvas/highlighter.md "Settings").
   highlighter?: import('./quick-style-highlighter').QuickHighlighterStyle;
-  // Names whose style this is when it is not plainly the selection.
-  caption?: string;
 };
 
 // An unlocked shape, arrow, text element or path (docs/specs/023-draw-mode/path-tool.md "Style"):
@@ -176,6 +186,22 @@ function swatchValue(
   return shown && shown.slot !== 0 ? shown.slot : null;
 }
 
+// The colour an element paints for a row: its own colour, Ink by name, else the row's theme default.
+function paintOf(
+  el: QuickStyleTarget,
+  role: QuickSwatchRole,
+  swatches: ShownSwatch[],
+  ink: string,
+): string | null {
+  const colour = (el as RoleValues)[ROLE_FIELDS[role].colour];
+  if (typeof colour === 'string') return colour.toLowerCase();
+  const named = NAMED_FIELD[role];
+  const name = named ? (el as Record<string, unknown>)[named] : undefined;
+  if (name === QUICK_INK) return ink.toLowerCase();
+  if (name !== undefined) return null;
+  return swatches[0]!.color.toLowerCase();
+}
+
 function widthOf(el: ShapeElement | ArrowElement | PathElement): QuickWidth | null {
   const w = el.type === 'arrow' ? arrowThicknessOf(el) : (el.strokeWidth ?? 'medium');
   return (QUICK_WIDTHS as readonly string[]).includes(w) ? (w as QuickWidth) : null;
@@ -221,6 +247,7 @@ export function quickStyleView(
       swatches,
       ink,
       value: shared(stroke.map((el) => swatchValue(el, theme, 'stroke', swatches))),
+      paint: shared(stroke.map((el) => paintOf(el, 'stroke', swatches, ink))),
     };
   }
   const background = supporting('background');
@@ -237,6 +264,7 @@ export function quickStyleView(
           return v === QUICK_INK ? null : v;
         }),
       ),
+      paint: shared(background.map((el) => paintOf(el, 'fill', swatches, ink))),
     };
   }
   const textColour = supporting('textColour');
@@ -246,6 +274,7 @@ export function quickStyleView(
       swatches,
       ink,
       value: shared(textColour.map((el) => swatchValue(el, theme, 'text', swatches))),
+      paint: shared(textColour.map((el) => paintOf(el, 'text', swatches, ink))),
     };
   }
   const width = lined('width');

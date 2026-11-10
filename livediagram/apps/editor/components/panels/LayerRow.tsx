@@ -1,3 +1,4 @@
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@livediagram/document';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
@@ -10,7 +11,7 @@ import {
   RowEyeOffIcon,
   UnlockIcon,
 } from '@/components/panels/layers-panel-icons';
-import { HoverCard, trustedHtml } from '@livediagram/ui';
+import { HoverCard, htmlProps } from '@livediagram/ui';
 
 // ONE ROW OF THE LAYERS PANEL (docs/specs/006-document/layers.md "The Layers panel"): grip ·
 // preview · name over a meta line · lock · eye · options.
@@ -151,7 +152,7 @@ export function LayerRow({
               preserveAspectRatio="xMidYMid meet"
               className="h-full w-full p-0.5"
               aria-hidden
-              dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+              {...htmlProps(sanitizedHtml(markup, 'svg-content'))}
             />
           ) : null}
         </span>

@@ -3,6 +3,7 @@
 // The Components category's In This Design band (docs/specs/009-elements/components.md "The library"): every main
 // in the design's library not removed from it, newest first, each drawn as it is and placed at the view's centre on
 // a click. Shown to Editors only (placing is theirs), with a line saying how to make one while the library is empty.
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { memo, useMemo } from 'react';
 import {
   canvasSurface,
@@ -14,7 +15,7 @@ import {
   type Tab,
 } from '@livedesign/design';
 import { lucidePackage } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, Tooltip, trustedHtml } from '@livedesign/ui';
+import { lucideGlyph, Tooltip, htmlProps } from '@livedesign/ui';
 import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
 import { instanceMarkup } from '@/lib/instance-svg';
 
@@ -125,7 +126,7 @@ const ComponentTile = memo(function ComponentTile({
           className="h-12 w-full rounded"
           style={{ background: backgroundColor ?? undefined }}
           aria-hidden="true"
-          dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+          {...htmlProps(sanitizedHtml(markup, 'svg-content'))}
         />
         <span className="truncate px-0.5 text-[11px] font-medium text-slate-700 dark:text-slate-200">
           {main.name}

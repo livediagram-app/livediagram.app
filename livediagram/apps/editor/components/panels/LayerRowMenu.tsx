@@ -1,5 +1,6 @@
 'use client';
 
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@livediagram/document';
 import {
@@ -27,7 +28,7 @@ import {
   useClickOutside,
   useControlMenu,
   Portal,
-  trustedHtml,
+  htmlProps,
 } from '@livediagram/ui';
 
 // The menu's width (w-64) and its gap from the panel and the viewport edges, in px.
@@ -175,7 +176,7 @@ export function LayerRowMenu({
                   preserveAspectRatio="xMidYMid meet"
                   className="h-full w-full"
                   aria-hidden
-                  dangerouslySetInnerHTML={{ __html: trustedHtml(thumbMarkup) }}
+                  {...htmlProps(sanitizedHtml(thumbMarkup, 'svg-content'))}
                 />
               ) : null}
             </span>

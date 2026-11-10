@@ -21,16 +21,16 @@ Scope, by file:
 | `apps/editor/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
 | `apps/editor/lib/quick-style.ts`                                              | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
 | `apps/editor/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
-| `../packages/workbench/src/lib/quick-style-placement.ts`                      | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
+| `../livediagram/apps/editor/lib/quick-style-placement.ts`                     | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
 | `apps/editor/hooks/canvas/useStyleMemory.ts`                                  | Per-document memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                            |
 | `apps/editor/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
-| `../packages/workbench/src/hooks/ui/useQuickStylePlacement.ts`                | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
+| `../livediagram/apps/editor/hooks/ui/useQuickStylePlacement.ts`               | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
 | apps/editor/components/canvas/QuickStylePanel.tsx                             | The panel: compact, a fixed width from `panelFrame()`                                                            |
 | apps/editor/components/canvas/quick-style-rows.tsx                            | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
 | `apps/editor/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
 | `apps/editor/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
 | apps/editor/components/canvas/SwatchOverridePopover.tsx                       | The right-click popover: picker, hex field, Clear override                                                       |
-| `apps/editor/app/document/[id]/useEditorState.ts`                             | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
+| `apps/editor/app/document/[id]/editor-state/useEditorStyle.ts`                | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
 | `apps/editor/app/document/[id]/EditorView.tsx`                                | Mounts the panel                                                                                                 |
 
 ## Domain and naming

@@ -29,7 +29,7 @@ Scope, by file:
 | `apps/editor/components/canvas/useBoxedElementGestures.ts`                     | Double-click → `onEditLink`                                                                                               |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`                           | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`                                                            |
 | `apps/editor/components/dialogs/LinkPickerDialog.tsx`                          | The shared link editor                                                                                                    |
-| `apps/editor/components/palette/palette-tile-defs.tsx`                         | `tools:link-card` tile                                                                                                    |
+| `apps/editor/components/palette/tile-defs/media-tiles.tsx`                     | `tools:link-card` tile                                                                                                    |
 | `apps/editor/app/document/[id]/useElementCreation.ts`                          | `addLinkCard`: arms the draw gesture                                                                                      |
 | `apps/editor/hooks/canvas/useShapeDrawing.ts`                                  | Commit: `track('Element', 'Added', 'LinkCard')`                                                                           |
 | `apps/editor/lib/search.ts`                                                    | Palette search entry                                                                                                      |
@@ -272,7 +272,7 @@ LinkUnfurled` exist.
 | Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/editor/lib/element-telemetry.test.ts`      |
 | Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/document/src/geometry.test.ts`         |
 | No inline text                                          | `is false for label-less kinds…`                            | `packages/document/src/element-has-text.test.ts` |
-| Shadow supported                                        | `supportsShadow` suite                                      | `packages/document/src/shadow.test.ts`           |
+| Shadow supported                                        | `supportsShadow` suite                                      | `../packages/element-model/src/shadow.test.ts`   |
 | Theme leaves cards alone                                | none                                                        |                                                  |
 | Stale-meta guard, unfurl only for cards, meta commit    | none (GB9, GB11, GB16)                                      |                                                  |
 | Contrast                                                | none (GB14)                                                 |                                                  |

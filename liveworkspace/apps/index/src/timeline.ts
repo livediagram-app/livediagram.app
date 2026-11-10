@@ -23,6 +23,7 @@
 // every app's view shows); then the newest limit + 1 of those, joined to their events and items. Nothing is
 // read per event.
 
+import { timelinePersonKeys } from './event-key';
 import {
   ACCOUNT_EVENT_AHEAD_MS,
   ACCOUNT_EVENT_SCOPES_MAX,
@@ -232,9 +233,9 @@ export function bulkEventStatements(db: Db, events: readonly BulkEvent[]): D1Pre
   ];
 }
 
-/** The id of a person's `edited` event on an item for the day of `at`. */
-export const editedEventId = (itemId: string, personId: string, at: number) =>
-  `ed:${itemId}:${personId}:${useDayOf(at)}`;
+/** The id of a person's `edited` event on an item for the day of `at`, by their key (event-key.ts). */
+export const editedEventId = (itemId: string, personKey: string, at: number) =>
+  `ed:${itemId}:${personKey}:${useDayOf(at)}`;
 
 export type TimelineSpec = {
   app?: App;
@@ -532,10 +533,15 @@ export async function pushAppEvents(
   const now = Date.now();
   // One per event id, the latest kept: a batch of a day's edits by one person is one event.
   const byId = new Map<string, AppTimelineEvent>();
+  const events: AppTimelineEvent[] = [];
   for (const value of list) {
     const event = parseAppEvent(value, now);
     if (!event) return badRequest('invalid_events');
-    const id = editedEventId(itemId, event.actorId, event.at);
+    events.push(event);
+  }
+  const keys = await timelinePersonKeys(events.map((e) => e.actorId));
+  for (const event of events) {
+    const id = editedEventId(itemId, keys.get(event.actorId)!, event.at);
     const seen = byId.get(id);
     if (!seen || seen.at <= event.at)
       byId.set(id, { ...event, actorName: event.actorName ?? seen?.actorName ?? null });

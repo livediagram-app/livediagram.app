@@ -138,8 +138,6 @@ test.describe('arrow labels and bending', () => {
 
   test('a free arrow moves by its frame', async ({ page, pageErrors }) => {
     await startBlankDesign(page);
-    // Right of the quick style panel, which opens on the canvas's left once the arrow is selected
-    // (docs/specs/008-canvas/quick-style-panel.md "Where it sits") and would take the frame press.
     await seedTab(page, [
       {
         id: 'free',

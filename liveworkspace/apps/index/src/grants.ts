@@ -34,7 +34,7 @@ async function makeEphemeral(): Promise<SigningKey> {
   const pair = await generateKeyPair(GRANT_ALG, { extractable: true });
   const kid = `dev-${crypto.randomUUID().slice(0, 8)}`;
   const publicJwk = { ...(await exportJWK(pair.publicKey)), kid, alg: GRANT_ALG, use: 'sig' };
-  console.log(
+  console.info(
     `[index] GRANT_SIGNING_KEY is unset: signing grants with an ephemeral key (${kid}) for this isolate only`,
   );
   return { kid, privateKey: pair.privateKey, publicJwk };

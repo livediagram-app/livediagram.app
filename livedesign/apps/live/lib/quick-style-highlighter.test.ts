@@ -7,7 +7,7 @@ import {
   toolHighlighterStyle,
 } from './quick-style-highlighter';
 
-// docs/specs/008-canvas/highlighter.md "Settings": the Quick style panel's Highlighter rows.
+// docs/specs/008-canvas/highlighter.md "Settings": the Quick Style bar's Highlighter rows.
 const highlight = (over: Record<string, unknown> = {}) =>
   ({
     id: 'h',

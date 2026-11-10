@@ -12,6 +12,7 @@
   "dependencies": {
     "@livehuddle/avatar": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/element-model": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "perfect-freehand": "^1.2.3"
   },

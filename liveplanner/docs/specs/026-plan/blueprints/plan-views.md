@@ -176,7 +176,7 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   `phaseOf` through `PHASE_COLOURS` with `tint`; under `GANTT_PILL_MIN_COLUMN_PX` (160) of names column it is an
   8 px dot in a Tooltip naming the status.
 - Gantt swimlanes: `planView.swimlaneBy` (`SWIMLANE_BY`) and `swimlaneField`, validated in validate-shape.ts.
-  `laneGroups(by, field, list, items, types, statusNames)` (board.ts, shared with `projectBoard`) gives the lanes
+  `laneGroups(by, field, list, items, types, statusNames)` (board-lanes.ts, shared with `projectBoard`) gives the lanes
   the rows fall in, in a board's order, and each item's lane; `ganttLanes(rows, ...)` keeps only lanes with rows,
   rows in the chart's order. `GanttView` lays rows and lane headers out in one pass (`ganttLayout`: each entry's
   top), drawing `GanttLaneHead` and `GanttNameRow` (gantt-rows.tsx). Lane collapse is per person, component state keyed by lane key. Set from `PlanViewMenuSection` (a View

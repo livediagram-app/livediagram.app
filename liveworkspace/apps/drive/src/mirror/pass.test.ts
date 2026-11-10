@@ -15,7 +15,7 @@ import { DRIVE_PICTURE_FULL_MS } from './picture';
 let h: Harness;
 
 beforeEach(() => {
-  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   h = harness();
 });

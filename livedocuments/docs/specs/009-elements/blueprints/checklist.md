@@ -21,7 +21,7 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`              | `setChecklistItemsSelected`: whole-array row edits                                                          |
 | `apps/editor/components/palette/ElementDataSections.tsx`       | The Checklist section (Tools flyout)                                                                        |
 | `apps/editor/components/palette/context-menu-data-editors.tsx` | `ChecklistRowsEditor`                                                                                       |
-| `apps/editor/components/palette/palette-tile-defs.tsx`         | Tile `tools:checklist`, section `components`                                                                |
+| `apps/editor/components/palette/tile-defs/element-tiles.tsx`   | Tile `tools:checklist`, section `components`                                                                |
 
 ## Domain and naming
 

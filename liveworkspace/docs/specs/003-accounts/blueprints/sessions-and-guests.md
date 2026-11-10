@@ -9,19 +9,19 @@ are relative to the repository root.
 
 Scope, by file:
 
-| File                                                 | Role                                                                                      |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/accounts/src/guests.ts`          | The `lw_guest` cookie, `GET /api/auth/guest`, the guest merge on sign-in and on authorize |
-| `liveworkspace/apps/accounts/src/workspace-token.ts` | `GET /api/auth/workspace-token`: liveworkspace.app's own token                            |
-| `liveworkspace/apps/accounts/src/end-session.ts`     | `POST` and `GET /api/auth/end-session`; every app's tokens on a session, at any sign-out  |
-| `liveworkspace/apps/accounts/src/bearer.ts`          | `bearerPerson`: an app API's access or guest token, checked against this Worker's keys    |
-| `liveworkspace/apps/accounts/src/own-sessions.ts`    | The bearer's Where You're Signed In: list, end one, end the others                        |
-| `liveworkspace/apps/accounts/src/link-google.ts`     | The bearer's Sign-in Methods, and `GET /api/auth/link-google`, the hop to Google          |
-| `liveworkspace/apps/accounts/src/legacy-guests.ts`   | `POST /api/account/internal/legacy-guests/claim`                                          |
-| `liveworkspace/apps/accounts/src/guest-sweep.ts`     | `noteGuestSeen`, `sweepIdleGuests`                                                        |
-| `liveworkspace/apps/accounts/src/account-api.ts`     | `GET /api/account/people` on each door                                                    |
-| `liveworkspace/apps/accounts/src/profiles.ts`        | `withSessionColour` on `GET /api/auth/get-session`                                        |
-| `packages/auth-client/src/silent.ts`, `oauth.ts`     | Each app's side: the guest hand-off and `prompt=none`                                     |
+| File                                                                                                                     | Role                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/accounts/src/guests.ts`                                                                              | The `lw_guest` cookie, `GET /api/auth/guest`, the guest merge on sign-in and on authorize |
+| `liveworkspace/apps/accounts/src/workspace-token.ts`                                                                     | `GET /api/auth/workspace-token`: liveworkspace.app's own token                            |
+| `liveworkspace/apps/accounts/src/end-session.ts`                                                                         | `POST` and `GET /api/auth/end-session`; every app's tokens on a session, at any sign-out  |
+| `liveworkspace/apps/accounts/src/bearer.ts`                                                                              | `bearerPerson`: an app API's access or guest token, checked against this Worker's keys    |
+| `liveworkspace/apps/accounts/src/own-sessions.ts`                                                                        | The bearer's Where You're Signed In: list, end one, end the others                        |
+| `liveworkspace/apps/accounts/src/link-google.ts`                                                                         | The bearer's Sign-in Methods, and `GET /api/auth/link-google`, the hop to Google          |
+| `liveworkspace/apps/accounts/src/legacy-guests.ts`                                                                       | `POST /api/account/internal/legacy-guests/claim`                                          |
+| `liveworkspace/apps/accounts/src/guest-sweep.ts`                                                                         | `noteGuestSeen`, `sweepIdleGuests`                                                        |
+| `liveworkspace/apps/accounts/src/account-api/signed-in.ts`, `liveworkspace/apps/accounts/src/account-api/bearer-door.ts` | `GET /api/account/people` on each door                                                    |
+| `liveworkspace/apps/accounts/src/profiles.ts`                                                                            | `withSessionColour` on `GET /api/auth/get-session`                                        |
+| `packages/auth-client/src/silent.ts`, `oauth.ts`                                                                         | Each app's side: the guest hand-off and `prompt=none`                                     |
 
 ## Domain and naming
 
@@ -178,6 +178,9 @@ invalid_into`).
    none: claimed answers as above, else `503 claim_in_progress`.
 5. `mergeGuestInto(…, { legacy: true })`; failing releases the hold, `502 merge_failed`.
 6. Stamped `claimedAt`, `claimedBy`; a race lost answers `claimed`. Logged `[accounts] legacy guest claimed { into }`.
+
+Closing the account that claimed (`legacyGuestCloseStatements`, in `leaveAllTeams`' batch): `claimedBy` naming it
+becomes `deleted`; a hold it has (`claimingBy`) goes, `claimingUntil` with it.
 
 ### Guests who never come back
 

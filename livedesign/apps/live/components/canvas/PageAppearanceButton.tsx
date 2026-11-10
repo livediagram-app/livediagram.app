@@ -3,7 +3,9 @@
 // A wireframe page's Appearance on a phone (docs/specs/007-editor/pages-mode.md "Beside the cog", "On a phone"): one
 // button in place of its Device, Layout and Background, its sheet a list of those controls (the shared
 // AppearanceRowList). A press on a row closes this sheet and opens that control's own (mounted headless beside the
-// bar), so each control keeps one body and one place to change it.
+// bar), so each control keeps one body and one place to change it. While something on the page is selected that the
+// Quick Style bar styles, its rows follow under Selected Element, on any page (docs/specs/008-canvas/quick-style-panel.md
+// "On a phone, in Appearance").
 import type { WireframeDeviceId } from '@livedesign/design';
 import {
   lucidePaintRoller,
@@ -12,6 +14,7 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { AppearanceRowList } from '@liveworkspace/workbench/components/canvas/AppearanceRowList';
+import type { QuickStylePhoneRows } from '@/lib/quick-style-bar-slots';
 import { track } from '@/lib/telemetry';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 import { DeviceGlyph } from './wireframe/DeviceGlyph';
@@ -55,8 +58,11 @@ export function PageAppearanceButton({
   rows,
   device,
   labelled = false,
+  selected = null,
   onPick,
 }: {
+  // The Quick Style rows while something on this page is selected (useQuickStylePhoneRows), else null.
+  selected?: QuickStylePhoneRows | null;
   // Named beside its icon: a phone's bar while the page on screen has the room.
   labelled?: boolean;
   rows: readonly AppearanceRow[];
@@ -65,7 +71,8 @@ export function PageAppearanceButton({
   // Opens the row's control, once this sheet has closed.
   onPick: (row: AppearanceRow) => void;
 }) {
-  if (rows.length === 0) return null;
+  const styled = selected !== null && selected.rows.length > 0;
+  if (rows.length === 0 && !styled) return null;
   return (
     <div
       // The title bar takes no pointer events: the button opts back in, and a press on it is its own, never the
@@ -85,25 +92,39 @@ export function PageAppearanceButton({
         onOpen={() => track('UI', 'Opened', 'PageAppearance')}
       >
         {(close) => (
-          <AppearanceRowList
-            rows={rows.map((row) => {
-              const icon =
-                row === 'device' ? (
-                  <DeviceGlyph device={device} size={16} />
-                ) : row === 'layout' ? (
-                  <LayoutIcon />
-                ) : (
-                  <BackgroundIcon />
-                );
-              return { id: row, ...ROWS[row], icon };
-            })}
-            onPick={(row) => {
-              close();
-              const event = ROW_EVENT[row];
-              if (event) track('UI', 'Opened', event);
-              onPick(row);
-            }}
-          />
+          <>
+            {rows.length > 0 ? (
+              <AppearanceRowList
+                rows={rows.map((row) => {
+                  const icon =
+                    row === 'device' ? (
+                      <DeviceGlyph device={device} size={16} />
+                    ) : row === 'layout' ? (
+                      <LayoutIcon />
+                    ) : (
+                      <BackgroundIcon />
+                    );
+                  return { id: row, ...ROWS[row], icon };
+                })}
+                onPick={(row) => {
+                  close();
+                  const event = ROW_EVENT[row];
+                  if (event) track('UI', 'Opened', event);
+                  onPick(row);
+                }}
+              />
+            ) : null}
+            {styled ? (
+              <AppearanceRowList
+                heading="Selected Element"
+                rows={selected.rows}
+                onPick={(id) => {
+                  close();
+                  selected.open(id);
+                }}
+              />
+            ) : null}
+          </>
         )}
       </TitlePopoverButton>
     </div>

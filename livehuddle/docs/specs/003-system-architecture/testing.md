@@ -86,6 +86,13 @@ export default defineProject({ test: { environment: 'jsdom' } });
   coverage, where the budget holds: each workspace's `test:coverage` runs it after its coverage run,
   and CI's editor shards run it beside theirs. A budget used as a test timeout is not a CPU budget and
   never goes through `cpuBudgetMs`.
+- **A growth check keeps its larger input under a million characters.** A test that holds a scan linear
+  compares the CPU time of two input sizes four times apart, against a ceiling of 8 where a quadratic
+  scan reads 16. Past about a million characters V8's memory handling alone grows faster than the text
+  (the same linear label scan took 3.2 times the CPU for twice the text), so the label-cap ReDoS checks,
+  whose larger input was 1.28 million characters, read a median 6.9 for four times the text and failed
+  CI at 8.4 (livedesign, 2026-11-09). They compare two and eight times their sweep's length now: 4.1,
+  worst 4.7 of 20 runs.
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it
   statically, so its transform happens at collection, outside every test's
@@ -143,8 +150,8 @@ excluded. `index.ts` is intentionally **not** excluded: in this repo a
 package's `index.ts` is its implementation (e.g. `@livehuddle/document`), not
 a barrel of re-exports.
 
-There is no repo-wide percentage gate: the bar for most code is "logic has
-tests," not a number.
+There is no per-file percentage gate: the bar for most code is "logic has
+tests," not a number. The editor (`apps/editor`) as a whole has a floor that only rises ([Editor coverage floor](#editor-coverage-floor)).
 
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
@@ -192,6 +199,19 @@ be split (Checks, about 4 minutes) buys no time, while each extra job takes one 
 concurrent runner slots that every other run waits on. The editor's suite is split into the fewest
 shards that finish inside Checks: three, at about 3 minutes each, of which about 30 seconds is
 setup. The E2E suite sizes its shards the same way ([End-to-end tests](e2e-smoke.md#when-it-runs)).
+
+### Editor coverage floor
+
+The editor's merged coverage, all three shards together, may never fall. After the shards, CI's **Editor
+coverage floors** job merges their lcov reports and fails when the editor's line or branch coverage is below its
+floor in `.github/scripts/coverage-floors.json` (the liveworkspace root's `docs/ci.md` "Editor coverage floors").
+Each floor sits 0.3 points below the coverage it was set from, rounded down to one decimal, so moving code between
+files never turns it red at random.
+A per-shard threshold in `vitest.config.ts` would be wrong: each shard runs a third of the files and covers a
+slice. When the editor beats its floor by 0.8 points or more (the slack plus half a point), the job says so; raise
+the floor in the same pull request with `node .github/scripts/coverage-floors.mjs --update`, which keeps the same
+slack and never lowers one. The pre-push hook runs
+the editor without coverage and never checks the floor.
 
 ### Coverage report
 

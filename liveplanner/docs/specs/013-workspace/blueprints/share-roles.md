@@ -18,26 +18,26 @@ The spec's [Later](../share-roles.md#later) items (token levels, ownership power
 
 ## Scope, by file
 
-| File                                                                                                          | Role                                                                                          |
-| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/access-levels.ts`                                                                 | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`        |
-| `packages/api-schema/src/index.ts`                                                                            | `ShareRole` becomes an alias of `AccessLevel`                                                 |
-| `packages/api-schema/src/room-messages.ts`                                                                    | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                    |
-| `packages/project/src/participant-content.ts`                                                                 | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets   |
-| `packages/project/src/element-types.ts`, `validate.ts`                                                        | `addedBy?: string` on `StickyElement` and `TextElement`; validated                            |
-| `packages/project/src/collab-ledger.ts`                                                                       | `mergeLedgerAnswersIntoTab`: votes and responses only                                         |
-| `apps/api/src/plan-room/plan-schema.ts`                                                                       | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                   |
-| `apps/api/src/routes/context.ts`                                                                              | `gateParticipate` is the Participant check                                                    |
-| `apps/api/src/adder-key.ts`                                                                                   | `adderKeyFor(projectId, ownerId)`                                                             |
-| `apps/api/src/routes/project-room-routes.ts`                                                                  | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`      |
-| `apps/api/src/plan-room/plan-room.ts`, `room-op-gate.ts`, `project-room-rules.ts`                             | Level on the session; op gate by class; participant `el` ops through the tab write queue      |
-| `apps/api/src/participant-write.ts`                                                                           | `writeParticipantOp`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
-| `apps/api/src/routes/item-routes.ts`, `item-patches-route.ts`                                                 | Create, patch, move and patches at participate                                                |
-| `apps/api/src/routes/sheet-route-kit.ts`, `sheet-write-route.ts`                                              | `cells` writes at participate                                                                 |
-| `packages/agent-verbs/src/mcp/*`                                                                              | `share_project.role` takes three levels, default `participate`                                |
-| `apps/editor/lib/editor-capabilities.ts`                                                                      | `resolveEditorCapabilities`, `EditorCapabilities`                                             |
-| `apps/editor/app/project/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
-| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/project/[id]/useRoleIndicator.ts`                     | Participating pill                                                                            |
+| File                                                                                                                            | Role                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `../packages/api-schema/src/access-levels.ts`                                                                                   | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`        |
+| `packages/api-schema/src/index.ts`                                                                                              | `ShareRole` becomes an alias of `AccessLevel`                                                 |
+| `packages/api-schema/src/room-messages.ts`                                                                                      | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                    |
+| `packages/project/src/participant-content.ts`                                                                                   | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets   |
+| `packages/project/src/element-types.ts`, `validate.ts`                                                                          | `addedBy?: string` on `StickyElement` and `TextElement`; validated                            |
+| `packages/project/src/collab-ledger.ts`                                                                                         | `mergeLedgerAnswersIntoTab`: votes and responses only                                         |
+| `apps/api/src/plan-room/plan-schema.ts`                                                                                         | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                   |
+| `apps/api/src/routes/context.ts`                                                                                                | `gateParticipate` is the Participant check                                                    |
+| `apps/api/src/adder-key.ts`                                                                                                     | `adderKeyFor(projectId, ownerId)`                                                             |
+| `apps/api/src/routes/project-room-routes.ts`                                                                                    | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`      |
+| `apps/api/src/plan-room/plan-room.ts`, `apps/api/src/plan-room/plan-room-frames.ts`, `room-op-gate.ts`, `project-room-rules.ts` | Level on the session; op gate by class; participant `el` ops through the tab write queue      |
+| `apps/api/src/participant-write.ts`                                                                                             | `writeParticipantOp`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
+| `apps/api/src/routes/item-routes.ts`, `item-patches-route.ts`                                                                   | Create, patch, move and patches at participate                                                |
+| `apps/api/src/routes/sheet-route-kit.ts`, `sheet-write-route.ts`                                                                | `cells` writes at participate                                                                 |
+| `packages/agent-verbs/src/mcp/*`                                                                                                | `share_project.role` takes three levels, default `participate`                                |
+| `apps/editor/lib/editor-capabilities.ts`                                                                                        | `resolveEditorCapabilities`, `EditorCapabilities`                                             |
+| `apps/editor/app/project/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`)                   | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
+| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/project/[id]/useRoleIndicator.ts`                                       | Participating pill                                                                            |
 
 ## Domain and naming
 
@@ -202,7 +202,7 @@ is the first `COLLAB_KEY_LENGTH` (32) hex characters of SHA-256(`liveworkspace:c
 `COLLAB_KEY_HEADER` (`X-Verified-Collab-Key`) on every path, empty when no person resolves (a link code).
 `newSessionAttachment` keeps `sessionCollabKey(header)`: the header when it `isCollabKey`, else `mintCollabKey()` (32
 hex from `crypto.getRandomValues`). `helloPresence` sets `presence.key` from `session.collabKey`, never from the
-`hello`. After each `hello` the room sends `{ kind: 'collab-key', key }` (`CollabKeyMessage`,
+`hello`. After each `hello` the room (`apps/api/src/plan-room/plan-room-frames.ts`) sends `{ kind: 'collab-key', key }` (`CollabKeyMessage`,
 `../packages/api-schema/src/collab-key.ts`) to that socket alone; the connector hands a key that `isCollabKey` to
 `onCollabKey`, and `useRoomConnection` sets `selfParticipant.key` to it. `gateClientOp` (`apps/api/src/room-op-gate.ts`) drops, at
 every level and before the ladder, an op that `namesAnotherPerson(op, sender.key)`: a `vote` whose `voter`, or an

@@ -17,8 +17,10 @@
 import { useMemo, useState } from 'react';
 import { useLatest } from './useLatest';
 
-// oxlint-disable-next-line typescript/no-explicit-any
-type AnyFn = (...args: any[]) => unknown;
+// Every handler fits: a function taking any arguments is assignable to one whose arguments are `never`.
+type AnyFn = (...args: never[]) => unknown;
+// What a forwarder calls: the newest handler, handed the arguments it was called with.
+type Forward = (...args: unknown[]) => unknown;
 
 export function useStableHandlers<T extends Record<string, AnyFn | undefined>>(handlers: T): T {
   const latest = useLatest(handlers);
@@ -26,7 +28,7 @@ export function useStableHandlers<T extends Record<string, AnyFn | undefined>>(h
     Object.fromEntries(
       Object.keys(handlers).map((key) => [
         key,
-        (...args: unknown[]) => (latest.current[key] as AnyFn)(...args),
+        (...args: unknown[]) => (latest.current[key] as Forward)(...args),
       ]),
     ),
   );
@@ -37,7 +39,7 @@ export function useStableHandlers<T extends Record<string, AnyFn | undefined>>(h
     .join('\0');
   return useMemo(() => {
     const present = new Set(presenceKey === '' ? [] : presenceKey.split('\0'));
-    const out: Record<string, AnyFn | undefined> = {};
+    const out: Record<string, Forward | undefined> = {};
     for (const key of Object.keys(wrappers))
       out[key] = present.has(key) ? wrappers[key] : undefined;
     return out as T;

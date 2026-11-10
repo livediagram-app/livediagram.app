@@ -69,7 +69,7 @@ export type PendingDraw =
   // answer is the tile you clicked.
   | { type: 'freehand'; variant?: 'shape-pen' }
   // The Highlighter tile's arm (docs/specs/008-canvas/highlighter.md): the colour and width the
-  // stroke lands in ride the intent, set from the Quick style panel's Highlighter rows, so the
+  // stroke lands in ride the intent, set from the Quick Style bar's Highlighter rows, so the
   // preview and the commit read them where they already read the arm. Absent: Yellow / Medium.
   | { type: 'freehand'; variant: 'highlighter'; colour?: string; width?: number }
   // A marker (docs/specs/023-draw-mode/drawing-tools.md "Markers"), picked up from a logo page's

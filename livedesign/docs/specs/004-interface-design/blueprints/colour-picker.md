@@ -8,7 +8,7 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | colour picker        | `ColourPicker` (`apps/live/components/colour/ColourPicker.tsx`)                                                                                                                         |
 | swatch               | `ColourSwatch`, `SwatchChip` (`apps/live/components/colour/ColourSwatch.tsx`)                                                                                                           |
-| standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`packages/design/src/standard-colours.ts`)                                                                                |
+| standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`../packages/element-model/src/standard-colours.ts`)                                                                      |
 | tone                 | `StandardTone = 'strong' \| 'soft'`                                                                                                                                                     |
 | theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/design/src/quick-swatches.ts`)                                                                         |
 | Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/design`), `designColours(...)` (`apps/live/lib/design-colours.ts`), `useDesignColours()` (`apps/live/hooks/ui/`) |
@@ -170,21 +170,21 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 
 ## Testing
 
-| Rule                                                      | Test                                                                                              |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| ten standard colours, both tones, readable                | `packages/design/src/standard-colours.test.ts`                                                    |
-| Grey is a stock colour, not hued                          | `packages/design/src/pen-colours.test.ts`                                                         |
-| one Tab stop, arrows wrap, Home/End                       | `apps/live/components/colour/ColourPicker.test.tsx`                                               |
-| pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                           |
-| preview and revert                                        | `ColourPicker.test.tsx`                                                                           |
-| skins open, pick closes, Escape refocuses                 | `ColourSkins.test.tsx`                                                                            |
-| custom colours kept and listed                            | `packages/design/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`              |
-| no new pickers: no colour well, editor only in the picker | `apps/live/components/colour/one-picker.test.ts`                                                  |
-| element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                             |
-| Quick Style rows, More colours, keys                      | `components/canvas/QuickStylePanel.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`               |
-| page background                                           | `page-background-section.test.tsx`                                                                |
-| laser and colour wells                                    | `LaserColourRow.test.tsx`, `lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx` |
-| rows fit, e2e                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`                                |
+| Rule                                                      | Test                                                                                                           |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| ten standard colours, both tones, readable                | `../packages/element-model/src/standard-colours.test.ts`                                                       |
+| Grey is a stock colour, not hued                          | `packages/design/src/pen-colours.test.ts`                                                                      |
+| one Tab stop, arrows wrap, Home/End                       | `apps/live/components/colour/ColourPicker.test.tsx`                                                            |
+| pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                                        |
+| preview and revert                                        | `ColourPicker.test.tsx`                                                                                        |
+| skins open, pick closes, Escape refocuses                 | `ColourSkins.test.tsx`                                                                                         |
+| custom colours kept and listed                            | `packages/design/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`                           |
+| no new pickers: no colour well, editor only in the picker | `apps/live/components/colour/one-picker.test.ts`                                                               |
+| element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                                          |
+| Quick Style rows, More colours, keys                      | `components/canvas/QuickStyleBar.test.tsx`, `quick-style-rows.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx` |
+| page background                                           | `page-background-section.test.tsx`                                                                             |
+| laser and colour wells                                    | `LaserColourRow.test.tsx`, `lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx`              |
+| rows fit, e2e                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`                                             |
 
 ## Constants and configuration
 

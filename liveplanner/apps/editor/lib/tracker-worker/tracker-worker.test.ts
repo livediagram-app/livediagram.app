@@ -67,7 +67,7 @@ describe('the tasks', () => {
     // A throw that is not an Error (a library's string) still answers with its text.
     const throwing: TrackerRunner = {
       run: () => {
-        // oxlint-disable-next-line only-throw-error
+        // oxlint-disable-next-line only-throw-error -- a throw that is not an Error is the case under test
         throw 'plain';
       },
     };

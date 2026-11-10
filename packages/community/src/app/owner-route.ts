@@ -119,7 +119,7 @@ export async function answerCommunityOwner(req: CommunityOwnerRequest): Promise<
     if (!res.ok && res.status !== 404) return passThrough(res);
     await revokeLink(existing.shareCode);
     await deleteCommunityPost(db);
-    console.log('[community] removed', { postId: existing.id });
+    console.info('[community] removed', { postId: existing.id });
     return r.noContent();
   }
 
@@ -161,7 +161,7 @@ export async function answerCommunityOwner(req: CommunityOwnerRequest): Promise<
         },
         now(),
       );
-    console.log('[community] updated', { postId: post.id });
+    console.info('[community] updated', { postId: post.id });
     return r.json({ post: ownPost(post) });
   }
 
@@ -201,6 +201,6 @@ export async function answerCommunityOwner(req: CommunityOwnerRequest): Promise<
     now(),
   );
   if (previous && previous.shareCode !== shareCode) await revokeLink(previous.shareCode);
-  console.log('[community] published', { postId: post.id, category: parsed.value.category });
+  console.info('[community] published', { postId: post.id, category: parsed.value.category });
   return r.json({ post: ownPost(post) }, { status: 201 });
 }

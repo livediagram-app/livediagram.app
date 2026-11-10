@@ -134,8 +134,7 @@ export function NewDocumentModeStep({
     if (!window.matchMedia?.('(pointer: fine)').matches) return;
     const at = Math.max(0, NEW_DOCUMENT_MODES.indexOf(selected ?? 'diagram'));
     cards.current[at]?.focus({ preventScroll: true });
-    // Once, as the step appears.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- once, as the step appears
   }, []);
   // 1 to 3 choose a mode wherever the focus is on the page, as Escape backs out from anywhere: after a click on the
   // backdrop the focus is on the page, not a card, and the keys did nothing. A field being typed in, or a chord, keeps

@@ -7,10 +7,10 @@ Scope, by file:
 
 | File                                                                                  | Role                                                                                                            |
 | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/sankey-model.ts`                                               | Types, option lists, bounds, `SANKEY_DEFAULT_FLOWS`, `sankeyGraph`, name/number formatting, node-style edits    |
+| `../packages/element-model/src/sankey-model.ts`                                       | Types, option lists, bounds, `SANKEY_DEFAULT_FLOWS`, `sankeyGraph`, name/number formatting, node-style edits    |
 | `packages/document/src/sankey-layout.ts`                                              | `sankeyLayout`: columns, scale, relaxation, band stacking, `sankeyBandPath`, `sankeyCentrePath`                 |
 | `packages/document/src/sankey-frame.ts`                                               | `sankeyFrame`: colours, band paint, labels and their collisions, summary, readouts                              |
-| `packages/document/src/sankey-text.ts`                                                | `parseSankeyText`, `sankeyFlowsToText`, `readSankeyNumber`                                                      |
+| `../packages/element-model/src/sankey-text.ts`                                        | `parseSankeyText`, `sankeyFlowsToText`, `readSankeyNumber`                                                      |
 | `packages/document/src/svg-render-sankey.ts`                                          | `svgSankey`: the export                                                                                         |
 | `packages/document/src/shape-kind.ts`, `validate.ts`                                  | `'sankey'` in `ShapeKind` and `SHAPE_KINDS`                                                                     |
 | `packages/document/src/validate-shape.ts`                                             | Field checks                                                                                                    |
@@ -34,7 +34,7 @@ Scope, by file:
 | `apps/editor/lib/sankey-edit.ts`                                                      | `canEditSankey`                                                                                                 |
 | `apps/editor/hooks/canvas/useSankeySetters.ts`                                        | `setSankeyFlows`, `setSankeyNodeColorSelected`, `setSankeyOptionSelected`                                       |
 | `apps/editor/app/canvas-motion.css`                                                   | `lvd-sankey-grow`, `-flow`, `-cascade`, `-pulse`, `-rise`                                                       |
-| `apps/editor/components/palette/palette-tile-defs.tsx`                                | Tile `tools:sankey`, section `build`                                                                            |
+| `apps/editor/components/palette/tile-defs/concept-tiles.tsx`                          | Tile `tools:sankey`, section `build`                                                                            |
 
 ## Domain and naming
 

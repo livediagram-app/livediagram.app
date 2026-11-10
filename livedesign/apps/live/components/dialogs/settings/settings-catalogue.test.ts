@@ -451,7 +451,7 @@ describe('settings sub-categories', () => {
   it('opens every panel section with its Enable switch, on by default', () => {
     const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
     const switches: Record<string, [string, string]> = {
-      'Quick Style': ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
+      'Quick Style': ['quickStylePanelEnabled', 'Enable Quick Style Bar'],
       Map: ['showMinimap', 'Enable Map'],
       Collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
     };

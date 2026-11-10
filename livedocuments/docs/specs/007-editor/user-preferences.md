@@ -613,7 +613,7 @@ and the dialog stays as the one complete, browsable index of them.
   Panels holds Panel Opacity, then a section per panel,
   Quick Style, Map, then Collaborate. Each section opens with that panel's **Enable
   switch** ("Enable Map",
-  "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
+  "Enable Collaborate Panel", "Enable Quick Style Bar"; see the panel
   switches in the data model). The panel's other rows nest beneath the
   switch (`parent`) and are offered only while it is on: a setting for a
   panel you have turned off has nothing to act on. The Map's switch keeps its stored key

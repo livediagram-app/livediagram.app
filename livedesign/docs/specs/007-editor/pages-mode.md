@@ -103,8 +103,9 @@ mode.
 
 ## The palette's kind
 
-The palette has a **kind**, which is always the kind of the page someone is on: it
-is never shown and never chosen. Each kind is its own palette layout (`palette-layouts.ts`),
+The palette has a **kind**, which is the tab's: a tab holds pages of one kind ("One kind a tab"),
+so its palette is known from the tab itself on the first paint, before any page is measured, and it
+never changes as someone moves from page to page. It is never shown and never chosen. Each kind is its own palette layout (`palette-layouts.ts`),
 offering what that page is made of and nothing it has no use for; within a kind every tile sits in
 one category (Popular, a pick from across them, aside).
 
@@ -119,14 +120,14 @@ one category (Popular, a pick from across them, aside).
   (an Image to trace); no charts, blocks, frames, stickers or embeds, and no Logo category
   ([Logo pages](logo-pages.md) "The Logo palette").
 
-The kind changes by itself as someone moves (see "Selecting on a page" for which page they are
-on): pressing on a page, going to one (its label, the page navigator, Contents), adding one, or a
-pan, scroll or zoom that comes to rest with another page under the canvas's centre (250 ms after
-the view settles; resting between pages keeps the last). Moving onto a page of another kind opens
-that kind's own category (Elements, Draw; the others keep the bar as it is). A change of kind
-moves: the new categories come in as a quick cascade, each rising and
-fading in a moment after the one before (160 ms each, the whole within the 250 ms chrome budget);
-nothing moves under reduced motion.
+The kind changes with the tab: going to a tab of another kind, or a blank first page taking its
+kind. A tab stored before the one-kind rule, holding pages of more than one kind, is the exception:
+its palette follows the page someone is on (see "Selecting on a page" for which page that is), as
+it did before. Taking a new kind opens that kind's own category (Elements, Draw; the others keep the
+bar as it is). A change of kind moves: the new categories come in as a quick cascade, each rising
+and fading in a moment after the one before (160 ms each, the whole within the 250 ms chrome
+budget); nothing moves under reduced motion. Opening a design plays nothing: the palette arrives in
+its kind.
 
 ## Page kinds
 
@@ -699,12 +700,18 @@ simplified, each button a 44 px touch target and its icon alone but Appearance:
   a press closes the sheet and opens that control's own sheet, the very one its desktop button opens.
   Telemetry `UI / Opened / PageAppearance` as it opens (`PageAppearanceButton`,
   `apps/live/components/canvas/PageAppearanceButton.tsx`). A locked page has no Appearance.
+- While something on the page is selected that the Quick Style bar styles (or a marker or the Highlighter is in hand
+  on it), **Appearance** shows on any page, and its sheet goes on under a hairline and a **Selected Element** heading
+  with one row per Quick Style button that applies (Marker, Size, Highlighter, Thickness, Stroke, Fill, Text, Width,
+  Line, Align, Icon), each showing its value as its icon; a press closes Appearance and opens that row's choices in
+  their own bottom sheet, named by the row's full name ([Quick Style bar](../008-canvas/quick-style-panel.md) "On a
+  phone, in Appearance"). On a page with no looks of its own, Appearance holds those rows alone.
 - A logo page keeps **Mirror** and **Guides**, with **no Tidy**; a photo page keeps its Image, Select and Filter
   menus (they are how a photo is edited).
 - **No lock button**: the page's cog sheet holds **Lock page** or **Unlock page** in its actions row instead, and a
   locked page's sheet says to unlock it there.
 - **No page label** above a page's top-left corner: its name is read in Contents and renamed in the cog sheet, and
-  the page moves with the cog sheet's Move left and Move right (or in Contents).
+  the page moves with the cog sheet's Move Left and Move Right (or in Contents).
 - A Participant or a Viewer sees no title-bar controls, on a phone as on a desktop.
 
 **Named while there is room.** On a desktop the title bar's buttons (Layout, Background,
@@ -1009,8 +1016,7 @@ Both show the same list:
   zoom, the pages row's arrows), read once the view has rested 150 ms, and scrolls its row into view.
   The page in view is the one holding the middle of what shows beside the sidebar, else the nearest.
 - **Reordering**: an Editor drags a row to move its page: a caret shows where it will land and
-  the move commits on release, one edit (one undo), the page's content with it, exactly as
-  dragging its label along the pages row does.
+  the move commits on release, one edit (one undo), the page's content with it, as the cog panel's Move Left and Move Right do.
   A mouse or pen drags the whole row; a finger drags the row's grip (shown on a phone and on hover
   on a desktop), so the list still scrolls by touch. The release is not a press of the row: it
   does not glide there, but marks the moved page as here. A Participant and a Viewer see no grip
@@ -1114,11 +1120,9 @@ is while the rest of the tab is worked on.
 - **The Map shows the pages**: each page's sheet in its own background (a picture as its tone) with a crisp outline,
   under the content, counted in the Map's bounds (so a tab of empty pages still has a Map), and
   each element inked for its page.
-- **Drag a page's label to reorder**: once the press travels 6 screen px sideways it is a drag (an
-  editor with two or more pages; only then the label shows a grab
-  cursor). A marker bar in the gap shows
-  where the page will land (after every other page whose centre is left of the dragged page's) and
-  the dragged sheet dims; release moves it there with its content, one edit. Escape cancels.
+- **A page's label does not drag**: pressing it fits the page to the screen (a double press stays the
+  rename), and that is all. Pages reorder in Contents (drag a row) or with the cog panel's Move left and
+  Move right.
 - **The label fits its page**: it truncates to the page's width on screen less the title bar's
   buttons, and hides when under 40 px.
 - **Snapping to the pages**: while a move or a resize is in hand, an element

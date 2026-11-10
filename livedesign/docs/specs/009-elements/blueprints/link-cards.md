@@ -27,9 +27,9 @@ Scope, by file:
 | `apps/live/components/canvas/element-variant.ts`                               | The card chrome: 10 px radius, 1 px border, fill                                                                          |
 | `apps/live/components/canvas/BoxedElementView.tsx`                             | Excludes link cards from the corner link badge                                                                            |
 | `apps/live/components/canvas/useBoxedElementGestures.ts`                       | Double-click → `onEditLink`                                                                                               |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`                             | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`                                                            |
+| `apps/live/components/canvas/editor-canvas-host/useEditCanvasProps.ts`         | `onEditLink: isReadOnly ? undefined : setLinkPickerOpenForId`                                                             |
 | `apps/live/components/dialogs/LinkPickerDialog.tsx`                            | The shared link editor                                                                                                    |
-| `apps/live/components/palette/palette-tile-defs.tsx`                           | `tools:link-card` tile                                                                                                    |
+| `apps/live/components/palette/tile-defs/concept-tiles.tsx`                     | `tools:link-card` tile                                                                                                    |
 | `apps/live/app/design/[id]/useElementCreation.ts`                              | `addLinkCard`: arms the draw gesture                                                                                      |
 | `apps/live/hooks/canvas/useShapeDrawing.ts`                                    | Commit: `track('Element', 'Added', 'LinkCard')`                                                                           |
 | `apps/live/lib/search.ts`                                                      | Palette search entry                                                                                                      |
@@ -272,7 +272,7 @@ LinkUnfurled` exist.
 | Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/live/lib/element-telemetry.test.ts`      |
 | Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/design/src/geometry.test.ts`         |
 | No inline text                                          | `is false for label-less kinds…`                            | `packages/design/src/element-has-text.test.ts` |
-| Shadow supported                                        | `supportsShadow` suite                                      | `packages/design/src/shadow.test.ts`           |
+| Shadow supported                                        | `supportsShadow` suite                                      | `../packages/element-model/src/shadow.test.ts` |
 | Theme leaves cards alone                                | none                                                        |                                                |
 | Stale-meta guard, unfurl only for cards, meta commit    | none (GB9, GB11, GB16)                                      |                                                |
 | Contrast                                                | none (GB14)                                                 |                                                |

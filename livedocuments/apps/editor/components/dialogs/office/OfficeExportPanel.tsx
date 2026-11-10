@@ -3,8 +3,9 @@
 // The Export dialog's PowerPoint and Word panel (docs/specs/020-import-export/office-export.md "The panel"): what the
 // file holds and what stays editable in it, the first page's preview, then the making, with its progress and Cancel.
 // Loaded only when the card opens, with the writers it calls.
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import type { Deck, LaidOutPage, Tab } from '@livedocuments/document';
-import { BackBar, Button, CheckIcon, trustedHtml } from '@livedocuments/ui';
+import { BackBar, Button, CheckIcon, htmlProps } from '@livedocuments/ui';
 import type { ImageExportOpts } from '@/lib/export-tab';
 import { OFFICE_EXPORT_MESSAGES } from '@/lib/office-export';
 import {
@@ -63,7 +64,7 @@ export default function OfficeExportPanel({
             role="img"
             aria-label="The first page as it will download"
             className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
-            dangerouslySetInnerHTML={{ __html: trustedHtml(previewSvg) }}
+            {...htmlProps(sanitizedHtml(previewSvg))}
           />
         ) : (
           <span className="text-xs text-slate-500 dark:text-slate-400">Preparing preview…</span>

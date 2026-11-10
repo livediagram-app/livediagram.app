@@ -6,138 +6,55 @@ import { isOfflineIdSync, subscribeOfflineIds } from '@/lib/offline/offline-stor
 import type { SheetCreateRequest, SheetsRoomOp, SheetWriteResponse } from '@liveplanner/api-schema';
 import {
   Workbook,
-  applyLayoutChange,
   applySheetWrite,
-  cellKey,
   changedInputs,
-  formatA1,
-  layoutIndex,
-  rangeOptions,
-  splitCellKey,
-  inverseLayoutChanges,
   inverseSheetWrite,
   mergeSheetChange,
   sheetFromJson,
   sheetToJson,
-  shrinkReadersOf,
-  splitWrite,
   undoReadsNow,
   uniqueSheetTitle,
-  validateWrite,
-  writeForRules,
   type CardSource,
   type Sheet,
   type SheetJson,
-  type SheetLayout,
   type SheetPerson,
   type SheetRejection,
   type SheetWrite,
-  type WriteCheck,
 } from '@liveplanner/sheets';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { ApiError } from '@/lib/api/core';
 import { errorStatus, isTransientWriteError } from './sheet-write-retry';
-import {
-  createSheet,
-  deleteSheet,
-  fetchSheets,
-  writeSheet,
-  type SheetsScope,
-} from '@/lib/api/sheets';
-import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
+import { createSheet, deleteSheet, fetchSheets, writeSheet } from '@/lib/api/sheets';
 import {
   PLAN_QUEUE_FULL_MESSAGE,
   nextSeq,
   planQueue,
   type SheetWriteFlags,
 } from '@/lib/offline-queue/plan-queue';
-import { SheetQueueKeeper, type SheetChange, type SheetQueueDeps } from './sheet-store-queue';
+import { SheetQueueKeeper, type SheetChange } from './sheet-store-queue';
+import { sheetRefusalMessage } from './sheet-store-messages';
+import { keysOf, plannedWrites, undoWrites, withReaders } from './sheet-store-writes';
+import type {
+  Entry,
+  Inverse,
+  Pending,
+  SheetStoreDeps,
+  TabStatus,
+  WriteOpts,
+} from './sheet-store-types';
 
-// How a write is made: `undoable` false for an undo or redo itself (`undo` true then); `alongside`, a change outside
-// the sheet made with it (Clear Sheet taking the Sheet's charts), undone and redone with it as one step.
-// `unchecked`: written as it is, past the validation rules (an import, a card table's sync, a template's start;
-// data-validation.md "Where values are checked").
-type WriteOpts = {
-  undoable?: boolean;
-  undo?: boolean;
-  unchecked?: boolean;
-  alongside?: ItemUndoStep;
-};
+// The store's shapes, refusal messages and write planning live in their own modules; this entry keeps every export.
+export { sheetRefusalMessage, writeRefusalMessage } from './sheet-store-messages';
+export type { TabStatus } from './sheet-store-types';
 
 // A new tab's sheet waiting for the tab to be saved: retried this many times, this much longer each time
 // (docs/specs/029-sheets/sheet-store.md "Changing a sheet"). Safe range 2..6 and 300..2000 ms.
 const CREATE_TAB_RETRIES = 4;
 const CREATE_TAB_RETRY_MS = 800;
 
-type SheetStoreDeps = {
-  scope: SheetsScope;
-  self: () => SheetPerson | null;
-  locale: string;
-  pushUndo: (step: ItemUndoStep) => void;
-  toast: (message: string) => void;
-  // Injected in tests.
-  api?: {
-    fetchSheets: typeof fetchSheets;
-    createSheet: typeof createSheet;
-    writeSheet: typeof writeSheet;
-    deleteSheet: typeof deleteSheet;
-  };
-  // The wait before a write is sent again; injected in tests.
-  wait?: (ms: number) => Promise<void>;
-  // The plan's queue of waiting changes and what of this session's may wait in it (docs/specs/007-editor/
-  // offline-changes.md); absent, nothing is kept past the tab, as for an Offline Mode project.
-} & SheetQueueDeps;
-
-// `seq`: when it was made, which orders it in the queue of waiting changes.
-type Pending = { wid: string; write: SheetWrite; seq: number };
-// One sheet's part of an undo step; a deletion's also keeps the layout it was made on and what it did, to be undone
-// against the sheet as it is at the undo.
-type Inverse = { sheetId: string; write: SheetWrite; before?: SheetLayout; applied?: SheetWrite };
-type Entry = { confirmed: Sheet; pending: Pending[]; view: Sheet };
-export type TabStatus = 'loading' | 'ready' | 'error';
-
 const NOBODY: SheetPerson = { id: '', name: 'Someone', color: '#94a3b8' };
 export const SHEET_REFETCH_DEBOUNCE_MS = 400;
-
-const REFUSALS: Partial<Record<string, string>> = {
-  sheet_full: 'This sheet holds the most cells it can',
-  sheets_full: 'This plan holds the most sheets it can',
-  sheet_too_large: 'A sheet holds up to 10,000 rows and 200 columns',
-  sheet_title_taken: 'Another sheet on this tab is called that',
-  input_too_long: 'A cell holds up to 10,000 characters',
-  sheet_not_found: 'This sheet is no longer in this plan',
-  rules_full: 'This sheet holds the most rules it can',
-};
-
-// What a refused write says: a value a validation rule refuses names its cell and what the rule allows.
-export function writeRefusalMessage(
-  check: { error: string; at?: string; line?: string },
-  layout?: SheetLayout,
-): string {
-  if (check.error === 'value_invalid' && check.line) {
-    const ix = layout && check.at ? layoutIndex(layout) : null;
-    const { r, c } = check.at ? splitCellKey(check.at) : { r: '', c: '' };
-    const row = ix?.rowPos.get(r);
-    const col = ix?.colPos.get(c);
-    return row !== undefined && col !== undefined
-      ? `${formatA1(row, col)}: ${check.line}`
-      : check.line;
-  }
-  return sheetRefusalMessage(check.error);
-}
-
-export function sheetRefusalMessage(code: string | null): string {
-  return (code && REFUSALS[code]) ?? "Couldn't save that change";
-}
-
-let widCounter = 0;
-const newWid = () => `w${Date.now().toString(36)}${(widCounter++).toString(36)}`;
-
-function keysOf(write: SheetWrite): string[] | undefined {
-  if (write.kind !== 'cells') return undefined;
-  return write.cells.map((c) => cellKey(c.r, c.c));
-}
 
 export class SheetStore {
   private deps: SheetStoreDeps;
@@ -441,53 +358,23 @@ export class SheetStore {
     opts: WriteOpts = {},
   ): SheetRejection | null {
     // An undo or redo replays writes that already carry their readers' rewrites.
-    const edits = opts.undo ? asMadeEdits : this.withReaders(asMadeEdits);
+    const edits = opts.undo ? asMadeEdits : withReaders(this.entries, asMadeEdits);
     const now = Date.now();
-    const states = new Map<string, Sheet>();
-    const plan: {
-      sheetId: string;
-      write: SheetWrite;
-      parts: SheetWrite[];
-      ids: { wid: string; seq: number }[];
-    }[] = [];
     const checked = !opts.undo && !opts.unchecked && opts.undoable !== false;
     const flags: SheetWriteFlags = {
       ...(opts.undo ? { undo: true } : {}),
       ...(opts.unchecked || (opts.undoable === false && !opts.undo) ? { unchecked: true } : {}),
     };
-    for (const { sheetId, write: asMade } of edits) {
-      const entry = this.entries.get(sheetId);
-      if (!entry) return 'write_invalid';
-      // What is typed or pasted takes its cell's rule: `done` is saved as the option `Done` (data-validation.md).
-      const write = checked ? writeForRules(entry.view.layout, asMade) : asMade;
-      const parts = splitWrite(write);
-      let state = states.get(sheetId) ?? entry.view;
-      // A Dropdown from a Range's options are worked out here, from the tab's workbook (the api cannot).
-      const wb = this.workbooks.get(entry.view.tabId);
-      const checks: WriteCheck = {
-        // Quiet writes (a card table's sync, a seed) are the system's, stored as they are.
-        checkRules: checked,
-        locale: this.deps.locale,
-        ...(wb ? { rangeValues: (rule) => rangeOptions(wb, sheetId, rule) } : {}),
-      };
-      for (const part of parts) {
-        const check = validateWrite(state, part, checks);
-        if (!check.ok) {
-          this.deps.toast(writeRefusalMessage(check, state.layout));
-          return check.error;
-        }
-        // Only a later part or write needs the sheet as this one leaves it.
-        if (parts.length > 1 || edits.length > 1)
-          state = applySheetWrite(state, part, { now, by: this.by() }).sheet;
-      }
-      states.set(sheetId, state);
-      plan.push({
-        sheetId,
-        write,
-        parts,
-        ids: parts.map(() => ({ wid: newWid(), seq: nextSeq() })),
-      });
-    }
+    const plan = plannedWrites(
+      this.entries,
+      this.workbooks,
+      this.deps,
+      () => this.by(),
+      edits,
+      now,
+      checked,
+    );
+    if (!Array.isArray(plan)) return plan;
     // Offline, or with older changes waiting: every part joins the queue of waiting changes before anything is
     // applied, or, past its bound, the change is refused whole (offline-changes.md "Bounds").
     if (this.waiting.waitsNow() && !this.waiting.keepAll(plan, flags)) {
@@ -521,7 +408,7 @@ export class SheetStore {
       const alongside = opts.alongside;
       this.deps.pushUndo({
         undo: () => {
-          this.writeAll(this.undoWrites(inverses), { undoable: false, undo: true });
+          this.writeAll(undoWrites(this.entries, inverses), { undoable: false, undo: true });
           alongside?.undo();
         },
         redo: () => {
@@ -536,52 +423,6 @@ export class SheetStore {
     }
     this.notify();
     return null;
-  }
-
-  // Rows or columns deleted from a sheet shrink the ranges into it held by the tab's other loaded sheets, and a sort
-  // keeps them on their rows (formulas.md "Other sheets"), in the same change, so one undo puts them back; the api shrinks them too, for writers that are not
-  // an editor (and finds nothing left to do after this). Linear in the tab's formula references.
-  private withReaders(
-    edits: readonly { sheetId: string; write: SheetWrite }[],
-  ): { sheetId: string; write: SheetWrite }[] {
-    const out = [...edits];
-    const named = new Set(edits.map((e) => e.sheetId));
-    for (const { sheetId, write } of edits) {
-      if (write.kind !== 'layout') continue;
-      if (
-        !write.changes.some(
-          (c) =>
-            c.k === 'deleteRows' ||
-            c.k === 'deleteCols' ||
-            c.k === 'orderRows' ||
-            c.k === 'orderCols',
-        )
-      )
-        continue;
-      const target = this.entries.get(sheetId)?.view;
-      if (!target) continue;
-      for (const [id, entry] of this.entries) {
-        if (named.has(id) || entry.view.tabId !== target.tabId) continue;
-        const cells = shrinkReadersOf(sheetId, target.layout, write.changes, entry.view.cells);
-        if (cells.length) out.push({ sheetId: id, write: { kind: 'cells', cells } });
-      }
-    }
-    return out;
-  }
-
-  // The undo of a change, as it lands on the sheets now: a deletion's undo puts back what it took into the layout
-  // as it is (and as the undo's earlier writes to that sheet leave it), so links, drafts and merges made since stay.
-  private undoWrites(inverses: readonly Inverse[]): { sheetId: string; write: SheetWrite }[] {
-    const landing = new Map<string, SheetLayout>();
-    return inverses.map(({ sheetId, write, before, applied }) => {
-      const now = landing.get(sheetId) ?? this.entries.get(sheetId)?.view.layout;
-      let out = write;
-      if (before && applied?.kind === 'layout' && write.kind === 'layout' && now)
-        out = { ...write, changes: inverseLayoutChanges(before, applied.changes, now) };
-      if (now && out.kind === 'layout')
-        landing.set(sheetId, out.changes.reduce(applyLayoutChange, now));
-      return { sheetId, write: out };
-    });
   }
 
   // Delete sheets with their elements: gone from the store now, kept as they were for Undo, and deleted by the api

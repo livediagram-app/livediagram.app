@@ -26,7 +26,7 @@ from browsers and code editors: drag the tab to where you want it.
 - **One header, one footer.** The site header (design title, share, account) runs across the top
   of both panes, and the tab bar (tabs, Search, Settings, System) across the bottom, as they do
   with one tab.
-- **No quick style panel.** The [quick style panel](../008-canvas/quick-style-panel.md) stands down
+- **No Quick Style bar.** The [Quick Style bar](../008-canvas/quick-style-panel.md) stands down
   while a split shows: half a window has no room for it beside the selection. Every style stays in
   the element's menu.
 - **Steps aside, is kept.** Zen mode and embeds hide the split; leaving them brings it

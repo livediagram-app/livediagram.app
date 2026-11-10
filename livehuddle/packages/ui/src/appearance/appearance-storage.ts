@@ -1,4 +1,5 @@
 import { appearanceBootScript, DARK_MEDIA_QUERY } from '@liveworkspace/ui/appearance-storage';
+import { trustedConstant } from '../trusted-types';
 
 // What the Appearance boot path needs (docs/specs/004-interface-design/appearance.md): this product's
 // localStorage key and the pre-paint script bound to it, in a PLAIN module, deliberately NOT `'use client'`.
@@ -14,4 +15,4 @@ export const APPEARANCE_STORAGE_KEY = 'livehuddle:v2:ui-mode';
 export { DARK_MEDIA_QUERY };
 
 // Runs before first paint in every app (see appearanceBootScript).
-export const APPEARANCE_BOOT_SCRIPT = appearanceBootScript(APPEARANCE_STORAGE_KEY);
+export const APPEARANCE_BOOT_SCRIPT = trustedConstant(appearanceBootScript(APPEARANCE_STORAGE_KEY));

@@ -36,7 +36,7 @@ A picker shows up to three groups, always in this order, each under a small head
 1. **Theme Palette**, in every picker in the editor, whatever the surface (an element, a page background, the laser): the active tab's theme colours, as the
    theme derives them ([Canvas and palette](../008-canvas/canvas-and-palette.md#colours)), each named by a
    colour word, never two alike ("Blue", "Light blue", "Deep blue"). A Quick Style row's More colours shows the
-   row's own colours here instead ([Quick Style Panel](../008-canvas/quick-style-panel.md#colours)). Outside
+   row's own colours here instead ([Quick Style bar](../008-canvas/quick-style-panel.md#colours)). Outside
    the editor (the Explorer) there is no active tab, so no group.
 2. **Standard Colours**: the **standard colours**, the same ten everywhere, in this order:
 
@@ -96,7 +96,7 @@ one, and **Use**. Use (or Enter in the hex field) applies the colour and keeps i
 - Where a line or text has to read on both appearances (the element menu's line and text rows), the editor warns
   when a colour is under 3:1 on either and offers a readable version beside the warning. Elsewhere it does not.
 - Quick Style's custom swatch popover holds the same editor
-  ([Quick Style Panel](../008-canvas/quick-style-panel.md#custom-swatches)).
+  ([Quick Style bar](../008-canvas/quick-style-panel.md#custom-swatches)).
 - There is **no system colour well** anywhere in the editor; the custom colour editor is the only one.
 
 ## What a picker stores
@@ -151,7 +151,7 @@ pick commits it, once, for undo.
 
 ## Quick Style
 
-The [Quick Style Panel](../008-canvas/quick-style-panel.md) keeps its compact rows: a theme row's seven and
+The [Quick Style bar](../008-canvas/quick-style-panel.md) keeps its compact rows: a theme row's seven and
 Ink. Each row draws the one swatch, follows the
 one keyboard model, and ends with **More colours**, a swatch button opening the full picker (the row's own
 colours as its Theme Palette, the standard colours, Custom colours). Its glyph is four dots of the standard

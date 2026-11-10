@@ -18,7 +18,7 @@ import {
   type Tab,
 } from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
-import { trustedHtml, useAppearance } from '@livedesign/ui';
+import { builtMarkup, htmlProps, useAppearance } from '@livedesign/ui';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { renderTabToSvg } from '@/lib/export-tab';
 import { elementAsSeen } from '@/lib/stock-colour-projector';
@@ -79,8 +79,7 @@ export function LayoutRenderThumb({
   const { rect } = page;
   const markup = useMemo(
     () => layoutRenderSvg(tab, page, layout, appearance),
-    // Redrawn for the page's place, size and paint, and the tab's look; not for its elements.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- redrawn for the page's place, size and paint, and the tab's look; not for its elements
     [
       layout,
       rect.x,
@@ -101,7 +100,7 @@ export function LayoutRenderThumb({
       className="overflow-hidden rounded-sm shadow-sm ring-1 ring-slate-900/10 dark:ring-white/10 [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
       // Whole pixels, so the render is never resampled across a half pixel.
       style={{ width: Math.round(width), height: Math.round((width * rect.height) / rect.width) }}
-      dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+      {...htmlProps(builtMarkup(markup))}
     />
   );
 }

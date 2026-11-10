@@ -8,7 +8,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { FINISHES, type Finish } from '@liveplanner/project';
-import { Select, lucideGlyph, trustedHtml } from '@liveplanner/ui';
+import { Select, lucideGlyph, builtMarkup, htmlProps } from '@liveplanner/ui';
 import { lucideDices } from '@liveworkspace/icons/lucide';
 import { FINISH_LABELS } from '@/components/palette/FinishSection';
 import { track } from '@/lib/telemetry';
@@ -79,8 +79,7 @@ export function LooksCarousel({
   };
   const mashupPreview = useMemo(
     () => ({ markup: lookPreviewSvg(mashup), paper: lookPreviewTab(mashup).backgroundColor }),
-    // As the looks' previews: redrawn in the viewer's half when it changes.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- as the looks' previews: redrawn in the viewer's half when it changes
     [mashup, appearance],
   );
   const previews = useMemo(
@@ -91,8 +90,7 @@ export function LooksCarousel({
           { markup: lookPreviewSvg(look), paper: lookPreviewTab(look).backgroundColor },
         ]),
       ),
-    // The previews read the viewer's appearance themselves (getTheme); it is a dependency so they redraw on a change.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the previews read the viewer's appearance themselves (getTheme); it is a dependency so they redraw on a change
     [appearance],
   );
   return (
@@ -217,7 +215,7 @@ function LookCard({
         aria-hidden
         className="block h-20 w-full overflow-hidden [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
         style={{ backgroundColor: paper }}
-        dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
+        {...htmlProps(builtMarkup(markup))}
       />
       {badge ? (
         <span

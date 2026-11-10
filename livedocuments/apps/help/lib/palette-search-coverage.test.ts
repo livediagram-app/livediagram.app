@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { searchArticles } from './articles';
@@ -38,7 +38,14 @@ const TILE_DEFS = fileURLToPath(
 const UNDOCUMENTED_SECTION = /toolGroup: 'behaviour'/;
 
 function paletteNames(): string[] {
-  const src = readFileSync(TILE_DEFS, 'utf8');
+  // The catalogue's entry spreads its sections from tile-defs/, one module per palette section.
+  const sections = TILE_DEFS.replace(/palette-tile-defs\.tsx$/, 'tile-defs/');
+  const src = [
+    readFileSync(TILE_DEFS, 'utf8'),
+    ...readdirSync(sections)
+      .sort()
+      .map((f) => readFileSync(`${sections}${f}`, 'utf8')),
+  ].join('\n');
   const names: string[] = [];
   for (const tile of src.split(/\n {2}\{\n/)) {
     if (UNDOCUMENTED_SECTION.test(tile)) continue;

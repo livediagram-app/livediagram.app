@@ -8,14 +8,14 @@ repository root.
 
 Scope, by file:
 
-| File                                                      | Role                                                                                                                                                    |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/accounts/src/teams.ts`                | Every team rule: create, update, delete, members, invitations, decline tokens, the join link, the sweep, the change feed, `teamsClaim`, `leaveAllTeams` |
-| `liveworkspace/apps/accounts/src/account-api.ts`          | `teamRoutes` (session and bearer), `handleOpen` (join preview, email decline), the internal team routes, `/index/teams`, `/index/people`                |
-| `liveworkspace/apps/accounts/src/internal-invitations.ts` | `POST /api/account/internal/invitations`                                                                                                                |
-| `liveworkspace/apps/accounts/src/notify.ts`               | `teamPeople` for `POST /api/account/internal/teams/members`                                                                                             |
-| `liveworkspace/apps/accounts/src/index-timeline.ts`       | `timelineStatement`, `teamScopes`, the outbox to the index                                                                                              |
-| `packages/auth-client/src/account.ts`, `invitations.ts`   | Each app's side: the change feed, `teams/of`, invitations (cached 30 s, 500 accounts)                                                                   |
+| File                                                      | Role                                                                                                                                                                                                                                                                                                            |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/accounts/src/teams.ts`                | Every team rule, re-exported from `teams/`: `shared.ts` (limits, types), `reads.ts` (`teamsClaim`, lists), `manage.ts` (create, update, delete), `members.ts` (members, invitations, `leaveAllTeams`), `tokens.ts` (decline tokens), `join-link.ts`, `reminders.ts` (the sweep), `changes.ts` (the change feed) |
+| `liveworkspace/apps/accounts/src/account-api.ts`          | The doors, in `account-api/`: `teamRoutes` (session and bearer, `both-doors.ts`), `handleOpen` (join preview, email decline, `signed-in.ts`), the internal team routes (`internal.ts`), `/index/teams`, `/index/people` (`index-door.ts`)                                                                       |
+| `liveworkspace/apps/accounts/src/internal-invitations.ts` | `POST /api/account/internal/invitations`                                                                                                                                                                                                                                                                        |
+| `liveworkspace/apps/accounts/src/notify.ts`               | `teamPeople` for `POST /api/account/internal/teams/members`                                                                                                                                                                                                                                                     |
+| `liveworkspace/apps/accounts/src/index-timeline.ts`       | `timelineStatement`, `teamScopes`, the outbox to the index                                                                                                                                                                                                                                                      |
+| `packages/auth-client/src/account.ts`, `invitations.ts`   | Each app's side: the change feed, `teams/of`, invitations (cached 30 s, 500 accounts)                                                                                                                                                                                                                           |
 
 ## Domain and naming
 
@@ -125,7 +125,8 @@ person's `p:<id>`; a deleted team's go to each former member's `p:`. Detail alwa
 For each joined row: a team where it is the only joined member closes (`deletedAt`, link cleared, open rows
 `removed`); a sole admin's role passes to the longest-standing joined member; the row `removed`. Then every row with
 its id, and declined or removed rows with its address, take the email `Deleted account`. Open invitations to its
-address stay. Answers the teams that closed.
+address stay. Every row it invited has `invitedBy` `deleted` (`ANONYMISED_PERSON`; not in the change feed, so no
+`rev`). Answers the teams that closed.
 
 ## Data and persistence
 
@@ -173,7 +174,7 @@ space-separated (default `''`); `reminder1SentAt`..`reminder3SentAt`, `reminderA
 `TEAM_NAME_MAX_LENGTH` 80, `ORGANISATION_MAX_LENGTH` 80, `MAX_TEAMS_PER_ACCOUNT` 50, `MAX_MEMBERS_PER_TEAM` 200,
 `INVITE_LINK_TTL_MS` 7 d, `REMINDER_AGES_MS` 1, 7, 21 d, `INVITATION_TTL_MS` 28 d, `EXPIRE_BATCH` 500,
 `REMINDER_BATCH` 100, `MAX_REMINDER_ATTEMPTS` 3, `MAX_DECLINE_HASHES` 4, `LIST_PREVIEW_MEMBERS` 4,
-`CHANGES_PAGE_SIZE` 500, `DELETED_MEMBER_EMAIL` `'Deleted account'` (`teams.ts`); `TIMELINE_BATCH` 100,
+`CHANGES_PAGE_SIZE` 500 (`teams/changes.ts`), `DELETED_MEMBER_EMAIL` `'Deleted account'` (`teams/members.ts`); `TIMELINE_BATCH` 100,
 `TIMELINE_SCOPES_MAX` 250, `TIMELINE_CALLS_PER_RUN` 10, `TIMELINE_MAX_ATTEMPTS` 96, `TIMELINE_OUTBOX_MAX` 5,000,
 `TIMELINE_TIMEOUT_MS` 5 s (`index-timeline.ts`); `INVITATIONS_TTL_MS` 30 s, `INVITATIONS_CACHE_MAX` 500
 (`packages/auth-client/src/invitations.ts`). `TEAM_LINK_LIMITER` `1004` (`2004`), 20 per 60 s.

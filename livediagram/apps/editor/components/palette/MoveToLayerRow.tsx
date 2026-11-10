@@ -1,4 +1,5 @@
-import { trustedHtml } from '@livediagram/ui';
+import { htmlProps } from '@livediagram/ui';
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import type { Element, Layer } from '@livediagram/document';
 import { LayersGlyph } from '@/components/palette/context-menu-icons';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
@@ -57,7 +58,7 @@ export function MoveToLayerRow({
                       preserveAspectRatio="xMidYMid meet"
                       className="h-full w-full"
                       aria-hidden
-                      dangerouslySetInnerHTML={{ __html: trustedHtml(thumbMarkup.get(layer.id)!) }}
+                      {...htmlProps(sanitizedHtml(thumbMarkup.get(layer.id)!, 'svg-content'))}
                     />
                   ) : null}
                 </span>

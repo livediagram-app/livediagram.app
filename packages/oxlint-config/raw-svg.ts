@@ -24,6 +24,7 @@ export const ICON_ART_ALLOWLIST = [
   // Style-value previews, option previews and coloured chips.
   '**/components/palette/palette-style-previews.tsx',
   '**/components/palette/palette-tile-art.tsx',
+  '**/components/palette/embed-tile-art.tsx',
   '**/components/palette/context-menu-tiles.tsx',
   '**/components/palette/mind-map-menu-glyphs.tsx',
   '**/components/palette/sankey-menu-glyphs.tsx',

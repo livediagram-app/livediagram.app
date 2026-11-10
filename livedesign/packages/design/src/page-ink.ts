@@ -10,7 +10,7 @@ import {
   defaultTextColor,
   type CanvasSurface,
 } from './colors';
-import { elementIndexFor, endpointPosition, type ElementIndex } from './geometry';
+import { elementIndexFor, endpointPosition } from './geometry';
 import { pagesOf, rowPageAt, layOutPages, type Page, type PageRect } from './page';
 import { elementAnchorPoint, pageFillTone } from './page-content';
 import { layerBands } from './layers';
@@ -27,7 +27,7 @@ import {
   type InkField,
   type InkRole,
 } from './page-ink-rules';
-import { isBoxed, type BoxedElement, type Element, type Tab } from './index';
+import { isBoxed, type BoxedElement, type Element, type Tab, type ElementIndex } from './index';
 import { pointInRect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 /** A colour re-inking replaced (`from`, the author's) and what it wrote (`to`). */

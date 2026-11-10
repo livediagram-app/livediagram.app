@@ -48,7 +48,6 @@ export function usePlanStartProjectName({
       const named = untitledNameForPlanStart(tabName);
       if (named !== projectName) nameProject(named);
     });
-    // nameProject is the editor's own setter, remade each render; the change it reacts to is the tab's.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- nameProject is the editor's own setter, remade each render; the change it reacts to is the tab's
   }, [id, kind, tabName, firstTabLoaded, projectName, canEdit]);
 }

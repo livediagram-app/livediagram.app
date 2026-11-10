@@ -1,14 +1,15 @@
 'use client';
 
-// The quick style panel's actions (docs/specs/008-canvas/quick-style-panel.md): each choice is one commit
+// The Quick Style bar's actions (docs/specs/008-canvas/quick-style-panel.md): each choice is one commit
 // over the selection (one undo step), recorded into style memory, and counted
-// under its own telemetry token so panel use reads apart from menu use.
+// under its own telemetry token so bar use reads apart from menu use.
 
 import { useMemo } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type {
   PenColour,
   Element,
+  LaidOutPage,
   QuickSwatchRole,
   QuickSwatchSlot,
   Tab,
@@ -17,7 +18,6 @@ import type {
 } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { canvasSurface, PEN_INK } from '@livedesign/design';
-import { quickStyleApplicability, quickStyleCaption } from '@/lib/quick-style-applicability';
 import {
   applyPenStyle,
   heldPenStyle,
@@ -113,6 +113,8 @@ export type QuickStyleDeps = {
   };
   // The draw intent in hand: the armed Highlighter's rows show with nothing selected.
   toolIntent?: PendingDraw | null;
+  // The tab's laid-out pages: the Quick Style bar sits on the selection's (quickStyleBarPage).
+  pages?: readonly LaidOutPage[] | null;
 };
 
 export function useQuickStyle(
@@ -155,27 +157,12 @@ export function useQuickStyle(
       strokesPenStyle(selected, palette) ??
       (selected.length === 0 && held ? heldPenStyle(held, palette) : undefined);
     if (!pen) return plain;
-    // A mixed selection's caption counts what the rows style (docs/specs/008-canvas/quick-style-panel.md
-    // "Multi-selection"); strokes alone keep the pen rows' own name.
-    const caption = quickStyleCaption(quickStyleApplicability(selected));
-    return { ...(plain ?? { targetIds: [], sections: {} }), pen, ...(caption ? { caption } : {}) };
+    return { ...(plain ?? { targetIds: [], sections: {} }), pen };
   }, [editsBlocked, selected, theme, overrides, held, palette]);
-  // The Highlighter rows join whatever else the panel shows; alone, they are the whole panel. A
-  // mixed selection's caption counts every styled element, highlights included.
+  // The Highlighter rows join whatever else the bar shows; alone, they are the whole bar.
   const view = useMemo((): QuickStyleView | null => {
     if (!highlighter) return baseView;
-    const styled =
-      (baseView?.targetIds.length ?? 0) +
-      (baseView?.pen?.subject.kind === 'strokes' ? baseView.pen.subject.ids.length : 0);
-    const caption =
-      highlighter.subject.kind === 'strokes' && styled > 0
-        ? `${styled + highlighter.subject.ids.length} elements`
-        : baseView?.caption;
-    return {
-      ...(baseView ?? { targetIds: [], sections: {} }),
-      highlighter,
-      ...(caption ? { caption } : {}),
-    };
+    return { ...(baseView ?? { targetIds: [], sections: {} }), highlighter };
   }, [baseView, highlighter]);
 
   // Map the view's targets through `apply`, as one commit, then remember it.

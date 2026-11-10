@@ -4,6 +4,7 @@ import { ExplorerShell } from '@/components/explorer/ExplorerShell';
 import { SilentSignInScript } from '@/components/explorer/SilentSignInScript';
 import { explorerSilentSignInScript } from '@/lib/explorer/silent';
 import './explorer.css';
+import { trustedConstant } from '@liveworkspace/trusted-types';
 
 // The Explorer (liveworkspace/docs/specs/010-site/site.md "The Explorer"): every view is its own route page under /explorer, and
 // this layout keeps the one Explorer mounted across them, so a list already loaded stays loaded. Suspense: the view
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 // On an app's own address, the app's silent sign-in, before anything renders (lib/explorer/silent.ts). Outside the
 // Suspense boundary, whose content the static export leaves to the browser, so the script is in every Explorer
 // page's HTML and runs as the page loads.
-const SILENT_SIGN_IN = explorerSilentSignInScript();
+const SILENT_SIGN_IN = trustedConstant(explorerSilentSignInScript());
 
 export default function ExplorerLayout({ children }: { children: ReactNode }) {
   return (

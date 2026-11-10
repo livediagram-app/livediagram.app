@@ -118,7 +118,6 @@ export function useTypeStatusJoins(opts: {
     latest.current.quietChange((stored) =>
       withTypeStatuses(stored, { joins, ...(planStatuses ? { planStatuses } : {}) }),
     );
-    // The catalogue is read through typeKey and the legacy check; a change to a type's statuses alone never joins.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the catalogue is read through typeKey and the legacy check; a change to a type's statuses alone never joins
   }, [tabs, loadedTabIds, enabled, typeKey, catalogue === null]);
 }

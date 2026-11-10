@@ -1,16 +1,15 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, expectNoPageErrors, openBlankPage, pagePoint, test } from './fixtures';
+import { quickBar, quickPopover, quickRow, type QuickRowTitle } from './quick-style-bar';
 
 // A swatch row never wraps and is never clipped (docs/specs/008-canvas/quick-style-panel.md "Where
-// it sits"): the panel's width counts the targets, their gaps, the padding and the border exactly.
-// Checked for a diagram's rows (the theme's seven, Ink and More colours).
+// it sits"): the popover counts the targets, their gaps, the padding and the border exactly. Checked
+// for a shape's colour rows (the theme's seven, Ink and More colours).
 
-const panel = (page: Page) => page.getByRole('region', { name: 'Quick style' });
-
-// Every swatch row in the panel: one line (every target on the same top, per row of a grid), and
-// nothing wider than the row's box, which itself sits inside the panel.
-async function rowsFit(page: Page) {
-  return panel(page).evaluate((root) => {
+// Every swatch row in a popover: one line (every target on the same top), and nothing wider than the
+// row's box, which itself sits inside the popover's dialog.
+async function rowsFit(dialog: Locator) {
+  return dialog.evaluate((root) => {
     const inner = root.getBoundingClientRect();
     const rows = [...root.querySelectorAll<HTMLElement>('[role="group"]')].filter((g) =>
       g.querySelector(':scope > * > button [data-swatch-chip], :scope > button [data-swatch-chip]'),
@@ -39,6 +38,11 @@ function expectFit(rows: Awaited<ReturnType<typeof rowsFit>>) {
   }
 }
 
+async function fitOf(page: Page, title: QuickRowTitle) {
+  await quickRow(page, title);
+  return rowsFit(quickPopover(page, title));
+}
+
 test.describe('swatch rows', () => {
   test('a diagram’s colour rows sit on one line, unclipped', async ({ page, pageErrors }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
@@ -48,10 +52,11 @@ test.describe('swatch rows', () => {
     await page.keyboard.press('Escape');
     await page.keyboard.press('o');
     await page.mouse.click(at.x, at.y);
-    await expect(panel(page)).toBeVisible();
-    const rows = await rowsFit(page);
-    expect(rows.find((r) => r.name === 'Stroke')?.count).toBe(9);
-    expectFit(rows);
+    await expect(quickBar(page)).toBeVisible();
+    const stroke = await fitOf(page, 'Stroke');
+    expect(stroke.find((r) => r.name === 'Stroke')?.count).toBe(9);
+    expectFit(stroke);
+    expectFit(await fitOf(page, 'Fill'));
     expectNoPageErrors(pageErrors);
   });
 });

@@ -25,12 +25,15 @@ afterEach(() => {
 describe('printInFrame', () => {
   it('prints the document from a sandboxed, unseen frame once it loads', async () => {
     const print = vi.fn();
-    const done = printInFrame('<p>Sheet</p>');
+    const done = printInFrame(
+      '<p>Sheet</p><script>alert(1)</script><img src="x" onerror="alert(1)">',
+    );
     const frame = frameNow()!;
     expect(frame.getAttribute('sandbox')).toBe('allow-same-origin allow-modals');
     expect(frame.getAttribute('aria-hidden')).toBe('true');
     expect(frame.style.visibility).toBe('hidden');
-    expect(frame.srcdoc).toBe('<p>Sheet</p>');
+    // Sanitised as a whole page (docs/specs/016-platform/trusted-types.md "The sanitiser"): no script, no handler.
+    expect(frame.srcdoc).toBe('<html><head></head><body><p>Sheet</p><img src="x"></body></html>');
     load(print);
     await done;
     expect(print).toHaveBeenCalledTimes(1);
@@ -103,7 +106,9 @@ describe('printInFrame', () => {
     void printInFrame('<p>two</p>');
     const frames = document.querySelectorAll(`iframe[${PRINT_FRAME_ATTR}]`);
     expect(frames).toHaveLength(1);
-    expect((frames[0] as HTMLIFrameElement).srcdoc).toBe('<p>two</p>');
+    expect((frames[0] as HTMLIFrameElement).srcdoc).toBe(
+      '<html><head></head><body><p>two</p></body></html>',
+    );
     load();
   });
 

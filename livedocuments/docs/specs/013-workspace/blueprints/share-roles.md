@@ -27,7 +27,7 @@ socket) are not derived here.
 | liveworkspace's index (sharing)                                                                                                                                 | A link's level and a visitor's, kept by the index with the link; the grant it signs carries the level                                       |
 | `apps/api/src/routes/context.ts`                                                                                                                                | `gateParticipate` is the Participant check                                                                                                  |
 | `apps/api/src/routes/document-room-routes.ts`                                                                                                                   | The ticket and the upgrade carry the effective level                                                                                        |
-| `apps/api/src/document-room/document-room.ts`, `room-op-gate.ts`, `room-participant.ts`                                                                         | Level on the session; op gate by class; a Participant's `el` ops and `article` frames through the tab write queue (`RoomParticipantWrites`) |
+| `apps/api/src/document-room/document-room.ts`, `apps/api/src/document-room/document-room-frames.ts`, `room-op-gate.ts`, `room-participant.ts`                   | Level on the session; op gate by class; a Participant's `el` ops and `article` frames through the tab write queue (`RoomParticipantWrites`) |
 | `apps/api/src/participant-write.ts`                                                                                                                             | `writeParticipantOp`, `writeParticipantArticle`: compare-and-swap writes of the rules' output                                               |
 | `apps/api/src/db/image-grants.ts`                                                                                                                               | Image grants from edit collaborators only                                                                                                   |
 | `packages/agent-verbs/src/mcp/*`                                                                                                                                | `share_document.role` takes three levels, default `participate`                                                                             |
@@ -209,7 +209,7 @@ is the first `COLLAB_KEY_LENGTH` (32) hex characters of SHA-256(`liveworkspace:c
 `COLLAB_KEY_HEADER` (`X-Verified-Collab-Key`) on every path, empty when no person resolves (a link code).
 `newSessionAttachment` keeps `sessionCollabKey(header)`: the header when it `isCollabKey`, else `mintCollabKey()` (32
 hex from `crypto.getRandomValues`). `helloPresence` sets `presence.key` from `session.collabKey`, never from the
-`hello`. After each `hello` the room sends `{ kind: 'collab-key', key }` (`CollabKeyMessage`,
+`hello`. After each `hello` the room (`apps/api/src/document-room/document-room-frames.ts`) sends `{ kind: 'collab-key', key }` (`CollabKeyMessage`,
 `../packages/api-schema/src/collab-key.ts`) to that socket alone; the connector hands a key that `isCollabKey` to
 `onCollabKey`, and `useRoomConnection` sets `selfParticipant.key` to it. `gateClientOp` (`apps/api/src/room-op-gate.ts`) drops, at
 every level and before the ladder, an op that `namesAnotherPerson(op, sender.key)`: a `vote` whose `voter`, or an

@@ -150,6 +150,35 @@ vocabulary, its copy) and, where its package's surface must stay stable, a one-l
 copies the products still hold may only become fewer ([docs/ci.md](../../../../docs/ci.md#copies-across-products)).
 Each product's router reads one set of caching rules, `@liveworkspace/sites/cache-policy`.
 
+### The shared element model
+
+Each product's element union (`Element`, `BoxedElement`, `ShapeElement`, `ArrowElement`) differs: its kinds, its
+shape kinds, its fields. Code that reads elements the same way in two or more products lives once in
+`@liveworkspace/element-model`, written against a structural model that every product's union is assignable to:
+
+- **The shared types** (`element-model/element`) name only the fields the shared modules read, each as widely as any
+  product stores it: a shape's kind is any string, the boxed kinds are every product's (a product holds a subset), an
+  arrow's pinned end may carry an entity `field`. A product's own union stays in its model package, exact and unchanged.
+- **Reading** functions take the shared types. **Functions that hand elements back** are generic over them
+  (`<E extends Element>(elements: E[]) => E[]`), so a caller keeps its product's precise type and no caller changes.
+- **`isBoxed`** in the shared model is the union of every product's boxed kinds, so on any element a product holds it
+  answers as that product's own `isBoxed` does.
+- Each moved module is a subpath (`@liveworkspace/element-model/<module>`), and each product keeps a one-line binding
+  at the module's old path, so its index and its importers did not change and an app bundles only what it imports.
+- What still differs per product (its union and factories, its parsers and stored-data migrations that name its
+  kinds, its vocabulary) stays in its model package. Where a product's copy differed only in an entry for a kind it
+  does not have, it took the entry and moved; nothing a product draws or stores changed shape.
+- **Drift is settled before a module moves.** Where the copies differ, each difference is one of three: a fix or
+  improvement one product got and the others did not, which every product then takes (a product change, written in
+  that product's specs first); a real product difference, which the shared module takes as data rather than by asking
+  which product it is in; or wording, which is made one. A kind table (a shape's drawn geometry, its outline, its
+  anchors) holds every product's kinds, each product naming the kinds it holds where it lists them
+  (`SHAPE_GEOMETRY_KINDS` in its `shape-kind.ts`); a module that mixes shared rules with a product's own is split on
+  cohesion (the colour maths is shared, each product's element defaults stay in its `colors.ts`).
+- A generic shared type a product reads under its own union is bound in that product's index
+  (`ElementGrid = ElementGrid<Element>`, `ElementIndex = ElementIndex<Element>`), and its modules import it from there.
+- `@liveworkspace/model-core` stays the vocabulary below it, with nothing of an element union.
+
 ## Adding an app
 
 An app joins by registering its OAuth client and API resource with accounts

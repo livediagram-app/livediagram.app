@@ -18,7 +18,7 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |
 | `apps/editor/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
 | `apps/editor/hooks/canvas/useStyleMemory.ts`                                  | Per-project memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                             |
-| `apps/editor/app/project/[id]/useEditorState.ts`                              | Wires memory into the style hooks and the creation hooks                                                         |
+| `apps/editor/app/project/[id]/editor-state/useEditorEditing.ts`               | Makes the memory; the style and creation slices wire it into their hooks                                         |
 | `../packages/workbench/src/lib/panel-presence.ts`                             | `announcePanelPresence()`, the floating-panel presence event                                                     |
 
 ## Domain and naming
@@ -114,7 +114,7 @@ Capture points (the element menu):
 Apply points (user-drawn only), each passing the built element through `styleNewElement`:
 `useElementCreation.dropPaletteItem` (the editor's own creation path),
 `useBoxedDragHandlers` (quick-connect arrow, both the drag and `placeOutPx`), `useEditorDrag`'s
-`chainNextArrow`. Nothing else calls it.
+`chainNextArrow` (in `editor-drag-release.ts`). Nothing else calls it.
 
 ## Observability
 

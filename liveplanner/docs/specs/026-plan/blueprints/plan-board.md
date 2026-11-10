@@ -526,7 +526,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 - **Plan card onto a board**: in `useEditorDrag`'s drag end, a moved `plan-card` released over a board cell
   (`data-plan-status` under the pointer) → `onPlanCardDroppedOnBoard(card, status)`: the item moves to the end of
   that column and the card element is removed (two undo steps: the removal, then the move).
-- **Card types a board shows**: `boardAddTypes(setup, types)` (`packages/items/src/board.ts`) is what Add Card
+- **Card types a board shows**: `boardAddTypes(setup, types)` (`packages/items/src/board-setup.ts`) is what Add Card
   offers and what the Cards menu's Card Types shows pressed: `setup.addTypes` filtered to the catalogue, in its
   order, or every type when it is unset or names none still in the catalogue. `boardTakesType(setup, types, id)`
   is the same rule for one type, and `boardShowsType(setup, type, types?)` applies it (or, without a catalogue,
@@ -1017,7 +1017,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `CUSTOM_ASSIGNEE_NAME_MAX` | 60                 | Spec; a name on one line of the picker; 30-120                              |
 | `ITEM_TRAIL_MAX`           | 8                  | Spec; bounds the trail's memory; 2–20                                       |
 | `FIT_GLIDE_MS`             | 420                | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`                  |
-| `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `useEditorState.ts`                                            |
+| `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `app/project/[id]/editor-state/useEditorShortcuts.ts`          |
 | `PLAN_BUSY_CARDS`          | 100                | Spec "A busy board"; the ease cost ~6 ms a card a pick past it; 50-200      |
 | `PLAN_INK_MEMO_MAX`        | 2048               | Bounds the card ink memo; a board asks for tens; 256-8192                   |
 | `RUN_SPREAD`               | 4                  | `card-runs.ts`: 8 cost 0.3-0.5 s an edge crossing, 2 slowed each gap; 3-6   |

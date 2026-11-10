@@ -29,21 +29,14 @@ import { track } from '@/lib/telemetry';
 import {
   lastPageOfTabKind,
   offersPageKindChoice,
-  PAGE_GAP,
   pageKindOf,
   pageLabel,
   pageScreenRect,
-  pageUnits,
   type LaidOutPage,
 } from '@livedesign/design';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { PageLayoutPreview } from './PageLayoutPreview';
-import {
-  laidOutUnits,
-  usePageReorderDrag,
-  type PageReorder,
-} from '@/hooks/canvas/usePageReorderDrag';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useLogoPaletteSwitch } from '@/hooks/canvas/useLogoPaletteSwitch';
 import { pageSheetStyle } from '@/lib/page-paint';
@@ -57,6 +50,8 @@ import {
 } from '@/components/tour/PageTour';
 import { useFollowPagePanelRequests } from '@/lib/page-panel-request';
 import { AddPageButton } from './AddPageButton';
+import { QuickStyleBarSlot } from './QuickStyleBarSlot';
+import { useQuickStyleBarRoom, useQuickStylePhoneRows } from '@/lib/quick-style-bar-slots';
 import {
   previewedBackground,
   setPageBackgroundPreview,
@@ -113,6 +108,11 @@ export function CanvasPages({
   );
   const cogs = useRef(new Map<string, HTMLButtonElement>());
   const mobile = useIsMobileViewport();
+  // The Quick Style bar's room beside the title bar of the one page it sits on (docs/specs/008-canvas/
+  // quick-style-panel.md "Where it sits"): that page's label truncates to what is left.
+  const quickStyleRoom = useQuickStyleBarRoom();
+  // On a phone, the Quick Style rows of the page holding the selection, for its Appearance.
+  const quickStylePhone = useQuickStylePhoneRows();
   // A phone's Appearance (PageAppearanceButton): each page's look control opened from its sheet, a count per page and
   // control that only rises, as that control's open request.
   const [appearanceAsks, setAppearanceAsks] = useState<Readonly<Record<string, number>>>({});
@@ -142,10 +142,6 @@ export function CanvasPages({
   // What the + adds another of: the last page of the tab's kind ("One kind a tab"); none on a tab
   // whose first page is still blank.
   const like = lastPageOfTabKind(pages);
-  // A label dragged sideways reorders the pages (usePageReorderDrag).
-  const drag = usePageReorderDrag({ pages, zoom, onMove: edit?.movePageTo });
-  // A label drags only when there is something to swap with: two pages.
-  const reorderable = pageUnits(pages).length > 1;
   const openId = opened?.id ?? null;
   const open = edit && opened ? pages.find((p) => p.id === opened.id) : undefined;
   const openKind = open ? pageKindOf(open) : null;
@@ -238,6 +234,8 @@ export function CanvasPages({
           photo: photoButtons,
           page: pageButtons,
           device: deviceButton,
+          selected:
+            mobile && quickStylePhone?.pageId === page.id && quickStylePhone.rows.length > 0,
         };
         // The buttons name themselves on a desktop while the page is wide enough on screen to hold
         // them named; zoomed out further they drop to their icons, as a phone shows them.
@@ -262,7 +260,8 @@ export function CanvasPages({
         const labelRoom =
           room -
           fixedRoom -
-          (invite === 'wide' ? INVITE_WIDE : invite === 'icon' ? INVITE_ICON : 0);
+          (invite === 'wide' ? INVITE_WIDE : invite === 'icon' ? INVITE_ICON : 0) -
+          (quickStyleRoom?.pageId === page.id ? quickStyleRoom.px : 0);
         return (
           <div
             key={page.id}
@@ -272,8 +271,6 @@ export function CanvasPages({
             data-page-kind={pageKindOf(page)}
             data-page-locked={locked ? '' : undefined}
             className={`pointer-events-none absolute transition-[left,top,width,height,opacity] duration-200 ease-out motion-reduce:transition-none ${
-              drag.reorder?.pageIds.includes(page.id) ? 'opacity-60' : ''
-            } ${
               background?.fill || device
                 ? ''
                 : 'bg-white text-slate-900/10 dark:bg-slate-900 dark:text-white/10'
@@ -344,11 +341,7 @@ export function CanvasPages({
                 label={label}
                 name={labelParts.name}
                 rest={labelParts.rest}
-                grab={!!edit && reorderable}
-                {...drag.handlers(page.id)}
-                onClick={() => {
-                  if (!drag.endsDrag()) goToPage(page);
-                }}
+                onClick={() => goToPage(page)}
               />
             </div>
             {edit ? (
@@ -359,6 +352,9 @@ export function CanvasPages({
                 {invite && openId !== page.id ? (
                   <LayoutInvite wide={invite === 'wide'} onOpen={() => openLayouts(page.id)} />
                 ) : null}
+                {/* The Quick Style bar's place, just left of the title bar, empty until the bar sits on this page. */}
+                {/* On a phone the bar's rows sit in Appearance; their sheets mount here, headless. */}
+                <QuickStyleBarSlot pageId={page.id} named={labelled} />
                 {/* The page's own controls, one toolbar card (PageTitleBar): the page kind's tools,
                     then the page itself at its corner. */}
                 <PageTitleBar
@@ -390,6 +386,7 @@ export function CanvasPages({
                           rows={appearanceRows(buttons)}
                           device={page.device ?? 'iphone'}
                           labelled={appearanceLabelled}
+                          selected={quickStylePhone?.pageId === page.id ? quickStylePhone : null}
                           onPick={(row) => ask(page.id, row)}
                         />
                       ) : null,
@@ -473,7 +470,6 @@ export function CanvasPages({
           </div>
         );
       })}
-      {drag.reorder ? <ReorderMarker pages={pages} reorder={drag.reorder} zoom={zoom} /> : null}
       {edit?.addPage && edit.addPageLike && like ? (
         <AddPageButton
           last={last}
@@ -616,36 +612,5 @@ function LayoutInvite({ wide, onOpen }: { wide: boolean; onOpen: () => void }) {
         </button>
       </Tooltip>
     </div>
-  );
-}
-
-// Where a dragged page will land: a bar in the gap at its slot, the pages' height, held at one
-// screen width.
-function ReorderMarker({
-  pages,
-  reorder,
-  zoom,
-}: {
-  pages: readonly LaidOutPage[];
-  reorder: PageReorder;
-  zoom: number;
-}) {
-  const others = laidOutUnits(pages).filter((u) => !u.pageIds.includes(reorder.pageId));
-  const before = others[reorder.slot - 1];
-  const after = others[reorder.slot];
-  const x = before
-    ? before.rect.x + before.rect.width + PAGE_GAP / 2
-    : after
-      ? after.rect.x - PAGE_GAP / 2
-      : 0;
-  const top = Math.min(...pages.map((p) => p.rect.y));
-  const bottom = Math.max(...pages.map((p) => p.rect.y + p.rect.height));
-  return (
-    <div
-      aria-hidden
-      data-page-reorder-marker
-      className="pointer-events-none absolute rounded-full bg-brand-500"
-      style={{ left: x - 2 / zoom, top, width: 4 / zoom, height: bottom - top }}
-    />
   );
 }

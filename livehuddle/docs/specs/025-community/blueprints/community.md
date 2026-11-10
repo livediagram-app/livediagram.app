@@ -244,7 +244,7 @@ article of `COMMUNITY_HELP`, every app's, from `@liveworkspace/help-registry/com
 an article href and its telemetry id, sent as `UI·Opened·<id>`). livehuddle's own
 `packages/ui/src/community/CommunityHelpLink.tsx` binds it to this site's telemetry.
 
-Picture and redaction (api): the export door (`exportImage` in `apps/api/src/document-room/document-room.ts`,
+Picture and redaction (api): the export door (`exportImage` in `apps/api/src/document-room/room-rpc.ts`,
 `drawDocument` in `apps/api/src/thumbnail.ts`) draws from the redacted board when asked with the open post's code;
 liveworkspace's previews keep that picture apart from the owner's (`liveworkspace/docs/specs/006-media/previews.md`);
 `redactDocumentForCommunity` (`apps/api/src/redact-document.ts`) strips owner name, colour, folder and origin from the

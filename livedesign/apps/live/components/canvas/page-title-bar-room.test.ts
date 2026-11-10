@@ -26,4 +26,16 @@ describe('the title bar', () => {
     expect(titleBarFixedRoom(wireframe, false)).toBeLessThan(titleBarFixedRoom(wireframe, true));
     expect(titleBarFixedRoom({ ...wireframe, edit: false, page: false }, true)).toBe(0);
   });
+
+  // docs/specs/008-canvas/quick-style-panel.md "On a phone, in Appearance": any page gains Appearance for a selection.
+  it("counts a phone's Appearance on any page while something on it is styled", () => {
+    const logo = { edit: true, locked: false, logo: true, page: false };
+    expect(titleBarFixedRoom({ ...logo, selected: true }, false, true)).toBeGreaterThan(
+      titleBarFixedRoom(logo, false, true),
+    );
+    // A wireframe page has it anyway.
+    expect(titleBarFixedRoom({ ...wireframe, selected: true }, false, true)).toBe(
+      titleBarFixedRoom(wireframe, false, true),
+    );
+  });
 });

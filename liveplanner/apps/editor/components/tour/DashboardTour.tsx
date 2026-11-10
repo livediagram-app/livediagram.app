@@ -99,8 +99,7 @@ export function useDashboardTour(hidden: boolean): {
   // The page covered or no longer editable: a run ends as skipped; the start panel only closes (nothing ran).
   useEffect(() => {
     if (!hidden || !active) return;
-    // The panel closes with its refs (cancel), as the run's end does: not something a render can derive.
-    // oxlint-disable-next-line react/set-state-in-effect
+    // oxlint-disable-next-line react/set-state-in-effect -- the panel closes with its refs (cancel), as the run's end does: not something a render can derive
     if (intro) cancel();
     else end('skipped');
   }, [hidden, active, intro, end, cancel]);

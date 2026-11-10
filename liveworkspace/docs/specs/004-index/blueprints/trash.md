@@ -6,13 +6,13 @@ engineering precision, read from the code. Defaults are cited as `IDXn`. Paths a
 
 Scope, by file:
 
-| File                                              | Role                                                                                             |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `liveworkspace/apps/index/src/items.ts`           | `DELETE /items/:id`, `POST /items/:id/restore`, `GET`/`DELETE /trash`                            |
-| `liveworkspace/apps/index/src/purge.ts`           | `purgeRows`, `drainTombstones`, `drainTombstonesSoon`, `sweepEmpty`, `sweep`, `sweepLooseEvents` |
-| `liveworkspace/apps/index/src/account-purge.ts`   | `POST /internal/purge-person`, `purgePerson`, `continuePurges`                                   |
-| `liveworkspace/apps/index/src/person-notices.ts`  | `recordPersonNotices`, `drainPersonNotices`                                                      |
-| `packages/index-app/src/purge.ts`, `anonymise.ts` | Each app's side: drop an item's room, anonymise a closed account in its items                    |
+| File                                                                                                     | Role                                                                                                        |
+| -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/items/item-routes.ts`, `liveworkspace/apps/index/src/items/list-routes.ts` | `DELETE /items/:id`, `POST /items/:id/restore` (`item-routes.ts`), `GET`/`DELETE /trash` (`list-routes.ts`) |
+| `liveworkspace/apps/index/src/purge.ts`                                                                  | `purgeRows`, `drainTombstones`, `drainTombstonesSoon`, `sweepEmpty`, `sweep`, `sweepLooseEvents`            |
+| `liveworkspace/apps/index/src/account-purge.ts`                                                          | `POST /internal/purge-person`, `purgePerson`, `continuePurges`                                              |
+| `liveworkspace/apps/index/src/person-notices.ts`                                                         | `recordPersonNotices`, `drainPersonNotices`                                                                 |
+| `packages/index-app/src/purge.ts`, `anonymise.ts`                                                        | Each app's side: drop an item's room, anonymise a closed account in its items                               |
 
 ## Domain and naming
 
@@ -84,8 +84,11 @@ first 25 purged items are drained at once, and person notices sent.
 3. Their own items (including those in teams closed with them): tombstones in, rows out.
 4. Everything else theirs: folders (defaults cascade), favourites, opens, use days, Shared with me, placement defaults,
    form reads, thread people; their id in threads' participants and mentions becomes `deleted`; actions assigned to
-   or by them name `deleted`; Timeline rows only they saw, then their events no one else sees, then `actor_id
-'deleted'` and `actor_name NULL` on the rest; their `drive_people` row. Then the team audit log
+   or by them name `deleted`, their name beside it null; an `action_assigned` event's and delivery's detail naming
+   them as `assigneeId` take `deleted` and `assigneeName` null (the events through the `aa:` id range); Timeline rows only they saw, then their events no one else sees, then `actor_id
+'deleted'` and `actor_name NULL` on the rest; on account events (`item_id` null) whose detail's `personId` is
+   them, `personId 'deleted'` and `memberName NULL`; their `drive_people` row; `actor_id 'deleted'`, `actor_name NULL`
+   on webhook deliveries they did (`webhookDeliveryPurgeStatement`). Then the team audit log
    (`teamAuditPurgeStatements`): the rows of teams closed with them go; `actor_id 'deleted'`, `actor_name NULL` where
    they acted; `subject_id 'deleted'` and the detail's `personId 'deleted'`, `memberName NULL` where a team event is
    about them.
@@ -135,7 +138,7 @@ configured counts as confirmed; a failure gets `attempts + 1`.
 `TRASH_RETENTION_MS` 30 d, `EMPTY_ITEM_STALE_MS` 30 d (`packages/index-client`); `SWEEP_ITEMS_MAX` 500,
 `TOMBSTONES_PER_RUN` 200, `EMPTY_SWEEP_MAX` 1000, `PURGE_NOW_MAX` 25, `APP_CALL_CONCURRENCY` 6, `APP_CALL_TIMEOUT_MS`
 10 s (`config.ts`); `ITEMS_PER_BATCH` 50, `EMPTY_TRASH_MAX` 1000, `LOOSE_EVENTS_SWEEP_MAX` 1000 (`purge.ts`,
-`items.ts`); `ANONYMISED_PERSON` `'deleted'`, `CHUNK` 500, `TEAMS_MAX` 200, `LINGER_MS` 2 h, `FREQUENT_CRON`
+`items/shared.ts`); `ANONYMISED_PERSON` `'deleted'` (`@liveworkspace/index-client`), `CHUNK` 500, `TEAMS_MAX` 200, `LINGER_MS` 2 h, `FREQUENT_CRON`
 `*/15 * * * *`, `TOMBSTONES_PER_FREQUENT_RUN` 300, `TOMBSTONE_RETRY_AFTER_MS` 1 h, `PURGES_PER_RUN` 20,
 `CALL_BUDGET` 5 s / 300, `CRON_BUDGET` 30 s / 300 (`account-purge.ts`); `PERSON_ITEMS_PER_CALL` 100, `RECORD_MAX`
 5,000, `GROUPS_PER_RUN` 20, `NOTICE_RETRY_AFTER_MS` 1 h, `NOTICE_GIVE_UP_MS` 7 d (`person-notices.ts`);

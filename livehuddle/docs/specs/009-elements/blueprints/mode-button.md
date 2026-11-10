@@ -6,27 +6,27 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                      | Role                                                                |
-| --------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/selection-mode.ts`                 | `SELECTION_MODES`, `SELECTION_MODE_LABEL`, guard, fixed size, skins |
-| `packages/document/src/shape-factory.ts`                  | `SHAPE_DEFAULT_SIZE['mode-button']`, the `createShape` branch       |
-| `packages/document/src/colors.ts`                         | `behaviourSkin`: the unstyled skin per surface                      |
-| `packages/document/src/behaviour-skin.ts`                 | `ownColours`: a stamped skin reads as unset                         |
-| `packages/document/src/validate.ts`                       | Rejects an unknown `mode`                                           |
-| `packages/document/src/svg-render-faces.ts`               | The export face (`svgBehaviourFace`, `'mode-button'`, `keycapEdge`) |
-| `apps/editor/components/canvas/ModeButtonFace.tsx`        | The face: chip, derived text, press; `MODE_LABEL`                   |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`     | Renders the face while not editing                                  |
-| `apps/editor/components/canvas/BoxedElementView.tsx`      | Resolves `textColor` through `ownColours` and `defaultTextColor`    |
-| `apps/editor/hooks/ui/usePressWithoutDrag.ts`             | Click presses, drag stays silent                                    |
-| `../packages/workbench/src/lib/press-gestures.ts`         | `isDragTravel`, `PRESS_DRAG_SLOP_PX`                                |
-| `apps/editor/components/canvas/useCanvasAvatar.tsx`       | `pressModeButton`: records the Avatar spawn point                   |
-| `apps/editor/app/document/[id]/useEditorState.ts`         | `pressModeButton`: Leave, else `pickCanvasTool`                     |
-| `apps/editor/hooks/canvas/useCanvasTool.ts`               | `selectCanvasTool` telemetry, `toolBeforeCurrent`                   |
-| `apps/editor/components/canvas/EditorCanvasHost.tsx`      | Threads the press; `mode ?? DEFAULT_BUTTON_MODE`                    |
-| `apps/editor/components/palette/palette-tile-defs.tsx`    | The one `tools:mode-avatar` tile, `tileGroup: 'travel'` [QF6]       |
-| `packages/document/src/legacy-mode-buttons.ts`            | Drops a retired stored `mode` on load                               |
-| `apps/editor/lib/draw-commit.ts`, `useElementCreation.ts` | Apply the tile's `mode` at commit / drop                            |
-| `apps/editor/lib/element-telemetry.ts`                    | `SHAPE_TOKENS['mode-button'] = 'ModeButton'`                        |
+| File                                                           | Role                                                                |
+| -------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `packages/document/src/selection-mode.ts`                      | `SELECTION_MODES`, `SELECTION_MODE_LABEL`, guard, fixed size, skins |
+| `packages/document/src/shape-factory.ts`                       | `SHAPE_DEFAULT_SIZE['mode-button']`, the `createShape` branch       |
+| `packages/document/src/colors.ts`                              | `behaviourSkin`: the unstyled skin per surface                      |
+| `packages/document/src/behaviour-skin.ts`                      | `ownColours`: a stamped skin reads as unset                         |
+| `packages/document/src/validate.ts`                            | Rejects an unknown `mode`                                           |
+| `packages/document/src/svg-render-faces.ts`                    | The export face (`svgBehaviourFace`, `'mode-button'`, `keycapEdge`) |
+| `apps/editor/components/canvas/ModeButtonFace.tsx`             | The face: chip, derived text, press; `MODE_LABEL`                   |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`          | Renders the face while not editing                                  |
+| `apps/editor/components/canvas/BoxedElementView.tsx`           | Resolves `textColor` through `ownColours` and `defaultTextColor`    |
+| `apps/editor/hooks/ui/usePressWithoutDrag.ts`                  | Click presses, drag stays silent                                    |
+| `../packages/workbench/src/lib/press-gestures.ts`              | `isDragTravel`, `PRESS_DRAG_SLOP_PX`                                |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`            | `pressModeButton`: records the Avatar spawn point                   |
+| `apps/editor/app/document/[id]/editor-state/useEditorTools.ts` | `pressModeButton`: Leave, else `pickCanvasTool`                     |
+| `apps/editor/hooks/canvas/useCanvasTool.ts`                    | `selectCanvasTool` telemetry, `toolBeforeCurrent`                   |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`           | Threads the press; `mode ?? DEFAULT_BUTTON_MODE`                    |
+| `apps/editor/components/palette/tile-defs/room-tiles.tsx`      | The one `tools:mode-avatar` tile, `tileGroup: 'travel'` [QF6]       |
+| `packages/document/src/legacy-mode-buttons.ts`                 | Drops a retired stored `mode` on load                               |
+| `apps/editor/lib/draw-commit.ts`, `useElementCreation.ts`      | Apply the tile's `mode` at commit / drop                            |
+| `apps/editor/lib/element-telemetry.ts`                         | `SHAPE_TOKENS['mode-button'] = 'ModeButton'`                        |
 
 ## Domain and naming
 

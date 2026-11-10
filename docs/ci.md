@@ -126,10 +126,15 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   - **Speed budgets:** a change may not add `performance.now()` to a test (see [Speed budgets](#speed-budgets)).
   - **Copies across products:** a change may not add a source file byte-identical in two or more products
     (see [Copies across products](#copies-across-products)).
+  - **File size:** a change may not take a source file past 800 lines (see [File size](#file-size)).
+  - **One path for markup:** a change may not add a raw HTML sink outside the shared markup module
+    (see [One path for markup](#one-path-for-markup)).
   - **Tests:** every affected workspace's suite once. Those with `test:coverage` run that, so their
     per-file thresholds are enforced in CI; the rest run `test`. Coverage goes to Codecov, one flag
     per group, carried forward when a run doesn't reach that group (`codecov.yml`).
   - **Editor unit tests:** a product's editor, when reached, in three shards under coverage.
+  - **Editor coverage floors:** after the shards, each reached editor's merged line and branch coverage
+    against its floor, which only rises (see [Editor coverage floors](#editor-coverage-floors)).
   - **Build:** the affected workspaces' builds (and what they build on), the CLI's `npm pack --dry-run`
     when the CLI is reached, and the staging wrangler config check.
   - **Coverage report** (pull requests only): writes the coverage report into the pull request's
@@ -196,11 +201,47 @@ coverage run `cpuBudgetMs` is unbounded: the test still runs and its lines still
 (`vitest-budgets --shard=n/3`). A budget used as a test timeout is a wall-clock limit, not a CPU budget, and
 never goes through `cpuBudgetMs`.
 
+A growth check (a scan held linear by comparing the CPU time of two input sizes, not by a budget) keeps its
+larger input under about a million characters. Past that, V8's memory handling alone grows faster than the
+text: the label-cap ReDoS checks in the four document packages compared 320,000 and 1.28 million characters,
+read a median 6.9 for four times the text against a ceiling of 8, and failed `main` at 8.4 under coverage
+(2026-11-09). At two and eight times their sweep's length they read 4.1 (worst 4.7 of 20 runs), and a
+quadratic scan still reads 16.
+
 The Checks job's **Speed budgets use CPU time** step (`.github/scripts/cpu-budget-guard.mjs`, also in
 the pre-push hook) fails a change that adds `performance.now()` to a test file. Older budgets are left
 for a pass of their own, and so is a copy of one: a line another product already has at the same path
 (a fork, such as livehuddle's of livediagram) isn't new. A line that truly needs the wall clock says why
 in a `wall-clock:` comment.
+
+## Lint disables and console.log
+
+The shared lint config (`packages/oxlint-config`, each product's `docs/specs/003-system-architecture/linting.md`)
+holds three hygiene lines in every workspace's `lint`, so the Checks job and the pre-push hook keep them without a
+script of their own:
+
+- **Every disable says why.** A directive names the rule it turns off and ends in a reason:
+  `// oxlint-disable-next-line react/exhaustive-deps -- keyed on the rows, not the array`. The same goes for
+  `oxlint-disable-line` and a block's `/* oxlint-disable rule -- reason */`. `liveworkspace/disable-reason` refuses
+  one with no rule or no reason, and refuses an `eslint-disable` outright: the config reads only `oxlint-disable`,
+  so an `eslint-disable` suppresses nothing while looking as if it does. A disable that suppresses nothing is
+  already an error (`reportUnusedDisableDirectives`), so a stale one is deleted, not explained. Where a small
+  change to the code removes the need (a stable value, a truer type), that change comes first.
+- **No explicit `any`.** `typescript/no-explicit-any` is an error in source and tests alike, and the repo holds
+  none and no disable of it. A value of unknown shape is `unknown`, narrowed where it is read; a function type that
+  must fit every signature is `(...args: never[]) => unknown`.
+- **console.log is a command line tool's stdout.** Shipped code writes each line with its intent:
+  - an app's trace lines go through `debugLog` (`packages/workbench/src/lib/debug-log.ts`, each product's
+    `docs/specs/003-system-architecture/console-logging.md`);
+  - a Worker's event (a sweep's counts, an item created, a pairing) is `console.info`, which Workers Logs and
+    `wrangler tail` record at the info level;
+  - something that went wrong is `console.warn` or `console.error`.
+
+  `eslint/no-console` refuses `console.log` everywhere but tests (`*.test.*`, `*.spec.*`, `e2e/`) and scripts
+  (`scripts/`, the MCP servers' `eval/`), where what a tool prints is its output. A command line tool outside
+  those folders (the migrate CLI) says so in a reasoned `oxlint-disable no-console`. Files outside every
+  workspace (`.github/scripts/`, the root `scripts/`, each product's own `scripts/`) are tools by definition and
+  print freely.
 
 ## Copies across products
 
@@ -225,6 +266,39 @@ new package carries) and a product's thin binding, a file whose only statements 
 - It reads blob hashes from the index (`git ls-files -s`) and opens one copy per identical group, to spot
   a binding: about 0.1 seconds on the whole repository (1,300 files in 450 groups). Its tests run with
   `node --test .github/scripts/*.test.mjs`.
+
+## File size
+
+A source file over 800 lines holds several concerns, and the rule is no god files: new features go in
+focused modules and a big file splits on cohesion, with the original kept as the entry that re-exports
+its pieces so no importer changes. The Checks job's **No new files over 800 lines** step
+(`.github/scripts/file-size-guard.mjs`, also in the pre-push hook) counts the lines of every tracked,
+non-test source file in the repository (generated files and `.d.ts` declarations aside) and compares the
+ones over 800 with the committed baseline, `.github/scripts/file-size-baseline.txt`: flat data files
+(tables, catalogues, registries of strings), which are exempt, and the real code still waiting for its
+split.
+
+- **It fails** when a file that the baseline doesn't list passes 800 lines: a new file, or one that grew.
+  Split it instead.
+- **It also fails** when a listed file is back at 800 lines or under, or gone. Run
+  `node .github/scripts/file-size-guard.mjs --update` and commit the smaller baseline, so it stays tight.
+- **The baseline only shrinks:** `--update` refuses to write while a file outside it is over the limit.
+  A listed file may grow (a data file gains rows), since the list is the exception, not a size cap.
+- It takes about 1.2 seconds of CPU time on the whole repository, most of it reading the files. Its
+  tests run with
+  `node --test .github/scripts/*.test.mjs`.
+
+## One path for markup
+
+Every raw HTML sink goes through `packages/trusted-types/src/html.ts` (livediagram/docs/specs/016-platform/trusted-types.md,
+"One path for markup"): `htmlProps` for a React element, `setHtml` and `setSrcdoc` for the DOM, each taking a
+`SafeHtml`. The Checks job's **One path for markup** step (`.github/scripts/raw-html-guard.mjs`, also in the
+pre-push hook) reads every tracked non-test source file in the repository and fails on a raw sink anywhere else:
+`dangerouslySetInnerHTML`, an assignment to `innerHTML`, `outerHTML` or `srcdoc`, `insertAdjacentHTML`,
+`createContextualFragment`, `setHTMLUnsafe`, `parseHTMLUnsafe` or `document.write`. It names each file and line.
+There is no baseline: none is left. Tests, e2e specs and CI's own scripts are left out, since they never ship.
+It reads about 14,400 files in about 1.5 seconds of CPU time (measured 2026-11-09), and its tests run with
+`node --test .github/scripts/*.test.mjs`.
 
 ## Drift report
 
@@ -264,6 +338,36 @@ text around it; an unchanged report writes nothing.
   report from local artifact folders; its pure parts are tested by `node --test
 .github/scripts/*.test.mjs`, which the platform's Checks run.
 
+## Editor coverage floors
+
+The five editors (livediagram, liveplanner, livedocuments and livehuddle's `apps/editor`, livedesign's
+`apps/live`) hold most of each product's tests and have no per-file thresholds. Their coverage is held by a
+ratchet instead: it may never fall, and its floor rises as tests are added.
+
+- **Where it runs:** the `editor-coverage` job in `ci.yml` (**Editor coverage floors**), after the editor
+  shards, on pull requests and pushes to `main`. It is part of the **CI** check. It downloads the reached
+  editors' `coverage-<group>-editor-<shard>` artifacts and runs `.github/scripts/coverage-floors.mjs`, which
+  merges each editor's shards with the lcov reader the coverage report uses (`.github/scripts/lcov.mjs`; a
+  line is covered when any shard hit it, a branch when any shard took it).
+- **Why not in `vitest.config.ts`:** each shard runs a third of the files, so a per-shard threshold
+  would judge a slice. Only the merged result is the editor's coverage.
+- **The floors:** `.github/scripts/coverage-floors.json`, per editor its line and branch coverage in
+  percent, each the measured value less 0.3 points of slack, rounded down to one decimal. The slack is
+  there because moving code between files (a split, a move to `packages/`) shifts coverage a little,
+  and a floor at the measured value would turn red at random. The job fails when either is below its
+  floor, and fails when a shard kept no coverage or an editor has no floor.
+- **Raising them:** when an editor beats a floor by 0.8 points or more (the slack plus half a point
+  gained), the job says so in a notice (it does not fail). Raise it in the same pull request: download
+  the run's editor artifacts into one folder with
+  `gh run download <run> --pattern 'coverage-*-editor-*' --dir <folder>`, then run
+  `node .github/scripts/coverage-floors.mjs --update <folder>`. `--update` sets each floor the same 0.3
+  below what it measures, only ever raises a floor, and adds a floor for an editor that has none.
+- **Lines, not Codecov's hits:** the floors count a line as covered when it ran. The coverage report counts a
+  line with a branch never taken as partial, not hit, so its percentages read a little lower.
+- **Locally:** the pre-push hook runs each reached editor once without coverage and never checks a floor;
+  coverage would slow every push several times over. `node --test .github/scripts/*.test.mjs` tests the
+  script.
+
 ## Before a push
 
 A **pre-push hook** runs, for what a push changes, what CI's Checks and Tests jobs would fail on, so a
@@ -274,8 +378,8 @@ deterministic failure shows up on the machine in minutes rather than on CI later
   saying so, when `CI` is set or outside a git work tree.
 - `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`. It takes the merge base with
   `origin/main`, asks CI's planner (`ci-plan.mjs`) which groups the change reaches, and runs each
-  group's steps as `ci.yml` does: the copies guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
-  each reached editor's suite once (unsharded). It stops at the first failing step.
+  group's steps as `ci.yml` does: the copies guard, the file size guard and the markup guard (once), lint and type check, the format check, the speed-budget guard, `test`, `test:coverage`, then
+  each reached editor's suite once (unsharded, without coverage, so no floor is checked). It stops at the first failing step.
 - It checks only a push of the checked-out `HEAD`; a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.
 - One run at a time on the machine: a push made while another's checks are running skips its own and

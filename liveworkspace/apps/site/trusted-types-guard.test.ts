@@ -6,6 +6,7 @@ import {
   NEXTJS_POLICY,
   trustedTypesCsp,
 } from '@liveworkspace/trusted-types/csp';
+import { escapesUnlisted, usesEscapeHatch } from '@liveworkspace/trusted-types/sinks-suite';
 import { SITE_ASSET_PREFIX } from '@liveworkspace/sites/workspace-proxy';
 import { describe, expect, it } from 'vitest';
 
@@ -40,36 +41,32 @@ const files = [
 ].map((f) => f.slice(root.length));
 const text = (f: string) => read(`${root}${f}`);
 
-const htmlExpressions = (source: string) =>
-  [...source.matchAll(/dangerouslySetInnerHTML=\{\{\s*__html:\s*/g)].map((m) =>
-    source.slice(m.index + m[0].length, m.index + m[0].length + 40),
-  );
+// The markup sinks a file feeds: htmlProps, the one way a React element is given markup. That every sink goes through
+// @liveworkspace/trusted-types's html.ts at all is the repository's raw HTML guard (.github/scripts/raw-html-guard.mjs).
+const htmlExpressions = (source: string) => [...source.matchAll(/\{\.\.\.htmlProps\(/g)];
+
+// Markup fed in unsanitised through the escape hatch (trustedConstant, builtMarkup) outside a layout: the random
+// UUID boot script. The Explorer's silent sign-in script comes from its layout, and the JSON-LD block is jsonScript's
+// (JSON with < escaped). Everything else goes through sanitizedHtml.
+const BUILDER_MARKUP = ['packages/ui/src/random-uuid-boot.ts'];
 
 describe('Trusted Types sinks', () => {
-  it('hand dangerouslySetInnerHTML only what trustedHtml made', () => {
-    const raw = files.flatMap((f) =>
-      htmlExpressions(text(f))
-        .filter((expr) => !expr.startsWith('trustedHtml('))
-        .map((expr) => `${f}: ${expr.split('\n')[0]}`),
+  // The policy only proves markup went through it; the sanitiser makes people's markup safe. The trusted-types
+  // package itself defines the helpers, so it is the one place outside the list that names the escape hatch.
+  it('use the escape hatch (trustedConstant, builtMarkup) only in a layout or a listed builder file', () => {
+    expect(
+      files.filter(
+        (f) =>
+          !f.startsWith('packages/trusted-types/') && escapesUnlisted(f, text(f), BUILDER_MARKUP),
+      ),
+    ).toEqual([]);
+    // A listed file that no longer uses it comes off the list, so the list never allows more than it needs.
+    expect(BUILDER_MARKUP.filter((f) => !files.includes(f) || !usesEscapeHatch(text(f)))).toEqual(
+      [],
     );
-    expect(raw).toEqual([]);
   });
 
-  it('write markup straight into the DOM only through trustedHtml', () => {
-    const raw = files.flatMap((f) =>
-      [...text(f).matchAll(/\.(?:innerHTML|outerHTML)\s*=(?!=)\s*|\binsertAdjacentHTML\(/g)]
-        .filter((m) => {
-          const rest = text(f).slice(m.index + m[0].length);
-          return m[0].startsWith('insertAdjacentHTML')
-            ? !/^[^,]*,\s*trustedHtml\(/.test(rest)
-            : !rest.startsWith('trustedHtml(');
-        })
-        .map((m) => `${f}: ${m[0]}`),
-    );
-    expect(raw).toEqual([]);
-  });
-
-  // A server component's trustedHtml runs in the prerender, where there are no Trusted Types, so a client render
+  // A server component's htmlProps runs in the prerender, where there are no Trusted Types, so a client render
   // (a Suspense boundary the static export leaves to the browser, or a client navigation) meets a plain string. So a
   // sink lives in the root layout (only ever hydrated) or a 'use client' module, which mints it in the browser.
   it('mint TrustedHTML in the browser, never in a server component', () => {
@@ -95,9 +92,7 @@ describe('the pages', () => {
     const layout = read(`${site}app/layout.tsx`);
     const head = layout.slice(layout.search(/^\s*<head>$/m));
     const first = head.indexOf('<script');
-    expect(head.slice(first, head.indexOf('/>', first))).toContain(
-      'trustedHtml(TRUSTED_TYPES_BOOT)',
-    );
+    expect(head.slice(first, head.indexOf('/>', first))).toContain('htmlProps(TRUSTED_TYPES_BOOT)');
     expect(layout).toMatch(/trustedTypesBootScript\(SITE_ASSET_PREFIX[,)]/);
     expect(read(`${site}next.config.ts`)).toContain(`const ASSET_PREFIX = '${SITE_ASSET_PREFIX}';`);
   });

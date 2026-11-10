@@ -161,7 +161,7 @@ export async function handleDataExport(
           },
     );
     if (!started.ok) return error(409, started.error);
-    console.log('[data-export] started', { kind: admin ? 'team' : 'personal' });
+    console.info('[data-export] started', { kind: admin ? 'team' : 'personal' });
     return json({ export: started.view }, 202);
   }
 
@@ -218,7 +218,7 @@ export async function handleDataExportDownload(
     await file.body.cancel();
     return refuse('missing');
   }
-  console.log('[data-export] downloaded', { kind: scope.kind, bytes: file.size });
+  console.info('[data-export] downloaded', { kind: scope.kind, bytes: file.size });
   return new Response(file.body, {
     headers: {
       'Content-Type': 'application/zip',
@@ -260,7 +260,7 @@ export async function handleDataExportReady(request: Request, env: Env): Promise
   // A team's goes only to someone still its admin: demoted, removed or the team deleted while it ran, no email.
   const scope = parseExportKey(call.key)!;
   if (scope.kind === 'team' && !(await adminOf(env.AUTH_DB, call.requestedBy, scope.teamId))) {
-    console.log('[data-export] not sent', { kind: 'team', reason: 'not_team_admin' });
+    console.info('[data-export] not sent', { kind: 'team', reason: 'not_team_admin' });
     return new Response(null, { status: 204 });
   }
   const user = await env.AUTH_DB.prepare('SELECT email, emailVerified FROM "user" WHERE id = ?')

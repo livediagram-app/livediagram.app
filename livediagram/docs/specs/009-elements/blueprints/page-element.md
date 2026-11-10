@@ -27,9 +27,9 @@ Scope, by file:
 | `apps/editor/components/canvas/PageMasthead.tsx`                 | The masthead: two `InlineTextLine`s over a hairline rule            |
 | `../packages/workbench/src/components/canvas/InlineTextLine.tsx` | One plain line edited in place                                      |
 | `../packages/workbench/src/components/canvas/PageCornerFold.tsx` | The turned-back corner                                              |
-| `apps/editor/components/canvas/BoxedElementView.tsx`             | Mounts the fold                                                     |
+| `apps/editor/components/canvas/boxed-element-face-parts.tsx`     | Mounts the fold                                                     |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`                | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
-| `apps/editor/components/palette/palette-tile-defs.tsx`           | Tile `tools:page`, `toolGroup: 'write'`                             |
+| `apps/editor/components/palette/tile-defs/tool-tiles.tsx`        | Tile `tools:page`, `toolGroup: 'write'`                             |
 | `packages/document/src/export-tab-text.ts`                       | Markdown outline [QD13]                                             |
 
 ## Domain and naming

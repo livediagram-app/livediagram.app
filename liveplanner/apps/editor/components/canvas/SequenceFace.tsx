@@ -1,4 +1,5 @@
-import { trustedHtml } from '@liveplanner/ui';
+import { htmlProps } from '@liveplanner/ui';
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { memo, useMemo, type CSSProperties } from 'react';
 import {
   ANIMATION_SPEED_FACTOR,
@@ -44,8 +45,7 @@ export const SequenceFace = memo(function SequenceFace({
         /^<svg([^>]*?) width="[^"]*" height="[^"]*"/,
         '<svg$1 width="100%" height="100%" preserveAspectRatio="xMidYMid meet"',
       ),
-    // The drawing depends on the rows and the look only.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the drawing depends on the rows and the look only
     [
       element.sequenceParticipants,
       element.sequenceMessages,
@@ -77,7 +77,7 @@ export const SequenceFace = memo(function SequenceFace({
         play ? (element.sequenceAnimRepeat ? 'lvd-seq-play-loop' : 'lvd-seq-play') : ''
       }`}
       style={style}
-      dangerouslySetInnerHTML={{ __html: trustedHtml(html) }}
+      {...htmlProps(sanitizedHtml(html))}
     />
   );
 });

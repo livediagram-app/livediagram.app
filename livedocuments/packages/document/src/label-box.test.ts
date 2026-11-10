@@ -94,16 +94,20 @@ function timeOf(text: string, run: (text: string) => unknown, tries = 3): number
 }
 
 // The sweep only picks the three slowest cases, so one timing each will do; the two times compared
-// for growth are each best of three, at four and sixteen times the sweep's length, so the smaller takes
-// milliseconds enough that noise cannot read as growth.
+// for growth are each best of three, at two and eight times the sweep's length, so the smaller takes
+// milliseconds enough that noise cannot read as growth. Never past eight: at sixteen the largest input,
+// over a million characters, is past a cliff in V8's memory handling (the same linear scan took 3.2
+// times the CPU for twice the text there), so four times the text cost seven to nine times the CPU
+// (median 6.9, worst 9.0 of 20 runs) against the ceiling of 8. Two to eight measures 4.1 (worst 4.7),
+// and a quadratic scan still reads 16.
 function expectLinear(all: Case[], run: (text: string) => unknown): void {
   const slowest = all
     .map((c) => ({ c, ms: timeOf(c.build(RUN), run, 1) }))
     .sort((a, b) => b.ms - a.ms)
     .slice(0, 3);
   for (const { c } of slowest) {
-    const ms = timeOf(c.build(RUN * 4), run);
-    const grown = timeOf(c.build(RUN * 16), run);
+    const ms = timeOf(c.build(RUN * 2), run);
+    const grown = timeOf(c.build(RUN * 8), run);
     expect(grown, c.build(8)).toBeLessThan(ms * 8 + 5);
   }
 }

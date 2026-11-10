@@ -176,6 +176,10 @@ export type AppTimelineEventType = (typeof APP_TIMELINE_EVENT_TYPES)[number];
 // event per person, app and UTC day, counting the images.
 export const APP_PERSON_EVENT_TYPES = ['image_uploaded'] as const;
 export type AppPersonEventType = (typeof APP_PERSON_EVENT_TYPES)[number];
+// What a reference to a closed account becomes, in the index, the accounts Worker and each app
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an account"). Shaped like neither an
+// account (`user_…`) nor a guest (`guest_…`), so it can never match anyone.
+export const ANONYMISED_PERSON = 'deleted';
 // The app an account's events (teams, API tokens) are under: liveworkspace.app itself. They show under every
 // app's filter as well as All.
 export const TIMELINE_PLATFORM = 'liveworkspace' as const;

@@ -21,7 +21,7 @@ Scope, by file:
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setChecklistItemsSelected`: whole-array row edits                                                          |
 | `apps/live/components/palette/ElementDataSections.tsx`       | The Checklist section (Tools flyout)                                                                        |
 | `apps/live/components/palette/context-menu-data-editors.tsx` | `ChecklistRowsEditor`                                                                                       |
-| `apps/live/components/palette/palette-tile-defs.tsx`         | Tile `tools:checklist`, section `components`                                                                |
+| `apps/live/components/palette/tile-defs/element-tiles.tsx`   | Tile `tools:checklist`, section `components`                                                                |
 
 ## Domain and naming
 
@@ -43,7 +43,7 @@ list".
 
 `createShape('checklist', x, y)`: 240 × 180 with `CHECKLIST_DEFAULT_ITEMS` (First task, Second task,
 Third task, all unchecked). Telemetry `Added Checklist`. Style memory
-([Quick style panel](../../008-canvas/quick-style-panel.md)) then dresses it with the colours last
+([Quick Style bar](../../008-canvas/quick-style-panel.md)) then dresses it with the colours last
 picked for checklists (`applyStyleMemory`).
 
 ### Render
@@ -137,7 +137,7 @@ At most 30 rows of at most 200 characters; a tick is one small delta, not a whol
 
 ## Presentation and UX
 
-Themed card that follows the tab theme; the quick style panel's Stroke and Background rows set
+Themed card that follows the tab theme; the Quick Style bar's Stroke and Fill rows set
 the accent and the card. Palette: Components category, caption "Checklist",
 blurb "Tickable to-do rows". AI vocabulary includes it with `checklistItems` (max 30 rows).
 

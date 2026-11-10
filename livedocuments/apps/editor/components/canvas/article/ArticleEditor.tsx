@@ -8,33 +8,11 @@
 // an undo) is merged in block by block, so neither loses the other. After every change it measures
 // where the writing reaches (how many pages, where each zone landed) and reports it, so the host
 // can add or remove pages and move zones' elements (useArticles).
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
-} from 'react';
-import { EditorState, Selection, TextSelection, type Transaction } from 'prosemirror-state';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Selection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import { gapCursor } from 'prosemirror-gapcursor';
-import {
-  MAX_PAGES,
-  applyArticleOps,
-  cleanFootnoteText,
-  diffArticleFlow,
-  type ArticleBlock,
-  type ArticleFlow,
-  type LaidOutPage,
-} from '@livedocuments/document';
-import { blocksToDoc, docToBlocks } from '@/lib/article/article-convert';
-import { replaceContentTr } from '@/lib/article/article-replace';
-import type { ArticleNotePlace } from '@livedocuments/document';
-import { articleKeymap, articleInputRules } from '@/lib/article/article-keys';
-import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/article/article-plugins';
-import { announceArticleCap, articleCapsPlugin } from '@/lib/article/article-caps';
-import { findHighlightPlugin } from '@/lib/article/article-find-plugin';
+import { applyArticleOps, diffArticleFlow, type ArticleFlow } from '@livedocuments/document';
+import { docToBlocks } from '@/lib/article/article-convert';
 import {
   insertBlocksAfterCaret,
   sameSelectionState,
@@ -42,145 +20,40 @@ import {
   type ArticleSelectionState,
 } from '@/lib/article/article-commands';
 import {
-  clearActiveArticle,
-  registerArticleHandle,
-  noteArticleLaidOut,
   setActiveArticle,
   getActiveArticle,
-  requestArticleComment,
-  blurActiveArticle,
   type ArticleEditorHandle,
 } from '@/lib/article/article-editor-store';
 import { articleSchema } from '@/lib/article/article-schema';
-import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
-import { publishCardOverflow } from '@/lib/flashcard-overflow-store';
-import { announceTextOnly } from '@/lib/flashcard-guard';
+import { columnAt } from '@/lib/article/article-flow-geometry';
 import { FlashcardTooLong } from './FlashcardTooLong';
-import type { CardSplit } from '@/lib/flashcard-split';
-import { articleStyleVars, type ArticleInk } from '@/lib/article/article-style-vars';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
-import {
-  removeSlashQuery,
-  slashKey,
-  slashPlugin,
-  type SlashBridge,
-} from '@/lib/article/article-slash';
+import { removeSlashQuery } from '@/lib/article/article-slash';
 import { filterSlashItems, type SlashItem } from '@/lib/article/article-slash-items';
 import { setBlockStyle, toggleList } from '@/lib/article/article-commands';
 import { caretOf } from '@/lib/article/article-caret';
 import { setLocalArticleCaret, useArticlePeers } from '@/lib/article/article-carets-store';
-import { articlePeersPlugin, onlyPeers, setArticlePeers } from '@/lib/article/article-peers';
-import { SLASH_MENU_ID, SlashMenu, slashOptionId } from './SlashMenu';
+import { setArticlePeers } from '@/lib/article/article-peers';
+import { SlashMenu } from './SlashMenu';
 import { useArticleLinkHover } from './useArticleLinkHover';
-import { caretCanvasRect, createArticleHandle, writingScale } from './article-editor-handle';
-import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
-import { articlePasteProps } from '@/lib/article/article-paste';
-import { cardPasteSlice } from '@/lib/article/article-card-paste';
-import type { ArticleInsert } from '@/hooks/editor/useArticles';
-import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { caretCanvasRect, writingScale } from './article-editor-handle';
 import { track } from '@/lib/telemetry';
 import { slashInsertEvent } from '@/lib/article/article-telemetry';
-import {
-  articleTablePasteProps,
-  jumpToHeading,
-  tableKeyPlugins,
-  tableNodeViews,
-  tablePlugins,
-  type TableRights,
-} from '@/lib/article/article-table-editor';
 import { insertTable } from '@/lib/article/article-table-commands';
-import { measureRepeats } from '@/lib/article/article-table-repeat';
-import { measureTocPages } from '@/lib/article/article-toc-view';
-import {
-  clearPendingNote,
-  footnoteKey,
-  footnoteNodeView,
-  footnotesPlugin,
-  insertFootnote,
-} from '@/lib/article/article-footnotes';
+import { insertFootnote } from '@/lib/article/article-footnotes';
 import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
-import { commitWritingOnLeave } from '@/lib/article/article-open-edit';
-import { layoutFootnotes } from '@/lib/article/article-footnote-layout';
-
-// How many times one change may re-measure for repeated header rows settling (each copy drawn can move
-// the rows after it); a guard, two is the most a real layout needs.
-const REPEAT_SETTLE_TRIES = 4;
-// The writing's paste, tables composed over it.
-const pasteProps = articleTablePasteProps(articlePasteProps);
+import type { ArticleEditorProps } from './article-editor-types';
+import { measureArticleLayout } from './article-measure';
+import { mountArticleView } from './article-view-mount';
+import { PageLimitNotice, replaceContent } from './article-editor-parts';
 
 // How long typing pauses before it is written to the tab (docs/specs/007-editor/article-pages.md
 // "Writing", "Commits").
 const ARTICLE_IDLE_COMMIT_MS = 600;
-// How long after a local change this person still counts as the writer of its consequences.
-const WRITER_WINDOW_MS = 3000;
 // How long an undo or redo from the writing waits for its writing to come back (UNDO_SETTLE_MS).
 const UNDO_SETTLE_MS = 400;
 
-export type FlowLayout = {
-  flow: string;
-  // How many pages the writing reaches.
-  pagesNeeded: number;
-  // Where each zone landed: its page (by index among the article's pages) and its top-left from
-  // that page's corner, and its size, in canvas px.
-  zones: { id: string; index: number; x: number; y: number; width: number; height: number }[];
-  // Where each margin note's text starts: its first line's page, top and height.
-  notes: ArticleNotePlace[];
-  // Whether this person made the change that laid it out (only they settle its consequences).
-  local: boolean;
-};
-
-export type FocusRequest = { flow: string; at: 'start' | 'end'; seq: number } | null;
-
-export type ArticleEditorProps = {
-  flow: string;
-  // The article's pages, laid out, in order.
-  pages: LaidOutPage[];
-  // The tab holds as many pages as it can (MAX_PAGES): no page is added for writing that
-  // runs past the last.
-  atPageLimit?: boolean;
-  // A flashcard (docs/specs/007-editor/flashcards.md): text only, laid out on its one card and
-  // never grown; writing past its foot is cut off there and said so.
-  card?: boolean;
-  // Split Onto a New Card from the Too long marker: given to someone who may change the pages.
-  split?: CardSplit | undefined;
-  doc: ArticleFlow;
-  editable: boolean;
-  // Whether the writer may reshape the article too (the slash menu's inserts): an Editor. A Participant writes
-  // only (docs/specs/013-workspace/share-roles.md). Absent: as `editable`.
-  reshape?: boolean;
-  // Whether a press on the writing is the writing's (not while a drawing tool is in hand).
-  interactive: boolean;
-  zoom: number;
-  ink: ArticleInk;
-  themeAccent: string;
-  margin: number;
-  // The least top margin: the toolbar's room, and a header's band above it (ARTICLE_TOP_MIN_PX when absent).
-  topMin?: number;
-  // A style shown in place of the article's own while a Style tab choice is hovered.
-  styleOverride?: ArticleFlow['style'];
-  // The writing's blocks, written to the tab (one undo step, one sync).
-  // False when the host refuses the writing (the tab locked, no rights).
-  onCommit: (flow: string, blocks: ArticleBlock[]) => boolean;
-  onLayout: (layout: FlowLayout) => void;
-  onUndo: () => void;
-  onRedo: () => void;
-  onLinkRequest: () => void;
-  // A click on a margin note's text: its thread, or its action, opens beside it.
-  onNoteOpen?: (id: string, kind: 'comment' | 'action') => void;
-  // An object put in at the caret (the slash menu): a table, a chart, a drawing...
-  onInsert: (flow: string, what: ArticleInsert) => void;
-  // A press on the writing: the canvas's selection goes.
-  onWritingPress: () => void;
-  // A finger on the writing: pans the view when it travels, else calls back on its tap (the
-  // browser has put the caret by then). False for a mouse or a pen.
-  onTouchPress?: (e: ReactPointerEvent, onTap?: () => void) => boolean;
-  focusRequest: FocusRequest;
-  // The request was taken (it is spent).
-  onFocusTaken?: (seq: number) => void;
-  // Where the caret is, as a canvas rect, after the writer types or moves it: the view keeps it in sight
-  // (docs/specs/007-editor/article-pages.md "Writing").
-  onRevealCaret?: (rect: { x: number; y: number; w: number; h: number }) => void;
-};
+export type { FlowLayout, FocusRequest, ArticleEditorProps } from './article-editor-types';
 
 export default function ArticleEditor(props: ArticleEditorProps) {
   const host = useRef<HTMLDivElement>(null);
@@ -309,101 +182,21 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     idle.current = window.setTimeout(flush, ARTICLE_IDLE_COMMIT_MS);
   };
 
-  const measure = () => {
-    // A new layout: the bars measured from the last one are out of date.
-    barsCache.current = null;
-    measureFrame.current = null;
-    const view = viewRef.current;
-    const p = latest.current;
-    if (!view || p.pages.length === 0) return;
-    const { frame, root, z } = writingScale(view, p);
-    // Repeated header rows first: a copy drawn moves the rows after it, so the rest is measured once
-    // they have settled (a frame later).
-    const foot = {
-      colOf: (x: number) => columnAt(frame, (x - root.left) / z),
-      limit: (col: number) => footLimits.current.get(col),
-    };
-    if (measureRepeats(view, root.top, z, foot) && repeatTries.current < REPEAT_SETTLE_TRIES) {
-      repeatTries.current++;
-      scheduleMeasure();
-      return;
-    }
-    repeatTries.current = 0;
-    // Then the footnotes: each page's notes at its foot and its text ended above them, measured again once the
-    // breaks have moved (the header rows repeat above the notes).
-    const footNotes = notesRef.current;
-    if (footNotes && !p.card) {
-      const laid = layoutFootnotes(view, { frame, root, z, pages: p.pages, notes: footNotes });
-      footLimits.current = laid.limits;
-      if (laid.changed && footTries.current < REPEAT_SETTLE_TRIES) {
-        footTries.current++;
-        scheduleMeasure();
-        return;
-      }
-      footTries.current = 0;
-      // A footnote just put in: its note takes the caret.
-      const fs = footnoteKey.getState(view.state);
-      if (fs && fs.pending !== null) {
-        const n = fs.refs.indexOf(fs.pending) + 1;
-        clearPendingNote(view);
-        if (n > 0) footNotes.focus(n);
-      }
-    }
-    // The contents' page numbers, from where each heading landed.
-    measureTocPages(view, (x) =>
-      Math.min(p.pages.length - 1, columnAt(frame, (x - root.left) / z)),
-    );
-    let right = 0;
-    for (const child of Array.from(view.dom.children)) {
-      for (const r of Array.from(child.getClientRects())) {
-        if (r.width === 0 && r.height === 0) continue;
-        right = Math.max(right, (r.left - root.left) / z + 1);
-      }
-    }
-    const reached = columnAt(frame, Math.max(0, right - 2)) + 1;
-    // A card never grows: what runs past its foot waits unseen, and the first block that does not
-    // fit whole is where a split would start (docs/specs/007-editor/flashcards.md "Never flows").
-    const pagesNeeded = p.card ? 1 : reached;
-    if (p.card)
-      publishCardOverflow(p.flow, reached > 1 ? firstBlockPastFoot(view, frame, root, z) : null);
-    // At the tab's page limit the writing past the last page waits unseen: say so on that page.
-    const cut = (p.atPageLimit === true || p.card === true) && reached > p.pages.length;
-    setCutOff((was) => (was === cut ? was : cut));
-    const zones: FlowLayout['zones'] = [];
-    view.dom.querySelectorAll<HTMLElement>('.article-zone').forEach((el) => {
-      const r = el.getBoundingClientRect();
-      const place = pagePlaceOf(frame, { x: (r.left - root.left) / z, y: (r.top - root.top) / z });
-      zones.push({
-        id: el.dataset.blockId ?? '',
-        index: place.index,
-        x: Math.round(place.x * 2) / 2,
-        y: Math.round(place.y * 2) / 2,
-        width: r.width / z,
-        height: r.height / z,
-      });
+  const measure = () =>
+    measureArticleLayout({
+      barsCache,
+      measureFrame,
+      viewRef,
+      latest,
+      repeatTries,
+      footLimits,
+      notesRef,
+      footTries,
+      lastLocal,
+      announced,
+      scheduleMeasure,
+      setCutOff,
     });
-    const notes: ArticleNotePlace[] = [];
-    const seen = new Set<string>();
-    view.dom.querySelectorAll<HTMLElement>('[data-note-id]').forEach((el) => {
-      const id = el.dataset.noteId ?? '';
-      const r = el.getClientRects()[0];
-      if (!id || seen.has(id) || !r) return;
-      seen.add(id);
-      const place = pagePlaceOf(frame, { x: (r.left - root.left) / z, y: (r.top - root.top) / z });
-      notes.push({ id, index: place.index, y: place.y, height: r.height / z });
-    });
-    // Only the writer of a change settles its consequences (docs/specs/007-editor/article-pages.md
-    // "Collaboration"): a change made here (typing, or a claimLayout from a zone, style or page
-    // edit) within the window. Focus alone is not writing: two people with the caret in the same
-    // article would both add a page for one of them's overflow.
-    const local = Date.now() - lastLocal.current < WRITER_WINDOW_MS;
-    p.onLayout({ flow: p.flow, pagesNeeded, zones, notes, local });
-    // The first layout (and the one after web fonts land) is news to the Map and the thumbnails.
-    if (!announced.current) {
-      announced.current = true;
-      noteArticleLaidOut();
-    }
-  };
   const scheduleMeasure = () => {
     if (measureFrame.current !== null) return;
     measureFrame.current = requestAnimationFrame(measure);
@@ -480,299 +273,33 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   };
 
   useLayoutEffect(() => {
-    const mount = host.current;
-    if (!mount) return;
-    const isEditable = () => latest.current.editable;
-    const rights: TableRights = {
-      editable: isEditable,
-      reshape: () => latest.current.reshape !== false,
-      commit: () => {
-        flush();
-      },
-    };
-    const bridge: SlashBridge = {
-      onChange: (s, v) => {
-        if (!s.active) {
-          setSlash(null);
-          return;
-        }
-        try {
-          const c = v.coordsAtPos(s.from);
-          setSlash((prev) => {
-            if (prev?.query !== s.query) setSlashIndex(0);
-            return { query: s.query, at: { left: c.left, top: c.top, bottom: c.bottom } };
-          });
-        } catch {
-          setSlash(null);
-        }
-      },
-      onKey: (key) => {
-        const { items, index } = slashLive.current;
-        if (items.length === 0) return false;
-        if (key === 'down') setSlashIndex((index + 1) % items.length);
-        else if (key === 'up') setSlashIndex((index - 1 + items.length) % items.length);
-        else if (key === 'enter') pickSlashRef.current(items[index] ?? items[0]!);
-        return true;
-      },
-    };
-    const state = EditorState.create({
-      doc: blocksToDoc(committed.current.blocks),
-      plugins: [
-        // First, so its keys come before Enter's and the arrows'.
-        slashPlugin(bridge),
-        // A cell's keys before the writing's (Tab, Enter and Backspace mean other things there).
-        ...tableKeyPlugins(rights),
-        ...articleKeymap({
-          undo: () => undoRedo('undo'),
-          redo: () => undoRedo('redo'),
-          onLink: () => latest.current.onLinkRequest(),
-          onComment: () => requestArticleComment(),
-          // Not on a card, and not by a Participant (an insert).
-          onFootnote: (state, dispatch, v) => {
-            const p = latest.current;
-            if (p.card || p.reshape === false || !p.editable) return false;
-            const done = insertFootnote(state, dispatch, v);
-            if (done && dispatch) track('Element', 'Added', 'ArticleFootnote');
-            return done;
-          },
-          onEscape: () => {
-            flush();
-            viewRef.current?.dom?.blur();
-          },
-        }),
-        articleInputRules(),
-        // Never past the article's caps: a paste or a key that would go past them is refused, said once.
-        articleCapsPlugin((cap) => announceArticleCap(cap)),
-        blockIdsPlugin,
-        decorationsPlugin(isEditable),
-        todoTogglePlugin(isEditable),
-        articlePeersPlugin,
-        // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
-        findHighlightPlugin(() => latest.current.flow),
-        // The footnotes' numbers and the breaks above their notes; a press on a reference puts the caret in its note.
-        footnotesPlugin((n) => {
-          if (latest.current.editable) notesRef.current?.focus(n);
-        }),
-        ...tablePlugins(),
-        gapCursor(),
-      ],
-    });
-    const view = new EditorView(mount, {
-      state,
-      editable: isEditable,
-      attributes: () => {
-        const p = latest.current;
-        const frame = flowFrame(p.pages, p.margin, p.topMin);
-        const { vars, rules } = articleStyleVars(
-          p.styleOverride ?? p.doc.style,
-          p.themeAccent,
-          p.ink,
-        );
-        const style: CSSProperties = {
-          ...vars,
-          left: `${frame.x}px`,
-          top: `${frame.y}px`,
-          width: `${frame.width}px`,
-          height: `${frame.height}px`,
-        };
-        const css = Object.entries(style)
-          .map(
-            ([k, v]) =>
-              `${k.startsWith('--') ? k : k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}: ${v}`,
-          )
-          .join('; ');
-        return {
-          class: 'article-flow',
-          style: `${css}; column-count: ${frame.count}; column-gap: ${frame.gap}px`,
-          'data-rules': rules,
-          'data-article-flow': p.flow,
-          role: 'textbox',
-          'aria-multiline': 'true',
-          'aria-label': 'Article text',
-          spellcheck: 'true',
-          // The open slash menu: the writing points at it and its highlighted option. A textbox
-          // takes no aria-expanded (ARIA 1.2), so the popup is announced by aria-haspopup and the
-          // active option alone.
-          ...(slashLive.current.open
-            ? {
-                'aria-controls': SLASH_MENU_ID,
-                'aria-haspopup': 'listbox',
-                'aria-activedescendant': slashOptionId(
-                  Math.min(slashLive.current.index, slashLive.current.items.length - 1),
-                ),
-              }
-            : {}),
-          ...(p.editable ? {} : { 'data-readonly': '', 'aria-readonly': 'true' }),
-          ...(p.interactive ? {} : { 'data-inert': '' }),
-        };
-      },
-      // The canvas is not a scrolling page: ProseMirror must never scroll its ancestors.
-      handleScrollToSelection: () => true,
-      ...pasteProps,
-      // A card holds text only: a pasted table comes as a list, a page break or a zone not at all
-      // (docs/specs/007-editor/flashcards.md "Text only").
-      transformPasted: (slice) => {
-        if (!latest.current.card) return slice;
-        const onCard = cardPasteSlice(slice);
-        if (onCard.cut) announceTextOnly();
-        return onCard.slice;
-      },
-      nodeViews: {
-        footnote: footnoteNodeView,
-        ...tableNodeViews(rights, (v, id) =>
-          jumpToHeading(v, id, latest.current.editable, (r) => {
-            const p = latest.current;
-            const { frame, root, z } = writingScale(v, p);
-            p.onRevealCaret?.({
-              x: frame.x + (r.left - root.left) / z,
-              y: frame.y + (r.top - root.top) / z,
-              w: Math.max(1, r.width / z),
-              h: Math.max(1, r.height / z),
-            });
-          }),
-        ),
-      },
-      dispatchTransaction(tr: Transaction) {
-        const v = viewRef.current;
-        if (!v) return;
-        v.updateState(v.state.apply(tr));
-        // Collaborators' carets arriving change nothing of ours: no commit, no toolbar update.
-        if (onlyPeers(tr)) return;
-        if (tr.docChanged) {
-          if (!tr.getMeta('article-remote')) {
-            lastLocal.current = Date.now();
-            scheduleCommit();
-          }
-          scheduleMeasure();
-        }
-        if ((tr.docChanged || tr.selectionSet) && !tr.getMeta('article-remote')) scheduleReveal();
-        publish(v);
-      },
-      handleDOMEvents: {
-        // An image, or elements copied from a canvas: not the writing's to take. Left alone (no
-        // preventDefault), the paste reaches the canvas, which puts it into the writing as a zone.
-        paste: (_v, e) => {
-          if (!articlePasteIsCanvas(e.clipboardData)) return false;
-          // A card holds text only: a picture or canvas elements pasted on it are dropped
-          // (docs/specs/007-editor/flashcards.md "Text only").
-          if (latest.current.card) {
-            e.preventDefault();
-            announceTextOnly();
-          }
-          return true;
-        },
-        click: (_v, e) => {
-          // A plain click on a margin note's text opens what it carries; a drag that selects
-          // does not.
-          const note = (e.target as Element | null)?.closest?.('[data-note-id]');
-          const sel = window.getSelection();
-          if (!note || (sel && !sel.isCollapsed)) return false;
-          const id = (note as HTMLElement).dataset.noteId;
-          if (id)
-            latest.current.onNoteOpen?.(
-              id,
-              note.classList.contains('article-note-action') ? 'action' : 'comment',
-            );
-          return false;
-        },
-        focus: (v) => {
-          publish(v);
-          return false;
-        },
-        blur: (v) => {
-          flush();
-          // A slash menu open as the writing loses the caret closes with it.
-          if (slashKey.getState(v.state)?.active) v.dispatch(v.state.tr.setMeta(slashKey, 'close'));
-          // The article stays active (its page keeps its toolbar) until a press lands off its
-          // pages (PageToolbar); only the focus goes.
-          if (blurTimer.current !== null) window.clearTimeout(blurTimer.current);
-          blurTimer.current = window.setTimeout(() => {
-            blurTimer.current = null;
-            if (v.hasFocus()) return;
-            blurActiveArticle(latest.current.flow);
-            setLocalArticleCaret(latest.current.flow, null);
-          }, 0);
-          return false;
-        },
-      },
-    });
-    viewRef.current = view;
-    // The notes at the pages' feet: edited by anyone who may write, each change one edit of the writing.
-    const commitNote = (n: number, text: string) => {
-      const v = viewRef.current;
-      if (!v || !latest.current.editable) return;
-      const pos = footnoteKey.getState(v.state)?.refs[n - 1];
-      const node = pos === undefined ? null : v.state.doc.nodeAt(pos);
-      if (pos === undefined || !node || node.attrs.text === text) return;
-      v.dispatch(v.state.tr.setNodeAttribute(pos, 'text', text));
-      flush();
-    };
-    notesRef.current = new FootnoteNotes(mount, {
-      editable: () => latest.current.editable,
-      commit: commitNote,
-      leave: (n) => {
-        const v = viewRef.current;
-        const pos = v ? footnoteKey.getState(v.state)?.refs[n - 1] : undefined;
-        if (!v || pos === undefined) return;
-        v.dispatch(v.state.tr.setSelection(TextSelection.create(v.state.doc, pos + 1)));
-        v.focus();
-      },
-      resize: () => scheduleMeasure(),
-      press: () => latest.current.onWritingPress(),
-    });
-    // A handle for driving the writing in development (browser checks); never in production.
-    if (process.env.NODE_ENV !== 'production') Reflect.set(window, '__articleView', view);
-    handleRef.current = createArticleHandle({
-      view,
+    return mountArticleView({
+      host,
+      viewRef,
       latest,
       committed,
       idle,
       lastLocal,
+      measureFrame,
+      notesRef,
+      announced,
+      blurTimer,
       barsCache,
+      slashLive,
+      pickSlashRef,
+      handleRef,
+      caretFrame,
+      revealFrame,
+      setSlash,
+      setSlashIndex,
       flush,
       undoRedo,
-      noteRoots: () => notesRef.current?.roots() ?? [],
+      scheduleCommit,
+      scheduleMeasure,
+      scheduleReveal,
+      publish,
     });
-    const unregister = registerArticleHandle(handleRef.current);
-    // A reload or a closed tab takes what was typed with it: the note being written, then the writing.
-    const stopLeave = commitWritingOnLeave(mount, () => {
-      const note = notesRef.current?.editing();
-      if (note) commitNote(note.n, cleanFootnoteText(note.text));
-      flush();
-    });
-    scheduleMeasure();
-    // Web fonts arriving change every line's length.
-    const fonts = document.fonts;
-    const onFonts = () => {
-      announced.current = false;
-      scheduleMeasure();
-    };
-    fonts?.addEventListener?.('loadingdone', onFonts);
-    debugLog('[article] writing mounted', { flow: latest.current.flow });
-    return () => {
-      fonts?.removeEventListener?.('loadingdone', onFonts);
-      unregister();
-      stopLeave();
-      if (measureFrame.current !== null) cancelAnimationFrame(measureFrame.current);
-      measureFrame.current = null;
-      if (caretFrame.current !== null) cancelAnimationFrame(caretFrame.current);
-      caretFrame.current = null;
-      if (revealFrame.current !== null) cancelAnimationFrame(revealFrame.current);
-      revealFrame.current = null;
-      flush();
-      if (blurTimer.current !== null) window.clearTimeout(blurTimer.current);
-      if (process.env.NODE_ENV !== 'production' && Reflect.get(window, '__articleView') === view)
-        Reflect.deleteProperty(window, '__articleView');
-      notesRef.current?.destroy();
-      notesRef.current = null;
-      view.destroy();
-      viewRef.current = null;
-      clearActiveArticle(latest.current.flow);
-      if (latest.current.card) publishCardOverflow(latest.current.flow, null);
-      setLocalArticleCaret(latest.current.flow, null);
-    };
-    // Created once per article: everything it reads is read through refs.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- created once per article: everything it reads is read through refs
   }, []);
 
   // The writing changed on the tab from elsewhere (a collaborator, an undo, a zone settled): merge
@@ -835,7 +362,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     view.dispatch(view.state.tr.setSelection(sel));
     view.focus();
     props.onFocusTaken?.(request.seq);
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- runs once per request, keyed on its seq
   }, [request?.seq]);
 
   return (
@@ -872,56 +399,5 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         onContextMenu={(e) => e.stopPropagation()}
       />
     </>
-  );
-}
-
-// The editor's content made `blocks` (article-replace): only what differs is replaced.
-function replaceContent(
-  view: EditorView,
-  blocks: readonly ArticleBlock[],
-  takeCaret: boolean,
-): void {
-  const tr = replaceContentTr(view.state, blocks, takeCaret);
-  if (tr) view.dispatch(tr);
-}
-
-// The id of the first top-level block that does not fit whole on the first page (a box of it in a
-// later column), or null.
-function firstBlockPastFoot(
-  view: EditorView,
-  frame: ReturnType<typeof flowFrame>,
-  root: DOMRect,
-  z: number,
-): string | null {
-  for (const child of Array.from(view.dom.children)) {
-    const id = (child as HTMLElement).dataset.blockId;
-    if (!id) continue;
-    for (const r of Array.from(child.getClientRects())) {
-      if (r.width === 0 && r.height === 0) continue;
-      if (columnAt(frame, Math.max(0, (r.right - root.left) / z - 2)) >= 1) return id;
-    }
-  }
-  return null;
-}
-
-// The foot of an article's last page when the tab is at its page limit and the writing runs past it
-// (docs/specs/007-editor/article-pages.md "Flowing onto pages", Limit). In canvas space, on the page.
-function PageLimitNotice({ page }: { page: LaidOutPage }) {
-  return (
-    <div
-      role="status"
-      data-page-limit-notice=""
-      className="pointer-events-none absolute flex items-end justify-center"
-      style={{
-        left: page.rect.x,
-        top: page.rect.y + page.rect.height - 40,
-        width: page.rect.width,
-        height: 32,
-      }}
-    >
-      <span className="rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-500/30">
-        This tab has reached {MAX_PAGES} pages: the writing below this line is hidden
-      </span>
-    </div>
   );
 }

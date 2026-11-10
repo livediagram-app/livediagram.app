@@ -13,7 +13,8 @@
 
 import type { Anchor, ArrowElement, Element, ElementId, ShapeElement } from './index';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
-import { endpointPosition, elementIndexFor, type ElementIndex, type Point } from './geometry';
+import { type ElementIndex } from './index';
+import { endpointPosition, elementIndexFor, type Point } from './geometry';
 import type { Finish } from './finish';
 import { DEFAULT_MIND_FLOW, MIND_CONNECTOR_LOOK, isMindFlow, type MindFlow } from './mind-flow';
 

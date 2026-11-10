@@ -16,7 +16,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/components/canvas/arrow-view-frame.ts`                      | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
 | `apps/live/components/canvas/ArrowView.tsx`                            | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
 | `apps/live/components/canvas/BoxedElementView.tsx`                     | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                                                  |
-| `packages/design/src/element-grid.ts`                                  | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
+| `../packages/element-model/src/element-grid.ts`                        | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
 | `packages/design/src/arrow-behind.ts`                                  | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
 | `packages/design/src/svg-render-arrows.ts`                             | The export builds one grid per render and queries it                                                            |
 | `apps/live/hooks/canvas/useArrowLabelLayouts.ts`                       | `draftLayout` identity-stable across passes                                                                     |
@@ -201,7 +201,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   `viewKey` changes, never after every commit. `CanvasChrome` derives `viewKey` from the pan
   offset, the zoom and `<main>`'s size, and hands it to `CanvasGuideOverlay`, `CanvasDrawPreview`
   and `TimelineLanesOverlay`; a move's frames keep it, so alignment guides read no layout.
-- The Quick Style panel's placement re-runs on `transitionend` only from the panel or an obstacle.
+- livediagram's Quick Style panel placement re-runs on `transitionend` only from the panel or an obstacle; livedesign's
+  Quick Style bar sits in the page's title-bar row and measures nothing but its own width.
 
 ### The Map draws settled elements
 
@@ -422,7 +423,7 @@ export function resetCanvasGesturesForTests(): void;
 export function gestureOfDrag(drag: DragState): CanvasGesture;
 export function dragWaitsToEngage(drag: DragState): boolean;
 
-// packages/design/src/element-grid.ts
+// ../packages/element-model/src/element-grid.ts
 export const ELEMENT_GRID_CELL = 256;
 export const ELEMENT_GRID_MAX_CELLS = 64;
 export type ElementGrid;
@@ -567,7 +568,7 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | Spec rule                                        | Test                                                                                                                                                                                                                |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A still canvas does nothing                      | `e2e/canvas-still.spec.ts`: no frame requested over a still second; probe idle row                                                                                                                                  |
-| An observer never notifies itself                | `useQuickStylePlacement.test.tsx` (shipped)                                                                                                                                                                         |
+| An observer never notifies itself                | livediagram's `useQuickStylePlacement.test.tsx` (shipped; livedesign's bar no longer places itself)                                                                                                                 |
 | A pan or zoom moves the canvas, not its elements | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only                                                                                          |
 | No layout read in a gesture frame                | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                                                                                                         |
 | Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                                                                                                         |

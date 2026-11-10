@@ -153,6 +153,30 @@ describe('quickStyleView: the highlighted value', () => {
     ).toBeNull();
   });
 
+  // docs/specs/008-canvas/quick-style-panel.md "Where it sits": a colour button shows the colour in force.
+  it('gives the colour every element paints, a hand-picked one too, for the bar’s chips', () => {
+    const view = (els: Parameters<typeof quickStyleView>[0]) =>
+      quickStyleView(els, forest, {}, '#1c1917')!.sections;
+    expect(view([shape('a', { strokeColor: '#123456' })]).stroke?.paint).toBe('#123456');
+    expect(
+      view([shape('a', { strokeColor: '#ABCDEF' }), shape('b', { strokeColor: '#abcdef' })]).stroke
+        ?.paint,
+    ).toBe('#abcdef');
+    expect(
+      view([shape('a', { strokeColor: '#123456' }), shape('b', { strokeColor: '#654321' })]).stroke
+        ?.paint,
+    ).toBeNull();
+    expect(view([shape('a')]).stroke?.paint).toBe(
+      view([shape('a')]).stroke!.swatches[0]!.color.toLowerCase(),
+    );
+    expect(view([shape('a', { fillColor: 'transparent' })]).background?.paint).toBe('transparent');
+    // Ink by name paints the canvas's ink; another stock name paints no one swatch.
+    expect(view([shape('a', { penColour: 'ink' })]).stroke?.paint).toBe('#1c1917');
+    expect(view([shape('a', { penColour: 'blue' })]).stroke?.paint).toBeNull();
+    const text = { id: 't', type: 'text', x: 0, y: 0, width: 9, height: 9, label: 'Hi' } as Element;
+    expect(view([{ ...text, textColor: '#FF0000' }]).textColour?.paint).toBe('#ff0000');
+  });
+
   it('reads an arrow’s dashed flow as Flowing, and any other flow as nothing', () => {
     const flowing = arrow('a', { strokeStyle: 'dashed', flow: 'dashes' });
     expect(quickStyleView([flowing], forest)!.sections.style?.value).toBe('flowing');
