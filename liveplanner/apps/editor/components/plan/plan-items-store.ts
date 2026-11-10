@@ -88,7 +88,7 @@ export function usePlanItemsSelect<T>(
     last.current = { items, deps, value };
     return value;
   };
-  // oxlint-disable-next-line react-hooks/rules-of-hooks
+  // oxlint-disable-next-line react-hooks/rules-of-hooks -- a caller passes a store always or never, so the call never changes between renders
   const own = store ? undefined : usePlan()?.items;
   const snapshot = () => pick((store ? store.get() : own) ?? NO_ITEMS);
   return useSyncExternalStore(store?.subscribe ?? noSubscribe, snapshot, snapshot);

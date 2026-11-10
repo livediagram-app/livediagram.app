@@ -65,7 +65,7 @@ export function PageLayoutPreview({
       wireframe
         ? wireframeFrameSvg(page, { dark, ...(frameTheme ? { theme: frameTheme } : {}) })
         : null,
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the frame's own fields, not the page object, which changes on every edit
     [
       wireframe,
       dark,
@@ -85,8 +85,7 @@ export function PageLayoutPreview({
         page,
         elements && pages ? elementsOnPage(elements, pages, page.id) : [],
       ),
-    // The page's shape, not its identity, decides the layout; its content, what carries over.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the page's shape, not its identity, decides the layout; its content, what carries over
     [layout, rect.x, rect.y, rect.width, rect.height, elements, pages],
   );
   // The carried pictures, fetched while the preview shows them (inline bytes paint as they are).

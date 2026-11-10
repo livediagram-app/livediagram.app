@@ -27,14 +27,14 @@ const worker = {
     ctx.waitUntil(
       deleteEventsBefore(env, now - RETENTION_MS).then(
         ({ events, counts }) =>
-          console.log(JSON.stringify({ sweep: 'events', rows: events, counts })),
+          console.info(JSON.stringify({ sweep: 'events', rows: events, counts })),
         (err: unknown) => console.error('events sweep failed', err),
       ),
     );
     // Yesterday, a whole UTC day no batch can still land in.
     ctx.waitUntil(
       recountDay(env, now - (now % DAY_MS) - DAY_MS).then(
-        (counts) => console.log(JSON.stringify({ recount: 'yesterday', counts })),
+        (counts) => console.info(JSON.stringify({ recount: 'yesterday', counts })),
         (err: unknown) => console.error('day recount failed', err),
       ),
     );

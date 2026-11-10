@@ -39,7 +39,7 @@ const keyOf = (filter: AuditFilter) =>
 
 export function useAuditLog(client: IndexClient, filter: AuditFilter): AuditLogState {
   const key = keyOf(filter);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- the key is the filter's value
+  // The key is the filter's value
   const stable = useMemo(() => filter, [key]);
   const [epoch, setEpoch] = useState(0);
   const [page, setPage] = useState<{

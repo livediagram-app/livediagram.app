@@ -255,8 +255,7 @@ export function usePagesMode(deps: {
     const here = pageIdInView();
     if (here && here !== cardId && pages.some((p) => p.id === here))
       setWantedCard({ tabId, id: here });
-    // Once per change of how the tab stands.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- once per change of how the tab stands
   }, [stackedNow, tabId]);
   // The card that was in front, pictured as it went, flipped away once its successor is drawn.
   const flipFrom = useRef<{ picture: CardPicture | null; forward: boolean } | null>(null);
@@ -277,8 +276,7 @@ export function usePagesMode(deps: {
     const pending = flipFrom.current;
     flipFrom.current = null;
     if (pending && flipTo) flipCard(pending.picture, flipTo, pending.forward);
-    // Once per change of the card in front, drawn.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- once per change of the card in front, drawn
   }, [flipTo?.id]);
   // The view rests on a page once a pan or a zoom lets go (docs/specs/007-editor/pages-mode.md
   // "Getting around the pages").

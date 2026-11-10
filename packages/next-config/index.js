@@ -18,7 +18,7 @@ export const SKIP_TYPECHECK_ENV = 'BUILD_SKIP_TYPECHECK';
  */
 export function typescriptConfig(env = process.env) {
   const skip = env[SKIP_TYPECHECK_ENV] === '1';
-  if (skip) console.log(`[next-config] ${SKIP_TYPECHECK_ENV}=1: next build skips its type check`);
+  if (skip) console.info(`[next-config] ${SKIP_TYPECHECK_ENV}=1: next build skips its type check`);
   return { ignoreBuildErrors: skip };
 }
 
@@ -63,7 +63,7 @@ export function liveworkspaceNextConfig({
   const exporting = exportInDev || env.NODE_ENV === 'production';
   const turbopack = isTurbopack(env);
   const compiler = turbopack && reactCompiler;
-  console.log(`[next-config] turbopack=${turbopack} export=${exporting} compiler=${compiler}`);
+  console.info(`[next-config] turbopack=${turbopack} export=${exporting} compiler=${compiler}`);
   return {
     ...(exporting ? { output: 'export' } : {}),
     // Dev builds into its own directory: `scripts/next-dev.mjs` sets NEXT_DISTDIR=.next-dev, so a `next build` running

@@ -111,6 +111,6 @@ export async function closeRooms(
       });
     }
   }
-  if (rooms.length > 0) console.log('[workbench] rooms closed', { closed, unreached });
+  if (rooms.length > 0) console.info('[workbench] rooms closed', { closed, unreached });
   return { closed, unreached };
 }

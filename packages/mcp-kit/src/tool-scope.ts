@@ -1,5 +1,4 @@
-// An ambient module declaration has nothing to import; the reference makes every Worker compiling this module see it.
-// oxlint-disable-next-line typescript/triple-slash-reference
+// oxlint-disable-next-line typescript/triple-slash-reference -- an ambient module declaration has nothing to import; the reference makes every Worker compiling this module see it
 /// <reference path="./async-hooks.d.ts" />
 // Which MCP tool is running (each product's docs/specs/017-telemetry/telemetry.md 'Error' and
 // docs/specs/015-api/mcp-server.md §4.12). An api failure deep inside a tool (an api call, a team-library sweep,

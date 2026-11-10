@@ -79,8 +79,7 @@ export function useTextAnimation(
   const key = texts.join('\u0000');
   return useMemo(
     () => textAnimationView(element, texts, textColor, isEditing),
-    // The element object changes on every edit; only these fields shape the view.
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the element object changes on every edit; only these fields shape the view
     [
       key,
       words.id,

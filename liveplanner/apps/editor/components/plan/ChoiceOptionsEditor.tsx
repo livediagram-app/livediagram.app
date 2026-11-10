@@ -53,7 +53,7 @@ export function ChoiceOptionsEditor({
   useEffect(() => {
     if (focusAt === null) return;
     list.current?.querySelectorAll<HTMLInputElement>('input')[focusAt]?.focus();
-    // oxlint-disable-next-line react/set-state-in-effect
+    // oxlint-disable-next-line react/set-state-in-effect -- a one-shot focus request, cleared once the row has focus
     setFocusAt(null);
   }, [focusAt]);
   const set = (next: string[], focus?: number) => {

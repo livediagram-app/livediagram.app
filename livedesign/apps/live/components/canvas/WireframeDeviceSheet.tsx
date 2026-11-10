@@ -41,8 +41,7 @@ export const WireframeDeviceSheet = memo(function WireframeDeviceSheet({
         { ...page, rect: { ...page.rect, x: 0, y: 0 } },
         { dark: false, ...(frameTheme ? { theme: frameTheme } : {}) },
       )?.under ?? '',
-    // The frame depends on these alone (a browser's address on the name).
-    // oxlint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps -- the frame depends on these alone (a browser's address on the name)
     [page.device, page.orientation, page.frameLook, page.name, page.kind, frameTheme],
   );
   if (!g) return null;

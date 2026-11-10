@@ -27,7 +27,7 @@ export function useNamedEvents<E extends Pick<TimelineEvent, 'actorId' | 'actorN
         const actorName = people.name(e.actorId);
         return actorName ? { ...e, actorName } : e;
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- version is what changes people.name
+    // version is what changes people.name
     [events, people, version],
   );
 }

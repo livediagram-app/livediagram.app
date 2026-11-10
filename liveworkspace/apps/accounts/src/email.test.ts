@@ -33,7 +33,7 @@ describe('deletionCodeEmail', () => {
   });
 
   it('logs in development, with the code in the subject', async () => {
-    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {});
     await sendDeletionCodeEmail(
       env({ ENVIRONMENT: 'development' }),
       'ada@example.com',
@@ -108,7 +108,7 @@ describe('sendCodeEmail', () => {
   });
 
   it('logs the email in development without the binding', async () => {
-    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {});
     await sendCodeEmail(env({ ENVIRONMENT: 'development' }), 'ada@example.com', '123456');
 
     expect(log).toHaveBeenCalledWith(
