@@ -230,7 +230,8 @@ panel keeps its own Home without it, and a first run shows its starting points i
 
 What a browser keeps offline belongs to its app's origin. On the app's address it is a view of the Explorer, This
 Browser, in the page and in the editor's panel alike; on liveworkspace.app, which can't read it, the sidebar links to
-that view on the app's own address.
+that view on the app's own address. On a phone (below `sm`) each of its rows puts Sync and its buttons on a line under
+the title, so the title and its pill keep the row's width rather than being squeezed to nothing beside them.
 
 #### A place that is empty here but not elsewhere
 

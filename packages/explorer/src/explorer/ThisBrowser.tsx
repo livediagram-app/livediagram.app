@@ -280,15 +280,21 @@ function LocalRow({
   // A row in a local folder syncs through the dialog that keeps its place; one at the root as it always did.
   const syncHref = sync && !item.folderId ? thisBrowser?.syncHref?.(item) : undefined;
   return (
-    <li data-this-browser-row={item.id} className="flex items-center" {...(sync ? drag : {})}>
+    // On a phone the actions take a line of their own under the title: beside it they left the title no room.
+    <li
+      data-this-browser-row={item.id}
+      className="flex flex-wrap items-center justify-end pb-2 sm:flex-nowrap sm:pb-0"
+      {...(sync ? drag : {})}
+    >
       <a
         href={thisBrowser?.itemHref(item)}
-        className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:hover:bg-slate-800/60"
+        className="flex min-w-0 flex-1 basis-full items-center sm:basis-auto gap-3 px-4 py-3 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:hover:bg-slate-800/60"
       >
         <LocalPreview app={app} iconSize={14} className="h-8 w-8 shrink-0 rounded-lg" />
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
+          {/* On a phone a long title takes its line and the pill goes under it; wider, the title truncates beside it. */}
+          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 sm:flex-nowrap">
+            <span className="max-w-full truncate text-sm font-medium text-slate-800 dark:text-slate-100">
               {name}
             </span>
             <ThisBrowserPill inLink />
