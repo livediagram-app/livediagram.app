@@ -94,7 +94,8 @@ own named policy. The boot script contains no `</script` anywhere (a test holds 
    `img` alone), and, under Trusted Types, `TRUSTED_TYPES_POLICY` set to the markup policy.
 3. `svg`: `USE_PROFILES { svg, svgFilters }`, `ADD_ATTR [role, target]`, DOMPurify's URL rule plus `blob:`.
    `svg-content`: the same over `<svg xmlns>…</svg>`, as a fragment, answering the `<svg>`'s `innerHTML`.
-   `document`: `USE_PROFILES { html, svg, svgFilters }`, `WHOLE_DOCUMENT`.
+   `document`: `USE_PROFILES { html, svg, svgFilters }`, answering the whole page (`<html>` and all, DOMPurify's
+   whole-page option).
 4. The text is minted through the markup policy (or answered as text without Trusted Types) and cached, unless it
    is empty or the markup and text together pass `SANITISE_CACHE_CHARS`; then the oldest results go until the cache
    is within `SANITISE_CACHE_ENTRIES` and `SANITISE_CACHE_CHARS`.
